@@ -1,6 +1,7 @@
 pragma solidity ^0.6.0;
+pragma experimental ABIEncoderV2;
 
-import "../bondingcurve/IAllocation.sol";
+import "../allocation/IAllocation.sol";
 
 contract PrototypeEthAllocation is IAllocation {
 

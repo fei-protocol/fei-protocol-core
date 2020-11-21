@@ -1,4 +1,5 @@
 pragma solidity ^0.6.0;
+pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
@@ -16,6 +17,12 @@ contract Fii is ERC20, ERC20Burnable, CoreRef {
 
     function mint(address account, uint256 amount) public onlyMinter returns (bool) {
         _mint(account, amount);
+        return true;
+    }
+
+
+    function burn(address account, uint256 amount) public onlyBurner returns (bool) {
+        _burn(account, amount);
         return true;
     }
 

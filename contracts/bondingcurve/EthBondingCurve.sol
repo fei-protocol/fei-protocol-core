@@ -2,7 +2,7 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./BondingCurve.sol";
-import "./IAllocation.sol";
+import "../allocation/IAllocation.sol";
 
 contract EthBondingCurve is BondingCurve {
 
@@ -12,21 +12,11 @@ contract EthBondingCurve is BondingCurve {
 
 	function purchase(uint256 amountIn, address to) public override payable returns (uint256 amountOut) {
 		require(msg.value == amountIn, "Bonding Curve: Sent value does not equal input");
-	 	amountOut = getAmountOut(amountIn);
-	 	incrementTotalPurchased(amountOut);
-		fii().mint(to, amountOut);
-		allocate(amountIn);
-		return amountOut;
+		return _purchase(amountIn, to);
 	}
 
-	// function purchaseFii() public payable {
-	// 	(Decimal.D256 memory price, bool valid) = oracle().capture();
-	// 	uint256 amount = price.mul(msg.value).asUint256();
-	// 	FII.mint(msg.sender, amount);
-	// }
-
-	function getAmountOut(uint256 amountIn) public override view returns (uint256 amountOut) {
-		uint256 radicand = (2 * amountIn * scale()) /* TODO div by oracle here */ + (totalPurchased() * totalPurchased());
+	function getBondingCurveAmountOut(uint256 amountIn) public override view returns (uint256 amountOut) {
+		uint256 radicand = (2 * amountIn * scale()) + (totalPurchased() * totalPurchased());
 		return sqrt(radicand) - totalPurchased();
 	}
 

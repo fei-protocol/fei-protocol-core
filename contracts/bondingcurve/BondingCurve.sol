@@ -5,13 +5,16 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./IBondingCurve.sol";
 import "../oracle/IOracle.sol";
 import "../core/CoreRef.sol";
-import "./AllocationRule.sol";
+import "../allocation/AllocationRule.sol";
 
 abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
+    using Decimal for Decimal.D256;
 
 	uint256 private SCALE;
 	uint256 private _totalPurchased = 0;
 	IOracle private ORACLE;
+	uint256 private BUFFER = 100;
+	uint256 private BUFFER_GRANULARITY = 10_000;
 
 	constructor(uint256 _scale, address core, address[] memory allocations, uint16[] memory ratios)
 	CoreRef(core)
@@ -32,6 +35,10 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 		return SCALE;
 	}
 
+	function atScale() public override view returns (bool) {
+		return _totalPurchased > SCALE;
+	}
+
 	function setScale(uint256 _scale) public override {
 		SCALE = _scale;
 	}
@@ -42,6 +49,42 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 
 	function setAllocation(address[] memory allocations, uint16[] memory ratios) public onlyGovernor {
 		_setAllocation(allocations, ratios);
+	}
+
+	function buffer() public view returns (uint256) {
+		return BUFFER;
+	}
+
+	function bufferGranularity() public view returns (uint256) {
+		return BUFFER_GRANULARITY;
+	}
+
+	function setBuffer(uint256 _buffer) public onlyGovernor {
+		require(_buffer <= BUFFER_GRANULARITY);
+		BUFFER = _buffer;
+	}
+
+	function getAmountOut(uint256 amountIn) internal returns (uint256 amountOut) {
+		(Decimal.D256 memory price, bool valid) = oracle().capture();
+		uint256 adjustedAmount = price.mul(amountIn).asUint256();
+		if (atScale()) {
+			return getBufferAdjustedAmount(adjustedAmount);
+		}
+		return getBondingCurveAmountOut(adjustedAmount);
+	}
+
+	function getBondingCurveAmountOut(uint256 amountIn) virtual public view returns(uint256);
+
+	function _purchase(uint256 amountIn, address to) internal returns (uint256 amountOut) {
+	 	amountOut = getAmountOut(amountIn);
+	 	incrementTotalPurchased(amountOut);
+		fii().mint(to, amountOut);
+		allocate(amountIn);
+		return amountOut;
+	}
+
+	function getBufferAdjustedAmount(uint256 amountIn) internal view returns(uint256) {
+		return amountIn * (BUFFER + BUFFER_GRANULARITY) / BUFFER_GRANULARITY;
 	}
 
 	function oracle() public view returns(IOracle) {

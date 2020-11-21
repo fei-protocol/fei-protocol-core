@@ -15,7 +15,7 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import { SafeMath } from "@openzeppelin/contracts/math/SafeMath.sol";
+import "./SafeMathCopy.sol";
 
 /**
  * @title Decimal
@@ -24,7 +24,7 @@ import { SafeMath } from "@openzeppelin/contracts/math/SafeMath.sol";
  * Library that defines a fixed-point number with 18 decimal places.
  */
 library Decimal {
-    using SafeMath for uint256;
+    using SafeMathCopy for uint256;
 
     // ============ Constants ============
 
