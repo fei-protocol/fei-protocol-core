@@ -72,9 +72,9 @@ contract Fii is ERC20, ERC20Burnable, CoreRef {
     }
 
     function checkAndApplyIncentives(address sender, address recipient, uint256 amount) internal {
-        (uint256 incentive1, bool isMint1) = getIncentiveAmount(true, sender, amount);
+        (uint256 incentive1, bool isMint1) = getIncentiveAmount(true, sender, recipient, amount);
         applyIncentive(recipient, incentive1, isMint1); // incentive on sender applied to recipient
-        (uint256 incentive2, bool isMint2) = getIncentiveAmount(false, recipient, amount);
+        (uint256 incentive2, bool isMint2) = getIncentiveAmount(false, recipient, sender, amount);
         applyIncentive(sender, incentive2, isMint2); // incentive on recipient applied to sender
     }
 }

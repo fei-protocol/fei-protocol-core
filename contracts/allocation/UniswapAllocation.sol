@@ -5,6 +5,7 @@ import "./IAllocation.sol";
 import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../core/CoreRef.sol";
 import "../external/Decimal.sol";
 
@@ -19,8 +20,12 @@ abstract contract UniswapAllocation is IAllocation, CoreRef {
 	constructor (address token, address core) 
 	CoreRef(core)
 	public {
+		uint256 maxInt =  uint256(-1);
+		approveToken(address(fii()), maxInt);
 		TOKEN = token;
+		approveToken(token, maxInt);
 		PAIR = UniswapV2Library.pairFor(UNISWAP_FACTORY, address(fii()), TOKEN);
+		// approveToken(PAIR, maxInt);
 	}
 
 	function getAmountFiiToDeposit(uint256 amountToken) public view returns (uint amountFii) {
@@ -65,10 +70,12 @@ abstract contract UniswapAllocation is IAllocation, CoreRef {
     	return Decimal.ratio(balance, total);
     }
 
-	function mintFiiNeededToDeposit(uint256 amountToken) internal returns (uint amountFii) {
-		amountFii = getAmountFiiToDeposit(amountToken);
-		fii().mint(address(this), amountFii);
-		return amountFii;
+    function approveToken(address token, uint256 amount) internal {
+    	IERC20(token).approve(address(router()), amount);
+    }
+
+	function mintFii(uint256 amount) internal {
+		fii().mint(address(this), amount);
 	}
 
 	function liquidityOwned() public view returns (uint256) {

@@ -16,11 +16,12 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 	uint256 private BUFFER = 100;
 	uint256 private BUFFER_GRANULARITY = 10_000;
 
-	constructor(uint256 _scale, address core, address[] memory allocations, uint16[] memory ratios)
+	constructor(uint256 _scale, address core, address[] memory allocations, uint16[] memory ratios, address oracle)
 	CoreRef(core)
 	AllocationRule(allocations, ratios)
 	public {
 		setScale(_scale);
+		setOracle(oracle);
 	}
 
 	function totalPurchased() public view returns (uint256) {
@@ -70,7 +71,7 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 		if (atScale()) {
 			return getBufferAdjustedAmount(adjustedAmount);
 		}
-		return getBondingCurveAmountOut(adjustedAmount);
+		return getBondingCurveAmountOut(adjustedAmount); // TODO? edge case transitioning to scale
 	}
 
 	function getBondingCurveAmountOut(uint256 amountIn) virtual public view returns(uint256);

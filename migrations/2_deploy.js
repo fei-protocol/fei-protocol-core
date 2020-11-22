@@ -2,11 +2,11 @@ const Core = artifacts.require("Core");
 const Fii = artifacts.require("Fii");
 const Oracle = artifacts.require("Oracle");
 const EthBonding = artifacts.require("EthBondingCurve");
-const PrototypeEthAllocation = artifacts.require("PrototypeEthAllocation");
+const EthUniswapAllocation = artifacts.require("EthUniswapAllocation");
 const PrototypeIncentive = artifacts.require("PrototypeIncentive");
 
 module.exports = function(deployer, network, accounts) {
-  	var core, fii, oracle, bc, a1, a2, i1;
+  	var core, fii, oracle, bc, allocation, i1;
 	deployer.then(function() {
 	  	// Create a new version of Core
 	  	return deployer.deploy(Core);
@@ -20,15 +20,17 @@ module.exports = function(deployer, network, accounts) {
 	}).then(function(instance) {
 	  	return deployer.deploy(Oracle);
 	}).then(function(instance) {
-	  	return deployer.deploy(PrototypeEthAllocation, accounts[1]);
+		oracle = instance
+	  	return deployer.deploy(EthUniswapAllocation, core.address);
 	}).then(function(instance) {
-	  	a1 = instance;
-	  	return deployer.deploy(PrototypeEthAllocation, accounts[2]);
+	  	allocation = instance;
+	  	return deployer.deploy(EthBonding, "1000000000000000000", core.address, [allocation.address], [10000], oracle.address);
 	}).then(function(instance) {
-	  	a2 = instance;
-	  	return deployer.deploy(EthBonding, "1000000000000000000", core.address, [a1.address, a2.address], [9000, 1000]);
+		bc = instance;
+	 	return core.grantMinter(allocation.address);
 	}).then(function(instance) {
-	 	bc = instance;
+	 	return allocation.addLiquidity("1000000000000000000", {value: "1000000000000000000"});
+	}).then(function(instance) {
 	 	return core.grantMinter(bc.address);
 	}).then(function(instance) {
 	 	return deployer.deploy(PrototypeIncentive, 10000, true);

@@ -6,8 +6,8 @@ import "../allocation/IAllocation.sol";
 
 contract EthBondingCurve is BondingCurve {
 
-	constructor(uint256 scale, address core, address[] memory allocations, uint16[] memory ratios)
-	BondingCurve(scale, core, allocations, ratios)
+	constructor(uint256 scale, address core, address[] memory allocations, uint16[] memory ratios, address oracle)
+	BondingCurve(scale, core, allocations, ratios, oracle)
 	public {}
 
 	function purchase(uint256 amountIn, address to) public override payable returns (uint256 amountOut) {
