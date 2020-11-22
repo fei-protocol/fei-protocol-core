@@ -1,25 +1,24 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
+import "./IIncentive.sol";
+import "../core/CoreRef.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
-import "../core/CoreRef.sol";
-import "./IIncentive.sol";
 
 contract Fii is ERC20, ERC20Burnable, CoreRef {
 
     mapping (address => address) public incentives;
 
 	constructor(address core)
-	ERC20("Fii Stablecoin", "FII") 
-    CoreRef(core)
+	   ERC20("Fii Stablecoin", "FII") 
+        CoreRef(core)
     public {}
 
     function mint(address account, uint256 amount) public onlyMinter returns (bool) {
         _mint(account, amount);
         return true;
     }
-
 
     function burn(address account, uint256 amount) public onlyBurner returns (bool) {
         _burn(account, amount);
@@ -32,7 +31,7 @@ contract Fii is ERC20, ERC20Burnable, CoreRef {
         return true;
     }
 
-    function transferFrom(address sender, address recipient, uint256 amount) override public returns (bool) {
+    function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
         _transfer(sender, recipient, amount);
         checkAndApplyIncentives(sender, recipient, amount);
         if (allowance(sender, _msgSender()) != uint256(-1)) {

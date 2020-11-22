@@ -1,16 +1,17 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "../token/IFii.sol";
 import "./Permissions.sol";
+import "../token/IFii.sol";
 
 contract Core is Permissions {
 
 	IFii private FII;
 
-	constructor() public {
+	constructor(address governor, address fii) public {
 		_setupGovernor(msg.sender);
-		_setupGovernor(0x76CE1e7C94519e4781A0136875E1ca0dC7acD443);
+		_setupGovernor(governor);
+		FII = IFii(fii);
 	}
 
 	function setFii(address token) public onlyGovernor {

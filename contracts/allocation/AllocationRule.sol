@@ -9,8 +9,7 @@ abstract contract AllocationRule {
 	address[] ALLOCATIONS;
 	uint16[] RATIOS;
 
-	constructor(address[] memory allocations, uint16[] memory ratios)
-	public {
+	constructor(address[] memory allocations, uint16[] memory ratios) public {
 		_setAllocation(allocations, ratios);
 	}
 
@@ -23,18 +22,18 @@ abstract contract AllocationRule {
 		require(total == GRANULARITY, "Allocation Rule: ratios do not total 100%");
 		return true;
 	}
+	
+	function getAllocations() public view returns (address[] memory, uint16[] memory) {
+		return (ALLOCATIONS, RATIOS);
+	}
+
+	function allocateSingle(uint256 amount, address allocation) internal virtual ;
 
 	function _setAllocation(address[] memory allocations, uint16[] memory ratios) internal {
 		checkAllocation(allocations, ratios);
 		ALLOCATIONS = allocations;
 		RATIOS = ratios;
 	}
-
-	function getAllocations() public view returns (address[] memory, uint16[] memory) {
-		return (ALLOCATIONS, RATIOS);
-	}
-
-	function allocateSingle(uint256 amount, address allocation) virtual internal;
 
 	function allocate(uint256 total) internal {
 		for (uint16 i = 0; i < RATIOS.length; i++) {

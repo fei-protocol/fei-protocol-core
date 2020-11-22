@@ -1,39 +1,38 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./IBondingCurve.sol";
 import "../oracle/IOracle.sol";
 import "../core/CoreRef.sol";
 import "../allocation/AllocationRule.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
     using Decimal for Decimal.D256;
 
 	uint256 private SCALE;
 	uint256 private _totalPurchased = 0;
-	IOracle private ORACLE;
 	uint256 private BUFFER = 100;
 	uint256 private BUFFER_GRANULARITY = 10_000;
+	IOracle private ORACLE;
 
-	constructor(uint256 _scale, address core, address[] memory allocations, uint16[] memory ratios, address oracle)
-	CoreRef(core)
-	AllocationRule(allocations, ratios)
+	constructor(
+		uint256 _scale, 
+		address core, 
+		address[] memory allocations, 
+		uint16[] memory ratios, 
+		address oracle
+	)
+		CoreRef(core)
+		AllocationRule(allocations, ratios)
 	public {
 		setScale(_scale);
 		setOracle(oracle);
 	}
 
-	function totalPurchased() public view returns (uint256) {
-		return _totalPurchased;
-	}
-
-	function incrementTotalPurchased(uint256 amount) internal {
-		_totalPurchased += amount;
-	}
-
-	function scale() public override view returns (uint256) {
-		return SCALE;
+	// TODO oracle ref?
+	function oracle() public view returns(IOracle) {
+		return ORACLE;
 	}
 
 	function atScale() public override view returns (bool) {
@@ -48,8 +47,21 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 		ORACLE = IOracle(oracle);
 	}
 
+	function setBuffer(uint256 _buffer) public onlyGovernor {
+		require(_buffer <= BUFFER_GRANULARITY);
+		BUFFER = _buffer;
+	}
+
 	function setAllocation(address[] memory allocations, uint16[] memory ratios) public onlyGovernor {
 		_setAllocation(allocations, ratios);
+	}
+
+	function totalPurchased() public view returns (uint256) {
+		return _totalPurchased;
+	}
+
+	function scale() public override view returns (uint256) {
+		return SCALE;
 	}
 
 	function buffer() public view returns (uint256) {
@@ -60,10 +72,7 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 		return BUFFER_GRANULARITY;
 	}
 
-	function setBuffer(uint256 _buffer) public onlyGovernor {
-		require(_buffer <= BUFFER_GRANULARITY);
-		BUFFER = _buffer;
-	}
+	function getBondingCurveAmountOut(uint256 amountIn) public view virtual returns(uint256);
 
 	function getAmountOut(uint256 amountIn) internal returns (uint256 amountOut) {
 		(Decimal.D256 memory price, bool valid) = oracle().capture();
@@ -74,8 +83,6 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 		return getBondingCurveAmountOut(adjustedAmount); // TODO? edge case transitioning to scale
 	}
 
-	function getBondingCurveAmountOut(uint256 amountIn) virtual public view returns(uint256);
-
 	function _purchase(uint256 amountIn, address to) internal returns (uint256 amountOut) {
 	 	amountOut = getAmountOut(amountIn);
 	 	incrementTotalPurchased(amountOut);
@@ -84,14 +91,15 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 		return amountOut;
 	}
 
+	function incrementTotalPurchased(uint256 amount) internal {
+		_totalPurchased += amount;
+	}
+
 	function getBufferAdjustedAmount(uint256 amountIn) internal view returns(uint256) {
 		return amountIn * (BUFFER + BUFFER_GRANULARITY) / BUFFER_GRANULARITY;
 	}
 
-	function oracle() public view returns(IOracle) {
-		return ORACLE;
-	}
-
+	// TODO move to math lib
 	function sqrt(uint y) internal pure returns (uint z) {
 	    if (y > 3) {
 	        z = y;

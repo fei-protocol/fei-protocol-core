@@ -6,12 +6,12 @@ import "./UniswapAllocation.sol";
 contract EthUniswapAllocation is UniswapAllocation {
 
     address WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-	constructor(address core) 
-    UniswapAllocation(WETH, core) 
-    public {
-    }
 
-    function deposit(uint256 ethAmount) override external payable {
+    constructor(address core) 
+        UniswapAllocation(WETH, core) 
+    public {}
+
+    function deposit(uint256 ethAmount) external override payable {
     	require(ethAmount == msg.value, "Bonding Curve: Sent value does not equal input");
         uint256 fiiAmount = getAmountFiiToDeposit(ethAmount);
         _addLiquidity(ethAmount, fiiAmount);
@@ -22,18 +22,7 @@ contract EthUniswapAllocation is UniswapAllocation {
         _addLiquidity(msg.value, fiiAmount);
     } 
 
-    function _addLiquidity(uint256 ethAmount, uint256 fiiAmount) internal {
-        mintFii(fiiAmount);
-        router().addLiquidityETH{value : ethAmount}(address(fii()),
-            fiiAmount,
-            0,
-            0,
-            address(this),
-            uint256(-1)
-        );
-    }
-
-    function removeLiquidity(uint256 liquidity, uint256 amountETHMin) override internal returns (uint256) {
+    function removeLiquidity(uint256 liquidity, uint256 amountETHMin) internal override returns (uint256) {
         (, uint256 amountWithdrawn) = router().removeLiquidityETH(
             address(fii()),
             liquidity,
@@ -45,7 +34,18 @@ contract EthUniswapAllocation is UniswapAllocation {
         return amountWithdrawn;
     }
 
-    function transferWithdrawn(uint256 amount) override internal {
+    function transferWithdrawn(uint256 amount) internal override {
         msg.sender.transfer(amount);
+    }
+
+    function _addLiquidity(uint256 ethAmount, uint256 fiiAmount) internal {
+        mintFii(fiiAmount);
+        router().addLiquidityETH{value : ethAmount}(address(fii()),
+            fiiAmount,
+            0,
+            0,
+            address(this),
+            uint256(-1)
+        );
     }
 }

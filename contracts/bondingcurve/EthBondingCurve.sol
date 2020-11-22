@@ -6,8 +6,14 @@ import "../allocation/IAllocation.sol";
 
 contract EthBondingCurve is BondingCurve {
 
-	constructor(uint256 scale, address core, address[] memory allocations, uint16[] memory ratios, address oracle)
-	BondingCurve(scale, core, allocations, ratios, oracle)
+	constructor(
+		uint256 scale, 
+		address core, 
+		address[] memory allocations, 
+		uint16[] memory ratios, 
+		address oracle
+	)
+		BondingCurve(scale, core, allocations, ratios, oracle)
 	public {}
 
 	function purchase(uint256 amountIn, address to) public override payable returns (uint256 amountOut) {
@@ -15,7 +21,7 @@ contract EthBondingCurve is BondingCurve {
 		return _purchase(amountIn, to);
 	}
 
-	function getBondingCurveAmountOut(uint256 amountIn) public override view returns (uint256 amountOut) {
+	function getBondingCurveAmountOut(uint256 amountIn) public view override returns (uint256 amountOut) {
 		uint256 radicand = (2 * amountIn * scale()) + (totalPurchased() * totalPurchased());
 		return sqrt(radicand) - totalPurchased();
 	}

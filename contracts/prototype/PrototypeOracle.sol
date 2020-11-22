@@ -14,11 +14,9 @@ contract PrototypeOracle is IOracle {
         _usdPerEth = usdPerEth;
     }
 
-    function setup() override public {
+    function setup() public override {}
 
-    }
-
-    function capture() override public returns (Decimal.D256 memory, bool) {
+    function capture() public override returns (Decimal.D256 memory, bool) {
         Decimal.D256 memory price = Decimal.from(_usdPerEth); 
         return (price, true);
     }

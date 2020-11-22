@@ -21,22 +21,6 @@ contract Permissions is AccessControl {
 		_;
 	}
 
-	function isMinter(address _address) public view returns (bool) {
-		return hasRole(MINTER_ROLE, _address);
-	}
-
-	function isBurner(address _address) public view returns (bool) {
-		return hasRole(BURNER_ROLE, _address);
-	}
-
-	function isGovernor(address _address) public view returns (bool) {
-		return hasRole(GOVERN_ROLE, _address);
-	}
-
-	function isReclaimer(address _address) public view returns (bool) {
-		return hasRole(RECLAIM_ROLE, _address);
-	}
-
 	function grantMinter(address minter) public onlyGovernor {
 		grantRole(MINTER_ROLE, minter);
 	} 
@@ -51,6 +35,22 @@ contract Permissions is AccessControl {
 
 	function grantGovernor(address governor) public onlyGovernor {
 		grantRole(GOVERN_ROLE, governor);
+	}
+
+	function isMinter(address _address) public view returns (bool) {
+		return hasRole(MINTER_ROLE, _address);
+	}
+
+	function isBurner(address _address) public view returns (bool) {
+		return hasRole(BURNER_ROLE, _address);
+	}
+
+	function isGovernor(address _address) public view returns (bool) {
+		return hasRole(GOVERN_ROLE, _address);
+	}
+
+	function isReclaimer(address _address) public view returns (bool) {
+		return hasRole(RECLAIM_ROLE, _address);
 	}
 
 	function _setupGovernor(address governor) internal {
