@@ -44,7 +44,7 @@ contract Fii is ERC20, ERC20Burnable, CoreRef {
         return true;
     }
 
-    function addIncentiveContract(address account, address incentive) public onlyGovernor {
+    function setIncentiveContract(address account, address incentive) public onlyGovernor {
         incentives[account] = incentive;
     }
 
@@ -52,29 +52,26 @@ contract Fii is ERC20, ERC20Burnable, CoreRef {
         return incentives[account];
     }
 
-    function getIncentiveAmount(bool isSender, address account, uint256 amountIn) public view returns (uint256, bool) {
-        address incentive = incentives[account];
-        if (incentive == address(0)) {
-            return (0, true);
+    function checkAndApplyIncentives(address sender, address receiver, uint256 amount) internal {
+        // incentive on sender
+        address senderIncentive = incentives[sender];
+        if (senderIncentive != address(0)) {
+            IIncentive(senderIncentive).incentivize(sender, receiver, msg.sender, amount);
         }
-        return IIncentive(incentive).getIncentiveAmount(isSender, account, amountIn);
-    }
-
-    function applyIncentive(address account, uint256 incentive, bool isMint) internal {
-        if (incentive == 0) {
-            return;
+        // incentive on receiver
+        address receiverIncentive = incentives[receiver];
+        if (receiverIncentive != address(0)) {
+            IIncentive(receiverIncentive).incentivize(sender, receiver, msg.sender, amount);
         }
-        if (isMint) {
-            _mint(account, incentive);
-        } else {
-            _burn(account, incentive);
+        // incentive on spender
+        address spenderIncentive = incentives[msg.sender];
+        if (msg.sender != sender && msg.sender != receiver && spenderIncentive != address(0)) {
+            IIncentive(spenderIncentive).incentivize(sender, receiver, msg.sender, amount);
         }
-    }
-
-    function checkAndApplyIncentives(address sender, address recipient, uint256 amount) internal {
-        (uint256 incentive1, bool isMint1) = getIncentiveAmount(true, sender, recipient, amount);
-        applyIncentive(recipient, incentive1, isMint1); // incentive on sender applied to recipient
-        (uint256 incentive2, bool isMint2) = getIncentiveAmount(false, recipient, sender, amount);
-        applyIncentive(sender, incentive2, isMint2); // incentive on recipient applied to sender
+        // all incentive
+        address allIncentive = incentives[address(0)];
+        if (allIncentive != address(0)) {
+            IIncentive(allIncentive).incentivize(sender, receiver, msg.sender, amount);
+        }
     }
 }

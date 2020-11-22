@@ -38,6 +38,16 @@ contract CoreRef {
 		_;
 	}
 
+	modifier onlyCore() {
+		require(msg.sender == address(CORE), "Caller is not core");
+		_;
+	}
+
+	modifier onlyFii() {
+		require(msg.sender == address(fii()), "Caller is not FII");
+		_;
+	}
+ 
 	function core() public view returns(ICore) {
 		return ICore(CORE);
 	}

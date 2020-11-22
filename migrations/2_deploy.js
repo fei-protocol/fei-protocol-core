@@ -3,10 +3,10 @@ const Fii = artifacts.require("Fii");
 const Oracle = artifacts.require("Oracle");
 const EthBonding = artifacts.require("EthBondingCurve");
 const EthUniswapAllocation = artifacts.require("EthUniswapAllocation");
-const PrototypeIncentive = artifacts.require("PrototypeIncentive");
+const UniswapIncentive = artifacts.require("UniswapIncentive");
 
 module.exports = function(deployer, network, accounts) {
-  	var core, fii, oracle, bc, allocation, i1;
+  	var core, fii, oracle, bc, allocation, i1, pair;
 	deployer.then(function() {
 	  	// Create a new version of Core
 	  	return deployer.deploy(Core);
@@ -33,9 +33,15 @@ module.exports = function(deployer, network, accounts) {
 	}).then(function(instance) {
 	 	return core.grantMinter(bc.address);
 	}).then(function(instance) {
-	 	return deployer.deploy(PrototypeIncentive, 10000, true);
+	 	return deployer.deploy(UniswapIncentive, core.address);
 	}).then(function(instance) {
 		i1 = instance;
-		fii.addIncentiveContract(accounts[3], i1.address);
+		return allocation.pair();
+	}).then(function(instance) {
+		pair = instance;
+		console.log(pair);
+		return fii.setIncentiveContract(pair, i1.address);
+	}).then(function(instance) {
+		return i1.setOracle(pair, oracle.address);
 	});
 }
