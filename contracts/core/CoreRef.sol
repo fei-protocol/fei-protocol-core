@@ -19,32 +19,32 @@ contract CoreRef {
 	}
 
 	modifier onlyMinter() {
-		require(CORE.isMinter(msg.sender), "Caller is not a minter");
+		require(CORE.isMinter(msg.sender), "CoreRef: Caller is not a minter");
 		_;
 	}
 
 	modifier onlyBurner() {
-		require(CORE.isBurner(msg.sender), "Caller is not a burner");
+		require(CORE.isBurner(msg.sender), "CoreRef: Caller is not a burner");
 		_;
 	}
 
 	modifier onlyReclaimer() {
-		require(CORE.isReclaimer(msg.sender), "Caller is not a reclaimer");
+		require(CORE.isReclaimer(msg.sender), "CoreRef: Caller is not a reclaimer");
 		_;
 	}
 
 	modifier onlyGovernor() {
-		require(CORE.isGovernor(msg.sender), "Caller is not a governor");
+		require(CORE.isGovernor(msg.sender), "CoreRef: Caller is not a governor");
 		_;
 	}
 
 	modifier onlyCore() {
-		require(msg.sender == address(CORE), "Caller is not core");
+		require(msg.sender == address(CORE), "CoreRef: Caller is not core");
 		_;
 	}
 
 	modifier onlyFii() {
-		require(msg.sender == address(fii()), "Caller is not FII");
+		require(msg.sender == address(fii()), "CoreRef: Caller is not FII");
 		_;
 	}
  

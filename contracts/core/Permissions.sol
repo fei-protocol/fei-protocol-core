@@ -17,7 +17,7 @@ contract Permissions is AccessControl {
 	}
 
 	modifier onlyGovernor() {
-		require(isGovernor(msg.sender), "Caller is not a governor");
+		require(isGovernor(msg.sender), "Permissions: Caller is not a governor");
 		_;
 	}
 
@@ -37,6 +37,22 @@ contract Permissions is AccessControl {
 		grantRole(GOVERN_ROLE, governor);
 	}
 
+	function revokeMinter(address minter) public onlyGovernor {
+		revokeRole(MINTER_ROLE, minter);
+	} 
+
+	function revokeBurner(address burner) public onlyGovernor {
+		revokeRole(BURNER_ROLE, burner);
+	} 
+
+	function revokeReclaimer(address reclaimer) public onlyGovernor {
+		revokeRole(RECLAIM_ROLE, reclaimer);
+	}
+
+	function revokeGovernor(address governor) public onlyGovernor {
+		revokeRole(GOVERN_ROLE, governor);
+	}
+
 	function isMinter(address _address) public view returns (bool) {
 		return hasRole(MINTER_ROLE, _address);
 	}
@@ -45,7 +61,8 @@ contract Permissions is AccessControl {
 		return hasRole(BURNER_ROLE, _address);
 	}
 
-	function isGovernor(address _address) public view returns (bool) {
+	// only virtual for testing mock override
+	function isGovernor(address _address) public view virtual returns (bool) {
 		return hasRole(GOVERN_ROLE, _address);
 	}
 

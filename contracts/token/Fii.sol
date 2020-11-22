@@ -15,14 +15,12 @@ contract Fii is ERC20, ERC20Burnable, CoreRef {
         CoreRef(core)
     public {}
 
-    function mint(address account, uint256 amount) public onlyMinter returns (bool) {
+    function mint(address account, uint256 amount) public onlyMinter {
         _mint(account, amount);
-        return true;
     }
 
-    function burn(address account, uint256 amount) public onlyBurner returns (bool) {
+    function burnFrom(address account, uint256 amount) public override onlyBurner {
         _burn(account, amount);
-        return true;
     }
 
     function transfer(address recipient, uint256 amount) public override returns (bool) {
