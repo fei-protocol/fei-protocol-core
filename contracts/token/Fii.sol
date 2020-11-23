@@ -10,35 +10,36 @@ contract Fii is ERC20, ERC20Burnable, CoreRef {
 
     mapping (address => address) public incentives;
 
+    event Minting(address indexed to, address indexed minter, uint256 amount);
+    event Burning(address indexed to, address indexed burner, uint256 amount);
+    // TODO would other info be useful here? Like incentive amount and mint/burn?
+    event Incentive(
+        address indexed on, 
+        address indexed incentiveContract,
+        address sender,
+        address recipient,
+        uint256 transferAmount
+    );
+
 	constructor(address core)
 	   ERC20("Fii Stablecoin", "FII") 
-        CoreRef(core)
+       CoreRef(core)
     public {}
 
     function mint(address account, uint256 amount) public onlyMinter {
         _mint(account, amount);
+        emit Minting(account, msg.sender, amount);
     }
 
     function burnFrom(address account, uint256 amount) public override onlyBurner {
         _burn(account, amount);
+        emit Burning(account, msg.sender, amount);
     }
 
-    function transfer(address recipient, uint256 amount) public override returns (bool) {
-        _transfer(_msgSender(), recipient, amount);
-        checkAndApplyIncentives(_msgSender(), recipient, amount);
-        return true;
-    }
-
-    function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
-        _transfer(sender, recipient, amount);
-        checkAndApplyIncentives(sender, recipient, amount);
-        if (allowance(sender, _msgSender()) != uint256(-1)) {
-            _approve(
-                sender,
-                _msgSender(),
-                allowance(sender, _msgSender()).sub(amount, "Fii: transfer amount exceeds allowance"));
+    function _beforeTokenTransfer(address from, address to, uint256 amount) internal override {
+        if (from != address(0) && to != address(0)) {
+            checkAndApplyIncentives(from, to, amount);      
         }
-        return true;
     }
 
     function setIncentiveContract(address account, address incentive) public onlyGovernor {
@@ -49,26 +50,30 @@ contract Fii is ERC20, ERC20Burnable, CoreRef {
         return incentives[account];
     }
 
-    function checkAndApplyIncentives(address sender, address receiver, uint256 amount) internal {
+    function checkAndApplyIncentives(address sender, address recipient, uint256 amount) internal {
         // incentive on sender
         address senderIncentive = incentives[sender];
         if (senderIncentive != address(0)) {
-            IIncentive(senderIncentive).incentivize(sender, receiver, msg.sender, amount);
+            IIncentive(senderIncentive).incentivize(sender, recipient, msg.sender, amount);
+            emit Incentive(sender, senderIncentive, sender, recipient, amount);
         }
-        // incentive on receiver
-        address receiverIncentive = incentives[receiver];
-        if (receiverIncentive != address(0)) {
-            IIncentive(receiverIncentive).incentivize(sender, receiver, msg.sender, amount);
+        // incentive on recipient
+        address recipientIncentive = incentives[recipient];
+        if (recipientIncentive != address(0)) {
+            IIncentive(recipientIncentive).incentivize(sender, recipient, msg.sender, amount);
+            emit Incentive(recipient, recipientIncentive, sender, recipient, amount);
         }
-        // incentive on spender
-        address spenderIncentive = incentives[msg.sender];
-        if (msg.sender != sender && msg.sender != receiver && spenderIncentive != address(0)) {
-            IIncentive(spenderIncentive).incentivize(sender, receiver, msg.sender, amount);
+        // incentive on operator
+        address operatorIncentive = incentives[msg.sender];
+        if (msg.sender != sender && msg.sender != recipient && operatorIncentive != address(0)) {
+            IIncentive(operatorIncentive).incentivize(sender, recipient, msg.sender, amount);
+            emit Incentive(msg.sender, operatorIncentive, sender, recipient, amount);
         }
         // all incentive
         address allIncentive = incentives[address(0)];
         if (allIncentive != address(0)) {
-            IIncentive(allIncentive).incentivize(sender, receiver, msg.sender, amount);
+            IIncentive(allIncentive).incentivize(sender, recipient, msg.sender, amount);
+            emit Incentive(address(0), allIncentive, sender, recipient, amount);
         }
     }
 }
