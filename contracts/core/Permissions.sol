@@ -4,10 +4,10 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract Permissions is AccessControl {
-	bytes32 private constant BURNER_ROLE = keccak256("BURNER_ROLE");
-	bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE");
-	bytes32 private constant RECLAIM_ROLE = keccak256("RECLAIM_ROLE");
-	bytes32 private constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
+	bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
+	bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+	bytes32 public constant RECLAIM_ROLE = keccak256("RECLAIM_ROLE");
+	bytes32 public constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
 
 	constructor() public {
 		_setRoleAdmin(MINTER_ROLE, GOVERN_ROLE);
