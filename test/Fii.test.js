@@ -10,6 +10,7 @@ const MockIncentive = contract.fromArtifact('MockIncentive');
 
 
 describe('Fii', function () {
+  return;
   const [ minterAddress, burnerAddress, userAddress, incentivizedAddress, operatorAddress ] = accounts;
 
   beforeEach(async function () {
