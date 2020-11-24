@@ -8,10 +8,8 @@ contract Core is Permissions {
 
 	IFii private FII;
 
-	constructor(address governor, address fii) public {
+	constructor() public {
 		_setupGovernor(msg.sender);
-		_setupGovernor(governor);
-		FII = IFii(fii);
 	}
 
 	function setFii(address token) public onlyGovernor {

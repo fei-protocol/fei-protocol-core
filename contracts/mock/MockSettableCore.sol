@@ -7,7 +7,6 @@ import "../token/Fii.sol";
 contract MockSettableCore is Core {
 
 	constructor()
-		Core(address(0), address(0))
 	public {
 		Fii fii = new Fii(address(this));
 		setFii(address(fii));

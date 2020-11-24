@@ -1,7 +1,7 @@
 const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
 const { accounts, contract } = require('@openzeppelin/test-environment');
 
-const { BN, expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers');
+const { BN, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
 const Fii = contract.fromArtifact('Fii');
