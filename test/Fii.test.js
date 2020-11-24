@@ -57,8 +57,9 @@ describe('Fii', function () {
       beforeEach(async function () {
       	await this.fii.mint(userAddress, 200, {from: minterAddress});
         const { logs } = await this.fii.burnFrom(userAddress, 100, {from: burnerAddress});
-		this.logs = logs;
+		    this.logs = logs;
       });
+
       it('burn Fii tokens', async function () {
         expect(await this.fii.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
       });
@@ -84,6 +85,7 @@ describe('Fii', function () {
     	await this.core.grantMinter(this.incentive.address);
     	await this.fii.setIncentiveContract(incentivizedAddress, this.incentive.address);
     });
+
     it('incentive contract registered', async function() {
         expect(await this.fii.getIncentiveContract(incentivizedAddress)).to.be.bignumber.equal(this.incentive.address);
     });
@@ -92,14 +94,17 @@ describe('Fii', function () {
   		describe('on sender', function() {
   		  beforeEach(async function () {
   		  	await this.fii.mint(incentivizedAddress, 200, {from: minterAddress});
-  			const { logs } = await this.fii.transfer(userAddress, 200, {from: incentivizedAddress});
-  			this.logs = logs;
+  			  const { logs } = await this.fii.transfer(userAddress, 200, {from: incentivizedAddress});
+  			  this.logs = logs;
     	  });
 
     	  it('balances update', async function() {
-        	expect(await this.fii.balanceOf(incentivizedAddress)).to.be.bignumber.equal(new BN(0));
         	expect(await this.fii.balanceOf(userAddress)).to.be.bignumber.equal(new BN(200));
     	  });
+
+        it('incentive applied', async function() {
+          expect(await this.fii.balanceOf(incentivizedAddress)).to.be.bignumber.equal(new BN(100));
+        });
 
     	  it('emits Incentive event', async function () {
 	        const event = expectEvent.inLogs(this.logs, 'Incentive', {
@@ -109,19 +114,22 @@ describe('Fii', function () {
 	          recipient: userAddress,
 	          transferAmount: new BN(200)
 	        });
-      	  });
+      	});
   		});
   		describe('on receiver', function() {
   		  beforeEach(async function () {
   		  	await this.fii.mint(userAddress, 200, {from: minterAddress});
-  			const { logs } = await this.fii.transfer(incentivizedAddress, 200, {from: userAddress});
-  			this.logs = logs;
+  			  const { logs } = await this.fii.transfer(incentivizedAddress, 200, {from: userAddress});
+  			  this.logs = logs;
     	  });
 
     	  it('balances update', async function() {
         	expect(await this.fii.balanceOf(incentivizedAddress)).to.be.bignumber.equal(new BN(200));
-        	expect(await this.fii.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
     	  });
+
+        it('incentive applied', async function() {
+          expect(await this.fii.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
+        });
 
     	  it('emits Incentive event', async function () {
 	        const event = expectEvent.inLogs(this.logs, 'Incentive', {
@@ -131,7 +139,7 @@ describe('Fii', function () {
 	          recipient: incentivizedAddress,
 	          transferAmount: new BN(200)
 	        });
-      	  });
+      	});
   		});
   		describe('on all', function() {
   		  beforeEach(async function () {
@@ -141,14 +149,17 @@ describe('Fii', function () {
   		  	// unset incentive
   		  	await this.fii.setIncentiveContract(incentivizedAddress, ZERO_ADDRESS);
 
-  			const { logs } = await this.fii.transfer(incentivizedAddress, 200, {from: userAddress});
-  			this.logs = logs;
+  			  const { logs } = await this.fii.transfer(incentivizedAddress, 200, {from: userAddress});
+  			  this.logs = logs;
     	  });
 
     	  it('balances update', async function() {
         	expect(await this.fii.balanceOf(incentivizedAddress)).to.be.bignumber.equal(new BN(200));
-        	expect(await this.fii.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
     	  });
+
+        it('incentive applied', async function() {
+          expect(await this.fii.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
+        });
 
     	  it('emits Incentive event', async function () {
 	        const event = expectEvent.inLogs(this.logs, 'Incentive', {
@@ -158,7 +169,7 @@ describe('Fii', function () {
 	          recipient: incentivizedAddress,
 	          transferAmount: new BN(200)
 	        });
-      	  });
+      	});
   		});
   		describe('on sender and receiver', function() {
 
@@ -167,14 +178,17 @@ describe('Fii', function () {
   		  	// Set incentive on user
   		  	await this.fii.setIncentiveContract(userAddress, this.incentive.address);
 
-  			const { logs } = await this.fii.transfer(incentivizedAddress, 200, {from: userAddress});
-  			this.logs = logs;
+  			  const { logs } = await this.fii.transfer(incentivizedAddress, 200, {from: userAddress});
+  			  this.logs = logs;
     	  });
 
     	  it('balances update', async function() {
         	expect(await this.fii.balanceOf(incentivizedAddress)).to.be.bignumber.equal(new BN(200));
-        	expect(await this.fii.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
     	  });
+
+        it('incentive applied', async function() {
+          expect(await this.fii.balanceOf(userAddress)).to.be.bignumber.equal(new BN(200));
+        });
 
     	  it('emits Incentive event twice', async function () {
 	        expectEvent.inLogs(this.logs, 'Incentive', {
@@ -191,7 +205,7 @@ describe('Fii', function () {
 	          recipient: incentivizedAddress,
 	          transferAmount: new BN(200)
 	        });
-      	  });
+      	});
   		});
   		describe('on receiver and all', function() {
   		  beforeEach(async function () {
@@ -199,14 +213,17 @@ describe('Fii', function () {
   		  	// Set incentive on zero address
   		  	await this.fii.setIncentiveContract(ZERO_ADDRESS, this.incentive.address);
 
-  			const { logs } = await this.fii.transfer(incentivizedAddress, 200, {from: userAddress});
-  			this.logs = logs;
+  			  const { logs } = await this.fii.transfer(incentivizedAddress, 200, {from: userAddress});
+  			  this.logs = logs;
     	  });
 
     	  it('balances update', async function() {
         	expect(await this.fii.balanceOf(incentivizedAddress)).to.be.bignumber.equal(new BN(200));
-        	expect(await this.fii.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
     	  });
+
+        it('incentive applied', async function() {
+          expect(await this.fii.balanceOf(userAddress)).to.be.bignumber.equal(new BN(200));
+        });
 
     	  it('emits Incentive event twice', async function () {
 	        expectEvent.inLogs(this.logs, 'Incentive', {
@@ -224,7 +241,7 @@ describe('Fii', function () {
 	          transferAmount: new BN(200)
 	        });
   		  });
-  	    });
+  	  });
   	});
  	describe('via transferFrom', function() {
   		describe('on operator', function() {
@@ -236,14 +253,17 @@ describe('Fii', function () {
   		  	// Unset incentive on incentivizedAddress
   		  	await this.fii.setIncentiveContract(incentivizedAddress, ZERO_ADDRESS);
 
-  			const { logs } = await this.fii.transferFrom(userAddress, incentivizedAddress, 200, {from: operatorAddress});
-  			this.logs = logs;
+  			  const { logs } = await this.fii.transferFrom(userAddress, incentivizedAddress, 200, {from: operatorAddress});
+  			  this.logs = logs;
     	  });
 
     	  it('balances update', async function() {
         	expect(await this.fii.balanceOf(incentivizedAddress)).to.be.bignumber.equal(new BN(200));
-        	expect(await this.fii.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
     	  });
+
+        it('incentive applied', async function() {
+          expect(await this.fii.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
+        });
 
     	  it('operator approval decrements', async function() {
     	  	expect(await this.fii.allowance(userAddress, operatorAddress)).to.be.bignumber.equal(new BN(0));
@@ -257,7 +277,7 @@ describe('Fii', function () {
 	          recipient: incentivizedAddress,
 	          transferAmount: new BN(200)
 	        });
-      	  });
+      	});
   		});
   		describe('on sender and operator', function() {
   		  beforeEach(async function () {
@@ -266,14 +286,17 @@ describe('Fii', function () {
   		  	// Set incentive on operator
   		  	await this.fii.setIncentiveContract(operatorAddress, this.incentive.address);
 
-  			const { logs } = await this.fii.transferFrom(incentivizedAddress, userAddress, 200, {from: operatorAddress});
-  			this.logs = logs;
+  			  const { logs } = await this.fii.transferFrom(incentivizedAddress, userAddress, 200, {from: operatorAddress});
+  			  this.logs = logs;
     	  });
 
     	  it('balances update', async function() {
-        	expect(await this.fii.balanceOf(incentivizedAddress)).to.be.bignumber.equal(new BN(0));
-        	expect(await this.fii.balanceOf(userAddress)).to.be.bignumber.equal(new BN(200));
+          expect(await this.fii.balanceOf(userAddress)).to.be.bignumber.equal(new BN(200));
     	  });
+
+        it('incentive applied', async function() {
+          expect(await this.fii.balanceOf(incentivizedAddress)).to.be.bignumber.equal(new BN(200));
+        });
 
     	  it('operator approval decrements', async function() {
     	  	expect(await this.fii.allowance(userAddress, operatorAddress)).to.be.bignumber.equal(new BN(0));
@@ -294,11 +317,11 @@ describe('Fii', function () {
 	          recipient: userAddress,
 	          transferAmount: new BN(200)
 	        });
-      	  });
+      	});
   		});
 
   		describe('on operator and all', function() {
-  	      beforeEach(async function () {
+  	    beforeEach(async function () {
   		  	await this.fii.mint(userAddress, 200, {from: minterAddress});
   		  	await this.fii.approve(operatorAddress, 200, {from: userAddress});
   		  	// Set incentive on operator
@@ -308,18 +331,22 @@ describe('Fii', function () {
   		  	// Set incentive on all 
   		  	await this.fii.setIncentiveContract(ZERO_ADDRESS, this.incentive.address);
 
-  			const { logs } = await this.fii.transferFrom(userAddress, incentivizedAddress, 200, {from: operatorAddress});
-  			this.logs = logs;
+  			  const { logs } = await this.fii.transferFrom(userAddress, incentivizedAddress, 200, {from: operatorAddress});
+  			  this.logs = logs;
     	  });
 
     	  it('balances update', async function() {
         	expect(await this.fii.balanceOf(incentivizedAddress)).to.be.bignumber.equal(new BN(200));
-        	expect(await this.fii.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
     	  });
+
+        it('incentive applied', async function() {
+          expect(await this.fii.balanceOf(userAddress)).to.be.bignumber.equal(new BN(200));
+        });
 
     	  it('operator approval decrements', async function() {
     	  	expect(await this.fii.allowance(userAddress, operatorAddress)).to.be.bignumber.equal(new BN(0));
     	  });
+
     	  it('emits Incentive event twice', async function () {
 	        expectEvent.inLogs(this.logs, 'Incentive', {
 	          on: operatorAddress,
@@ -335,7 +362,7 @@ describe('Fii', function () {
 	          recipient: incentivizedAddress,
 	          transferAmount: new BN(200)
 	        });
-      	  });
+      	});
   		});
   	});
   });

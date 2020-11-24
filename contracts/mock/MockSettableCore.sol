@@ -6,12 +6,6 @@ import "../token/Fii.sol";
 
 contract MockSettableCore is Core {
 
-	constructor()
-	public {
-		Fii fii = new Fii(address(this));
-		setFii(address(fii));
-	}
-
 	// anyone can set any role
 	function isGovernor(address _address) public view override returns (bool) {
 		return true;

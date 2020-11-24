@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "./Permissions.sol";
 import "../token/IFii.sol";
+import "../token/Fii.sol";
 
 contract Core is Permissions {
 
@@ -10,6 +11,8 @@ contract Core is Permissions {
 
 	constructor() public {
 		_setupGovernor(msg.sender);
+		Fii fii = new Fii(address(this));
+		FII = IFii(address(fii));
 	}
 
 	function setFii(address token) public onlyGovernor {
