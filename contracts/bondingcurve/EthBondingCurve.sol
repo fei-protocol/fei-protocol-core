@@ -21,6 +21,8 @@ contract EthBondingCurve is BondingCurve {
 		return _purchase(amountIn, to);
 	}
 
+	// Represents the integral solved for upper bound of P(x) = X/S * O
+	// TODO update to P(x) = sqrt(X/S) * O or other appropriate sublinear function
 	function getBondingCurveAmountOut(uint256 amountIn) public view override returns (uint256 amountOut) {
 		uint256 radicand = (2 * amountIn * scale()) + (totalPurchased() * totalPurchased());
 		return sqrt(radicand) - totalPurchased();

@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 import "../external/Decimal.sol";
 import "../oracle/IOracle.sol";
 
-contract PrototypeOracle is IOracle {
+contract MockOracle is IOracle {
     using Decimal for Decimal.D256;
 
     // fixed exchange ratio

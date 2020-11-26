@@ -3,9 +3,10 @@ pragma experimental ABIEncoderV2;
 
 import "../allocation/IAllocation.sol";
 
-contract PrototypeEthAllocation is IAllocation {
+contract MockEthAllocation is IAllocation {
 
 	address payable beneficiary;
+    uint256 total = 0;
 
 	constructor(address payable _beneficiary) public {
 		beneficiary = _beneficiary;
@@ -14,12 +15,13 @@ contract PrototypeEthAllocation is IAllocation {
     function deposit(uint256 amount) external override payable {
     	require(amount == msg.value, "Bonding Curve: Sent value does not equal input");
     	beneficiary.transfer(amount);
+        total += amount;
     }
 
     function withdraw(uint256 amount) external override {}
 
     function totalValue() external view override returns(uint256) {
-    	return 0;
+    	return total;
     }
 
 }

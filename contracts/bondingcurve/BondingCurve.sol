@@ -11,7 +11,7 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
     using Decimal for Decimal.D256;
 
 	uint256 private SCALE;
-	uint256 private _totalPurchased = 0;
+	uint256 private _totalPurchased = 0; // FEI_b for this curve
 	uint256 private BUFFER = 100;
 	uint256 private BUFFER_GRANULARITY = 10_000;
 	IOracle private ORACLE;
@@ -26,8 +26,8 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 		CoreRef(core)
 		AllocationRule(allocations, ratios)
 	public {
-		setScale(_scale);
-		setOracle(oracle);
+		_setScale(_scale);
+		_setOracle(oracle);
 	}
 
 	// TODO oracle ref?
@@ -36,15 +36,15 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 	}
 
 	function atScale() public override view returns (bool) {
-		return _totalPurchased > SCALE;
+		return _totalPurchased >= SCALE;
 	}
 
-	function setScale(uint256 _scale) public override {
-		SCALE = _scale;
+	function setScale(uint256 _scale) public override onlyGovernor {
+		_setScale(_scale);
 	}
 
-	function setOracle(address oracle) public {
-		ORACLE = IOracle(oracle);
+	function setOracle(address oracle) public onlyGovernor {
+		_setOracle(oracle);	
 	}
 
 	function setBuffer(uint256 _buffer) public onlyGovernor {
@@ -95,8 +95,16 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 		_totalPurchased += amount;
 	}
 
+	function _setScale(uint256 _scale) internal {
+		SCALE = _scale;
+	}
+
+	function _setOracle(address oracle) internal {
+		ORACLE = IOracle(oracle);
+	}
+
 	function getBufferAdjustedAmount(uint256 amountIn) internal view returns(uint256) {
-		return amountIn * (BUFFER + BUFFER_GRANULARITY) / BUFFER_GRANULARITY;
+		return amountIn * (BUFFER_GRANULARITY - BUFFER) / BUFFER_GRANULARITY;
 	}
 
 	// TODO move to math lib

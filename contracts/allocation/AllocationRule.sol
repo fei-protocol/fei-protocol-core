@@ -13,7 +13,7 @@ abstract contract AllocationRule {
 		_setAllocation(allocations, ratios);
 	}
 
-	function checkAllocation(address[] memory allocations, uint16[] memory ratios) public view returns (bool){
+	function checkAllocation(address[] memory allocations, uint16[] memory ratios) public view returns (bool) {
 		require(allocations.length == ratios.length, "Allocation Rule: allocations and ratios are different lengths");
 		uint16 total = 0;
 		for (uint16 i = 0; i < ratios.length; i++) {
