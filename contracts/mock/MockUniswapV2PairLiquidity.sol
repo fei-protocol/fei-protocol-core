@@ -78,6 +78,9 @@ contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
         IERC20(token1).transfer(to, amount1);
     }
 
+    function withdrawFii(address to, uint256 amount) public {
+        IERC20(token1).transfer(to, amount);
+    }
 
     /**
      * Should not use

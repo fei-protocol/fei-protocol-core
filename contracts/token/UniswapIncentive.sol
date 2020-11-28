@@ -162,10 +162,12 @@ contract UniswapIncentive is IIncentive, CoreRef {
     	Decimal.D256 memory price, 
     	Decimal.D256 memory peg
     ) internal pure returns (Decimal.D256 memory) {
-    	if (price.greaterThanOrEqualTo(peg)) {
+        // If price <= peg, then FII is more expensive and above peg
+        // In this case we can just return zero for deviation
+    	if (price.lessThanOrEqualTo(peg)) {
     		return Decimal.zero();
     	}
-    	Decimal.D256 memory delta = peg.sub(price, "UniswapIncentive: price exceeds peg"); // Should never error
+    	Decimal.D256 memory delta = price.sub(peg, "UniswapIncentive: price exceeds peg"); // Should never error
     	return delta.div(peg);
     }
 }
