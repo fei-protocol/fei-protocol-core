@@ -18,19 +18,24 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "../external/Decimal.sol";
 import '@uniswap/lib/contracts/libraries/FixedPoint.sol';
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
     using SafeMath for uint256;
+    using Decimal for Decimal.D256;
 
     uint112 private reserve0;           // uses single storage slot, accessible via getReserves
     uint112 private reserve1;           // uses single storage slot, accessible via getReserves
     uint256 private liquidity;
-    address private TOKEN;
+    address public override token0;
+    address public override token1;
 
-    constructor(address _token0) public {
-        TOKEN = _token0;
+    constructor(address _token0, address _token1) public {
+        token0 = _token0;
+        token1 = _token1;
     } 
 
     function getReserves() external view override returns (uint112, uint112, uint32) {
@@ -42,22 +47,37 @@ contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
         return liquidity;
     }
 
-    function set(uint112 newReserve0, uint112 newReserve1, uint256 newLiquidity) external {
+    function mintAmount(address to, uint256 _liquidity) public payable {
+        _mint(to, _liquidity);
+    }
+
+    function set(uint112 newReserve0, uint112 newReserve1, uint256 newLiquidity) external payable {
         reserve0 = newReserve0;
         reserve1 = newReserve1;
         liquidity = newLiquidity;
         mint(msg.sender);
     }
 
-    function token0() external view override returns (address) { 
-        return TOKEN;
+    function setReserves(uint112 newReserve0, uint112 newReserve1) external {
+        reserve0 = newReserve0;
+        reserve1 = newReserve1;
     }
-
 
     function faucet(address account, uint256 amount) external returns (bool) {
         _mint(account, amount);
         return true;
     }
+
+    function burnEth(address to, Decimal.D256 memory ratio) public returns(uint256 amountEth, uint256 amount1) {
+        uint256 balanceEth = address(this).balance;
+        amountEth = ratio.mul(balanceEth).asUint256();
+        payable(to).transfer(amountEth);
+
+        uint256 balance1 = reserve1;
+        amount1 = ratio.mul(balance1).asUint256();
+        IERC20(token1).transfer(to, amount1);
+    }
+
 
     /**
      * Should not use
@@ -75,15 +95,14 @@ contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
 
     function MINIMUM_LIQUIDITY() external pure override returns (uint) { revert("Should not use"); }
     function factory() external view override returns (address) { revert("Should not use"); }
-    function token1() external view override returns (address) { revert("Should not use"); }
     function price0CumulativeLast() external view override returns (uint) { revert("Should not use"); }
     function price1CumulativeLast() external view override returns (uint) { revert("Should not use"); }
     function kLast() external view override returns (uint) { revert("Should not use"); }
 
-    function burn(address to) external override returns (uint amount0, uint amount1) { revert("Should not use"); }
     function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external override { revert("Should not use"); }
     function skim(address to) external override { revert("Should not use"); }
     function sync() external override { revert("Should not use"); }
+    function burn(address to) external override returns (uint amount0, uint amount1) { revert("Should not use"); }
 
     function initialize(address, address) external override { revert("Should not use"); }
 

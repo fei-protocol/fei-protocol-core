@@ -28,8 +28,7 @@ abstract contract UniswapAllocation is IAllocation, CoreRef {
 		// approveToken(PAIR, maxInt);
 	}
 
-	// TODO add to address
-	function withdraw(uint256 amountUnderlying) public override onlyReclaimer {
+	function withdraw(address to, uint256 amountUnderlying) public override onlyReclaimer {
     	uint256 totalUnderlying = totalValue();
     	require(amountUnderlying <= totalUnderlying, "Uniswap Allocation: Insufficient underlying");
 
@@ -37,8 +36,9 @@ abstract contract UniswapAllocation is IAllocation, CoreRef {
     	Decimal.D256 memory ratioToWithdraw = Decimal.ratio(amountUnderlying, totalUnderlying);
     	uint256 liquidityToWithdraw = ratioToWithdraw.mul(totalLiquidity).asUint256();
 
+    	approveToken(address(pair()), liquidityToWithdraw);
     	uint256 amountWithdrawn = removeLiquidity(liquidityToWithdraw, amountUnderlying); // TODO possibly need room for rounding errors here
-    	transferWithdrawn(amountWithdrawn);
+    	transferWithdrawn(to, amountWithdrawn);
     	burnFiiHeld();
     }
 
@@ -48,10 +48,15 @@ abstract contract UniswapAllocation is IAllocation, CoreRef {
 
 	function setToken(address _token) public onlyGovernor {
 		TOKEN = _token;
+		uint256 maxInt =  uint256(-1);
+		approveToken(_token, maxInt);
 	}
 
 	function setRouter(address _router) public onlyGovernor {
 		ROUTER = IUniswapV2Router02(_router);
+		uint256 maxInt =  uint256(-1);
+		approveToken(address(fii()), maxInt);
+		approveToken(TOKEN, maxInt);
 	}
 
 	function totalValue() public view override returns(uint256) {
@@ -94,7 +99,7 @@ abstract contract UniswapAllocation is IAllocation, CoreRef {
 
     function removeLiquidity(uint256 amount, uint256 amountETHMin) internal virtual returns(uint256);
 
-    function transferWithdrawn(uint256 amount) internal virtual;
+    function transferWithdrawn(address to, uint256 amount) internal virtual;
 
     function burnFiiHeld() internal {
     	uint256 balance = fii().balanceOf(address(this));

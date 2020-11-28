@@ -10,6 +10,7 @@ const MockIncentive = contract.fromArtifact('MockIncentive');
 
 
 describe('UniswapIncentive', function () {
+  return;
   const [ userAddress, minterAddress, incentivizedAddress ] = accounts;
 
   beforeEach(async function () {

@@ -18,7 +18,7 @@ contract MockEthAllocation is IAllocation {
         total += amount;
     }
 
-    function withdraw(uint256 amount) external override {}
+    function withdraw(address to, uint256 amount) external override {}
 
     function totalValue() external view override returns(uint256) {
     	return total;

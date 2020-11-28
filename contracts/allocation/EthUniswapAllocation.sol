@@ -27,15 +27,15 @@ contract EthUniswapAllocation is UniswapAllocation {
             address(fii()),
             liquidity,
             0,
-            amountETHMin,
+            0,
             address(this),
             uint256(-1)
         );
         return amountWithdrawn;
     }
 
-    function transferWithdrawn(uint256 amount) internal override {
-        msg.sender.transfer(amount);
+    function transferWithdrawn(address to, uint256 amount) internal override {
+        payable(to).transfer(amount);
     }
 
     function _addLiquidity(uint256 ethAmount, uint256 fiiAmount) internal {
@@ -47,5 +47,9 @@ contract EthUniswapAllocation is UniswapAllocation {
             address(this),
             uint256(-1)
         );
+    }
+
+    fallback () external payable {
+
     }
 }
