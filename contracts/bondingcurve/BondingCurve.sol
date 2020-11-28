@@ -6,9 +6,11 @@ import "../oracle/IOracle.sol";
 import "../core/CoreRef.sol";
 import "../allocation/AllocationRule.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 
 abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
     using Decimal for Decimal.D256;
+    using Babylonian for uint256;
 
 	uint256 private SCALE;
 	uint256 private _totalPurchased = 0; // FEI_b for this curve
@@ -105,19 +107,5 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 
 	function getBufferAdjustedAmount(uint256 amountIn) internal view returns(uint256) {
 		return amountIn * (BUFFER_GRANULARITY - BUFFER) / BUFFER_GRANULARITY;
-	}
-
-	// TODO move to math lib
-	function sqrt(uint y) internal pure returns (uint z) {
-	    if (y > 3) {
-	        z = y;
-	        uint x = y / 2 + 1;
-	        while (x < z) {
-	            z = x;
-	            x = (y / x + x) / 2;
-	        }
-	    } else if (y != 0) {
-	        z = 1;
-	    }
 	}
 }

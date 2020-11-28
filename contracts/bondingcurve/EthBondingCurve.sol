@@ -25,7 +25,7 @@ contract EthBondingCurve is BondingCurve {
 	// TODO update to P(x) = sqrt(X/S) * O or other appropriate sublinear function
 	function getBondingCurveAmountOut(uint256 amountIn) public view override returns (uint256 amountOut) {
 		uint256 radicand = (2 * amountIn * scale()) + (totalPurchased() * totalPurchased());
-		return sqrt(radicand) - totalPurchased();
+		return radicand.sqrt() - totalPurchased();
 	}
 
 	function allocateSingle(uint256 amount, address allocation) internal override {

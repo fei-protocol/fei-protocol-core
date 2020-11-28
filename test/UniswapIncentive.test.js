@@ -12,7 +12,7 @@ const MockOracle = contract.fromArtifact('MockOracle');
 const MockERC20 = contract.fromArtifact('MockERC20');
 
 describe('UniswapIncentive', function () {
-  // return;
+  return;
   const [ userAddress, minterAddress, governorAddress ] = accounts;
 
   beforeEach(async function () {
