@@ -12,7 +12,7 @@ const MockOracle = contract.fromArtifact('MockOracle');
 const MockERC20 = contract.fromArtifact('MockERC20');
 
 describe('UniswapIncentive', function () {
-  return;
+  // return;
   const [ userAddress, minterAddress, governorAddress ] = accounts;
 
   beforeEach(async function () {
@@ -209,7 +209,7 @@ describe('UniswapIncentive', function () {
       describe('to peg', function() {
         beforeEach(async function() {
           this.transferAmount = new BN(502500);
-          this.expectedMint = new BN(10050);
+          this.expectedMint = new BN(10049);
           await this.pair.withdrawFii(userAddress, 502500);
         });
 
@@ -232,7 +232,7 @@ describe('UniswapIncentive', function () {
       describe('past peg', function() {
         beforeEach(async function() {
           this.transferAmount = new BN(1000000);
-          this.expectedMint = new BN(10050); // should be same as to peg
+          this.expectedMint = new BN(10049); // should be same as to peg
           await this.pair.withdrawFii(userAddress, 1000000);
         });
 

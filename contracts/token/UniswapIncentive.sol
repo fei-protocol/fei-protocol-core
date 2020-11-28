@@ -1,16 +1,17 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
+import "./IIncentive.sol";
 import "../external/Decimal.sol";
 import "../oracle/IOracle.sol";
-import "./IIncentive.sol";
+import "../core/CoreRef.sol";
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
-import "../core/CoreRef.sol";
-
+import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 
 contract UniswapIncentive is IIncentive, CoreRef {
 	using Decimal for Decimal.D256;
+    using Babylonian for uint256;
 
 	mapping(address => address) private _oracles;
 	mapping(address => bool) private _exempt;
@@ -89,8 +90,22 @@ contract UniswapIncentive is IIncentive, CoreRef {
     	Decimal.D256 memory finalDeviation = getPriceDeviation(finalPrice, peg);
 
     	Decimal.D256 memory completion = Decimal.one().sub(finalDeviation.div(initialDeviation));
-    	uint256 incentive = calculateBuyIncentive(initialDeviation, amountIn);
+    	uint256 incentivizedAmount = amountIn;
+        if (completion.equals(Decimal.one())) {
+            incentivizedAmount = getAmountToPeg(reserveFii, reserveOther, peg);
+        }
+
+        uint256 incentive = calculateBuyIncentive(initialDeviation, incentivizedAmount);
     	fii().mint(target, incentive);
+    }
+
+    function getAmountToPeg(uint reserveFii, uint reserveOther, Decimal.D256 memory peg) internal view returns (uint) {
+        uint radicand = peg.mul(reserveFii).mul(reserveOther).asUint256();
+        uint root = radicand.sqrt();
+        if (root > reserveFii) {
+            return root - reserveFii;
+        }
+        return reserveFii - root;
     }
 
     // TODO partial fill calculation
