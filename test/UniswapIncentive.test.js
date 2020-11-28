@@ -169,7 +169,7 @@ describe('UniswapIncentive', function () {
       describe('past the peg', function() {
         describe('enough in wallet', function() {
           beforeEach(async function() {
-            this.expectedBurn = new BN(41649); // with rounding error
+            this.expectedBurn = new BN(20929);
             this.transferAmount = new BN(1000000);
             await this.fii.transfer(this.pair.address, 1000000, {from: userAddress});
           });

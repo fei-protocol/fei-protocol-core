@@ -125,7 +125,17 @@ contract UniswapIncentive is IIncentive, CoreRef {
     	}
 
     	Decimal.D256 memory initialDeviation = getPriceDeviation(price, peg);
-    	uint256 penalty = calculateSellPenalty(finalDeviation, amount);
+        uint256 incentivizedAmount = amount;
+        if (initialDeviation.equals(Decimal.zero())) {
+            uint256 amountToPeg = getAmountToPeg(reserveFii, reserveOther, peg);
+            if (amountToPeg < amount) {
+                incentivizedAmount = amount - amountToPeg;
+            } else {
+                incentivizedAmount = 0;
+            }
+        
+        }
+    	uint256 penalty = calculateSellPenalty(finalDeviation, incentivizedAmount);
     	fii().burnFrom(target, penalty);
     }
 
