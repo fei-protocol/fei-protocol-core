@@ -48,7 +48,6 @@ contract MockRouter {
         address to,
         uint deadline
     ) external returns (uint amountToken, uint amountETH) {
-        // PAIR.transferFrom(msg.sender, address(PAIR), liquidity); // send liquidity to pair
 
         Decimal.D256 memory percentWithdrawal = Decimal.ratio(liquidity, totalLiquidity);
         Decimal.D256 memory ratio = ratioOwned(to);
@@ -57,7 +56,14 @@ contract MockRouter {
         (uint112 reserves0, uint112 reserves1, ) = PAIR.getReserves();
         uint112 newReserve0 = uint112(reserves0) - uint112(amountETH);
         uint112 newReserve1 = uint112(reserves1) - uint112(amountToken);
+
         PAIR.setReserves(newReserve0, newReserve1);
+        transferLiquidity(liquidity);
+    }
+
+    function transferLiquidity(uint liquidity) internal {
+        PAIR.transferFrom(msg.sender, address(PAIR), liquidity); // send liquidity to pair
+
     }
 
     function ratioOwned(address to) public view returns (Decimal.D256 memory) {   

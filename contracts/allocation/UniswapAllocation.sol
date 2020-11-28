@@ -25,7 +25,6 @@ abstract contract UniswapAllocation is IAllocation, CoreRef {
 		TOKEN = token;
 		approveToken(token, maxInt);
 		PAIR = UniswapV2Library.pairFor(UNISWAP_FACTORY, address(fii()), TOKEN);
-		// approveToken(PAIR, maxInt);
 	}
 
 	function withdraw(address to, uint256 amountUnderlying) public override onlyReclaimer {
