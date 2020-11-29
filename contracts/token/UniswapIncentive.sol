@@ -5,6 +5,7 @@ import "./IIncentive.sol";
 import "../external/Decimal.sol";
 import "../oracle/IOracle.sol";
 import "../core/CoreRef.sol";
+import "@openzeppelin/contracts/math/Math.sol";
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
@@ -13,10 +14,20 @@ contract UniswapIncentive is IIncentive, CoreRef {
 	using Decimal for Decimal.D256;
     using Babylonian for uint256;
 
+    struct TimeWeightInfo {
+        uint256 blockNo;
+        uint256 weight;
+        uint256 growthRate;
+        bool active;
+    }
+
 	mapping(address => address) private _oracles;
 	mapping(address => bool) private _exempt;
+    mapping(address => TimeWeightInfo) public _timeWeights;
 
 	bool private KILL_SWITCH = false;
+    uint256 public constant TIME_WEIGHT_GRANULARITY = 1e5;
+    uint256 public constant DEFAULT_INCENTIVE_GROWTH_RATE = 333; // about 1 unit per hour assuming 12s block time
 
 	constructor(address core) 
 		CoreRef(core)
@@ -51,6 +62,30 @@ contract UniswapIncentive is IIncentive, CoreRef {
 
     function setOracle(address account, address oracle) public onlyGovernor {
     	_oracles[account] = oracle;
+        _timeWeights[account] = TimeWeightInfo(block.number, 0, DEFAULT_INCENTIVE_GROWTH_RATE, false);
+    }
+
+    function setTimeWeightGrowth(address account, uint growthRate) public onlyGovernor {
+        require(isIncentivized(account), "UniswapIncentive: Account not incentivized");
+        TimeWeightInfo memory tw = _timeWeights[account];
+        _timeWeights[account] = TimeWeightInfo(tw.blockNo, tw.weight, growthRate, tw.active);
+    }
+
+    function getGrowthRate(address _pair) public view returns (uint256) {
+        return _timeWeights[_pair].growthRate;
+    }
+
+    function getTimeWeight(address _pair) public view returns (uint256) {
+        TimeWeightInfo memory tw = _timeWeights[_pair];
+        if (!tw.active) {
+            return 0;
+        }
+        return tw.weight + ((block.number - tw.blockNo) * tw.growthRate);
+    }
+
+    function setTimeWeight(address _pair, uint blockNo, uint weight, uint growth, bool active) public onlyGovernor {
+        require(isIncentivized(_pair), "UniswapIncentive: Account not incentivized");
+        _timeWeights[_pair] = TimeWeightInfo(blockNo, weight, growth, active);
     }
 
     function isExemptAddress(address account) public view returns (bool) {
@@ -69,7 +104,6 @@ contract UniswapIncentive is IIncentive, CoreRef {
     	return getOracle(account) != address(0x0);
     }
 
-    // TODO partial fill calculation
     function incentivizeBuy(address target, address _pair, uint256 amountIn) internal {
     	if (isExemptAddress(target)) {
     		return;
@@ -89,17 +123,48 @@ contract UniswapIncentive is IIncentive, CoreRef {
     	);
     	Decimal.D256 memory finalDeviation = getPriceDeviation(finalPrice, peg);
 
-    	Decimal.D256 memory completion = Decimal.one().sub(finalDeviation.div(initialDeviation));
     	uint256 incentivizedAmount = amountIn;
-        if (completion.equals(Decimal.one())) {
+        if (finalDeviation.equals(Decimal.zero())) {
             incentivizedAmount = getAmountToPeg(reserveFii, reserveOther, peg);
         }
 
-        uint256 incentive = calculateBuyIncentive(initialDeviation, incentivizedAmount);
+        uint256 weight = getTimeWeight(_pair);
+        uint256 incentive = calculateBuyIncentive(initialDeviation, incentivizedAmount, weight);
+        updateTimeWeight(initialDeviation, finalDeviation, _pair, weight);
     	fii().mint(target, incentive);
     }
 
-    function getAmountToPeg(uint reserveFii, uint reserveOther, Decimal.D256 memory peg) internal view returns (uint) {
+    function updateTimeWeight (
+        Decimal.D256 memory initialDeviation, 
+        Decimal.D256 memory finalDeviation, 
+        address _pair,
+        uint256 currentWeight
+    ) internal {
+        // Reset after completion
+        if (finalDeviation.equals(Decimal.zero())) {
+            _timeWeights[_pair] = TimeWeightInfo(block.number, 0, getGrowthRate(_pair), false);
+            return;
+        } 
+        // Init
+        if (initialDeviation.equals(Decimal.zero())) {
+            _timeWeights[_pair] = TimeWeightInfo(block.number, 0, getGrowthRate(_pair), true);
+            return;
+        }
+
+        uint256 updatedWeight = currentWeight;
+        // Partial buy
+        if (initialDeviation.greaterThan(finalDeviation)) {
+            Decimal.D256 memory remainingRatio = finalDeviation.div(initialDeviation);
+            updatedWeight = remainingRatio.mul(currentWeight).asUint256();
+        }
+        _timeWeights[_pair] = TimeWeightInfo(block.number, updatedWeight, getGrowthRate(_pair), true);
+    }
+
+    function getAmountToPeg(
+        uint reserveFii, 
+        uint reserveOther, 
+        Decimal.D256 memory peg
+    ) internal view returns (uint) {
         uint radicand = peg.mul(reserveFii).mul(reserveOther).asUint256();
         uint root = radicand.sqrt();
         if (root > reserveFii) {
@@ -108,7 +173,6 @@ contract UniswapIncentive is IIncentive, CoreRef {
         return reserveFii - root;
     }
 
-    // TODO partial fill calculation
     function incentivizeSell(address target, address _pair, uint256 amount) internal {
     	if (isExemptAddress(target)) {
     		return;
@@ -133,9 +197,10 @@ contract UniswapIncentive is IIncentive, CoreRef {
             } else {
                 incentivizedAmount = 0;
             }
-        
         }
     	uint256 penalty = calculateSellPenalty(finalDeviation, incentivizedAmount);
+        uint256 weight = getTimeWeight(_pair);
+        updateTimeWeight(initialDeviation, finalDeviation, _pair, weight);
     	fii().burnFrom(target, penalty);
     }
 
@@ -160,9 +225,12 @@ contract UniswapIncentive is IIncentive, CoreRef {
 
     function calculateBuyIncentive(
     	Decimal.D256 memory initialDeviation, 
-    	uint256 amountIn
-    ) internal pure returns (uint256) {
-    	return initialDeviation.mul(amountIn).asUint256();
+    	uint256 amountIn,
+        uint256 weight
+    ) internal view returns (uint256) {
+        uint256 correspondingPenalty = calculateSellPenalty(initialDeviation, amountIn);
+        uint256 incentive = initialDeviation.mul(amountIn).mul(weight).div(TIME_WEIGHT_GRANULARITY).asUint256();
+    	return Math.min(incentive, correspondingPenalty);
     }
 
     function calculateSellPenalty(
