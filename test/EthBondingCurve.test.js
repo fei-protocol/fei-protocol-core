@@ -11,7 +11,6 @@ const MockOracle = contract.fromArtifact('MockOracle');
 const EthBondingCurve = contract.fromArtifact('EthBondingCurve');
 
 describe('EthBondingCurve', function () {
-  // return;
   const [ userAddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress ] = accounts;
 
   beforeEach(async function () {

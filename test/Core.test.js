@@ -8,7 +8,6 @@ const MockCoreRef = contract.fromArtifact('MockCoreRef');
 const Core = contract.fromArtifact('Core');
 
 describe('Core', function () {
-  // return;
   const [ userAddress, minterAddress, burnerAddress, governorAddress, reclaimerAddress ] = accounts;
 
   beforeEach(async function () {

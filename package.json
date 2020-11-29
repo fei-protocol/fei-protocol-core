@@ -7,7 +7,8 @@
   "scripts": {
     "build": "npm run compile",
     "compile": "truffle compile",
-    "test": "mocha --timeout 10000 --exit --recursive test",
+    "test": "mocha --timeout 10000 --exit --recursive $1",
+    "testAll": "mocha --timeout 10000 --exit --recursive test",
     "deploy": "truffle migrate --network mainnet",
     "verify": "truffle run verify Implementation --network mainnet"
   },

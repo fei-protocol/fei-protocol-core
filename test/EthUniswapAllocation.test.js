@@ -12,7 +12,6 @@ const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
 const MockRouter = contract.fromArtifact('MockRouter');
 
 describe('EthUniswapAllocation', function () {
-  // return
   const [ userAddress, governorAddress, minterAddress, beneficiaryAddress ] = accounts;
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit
 
