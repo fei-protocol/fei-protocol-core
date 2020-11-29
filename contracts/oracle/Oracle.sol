@@ -66,7 +66,7 @@ contract Oracle is IOracle {
      *        (2) First reported value
      */
     function capture() override public onlyDao returns (Decimal.D256 memory, bool) {
-        Decimal.D256 memory price = Decimal.ratio(1, 400); // fixed exchange ratio 1 ETH = 400 FII
+        Decimal.D256 memory price = Decimal.ratio(1, 400); // fixed exchange ratio 1 ETH = 400 FEI
         return (price, true);
         // if (_initialized) {
         //     return updateOracle();

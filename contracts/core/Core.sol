@@ -2,25 +2,25 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./Permissions.sol";
-import "../token/IFii.sol";
-import "../token/Fii.sol";
+import "../token/IFei.sol";
+import "../token/Fei.sol";
 
 contract Core is Permissions {
 
-	IFii private FII;
+	IFei private FEI;
 
 	constructor() public {
 		_setupGovernor(msg.sender);
-		Fii fii = new Fii(address(this));
-		FII = IFii(address(fii));
+		Fei fei = new Fei(address(this));
+		FEI = IFei(address(fei));
 	}
 
-	function setFii(address token) public onlyGovernor {
-		FII = IFii(token);
+	function setFei(address token) public onlyGovernor {
+		FEI = IFei(token);
 	}
 
-	function fii() public view returns(IFii) {
-		return FII;
+	function fei() public view returns(IFei) {
+		return FEI;
 	}
 }
 

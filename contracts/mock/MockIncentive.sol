@@ -18,6 +18,6 @@ contract MockIncentive is IIncentive, CoreRef {
     	address spender, 
     	uint256 amountIn
     ) public override {
-        fii().mint(sender, INCENTIVE);
+        fei().mint(sender, INCENTIVE);
     }
 }

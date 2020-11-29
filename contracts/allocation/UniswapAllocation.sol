@@ -21,10 +21,10 @@ abstract contract UniswapAllocation is IAllocation, CoreRef {
 		CoreRef(core)
 	public {
 		uint256 maxInt =  uint256(-1);
-		approveToken(address(fii()), maxInt);
+		approveToken(address(fei()), maxInt);
 		TOKEN = token;
 		approveToken(token, maxInt);
-		PAIR = UniswapV2Library.pairFor(UNISWAP_FACTORY, address(fii()), TOKEN);
+		PAIR = UniswapV2Library.pairFor(UNISWAP_FACTORY, address(fei()), TOKEN);
 	}
 
 	function withdraw(address to, uint256 amountUnderlying) public override onlyReclaimer {
@@ -38,7 +38,7 @@ abstract contract UniswapAllocation is IAllocation, CoreRef {
     	approveToken(address(pair()), liquidityToWithdraw);
     	uint256 amountWithdrawn = removeLiquidity(liquidityToWithdraw, amountUnderlying); // TODO possibly need room for rounding errors here
     	transferWithdrawn(to, amountWithdrawn);
-    	burnFiiHeld();
+    	burnFeiHeld();
     }
 
 	function setPair(address _pair) public onlyGovernor {
@@ -54,7 +54,7 @@ abstract contract UniswapAllocation is IAllocation, CoreRef {
 	function setRouter(address _router) public onlyGovernor {
 		ROUTER = IUniswapV2Router02(_router);
 		uint256 maxInt =  uint256(-1);
-		approveToken(address(fii()), maxInt);
+		approveToken(address(fei()), maxInt);
 		approveToken(TOKEN, maxInt);
 	}
 
@@ -63,15 +63,15 @@ abstract contract UniswapAllocation is IAllocation, CoreRef {
     	return ratioOwned().mul(tokenReserves).asUint256();
     }
 
-	function getAmountFiiToDeposit(uint256 amountToken) public view returns (uint amountFii) {
-		(uint fiiReserves, uint tokenReserves) = getReserves();
-		return UniswapV2Library.quote(amountToken, tokenReserves, fiiReserves);
+	function getAmountFeiToDeposit(uint256 amountToken) public view returns (uint amountFei) {
+		(uint feiReserves, uint tokenReserves) = getReserves();
+		return UniswapV2Library.quote(amountToken, tokenReserves, feiReserves);
 	}
 
-	function getReserves() public view returns (uint fiiReserves, uint tokenReserves) {
+	function getReserves() public view returns (uint feiReserves, uint tokenReserves) {
 		address token0 = pair().token0();
         (uint reserve0, uint reserve1,) = pair().getReserves();
-        (fiiReserves, tokenReserves) = address(fii()) == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
+        (feiReserves, tokenReserves) = address(fei()) == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
 	}
 
     function ratioOwned() public view returns (Decimal.D256 memory) {	
@@ -100,17 +100,17 @@ abstract contract UniswapAllocation is IAllocation, CoreRef {
 
     function transferWithdrawn(address to, uint256 amount) internal virtual;
 
-    function burnFiiHeld() internal {
-    	uint256 balance = fii().balanceOf(address(this));
-    	fii().burn(balance);
+    function burnFeiHeld() internal {
+    	uint256 balance = fei().balanceOf(address(this));
+    	fei().burn(balance);
     }
 
     function approveToken(address _token, uint256 amount) internal {
     	IERC20(_token).approve(address(router()), amount);
     }
 
-	function mintFii(uint256 amount) internal {
-		fii().mint(address(this), amount);
+	function mintFei(uint256 amount) internal {
+		fei().mint(address(this), amount);
 	}
 
 }

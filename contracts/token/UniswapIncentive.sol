@@ -38,7 +38,7 @@ contract UniswapIncentive is IIncentive, CoreRef {
     	address receiver, 
     	address spender, 
     	uint256 amountIn
-    ) public override onlyFii {
+    ) public override onlyFei {
     	if (KILL_SWITCH) {
     		return;
     	}
@@ -109,7 +109,7 @@ contract UniswapIncentive is IIncentive, CoreRef {
     		return;
     	}
     	Decimal.D256 memory peg = getPeg(_pair);
-    	(Decimal.D256 memory price, uint reserveFii, uint reserveOther) = getUniswapPrice(_pair);
+    	(Decimal.D256 memory price, uint reserveFei, uint reserveOther) = getUniswapPrice(_pair);
 
     	Decimal.D256 memory initialDeviation = getPriceDeviation(price, peg);
     	if (initialDeviation.equals(Decimal.zero())) {
@@ -118,20 +118,20 @@ contract UniswapIncentive is IIncentive, CoreRef {
 
     	Decimal.D256 memory finalPrice = getFinalPrice(
     		-1 * int256(amountIn), 
-    		reserveFii, 
+    		reserveFei, 
     		reserveOther
     	);
     	Decimal.D256 memory finalDeviation = getPriceDeviation(finalPrice, peg);
 
     	uint256 incentivizedAmount = amountIn;
         if (finalDeviation.equals(Decimal.zero())) {
-            incentivizedAmount = getAmountToPeg(reserveFii, reserveOther, peg);
+            incentivizedAmount = getAmountToPeg(reserveFei, reserveOther, peg);
         }
 
         uint256 weight = getTimeWeight(_pair);
         uint256 incentive = calculateBuyIncentive(initialDeviation, incentivizedAmount, weight);
         updateTimeWeight(initialDeviation, finalDeviation, _pair, weight);
-    	fii().mint(target, incentive);
+    	fei().mint(target, incentive);
     }
 
     function updateTimeWeight (
@@ -161,16 +161,16 @@ contract UniswapIncentive is IIncentive, CoreRef {
     }
 
     function getAmountToPeg(
-        uint reserveFii, 
+        uint reserveFei, 
         uint reserveOther, 
         Decimal.D256 memory peg
     ) internal view returns (uint) {
-        uint radicand = peg.mul(reserveFii).mul(reserveOther).asUint256();
+        uint radicand = peg.mul(reserveFei).mul(reserveOther).asUint256();
         uint root = radicand.sqrt();
-        if (root > reserveFii) {
-            return root - reserveFii;
+        if (root > reserveFei) {
+            return root - reserveFei;
         }
-        return reserveFii - root;
+        return reserveFei - root;
     }
 
     function incentivizeSell(address target, address _pair, uint256 amount) internal {
@@ -179,9 +179,9 @@ contract UniswapIncentive is IIncentive, CoreRef {
     	}
 
     	Decimal.D256 memory peg = getPeg(_pair);
-    	(Decimal.D256 memory price, uint reserveFii, uint reserveOther) = getUniswapPrice(_pair);
+    	(Decimal.D256 memory price, uint reserveFei, uint reserveOther) = getUniswapPrice(_pair);
 
-    	Decimal.D256 memory finalPrice = getFinalPrice(int256(amount), reserveFii, reserveOther);
+    	Decimal.D256 memory finalPrice = getFinalPrice(int256(amount), reserveFei, reserveOther);
     	Decimal.D256 memory finalDeviation = getPriceDeviation(finalPrice, peg);
 
     	if (finalDeviation.equals(Decimal.zero())) {
@@ -191,7 +191,7 @@ contract UniswapIncentive is IIncentive, CoreRef {
     	Decimal.D256 memory initialDeviation = getPriceDeviation(price, peg);
         uint256 incentivizedAmount = amount;
         if (initialDeviation.equals(Decimal.zero())) {
-            uint256 amountToPeg = getAmountToPeg(reserveFii, reserveOther, peg);
+            uint256 amountToPeg = getAmountToPeg(reserveFei, reserveOther, peg);
             if (amountToPeg < amount) {
                 incentivizedAmount = amount - amountToPeg;
             } else {
@@ -201,7 +201,7 @@ contract UniswapIncentive is IIncentive, CoreRef {
     	uint256 penalty = calculateSellPenalty(finalDeviation, incentivizedAmount);
         uint256 weight = getTimeWeight(_pair);
         updateTimeWeight(initialDeviation, finalDeviation, _pair, weight);
-    	fii().burnFrom(target, penalty);
+    	fei().burnFrom(target, penalty);
     }
 
     function getPeg(address _pair) internal returns (Decimal.D256 memory) {
@@ -214,13 +214,13 @@ contract UniswapIncentive is IIncentive, CoreRef {
 
     function getUniswapPrice(address _pair) internal view returns(
     	Decimal.D256 memory, 
-    	uint reserveFii, 
+    	uint reserveFei, 
     	uint reserveOther
     ) {
     	IUniswapV2Pair pair = IUniswapV2Pair(_pair); 
     	(uint reserve0, uint reserve1,) = IUniswapV2Pair(pair).getReserves();
-    	(reserveFii, reserveOther) = pair.token0() == address(fii()) ? (reserve0, reserve1) : (reserve1, reserve0);
-    	return (Decimal.ratio(reserveFii, reserveOther), reserveFii, reserveOther);
+    	(reserveFei, reserveOther) = pair.token0() == address(fei()) ? (reserve0, reserve1) : (reserve1, reserve0);
+    	return (Decimal.ratio(reserveFei, reserveOther), reserveFei, reserveOther);
     }
 
     function calculateBuyIncentive(
@@ -242,20 +242,20 @@ contract UniswapIncentive is IIncentive, CoreRef {
 
     function getFinalPrice(
     	int256 amount, 
-    	uint256 reserveFii, 
+    	uint256 reserveFei, 
     	uint256 reserveOther
     ) internal pure returns (Decimal.D256 memory) {
-    	uint256 k = reserveFii * reserveOther;
-    	uint256 adjustedReserveFii = uint256(int256(reserveFii) + amount);
-    	uint256 adjustedReserveOther = k / adjustedReserveFii;
-    	return Decimal.ratio(adjustedReserveFii, adjustedReserveOther); // alt: adjustedReserveFii^2 / k
+    	uint256 k = reserveFei * reserveOther;
+    	uint256 adjustedReserveFei = uint256(int256(reserveFei) + amount);
+    	uint256 adjustedReserveOther = k / adjustedReserveFei;
+    	return Decimal.ratio(adjustedReserveFei, adjustedReserveOther); // alt: adjustedReserveFei^2 / k
     }
 
     function getPriceDeviation(
     	Decimal.D256 memory price, 
     	Decimal.D256 memory peg
     ) internal pure returns (Decimal.D256 memory) {
-        // If price <= peg, then FII is more expensive and above peg
+        // If price <= peg, then FEI is more expensive and above peg
         // In this case we can just return zero for deviation
     	if (price.lessThanOrEqualTo(peg)) {
     		return Decimal.zero();

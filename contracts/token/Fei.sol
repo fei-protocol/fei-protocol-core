@@ -6,7 +6,7 @@ import "../core/CoreRef.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 
-contract Fii is ERC20, ERC20Burnable, CoreRef {
+contract Fei is ERC20, ERC20Burnable, CoreRef {
 
     mapping (address => address) public incentives;
 
@@ -22,7 +22,7 @@ contract Fii is ERC20, ERC20Burnable, CoreRef {
     );
 
 	constructor(address core)
-	   ERC20("Fii Stablecoin", "FII") 
+	   ERC20("Fei Stablecoin", "FEI") 
        CoreRef(core)
     public {}
 

@@ -1,5 +1,5 @@
 const Core = artifacts.require("Core");
-const Fii = artifacts.require("Fii");
+const Fei = artifacts.require("Fei");
 const Oracle = artifacts.require("Oracle");
 const EthBonding = artifacts.require("EthBondingCurve");
 const EthUniswapAllocation = artifacts.require("EthUniswapAllocation");

@@ -1,14 +1,14 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "../token/IFii.sol";
+import "../token/IFei.sol";
 
 interface ICore {
 	function isBurner(address _address) external view returns (bool);
 	function isMinter(address _address) external view returns (bool);
 	function isGovernor(address _address) external view returns (bool);
 	function isReclaimer(address _address) external view returns (bool);
-	function fii() external view returns (IFii);
+	function fei() external view returns (IFei);
 }
 
 contract CoreRef {
@@ -43,8 +43,8 @@ contract CoreRef {
 		_;
 	}
 
-	modifier onlyFii() {
-		require(msg.sender == address(fii()), "CoreRef: Caller is not FII");
+	modifier onlyFei() {
+		require(msg.sender == address(fei()), "CoreRef: Caller is not FEI");
 		_;
 	}
  
@@ -52,7 +52,7 @@ contract CoreRef {
 		return ICore(CORE);
 	}
 
-	function fii() public view returns(IFii) {
-		return CORE.fii();
+	function fei() public view returns(IFei) {
+		return CORE.fei();
 	}
 }

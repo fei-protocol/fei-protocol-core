@@ -88,7 +88,7 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 	function _purchase(uint256 amountIn, address to) internal returns (uint256 amountOut) {
 	 	amountOut = getAmountOut(amountIn);
 	 	incrementTotalPurchased(amountOut);
-		fii().mint(to, amountOut);
+		fei().mint(to, amountOut);
 		allocate(amountIn);
 		return amountOut;
 	}
