@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 import "./IIncentive.sol";
 import "../external/Decimal.sol";
 import "../oracle/IOracle.sol";
-import "../core/CoreRef.sol";
+import "../refs/CoreRef.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";

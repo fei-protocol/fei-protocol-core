@@ -2,7 +2,7 @@ const Core = artifacts.require("Core");
 const Fei = artifacts.require("Fei");
 const Oracle = artifacts.require("Oracle");
 const EthBonding = artifacts.require("EthBondingCurve");
-const EthUniswapAllocation = artifacts.require("EthUniswapAllocation");
+const EthUniswapPCVDeposit = artifacts.require("EthUniswapPCVDeposit");
 const UniswapIncentive = artifacts.require("UniswapIncentive");
 
 module.exports = function(deployer, network, accounts) {
@@ -15,7 +15,7 @@ module.exports = function(deployer, network, accounts) {
 	  	return deployer.deploy(Oracle);
 	}).then(function(instance) {
 		oracle = instance
-	  	return deployer.deploy(EthUniswapAllocation, core.address);
+	  	return deployer.deploy(EthUniswapPCVDeposit, core.address);
 	}).then(function(instance) {
 	  	allocation = instance;
 	  	return deployer.deploy(EthBonding, "1000000000000000000", core.address, [allocation.address], [10000], oracle.address);

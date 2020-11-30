@@ -2,7 +2,7 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "../token/IIncentive.sol";
-import "../core/CoreRef.sol";
+import "../refs/CoreRef.sol";
 
 contract MockIncentive is IIncentive, CoreRef {
 

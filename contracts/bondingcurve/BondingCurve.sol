@@ -2,9 +2,9 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./IBondingCurve.sol";
+import "./AllocationRule.sol";
 import "../oracle/IOracle.sol";
-import "../core/CoreRef.sol";
-import "../allocation/AllocationRule.sol";
+import "../refs/CoreRef.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 

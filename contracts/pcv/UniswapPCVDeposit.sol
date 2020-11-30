@@ -1,15 +1,15 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./IAllocation.sol";
-import "../core/CoreRef.sol";
+import "./IPCVDeposit.sol";
+import "../refs/CoreRef.sol";
 import "../external/Decimal.sol";
 import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-abstract contract UniswapAllocation is IAllocation, CoreRef {
+abstract contract UniswapPCVDeposit is IPCVDeposit, CoreRef {
 	using Decimal for Decimal.D256;
 
 	address private TOKEN;
@@ -29,7 +29,7 @@ abstract contract UniswapAllocation is IAllocation, CoreRef {
 
 	function withdraw(address to, uint256 amountUnderlying) public override onlyReclaimer {
     	uint256 totalUnderlying = totalValue();
-    	require(amountUnderlying <= totalUnderlying, "Uniswap Allocation: Insufficient underlying");
+    	require(amountUnderlying <= totalUnderlying, "UniswapPCVDeposit: Insufficient underlying");
 
     	uint256 totalLiquidity = liquidityOwned();
     	Decimal.D256 memory ratioToWithdraw = Decimal.ratio(amountUnderlying, totalUnderlying);
@@ -99,11 +99,6 @@ abstract contract UniswapAllocation is IAllocation, CoreRef {
     function removeLiquidity(uint256 amount, uint256 amountETHMin) internal virtual returns(uint256);
 
     function transferWithdrawn(address to, uint256 amount) internal virtual;
-
-    function burnFeiHeld() internal {
-    	uint256 balance = fei().balanceOf(address(this));
-    	fei().burn(balance);
-    }
 
     function approveToken(address _token, uint256 amount) internal {
     	IERC20(_token).approve(address(router()), amount);

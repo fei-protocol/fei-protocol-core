@@ -1,14 +1,14 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./UniswapAllocation.sol";
+import "./UniswapPCVDeposit.sol";
 
-contract EthUniswapAllocation is UniswapAllocation {
+contract EthUniswapPCVDeposit is UniswapPCVDeposit {
 
     address WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
     constructor(address _token, address core) 
-        UniswapAllocation(_token, core) 
+        UniswapPCVDeposit(_token, core) 
     public {}
 
     function deposit(uint256 ethAmount) external override payable {

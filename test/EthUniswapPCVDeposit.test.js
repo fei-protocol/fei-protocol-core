@@ -4,14 +4,14 @@ const { accounts, contract } = require('@openzeppelin/test-environment');
 const { BN, expectEvent, expectRevert, balance } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
-const EthUniswapAllocation = contract.fromArtifact('EthUniswapAllocation');
+const EthUniswapPCVDeposit = contract.fromArtifact('EthUniswapPCVDeposit');
 const Core = contract.fromArtifact('Core');
 const Fei = contract.fromArtifact('Fei');
 const MockERC20 = contract.fromArtifact('MockERC20');
 const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
 const MockRouter = contract.fromArtifact('MockRouter');
 
-describe('EthUniswapAllocation', function () {
+describe('EthUniswapPCVDeposit', function () {
   const [ userAddress, governorAddress, minterAddress, beneficiaryAddress ] = accounts;
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit
 
@@ -21,7 +21,7 @@ describe('EthUniswapAllocation', function () {
     this.token = await MockERC20.new();
     this.pair = await MockPair.new(this.token.address, this.fei.address);
     this.router = await MockRouter.new(this.pair.address);
-    this.allocation = await EthUniswapAllocation.new(this.token.address, this.core.address);
+    this.allocation = await EthUniswapPCVDeposit.new(this.token.address, this.core.address);
     await this.core.grantMinter(this.allocation.address, {from: governorAddress});
     await this.core.grantMinter(minterAddress, {from: governorAddress});
     await this.fei.mint(this.pair.address, 50000000, {from: minterAddress});
@@ -146,7 +146,7 @@ describe('EthUniswapAllocation', function () {
 
       it('no balance', async function() {
         await this.core.grantReclaimer(userAddress, {from: governorAddress});
-        await expectRevert(this.allocation.withdraw(beneficiaryAddress, "100000", {from: userAddress}), "Uniswap Allocation: Insufficient underlying");
+        await expectRevert(this.allocation.withdraw(beneficiaryAddress, "100000", {from: userAddress}), "UniswapPCVDeposit: Insufficient underlying");
       });
     });
     describe('With Balance', function() {

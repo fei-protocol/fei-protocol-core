@@ -2,7 +2,7 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./BondingCurve.sol";
-import "../allocation/IAllocation.sol";
+import "../pcv/IPCVDeposit.sol";
 
 contract EthBondingCurve is BondingCurve {
 
@@ -28,8 +28,8 @@ contract EthBondingCurve is BondingCurve {
 		return radicand.sqrt() - totalPurchased();
 	}
 
-	function allocateSingle(uint256 amount, address allocation) internal override {
-		IAllocation(allocation).deposit{value : amount}(amount);
+	function allocateSingle(uint256 amount, address pcvDeposit) internal override {
+		IPCVDeposit(pcvDeposit).deposit{value : amount}(amount);
 	}
 
 }

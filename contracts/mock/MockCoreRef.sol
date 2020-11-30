@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "../core/CoreRef.sol";
+import "../refs/CoreRef.sol";
 
 contract MockCoreRef is CoreRef {
 	constructor(address core) 

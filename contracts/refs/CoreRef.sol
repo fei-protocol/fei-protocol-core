@@ -55,4 +55,9 @@ contract CoreRef {
 	function fei() public view returns(IFei) {
 		return CORE.fei();
 	}
+
+    function burnFeiHeld() internal {
+    	uint256 balance = fei().balanceOf(address(this));
+    	fei().burn(balance);
+    }
 }

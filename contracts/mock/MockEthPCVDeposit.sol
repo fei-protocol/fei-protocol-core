@@ -1,9 +1,9 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "../allocation/IAllocation.sol";
+import "../pcv/IPCVDeposit.sol";
 
-contract MockEthAllocation is IAllocation {
+contract MockEthPCVDeposit is IPCVDeposit {
 
 	address payable beneficiary;
     uint256 total = 0;
