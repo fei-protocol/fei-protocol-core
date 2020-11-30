@@ -8,18 +8,18 @@ const MockCoreRef = contract.fromArtifact('MockCoreRef');
 const Core = contract.fromArtifact('Core');
 
 describe('Core', function () {
-  const [ userAddress, minterAddress, burnerAddress, governorAddress, reclaimerAddress ] = accounts;
+  const [ userAddress, minterAddress, burnerAddress, governorAddress, pcvControllerAddress ] = accounts;
 
   beforeEach(async function () {
     this.core = await Core.new({gas: 8000000, from: governorAddress});
     this.coreRef = await MockCoreRef.new(this.core.address);
     await this.core.grantMinter(minterAddress, {from: governorAddress});
     await this.core.grantBurner(burnerAddress, {from: governorAddress});
-    await this.core.grantReclaimer(reclaimerAddress, {from: governorAddress});
+    await this.core.grantPCVController(pcvControllerAddress, {from: governorAddress});
     this.minterRole = await this.core.MINTER_ROLE();
     this.burnerRole = await this.core.BURNER_ROLE();
     this.governorRole = await this.core.GOVERN_ROLE();
-    this.reclaimerRole = await this.core.RECLAIM_ROLE();
+    this.pcvControllerRole = await this.core.PCV_CONTROLLER_ROLE();
   });
 
   describe('Minter', function () {
@@ -75,8 +75,8 @@ describe('Core', function () {
   			await expectRevert(this.coreRef.testGovernor({from: minterAddress}), "CoreRef: Caller is not a governor");
   		});
 
-  		it('onlyReclaimer reverts', async function() {
-  			await expectRevert(this.coreRef.testReclaimer({from: minterAddress}), "CoreRef: Caller is not a reclaimer");
+  		it('onlyPCVController reverts', async function() {
+  			await expectRevert(this.coreRef.testPCVController({from: minterAddress}), "CoreRef: Caller is not a PCV controller");
   		});
   	});
   });
@@ -134,67 +134,67 @@ describe('Core', function () {
   			await expectRevert(this.coreRef.testGovernor({from: burnerAddress}), "CoreRef: Caller is not a governor");
   		});
 
-  		it('onlyReclaimer reverts', async function() {
-  			await expectRevert(this.coreRef.testReclaimer({from: burnerAddress}), "CoreRef: Caller is not a reclaimer");
+  		it('onlyPCVController reverts', async function() {
+  			await expectRevert(this.coreRef.testPCVController({from: burnerAddress}), "CoreRef: Caller is not a PCV controller");
   		});
   	});
   });
 
-  describe('Reclaimer', function () {
+  describe('PCV Controller', function () {
   	describe('Role', function () {
   		describe('Has access', function () {
   			it('is registered in core', async function() {
-  				expect(await this.core.isReclaimer(reclaimerAddress)).to.be.equal(true);
+  				expect(await this.core.isPCVController(pcvControllerAddress)).to.be.equal(true);
   			});
   		});
   		describe('Access revoked', function () {
   			beforeEach(async function() {
-  				await this.core.revokeReclaimer(reclaimerAddress, {from: governorAddress});
+  				await this.core.revokePCVController(pcvControllerAddress, {from: governorAddress});
   			});
 
   			it('is not registered in core', async function() {
-  				expect(await this.core.isReclaimer(reclaimerAddress)).to.be.equal(false);
+  				expect(await this.core.isPCVController(pcvControllerAddress)).to.be.equal(false);
   			});
   		});
   		describe('Access renounced', function() {
   			beforeEach(async function() {
-  				await this.core.renounceRole(this.reclaimerRole, reclaimerAddress, {from: reclaimerAddress});
+  				await this.core.renounceRole(this.pcvControllerRole, pcvControllerAddress, {from: pcvControllerAddress});
   			});
 
   			it('is not registered in core', async function() {
-  				expect(await this.core.isReclaimer(reclaimerAddress)).to.be.equal(false);
+  				expect(await this.core.isPCVController(pcvControllerAddress)).to.be.equal(false);
   			});
   		});
   		describe('Member Count', function() {
   			it('is one', async function() {
-  				expect(await this.core.getRoleMemberCount(this.reclaimerRole)).to.be.bignumber.equal(new BN(1));
+  				expect(await this.core.getRoleMemberCount(this.pcvControllerRole)).to.be.bignumber.equal(new BN(1));
   			});
   			it('updates to two', async function() {
-  				await this.core.grantReclaimer(userAddress, {from: governorAddress});
-  				expect(await this.core.getRoleMemberCount(this.reclaimerRole)).to.be.bignumber.equal(new BN(2));
+  				await this.core.grantPCVController(userAddress, {from: governorAddress});
+  				expect(await this.core.getRoleMemberCount(this.pcvControllerRole)).to.be.bignumber.equal(new BN(2));
   			});
   		});
   		describe('Admin', function() {
   			it('is governor', async function() {
-  				expect(await this.core.getRoleAdmin(this.reclaimerRole)).to.be.equal(this.governorRole);
+  				expect(await this.core.getRoleAdmin(this.pcvControllerRole)).to.be.equal(this.governorRole);
   			});
   		});
   	});
   	describe('Access', function () {
   		it('onlyMinter reverts', async function() {
-  			await expectRevert(this.coreRef.testMinter({from: reclaimerAddress}), "CoreRef: Caller is not a minter");
+  			await expectRevert(this.coreRef.testMinter({from: pcvControllerAddress}), "CoreRef: Caller is not a minter");
   		});
 
   		it('onlyBurner reverts', async function() {
-  			await expectRevert(this.coreRef.testBurner({from: reclaimerAddress}), "CoreRef: Caller is not a burner");
+  			await expectRevert(this.coreRef.testBurner({from: pcvControllerAddress}), "CoreRef: Caller is not a burner");
   		});
 
   		it('onlyGovernor reverts', async function() {
-  			await expectRevert(this.coreRef.testGovernor({from: reclaimerAddress}), "CoreRef: Caller is not a governor");
+  			await expectRevert(this.coreRef.testGovernor({from: pcvControllerAddress}), "CoreRef: Caller is not a governor");
   		});
 
-  		it('onlyReclaimer succeeds', async function() {
-  			await this.coreRef.testReclaimer({from: reclaimerAddress});
+  		it('onlyPCVController succeeds', async function() {
+  			await this.coreRef.testPCVController({from: pcvControllerAddress});
   		});
   	});
   });
@@ -252,8 +252,8 @@ describe('Core', function () {
   			await this.coreRef.testGovernor({from: governorAddress});
   		});
 
-  		it('onlyReclaimer reverts', async function() {
-  			await expectRevert(this.coreRef.testReclaimer({from: governorAddress}), "CoreRef: Caller is not a reclaimer");
+  		it('onlyPCVController reverts', async function() {
+  			await expectRevert(this.coreRef.testPCVController({from: governorAddress}), "CoreRef: Caller is not a PCV controller");
   		});
   	});
 
@@ -278,14 +278,14 @@ describe('Core', function () {
   				expect(await this.core.isBurner(burnerAddress)).to.be.equal(false);
   			});
   		});
-  		describe('Reclaimer', function() {
+  		describe('PCV Controller', function() {
   			it('can grant', async function() {
-  				await this.core.grantReclaimer(userAddress, {from: governorAddress});
-  				expect(await this.core.isReclaimer(userAddress)).to.be.equal(true);
+  				await this.core.grantPCVController(userAddress, {from: governorAddress});
+  				expect(await this.core.isPCVController(userAddress)).to.be.equal(true);
   			});
   			it('can revoke', async function() {
-  				await this.core.revokeReclaimer(reclaimerAddress, {from: governorAddress});
-  				expect(await this.core.isReclaimer(reclaimerAddress)).to.be.equal(false);
+  				await this.core.revokePCVController(pcvControllerAddress, {from: governorAddress});
+  				expect(await this.core.isPCVController(pcvControllerAddress)).to.be.equal(false);
   			});
   		});
   		describe('Governor', function() {

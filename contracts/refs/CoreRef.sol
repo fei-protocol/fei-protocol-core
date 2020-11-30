@@ -7,7 +7,7 @@ interface ICore {
 	function isBurner(address _address) external view returns (bool);
 	function isMinter(address _address) external view returns (bool);
 	function isGovernor(address _address) external view returns (bool);
-	function isReclaimer(address _address) external view returns (bool);
+	function isPCVController(address _address) external view returns (bool);
 	function fei() external view returns (IFei);
 }
 
@@ -28,8 +28,8 @@ contract CoreRef {
 		_;
 	}
 
-	modifier onlyReclaimer() {
-		require(CORE.isReclaimer(msg.sender), "CoreRef: Caller is not a reclaimer");
+	modifier onlyPCVController() {
+		require(CORE.isPCVController(msg.sender), "CoreRef: Caller is not a PCV controller");
 		_;
 	}
 
@@ -55,4 +55,9 @@ contract CoreRef {
 	function fei() public view returns(IFei) {
 		return CORE.fei();
 	}
+
+    function burnFeiHeld() internal {
+    	uint256 balance = fei().balanceOf(address(this));
+    	fei().burn(balance);
+    }
 }

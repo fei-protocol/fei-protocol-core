@@ -6,13 +6,13 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 contract Permissions is AccessControl {
 	bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
 	bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-	bytes32 public constant RECLAIM_ROLE = keccak256("RECLAIM_ROLE");
+	bytes32 public constant PCV_CONTROLLER_ROLE = keccak256("PCV_CONTROLLER_ROLE");
 	bytes32 public constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
 
 	constructor() public {
 		_setRoleAdmin(MINTER_ROLE, GOVERN_ROLE);
 		_setRoleAdmin(BURNER_ROLE, GOVERN_ROLE);
-		_setRoleAdmin(RECLAIM_ROLE, GOVERN_ROLE);
+		_setRoleAdmin(PCV_CONTROLLER_ROLE, GOVERN_ROLE);
 		_setRoleAdmin(GOVERN_ROLE, GOVERN_ROLE);
 	}
 
@@ -29,8 +29,8 @@ contract Permissions is AccessControl {
 		grantRole(BURNER_ROLE, burner);
 	} 
 
-	function grantReclaimer(address reclaimer) public onlyGovernor {
-		grantRole(RECLAIM_ROLE, reclaimer);
+	function grantPCVController(address pcvController) public onlyGovernor {
+		grantRole(PCV_CONTROLLER_ROLE, pcvController);
 	}
 
 	function grantGovernor(address governor) public onlyGovernor {
@@ -45,8 +45,8 @@ contract Permissions is AccessControl {
 		revokeRole(BURNER_ROLE, burner);
 	} 
 
-	function revokeReclaimer(address reclaimer) public onlyGovernor {
-		revokeRole(RECLAIM_ROLE, reclaimer);
+	function revokePCVController(address pcvController) public onlyGovernor {
+		revokeRole(PCV_CONTROLLER_ROLE, pcvController);
 	}
 
 	function revokeGovernor(address governor) public onlyGovernor {
@@ -66,8 +66,8 @@ contract Permissions is AccessControl {
 		return hasRole(GOVERN_ROLE, _address);
 	}
 
-	function isReclaimer(address _address) public view returns (bool) {
-		return hasRole(RECLAIM_ROLE, _address);
+	function isPCVController(address _address) public view returns (bool) {
+		return hasRole(PCV_CONTROLLER_ROLE, _address);
 	}
 
 	function _setupGovernor(address governor) internal {

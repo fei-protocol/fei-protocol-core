@@ -2,7 +2,7 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./IIncentive.sol";
-import "../core/CoreRef.sol";
+import "../refs/CoreRef.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 

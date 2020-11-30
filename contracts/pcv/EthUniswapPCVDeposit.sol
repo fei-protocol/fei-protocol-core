@@ -1,14 +1,14 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./UniswapAllocation.sol";
+import "./UniswapPCVDeposit.sol";
 
-contract EthUniswapAllocation is UniswapAllocation {
+contract EthUniswapPCVDeposit is UniswapPCVDeposit {
 
     address WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
     constructor(address _token, address core) 
-        UniswapAllocation(_token, core) 
+        UniswapPCVDeposit(_token, core) 
     public {}
 
     function deposit(uint256 ethAmount) external override payable {
@@ -23,7 +23,7 @@ contract EthUniswapAllocation is UniswapAllocation {
     } 
 
     function removeLiquidity(uint256 liquidity, uint256 amountETHMin) internal override returns (uint256) {
-        (, uint256 amountWithdrawn) = router().removeLiquidityETH(
+        (, uint256 amountWithdrawn) = router.removeLiquidityETH(
             address(fei()),
             liquidity,
             0,
@@ -40,7 +40,7 @@ contract EthUniswapAllocation is UniswapAllocation {
 
     function _addLiquidity(uint256 ethAmount, uint256 feiAmount) internal {
         mintFei(feiAmount);
-        router().addLiquidityETH{value : ethAmount}(address(fei()),
+        router.addLiquidityETH{value : ethAmount}(address(fei()),
             feiAmount,
             0,
             0,

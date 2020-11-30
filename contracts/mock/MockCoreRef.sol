@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "../core/CoreRef.sol";
+import "../refs/CoreRef.sol";
 
 contract MockCoreRef is CoreRef {
 	constructor(address core) 
@@ -12,7 +12,7 @@ contract MockCoreRef is CoreRef {
 
 	function testBurner() public view onlyBurner {}
 
-	function testReclaimer() public view onlyReclaimer {}
+	function testPCVController() public view onlyPCVController {}
 
 	function testGovernor() public view onlyGovernor {}
 }

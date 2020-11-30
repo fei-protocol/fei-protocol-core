@@ -4,14 +4,14 @@ const { accounts, contract } = require('@openzeppelin/test-environment');
 const { BN, expectEvent, expectRevert, balance } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
-const EthUniswapAllocation = contract.fromArtifact('EthUniswapAllocation');
+const EthUniswapPCVDeposit = contract.fromArtifact('EthUniswapPCVDeposit');
 const Core = contract.fromArtifact('Core');
 const Fei = contract.fromArtifact('Fei');
 const MockERC20 = contract.fromArtifact('MockERC20');
 const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
 const MockRouter = contract.fromArtifact('MockRouter');
 
-describe('EthUniswapAllocation', function () {
+describe('EthUniswapPCVDeposit', function () {
   const [ userAddress, governorAddress, minterAddress, beneficiaryAddress ] = accounts;
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit
 
@@ -21,7 +21,7 @@ describe('EthUniswapAllocation', function () {
     this.token = await MockERC20.new();
     this.pair = await MockPair.new(this.token.address, this.fei.address);
     this.router = await MockRouter.new(this.pair.address);
-    this.allocation = await EthUniswapAllocation.new(this.token.address, this.core.address);
+    this.allocation = await EthUniswapPCVDeposit.new(this.token.address, this.core.address);
     await this.core.grantMinter(this.allocation.address, {from: governorAddress});
     await this.core.grantMinter(minterAddress, {from: governorAddress});
     await this.fei.mint(this.pair.address, 50000000, {from: minterAddress});
@@ -140,18 +140,18 @@ describe('EthUniswapAllocation', function () {
 
   describe('Withdraw', function() {
     describe('Reverts', function() {
-      it('not reclaimer', async function() {
-        await expectRevert(this.allocation.withdraw(beneficiaryAddress, "100000", {from: userAddress}), "CoreRef: Caller is not a reclaimer");
+      it('not pcv controller', async function() {
+        await expectRevert(this.allocation.withdraw(beneficiaryAddress, "100000", {from: userAddress}), "CoreRef: Caller is not a PCV controller");
       });
 
       it('no balance', async function() {
-        await this.core.grantReclaimer(userAddress, {from: governorAddress});
-        await expectRevert(this.allocation.withdraw(beneficiaryAddress, "100000", {from: userAddress}), "Uniswap Allocation: Insufficient underlying");
+        await this.core.grantPCVController(userAddress, {from: governorAddress});
+        await expectRevert(this.allocation.withdraw(beneficiaryAddress, "100000", {from: userAddress}), "UniswapPCVDeposit: Insufficient underlying");
       });
     });
     describe('With Balance', function() {
       beforeEach(async function() {
-        await this.core.grantReclaimer(userAddress, {from: governorAddress});
+        await this.core.grantPCVController(userAddress, {from: governorAddress});
         await this.allocation.deposit("100000", {from: userAddress, value: "100000"});
         this.beneficiaryBalance = await balance.current(beneficiaryAddress);
       });
@@ -229,17 +229,6 @@ describe('EthUniswapAllocation', function () {
 
       it('Non-governor set reverts', async function() {
         await expectRevert(this.allocation.setRouter(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
-      });
-    });
-    describe('Token', function() {
-      it('Governor set succeeds', async function() {
-        this.altToken = await MockERC20.new();
-        await this.allocation.setToken(this.altToken.address, {from: governorAddress});
-        expect(await this.allocation.token()).to.be.equal(this.altToken.address);
-      });
-
-      it('Non-governor set reverts', async function() {
-        await expectRevert(this.allocation.setToken(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
   });

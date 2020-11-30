@@ -1,16 +1,13 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./IIncentive.sol";
+import "./IUniswapIncentive.sol";
 import "../external/Decimal.sol";
 import "../oracle/IOracle.sol";
-import "../core/CoreRef.sol";
+import "../refs/UniRef.sol";
 import "@openzeppelin/contracts/math/Math.sol";
-import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
-import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
-import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 
-contract UniswapIncentive is IIncentive, CoreRef {
+contract UniswapIncentive is IUniswapIncentive, UniRef {
 	using Decimal for Decimal.D256;
     using Babylonian for uint256;
 
@@ -30,7 +27,7 @@ contract UniswapIncentive is IIncentive, CoreRef {
     uint256 public constant DEFAULT_INCENTIVE_GROWTH_RATE = 333; // about 1 unit per hour assuming 12s block time
 
 	constructor(address core) 
-		CoreRef(core)
+		UniRef(core)
 	public {}
 
     function incentivize(
@@ -104,6 +101,20 @@ contract UniswapIncentive is IIncentive, CoreRef {
     	return getOracle(account) != address(0x0);
     }
 
+    function isIncentiveParity(address _pair) public override returns (bool) {
+        uint weight = getTimeWeight(_pair);
+        require(weight != 0, "UniswapIncentive: Incentive zero or not active");
+
+        Decimal.D256 memory peg = getPeg(_pair);
+        (Decimal.D256 memory price, uint reserveFei, uint reserveOther) = getUniswapPrice(_pair);
+        Decimal.D256 memory deviation = getPriceDeviation(price, peg);
+        require(!deviation.equals(Decimal.zero()), "UniswapIncentive: Price already at or above peg");
+
+        Decimal.D256 memory incentive = calculateBuyIncentiveMultiplier(deviation, weight);
+        Decimal.D256 memory penalty = calculateSellPenaltyMultiplier(deviation);
+        return incentive.equals(penalty);
+    }
+
     function incentivizeBuy(address target, address _pair, uint256 amountIn) internal {
     	if (isExemptAddress(target)) {
     		return;
@@ -160,19 +171,6 @@ contract UniswapIncentive is IIncentive, CoreRef {
         _timeWeights[_pair] = TimeWeightInfo(block.number, updatedWeight, getGrowthRate(_pair), true);
     }
 
-    function getAmountToPeg(
-        uint reserveFei, 
-        uint reserveOther, 
-        Decimal.D256 memory peg
-    ) internal view returns (uint) {
-        uint radicand = peg.mul(reserveFei).mul(reserveOther).asUint256();
-        uint root = radicand.sqrt();
-        if (root > reserveFei) {
-            return root - reserveFei;
-        }
-        return reserveFei - root;
-    }
-
     function incentivizeSell(address target, address _pair, uint256 amount) internal {
     	if (isExemptAddress(target)) {
     		return;
@@ -212,55 +210,49 @@ contract UniswapIncentive is IIncentive, CoreRef {
     	return peg;
     }
 
-    function getUniswapPrice(address _pair) internal view returns(
-    	Decimal.D256 memory, 
-    	uint reserveFei, 
-    	uint reserveOther
-    ) {
-    	IUniswapV2Pair pair = IUniswapV2Pair(_pair); 
-    	(uint reserve0, uint reserve1,) = IUniswapV2Pair(pair).getReserves();
-    	(reserveFei, reserveOther) = pair.token0() == address(fei()) ? (reserve0, reserve1) : (reserve1, reserve0);
-    	return (Decimal.ratio(reserveFei, reserveOther), reserveFei, reserveOther);
-    }
-
     function calculateBuyIncentive(
     	Decimal.D256 memory initialDeviation, 
     	uint256 amountIn,
         uint256 weight
     ) internal view returns (uint256) {
-        uint256 correspondingPenalty = calculateSellPenalty(initialDeviation, amountIn);
-        uint256 incentive = initialDeviation.mul(amountIn).mul(weight).div(TIME_WEIGHT_GRANULARITY).asUint256();
-    	return Math.min(incentive, correspondingPenalty);
+    	return calculateBuyIncentiveMultiplier(initialDeviation, weight).mul(amountIn).asUint256();
+    }
+
+    function calculateBuyIncentiveMultiplier(
+        Decimal.D256 memory deviation,
+        uint weight
+    ) internal pure returns (Decimal.D256 memory) {
+        Decimal.D256 memory correspondingPenalty = calculateSellPenaltyMultiplier(deviation);
+        Decimal.D256 memory buyMultiplier = deviation.mul(weight).div(TIME_WEIGHT_GRANULARITY);
+        if (correspondingPenalty.lessThan(buyMultiplier)) {
+            return correspondingPenalty;
+        }
+        return buyMultiplier;
+    }
+
+    function calculateSellPenaltyMultiplier(
+        Decimal.D256 memory deviation
+    ) internal pure returns (Decimal.D256 memory) {
+        return deviation.mul(deviation).mul(100);
     }
 
     function calculateSellPenalty(
     	Decimal.D256 memory finalDeviation, 
     	uint256 amount
     ) internal pure returns (uint256) {
-    	return finalDeviation.mul(finalDeviation).mul(amount).mul(100).asUint256(); // m^2 * x * 100
-    }
-
-    function getFinalPrice(
-    	int256 amount, 
-    	uint256 reserveFei, 
-    	uint256 reserveOther
-    ) internal pure returns (Decimal.D256 memory) {
-    	uint256 k = reserveFei * reserveOther;
-    	uint256 adjustedReserveFei = uint256(int256(reserveFei) + amount);
-    	uint256 adjustedReserveOther = k / adjustedReserveFei;
-    	return Decimal.ratio(adjustedReserveFei, adjustedReserveOther); // alt: adjustedReserveFei^2 / k
+    	return calculateSellPenaltyMultiplier(finalDeviation).mul(amount).asUint256(); // m^2 * x * 100
     }
 
     function getPriceDeviation(
-    	Decimal.D256 memory price, 
-    	Decimal.D256 memory peg
+        Decimal.D256 memory price, 
+        Decimal.D256 memory peg
     ) internal pure returns (Decimal.D256 memory) {
         // If price <= peg, then FEI is more expensive and above peg
         // In this case we can just return zero for deviation
-    	if (price.lessThanOrEqualTo(peg)) {
-    		return Decimal.zero();
-    	}
-    	Decimal.D256 memory delta = price.sub(peg, "UniswapIncentive: price exceeds peg"); // Should never error
-    	return delta.div(peg);
+        if (price.lessThanOrEqualTo(peg)) {
+            return Decimal.zero();
+        }
+        Decimal.D256 memory delta = price.sub(peg, "UniswapIncentive: price exceeds peg"); // Should never error
+        return delta.div(peg);
     }
 }
