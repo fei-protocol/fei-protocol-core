@@ -11,6 +11,7 @@ contract MockRouter {
     using Decimal for Decimal.D256;
 
     IMockUniswapV2PairLiquidity private PAIR;
+    address public WETH;
 
     constructor(address pair) public {
         PAIR = IMockUniswapV2PairLiquidity(pair);
@@ -38,6 +39,10 @@ contract MockRouter {
         uint112 newReserve0 = uint112(reserves0) + uint112(amountETH);
         uint112 newReserve1 = uint112(reserves1) + uint112(amountToken);
         PAIR.setReserves(newReserve0, newReserve1);
+    }
+
+    function setWETH(address weth) public {
+        WETH = weth;
     }
 
     function removeLiquidityETH(

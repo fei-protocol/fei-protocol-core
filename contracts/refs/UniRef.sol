@@ -62,6 +62,11 @@ contract UniRef is CoreRef {
 		return getPairReserves(pair);
 	}
 
+    function isBelowPeg(Decimal.D256 memory peg) public requirePair view returns (bool) {
+        (Decimal.D256 memory price,,) = getUniswapPrice(address(pair));
+        return peg.lessThan(price);
+    }
+
 	function getPairReserves(IUniswapV2Pair _pair) public view returns (uint feiReserves, uint tokenReserves) {
 		address token0 = _pair.token0();
         (uint reserve0, uint reserve1,) = _pair.getReserves();

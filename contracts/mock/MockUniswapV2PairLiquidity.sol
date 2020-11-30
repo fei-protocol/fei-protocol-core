@@ -82,6 +82,11 @@ contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
         IERC20(token1).transfer(to, amount);
     }
 
+    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external override { 
+        // No - op;
+    }
+
+
     /**
      * Should not use
      */
@@ -102,7 +107,6 @@ contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
     function price1CumulativeLast() external view override returns (uint) { revert("Should not use"); }
     function kLast() external view override returns (uint) { revert("Should not use"); }
 
-    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external override { revert("Should not use"); }
     function skim(address to) external override { revert("Should not use"); }
     function sync() external override { revert("Should not use"); }
     function burn(address to) external override returns (uint amount0, uint amount1) { revert("Should not use"); }

@@ -319,6 +319,37 @@ describe('UniswapIncentive', function () {
         });
       });
 
+      describe('exempt user', function() {
+        beforeEach(async function() {
+          await this.incentive.setExemptAddress(userAddress, true, {from: governorAddress});
+          this.transferAmount = new BN(502500);
+          this.expectedMint = new BN(0);
+          await this.pair.withdrawFei(userAddress, 502500);
+        });
+
+        it('user balance updates', async function() {
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.transferAmount.add(this.userBalance).add(this.expectedMint));
+        });
+
+        it('pair balance updates', async function() {
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.sub(this.transferAmount));
+        });
+
+        it('no incentive', async function() {
+          var user = await this.fei.balanceOf(userAddress);
+          var pair = await this.fei.balanceOf(this.pair.address);
+
+          expect(user.add(pair).sub(this.userBalance).sub(this.pairBalance)).to.be.bignumber.equal(this.expectedMint);
+        });
+
+        it('time weight stays active', async function() {
+          var twInfo = await this.incentive._timeWeights(this.pair.address);
+          expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
+          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
+          expect(twInfo.active).to.be.equal(true);
+        });
+      });
+
       describe('to peg', function() {
         beforeEach(async function() {
           this.transferAmount = new BN(502500);
@@ -521,6 +552,37 @@ describe('UniswapIncentive', function () {
       describe('kill switch engaged', function() {
         beforeEach(async function() {
           await this.incentive.setKillSwitch(true, {from: governorAddress});
+          this.expectedBurn = new BN(0);
+          this.transferAmount = new BN(1000000);
+          await this.fei.transfer(this.pair.address, 1000000, {from: userAddress});
+        });
+
+        it('user balance updates', async function() {
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.userBalance.sub(this.transferAmount).sub(this.expectedBurn));
+        });
+
+        it('pair balance updates', async function() {
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.add(this.transferAmount));
+        });
+
+        it('burn incentive', async function() {
+          var user = await this.fei.balanceOf(userAddress);
+          var pair = await this.fei.balanceOf(this.pair.address);
+
+          expect(this.userBalance.add(this.pairBalance).sub(user).sub(pair)).to.be.bignumber.equal(this.expectedBurn);
+        });
+
+        it('time weight stays active', async function() {
+          var twInfo = await this.incentive._timeWeights(this.pair.address);
+          expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
+          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
+          expect(twInfo.active).to.be.equal(true);
+        });
+      });
+
+      describe('exempt user', function() {
+        beforeEach(async function() {
+          await this.incentive.setExemptAddress(userAddress, true, {from: governorAddress});
           this.expectedBurn = new BN(0);
           this.transferAmount = new BN(1000000);
           await this.fei.transfer(this.pair.address, 1000000, {from: userAddress});

@@ -9,7 +9,7 @@ contract MockERC20 is ERC20, ERC20Burnable {
         ERC20("MockToken", "MCT")
     public {}
 
-    function mint(address account, uint256 amount) external returns (bool) {
+    function mint(address account, uint256 amount) public returns (bool) {
         _mint(account, amount);
         return true;
     }
