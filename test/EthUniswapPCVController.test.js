@@ -11,7 +11,8 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
 const MockOracle = contract.fromArtifact('MockOracle');
 const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
 const MockRouter = contract.fromArtifact('MockRouter');
-const MockWeth = contract.fromArtifact('MockWeth')
+const MockWeth = contract.fromArtifact('MockWeth');
+const MockIncentive = contract.fromArtifact('MockUniswapIncentive');
 
 describe('EthUniswapPCVController', function () {
   const [ userAddress, governorAddress, minterAddress, beneficiaryAddress ] = accounts;
@@ -26,7 +27,9 @@ describe('EthUniswapPCVController', function () {
     this.router = await MockRouter.new(this.pair.address);
     await this.router.setWETH(this.token.address);
     this.pcvDeposit = await MockPCVDeposit.new(this.pair.address);
-    this.pcvController = await EthUniswapPCVController.new(this.core.address, this.pcvDeposit.address, this.oracle.address);
+    this.incentive = await MockIncentive.new(this.core.address);
+
+    this.pcvController = await EthUniswapPCVController.new(this.core.address, this.pcvDeposit.address, this.oracle.address, this.incentive.address);
     await this.core.grantPCVController(this.pcvController.address, {from: governorAddress});
     await this.core.grantMinter(minterAddress, {from: governorAddress});
     await this.fei.mint(this.pair.address, 50000000, {from: minterAddress});
@@ -118,6 +121,14 @@ describe('EthUniswapPCVController', function () {
           expect(await this.fei.balanceOf(this.pcvController.address)).to.be.bignumber.equal(new BN(0));
         });
       });
+    });
+  });
+
+  describe('External Reweight', function() {
+    describe('Not at incentive parity', function () {
+      it('reverts', async function() {
+        await expectRevert(this.pcvController.reweight(), "EthUniswapPCVController: Not at incentive parity");
+      })
     });
   });
 

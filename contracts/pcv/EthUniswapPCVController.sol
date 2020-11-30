@@ -2,6 +2,7 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./IUniswapPCVDeposit.sol";
+import "../token/IUniswapIncentive.sol";
 import "../refs/UniRef.sol";
 import "../external/Decimal.sol";
 import "../oracle/IOracle.sol";
@@ -13,16 +14,23 @@ contract EthUniswapPCVController is UniRef {
 
 	IUniswapPCVDeposit public pcvDeposit;
 	IOracle public oracle;
+	IUniswapIncentive public incentiveContract;
 
-	constructor (address core, address _pcvDeposit, address _oracle) 
+	constructor (address core, address _pcvDeposit, address _oracle, address _incentiveContract) 
 		UniRef(core)
 	public {
 		pcvDeposit = IUniswapPCVDeposit(_pcvDeposit);
 		oracle = IOracle(_oracle);
+		incentiveContract = IUniswapIncentive(_incentiveContract);
 		setupPair(address(pcvDeposit.pair()));
 	}
 
 	function forceReweight() public onlyGovernor {
+		_reweight();
+	}
+
+	function reweight() public {
+		require(incentiveContract.isIncentiveParity(address(pair)), "EthUniswapPCVController: Not at incentive parity");
 		_reweight();
 	}
 

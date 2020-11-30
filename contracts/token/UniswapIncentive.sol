@@ -1,13 +1,13 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./IIncentive.sol";
+import "./IUniswapIncentive.sol";
 import "../external/Decimal.sol";
 import "../oracle/IOracle.sol";
 import "../refs/UniRef.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 
-contract UniswapIncentive is IIncentive, UniRef {
+contract UniswapIncentive is IUniswapIncentive, UniRef {
 	using Decimal for Decimal.D256;
     using Babylonian for uint256;
 
@@ -99,6 +99,20 @@ contract UniswapIncentive is IIncentive, UniRef {
 
     function isIncentivized(address account) public view returns (bool) {
     	return getOracle(account) != address(0x0);
+    }
+
+    function isIncentiveParity(address _pair) public override returns (bool) {
+        uint weight = getTimeWeight(_pair);
+        require(weight != 0, "UniswapIncentive: Incentive zero or not active");
+
+        Decimal.D256 memory peg = getPeg(_pair);
+        (Decimal.D256 memory price, uint reserveFei, uint reserveOther) = getUniswapPrice(_pair);
+        Decimal.D256 memory deviation = getPriceDeviation(price, peg);
+        require(!deviation.equals(Decimal.zero()), "UniswapIncentive: Price already at or above peg");
+
+        Decimal.D256 memory incentive = calculateBuyIncentiveMultiplier(deviation, weight);
+        Decimal.D256 memory penalty = calculateSellPenaltyMultiplier(deviation);
+        return incentive.equals(penalty);
     }
 
     function incentivizeBuy(address target, address _pair, uint256 amountIn) internal {
@@ -201,16 +215,32 @@ contract UniswapIncentive is IIncentive, UniRef {
     	uint256 amountIn,
         uint256 weight
     ) internal view returns (uint256) {
-        uint256 correspondingPenalty = calculateSellPenalty(initialDeviation, amountIn);
-        uint256 incentive = initialDeviation.mul(amountIn).mul(weight).div(TIME_WEIGHT_GRANULARITY).asUint256();
-    	return Math.min(incentive, correspondingPenalty);
+    	return calculateBuyIncentiveMultiplier(initialDeviation, weight).mul(amountIn).asUint256();
+    }
+
+    function calculateBuyIncentiveMultiplier(
+        Decimal.D256 memory deviation,
+        uint weight
+    ) internal pure returns (Decimal.D256 memory) {
+        Decimal.D256 memory correspondingPenalty = calculateSellPenaltyMultiplier(deviation);
+        Decimal.D256 memory buyMultiplier = deviation.mul(weight).div(TIME_WEIGHT_GRANULARITY);
+        if (correspondingPenalty.lessThan(buyMultiplier)) {
+            return correspondingPenalty;
+        }
+        return buyMultiplier;
+    }
+
+    function calculateSellPenaltyMultiplier(
+        Decimal.D256 memory deviation
+    ) internal pure returns (Decimal.D256 memory) {
+        return deviation.mul(deviation).mul(100);
     }
 
     function calculateSellPenalty(
     	Decimal.D256 memory finalDeviation, 
     	uint256 amount
     ) internal pure returns (uint256) {
-    	return finalDeviation.mul(finalDeviation).mul(amount).mul(100).asUint256(); // m^2 * x * 100
+    	return calculateSellPenaltyMultiplier(finalDeviation).mul(amount).asUint256(); // m^2 * x * 100
     }
 
     function getPriceDeviation(

@@ -34,6 +34,108 @@ describe('UniswapIncentive', function () {
     this.pairBalance = new BN(50000000);
   });
 
+  describe('Incentive Parity', function() {
+    describe('Above Peg', function() {
+      beforeEach(async function() {
+        await this.pair.setReserves(100000, 49000000);
+      });
+      describe('Inactive Time Weight', function() {
+        beforeEach(async function() {
+          let block = await time.latestBlock();
+          await this.incentive.setTimeWeight(this.pair.address, block.sub(new BN(5)), 0, 100000, false, {from: governorAddress});
+        });
+        it('reverts', async function() {
+          await expectRevert(this.incentive.isIncentiveParity(this.pair.address), "UniswapIncentive: Incentive zero or not active");
+        });
+      });
+      describe('Active Time Weight', function() {
+        beforeEach(async function() {
+          let block = await time.latestBlock();
+          await this.incentive.setTimeWeight(this.pair.address, block.sub(new BN(5)), 0, 100000, true, {from: governorAddress});
+        });
+        it('reverts', async function() {
+          await expectRevert(this.incentive.isIncentiveParity(this.pair.address), "UniswapIncentive: Price already at or above peg");
+        });
+      });
+    });
+    describe('At Peg', function() {
+      beforeEach(async function() {
+        await this.pair.setReserves(100000, 50000000);
+      });
+
+      describe('Inactive Time Weight', function() {
+        beforeEach(async function() {
+          let block = await time.latestBlock();
+          await this.incentive.setTimeWeight(this.pair.address, block.sub(new BN(5)), 0, 100000, false, {from: governorAddress});
+        });
+        it('reverts', async function() {
+          await expectRevert(this.incentive.isIncentiveParity(this.pair.address), "UniswapIncentive: Incentive zero or not active");
+        });
+      });
+
+      describe('Active Time Weight', function() {
+        beforeEach(async function() {
+          let block = await time.latestBlock();
+          await this.incentive.setTimeWeight(this.pair.address, block.sub(new BN(5)), 0, 100000, true, {from: governorAddress});
+        });
+        it('reverts', async function() {
+          await expectRevert(this.incentive.isIncentiveParity(this.pair.address), "UniswapIncentive: Price already at or above peg");
+        });
+      });
+    });
+
+    describe('Below Peg', function() {
+      beforeEach(async function() {
+        await this.pair.setReserves(100000, 51000000);
+      });
+      describe('Inactive Time Weight', function() {
+        beforeEach(async function() {
+          let block = await time.latestBlock();
+          await this.incentive.setTimeWeight(this.pair.address, block.sub(new BN(5)), 0, 100000, false, {from: governorAddress});
+        });
+        it('reverts', async function() {
+          await expectRevert(this.incentive.isIncentiveParity(this.pair.address), "UniswapIncentive: Incentive zero or not active");
+        });
+      });
+
+      describe('Active Time Weight', function() {
+        // at 2% deviation, w=2 is parity
+        describe('Below Parity', function() {
+          beforeEach(async function() {
+            let block = await time.latestBlock();
+            // w=1
+            await this.incentive.setTimeWeight(this.pair.address, block, 0, 100000, true, {from: governorAddress});
+          });
+          it('returns false', async function() {
+            expect(await this.incentive.methods['isIncentiveParity(address)'].call(this.pair.address)).to.be.equal(false);
+          });
+        });
+
+        describe('At Parity', function() {
+          beforeEach(async function() {
+            let block = await time.latestBlock();
+            // w=2
+            await this.incentive.setTimeWeight(this.pair.address, block, 0, 200000, true, {from: governorAddress});
+          });
+          it('returns true', async function() {
+            expect(await this.incentive.methods['isIncentiveParity(address)'].call(this.pair.address)).to.be.equal(true);
+          });
+        });
+
+        describe('Exceeds Parity', function() {
+          beforeEach(async function() {
+            let block = await time.latestBlock();
+            // w=4
+            await this.incentive.setTimeWeight(this.pair.address, block, 0, 400000, true, {from: governorAddress});
+          });
+          it('returns true', async function() {
+            expect(await this.incentive.methods['isIncentiveParity(address)'].call(this.pair.address)).to.be.equal(true);
+          });
+        });
+      });
+    });
+  });
+
   describe('Time Weight', function() {
     it('granularity', async function() {
         expect(await this.incentive.TIME_WEIGHT_GRANULARITY()).to.be.bignumber.equal(new BN(100000));
