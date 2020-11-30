@@ -19,7 +19,7 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
 		setupPair(_pair);
 	}
 
-	function withdraw(address to, uint256 amountUnderlying) public override onlyReclaimer {
+	function withdraw(address to, uint256 amountUnderlying) public override onlyPCVController {
     	uint256 totalUnderlying = totalValue();
     	require(amountUnderlying <= totalUnderlying, "UniswapPCVDeposit: Insufficient underlying");
 

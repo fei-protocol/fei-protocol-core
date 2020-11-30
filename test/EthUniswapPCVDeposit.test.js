@@ -140,18 +140,18 @@ describe('EthUniswapPCVDeposit', function () {
 
   describe('Withdraw', function() {
     describe('Reverts', function() {
-      it('not reclaimer', async function() {
-        await expectRevert(this.allocation.withdraw(beneficiaryAddress, "100000", {from: userAddress}), "CoreRef: Caller is not a reclaimer");
+      it('not pcv controller', async function() {
+        await expectRevert(this.allocation.withdraw(beneficiaryAddress, "100000", {from: userAddress}), "CoreRef: Caller is not a PCV controller");
       });
 
       it('no balance', async function() {
-        await this.core.grantReclaimer(userAddress, {from: governorAddress});
+        await this.core.grantPCVController(userAddress, {from: governorAddress});
         await expectRevert(this.allocation.withdraw(beneficiaryAddress, "100000", {from: userAddress}), "UniswapPCVDeposit: Insufficient underlying");
       });
     });
     describe('With Balance', function() {
       beforeEach(async function() {
-        await this.core.grantReclaimer(userAddress, {from: governorAddress});
+        await this.core.grantPCVController(userAddress, {from: governorAddress});
         await this.allocation.deposit("100000", {from: userAddress, value: "100000"});
         this.beneficiaryBalance = await balance.current(beneficiaryAddress);
       });

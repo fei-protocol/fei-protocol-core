@@ -12,7 +12,7 @@ contract MockCoreRef is CoreRef {
 
 	function testBurner() public view onlyBurner {}
 
-	function testReclaimer() public view onlyReclaimer {}
+	function testPCVController() public view onlyPCVController {}
 
 	function testGovernor() public view onlyGovernor {}
 }
