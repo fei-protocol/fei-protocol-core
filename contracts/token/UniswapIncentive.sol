@@ -4,13 +4,10 @@ pragma experimental ABIEncoderV2;
 import "./IIncentive.sol";
 import "../external/Decimal.sol";
 import "../oracle/IOracle.sol";
-import "../refs/CoreRef.sol";
+import "../refs/UniRef.sol";
 import "@openzeppelin/contracts/math/Math.sol";
-import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
-import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
-import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 
-contract UniswapIncentive is IIncentive, CoreRef {
+contract UniswapIncentive is IIncentive, UniRef {
 	using Decimal for Decimal.D256;
     using Babylonian for uint256;
 
@@ -30,7 +27,7 @@ contract UniswapIncentive is IIncentive, CoreRef {
     uint256 public constant DEFAULT_INCENTIVE_GROWTH_RATE = 333; // about 1 unit per hour assuming 12s block time
 
 	constructor(address core) 
-		CoreRef(core)
+		UniRef(core)
 	public {}
 
     function incentivize(
@@ -160,19 +157,6 @@ contract UniswapIncentive is IIncentive, CoreRef {
         _timeWeights[_pair] = TimeWeightInfo(block.number, updatedWeight, getGrowthRate(_pair), true);
     }
 
-    function getAmountToPeg(
-        uint reserveFei, 
-        uint reserveOther, 
-        Decimal.D256 memory peg
-    ) internal view returns (uint) {
-        uint radicand = peg.mul(reserveFei).mul(reserveOther).asUint256();
-        uint root = radicand.sqrt();
-        if (root > reserveFei) {
-            return root - reserveFei;
-        }
-        return reserveFei - root;
-    }
-
     function incentivizeSell(address target, address _pair, uint256 amount) internal {
     	if (isExemptAddress(target)) {
     		return;
@@ -212,17 +196,6 @@ contract UniswapIncentive is IIncentive, CoreRef {
     	return peg;
     }
 
-    function getUniswapPrice(address _pair) internal view returns(
-    	Decimal.D256 memory, 
-    	uint reserveFei, 
-    	uint reserveOther
-    ) {
-    	IUniswapV2Pair pair = IUniswapV2Pair(_pair); 
-    	(uint reserve0, uint reserve1,) = IUniswapV2Pair(pair).getReserves();
-    	(reserveFei, reserveOther) = pair.token0() == address(fei()) ? (reserve0, reserve1) : (reserve1, reserve0);
-    	return (Decimal.ratio(reserveFei, reserveOther), reserveFei, reserveOther);
-    }
-
     function calculateBuyIncentive(
     	Decimal.D256 memory initialDeviation, 
     	uint256 amountIn,
@@ -240,27 +213,16 @@ contract UniswapIncentive is IIncentive, CoreRef {
     	return finalDeviation.mul(finalDeviation).mul(amount).mul(100).asUint256(); // m^2 * x * 100
     }
 
-    function getFinalPrice(
-    	int256 amount, 
-    	uint256 reserveFei, 
-    	uint256 reserveOther
-    ) internal pure returns (Decimal.D256 memory) {
-    	uint256 k = reserveFei * reserveOther;
-    	uint256 adjustedReserveFei = uint256(int256(reserveFei) + amount);
-    	uint256 adjustedReserveOther = k / adjustedReserveFei;
-    	return Decimal.ratio(adjustedReserveFei, adjustedReserveOther); // alt: adjustedReserveFei^2 / k
-    }
-
     function getPriceDeviation(
-    	Decimal.D256 memory price, 
-    	Decimal.D256 memory peg
+        Decimal.D256 memory price, 
+        Decimal.D256 memory peg
     ) internal pure returns (Decimal.D256 memory) {
         // If price <= peg, then FEI is more expensive and above peg
         // In this case we can just return zero for deviation
-    	if (price.lessThanOrEqualTo(peg)) {
-    		return Decimal.zero();
-    	}
-    	Decimal.D256 memory delta = price.sub(peg, "UniswapIncentive: price exceeds peg"); // Should never error
-    	return delta.div(peg);
+        if (price.lessThanOrEqualTo(peg)) {
+            return Decimal.zero();
+        }
+        Decimal.D256 memory delta = price.sub(peg, "UniswapIncentive: price exceeds peg"); // Should never error
+        return delta.div(peg);
     }
 }

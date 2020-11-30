@@ -23,7 +23,7 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
     } 
 
     function removeLiquidity(uint256 liquidity, uint256 amountETHMin) internal override returns (uint256) {
-        (, uint256 amountWithdrawn) = router().removeLiquidityETH(
+        (, uint256 amountWithdrawn) = router.removeLiquidityETH(
             address(fei()),
             liquidity,
             0,
@@ -40,7 +40,7 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
 
     function _addLiquidity(uint256 ethAmount, uint256 feiAmount) internal {
         mintFei(feiAmount);
-        router().addLiquidityETH{value : ethAmount}(address(fei()),
+        router.addLiquidityETH{value : ethAmount}(address(fei()),
             feiAmount,
             0,
             0,

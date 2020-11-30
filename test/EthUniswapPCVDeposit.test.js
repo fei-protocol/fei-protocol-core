@@ -231,16 +231,5 @@ describe('EthUniswapPCVDeposit', function () {
         await expectRevert(this.allocation.setRouter(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
-    describe('Token', function() {
-      it('Governor set succeeds', async function() {
-        this.altToken = await MockERC20.new();
-        await this.allocation.setToken(this.altToken.address, {from: governorAddress});
-        expect(await this.allocation.token()).to.be.equal(this.altToken.address);
-      });
-
-      it('Non-governor set reverts', async function() {
-        await expectRevert(this.allocation.setToken(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
-      });
-    });
   });
 });
