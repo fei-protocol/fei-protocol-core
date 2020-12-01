@@ -757,6 +757,12 @@ describe('UniswapIncentive', function () {
   });
 
   describe('Access', function () {
+    describe('Incentivize', function() {
+      it('Non-Fei call reverts', async function() {
+        await expectRevert(this.incentive.incentivize(this.pair.address, userAddress, userAddress, 1000000), "CoreRef: Caller is not FEI");
+      });
+    });
+
     describe('Growth Rate', function() {
       it('Governor set succeeds', async function() {
         await this.incentive.setTimeWeightGrowth(1000, {from: governorAddress});
