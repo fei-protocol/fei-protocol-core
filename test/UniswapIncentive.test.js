@@ -15,19 +15,22 @@ describe('UniswapIncentive', function () {
   const [ userAddress, minterAddress, governorAddress ] = accounts;
 
   beforeEach(async function () {
+
     this.core = await Core.new({gas: 8000000, from: governorAddress});
     this.fei = await Fei.at(await this.core.fei());
-    this.incentive = await UniswapIncentive.new(this.core.address);
+    this.oracle = await MockOracle.new(500); // 500:1 USD/ETH exchange rate
+
+    this.incentive = await UniswapIncentive.new(this.core.address, this.oracle.address);
     this.token = await MockERC20.new();
     this.pair = await MockPair.new(this.token.address, this.fei.address);
-    this.oracle = await MockOracle.new(500); // 500:1 USD/ETH exchange rate
+
+    this.incentive.setPair(this.pair.address, {from: governorAddress});
 
     await this.core.grantMinter(this.incentive.address, {from: governorAddress});
     await this.core.grantBurner(this.incentive.address, {from: governorAddress});
     await this.core.grantMinter(minterAddress, {from: governorAddress});
     await this.fei.setIncentiveContract(this.pair.address, this.incentive.address, {from: governorAddress});
     await this.fei.mint(userAddress, 50000000, {from: minterAddress});
-    await this.incentive.setOracleForPair(this.pair.address, this.oracle.address, {from: governorAddress});
 
     this.userBalance = new BN(50000000);
     await this.fei.mint(this.pair.address, 50000000, {from: minterAddress});
@@ -42,19 +45,19 @@ describe('UniswapIncentive', function () {
       describe('Inactive Time Weight', function() {
         beforeEach(async function() {
           let block = await time.latestBlock();
-          await this.incentive.setTimeWeight(this.pair.address, block.sub(new BN(5)), 0, 100000, false, {from: governorAddress});
+          await this.incentive.setTimeWeight(block.sub(new BN(5)), 0, 100000, false, {from: governorAddress});
         });
         it('reverts', async function() {
-          await expectRevert(this.incentive.isIncentiveParity(this.pair.address), "UniswapIncentive: Incentive zero or not active");
+          await expectRevert(this.incentive.isIncentiveParity(), "UniswapIncentive: Incentive zero or not active");
         });
       });
       describe('Active Time Weight', function() {
         beforeEach(async function() {
           let block = await time.latestBlock();
-          await this.incentive.setTimeWeight(this.pair.address, block.sub(new BN(5)), 0, 100000, true, {from: governorAddress});
+          await this.incentive.setTimeWeight(block.sub(new BN(5)), 0, 100000, true, {from: governorAddress});
         });
         it('reverts', async function() {
-          await expectRevert(this.incentive.isIncentiveParity(this.pair.address), "UniswapIncentive: Price already at or above peg");
+          await expectRevert(this.incentive.isIncentiveParity(), "UniswapIncentive: Price already at or above peg");
         });
       });
     });
@@ -66,20 +69,20 @@ describe('UniswapIncentive', function () {
       describe('Inactive Time Weight', function() {
         beforeEach(async function() {
           let block = await time.latestBlock();
-          await this.incentive.setTimeWeight(this.pair.address, block.sub(new BN(5)), 0, 100000, false, {from: governorAddress});
+          await this.incentive.setTimeWeight(block.sub(new BN(5)), 0, 100000, false, {from: governorAddress});
         });
         it('reverts', async function() {
-          await expectRevert(this.incentive.isIncentiveParity(this.pair.address), "UniswapIncentive: Incentive zero or not active");
+          await expectRevert(this.incentive.isIncentiveParity(), "UniswapIncentive: Incentive zero or not active");
         });
       });
 
       describe('Active Time Weight', function() {
         beforeEach(async function() {
           let block = await time.latestBlock();
-          await this.incentive.setTimeWeight(this.pair.address, block.sub(new BN(5)), 0, 100000, true, {from: governorAddress});
+          await this.incentive.setTimeWeight(block.sub(new BN(5)), 0, 100000, true, {from: governorAddress});
         });
         it('reverts', async function() {
-          await expectRevert(this.incentive.isIncentiveParity(this.pair.address), "UniswapIncentive: Price already at or above peg");
+          await expectRevert(this.incentive.isIncentiveParity(), "UniswapIncentive: Price already at or above peg");
         });
       });
     });
@@ -91,10 +94,10 @@ describe('UniswapIncentive', function () {
       describe('Inactive Time Weight', function() {
         beforeEach(async function() {
           let block = await time.latestBlock();
-          await this.incentive.setTimeWeight(this.pair.address, block.sub(new BN(5)), 0, 100000, false, {from: governorAddress});
+          await this.incentive.setTimeWeight(block.sub(new BN(5)), 0, 100000, false, {from: governorAddress});
         });
         it('reverts', async function() {
-          await expectRevert(this.incentive.isIncentiveParity(this.pair.address), "UniswapIncentive: Incentive zero or not active");
+          await expectRevert(this.incentive.isIncentiveParity(), "UniswapIncentive: Incentive zero or not active");
         });
       });
 
@@ -104,10 +107,10 @@ describe('UniswapIncentive', function () {
           beforeEach(async function() {
             let block = await time.latestBlock();
             // w=1
-            await this.incentive.setTimeWeight(this.pair.address, block, 0, 100000, true, {from: governorAddress});
+            await this.incentive.setTimeWeight(block, 0, 100000, true, {from: governorAddress});
           });
           it('returns false', async function() {
-            expect(await this.incentive.methods['isIncentiveParity(address)'].call(this.pair.address)).to.be.equal(false);
+            expect(await this.incentive.methods['isIncentiveParity()'].call()).to.be.equal(false);
           });
         });
 
@@ -115,10 +118,10 @@ describe('UniswapIncentive', function () {
           beforeEach(async function() {
             let block = await time.latestBlock();
             // w=2
-            await this.incentive.setTimeWeight(this.pair.address, block, 0, 200000, true, {from: governorAddress});
+            await this.incentive.setTimeWeight(block, 0, 200000, true, {from: governorAddress});
           });
           it('returns true', async function() {
-            expect(await this.incentive.methods['isIncentiveParity(address)'].call(this.pair.address)).to.be.equal(true);
+            expect(await this.incentive.methods['isIncentiveParity()'].call()).to.be.equal(true);
           });
         });
 
@@ -126,10 +129,10 @@ describe('UniswapIncentive', function () {
           beforeEach(async function() {
             let block = await time.latestBlock();
             // w=4
-            await this.incentive.setTimeWeight(this.pair.address, block, 0, 400000, true, {from: governorAddress});
+            await this.incentive.setTimeWeight(block, 0, 400000, true, {from: governorAddress});
           });
           it('returns true', async function() {
-            expect(await this.incentive.methods['isIncentiveParity(address)'].call(this.pair.address)).to.be.equal(true);
+            expect(await this.incentive.methods['isIncentiveParity()'].call()).to.be.equal(true);
           });
         });
       });
@@ -147,32 +150,32 @@ describe('UniswapIncentive', function () {
     describe('calculation', function() {
       it('inactive', async function() {
         let block = await time.latestBlock();
-        await this.incentive.setTimeWeight(this.pair.address, block.sub(new BN(5)), 0, 100000, false, {from: governorAddress});
-        expect(await this.incentive.getTimeWeight(this.pair.address)).to.be.bignumber.equal(new BN(0));
+        await this.incentive.setTimeWeight(block.sub(new BN(5)), 0, 100000, false, {from: governorAddress});
+        expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(0));
       });
 
       it('default single block', async function() {
         let block = await time.latestBlock();
-        await this.incentive.setTimeWeight(this.pair.address, block, 0, 333, true, {from: governorAddress});
-        expect(await this.incentive.getTimeWeight(this.pair.address)).to.be.bignumber.equal(new BN(333));
+        await this.incentive.setTimeWeight(block, 0, 333, true, {from: governorAddress});
+        expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(333));
       });
 
       it('default multi block', async function() {
         let block = await time.latestBlock();
-        await this.incentive.setTimeWeight(this.pair.address, block.sub(new BN(2)), 0, 333, true, {from: governorAddress});
-        expect(await this.incentive.getTimeWeight(this.pair.address)).to.be.bignumber.equal(new BN(999));
+        await this.incentive.setTimeWeight(block.sub(new BN(2)), 0, 333, true, {from: governorAddress});
+        expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(999));
       });
 
       it('custom growth rate single block', async function() {
         let block = await time.latestBlock();
-        await this.incentive.setTimeWeight(this.pair.address, block, 0, 1000, true, {from: governorAddress});
-        expect(await this.incentive.getTimeWeight(this.pair.address)).to.be.bignumber.equal(new BN(1000));
+        await this.incentive.setTimeWeight(block, 0, 1000, true, {from: governorAddress});
+        expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(1000));
       });
 
       it('custom growth rate multi-block', async function() {
         let block = await time.latestBlock();
-        await this.incentive.setTimeWeight(this.pair.address, block.sub(new BN(4)), 0, 1000, true, {from: governorAddress});
-        expect(await this.incentive.getTimeWeight(this.pair.address)).to.be.bignumber.equal(new BN(5000));
+        await this.incentive.setTimeWeight(block.sub(new BN(4)), 0, 1000, true, {from: governorAddress});
+        expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(5000));
       });
     });
   });
@@ -203,7 +206,7 @@ describe('UniswapIncentive', function () {
       });
 
       it('time weight stays inactive', async function() {
-        var twInfo = await this.incentive._timeWeights(this.pair.address);
+        var twInfo = await this.incentive.timeWeightInfo();
         expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
         expect(twInfo.growthRate).to.be.bignumber.equal(new BN(333));
         expect(twInfo.active).to.be.equal(false);
@@ -233,7 +236,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('activates time weight', async function() {
-          var twInfo = await this.incentive._timeWeights(this.pair.address);
+          var twInfo = await this.incentive.timeWeightInfo();
           let block = await time.latestBlock()
           expect(twInfo.blockNo).to.be.bignumber.equal(block);
           expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
@@ -301,7 +304,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight stays inactive', async function() {
-          var twInfo = await this.incentive._timeWeights(this.pair.address);
+          var twInfo = await this.incentive.timeWeightInfo();
           expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
           expect(twInfo.growthRate).to.be.bignumber.equal(new BN(333));
           expect(twInfo.active).to.be.equal(false);
@@ -331,7 +334,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight stays inactive', async function() {
-          var twInfo = await this.incentive._timeWeights(this.pair.address);
+          var twInfo = await this.incentive.timeWeightInfo();
           expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
           expect(twInfo.growthRate).to.be.bignumber.equal(new BN(333));
           expect(twInfo.active).to.be.equal(false);
@@ -362,7 +365,7 @@ describe('UniswapIncentive', function () {
           });
 
           it('activates time weight', async function() {
-            var twInfo = await this.incentive._timeWeights(this.pair.address);
+            var twInfo = await this.incentive.timeWeightInfo();
             let block = await time.latestBlock()
             expect(twInfo.blockNo).to.be.bignumber.equal(block);
             expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
@@ -386,7 +389,7 @@ describe('UniswapIncentive', function () {
       await this.pair.setReserves(100000, 51000000);
       let block = await time.latestBlock();
       // Set growth rate to 1 per block, starting at next block (the block preceeding the withdrawal)
-      await this.incentive.setTimeWeight(this.pair.address, block.add(new BN(1)), 0, 100000, true, {from: governorAddress});
+      await this.incentive.setTimeWeight(block.add(new BN(1)), 0, 100000, true, {from: governorAddress});
     });
 
     describe('Buy', function() {
@@ -414,7 +417,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight stays active', async function() {
-          var twInfo = await this.incentive._timeWeights(this.pair.address);
+          var twInfo = await this.incentive.timeWeightInfo();
           expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
           expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
           expect(twInfo.active).to.be.equal(true);
@@ -445,7 +448,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight stays active', async function() {
-          var twInfo = await this.incentive._timeWeights(this.pair.address);
+          var twInfo = await this.incentive.timeWeightInfo();
           expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
           expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
           expect(twInfo.active).to.be.equal(true);
@@ -475,7 +478,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('resets time weight', async function() {
-          var twInfo = await this.incentive._timeWeights(this.pair.address);
+          var twInfo = await this.incentive.timeWeightInfo();
           let block = await time.latestBlock()
           expect(twInfo.blockNo).to.be.bignumber.equal(block);
           expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
@@ -507,7 +510,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('resets time weight', async function() {
-          var twInfo = await this.incentive._timeWeights(this.pair.address);
+          var twInfo = await this.incentive.timeWeightInfo();
           let block = await time.latestBlock()
           expect(twInfo.blockNo).to.be.bignumber.equal(block);
           expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
@@ -539,7 +542,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('partially updates time weight', async function() {
-          var twInfo = await this.incentive._timeWeights(this.pair.address);
+          var twInfo = await this.incentive.timeWeightInfo();
           let block = await time.latestBlock()
           expect(twInfo.blockNo).to.be.bignumber.equal(block);
           expect(twInfo.weight).to.be.bignumber.equal(new BN(80043));
@@ -572,7 +575,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('resets time weight', async function() {
-          var twInfo = await this.incentive._timeWeights(this.pair.address);
+          var twInfo = await this.incentive.timeWeightInfo();
           let block = await time.latestBlock()
           expect(twInfo.blockNo).to.be.bignumber.equal(block);
           expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
@@ -605,7 +608,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('partially updates time weight', async function() {
-          var twInfo = await this.incentive._timeWeights(this.pair.address);
+          var twInfo = await this.incentive.timeWeightInfo();
           let block = await time.latestBlock()
           expect(twInfo.blockNo).to.be.bignumber.equal(block);
           expect(twInfo.weight).to.be.bignumber.equal(new BN(160086));
@@ -640,7 +643,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('resets time weight', async function() {
-          var twInfo = await this.incentive._timeWeights(this.pair.address);
+          var twInfo = await this.incentive.timeWeightInfo();
           let block = await time.latestBlock()
           expect(twInfo.blockNo).to.be.bignumber.equal(block);
           expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
@@ -675,7 +678,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight stays active', async function() {
-          var twInfo = await this.incentive._timeWeights(this.pair.address);
+          var twInfo = await this.incentive.timeWeightInfo();
           expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
           expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
           expect(twInfo.active).to.be.equal(true);
@@ -706,7 +709,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight stays active', async function() {
-          var twInfo = await this.incentive._timeWeights(this.pair.address);
+          var twInfo = await this.incentive.timeWeightInfo();
           expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
           expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
           expect(twInfo.active).to.be.equal(true);
@@ -736,7 +739,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight updates', async function() {
-          var twInfo = await this.incentive._timeWeights(this.pair.address);
+          var twInfo = await this.incentive.timeWeightInfo();
           let block = await time.latestBlock()
           expect(twInfo.blockNo).to.be.bignumber.equal(block);
           expect(twInfo.weight).to.be.bignumber.equal(new BN(100000));
@@ -756,35 +759,22 @@ describe('UniswapIncentive', function () {
   describe('Access', function () {
     describe('Growth Rate', function() {
       it('Governor set succeeds', async function() {
-        await this.incentive.setTimeWeightGrowth(this.pair.address, 1000, {from: governorAddress});
-        expect(await this.incentive.getGrowthRate(this.pair.address)).to.be.bignumber.equal(new BN(1000));
-      });
-
-      it('Unincenitivized contract fails', async function() {
-        await expectRevert(this.incentive.setTimeWeightGrowth(userAddress, 1000, {from: governorAddress}), "UniswapIncentive: Account not incentivized");
+        await this.incentive.setTimeWeightGrowth(1000, {from: governorAddress});
+        expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(1000));
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.incentive.setTimeWeightGrowth(this.pair.address, 1000, {from: userAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.incentive.setTimeWeightGrowth(1000, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
     describe('Oracle', function() {
       it('Governor set succeeds', async function() {
-        await this.incentive.setOracleForPair(this.pair.address, this.oracle.address, {from: governorAddress});
-        expect(await this.incentive.getOracle(this.pair.address)).to.be.equal(this.oracle.address);
-        expect(await this.incentive.isIncentivized(this.pair.address)).to.be.equal(true);
-        expect(await this.incentive.getGrowthRate(this.pair.address)).to.be.bignumber.equal(new BN(333));
-      });
-
-      it('Governor unset succeeds', async function() {
-        await this.incentive.setOracleForPair(this.pair.address, this.oracle.address, {from: governorAddress});
-        await this.incentive.setOracleForPair(this.pair.address, "0x0000000000000000000000000000000000000000", {from: governorAddress});
-        expect(await this.incentive.getOracle(this.pair.address)).to.be.equal("0x0000000000000000000000000000000000000000");
-        expect(await this.incentive.isIncentivized(this.pair.address)).to.be.equal(false);
+        await this.incentive.setOracle(this.oracle.address, {from: governorAddress});
+        expect(await this.incentive.oracle()).to.be.equal(this.oracle.address);
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.incentive.setOracleForPair(this.pair.address, this.oracle.address, {from: userAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.incentive.setOracle(this.oracle.address, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
     describe('Kill Switch', function() {

@@ -18,17 +18,20 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         bool active;
     }
 
-	mapping(address => address) private _oracles;
 	mapping(address => bool) private _exempt;
-    mapping(address => TimeWeightInfo) public _timeWeights;
+
+    TimeWeightInfo public timeWeightInfo;
 
 	bool private KILL_SWITCH = false;
     uint256 public constant TIME_WEIGHT_GRANULARITY = 1e5;
     uint256 public constant DEFAULT_INCENTIVE_GROWTH_RATE = 333; // about 1 unit per hour assuming 12s block time
 
-	constructor(address core) 
+	constructor(address core, address _oracle) 
 		UniRef(core)
-	public {}
+	public {
+        _setOracle(_oracle);
+        timeWeightInfo = TimeWeightInfo(block.number, 0, DEFAULT_INCENTIVE_GROWTH_RATE, false);
+    }
 
     function incentivize(
     	address sender, 
@@ -40,12 +43,12 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     		return;
     	}
 
-    	if (isIncentivized(sender)) {
-    		incentivizeBuy(receiver, sender, amountIn);
+    	if (isPair(sender)) {
+    		incentivizeBuy(receiver, amountIn);
     	}
 
-    	if (isIncentivized(receiver)) {
-    		incentivizeSell(sender, receiver, amountIn);
+    	if (isPair(receiver)) {
+    		incentivizeSell(sender, amountIn);
     	}
     }
 
@@ -57,32 +60,25 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     	KILL_SWITCH = enabled;
     }
 
-    function setOracleForPair(address account, address oracle) public onlyGovernor {
-    	_oracles[account] = oracle;
-        _timeWeights[account] = TimeWeightInfo(block.number, 0, DEFAULT_INCENTIVE_GROWTH_RATE, false);
+    function setTimeWeightGrowth(uint growthRate) public onlyGovernor {
+        TimeWeightInfo memory tw = timeWeightInfo;
+        timeWeightInfo = TimeWeightInfo(tw.blockNo, tw.weight, growthRate, tw.active);
     }
 
-    function setTimeWeightGrowth(address account, uint growthRate) public onlyGovernor {
-        require(isIncentivized(account), "UniswapIncentive: Account not incentivized");
-        TimeWeightInfo memory tw = _timeWeights[account];
-        _timeWeights[account] = TimeWeightInfo(tw.blockNo, tw.weight, growthRate, tw.active);
+    function getGrowthRate() public view returns (uint256) {
+        return timeWeightInfo.growthRate;
     }
 
-    function getGrowthRate(address _pair) public view returns (uint256) {
-        return _timeWeights[_pair].growthRate;
-    }
-
-    function getTimeWeight(address _pair) public view returns (uint256) {
-        TimeWeightInfo memory tw = _timeWeights[_pair];
+    function getTimeWeight() public view returns (uint256) {
+        TimeWeightInfo memory tw = timeWeightInfo;
         if (!tw.active) {
             return 0;
         }
         return tw.weight + ((block.number - tw.blockNo) * tw.growthRate);
     }
 
-    function setTimeWeight(address _pair, uint blockNo, uint weight, uint growth, bool active) public onlyGovernor {
-        require(isIncentivized(_pair), "UniswapIncentive: Account not incentivized");
-        _timeWeights[_pair] = TimeWeightInfo(blockNo, weight, growth, active);
+    function setTimeWeight(uint blockNo, uint weight, uint growth, bool active) public onlyGovernor {
+        timeWeightInfo = TimeWeightInfo(blockNo, weight, growth, active);
     }
 
     function isExemptAddress(address account) public view returns (bool) {
@@ -93,20 +89,12 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     	return KILL_SWITCH;
     }
 
-    function getOracle(address account) public view returns (address) {
-    	return _oracles[account];
-    }
-
-    function isIncentivized(address account) public view returns (bool) {
-    	return getOracle(account) != address(0x0);
-    }
-
-    function isIncentiveParity(address _pair) public override returns (bool) {
-        uint weight = getTimeWeight(_pair);
+    function isIncentiveParity() public override returns (bool) {
+        uint weight = getTimeWeight();
         require(weight != 0, "UniswapIncentive: Incentive zero or not active");
 
-        Decimal.D256 memory peg = getPeg(_pair);
-        (Decimal.D256 memory price, uint reserveFei, uint reserveOther) = getUniswapPrice(_pair);
+        Decimal.D256 memory peg = peg();
+        (Decimal.D256 memory price, uint reserveFei, uint reserveOther) = getUniswapPrice();
         Decimal.D256 memory deviation = getPriceDeviation(price, peg);
         require(!deviation.equals(Decimal.zero()), "UniswapIncentive: Price already at or above peg");
 
@@ -115,12 +103,12 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return incentive.equals(penalty);
     }
 
-    function incentivizeBuy(address target, address _pair, uint256 amountIn) internal {
+    function incentivizeBuy(address target, uint256 amountIn) internal {
     	if (isExemptAddress(target)) {
     		return;
     	}
-    	Decimal.D256 memory peg = getPeg(_pair);
-    	(Decimal.D256 memory price, uint reserveFei, uint reserveOther) = getUniswapPrice(_pair);
+    	Decimal.D256 memory peg = peg();
+    	(Decimal.D256 memory price, uint reserveFei, uint reserveOther) = getUniswapPrice();
 
     	Decimal.D256 memory initialDeviation = getPriceDeviation(price, peg);
     	if (initialDeviation.equals(Decimal.zero())) {
@@ -139,26 +127,25 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
             incentivizedAmount = getAmountToPeg(reserveFei, reserveOther, peg);
         }
 
-        uint256 weight = getTimeWeight(_pair);
+        uint256 weight = getTimeWeight();
         uint256 incentive = calculateBuyIncentive(initialDeviation, incentivizedAmount, weight);
-        updateTimeWeight(initialDeviation, finalDeviation, _pair, weight);
+        updateTimeWeight(initialDeviation, finalDeviation, weight);
     	fei().mint(target, incentive);
     }
 
     function updateTimeWeight (
         Decimal.D256 memory initialDeviation, 
         Decimal.D256 memory finalDeviation, 
-        address _pair,
         uint256 currentWeight
     ) internal {
         // Reset after completion
         if (finalDeviation.equals(Decimal.zero())) {
-            _timeWeights[_pair] = TimeWeightInfo(block.number, 0, getGrowthRate(_pair), false);
+            timeWeightInfo = TimeWeightInfo(block.number, 0, getGrowthRate(), false);
             return;
         } 
         // Init
         if (initialDeviation.equals(Decimal.zero())) {
-            _timeWeights[_pair] = TimeWeightInfo(block.number, 0, getGrowthRate(_pair), true);
+            timeWeightInfo = TimeWeightInfo(block.number, 0, getGrowthRate(), true);
             return;
         }
 
@@ -168,16 +155,16 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
             Decimal.D256 memory remainingRatio = finalDeviation.div(initialDeviation);
             updatedWeight = remainingRatio.mul(currentWeight).asUint256();
         }
-        _timeWeights[_pair] = TimeWeightInfo(block.number, updatedWeight, getGrowthRate(_pair), true);
+        timeWeightInfo = TimeWeightInfo(block.number, updatedWeight, getGrowthRate(), true);
     }
 
-    function incentivizeSell(address target, address _pair, uint256 amount) internal {
+    function incentivizeSell(address target, uint256 amount) internal {
     	if (isExemptAddress(target)) {
     		return;
     	}
 
-    	Decimal.D256 memory peg = getPeg(_pair);
-    	(Decimal.D256 memory price, uint reserveFei, uint reserveOther) = getUniswapPrice(_pair);
+    	Decimal.D256 memory peg = peg();
+    	(Decimal.D256 memory price, uint reserveFei, uint reserveOther) = getUniswapPrice();
 
     	Decimal.D256 memory finalPrice = getFinalPrice(int256(amount), reserveFei, reserveOther);
     	Decimal.D256 memory finalDeviation = getPriceDeviation(finalPrice, peg);
@@ -197,17 +184,9 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
             }
         }
     	uint256 penalty = calculateSellPenalty(finalDeviation, incentivizedAmount);
-        uint256 weight = getTimeWeight(_pair);
-        updateTimeWeight(initialDeviation, finalDeviation, _pair, weight);
+        uint256 weight = getTimeWeight();
+        updateTimeWeight(initialDeviation, finalDeviation, weight);
     	fei().burnFrom(target, penalty);
-    }
-
-    function getPeg(address _pair) internal returns (Decimal.D256 memory) {
-    	IOracle oracle = IOracle(getOracle(_pair));
-    	require(address(oracle) != address(0), "UniswapIncentive: no oracle for pair");
-    	(Decimal.D256 memory peg, bool valid) = oracle.read();
-    	require(valid, "UniswapIncentive: oracle error");
-    	return peg;
     }
 
     function calculateBuyIncentive(

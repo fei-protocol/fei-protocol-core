@@ -12,7 +12,7 @@ contract MockUniswapIncentive is MockIncentive, IUniswapIncentive {
 
     bool isParity = false;
 
-    function isIncentiveParity(address _pair) external override returns (bool) {
+    function isIncentiveParity() external override returns (bool) {
         return isParity;
     }
 

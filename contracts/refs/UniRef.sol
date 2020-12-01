@@ -59,19 +59,15 @@ contract UniRef is OracleRef {
     }
 
 	function getReserves() public requirePair view returns (uint feiReserves, uint tokenReserves) {
-		return getPairReserves(pair);
+        address token0 = pair.token0();
+        (uint reserve0, uint reserve1,) = pair.getReserves();
+        (feiReserves, tokenReserves) = address(fei()) == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
 	}
 
     function isBelowPeg(Decimal.D256 memory peg) public requirePair view returns (bool) {
-        (Decimal.D256 memory price,,) = getUniswapPrice(address(pair));
+        (Decimal.D256 memory price,,) = getUniswapPrice();
         return peg.lessThan(price);
     }
-
-	function getPairReserves(IUniswapV2Pair _pair) public view returns (uint feiReserves, uint tokenReserves) {
-		address token0 = _pair.token0();
-        (uint reserve0, uint reserve1,) = _pair.getReserves();
-        (feiReserves, tokenReserves) = address(fei()) == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
-	}
 
     function approveToken(address _token, uint256 amount) internal {
     	IERC20(_token).approve(address(router), amount);
@@ -83,6 +79,10 @@ contract UniRef is OracleRef {
 
     function hasPair() internal view returns (bool) {
     	return address(pair) != address(0);
+    }
+
+    function isPair(address account) public view returns(bool) {
+        return address(pair) == account;
     }
 
     function getAmountToPeg(
@@ -98,13 +98,13 @@ contract UniRef is OracleRef {
         return reserveTarget - root;
     }
 
-    function getUniswapPrice(address _pair) internal view returns(
-    	Decimal.D256 memory, 
-    	uint reserveFei, 
-    	uint reserveOther
+    function getUniswapPrice() internal view returns(
+        Decimal.D256 memory, 
+        uint reserveFei, 
+        uint reserveOther
     ) {
-    	(reserveFei, reserveOther) = getPairReserves(IUniswapV2Pair(_pair));
-    	return (Decimal.ratio(reserveFei, reserveOther), reserveFei, reserveOther);
+        (reserveFei, reserveOther) = getReserves();
+        return (Decimal.ratio(reserveFei, reserveOther), reserveFei, reserveOther);
     }
 
     function getFinalPrice(

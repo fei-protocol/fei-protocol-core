@@ -29,7 +29,7 @@ contract EthUniswapPCVController is UniRef {
 	}
 
 	function reweight() public {
-		require(incentiveContract.isIncentiveParity(address(pair)), "EthUniswapPCVController: Not at incentive parity");
+		require(incentiveContract.isIncentiveParity(), "EthUniswapPCVController: Not at incentive parity");
 		_reweight();
 	}
 
