@@ -3,12 +3,11 @@ pragma experimental ABIEncoderV2;
 
 import "./IBondingCurve.sol";
 import "./AllocationRule.sol";
-import "../oracle/IOracle.sol";
-import "../refs/CoreRef.sol";
+import "../refs/OracleRef.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 
-abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
+abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
     using Decimal for Decimal.D256;
     using Babylonian for uint256;
 
@@ -23,18 +22,13 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 		address core, 
 		address[] memory allocations, 
 		uint16[] memory ratios, 
-		address oracle
+		address _oracle
 	)
-		CoreRef(core)
+		OracleRef(core)
 		AllocationRule(allocations, ratios)
 	public {
 		_setScale(_scale);
-		_setOracle(oracle);
-	}
-
-	// TODO oracle ref?
-	function oracle() public view returns(IOracle) {
-		return ORACLE;
+		_setOracle(_oracle);
 	}
 
 	function atScale() public override view returns (bool) {
@@ -43,10 +37,6 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 
 	function setScale(uint256 _scale) public override onlyGovernor {
 		_setScale(_scale);
-	}
-
-	function setOracle(address oracle) public onlyGovernor {
-		_setOracle(oracle);	
 	}
 
 	function setBuffer(uint256 _buffer) public onlyGovernor {
@@ -77,7 +67,7 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 	function getBondingCurveAmountOut(uint256 amountIn) public view virtual returns(uint256);
 
 	function getAmountOut(uint256 amountIn) internal returns (uint256 amountOut) {
-		(Decimal.D256 memory price, bool valid) = oracle().capture();
+		Decimal.D256 memory price = capture();
 		uint256 adjustedAmount = price.mul(amountIn).asUint256();
 		if (atScale()) {
 			return getBufferAdjustedAmount(adjustedAmount);
@@ -99,10 +89,6 @@ abstract contract BondingCurve is IBondingCurve, CoreRef, AllocationRule {
 
 	function _setScale(uint256 _scale) internal {
 		SCALE = _scale;
-	}
-
-	function _setOracle(address oracle) internal {
-		ORACLE = IOracle(oracle);
 	}
 
 	function getBufferAdjustedAmount(uint256 amountIn) internal view returns(uint256) {

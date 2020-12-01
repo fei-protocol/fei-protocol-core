@@ -57,7 +57,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     	KILL_SWITCH = enabled;
     }
 
-    function setOracle(address account, address oracle) public onlyGovernor {
+    function setOracleForPair(address account, address oracle) public onlyGovernor {
     	_oracles[account] = oracle;
         _timeWeights[account] = TimeWeightInfo(block.number, 0, DEFAULT_INCENTIVE_GROWTH_RATE, false);
     }
@@ -205,7 +205,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     function getPeg(address _pair) internal returns (Decimal.D256 memory) {
     	IOracle oracle = IOracle(getOracle(_pair));
     	require(address(oracle) != address(0), "UniswapIncentive: no oracle for pair");
-    	(Decimal.D256 memory peg, bool valid) = oracle.capture();
+    	(Decimal.D256 memory peg, bool valid) = oracle.read();
     	require(valid, "UniswapIncentive: oracle error");
     	return peg;
     }

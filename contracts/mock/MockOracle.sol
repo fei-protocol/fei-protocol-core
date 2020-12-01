@@ -14,9 +14,11 @@ contract MockOracle is IOracle {
         _usdPerEth = usdPerEth;
     }
 
-    function setup() public override {}
+    function update() public override returns (bool) {
+        return true;
+    }
 
-    function capture() public override returns (Decimal.D256 memory, bool) {
+    function read() public view override returns (Decimal.D256 memory, bool) {
         Decimal.D256 memory price = Decimal.from(_usdPerEth); 
         return (price, true);
     }

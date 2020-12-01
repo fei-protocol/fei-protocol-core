@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./CoreRef.sol";
+import "./OracleRef.sol";
 import "../external/Decimal.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
@@ -10,7 +10,7 @@ import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract UniRef is CoreRef {
+contract UniRef is OracleRef {
 	using Decimal for Decimal.D256;
 	using Babylonian for uint256;
 
@@ -19,7 +19,7 @@ contract UniRef is CoreRef {
 	IUniswapV2Pair public pair;
 
 	constructor(address core) 
-		CoreRef(core)
+		OracleRef(core)
 	public {}
 
 	modifier requirePair() {

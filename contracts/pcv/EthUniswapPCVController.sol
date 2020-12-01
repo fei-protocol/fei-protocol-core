@@ -13,16 +13,15 @@ contract EthUniswapPCVController is UniRef {
 	using Decimal for Decimal.D256;
 
 	IUniswapPCVDeposit public pcvDeposit;
-	IOracle public oracle;
 	IUniswapIncentive public incentiveContract;
 
 	constructor (address core, address _pcvDeposit, address _oracle, address _incentiveContract) 
 		UniRef(core)
 	public {
 		pcvDeposit = IUniswapPCVDeposit(_pcvDeposit);
-		oracle = IOracle(_oracle);
 		incentiveContract = IUniswapIncentive(_incentiveContract);
 		setupPair(address(pcvDeposit.pair()));
+		_setOracle(_oracle);
 	}
 
 	function forceReweight() public onlyGovernor {
@@ -38,10 +37,6 @@ contract EthUniswapPCVController is UniRef {
 		pcvDeposit = IUniswapPCVDeposit(_pcvDeposit);
 	}
 
-	function setOracle(address _oracle) public onlyGovernor {
-		oracle = IOracle(_oracle);
-	}
-
 	function _reweight() internal {
 		withdrawAll();
 		returnToPeg();
@@ -55,10 +50,9 @@ contract EthUniswapPCVController is UniRef {
 		if (feiReserves == 0 || ethReserves == 0) {
 			return;
 		}
-		(Decimal.D256 memory peg, bool valid) = oracle.capture();
-    	require(valid, "EthUniswapPCVController: oracle error");
+		Decimal.D256 memory peg = capture();
     	require(isBelowPeg(peg), "EthUniswapPCVController: already at or above peg");
-    	Decimal.D256 memory ethPeg = Decimal.one().div(peg);
+    	Decimal.D256 memory ethPeg = invert(peg);
     	uint amountEth = getAmountToPeg(ethReserves, feiReserves, ethPeg); // need to flip peg to solve for ETH
     	swapEth(amountEth, ethReserves, feiReserves);
 	}

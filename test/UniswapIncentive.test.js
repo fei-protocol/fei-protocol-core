@@ -27,7 +27,7 @@ describe('UniswapIncentive', function () {
     await this.core.grantMinter(minterAddress, {from: governorAddress});
     await this.fei.setIncentiveContract(this.pair.address, this.incentive.address, {from: governorAddress});
     await this.fei.mint(userAddress, 50000000, {from: minterAddress});
-    await this.incentive.setOracle(this.pair.address, this.oracle.address, {from: governorAddress});
+    await this.incentive.setOracleForPair(this.pair.address, this.oracle.address, {from: governorAddress});
 
     this.userBalance = new BN(50000000);
     await this.fei.mint(this.pair.address, 50000000, {from: minterAddress});
@@ -770,21 +770,21 @@ describe('UniswapIncentive', function () {
     });
     describe('Oracle', function() {
       it('Governor set succeeds', async function() {
-        await this.incentive.setOracle(this.pair.address, this.oracle.address, {from: governorAddress});
+        await this.incentive.setOracleForPair(this.pair.address, this.oracle.address, {from: governorAddress});
         expect(await this.incentive.getOracle(this.pair.address)).to.be.equal(this.oracle.address);
         expect(await this.incentive.isIncentivized(this.pair.address)).to.be.equal(true);
         expect(await this.incentive.getGrowthRate(this.pair.address)).to.be.bignumber.equal(new BN(333));
       });
 
       it('Governor unset succeeds', async function() {
-        await this.incentive.setOracle(this.pair.address, this.oracle.address, {from: governorAddress});
-        await this.incentive.setOracle(this.pair.address, "0x0000000000000000000000000000000000000000", {from: governorAddress});
+        await this.incentive.setOracleForPair(this.pair.address, this.oracle.address, {from: governorAddress});
+        await this.incentive.setOracleForPair(this.pair.address, "0x0000000000000000000000000000000000000000", {from: governorAddress});
         expect(await this.incentive.getOracle(this.pair.address)).to.be.equal("0x0000000000000000000000000000000000000000");
         expect(await this.incentive.isIncentivized(this.pair.address)).to.be.equal(false);
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.incentive.setOracle(this.pair.address, this.oracle.address, {from: userAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.incentive.setOracleForPair(this.pair.address, this.oracle.address, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
     describe('Kill Switch', function() {
