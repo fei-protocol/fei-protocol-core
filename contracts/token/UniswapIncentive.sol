@@ -93,9 +93,8 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         uint weight = getTimeWeight();
         require(weight != 0, "UniswapIncentive: Incentive zero or not active");
 
-        Decimal.D256 memory peg = peg();
-        (Decimal.D256 memory price, uint reserveFei, uint reserveOther) = getUniswapPrice();
-        Decimal.D256 memory deviation = getPriceDeviation(price, peg);
+        (Decimal.D256 memory price,,) = getUniswapPrice();
+        Decimal.D256 memory deviation = calculateDeviation(price, peg());
         require(!deviation.equals(Decimal.zero()), "UniswapIncentive: Price already at or above peg");
 
         Decimal.D256 memory incentive = calculateBuyIncentiveMultiplier(deviation, weight);
@@ -107,24 +106,15 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     	if (isExemptAddress(target)) {
     		return;
     	}
-    	Decimal.D256 memory peg = peg();
-    	(Decimal.D256 memory price, uint reserveFei, uint reserveOther) = getUniswapPrice();
 
-    	Decimal.D256 memory initialDeviation = getPriceDeviation(price, peg);
+        (Decimal.D256 memory initialDeviation, Decimal.D256 memory finalDeviation) = getPriceDeviations(-1 * int256(amountIn));
     	if (initialDeviation.equals(Decimal.zero())) {
     		return;
     	}
 
-    	Decimal.D256 memory finalPrice = getFinalPrice(
-    		-1 * int256(amountIn), 
-    		reserveFei, 
-    		reserveOther
-    	);
-    	Decimal.D256 memory finalDeviation = getPriceDeviation(finalPrice, peg);
-
     	uint256 incentivizedAmount = amountIn;
         if (finalDeviation.equals(Decimal.zero())) {
-            incentivizedAmount = getAmountToPeg(reserveFei, reserveOther, peg);
+            incentivizedAmount = getAmountToPegFei();
         }
 
         uint256 weight = getTimeWeight();
@@ -133,50 +123,20 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     	fei().mint(target, incentive);
     }
 
-    function updateTimeWeight (
-        Decimal.D256 memory initialDeviation, 
-        Decimal.D256 memory finalDeviation, 
-        uint256 currentWeight
-    ) internal {
-        // Reset after completion
-        if (finalDeviation.equals(Decimal.zero())) {
-            timeWeightInfo = TimeWeightInfo(block.number, 0, getGrowthRate(), false);
-            return;
-        } 
-        // Init
-        if (initialDeviation.equals(Decimal.zero())) {
-            timeWeightInfo = TimeWeightInfo(block.number, 0, getGrowthRate(), true);
-            return;
-        }
-
-        uint256 updatedWeight = currentWeight;
-        // Partial buy
-        if (initialDeviation.greaterThan(finalDeviation)) {
-            Decimal.D256 memory remainingRatio = finalDeviation.div(initialDeviation);
-            updatedWeight = remainingRatio.mul(currentWeight).asUint256();
-        }
-        timeWeightInfo = TimeWeightInfo(block.number, updatedWeight, getGrowthRate(), true);
-    }
-
     function incentivizeSell(address target, uint256 amount) internal {
     	if (isExemptAddress(target)) {
     		return;
     	}
 
-    	Decimal.D256 memory peg = peg();
-    	(Decimal.D256 memory price, uint reserveFei, uint reserveOther) = getUniswapPrice();
-
-    	Decimal.D256 memory finalPrice = getFinalPrice(int256(amount), reserveFei, reserveOther);
-    	Decimal.D256 memory finalDeviation = getPriceDeviation(finalPrice, peg);
+        (Decimal.D256 memory initialDeviation, Decimal.D256 memory finalDeviation) = getPriceDeviations(int256(amount));
 
     	if (finalDeviation.equals(Decimal.zero())) {
     		return;
     	}
 
-    	Decimal.D256 memory initialDeviation = getPriceDeviation(price, peg);
         uint256 incentivizedAmount = amount;
         if (initialDeviation.equals(Decimal.zero())) {
-            uint256 amountToPeg = getAmountToPeg(reserveFei, reserveOther, peg);
+            uint256 amountToPeg = getAmountToPegFei();
             if (amountToPeg < amount) {
                 incentivizedAmount = amount - amountToPeg;
             } else {
@@ -222,16 +182,28 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     	return calculateSellPenaltyMultiplier(finalDeviation).mul(amount).asUint256(); // m^2 * x * 100
     }
 
-    function getPriceDeviation(
-        Decimal.D256 memory price, 
-        Decimal.D256 memory peg
-    ) internal pure returns (Decimal.D256 memory) {
-        // If price <= peg, then FEI is more expensive and above peg
-        // In this case we can just return zero for deviation
-        if (price.lessThanOrEqualTo(peg)) {
-            return Decimal.zero();
+    function updateTimeWeight (
+        Decimal.D256 memory initialDeviation, 
+        Decimal.D256 memory finalDeviation, 
+        uint256 currentWeight
+    ) internal {
+        // Reset after completion
+        if (finalDeviation.equals(Decimal.zero())) {
+            timeWeightInfo = TimeWeightInfo(block.number, 0, getGrowthRate(), false);
+            return;
+        } 
+        // Init
+        if (initialDeviation.equals(Decimal.zero())) {
+            timeWeightInfo = TimeWeightInfo(block.number, 0, getGrowthRate(), true);
+            return;
         }
-        Decimal.D256 memory delta = price.sub(peg, "UniswapIncentive: price exceeds peg"); // Should never error
-        return delta.div(peg);
+
+        uint256 updatedWeight = currentWeight;
+        // Partial buy
+        if (initialDeviation.greaterThan(finalDeviation)) {
+            Decimal.D256 memory remainingRatio = finalDeviation.div(initialDeviation);
+            updatedWeight = remainingRatio.mul(currentWeight).asUint256();
+        }
+        timeWeightInfo = TimeWeightInfo(block.number, updatedWeight, getGrowthRate(), true);
     }
 }

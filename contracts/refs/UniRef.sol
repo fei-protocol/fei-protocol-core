@@ -98,6 +98,16 @@ contract UniRef is OracleRef {
         return reserveTarget - root;
     }
 
+    function getAmountToPegFei() internal view returns (uint) {
+        (uint feiReserves, uint tokenReserves) = getReserves();
+        return getAmountToPeg(feiReserves, tokenReserves, peg());
+    }
+
+    function getAmountToPegOther() internal view returns (uint) {
+        (uint feiReserves, uint tokenReserves) = getReserves();
+        return getAmountToPeg(tokenReserves, feiReserves, invert(peg()));
+    }
+
     function getUniswapPrice() internal view returns(
         Decimal.D256 memory, 
         uint reserveFei, 
@@ -116,5 +126,29 @@ contract UniRef is OracleRef {
     	uint256 adjustedReserveFei = uint256(int256(reserveFei) + amountFei);
     	uint256 adjustedReserveOther = k / adjustedReserveFei;
     	return Decimal.ratio(adjustedReserveFei, adjustedReserveOther); // alt: adjustedReserveFei^2 / k
+    }
+
+    function getPriceDeviations(int256 amountIn) internal view returns (
+        Decimal.D256 memory initialDeviation, 
+        Decimal.D256 memory finalDeviation
+    ) {
+        (Decimal.D256 memory price, uint reserveFei, uint reserveOther) = getUniswapPrice();
+        initialDeviation = calculateDeviation(price, peg());
+        Decimal.D256 memory finalPrice = getFinalPrice(amountIn, reserveFei, reserveOther);
+        finalDeviation = calculateDeviation(finalPrice, peg());
+        return (initialDeviation, finalDeviation);
+    }
+
+    function calculateDeviation(
+        Decimal.D256 memory price, 
+        Decimal.D256 memory peg
+    ) internal view returns (Decimal.D256 memory) {
+        // If price <= peg, then FEI is more expensive and above peg
+        // In this case we can just return zero for deviation
+        if (price.lessThanOrEqualTo(peg)) {
+            return Decimal.zero();
+        }
+        Decimal.D256 memory delta = price.sub(peg, "UniswapIncentive: price exceeds peg"); // Should never error
+        return delta.div(peg);
     }
 }

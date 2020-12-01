@@ -52,8 +52,7 @@ contract EthUniswapPCVController is UniRef {
 		}
 		Decimal.D256 memory peg = capture();
     	require(isBelowPeg(peg), "EthUniswapPCVController: already at or above peg");
-    	Decimal.D256 memory ethPeg = invert(peg);
-    	uint amountEth = getAmountToPeg(ethReserves, feiReserves, ethPeg); // need to flip peg to solve for ETH
+    	uint amountEth = getAmountToPegOther();
     	swapEth(amountEth, ethReserves, feiReserves);
 	}
 
