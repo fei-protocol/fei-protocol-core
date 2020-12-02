@@ -77,7 +77,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     	return _exempt[account];
     }
 
-    function isIncentiveParity() public override returns (bool) {
+    function isIncentiveParity() public view override returns (bool) {
         uint weight = getTimeWeight();
         require(weight != 0, "UniswapIncentive: Incentive zero or not active");
 
