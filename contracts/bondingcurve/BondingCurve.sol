@@ -11,11 +11,10 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
     using Decimal for Decimal.D256;
     using Babylonian for uint256;
 
-	uint256 private SCALE;
-	uint256 private _totalPurchased = 0; // FEI_b for this curve
-	uint256 private BUFFER = 100;
-	uint256 private BUFFER_GRANULARITY = 10_000;
-	IOracle private ORACLE;
+	uint256 public override scale;
+	uint256 public totalPurchased = 0; // FEI_b for this curve
+	uint256 public buffer = 100;
+	uint256 public constant BUFFER_GRANULARITY = 10_000;
 
 	constructor(
 		uint256 _scale, 
@@ -32,7 +31,7 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
 	}
 
 	function atScale() public override view returns (bool) {
-		return _totalPurchased >= SCALE;
+		return totalPurchased >= scale;
 	}
 
 	function setScale(uint256 _scale) public override onlyGovernor {
@@ -40,40 +39,32 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
 	}
 
 	function setBuffer(uint256 _buffer) public onlyGovernor {
-		require(_buffer <= BUFFER_GRANULARITY);
-		BUFFER = _buffer;
+		require(_buffer < BUFFER_GRANULARITY, "BondingCurve: Buffer exceeds or matches granularity");
+		buffer = _buffer;
 	}
 
 	function setAllocation(address[] memory allocations, uint16[] memory ratios) public onlyGovernor {
 		_setAllocation(allocations, ratios);
 	}
 
-	function totalPurchased() public view returns (uint256) {
-		return _totalPurchased;
+	function getCurrentPrice() public view override returns(Decimal.D256 memory) {
+		if (atScale()) {
+			return invert(peg()).div(getBuffer());
+		}
+		return peg().mul(getBondingCurvePriceMultiplier());
 	}
 
-	function scale() public override view returns (uint256) {
-		return SCALE;
-	}
-
-	function buffer() public view returns (uint256) {
-		return BUFFER;
-	}
-
-	function bufferGranularity() public view returns (uint256) {
-		return BUFFER_GRANULARITY;
-	}
-
-	function getBondingCurveAmountOut(uint256 amountIn) public view virtual returns(uint256);
-
-	function getAmountOut(uint256 amountIn) internal returns (uint256 amountOut) {
-		Decimal.D256 memory price = capture();
-		uint256 adjustedAmount = price.mul(amountIn).asUint256();
+	function getAmountOut(uint256 amountIn) public view override returns (uint256 amountOut) {
+		uint256 adjustedAmount = peg().mul(amountIn).asUint256();
 		if (atScale()) {
 			return getBufferAdjustedAmount(adjustedAmount);
 		}
-		return getBondingCurveAmountOut(adjustedAmount); // TODO? edge case transitioning to scale
+		return getBondingCurveAmountOut(adjustedAmount);
 	}
+
+	function getBondingCurvePriceMultiplier() internal view virtual returns(uint256);
+
+	function getBondingCurveAmountOut(uint256 adjustedAmountIn) internal view virtual returns(uint256);
 
 	function _purchase(uint256 amountIn, address to) internal returns (uint256 amountOut) {
 	 	amountOut = getAmountOut(amountIn);
@@ -84,14 +75,18 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
 	}
 
 	function incrementTotalPurchased(uint256 amount) internal {
-		_totalPurchased += amount;
+		totalPurchased += amount;
 	}
 
 	function _setScale(uint256 _scale) internal {
-		SCALE = _scale;
+		scale = _scale;
 	}
 
+	function getBuffer() internal view returns(Decimal.D256 memory) {
+		return Decimal.ratio(BUFFER_GRANULARITY - buffer, BUFFER_GRANULARITY);
+	} 
+
 	function getBufferAdjustedAmount(uint256 amountIn) internal view returns(uint256) {
-		return amountIn * (BUFFER_GRANULARITY - BUFFER) / BUFFER_GRANULARITY;
+		return getBuffer().mul(amountIn).asUint256();
 	}
 }

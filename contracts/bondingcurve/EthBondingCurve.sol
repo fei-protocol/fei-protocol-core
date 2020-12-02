@@ -23,9 +23,13 @@ contract EthBondingCurve is BondingCurve {
 
 	// Represents the integral solved for upper bound of P(x) = X/S * O
 	// TODO update to P(x) = sqrt(X/S) * O or other appropriate sublinear function
-	function getBondingCurveAmountOut(uint256 amountIn) public view override returns (uint256 amountOut) {
-		uint256 radicand = (2 * amountIn * scale()) + (totalPurchased() * totalPurchased());
-		return radicand.sqrt() - totalPurchased();
+	function getBondingCurveAmountOut(uint256 adjustedAmountIn) internal view override returns (uint256 amountOut) {
+		uint256 radicand = (2 * adjustedAmountIn * scale) + (totalPurchased * totalPurchased);
+		return radicand.sqrt() - totalPurchased;
+	}
+
+	function getBondingCurvePriceMultiplier() internal view override returns(uint256) {
+		return totalPurchased / scale; // TODO add sqrt
 	}
 
 	function allocateSingle(uint256 amount, address pcvDeposit) internal override {

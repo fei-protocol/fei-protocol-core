@@ -1,4 +1,7 @@
 pragma solidity ^0.6.0;
+pragma experimental ABIEncoderV2;
+
+import "../external/Decimal.sol";
 
 interface IBondingCurve {
 
@@ -9,6 +12,10 @@ interface IBondingCurve {
 	function scale() external view returns (uint256 _scale);
 
 	function atScale() external view returns (bool);
+
+	function getCurrentPrice() external view returns(Decimal.D256 memory);
+
+	function getAmountOut(uint256 amountIn) external view returns (uint256 amountOut); 
 
 }
 
