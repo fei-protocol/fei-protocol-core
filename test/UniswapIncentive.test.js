@@ -393,9 +393,9 @@ describe('UniswapIncentive', function () {
     });
 
     describe('Buy', function() {
-      describe('kill switch engaged', function() {
+      describe('not a minter', function() {
         beforeEach(async function() {
-          await this.incentive.setKillSwitch(true, {from: governorAddress});
+          await this.core.revokeMinter(this.incentive.address, {from: governorAddress});
           this.transferAmount = new BN(502500);
           this.expectedMint = new BN(0);
           await this.pair.withdrawFei(userAddress, 502500);
@@ -654,9 +654,9 @@ describe('UniswapIncentive', function () {
     });
 
     describe('Sell', function() {
-      describe('kill switch engaged', function() {
+      describe('not a burner', function() {
         beforeEach(async function() {
-          await this.incentive.setKillSwitch(true, {from: governorAddress});
+          await this.core.revokeBurner(this.incentive.address, {from: governorAddress});
           this.expectedBurn = new BN(0);
           this.transferAmount = new BN(1000000);
           await this.fei.transfer(this.pair.address, 1000000, {from: userAddress});
@@ -773,6 +773,7 @@ describe('UniswapIncentive', function () {
         await expectRevert(this.incentive.setTimeWeightGrowth(1000, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
+
     describe('Oracle', function() {
       it('Governor set succeeds', async function() {
         await this.incentive.setOracle(this.oracle.address, {from: governorAddress});
@@ -783,16 +784,7 @@ describe('UniswapIncentive', function () {
         await expectRevert(this.incentive.setOracle(this.oracle.address, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
-    describe('Kill Switch', function() {
-      it('Governor set succeeds', async function() {
-        await this.incentive.setKillSwitch(true, {from: governorAddress});
-        expect(await this.incentive.isKillSwitchEnabled()).to.be.equal(true);
-      });
 
-      it('Non-governor set reverts', async function() {
-        await expectRevert(this.incentive.setKillSwitch(true, {from: userAddress}), "CoreRef: Caller is not a governor");
-      });
-    });
     describe('Exempt Addresses', function() {
       it('Governor set succeeds', async function() {
         await this.incentive.setExemptAddress(userAddress, true, {from: governorAddress});

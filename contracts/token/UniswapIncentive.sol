@@ -22,7 +22,6 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
 
     TimeWeightInfo public timeWeightInfo;
 
-	bool private KILL_SWITCH = false;
     uint256 public constant TIME_WEIGHT_GRANULARITY = 1e5;
     uint256 public constant DEFAULT_INCENTIVE_GROWTH_RATE = 333; // about 1 unit per hour assuming 12s block time
 
@@ -39,9 +38,6 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     	address spender, 
     	uint256 amountIn
     ) public override onlyFei {
-    	if (KILL_SWITCH) {
-    		return;
-    	}
 
     	if (isPair(sender)) {
     		incentivizeBuy(receiver, amountIn);
@@ -54,10 +50,6 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
 
     function setExemptAddress(address account, bool isExempt) public onlyGovernor {
     	_exempt[account] = isExempt;
-    }
-
-    function setKillSwitch(bool enabled) public onlyGovernor {
-    	KILL_SWITCH = enabled;
     }
 
     function setTimeWeightGrowth(uint growthRate) public onlyGovernor {
@@ -85,10 +77,6 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     	return _exempt[account];
     }
 
-    function isKillSwitchEnabled() public view returns (bool) {
-    	return KILL_SWITCH;
-    }
-
     function isIncentiveParity() public override returns (bool) {
         uint weight = getTimeWeight();
         require(weight != 0, "UniswapIncentive: Incentive zero or not active");
@@ -102,7 +90,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return incentive.equals(penalty);
     }
 
-    function incentivizeBuy(address target, uint256 amountIn) internal {
+    function incentivizeBuy(address target, uint256 amountIn) internal ifMinterSelf {
     	if (isExemptAddress(target)) {
     		return;
     	}
@@ -123,7 +111,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     	fei().mint(target, incentive);
     }
 
-    function incentivizeSell(address target, uint256 amount) internal {
+    function incentivizeSell(address target, uint256 amount) internal ifBurnerSelf {
     	if (isExemptAddress(target)) {
     		return;
     	}

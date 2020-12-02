@@ -24,6 +24,12 @@ contract CoreRef {
 		}
 	}
 
+	modifier ifBurnerSelf() {
+		if (CORE.isBurner(address(this))) {
+			_;
+		}
+	}
+
 	modifier onlyMinter() {
 		require(CORE.isMinter(msg.sender), "CoreRef: Caller is not a minter");
 		_;
