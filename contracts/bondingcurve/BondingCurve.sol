@@ -63,6 +63,7 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
 	}
 
 	function _purchase(uint256 amountIn, address to) internal returns (uint256 amountOut) {
+	 	updateOracle();
 	 	amountOut = getAmountOut(amountIn);
 	 	incrementTotalPurchased(amountOut);
 		fei().mint(to, amountOut);

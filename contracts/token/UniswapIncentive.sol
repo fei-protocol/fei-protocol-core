@@ -38,7 +38,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     	address spender, 
     	uint256 amountIn
     ) public override onlyFei {
-
+        updateOracle();
     	if (isPair(sender)) {
     		incentivizeBuy(receiver, amountIn);
     	}
