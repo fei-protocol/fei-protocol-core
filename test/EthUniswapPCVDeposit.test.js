@@ -10,6 +10,7 @@ const Fei = contract.fromArtifact('Fei');
 const MockERC20 = contract.fromArtifact('MockERC20');
 const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
 const MockRouter = contract.fromArtifact('MockRouter');
+const MockOracle = contract.fromArtifact('MockOracle');
 
 describe('EthUniswapPCVDeposit', function () {
   const [ userAddress, governorAddress, minterAddress, beneficiaryAddress ] = accounts;
@@ -20,8 +21,10 @@ describe('EthUniswapPCVDeposit', function () {
     this.fei = await Fei.at(await this.core.fei());
     this.token = await MockERC20.new();
     this.pair = await MockPair.new(this.token.address, this.fei.address);
+    this.oracle = await MockOracle.new(400); // 400:1 oracle price
     this.router = await MockRouter.new(this.pair.address);
     this.allocation = await EthUniswapPCVDeposit.new(this.token.address, this.core.address);
+    await this.allocation.setOracle(this.oracle.address, {from: governorAddress});
     await this.core.grantMinter(this.allocation.address, {from: governorAddress});
     await this.core.grantMinter(minterAddress, {from: governorAddress});
     await this.fei.mint(this.pair.address, 50000000, {from: minterAddress});
@@ -32,6 +35,23 @@ describe('EthUniswapPCVDeposit', function () {
   });
 
   describe('Deposit', function() {
+    describe('No prior LP', function() {
+      beforeEach(async function() {
+        await this.pair.setReserves(0, 0);
+        this.pairEth = await balance.current(this.pair.address);
+        this.pairFei = await this.fei.balanceOf(this.pair.address);
+        await this.allocation.deposit("100000", {from: userAddress, value: "100000"});
+      });
+
+      it('deposits at oracle price', async function() {
+        expect(await balance.current(this.pair.address)).to.be.bignumber.equal(this.pairEth.add(new BN("100000")));
+        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairFei.add(new BN("100000").mul(new BN(400))));
+        let result = await this.allocation.getReserves();
+        expect(result[0]).to.be.bignumber.equal(new BN(40000000));
+        expect(result[1]).to.be.bignumber.equal(new BN(100000));
+      });
+    });
+
     describe('Pre deposit values', function() {
       it('liquidityOwned', async function(){
         expect(await this.allocation.liquidityOwned()).to.be.bignumber.equal(new BN(0));
