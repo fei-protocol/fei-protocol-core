@@ -130,6 +130,47 @@ describe('EthUniswapPCVController', function () {
         await expectRevert(this.pcvController.reweight(), "EthUniswapPCVController: Not at incentive parity");
       })
     });
+
+    describe('No incentive for caller if controller not minter', function() {
+        beforeEach(async function() {
+          await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/ETH with 10k liquidity
+          await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
+          await this.incentive.setIncentiveParity(true);          
+          await this.pcvController.reweight({from: userAddress});
+        });
+
+        it('pair gets some ETH in swap', async function() {
+          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(995));
+        });
+        it('pcvDeposit gets remaining ETH', async function() {
+          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(99005));
+          expect(await balance.current(this.pcvController.address)).to.be.bignumber.equal(new BN(0));
+        });
+        it('user FEI balance is 0', async function() {
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
+        });
+    });
+
+    describe('Incentive for caller if controller is a minter', function() {
+        beforeEach(async function() {
+          await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/ETH with 10k liquidity
+          await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
+          await this.incentive.setIncentiveParity(true);     
+          await this.core.grantMinter(this.pcvController.address, {from: governorAddress});     
+          await this.pcvController.reweight({from: userAddress});
+        });
+
+        it('pair gets some ETH in swap', async function() {
+          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(995));
+        });
+        it('pcvDeposit gets remaining ETH', async function() {
+          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(99005));
+          expect(await balance.current(this.pcvController.address)).to.be.bignumber.equal(new BN(0));
+        });
+        it('user FEI balance updates', async function() {
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN("100000000000000000000"));
+        });
+    });
   });
 
   describe('Access', function() {

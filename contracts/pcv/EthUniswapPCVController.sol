@@ -14,6 +14,7 @@ contract EthUniswapPCVController is UniRef {
 
 	IUniswapPCVDeposit public pcvDeposit;
 	IUniswapIncentive public incentiveContract;
+	uint public reweightIncentiveAmount;
 
 	constructor (address core, address _pcvDeposit, address _oracle, address _incentiveContract) 
 		UniRef(core)
@@ -22,6 +23,7 @@ contract EthUniswapPCVController is UniRef {
 		incentiveContract = IUniswapIncentive(_incentiveContract);
 		setupPair(address(pcvDeposit.pair()));
 		_setOracle(_oracle);
+		reweightIncentiveAmount = 100 * (10 ** fei().decimals());
 	}
 
 	function forceReweight() public onlyGovernor {
@@ -31,10 +33,19 @@ contract EthUniswapPCVController is UniRef {
 	function reweight() public {
 		require(incentiveContract.isIncentiveParity(), "EthUniswapPCVController: Not at incentive parity");
 		_reweight();
+		incentivize();
 	}
 
 	function setPCVDeposit(address _pcvDeposit) public onlyGovernor {
 		pcvDeposit = IUniswapPCVDeposit(_pcvDeposit);
+	}
+
+	function setReweightIncentive(uint amount) public onlyGovernor {
+		reweightIncentiveAmount = amount;
+	}
+
+	function incentivize() internal ifMinterSelf {
+		fei().mint(msg.sender, reweightIncentiveAmount);
 	}
 
 	function _reweight() internal {

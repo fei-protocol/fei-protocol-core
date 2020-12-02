@@ -12,10 +12,16 @@ interface ICore {
 }
 
 contract CoreRef {
-	ICore private CORE;
+	ICore internal CORE;
 
 	constructor(address core) public {
 		CORE = ICore(core);
+	}
+
+	modifier ifMinterSelf() {
+		if (CORE.isMinter(address(this))) {
+			_;
+		}
 	}
 
 	modifier onlyMinter() {
