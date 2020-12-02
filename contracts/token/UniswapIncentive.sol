@@ -90,37 +90,38 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return incentive.equals(penalty);
     }
 
-    function incentivizeBuy(address target, uint256 amountIn) internal ifMinterSelf {
-    	if (isExemptAddress(target)) {
-    		return;
-    	}
+    function getBuyIncentive(uint256 amount) public view returns(
+        uint256 incentive, 
+        uint256 weight,
+        Decimal.D256 memory initialDeviation,
+        Decimal.D256 memory finalDeviation
+    ) {
+        (initialDeviation, finalDeviation) = getPriceDeviations(-1 * int256(amount));
+        weight = getTimeWeight();
+        if (initialDeviation.equals(Decimal.zero())) {
+            return (0, weight, initialDeviation, finalDeviation);
+        }
 
-        (Decimal.D256 memory initialDeviation, Decimal.D256 memory finalDeviation) = getPriceDeviations(-1 * int256(amountIn));
-    	if (initialDeviation.equals(Decimal.zero())) {
-    		return;
-    	}
-
-    	uint256 incentivizedAmount = amountIn;
+        uint256 incentivizedAmount = amount;
         if (finalDeviation.equals(Decimal.zero())) {
             incentivizedAmount = getAmountToPegFei();
         }
 
-        uint256 weight = getTimeWeight();
-        uint256 incentive = calculateBuyIncentive(initialDeviation, incentivizedAmount, weight);
-        updateTimeWeight(initialDeviation, finalDeviation, weight);
-    	fei().mint(target, incentive);
+        Decimal.D256 memory multiplier = calculateBuyIncentiveMultiplier(initialDeviation, weight);
+        incentive = multiplier.mul(incentivizedAmount).asUint256();
+        return (incentive, weight, initialDeviation, finalDeviation);
     }
 
-    function incentivizeSell(address target, uint256 amount) internal ifBurnerSelf {
-    	if (isExemptAddress(target)) {
-    		return;
-    	}
-
+    function getSellPenalty(uint256 amount) public view returns(
+        uint256 penalty, 
+        Decimal.D256 memory initialDeviation,
+        Decimal.D256 memory finalDeviation
+    ) {
         (Decimal.D256 memory initialDeviation, Decimal.D256 memory finalDeviation) = getPriceDeviations(int256(amount));
 
-    	if (finalDeviation.equals(Decimal.zero())) {
-    		return;
-    	}
+        if (finalDeviation.equals(Decimal.zero())) {
+            return (0, initialDeviation, finalDeviation);
+        }
 
         uint256 incentivizedAmount = amount;
         if (initialDeviation.equals(Decimal.zero())) {
@@ -131,18 +132,39 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
                 incentivizedAmount = 0;
             }
         }
-    	uint256 penalty = calculateSellPenalty(finalDeviation, incentivizedAmount);
-        uint256 weight = getTimeWeight();
-        updateTimeWeight(initialDeviation, finalDeviation, weight);
-    	fei().burnFrom(target, penalty);
+        Decimal.D256 memory multiplier = calculateSellPenaltyMultiplier(finalDeviation); 
+        penalty = multiplier.mul(incentivizedAmount).asUint256(); 
+        return (penalty, initialDeviation, finalDeviation);   
     }
 
-    function calculateBuyIncentive(
-    	Decimal.D256 memory initialDeviation, 
-    	uint256 amountIn,
-        uint256 weight
-    ) internal view returns (uint256) {
-    	return calculateBuyIncentiveMultiplier(initialDeviation, weight).mul(amountIn).asUint256();
+    function incentivizeBuy(address target, uint256 amountIn) internal ifMinterSelf {
+    	if (isExemptAddress(target)) {
+    		return;
+    	}
+
+        (uint256 incentive, uint256 weight,
+        Decimal.D256 memory initialDeviation, 
+        Decimal.D256 memory finalDeviation) = getBuyIncentive(amountIn);
+
+        updateTimeWeight(initialDeviation, finalDeviation, weight);
+        if (incentive != 0) {
+            fei().mint(target, incentive);         
+        }
+    }
+
+    function incentivizeSell(address target, uint256 amount) internal ifBurnerSelf {
+    	if (isExemptAddress(target)) {
+    		return;
+    	}
+
+        (uint256 penalty, Decimal.D256 memory initialDeviation,
+        Decimal.D256 memory finalDeviation) = getSellPenalty(amount);
+
+        uint256 weight = getTimeWeight();
+        updateTimeWeight(initialDeviation, finalDeviation, weight);
+        if (penalty != 0) {
+            fei().burnFrom(target, penalty);
+        }
     }
 
     function calculateBuyIncentiveMultiplier(
@@ -160,14 +182,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     function calculateSellPenaltyMultiplier(
         Decimal.D256 memory deviation
     ) internal pure returns (Decimal.D256 memory) {
-        return deviation.mul(deviation).mul(100);
-    }
-
-    function calculateSellPenalty(
-    	Decimal.D256 memory finalDeviation, 
-    	uint256 amount
-    ) internal pure returns (uint256) {
-    	return calculateSellPenaltyMultiplier(finalDeviation).mul(amount).asUint256(); // m^2 * x * 100
+        return deviation.mul(deviation).mul(100); // m^2 * 100
     }
 
     function updateTimeWeight (
