@@ -28,8 +28,8 @@ contract EthBondingCurve is BondingCurve {
 		return radicand.sqrt() - totalPurchased;
 	}
 
-	function getBondingCurvePriceMultiplier() internal view override returns(uint256) {
-		return totalPurchased / scale; // TODO add sqrt
+	function getBondingCurvePriceMultiplier() internal view override returns(Decimal.D256 memory) {
+		return Decimal.ratio(totalPurchased, scale); // TODO add sqrt
 	}
 
 	function allocateSingle(uint256 amount, address pcvDeposit) internal override {

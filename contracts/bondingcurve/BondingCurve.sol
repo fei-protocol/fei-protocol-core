@@ -49,9 +49,9 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
 
 	function getCurrentPrice() public view override returns(Decimal.D256 memory) {
 		if (atScale()) {
-			return invert(peg()).div(getBuffer());
+			return peg().mul(getBuffer());
 		}
-		return invert(peg()).mul(getBondingCurvePriceMultiplier());
+		return peg().div(getBondingCurvePriceMultiplier());
 	}
 
 	function getAmountOut(uint256 amountIn) public view override returns (uint256 amountOut) {
@@ -79,7 +79,7 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
 		scale = _scale;
 	}
 
-	function getBondingCurvePriceMultiplier() internal view virtual returns(uint256);
+	function getBondingCurvePriceMultiplier() internal view virtual returns(Decimal.D256 memory);
 
 	function getBondingCurveAmountOut(uint256 adjustedAmountIn) internal view virtual returns(uint256);
 

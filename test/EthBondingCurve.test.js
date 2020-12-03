@@ -66,15 +66,25 @@ describe('EthBondingCurve', function () {
           expect(await this.bondingCurve.atScale()).to.be.equal(false);
         });
 
+        it('Correct current price', async function() {
+          expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("707113562438127563286");
+        });
       });
       describe('Crossing Scale', function() {
-        it('registers scale cross', async function() {
+        beforeEach(async function() {
           expect(await this.bondingCurve.atScale()).to.be.equal(false);
           await this.bondingCurve.purchase("200", userAddress, {value: "200"});
+        });
+
+        it('registers scale cross', async function() {
           // Uses bonding curve for entire trade
           expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(141421));
           expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(141421));
           expect(await this.bondingCurve.atScale()).to.be.equal(true);
+        });
+
+        it('Correct current price', async function() {
+          expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("495000000000000000000");
         });
       });
       describe('Post Scale', function() {
@@ -106,7 +116,7 @@ describe('EthBondingCurve', function () {
           await this.bondingCurve.purchase("100", beneficiaryAddress2, {value: "100"});
           expect(await this.fei.balanceOf(beneficiaryAddress2)).to.be.bignumber.equal(new BN(47500));
           expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(197000));
-
+          expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("475000000000000000000");
         });
 
         it('Changes in oracle price', async function() {
@@ -114,6 +124,11 @@ describe('EthBondingCurve', function () {
           await this.bondingCurve.purchase("100", beneficiaryAddress2, {value: "100"});
           expect(await this.fei.balanceOf(beneficiaryAddress2)).to.be.bignumber.equal(new BN(59400));
           expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(208900));
+          expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("594000000000000000000");
+        });
+
+        it('Correct current price', async function() {
+          expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("495000000000000000000");
         });
       });
     });
