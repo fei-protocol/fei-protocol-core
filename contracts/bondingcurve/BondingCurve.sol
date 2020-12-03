@@ -4,12 +4,12 @@ pragma experimental ABIEncoderV2;
 import "./IBondingCurve.sol";
 import "./AllocationRule.sol";
 import "../refs/OracleRef.sol";
+import "../external/Roots.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 
 abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
     using Decimal for Decimal.D256;
-    using Babylonian for uint256;
+    using Roots for uint256;
 
 	uint256 public override scale;
 	uint256 public override totalPurchased = 0; // FEI_b for this curve

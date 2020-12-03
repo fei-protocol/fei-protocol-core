@@ -39,11 +39,11 @@ describe('EthBondingCurve', function () {
         });
 
         it('Correct FEI sent', async function() {
-          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(70710));
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(51977));
         });
 
         it('Updates total purchased', async function() {
-          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(70710));
+          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(51977));
         });
 
         it('stays pre-scale', async function() {
@@ -52,8 +52,8 @@ describe('EthBondingCurve', function () {
 
         it('Second purchase moves along curve', async function() {
           await this.bondingCurve.purchase("50", beneficiaryAddress1, {value: "50"});
-          expect(await this.fei.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(new BN(29289));
-          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(99999));
+          expect(await this.fei.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(new BN(30531));
+          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(82508));
           expect(await this.bondingCurve.atScale()).to.be.equal(false);
         });
 
@@ -61,13 +61,13 @@ describe('EthBondingCurve', function () {
           // 20% reduction in exchange rate
           await this.oracle.setExchangeRate(400);
           await this.bondingCurve.purchase("50", beneficiaryAddress1, {value: "50"});
-          expect(await this.fei.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(new BN(24157));
-          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(94867));
+          expect(await this.fei.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(new BN(24934));
+          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(76911));
           expect(await this.bondingCurve.atScale()).to.be.equal(false);
         });
 
         it('Correct current price', async function() {
-          expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("707113562438127563286");
+          expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("696035242290748899107");
         });
       });
       describe('Crossing Scale', function() {
@@ -78,8 +78,8 @@ describe('EthBondingCurve', function () {
 
         it('registers scale cross', async function() {
           // Uses bonding curve for entire trade
-          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(141421));
-          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(141421));
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(130974));
+          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(130974));
           expect(await this.bondingCurve.atScale()).to.be.equal(true);
         });
 
@@ -90,9 +90,9 @@ describe('EthBondingCurve', function () {
       describe('Post Scale', function() {
         beforeEach(async function() {
            // First reach scale
-          await this.bondingCurve.purchase("100", beneficiaryAddress1, {value: "100"});
+          await this.bondingCurve.purchase("134", beneficiaryAddress1, {value: "134"});
           expect(await this.bondingCurve.atScale()).to.be.equal(true);
-          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(100284));
           // Then buy 100 more
           await this.bondingCurve.purchase("100", userAddress, {value: "100"});
         });
@@ -103,7 +103,7 @@ describe('EthBondingCurve', function () {
         });
 
         it('Updates total supply', async function() {
-          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(149500));
+          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(149784));
         });
 
         it('stays post-scale', async function() {
@@ -115,7 +115,7 @@ describe('EthBondingCurve', function () {
           await this.bondingCurve.setBuffer(500, {from: governorAddress});
           await this.bondingCurve.purchase("100", beneficiaryAddress2, {value: "100"});
           expect(await this.fei.balanceOf(beneficiaryAddress2)).to.be.bignumber.equal(new BN(47500));
-          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(197000));
+          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(197284));
           expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("475000000000000000000");
         });
 
@@ -123,7 +123,7 @@ describe('EthBondingCurve', function () {
           await this.oracle.setExchangeRate(600);
           await this.bondingCurve.purchase("100", beneficiaryAddress2, {value: "100"});
           expect(await this.fei.balanceOf(beneficiaryAddress2)).to.be.bignumber.equal(new BN(59400));
-          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(208900));
+          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(209184));
           expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("594000000000000000000");
         });
 
