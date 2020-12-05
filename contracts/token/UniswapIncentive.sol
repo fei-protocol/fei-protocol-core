@@ -207,6 +207,8 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
             Decimal.D256 memory remainingRatio = finalDeviation.div(initialDeviation);
             updatedWeight = remainingRatio.mul(currentWeight).asUint256();
         }
+        uint maxWeight = finalDeviation.mul(100).mul(TIME_WEIGHT_GRANULARITY).asUint256(); // m^2*100 (sell) = t*m (buy) 
+        updatedWeight = Math.min(updatedWeight, maxWeight);
         timeWeightInfo = TimeWeightInfo(block.number, updatedWeight, getGrowthRate(), true);
     }
 }

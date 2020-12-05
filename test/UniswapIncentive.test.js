@@ -748,6 +748,44 @@ describe('UniswapIncentive', function () {
         });
       });
 
+      describe('time weight too high', function() {
+        beforeEach(async function() {
+          this.expectedBurn = new BN(5763);
+          this.transferAmount = new BN(100000);
+          await time.advanceBlock();
+          await time.advanceBlock();
+          await time.advanceBlock();
+          await time.advanceBlock();
+          await time.advanceBlock();
+
+          await this.fei.transfer(this.pair.address, 100000, {from: userAddress});
+        });
+
+        it('user balance updates', async function() {
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.userBalance.sub(this.transferAmount).sub(this.expectedBurn));
+        });
+
+        it('pair balance updates', async function() {
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.add(this.transferAmount));
+        });
+
+        it('burn incentive', async function() {
+          var user = await this.fei.balanceOf(userAddress);
+          var pair = await this.fei.balanceOf(this.pair.address);
+
+          expect(this.userBalance.add(this.pairBalance).sub(user).sub(pair)).to.be.bignumber.equal(this.expectedBurn);
+        });
+
+        it('time weight update capped', async function() {
+          var twInfo = await this.incentive.timeWeightInfo();
+          let block = await time.latestBlock()
+          expect(twInfo.blockNo).to.be.bignumber.equal(block);
+          expect(twInfo.weight).to.be.bignumber.equal(new BN(240070));
+          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
+          expect(twInfo.active).to.be.equal(true);
+        });
+      });
+
       describe('not enough in wallet', function() {
         it('reverts', async function() {
           await expectRevert(this.fei.transfer(this.pair.address, 10000000, {from: userAddress}), "ERC20: burn amount exceeds balance");
