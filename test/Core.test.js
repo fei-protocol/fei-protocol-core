@@ -1,14 +1,14 @@
 const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
 const { accounts, contract } = require('@openzeppelin/test-environment');
 
-const { BN, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
+const { BN, expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
 const MockCoreRef = contract.fromArtifact('MockCoreRef');
 const Core = contract.fromArtifact('Core');
 
 describe('Core', function () {
-  const [ userAddress, minterAddress, burnerAddress, governorAddress, pcvControllerAddress ] = accounts;
+  const [ userAddress, minterAddress, burnerAddress, governorAddress, pcvControllerAddress, genesisGroup ] = accounts;
 
   beforeEach(async function () {
     this.core = await Core.new({gas: 8000000, from: governorAddress});
@@ -22,6 +22,89 @@ describe('Core', function () {
     this.pcvControllerRole = await this.core.PCV_CONTROLLER_ROLE();
   });
 
+  describe('Genesis', function() {
+    describe('Genesis Group', function() {
+      it('governor set succeeds', async function() {
+        await this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
+        expect(await this.core.genesisGroup()).to.be.equal(genesisGroup);
+      });
+
+      it('non-governor set reverts', async function() {
+        await expectRevert(this.core.setGenesisGroup(genesisGroup, {from: userAddress}), "Permissions: Caller is not a governor");
+      });
+    });
+
+    describe('Genesis Period', function() {
+      beforeEach(async function() {
+        this.latest = await time.latest();
+      });
+
+      it('governor set succeeds', async function() {
+        await this.core.setGenesisPeriodEnd(this.latest, {from: governorAddress});
+        expect(await this.core.genesisPeriodEnd()).to.be.bignumber.equal(this.latest);
+      });
+
+      it('non-governor set reverts', async function() {
+        await expectRevert(this.core.setGenesisPeriodEnd(this.latest, {from: userAddress}), "Permissions: Caller is not a governor");
+      });
+
+      describe('timing', function() {
+        it('ends before now', async function() {
+          await this.core.setGenesisPeriodEnd(this.latest.sub(new BN(1)), {from: governorAddress});
+          expect(await this.core.isGenesisPeriod()).to.be.equal(false);
+        });
+
+        it('ends now', async function() {
+          await this.core.setGenesisPeriodEnd(this.latest, {from: governorAddress});
+          expect(await this.core.isGenesisPeriod()).to.be.equal(false);
+        });
+
+        it('ends later', async function() {
+          await this.core.setGenesisPeriodEnd(this.latest.add(new BN(1)), {from: governorAddress});
+          expect(await this.core.isGenesisPeriod()).to.be.equal(true);
+        });
+      });
+    });
+
+    describe('Modifiers', function() {
+      beforeEach(async function() {
+        await this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
+      });
+
+      describe('Pre-Genesis Period End', function() {
+        beforeEach(async function() {
+          this.latest = await time.latest();
+          await this.core.setGenesisPeriodEnd(this.latest.add(new BN(1000)), {from: governorAddress});
+        });
+
+        it('postGenesis reverts', async function() {
+          await expectRevert(this.coreRef.testPostGenesis(), "CoreRef: Still in Genesis Period");
+        });
+
+        it('genesisOnly by genesis succeeds', async function() {
+          await this.coreRef.testGenesis({from: genesisGroup});
+        });
+
+        it('genesisOnly by user fails', async function() {
+          await expectRevert(this.coreRef.testGenesis({from: userAddress}), "CoreRef: Not in Genesis Period or caller is not Genesis Group");
+        });
+      });
+      describe('Post-Genesis Period End', function() {
+        beforeEach(async function() {
+          this.latest = await time.latest();
+          await this.core.setGenesisPeriodEnd(this.latest.sub(new BN(1000)), {from: governorAddress});
+        });
+
+        it('postGenesis succeeds', async function() {
+          await this.coreRef.testPostGenesis();
+        });
+
+        it('genesisOnly reverts', async function() {
+          await expectRevert(this.coreRef.testGenesis({from: genesisGroup}), "CoreRef: Not in Genesis Period or caller is not Genesis Group");
+        });
+      });
+    });
+  });
   describe('Minter', function () {
   	describe('Role', function () {
   		describe('Has access', function () {

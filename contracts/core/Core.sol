@@ -7,20 +7,30 @@ import "../token/Fei.sol";
 
 contract Core is Permissions {
 
-	IFei private FEI;
+	IFei public fei;
+	uint public genesisPeriodEnd;
+	address public genesisGroup;
 
 	constructor() public {
 		_setupGovernor(msg.sender);
-		Fei fei = new Fei(address(this));
-		FEI = IFei(address(fei));
+		Fei _fei = new Fei(address(this));
+		fei = IFei(address(_fei));
 	}
 
 	function setFei(address token) public onlyGovernor {
-		FEI = IFei(token);
+		fei = IFei(token);
 	}
 
-	function fei() public view returns(IFei) {
-		return FEI;
+	function setGenesisGroup(address _genesisGroup) public onlyGovernor {
+		genesisGroup = _genesisGroup;
+	}
+
+	function setGenesisPeriodEnd(uint _genesisPeriodEnd) public onlyGovernor {
+		genesisPeriodEnd = _genesisPeriodEnd;
+	}
+
+	function isGenesisPeriod() public view returns(bool) {
+		return now < genesisPeriodEnd;
 	}
 }
 
