@@ -37,6 +37,8 @@ contract UniswapOracle is IOracle, CoreRef {
 	}
 
 	function update() external override returns (bool) {
+		// Tests not made for this commented code, but the commented should be more accurate
+		// Referencing https://github.com/Uniswap/uniswap-v2-periphery/blob/master/contracts/examples/ExampleOracleSimple.sol
 		// (uint price0Cumulative, uint price1Cumulative, uint32 currentTimestamp) =
             // UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
         uint price0Cumulative = pair.price0CumulativeLast();
@@ -47,8 +49,10 @@ contract UniswapOracle is IOracle, CoreRef {
 			return false;
 		}
 
+
 		uint currentCumulative = getCumulative(price0Cumulative, price1Cumulative);
 		uint deltaCumulative = currentCumulative - priorCumulative;
+
 		twap = Decimal.ratio(deltaCumulative, deltaTimestamp);
 
 		priorTimestamp = currentTimestamp;

@@ -17,7 +17,8 @@ describe('UniswapOracle', function () {
     this.delta = new BN(1000);
     await time.increase(this.delta);
     this.cursor = this.startTime.add(this.delta);
-    this.pair = await MockPair.new(this.delta.mul(new BN(500)), this.delta.div(new BN(500)), this.cursor, 100000, 50000000); // 500:1 FEI/ETH initial price
+    this.cumulative = this.delta.mul(new BN(500));
+    this.pair = await MockPair.new(this.cumulative, 0, this.cursor, 100000, 50000000); // 500:1 FEI/ETH initial price
 
     this.oracle = await UniswapOracle.new(this.core.address, this.pair.address, 600, true); // 10 min TWAP using price0
   });
@@ -25,94 +26,6 @@ describe('UniswapOracle', function () {
   it('initializes', async function() {
     expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.cursor);
     expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.delta.mul(new BN(500)));
-  });
-
-  describe('Update', function() {
-    beforeEach(async function() {
-      await time.increase(1000);
-      await this.pair.simulateTrade(100000, 50000000);
-      await this.oracle.update();
-      this.priorCumulativePrice = await this.oracle.priorCumulative();
-      this.priorTime = await this.oracle.priorTimestamp();
-      this.twap = (await this.oracle.read())[0].value;
-    });
-
-    describe('Within duration', function() {
-      beforeEach(async function() {
-        await time.increase(100);
-        await this.pair.simulateTrade(100000, 50000000); 
-        await this.oracle.update();
-      });
-
-      it('no change', async function() {
-        expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.priorCumulativePrice);
-        expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.priorTime);
-        expect((await this.oracle.read())[0].value).to.be.equal(this.twap);
-      });
-    });
-
-    describe('Exceeds duration', function() {
-      beforeEach(async function() {
-        await time.increase(1000);
-        await this.pair.simulateTrade(100000, 50000000); 
-        this.expectedCumulative = await this.pair.price0CumulativeLast();
-        this.expectedTime = await time.latest();
-        await this.oracle.update();
-      });
-
-      it('updates', async function() {
-        expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.expectedCumulative);
-        expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.expectedTime);
-        expect((await this.oracle.read())[0].value).to.be.equal(this.twap);
-      });
-    });
-
-    describe('Price Moves', function() {
-      describe('Upward', function() {
-        beforeEach(async function() {
-          await time.increase(1000);
-          await this.pair.simulateTrade(100000, 55000000); 
-          await time.increase(1000);
-          await this.oracle.update();
-        });
-
-        it('updates', async function() {
-          expect((await this.oracle.read())[0].value).to.be.equal(this.twap);
-        });
-      });
-
-      describe('Downward', function() {
-        beforeEach(async function() {
-          await time.increase(1000);
-          await this.pair.simulateTrade(100000, 45000000); 
-          await time.increase(1000);
-          await this.oracle.update();
-        });
-
-        it('updates', async function() {
-          expect((await this.oracle.read())[0].value).to.be.equal(this.twap);
-        });
-      });
-
-      describe('Multiple', function() {
-        beforeEach(async function() {
-          await time.increase(200);
-          await this.pair.simulateTrade(100000, 45000000); 
-          await time.increase(200);
-          await this.pair.simulateTrade(100000, 49000000);
-          await time.increase(200);
-          await this.pair.simulateTrade(100000, 53000000);
-          await time.increase(200);
-          await this.pair.simulateTrade(100000, 52000000);
-          await time.increase(200);
-          await this.oracle.update();
-        });
-
-        it('updates', async function() {
-          expect((await this.oracle.read())[0].value).to.be.equal(this.twap);
-        });
-      });
-    });
   });
 
   describe('Read', function() {
@@ -126,9 +39,7 @@ describe('UniswapOracle', function () {
 
     describe('Initialized', function() {
       beforeEach(async function() {
-        this.cursor = await time.latest();
-        await time.increase(1000);
-        await this.pair.simulateTrade(100000, 50000000, this.cursor);
+        await this.pair.set(this.cumulative.add(this.delta.mul(new BN(500))), 0, this.cursor.add(new BN(1000)));
         await this.oracle.update();
       });
 
@@ -149,6 +60,71 @@ describe('UniswapOracle', function () {
           let result = await this.oracle.read();
           expect(result[0].value).to.be.equal('500000000000000000000');
           expect(result[1]).to.be.equal(true);
+        });
+      });
+    });
+  });
+  describe('Update', function() {
+    beforeEach(async function() {
+      this.priorCumulativePrice = await this.oracle.priorCumulative();
+      this.priorTime = await this.oracle.priorTimestamp();      
+    }) 
+
+    describe('Within duration', function() {
+      beforeEach(async function() {
+        await this.pair.set(this.cumulative.add(this.delta.mul(new BN(500))), 0, this.cursor.add(new BN(100)));
+        await this.oracle.update();
+      });
+
+      it('no change', async function() {
+        expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.priorCumulativePrice);
+        expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.cursor);
+      });
+    });
+
+    describe('Exceeds duration', function() {
+      beforeEach(async function() {
+        this.expectedTime = this.cursor.add(new BN(1000))
+        this.expectedCumulative = this.cumulative.add(this.delta.mul(new BN(500))); 
+        await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
+        await this.oracle.update();
+      });
+
+      it('updates', async function() {
+        expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.expectedCumulative);
+        expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.expectedTime);
+        expect((await this.oracle.read())[0].value).to.be.equal('500000000000000000000');
+      });
+    });
+
+    describe('Price Moves', function() {
+      describe('Upward', function() {
+        beforeEach(async function() {
+          this.expectedTime = this.cursor.add(new BN(1000))
+          this.expectedCumulative = this.cumulative.add(this.delta.mul(new BN(490))); 
+          await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
+          await this.oracle.update();
+        });
+
+        it('updates', async function() {
+          expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.expectedCumulative);
+          expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.expectedTime);
+          expect((await this.oracle.read())[0].value).to.be.equal('490000000000000000000');
+        });
+      });
+
+      describe('Downward', function() {
+        beforeEach(async function() {
+          this.expectedTime = this.cursor.add(new BN(1000))
+          this.expectedCumulative = this.cumulative.add(this.delta.mul(new BN(510))); 
+          await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
+          await this.oracle.update();
+        });
+
+        it('updates', async function() {
+          expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.expectedCumulative);
+          expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.expectedTime);
+          expect((await this.oracle.read())[0].value).to.be.equal('510000000000000000000');
         });
       });
     });
