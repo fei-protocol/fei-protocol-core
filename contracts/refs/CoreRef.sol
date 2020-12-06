@@ -10,6 +10,7 @@ interface ICore {
 	function isPCVController(address _address) external view returns (bool);
 	function fei() external view returns (IFei);
 	function isGenesisPeriod() external view returns(bool);
+	function hasGenesisGroupCompleted() external view returns(bool);
 	function genesisGroup() external view returns(address);
 }
 
@@ -62,13 +63,13 @@ contract CoreRef {
 		_;
 	}
 
-	modifier onlyGenesis() {
-		require(CORE.isGenesisPeriod() && msg.sender == address(CORE.genesisGroup()), "CoreRef: Not in Genesis Period or caller is not Genesis Group");
+	modifier onlyGenesisPeriod() {
+		require(CORE.isGenesisPeriod(), "CoreRef: Not in Genesis Period");
 		_;
 	}
 
 	modifier postGenesis() {
-		require(!CORE.isGenesisPeriod(), "CoreRef: Still in Genesis Period");
+		require(!CORE.isGenesisPeriod() && CORE.hasGenesisGroupCompleted(), "CoreRef: Still in Genesis Period");
 		_;
 	}
  

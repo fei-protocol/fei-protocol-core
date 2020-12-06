@@ -16,7 +16,7 @@ contract MockCoreRef is CoreRef {
 
 	function testGovernor() public view onlyGovernor {}
 
-	function testGenesis() public view onlyGenesis {}
+	function testGenesis() public view onlyGenesisPeriod {}
 
 	function testPostGenesis() public view postGenesis {}
 }

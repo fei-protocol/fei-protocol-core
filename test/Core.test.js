@@ -81,12 +81,12 @@ describe('Core', function () {
           await expectRevert(this.coreRef.testPostGenesis(), "CoreRef: Still in Genesis Period");
         });
 
-        it('genesisOnly by genesis succeeds', async function() {
-          await this.coreRef.testGenesis({from: genesisGroup});
+        it('completeGenesisGroup reverts', async function() {
+
         });
 
-        it('genesisOnly by user fails', async function() {
-          await expectRevert(this.coreRef.testGenesis({from: userAddress}), "CoreRef: Not in Genesis Period or caller is not Genesis Group");
+        it('genesisOnly succeeds', async function() {
+          await this.coreRef.testGenesis();
         });
       });
       describe('Post-Genesis Period End', function() {
@@ -95,12 +95,27 @@ describe('Core', function () {
           await this.core.setGenesisPeriodEnd(this.latest.sub(new BN(1000)), {from: governorAddress});
         });
 
-        it('postGenesis succeeds', async function() {
-          await this.coreRef.testPostGenesis();
+        describe('Genesis completed', function() {
+          beforeEach(async function() {
+            await this.core.completeGenesisGroup({from: genesisGroup});
+          });
+          it('postGenesis succeeds', async function() {
+            await this.coreRef.testPostGenesis();
+          });
+        });
+
+        describe('Genesis not completed', function() {
+          it('non-genesis complete fails', async function() {
+            await expectRevert(this.core.completeGenesisGroup({from: userAddress}), "Core: Still in Genesis Period or caller is not Genesis Group");
+          });
+
+          it('postGenesis reverts', async function() {
+            await expectRevert(this.coreRef.testPostGenesis(), "CoreRef: Still in Genesis Period");
+          });
         });
 
         it('genesisOnly reverts', async function() {
-          await expectRevert(this.coreRef.testGenesis({from: genesisGroup}), "CoreRef: Not in Genesis Period or caller is not Genesis Group");
+          await expectRevert(this.coreRef.testGenesis({from: genesisGroup}), "CoreRef: Not in Genesis Period");
         });
       });
     });

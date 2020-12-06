@@ -11,7 +11,7 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
         UniswapPCVDeposit(_token, core) 
     public {}
 
-    function deposit(uint256 ethAmount) external override payable {
+    function deposit(uint256 ethAmount) external override payable postGenesis {
     	require(ethAmount == msg.value, "Bonding Curve: Sent value does not equal input");
         uint256 feiAmount = getAmountFeiToDeposit(ethAmount);
         addLiquidity(ethAmount, feiAmount);
