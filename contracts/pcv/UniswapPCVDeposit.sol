@@ -50,7 +50,4 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
 
     function transferWithdrawn(address to, uint256 amount) internal virtual;
 
-	function mintFei(uint256 amount) internal {
-		fei().mint(address(this), amount);
-	}
 }

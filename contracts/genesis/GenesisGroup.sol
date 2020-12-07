@@ -63,14 +63,6 @@ contract GenesisGroup is ERC20, CoreRef {
 		return Decimal.ratio(feiBalance(), tribeBalance());
 	}
 
-	function feiBalance() internal view returns (uint) {
-		return fei().balanceOf(address(this));
-	}
-
-	function tribeBalance() internal view returns (uint) {
-		return tribe().balanceOf(address(this));
-	}
-
 	function fgenRatio(address account) internal view returns (Decimal.D256 memory) {
 		return Decimal.ratio(balanceOf(account), totalSupply());
 	}

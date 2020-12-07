@@ -66,6 +66,11 @@ contract CoreRef {
 		_;
 	}
 
+	modifier onlyGenesisGroup() {
+		require(msg.sender == CORE.genesisGroup(), "CoreRef: Caller is not GenesisGroup");
+		_;
+	}
+
 	modifier onlyGenesisPeriod() {
 		require(CORE.isGenesisPeriod(), "CoreRef: Not in Genesis Period");
 		_;
@@ -89,7 +94,18 @@ contract CoreRef {
 	}
 
     function burnFeiHeld() internal {
-    	uint256 balance = fei().balanceOf(address(this));
-    	fei().burn(balance);
+    	fei().burn(feiBalance());
     }
+
+	function feiBalance() internal view returns (uint) {
+		return fei().balanceOf(address(this));
+	}
+
+	function tribeBalance() internal view returns (uint) {
+		return tribe().balanceOf(address(this));
+	}
+
+    function mintFei(uint256 amount) internal {
+		fei().mint(address(this), amount);
+	}
 }
