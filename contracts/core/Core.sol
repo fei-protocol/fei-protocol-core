@@ -36,6 +36,11 @@ contract Core is Permissions {
 		genesisPeriodEnd = _genesisPeriodEnd;
 	}
 
+	function allocateTribe(address to, uint amount) public onlyGovernor {
+		require(tribe.balanceOf(address(this)) > amount, "Core: Not enough Tribe");
+		tribe.transfer(to, amount);
+	}
+
 	function completeGenesisGroup() external {
 		require(!isGenesisPeriod() && msg.sender == genesisGroup, "Core: Still in Genesis Period or caller is not Genesis Group");
 		hasGenesisGroupCompleted = true;
