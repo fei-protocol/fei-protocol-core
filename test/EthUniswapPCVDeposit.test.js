@@ -13,11 +13,15 @@ const MockRouter = contract.fromArtifact('MockRouter');
 const MockOracle = contract.fromArtifact('MockOracle');
 
 describe('EthUniswapPCVDeposit', function () {
-  const [ userAddress, governorAddress, minterAddress, beneficiaryAddress ] = accounts;
+  const [ userAddress, governorAddress, minterAddress, beneficiaryAddress, genesisGroup ] = accounts;
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit
 
   beforeEach(async function () {
     this.core = await Core.new({gas: 8000000, from: governorAddress});
+    await this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
+    await this.core.setGenesisPeriodEnd(0, {from: governorAddress});
+    await this.core.completeGenesisGroup({from: genesisGroup});
+
     this.fei = await Fei.at(await this.core.fei());
     this.token = await MockERC20.new();
     this.pair = await MockPair.new(this.token.address, this.fei.address);

@@ -11,10 +11,14 @@ const MockOracle = contract.fromArtifact('MockOracle');
 const EthBondingCurve = contract.fromArtifact('EthBondingCurve');
 
 describe('EthBondingCurve', function () {
-  const [ userAddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress ] = accounts;
+  const [ userAddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress, genesisGroup ] = accounts;
 
   beforeEach(async function () {
     this.core = await Core.new({gas: 8000000, from: governorAddress});
+    await this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
+    await this.core.setGenesisPeriodEnd(0, {from: governorAddress});
+    await this.core.completeGenesisGroup({from: genesisGroup});
+
     this.fei = await Fei.at(await this.core.fei());
     this.oracle = await MockOracle.new(500); // 500 USD per ETH exchange rate 
     this.pcvDeposit1 = await MockEthPCVDeposit.new(beneficiaryAddress1);
