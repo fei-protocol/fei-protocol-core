@@ -17,6 +17,7 @@ contract Core is Permissions {
 
 	constructor() public {
 		_setupGovernor(msg.sender);
+		_setupGovernor(address(this));
 		Fei _fei = new Fei(address(this));
 		fei = IFei(address(_fei));
 

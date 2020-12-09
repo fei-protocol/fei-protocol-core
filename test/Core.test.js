@@ -8,7 +8,7 @@ const MockCoreRef = contract.fromArtifact('MockCoreRef');
 const Core = contract.fromArtifact('Core');
 
 describe('Core', function () {
-  const [ userAddress, minterAddress, burnerAddress, governorAddress, pcvControllerAddress, genesisGroup ] = accounts;
+  const [ userAddress, minterAddress, burnerAddress, governorAddress, pcvControllerAddress, genesisGroup, revokeAddress ] = accounts;
 
   beforeEach(async function () {
     this.core = await Core.new({gas: 8000000, from: governorAddress});
@@ -16,10 +16,12 @@ describe('Core', function () {
     await this.core.grantMinter(minterAddress, {from: governorAddress});
     await this.core.grantBurner(burnerAddress, {from: governorAddress});
     await this.core.grantPCVController(pcvControllerAddress, {from: governorAddress});
+    await this.core.grantRevoker(revokeAddress, {from: governorAddress});
     this.minterRole = await this.core.MINTER_ROLE();
     this.burnerRole = await this.core.BURNER_ROLE();
     this.governorRole = await this.core.GOVERN_ROLE();
     this.pcvControllerRole = await this.core.PCV_CONTROLLER_ROLE();
+    this.revokeRole = await this.core.REVOKE_ROLE();
   });
 
   describe('Genesis', function() {
@@ -397,5 +399,107 @@ describe('Core', function () {
   			});
   		});
   	});
+  });
+
+  describe('Revoker', function () {
+    describe('Role', function () {
+      describe('Has access', function () {
+        it('is registered in core', async function() {
+          expect(await this.core.isRevoker(revokeAddress)).to.be.equal(true);
+        });
+      });
+      describe('Access revoked', function () {
+        beforeEach(async function() {
+          await this.core.revokeRevoker(revokeAddress, {from: governorAddress});
+        });
+
+        it('is not registered in core', async function() {
+          expect(await this.core.isRevoker(revokeAddress)).to.be.equal(false);
+        });
+      });
+      describe('Access renounced', function() {
+        beforeEach(async function() {
+          await this.core.renounceRole(this.revokeRole, revokeAddress, {from: revokeAddress});
+        });
+
+        it('is not registered in core', async function() {
+          expect(await this.core.isRevoker(revokeAddress)).to.be.equal(false);
+        });
+      });
+      describe('Member Count', function() {
+        it('is one', async function() {
+          expect(await this.core.getRoleMemberCount(this.revokeRole)).to.be.bignumber.equal(new BN(1));
+        });
+        it('updates to two', async function() {
+          await this.core.grantRevoker(userAddress, {from: governorAddress});
+          expect(await this.core.getRoleMemberCount(this.revokeRole)).to.be.bignumber.equal(new BN(2));
+        });
+      });
+      describe('Admin', function() {
+        it('is governor', async function() {
+          expect(await this.core.getRoleAdmin(this.revokeRole)).to.be.equal(this.governorRole);
+        });
+      });
+    });
+    describe('Access', function () {
+      it('onlyMinter reverts', async function() {
+        await expectRevert(this.coreRef.testMinter({from: revokeAddress}), "CoreRef: Caller is not a minter");
+      });
+
+      it('onlyBurner reverts', async function() {
+        await expectRevert(this.coreRef.testBurner({from: revokeAddress}), "CoreRef: Caller is not a burner");
+      });
+
+      it('onlyGovernor reverts', async function() {
+        await expectRevert(this.coreRef.testGovernor({from: revokeAddress}), "CoreRef: Caller is not a governor");
+      });
+
+      it('onlyPCVController reverts', async function() {
+        await expectRevert(this.coreRef.testPCVController({from: revokeAddress}), "CoreRef: Caller is not a PCV controller");
+      });
+    });
+
+    describe('Access Control', function () {
+      describe('Minter', function() {
+        it('can revoke', async function() {
+          await this.core.revokeOverride(this.minterRole, minterAddress, {from: revokeAddress});
+          expect(await this.core.isMinter(minterAddress)).to.be.equal(false);
+        });
+      });
+      describe('Burner', function() {
+        it('can revoke', async function() {
+          await this.core.revokeOverride(this.burnerRole, burnerAddress, {from: revokeAddress});
+          expect(await this.core.isBurner(burnerAddress)).to.be.equal(false);
+        });
+      });
+      describe('PCV Controller', function() {
+        it('can revoke', async function() {
+          await this.core.revokeOverride(this.pcvControllerRole, pcvControllerAddress, {from: revokeAddress});
+          expect(await this.core.isPCVController(pcvControllerAddress)).to.be.equal(false);
+        });
+      });
+      describe('Governor', function() {
+        it('can revoke', async function() {
+          await this.core.revokeOverride(this.governorRole, governorAddress, {from: revokeAddress});
+          expect(await this.core.isGovernor(governorAddress)).to.be.equal(false);
+        });
+      });
+    });
+  });
+
+  describe('Create Role', function() {
+    beforeEach(async function() {
+      this.role = "0x0000000000000000000000000000000000000000000000000000000000000001";
+      this.adminRole = "0x0000000000000000000000000000000000000000000000000000000000000002";
+    });
+
+    it('governor succeeds', async function() {
+      await this.core.createRole(this.role, this.adminRole, {from: governorAddress});
+      expect(await this.core.getRoleAdmin(this.role)).to.be.equal(this.adminRole);
+    });
+
+    it('non-governor fails', async function() {
+      await expectRevert(this.core.createRole(this.role, this.adminRole), "Permissions: Caller is not a governor");
+    });
   });
 });
