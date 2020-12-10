@@ -137,6 +137,11 @@ contract UniRef is OracleRef {
         return (initialDeviation, finalDeviation);
     }
 
+    function getDistanceToPeg() internal view returns(Decimal.D256 memory distance) {
+        (Decimal.D256 memory price, , ) = getUniswapPrice();
+        return calculateDeviation(price, peg()); 
+    }
+
     function calculateDeviation(
         Decimal.D256 memory price, 
         Decimal.D256 memory peg

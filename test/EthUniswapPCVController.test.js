@@ -131,15 +131,27 @@ describe('EthUniswapPCVController', function () {
   describe('External Reweight', function() {
     describe('Not at incentive parity', function () {
       it('reverts', async function() {
-        await expectRevert(this.pcvController.reweight(), "EthUniswapPCVController: Not at incentive parity");
+        await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/ETH with 10k liquidity
+        expect(await this.pcvController.reweightEligible()).to.be.equal(false);
+        await expectRevert(this.pcvController.reweight(), "EthUniswapPCVController: Not at incentive parity or not at min distance");
+      })
+    });
+
+    describe('Not at min distance', function () {
+      it('reverts', async function() {
+        await this.pair.set(100000, 50400000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 504:1 FEI/ETH with 10k liquidity
+        await this.incentive.setIncentiveParity(true);
+        expect(await this.pcvController.reweightEligible()).to.be.equal(false);
+        await expectRevert(this.pcvController.reweight(), "EthUniswapPCVController: Not at incentive parity or not at min distance");
       })
     });
 
     describe('No incentive for caller if controller not minter', function() {
         beforeEach(async function() {
-          await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/ETH with 10k liquidity
+          await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/ETH with 10k liquidity
           await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
-          await this.incentive.setIncentiveParity(true);          
+          await this.incentive.setIncentiveParity(true);
+          expect(await this.pcvController.reweightEligible()).to.be.equal(true);
           await this.pcvController.reweight({from: userAddress});
         });
 
@@ -161,6 +173,7 @@ describe('EthUniswapPCVController', function () {
           await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
           await this.incentive.setIncentiveParity(true);     
           await this.core.grantMinter(this.pcvController.address, {from: governorAddress});     
+          expect(await this.pcvController.reweightEligible()).to.be.equal(true);
           await this.pcvController.reweight({from: userAddress});
         });
 
@@ -181,6 +194,17 @@ describe('EthUniswapPCVController', function () {
     describe('Force Reweight', function() {
       it('Non-governor call fails', async function() {
         await expectRevert(this.pcvController.forceReweight({from: userAddress}), "CoreRef: Caller is not a governor");
+      });
+    });
+
+    describe('Reweight Min Distance', function() {
+      it('Governor set succeeds', async function() {
+        await this.pcvController.setReweightMinDistance(50, {from: governorAddress});
+        expect(await this.pcvController.minDistanceForReweight()).to.be.bignumber.equal('5000000000000000');
+      });
+
+      it('Non-governor set reverts', async function() {
+        await expectRevert(this.pcvController.setReweightMinDistance(50, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
 

@@ -15,6 +15,7 @@ contract EthUniswapPCVController is UniRef {
 	IUniswapPCVDeposit public pcvDeposit;
 	IUniswapIncentive public incentiveContract;
 	uint public reweightIncentiveAmount;
+	Decimal.D256 public minDistanceForReweight;
 
 	constructor (address core, address _pcvDeposit, address _oracle, address _incentiveContract) public
 		UniRef(core)
@@ -24,6 +25,7 @@ contract EthUniswapPCVController is UniRef {
 		setupPair(address(pcvDeposit.pair()));
 		_setOracle(_oracle);
 		reweightIncentiveAmount = 100 * (10 ** fei().decimals());
+		minDistanceForReweight = Decimal.ratio(1, 100); // initial min is 1%
 	}
 
 	function forceReweight() public onlyGovernor {
@@ -31,9 +33,15 @@ contract EthUniswapPCVController is UniRef {
 	}
 
 	function reweight() public postGenesis {
-		require(incentiveContract.isIncentiveParity(), "EthUniswapPCVController: Not at incentive parity");
+		require(reweightEligible(), "EthUniswapPCVController: Not at incentive parity or not at min distance");
 		_reweight();
 		incentivize();
+	}
+
+	function reweightEligible() public view returns(bool) {
+		bool magnitude = getDistanceToPeg().greaterThan(minDistanceForReweight);
+		bool time = incentiveContract.isIncentiveParity();
+		return magnitude && time;
 	}
 
 	function setPCVDeposit(address _pcvDeposit) public onlyGovernor {
@@ -42,6 +50,10 @@ contract EthUniswapPCVController is UniRef {
 
 	function setReweightIncentive(uint amount) public onlyGovernor {
 		reweightIncentiveAmount = amount;
+	}
+
+	function setReweightMinDistance(uint basisPoints) public onlyGovernor {
+		minDistanceForReweight = Decimal.ratio(basisPoints, 10000);
 	}
 
 	function incentivize() internal ifMinterSelf {
