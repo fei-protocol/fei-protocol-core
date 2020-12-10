@@ -9,9 +9,9 @@ import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
 	using Decimal for Decimal.D256;
 
-	constructor (address token, address core) 
+	constructor (address token, address core) public
 		UniRef(core)
-	public {
+	{
 		uint256 maxInt =  uint256(-1);
 		approveToken(address(fei()), maxInt);
 		approveToken(token, maxInt);
@@ -28,7 +28,7 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
     	uint256 liquidityToWithdraw = ratioToWithdraw.mul(totalLiquidity).asUint256();
 
     	approveToken(address(pair), liquidityToWithdraw);
-    	uint256 amountWithdrawn = removeLiquidity(liquidityToWithdraw, amountUnderlying); // TODO possibly need room for rounding errors here
+    	uint256 amountWithdrawn = removeLiquidity(liquidityToWithdraw);
     	transferWithdrawn(to, amountWithdrawn);
     	burnFeiHeld();
     }
@@ -46,7 +46,7 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
 		return UniswapV2Library.quote(amountToken, tokenReserves, feiReserves);
 	}
 
-    function removeLiquidity(uint256 amount, uint256 amountETHMin) internal virtual returns(uint256);
+    function removeLiquidity(uint256 amount) internal virtual returns(uint256);
 
     function transferWithdrawn(address to, uint256 amount) internal virtual;
 

@@ -13,9 +13,9 @@ contract BondingCurveOracle is IOracle, CoreRef {
 	IBondingCurve public bondingCurve;
 	bool public killSwitch = false;
 
-	constructor(address _core, address _oracle, address _bondingCurve) 
+	constructor(address _core, address _oracle, address _bondingCurve) public
 		CoreRef(_core)
-	public {
+	{
 		uniswapOracle = IOracle(_oracle);
 		bondingCurve = IBondingCurve(_bondingCurve);
 	}

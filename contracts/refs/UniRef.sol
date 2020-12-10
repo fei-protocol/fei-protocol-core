@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 import "./OracleRef.sol";
 import "../external/Decimal.sol";
 import "@openzeppelin/contracts/math/Math.sol";
-import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
+import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
@@ -18,9 +18,7 @@ contract UniRef is OracleRef {
 	IUniswapV2Router02 public router = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 	IUniswapV2Pair public pair;
 
-	constructor(address core) 
-		OracleRef(core)
-	public {}
+	constructor(address core) public OracleRef(core) {}
 
 	modifier requirePair() {
 		require(hasPair(), "UniRef: Contract has no pair defined");

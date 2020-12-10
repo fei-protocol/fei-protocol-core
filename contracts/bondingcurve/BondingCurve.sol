@@ -22,10 +22,10 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
 		address[] memory allocations, 
 		uint16[] memory ratios, 
 		address _oracle
-	)
+	) public
 		OracleRef(core)
 		AllocationRule(allocations, ratios)
-	public {
+	{
 		_setScale(_scale);
 		_setOracle(_oracle);
 	}

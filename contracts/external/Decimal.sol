@@ -28,7 +28,7 @@ library Decimal {
 
     // ============ Constants ============
 
-    uint256 constant BASE = 10**18;
+    uint256 private constant BASE = 10**18;
 
     // ============ Structs ============
 

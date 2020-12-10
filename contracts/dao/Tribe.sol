@@ -6,15 +6,19 @@ pragma experimental ABIEncoderV2;
 
 contract Tribe {
     /// @notice EIP-20 token name for this token
+    // solhint-disable-next-line const-name-snakecase
     string public constant name = "Fei Protocol Tribe";
 
     /// @notice EIP-20 token symbol for this token
+    // solhint-disable-next-line const-name-snakecase
     string public constant symbol = "TRIBE";
 
     /// @notice EIP-20 token decimals for this token
+    // solhint-disable-next-line const-name-snakecase
     uint8 public constant decimals = 18;
 
     /// @notice Total number of tokens in circulation
+    // solhint-disable-next-line const-name-snakecase
     uint public constant totalSupply = 10000000e18; // 10 million Tribe
 
     /// @notice Allowance amounts on behalf of others
@@ -168,6 +172,7 @@ contract Tribe {
         address signatory = ecrecover(digest, v, r, s);
         require(signatory != address(0), "Tribe::delegateBySig: invalid signature");
         require(nonce == nonces[signatory]++, "Tribe::delegateBySig: invalid nonce");
+        // solhint-disable-next-line not-rely-on-time
         require(now <= expiry, "Tribe::delegateBySig: signature expired");
         return _delegate(signatory, delegatee);
     }
@@ -298,6 +303,7 @@ contract Tribe {
 
     function getChainId() internal pure returns (uint) {
         uint256 chainId;
+        // solhint-disable-next-line no-inline-assembly
         assembly { chainId := chainid() }
         return chainId;
     }

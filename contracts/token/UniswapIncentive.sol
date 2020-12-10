@@ -25,9 +25,8 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     uint256 public constant TIME_WEIGHT_GRANULARITY = 1e5;
     uint256 public constant DEFAULT_INCENTIVE_GROWTH_RATE = 333; // about 1 unit per hour assuming 12s block time
 
-	constructor(address core, address _oracle) 
-		UniRef(core)
-	public {
+	constructor(address core, address _oracle) public
+	UniRef(core) {
         _setOracle(_oracle);
         timeWeightInfo = TimeWeightInfo(block.number, 0, DEFAULT_INCENTIVE_GROWTH_RATE, false);
     }
@@ -35,7 +34,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     function incentivize(
     	address sender, 
     	address receiver, 
-    	address spender, 
+    	address, 
     	uint256 amountIn
     ) public override onlyFei {
         updateOracle();

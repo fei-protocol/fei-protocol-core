@@ -19,8 +19,8 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../external/Decimal.sol";
-import '@uniswap/lib/contracts/libraries/FixedPoint.sol';
-import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
+import "@uniswap/lib/contracts/libraries/FixedPoint.sol";
+import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract MockUniswapV2PairLiquidity is IUniswapV2Pair {

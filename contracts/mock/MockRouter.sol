@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../external/Decimal.sol";
-import './IMockUniswapV2PairLiquidity.sol';
+import "./IMockUniswapV2PairLiquidity.sol";
 
 contract MockRouter {
     using SafeMath for uint256;

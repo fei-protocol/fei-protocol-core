@@ -95,8 +95,8 @@ contract Timelock {
             callData = abi.encodePacked(bytes4(keccak256(bytes(signature))), data);
         }
 
-        // solium-disable-next-line security/no-call-value
-        (bool success, bytes memory returnData) = target.call.value(value)(callData);
+        // solhint-disable-next-line avoid-low-level-calls
+        (bool success, bytes memory returnData) = target.call.value(value)(callData); //solhint-disable avoid-call-value
         require(success, "Timelock::executeTransaction: Transaction execution reverted.");
 
         emit ExecuteTransaction(txHash, target, value, signature, data, eta);
@@ -105,7 +105,7 @@ contract Timelock {
     }
 
     function getBlockTimestamp() internal view returns (uint) {
-        // solium-disable-next-line security/no-block-members
+        // solhint-disable-next-line not-rely-on-time
         return block.timestamp;
     }
 }

@@ -26,6 +26,7 @@ contract LinearTokenTimelock {
         // solhint-disable-next-line not-rely-on-time
         require(releaseTimeEnd > now, "LinearTokenTimelock: release time is before current time");
         beneficiary = _beneficiary;
+        // solhint-disable-next-line not-rely-on-time
         releaseTimeStart = now;
         releaseTimeEnd = _releaseTimeEnd;
 
@@ -50,6 +51,7 @@ contract LinearTokenTimelock {
     }
 
     function availableForRelease() public view returns(uint256) {
+        // solhint-disable-next-line not-rely-on-time
         uint elapsed = now - releaseTimeStart;
         uint window = releaseTimeEnd - releaseTimeStart;
 

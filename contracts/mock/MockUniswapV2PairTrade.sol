@@ -1,6 +1,6 @@
 pragma solidity ^0.6.0;
 
-import '@uniswap/lib/contracts/libraries/FixedPoint.sol';
+import "@uniswap/lib/contracts/libraries/FixedPoint.sol";
 
 contract MockUniswapV2PairTrade {
 

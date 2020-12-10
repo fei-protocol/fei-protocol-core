@@ -1,0 +1,10 @@
+{
+  "extends": "solhint:recommended",
+  "plugins": [],
+    "rules": {
+      "max-line-length" : "off",
+      "compiler-version" : ["warn", "^0.6.0"],
+      "reason-string" : "off",
+      "no-empty-blocks" : "off"
+    }
+}

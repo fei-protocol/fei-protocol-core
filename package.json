@@ -7,6 +7,7 @@
   "scripts": {
     "build": "npm run compile",
     "compile": "truffle compile",
+    "coverage": "scripts/coverage.js",
     "test": "mocha --timeout 10000 --exit --recursive $1",
     "testAll": "mocha --timeout 10000 --exit --recursive test",
     "deploy": "truffle migrate --network mainnet",

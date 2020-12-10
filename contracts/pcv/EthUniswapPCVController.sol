@@ -16,9 +16,9 @@ contract EthUniswapPCVController is UniRef {
 	IUniswapIncentive public incentiveContract;
 	uint public reweightIncentiveAmount;
 
-	constructor (address core, address _pcvDeposit, address _oracle, address _incentiveContract) 
+	constructor (address core, address _pcvDeposit, address _oracle, address _incentiveContract) public
 		UniRef(core)
-	public {
+	{
 		pcvDeposit = IUniswapPCVDeposit(_pcvDeposit);
 		incentiveContract = IUniswapIncentive(_incentiveContract);
 		setupPair(address(pcvDeposit.pair()));
@@ -76,7 +76,7 @@ contract EthUniswapPCVController is UniRef {
 		weth.transfer(address(pair), amount);
 
 		(uint256 amount0Out, uint256 amount1Out) = pair.token0() == address(weth) ? (uint256(0), amountOut) : (amountOut, uint256(0));
-		pair.swap(amountOut, amountOut, address(this), new bytes(0));
+		pair.swap(amount0Out, amount1Out, address(this), new bytes(0));
 	}
 
 	function withdrawAll() internal {

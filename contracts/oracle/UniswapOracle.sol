@@ -5,8 +5,8 @@ pragma experimental ABIEncoderV2;
 import "./IOracle.sol";
 import "../external/Decimal.sol";
 import "../refs/CoreRef.sol";
-import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
-import '@uniswap/v2-periphery/contracts/libraries/UniswapV2OracleLibrary.sol';
+import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
+import "@uniswap/v2-periphery/contracts/libraries/UniswapV2OracleLibrary.sol";
 
 contract UniswapOracle is IOracle, CoreRef {
 	using Decimal for Decimal.D256;
@@ -19,9 +19,9 @@ contract UniswapOracle is IOracle, CoreRef {
 	bool public killSwitch = false;
 	bool private isPrice0;
 
-	constructor(address _core, address _pair, uint32 _duration, bool _isPrice0) 
+	constructor(address _core, address _pair, uint32 _duration, bool _isPrice0) public
 		CoreRef(_core)
-	public {
+	{
 		pair = IUniswapV2Pair(_pair);
 		duration = _duration;
 		isPrice0 = _isPrice0;

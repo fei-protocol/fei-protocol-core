@@ -9,10 +9,10 @@ contract IDO is UniRef, LinearTokenTimelock {
 
 	uint constant public RELEASE_WINDOW = 4 * 365 * 24 * 60 * 60; // 4 years vesting
 
-	constructor(address core, address _beneficiary) 
+	constructor(address core, address _beneficiary) public
 		UniRef(core)
 		LinearTokenTimelock(_beneficiary, RELEASE_WINDOW)
-	public {
+	{
 		uint256 maxInt =  uint256(-1);
 		address _tribe = address(tribe()); 
 		address _fei = address(fei());

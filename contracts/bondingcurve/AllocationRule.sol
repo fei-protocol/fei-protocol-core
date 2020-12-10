@@ -6,8 +6,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 abstract contract AllocationRule {
 
 	uint16 public constant GRANULARITY = 10_000; // total allocation allowed
-	address[] pcvDeposits;
-	uint16[] ratios;
+	address[] private pcvDeposits;
+	uint16[] private ratios;
 
 	constructor(address[] memory _pcvDeposits, uint16[] memory _ratios) public {
 		_setAllocation(_pcvDeposits, _ratios);

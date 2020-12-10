@@ -12,9 +12,8 @@ contract EthBondingCurve is BondingCurve {
 		address[] memory allocations, 
 		uint16[] memory ratios, 
 		address oracle
-	)
-		BondingCurve(scale, core, allocations, ratios, oracle)
-	public {}
+	) public
+		BondingCurve(scale, core, allocations, ratios, oracle) {}
 
 	function purchase(uint256 amountIn, address to) public override payable postGenesis returns (uint256 amountOut) {
 		require(msg.value == amountIn, "Bonding Curve: Sent value does not equal input");

@@ -326,11 +326,11 @@ describe('Core', function () {
   		});
   		describe('Member Count', function() {
   			it('is one', async function() {
-  				expect(await this.core.getRoleMemberCount(this.governorRole)).to.be.bignumber.equal(new BN(1));
+  				expect(await this.core.getRoleMemberCount(this.governorRole)).to.be.bignumber.equal(new BN(2)); // gov and core
   			});
   			it('updates to two', async function() {
   				await this.core.grantGovernor(userAddress, {from: governorAddress});
-  				expect(await this.core.getRoleMemberCount(this.governorRole)).to.be.bignumber.equal(new BN(2));
+  				expect(await this.core.getRoleMemberCount(this.governorRole)).to.be.bignumber.equal(new BN(3)); // gov, core, and user
   			});
   		});
   		describe('Admin', function() {

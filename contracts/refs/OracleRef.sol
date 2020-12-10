@@ -10,9 +10,8 @@ contract OracleRef is CoreRef {
 
 	IOracle public oracle;
 
-	constructor(address _core)
-		CoreRef(_core)
-	public {}
+	constructor(address _core) public
+		CoreRef(_core) {}
 
 	function setOracle(address _oracle) public onlyGovernor {
 		_setOracle(_oracle);

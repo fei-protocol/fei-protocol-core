@@ -20,10 +20,10 @@ contract GenesisGroup is ERC20, CoreRef {
 		address _core, 
 		address _bondingcurve,
 		address _ido
-	)
+	) public
 		CoreRef(_core)
 		ERC20("Fei Genesis Group", "FGEN")
-	public {
+	{
 		bondingcurve = IBondingCurve(_bondingcurve);
 		ido = IDOInterface(_ido);
 	}

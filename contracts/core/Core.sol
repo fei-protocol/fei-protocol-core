@@ -48,6 +48,7 @@ contract Core is Permissions {
 	}
 
 	function isGenesisPeriod() public view returns(bool) {
+		// solhint-disable-next-line not-rely-on-time
 		return now < genesisPeriodEnd;
 	}
 }

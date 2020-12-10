@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 contract GovernorAlpha {
     /// @notice The name of this contract
+    // solhint-disable-next-line const-name-snakecase
     string public constant name = "Compound Governor Alpha";
 
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
@@ -176,6 +177,7 @@ contract GovernorAlpha {
     function queue(uint proposalId) public {
         require(state(proposalId) == ProposalState.Succeeded, "GovernorAlpha::queue: proposal can only be queued if it is succeeded");
         Proposal storage proposal = proposals[proposalId];
+        // solhint-disable-next-line not-rely-on-time
         uint eta = add256(block.timestamp, timelock.delay());
         for (uint i = 0; i < proposal.targets.length; i++) {
             _queueOrRevert(proposal.targets[i], proposal.values[i], proposal.signatures[i], proposal.calldatas[i], eta);
@@ -238,6 +240,7 @@ contract GovernorAlpha {
             return ProposalState.Succeeded;
         } else if (proposal.executed) {
             return ProposalState.Executed;
+        // solhint-disable-next-line not-rely-on-time
         } else if (block.timestamp >= add256(proposal.eta, timelock.GRACE_PERIOD())) {
             return ProposalState.Expired;
         } else {
@@ -311,6 +314,7 @@ contract GovernorAlpha {
 
     function getChainId() internal pure returns (uint) {
         uint chainId;
+        // solhint-disable-next-line no-inline-assembly
         assembly { chainId := chainid() }
         return chainId;
     }
@@ -318,6 +322,7 @@ contract GovernorAlpha {
 
 interface TimelockInterface {
     function delay() external view returns (uint);
+    // solhint-disable-next-line func-name-mixedcase
     function GRACE_PERIOD() external view returns (uint);
     function acceptAdmin() external;
     function queuedTransactions(bytes32 hash) external view returns (bool);

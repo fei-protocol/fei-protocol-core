@@ -18,46 +18,46 @@ interface ICore {
 }
 
 contract CoreRef {
-	ICore internal CORE;
+	ICore private _core;
 
 	constructor(address core) public {
-		CORE = ICore(core);
+		_core = ICore(core);
 	}
 
 	modifier ifMinterSelf() {
-		if (CORE.isMinter(address(this))) {
+		if (_core.isMinter(address(this))) {
 			_;
 		}
 	}
 
 	modifier ifBurnerSelf() {
-		if (CORE.isBurner(address(this))) {
+		if (_core.isBurner(address(this))) {
 			_;
 		}
 	}
 
 	modifier onlyMinter() {
-		require(CORE.isMinter(msg.sender), "CoreRef: Caller is not a minter");
+		require(_core.isMinter(msg.sender), "CoreRef: Caller is not a minter");
 		_;
 	}
 
 	modifier onlyBurner() {
-		require(CORE.isBurner(msg.sender), "CoreRef: Caller is not a burner");
+		require(_core.isBurner(msg.sender), "CoreRef: Caller is not a burner");
 		_;
 	}
 
 	modifier onlyPCVController() {
-		require(CORE.isPCVController(msg.sender), "CoreRef: Caller is not a PCV controller");
+		require(_core.isPCVController(msg.sender), "CoreRef: Caller is not a PCV controller");
 		_;
 	}
 
 	modifier onlyGovernor() {
-		require(CORE.isGovernor(msg.sender), "CoreRef: Caller is not a governor");
+		require(_core.isGovernor(msg.sender), "CoreRef: Caller is not a governor");
 		_;
 	}
 
 	modifier onlyCore() {
-		require(msg.sender == address(CORE), "CoreRef: Caller is not core");
+		require(msg.sender == address(_core), "CoreRef: Caller is not core");
 		_;
 	}
 
@@ -67,30 +67,30 @@ contract CoreRef {
 	}
 
 	modifier onlyGenesisGroup() {
-		require(msg.sender == CORE.genesisGroup(), "CoreRef: Caller is not GenesisGroup");
+		require(msg.sender == _core.genesisGroup(), "CoreRef: Caller is not GenesisGroup");
 		_;
 	}
 
 	modifier onlyGenesisPeriod() {
-		require(CORE.isGenesisPeriod(), "CoreRef: Not in Genesis Period");
+		require(_core.isGenesisPeriod(), "CoreRef: Not in Genesis Period");
 		_;
 	}
 
 	modifier postGenesis() {
-		require(!CORE.isGenesisPeriod() && CORE.hasGenesisGroupCompleted(), "CoreRef: Still in Genesis Period");
+		require(!_core.isGenesisPeriod() && _core.hasGenesisGroupCompleted(), "CoreRef: Still in Genesis Period");
 		_;
 	}
  
 	function core() public view returns(ICore) {
-		return ICore(CORE);
+		return ICore(_core);
 	}
 
 	function fei() public view returns(IFei) {
-		return CORE.fei();
+		return _core.fei();
 	}
 
 	function tribe() public view returns(IERC20) {
-		return CORE.tribe();
+		return _core.tribe();
 	}
 
     function burnFeiHeld() internal {
