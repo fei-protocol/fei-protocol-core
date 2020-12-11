@@ -24,6 +24,7 @@ contract UniswapOracle is IOracle, CoreRef {
 	{
 		pair = IUniswapV2Pair(_pair);
 		duration = _duration;
+		// Relative to USD/ETH price
 		isPrice0 = _isPrice0;
 		init();
 	}

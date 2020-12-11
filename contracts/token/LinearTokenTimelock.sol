@@ -71,9 +71,9 @@ contract LinearTokenTimelock {
         lockedToken.transfer(beneficiary, amount);
     }
 
-    function setBeneficiary() public {
+    function setBeneficiary(address newBeneficiary) public virtual {
         require(msg.sender == beneficiary, "LinearTokenTimelock: Caller is not beneficiary");
-        beneficiary = msg.sender;
+        beneficiary = newBeneficiary;
     }
 
     function setLockedToken(address tokenAddress) internal {
