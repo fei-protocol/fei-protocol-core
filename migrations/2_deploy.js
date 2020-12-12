@@ -1,30 +1,50 @@
-const Core = artifacts.require("Core");
-const Fei = artifacts.require("Fei");
-const Oracle = artifacts.require("Oracle");
-const EthBonding = artifacts.require("EthBondingCurve");
-const EthUniswapPCVDeposit = artifacts.require("EthUniswapPCVDeposit");
-const UniswapIncentive = artifacts.require("UniswapIncentive");
+const CoreOrchestrator = artifacts.require("CoreOrchestrator");
+const BondingCurveOrchestrator = artifacts.require("BondingCurveOrchestrator");
+const GenesisOrchestrator = artifacts.require("GenesisOrchestrator");
+const GovernanceOrchestrator = artifacts.require("GovernanceOrchestrator");
+const IDOOrchestrator = artifacts.require("IDOOrchestrator");
+const IncentiveOrchestrator = artifacts.require("IncentiveOrchestrator");
 
 module.exports = function(deployer, network, accounts) {
-  	var core, allocation, oracle, bc;
+  	var bc, incentive, ido, genesis, gov, core;
+
 	deployer.then(function() {
-	  	// Create a new version of Core
-	  	return deployer.deploy(Core);
+	  	return deployer.deploy(BondingCurveOrchestrator);
 	}).then(function(instance) {
-	  	core = instance;
-	  	return deployer.deploy(Oracle);
+	  	bc = instance;
+	  	return deployer.deploy(GenesisOrchestrator);
 	}).then(function(instance) {
-		oracle = instance
-	  	return deployer.deploy(EthUniswapPCVDeposit, core.address);
+		genesis = instance
+	  	return deployer.deploy(GovernanceOrchestrator);
 	}).then(function(instance) {
-	  	allocation = instance;
-	  	return deployer.deploy(EthBonding, "1000000000000000000", core.address, [allocation.address], [10000], oracle.address);
+	  	gov = instance;
+	  	return deployer.deploy(IDOOrchestrator);
 	}).then(function(instance) {
-		bc = instance;
-	 	return core.grantMinter(allocation.address);
+		ido = instance;
+	 	return deployer.deploy(IncentiveOrchestrator);
 	}).then(function(instance) {
-	 	return allocation.addLiquidity("1000000000000000000", {value: "1000000000000000000"});
+		incentive = instance;
+	 	return deployer.deploy(CoreOrchestrator, bc.address, incentive.address, ido.address, genesis.address, gov.address);
 	}).then(function(instance) {
-	 	return core.grantMinter(bc.address);
+		core = instance;
+	 	return bc.transferOwnership(core.address);
+	}).then(function(instance) {
+	 	return incentive.transferOwnership(core.address);
+	}).then(function(instance) {
+	 	return ido.transferOwnership(core.address);
+	}).then(function(instance) {
+	 	return genesis.transferOwnership(core.address);
+	}).then(function(instance) {
+	 	return gov.transferOwnership(core.address);
+	}).then(function(instance) {
+	 	return core.initBondingCurve();
+	}).then(function(instance) {
+	 	return core.initIncentive();
+	}).then(function(instance) {
+	 	return core.initIDO();
+	}).then(function(instance) {
+	 	return core.initGenesis();
+	}).then(function(instance) {
+	 	return core.initGovernance();
 	});
 }
