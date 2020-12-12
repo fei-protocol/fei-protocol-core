@@ -15,7 +15,7 @@ contract LinearTokenTimelock {
 
     uint256 public initialBalance;
 
-    uint256 public lastBalance;
+    uint256 internal lastBalance;
 
     uint256 public releaseTimeStart;
 
@@ -41,7 +41,12 @@ contract LinearTokenTimelock {
         lastBalance = totalToken();
     }
 
-    function totalToken() public view returns(uint256) {
+    modifier onlyBeneficiary() {
+        require(msg.sender == beneficiary, "LinearTokenTimelock: Caller is not a beneficiary");
+        _;
+    }
+
+    function totalToken() public view virtual returns(uint256) {
         return lockedToken.balanceOf(address(this));
     }
 
@@ -63,15 +68,14 @@ contract LinearTokenTimelock {
         return netAvailable;
     }
 
-    function release() public balanceCheck {
+    function release() public onlyBeneficiary balanceCheck {
         uint256 amount = availableForRelease();
-        require(amount > 0, "LinearTokenTimelock: no tokens to release");
+        require(amount != 0, "LinearTokenTimelock: no tokens to release");
 
         lockedToken.transfer(beneficiary, amount);
     }
 
-    function setBeneficiary(address newBeneficiary) public virtual {
-        require(msg.sender == beneficiary, "LinearTokenTimelock: Caller is not beneficiary");
+    function setBeneficiary(address newBeneficiary) public virtual onlyBeneficiary {
         beneficiary = newBeneficiary;
     }
 
