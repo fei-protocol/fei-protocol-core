@@ -22,7 +22,7 @@ contract Fei is ERC20, ERC20Burnable, CoreRef {
     );
 
 	constructor(address core) public
-	   ERC20("Fei Stablecoin", "FEI") 
+	   ERC20("Fei USD", "FEI") 
        CoreRef(core) {}
 
     function mint(address account, uint256 amount) public onlyMinter {
