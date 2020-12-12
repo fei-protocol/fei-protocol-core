@@ -22,13 +22,12 @@ contract LinearTokenTimelock {
     // timestamp when token release is enabled
     uint256 public releaseTimeEnd;
 
-    constructor (address _beneficiary, uint256 _releaseTimeEnd) public {
-        // solhint-disable-next-line not-rely-on-time
-        require(releaseTimeEnd > now, "LinearTokenTimelock: release time is before current time");
+    constructor (address _beneficiary, uint256 duration) public {
+        require(duration != 0, "LinearTokenTimelock: duration is 0");
         beneficiary = _beneficiary;
         // solhint-disable-next-line not-rely-on-time
         releaseTimeStart = now;
-        releaseTimeEnd = _releaseTimeEnd;
+        releaseTimeEnd = releaseTimeStart + duration;
 
     }
 

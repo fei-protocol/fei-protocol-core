@@ -29,21 +29,21 @@ contract TimelockedDelegator is LinearTokenTimelock, CoreRef {
 
     mapping (address => address) public delegateContracts;
 
-    ITribe public TRIBE;
+    ITribe public _tribe;
 
 	constructor(address core, address _beneficiary) public
 		CoreRef(core)
 		LinearTokenTimelock(_beneficiary, RELEASE_WINDOW)
 	{
-		TRIBE = ITribe(address(tribe()));
-		TRIBE.delegate(_beneficiary);
+		_tribe = ITribe(address(tribe()));
+		_tribe.delegate(_beneficiary);
 	}
 
 	function delegate(address delegatee, uint amount) public {
 		require(msg.sender == beneficiary, "TimelockedDelegator: Caller is not beneficiary");
-		address delegateContract = address(new Delegatee(delegatee, address(TRIBE)));
+		address delegateContract = address(new Delegatee(delegatee, address(_tribe)));
 		delegateContracts[delegatee] = delegateContract;
-		TRIBE.transfer(delegatee, amount);
+		_tribe.transfer(delegatee, amount);
 	}
 
 	function undelegate(address delegatee) public {
@@ -54,6 +54,6 @@ contract TimelockedDelegator is LinearTokenTimelock, CoreRef {
 	function setBeneficiary(address newBeneficiary) public override {
         require(msg.sender == beneficiary, "TimelockedDelegator: Caller is not beneficiary");
         beneficiary = newBeneficiary;
-        TRIBE.delegate(newBeneficiary);
+        _tribe.delegate(newBeneficiary);
     }
 }
