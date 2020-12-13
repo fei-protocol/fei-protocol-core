@@ -43,6 +43,7 @@ contract Core is Permissions {
 	}
 
 	function completeGenesisGroup() external {
+		require(!hasGenesisGroupCompleted, "Core: Genesis Group already complete");
 		require(!isGenesisPeriod() && msg.sender == genesisGroup, "Core: Still in Genesis Period or caller is not Genesis Group");
 		hasGenesisGroupCompleted = true;
 	}

@@ -104,6 +104,9 @@ describe('Core', function () {
           it('postGenesis succeeds', async function() {
             await this.coreRef.testPostGenesis();
           });
+          it('second complete reverts', async function() {
+            await expectRevert(this.core.completeGenesisGroup({from: genesisGroup}), "Core: Genesis Group already complete");
+          });
         });
 
         describe('Genesis not completed', function() {

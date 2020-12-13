@@ -189,6 +189,10 @@ describe('GenesisGroup', function () {
       it('deploys IDO', async function() {
         expect(await this.ido.ratio()).to.be.bignumber.equal(new BN('5000000000000000000'));
       });
+
+      it('second launch reverts', async function() {
+        await expectRevert(this.genesisGroup.launch(), "Core: Genesis Group already complete");
+      })
     });
   });
 });
