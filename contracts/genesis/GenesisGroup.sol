@@ -36,6 +36,8 @@ contract GenesisGroup is ERC20, CoreRef {
 
 	function redeem(address to) public postGenesis {
 		Decimal.D256 memory ratio = fgenRatio(to);
+		require(!ratio.equals(Decimal.zero()), "GensisGroup: No balance to redeem");
+		_burn(to, balanceOf(to));
 		uint feiAmount = ratio.mul(feiBalance()).asUint256();
 		fei().transfer(to, feiAmount);
 
@@ -46,15 +48,18 @@ contract GenesisGroup is ERC20, CoreRef {
 	function launch() external {
 		core().completeGenesisGroup();
 		address genesisGroup = address(this);
-		bondingcurve.purchase(genesisGroup.balance, genesisGroup);
+		uint balance = genesisGroup.balance;
+		bondingcurve.purchase{value: balance}(balance, genesisGroup);
 		ido.deploy(exchangeRate());
 	}
 
 	function getAmountOut(uint amountIn, bool inclusive) public view returns (uint) {
+		// TODO what happens when this number is different from ETH in?
 		uint totalIn = totalSupply();
 		if (!inclusive) {
 			totalIn += amountIn;
 		}
+		require(amountIn <= totalIn, "GenesisGroup: Not enough supply");
 		uint totalOut = bondingcurve.getAmountOut(totalIn);
 		return totalOut * amountIn / totalIn;
 	}

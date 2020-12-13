@@ -21,4 +21,12 @@ contract MockBondingCurve {
 	function setCurrentPrice(uint256 price) public {
 		getCurrentPrice = Decimal.from(price);
 	}
+
+	function purchase(uint amount, address to) public payable returns (uint256 amountOut) {
+		return 1;
+	}
+
+	function getAmountOut(uint amount) public view returns(uint) {
+		return 10 * amount;
+	}
 }
