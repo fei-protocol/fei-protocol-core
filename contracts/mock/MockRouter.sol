@@ -41,6 +41,26 @@ contract MockRouter {
         PAIR.setReserves(newReserve0, newReserve1);
     }
 
+    function addLiquidity(
+        address token0,
+        address token1,
+        uint amountToken0Desired,
+        uint amountToken1Desired,
+        uint amountToken0Min,
+        uint amountToken1Min,
+        address to,
+        uint deadline
+    ) external returns (uint amountToken0, uint amountToken1, uint liquidity) {
+        address pair = address(PAIR);
+
+        liquidity = LIQUIDITY_INCREMENT;
+
+        IERC20(token0).transferFrom(to, pair, amountToken0Desired);
+        IERC20(token1).transferFrom(to, pair, amountToken1Desired);
+
+        PAIR.mintAmount(to, LIQUIDITY_INCREMENT);
+    }
+
     function setWETH(address weth) public {
         WETH = weth;
     }
