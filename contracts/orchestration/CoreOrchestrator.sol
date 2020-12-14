@@ -39,7 +39,7 @@ interface IUniRef {
 }
 
 contract CoreOrchestrator is Ownable {
-	address public constant ADMIN = address(0);
+	address public admin;
 
 	Core public core;
 	address public fei;
@@ -61,7 +61,8 @@ contract CoreOrchestrator is Ownable {
 		address _incentiveOrchestrator, 
 		address _idoOrchestrator,
 		address _genesisOrchestrator, 
-		address _governanceOrchestrator
+		address _governanceOrchestrator,
+		address _admin
 	) public {
 		core = new Core();
 		tribe = address(core.tribe());
@@ -76,6 +77,7 @@ contract CoreOrchestrator is Ownable {
 		idoOrchestrator = IIDOOrchestrator(_idoOrchestrator);
 		genesisOrchestrator = IGenesisOrchestrator(_genesisOrchestrator);
 		governanceOrchestrator = IGovernanceOrchestrator(_governanceOrchestrator);
+		admin = _admin;
 	}
 
 	function initBondingCurve() public onlyOwner {
@@ -98,7 +100,7 @@ contract CoreOrchestrator is Ownable {
 	}
 
 	function initIDO() public onlyOwner {
-		idoOrchestrator.init(address(core), ADMIN);
+		idoOrchestrator.init(address(core), admin);
 		core.grantMinter(idoOrchestrator.ido());
 	}
 
@@ -114,7 +116,7 @@ contract CoreOrchestrator is Ownable {
 
 	function initGovernance() public onlyOwner {
 		governanceOrchestrator.init(
-			ADMIN, 
+			admin, 
 			tribe
 		);
 		core.grantGovernor(governanceOrchestrator.timelock());
