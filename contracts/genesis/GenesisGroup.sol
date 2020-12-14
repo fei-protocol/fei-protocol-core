@@ -16,6 +16,8 @@ contract GenesisGroup is ERC20, CoreRef {
 	IBondingCurve public bondingcurve;
 	IDOInterface public ido;
 
+	uint private constant EXCHANGE_RATE_DISCOUNT = 10;
+
 	constructor(
 		address _core, 
 		address _bondingcurve,
@@ -65,7 +67,11 @@ contract GenesisGroup is ERC20, CoreRef {
 	}
 
 	function exchangeRate() public view returns (Decimal.D256 memory) {
-		return Decimal.ratio(feiBalance(), tribeBalance());
+		return Decimal.ratio(feiBalance(), tribeBalance()).div(exchangeRateDiscount());
+	}
+
+	function exchangeRateDiscount() internal view returns(uint) {
+		return EXCHANGE_RATE_DISCOUNT;
 	}
 
 	function fgenRatio(address account) internal view returns (Decimal.D256 memory) {

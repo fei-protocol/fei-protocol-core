@@ -187,7 +187,7 @@ describe('GenesisGroup', function () {
       });
 
       it('deploys IDO', async function() {
-        expect(await this.ido.ratio()).to.be.bignumber.equal(new BN('5000000000000000000'));
+        expect(await this.ido.ratio()).to.be.bignumber.equal(new BN('5000000000000000000').div(new BN(10)));
       });
 
       it('second launch reverts', async function() {
