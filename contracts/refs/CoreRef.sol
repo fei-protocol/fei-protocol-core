@@ -80,6 +80,10 @@ contract CoreRef {
 		require(!_core.isGenesisPeriod() && _core.hasGenesisGroupCompleted(), "CoreRef: Still in Genesis Period");
 		_;
 	}
+
+	function setCore(address core) public onlyGovernor {
+		_core = core;
+	}
  
 	function core() public view returns(ICore) {
 		return ICore(_core);
