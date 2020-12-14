@@ -4,6 +4,7 @@ import "../core/Core.sol";
 import "../oracle/UniswapOracle.sol";
 import "../pcv/IUniswapPCVDeposit.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IBondingCurveOrchestrator {
 	function ethUniswapPCVDeposit() external view returns(address);
@@ -26,12 +27,14 @@ interface IGovernanceOrchestrator {
 
 interface IGenesisOrchestrator {
 	function genesisGroup() external view returns(address);
+	function pool() external view returns(address);
 	function init(address core, address ethBondingCurve, address ido) external;
 }
 
 interface IIDOOrchestrator {
 	function ido() external view returns(address);
-	function init(address core, address admin) external;
+	function timelockedDelegator() external view returns(address);
+	function init(address core, address admin, address tribe) external;
 }
 
 interface IUniRef {
@@ -49,6 +52,11 @@ contract CoreOrchestrator is Ownable {
 	bool public constant USDC_PER_ETH_IS_PRICE_0 = true;
 	address public uniswapOracle;
 	uint public constant GENESIS_DURATION = 4 weeks;
+	uint public tribeSupply;
+	uint public constant IDO_TRIBE_PERCENTAGE = 20;
+	uint public constant GENESIS_TRIBE_PERCENTAGE = 10;
+	uint public constant DEV_TRIBE_PERCENTAGE = 20;
+	uint public constant STAKING_TRIBE_PERCENTAGE = 20;
 
 	IBondingCurveOrchestrator private bcOrchestrator;
 	IIncentiveOrchestrator private incentiveOrchestrator;
@@ -72,12 +80,14 @@ contract CoreOrchestrator is Ownable {
 			UNI_ORACLE_TWAP_DURATION, 
 			USDC_PER_ETH_IS_PRICE_0
 		));
+		core.grantRevoker(_admin);
 		bcOrchestrator = IBondingCurveOrchestrator(_bcOrchestrator);
 		incentiveOrchestrator = IIncentiveOrchestrator(_incentiveOrchestrator);
 		idoOrchestrator = IIDOOrchestrator(_idoOrchestrator);
 		genesisOrchestrator = IGenesisOrchestrator(_genesisOrchestrator);
 		governanceOrchestrator = IGovernanceOrchestrator(_governanceOrchestrator);
 		admin = _admin;
+		tribeSupply = IERC20(tribe).totalSupply();
 	}
 
 	function initBondingCurve() public onlyOwner {
@@ -100,8 +110,11 @@ contract CoreOrchestrator is Ownable {
 	}
 
 	function initIDO() public onlyOwner {
-		idoOrchestrator.init(address(core), admin);
-		core.grantMinter(idoOrchestrator.ido());
+		idoOrchestrator.init(address(core), admin, tribe);
+		address ido = idoOrchestrator.ido();
+		core.grantMinter(ido);
+		core.allocateTribe(ido, tribeSupply * IDO_TRIBE_PERCENTAGE / 100);
+		core.allocateTribe(idoOrchestrator.timelockedDelegator(), tribeSupply * DEV_TRIBE_PERCENTAGE / 100);
 	}
 
 	function initGenesis() public onlyOwner {
@@ -110,8 +123,12 @@ contract CoreOrchestrator is Ownable {
 			bcOrchestrator.ethBondingCurve(), 
 			idoOrchestrator.ido()
 		);
-		core.setGenesisGroup(genesisOrchestrator.genesisGroup());
+		address genesisGroup = genesisOrchestrator.genesisGroup();
+		core.setGenesisGroup(genesisGroup);
 		core.setGenesisPeriodEnd(now + GENESIS_DURATION);
+		core.allocateTribe(genesisGroup, tribeSupply * GENESIS_TRIBE_PERCENTAGE / 100);
+		address pool = genesisOrchestrator.pool();
+		core.allocateTribe(pool, tribeSupply * STAKING_TRIBE_PERCENTAGE / 100);
 	}
 
 	function initGovernance() public onlyOwner {

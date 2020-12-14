@@ -82,11 +82,11 @@ contract CoreRef {
 	}
 
 	function setCore(address core) public onlyGovernor {
-		_core = core;
+		_core = ICore(core);
 	}
  
 	function core() public view returns(ICore) {
-		return ICore(_core);
+		return _core;
 	}
 
 	function fei() public view returns(IFei) {
