@@ -87,7 +87,7 @@ contract UniRef is OracleRef {
         uint reserveTarget, 
         uint reserveOther, 
         Decimal.D256 memory peg
-    ) internal view returns (uint) {
+    ) internal pure returns (uint) {
         uint radicand = peg.mul(reserveTarget).mul(reserveOther).asUint256();
         uint root = radicand.sqrt();
         if (root > reserveTarget) {
@@ -145,7 +145,7 @@ contract UniRef is OracleRef {
     function calculateDeviation(
         Decimal.D256 memory price, 
         Decimal.D256 memory peg
-    ) internal view returns (Decimal.D256 memory) {
+    ) internal pure returns (Decimal.D256 memory) {
         // If price <= peg, then FEI is more expensive and above peg
         // In this case we can just return zero for deviation
         if (price.lessThanOrEqualTo(peg)) {

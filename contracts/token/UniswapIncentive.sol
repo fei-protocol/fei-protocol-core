@@ -116,7 +116,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         Decimal.D256 memory initialDeviation,
         Decimal.D256 memory finalDeviation
     ) {
-        (Decimal.D256 memory initialDeviation, Decimal.D256 memory finalDeviation) = getPriceDeviations(int256(amount));
+        (initialDeviation, finalDeviation) = getPriceDeviations(int256(amount));
 
         if (finalDeviation.equals(Decimal.zero())) {
             return (0, initialDeviation, finalDeviation);

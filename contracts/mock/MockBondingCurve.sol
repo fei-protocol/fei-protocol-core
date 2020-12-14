@@ -5,7 +5,6 @@ import "../external/Decimal.sol";
 
 contract MockBondingCurve {
 
-	uint256 public price;
 	bool public atScale;
 	Decimal.D256 public getCurrentPrice;
 

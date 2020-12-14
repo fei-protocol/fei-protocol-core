@@ -13,7 +13,7 @@ abstract contract AllocationRule {
 		_setAllocation(_pcvDeposits, _ratios);
 	}
 
-	function checkAllocation(address[] memory _pcvDeposits, uint16[] memory _ratios) public view returns (bool) {
+	function checkAllocation(address[] memory _pcvDeposits, uint16[] memory _ratios) public pure returns (bool) {
 		require(_pcvDeposits.length == _ratios.length, "Allocation Rule: PCV Deposits and ratios are different lengths");
 		uint16 total = 0;
 		for (uint16 i = 0; i < _ratios.length; i++) {

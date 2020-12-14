@@ -96,7 +96,7 @@ contract Timelock {
         }
 
         // solhint-disable-next-line avoid-low-level-calls
-        (bool success, bytes memory returnData) = target.call.value(value)(callData); //solhint-disable avoid-call-value
+        (bool success, bytes memory returnData) = target.call{value: value}(callData); //solhint-disable avoid-call-value
         require(success, "Timelock::executeTransaction: Transaction execution reverted.");
 
         emit ExecuteTransaction(txHash, target, value, signature, data, eta);

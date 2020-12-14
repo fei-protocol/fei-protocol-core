@@ -70,7 +70,7 @@ contract GenesisGroup is ERC20, CoreRef {
 		return Decimal.ratio(feiBalance(), tribeBalance()).div(exchangeRateDiscount());
 	}
 
-	function exchangeRateDiscount() internal view returns(uint) {
+	function exchangeRateDiscount() internal pure returns(uint) {
 		return EXCHANGE_RATE_DISCOUNT;
 	}
 

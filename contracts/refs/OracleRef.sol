@@ -17,8 +17,8 @@ contract OracleRef is CoreRef {
 		_setOracle(_oracle);
 	}
 
-    function invert(Decimal.D256 memory peg) public view returns(Decimal.D256 memory) {
-    	return Decimal.one().div(peg);
+    function invert(Decimal.D256 memory price) public pure returns(Decimal.D256 memory) {
+    	return Decimal.one().div(price);
     }
 
     function updateOracle() public returns(bool) {
@@ -26,9 +26,9 @@ contract OracleRef is CoreRef {
     }
 
     function peg() public view returns(Decimal.D256 memory) {
-    	(Decimal.D256 memory peg, bool valid) = oracle.read();
+    	(Decimal.D256 memory _peg, bool valid) = oracle.read();
     	require(valid, "OracleRef: oracle invalid");
-    	return peg;
+    	return _peg;
     }
 
     function capture() internal returns(Decimal.D256 memory) {

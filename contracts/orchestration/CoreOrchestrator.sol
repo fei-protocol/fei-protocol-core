@@ -125,6 +125,7 @@ contract CoreOrchestrator is Ownable {
 		);
 		address genesisGroup = genesisOrchestrator.genesisGroup();
 		core.setGenesisGroup(genesisGroup);
+		//solhint-disable-next-line not-rely-on-time
 		core.setGenesisPeriodEnd(now + GENESIS_DURATION);
 		core.allocateTribe(genesisGroup, tribeSupply * GENESIS_TRIBE_PERCENTAGE / 100);
 		address pool = genesisOrchestrator.pool();
