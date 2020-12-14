@@ -14,7 +14,7 @@ describe('EthBondingCurve', function () {
   const [ userAddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress, genesisGroup ] = accounts;
 
   beforeEach(async function () {
-    this.core = await Core.new({gas: 8000000, from: governorAddress});
+    this.core = await Core.new({from: governorAddress});
     await this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
     await this.core.setGenesisPeriodEnd(0, {from: governorAddress});
     await this.core.completeGenesisGroup({from: genesisGroup});

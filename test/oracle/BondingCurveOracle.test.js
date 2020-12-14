@@ -13,7 +13,7 @@ describe('BondingCurveOracle', function () {
   const [ userAddress, governorAddress ] = accounts;
 
   beforeEach(async function () {
-    this.core = await Core.new({gas: 8000000, from: governorAddress});
+    this.core = await Core.new({from: governorAddress});
     this.mockOracle = await MockOracle.new(500);
     this.bondingCurve = await MockBondingCurve.new(false, 700);
 

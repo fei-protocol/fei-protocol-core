@@ -14,7 +14,7 @@ describe('GenesisGroup', function () {
   const [ userAddress, secondUserAddress, governorAddress, minterAddress ] = accounts;
 
   beforeEach(async function () {
-    this.core = await Core.new({gas: 8000000, from: governorAddress});
+    this.core = await Core.new({from: governorAddress});
     this.fei = await Fei.at(await this.core.fei());
     this.tribe = await Tribe.at(await this.core.tribe());
     this.bc = await MockBondingCurve.new(false, 10);

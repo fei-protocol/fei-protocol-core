@@ -10,7 +10,7 @@ describe('TimelockedDelegator', function () {
   const [ userAddress, beneficiaryAddress ] = accounts;
 
   beforeEach(async function () {
-    this.tribe = await MockTribe.new({gas: 8000000, from: beneficiaryAddress});
+    this.tribe = await MockTribe.new({from: beneficiaryAddress});
     this.delegator = await TimelockedDelegator.new(this.tribe.address, beneficiaryAddress, {gas: 8000000, from: beneficiaryAddress});
     await this.tribe.mint(this.delegator.address, 10000);
     this.window = await this.delegator.RELEASE_WINDOW();

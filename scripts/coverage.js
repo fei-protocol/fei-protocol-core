@@ -5,8 +5,8 @@ const { runCoverage } = require('@openzeppelin/test-environment');
 async function main () {
   await runCoverage(
     ['mock'],
-    'truffle compile',
-    './node_modules/.bin/mocha --exit --timeout 10000'.split(' '),
+    'npm run compile',
+    './node_modules/.bin/mocha --exit --timeout 10000 --recursive'.split(' '),
   );
 }
 

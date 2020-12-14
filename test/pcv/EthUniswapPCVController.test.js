@@ -19,7 +19,7 @@ describe('EthUniswapPCVController', function () {
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit
 
   beforeEach(async function () {
-    this.core = await Core.new({gas: 8000000, from: governorAddress});
+    this.core = await Core.new({from: governorAddress});
     await this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
     await this.core.setGenesisPeriodEnd(0, {from: governorAddress});
     await this.core.completeGenesisGroup({from: genesisGroup});

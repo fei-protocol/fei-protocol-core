@@ -12,7 +12,7 @@ describe('UniswapOracle', function () {
   const [ userAddress, governorAddress ] = accounts;
 
   beforeEach(async function () {
-    this.core = await Core.new({gas: 8000000, from: governorAddress});
+    this.core = await Core.new({from: governorAddress});
     this.startTime = await time.latest();
     this.delta = new BN(1000);
     await time.increase(this.delta);

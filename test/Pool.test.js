@@ -12,7 +12,7 @@ describe('Pool', function () {
   const [ userAddress, minterAddress, governorAddress, genesisGroup, secondUserAddress ] = accounts;
 
   beforeEach(async function () {
-    this.core = await Core.new({gas: 8000000, from: governorAddress});
+    this.core = await Core.new({from: governorAddress});
     this.pool = await Pool.new(this.core.address);
     this.core.grantMinter(minterAddress, {from: governorAddress});
     this.fei = await Fei.at(await this.core.fei());

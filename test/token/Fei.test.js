@@ -13,7 +13,7 @@ describe('Fei', function () {
   const [ minterAddress, burnerAddress, userAddress, incentivizedAddress, operatorAddress ] = accounts;
 
   beforeEach(async function () {
-    this.core = await MockCore.new({gas: 8000000});
+    this.core = await MockCore.new();
     this.fei = await Fei.at(await this.core.fei());
     await this.core.grantMinter(minterAddress);
     await this.core.grantBurner(burnerAddress);

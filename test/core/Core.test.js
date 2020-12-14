@@ -11,7 +11,7 @@ describe('Core', function () {
   const [ userAddress, minterAddress, burnerAddress, governorAddress, pcvControllerAddress, genesisGroup, revokeAddress ] = accounts;
 
   beforeEach(async function () {
-    this.core = await Core.new({gas: 8000000, from: governorAddress});
+    this.core = await Core.new({from: governorAddress});
     this.coreRef = await MockCoreRef.new(this.core.address);
     await this.core.grantMinter(minterAddress, {from: governorAddress});
     await this.core.grantBurner(burnerAddress, {from: governorAddress});
@@ -84,7 +84,7 @@ describe('Core', function () {
         });
 
         it('completeGenesisGroup reverts', async function() {
-
+            await expectRevert(this.core.completeGenesisGroup({from: genesisGroup}), "Core: Still in Genesis Period or caller is not Genesis Group");
         });
 
         it('genesisOnly succeeds', async function() {
