@@ -12,7 +12,7 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
     using Roots for uint256;
 
 	uint256 public override scale;
-	uint256 public override totalPurchased = 0; // FEI_b for this curve
+	uint256 public override totalPurchased; // FEI_b for this curve
 	uint256 public override buffer = 100;
 	uint256 public constant BUFFER_GRANULARITY = 10_000;
 
@@ -84,7 +84,8 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
 	function getBondingCurveAmountOut(uint256 adjustedAmountIn) internal view virtual returns(uint256);
 
 	function getBuffer() internal view returns(Decimal.D256 memory) {
-		return Decimal.ratio(BUFFER_GRANULARITY - buffer, BUFFER_GRANULARITY);
+		uint granularity = BUFFER_GRANULARITY;
+		return Decimal.ratio(granularity - buffer, granularity);
 	} 
 
 	function getBufferAdjustedAmount(uint256 amountIn) internal view returns(uint256) {

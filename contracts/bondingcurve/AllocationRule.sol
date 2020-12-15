@@ -2,10 +2,8 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../external/SafeMathCopy.sol";
 
 abstract contract AllocationRule {
-	using SafeMathCopy for uint256;
 
 	uint256 public constant GRANULARITY = 10_000; // total allocation allowed
 	uint256[] private ratios;
@@ -19,7 +17,7 @@ abstract contract AllocationRule {
 		require(_pcvDeposits.length == _ratios.length, "Allocation Rule: PCV Deposits and ratios are different lengths");
 		uint256 total;
 		for (uint256 i; i < _ratios.length; i++) {
-			total = total.add(_ratios[i]);
+			total += _ratios[i];
 		}
 		require(total == GRANULARITY, "Allocation Rule: ratios do not total 100%");
 		return true;
@@ -38,8 +36,9 @@ abstract contract AllocationRule {
 	}
 
 	function allocate(uint256 total) internal {
+		uint256 granularity = GRANULARITY;
 		for (uint256 i; i < ratios.length; i++) {
-			uint256 amount = total.mul(ratios[i]).div(GRANULARITY);
+			uint256 amount = total * ratios[i] / granularity;
 			allocateSingle(amount, pcvDeposits[i]);
 		}
 	}
