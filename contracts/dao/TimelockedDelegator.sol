@@ -16,11 +16,10 @@ contract Delegatee is Ownable {
 		tribe.delegate(delegatee);
 	}
 
-	function withdraw() public onlyOwner returns(uint) {
+	function withdraw() public onlyOwner {
 		ITribe _tribe = tribe;
 		uint balance = _tribe.balanceOf(address(this));
 		_tribe.transfer(owner(), balance);
-		return balance;
 	}
 }
 
@@ -29,6 +28,8 @@ contract TimelockedDelegator is LinearTokenTimelock {
 	uint constant public RELEASE_WINDOW = 4 * 365 * 24 * 60 * 60; // 4 years vesting
 
     mapping (address => address) public delegateContracts;
+    // Using as source of truth to prevent accounting errors by transferring to Delegate contracts
+    mapping (address => uint) public delegateAmounts;
 
     ITribe public tribe;
     uint public delegatedAmount;
@@ -49,15 +50,19 @@ contract TimelockedDelegator is LinearTokenTimelock {
 		ITribe _tribe = tribe;
 		address delegateContract = address(new Delegatee(delegatee, address(_tribe)));
 		delegateContracts[delegatee] = delegateContract;
+		delegateAmounts[delegatee] = amount;
 		delegatedAmount += amount;
 		_tribe.transfer(delegateContract, amount);
 	}
 
 	function undelegate(address delegatee) public onlyBeneficiary returns(uint) {
-		require(delegateContracts[delegatee] != address(0), "TimelockedDelegator: Delegate contract nonexistent");
-		uint amount = Delegatee(delegateContracts[delegatee]).withdraw();
+		address delegateContract = delegateContracts[delegatee];
+		require(delegateContract != address(0), "TimelockedDelegator: Delegate contract nonexistent");
+		Delegatee(delegateContract).withdraw();
+		uint amount = delegateAmounts[delegatee];
 		delegatedAmount -= amount;
 		delegateContracts[delegatee] = address(0);
+		delegateAmounts[delegatee] = 0;
 		return amount;
 	}
 
