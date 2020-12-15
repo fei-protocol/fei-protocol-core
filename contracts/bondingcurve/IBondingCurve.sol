@@ -15,7 +15,7 @@ interface IBondingCurve {
 
 	function setScale(uint256 _scale) external;
 
-	function setAllocation(address[] calldata allocations, uint16[] calldata ratios) external;
+	function setAllocation(address[] calldata allocations, uint256[] calldata ratios) external;
 
 	// ----- Getters -----
 

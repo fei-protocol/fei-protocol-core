@@ -10,7 +10,7 @@ contract EthBondingCurve is BondingCurve {
 		uint256 scale, 
 		address core, 
 		address[] memory allocations, 
-		uint16[] memory ratios, 
+		uint256[] memory ratios, 
 		address oracle
 	) public
 		BondingCurve(scale, core, allocations, ratios, oracle) {}

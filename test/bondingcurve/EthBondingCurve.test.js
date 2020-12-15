@@ -147,10 +147,6 @@ describe('EthBondingCurve', function () {
       await expectRevert(this.bondingCurve.checkAllocation([this.pcvDeposit1.address, this.pcvDeposit2.address], [9000, 2000]), "Allocation Rule: ratios do not total 100%");
     });
 
-    it('Overflow reverts', async function() {
-      await expectRevert(this.bondingCurve.checkAllocation([this.pcvDeposit1.address, this.pcvDeposit2.address], [65535, 10001]), "Some kind of revert");
-    });
-
     it('Correct allocation rule succeeds', async function() {
       expect(await this.bondingCurve.checkAllocation([this.pcvDeposit1.address, this.pcvDeposit2.address], [5000, 5000])).to.be.equal(true);
     });

@@ -20,7 +20,7 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
 		uint256 _scale, 
 		address core, 
 		address[] memory allocations, 
-		uint16[] memory ratios, 
+		uint256[] memory ratios, 
 		address _oracle
 	) public
 		OracleRef(core)
@@ -39,7 +39,7 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
 		buffer = _buffer;
 	}
 
-	function setAllocation(address[] memory allocations, uint16[] memory ratios) public override onlyGovernor {
+	function setAllocation(address[] memory allocations, uint256[] memory ratios) public override onlyGovernor {
 		_setAllocation(allocations, ratios);
 	}
 
