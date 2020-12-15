@@ -9,8 +9,8 @@ import "@openzeppelin/contracts/math/Math.sol";
 
 contract UniswapIncentive is IUniswapIncentive, UniRef {
 	using Decimal for Decimal.D256;
-    using Babylonian for uint256;
 
+    // TODO packing
     struct TimeWeightInfo {
         uint256 blockNo;
         uint256 weight;
@@ -36,7 +36,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     	address receiver, 
     	address, 
     	uint256 amountIn
-    ) public override onlyFei {
+    ) external override onlyFei {
         updateOracle();
     	if (isPair(sender)) {
     		incentivizeBuy(receiver, amountIn);

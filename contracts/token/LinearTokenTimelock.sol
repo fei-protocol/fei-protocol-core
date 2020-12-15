@@ -46,6 +46,13 @@ contract LinearTokenTimelock {
         _;
     }
 
+    function release() external onlyBeneficiary balanceCheck {
+        uint256 amount = availableForRelease();
+        require(amount != 0, "LinearTokenTimelock: no tokens to release");
+
+        lockedToken.transfer(beneficiary, amount);
+    }
+
     function totalToken() public view virtual returns(uint256) {
         return lockedToken.balanceOf(address(this));
     }
@@ -66,13 +73,6 @@ contract LinearTokenTimelock {
         uint totalAvailable = initialBalance * elapsed / window;
         uint netAvailable = totalAvailable - alreadyReleasedAmount();
         return netAvailable;
-    }
-
-    function release() public onlyBeneficiary balanceCheck {
-        uint256 amount = availableForRelease();
-        require(amount != 0, "LinearTokenTimelock: no tokens to release");
-
-        lockedToken.transfer(beneficiary, amount);
     }
 
     function setBeneficiary(address newBeneficiary) public virtual onlyBeneficiary {

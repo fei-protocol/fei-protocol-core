@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/math/Math.sol";
 contract Pool is CoreRef, ERC20 {
 	using Decimal for Decimal.D256;
 
+	// TODO packing? / start possibly not needed
 	uint public startTime;
 	uint public endTime;
 	uint public constant DURATION = 2 * 365 days;
@@ -23,11 +24,17 @@ contract Pool is CoreRef, ERC20 {
 		ERC20("Fei USD Pool", "poolFEI")
 	{}
 
-	function init() public postGenesis {
+	function init() external postGenesis {
 		require(!initialized, "Pool: Already initialized");
 		startTime = now;
 		endTime = startTime + DURATION;
 		initialized = true;
+	}
+
+	function claim() external returns(uint) {
+		(uint amountFei, uint amountTribe) = withdraw();
+		deposit(amountFei);
+		return amountTribe;
 	}
 
 	function deposit(uint amount) public {
@@ -51,12 +58,6 @@ contract Pool is CoreRef, ERC20 {
 		fei().transfer(msg.sender, amountFei);
 		tribe().transfer(msg.sender, amountTribe);
 		return (amountFei, amountTribe);
-	}
-
-	function claim() public returns(uint) {
-		(uint amountFei, uint amountTribe) = withdraw();
-		deposit(amountFei);
-		return amountTribe;
 	}
 
     function userRedeemableTribe(address account) public view returns(uint) {

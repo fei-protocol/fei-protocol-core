@@ -38,11 +38,11 @@ contract UniRef is OracleRef {
 		}
 	}
 
-	function liquidityOwned() public requirePair view returns (uint256) {
+	function liquidityOwned() public view requirePair returns (uint256) {
 		return pair.balanceOf(address(this));
 	}
 
-	function token() public requirePair view returns (address) {
+	function token() public view requirePair returns (address) {
 		address token0 = pair.token0();
 		if (address(fei()) == token0) {
 			return pair.token1();
@@ -50,13 +50,13 @@ contract UniRef is OracleRef {
 		return token0;
 	}
 
-	function ratioOwned() public view returns (Decimal.D256 memory) {	
+	function ratioOwned() public view requirePair returns (Decimal.D256 memory) {	
     	uint256 balance = liquidityOwned();
     	uint256 total = pair.totalSupply();
     	return Decimal.ratio(balance, total);
     }
 
-	function getReserves() public requirePair view returns (uint feiReserves, uint tokenReserves) {
+	function getReserves() public view requirePair returns (uint feiReserves, uint tokenReserves) {
         address token0 = pair.token0();
         (uint reserve0, uint reserve1,) = pair.getReserves();
         (feiReserves, tokenReserves) = address(fei()) == token0 ? (reserve0, reserve1) : (reserve1, reserve0);

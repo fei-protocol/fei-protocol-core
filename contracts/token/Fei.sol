@@ -35,18 +35,14 @@ contract Fei is ERC20, ERC20Burnable, CoreRef {
         emit Burning(account, msg.sender, amount);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 amount) internal override {
-        if (from != address(0) && to != address(0)) {
-            checkAndApplyIncentives(from, to, amount);      
-        }
-    }
-
     function setIncentiveContract(address account, address incentive) public onlyGovernor {
         incentives[account] = incentive;
     }
 
-    function getIncentiveContract(address account) public view returns (address) {
-        return incentives[account];
+    function _beforeTokenTransfer(address from, address to, uint256 amount) internal override {
+        if (from != address(0) && to != address(0)) {
+            checkAndApplyIncentives(from, to, amount);      
+        }
     }
 
     function checkAndApplyIncentives(address sender, address recipient, uint256 amount) internal {

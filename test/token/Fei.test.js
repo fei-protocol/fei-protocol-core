@@ -87,7 +87,7 @@ describe('Fei', function () {
     });
 
     it('incentive contract registered', async function() {
-        expect(await this.fei.getIncentiveContract(incentivizedAddress)).to.be.bignumber.equal(this.incentive.address);
+        expect(await this.fei.incentives(incentivizedAddress)).to.be.bignumber.equal(this.incentive.address);
     });
 
   	describe('via transfer', function() {

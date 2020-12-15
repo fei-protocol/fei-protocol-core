@@ -28,14 +28,14 @@ contract EthUniswapPCVController is UniRef {
 		minDistanceForReweight = Decimal.ratio(1, 100); // initial min is 1%
 	}
 
-	function forceReweight() public onlyGovernor {
-		_reweight();
-	}
-
-	function reweight() public postGenesis {
+	function reweight() external postGenesis {
 		require(reweightEligible(), "EthUniswapPCVController: Not at incentive parity or not at min distance");
 		_reweight();
 		incentivize();
+	}
+
+	function forceReweight() public onlyGovernor {
+		_reweight();
 	}
 
 	function reweightEligible() public view returns(bool) {
