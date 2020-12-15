@@ -2,8 +2,10 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./UniswapPCVDeposit.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 contract EthUniswapPCVDeposit is UniswapPCVDeposit {
+    using Address for address payable;
 
     constructor(address _token, address core) public
         UniswapPCVDeposit(_token, core) 
@@ -28,7 +30,7 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
     }
 
     function transferWithdrawn(address to, uint256 amount) internal override {
-        payable(to).transfer(amount);
+        payable(to).sendValue(amount);
     }
 
     function addLiquidity(uint256 ethAmount, uint256 feiAmount) internal {
