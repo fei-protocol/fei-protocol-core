@@ -17,8 +17,9 @@ contract Delegatee is Ownable {
 	}
 
 	function withdraw() public onlyOwner returns(uint) {
-		uint balance = tribe.balanceOf(address(this));
-		tribe.transfer(owner(), balance);
+		ITribe _tribe = tribe;
+		uint balance = _tribe.balanceOf(address(this));
+		_tribe.transfer(owner(), balance);
 		return balance;
 	}
 }
@@ -45,10 +46,11 @@ contract TimelockedDelegator is LinearTokenTimelock {
 		if (delegateContracts[delegatee] != address(0)) {
 			amount += undelegate(delegatee);
 		}
-		address delegateContract = address(new Delegatee(delegatee, address(tribe)));
+		ITribe _tribe = tribe;
+		address delegateContract = address(new Delegatee(delegatee, address(_tribe)));
 		delegateContracts[delegatee] = delegateContract;
 		delegatedAmount += amount;
-		tribe.transfer(delegateContract, amount);
+		_tribe.transfer(delegateContract, amount);
 	}
 
 	function undelegate(address delegatee) public onlyBeneficiary returns(uint) {
@@ -59,6 +61,7 @@ contract TimelockedDelegator is LinearTokenTimelock {
 		return amount;
 	}
 
+	// Used for Timelock to calculate how much to release
 	function totalToken() public view override returns(uint256) {
         return tribeBalance() + delegatedAmount;
     }

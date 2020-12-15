@@ -38,8 +38,9 @@ contract Core is Permissions {
 	}
 
 	function allocateTribe(address to, uint amount) public onlyGovernor {
-		require(tribe.balanceOf(address(this)) > amount, "Core: Not enough Tribe");
-		tribe.transfer(to, amount);
+		IERC20 _tribe = tribe;
+		require(_tribe.balanceOf(address(this)) > amount, "Core: Not enough Tribe");
+		_tribe.transfer(to, amount);
 	}
 
 	function completeGenesisGroup() external {
