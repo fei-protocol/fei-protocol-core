@@ -21,7 +21,7 @@ contract UniRef is OracleRef {
 	constructor(address core) public OracleRef(core) {}
 
 	modifier requirePair() {
-		require(hasPair(), "UniRef: Contract has no pair defined");
+		require(hasPair(), "UniRef: Contract has no pair");
 		_;
 	}
 
@@ -151,7 +151,7 @@ contract UniRef is OracleRef {
         if (price.lessThanOrEqualTo(peg)) {
             return Decimal.zero();
         }
-        Decimal.D256 memory delta = price.sub(peg, "UniswapIncentive: price exceeds peg"); // Should never error
+        Decimal.D256 memory delta = price.sub(peg, "UniRef: price exceeds peg"); // Should never error
         return delta.div(peg);
     }
 }
