@@ -30,13 +30,13 @@ contract GenesisGroup is ERC20, CoreRef {
 		ido = IDOInterface(_ido);
 	}
 
-	function purchase(address to) public payable onlyGenesisPeriod {
+	function purchase(address to) external payable onlyGenesisPeriod {
 		uint value = msg.value;
 		require(value != 0, "GenesisGroup: no value sent");
 		_mint(to, value);
 	}
 
-	function redeem(address to) public postGenesis {
+	function redeem(address to) external postGenesis {
 		Decimal.D256 memory ratio = fgenRatio(to);
 		require(!ratio.equals(Decimal.zero()), "GensisGroup: No balance to redeem");
 		_burn(to, balanceOf(to));
@@ -55,8 +55,9 @@ contract GenesisGroup is ERC20, CoreRef {
 		ido.deploy(exchangeRate());
 	}
 
+	// TODO add TRIBE amount out
 	function getAmountOut(uint amountIn, bool inclusive) public view returns (uint) {
-		// TODO what happens when this number is different from ETH in?
+		// TODO what happens when this number is different from ETH in? i.e. someone force sends ETH
 		uint totalIn = totalSupply();
 		if (!inclusive) {
 			totalIn += amountIn;
