@@ -73,8 +73,8 @@ contract EthUniswapPCVController is UniRef {
 		if (feiReserves == 0 || ethReserves == 0) {
 			return;
 		}
-		Decimal.D256 memory peg = capture();
-    	require(isBelowPeg(peg), "EthUniswapPCVController: already at or above peg");
+		updateOracle();
+    	require(isBelowPeg(peg()), "EthUniswapPCVController: already at or above peg");
     	uint amountEth = getAmountToPegOther();
     	swapEth(amountEth, ethReserves, feiReserves);
 	}

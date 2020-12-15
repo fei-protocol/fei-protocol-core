@@ -101,15 +101,15 @@ contract CoreRef {
     	fei().burn(feiBalance());
     }
 
+    function mintFei(uint256 amount) internal {
+		fei().mint(address(this), amount);
+	}
+
 	function feiBalance() internal view returns (uint) {
 		return fei().balanceOf(address(this));
 	}
 
 	function tribeBalance() internal view returns (uint) {
 		return tribe().balanceOf(address(this));
-	}
-
-    function mintFei(uint256 amount) internal {
-		fei().mint(address(this), amount);
 	}
 }

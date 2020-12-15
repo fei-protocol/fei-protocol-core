@@ -31,11 +31,6 @@ contract OracleRef is CoreRef {
     	return _peg;
     }
 
-    function capture() internal returns(Decimal.D256 memory) {
-    	updateOracle();
-    	return peg();
-    }
-
     function _setOracle(address _oracle) internal {
     	oracle = IOracle(_oracle);
     }
