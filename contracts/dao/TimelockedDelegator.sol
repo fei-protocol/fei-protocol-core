@@ -20,6 +20,7 @@ contract Delegatee is Ownable {
 		ITribe _tribe = tribe;
 		uint balance = _tribe.balanceOf(address(this));
 		_tribe.transfer(owner(), balance);
+		selfdestruct(payable(owner()));
 	}
 }
 

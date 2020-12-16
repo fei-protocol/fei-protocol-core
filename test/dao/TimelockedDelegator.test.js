@@ -1,4 +1,4 @@
-const { accounts, contract } = require('@openzeppelin/test-environment');
+const { accounts, contract, web3 } = require('@openzeppelin/test-environment');
 
 const { BN, expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
@@ -101,6 +101,7 @@ describe('TimelockedDelegator', function () {
 
       describe('Double Delegation', function() {
         beforeEach(async function() {
+          this.originalDelegatee = await this.delegator.delegateContracts(userAddress);
           await this.delegator.delegate(userAddress, 100, {from: beneficiaryAddress});
         });
         it('updates balances', async function() {
@@ -115,6 +116,10 @@ describe('TimelockedDelegator', function () {
 
         it('maintains total token', async function() {
             expect(await this.delegator.totalToken()).to.be.bignumber.equal(new BN(10000));
+        });
+
+        it('original delegatee is deleted', async function() {
+          expect(await web3.eth.getCode(this.originalDelegatee)).to.be.equal('0x');
         });
       });
 
@@ -135,6 +140,11 @@ describe('TimelockedDelegator', function () {
         it('maintains total token', async function() {
             expect(await this.delegator.totalToken()).to.be.bignumber.equal(new BN(10000));
         });
+
+        it('delegatee is deleted', async function() {
+          expect(await web3.eth.getCode(this.delegatee)).to.be.equal('0x');
+        });
+
         describe('Double Undelegation', function() {
           it('reverts', async function() {
             await expectRevert(this.delegator.undelegate(userAddress, {from: beneficiaryAddress}), "TimelockedDelegator: Delegate contract nonexistent");
