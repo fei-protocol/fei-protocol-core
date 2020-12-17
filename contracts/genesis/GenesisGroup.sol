@@ -30,8 +30,8 @@ contract GenesisGroup is ERC20, CoreRef {
 		ido = IDOInterface(_ido);
 	}
 
-	function purchase(address to) external payable onlyGenesisPeriod {
-		uint value = msg.value;
+	function purchase(address to, uint value) external payable onlyGenesisPeriod {
+		require(msg.value == value, "GenesisGroup: value mismatch");
 		require(value != 0, "GenesisGroup: no value sent");
 		_mint(to, value);
 	}

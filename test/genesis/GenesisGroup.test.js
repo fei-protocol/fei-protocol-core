@@ -36,12 +36,17 @@ describe('GenesisGroup', function () {
       });
       describe('No value', function() {
         it('reverts', async function() {
-          await expectRevert(this.genesisGroup.purchase(userAddress, {from: userAddress, value: 0}), "GenesisGroup: no value sent");
+          await expectRevert(this.genesisGroup.purchase(userAddress, 0, {from: userAddress, value: 0}), "GenesisGroup: no value sent");
+        });
+      });
+      describe('Wrong value', function() {
+        it('reverts', async function() {
+          await expectRevert(this.genesisGroup.purchase(userAddress, 100, {from: userAddress, value: 1000}), "GenesisGroup: value mismatch");
         });
       });
       describe('With value', function() {
         beforeEach(async function() {
-          await this.genesisGroup.purchase(userAddress, {from: userAddress, value: 1000});
+          await this.genesisGroup.purchase(userAddress, 1000, {from: userAddress, value: 1000});
         });
         it('Updates balances', async function() {
           expect(await balance.current(this.genesisGroup.address)).to.be.bignumber.equal(new BN(1000));
@@ -50,7 +55,7 @@ describe('GenesisGroup', function () {
         });
         describe('Second Purchase', function() {
           beforeEach(async function() {
-            await this.genesisGroup.purchase(secondUserAddress, {from: secondUserAddress, value: 1000});
+            await this.genesisGroup.purchase(secondUserAddress, 1000, {from: secondUserAddress, value: 1000});
           });
           it('Updates balances', async function() {
             expect(await balance.current(this.genesisGroup.address)).to.be.bignumber.equal(new BN(2000));
@@ -67,8 +72,8 @@ describe('GenesisGroup', function () {
       let latest = await time.latest();
       await this.core.setGenesisPeriodEnd(latest.add(new BN(1000)), {from: governorAddress});
       // 3/4 first user
-      await this.genesisGroup.purchase(userAddress, {from: userAddress, value: 3000});
-      await this.genesisGroup.purchase(secondUserAddress, {from: secondUserAddress, value: 1000});
+      await this.genesisGroup.purchase(userAddress, 3000, {from: userAddress, value: 3000});
+      await this.genesisGroup.purchase(secondUserAddress, 1000, {from: secondUserAddress, value: 1000});
     });
     describe('During Genesis Period', function() {
       it('reverts', async function() {
@@ -132,7 +137,7 @@ describe('GenesisGroup', function () {
 
       describe('Existing', function() {
         beforeEach(async function() {
-          await this.genesisGroup.purchase(userAddress, {from: userAddress, value: 1000});
+          await this.genesisGroup.purchase(userAddress, 1000, {from: userAddress, value: 1000});
         });
 
         it('succeeds', async function() {
@@ -154,7 +159,7 @@ describe('GenesisGroup', function () {
 
       describe('Existing', function() {
         beforeEach(async function() {
-          await this.genesisGroup.purchase(userAddress, {from: userAddress, value: 1000});
+          await this.genesisGroup.purchase(userAddress, 1000, {from: userAddress, value: 1000});
         });
 
         it('succeeds', async function() {
@@ -182,7 +187,7 @@ describe('GenesisGroup', function () {
       beforeEach(async function() {
         let latest = await time.latest();
         await this.core.setGenesisPeriodEnd(latest.add(new BN(1000)), {from: governorAddress});
-        await this.genesisGroup.purchase(userAddress, {from: userAddress, value: 1000});
+        await this.genesisGroup.purchase(userAddress, 1000, {from: userAddress, value: 1000});
         await this.core.setGenesisPeriodEnd(latest.sub(new BN(1000)), {from: governorAddress});
         await this.genesisGroup.launch();
       });
