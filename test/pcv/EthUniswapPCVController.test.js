@@ -88,7 +88,11 @@ describe('EthUniswapPCVController', function () {
           await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/ETH with 10k liquidity
           await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
           await this.fei.mint(this.pcvController.address, 50000000, {from: minterAddress}); // seed Fei to burn
-          await this.pcvController.forceReweight({from: governorAddress});
+          expectEvent(
+            await this.pcvController.forceReweight({from: governorAddress}),
+            'Reweight',
+            { _caller: governorAddress }
+          );
         });
 
         it('pair gets some ETH in swap', async function() {
@@ -197,9 +201,28 @@ describe('EthUniswapPCVController', function () {
       });
     });
 
+    describe('Reweight Incentive', function() {
+      it('Governor set succeeds', async function() {
+        expectEvent(
+          await this.pcvController.setReweightIncentive(10000, {from: governorAddress}),
+          'ReweightIncentiveUpdate',
+          { _amount: '10000' }
+        );
+        expect(await this.pcvController.reweightIncentiveAmount()).to.be.bignumber.equal('10000');
+      });
+
+      it('Non-governor set reverts', async function() {
+        await expectRevert(this.pcvController.setReweightIncentive(10000, {from: userAddress}), "CoreRef: Caller is not a governor");
+      });
+    });
+
     describe('Reweight Min Distance', function() {
       it('Governor set succeeds', async function() {
-        await this.pcvController.setReweightMinDistance(50, {from: governorAddress});
+        expectEvent(
+          await this.pcvController.setReweightMinDistance(50, {from: governorAddress}),
+          'ReweightMinDistanceUpdate',
+          { _basisPoints: '50' }
+        );
         expect(await this.pcvController.minDistanceForReweight()).to.be.bignumber.equal('5000000000000000');
       });
 
@@ -232,7 +255,11 @@ describe('EthUniswapPCVController', function () {
 
     describe('PCV Deposit', function() {
       it('Governor set succeeds', async function() {
-        await this.pcvController.setPCVDeposit(userAddress, {from: governorAddress});
+        expectEvent(
+          await this.pcvController.setPCVDeposit(userAddress, {from: governorAddress}),
+          'PCVDepositUpdate',
+          { _pcvDeposit: userAddress }
+        );
         expect(await this.pcvController.pcvDeposit()).to.be.equal(userAddress);
       });
 

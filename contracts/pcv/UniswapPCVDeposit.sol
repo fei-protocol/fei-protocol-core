@@ -9,6 +9,8 @@ import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
 	using Decimal for Decimal.D256;
 
+    event Withdrawal(address indexed _caller, address indexed _to, uint _amount);
+
 	constructor (address token, address core) public
 		UniRef(core)
 	{
@@ -32,6 +34,7 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
     	uint256 amountWithdrawn = removeLiquidity(liquidityToWithdraw);
     	transferWithdrawn(to, amountWithdrawn);
     	burnFeiHeld();
+    	emit Withdrawal(msg.sender, to, amountWithdrawn);
     }
 
 	function totalValue() public view override returns(uint256) {

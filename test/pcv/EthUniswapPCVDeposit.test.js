@@ -44,7 +44,14 @@ describe('EthUniswapPCVDeposit', function () {
         await this.pair.setReserves(0, 0);
         this.pairEth = await balance.current(this.pair.address);
         this.pairFei = await this.fei.balanceOf(this.pair.address);
-        await this.allocation.deposit("100000", {from: userAddress, value: "100000"});
+        expectEvent(
+          await this.allocation.deposit("100000", {from: userAddress, value: "100000"}),
+          'Deposit',
+          {
+            _from: userAddress,
+            _amount: "100000"
+          }
+        );
       });
 
       it('deposits at oracle price', async function() {
@@ -182,7 +189,15 @@ describe('EthUniswapPCVDeposit', function () {
 
       describe('Partial', function() {
         beforeEach(async function() {
-          await this.allocation.withdraw(beneficiaryAddress, "50000", {from: userAddress});
+          expectEvent(
+            await this.allocation.withdraw(beneficiaryAddress, "50000", {from: userAddress}),
+            'Withdrawal',
+            {
+              _caller: userAddress,
+              _to: beneficiaryAddress,
+              _amount: "50000"
+            }
+          );
         });
 
         it('user balance updates', async function() {

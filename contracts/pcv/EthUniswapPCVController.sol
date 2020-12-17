@@ -17,6 +17,11 @@ contract EthUniswapPCVController is UniRef {
 	uint public reweightIncentiveAmount;
 	Decimal.D256 public minDistanceForReweight;
 
+	event Reweight(address indexed _caller);
+	event PCVDepositUpdate(address indexed _pcvDeposit);
+	event ReweightIncentiveUpdate(uint _amount);
+	event ReweightMinDistanceUpdate(uint _basisPoints);
+
 	constructor (address core, address _pcvDeposit, address _oracle, address _incentiveContract) public
 		UniRef(core)
 	{
@@ -46,14 +51,17 @@ contract EthUniswapPCVController is UniRef {
 
 	function setPCVDeposit(address _pcvDeposit) public onlyGovernor {
 		pcvDeposit = IUniswapPCVDeposit(_pcvDeposit);
+		emit PCVDepositUpdate(_pcvDeposit);
 	}
 
 	function setReweightIncentive(uint amount) public onlyGovernor {
 		reweightIncentiveAmount = amount;
+		emit ReweightIncentiveUpdate(amount);
 	}
 
 	function setReweightMinDistance(uint basisPoints) public onlyGovernor {
 		minDistanceForReweight = Decimal.ratio(basisPoints, 10000);
+		emit ReweightMinDistanceUpdate(basisPoints);
 	}
 
 	function incentivize() internal ifMinterSelf {
@@ -66,6 +74,7 @@ contract EthUniswapPCVController is UniRef {
 		uint balance = address(this).balance;
 		pcvDeposit.deposit{value: balance}(balance);
 		burnFeiHeld();
+		emit Reweight(msg.sender);
 	}
 
 	function returnToPeg() internal {

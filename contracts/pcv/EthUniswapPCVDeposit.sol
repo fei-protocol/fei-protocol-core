@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/utils/Address.sol";
 contract EthUniswapPCVDeposit is UniswapPCVDeposit {
     using Address for address payable;
 
+    event Deposit(address indexed _from, uint _amount);
+
     constructor(address _token, address core) public
         UniswapPCVDeposit(_token, core) 
     {}
@@ -15,6 +17,7 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
     	require(ethAmount == msg.value, "Bonding Curve: Sent value does not equal input");
         uint256 feiAmount = getAmountFeiToDeposit(ethAmount);
         addLiquidity(ethAmount, feiAmount);
+        emit Deposit(msg.sender, ethAmount);
     }
 
     function removeLiquidity(uint256 liquidity) internal override returns (uint256) {
