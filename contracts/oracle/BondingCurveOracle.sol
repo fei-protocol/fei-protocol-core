@@ -13,6 +13,8 @@ contract BondingCurveOracle is IOracle, CoreRef {
 	IBondingCurve public bondingCurve;
 	bool public killSwitch;
 
+	event KillSwitchUpdate(bool _killSwitch);
+
 	constructor(address _core, address _oracle, address _bondingCurve) public
 		CoreRef(_core)
 	{
@@ -22,6 +24,7 @@ contract BondingCurveOracle is IOracle, CoreRef {
 
 	function setKillSwitch(bool _killSwitch) public onlyGovernor {
 		killSwitch = _killSwitch;
+		emit KillSwitchUpdate(_killSwitch);
 	}
 
 	function update() external override returns (bool) {

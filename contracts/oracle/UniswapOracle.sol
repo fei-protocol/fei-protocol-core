@@ -22,6 +22,10 @@ contract UniswapOracle is IOracle, CoreRef {
 	bool public killSwitch;
 	bool private isPrice0;
 
+	event KillSwitchUpdate(bool _killSwitch);
+	event DurationUpdate(uint32 _duration);
+	event Update(uint256 _twap);
+
 	constructor(address _core, address _pair, uint32 _duration, bool _isPrice0) public
 		CoreRef(_core)
 	{
@@ -43,10 +47,12 @@ contract UniswapOracle is IOracle, CoreRef {
 		uint currentCumulative = getCumulative(price0Cumulative, price1Cumulative);
 		uint deltaCumulative = currentCumulative - priorCumulative;
 
-		twap = Decimal.ratio(deltaCumulative, deltaTimestamp);
+		Decimal.D256 memory _twap = Decimal.ratio(deltaCumulative, deltaTimestamp);
+		twap = _twap;
 
 		priorTimestamp = currentTimestamp;
 		priorCumulative = currentCumulative;
+		emit Update(_twap.asUint256());
 		return true;
 	}
 
@@ -57,10 +63,12 @@ contract UniswapOracle is IOracle, CoreRef {
  
 	function setKillSwitch(bool _killSwitch) public onlyGovernor {
 		killSwitch = _killSwitch;
+		emit KillSwitchUpdate(_killSwitch);
 	}
 
 	function setDuration(uint32 _duration) public onlyGovernor {
 		duration = _duration;
+		emit DurationUpdate(_duration);
 	}
 
 	function init() internal {

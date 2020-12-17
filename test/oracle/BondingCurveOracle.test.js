@@ -55,7 +55,11 @@ describe('BondingCurveOracle', function () {
   describe('Access', function() {
     describe('Kill Switch', function() {
       it('Governor set succeeds', async function() {
-        await this.oracle.setKillSwitch(true, {from: governorAddress});
+        expectEvent(
+            await this.oracle.setKillSwitch(true, {from: governorAddress}),
+            'KillSwitchUpdate',
+            { _killSwitch: true }
+          );
         expect(await this.oracle.killSwitch()).to.be.equal(true);
       });
 

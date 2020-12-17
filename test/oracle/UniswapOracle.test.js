@@ -91,7 +91,11 @@ describe('UniswapOracle', function () {
         await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
         await this.pair.setReserves(100000, 50000000);
         await time.increase(this.delta);
-        await this.oracle.update();
+        expectEvent(
+            await this.oracle.update(),
+            'Update',
+            { _twap: '500' }
+          );
       });
 
       it('updates', async function() {
@@ -141,7 +145,11 @@ describe('UniswapOracle', function () {
   describe('Access', function() {
     describe('Kill Switch', function() {
       it('Governor set succeeds', async function() {
-        await this.oracle.setKillSwitch(true, {from: governorAddress});
+        expectEvent(
+            await this.oracle.setKillSwitch(true, {from: governorAddress}),
+            'KillSwitchUpdate',
+            { _killSwitch: true }
+          );
         expect(await this.oracle.killSwitch()).to.be.equal(true);
       });
 
@@ -152,6 +160,11 @@ describe('UniswapOracle', function () {
     describe('Duration', function() {
       it('Governor set succeeds', async function() {
         await this.oracle.setDuration(1000, {from: governorAddress});
+        expectEvent(
+            await this.oracle.setDuration(1000, {from: governorAddress}),
+            'DurationUpdate',
+            { _duration: '1000' }
+          );
         expect(await this.oracle.duration()).to.be.bignumber.equal(new BN(1000));
       });
 
