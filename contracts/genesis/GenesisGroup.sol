@@ -18,6 +18,10 @@ contract GenesisGroup is ERC20, CoreRef {
 
 	uint private constant EXCHANGE_RATE_DISCOUNT = 10;
 
+	event Purchase(address indexed _to, uint _value);
+	event Redeem(address indexed _to, uint _amountFei, uint _amountTribe);
+	event Launch(uint timestamp);
+
 	constructor(
 		address _core, 
 		address _bondingcurve,
@@ -34,6 +38,7 @@ contract GenesisGroup is ERC20, CoreRef {
 		require(msg.value == value, "GenesisGroup: value mismatch");
 		require(value != 0, "GenesisGroup: no value sent");
 		_mint(to, value);
+		emit Purchase(to, value);
 	}
 
 	function redeem(address to) external postGenesis {
@@ -45,6 +50,7 @@ contract GenesisGroup is ERC20, CoreRef {
 
 		uint tribeAmount = ratio.mul(tribeBalance()).asUint256();
 		tribe().transfer(to, tribeAmount);
+		emit Redeem(to, feiAmount, tribeAmount);
 	}
 
 	function launch() external {
@@ -53,6 +59,8 @@ contract GenesisGroup is ERC20, CoreRef {
 		uint balance = genesisGroup.balance;
 		bondingcurve.purchase{value: balance}(balance, genesisGroup);
 		ido.deploy(exchangeRate());
+		// solhint-disable-next-line not-rely-on-time
+		emit Launch(now);
 	}
 
 	function getAmountOut(uint amountIn, bool inclusive) public view returns (uint feiAmount, uint tribeAmount) {

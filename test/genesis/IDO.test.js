@@ -41,7 +41,14 @@ describe('IDO', function () {
 
     describe('From Genesis Group', function() {
       beforeEach(async function() {
-        await this.ido.deploy(['5000000000000000000'], {from: genesisGroup});
+        expectEvent(
+          await this.ido.deploy(['5000000000000000000'], {from: genesisGroup}),
+          'Deploy',
+          {
+            _amountFei: "500000",
+            _amountTribe: "100000"
+          }
+        );
       });
 
       it('updates ido balances', async function() {

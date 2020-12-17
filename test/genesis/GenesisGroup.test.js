@@ -46,7 +46,14 @@ describe('GenesisGroup', function () {
       });
       describe('With value', function() {
         beforeEach(async function() {
-          await this.genesisGroup.purchase(userAddress, 1000, {from: userAddress, value: 1000});
+          expectEvent(
+            await this.genesisGroup.purchase(userAddress, 1000, {from: userAddress, value: 1000}),
+            'Purchase',
+            {
+              _to: userAddress,
+              _value: "1000"
+            }
+          );
         });
         it('Updates balances', async function() {
           expect(await balance.current(this.genesisGroup.address)).to.be.bignumber.equal(new BN(1000));
@@ -89,7 +96,15 @@ describe('GenesisGroup', function () {
       });
       describe('Single Redeem', function() {
         beforeEach(async function() {
-          await this.genesisGroup.redeem(userAddress, {from: userAddress});
+          expectEvent(
+            await this.genesisGroup.redeem(userAddress, {from: userAddress}),
+            'Redeem',
+            {
+              _to: userAddress,
+              _amountFei: "37500",
+              _amountTribe: "7500"
+            }
+          );
         });
 
         it('updates balances', async function() {
@@ -189,7 +204,11 @@ describe('GenesisGroup', function () {
         await this.core.setGenesisPeriodEnd(latest.add(new BN(1000)), {from: governorAddress});
         await this.genesisGroup.purchase(userAddress, 1000, {from: userAddress, value: 1000});
         await this.core.setGenesisPeriodEnd(latest.sub(new BN(1000)), {from: governorAddress});
-        await this.genesisGroup.launch();
+        expectEvent(
+          await this.genesisGroup.launch(),
+          'Launch',
+          {}
+        );
       });
 
       it('purchases on bondingCurve', async function() {

@@ -9,6 +9,8 @@ contract IDO is UniRef, LinearTokenTimelock {
 
 	uint constant public RELEASE_WINDOW = 4 * 365 * 24 * 60 * 60; // 4 years vesting
 
+	event Deploy(uint _amountFei, uint _amountTribe);
+
 	constructor(address core, address _beneficiary) public
 		UniRef(core)
 		LinearTokenTimelock(_beneficiary, RELEASE_WINDOW)
@@ -37,5 +39,6 @@ contract IDO is UniRef, LinearTokenTimelock {
 	        address(this),
 	        uint(-1)
 	    );
+	    emit Deploy(feiAmount, tribeAmount);
 	} 
 }
