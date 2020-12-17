@@ -81,7 +81,14 @@ describe('TimelockedDelegator', function () {
     }); 
     describe('Enough Tribe', function() {
       beforeEach(async function() {
-        await this.delegator.delegate(userAddress, 100, {from: beneficiaryAddress});
+        expectEvent(
+            await this.delegator.delegate(userAddress, 100, {from: beneficiaryAddress}),
+            'Delegate',
+            {
+              _delegatee: userAddress,
+              _amount: "100"
+            }
+          );
       });
       describe('Single Delegation', function() {
         it('updates balances', async function() {
@@ -126,7 +133,14 @@ describe('TimelockedDelegator', function () {
       describe('Undelegation', function() {
         beforeEach(async function() {
           this.delegatee = await this.delegator.delegateContracts(userAddress);
-          await this.delegator.undelegate(userAddress, {from: beneficiaryAddress});
+          expectEvent(
+              await this.delegator.undelegate(userAddress, {from: beneficiaryAddress}),
+              'Undelegate',
+              {
+                _delegatee: userAddress,
+                _amount: "100"
+              }
+            );
         });
         it('updates balances', async function() {
             expect(await this.tribe.balanceOf(this.delegator.address)).to.be.bignumber.equal(new BN(10000));

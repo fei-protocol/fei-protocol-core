@@ -35,6 +35,9 @@ contract TimelockedDelegator is LinearTokenTimelock {
     ITribe public tribe;
     uint public delegatedAmount;
 
+    event Delegate(address indexed _delegatee, uint _amount);
+    event Undelegate(address indexed _delegatee, uint _amount);
+
 	constructor(address _tribe, address _beneficiary) public
 		LinearTokenTimelock(_beneficiary, RELEASE_WINDOW)
 	{
@@ -54,6 +57,7 @@ contract TimelockedDelegator is LinearTokenTimelock {
 		delegateAmounts[delegatee] = amount;
 		delegatedAmount += amount;
 		_tribe.transfer(delegateContract, amount);
+		emit Delegate(delegatee, amount);
 	}
 
 	function undelegate(address delegatee) public onlyBeneficiary returns(uint) {
@@ -64,6 +68,7 @@ contract TimelockedDelegator is LinearTokenTimelock {
 		delegatedAmount -= amount;
 		delegateContracts[delegatee] = address(0);
 		delegateAmounts[delegatee] = 0;
+		emit Undelegate(delegatee, amount);
 		return amount;
 	}
 
