@@ -28,6 +28,7 @@ contract Permissions is AccessControl {
 		_;
 	}
 
+	// Retain the ability for governor to define future roles (or update admins)
 	function createRole(bytes32 role, bytes32 adminRole) public onlyGovernor {
 		_setRoleAdmin(role, adminRole);
 	}

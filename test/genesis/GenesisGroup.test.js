@@ -136,7 +136,9 @@ describe('GenesisGroup', function () {
         });
 
         it('succeeds', async function() {
-          expect(await this.genesisGroup.getAmountOut(500, true)).to.be.bignumber.equal(new BN(5000));
+          let result = await this.genesisGroup.getAmountOut(500, true);
+          expect(result[0]).to.be.bignumber.equal(new BN(5000));
+          expect(result[1]).to.be.bignumber.equal(new BN(5000));
         });
       });
     });
@@ -144,7 +146,9 @@ describe('GenesisGroup', function () {
     describe('Exclusive', function() {
       describe('No existing', function() {
         it('succeeds', async function() {
-          expect(await this.genesisGroup.getAmountOut(500, false)).to.be.bignumber.equal(new BN(5000));
+          let result = await this.genesisGroup.getAmountOut(500, false);
+          expect(result[0]).to.be.bignumber.equal(new BN(5000));
+          expect(result[1]).to.be.bignumber.equal(new BN(10000));
         });
       });
 
@@ -154,7 +158,9 @@ describe('GenesisGroup', function () {
         });
 
         it('succeeds', async function() {
-          expect(await this.genesisGroup.getAmountOut(1000, false)).to.be.bignumber.equal(new BN(10000));
+          let result = await this.genesisGroup.getAmountOut(1000, false);
+          expect(result[0]).to.be.bignumber.equal(new BN(10000));
+          expect(result[1]).to.be.bignumber.equal(new BN(5000));
         });
       });
     });

@@ -3,6 +3,7 @@ pragma solidity ^0.6.0;
 import "../core/Core.sol";
 import "../oracle/UniswapOracle.sol";
 import "../pcv/IUniswapPCVDeposit.sol";
+import "../token/IUniswapIncentive.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -104,9 +105,12 @@ contract CoreOrchestrator is Ownable {
 		core.grantMinter(uniswapIncentive);
 		core.grantBurner(uniswapIncentive);
 		address pair = address(IUniswapPCVDeposit(ethUniswapPCVDeposit).pair());
+		address ethUniswapPCVController = incentiveOrchestrator.ethUniswapPCVController();
 		IUniRef(uniswapIncentive).setPair(pair);
-		core.grantMinter(incentiveOrchestrator.ethUniswapPCVController());
-		core.grantPCVController(incentiveOrchestrator.ethUniswapPCVController());
+		core.grantMinter(ethUniswapPCVController);
+		core.grantPCVController(ethUniswapPCVController);
+		IUniswapIncentive(uniswapIncentive).setExemptAddress(ethUniswapPCVDeposit, true);
+		IUniswapIncentive(uniswapIncentive).setExemptAddress(ethUniswapPCVController, true);
 	}
 
 	function initIDO() public onlyOwner {

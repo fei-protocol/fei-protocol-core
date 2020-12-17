@@ -13,7 +13,7 @@ contract Core is Permissions {
 	IERC20 public tribe;
 	uint public genesisPeriodEnd;
 	address public genesisGroup;
-	bool public hasGenesisGroupCompleted = false;
+	bool public hasGenesisGroupCompleted;
 
 	constructor() public {
 		_setupGovernor(msg.sender);

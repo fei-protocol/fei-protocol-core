@@ -19,4 +19,6 @@ contract MockUniswapIncentive is MockIncentive, IUniswapIncentive {
     function setIncentiveParity(bool _isParity) public {
         isParity = _isParity;
     }
+
+    function setExemptAddress(address account, bool isExempt) external override {}
 }

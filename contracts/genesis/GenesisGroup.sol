@@ -55,16 +55,16 @@ contract GenesisGroup is ERC20, CoreRef {
 		ido.deploy(exchangeRate());
 	}
 
-	// TODO add TRIBE amount out
-	function getAmountOut(uint amountIn, bool inclusive) public view returns (uint) {
+	function getAmountOut(uint amountIn, bool inclusive) public view returns (uint feiAmount, uint tribeAmount) {
 		// TODO what happens when this number is different from ETH in? i.e. someone force sends ETH
 		uint totalIn = totalSupply();
 		if (!inclusive) {
 			totalIn += amountIn;
 		}
 		require(amountIn <= totalIn, "GenesisGroup: Not enough supply");
-		uint totalOut = bondingcurve.getAmountOut(totalIn);
-		return totalOut * amountIn / totalIn;
+		uint totalFei = bondingcurve.getAmountOut(totalIn);
+		uint totalTribe = tribeBalance();
+		return (totalFei * amountIn / totalIn, totalTribe * amountIn / totalIn);
 	}
 
 	function exchangeRate() public view returns (Decimal.D256 memory) {

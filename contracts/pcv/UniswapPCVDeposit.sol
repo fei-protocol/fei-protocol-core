@@ -27,6 +27,7 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
     	Decimal.D256 memory ratioToWithdraw = Decimal.ratio(amountUnderlying, totalUnderlying);
     	uint256 liquidityToWithdraw = ratioToWithdraw.mul(totalLiquidity).asUint256();
 
+    	// TODO possibly move to constructor
     	approveToken(address(pair), liquidityToWithdraw);
     	uint256 amountWithdrawn = removeLiquidity(liquidityToWithdraw);
     	transferWithdrawn(to, amountWithdrawn);

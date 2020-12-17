@@ -2,7 +2,7 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 // Forked from Compound's COMP
-// Reference: https://github.com/compound-finance/compound-protocol/blob/master/contracts/Governance/Tribe.sol
+// Reference: https://github.com/compound-finance/compound-protocol/blob/master/contracts/Governance/Comp.sol
 
 contract Tribe {
     /// @notice EIP-20 token name for this token

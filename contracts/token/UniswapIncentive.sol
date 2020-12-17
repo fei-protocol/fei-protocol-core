@@ -22,7 +22,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
 
     TimeWeightInfo public timeWeightInfo;
 
-    uint256 public constant TIME_WEIGHT_GRANULARITY = 1e5;
+    uint256 public constant TIME_WEIGHT_GRANULARITY = 100_000;
     uint256 public constant DEFAULT_INCENTIVE_GROWTH_RATE = 333; // about 1 unit per hour assuming 12s block time
 
 	constructor(address core, address _oracle) public
@@ -47,7 +47,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     	}
     }
 
-    function setExemptAddress(address account, bool isExempt) public onlyGovernor {
+    function setExemptAddress(address account, bool isExempt) public override onlyGovernor {
     	_exempt[account] = isExempt;
     }
 
@@ -125,11 +125,8 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         uint256 incentivizedAmount = amount;
         if (initialDeviation.equals(Decimal.zero())) {
             uint256 amountToPeg = getAmountToPegFei();
-            if (amountToPeg < amount) {
-                incentivizedAmount = amount - amountToPeg;
-            } else {
-                incentivizedAmount = 0;
-            }
+            // TODO SafeMath?
+            incentivizedAmount = amount - amountToPeg;
         }
         Decimal.D256 memory multiplier = calculateSellPenaltyMultiplier(finalDeviation); 
         penalty = multiplier.mul(incentivizedAmount).asUint256(); 

@@ -16,7 +16,7 @@ contract UniswapOracle is IOracle, CoreRef {
 	uint32 public priorTimestamp;
 	uint32 public duration;
 	Decimal.D256 private twap = Decimal.zero();
-	bool public killSwitch = false;
+	bool public killSwitch;
 	bool private isPrice0;
 
 	constructor(address _core, address _pair, uint32 _duration, bool _isPrice0) public
