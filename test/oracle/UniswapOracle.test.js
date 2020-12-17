@@ -40,6 +40,8 @@ describe('UniswapOracle', function () {
     describe('Initialized', function() {
       beforeEach(async function() {
         await this.pair.set(this.cumulative.add(this.delta.mul(new BN(500))), 0, this.cursor.add(new BN(1000)));
+        await this.pair.setReserves(100000, 50000000);
+        await time.increase(this.delta);
         await this.oracle.update();
       });
 
@@ -87,6 +89,8 @@ describe('UniswapOracle', function () {
         this.expectedTime = this.cursor.add(new BN(1000))
         this.expectedCumulative = this.cumulative.add(this.delta.mul(new BN(500))); 
         await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
+        await this.pair.setReserves(100000, 50000000);
+        await time.increase(this.delta);
         await this.oracle.update();
       });
 
@@ -103,6 +107,8 @@ describe('UniswapOracle', function () {
           this.expectedTime = this.cursor.add(new BN(1000))
           this.expectedCumulative = this.cumulative.add(this.delta.mul(new BN(490))); 
           await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
+          await this.pair.setReserves(100000, 49000000);
+          await time.increase(this.delta);
           await this.oracle.update();
         });
 
@@ -118,6 +124,8 @@ describe('UniswapOracle', function () {
           this.expectedTime = this.cursor.add(new BN(1000))
           this.expectedCumulative = this.cumulative.add(this.delta.mul(new BN(510))); 
           await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
+          await this.pair.setReserves(100000, 51000000);
+          await time.increase(this.delta);
           await this.oracle.update();
         });
 

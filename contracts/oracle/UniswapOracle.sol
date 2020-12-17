@@ -2,6 +2,9 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
+// Referencing Uniswap Example Simple Oracle
+// https://github.com/Uniswap/uniswap-v2-periphery/blob/master/contracts/examples/ExampleOracleSimple.sol
+
 import "./IOracle.sol";
 import "../external/Decimal.sol";
 import "../refs/CoreRef.sol";
@@ -12,10 +15,10 @@ contract UniswapOracle is IOracle, CoreRef {
 	using Decimal for Decimal.D256;
 
 	IUniswapV2Pair public pair;
+	Decimal.D256 private twap = Decimal.zero();
 	uint256 public priorCumulative; 
 	uint32 public priorTimestamp;
 	uint32 public duration;
-	Decimal.D256 private twap = Decimal.zero();
 	bool public killSwitch;
 	bool private isPrice0;
 
@@ -29,27 +32,13 @@ contract UniswapOracle is IOracle, CoreRef {
 		init();
 	}
 
-	function setKillSwitch(bool _killSwitch) public onlyGovernor {
-		killSwitch = _killSwitch;
-	}
-
-	function setDuration(uint32 _duration) public onlyGovernor {
-		duration = _duration;
-	}
-
 	function update() external override returns (bool) {
-		// Tests not made for this commented code, but the commented should be more accurate
-		// Referencing https://github.com/Uniswap/uniswap-v2-periphery/blob/master/contracts/examples/ExampleOracleSimple.sol
-		// (uint price0Cumulative, uint price1Cumulative, uint32 currentTimestamp) =
-            // UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
-        uint price0Cumulative = pair.price0CumulativeLast();
-        uint price1Cumulative = pair.price1CumulativeLast();
-        (,, uint32 currentTimestamp) = pair.getReserves();
+		(uint price0Cumulative, uint price1Cumulative, uint32 currentTimestamp) =
+            UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
 		uint32 deltaTimestamp = currentTimestamp - priorTimestamp;
 		if(currentTimestamp <= priorTimestamp || deltaTimestamp < duration) {
 			return false;
 		}
-
 
 		uint currentCumulative = getCumulative(price0Cumulative, price1Cumulative);
 		uint deltaCumulative = currentCumulative - priorCumulative;
@@ -65,6 +54,14 @@ contract UniswapOracle is IOracle, CoreRef {
     	bool valid = !(killSwitch || twap.isZero());
     	return (twap, valid);
     }
+ 
+	function setKillSwitch(bool _killSwitch) public onlyGovernor {
+		killSwitch = _killSwitch;
+	}
+
+	function setDuration(uint32 _duration) public onlyGovernor {
+		duration = _duration;
+	}
 
 	function init() internal {
         uint price0Cumulative = pair.price0CumulativeLast();
