@@ -15,6 +15,10 @@ contract Core is Permissions {
 	address public genesisGroup;
 	bool public hasGenesisGroupCompleted;
 
+    event FeiUpdate(address indexed _fei);
+    event TribeAllocation(address indexed _to, uint _amount);
+    event GenesisPeriodComplete(uint _timestamp);
+
 	constructor() public {
 		_setupGovernor(msg.sender);
 		_setupGovernor(address(this));
@@ -27,6 +31,7 @@ contract Core is Permissions {
 
 	function setFei(address token) public onlyGovernor {
 		fei = IFei(token);
+		emit FeiUpdate(token);
 	}
 
 	function setGenesisGroup(address _genesisGroup) public onlyGovernor {
@@ -41,12 +46,15 @@ contract Core is Permissions {
 		IERC20 _tribe = tribe;
 		require(_tribe.balanceOf(address(this)) > amount, "Core: Not enough Tribe");
 		_tribe.transfer(to, amount);
+		emit TribeAllocation(to, amount);
 	}
 
 	function completeGenesisGroup() external {
 		require(!hasGenesisGroupCompleted, "Core: Genesis Group already complete");
 		require(!isGenesisPeriod() && msg.sender == genesisGroup, "Core: Still in Genesis Period or caller is not Genesis Group");
 		hasGenesisGroupCompleted = true;
+		// solhint-disable-next-line not-rely-on-time
+		emit GenesisPeriodComplete(now);
 	}
 
 	function isGenesisPeriod() public view returns(bool) {

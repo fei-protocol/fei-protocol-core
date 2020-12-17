@@ -6,12 +6,14 @@ const { expect } = require('chai');
 
 const MockCoreRef = contract.fromArtifact('MockCoreRef');
 const Core = contract.fromArtifact('Core');
+const Tribe = contract.fromArtifact('Tribe');
 
 describe('Core', function () {
   const [ userAddress, minterAddress, burnerAddress, governorAddress, pcvControllerAddress, genesisGroup, revokeAddress ] = accounts;
 
   beforeEach(async function () {
     this.core = await Core.new({from: governorAddress});
+    this.tribe = await Tribe.at(await this.core.tribe());
     this.coreRef = await MockCoreRef.new(this.core.address);
     await this.core.grantMinter(minterAddress, {from: governorAddress});
     await this.core.grantBurner(burnerAddress, {from: governorAddress});
@@ -22,6 +24,33 @@ describe('Core', function () {
     this.governorRole = await this.core.GOVERN_ROLE();
     this.pcvControllerRole = await this.core.PCV_CONTROLLER_ROLE();
     this.revokeRole = await this.core.REVOKE_ROLE();
+  });
+
+  describe('Allocation', function() {
+    it('updates', async function() {
+      expectEvent(
+        await this.core.allocateTribe(userAddress, 1000, {from: governorAddress}),
+        'TribeAllocation',
+        {
+          _to : userAddress,
+          _amount : '1000'
+        }
+      );
+      expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal('1000');
+    });
+  });
+
+  describe('Fei Update', function() {
+    it('updates', async function() {
+      expectEvent(
+        await this.core.setFei(userAddress, {from: governorAddress}),
+        'FeiUpdate',
+        {
+          _fei : userAddress
+        }
+      );
+      expect(await this.core.fei()).to.be.equal(userAddress);
+    });
   });
 
   describe('Genesis', function() {
@@ -99,7 +128,11 @@ describe('Core', function () {
 
         describe('Genesis completed', function() {
           beforeEach(async function() {
-            await this.core.completeGenesisGroup({from: genesisGroup});
+            expectEvent(
+              await this.core.completeGenesisGroup({from: genesisGroup}),
+              'GenesisPeriodComplete',
+              {}
+            );
           });
           it('postGenesis succeeds', async function() {
             await this.coreRef.testPostGenesis();

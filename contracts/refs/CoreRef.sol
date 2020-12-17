@@ -79,7 +79,7 @@ contract CoreRef {
 	}
 
 	modifier postGenesis() {
-		require(!_core.isGenesisPeriod() && _core.hasGenesisGroupCompleted(), "CoreRef: Still in Genesis Period");
+		require(_core.hasGenesisGroupCompleted(), "CoreRef: Still in Genesis Period");
 		_;
 	}
 
