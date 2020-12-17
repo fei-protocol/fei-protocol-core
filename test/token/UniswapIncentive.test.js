@@ -150,31 +150,66 @@ describe('UniswapIncentive', function () {
     describe('calculation', function() {
       it('inactive', async function() {
         let block = await time.latestBlock();
-        await this.incentive.setTimeWeight(block.sub(new BN(5)), 0, 100000, false, {from: governorAddress});
+        expectEvent(
+          await this.incentive.setTimeWeight(block.sub(new BN(5)), 0, 100000, false, {from: governorAddress}),
+          'TimeWeightUpdate',
+          {
+            _weight: '0',
+            _active: false
+          }
+        );
         expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(0));
       });
 
       it('default single block', async function() {
         let block = await time.latestBlock();
-        await this.incentive.setTimeWeight(block, 0, 333, true, {from: governorAddress});
+        expectEvent(
+          await this.incentive.setTimeWeight(block, 0, 333, true, {from: governorAddress}),
+          'TimeWeightUpdate',
+          {
+            _weight: '0',
+            _active: true
+          }
+        );
         expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(333));
       });
 
       it('default multi block', async function() {
         let block = await time.latestBlock();
-        await this.incentive.setTimeWeight(block.sub(new BN(2)), 0, 333, true, {from: governorAddress});
+        expectEvent(
+          await this.incentive.setTimeWeight(block.sub(new BN(2)), 0, 333, true, {from: governorAddress}),
+          'TimeWeightUpdate',
+          {
+            _weight: '0',
+            _active: true
+          }
+        );
         expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(999));
       });
 
       it('custom growth rate single block', async function() {
         let block = await time.latestBlock();
-        await this.incentive.setTimeWeight(block, 0, 1000, true, {from: governorAddress});
+        expectEvent(
+          await this.incentive.setTimeWeight(block, 0, 1000, true, {from: governorAddress}),
+          'TimeWeightUpdate',
+          {
+            _weight: '0',
+            _active: true
+          }
+        );
         expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(1000));
       });
 
       it('custom growth rate multi-block', async function() {
         let block = await time.latestBlock();
-        await this.incentive.setTimeWeight(block.sub(new BN(4)), 0, 1000, true, {from: governorAddress});
+        expectEvent(
+          await this.incentive.setTimeWeight(block.sub(new BN(4)), 0, 1000, true, {from: governorAddress}),
+          'TimeWeightUpdate',
+          {
+            _weight: '0',
+            _active: true
+          }
+        );
         expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(5000));
       });
     });
@@ -803,7 +838,11 @@ describe('UniswapIncentive', function () {
 
     describe('Growth Rate', function() {
       it('Governor set succeeds', async function() {
-        await this.incentive.setTimeWeightGrowth(1000, {from: governorAddress});
+        expectEvent(
+          await this.incentive.setTimeWeightGrowth(1000, {from: governorAddress}),
+          'GrowthRateUpdate',
+          {_growthRate: '1000'}
+        );
         expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(1000));
       });
 
@@ -825,7 +864,14 @@ describe('UniswapIncentive', function () {
 
     describe('Exempt Addresses', function() {
       it('Governor set succeeds', async function() {
-        await this.incentive.setExemptAddress(userAddress, true, {from: governorAddress});
+        expectEvent(
+          await this.incentive.setExemptAddress(userAddress, true, {from: governorAddress}),
+          'ExemptAddressUpdate',
+          {
+            _account: userAddress,
+            _isExempt: true
+          }
+        );
         expect(await this.incentive.isExemptAddress(userAddress)).to.be.equal(true);
       });
 

@@ -25,6 +25,10 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     uint256 public constant TIME_WEIGHT_GRANULARITY = 100_000;
     uint256 public constant DEFAULT_INCENTIVE_GROWTH_RATE = 333; // about 1 unit per hour assuming 12s block time
 
+    event TimeWeightUpdate(uint _weight, bool _active);
+    event GrowthRateUpdate(uint _growthRate);
+    event ExemptAddressUpdate(address indexed _account, bool _isExempt);
+
 	constructor(address core, address _oracle) public
 	UniRef(core) {
         _setOracle(_oracle);
@@ -49,11 +53,22 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
 
     function setExemptAddress(address account, bool isExempt) public override onlyGovernor {
     	_exempt[account] = isExempt;
+        emit ExemptAddressUpdate(account, isExempt);
     }
 
     function setTimeWeightGrowth(uint growthRate) public onlyGovernor {
         TimeWeightInfo memory tw = timeWeightInfo;
         timeWeightInfo = TimeWeightInfo(tw.blockNo, tw.weight, growthRate, tw.active);
+        emit GrowthRateUpdate(growthRate);
+    }
+
+    function setTimeWeight(uint blockNo, uint weight, uint growth, bool active) public onlyGovernor {
+        uint currentGrowth = getGrowthRate();
+        timeWeightInfo = TimeWeightInfo(blockNo, weight, growth, active);
+        emit TimeWeightUpdate(weight, active);
+        if (currentGrowth != growth) {
+            emit GrowthRateUpdate(growth);
+        }
     }
 
     function getGrowthRate() public view returns (uint256) {
@@ -66,10 +81,6 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
             return 0;
         }
         return tw.weight + ((block.number - tw.blockNo) * tw.growthRate);
-    }
-
-    function setTimeWeight(uint blockNo, uint weight, uint growth, bool active) public onlyGovernor {
-        timeWeightInfo = TimeWeightInfo(blockNo, weight, growth, active);
     }
 
     function isExemptAddress(address account) public view returns (bool) {
@@ -189,11 +200,13 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         // Reset after completion
         if (finalDeviation.equals(Decimal.zero())) {
             timeWeightInfo = TimeWeightInfo(block.number, 0, getGrowthRate(), false);
+            emit TimeWeightUpdate(0, false);
             return;
         } 
         // Init
         if (initialDeviation.equals(Decimal.zero())) {
             timeWeightInfo = TimeWeightInfo(block.number, 0, getGrowthRate(), true);
+            emit TimeWeightUpdate(0, true);
             return;
         }
 
@@ -206,5 +219,6 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         uint maxWeight = finalDeviation.mul(100).mul(TIME_WEIGHT_GRANULARITY).asUint256(); // m^2*100 (sell) = t*m (buy) 
         updatedWeight = Math.min(updatedWeight, maxWeight);
         timeWeightInfo = TimeWeightInfo(block.number, updatedWeight, getGrowthRate(), true);
+        emit TimeWeightUpdate(updatedWeight, true);
     }
 }
