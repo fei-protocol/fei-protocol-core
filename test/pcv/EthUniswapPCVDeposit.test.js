@@ -237,7 +237,11 @@ describe('EthUniswapPCVDeposit', function () {
   describe('Access', function() {
     describe('Pair', function() {
       it('Governor set succeeds', async function() {
-        await this.allocation.setPair(userAddress, {from: governorAddress});
+        expectEvent(
+          await this.allocation.setPair(userAddress, {from: governorAddress}), 
+          'PairUpdate', 
+          { _pair : userAddress }
+        );
         expect(await this.allocation.pair()).to.be.equal(userAddress);
       });
 
@@ -247,7 +251,11 @@ describe('EthUniswapPCVDeposit', function () {
     });
     describe('Router', function() {
       it('Governor set succeeds', async function() {
-        await this.allocation.setRouter(userAddress, {from: governorAddress});
+        expectEvent(
+          await this.allocation.setRouter(userAddress, {from: governorAddress}), 
+          'RouterUpdate', 
+          { _router : userAddress }
+        );
         expect(await this.allocation.router()).to.be.equal(userAddress);
       });
 

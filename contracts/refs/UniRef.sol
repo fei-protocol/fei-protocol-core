@@ -18,6 +18,9 @@ contract UniRef is OracleRef {
 	IUniswapV2Router02 public router = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 	IUniswapV2Pair public pair;
 
+    event PairUpdate(address indexed _pair);
+    event RouterUpdate(address indexed _router);
+
 	constructor(address core) public OracleRef(core) {}
 
 	modifier requirePair() {
@@ -36,6 +39,7 @@ contract UniRef is OracleRef {
 		if (hasPair()) {
 			approveToken(token(), maxInt);
 		}
+        emit RouterUpdate(_router);
 	}
 
 	function liquidityOwned() public view requirePair returns (uint256) {
@@ -73,6 +77,7 @@ contract UniRef is OracleRef {
 
     function setupPair(address _pair) internal {
     	pair = IUniswapV2Pair(_pair);
+        emit PairUpdate(_pair);
     }
 
     function hasPair() internal view returns (bool) {

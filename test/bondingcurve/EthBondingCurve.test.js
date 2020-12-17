@@ -179,7 +179,11 @@ describe('EthBondingCurve', function () {
   describe('Access', function() {
     describe('Oracle', function() {
       it('Governor set succeeds', async function() {
-        await this.bondingCurve.setOracle(userAddress, {from: governorAddress});
+        expectEvent(
+          await this.bondingCurve.setOracle(userAddress, {from: governorAddress}),
+          'OracleUpdate',
+          {_oracle: userAddress}
+        );
         expect(await this.bondingCurve.oracle()).to.be.equal(userAddress);
       });
 
@@ -209,7 +213,12 @@ describe('EthBondingCurve', function () {
     });
     describe('Allocation Rule', function() {
       it('Governor set succeeds', async function() {
-        await this.bondingCurve.setAllocation([this.pcvDeposit1.address], [10000], {from: governorAddress});
+        expectEvent(
+          await this.bondingCurve.setAllocation([this.pcvDeposit1.address], [10000], {from: governorAddress}), 
+          'AllocationUpdate', 
+          { _pcvDeposits : [this.pcvDeposit1.address] }
+        );
+
         var result = await this.bondingCurve.getAllocationRule();
         expect(result[0].length).to.be.equal(1);
         expect(result[0][0]).to.be.equal(this.pcvDeposit1.address);

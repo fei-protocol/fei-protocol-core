@@ -20,6 +20,8 @@ interface ICore {
 contract CoreRef {
 	ICore private _core;
 
+	event CoreUpdate(address indexed core);
+
 	constructor(address core) public {
 		_core = ICore(core);
 	}
@@ -83,6 +85,7 @@ contract CoreRef {
 
 	function setCore(address core) public onlyGovernor {
 		_core = ICore(core);
+		emit CoreUpdate(core);
 	}
  
 	function core() public view returns(ICore) {

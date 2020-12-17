@@ -9,6 +9,8 @@ abstract contract AllocationRule {
 	uint256[] private ratios;
 	address[] private pcvDeposits;
 
+	event AllocationUpdate(address[] _pcvDeposits, uint256[] _ratios);
+
 	constructor(address[] memory _pcvDeposits, uint256[] memory _ratios) public {
 		_setAllocation(_pcvDeposits, _ratios);
 	}
@@ -33,6 +35,7 @@ abstract contract AllocationRule {
 		checkAllocation(_pcvDeposits, _ratios);
 		pcvDeposits = _pcvDeposits;
 		ratios = _ratios;
+		emit AllocationUpdate(_pcvDeposits, _ratios);
 	}
 
 	function allocate(uint256 total) internal {

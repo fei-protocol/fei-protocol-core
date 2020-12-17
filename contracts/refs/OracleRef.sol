@@ -10,11 +10,14 @@ contract OracleRef is CoreRef {
 
 	IOracle public oracle;
 
+    event OracleUpdate(address indexed _oracle);
+
 	constructor(address _core) public
 		CoreRef(_core) {}
 
 	function setOracle(address _oracle) public onlyGovernor {
 		_setOracle(_oracle);
+        emit OracleUpdate(_oracle);
 	}
 
     function invert(Decimal.D256 memory price) public pure returns(Decimal.D256 memory) {
