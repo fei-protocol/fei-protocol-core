@@ -19,15 +19,14 @@ contract LinearTokenTimelock {
 
     uint256 public releaseTimeStart;
 
-    // timestamp when token release is enabled
-    uint256 public releaseTimeEnd;
+    uint256 public duration;
 
-    constructor (address _beneficiary, uint256 duration) public {
-        require(duration != 0, "LinearTokenTimelock: duration is 0");
+    constructor (address _beneficiary, uint256 _duration) public {
+        require(_duration != 0, "LinearTokenTimelock: duration is 0");
         beneficiary = _beneficiary;
         // solhint-disable-next-line not-rely-on-time
         releaseTimeStart = now;
-        releaseTimeEnd = releaseTimeStart + duration;
+        duration = _duration;
 
     }
 
@@ -64,13 +63,13 @@ contract LinearTokenTimelock {
     function availableForRelease() public view returns(uint256) {
         // solhint-disable-next-line not-rely-on-time
         uint elapsed = now - releaseTimeStart;
-        uint window = releaseTimeEnd - releaseTimeStart;
+        uint _duration = duration;
 
-        if (elapsed > window) {
-            elapsed = window;
+        if (elapsed > _duration) {
+            elapsed = _duration;
         }
 
-        uint totalAvailable = initialBalance * elapsed / window;
+        uint totalAvailable = initialBalance * elapsed / _duration;
         uint netAvailable = totalAvailable - alreadyReleasedAmount();
         return netAvailable;
     }
