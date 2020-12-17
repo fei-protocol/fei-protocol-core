@@ -16,6 +16,10 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
 	uint256 public override buffer = 100;
 	uint256 public constant BUFFER_GRANULARITY = 10_000;
 
+    event ScaleUpdate(uint _scale);
+    event BufferUpdate(uint _buffer);
+    event Purchase(address indexed _to, uint _amountIn, uint _amountOut);
+
 	constructor(
 		uint256 _scale, 
 		address core, 
@@ -32,11 +36,13 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
 
 	function setScale(uint256 _scale) public override onlyGovernor {
 		_setScale(_scale);
+		emit ScaleUpdate(_scale);
 	}
 
 	function setBuffer(uint256 _buffer) public override onlyGovernor {
 		require(_buffer < BUFFER_GRANULARITY, "BondingCurve: Buffer exceeds or matches granularity");
 		buffer = _buffer;
+		emit BufferUpdate(_buffer);
 	}
 
 	function setAllocation(address[] memory allocations, uint256[] memory ratios) public override onlyGovernor {
@@ -68,6 +74,7 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
 	 	incrementTotalPurchased(amountOut);
 		fei().mint(to, amountOut);
 		allocate(amountIn);
+		emit Purchase(to, amountIn, amountOut);
 		return amountOut;
 	}
 

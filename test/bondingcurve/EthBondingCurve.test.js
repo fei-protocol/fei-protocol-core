@@ -39,7 +39,15 @@ describe('EthBondingCurve', function () {
     describe('Correct ETH sent', function() {
       describe('Pre Scale', function() {
         beforeEach(async function() {
-          await this.bondingCurve.purchase("50", userAddress, {value: "50"});
+          expectEvent(
+            await this.bondingCurve.purchase("50", userAddress, {value: "50"}),
+            'Purchase',
+            {
+              _to: userAddress,
+              _amountIn: "50",
+              _amountOut: "51977"
+            }
+          );
         });
 
         it('Correct FEI sent', async function() {
@@ -193,7 +201,11 @@ describe('EthBondingCurve', function () {
     });
     describe('Scale', function() {
       it('Governor set succeeds', async function() {
-        await this.bondingCurve.setScale(100, {from: governorAddress});
+        expectEvent(
+          await this.bondingCurve.setScale(100, {from: governorAddress}),
+          'ScaleUpdate',
+          {_scale: new BN(100)}
+        );
         expect(await this.bondingCurve.scale()).to.be.bignumber.equal(new BN(100));
       });
 
@@ -203,7 +215,11 @@ describe('EthBondingCurve', function () {
     });
     describe('Buffer', function() {
       it('Governor set succeeds', async function() {
-        await this.bondingCurve.setBuffer(1000, {from: governorAddress});
+        expectEvent(
+          await this.bondingCurve.setBuffer(1000, {from: governorAddress}),
+          'BufferUpdate',
+          {_buffer: new BN(1000)}
+        );
         expect(await this.bondingCurve.buffer()).to.be.bignumber.equal(new BN(1000));
       });
 
