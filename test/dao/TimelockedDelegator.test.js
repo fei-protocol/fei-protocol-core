@@ -27,7 +27,14 @@ describe('TimelockedDelegator', function () {
       beforeEach(async function() {
         this.quarter = this.window.div(new BN(4));
         await time.increase(this.quarter);
-        await this.delegator.release({from: beneficiaryAddress});
+        expectEvent(
+          await this.delegator.release({from: beneficiaryAddress}),
+          'Release',
+          {
+            _beneficiary: beneficiaryAddress,
+            _amount: '2500'
+          }
+        );
       });
       it('releases tokens', async function() {
         expect(await this.delegator.totalToken()).to.be.bignumber.equal(new BN(7500));
@@ -190,7 +197,11 @@ describe('TimelockedDelegator', function () {
     });
     describe('Set Beneficiary', function() {
       it('Beneficiary set succeeds', async function() {
-        await this.delegator.setBeneficiary(userAddress, {from: beneficiaryAddress});
+        expectEvent(
+          await this.delegator.setBeneficiary(userAddress, {from: beneficiaryAddress}),
+          'BeneficiaryUpdate',
+          {_beneficiary: userAddress}
+        );
         expect(await this.delegator.beneficiary()).to.be.equal(userAddress);
       });
 

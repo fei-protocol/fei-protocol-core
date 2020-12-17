@@ -21,6 +21,9 @@ contract LinearTokenTimelock {
 
     uint256 public duration;
 
+    event Release(address indexed _beneficiary, uint _amount);
+    event BeneficiaryUpdate(address indexed _beneficiary);
+
     constructor (address _beneficiary, uint256 _duration) public {
         require(_duration != 0, "LinearTokenTimelock: duration is 0");
         beneficiary = _beneficiary;
@@ -50,6 +53,7 @@ contract LinearTokenTimelock {
         require(amount != 0, "LinearTokenTimelock: no tokens to release");
 
         lockedToken.transfer(beneficiary, amount);
+        emit Release(beneficiary, amount);
     }
 
     function totalToken() public view virtual returns(uint256) {
@@ -76,6 +80,7 @@ contract LinearTokenTimelock {
 
     function setBeneficiary(address newBeneficiary) public virtual onlyBeneficiary {
         beneficiary = newBeneficiary;
+        emit BeneficiaryUpdate(newBeneficiary);
     }
 
     function setLockedToken(address tokenAddress) internal {

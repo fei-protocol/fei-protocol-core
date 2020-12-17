@@ -80,6 +80,7 @@ contract TimelockedDelegator is LinearTokenTimelock {
 	function setBeneficiary(address newBeneficiary) public override onlyBeneficiary {
         beneficiary = newBeneficiary;
         tribe.delegate(newBeneficiary);
+        emit BeneficiaryUpdate(newBeneficiary);
     }
 
     function tribeBalance() internal view returns (uint256) {
