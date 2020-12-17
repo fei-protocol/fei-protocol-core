@@ -24,7 +24,7 @@ module.exports = function(deployer, network, accounts) {
 	 	return deployer.deploy(IncentiveOrchestrator);
 	}).then(function(instance) {
 		incentive = instance;
-	 	return deployer.deploy(CoreOrchestrator, bc.address, incentive.address, ido.address, genesis.address, gov.address);
+	 	return deployer.deploy(CoreOrchestrator, bc.address, incentive.address, ido.address, genesis.address, gov.address, accounts[0]);
 	}).then(function(instance) {
 		core = instance;
 	 	return bc.transferOwnership(core.address);
