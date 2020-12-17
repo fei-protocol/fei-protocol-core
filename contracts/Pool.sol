@@ -19,6 +19,10 @@ contract Pool is CoreRef, ERC20 {
 
     mapping (address => uint) public feiBalances;
 
+    event Claim(address indexed _account, uint _amountTribe);
+    event Deposit(address indexed _account, uint _amountFei);
+    event Withdraw(address indexed _account, uint _amountFei, uint _amountTribe);
+
 	constructor(address core) public 
 		CoreRef(core) 
 		ERC20("Fei USD Pool", "poolFEI")
@@ -31,32 +35,21 @@ contract Pool is CoreRef, ERC20 {
 		initialized = true;
 	}
 
-	function claim() external returns(uint) {
-		(uint amountFei, uint amountTribe) = withdraw();
-		deposit(amountFei);
+	function claim(address account) external returns(uint) {
+		(uint amountFei, uint amountTribe) = _withdraw(account);
+		_deposit(account, amountFei);
+		emit Claim(account, amountTribe);
 		return amountTribe;
 	}
 
 	function deposit(uint amount) public {
-		require(startTime != 0, "Pool: Uninitialized");
-		fei().transferFrom(msg.sender, address(this), amount);
-		feiBalances[msg.sender] += amount;
-		depositedFei += amount;
-		uint poolFei = twfb(amount);
-		require(poolFei != 0, "Pool: Window has ended");
-		_mint(msg.sender, poolFei);
+		_deposit(msg.sender, amount);
+		emit Deposit(msg.sender, amount);
 	}
 
 	function withdraw() public returns(uint amountFei, uint amountTribe) {
-		uint amountPoolFei = balanceOf(msg.sender);
-		require(amountPoolFei != 0, "Pool: User has no poolFei");
-		amountFei = feiBalances[msg.sender];
-		amountTribe = userRedeemableTribe(msg.sender);
-		claimed += amountTribe;
-		_burn(msg.sender, amountPoolFei);
-		feiBalances[msg.sender] = 0;
-		fei().transfer(msg.sender, amountFei);
-		tribe().transfer(msg.sender, amountTribe);
+		(amountFei, amountTribe) = _withdraw(msg.sender);
+		emit Withdraw(msg.sender, amountFei, amountTribe);
 		return (amountFei, amountTribe);
 	}
 
@@ -88,6 +81,29 @@ contract Pool is CoreRef, ERC20 {
 		// T*t^2/d^2
 		Decimal.D256 memory end = Decimal.ratio(tribeAmount, duration).div(duration).mul(t * t);
 		return end.add(tribeAmount).sub(start).asUint256();
+	}
+
+	function _deposit(address account, uint amount) internal {
+		require(startTime != 0, "Pool: Uninitialized");
+		fei().transferFrom(account, address(this), amount);
+		feiBalances[account] += amount;
+		depositedFei += amount;
+		uint poolFei = twfb(amount);
+		require(poolFei != 0, "Pool: Window has ended");
+		_mint(account, poolFei);
+	}
+
+	function _withdraw(address account) internal returns(uint amountFei, uint amountTribe) {
+		uint amountPoolFei = balanceOf(account);
+		require(amountPoolFei != 0, "Pool: User has no poolFei");
+		amountFei = feiBalances[account];
+		amountTribe = userRedeemableTribe(account);
+		claimed += amountTribe;
+		_burn(account, amountPoolFei);
+		feiBalances[account] = 0;
+		fei().transfer(account, amountFei);
+		tribe().transfer(account, amountTribe);
+		return (amountFei, amountTribe);	
 	}
 
 	function twfb(uint amount) internal view returns(uint) {

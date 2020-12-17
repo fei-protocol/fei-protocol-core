@@ -55,7 +55,14 @@ describe('Pool', function () {
       });
       describe('With Deposit', function() {
         beforeEach(async function() {
-          await this.pool.deposit(100, {from: userAddress});
+          expectEvent(
+            await this.pool.deposit(100, {from: userAddress}),
+            'Deposit',
+            {
+              _account: userAddress,
+              _amountFei: '100'
+            }
+          );
           this.latest = await time.latest();
           this.expectedPoolFeiFirst = this.end.sub(this.latest).mul(new BN(100));
         });
@@ -119,7 +126,15 @@ describe('Pool', function () {
             });
             describe('Withdraw', function() {
               beforeEach(async function() {
-                await this.pool.withdraw({from: userAddress});
+                expectEvent(
+                  await this.pool.withdraw({from: userAddress}),
+                  'Withdraw',
+                  {
+                    _account: userAddress,
+                    _amountFei: '100',
+                    _amountTribe: '75001'
+                  }
+                );
               });
               it('updates balances', async function() {
                 expect(await this.pool.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
@@ -158,7 +173,14 @@ describe('Pool', function () {
             });
             describe('Claim', function() {
               beforeEach(async function() {
-                await this.pool.claim({from: userAddress});
+                expectEvent(
+                  await this.pool.claim(userAddress, {from: userAddress}),
+                  'Claim',
+                  {
+                    _account: userAddress,
+                    _amountTribe: '75001'
+                  }
+                );
                 this.latest = await time.latest();
                 this.expectedPoolFeiFirst = this.end.sub(this.latest).mul(new BN(100));
               });
