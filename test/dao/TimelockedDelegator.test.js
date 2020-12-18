@@ -7,7 +7,7 @@ const MockTribe = contract.fromArtifact('MockTribe');
 const TimelockedDelegator = contract.fromArtifact('TimelockedDelegator');
 
 describe('TimelockedDelegator', function () {
-  const [ userAddress, beneficiaryAddress ] = accounts;
+  const [ userAddress, beneficiaryAddress, badActorAddress ] = accounts;
 
   beforeEach(async function () {
     this.tribe = await MockTribe.new({from: beneficiaryAddress});
@@ -195,20 +195,37 @@ describe('TimelockedDelegator', function () {
         await expectRevert(this.delegator.undelegate(userAddress, {from: userAddress}), "LinearTokenTimelock: Caller is not a beneficiary");
       });
     });
-    describe('Set Beneficiary', function() {
+    describe('Set Pending Beneficiary', function() {
       it('Beneficiary set succeeds', async function() {
         expectEvent(
-          await this.delegator.setBeneficiary(userAddress, {from: beneficiaryAddress}),
+          await this.delegator.setPendingBeneficiary(userAddress, {from: beneficiaryAddress}),
+          'PendingBeneficiaryUpdate',
+          {_pendingBeneficiary: userAddress}
+        );
+        expect(await this.delegator.pendingBeneficiary()).to.be.equal(userAddress);
+      });
+
+      it('Non-beneficiary set reverts', async function() {
+        await expectRevert(this.delegator.setPendingBeneficiary(userAddress, {from: userAddress}), "LinearTokenTimelock: Caller is not a beneficiary");
+      });
+    });
+
+    describe('Accept Beneficiary', function() {
+      it('Pending Beneficiary succeeds', async function() {
+        await this.delegator.setPendingBeneficiary(userAddress, {from: beneficiaryAddress});
+        expectEvent(
+          await this.delegator.acceptBeneficiary({from: userAddress}),
           'BeneficiaryUpdate',
           {_beneficiary: userAddress}
         );
         expect(await this.delegator.beneficiary()).to.be.equal(userAddress);
       });
 
-      it('Non-beneficiary set reverts', async function() {
-        await expectRevert(this.delegator.setBeneficiary(userAddress, {from: userAddress}), "LinearTokenTimelock: Caller is not a beneficiary");
+      it('Non pending beneficiary reverts', async function() {
+        await expectRevert(this.delegator.acceptBeneficiary({from: badActorAddress}), "LinearTokenTimelock: Caller is not pending beneficiary");
       });
     });
+
     describe('Release', function() {
       it('Non-beneficiary set reverts', async function() {
         await expectRevert(this.delegator.release({from: userAddress}), "LinearTokenTimelock: Caller is not a beneficiary");

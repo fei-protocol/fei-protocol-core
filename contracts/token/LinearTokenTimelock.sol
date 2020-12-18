@@ -13,6 +13,8 @@ contract LinearTokenTimelock {
     // beneficiary of tokens after they are released
     address public beneficiary;
 
+    address public pendingBeneficiary;
+
     uint256 public initialBalance;
 
     uint256 internal lastBalance;
@@ -23,6 +25,7 @@ contract LinearTokenTimelock {
 
     event Release(address indexed _beneficiary, uint _amount);
     event BeneficiaryUpdate(address indexed _beneficiary);
+    event PendingBeneficiaryUpdate(address indexed _pendingBeneficiary);
 
     constructor (address _beneficiary, uint256 _duration) public {
         require(_duration != 0, "LinearTokenTimelock: duration is 0");
@@ -78,9 +81,20 @@ contract LinearTokenTimelock {
         return netAvailable;
     }
 
-    function setBeneficiary(address newBeneficiary) public virtual onlyBeneficiary {
+    function setPendingBeneficiary(address _pendingBeneficiary) public onlyBeneficiary {
+        pendingBeneficiary = _pendingBeneficiary;
+        emit PendingBeneficiaryUpdate(_pendingBeneficiary);
+    }
+
+    function acceptBeneficiary() public virtual {
+        _setBeneficiary(msg.sender);
+    }
+
+    function _setBeneficiary(address newBeneficiary) internal {
+        require(newBeneficiary == pendingBeneficiary, "LinearTokenTimelock: Caller is not pending beneficiary");
         beneficiary = newBeneficiary;
         emit BeneficiaryUpdate(newBeneficiary);
+        pendingBeneficiary = address(0);
     }
 
     function setLockedToken(address tokenAddress) internal {
