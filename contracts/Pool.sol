@@ -3,19 +3,23 @@ pragma experimental ABIEncoderV2;
 
 import "./refs/CoreRef.sol";
 import "./external/Decimal.sol";
+import "./external/SafeMath32.sol";
+import "./external/SafeMath128.sol";
+import "./external/SafeMathCopy.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/math/Math.sol";
 
 contract Pool is CoreRef, ERC20 {
 	using Decimal for Decimal.D256;
+	using SafeMath32 for uint32;
+	using SafeMath128 for uint128;
 
-	// TODO packing? / start possibly not needed
-	uint public startTime;
-	uint public endTime;
-	uint public constant DURATION = 2 * 365 days;
-	uint public claimed;
-	uint public depositedFei;
 	bool public initialized;
+
+	uint32 public startTime;
+	uint32 public constant DURATION = 2 * 365 days;
+
+	uint128 public claimed;
+	uint128 public depositedFei;
 
     mapping (address => uint) public feiBalances;
 
@@ -30,8 +34,7 @@ contract Pool is CoreRef, ERC20 {
 
 	function init() external postGenesis {
 		require(!initialized, "Pool: Already initialized");
-		startTime = now;
-		endTime = startTime + DURATION;
+		startTime = SafeMath32.safe32(now);
 		initialized = true;
 	}
 
@@ -58,21 +61,30 @@ contract Pool is CoreRef, ERC20 {
     }
 
 	function totalRedeemablePoolFEI() public view returns(uint) {
-		return totalSupply() - twfb(depositedFei);
+		uint total = totalSupply();
+		uint balance = twfb(uint256(depositedFei));
+		require(total >= balance, "Pool: Total Redeemable underflow");
+		return total - balance;
 	}
 
 	function userRedeemablePoolFEI(address account) public view returns(uint) {
-		return balanceOf(account) - twfb(feiBalances[account]);
+		uint total = balanceOf(account);
+		uint balance = twfb(feiBalances[account]);
+		require(total >= balance, "Pool: Total Redeemable underflow");
+		return total - balance;
 	}
 
 	function releasedTribe() public view returns (uint) {
-		return tribeBalance() - unreleasedTribe();
+		uint total = tribeBalance();
+		uint unreleased = unreleasedTribe();
+		require(total >= unreleased, "Pool: Released Tribe underflow");
+		return total - unreleased;
 	}
 
 	function unreleasedTribe() public view returns (uint) {
 		uint tribeAmount = totalTribe();
-		uint duration = DURATION;
-		uint t = timestamp();
+		uint duration = uint256(DURATION);
+		uint t = uint256(timestamp());
 		if (t == duration) {
 			return 0;
 		}
@@ -84,10 +96,10 @@ contract Pool is CoreRef, ERC20 {
 	}
 
 	function _deposit(address account, uint amount) internal {
-		require(startTime != 0, "Pool: Uninitialized");
+		require(initialized, "Pool: Uninitialized");
 		fei().transferFrom(account, address(this), amount);
 		feiBalances[account] += amount;
-		depositedFei += amount;
+		incrementDeposited(amount);
 		uint poolFei = twfb(amount);
 		require(poolFei != 0, "Pool: Window has ended");
 		_mint(account, poolFei);
@@ -98,7 +110,7 @@ contract Pool is CoreRef, ERC20 {
 		require(amountPoolFei != 0, "Pool: User has no poolFei");
 		amountFei = feiBalances[account];
 		amountTribe = userRedeemableTribe(account);
-		claimed += amountTribe;
+		incrementClaimed(amountTribe);
 		_burn(account, amountPoolFei);
 		feiBalances[account] = 0;
 		fei().transfer(account, amountFei);
@@ -106,16 +118,26 @@ contract Pool is CoreRef, ERC20 {
 		return (amountFei, amountTribe);	
 	}
 
+	function incrementClaimed(uint256 amount) internal {
+		claimed = claimed.add(SafeMath128.safe128(amount));
+	}
+
+	function incrementDeposited(uint256 amount) internal {
+		depositedFei = depositedFei.add(SafeMath128.safe128(amount));
+	}
+
 	function twfb(uint amount) internal view returns(uint) {
-		return amount * remainingTime();
+		return amount * uint256(remainingTime());
 	}
 
-	function remainingTime() internal view returns(uint) {
-		return DURATION - timestamp();
+	function remainingTime() internal view returns(uint32) {
+		return DURATION.sub(timestamp());
 	}
 
-	function timestamp() internal view returns(uint) {
-		return Math.min(now - startTime, DURATION);
+	function timestamp() internal view returns(uint32) {
+		uint32 d = DURATION;
+		uint32 t = SafeMath32.safe32(now).sub(startTime);
+		return t > d ? d : t;
 	}
 
 	// Updates stored FEI balance pro-rata for transfer and transferFrom
@@ -129,6 +151,6 @@ contract Pool is CoreRef, ERC20 {
     }
 
 	function totalTribe() internal view returns (uint) {
-		return tribeBalance() + claimed;
+		return tribeBalance() + uint256(claimed);
 	}
 }

@@ -41,7 +41,7 @@ describe('Pool', function () {
       await this.core.setGenesisPeriodEnd(0, {from: governorAddress});
       await this.core.completeGenesisGroup({from: genesisGroup});
       await this.pool.init();
-      this.end = await this.pool.endTime();
+      this.end = (await this.pool.startTime()).add(await this.pool.DURATION());
     });
 
     it('cant init again', async function() {
