@@ -16,7 +16,11 @@ contract GenesisGroup is ERC20, CoreRef {
 	IBondingCurve public bondingcurve;
 	IDOInterface public ido;
 
+	uint public startTime;
+	uint public duration;
 	uint private constant EXCHANGE_RATE_DISCOUNT = 10;
+
+	Decimal.D256 public MAX_GENESIS_PRICE = Decimal.ratio(90, 100);
 
 	event Purchase(address indexed _to, uint _value);
 	event Redeem(address indexed _to, uint _amountFei, uint _amountTribe);
@@ -25,13 +29,22 @@ contract GenesisGroup is ERC20, CoreRef {
 	constructor(
 		address _core, 
 		address _bondingcurve,
-		address _ido
+		address _ido,
+		uint _duration
 	) public
 		CoreRef(_core)
 		ERC20("Fei Genesis Group", "FGEN")
 	{
 		bondingcurve = IBondingCurve(_bondingcurve);
 		ido = IDOInterface(_ido);
+		duration = _duration;
+		// solhint-disable-next-line not-rely-on-time
+		startTime = now;
+	}
+
+	modifier onlyGenesisPeriod() {
+		require(isGenesisPeriod(), "GenesisGroup: Not in Genesis Period");
+		_;
 	}
 
 	function purchase(address to, uint value) external payable onlyGenesisPeriod {
@@ -54,6 +67,7 @@ contract GenesisGroup is ERC20, CoreRef {
 	}
 
 	function launch() external {
+		require(!isGenesisPeriod() || isAtMaxPrice(), "GenesisGroup: Still in Genesis Period");
 		core().completeGenesisGroup();
 		address genesisGroup = address(this);
 		uint balance = genesisGroup.balance;
@@ -85,5 +99,16 @@ contract GenesisGroup is ERC20, CoreRef {
 
 	function fgenRatio(address account) internal view returns (Decimal.D256 memory) {
 		return Decimal.ratio(balanceOf(account), totalSupply());
+	}
+
+	function isGenesisPeriod() public view returns(bool) {
+		// solhint-disable-next-line not-rely-on-time
+		return now - startTime < duration;
+	}
+
+	function isAtMaxPrice() public view returns(bool) {
+		uint balance = address(this).balance;
+		require(balance != 0, "GenesisGroup: No balance");
+		return bondingcurve.getAveragePrice(balance).greaterThanOrEqualTo(MAX_GENESIS_PRICE);
 	}
 }

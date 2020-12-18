@@ -61,11 +61,21 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
 	}
 
 	function getAmountOut(uint256 amountIn) public view override returns (uint256 amountOut) {
-		uint256 adjustedAmount = peg().mul(amountIn).asUint256();
+		uint256 adjustedAmount = getAdjustedAmount(amountIn);
 		if (atScale()) {
 			return getBufferAdjustedAmount(adjustedAmount);
 		}
 		return getBondingCurveAmountOut(adjustedAmount);
+	}
+
+	function getAveragePrice(uint256 amountIn) public view override returns (Decimal.D256 memory) {
+		uint256 adjustedAmount = getAdjustedAmount(amountIn);
+		uint256 amountOut = getAmountOut(amountIn);
+		return Decimal.ratio(adjustedAmount, amountOut);
+	}
+
+	function getAdjustedAmount(uint256 amountIn) internal view returns (uint256) {
+		return peg().mul(amountIn).asUint256();
 	}
 
 	function _purchase(uint256 amountIn, address to) internal returns (uint256 amountOut) {

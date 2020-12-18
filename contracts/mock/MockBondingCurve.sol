@@ -18,7 +18,7 @@ contract MockBondingCurve {
 	}
 
 	function setCurrentPrice(uint256 price) public {
-		getCurrentPrice = Decimal.from(price);
+		getCurrentPrice = Decimal.ratio(price, 100);
 	}
 
 	function purchase(uint amount, address to) public payable returns (uint256 amountOut) {
@@ -27,5 +27,9 @@ contract MockBondingCurve {
 
 	function getAmountOut(uint amount) public view returns(uint) {
 		return 10 * amount;
+	}
+
+	function getAveragePrice(uint256 amountIn) public view returns (Decimal.D256 memory) {
+		return getCurrentPrice;
 	}
 }

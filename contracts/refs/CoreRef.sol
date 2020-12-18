@@ -11,7 +11,6 @@ interface ICore {
 	function isPCVController(address _address) external view returns (bool);
 	function fei() external view returns (IFei);
 	function tribe() external view returns (IERC20);
-	function isGenesisPeriod() external view returns(bool);
 	function hasGenesisGroupCompleted() external view returns(bool);
 	function genesisGroup() external view returns(address);
 	function completeGenesisGroup() external;
@@ -70,11 +69,6 @@ contract CoreRef {
 
 	modifier onlyGenesisGroup() {
 		require(msg.sender == _core.genesisGroup(), "CoreRef: Caller is not GenesisGroup");
-		_;
-	}
-
-	modifier onlyGenesisPeriod() {
-		require(_core.isGenesisPeriod(), "CoreRef: Not in Genesis Period");
 		_;
 	}
 

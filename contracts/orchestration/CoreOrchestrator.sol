@@ -52,7 +52,6 @@ contract CoreOrchestrator is Ownable {
 	uint32 public constant UNI_ORACLE_TWAP_DURATION = 10 minutes; // 10 min twap
 	bool public constant USDC_PER_ETH_IS_PRICE_0 = true;
 	address public uniswapOracle;
-	uint public constant GENESIS_DURATION = 4 weeks;
 	uint public tribeSupply;
 	uint public constant IDO_TRIBE_PERCENTAGE = 20;
 	uint public constant GENESIS_TRIBE_PERCENTAGE = 10;
@@ -129,8 +128,6 @@ contract CoreOrchestrator is Ownable {
 		);
 		address genesisGroup = genesisOrchestrator.genesisGroup();
 		core.setGenesisGroup(genesisGroup);
-		//solhint-disable-next-line not-rely-on-time
-		core.setGenesisPeriodEnd(now + GENESIS_DURATION);
 		core.allocateTribe(genesisGroup, tribeSupply * GENESIS_TRIBE_PERCENTAGE / 100);
 		address pool = genesisOrchestrator.pool();
 		core.allocateTribe(pool, tribeSupply * STAKING_TRIBE_PERCENTAGE / 100);

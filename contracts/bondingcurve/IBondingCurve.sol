@@ -21,6 +21,8 @@ interface IBondingCurve {
 
 	function getCurrentPrice() external view returns(Decimal.D256 memory);
 
+	function getAveragePrice(uint256 amountIn) external view returns (Decimal.D256 memory);
+
 	function getAmountOut(uint256 amountIn) external view returns (uint256 amountOut); 
 
 	function scale() external view returns (uint256);

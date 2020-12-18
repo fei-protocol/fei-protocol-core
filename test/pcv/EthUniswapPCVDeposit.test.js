@@ -19,7 +19,6 @@ describe('EthUniswapPCVDeposit', function () {
   beforeEach(async function () {
     this.core = await Core.new({from: governorAddress});
     await this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
-    await this.core.setGenesisPeriodEnd(0, {from: governorAddress});
     await this.core.completeGenesisGroup({from: genesisGroup});
 
     this.fei = await Fei.at(await this.core.fei());

@@ -15,7 +15,7 @@ describe('BondingCurveOracle', function () {
   beforeEach(async function () {
     this.core = await Core.new({from: governorAddress});
     this.mockOracle = await MockOracle.new(500);
-    this.bondingCurve = await MockBondingCurve.new(false, 700);
+    this.bondingCurve = await MockBondingCurve.new(false, 70000);
 
     this.oracle = await BondingCurveOracle.new(this.core.address, this.mockOracle.address, this.bondingCurve.address);
   });
