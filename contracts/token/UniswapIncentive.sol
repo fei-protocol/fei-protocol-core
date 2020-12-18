@@ -5,25 +5,26 @@ import "./IUniswapIncentive.sol";
 import "../external/Decimal.sol";
 import "../oracle/IOracle.sol";
 import "../refs/UniRef.sol";
+import "../external/SafeMath32.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 
 contract UniswapIncentive is IUniswapIncentive, UniRef {
 	using Decimal for Decimal.D256;
+    using SafeMath32 for uint32;
 
-    // TODO packing
     struct TimeWeightInfo {
-        uint256 blockNo;
-        uint256 weight;
-        uint256 growthRate;
+        uint32 blockNo;
+        uint32 weight;
+        uint32 growthRate;
         bool active;
     }
 
-	mapping(address => bool) private _exempt;
-
     TimeWeightInfo public timeWeightInfo;
 
-    uint256 public constant TIME_WEIGHT_GRANULARITY = 100_000;
-    uint256 public constant DEFAULT_INCENTIVE_GROWTH_RATE = 333; // about 1 unit per hour assuming 12s block time
+    uint32 public constant TIME_WEIGHT_GRANULARITY = 100_000;
+    uint32 public constant DEFAULT_INCENTIVE_GROWTH_RATE = 333; // about 1 unit per hour assuming 12s block time
+
+    mapping(address => bool) private _exempt;
 
     event TimeWeightUpdate(uint _weight, bool _active);
     event GrowthRateUpdate(uint _growthRate);
@@ -32,7 +33,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
 	constructor(address core, address _oracle) public
 	UniRef(core) {
         _setOracle(_oracle);
-        timeWeightInfo = TimeWeightInfo(block.number, 0, DEFAULT_INCENTIVE_GROWTH_RATE, false);
+        _setTimeWeight(0, false);    
     }
 
     function incentivize(
@@ -56,14 +57,14 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         emit ExemptAddressUpdate(account, isExempt);
     }
 
-    function setTimeWeightGrowth(uint growthRate) public onlyGovernor {
+    function setTimeWeightGrowth(uint32 growthRate) public onlyGovernor {
         TimeWeightInfo memory tw = timeWeightInfo;
         timeWeightInfo = TimeWeightInfo(tw.blockNo, tw.weight, growthRate, tw.active);
         emit GrowthRateUpdate(growthRate);
     }
 
-    function setTimeWeight(uint blockNo, uint weight, uint growth, bool active) public onlyGovernor {
-        uint currentGrowth = getGrowthRate();
+    function setTimeWeight(uint32 blockNo, uint32 weight, uint32 growth, bool active) public onlyGovernor {
+        uint32 currentGrowth = getGrowthRate();
         timeWeightInfo = TimeWeightInfo(blockNo, weight, growth, active);
         emit TimeWeightUpdate(weight, active);
         if (currentGrowth != growth) {
@@ -71,16 +72,21 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         }
     }
 
-    function getGrowthRate() public view returns (uint256) {
-        return timeWeightInfo.growthRate;
+    function getGrowthRate() public view returns (uint32) {
+        uint32 growth = timeWeightInfo.growthRate;
+        if (growth == 0) {
+            return DEFAULT_INCENTIVE_GROWTH_RATE;
+        }
+        return growth;
     }
 
-    function getTimeWeight() public view returns (uint256) {
+    function getTimeWeight() public view returns (uint32) {
         TimeWeightInfo memory tw = timeWeightInfo;
         if (!tw.active) {
             return 0;
         }
-        return tw.weight + ((block.number - tw.blockNo) * tw.growthRate);
+        uint32 blockDelta = SafeMath32.safe32(block.number).sub(tw.blockNo);
+        return tw.weight.add(blockDelta * tw.growthRate);
     }
 
     function isExemptAddress(address account) public view returns (bool) {
@@ -88,7 +94,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     }
 
     function isIncentiveParity() public view override returns (bool) {
-        uint weight = getTimeWeight();
+        uint32 weight = getTimeWeight();
         require(weight != 0, "UniswapIncentive: Incentive zero or not active");
 
         (Decimal.D256 memory price,,) = getUniswapPrice();
@@ -102,7 +108,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
 
     function getBuyIncentive(uint256 amount) public view returns(
         uint256 incentive, 
-        uint256 weight,
+        uint32 weight,
         Decimal.D256 memory initialDeviation,
         Decimal.D256 memory finalDeviation
     ) {
@@ -136,7 +142,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         uint256 incentivizedAmount = amount;
         if (initialDeviation.equals(Decimal.zero())) {
             uint256 amountToPeg = getAmountToPegFei();
-            // TODO SafeMath?
+            require(amount >= amountToPeg, "UniswapIncentive: Underflow");
             incentivizedAmount = amount - amountToPeg;
         }
         Decimal.D256 memory multiplier = calculateSellPenaltyMultiplier(finalDeviation); 
@@ -149,7 +155,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     		return;
     	}
 
-        (uint256 incentive, uint256 weight,
+        (uint256 incentive, uint32 weight,
         Decimal.D256 memory initialDeviation, 
         Decimal.D256 memory finalDeviation) = getBuyIncentive(amountIn);
 
@@ -167,7 +173,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         (uint256 penalty, Decimal.D256 memory initialDeviation,
         Decimal.D256 memory finalDeviation) = getSellPenalty(amount);
 
-        uint256 weight = getTimeWeight();
+        uint32 weight = getTimeWeight();
         updateTimeWeight(initialDeviation, finalDeviation, weight);
         if (penalty != 0) {
             fei().burnFrom(target, penalty);
@@ -176,10 +182,10 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
 
     function calculateBuyIncentiveMultiplier(
         Decimal.D256 memory deviation,
-        uint weight
+        uint32 weight
     ) internal pure returns (Decimal.D256 memory) {
         Decimal.D256 memory correspondingPenalty = calculateSellPenaltyMultiplier(deviation);
-        Decimal.D256 memory buyMultiplier = deviation.mul(weight).div(TIME_WEIGHT_GRANULARITY);
+        Decimal.D256 memory buyMultiplier = deviation.mul(uint256(weight)).div(uint256(TIME_WEIGHT_GRANULARITY));
         if (correspondingPenalty.lessThan(buyMultiplier)) {
             return correspondingPenalty;
         }
@@ -195,30 +201,33 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     function updateTimeWeight (
         Decimal.D256 memory initialDeviation, 
         Decimal.D256 memory finalDeviation, 
-        uint256 currentWeight
+        uint32 currentWeight
     ) internal {
         // Reset after completion
         if (finalDeviation.equals(Decimal.zero())) {
-            timeWeightInfo = TimeWeightInfo(block.number, 0, getGrowthRate(), false);
-            emit TimeWeightUpdate(0, false);
+            _setTimeWeight(0, false);
             return;
         } 
         // Init
         if (initialDeviation.equals(Decimal.zero())) {
-            timeWeightInfo = TimeWeightInfo(block.number, 0, getGrowthRate(), true);
-            emit TimeWeightUpdate(0, true);
+            _setTimeWeight(0, true);
             return;
         }
 
-        uint256 updatedWeight = currentWeight;
+        uint256 updatedWeight = uint256(currentWeight);
         // Partial buy
         if (initialDeviation.greaterThan(finalDeviation)) {
             Decimal.D256 memory remainingRatio = finalDeviation.div(initialDeviation);
-            updatedWeight = remainingRatio.mul(currentWeight).asUint256();
+            updatedWeight = remainingRatio.mul(uint256(currentWeight)).asUint256();
         }
-        uint maxWeight = finalDeviation.mul(100).mul(TIME_WEIGHT_GRANULARITY).asUint256(); // m^2*100 (sell) = t*m (buy) 
+        uint256 maxWeight = finalDeviation.mul(100).mul(uint256(TIME_WEIGHT_GRANULARITY)).asUint256(); // m^2*100 (sell) = t*m (buy) 
         updatedWeight = Math.min(updatedWeight, maxWeight);
-        timeWeightInfo = TimeWeightInfo(block.number, updatedWeight, getGrowthRate(), true);
-        emit TimeWeightUpdate(updatedWeight, true);
+        _setTimeWeight(SafeMath32.safe32(updatedWeight), true);
+    }
+
+    function _setTimeWeight(uint32 weight, bool active) internal {
+        uint32 blockNo = SafeMath32.safe32(block.number);
+        timeWeightInfo = TimeWeightInfo(blockNo, weight, getGrowthRate(), active);
+        emit TimeWeightUpdate(weight, active);   
     }
 }
