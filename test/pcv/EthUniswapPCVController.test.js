@@ -38,14 +38,13 @@ describe('EthUniswapPCVController', function () {
       this.oracle.address, 
       this.incentive.address,
       '100000000000000000000',
-      '100'
+      '100',
+      this.pair.address,
+      this.router.address
     );
     await this.core.grantPCVController(this.pcvController.address, {from: governorAddress});
     await this.core.grantMinter(minterAddress, {from: governorAddress});
     await this.fei.mint(this.pair.address, 50000000, {from: minterAddress});
-
-    await this.pcvController.setPair(this.pair.address, {from: governorAddress});
-    await this.pcvController.setRouter(this.router.address, {from: governorAddress});
   });
 
   describe('Sole LP', function() {
@@ -239,23 +238,13 @@ describe('EthUniswapPCVController', function () {
 
     describe('Pair', function() {
       it('Governor set succeeds', async function() {
-        await this.pcvController.setPair(userAddress, {from: governorAddress});
-        expect(await this.pcvController.pair()).to.be.equal(userAddress);
+        let pair2 = await MockPair.new(this.token.address, this.fei.address);
+        await this.pcvController.setPair(pair2.address, {from: governorAddress});
+        expect(await this.pcvController.pair()).to.be.equal(pair2.address);
       });
 
       it('Non-governor set reverts', async function() {
         await expectRevert(this.pcvController.setPair(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
-      });
-    });
-
-    describe('Router', function() {
-      it('Governor set succeeds', async function() {
-        await this.pcvController.setRouter(userAddress, {from: governorAddress});
-        expect(await this.pcvController.router()).to.be.equal(userAddress);
-      });
-
-      it('Non-governor set reverts', async function() {
-        await expectRevert(this.pcvController.setRouter(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
 

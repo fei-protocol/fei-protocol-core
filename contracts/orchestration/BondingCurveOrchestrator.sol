@@ -3,17 +3,21 @@ pragma solidity ^0.6.0;
 import "../pcv/EthUniswapPCVDeposit.sol";
 import "../bondingcurve/EthBondingCurve.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 
 contract BondingCurveOrchestrator is Ownable {
-	address public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 	EthUniswapPCVDeposit public ethUniswapPCVDeposit;
 	uint public scale = 250_000_000e18;
 	EthBondingCurve public ethBondingCurve;
 	bool public deployed;
 
-	function init(address core, address uniswapOracle) public onlyOwner {
+	address public constant WETH = address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+	address public constant UNISWAP_FACTORY = address(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
+
+	function init(address core, address uniswapOracle, address fei, address router) public onlyOwner {
 		if (!deployed) {
-			ethUniswapPCVDeposit = new EthUniswapPCVDeposit(WETH, core);
+			address pair = UniswapV2Library.pairFor(UNISWAP_FACTORY, fei, WETH);
+			ethUniswapPCVDeposit = new EthUniswapPCVDeposit(core, pair, router);
 			uint256[] memory ratios = new uint256[](1);
 			ratios[0] = 10000;
 			address[] memory allocations = new address[](1);

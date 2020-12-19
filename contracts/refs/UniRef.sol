@@ -6,7 +6,6 @@ import "../external/Decimal.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
-import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -14,39 +13,29 @@ contract UniRef is OracleRef {
 	using Decimal for Decimal.D256;
 	using Babylonian for uint256;
 
-	address internal constant UNISWAP_FACTORY = address(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
-	IUniswapV2Router02 public router = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+	IUniswapV2Router02 public router;
 	IUniswapV2Pair public pair;
 
     event PairUpdate(address indexed _pair);
-    event RouterUpdate(address indexed _router);
 
-	constructor(address core) public OracleRef(core) {}
-
-	modifier requirePair() {
-		require(hasPair(), "UniRef: Contract has no pair");
-		_;
-	}
+	constructor(address core, address _pair, address _router) public OracleRef(core) {
+        setupPair(_pair);
+        router = IUniswapV2Router02(_router);
+        uint256 maxInt =  uint256(-1);
+        approveToken(address(fei()), maxInt);
+        approveToken(token(), maxInt);
+    }
 
 	function setPair(address _pair) public onlyGovernor {
 		setupPair(_pair);
+        approveToken(token(), uint256(-1));
 	}
 
-	function setRouter(address _router) public onlyGovernor {
-		router = IUniswapV2Router02(_router);
-		uint256 maxInt =  uint256(-1);
-		approveToken(address(fei()), maxInt);
-		if (hasPair()) {
-			approveToken(token(), maxInt);
-		}
-        emit RouterUpdate(_router);
-	}
-
-	function liquidityOwned() public view requirePair returns (uint256) {
+	function liquidityOwned() public view returns (uint256) {
 		return pair.balanceOf(address(this));
 	}
 
-	function token() public view requirePair returns (address) {
+	function token() public view returns (address) {
 		address token0 = pair.token0();
 		if (address(fei()) == token0) {
 			return pair.token1();
@@ -54,13 +43,13 @@ contract UniRef is OracleRef {
 		return token0;
 	}
 
-	function ratioOwned() public view requirePair returns (Decimal.D256 memory) {	
+	function ratioOwned() public view returns (Decimal.D256 memory) {	
     	uint256 balance = liquidityOwned();
     	uint256 total = pair.totalSupply();
     	return Decimal.ratio(balance, total);
     }
 
-	function getReserves() public view requirePair returns (uint feiReserves, uint tokenReserves) {
+	function getReserves() public view returns (uint feiReserves, uint tokenReserves) {
         address token0 = pair.token0();
         (uint reserve0, uint reserve1,) = pair.getReserves();
         (feiReserves, tokenReserves) = address(fei()) == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
@@ -71,7 +60,7 @@ contract UniRef is OracleRef {
         return (feiReserves, tokenReserves);
 	}
 
-    function isBelowPeg(Decimal.D256 memory peg) public requirePair view returns (bool) {
+    function isBelowPeg(Decimal.D256 memory peg) public view returns (bool) {
         (Decimal.D256 memory price,,) = getUniswapPrice();
         return peg.lessThan(price);
     }
@@ -83,10 +72,6 @@ contract UniRef is OracleRef {
     function setupPair(address _pair) internal {
     	pair = IUniswapV2Pair(_pair);
         emit PairUpdate(_pair);
-    }
-
-    function hasPair() internal view returns (bool) {
-    	return address(pair) != address(0);
     }
 
     function isPair(address account) public view returns(bool) {

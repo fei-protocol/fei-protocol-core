@@ -26,13 +26,11 @@ describe('EthUniswapPCVDeposit', function () {
     this.pair = await MockPair.new(this.token.address, this.fei.address);
     this.oracle = await MockOracle.new(400); // 400:1 oracle price
     this.router = await MockRouter.new(this.pair.address);
-    this.allocation = await EthUniswapPCVDeposit.new(this.token.address, this.core.address);
+    this.allocation = await EthUniswapPCVDeposit.new(this.core.address, this.pair.address, this.router.address);
     await this.allocation.setOracle(this.oracle.address, {from: governorAddress});
     await this.core.grantMinter(this.allocation.address, {from: governorAddress});
     await this.core.grantMinter(minterAddress, {from: governorAddress});
 
-    await this.allocation.setPair(this.pair.address, {from: governorAddress});
-    await this.allocation.setRouter(this.router.address, {from: governorAddress});
     await this.pair.set(100000, 50000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 500:1 FEI/ETH with 10k liquidity
   });
 
@@ -250,30 +248,17 @@ describe('EthUniswapPCVDeposit', function () {
   describe('Access', function() {
     describe('Pair', function() {
       it('Governor set succeeds', async function() {
+        let pair2 = await MockPair.new(this.token.address, this.fei.address);
         expectEvent(
-          await this.allocation.setPair(userAddress, {from: governorAddress}), 
+          await this.allocation.setPair(pair2.address, {from: governorAddress}), 
           'PairUpdate', 
-          { _pair : userAddress }
+          { _pair : pair2.address }
         );
-        expect(await this.allocation.pair()).to.be.equal(userAddress);
+        expect(await this.allocation.pair()).to.be.equal(pair2.address);
       });
 
       it('Non-governor set reverts', async function() {
         await expectRevert(this.allocation.setPair(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
-      });
-    });
-    describe('Router', function() {
-      it('Governor set succeeds', async function() {
-        expectEvent(
-          await this.allocation.setRouter(userAddress, {from: governorAddress}), 
-          'RouterUpdate', 
-          { _router : userAddress }
-        );
-        expect(await this.allocation.router()).to.be.equal(userAddress);
-      });
-
-      it('Non-governor set reverts', async function() {
-        await expectRevert(this.allocation.setRouter(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
   });

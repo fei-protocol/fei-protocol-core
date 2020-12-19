@@ -10,14 +10,14 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 interface IBondingCurveOrchestrator {
 	function ethUniswapPCVDeposit() external view returns(address);
 	function ethBondingCurve() external view returns(address);
-	function init(address core, address uniswapOracle) external;
+	function init(address core, address uniswapOracle, address pair, address router) external;
 }
 
 interface IIncentiveOrchestrator {
 	function uniswapIncentive() external view returns(address);
 	function bondingCurveOracle() external view returns(address);
 	function ethUniswapPCVController() external view returns(address);
-	function init(address core, address uniswapOracle, address ethBondingCurve, address ethUniswapPCVDeposit) external;
+	function init(address core, address uniswapOracle, address ethBondingCurve, address ethUniswapPCVDeposit, address pair, address router) external;
 }
 
 interface IGovernanceOrchestrator {
@@ -35,7 +35,7 @@ interface IGenesisOrchestrator {
 interface IIDOOrchestrator {
 	function ido() external view returns(address);
 	function timelockedDelegator() external view returns(address);
-	function init(address core, address admin, address tribe) external;
+	function init(address core, address admin, address tribe, address pair, address router) external;
 }
 
 interface IUniRef {
@@ -49,6 +49,8 @@ contract CoreOrchestrator is Ownable {
 	address public fei;
 	address public tribe;
 	address public constant ETH_USDC_UNI_PAIR = address(0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc);
+	address public constant ROUTER = address(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+
 	uint32 public constant UNI_ORACLE_TWAP_DURATION = 10 minutes; // 10 min twap
 	bool public constant USDC_PER_ETH_IS_PRICE_0 = true;
 	address public uniswapOracle;
@@ -91,7 +93,7 @@ contract CoreOrchestrator is Ownable {
 	}
 
 	function initBondingCurve() public onlyOwner {
-		bcOrchestrator.init(address(core), uniswapOracle);
+		bcOrchestrator.init(address(core), uniswapOracle, fei, ROUTER);
 		core.grantMinter(bcOrchestrator.ethUniswapPCVDeposit());
 		core.grantMinter(bcOrchestrator.ethBondingCurve());
 	}
@@ -99,13 +101,18 @@ contract CoreOrchestrator is Ownable {
 	function initIncentive() public onlyOwner {
 		address ethUniswapPCVDeposit = bcOrchestrator.ethUniswapPCVDeposit();
 		address ethBondingCurve = bcOrchestrator.ethBondingCurve();
-		incentiveOrchestrator.init(address(core), uniswapOracle, ethBondingCurve, ethUniswapPCVDeposit);
+		incentiveOrchestrator.init(
+			address(core), 
+			uniswapOracle, 
+			ethBondingCurve, 
+			ethUniswapPCVDeposit, 
+			fei,
+			ROUTER
+		);
 		address uniswapIncentive = incentiveOrchestrator.uniswapIncentive();
 		core.grantMinter(uniswapIncentive);
 		core.grantBurner(uniswapIncentive);
-		address pair = address(IUniswapPCVDeposit(ethUniswapPCVDeposit).pair());
 		address ethUniswapPCVController = incentiveOrchestrator.ethUniswapPCVController();
-		IUniRef(uniswapIncentive).setPair(pair);
 		core.grantMinter(ethUniswapPCVController);
 		core.grantPCVController(ethUniswapPCVController);
 		IUniswapIncentive(uniswapIncentive).setExemptAddress(ethUniswapPCVDeposit, true);
@@ -113,7 +120,7 @@ contract CoreOrchestrator is Ownable {
 	}
 
 	function initIDO() public onlyOwner {
-		idoOrchestrator.init(address(core), admin, tribe);
+		idoOrchestrator.init(address(core), admin, tribe, fei, ROUTER);
 		address ido = idoOrchestrator.ido();
 		core.grantMinter(ido);
 		core.allocateTribe(ido, tribeSupply * IDO_TRIBE_PERCENTAGE / 100);

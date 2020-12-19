@@ -11,15 +11,9 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
 
     event Withdrawal(address indexed _caller, address indexed _to, uint _amount);
 
-	constructor (address token, address core) public
-		UniRef(core)
-	{
-		uint256 maxInt =  uint256(-1);
-		approveToken(address(fei()), maxInt);
-		approveToken(token, maxInt);
-		address _pair = UniswapV2Library.pairFor(UNISWAP_FACTORY, address(fei()), token);
-		setupPair(_pair);
-	}
+	constructor (address core, address _pair, address _router) public
+		UniRef(core, _pair, _router)
+	{}
 
 	function withdraw(address to, uint256 amountUnderlying) external override onlyPCVController {
     	uint256 totalUnderlying = totalValue();

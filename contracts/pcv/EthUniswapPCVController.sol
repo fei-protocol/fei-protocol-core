@@ -8,6 +8,7 @@ import "../external/Decimal.sol";
 import "../oracle/IOracle.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@openzeppelin/contracts/math/Math.sol";
+import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 
 contract EthUniswapPCVController is UniRef {
 	using Decimal for Decimal.D256;
@@ -28,13 +29,14 @@ contract EthUniswapPCVController is UniRef {
 		address _oracle, 
 		address _incentiveContract,
 		uint _incentiveAmount,
-		uint _minDistanceForReweightBPs
+		uint _minDistanceForReweightBPs,
+		address _pair,
+		address _router
 	) public
-		UniRef(core)
+		UniRef(core, _pair, _router)
 	{
 		pcvDeposit = IUniswapPCVDeposit(_pcvDeposit);
 		incentiveContract = IUniswapIncentive(_incentiveContract);
-		setupPair(address(pcvDeposit.pair()));
 		_setOracle(_oracle);
 		reweightIncentiveAmount = _incentiveAmount;
 		minDistanceForReweight = Decimal.ratio(_minDistanceForReweightBPs, 10000);

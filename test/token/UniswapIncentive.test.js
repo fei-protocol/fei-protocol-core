@@ -20,11 +20,10 @@ describe('UniswapIncentive', function () {
     this.fei = await Fei.at(await this.core.fei());
     this.oracle = await MockOracle.new(500); // 500:1 USD/ETH exchange rate
 
-    this.incentive = await UniswapIncentive.new(this.core.address, this.oracle.address);
     this.token = await MockERC20.new();
     this.pair = await MockPair.new(this.token.address, this.fei.address);
 
-    this.incentive.setPair(this.pair.address, {from: governorAddress});
+    this.incentive = await UniswapIncentive.new(this.core.address, this.oracle.address, this.pair.address, this.pair.address);
 
     await this.core.grantMinter(this.incentive.address, {from: governorAddress});
     await this.core.grantBurner(this.incentive.address, {from: governorAddress});

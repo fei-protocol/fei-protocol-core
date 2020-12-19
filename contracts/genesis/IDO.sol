@@ -9,17 +9,10 @@ contract IDO is UniRef, LinearTokenTimelock {
 
 	event Deploy(uint _amountFei, uint _amountTribe);
 
-	constructor(address core, address _beneficiary, uint _duration) public
-		UniRef(core)
+	constructor(address core, address _beneficiary, uint _duration, address _pair, address _router) public
+		UniRef(core, _pair, _router)
 		LinearTokenTimelock(_beneficiary, _duration)
 	{
-		uint256 maxInt =  uint256(-1);
-		address _tribe = address(tribe()); 
-		address _fei = address(fei());
-		approveToken(_fei, maxInt);
-		approveToken(_tribe, maxInt);
-		address _pair = UniswapV2Library.pairFor(UNISWAP_FACTORY, _fei, _tribe);
-		setupPair(_pair);
 		setLockedToken(_pair);
 	}
 
