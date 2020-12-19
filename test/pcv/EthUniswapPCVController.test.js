@@ -32,7 +32,14 @@ describe('EthUniswapPCVController', function () {
     this.pcvDeposit = await MockPCVDeposit.new(this.pair.address);
     this.incentive = await MockIncentive.new(this.core.address);
 
-    this.pcvController = await EthUniswapPCVController.new(this.core.address, this.pcvDeposit.address, this.oracle.address, this.incentive.address);
+    this.pcvController = await EthUniswapPCVController.new(
+      this.core.address, 
+      this.pcvDeposit.address, 
+      this.oracle.address, 
+      this.incentive.address,
+      '100000000000000000000',
+      '100'
+    );
     await this.core.grantPCVController(this.pcvController.address, {from: governorAddress});
     await this.core.grantMinter(minterAddress, {from: governorAddress});
     await this.fei.mint(this.pair.address, 50000000, {from: minterAddress});

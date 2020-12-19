@@ -22,15 +22,22 @@ contract EthUniswapPCVController is UniRef {
 	event ReweightIncentiveUpdate(uint _amount);
 	event ReweightMinDistanceUpdate(uint _basisPoints);
 
-	constructor (address core, address _pcvDeposit, address _oracle, address _incentiveContract) public
+	constructor (
+		address core, 
+		address _pcvDeposit, 
+		address _oracle, 
+		address _incentiveContract,
+		uint _incentiveAmount,
+		uint _minDistanceForReweightBPs
+	) public
 		UniRef(core)
 	{
 		pcvDeposit = IUniswapPCVDeposit(_pcvDeposit);
 		incentiveContract = IUniswapIncentive(_incentiveContract);
 		setupPair(address(pcvDeposit.pair()));
 		_setOracle(_oracle);
-		reweightIncentiveAmount = 100 * (10 ** fei().decimals());
-		minDistanceForReweight = Decimal.ratio(1, 100); // initial min is 1%
+		reweightIncentiveAmount = _incentiveAmount;
+		minDistanceForReweight = Decimal.ratio(_minDistanceForReweightBPs, 10000);
 	}
 
 	function reweight() external postGenesis {
