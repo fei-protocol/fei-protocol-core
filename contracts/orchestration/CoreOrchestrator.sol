@@ -2,22 +2,28 @@ pragma solidity ^0.6.0;
 
 import "../core/Core.sol";
 import "../oracle/UniswapOracle.sol";
+// import "../mock/MockOracle.sol";
 import "../pcv/IUniswapPCVDeposit.sol";
 import "../token/IUniswapIncentive.sol";
+import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IBondingCurveOrchestrator {
 	function ethUniswapPCVDeposit() external view returns(address);
 	function ethBondingCurve() external view returns(address);
+	function bondingCurveOracle() external view returns(address);
 	function init(address core, address uniswapOracle, address pair, address router) external;
 }
 
 interface IIncentiveOrchestrator {
 	function uniswapIncentive() external view returns(address);
-	function bondingCurveOracle() external view returns(address);
+	function init(address core, address bondingCurveOracle, address fei, address router) external;
+}
+
+interface IControllerOrchestrator {
 	function ethUniswapPCVController() external view returns(address);
-	function init(address core, address uniswapOracle, address ethBondingCurve, address ethUniswapPCVDeposit, address pair, address router) external;
+	function init(address core, address bondingCurveOracle, address uniswapIncentive, address ethUniswapPCVDeposit, address fei, address router) external;
 }
 
 interface IGovernanceOrchestrator {
@@ -51,6 +57,12 @@ contract CoreOrchestrator is Ownable {
 	address public constant ETH_USDC_UNI_PAIR = address(0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc);
 	address public constant ROUTER = address(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
+	address public constant WETH = address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+	IUniswapV2Factory public constant UNISWAP_FACTORY = IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
+
+	address public ethFeiPair;
+	address public tribeFeiPair;
+
 	uint32 public constant UNI_ORACLE_TWAP_DURATION = 10 minutes; // 10 min twap
 	bool public constant USDC_PER_ETH_IS_PRICE_0 = true;
 	address public uniswapOracle;
@@ -62,6 +74,7 @@ contract CoreOrchestrator is Ownable {
 
 	IBondingCurveOrchestrator private bcOrchestrator;
 	IIncentiveOrchestrator private incentiveOrchestrator;
+	IControllerOrchestrator private controllerOrchestrator;
 	IIDOOrchestrator private idoOrchestrator;
 	IGenesisOrchestrator private genesisOrchestrator;
 	IGovernanceOrchestrator private governanceOrchestrator;
@@ -69,6 +82,7 @@ contract CoreOrchestrator is Ownable {
 	constructor(
 		address _bcOrchestrator, 
 		address _incentiveOrchestrator, 
+		address _controllerOrchestrator,
 		address _idoOrchestrator,
 		address _genesisOrchestrator, 
 		address _governanceOrchestrator,
@@ -77,19 +91,29 @@ contract CoreOrchestrator is Ownable {
 		core = new Core();
 		tribe = address(core.tribe());
 		fei = address(core.fei());
+
+		// uniswapOracle = address(new MockOracle(500));
+
 		uniswapOracle = address(new UniswapOracle(address(core), 
 			ETH_USDC_UNI_PAIR, 
 			UNI_ORACLE_TWAP_DURATION, 
 			USDC_PER_ETH_IS_PRICE_0
 		));
+
 		core.grantRevoker(_admin);
 		bcOrchestrator = IBondingCurveOrchestrator(_bcOrchestrator);
 		incentiveOrchestrator = IIncentiveOrchestrator(_incentiveOrchestrator);
 		idoOrchestrator = IIDOOrchestrator(_idoOrchestrator);
+		controllerOrchestrator = IControllerOrchestrator(_controllerOrchestrator);
 		genesisOrchestrator = IGenesisOrchestrator(_genesisOrchestrator);
 		governanceOrchestrator = IGovernanceOrchestrator(_governanceOrchestrator);
 		admin = _admin;
 		tribeSupply = IERC20(tribe).totalSupply();
+	}
+
+	function initPairs() public onlyOwner {
+		ethFeiPair = UNISWAP_FACTORY.createPair(fei, WETH);
+		tribeFeiPair = UNISWAP_FACTORY.createPair(tribe, fei);
 	}
 
 	function initBondingCurve() public onlyOwner {
@@ -99,20 +123,31 @@ contract CoreOrchestrator is Ownable {
 	}
 
 	function initIncentive() public onlyOwner {
-		address ethUniswapPCVDeposit = bcOrchestrator.ethUniswapPCVDeposit();
-		address ethBondingCurve = bcOrchestrator.ethBondingCurve();
+		address bondingCurveOracle = bcOrchestrator.bondingCurveOracle();
 		incentiveOrchestrator.init(
 			address(core), 
-			uniswapOracle, 
-			ethBondingCurve, 
-			ethUniswapPCVDeposit, 
+			bondingCurveOracle, 
 			fei,
 			ROUTER
 		);
 		address uniswapIncentive = incentiveOrchestrator.uniswapIncentive();
 		core.grantMinter(uniswapIncentive);
 		core.grantBurner(uniswapIncentive);
-		address ethUniswapPCVController = incentiveOrchestrator.ethUniswapPCVController();
+	}
+
+	function initController() public onlyOwner {
+		address ethUniswapPCVDeposit = bcOrchestrator.ethUniswapPCVDeposit();
+		address bondingCurveOracle = bcOrchestrator.bondingCurveOracle();
+		address uniswapIncentive = incentiveOrchestrator.uniswapIncentive();
+		controllerOrchestrator.init(
+			address(core), 
+			bondingCurveOracle, 
+			uniswapIncentive, 
+			ethUniswapPCVDeposit, 
+			fei,
+			ROUTER
+		);
+		address ethUniswapPCVController = controllerOrchestrator.ethUniswapPCVController();
 		core.grantMinter(ethUniswapPCVController);
 		core.grantPCVController(ethUniswapPCVController);
 		IUniswapIncentive(uniswapIncentive).setExemptAddress(ethUniswapPCVDeposit, true);

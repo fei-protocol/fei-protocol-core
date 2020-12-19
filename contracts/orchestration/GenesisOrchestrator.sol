@@ -9,6 +9,7 @@ contract GenesisOrchestrator is Ownable {
 	Pool public pool;
 	bool public deployed;
 	uint public constant GENESIS_DURATION = 4 weeks;
+	// uint public constant GENESIS_DURATION = 40;
 	uint public constant MAX_PRICE_BPS = 9000;
 	uint public constant EXCHANGE_RATE_DISCOUNT = 10;
 	uint32 public constant POOL_DURATION = 2 * 365 days;
