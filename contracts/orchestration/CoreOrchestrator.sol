@@ -118,7 +118,7 @@ contract CoreOrchestrator is Ownable {
 	}
 
 	function initBondingCurve() public onlyOwner {
-		bcOrchestrator.init(address(core), uniswapOracle, fei, ROUTER);
+		bcOrchestrator.init(address(core), uniswapOracle, ethFeiPair, ROUTER);
 		core.grantMinter(bcOrchestrator.ethUniswapPCVDeposit());
 		core.grantMinter(bcOrchestrator.ethBondingCurve());
 	}
@@ -128,7 +128,7 @@ contract CoreOrchestrator is Ownable {
 		incentiveOrchestrator.init(
 			address(core), 
 			bondingCurveOracle, 
-			fei,
+			ethFeiPair,
 			ROUTER
 		);
 		address uniswapIncentive = incentiveOrchestrator.uniswapIncentive();
@@ -146,7 +146,7 @@ contract CoreOrchestrator is Ownable {
 			bondingCurveOracle, 
 			uniswapIncentive, 
 			ethUniswapPCVDeposit, 
-			fei,
+			ethFeiPair,
 			ROUTER
 		);
 		address ethUniswapPCVController = controllerOrchestrator.ethUniswapPCVController();
@@ -157,7 +157,7 @@ contract CoreOrchestrator is Ownable {
 	}
 
 	function initIDO() public onlyOwner {
-		idoOrchestrator.init(address(core), admin, tribe, fei, ROUTER);
+		idoOrchestrator.init(address(core), admin, tribe, tribeFeiPair, ROUTER);
 		address ido = idoOrchestrator.ido();
 		core.grantMinter(ido);
 		core.allocateTribe(ido, tribeSupply * IDO_TRIBE_PERCENTAGE / 100);
