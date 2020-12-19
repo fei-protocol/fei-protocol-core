@@ -11,9 +11,9 @@ describe('TimelockedDelegator', function () {
 
   beforeEach(async function () {
     this.tribe = await MockTribe.new({from: beneficiaryAddress});
-    this.delegator = await TimelockedDelegator.new(this.tribe.address, beneficiaryAddress, {gas: 8000000, from: beneficiaryAddress});
+    this.window = new BN(4 * 365 * 24 * 60 * 60);
+    this.delegator = await TimelockedDelegator.new(this.tribe.address, beneficiaryAddress, this.window, {gas: 8000000, from: beneficiaryAddress});
     await this.tribe.mint(this.delegator.address, 10000);
-    this.window = await this.delegator.RELEASE_WINDOW();
   });
 
   describe('Timelocks', function() {

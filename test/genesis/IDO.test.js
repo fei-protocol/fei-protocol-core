@@ -24,7 +24,8 @@ describe('IDO', function () {
     this.pair = await MockPair.new(this.tribe.address, this.fei.address);
     this.router = await MockRouter.new(this.pair.address);
 
-    this.ido = await IDO.new(this.core.address, beneficiaryAddress);
+    this.window = new BN(4 * 365 * 24 * 60 * 60);
+    this.ido = await IDO.new(this.core.address, beneficiaryAddress, this.window);
     await this.core.grantMinter(this.ido.address, {from: governorAddress});
     await this.core.allocateTribe(this.ido.address, 100000, {from: governorAddress});
 

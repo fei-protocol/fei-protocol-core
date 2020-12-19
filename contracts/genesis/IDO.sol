@@ -7,13 +7,11 @@ import "../token/LinearTokenTimelock.sol";
 
 contract IDO is UniRef, LinearTokenTimelock {
 
-	uint constant public RELEASE_WINDOW = 4 * 365 * 24 * 60 * 60; // 4 years vesting
-
 	event Deploy(uint _amountFei, uint _amountTribe);
 
-	constructor(address core, address _beneficiary) public
+	constructor(address core, address _beneficiary, uint _duration) public
 		UniRef(core)
-		LinearTokenTimelock(_beneficiary, RELEASE_WINDOW)
+		LinearTokenTimelock(_beneficiary, _duration)
 	{
 		uint256 maxInt =  uint256(-1);
 		address _tribe = address(tribe()); 

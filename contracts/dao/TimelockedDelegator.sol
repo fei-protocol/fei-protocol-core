@@ -25,9 +25,6 @@ contract Delegatee is Ownable {
 }
 
 contract TimelockedDelegator is LinearTokenTimelock {
-
-	uint constant public RELEASE_WINDOW = 4 * 365 * 24 * 60 * 60; // 4 years vesting
-
     mapping (address => address) public delegateContracts;
     // Using as source of truth to prevent accounting errors by transferring to Delegate contracts
     mapping (address => uint) public delegateAmounts;
@@ -38,8 +35,8 @@ contract TimelockedDelegator is LinearTokenTimelock {
     event Delegate(address indexed _delegatee, uint _amount);
     event Undelegate(address indexed _delegatee, uint _amount);
 
-	constructor(address _tribe, address _beneficiary) public
-		LinearTokenTimelock(_beneficiary, RELEASE_WINDOW)
+	constructor(address _tribe, address _beneficiary, uint _duration) public
+		LinearTokenTimelock(_beneficiary, _duration)
 	{
 		tribe = ITribe(_tribe);
 		tribe.delegate(_beneficiary);
