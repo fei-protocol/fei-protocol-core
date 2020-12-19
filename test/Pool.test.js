@@ -13,7 +13,9 @@ describe('Pool', function () {
 
   beforeEach(async function () {
     this.core = await Core.new({from: governorAddress});
-    this.pool = await Pool.new(this.core.address);
+    this.window = new BN(2 * 365 * 24 * 60 * 60);
+    this.pool = await Pool.new(this.core.address, this.window);
+
     this.core.grantMinter(minterAddress, {from: governorAddress});
     this.fei = await Fei.at(await this.core.fei());
     this.tribe = await Tribe.at(await this.core.tribe());
@@ -22,7 +24,6 @@ describe('Pool', function () {
     this.fei.mint(secondUserAddress, 100, {from: minterAddress});
     this.fei.approve(this.pool.address, 10000, {from: secondUserAddress});
     await this.core.allocateTribe(this.pool.address, 100000, {from: governorAddress});
-    this.window = await this.pool.DURATION();
   });
 
   describe('Before Init', function() {
@@ -40,7 +41,7 @@ describe('Pool', function () {
       await this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
       await this.core.completeGenesisGroup({from: genesisGroup});
       await this.pool.init();
-      this.end = (await this.pool.startTime()).add(await this.pool.DURATION());
+      this.end = (await this.pool.startTime()).add(await this.window);
     });
 
     it('cant init again', async function() {

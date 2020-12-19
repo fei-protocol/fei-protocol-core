@@ -9,10 +9,14 @@ contract GenesisOrchestrator is Ownable {
 	Pool public pool;
 	bool public deployed;
 	uint public constant GENESIS_DURATION = 4 weeks;
+	uint public constant MAX_PRICE_BPS = 9000;
+	uint public constant EXCHANGE_RATE_DISCOUNT = 10;
+	uint32 public constant POOL_DURATION = 2 * 365 days;
+
 	function init(address core, address ethBondingCurve, address ido) public onlyOwner {
 		if(!deployed) {
-			genesisGroup = new GenesisGroup(core, ethBondingCurve, ido, GENESIS_DURATION);
-			pool = new Pool(core);
+			genesisGroup = new GenesisGroup(core, ethBondingCurve, ido, GENESIS_DURATION, MAX_PRICE_BPS, EXCHANGE_RATE_DISCOUNT);
+			pool = new Pool(core, POOL_DURATION);
 			deployed = true;		
 		}
 	}

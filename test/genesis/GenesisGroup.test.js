@@ -19,7 +19,7 @@ describe('GenesisGroup', function () {
     this.tribe = await Tribe.at(await this.core.tribe());
     this.bc = await MockBondingCurve.new(false, 10);
     this.ido = await MockIDO.new();
-    this.genesisGroup = await GenesisGroup.new(this.core.address, this.bc.address, this.ido.address, '1000');
+    this.genesisGroup = await GenesisGroup.new(this.core.address, this.bc.address, this.ido.address, '1000', '9000', '10');
 
     await this.core.allocateTribe(this.genesisGroup.address, 10000, {from: governorAddress});
     await this.core.setGenesisGroup(this.genesisGroup.address, {from: governorAddress});

@@ -16,7 +16,7 @@ contract Pool is CoreRef, ERC20 {
 	bool public initialized;
 
 	uint32 public startTime;
-	uint32 public constant DURATION = 2 * 365 days;
+	uint32 public duration;
 
 	uint128 public claimed;
 	uint128 public depositedFei;
@@ -27,10 +27,12 @@ contract Pool is CoreRef, ERC20 {
     event Deposit(address indexed _account, uint _amountFei);
     event Withdraw(address indexed _account, uint _amountFei, uint _amountTribe);
 
-	constructor(address core) public 
+	constructor(address core, uint32 _duration) public 
 		CoreRef(core) 
 		ERC20("Fei USD Pool", "poolFEI")
-	{}
+	{
+		duration = _duration;
+	}
 
 	function init() external postGenesis {
 		require(!initialized, "Pool: Already initialized");
@@ -83,15 +85,15 @@ contract Pool is CoreRef, ERC20 {
 
 	function unreleasedTribe() public view returns (uint) {
 		uint tribeAmount = totalTribe();
-		uint duration = uint256(DURATION);
+		uint _duration = uint256(duration);
 		uint t = uint256(timestamp());
-		if (t == duration) {
+		if (t == _duration) {
 			return 0;
 		}
 		// 2T*t/d 
-		Decimal.D256 memory start = Decimal.ratio(tribeAmount, duration).mul(2).mul(t);
+		Decimal.D256 memory start = Decimal.ratio(tribeAmount, _duration).mul(2).mul(t);
 		// T*t^2/d^2
-		Decimal.D256 memory end = Decimal.ratio(tribeAmount, duration).div(duration).mul(t * t);
+		Decimal.D256 memory end = Decimal.ratio(tribeAmount, _duration).div(_duration).mul(t * t);
 		return end.add(tribeAmount).sub(start).asUint256();
 	}
 
@@ -131,11 +133,11 @@ contract Pool is CoreRef, ERC20 {
 	}
 
 	function remainingTime() internal view returns(uint32) {
-		return DURATION.sub(timestamp());
+		return duration.sub(timestamp());
 	}
 
 	function timestamp() internal view returns(uint32) {
-		uint32 d = DURATION;
+		uint32 d = duration;
 		uint32 t = SafeMath32.safe32(now).sub(startTime);
 		return t > d ? d : t;
 	}
