@@ -3,6 +3,7 @@ pragma solidity ^0.6.0;
 import "../core/Core.sol";
 import "../oracle/UniswapOracle.sol";
 // import "../mock/MockOracle.sol";
+import "../token/IFei.sol";
 import "../pcv/IUniswapPCVDeposit.sol";
 import "../token/IUniswapIncentive.sol";
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
@@ -133,6 +134,7 @@ contract CoreOrchestrator is Ownable {
 		address uniswapIncentive = incentiveOrchestrator.uniswapIncentive();
 		core.grantMinter(uniswapIncentive);
 		core.grantBurner(uniswapIncentive);
+		IFei(fei).setIncentiveContract(ethFeiPair, uniswapIncentive);
 	}
 
 	function initController() public onlyOwner {

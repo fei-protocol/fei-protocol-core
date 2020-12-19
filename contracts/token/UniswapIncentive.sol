@@ -31,8 +31,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     event ExemptAddressUpdate(address indexed _account, bool _isExempt);
 
 	constructor(address core, address _oracle, address _pair, address _router) public
-	UniRef(core, _pair, _router) {
-        _setOracle(_oracle);
+	UniRef(core, _pair, _router, _oracle) {
         _setTimeWeight(0, false);    
     }
 

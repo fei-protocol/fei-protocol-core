@@ -9,8 +9,8 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
 
     event Deposit(address indexed _from, uint _amount);
 
-    constructor(address core, address _pair, address _router) public
-        UniswapPCVDeposit(core, _pair, _router) 
+    constructor(address core, address _pair, address _router, address _oracle) public
+        UniswapPCVDeposit(core, _pair, _router, _oracle) 
     {}
 
     function deposit(uint256 ethAmount) external override payable postGenesis {

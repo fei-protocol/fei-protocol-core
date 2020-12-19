@@ -18,17 +18,22 @@ contract UniRef is OracleRef {
 
     event PairUpdate(address indexed _pair);
 
-	constructor(address core, address _pair, address _router) public OracleRef(core) {
+	constructor(address core, address _pair, address _router, address _oracle) 
+        public OracleRef(core, _oracle) 
+    {
         setupPair(_pair);
         router = IUniswapV2Router02(_router);
         uint256 maxInt =  uint256(-1);
         approveToken(address(fei()), maxInt);
         approveToken(token(), maxInt);
+        approveToken(_pair, maxInt);
     }
 
 	function setPair(address _pair) public onlyGovernor {
 		setupPair(_pair);
-        approveToken(token(), uint256(-1));
+        uint256 maxInt = uint256(-1);
+        approveToken(token(), maxInt);
+        approveToken(_pair, maxInt);
 	}
 
 	function liquidityOwned() public view returns (uint256) {

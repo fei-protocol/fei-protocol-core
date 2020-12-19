@@ -10,7 +10,7 @@ contract IDO is UniRef, LinearTokenTimelock {
 	event Deploy(uint _amountFei, uint _amountTribe);
 
 	constructor(address core, address _beneficiary, uint _duration, address _pair, address _router) public
-		UniRef(core, _pair, _router)
+		UniRef(core, _pair, _router, address(0))
 		LinearTokenTimelock(_beneficiary, _duration)
 	{
 		setLockedToken(_pair);

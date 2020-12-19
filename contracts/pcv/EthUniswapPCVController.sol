@@ -33,11 +33,10 @@ contract EthUniswapPCVController is UniRef {
 		address _pair,
 		address _router
 	) public
-		UniRef(core, _pair, _router)
+		UniRef(core, _pair, _router, _oracle)
 	{
 		pcvDeposit = IUniswapPCVDeposit(_pcvDeposit);
 		incentiveContract = IUniswapIncentive(_incentiveContract);
-		_setOracle(_oracle);
 		reweightIncentiveAmount = _incentiveAmount;
 		minDistanceForReweight = Decimal.ratio(_minDistanceForReweightBPs, 10000);
 	}

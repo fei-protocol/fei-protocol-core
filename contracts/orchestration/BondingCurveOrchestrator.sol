@@ -19,7 +19,7 @@ contract BondingCurveOrchestrator is Ownable {
 	function init(address core, address uniswapOracle, address fei, address router) public onlyOwner {
 		if (!deployed) {
 			address pair = UniswapV2Library.pairFor(UNISWAP_FACTORY, fei, WETH);
-			ethUniswapPCVDeposit = new EthUniswapPCVDeposit(core, pair, router);
+			ethUniswapPCVDeposit = new EthUniswapPCVDeposit(core, pair, router, uniswapOracle);
 			uint256[] memory ratios = new uint256[](1);
 			ratios[0] = 10000;
 			address[] memory allocations = new address[](1);

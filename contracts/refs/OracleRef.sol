@@ -12,8 +12,11 @@ contract OracleRef is CoreRef {
 
     event OracleUpdate(address indexed _oracle);
 
-	constructor(address _core) public
-		CoreRef(_core) {}
+	constructor(address _core, address _oracle) public
+		CoreRef(_core) 
+    {
+        _setOracle(_oracle);
+    }
 
 	function setOracle(address _oracle) public onlyGovernor {
 		_setOracle(_oracle);

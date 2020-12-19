@@ -11,9 +11,8 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
 
     event Withdrawal(address indexed _caller, address indexed _to, uint _amount);
 
-	constructor (address core, address _pair, address _router) public
-		UniRef(core, _pair, _router)
-	{}
+	constructor (address core, address _pair, address _router, address _oracle) public
+		UniRef(core, _pair, _router, _oracle) {}
 
 	function withdraw(address to, uint256 amountUnderlying) external override onlyPCVController {
     	uint256 totalUnderlying = totalValue();
@@ -23,8 +22,6 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
     	Decimal.D256 memory ratioToWithdraw = Decimal.ratio(amountUnderlying, totalUnderlying);
     	uint256 liquidityToWithdraw = ratioToWithdraw.mul(totalLiquidity).asUint256();
 
-    	// TODO possibly move to constructor
-    	approveToken(address(pair), liquidityToWithdraw);
     	uint256 amountWithdrawn = removeLiquidity(liquidityToWithdraw);
     	transferWithdrawn(to, amountWithdrawn);
     	burnFeiHeld();
