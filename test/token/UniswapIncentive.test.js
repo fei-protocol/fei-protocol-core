@@ -33,8 +33,8 @@ describe('UniswapIncentive', function () {
     await this.fei.mint(userAddress, 50000000, {from: minterAddress});
 
     this.userBalance = new BN(50000000);
-    await this.fei.mint(this.pair.address, 50000000, {from: minterAddress});
-    this.pairBalance = new BN(50000000);
+    await this.fei.mint(this.pair.address, 5000000, {from: minterAddress});
+    this.pairBalance = new BN(5000000);
   });
 
   describe('Incentive Parity', function() {
@@ -222,15 +222,15 @@ describe('UniswapIncentive', function () {
 
     describe('Buy', function() {
       beforeEach(async function() {
-        await this.pair.withdrawFei(userAddress, 10000000);
+        await this.pair.withdrawFei(userAddress, 1000000);
       });
 
       it('user balance updates', async function() {
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(10000000).add(this.userBalance));
+        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(1000000).add(this.userBalance));
       });
 
       it('pair balance updates', async function() {
-        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.sub(new BN(10000000)));
+        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.sub(new BN(1000000)));
       });
 
       it('no incentive', async function() {
@@ -297,15 +297,15 @@ describe('UniswapIncentive', function () {
     describe('Buy', function() {
 
       beforeEach(async function() {
-        await this.pair.withdrawFei(userAddress, 10000000);
+        await this.pair.withdrawFei(userAddress, 1000000);
       });
 
       it('user balance updates', async function() {
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(10000000).add(this.userBalance));
+        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(1000000).add(this.userBalance));
       });
 
       it('pair balance updates', async function() {
-        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.sub(new BN(10000000)));
+        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.sub(new BN(1000000)));
       });
 
       it('no incentive', async function() {

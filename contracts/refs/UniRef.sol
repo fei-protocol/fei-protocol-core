@@ -64,6 +64,11 @@ contract UniRef is OracleRef {
         address token0 = pair.token0();
         (uint reserve0, uint reserve1,) = pair.getReserves();
         (feiReserves, tokenReserves) = address(fei()) == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
+        uint feiBalance = fei().balanceOf(address(pair));
+        if(feiBalance > feiReserves) {
+            feiReserves = feiBalance;
+        }
+        return (feiReserves, tokenReserves);
 	}
 
     function isBelowPeg(Decimal.D256 memory peg) public requirePair view returns (bool) {

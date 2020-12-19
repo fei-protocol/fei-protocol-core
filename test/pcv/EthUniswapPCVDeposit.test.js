@@ -30,7 +30,6 @@ describe('EthUniswapPCVDeposit', function () {
     await this.allocation.setOracle(this.oracle.address, {from: governorAddress});
     await this.core.grantMinter(this.allocation.address, {from: governorAddress});
     await this.core.grantMinter(minterAddress, {from: governorAddress});
-    await this.fei.mint(this.pair.address, 50000000, {from: minterAddress});
 
     await this.allocation.setPair(this.pair.address, {from: governorAddress});
     await this.allocation.setRouter(this.router.address, {from: governorAddress});
@@ -69,7 +68,7 @@ describe('EthUniswapPCVDeposit', function () {
 
       it('pair reserves', async function() {
         expect(await balance.current(this.pair.address)).to.be.bignumber.equal(new BN(100000));
-        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(50000000));
+        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
         let result = await this.allocation.getReserves();
         expect(result[0]).to.be.bignumber.equal(new BN(50000000));
         expect(result[1]).to.be.bignumber.equal(new BN(100000));
@@ -90,7 +89,7 @@ describe('EthUniswapPCVDeposit', function () {
 
         it('pair reserves', async function() {
           expect(await balance.current(this.pair.address)).to.be.bignumber.equal(new BN(200000));
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(100000000));
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(50000000));
           let result = await this.allocation.getReserves();
           expect(result[0]).to.be.bignumber.equal(new BN(100000000));
           expect(result[1]).to.be.bignumber.equal(new BN(200000));
@@ -115,7 +114,7 @@ describe('EthUniswapPCVDeposit', function () {
 
         it('pair reserves', async function() {
           expect(await balance.current(this.pair.address)).to.be.bignumber.equal(new BN(300000));
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(150000000));
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(100000000));
           let result = await this.allocation.getReserves();
           expect(result[0]).to.be.bignumber.equal(new BN(150000000));
           expect(result[1]).to.be.bignumber.equal(new BN(300000));
@@ -145,7 +144,7 @@ describe('EthUniswapPCVDeposit', function () {
 
         it('pair reserves', async function() {
           expect(await balance.current(this.pair.address)).to.be.bignumber.equal(new BN(300000));
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(300000000));
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(250000000));
           let result = await this.allocation.getReserves();
           expect(result[0]).to.be.bignumber.equal(new BN(300000000));
           expect(result[1]).to.be.bignumber.equal(new BN(300000));
@@ -209,7 +208,7 @@ describe('EthUniswapPCVDeposit', function () {
 
         it('pair balances update', async function() {
           expect(await balance.current(this.pair.address)).to.be.bignumber.equal(new BN(150000));
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(75000000));
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(25000000));
           let result = await this.allocation.getReserves();
           expect(result[0]).to.be.bignumber.equal(new BN(75000000));
           expect(result[1]).to.be.bignumber.equal(new BN(150000));
@@ -239,7 +238,7 @@ describe('EthUniswapPCVDeposit', function () {
 
         it('pair balances update', async function() {
           expect(await balance.current(this.pair.address)).to.be.bignumber.equal(new BN(100000));
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(50000000));
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
           let result = await this.allocation.getReserves();
           expect(result[0]).to.be.bignumber.equal(new BN(50000000));
           expect(result[1]).to.be.bignumber.equal(new BN(100000));
