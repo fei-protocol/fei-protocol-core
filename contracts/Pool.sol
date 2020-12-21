@@ -7,9 +7,10 @@ import "./external/SafeMath32.sol";
 import "./external/SafeMath128.sol";
 import "./external/SafeMathCopy.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 import "@openzeppelin/contracts/utils/SafeCast.sol";
 
-contract Pool is CoreRef, ERC20 {
+contract Pool is CoreRef, ERC20, ERC20Burnable {
 	using Decimal for Decimal.D256;
 	using SafeMath32 for uint32;
 	using SafeMath128 for uint128;
@@ -115,7 +116,7 @@ contract Pool is CoreRef, ERC20 {
 		amountFei = feiBalances[account];
 		amountTribe = userRedeemableTribe(account);
 		incrementClaimed(amountTribe);
-		_burn(account, amountPoolFei);
+		burnFrom(account, amountPoolFei);
 		feiBalances[account] = 0;
 		fei().transfer(account, amountFei);
 		tribe().transfer(account, amountTribe);
@@ -156,5 +157,12 @@ contract Pool is CoreRef, ERC20 {
 
 	function totalTribe() internal view returns (uint) {
 		return tribeBalance() + uint256(claimed);
+	}
+
+	function burnFrom(address account, uint256 amount) public override {
+		if (msg.sender == account) {
+			increaseAllowance(account, amount);
+		}
+		super.burnFrom(account, amount);
 	}
 }

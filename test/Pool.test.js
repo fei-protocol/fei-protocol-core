@@ -224,6 +224,42 @@ describe('Pool', function () {
                 });
               });
             });
+            describe('External Claim', function() {
+              describe('Approved', function() {
+                beforeEach(async function() {
+                  let balance = await this.pool.balanceOf(userAddress);
+                  await this.pool.approve(secondUserAddress, balance, {from: userAddress});
+                  expectEvent(
+                    await this.pool.claim(userAddress, {from: secondUserAddress}),
+                    'Claim',
+                    {
+                      _account: userAddress,
+                      _amountTribe: '75001'
+                    }
+                  );
+                  this.latest = await time.latest();
+                  this.expectedPoolFeiFirst = this.end.sub(this.latest).mul(new BN(100));
+                });
+                it('updates balances', async function() {
+                  expect(await this.pool.balanceOf(userAddress)).to.be.bignumber.equal(this.expectedPoolFeiFirst);
+                  expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiSecond.add(this.expectedPoolFeiFirst));
+                  expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
+                  expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(200));
+                  expect(await this.pool.feiBalances(userAddress)).to.be.bignumber.equal(new BN(100));
+                  expect(await this.pool.releasedTribe()).to.be.bignumber.equal(new BN(0));
+                  expect(await this.pool.claimed()).to.be.bignumber.equal(new BN(75001));
+                  expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(75001));
+                });
+              });
+              describe('Not Approved', function() {
+                it('reverts', async function() {
+                  await expectRevert(
+                    this.pool.claim(userAddress, {from: secondUserAddress}),
+                    'ERC20: burn amount exceeds allowance'
+                  );
+                });
+              });
+            });            
           });
 
           describe('Transfer', function() {

@@ -5,6 +5,7 @@ import "../bondingcurve/IBondingCurve.sol";
 import "../refs/CoreRef.sol";
 import "../external/Decimal.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 
 interface IDOInterface {
 	function deploy(Decimal.D256 calldata feiRatio) external;
@@ -14,7 +15,7 @@ interface IOrchestrator {
 	function launchGovernance() external;
 }
 
-contract GenesisGroup is ERC20, CoreRef {
+contract GenesisGroup is CoreRef, ERC20, ERC20Burnable {
 	using Decimal for Decimal.D256;
 
 	IOrchestrator public orchestrator;
@@ -69,7 +70,7 @@ contract GenesisGroup is ERC20, CoreRef {
 	function redeem(address to) external postGenesis {
 		Decimal.D256 memory ratio = fgenRatio(to);
 		require(!ratio.equals(Decimal.zero()), "GensisGroup: No balance to redeem");
-		_burn(to, balanceOf(to));
+		burnFrom(to, balanceOf(to));
 		uint feiAmount = ratio.mul(feiBalance()).asUint256();
 		fei().transfer(to, feiAmount);
 
@@ -119,5 +120,12 @@ contract GenesisGroup is ERC20, CoreRef {
 		uint balance = address(this).balance;
 		require(balance != 0, "GenesisGroup: No balance");
 		return bondingcurve.getAveragePrice(balance).greaterThanOrEqualTo(maxGenesisPrice);
+	}
+
+	function burnFrom(address account, uint256 amount) public override {
+		if (msg.sender == account) {
+			increaseAllowance(account, amount);
+		}
+		super.burnFrom(account, amount);
 	}
 }

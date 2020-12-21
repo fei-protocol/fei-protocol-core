@@ -4,6 +4,7 @@ const { BN, expectEvent, expectRevert, time, balance } = require('@openzeppelin/
 const { expect } = require('chai');
 
 const MockIDO = contract.fromArtifact('MockIDO');
+const MockGenesisGroupOrchestrator = contract.fromArtifact('MockGenesisGroupOrchestrator');
 const MockBondingCurve = contract.fromArtifact('MockBondingCurve');
 const Core = contract.fromArtifact('Core');
 const GenesisGroup = contract.fromArtifact('GenesisGroup');
@@ -19,7 +20,8 @@ describe('GenesisGroup', function () {
     this.tribe = await Tribe.at(await this.core.tribe());
     this.bc = await MockBondingCurve.new(false, 10);
     this.ido = await MockIDO.new();
-    this.genesisGroup = await GenesisGroup.new(this.core.address, this.bc.address, this.ido.address, '1000', '9000', '10');
+    this.go = await MockGenesisGroupOrchestrator.new(this.core.address, this.bc.address, this.ido.address, '1000', '9000', '10');
+    this.genesisGroup = await GenesisGroup.at(await this.go.genesisGroup());
 
     await this.core.allocateTribe(this.genesisGroup.address, 10000, {from: governorAddress});
     await this.core.setGenesisGroup(this.genesisGroup.address, {from: governorAddress});
@@ -202,6 +204,43 @@ describe('GenesisGroup', function () {
           {}
         );
       });
+
+      describe('External Redeem', function() {
+        describe('Approved', function() {
+          beforeEach(async function() {
+            let balance = await this.genesisGroup.balanceOf(userAddress);
+            await this.genesisGroup.approve(secondUserAddress, balance, {from: userAddress});
+            expectEvent(
+              await this.genesisGroup.redeem(userAddress, {from: secondUserAddress}),
+              'Redeem',
+              {
+                _to: userAddress,
+                _amountFei: "37500",
+                _amountTribe: "7500"
+              }
+            );
+          });
+
+          it('updates balances', async function() {
+            expect(await this.genesisGroup.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
+            expect(await this.genesisGroup.totalSupply()).to.be.bignumber.equal(new BN(250));
+            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(37500));
+            expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(7500));
+            expect(await this.fei.balanceOf(this.genesisGroup.address)).to.be.bignumber.equal(new BN(12500));
+            expect(await this.tribe.balanceOf(this.genesisGroup.address)).to.be.bignumber.equal(new BN(2500));
+          });
+        });
+
+        describe('Not Approved', function() {
+          it('reverts', async function() {
+            await expectRevert(
+               this.genesisGroup.redeem(userAddress, {from: secondUserAddress}),
+              'ERC20: burn amount exceeds allowance'
+            );
+          });
+        });
+      });
+
       describe('Single Redeem', function() {
         beforeEach(async function() {
           expectEvent(
