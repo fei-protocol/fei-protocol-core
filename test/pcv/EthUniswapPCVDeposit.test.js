@@ -26,8 +26,7 @@ describe('EthUniswapPCVDeposit', function () {
     this.pair = await MockPair.new(this.token.address, this.fei.address);
     this.oracle = await MockOracle.new(400); // 400:1 oracle price
     this.router = await MockRouter.new(this.pair.address);
-    this.allocation = await EthUniswapPCVDeposit.new(this.core.address, this.pair.address, this.router.address);
-    await this.allocation.setOracle(this.oracle.address, {from: governorAddress});
+    this.allocation = await EthUniswapPCVDeposit.new(this.core.address, this.pair.address, this.router.address, this.oracle.address);
     await this.core.grantMinter(this.allocation.address, {from: governorAddress});
     await this.core.grantMinter(minterAddress, {from: governorAddress});
 
