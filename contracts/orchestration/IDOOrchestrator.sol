@@ -5,17 +5,24 @@ import "../dao/TimelockedDelegator.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract IDOOrchestrator is Ownable {
-	IDO public ido;
-	TimelockedDelegator public timelockedDelegator;
+	
 	uint constant public RELEASE_WINDOW = 4 * 365 * 24 * 60 * 60; // 4 years vesting
 
-	bool public deployed;
+	function init(
+		address core, 
+		address admin, 
+		address tribe, 
+		address pair, 
+		address router
+	) public onlyOwner returns (
+		address ido,
+		address timelockedDelegator
+	) {
+		ido = address(new IDO(core, admin, RELEASE_WINDOW, pair, router));
+		timelockedDelegator = address(new TimelockedDelegator(tribe, admin, RELEASE_WINDOW));
+	}
 
-	function init(address core, address admin, address tribe, address pair, address router) public onlyOwner {
-		if(!deployed) {
-			ido = new IDO(core, admin, RELEASE_WINDOW, pair, router);
-			timelockedDelegator = new TimelockedDelegator(tribe, admin, RELEASE_WINDOW);
-			deployed = true;
-		}
+	function detonate() public onlyOwner {
+		selfdestruct(payable(owner()));
 	}
 }

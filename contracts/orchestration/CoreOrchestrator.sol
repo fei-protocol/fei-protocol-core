@@ -11,50 +11,76 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IBondingCurveOrchestrator {
-	function ethUniswapPCVDeposit() external view returns(address);
-	function ethBondingCurve() external view returns(address);
-	function bondingCurveOracle() external view returns(address);
-	function init(address core, address uniswapOracle, address pair, address router) external;
+	function init(
+		address core, 
+		address uniswapOracle, 
+		address pair, 
+		address router
+	) external returns(
+		address ethUniswapPCVDeposit,
+		address ethBondingCurve,
+		address bondingCurveOracle
+	);
+
+	function detonate() external;
 }
 
 interface IIncentiveOrchestrator {
-	function uniswapIncentive() external view returns(address);
-	function init(address core, address bondingCurveOracle, address fei, address router) external;
+	function init(
+		address core, 
+		address bondingCurveOracle, 
+		address fei, 
+		address router
+	) external returns(address uniswapIncentive);
+	function detonate() external;
 }
 
 interface IControllerOrchestrator {
-	function ethUniswapPCVController() external view returns(address);
-	function init(address core, address bondingCurveOracle, address uniswapIncentive, address ethUniswapPCVDeposit, address fei, address router) external;
-}
-
-interface IGovernanceOrchestrator {
-	function governorAlpha() external view returns(address);
-	function timelock() external view returns(address);
-	function init(address admin, address tribe) external;
-}
-
-interface IGenesisOrchestrator {
-	function genesisGroup() external view returns(address);
-	function pool() external view returns(address);
-	function init(address core, address ethBondingCurve, address ido) external;
+	function init(
+		address core, 
+		address bondingCurveOracle, 
+		address uniswapIncentive, 
+		address ethUniswapPCVDeposit, 
+		address fei, 
+		address router
+	) external returns(address ethUniswapPCVController);
+	function detonate() external;
 }
 
 interface IIDOOrchestrator {
-	function ido() external view returns(address);
-	function timelockedDelegator() external view returns(address);
-	function init(address core, address admin, address tribe, address pair, address router) external;
+	function init(
+		address core, 
+		address admin, 
+		address tribe, 
+		address pair, 
+		address router
+	) external returns (
+		address ido,
+		address timelockedDelegator
+	);
+	function detonate() external;
 }
 
-interface IUniRef {
-	function setPair(address pair) external;
+interface IGenesisOrchestrator {
+	function init(
+		address core, 
+		address ethBondingCurve, 
+		address ido
+	) external returns (address genesisGroup, address pool);
+	function detonate() external;
+}
+
+interface IGovernanceOrchestrator {
+	function init(address admin, address tribe) external returns (
+		address governorAlpha, 
+		address timelock
+	);
+	function detonate() external;
 }
 
 contract CoreOrchestrator is Ownable {
 	address public admin;
 
-	Core public core;
-	address public fei;
-	address public tribe;
 	address public constant ETH_USDC_UNI_PAIR = address(0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc);
 	address public constant ROUTER = address(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
@@ -73,6 +99,7 @@ contract CoreOrchestrator is Ownable {
 	uint public constant DEV_TRIBE_PERCENTAGE = 20;
 	uint public constant STAKING_TRIBE_PERCENTAGE = 20;
 
+	// Orchestrators
 	IBondingCurveOrchestrator private bcOrchestrator;
 	IIncentiveOrchestrator private incentiveOrchestrator;
 	IControllerOrchestrator private controllerOrchestrator;
@@ -80,6 +107,28 @@ contract CoreOrchestrator is Ownable {
 	IGenesisOrchestrator private genesisOrchestrator;
 	IGovernanceOrchestrator private governanceOrchestrator;
 	
+	// Contracts
+	Core public core;
+	address public fei;
+	address public tribe;
+
+	address public ethUniswapPCVDeposit;
+	address public ethBondingCurve;
+	address public bondingCurveOracle;
+
+	address public uniswapIncentive;
+
+	address public ethUniswapPCVController;
+
+	address public ido;
+	address public timelockedDelegator;
+
+	address public genesisGroup;
+	address public pool;
+
+	address public governorAlpha;
+	address public timelock;
+
 	constructor(
 		address _bcOrchestrator, 
 		address _incentiveOrchestrator, 
@@ -118,30 +167,29 @@ contract CoreOrchestrator is Ownable {
 	}
 
 	function initBondingCurve() public onlyOwner {
-		bcOrchestrator.init(address(core), uniswapOracle, ethFeiPair, ROUTER);
-		core.grantMinter(bcOrchestrator.ethUniswapPCVDeposit());
-		core.grantMinter(bcOrchestrator.ethBondingCurve());
+		(ethUniswapPCVDeposit,
+		 ethBondingCurve,
+		 bondingCurveOracle) = bcOrchestrator.init(address(core), uniswapOracle, ethFeiPair, ROUTER);
+		core.grantMinter(ethUniswapPCVDeposit);
+		core.grantMinter(ethBondingCurve);
+		bcOrchestrator.detonate();
 	}
 
 	function initIncentive() public onlyOwner {
-		address bondingCurveOracle = bcOrchestrator.bondingCurveOracle();
-		incentiveOrchestrator.init(
+		uniswapIncentive = incentiveOrchestrator.init(
 			address(core), 
 			bondingCurveOracle, 
 			ethFeiPair,
 			ROUTER
 		);
-		address uniswapIncentive = incentiveOrchestrator.uniswapIncentive();
 		core.grantMinter(uniswapIncentive);
 		core.grantBurner(uniswapIncentive);
 		IFei(fei).setIncentiveContract(ethFeiPair, uniswapIncentive);
+		incentiveOrchestrator.detonate();
 	}
 
 	function initController() public onlyOwner {
-		address ethUniswapPCVDeposit = bcOrchestrator.ethUniswapPCVDeposit();
-		address bondingCurveOracle = bcOrchestrator.bondingCurveOracle();
-		address uniswapIncentive = incentiveOrchestrator.uniswapIncentive();
-		controllerOrchestrator.init(
+		ethUniswapPCVController = controllerOrchestrator.init(
 			address(core), 
 			bondingCurveOracle, 
 			uniswapIncentive, 
@@ -149,39 +197,44 @@ contract CoreOrchestrator is Ownable {
 			ethFeiPair,
 			ROUTER
 		);
-		address ethUniswapPCVController = controllerOrchestrator.ethUniswapPCVController();
 		core.grantMinter(ethUniswapPCVController);
 		core.grantPCVController(ethUniswapPCVController);
 		IUniswapIncentive(uniswapIncentive).setExemptAddress(ethUniswapPCVDeposit, true);
 		IUniswapIncentive(uniswapIncentive).setExemptAddress(ethUniswapPCVController, true);
+		controllerOrchestrator.detonate();
 	}
 
 	function initIDO() public onlyOwner {
-		idoOrchestrator.init(address(core), admin, tribe, tribeFeiPair, ROUTER);
-		address ido = idoOrchestrator.ido();
+		(ido, timelockedDelegator) = idoOrchestrator.init(address(core), admin, tribe, tribeFeiPair, ROUTER);
 		core.grantMinter(ido);
 		core.allocateTribe(ido, tribeSupply * IDO_TRIBE_PERCENTAGE / 100);
-		core.allocateTribe(idoOrchestrator.timelockedDelegator(), tribeSupply * DEV_TRIBE_PERCENTAGE / 100);
+		core.allocateTribe(timelockedDelegator, tribeSupply * DEV_TRIBE_PERCENTAGE / 100);
+		idoOrchestrator.detonate();
 	}
 
 	function initGenesis() public onlyOwner {
-		genesisOrchestrator.init(
+		(genesisGroup, pool) = genesisOrchestrator.init(
 			address(core), 
-			bcOrchestrator.ethBondingCurve(), 
-			idoOrchestrator.ido()
+			ethBondingCurve, 
+			ido
 		);
-		address genesisGroup = genesisOrchestrator.genesisGroup();
 		core.setGenesisGroup(genesisGroup);
 		core.allocateTribe(genesisGroup, tribeSupply * GENESIS_TRIBE_PERCENTAGE / 100);
-		address pool = genesisOrchestrator.pool();
 		core.allocateTribe(pool, tribeSupply * STAKING_TRIBE_PERCENTAGE / 100);
+		genesisOrchestrator.detonate();
 	}
 
 	function initGovernance() public onlyOwner {
-		governanceOrchestrator.init(
+		(governorAlpha, timelock) = governanceOrchestrator.init(
 			admin, 
 			tribe
 		);
-		core.grantGovernor(governanceOrchestrator.timelock());
+		governanceOrchestrator.detonate();
+	}
+
+	function launchGovernance() public {
+		require(msg.sender == core.genesisGroup(), "CoreOrchestrator: Caller is not GenesisGroup");
+		require(core.hasGenesisGroupCompleted(), "CoreOrchestrator: Still in Genesis Period");
+		core.grantGovernor(timelock);
 	}
 }

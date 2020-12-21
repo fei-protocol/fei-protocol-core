@@ -5,12 +5,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ControllerOrchestrator is Ownable {
 
-	EthUniswapPCVController public ethUniswapPCVController;
-
 	uint public constant REWEIGHT_INCENTIVE = 100e18;
 	uint public constant MIN_REWEIGHT_DISTANCE_BPS = 100;
-
-	bool public deployed;
 
 	function init(
 		address core,
@@ -19,9 +15,8 @@ contract ControllerOrchestrator is Ownable {
 		address ethUniswapPCVDeposit,
 		address pair, 
 		address router
-	) public onlyOwner {
-		if (!deployed) {
-			ethUniswapPCVController = new EthUniswapPCVController(
+	) public onlyOwner returns(address) {
+		return address(new EthUniswapPCVController(
 				core, 
 				ethUniswapPCVDeposit, 
 				bondingCurveOracle, 
@@ -30,8 +25,10 @@ contract ControllerOrchestrator is Ownable {
 				MIN_REWEIGHT_DISTANCE_BPS,
 				pair, 
 				router
-			);
-			deployed = true;	
-		}
+			));
+	}
+
+	function detonate() public onlyOwner {
+		selfdestruct(payable(owner()));
 	}
 }

@@ -7,17 +7,16 @@ contract IncentiveOrchestrator is Ownable {
 
 	UniswapIncentive public uniswapIncentive;
 
-	bool public deployed;
-
 	function init(
 		address core,
 		address bondingCurveOracle, 
 		address pair, 
 		address router
-	) public onlyOwner {
-		if (!deployed) {
-			uniswapIncentive = new UniswapIncentive(core, bondingCurveOracle, pair, router);
-			deployed = true;	
-		}
+	) public onlyOwner returns(address) {
+		return address(new UniswapIncentive(core, bondingCurveOracle, pair, router));
+	}
+
+	function detonate() public onlyOwner {
+		selfdestruct(payable(owner()));
 	}
 }
