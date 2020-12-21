@@ -124,11 +124,4 @@ library SafeMath128 {
 
         return c;
     }
-
-
-    // Inspired by Compound's COMP token
-    function safe128(uint n) internal pure returns (uint128) {
-        require(n < 2**128, "SafeMath: downcast unclean");
-        return uint128(n);
-    }
 }

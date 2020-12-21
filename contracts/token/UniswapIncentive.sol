@@ -7,10 +7,12 @@ import "../oracle/IOracle.sol";
 import "../refs/UniRef.sol";
 import "../external/SafeMath32.sol";
 import "@openzeppelin/contracts/math/Math.sol";
+import "@openzeppelin/contracts/utils/SafeCast.sol";
 
 contract UniswapIncentive is IUniswapIncentive, UniRef {
 	using Decimal for Decimal.D256;
     using SafeMath32 for uint32;
+    using SafeCast for uint256;
 
     struct TimeWeightInfo {
         uint32 blockNo;
@@ -84,7 +86,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         if (!tw.active) {
             return 0;
         }
-        uint32 blockDelta = SafeMath32.safe32(block.number).sub(tw.blockNo);
+        uint32 blockDelta = block.number.toUint32().sub(tw.blockNo);
         return tw.weight.add(blockDelta * tw.growthRate);
     }
 
@@ -221,11 +223,11 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         }
         uint256 maxWeight = finalDeviation.mul(100).mul(uint256(TIME_WEIGHT_GRANULARITY)).asUint256(); // m^2*100 (sell) = t*m (buy) 
         updatedWeight = Math.min(updatedWeight, maxWeight);
-        _setTimeWeight(SafeMath32.safe32(updatedWeight), true);
+        _setTimeWeight(updatedWeight.toUint32(), true);
     }
 
     function _setTimeWeight(uint32 weight, bool active) internal {
-        uint32 blockNo = SafeMath32.safe32(block.number);
+        uint32 blockNo = block.number.toUint32();
         timeWeightInfo = TimeWeightInfo(blockNo, weight, getGrowthRate(), active);
         emit TimeWeightUpdate(weight, active);   
     }

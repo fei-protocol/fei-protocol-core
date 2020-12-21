@@ -7,11 +7,13 @@ import "./external/SafeMath32.sol";
 import "./external/SafeMath128.sol";
 import "./external/SafeMathCopy.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/utils/SafeCast.sol";
 
 contract Pool is CoreRef, ERC20 {
 	using Decimal for Decimal.D256;
 	using SafeMath32 for uint32;
 	using SafeMath128 for uint128;
+	using SafeCast for uint256;
 
 	bool public initialized;
 
@@ -36,7 +38,7 @@ contract Pool is CoreRef, ERC20 {
 
 	function init() external postGenesis {
 		require(!initialized, "Pool: Already initialized");
-		startTime = SafeMath32.safe32(now);
+		startTime = now.toUint32();
 		initialized = true;
 	}
 
@@ -121,11 +123,11 @@ contract Pool is CoreRef, ERC20 {
 	}
 
 	function incrementClaimed(uint256 amount) internal {
-		claimed = claimed.add(SafeMath128.safe128(amount));
+		claimed = claimed.add(amount.toUint128());
 	}
 
 	function incrementDeposited(uint256 amount) internal {
-		depositedFei = depositedFei.add(SafeMath128.safe128(amount));
+		depositedFei = depositedFei.add(amount.toUint128());
 	}
 
 	function twfb(uint amount) internal view returns(uint) {
@@ -138,7 +140,7 @@ contract Pool is CoreRef, ERC20 {
 
 	function timestamp() internal view returns(uint32) {
 		uint32 d = duration;
-		uint32 t = SafeMath32.safe32(now).sub(startTime);
+		uint32 t = now.toUint32().sub(startTime);
 		return t > d ? d : t;
 	}
 

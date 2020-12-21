@@ -64,10 +64,4 @@ library SafeMath32 {
 
         return c;
     }
-
-    // Inspired by Compound's COMP token
-    function safe32(uint n) internal pure returns (uint32) {
-        require(n < 2**32, "SafeMath: downcast unclean");
-        return uint32(n);
-    }
 }
