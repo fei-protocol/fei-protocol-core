@@ -10,9 +10,14 @@ interface IDOInterface {
 	function deploy(Decimal.D256 calldata feiRatio) external;
 }
 
+interface IOrchestrator {
+	function launchGovernance() external;
+}
+
 contract GenesisGroup is ERC20, CoreRef {
 	using Decimal for Decimal.D256;
 
+	IOrchestrator public orchestrator;
 	IBondingCurve public bondingcurve;
 	IDOInterface public ido;
 
@@ -45,6 +50,8 @@ contract GenesisGroup is ERC20, CoreRef {
 
 		maxGenesisPrice = Decimal.ratio(_maxPriceBPs, 10000);
 		exchangeRateDiscount = _exchangeRateDiscount;
+
+		orchestrator = IOrchestrator(msg.sender);
 	}
 
 	modifier onlyGenesisPeriod() {
@@ -74,6 +81,7 @@ contract GenesisGroup is ERC20, CoreRef {
 	function launch() external {
 		require(!isGenesisPeriod() || isAtMaxPrice(), "GenesisGroup: Still in Genesis Period");
 		core().completeGenesisGroup();
+		orchestrator.launchGovernance();
 		address genesisGroup = address(this);
 		uint balance = genesisGroup.balance;
 		bondingcurve.purchase{value: balance}(balance, genesisGroup);
