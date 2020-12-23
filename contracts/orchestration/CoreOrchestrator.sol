@@ -2,7 +2,6 @@ pragma solidity ^0.6.0;
 
 import "../core/Core.sol";
 import "../oracle/UniswapOracle.sol";
-// import "../mock/MockOracle.sol";
 import "../token/IFei.sol";
 import "../pcv/IUniswapPCVDeposit.sol";
 import "../token/IUniswapIncentive.sol";
@@ -142,8 +141,6 @@ contract CoreOrchestrator is Ownable {
 		tribe = address(core.tribe());
 		fei = address(core.fei());
 
-		// uniswapOracle = address(new MockOracle(500));
-
 		uniswapOracle = address(new UniswapOracle(address(core), 
 			ETH_USDC_UNI_PAIR, 
 			UNI_ORACLE_TWAP_DURATION, 
@@ -236,5 +233,6 @@ contract CoreOrchestrator is Ownable {
 		require(msg.sender == core.genesisGroup(), "CoreOrchestrator: Caller is not GenesisGroup");
 		require(core.hasGenesisGroupCompleted(), "CoreOrchestrator: Still in Genesis Period");
 		core.grantGovernor(timelock);
+		// core.grantGovernor(admin);
 	}
 }

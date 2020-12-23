@@ -8,6 +8,7 @@ const Pair = artifacts.require("IUniswapV2Pair");
 const TimelockedDelegator = artifacts.require("TimelockedDelegator");
 const Pool = artifacts.require("Pool");
 const EthBondingCurve = artifacts.require("EthBondingCurve");
+const UniswapOracle = artifacts.require("UniswapOracle");
 
 module.exports = async function(callback) {
   let accounts = await web3.eth.getAccounts();
@@ -22,6 +23,7 @@ module.exports = async function(callback) {
   let pool = await Pool.at(await co.pool());
   let bc = await EthBondingCurve.at(await co.ethBondingCurve());
   let ethPair = await Pair.at(await co.ethFeiPair());
+  let uo = await UniswapOracle.at(await co.uniswapOracle());
 
   console.log('Init');
   let ggPurchase = await gg.purchase(accounts[0], 100000, {from: accounts[0], value: 100000});
@@ -30,6 +32,9 @@ module.exports = async function(callback) {
 
   console.log('Sleeping for 60s');
   await sleep(60000);
+  console.log('Oracles');
+  await uo.update();
+  console.log(await uo.read());
   console.log('Launch:'); 
   let launch = await gg.launch({from: accounts[0]});
   console.log(launch['receipt']['gasUsed']);

@@ -45,9 +45,9 @@ contract UniswapOracle is IOracle, CoreRef {
 		}
 
 		uint currentCumulative = getCumulative(price0Cumulative, price1Cumulative);
-		uint deltaCumulative = currentCumulative - priorCumulative;
+		uint deltaCumulative = (currentCumulative - priorCumulative) / 1e12;
 
-		Decimal.D256 memory _twap = Decimal.ratio(deltaCumulative, deltaTimestamp);
+		Decimal.D256 memory _twap = Decimal.ratio(2**112, deltaCumulative / deltaTimestamp);
 		twap = _twap;
 
 		priorTimestamp = currentTimestamp;
