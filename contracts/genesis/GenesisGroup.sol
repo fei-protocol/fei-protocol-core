@@ -13,6 +13,11 @@ interface IDOInterface {
 
 interface IOrchestrator {
 	function launchGovernance() external;
+	function pool() external returns(address);
+}
+
+interface IPool {
+	function init() external;
 }
 
 contract GenesisGroup is CoreRef, ERC20, ERC20Burnable {
@@ -38,7 +43,8 @@ contract GenesisGroup is CoreRef, ERC20, ERC20Burnable {
 		address _ido,
 		uint _duration,
 		uint _maxPriceBPs,
-		uint _exchangeRateDiscount
+		uint _exchangeRateDiscount,
+		address _orchestrator
 	) public
 		CoreRef(_core)
 		ERC20("Fei Genesis Group", "FGEN")
@@ -52,7 +58,7 @@ contract GenesisGroup is CoreRef, ERC20, ERC20Burnable {
 		maxGenesisPrice = Decimal.ratio(_maxPriceBPs, 10000);
 		exchangeRateDiscount = _exchangeRateDiscount;
 
-		orchestrator = IOrchestrator(msg.sender);
+		orchestrator = IOrchestrator(_orchestrator);
 	}
 
 	modifier onlyGenesisPeriod() {
@@ -86,6 +92,7 @@ contract GenesisGroup is CoreRef, ERC20, ERC20Burnable {
 		address genesisGroup = address(this);
 		uint balance = genesisGroup.balance;
 		bondingcurve.purchase{value: balance}(balance, genesisGroup);
+		IPool(orchestrator.pool()).init();
 		ido.deploy(exchangeRate());
 		// solhint-disable-next-line not-rely-on-time
 		emit Launch(now);

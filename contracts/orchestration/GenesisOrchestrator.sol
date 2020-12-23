@@ -23,7 +23,8 @@ contract GenesisOrchestrator is Ownable {
 			ido, 
 			GENESIS_DURATION, 
 			MAX_PRICE_BPS, 
-			EXCHANGE_RATE_DISCOUNT
+			EXCHANGE_RATE_DISCOUNT,
+			msg.sender
 		));
 		pool = address(new Pool(core, POOL_DURATION));
 		return (genesisGroup, pool);

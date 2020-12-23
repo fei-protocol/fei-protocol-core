@@ -4,7 +4,7 @@ const { BN, expectEvent, expectRevert, time, balance } = require('@openzeppelin/
 const { expect } = require('chai');
 
 const MockIDO = contract.fromArtifact('MockIDO');
-const MockGenesisGroupOrchestrator = contract.fromArtifact('MockGenesisGroupOrchestrator');
+const MockOrchestrator = contract.fromArtifact('MockOrchestrator');
 const MockBondingCurve = contract.fromArtifact('MockBondingCurve');
 const Core = contract.fromArtifact('Core');
 const GenesisGroup = contract.fromArtifact('GenesisGroup');
@@ -20,8 +20,8 @@ describe('GenesisGroup', function () {
     this.tribe = await Tribe.at(await this.core.tribe());
     this.bc = await MockBondingCurve.new(false, 10);
     this.ido = await MockIDO.new();
-    this.go = await MockGenesisGroupOrchestrator.new(this.core.address, this.bc.address, this.ido.address, '1000', '9000', '10');
-    this.genesisGroup = await GenesisGroup.at(await this.go.genesisGroup());
+    this.go = await MockOrchestrator.new();
+    this.genesisGroup = await GenesisGroup.new(this.core.address, this.bc.address, this.ido.address, '1000', '9000', '10', this.go.address);
 
     await this.core.allocateTribe(this.genesisGroup.address, 10000, {from: governorAddress});
     await this.core.setGenesisGroup(this.genesisGroup.address, {from: governorAddress});
