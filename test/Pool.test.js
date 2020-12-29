@@ -82,7 +82,7 @@ describe('Pool', function () {
           expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiFirst);
           expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
           expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(100));
-          expect(await this.pool.stakedBalances(userAddress)).to.be.bignumber.equal(new BN(100));
+          expect(await this.pool.stakedBalance(userAddress)).to.be.bignumber.equal(new BN(100));
         });
         describe('Halfway', function() {
           beforeEach(async function() {
@@ -104,7 +104,7 @@ describe('Pool', function () {
               expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiSecond.add(this.expectedPoolFeiFirst));
               expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(0));
               expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(200));
-              expect(await this.pool.stakedBalances(secondUserAddress)).to.be.bignumber.equal(new BN(100));
+              expect(await this.pool.stakedBalance(secondUserAddress)).to.be.bignumber.equal(new BN(100));
             });
             describe('Complete', function() {
               beforeEach(async function() {
@@ -126,8 +126,8 @@ describe('Pool', function () {
                   expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
                   expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(100));
                   expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(0));
-                  expect(await this.pool.stakedBalances(userAddress)).to.be.bignumber.equal(new BN(0));
-                  expect(await this.pool.stakedBalances(secondUserAddress)).to.be.bignumber.equal(new BN(0));
+                  expect(await this.pool.stakedBalance(userAddress)).to.be.bignumber.equal(new BN(0));
+                  expect(await this.pool.stakedBalance(secondUserAddress)).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(100000));
                   expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(66666));
@@ -152,7 +152,7 @@ describe('Pool', function () {
                 expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiSecond);
                 expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
                 expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(100));
-                expect(await this.pool.stakedBalances(userAddress)).to.be.bignumber.equal(new BN(0));
+                expect(await this.pool.stakedBalance(userAddress)).to.be.bignumber.equal(new BN(0));
                 expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
                 expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(75001));
                 expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(75001));
@@ -174,7 +174,7 @@ describe('Pool', function () {
                     expect(await this.pool.totalSupply()).to.be.bignumber.equal(new BN(0));
                     expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(100));
                     expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(0));
-                    expect(await this.pool.stakedBalances(secondUserAddress)).to.be.bignumber.equal(new BN(0));
+                    expect(await this.pool.stakedBalance(secondUserAddress)).to.be.bignumber.equal(new BN(0));
                     expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
                     expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(100000));
                     expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(24999));
@@ -200,7 +200,7 @@ describe('Pool', function () {
                 expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiSecond.add(this.expectedPoolFeiFirst));
                 expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
                 expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(200));
-                expect(await this.pool.stakedBalances(userAddress)).to.be.bignumber.equal(new BN(100));
+                expect(await this.pool.stakedBalance(userAddress)).to.be.bignumber.equal(new BN(100));
                 expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
                 expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(75001));
                 expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(75001));
@@ -225,8 +225,8 @@ describe('Pool', function () {
                     expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
                     expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(100));
                     expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(0));
-                    expect(await this.pool.stakedBalances(userAddress)).to.be.bignumber.equal(new BN(0));
-                    expect(await this.pool.stakedBalances(secondUserAddress)).to.be.bignumber.equal(new BN(0));
+                    expect(await this.pool.stakedBalance(userAddress)).to.be.bignumber.equal(new BN(0));
+                    expect(await this.pool.stakedBalance(secondUserAddress)).to.be.bignumber.equal(new BN(0));
                     expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
                     expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(100000));
                     expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(87500));
@@ -256,7 +256,7 @@ describe('Pool', function () {
                   expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiSecond.add(this.expectedPoolFeiFirst));
                   expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
                   expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(200));
-                  expect(await this.pool.stakedBalances(userAddress)).to.be.bignumber.equal(new BN(100));
+                  expect(await this.pool.stakedBalance(userAddress)).to.be.bignumber.equal(new BN(100));
                   expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(75001));
                   expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(75001));
@@ -285,8 +285,8 @@ describe('Pool', function () {
               expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.balance);
               expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
               expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(100));
-              expect(await this.pool.stakedBalances(userAddress)).to.be.bignumber.equal(new BN(50));
-              expect(await this.pool.stakedBalances(secondUserAddress)).to.be.bignumber.equal(new BN(50));
+              expect(await this.pool.stakedBalance(userAddress)).to.be.bignumber.equal(new BN(50));
+              expect(await this.pool.stakedBalance(secondUserAddress)).to.be.bignumber.equal(new BN(50));
               expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(75001));
               expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(0));
               expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
@@ -311,8 +311,8 @@ describe('Pool', function () {
                   expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(50));
                   expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(150));
                   expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(0));
-                  expect(await this.pool.stakedBalances(userAddress)).to.be.bignumber.equal(new BN(0));
-                  expect(await this.pool.stakedBalances(secondUserAddress)).to.be.bignumber.equal(new BN(0));
+                  expect(await this.pool.stakedBalance(userAddress)).to.be.bignumber.equal(new BN(0));
+                  expect(await this.pool.stakedBalance(secondUserAddress)).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(100000));
                   expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(50000));
@@ -344,7 +344,7 @@ describe('Pool', function () {
               expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFei);
               expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
               expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(100));
-              expect(await this.pool.stakedBalances(userAddress)).to.be.bignumber.equal(new BN(100));
+              expect(await this.pool.stakedBalance(userAddress)).to.be.bignumber.equal(new BN(100));
             });
             describe('Complete', function() {
               beforeEach(async function() {
@@ -363,7 +363,7 @@ describe('Pool', function () {
                   expect(await this.pool.totalSupply()).to.be.bignumber.equal(new BN(0));
                   expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
                   expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(0));
-                  expect(await this.pool.stakedBalances(userAddress)).to.be.bignumber.equal(new BN(0));
+                  expect(await this.pool.stakedBalance(userAddress)).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(100000));
                   expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100000));

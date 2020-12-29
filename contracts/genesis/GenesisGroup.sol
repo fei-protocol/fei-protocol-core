@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 import "../bondingcurve/IBondingCurve.sol";
 import "../refs/CoreRef.sol";
 import "../external/Decimal.sol";
+import "../pool/IPool.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 
@@ -15,10 +16,6 @@ interface IOrchestrator {
 	function launchGovernance() external;
 	function pool() external returns(address);
 	function bondingCurveOracle() external returns(address);
-}
-
-interface IPool {
-	function init() external;
 }
 
 interface IBondingCurveOracle {
