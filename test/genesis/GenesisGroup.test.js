@@ -10,6 +10,7 @@ const Core = contract.fromArtifact('Core');
 const GenesisGroup = contract.fromArtifact('GenesisGroup');
 const Fei = contract.fromArtifact('Fei');
 const Tribe = contract.fromArtifact('Tribe');
+const MockBondingCurveOracle = contract.fromArtifact('MockBCO');
 
 describe('GenesisGroup', function () {
   const [ userAddress, secondUserAddress, governorAddress, minterAddress ] = accounts;
@@ -21,6 +22,7 @@ describe('GenesisGroup', function () {
     this.bc = await MockBondingCurve.new(false, 10);
     this.ido = await MockIDO.new();
     this.go = await MockOrchestrator.new();
+    this.bo = await MockBondingCurveOracle.at(await this.go.bondingCurveOracle());
     this.genesisGroup = await GenesisGroup.new(this.core.address, this.bc.address, this.ido.address, '1000', '9000', '10', this.go.address);
 
     await this.core.allocateTribe(this.genesisGroup.address, 10000, {from: governorAddress});
@@ -145,6 +147,10 @@ describe('GenesisGroup', function () {
         it('deploys IDO', async function() {
           expect(await this.ido.ratio()).to.be.bignumber.equal(new BN('5000000000000000000').div(new BN(10)));
         });
+
+        it('inits Bonding Curve Oracle', async function() {
+          expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('10000000000000000000'));
+        });
       });
 
     });
@@ -193,6 +199,9 @@ describe('GenesisGroup', function () {
 
       it('second launch reverts', async function() {
         await expectRevert(this.genesisGroup.launch(), "Core: Genesis Group already complete");
+      });
+      it('inits Bonding Curve Oracle', async function() {
+        expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('10000000000000000000'));
       });
     });
 

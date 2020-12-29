@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract BondingCurveOrchestrator is Ownable {
 	uint public scale = 250_000_000e18;
-	// uint public scale = 250_000_000;
+	// uint public scale = 250_000_000; // TEST MODE
 
 	function init(
 		address core, 

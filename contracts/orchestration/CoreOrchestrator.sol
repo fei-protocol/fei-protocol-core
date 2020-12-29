@@ -3,6 +3,7 @@ pragma solidity ^0.6.0;
 import "../core/Core.sol";
 import "../oracle/UniswapOracle.sol";
 import "../token/IFei.sol";
+import "../refs/IOracleRef.sol";
 import "../pcv/IUniswapPCVDeposit.sol";
 import "../token/IUniswapIncentive.sol";
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
@@ -90,6 +91,7 @@ contract CoreOrchestrator is Ownable {
 	address public tribeFeiPair;
 
 	uint32 public constant UNI_ORACLE_TWAP_DURATION = 10 minutes; // 10 min twap
+	// uint32 public constant UNI_ORACLE_TWAP_DURATION = 1 // TEST MODE
 	bool public constant USDC_PER_ETH_IS_PRICE_0 = true;
 	address public uniswapOracle;
 	uint public tribeSupply;
@@ -169,6 +171,7 @@ contract CoreOrchestrator is Ownable {
 		 bondingCurveOracle) = bcOrchestrator.init(address(core), uniswapOracle, ethFeiPair, ROUTER);
 		core.grantMinter(ethUniswapPCVDeposit);
 		core.grantMinter(ethBondingCurve);
+		IOracleRef(ethUniswapPCVDeposit).setOracle(bondingCurveOracle);
 		bcOrchestrator.detonate();
 	}
 
@@ -233,6 +236,6 @@ contract CoreOrchestrator is Ownable {
 		require(msg.sender == core.genesisGroup(), "CoreOrchestrator: Caller is not GenesisGroup");
 		require(core.hasGenesisGroupCompleted(), "CoreOrchestrator: Still in Genesis Period");
 		core.grantGovernor(timelock);
-		// core.grantGovernor(admin);
+		// core.grantGovernor(admin); // TEST MODE
 	}
 }

@@ -14,10 +14,15 @@ interface IDOInterface {
 interface IOrchestrator {
 	function launchGovernance() external;
 	function pool() external returns(address);
+	function bondingCurveOracle() external returns(address);
 }
 
 interface IPool {
 	function init() external;
+}
+
+interface IBondingCurveOracle {
+	function init(Decimal.D256 calldata price) external;
 }
 
 contract GenesisGroup is CoreRef, ERC20, ERC20Burnable {
@@ -89,6 +94,7 @@ contract GenesisGroup is CoreRef, ERC20, ERC20Burnable {
 		require(!isGenesisPeriod() || isAtMaxPrice(), "GenesisGroup: Still in Genesis Period");
 		core().completeGenesisGroup();
 		orchestrator.launchGovernance();
+		IBondingCurveOracle(orchestrator.bondingCurveOracle()).init(feiEthExchangeRate());
 		address genesisGroup = address(this);
 		uint balance = genesisGroup.balance;
 		bondingcurve.purchase{value: balance}(balance, genesisGroup);
@@ -112,6 +118,11 @@ contract GenesisGroup is CoreRef, ERC20, ERC20Burnable {
 
 	function exchangeRate() public view returns (Decimal.D256 memory) {
 		return Decimal.ratio(feiBalance(), tribeBalance()).div(exchangeRateDiscount);
+	}
+
+	function feiEthExchangeRate() public view returns (Decimal.D256 memory) {
+		(uint amountFei, ) = getAmountOut(totalSupply(), true); 
+		return Decimal.ratio(amountFei, totalSupply());
 	}
 
 	function fgenRatio(address account) internal view returns (Decimal.D256 memory) {

@@ -4,7 +4,7 @@ const IDO = artifacts.require("IDO");
 const Core = artifacts.require("Core");
 const Fei = artifacts.require("Fei");
 const Tribe = artifacts.require("Tribe");
-const Pair = artifacts.require("IUniswapV2Pair");
+const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 const TimelockedDelegator = artifacts.require("TimelockedDelegator");
 const Pool = artifacts.require("Pool");
 const EthBondingCurve = artifacts.require("EthBondingCurve");
@@ -18,11 +18,11 @@ module.exports = async function(callback) {
   let tribe = await Tribe.at(await core.tribe());
   let gg = await GenesisGroup.at(await co.genesisGroup());
   let ido = await IDO.at(await co.ido());
-  let pair = await Pair.at(await ido.pair());
+  let pair = await IUniswapV2Pair.at(await ido.pair());
   let td = await TimelockedDelegator.at(await co.timelockedDelegator());
   let pool = await Pool.at(await co.pool());
   let bc = await EthBondingCurve.at(await co.ethBondingCurve());
-  let ethPair = await Pair.at(await co.ethFeiPair());
+  let ethPair = await IUniswapV2Pair.at(await co.ethFeiPair());
   let uo = await UniswapOracle.at(await co.uniswapOracle());
 
   console.log('Init');
