@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "../genesis/GenesisGroup.sol";
-import "../Pool.sol";
+import "../pool/FeiPool.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract GenesisOrchestrator is Ownable {
@@ -26,7 +26,7 @@ contract GenesisOrchestrator is Ownable {
 			EXCHANGE_RATE_DISCOUNT,
 			msg.sender
 		));
-		pool = address(new Pool(core, POOL_DURATION));
+		pool = address(new FeiPool(core, POOL_DURATION));
 		return (genesisGroup, pool);
 	}
 
