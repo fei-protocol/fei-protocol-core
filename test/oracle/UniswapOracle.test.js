@@ -17,7 +17,7 @@ describe('UniswapOracle', function () {
     this.delta = new BN(1000);
     await time.increase(this.delta);
     this.cursor = this.startTime.add(this.delta);
-    this.cumulative = this.delta.mul(new BN(500));
+    this.cumulative = this.delta.mul(new BN(500e12));
     this.pair = await MockPair.new(this.cumulative, 0, this.cursor, 100000, 50000000); // 500:1 FEI/ETH initial price
 
     this.oracle = await UniswapOracle.new(this.core.address, this.pair.address, 600, true); // 10 min TWAP using price0
@@ -25,7 +25,7 @@ describe('UniswapOracle', function () {
 
   it('initializes', async function() {
     expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.cursor);
-    expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.delta.mul(new BN(500)));
+    expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.delta.mul(new BN(500e12)));
   });
 
   describe('Read', function() {
@@ -39,7 +39,7 @@ describe('UniswapOracle', function () {
 
     describe('Initialized', function() {
       beforeEach(async function() {
-        await this.pair.set(this.cumulative.add(this.delta.mul(new BN(500))), 0, this.cursor.add(new BN(1000)));
+        await this.pair.set(this.cumulative.add(this.delta.mul(new BN(500e12))), 0, this.cursor.add(new BN(1000)));
         await this.pair.setReserves(100000, 50000000);
         await time.increase(this.delta);
         await this.oracle.update();
@@ -52,7 +52,7 @@ describe('UniswapOracle', function () {
 
         it('returns invalid', async function() {
           let result = await this.oracle.read();
-          expect(result[0].value).to.be.equal('500000000000000000000');
+          expect(result[0].value).to.be.equal('10384593717069655257060992658440192000000000000000'); // 2^112 / 500000000000000000000
           expect(result[1]).to.be.equal(false);
         });
       });
@@ -60,7 +60,7 @@ describe('UniswapOracle', function () {
       describe('No kill switch', function() {
         it('returns valid', async function() {
           let result = await this.oracle.read();
-          expect(result[0].value).to.be.equal('500000000000000000000');
+          expect(result[0].value).to.be.equal('10384593717069655257060992658440192000000000000000');
           expect(result[1]).to.be.equal(true);
         });
       });
@@ -74,7 +74,7 @@ describe('UniswapOracle', function () {
 
     describe('Within duration', function() {
       beforeEach(async function() {
-        await this.pair.set(this.cumulative.add(this.delta.mul(new BN(500))), 0, this.cursor.add(new BN(100)));
+        await this.pair.set(this.cumulative.add(this.delta.mul(new BN(500e12))), 0, this.cursor.add(new BN(100)));
         await this.oracle.update();
       });
 
@@ -87,21 +87,21 @@ describe('UniswapOracle', function () {
     describe('Exceeds duration', function() {
       beforeEach(async function() {
         this.expectedTime = this.cursor.add(new BN(1000))
-        this.expectedCumulative = this.cumulative.add(this.delta.mul(new BN(500))); 
+        this.expectedCumulative = this.cumulative.add(this.delta.mul(new BN(500e12))); 
         await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
         await this.pair.setReserves(100000, 50000000);
         await time.increase(this.delta);
         expectEvent(
             await this.oracle.update(),
             'Update',
-            { _twap: '500' }
+            { _twap: '10384593717069655257060992658440' }
           );
       });
 
       it('updates', async function() {
         expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.expectedCumulative);
         expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.expectedTime);
-        expect((await this.oracle.read())[0].value).to.be.equal('500000000000000000000');
+        expect((await this.oracle.read())[0].value).to.be.equal('10384593717069655257060992658440192000000000000000');
       });
     });
 
@@ -109,7 +109,7 @@ describe('UniswapOracle', function () {
       describe('Upward', function() {
         beforeEach(async function() {
           this.expectedTime = this.cursor.add(new BN(1000))
-          this.expectedCumulative = this.cumulative.add(this.delta.mul(new BN(490))); 
+          this.expectedCumulative = this.cumulative.add(this.delta.mul(new BN(490e12))); 
           await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
           await this.pair.setReserves(100000, 49000000);
           await time.increase(this.delta);
@@ -119,14 +119,14 @@ describe('UniswapOracle', function () {
         it('updates', async function() {
           expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.expectedCumulative);
           expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.expectedTime);
-          expect((await this.oracle.read())[0].value).to.be.equal('490000000000000000000');
+          expect((await this.oracle.read())[0].value).to.be.equal('10596524201091484956184686386163461224489795918367'); // 2^112 / 490000000000000000000
         });
       });
 
       describe('Downward', function() {
         beforeEach(async function() {
           this.expectedTime = this.cursor.add(new BN(1000))
-          this.expectedCumulative = this.cumulative.add(this.delta.mul(new BN(510))); 
+          this.expectedCumulative = this.cumulative.add(this.delta.mul(new BN(510e12))); 
           await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
           await this.pair.setReserves(100000, 51000000);
           await time.increase(this.delta);
@@ -136,7 +136,7 @@ describe('UniswapOracle', function () {
         it('updates', async function() {
           expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.expectedCumulative);
           expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.expectedTime);
-          expect((await this.oracle.read())[0].value).to.be.equal('510000000000000000000');
+          expect((await this.oracle.read())[0].value).to.be.equal('10180974232421230644177443782784501960784313725490'); // 2^112 / 510000000000000000000
         });
       });
     });
