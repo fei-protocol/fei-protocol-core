@@ -39,6 +39,7 @@ contract Pool is CoreRef, ERC20, ERC20Burnable {
 
 	function init() external postGenesis {
 		require(!initialized, "Pool: Already initialized");
+		// solhint-disable-next-line not-rely-on-time
 		startTime = now.toUint32();
 		initialized = true;
 	}
@@ -141,6 +142,7 @@ contract Pool is CoreRef, ERC20, ERC20Burnable {
 
 	function timestamp() internal view returns(uint32) {
 		uint32 d = duration;
+		// solhint-disable-next-line not-rely-on-time
 		uint32 t = now.toUint32().sub(startTime);
 		return t > d ? d : t;
 	}

@@ -6,7 +6,7 @@ import "../token/IFei.sol";
 import "../refs/IOracleRef.sol";
 import "../pcv/IUniswapPCVDeposit.sol";
 import "../token/IUniswapIncentive.sol";
-import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
+import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -78,6 +78,7 @@ interface IGovernanceOrchestrator {
 	function detonate() external;
 }
 
+// solhint-disable-next-line max-states-count
 contract CoreOrchestrator is Ownable {
 	address public admin;
 

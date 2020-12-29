@@ -35,6 +35,7 @@ contract BondingCurveOracle is IOracle, CoreRef {
     	killSwitch = false;
     	(Decimal.D256 memory uniswapPeg,) = uniswapOracle.read();
     	initialPrice = uniswapPeg.div(initialPeg);
+        // solhint-disable-next-line not-rely-on-time
     	startTime = now;
     }
 
@@ -63,6 +64,7 @@ contract BondingCurveOracle is IOracle, CoreRef {
     }
 
     function time() internal view returns (uint) {
+        // solhint-disable-next-line not-rely-on-time
     	return now - startTime;
     }
 
