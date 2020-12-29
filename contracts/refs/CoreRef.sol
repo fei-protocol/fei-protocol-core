@@ -2,19 +2,8 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "../token/IFei.sol";
+import "../core/ICore.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-interface ICore {
-	function isBurner(address _address) external view returns (bool);
-	function isMinter(address _address) external view returns (bool);
-	function isGovernor(address _address) external view returns (bool);
-	function isPCVController(address _address) external view returns (bool);
-	function fei() external view returns (IFei);
-	function tribe() external view returns (IERC20);
-	function hasGenesisGroupCompleted() external view returns(bool);
-	function genesisGroup() external view returns(address);
-	function completeGenesisGroup() external;
-}
 
 contract CoreRef {
 	ICore private _core;

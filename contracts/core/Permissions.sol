@@ -1,9 +1,12 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
+import "./IPermissions.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract Permissions is AccessControl {
+/// @title IPermissions implementation
+/// @author Fei Protocol
+contract Permissions is AccessControl, IPermissions {
 	bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
 	bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 	bytes32 public constant PCV_CONTROLLER_ROLE = keccak256("PCV_CONTROLLER_ROLE");
@@ -11,6 +14,7 @@ contract Permissions is AccessControl {
 	bytes32 public constant REVOKE_ROLE = keccak256("REVOKE_ROLE");
 
 	constructor() public {
+		_setupGovernor(address(this));
 		_setRoleAdmin(MINTER_ROLE, GOVERN_ROLE);
 		_setRoleAdmin(BURNER_ROLE, GOVERN_ROLE);
 		_setRoleAdmin(PCV_CONTROLLER_ROLE, GOVERN_ROLE);
@@ -28,73 +32,72 @@ contract Permissions is AccessControl {
 		_;
 	}
 
-	// Retain the ability for governor to define future roles (or update admins)
-	function createRole(bytes32 role, bytes32 adminRole) public onlyGovernor {
+	function createRole(bytes32 role, bytes32 adminRole) public override onlyGovernor {
 		_setRoleAdmin(role, adminRole);
 	}
 
-	function grantMinter(address minter) public onlyGovernor {
+	function grantMinter(address minter) public override onlyGovernor {
 		grantRole(MINTER_ROLE, minter);
 	} 
 
-	function grantBurner(address burner) public onlyGovernor {
+	function grantBurner(address burner) public override onlyGovernor {
 		grantRole(BURNER_ROLE, burner);
 	} 
 
-	function grantPCVController(address pcvController) public onlyGovernor {
+	function grantPCVController(address pcvController) public override onlyGovernor {
 		grantRole(PCV_CONTROLLER_ROLE, pcvController);
 	}
 
-	function grantGovernor(address governor) public onlyGovernor {
+	function grantGovernor(address governor) public override onlyGovernor {
 		grantRole(GOVERN_ROLE, governor);
 	}
 
-	function grantRevoker(address revoker) public onlyGovernor {
+	function grantRevoker(address revoker) public override onlyGovernor {
 		grantRole(REVOKE_ROLE, revoker);
 	}
 
-	function revokeMinter(address minter) public onlyGovernor {
+	function revokeMinter(address minter) public override onlyGovernor {
 		revokeRole(MINTER_ROLE, minter);
 	} 
 
-	function revokeBurner(address burner) public onlyGovernor {
+	function revokeBurner(address burner) public override onlyGovernor {
 		revokeRole(BURNER_ROLE, burner);
 	} 
 
-	function revokePCVController(address pcvController) public onlyGovernor {
+	function revokePCVController(address pcvController) public override onlyGovernor {
 		revokeRole(PCV_CONTROLLER_ROLE, pcvController);
 	}
 
-	function revokeGovernor(address governor) public onlyGovernor {
+	function revokeGovernor(address governor) public override onlyGovernor {
 		revokeRole(GOVERN_ROLE, governor);
 	}
 
-	function revokeRevoker(address revoker) public onlyGovernor {
+	function revokeRevoker(address revoker) public override onlyGovernor {
 		revokeRole(REVOKE_ROLE, revoker);
 	}
 
-	function revokeOverride(bytes32 role, address account) public onlyRevoker {
+	function revokeOverride(bytes32 role, address account) public override onlyRevoker {
 		this.revokeRole(role, account);
 	}
 
-	function isMinter(address _address) public view returns (bool) {
+	function isMinter(address _address) public override view returns (bool) {
 		return hasRole(MINTER_ROLE, _address);
 	}
 
-	function isBurner(address _address) public view returns (bool) {
+	function isBurner(address _address) public override view returns (bool) {
 		return hasRole(BURNER_ROLE, _address);
 	}
 
 	// only virtual for testing mock override
-	function isGovernor(address _address) public view virtual returns (bool) {
+	function isGovernor(address _address) public override view virtual returns (bool) {
 		return hasRole(GOVERN_ROLE, _address);
 	}
 
-	function isRevoker(address _address) public view returns (bool) {
+	function isRevoker(address _address) public override view returns (bool) {
 		return hasRole(REVOKE_ROLE, _address);
 	}
 
-	function isPCVController(address _address) public view returns (bool) {
+	function isPCVController(address _address) public override view returns (bool) {
 		return hasRole(PCV_CONTROLLER_ROLE, _address);
 	}
 
