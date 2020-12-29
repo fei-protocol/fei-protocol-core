@@ -2,8 +2,8 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "../refs/UniRef.sol";
-import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 import "../token/LinearTokenTimelock.sol";
+import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 
 contract IDO is UniRef, LinearTokenTimelock {
 
@@ -19,7 +19,7 @@ contract IDO is UniRef, LinearTokenTimelock {
 	function deploy(Decimal.D256 calldata feiRatio) external onlyGenesisGroup {
 		uint tribeAmount = tribeBalance();
 		uint feiAmount = feiRatio.mul(tribeAmount).asUint256();
-		mintFei(feiAmount);
+		_mintFei(feiAmount);
 		router.addLiquidity(
 	        address(tribe()),
 	        address(fei()),

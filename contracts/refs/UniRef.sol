@@ -9,7 +9,7 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract UniRef is OracleRef {
+abstract contract UniRef is OracleRef {
 	using Decimal for Decimal.D256;
 	using Babylonian for uint256;
 

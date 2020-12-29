@@ -81,7 +81,7 @@ contract EthUniswapPCVController is UniRef {
 		returnToPeg();
 		uint balance = address(this).balance;
 		pcvDeposit.deposit{value: balance}(balance);
-		burnFeiHeld();
+		_burnFeiHeld();
 		emit Reweight(msg.sender);
 	}
 

@@ -24,7 +24,7 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
 
     	uint256 amountWithdrawn = removeLiquidity(liquidityToWithdraw);
     	transferWithdrawn(to, amountWithdrawn);
-    	burnFeiHeld();
+    	_burnFeiHeld();
     	emit Withdrawal(msg.sender, to, amountWithdrawn);
     }
 

@@ -5,7 +5,7 @@ import "../oracle/IOracle.sol";
 import "../external/Decimal.sol";
 import "../refs/CoreRef.sol";
 
-contract OracleRef is CoreRef {
+abstract contract OracleRef is CoreRef {
 	using Decimal for Decimal.D256;
 
 	IOracle public oracle;

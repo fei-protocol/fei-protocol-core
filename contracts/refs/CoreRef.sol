@@ -1,11 +1,11 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "../token/IFei.sol";
-import "../core/ICore.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./ICoreRef.sol";
 
-contract CoreRef {
+/// @title Abstract implementation of ICoreRef
+/// @author Fei Protocol
+abstract contract CoreRef is ICoreRef {
 	ICore private _core;
 
 	event CoreUpdate(address indexed core);
@@ -66,36 +66,36 @@ contract CoreRef {
 		_;
 	}
 
-	function setCore(address core) public onlyGovernor {
+	function setCore(address core) public override onlyGovernor {
 		_core = ICore(core);
 		emit CoreUpdate(core);
 	}
  
-	function core() public view returns(ICore) {
+	function core() public view override returns(ICore) {
 		return _core;
 	}
 
-	function fei() public view returns(IFei) {
+	function fei() public view override returns(IFei) {
 		return _core.fei();
 	}
 
-	function tribe() public view returns(IERC20) {
+	function tribe() public view override returns(IERC20) {
 		return _core.tribe();
 	}
 
-    function burnFeiHeld() internal {
-    	fei().burn(feiBalance());
-    }
-
-    function mintFei(uint256 amount) internal {
-		fei().mint(address(this), amount);
-	}
-
-	function feiBalance() internal view returns (uint) {
+	function feiBalance() public view override returns (uint) {
 		return fei().balanceOf(address(this));
 	}
 
-	function tribeBalance() internal view returns (uint) {
+	function tribeBalance() public view override returns (uint) {
 		return tribe().balanceOf(address(this));
+	}
+
+    function _burnFeiHeld() internal {
+    	fei().burn(feiBalance());
+    }
+
+    function _mintFei(uint256 amount) internal {
+		fei().mint(address(this), amount);
 	}
 }

@@ -37,7 +37,7 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
     }
 
     function addLiquidity(uint256 ethAmount, uint256 feiAmount) internal {
-        mintFei(feiAmount);
+        _mintFei(feiAmount);
         router.addLiquidityETH{value : ethAmount}(address(fei()),
             feiAmount,
             0,
