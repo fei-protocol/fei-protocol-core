@@ -2,19 +2,17 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./OracleRef.sol";
-import "../external/Decimal.sol";
-import "@openzeppelin/contracts/math/Math.sol";
-import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
-import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
+import "./IUniswapRef.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-abstract contract UniRef is OracleRef {
+/// @title UniRef abstract implementation contract
+/// @author Fei Protocol
+abstract contract UniRef is OracleRef, IUniswapRef {
 	using Decimal for Decimal.D256;
 	using Babylonian for uint256;
 
-	IUniswapV2Router02 public router;
-	IUniswapV2Pair public pair;
+	IUniswapV2Router02 public override router;
+	IUniswapV2Pair public override pair;
 
     event PairUpdate(address indexed _pair);
 
@@ -23,24 +21,18 @@ abstract contract UniRef is OracleRef {
     {
         setupPair(_pair);
         router = IUniswapV2Router02(_router);
-        uint256 maxInt =  uint256(-1);
-        approveToken(address(fei()), maxInt);
-        approveToken(token(), maxInt);
-        approveToken(_pair, maxInt);
+        approveToken(address(fei()));
+        approveToken(token());
+        approveToken(_pair);
     }
 
-	function setPair(address _pair) public onlyGovernor {
+	function setPair(address _pair) public override onlyGovernor {
 		setupPair(_pair);
-        uint256 maxInt = uint256(-1);
-        approveToken(token(), maxInt);
-        approveToken(_pair, maxInt);
+        approveToken(token());
+        approveToken(_pair);
 	}
 
-	function liquidityOwned() public view returns (uint256) {
-		return pair.balanceOf(address(this));
-	}
-
-	function token() public view returns (address) {
+	function token() public override view returns (address) {
 		address token0 = pair.token0();
 		if (address(fei()) == token0) {
 			return pair.token1();
@@ -48,13 +40,7 @@ abstract contract UniRef is OracleRef {
 		return token0;
 	}
 
-	function ratioOwned() public view returns (Decimal.D256 memory) {	
-    	uint256 balance = liquidityOwned();
-    	uint256 total = pair.totalSupply();
-    	return Decimal.ratio(balance, total);
-    }
-
-	function getReserves() public view returns (uint feiReserves, uint tokenReserves) {
+	function getReserves() public override view returns (uint feiReserves, uint tokenReserves) {
         address token0 = pair.token0();
         (uint reserve0, uint reserve1,) = pair.getReserves();
         (feiReserves, tokenReserves) = address(fei()) == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
@@ -65,13 +51,27 @@ abstract contract UniRef is OracleRef {
         return (feiReserves, tokenReserves);
 	}
 
-    function isBelowPeg(Decimal.D256 memory peg) public view returns (bool) {
+	function liquidityOwned() public override view returns (uint256) {
+		return pair.balanceOf(address(this));
+	}
+
+    /// @notice ratio of all pair liquidity owned by this contract
+	function ratioOwned() internal view returns (Decimal.D256 memory) {	
+    	uint256 balance = liquidityOwned();
+    	uint256 total = pair.totalSupply();
+    	return Decimal.ratio(balance, total);
+    }
+
+    /// @notice returns true if price is below the peg
+    /// @dev counterintuitively checks if peg < price because price is reported as FEI per X
+    function isBelowPeg(Decimal.D256 memory peg) internal view returns (bool) {
         (Decimal.D256 memory price,,) = getUniswapPrice();
         return peg.lessThan(price);
     }
 
-    function approveToken(address _token, uint256 amount) internal {
-    	IERC20(_token).approve(address(router), amount);
+    /// @notice approves a token for the router
+    function approveToken(address _token) internal {
+    	IERC20(_token).approve(address(router), uint(-1));
     }
 
     function setupPair(address _pair) internal {
@@ -79,10 +79,14 @@ abstract contract UniRef is OracleRef {
         emit PairUpdate(_pair);
     }
 
-    function isPair(address account) public view returns(bool) {
+    function isPair(address account) internal view returns(bool) {
         return address(pair) == account;
     }
 
+    /// @notice utility for calculating absolute distance from peg based on reserves
+    /// @param reserveTarget pair reserves of the asset desired to trade with
+    /// @param reserveOther pair reserves of the non-traded asset
+    /// @param peg the target peg reported as Target per Other 
     function getAmountToPeg(
         uint reserveTarget, 
         uint reserveOther, 
@@ -96,16 +100,22 @@ abstract contract UniRef is OracleRef {
         return reserveTarget - root;
     }
 
+    /// @notice calculate amount of Fei needed to trade back to the peg
     function getAmountToPegFei() internal view returns (uint) {
         (uint feiReserves, uint tokenReserves) = getReserves();
         return getAmountToPeg(feiReserves, tokenReserves, peg());
     }
 
+    /// @notice calculate amount of the not Fei token needed to trade back to the peg
     function getAmountToPegOther() internal view returns (uint) {
         (uint feiReserves, uint tokenReserves) = getReserves();
         return getAmountToPeg(tokenReserves, feiReserves, invert(peg()));
     }
 
+    /// @notice get uniswap price and reserves
+    /// @return price reported as Fei per X
+    /// @return reserveFei fei reserves
+    /// @return reserveOther non-fei reserves
     function getUniswapPrice() internal view returns(
         Decimal.D256 memory, 
         uint reserveFei, 
@@ -115,6 +125,10 @@ abstract contract UniRef is OracleRef {
         return (Decimal.ratio(reserveFei, reserveOther), reserveFei, reserveOther);
     }
 
+    /// @notice get final uniswap price after hypothetical FEI trade
+    /// @param amountFei a signed integer representing FEI trade. Positive=sell, negative=buy
+    /// @param reserveFei fei reserves
+    /// @param reserveOther non-fei reserves
     function getFinalPrice(
     	int256 amountFei, 
     	uint256 reserveFei, 
@@ -126,6 +140,11 @@ abstract contract UniRef is OracleRef {
     	return Decimal.ratio(adjustedReserveFei, adjustedReserveOther); // alt: adjustedReserveFei^2 / k
     }
 
+    /// @notice return the percent distance from peg before and after a hypothetical trade
+    /// @param amountIn a signed amount of FEI to be traded. Positive=sell, negative=buy 
+    /// @return initialDeviation the percent distance from peg before trade
+    /// @return finalDeviation the percent distance from peg after hypothetical trade
+    /// @dev deviations will return Decimal.zero() if above peg
     function getPriceDeviations(int256 amountIn) internal view returns (
         Decimal.D256 memory initialDeviation, 
         Decimal.D256 memory finalDeviation
@@ -137,11 +156,15 @@ abstract contract UniRef is OracleRef {
         return (initialDeviation, finalDeviation);
     }
 
+    /// @notice return current percent distance from peg
+    /// @dev will return Decimal.zero() if above peg
     function getDistanceToPeg() internal view returns(Decimal.D256 memory distance) {
         (Decimal.D256 memory price, , ) = getUniswapPrice();
         return calculateDeviation(price, peg()); 
     }
 
+    /// @notice get deviation from peg as a percent given price
+    /// @dev will return Decimal.zero() if above peg
     function calculateDeviation(
         Decimal.D256 memory price, 
         Decimal.D256 memory peg
