@@ -32,9 +32,6 @@ interface IGenesisGroup {
     /// @return tribeAmount the amount of TRIBE received by the user
     function getAmountOut(uint amountIn, bool inclusive) external view returns (uint feiAmount, uint tribeAmount);
 
-    /// @notice check whether in the Genesis Period. Sufficient condition for launch
-    function isGenesisPeriod() external view returns(bool);
-
     /// @notice check whether GenesisGroup has reached max FEI price. Sufficient condition for launch
     function isAtMaxPrice() external view returns(bool);
 }

@@ -5,7 +5,7 @@ import "./IUniswapIncentive.sol";
 import "../external/Decimal.sol";
 import "../oracle/IOracle.sol";
 import "../refs/UniRef.sol";
-import "../external/SafeMath32.sol";
+import "../utils/SafeMath32.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/utils/SafeCast.sol";
 

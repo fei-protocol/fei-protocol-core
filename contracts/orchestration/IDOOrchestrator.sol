@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract IDOOrchestrator is Ownable {
 	
-	uint constant public RELEASE_WINDOW = 4 * 365 * 24 * 60 * 60; // 4 years vesting
+	uint32 constant public RELEASE_WINDOW = 4 * 365 * 24 * 60 * 60; // 4 years vesting
 
 	function init(
 		address core, 

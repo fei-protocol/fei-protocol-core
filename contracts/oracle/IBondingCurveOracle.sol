@@ -16,13 +16,6 @@ interface IBondingCurveOracle is IOracle {
     function init(Decimal.D256 calldata initialPeg) external;
 
     // Getter functions
-
-    /// @notice the starting block timestamp at initialization
-    function startTime() external returns(uint);
-
-    /// @notice the window over which the initial price will "thaw" to the true peg price
-    function duration() external returns(uint);
-
     /// @notice the referenced uniswap oracle price
     function uniswapOracle() external returns(IOracle);
 

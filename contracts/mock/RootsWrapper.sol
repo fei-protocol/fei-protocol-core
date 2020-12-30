@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "../external/Roots.sol";
+import "../utils/Roots.sol";
 
 contract RootsWrapper {
     using Roots for uint;

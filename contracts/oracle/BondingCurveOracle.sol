@@ -3,11 +3,12 @@ pragma experimental ABIEncoderV2;
 
 import "./IBondingCurveOracle.sol";
 import "../refs/CoreRef.sol";
+import "../utils/Timed.sol";
 
 /// @title IBondingCurveOracle implementation contract
 /// @author Fei Protocol
 /// @notice includes "thawing" on the initial purchase price at genesis. Time weights price from initial to true peg over a window.
-contract BondingCurveOracle is IBondingCurveOracle, CoreRef {
+contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
 	using Decimal for Decimal.D256;
 
 	IOracle public override uniswapOracle;
@@ -18,13 +19,12 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef {
 	/// @dev this price will "thaw" to the peg price over `duration` window
 	Decimal.D256 public initialPrice;
 
-	uint public override startTime;
-	uint public override duration = 4 weeks;
-
 	event KillSwitchUpdate(bool _killSwitch);
 
+	// TODO remove hardcoded 4w
 	constructor(address _core, address _oracle, address _bondingCurve) public
 		CoreRef(_core)
+		Timed(4 weeks)
 	{
 		uniswapOracle = IOracle(_oracle);
 		bondingCurve = IBondingCurve(_bondingCurve);
@@ -40,8 +40,7 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef {
     	(Decimal.D256 memory uniswapPeg, bool valid) = uniswapOracle.read();
 		require(valid, "BondingCurveOracle: Uniswap Oracle not valid");
     	initialPrice = uniswapPeg.div(initialPeg);
-        // solhint-disable-next-line not-rely-on-time
-    	startTime = now;
+		_initTimed();
     }
 
 	function update() external override returns (bool) {
@@ -57,20 +56,18 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef {
     }
 
     function thaw(Decimal.D256 memory peg) internal view returns (Decimal.D256 memory) {
-    	uint t = time();
-    	if (t >= duration) {
+    	if (isTimeEnded()) {
     		return peg;
     	}
+		uint t = uint256(timestamp());
+		uint remaining = uint256(remainingTime());
+		uint d = uint256(duration);
+
     	(Decimal.D256 memory uniswapPeg,) = uniswapOracle.read();
     	Decimal.D256 memory price = uniswapPeg.div(peg);
 
-    	Decimal.D256 memory weightedPrice = initialPrice.mul(duration - t).add(price.mul(t)).div(duration);
+    	Decimal.D256 memory weightedPrice = initialPrice.mul(remaining).add(price.mul(t)).div(d);
     	return uniswapPeg.div(weightedPrice);
-    }
-
-    function time() internal view returns (uint) {
-        // solhint-disable-next-line not-rely-on-time
-    	return now - startTime;
     }
 
     function getOracleValue() internal view returns(Decimal.D256 memory, bool) {

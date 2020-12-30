@@ -3,18 +3,17 @@ pragma experimental ABIEncoderV2;
 
 import "./IPool.sol";
 import "../external/Decimal.sol";
-import "../external/SafeMath32.sol";
-import "../external/SafeMath128.sol";
 import "../external/SafeMathCopy.sol";
+import "../utils/SafeMath128.sol";
+import "../utils/Timed.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 import "@openzeppelin/contracts/utils/SafeCast.sol";
 
 /// @title abstract implementation of IPool interface
 /// @author Fei Protocol
-abstract contract Pool is IPool, ERC20, ERC20Burnable {
+abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 	using Decimal for Decimal.D256;
-	using SafeMath32 for uint32;
 	using SafeMath128 for uint128;
 	using SafeCast for uint256;
 
@@ -22,9 +21,6 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable {
 
 	IERC20 public override rewardToken;
 	IERC20 public override stakedToken;
-
-	uint32 public override startTime;
-	uint32 public override duration;
 
 	uint128 public override claimedRewards;
 	uint128 public override totalStaked;
@@ -39,11 +35,7 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable {
 		uint32 _duration,
 		string memory _name,
 		string memory _ticker
-	) public 
-		ERC20(_name, _ticker)
-	{
-		duration = _duration;
-	}
+	) public ERC20(_name, _ticker) Timed(_duration) {}
 
 	function claim(address account) external override returns(uint) {
 		(uint amountStaked, uint amountReward) = _withdraw(account);
@@ -65,8 +57,7 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable {
 
 	function init() public override virtual {
 		require(!initialized, "Pool: Already initialized");
-		// solhint-disable-next-line not-rely-on-time
-		startTime = now.toUint32();
+		_initTimed();
 		initialized = true;
 	}
 
@@ -82,12 +73,10 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable {
 	}
 
 	function unreleasedReward() public view override returns (uint) {
-		uint _duration = uint256(duration);
-		uint t = uint256(timestamp());
-		if (t == _duration) {
+		if (isTimeEnded()) {
 			return 0;
 		}
-		return _unreleasedReward(totalReward(), _duration, t);
+		return _unreleasedReward(totalReward(), uint256(duration), uint256(timestamp()));
 	}
 
 	function totalReward() public view override returns (uint) {
@@ -96,17 +85,6 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable {
 
 	function rewardBalance() public view override returns (uint) {
 		return rewardToken.balanceOf(address(this));
-	}
-
-	function remainingTime() public view override returns(uint32) {
-		return duration.sub(timestamp());
-	}
-
-	function timestamp() public view override returns(uint32) {
-		uint32 d = duration;
-		// solhint-disable-next-line not-rely-on-time
-		uint32 t = now.toUint32().sub(startTime);
-		return t > d ? d : t;
 	}
 
 	function burnFrom(address account, uint256 amount) public override {

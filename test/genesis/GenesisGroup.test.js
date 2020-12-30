@@ -34,7 +34,7 @@ describe('GenesisGroup', function () {
 
   describe('During Genesis Period', function() {
     it('is during', async function() {
-      expect(await this.genesisGroup.isGenesisPeriod()).to.be.equal(true);
+      expect(await this.genesisGroup.isTimeEnded()).to.be.equal(false);
     });
     describe('Purchase', function() {
       describe('No value', function() {
@@ -170,7 +170,7 @@ describe('GenesisGroup', function () {
     });
 
     it('is post', async function() {
-      expect(await this.genesisGroup.isGenesisPeriod()).to.be.equal(false);
+      expect(await this.genesisGroup.isTimeEnded()).to.be.equal(true);
     });
 
     describe('Purchase', function() {

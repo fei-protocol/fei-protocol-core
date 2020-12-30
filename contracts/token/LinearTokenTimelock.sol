@@ -3,9 +3,10 @@ pragma solidity ^0.6.0;
 // Inspired by OpenZeppelin TokenTimelock contract
 // Reference: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/TokenTimelock.sol
 
+import "../utils/Timed.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract LinearTokenTimelock {
+contract LinearTokenTimelock is Timed {
 
     // ERC20 basic token contract being held
     IERC20 public lockedToken;
@@ -19,21 +20,14 @@ contract LinearTokenTimelock {
 
     uint256 internal lastBalance;
 
-    uint256 public releaseTimeStart;
-
-    uint256 public duration;
-
     event Release(address indexed _beneficiary, uint _amount);
     event BeneficiaryUpdate(address indexed _beneficiary);
     event PendingBeneficiaryUpdate(address indexed _pendingBeneficiary);
 
-    constructor (address _beneficiary, uint256 _duration) public {
+    constructor (address _beneficiary, uint32 _duration) public Timed(_duration) {
         require(_duration != 0, "LinearTokenTimelock: duration is 0");
         beneficiary = _beneficiary;
-        // solhint-disable-next-line not-rely-on-time
-        releaseTimeStart = now;
-        duration = _duration;
-
+        _initTimed();
     }
 
     // Prevents incoming LP tokens from messing up calculations
@@ -68,8 +62,7 @@ contract LinearTokenTimelock {
     }
 
     function availableForRelease() public view returns(uint256) {
-        // solhint-disable-next-line not-rely-on-time
-        uint elapsed = now - releaseTimeStart;
+        uint elapsed = timestamp();
         uint _duration = duration;
 
         if (elapsed > _duration) {

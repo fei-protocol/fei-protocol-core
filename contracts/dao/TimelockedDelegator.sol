@@ -35,7 +35,7 @@ contract TimelockedDelegator is LinearTokenTimelock {
     event Delegate(address indexed _delegatee, uint _amount);
     event Undelegate(address indexed _delegatee, uint _amount);
 
-	constructor(address _tribe, address _beneficiary, uint _duration) public
+	constructor(address _tribe, address _beneficiary, uint32 _duration) public
 		LinearTokenTimelock(_beneficiary, _duration)
 	{
 		tribe = ITribe(_tribe);

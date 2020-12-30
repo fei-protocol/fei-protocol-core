@@ -72,24 +72,5 @@ interface IPool {
     /// @notice the staked balance of a given account
     /// @param account the user account
     /// @return the total staked
-    function stakedBalance(address account) external view returns(uint);
-
-    // Time Getters
-
-    /// @notice the block timestamp when the pool was initialized
-    /// @return the timestamp
-    function startTime() external view returns(uint32);
-
-    /// @notice total duration in seconds of the reward release
-    /// @return duration
-    function duration() external view returns(uint32);
-
-    /// @notice number of seconds remaining until all rewards are unlocked
-    /// @return remaining
-    function remainingTime() external view returns(uint32);
-    
-    /// @notice number of seconds since contract was initialized
-    /// @return timestamp
-    /// @dev will be less than or equal to duration
-    function timestamp() external view returns(uint32);
+    function stakedBalance(address account) external view returns(uint);    
 }

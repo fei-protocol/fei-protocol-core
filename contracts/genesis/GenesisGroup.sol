@@ -7,6 +7,7 @@ import "../bondingcurve/IBondingCurve.sol";
 import "../refs/CoreRef.sol";
 import "../pool/IPool.sol";
 import "../oracle/IBondingCurveOracle.sol";
+import "../utils/Timed.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 
@@ -18,15 +19,13 @@ interface IOrchestrator {
 
 /// @title IGenesisGroup implementation
 /// @author Fei Protocol
-contract GenesisGroup is CoreRef, ERC20, ERC20Burnable, IGenesisGroup {
+contract GenesisGroup is CoreRef, ERC20, ERC20Burnable, Timed, IGenesisGroup {
 	using Decimal for Decimal.D256;
 
 	IOrchestrator private orchestrator;
 	IBondingCurve private bondingcurve;
 	IDOInterface private ido;
 
-	uint public startTime;
-	uint public duration;
 	uint private exchangeRateDiscount;
 
 	/// @notice a cap on the genesis group purchase price
@@ -40,19 +39,18 @@ contract GenesisGroup is CoreRef, ERC20, ERC20Burnable, IGenesisGroup {
 		address _core, 
 		address _bondingcurve,
 		address _ido,
-		uint _duration,
+		uint32 _duration,
 		uint _maxPriceBPs,
 		uint _exchangeRateDiscount,
 		address _orchestrator
 	) public
 		CoreRef(_core)
 		ERC20("Fei Genesis Group", "FGEN")
+		Timed(_duration)
 	{
 		bondingcurve = IBondingCurve(_bondingcurve);
 		ido = IDOInterface(_ido);
-		duration = _duration;
-		// solhint-disable-next-line not-rely-on-time
-		startTime = now;
+		_initTimed();
 
 		maxGenesisPrice = Decimal.ratio(_maxPriceBPs, 10000);
 		exchangeRateDiscount = _exchangeRateDiscount;
@@ -61,7 +59,7 @@ contract GenesisGroup is CoreRef, ERC20, ERC20Burnable, IGenesisGroup {
 	}
 
 	modifier onlyGenesisPeriod() {
-		require(isGenesisPeriod(), "GenesisGroup: Not in Genesis Period");
+		require(!isTimeEnded(), "GenesisGroup: Not in Genesis Period");
 		_;
 	}
 
@@ -85,7 +83,7 @@ contract GenesisGroup is CoreRef, ERC20, ERC20Burnable, IGenesisGroup {
 	}
 
 	function launch() external override {
-		require(!isGenesisPeriod() || isAtMaxPrice(), "GenesisGroup: Still in Genesis Period");
+		require(isTimeEnded() || isAtMaxPrice(), "GenesisGroup: Still in Genesis Period");
 		core().completeGenesisGroup();
 		orchestrator.launchGovernance();
 		IBondingCurveOracle(orchestrator.bondingCurveOracle()).init(_feiEthExchangeRate());
@@ -111,11 +109,6 @@ contract GenesisGroup is CoreRef, ERC20, ERC20Burnable, IGenesisGroup {
 		uint totalFei = bondingcurve.getAmountOut(totalIn);
 		uint totalTribe = tribeBalance();
 		return (totalFei * amountIn / totalIn, totalTribe * amountIn / totalIn);
-	}
-
-	function isGenesisPeriod() public view override returns(bool) {
-		// solhint-disable-next-line not-rely-on-time
-		return now - startTime < duration;
 	}
 
 	function isAtMaxPrice() public view override returns(bool) {

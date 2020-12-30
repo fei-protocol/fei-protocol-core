@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 import "./IBondingCurve.sol";
 import "./AllocationRule.sol";
 import "../refs/OracleRef.sol";
-import "../external/Roots.sol";
+import "../utils/Roots.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
