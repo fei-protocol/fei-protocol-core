@@ -1,11 +1,14 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
+import "./IDOInterface.sol";
 import "../refs/UniRef.sol";
 import "../token/LinearTokenTimelock.sol";
 import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 
-contract IDO is UniRef, LinearTokenTimelock {
+/// @title IDOInterface implementation
+/// @author Fei Protocol
+contract IDO is UniRef, LinearTokenTimelock, IDOInterface {
 
 	event Deploy(uint _amountFei, uint _amountTribe);
 
@@ -16,7 +19,7 @@ contract IDO is UniRef, LinearTokenTimelock {
 		setLockedToken(_pair);
 	}
 
-	function deploy(Decimal.D256 calldata feiRatio) external onlyGenesisGroup {
+	function deploy(Decimal.D256 calldata feiRatio) external override onlyGenesisGroup {
 		uint tribeAmount = tribeBalance();
 		uint feiAmount = feiRatio.mul(tribeAmount).asUint256();
 		_mintFei(feiAmount);
