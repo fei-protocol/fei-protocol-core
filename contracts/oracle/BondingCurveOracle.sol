@@ -1,21 +1,25 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./IOracle.sol";
-import "../bondingcurve/IBondingCurve.sol";
-import "../external/Decimal.sol";
+import "./IBondingCurveOracle.sol";
 import "../refs/CoreRef.sol";
 
-contract BondingCurveOracle is IOracle, CoreRef {
+/// @title IBondingCurveOracle implementation contract
+/// @author Fei Protocol
+/// @notice includes "thawing" on the initial purchase price at genesis. Time weights price from initial to true peg over a window.
+contract BondingCurveOracle is IBondingCurveOracle, CoreRef {
 	using Decimal for Decimal.D256;
 
-	IOracle public uniswapOracle;
-	IBondingCurve public bondingCurve;
-	bool public killSwitch = true;
+	IOracle public override uniswapOracle;
+	IBondingCurve public override bondingCurve;
+	bool public override killSwitch = true;
 
+	/// @notice the price in dollars at initialization
+	/// @dev this price will "thaw" to the peg price over `duration` window
 	Decimal.D256 public initialPrice;
-	uint public startTime;
-	uint public duration = 4 weeks;
+
+	uint public override startTime;
+	uint public override duration = 4 weeks;
 
 	event KillSwitchUpdate(bool _killSwitch);
 
@@ -26,14 +30,15 @@ contract BondingCurveOracle is IOracle, CoreRef {
 		bondingCurve = IBondingCurve(_bondingCurve);
 	}
 
-	function setKillSwitch(bool _killSwitch) public onlyGovernor {
+	function setKillSwitch(bool _killSwitch) public override onlyGovernor {
 		killSwitch = _killSwitch;
 		emit KillSwitchUpdate(_killSwitch);
 	}
 
-	function init(Decimal.D256 memory initialPeg) public onlyGenesisGroup {
+	function init(Decimal.D256 memory initialPeg) public override onlyGenesisGroup {
     	killSwitch = false;
-    	(Decimal.D256 memory uniswapPeg,) = uniswapOracle.read();
+    	(Decimal.D256 memory uniswapPeg, bool valid) = uniswapOracle.read();
+		require(valid, "BondingCurveOracle: Uniswap Oracle not valid");
     	initialPrice = uniswapPeg.div(initialPeg);
         // solhint-disable-next-line not-rely-on-time
     	startTime = now;

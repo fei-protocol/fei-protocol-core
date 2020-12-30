@@ -5,6 +5,7 @@ import "../bondingcurve/IBondingCurve.sol";
 import "../refs/CoreRef.sol";
 import "../external/Decimal.sol";
 import "../pool/IPool.sol";
+import "../oracle/IBondingCurveOracle.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 
@@ -16,10 +17,6 @@ interface IOrchestrator {
 	function launchGovernance() external;
 	function pool() external returns(address);
 	function bondingCurveOracle() external returns(address);
-}
-
-interface IBondingCurveOracle {
-	function init(Decimal.D256 calldata price) external;
 }
 
 contract GenesisGroup is CoreRef, ERC20, ERC20Burnable {

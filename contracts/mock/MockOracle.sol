@@ -9,6 +9,7 @@ contract MockOracle is IOracle {
 
     // fixed exchange ratio
     uint256 _usdPerEth;
+	bool public override killSwitch;
 
     constructor(uint256 usdPerEth) public {
         _usdPerEth = usdPerEth;
@@ -26,4 +27,8 @@ contract MockOracle is IOracle {
     function setExchangeRate(uint256 usdPerEth) public {
         _usdPerEth = usdPerEth;
     }
+
+	function setKillSwitch(bool _killSwitch) public override {
+		killSwitch = _killSwitch;
+	}
 }
