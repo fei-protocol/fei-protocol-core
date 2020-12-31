@@ -240,10 +240,9 @@ describe('UniswapIncentive', function () {
       });
 
       it('time weight stays inactive', async function() {
-        var twInfo = await this.incentive.timeWeightInfo();
-        expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
-        expect(twInfo.growthRate).to.be.bignumber.equal(new BN(333));
-        expect(twInfo.active).to.be.equal(false);
+        expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(0));
+        expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(333));
+        expect(await this.incentive.isTimeWeightActive()).to.be.equal(false);
       });
     });
 
@@ -270,12 +269,9 @@ describe('UniswapIncentive', function () {
         });
 
         it('activates time weight', async function() {
-          var twInfo = await this.incentive.timeWeightInfo();
-          let block = await time.latestBlock()
-          expect(twInfo.blockNo).to.be.bignumber.equal(block);
-          expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
-          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(333));
-          expect(twInfo.active).to.be.equal(true);
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(0));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(333));
+          expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
 
@@ -338,10 +334,9 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight stays inactive', async function() {
-          var twInfo = await this.incentive.timeWeightInfo();
-          expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
-          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(333));
-          expect(twInfo.active).to.be.equal(false);
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(0));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(333));
+          expect(await this.incentive.isTimeWeightActive()).to.be.equal(false);
         });
       });
 
@@ -368,10 +363,9 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight stays inactive', async function() {
-          var twInfo = await this.incentive.timeWeightInfo();
-          expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
-          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(333));
-          expect(twInfo.active).to.be.equal(false);
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(0));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(333));
+          expect(await this.incentive.isTimeWeightActive()).to.be.equal(false);
         });
       });
 
@@ -399,12 +393,9 @@ describe('UniswapIncentive', function () {
           });
 
           it('activates time weight', async function() {
-            var twInfo = await this.incentive.timeWeightInfo();
-            let block = await time.latestBlock()
-            expect(twInfo.blockNo).to.be.bignumber.equal(block);
-            expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
-            expect(twInfo.growthRate).to.be.bignumber.equal(new BN(333));
-            expect(twInfo.active).to.be.equal(true);
+            expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(0));
+            expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(333));
+            expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
           });
         });
 
@@ -451,10 +442,9 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight stays active', async function() {
-          var twInfo = await this.incentive.timeWeightInfo();
-          expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
-          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
-          expect(twInfo.active).to.be.equal(true);
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(200000));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
 
@@ -482,10 +472,9 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight stays active', async function() {
-          var twInfo = await this.incentive.timeWeightInfo();
-          expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
-          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
-          expect(twInfo.active).to.be.equal(true);
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(200000));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
 
@@ -512,12 +501,9 @@ describe('UniswapIncentive', function () {
         });
 
         it('resets time weight', async function() {
-          var twInfo = await this.incentive.timeWeightInfo();
-          let block = await time.latestBlock()
-          expect(twInfo.blockNo).to.be.bignumber.equal(block);
-          expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
-          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
-          expect(twInfo.active).to.be.equal(false);
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(0));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.isTimeWeightActive()).to.be.equal(false);
         });
       });
 
@@ -544,12 +530,9 @@ describe('UniswapIncentive', function () {
         });
 
         it('resets time weight', async function() {
-          var twInfo = await this.incentive.timeWeightInfo();
-          let block = await time.latestBlock()
-          expect(twInfo.blockNo).to.be.bignumber.equal(block);
-          expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
-          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
-          expect(twInfo.active).to.be.equal(false);
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(0));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.isTimeWeightActive()).to.be.equal(false);
         });
       });
 
@@ -576,12 +559,9 @@ describe('UniswapIncentive', function () {
         });
 
         it('partially updates time weight', async function() {
-          var twInfo = await this.incentive.timeWeightInfo();
-          let block = await time.latestBlock()
-          expect(twInfo.blockNo).to.be.bignumber.equal(block);
-          expect(twInfo.weight).to.be.bignumber.equal(new BN(80043));
-          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
-          expect(twInfo.active).to.be.equal(true);
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(80043));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
 
@@ -609,12 +589,9 @@ describe('UniswapIncentive', function () {
         });
 
         it('resets time weight', async function() {
-          var twInfo = await this.incentive.timeWeightInfo();
-          let block = await time.latestBlock()
-          expect(twInfo.blockNo).to.be.bignumber.equal(block);
-          expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
-          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
-          expect(twInfo.active).to.be.equal(false);
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(0));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.isTimeWeightActive()).to.be.equal(false);
         });
       });
 
@@ -642,12 +619,9 @@ describe('UniswapIncentive', function () {
         });
 
         it('partially updates time weight', async function() {
-          var twInfo = await this.incentive.timeWeightInfo();
-          let block = await time.latestBlock()
-          expect(twInfo.blockNo).to.be.bignumber.equal(block);
-          expect(twInfo.weight).to.be.bignumber.equal(new BN(160086));
-          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
-          expect(twInfo.active).to.be.equal(true);
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(160086));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
 
@@ -677,12 +651,9 @@ describe('UniswapIncentive', function () {
         });
 
         it('resets time weight', async function() {
-          var twInfo = await this.incentive.timeWeightInfo();
-          let block = await time.latestBlock()
-          expect(twInfo.blockNo).to.be.bignumber.equal(block);
-          expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
-          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
-          expect(twInfo.active).to.be.equal(false);
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(0));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.isTimeWeightActive()).to.be.equal(false);
         });
       });
     });
@@ -712,10 +683,9 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight stays active', async function() {
-          var twInfo = await this.incentive.timeWeightInfo();
-          expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
-          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
-          expect(twInfo.active).to.be.equal(true);
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(200000));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
 
@@ -743,10 +713,9 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight stays active', async function() {
-          var twInfo = await this.incentive.timeWeightInfo();
-          expect(twInfo.weight).to.be.bignumber.equal(new BN(0));
-          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
-          expect(twInfo.active).to.be.equal(true);
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(200000));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
 
@@ -773,12 +742,9 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight updates', async function() {
-          var twInfo = await this.incentive.timeWeightInfo();
-          let block = await time.latestBlock()
-          expect(twInfo.blockNo).to.be.bignumber.equal(block);
-          expect(twInfo.weight).to.be.bignumber.equal(new BN(100000));
-          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
-          expect(twInfo.active).to.be.equal(true);
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
 
@@ -811,12 +777,9 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight update capped', async function() {
-          var twInfo = await this.incentive.timeWeightInfo();
-          let block = await time.latestBlock()
-          expect(twInfo.blockNo).to.be.bignumber.equal(block);
-          expect(twInfo.weight).to.be.bignumber.equal(new BN(240070));
-          expect(twInfo.growthRate).to.be.bignumber.equal(new BN(100000));
-          expect(twInfo.active).to.be.equal(true);
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(240070));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
 

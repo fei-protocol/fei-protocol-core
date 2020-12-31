@@ -2,13 +2,14 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./IUniswapIncentive.sol";
-import "../external/Decimal.sol";
 import "../oracle/IOracle.sol";
 import "../refs/UniRef.sol";
 import "../utils/SafeMath32.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/utils/SafeCast.sol";
 
+/// @title IUniswapIncentive implementation
+/// @author Fei Protocol
 contract UniswapIncentive is IUniswapIncentive, UniRef {
 	using Decimal for Decimal.D256;
     using SafeMath32 for uint32;
@@ -21,9 +22,11 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         bool active;
     }
 
-    TimeWeightInfo public timeWeightInfo;
+    TimeWeightInfo private timeWeightInfo;
 
-    uint32 public constant TIME_WEIGHT_GRANULARITY = 100_000;
+    uint32 public constant override TIME_WEIGHT_GRANULARITY = 100_000;
+
+    // TODO move this out to a param
     uint32 public constant DEFAULT_INCENTIVE_GROWTH_RATE = 333; // about 1 unit per hour assuming 12s block time
 
     mapping(address => bool) private _exempt;
@@ -58,13 +61,13 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         emit ExemptAddressUpdate(account, isExempt);
     }
 
-    function setTimeWeightGrowth(uint32 growthRate) public onlyGovernor {
+    function setTimeWeightGrowth(uint32 growthRate) public override onlyGovernor {
         TimeWeightInfo memory tw = timeWeightInfo;
         timeWeightInfo = TimeWeightInfo(tw.blockNo, tw.weight, growthRate, tw.active);
         emit GrowthRateUpdate(growthRate);
     }
 
-    function setTimeWeight(uint32 blockNo, uint32 weight, uint32 growth, bool active) public onlyGovernor {
+    function setTimeWeight(uint32 blockNo, uint32 weight, uint32 growth, bool active) public override onlyGovernor {
         uint32 currentGrowth = getGrowthRate();
         timeWeightInfo = TimeWeightInfo(blockNo, weight, growth, active);
         emit TimeWeightUpdate(weight, active);
@@ -73,7 +76,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         }
     }
 
-    function getGrowthRate() public view returns (uint32) {
+    function getGrowthRate() public view override returns (uint32) {
         uint32 growth = timeWeightInfo.growthRate;
         if (growth == 0) {
             return DEFAULT_INCENTIVE_GROWTH_RATE;
@@ -81,7 +84,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return growth;
     }
 
-    function getTimeWeight() public view returns (uint32) {
+    function getTimeWeight() public view override returns (uint32) {
         TimeWeightInfo memory tw = timeWeightInfo;
         if (!tw.active) {
             return 0;
@@ -90,7 +93,11 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return tw.weight.add(blockDelta * tw.growthRate);
     }
 
-    function isExemptAddress(address account) public view returns (bool) {
+    function isTimeWeightActive() public view override returns (bool) {
+    	return timeWeightInfo.active;
+    }
+
+    function isExemptAddress(address account) public view override returns (bool) {
     	return _exempt[account];
     }
 
@@ -107,7 +114,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return incentive.equals(penalty);
     }
 
-    function getBuyIncentive(uint256 amount) public view returns(
+    function getBuyIncentive(uint256 amount) public view override returns(
         uint256 incentive, 
         uint32 weight,
         Decimal.D256 memory initialDeviation,
@@ -129,7 +136,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return (incentive, weight, initialDeviation, finalDeviation);
     }
 
-    function getSellPenalty(uint256 amount) public view returns(
+    function getSellPenalty(uint256 amount) public view override returns(
         uint256 penalty, 
         Decimal.D256 memory initialDeviation,
         Decimal.D256 memory finalDeviation

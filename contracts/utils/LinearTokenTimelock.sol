@@ -3,7 +3,7 @@ pragma solidity ^0.6.0;
 // Inspired by OpenZeppelin TokenTimelock contract
 // Reference: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/TokenTimelock.sol
 
-import "../utils/Timed.sol";
+import "./Timed.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract LinearTokenTimelock is Timed {

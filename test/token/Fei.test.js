@@ -77,7 +77,7 @@ describe('Fei', function () {
     });
   });
 
-  describe('incentives', function() {
+  describe('incentive contracts', function() {
   	beforeEach(async function () {
   		this.incentive = await MockIncentive.new(this.core.address);
     	await this.core.grantMinter(this.incentive.address);
@@ -92,7 +92,7 @@ describe('Fei', function () {
     });
 
     it('incentive contract registered', async function() {
-        expect(await this.fei.incentives(incentivizedAddress)).to.be.bignumber.equal(this.incentive.address);
+        expect(await this.fei.incentiveContract(incentivizedAddress)).to.be.bignumber.equal(this.incentive.address);
     });
 
   	describe('via transfer', function() {

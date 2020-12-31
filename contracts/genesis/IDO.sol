@@ -3,7 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "./IDOInterface.sol";
 import "../refs/UniRef.sol";
-import "../token/LinearTokenTimelock.sol";
+import "../utils/LinearTokenTimelock.sol";
 import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 
 /// @title IDOInterface implementation

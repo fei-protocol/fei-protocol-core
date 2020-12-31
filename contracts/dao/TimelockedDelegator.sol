@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "../token/LinearTokenTimelock.sol";
+import "../utils/LinearTokenTimelock.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface ITribe is IERC20 {
