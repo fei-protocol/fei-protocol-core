@@ -1,8 +1,7 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./IUniswapPCVDeposit.sol";
-import "../token/IUniswapIncentive.sol";
+import "./IUniswapPCVController.sol";
 import "../refs/UniRef.sol";
 import "../external/Decimal.sol";
 import "../oracle/IOracle.sol";
@@ -10,12 +9,14 @@ import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 
-contract EthUniswapPCVController is UniRef {
+/// @title a IUniswapPCVController implementation for ETH
+/// @author Fei Protocol
+contract EthUniswapPCVController is UniRef, IUniswapPCVController {
 	using Decimal for Decimal.D256;
 
-	IUniswapPCVDeposit public pcvDeposit;
-	IUniswapIncentive public incentiveContract;
-	uint public reweightIncentiveAmount;
+	IPCVDeposit public override pcvDeposit;
+	IUniswapIncentive public override incentiveContract;
+	uint public override reweightIncentiveAmount;
 	Decimal.D256 public minDistanceForReweight;
 
 	event Reweight(address indexed _caller);
@@ -35,57 +36,57 @@ contract EthUniswapPCVController is UniRef {
 	) public
 		UniRef(core, _pair, _router, _oracle)
 	{
-		pcvDeposit = IUniswapPCVDeposit(_pcvDeposit);
+		pcvDeposit = IPCVDeposit(_pcvDeposit);
 		incentiveContract = IUniswapIncentive(_incentiveContract);
 		reweightIncentiveAmount = _incentiveAmount;
 		minDistanceForReweight = Decimal.ratio(_minDistanceForReweightBPs, 10000);
 	}
 
-	function reweight() external postGenesis {
+	function reweight() external override postGenesis {
 		require(reweightEligible(), "EthUniswapPCVController: Not at incentive parity or not at min distance");
 		_reweight();
-		incentivize();
+		_incentivize();
 	}
 
-	function forceReweight() public onlyGovernor {
+	function forceReweight() public override onlyGovernor {
 		_reweight();
 	}
 
-	function reweightEligible() public view returns(bool) {
+	function reweightEligible() public view override returns(bool) {
 		bool magnitude = getDistanceToPeg().greaterThan(minDistanceForReweight);
 		bool time = incentiveContract.isIncentiveParity();
 		return magnitude && time;
 	}
 
-	function setPCVDeposit(address _pcvDeposit) public onlyGovernor {
-		pcvDeposit = IUniswapPCVDeposit(_pcvDeposit);
+	function setPCVDeposit(address _pcvDeposit) public override onlyGovernor {
+		pcvDeposit = IPCVDeposit(_pcvDeposit);
 		emit PCVDepositUpdate(_pcvDeposit);
 	}
 
-	function setReweightIncentive(uint amount) public onlyGovernor {
+	function setReweightIncentive(uint amount) public override onlyGovernor {
 		reweightIncentiveAmount = amount;
 		emit ReweightIncentiveUpdate(amount);
 	}
 
-	function setReweightMinDistance(uint basisPoints) public onlyGovernor {
+	function setReweightMinDistance(uint basisPoints) public override onlyGovernor {
 		minDistanceForReweight = Decimal.ratio(basisPoints, 10000);
 		emit ReweightMinDistanceUpdate(basisPoints);
 	}
 
-	function incentivize() internal ifMinterSelf {
+	function _incentivize() internal ifMinterSelf {
 		fei().mint(msg.sender, reweightIncentiveAmount);
 	}
 
 	function _reweight() internal {
-		withdrawAll();
-		returnToPeg();
+		_withdrawAll();
+		_returnToPeg();
 		uint balance = address(this).balance;
 		pcvDeposit.deposit{value: balance}(balance);
 		_burnFeiHeld();
 		emit Reweight(msg.sender);
 	}
 
-	function returnToPeg() internal {
+	function _returnToPeg() internal {
 		(uint feiReserves, uint ethReserves) = getReserves();
 		if (feiReserves == 0 || ethReserves == 0) {
 			return;
@@ -93,10 +94,10 @@ contract EthUniswapPCVController is UniRef {
 		updateOracle();
     	require(isBelowPeg(peg()), "EthUniswapPCVController: already at or above peg");
     	uint amountEth = getAmountToPegOther();
-    	swapEth(amountEth, ethReserves, feiReserves);
+    	_swapEth(amountEth, ethReserves, feiReserves);
 	}
 
-	function swapEth(uint amountEth, uint ethReserves, uint feiReserves) internal {
+	function _swapEth(uint amountEth, uint ethReserves, uint feiReserves) internal {
 		uint balance = address(this).balance;
 		uint amount = Math.min(amountEth, balance);
 		uint amountOut = UniswapV2Library.getAmountOut(amount, ethReserves, feiReserves);
@@ -108,7 +109,7 @@ contract EthUniswapPCVController is UniRef {
 		pair.swap(amount0Out, amount1Out, address(this), new bytes(0));
 	}
 
-	function withdrawAll() internal {
+	function _withdrawAll() internal {
 		uint value = pcvDeposit.totalValue();
 		pcvDeposit.withdraw(address(this), value);
 	}

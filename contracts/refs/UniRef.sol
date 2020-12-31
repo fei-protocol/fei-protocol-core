@@ -2,12 +2,12 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./OracleRef.sol";
-import "./IUniswapRef.sol";
+import "./IUniRef.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 
 /// @title UniRef abstract implementation contract
 /// @author Fei Protocol
-abstract contract UniRef is OracleRef, IUniswapRef {
+abstract contract UniRef is OracleRef, IUniRef {
 	using Decimal for Decimal.D256;
 	using Babylonian for uint256;
 

@@ -4,6 +4,8 @@ pragma experimental ABIEncoderV2;
 import "./UniswapPCVDeposit.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
+/// @title implementation for an ETH Uniswap LP PCV Deposit
+/// @author Fei Protocol
 contract EthUniswapPCVDeposit is UniswapPCVDeposit {
     using Address for address payable;
 
@@ -15,12 +17,12 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
 
     function deposit(uint256 ethAmount) external override payable postGenesis {
     	require(ethAmount == msg.value, "Bonding Curve: Sent value does not equal input");
-        uint256 feiAmount = getAmountFeiToDeposit(ethAmount);
-        addLiquidity(ethAmount, feiAmount);
+        uint256 feiAmount = _getAmountFeiToDeposit(ethAmount);
+        _addLiquidity(ethAmount, feiAmount);
         emit Deposit(msg.sender, ethAmount);
     }
 
-    function removeLiquidity(uint256 liquidity) internal override returns (uint256) {
+    function _removeLiquidity(uint256 liquidity) internal override returns (uint256) {
         (, uint256 amountWithdrawn) = router.removeLiquidityETH(
             address(fei()),
             liquidity,
@@ -32,11 +34,11 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
         return amountWithdrawn;
     }
 
-    function transferWithdrawn(address to, uint256 amount) internal override {
+    function _transferWithdrawn(address to, uint256 amount) internal override {
         payable(to).sendValue(amount);
     }
 
-    function addLiquidity(uint256 ethAmount, uint256 feiAmount) internal {
+    function _addLiquidity(uint256 ethAmount, uint256 feiAmount) internal {
         _mintFei(feiAmount);
         router.addLiquidityETH{value : ethAmount}(address(fei()),
             feiAmount,

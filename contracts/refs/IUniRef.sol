@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /// @author Fei Protocol
 /// @notice defines some modifiers and utilities around interacting with Uniswap
 /// @dev the uniswap pair should be FEI and another asset
-interface IUniswapRef {
+interface IUniRef {
     // Governor only state changing api
 
     /// @notice set the new pair contract

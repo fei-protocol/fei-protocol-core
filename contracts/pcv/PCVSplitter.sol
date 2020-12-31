@@ -3,6 +3,8 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+/// @title abstract contract for splitting PCV into different deposits
+/// @author Fei Protocol
 abstract contract PCVSplitter {
 
 	/// @notice total allocation allowed representing 100%

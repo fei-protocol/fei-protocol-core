@@ -4,7 +4,6 @@ import "../core/Core.sol";
 import "../oracle/UniswapOracle.sol";
 import "../token/IFei.sol";
 import "../refs/IOracleRef.sol";
-import "../pcv/IUniswapPCVDeposit.sol";
 import "../token/IUniswapIncentive.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
