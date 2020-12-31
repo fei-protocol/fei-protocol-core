@@ -145,13 +145,13 @@ describe('EthBondingCurve', function () {
     });
   });
 
-  describe('Allocation Rule', function() {
+  describe('PCV Splitter', function() {
     it('Mismatched lengths revert', async function() {
-      await expectRevert(this.bondingCurve.checkAllocation([this.pcvDeposit1.address], [9000, 1000]), "Allocation Rule: PCV Deposits and ratios are different lengths");
+      await expectRevert(this.bondingCurve.checkAllocation([this.pcvDeposit1.address], [9000, 1000]), "PCVSplitter: PCV Deposits and ratios are different lengths");
     });
 
     it('Incomplete allocation rule reverts', async function() {
-      await expectRevert(this.bondingCurve.checkAllocation([this.pcvDeposit1.address, this.pcvDeposit2.address], [9000, 2000]), "Allocation Rule: ratios do not total 100%");
+      await expectRevert(this.bondingCurve.checkAllocation([this.pcvDeposit1.address, this.pcvDeposit2.address], [9000, 2000]), "PCVSplitter: ratios do not total 100%");
     });
 
     it('Correct allocation rule succeeds', async function() {
@@ -226,7 +226,7 @@ describe('EthBondingCurve', function () {
         await expectRevert(this.bondingCurve.setBuffer(1000, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
-    describe('Allocation Rule', function() {
+    describe('PCV Splitter', function() {
       it('Governor set succeeds', async function() {
         expectEvent(
           await this.bondingCurve.setAllocation([this.pcvDeposit1.address], [10000], {from: governorAddress}), 
@@ -234,7 +234,7 @@ describe('EthBondingCurve', function () {
           { _pcvDeposits : [this.pcvDeposit1.address] }
         );
 
-        var result = await this.bondingCurve.getAllocationRule();
+        var result = await this.bondingCurve.getAllocation();
         expect(result[0].length).to.be.equal(1);
         expect(result[0][0]).to.be.equal(this.pcvDeposit1.address);
         expect(result[1].length).to.be.equal(1);

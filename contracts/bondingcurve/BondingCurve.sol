@@ -2,12 +2,12 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./IBondingCurve.sol";
-import "./AllocationRule.sol";
+import "../pcv/PCVSplitter.sol";
 import "../refs/OracleRef.sol";
 import "../utils/Roots.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
+abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter {
     using Decimal for Decimal.D256;
     using Roots for uint256;
 
@@ -28,7 +28,7 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
 		address _oracle
 	) public
 		OracleRef(core, _oracle)
-		AllocationRule(allocations, ratios)
+		PCVSplitter(allocations, ratios)
 	{
 		_setScale(_scale);
 	}
@@ -82,7 +82,7 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, AllocationRule {
 	 	amountOut = getAmountOut(amountIn);
 	 	incrementTotalPurchased(amountOut);
 		fei().mint(to, amountOut);
-		allocate(amountIn);
+		_allocate(amountIn);
 		emit Purchase(to, amountIn, amountOut);
 		return amountOut;
 	}

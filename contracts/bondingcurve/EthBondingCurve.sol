@@ -31,7 +31,7 @@ contract EthBondingCurve is BondingCurve {
 		return Decimal.ratio(totalPurchased.sqrt(), scale.sqrt());
 	}
 
-	function allocateSingle(uint256 amount, address pcvDeposit) internal override {
+	function _allocateSingle(uint256 amount, address pcvDeposit) internal override {
 		IPCVDeposit(pcvDeposit).deposit{value : amount}(amount);
 	}
 
