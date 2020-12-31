@@ -7,6 +7,8 @@ import "../refs/OracleRef.sol";
 import "../utils/Roots.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
+/// @title an abstract bonding curve for purchasing FEI
+/// @author Fei Protocol
 abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter {
     using Decimal for Decimal.D256;
     using Roots for uint256;
@@ -54,17 +56,17 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter {
 
 	function getCurrentPrice() public view override returns(Decimal.D256 memory) {
 		if (atScale()) {
-			return peg().mul(getBuffer());
+			return peg().mul(_getBuffer());
 		}
-		return peg().div(getBondingCurvePriceMultiplier());
+		return peg().div(_getBondingCurvePriceMultiplier());
 	}
 
 	function getAmountOut(uint256 amountIn) public view override returns (uint256 amountOut) {
 		uint256 adjustedAmount = getAdjustedAmount(amountIn);
 		if (atScale()) {
-			return getBufferAdjustedAmount(adjustedAmount);
+			return _getBufferAdjustedAmount(adjustedAmount);
 		}
-		return getBondingCurveAmountOut(adjustedAmount);
+		return _getBondingCurveAmountOut(adjustedAmount);
 	}
 
 	function getAveragePrice(uint256 amountIn) public view override returns (Decimal.D256 memory) {
@@ -95,16 +97,16 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter {
 		scale = _scale;
 	}
 
-	function getBondingCurvePriceMultiplier() internal view virtual returns(Decimal.D256 memory);
+	function _getBondingCurvePriceMultiplier() internal view virtual returns(Decimal.D256 memory);
 
-	function getBondingCurveAmountOut(uint256 adjustedAmountIn) internal view virtual returns(uint256);
+	function _getBondingCurveAmountOut(uint256 adjustedAmountIn) internal view virtual returns(uint256);
 
-	function getBuffer() internal view returns(Decimal.D256 memory) {
+	function _getBuffer() internal view returns(Decimal.D256 memory) {
 		uint granularity = BUFFER_GRANULARITY;
 		return Decimal.ratio(granularity - buffer, granularity);
 	} 
 
-	function getBufferAdjustedAmount(uint256 amountIn) internal view returns(uint256) {
-		return getBuffer().mul(amountIn).asUint256();
+	function _getBufferAdjustedAmount(uint256 amountIn) internal view returns(uint256) {
+		return _getBuffer().mul(amountIn).asUint256();
 	}
 }
