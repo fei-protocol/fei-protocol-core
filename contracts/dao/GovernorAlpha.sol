@@ -1,6 +1,8 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
+// Forked from Compound
+// See https://github.com/compound-finance/compound-protocol/blob/master/contracts/Governance/GovernorAlpha.sol
 contract GovernorAlpha {
     /// @notice The name of this contract
     // solhint-disable-next-line const-name-snakecase

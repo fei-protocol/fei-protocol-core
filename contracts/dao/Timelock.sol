@@ -2,6 +2,8 @@ pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
+// Forked from Compound
+// See https://github.com/compound-finance/compound-protocol/blob/master/contracts/Timelock.sol
 contract Timelock {
     using SafeMath for uint;
 
