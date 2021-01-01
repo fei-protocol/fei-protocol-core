@@ -17,10 +17,6 @@ contract Core is ICore, Permissions {
 	address public override genesisGroup;
 	bool public override hasGenesisGroupCompleted;
 
-    event FeiUpdate(address indexed _fei);
-    event TribeAllocation(address indexed _to, uint _amount);
-    event GenesisPeriodComplete(uint _timestamp);
-
 	constructor() public {
 		_setupGovernor(msg.sender);
 		Fei _fei = new Fei(address(this));
