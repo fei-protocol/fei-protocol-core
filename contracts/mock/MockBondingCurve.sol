@@ -21,7 +21,7 @@ contract MockBondingCurve {
 		getCurrentPrice = Decimal.ratio(price, 100);
 	}
 
-	function purchase(uint amount, address to) public payable returns (uint256 amountOut) {
+	function purchase(address to, uint amount) public payable returns (uint256 amountOut) {
 		return 1;
 	}
 

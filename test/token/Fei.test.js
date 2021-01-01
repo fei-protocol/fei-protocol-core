@@ -32,9 +32,9 @@ describe('Fei', function () {
           await this.fei.mint(userAddress, 100, {from: minterAddress}),
           'Minting',
           {
-            to: userAddress,
-            minter: minterAddress,
-            amount: '100'
+            _to: userAddress,
+            _minter: minterAddress,
+            _amount: '100'
           }
         );
       });
@@ -59,9 +59,9 @@ describe('Fei', function () {
           await this.fei.burnFrom(userAddress, 100, {from: burnerAddress}),
           'Burning',
           {
-            to: userAddress,
-            burner: burnerAddress,
-            amount: '100'
+            _to: userAddress,
+            _burner: burnerAddress,
+            _amount: '100'
           }
         );
       });
