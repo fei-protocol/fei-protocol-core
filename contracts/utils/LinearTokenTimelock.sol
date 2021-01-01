@@ -16,9 +16,9 @@ contract LinearTokenTimelock is Timed {
 
     address public pendingBeneficiary;
 
-    uint256 public initialBalance;
+    uint public initialBalance;
 
-    uint256 internal lastBalance;
+    uint internal lastBalance;
 
     event Release(address indexed _beneficiary, uint _amount);
     event BeneficiaryUpdate(address indexed _beneficiary);
@@ -46,22 +46,22 @@ contract LinearTokenTimelock is Timed {
     }
 
     function release() external onlyBeneficiary balanceCheck {
-        uint256 amount = availableForRelease();
+        uint amount = availableForRelease();
         require(amount != 0, "LinearTokenTimelock: no tokens to release");
 
         lockedToken.transfer(beneficiary, amount);
         emit Release(beneficiary, amount);
     }
 
-    function totalToken() public view virtual returns(uint256) {
+    function totalToken() public view virtual returns(uint) {
         return lockedToken.balanceOf(address(this));
     }
 
-    function alreadyReleasedAmount() public view returns(uint256) {
+    function alreadyReleasedAmount() public view returns(uint) {
         return initialBalance - totalToken();
     }
 
-    function availableForRelease() public view returns(uint256) {
+    function availableForRelease() public view returns(uint) {
         uint elapsed = timestamp();
         uint _duration = duration;
 

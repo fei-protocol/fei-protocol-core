@@ -9,7 +9,7 @@ import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 /// @author Fei Protocol
 abstract contract UniRef is OracleRef, IUniRef {
 	using Decimal for Decimal.D256;
-	using Babylonian for uint256;
+	using Babylonian for uint;
 
 	IUniswapV2Router02 public override router;
 	IUniswapV2Pair public override pair;
@@ -51,14 +51,14 @@ abstract contract UniRef is OracleRef, IUniRef {
         return (feiReserves, tokenReserves);
 	}
 
-	function liquidityOwned() public override view returns (uint256) {
+	function liquidityOwned() public override view returns (uint) {
 		return pair.balanceOf(address(this));
 	}
 
     /// @notice ratio of all pair liquidity owned by this contract
 	function ratioOwned() internal view returns (Decimal.D256 memory) {	
-    	uint256 balance = liquidityOwned();
-    	uint256 total = pair.totalSupply();
+    	uint balance = liquidityOwned();
+    	uint total = pair.totalSupply();
     	return Decimal.ratio(balance, total);
     }
 
@@ -131,12 +131,12 @@ abstract contract UniRef is OracleRef, IUniRef {
     /// @param reserveOther non-fei reserves
     function getFinalPrice(
     	int256 amountFei, 
-    	uint256 reserveFei, 
-    	uint256 reserveOther
+    	uint reserveFei, 
+    	uint reserveOther
     ) internal pure returns (Decimal.D256 memory) {
-    	uint256 k = reserveFei * reserveOther;
-    	uint256 adjustedReserveFei = uint256(int256(reserveFei) + amountFei);
-    	uint256 adjustedReserveOther = k / adjustedReserveFei;
+    	uint k = reserveFei * reserveOther;
+    	uint adjustedReserveFei = uint(int256(reserveFei) + amountFei);
+    	uint adjustedReserveOther = k / adjustedReserveFei;
     	return Decimal.ratio(adjustedReserveFei, adjustedReserveOther); // alt: adjustedReserveFei^2 / k
     }
 

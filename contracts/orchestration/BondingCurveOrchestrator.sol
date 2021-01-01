@@ -20,7 +20,7 @@ contract BondingCurveOrchestrator is Ownable {
 		address bondingCurveOracle
 	) {
 		ethUniswapPCVDeposit = address(new EthUniswapPCVDeposit(core, pair, router, uniswapOracle));
-		uint256[] memory ratios = new uint256[](1);
+		uint[] memory ratios = new uint[](1);
 		ratios[0] = 10000;
 		address[] memory allocations = new address[](1);
 		allocations[0] = address(ethUniswapPCVDeposit);

@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/utils/SafeCast.sol";
 contract UniswapIncentive is IUniswapIncentive, UniRef {
 	using Decimal for Decimal.D256;
     using SafeMath32 for uint32;
-    using SafeCast for uint256;
+    using SafeCast for uint;
 
     struct TimeWeightInfo {
         uint32 blockNo;
@@ -44,7 +44,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     	address sender, 
     	address receiver, 
     	address, 
-    	uint256 amountIn
+    	uint amountIn
     ) external override onlyFei {
         updateOracle();
     	if (isPair(sender)) {
@@ -114,8 +114,8 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return incentive.equals(penalty);
     }
 
-    function getBuyIncentive(uint256 amount) public view override returns(
-        uint256 incentive, 
+    function getBuyIncentive(uint amount) public view override returns(
+        uint incentive, 
         uint32 weight,
         Decimal.D256 memory initialDeviation,
         Decimal.D256 memory finalDeviation
@@ -126,7 +126,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
             return (0, weight, initialDeviation, finalDeviation);
         }
 
-        uint256 incentivizedAmount = amount;
+        uint incentivizedAmount = amount;
         if (finalDeviation.equals(Decimal.zero())) {
             incentivizedAmount = getAmountToPegFei();
         }
@@ -136,8 +136,8 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return (incentive, weight, initialDeviation, finalDeviation);
     }
 
-    function getSellPenalty(uint256 amount) public view override returns(
-        uint256 penalty, 
+    function getSellPenalty(uint amount) public view override returns(
+        uint penalty, 
         Decimal.D256 memory initialDeviation,
         Decimal.D256 memory finalDeviation
     ) {
@@ -147,9 +147,9 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
             return (0, initialDeviation, finalDeviation);
         }
 
-        uint256 incentivizedAmount = amount;
+        uint incentivizedAmount = amount;
         if (initialDeviation.equals(Decimal.zero())) {
-            uint256 amountToPeg = getAmountToPegFei();
+            uint amountToPeg = getAmountToPegFei();
             require(amount >= amountToPeg, "UniswapIncentive: Underflow");
             incentivizedAmount = amount - amountToPeg;
         }
@@ -158,12 +158,12 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return (penalty, initialDeviation, finalDeviation);   
     }
 
-    function incentivizeBuy(address target, uint256 amountIn) internal ifMinterSelf {
+    function incentivizeBuy(address target, uint amountIn) internal ifMinterSelf {
     	if (isExemptAddress(target)) {
     		return;
     	}
 
-        (uint256 incentive, uint32 weight,
+        (uint incentive, uint32 weight,
         Decimal.D256 memory initialDeviation, 
         Decimal.D256 memory finalDeviation) = getBuyIncentive(amountIn);
 
@@ -173,12 +173,12 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         }
     }
 
-    function incentivizeSell(address target, uint256 amount) internal ifBurnerSelf {
+    function incentivizeSell(address target, uint amount) internal ifBurnerSelf {
     	if (isExemptAddress(target)) {
     		return;
     	}
 
-        (uint256 penalty, Decimal.D256 memory initialDeviation,
+        (uint penalty, Decimal.D256 memory initialDeviation,
         Decimal.D256 memory finalDeviation) = getSellPenalty(amount);
 
         uint32 weight = getTimeWeight();
@@ -193,7 +193,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         uint32 weight
     ) internal pure returns (Decimal.D256 memory) {
         Decimal.D256 memory correspondingPenalty = calculateSellPenaltyMultiplier(deviation);
-        Decimal.D256 memory buyMultiplier = deviation.mul(uint256(weight)).div(uint256(TIME_WEIGHT_GRANULARITY));
+        Decimal.D256 memory buyMultiplier = deviation.mul(uint(weight)).div(uint(TIME_WEIGHT_GRANULARITY));
         if (correspondingPenalty.lessThan(buyMultiplier)) {
             return correspondingPenalty;
         }
@@ -222,13 +222,13 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
             return;
         }
 
-        uint256 updatedWeight = uint256(currentWeight);
+        uint updatedWeight = uint(currentWeight);
         // Partial buy
         if (initialDeviation.greaterThan(finalDeviation)) {
             Decimal.D256 memory remainingRatio = finalDeviation.div(initialDeviation);
-            updatedWeight = remainingRatio.mul(uint256(currentWeight)).asUint256();
+            updatedWeight = remainingRatio.mul(uint(currentWeight)).asUint256();
         }
-        uint256 maxWeight = finalDeviation.mul(100).mul(uint256(TIME_WEIGHT_GRANULARITY)).asUint256(); // m^2*100 (sell) = t*m (buy) 
+        uint maxWeight = finalDeviation.mul(100).mul(uint(TIME_WEIGHT_GRANULARITY)).asUint256(); // m^2*100 (sell) = t*m (buy) 
         updatedWeight = Math.min(updatedWeight, maxWeight);
         _setTimeWeight(updatedWeight.toUint32(), true);
     }

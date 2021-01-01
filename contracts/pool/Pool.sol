@@ -15,7 +15,7 @@ import "@openzeppelin/contracts/utils/SafeCast.sol";
 abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 	using Decimal for Decimal.D256;
 	using SafeMath128 for uint128;
-	using SafeCast for uint256;
+	using SafeCast for uint;
 
 	bool internal initialized;
 
@@ -76,18 +76,18 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 		if (isTimeEnded()) {
 			return 0;
 		}
-		return _unreleasedReward(totalReward(), uint256(duration), uint256(timestamp()));
+		return _unreleasedReward(totalReward(), uint(duration), uint(timestamp()));
 	}
 
 	function totalReward() public view override returns (uint) {
-		return rewardBalance() + uint256(claimedRewards);
+		return rewardBalance() + uint(claimedRewards);
 	}
 
 	function rewardBalance() public view override returns (uint) {
 		return rewardToken.balanceOf(address(this));
 	}
 
-	function burnFrom(address account, uint256 amount) public override {
+	function burnFrom(address account, uint amount) public override {
 		if (msg.sender == account) {
 			increaseAllowance(account, amount);
 		}
@@ -96,7 +96,7 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 
 	function _totalRedeemablePoolTokens() public view returns(uint) {
 		uint total = totalSupply();
-		uint balance = _twfb(uint256(totalStaked));
+		uint balance = _twfb(uint(totalStaked));
 		require(total >= balance, "Pool: Total redeemable underflow");
 		return total - balance;
 	}
@@ -133,20 +133,20 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 		return (amountStaked, amountReward);	
 	}
 
-	function _incrementClaimed(uint256 amount) internal {
+	function _incrementClaimed(uint amount) internal {
 		claimedRewards = claimedRewards.add(amount.toUint128());
 	}
 
-	function _incrementStaked(uint256 amount) internal {
+	function _incrementStaked(uint amount) internal {
 		totalStaked = totalStaked.add(amount.toUint128());
 	}
 
 	function _twfb(uint amount) internal view returns(uint) {
-		return amount * uint256(remainingTime());
+		return amount * uint(remainingTime());
 	}
 
 	// Updates stored staked balance pro-rata for transfer and transferFrom
-	function _beforeTokenTransfer(address from, address to, uint256 amount) internal override {
+	function _beforeTokenTransfer(address from, address to, uint amount) internal override {
         if (from != address(0) && to != address(0)) {
  			Decimal.D256 memory ratio = Decimal.ratio(amount, balanceOf(from));
  			uint amountStaked = ratio.mul(stakedBalance[from]).asUint256();

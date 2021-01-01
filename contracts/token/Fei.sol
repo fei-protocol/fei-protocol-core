@@ -12,20 +12,20 @@ contract Fei is ERC20, ERC20Burnable, CoreRef {
 
     mapping (address => address) public incentiveContract;
 
-    event Minting(address indexed to, address indexed minter, uint256 amount);
-    event Burning(address indexed to, address indexed burner, uint256 amount);
+    event Minting(address indexed to, address indexed minter, uint amount);
+    event Burning(address indexed to, address indexed burner, uint amount);
     event IncentiveContractUpdate(address indexed _incentivized, address indexed _incentiveContract);
 
 	constructor(address core) public
 	   ERC20("Fei USD", "FEI") 
        CoreRef(core) {}
 
-    function mint(address account, uint256 amount) public onlyMinter {
+    function mint(address account, uint amount) public onlyMinter {
         _mint(account, amount);
         emit Minting(account, msg.sender, amount);
     }
 
-    function burnFrom(address account, uint256 amount) public override onlyBurner {
+    function burnFrom(address account, uint amount) public override onlyBurner {
         _burn(account, amount);
         emit Burning(account, msg.sender, amount);
     }
@@ -35,13 +35,13 @@ contract Fei is ERC20, ERC20Burnable, CoreRef {
         emit IncentiveContractUpdate(account, incentive);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 amount) internal override {
+    function _beforeTokenTransfer(address from, address to, uint amount) internal override {
         if (from != address(0) && to != address(0)) {
             _checkAndApplyIncentives(from, to, amount);      
         }
     }
 
-    function _checkAndApplyIncentives(address sender, address recipient, uint256 amount) internal {
+    function _checkAndApplyIncentives(address sender, address recipient, uint amount) internal {
         // incentive on sender
         address senderIncentive = incentiveContract[sender];
         if (senderIncentive != address(0)) {

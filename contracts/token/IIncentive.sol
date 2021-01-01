@@ -15,6 +15,6 @@ interface IIncentive {
     	address sender, 
     	address receiver, 
     	address operator, 
-    	uint256 amount
+    	uint amount
     ) external;
 }

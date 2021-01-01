@@ -55,8 +55,8 @@ interface IUniswapIncentive is IIncentive {
 	/// @return initialDeviation the Decimal deviation from peg before a transfer
 	/// @return finalDeviation the Decimal deviation from peg after a transfer
 	/// @dev calculated based on a hypothetical buy, applies to any ERC20 FEI transfer from the pool
-	function getBuyIncentive(uint256 amount) external view returns(
-        uint256 incentive, 
+	function getBuyIncentive(uint amount) external view returns(
+        uint incentive, 
         uint32 weight,
         Decimal.D256 memory initialDeviation,
         Decimal.D256 memory finalDeviation
@@ -68,8 +68,8 @@ interface IUniswapIncentive is IIncentive {
 	/// @return initialDeviation the Decimal deviation from peg before a transfer
 	/// @return finalDeviation the Decimal deviation from peg after a transfer
 	/// @dev calculated based on a hypothetical sell, applies to any ERC20 FEI transfer to the pool
-	function getSellPenalty(uint256 amount) external view returns(
-        uint256 penalty, 
+	function getSellPenalty(uint amount) external view returns(
+        uint penalty, 
         Decimal.D256 memory initialDeviation,
         Decimal.D256 memory finalDeviation
     );

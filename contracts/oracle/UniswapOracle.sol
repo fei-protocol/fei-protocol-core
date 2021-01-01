@@ -16,7 +16,7 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 
 	IUniswapV2Pair public override pair;
 	Decimal.D256 private twap = Decimal.zero();
-	uint256 public override priorCumulative; 
+	uint public override priorCumulative; 
 	uint32 public override priorTimestamp;
 	uint32 public override duration;
 	bool public override killSwitch;
@@ -24,7 +24,7 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 
 	event KillSwitchUpdate(bool _killSwitch);
 	event DurationUpdate(uint32 _duration);
-	event Update(uint256 _twap);
+	event Update(uint _twap);
 
 	constructor(address _core, address _pair, uint32 _duration, bool _isPrice0) public
 		CoreRef(_core)
@@ -79,7 +79,7 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 		priorCumulative = _getCumulative(price0Cumulative, price1Cumulative);
 	}
 
-    function _getCumulative(uint price0Cumulative, uint price1Cumulative) internal view returns (uint256) {
+    function _getCumulative(uint price0Cumulative, uint price1Cumulative) internal view returns (uint) {
 		return isPrice0 ? price0Cumulative : price1Cumulative;
 	}
 }

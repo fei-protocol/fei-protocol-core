@@ -95,7 +95,7 @@ abstract contract CoreRef is ICoreRef {
     	fei().burn(feiBalance());
     }
 
-    function _mintFei(uint256 amount) internal {
+    function _mintFei(uint amount) internal {
 		fei().mint(address(this), amount);
 	}
 }

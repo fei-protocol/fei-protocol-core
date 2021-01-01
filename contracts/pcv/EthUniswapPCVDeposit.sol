@@ -15,37 +15,37 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
         UniswapPCVDeposit(core, _pair, _router, _oracle) 
     {}
 
-    function deposit(uint256 ethAmount) external override payable postGenesis {
+    function deposit(uint ethAmount) external override payable postGenesis {
     	require(ethAmount == msg.value, "Bonding Curve: Sent value does not equal input");
-        uint256 feiAmount = _getAmountFeiToDeposit(ethAmount);
+        uint feiAmount = _getAmountFeiToDeposit(ethAmount);
         _addLiquidity(ethAmount, feiAmount);
         emit Deposit(msg.sender, ethAmount);
     }
 
-    function _removeLiquidity(uint256 liquidity) internal override returns (uint256) {
-        (, uint256 amountWithdrawn) = router.removeLiquidityETH(
+    function _removeLiquidity(uint liquidity) internal override returns (uint) {
+        (, uint amountWithdrawn) = router.removeLiquidityETH(
             address(fei()),
             liquidity,
             0,
             0,
             address(this),
-            uint256(-1)
+            uint(-1)
         );
         return amountWithdrawn;
     }
 
-    function _transferWithdrawn(address to, uint256 amount) internal override {
+    function _transferWithdrawn(address to, uint amount) internal override {
         payable(to).sendValue(amount);
     }
 
-    function _addLiquidity(uint256 ethAmount, uint256 feiAmount) internal {
+    function _addLiquidity(uint ethAmount, uint feiAmount) internal {
         _mintFei(feiAmount);
         router.addLiquidityETH{value : ethAmount}(address(fei()),
             feiAmount,
             0,
             0,
             address(this),
-            uint256(-1)
+            uint(-1)
         );
     }
 

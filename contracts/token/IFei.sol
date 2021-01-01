@@ -10,21 +10,21 @@ interface IFei is IERC20 {
 
     /// @notice burn FEI tokens from sender
     /// @param amount the amount to burn
-    function burn(uint256 amount) external;
+    function burn(uint amount) external;
 
     // Burner only state changing api
 
     /// @notice burn FEI tokens from specified account
     /// @param account the account to burn from
     /// @param amount the amount to burn
-    function burnFrom(address account, uint256 amount) external;
+    function burnFrom(address account, uint amount) external;
 
     // Minter only state changing api
 
     /// @notice mint FEI tokens
     /// @param account the account to mint to
     /// @param amount the amount to mint
-    function mint(address account, uint256 amount) external;
+    function mint(address account, uint amount) external;
 
     // Governor only state changing api
 
@@ -35,7 +35,7 @@ interface IFei is IERC20 {
     // Getters
 
     /// @notice number of decimals of ERC20
-    function decimals() external view returns(uint256);
+    function decimals() external view returns(uint);
 
     /// @notice get associated incentive contract
     /// @param account the address to check

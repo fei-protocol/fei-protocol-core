@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/SafeCast.sol";
 /// @title an abstract contract for timed events
 /// @author Fei Protocol
 abstract contract Timed {
-    using SafeCast for uint256;
+    using SafeCast for uint;
 	using SafeMath32 for uint32;
 
     /// @notice the start timestamp of the timed period

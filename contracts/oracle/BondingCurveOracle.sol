@@ -59,9 +59,9 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
     	if (isTimeEnded()) {
     		return peg;
     	}
-		uint t = uint256(timestamp());
-		uint remaining = uint256(remainingTime());
-		uint d = uint256(duration);
+		uint t = uint(timestamp());
+		uint remaining = uint(remainingTime());
+		uint d = uint(duration);
 
     	(Decimal.D256 memory uniswapPeg,) = uniswapOracle.read();
     	Decimal.D256 memory price = uniswapPeg.div(peg);

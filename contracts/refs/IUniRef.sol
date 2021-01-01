@@ -38,5 +38,5 @@ interface IUniRef {
 
     /// @notice amount of pair liquidity owned by this contract
     /// @return amount of LP tokens
-	function liquidityOwned() external view returns (uint256);
+	function liquidityOwned() external view returns (uint);
 }

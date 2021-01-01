@@ -9,22 +9,22 @@ import "../pcv/IPCVDeposit.sol";
 contract EthBondingCurve is BondingCurve {
 
 	constructor(
-		uint256 scale, 
+		uint scale, 
 		address core, 
 		address[] memory pcvDeposits, 
-		uint256[] memory ratios, 
+		uint[] memory ratios, 
 		address oracle
 	) public
 		BondingCurve(scale, core, pcvDeposits, ratios, oracle) {}
 
-	function purchase(address to, uint256 amountIn) external override payable postGenesis returns (uint256 amountOut) {
+	function purchase(address to, uint amountIn) external override payable postGenesis returns (uint amountOut) {
 		require(msg.value == amountIn, "Bonding Curve: Sent value does not equal input");
 		return _purchase(amountIn, to);
 	}
 
 	// Represents the integral solved for upper bound of P(x) = (X/S)^1/2 * O
-	function _getBondingCurveAmountOut(uint256 adjustedAmountIn) internal view override returns (uint256 amountOut) {
-		uint256 radicand = (3 * adjustedAmountIn * scale.sqrt() / 2) + totalPurchased.threeHalfsRoot();
+	function _getBondingCurveAmountOut(uint adjustedAmountIn) internal view override returns (uint amountOut) {
+		uint radicand = (3 * adjustedAmountIn * scale.sqrt() / 2) + totalPurchased.threeHalfsRoot();
 		return radicand.twoThirdsRoot() - totalPurchased;
 	}
 
@@ -32,7 +32,7 @@ contract EthBondingCurve is BondingCurve {
 		return Decimal.ratio(totalPurchased.sqrt(), scale.sqrt());
 	}
 
-	function _allocateSingle(uint256 amount, address pcvDeposit) internal override {
+	function _allocateSingle(uint amount, address pcvDeposit) internal override {
 		IPCVDeposit(pcvDeposit).deposit{value : amount}(amount);
 	}
 

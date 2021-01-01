@@ -117,7 +117,7 @@ contract GenesisGroup is CoreRef, ERC20, ERC20Burnable, Timed, IGenesisGroup {
 		return bondingcurve.getAveragePrice(balance).greaterThanOrEqualTo(maxGenesisPrice);
 	}
 
-	function burnFrom(address account, uint256 amount) public override {
+	function burnFrom(address account, uint amount) public override {
 		if (msg.sender == account) {
 			increaseAllowance(account, amount);
 		}
