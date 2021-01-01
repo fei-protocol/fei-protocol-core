@@ -7,7 +7,15 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /// @author Fei Protocol
 interface IPool {
 
-    // State changing API
+	// ----------- Events -----------
+
+    event Claim(address indexed _account, uint _amountReward);
+
+    event Deposit(address indexed _account, uint _amountStaked);
+
+    event Withdraw(address indexed _account, uint _amountStaked, uint _amountReward);
+
+    // ----------- State changing API -----------
 
     /// @notice collect redeemable rewards without unstaking
     /// @param account the account to claim for
@@ -28,7 +36,7 @@ interface IPool {
     /// @notice initializes the pool start time. Only callable once
     function init() external;
 
-    // Reward Getters
+    // ----------- Getters -----------
 
     /// @notice the ERC20 reward token
     /// @return the IERC20 implementation address
@@ -58,8 +66,6 @@ interface IPool {
     /// @notice the total amount of rewards previously claimed
     /// @return the total
     function claimedRewards() external view returns(uint128);
-
-    // Staked Getters
 
     /// @notice the ERC20 staked token
     /// @return the IERC20 implementation address

@@ -1,14 +1,14 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./IPool.sol";
-import "../external/Decimal.sol";
-import "../external/SafeMathCopy.sol";
-import "../utils/SafeMath128.sol";
-import "../utils/Timed.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 import "@openzeppelin/contracts/utils/SafeCast.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./IPool.sol";
+import "../utils/Timed.sol";
+import "../utils/SafeMath128.sol";
+import "../external/SafeMathCopy.sol";
+import "../external/Decimal.sol";
 
 /// @title abstract implementation of IPool interface
 /// @author Fei Protocol
@@ -27,10 +27,10 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 
     mapping (address => uint) public override stakedBalance;
 
-    event Claim(address indexed _account, uint _amountReward);
-    event Deposit(address indexed _account, uint _amountStaked);
-    event Withdraw(address indexed _account, uint _amountStaked, uint _amountReward);
-
+	/// @notice Pool constructor
+	/// @param _duration duration of the pool reward distribution
+	/// @param _name the name of the pool token
+	/// @param _ticker the token ticker for the pool token
 	constructor(
 		uint32 _duration,
 		string memory _name,
@@ -40,7 +40,9 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 	function claim(address account) external override returns(uint) {
 		(uint amountStaked, uint amountReward) = _withdraw(account);
 		_deposit(account, amountStaked);
+
 		emit Claim(account, amountReward);
+
 		return amountReward;
 	}
 
@@ -94,14 +96,14 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 		super.burnFrom(account, amount);
 	}
 
-	function _totalRedeemablePoolTokens() public view returns(uint) {
+	function _totalRedeemablePoolTokens() internal view returns(uint) {
 		uint total = totalSupply();
 		uint balance = _twfb(uint(totalStaked));
 		require(total >= balance, "Pool: Total redeemable underflow");
 		return total - balance;
 	}
 
-	function _redeemablePoolTokens(address account) public view returns(uint) {
+	function _redeemablePoolTokens(address account) internal view returns(uint) {
 		uint total = balanceOf(account);
 		uint balance = _twfb(stakedBalance[account]);
 		require(total >= balance, "Pool: Redeemable underflow");
@@ -112,22 +114,30 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 
 	function _deposit(address account, uint amount) internal {
 		require(initialized, "Pool: Uninitialized");
+
 		stakedToken.transferFrom(account, address(this), amount);
+
 		stakedBalance[account] += amount;
 		_incrementStaked(amount);
+		
 		uint poolTokens = _twfb(amount);
 		require(poolTokens != 0, "Pool: Window has ended");
+
 		_mint(account, poolTokens);
 	}
 
 	function _withdraw(address account) internal returns(uint amountStaked, uint amountReward) {
 		uint amountPoolTokens = balanceOf(account);
 		require(amountPoolTokens != 0, "Pool: User has no pool tokens");
+
 		amountStaked = stakedBalance[account];
 		amountReward = redeemableReward(account);
+
 		_incrementClaimed(amountReward);
+
 		burnFrom(account, amountPoolTokens);
 		stakedBalance[account] = 0;
+
 		stakedToken.transfer(account, amountStaked);
 		rewardToken.transfer(account, amountReward);
 		return (amountStaked, amountReward);	
@@ -150,6 +160,7 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
         if (from != address(0) && to != address(0)) {
  			Decimal.D256 memory ratio = Decimal.ratio(amount, balanceOf(from));
  			uint amountStaked = ratio.mul(stakedBalance[from]).asUint256();
+			
  			stakedBalance[from] -= amountStaked;
  			stakedBalance[to] += amountStaked;
         }
