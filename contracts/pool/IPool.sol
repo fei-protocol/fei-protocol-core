@@ -48,8 +48,9 @@ interface IPool {
     
     /// @notice the amount of rewards currently redeemable by an account
     /// @param account the potentially redeeming account
-    /// @return reward amount
-    function redeemableReward(address account) external view returns(uint);
+    /// @return amountReward the amount of reward tokens
+    /// @return amountPool the amount of redeemable pool tokens
+    function redeemableReward(address account) external view returns(uint amountReward, uint amountPool);
  
     /// @notice the total amount of rewards owned by contract and unlocked for release
     /// @return the total

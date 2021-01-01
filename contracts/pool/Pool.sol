@@ -37,12 +37,9 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 		string memory _ticker
 	) public ERC20(_name, _ticker) Timed(_duration) {}
 
-	function claim(address account) external override returns(uint) {
-		(uint amountStaked, uint amountReward) = _withdraw(account);
-		_deposit(account, amountStaked);
-
+	function claim(address account) external override returns(uint amountReward) {
+		amountReward = _claim(account);
 		emit Claim(account, amountReward);
-
 		return amountReward;
 	}
 
@@ -52,8 +49,10 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 	}
 
 	function withdraw() external override returns(uint amountStaked, uint amountReward) {
-		(amountStaked, amountReward) = _withdraw(msg.sender);
-		emit Withdraw(msg.sender, amountStaked, amountReward);
+		address account = msg.sender;
+		amountReward = _claim(account);
+		amountStaked = _withdraw(account);
+		emit Withdraw(account, amountStaked, amountReward);
 		return (amountStaked, amountReward);
 	}
 
@@ -63,8 +62,9 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 		initialized = true;
 	}
 
-    function redeemableReward(address account) public view override returns(uint) {
-		return releasedReward() * _redeemablePoolTokens(account) / _totalRedeemablePoolTokens();
+    function redeemableReward(address account) public view override returns(uint amountReward, uint amountPool) {
+		amountPool = _redeemablePoolTokens(account);
+		return (releasedReward() * amountPool / _totalRedeemablePoolTokens(), amountPool);
     }
 
 	function releasedReward() public view override returns (uint) {
@@ -126,21 +126,27 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 		_mint(account, poolTokens);
 	}
 
-	function _withdraw(address account) internal returns(uint amountStaked, uint amountReward) {
-		uint amountPoolTokens = balanceOf(account);
-		require(amountPoolTokens != 0, "Pool: User has no pool tokens");
-
+	function _withdraw(address account) internal returns(uint amountStaked) {
 		amountStaked = stakedBalance[account];
-		amountReward = redeemableReward(account);
+		stakedBalance[account] = 0;
+		stakedToken.transfer(account, amountStaked);
 
+		uint amountPool = balanceOf(account);
+		if (amountPool != 0) {
+			_burn(account, amountPool);
+		}
+		return amountStaked;	
+	}
+
+	function _claim(address account) internal returns(uint) {
+		(uint amountReward, uint amountPool) = redeemableReward(account);
+		require(amountPool != 0, "Pool: User has no redeemable pool tokens");
+
+		burnFrom(account, amountPool);
 		_incrementClaimed(amountReward);
 
-		burnFrom(account, amountPoolTokens);
-		stakedBalance[account] = 0;
-
-		stakedToken.transfer(account, amountStaked);
 		rewardToken.transfer(account, amountReward);
-		return (amountStaked, amountReward);	
+		return amountReward;
 	}
 
 	function _incrementClaimed(uint amount) internal {
