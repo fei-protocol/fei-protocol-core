@@ -1,21 +1,26 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../token/IFei.sol";
 import "../core/ICore.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /// @title A Core Reference contract
 /// @author Fei Protocol
 /// @notice defines some modifiers and utilities around interacting with Core
 interface ICoreRef {
-    // Governor only state changing api
+
+	// ----------- Events -----------
+
+    event CoreUpdate(address indexed _core);
+
+    // ----------- Governor only state changing api -----------
 
     /// @notice set new Core reference address
     /// @param core the new core address
     function setCore(address core) external;
 
-    // Getters
+    // ----------- Getters -----------
 
     /// @notice address of the Core contract referenced
     /// @return ICore implementation address

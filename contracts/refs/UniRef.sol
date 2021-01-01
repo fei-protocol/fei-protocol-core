@@ -1,33 +1,39 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
+import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "./OracleRef.sol";
 import "./IUniRef.sol";
-import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 
 /// @title UniRef abstract implementation contract
 /// @author Fei Protocol
-abstract contract UniRef is OracleRef, IUniRef {
+abstract contract UniRef is IUniRef, OracleRef {
 	using Decimal for Decimal.D256;
 	using Babylonian for uint;
 
 	IUniswapV2Router02 public override router;
 	IUniswapV2Pair public override pair;
 
-    event PairUpdate(address indexed _pair);
-
-	constructor(address core, address _pair, address _router, address _oracle) 
-        public OracleRef(core, _oracle) 
+	/// @notice UniRef constructor
+	/// @param _core Fei Core to reference
+    /// @param _pair Uniswap pair to reference
+    /// @param _router Uniswap Router to reference
+    /// @param _oracle oracle to reference
+	constructor(address _core, address _pair, address _router, address _oracle) 
+        public OracleRef(_core, _oracle) 
     {
         setupPair(_pair);
+
         router = IUniswapV2Router02(_router);
+
         approveToken(address(fei()));
         approveToken(token());
         approveToken(_pair);
     }
 
-	function setPair(address _pair) public override onlyGovernor {
+	function setPair(address _pair) external override onlyGovernor {
 		setupPair(_pair);
+
         approveToken(token());
         approveToken(_pair);
 	}
@@ -44,6 +50,7 @@ abstract contract UniRef is OracleRef, IUniRef {
         address token0 = pair.token0();
         (uint reserve0, uint reserve1,) = pair.getReserves();
         (feiReserves, tokenReserves) = address(fei()) == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
+        
         uint feiBalance = fei().balanceOf(address(pair));
         if(feiBalance > feiReserves) {
             feiReserves = feiBalance;
@@ -151,8 +158,10 @@ abstract contract UniRef is OracleRef, IUniRef {
     ) {
         (Decimal.D256 memory price, uint reserveFei, uint reserveOther) = getUniswapPrice();
         initialDeviation = calculateDeviation(price, peg());
+
         Decimal.D256 memory finalPrice = getFinalPrice(amountIn, reserveFei, reserveOther);
         finalDeviation = calculateDeviation(finalPrice, peg());
+        
         return (initialDeviation, finalDeviation);
     }
 

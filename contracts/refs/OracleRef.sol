@@ -6,18 +6,19 @@ import "./CoreRef.sol";
 
 /// @title Abstract implementation of IOracleRef
 /// @author Fei Protocol
-abstract contract OracleRef is CoreRef, IOracleRef {
+abstract contract OracleRef is IOracleRef, CoreRef {
 	using Decimal for Decimal.D256;
 
 	IOracle public override oracle;
 
-    event OracleUpdate(address indexed _oracle);
-
+	/// @notice OracleRef constructor
+	/// @param _core Fei Core to reference
+	/// @param _oracle oracle to reference
 	constructor(address _core, address _oracle) public CoreRef(_core) {
         _setOracle(_oracle);
     }
 
-	function setOracle(address _oracle) public override onlyGovernor {
+	function setOracle(address _oracle) external override onlyGovernor {
 		_setOracle(_oracle);
         emit OracleUpdate(_oracle);
 	}

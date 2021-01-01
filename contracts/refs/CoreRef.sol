@@ -8,8 +8,8 @@ import "./ICoreRef.sol";
 abstract contract CoreRef is ICoreRef {
 	ICore private _core;
 
-	event CoreUpdate(address indexed core);
-
+	/// @notice CoreRef constructor
+	/// @param core Fei Core to reference
 	constructor(address core) public {
 		_core = ICore(core);
 	}
@@ -66,7 +66,7 @@ abstract contract CoreRef is ICoreRef {
 		_;
 	}
 
-	function setCore(address core) public override onlyGovernor {
+	function setCore(address core) external override onlyGovernor {
 		_core = ICore(core);
 		emit CoreUpdate(core);
 	}

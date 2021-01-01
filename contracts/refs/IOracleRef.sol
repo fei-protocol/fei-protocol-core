@@ -8,19 +8,24 @@ import "../external/Decimal.sol";
 /// @author Fei Protocol
 /// @notice defines some utilities around interacting with the referenced oracle
 interface IOracleRef {
-	// Governor only state mutating API
 
-	/// @notice sets the referenced oracle
-	/// @param _oracle the new oracle to reference
-	function setOracle(address _oracle) external;
+	// ----------- Events -----------
 
-	// Open state mutating API
+	event OracleUpdate(address indexed _oracle);
+
+	// ----------- State changing API -----------
 
 	/// @notice updates the referenced oracle
 	/// @return true if the update is effective
 	function updateOracle() external returns(bool);
 
-	// Getters
+	// ----------- Governor only state changing API -----------
+
+	/// @notice sets the referenced oracle
+	/// @param _oracle the new oracle to reference
+	function setOracle(address _oracle) external;
+
+	// ----------- Getters -----------
 
 	/// @notice the oracle reference by the contract
 	/// @return the IOracle implementation address
