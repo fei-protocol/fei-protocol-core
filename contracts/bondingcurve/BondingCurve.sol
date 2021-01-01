@@ -18,19 +18,21 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter {
 	uint256 public override buffer = 100;
 	uint256 public constant BUFFER_GRANULARITY = 10_000;
 
-    event ScaleUpdate(uint _scale);
-    event BufferUpdate(uint _buffer);
-    event Purchase(address indexed _to, uint _amountIn, uint _amountOut);
-
+	/// @notice constructor
+	/// @param _scale the Scale target where peg fixes
+	/// @param core Fei Core to reference
+	/// @param pcvDeposits the PCV Deposits for the PCVSplitter
+	/// @param ratios the ratios for the PCVSplitter
+	/// @param _oracle the UniswapOracle to reference
 	constructor(
 		uint256 _scale, 
 		address core, 
-		address[] memory allocations, 
+		address[] memory pcvDeposits, 
 		uint256[] memory ratios, 
 		address _oracle
 	) public
 		OracleRef(core, _oracle)
-		PCVSplitter(allocations, ratios)
+		PCVSplitter(pcvDeposits, ratios)
 	{
 		_setScale(_scale);
 	}

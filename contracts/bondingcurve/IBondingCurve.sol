@@ -5,15 +5,23 @@ import "../external/Decimal.sol";
 
 interface IBondingCurve {
 
-	// State changing Api
+	// ----------- Events -----------
+
+    event ScaleUpdate(uint _scale);
+
+    event BufferUpdate(uint _buffer);
+
+    event Purchase(address indexed _to, uint _amountIn, uint _amountOut);
+
+	// ----------- State changing Api -----------
 
 	/// @notice purchase FEI for underlying tokens
-	/// @param amountIn amount of underlying tokens input
 	/// @param to address to receive FEI
+	/// @param amountIn amount of underlying tokens input
 	/// @return amountOut amount of FEI received
-	function purchase(uint256 amountIn, address to) external payable returns (uint256 amountOut);
+	function purchase(address to, uint256 amountIn) external payable returns (uint256 amountOut);
 	
-	// Governor only state changing api
+	// ----------- Governor only state changing api -----------
 
 	/// @notice sets the bonding curve price buffer
 	function setBuffer(uint256 _buffer) external;
@@ -24,7 +32,7 @@ interface IBondingCurve {
 	/// @notice sets the allocation of incoming PCV
 	function setAllocation(address[] calldata pcvDeposits, uint256[] calldata ratios) external;
 
-	// Getters
+	// ----------- Getters -----------
 
 	/// @notice return current instantaneous bonding curve price 
 	/// @return price reported as FEI per X with X being the underlying asset

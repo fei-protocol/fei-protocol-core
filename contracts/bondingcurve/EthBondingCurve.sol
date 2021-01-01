@@ -17,8 +17,7 @@ contract EthBondingCurve is BondingCurve {
 	) public
 		BondingCurve(scale, core, allocations, ratios, oracle) {}
 
-	// TODO flip params per convention
-	function purchase(uint256 amountIn, address to) external override payable postGenesis returns (uint256 amountOut) {
+	function purchase(address to, uint256 amountIn) external override payable postGenesis returns (uint256 amountOut) {
 		require(msg.value == amountIn, "Bonding Curve: Sent value does not equal input");
 		return _purchase(amountIn, to);
 	}

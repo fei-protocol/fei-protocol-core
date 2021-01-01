@@ -89,7 +89,7 @@ contract GenesisGroup is CoreRef, ERC20, ERC20Burnable, Timed, IGenesisGroup {
 		IBondingCurveOracle(orchestrator.bondingCurveOracle()).init(_feiEthExchangeRate());
 		address genesisGroup = address(this);
 		uint balance = genesisGroup.balance;
-		bondingcurve.purchase{value: balance}(balance, genesisGroup);
+		bondingcurve.purchase{value: balance}(genesisGroup, balance);
 		IPool(orchestrator.pool()).init();
 		ido.deploy(_feiTribeExchangeRate());
 		// solhint-disable-next-line not-rely-on-time
