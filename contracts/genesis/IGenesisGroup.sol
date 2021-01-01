@@ -7,8 +7,15 @@ import "../external/Decimal.sol";
 /// @title Equal access to the first bonding curve transaction
 /// @author Fei Protocol
 interface IGenesisGroup {
+	// ----------- Events -----------
 
-    // State changing API
+	event Purchase(address indexed _to, uint _value);
+
+	event Redeem(address indexed _to, uint _amountIn, uint _amountFei, uint _amountTribe);
+
+	event Launch(uint _timestamp);
+
+    // ----------- State changing API -----------
 
     /// @notice allows for entry into the Genesis Group via ETH. Only callable during Genesis Period.
     /// @param to address to send FGEN Genesis tokens to
@@ -23,7 +30,7 @@ interface IGenesisGroup {
     function launch() external;
 
 
-    // View functions
+    // ----------- Getters -----------
 
     /// @notice calculate amount of FEI and TRIBE received if the Genesis Group ended now.
     /// @param amountIn amount of FGEN held or equivalently amount of ETH purchasing with

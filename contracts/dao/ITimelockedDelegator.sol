@@ -48,6 +48,6 @@ interface ITimelockedDelegator {
     function totalDelegated() external view returns(uint);
 
 	/// @notice the TRIBE token contract
-    function tribe() external view returns(uint);
+    function tribe() external view returns(ITribe);
 
 }

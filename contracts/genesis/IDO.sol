@@ -1,19 +1,29 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./IDOInterface.sol";
-import "../refs/UniRef.sol";
-import "../utils/LinearTokenTimelock.sol";
 import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
+import "./IDOInterface.sol";
+import "../utils/LinearTokenTimelock.sol";
+import "../refs/UniRef.sol";
 
 /// @title IDOInterface implementation
 /// @author Fei Protocol
-contract IDO is UniRef, LinearTokenTimelock, IDOInterface {
+contract IDO is IDOInterface, UniRef, LinearTokenTimelock {
 
-	event Deploy(uint _amountFei, uint _amountTribe);
-
-	constructor(address core, address _beneficiary, uint32 _duration, address _pair, address _router) public
-		UniRef(core, _pair, _router, address(0))
+	/// @notice IDO constructor
+	/// @param _core Fei Core address to reference
+	/// @param _beneficiary the beneficiary to vest LP shares
+	/// @param _duration the duration of LP share vesting
+	/// @param _pair the Uniswap pair contract of the IDO
+	/// @param _router the Uniswap router contract
+	constructor(
+		address _core, 
+		address _beneficiary, 
+		uint32 _duration, 
+		address _pair, 
+		address _router
+	) public
+		UniRef(_core, _pair, _router, address(0)) // no oracle needed
 		LinearTokenTimelock(_beneficiary, _duration)
 	{
 		setLockedToken(_pair);
@@ -21,8 +31,10 @@ contract IDO is UniRef, LinearTokenTimelock, IDOInterface {
 
 	function deploy(Decimal.D256 calldata feiRatio) external override onlyGenesisGroup {
 		uint tribeAmount = tribeBalance();
+
 		uint feiAmount = feiRatio.mul(tribeAmount).asUint256();
 		_mintFei(feiAmount);
+
 		router.addLiquidity(
 	        address(tribe()),
 	        address(fei()),
@@ -33,6 +45,7 @@ contract IDO is UniRef, LinearTokenTimelock, IDOInterface {
 	        address(this),
 	        uint(-1)
 	    );
+
 	    emit Deploy(feiAmount, tribeAmount);
 	} 
 }
