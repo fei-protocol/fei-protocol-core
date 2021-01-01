@@ -1,9 +1,9 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./IPermissions.sol";
 import "../token/IFei.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /// @title Source of truth for Fei Protocol
 /// @author Fei Protocol
@@ -38,6 +38,7 @@ interface ICore is IPermissions {
 	function completeGenesisGroup() external;
 
     // ----------- Getters -----------
+
     /// @notice the address of the FEI contract
     /// @return fei contract
 	function fei() external view returns (IFei);

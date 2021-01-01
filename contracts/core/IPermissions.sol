@@ -1,8 +1,8 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "../token/IFei.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../token/IFei.sol";
 
 /// @title Access control module for Core
 /// @author Fei Protocol

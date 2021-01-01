@@ -1,12 +1,12 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Permissions.sol";
 import "./ICore.sol";
-import "../dao/Tribe.sol";
 import "../token/IFei.sol";
 import "../token/Fei.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../dao/Tribe.sol";
 
 /// @title ICore implementation
 /// @author Fei Protocol
@@ -14,6 +14,7 @@ contract Core is ICore, Permissions {
 
 	IFei public override fei;
 	IERC20 public override tribe;
+
 	address public override genesisGroup;
 	bool public override hasGenesisGroupCompleted;
 
@@ -38,14 +39,18 @@ contract Core is ICore, Permissions {
 	function allocateTribe(address to, uint amount) public override onlyGovernor {
 		IERC20 _tribe = tribe;
 		require(_tribe.balanceOf(address(this)) > amount, "Core: Not enough Tribe");
+
 		_tribe.transfer(to, amount);
+
 		emit TribeAllocation(to, amount);
 	}
 
 	function completeGenesisGroup() override external {
 		require(!hasGenesisGroupCompleted, "Core: Genesis Group already complete");
 		require(msg.sender == genesisGroup, "Core: Caller is not Genesis Group");
+
 		hasGenesisGroupCompleted = true;
+
 		// solhint-disable-next-line not-rely-on-time
 		emit GenesisPeriodComplete(now);
 	}

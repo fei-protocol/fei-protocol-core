@@ -100,12 +100,12 @@ describe('TimelockedDelegator', function () {
       describe('Single Delegation', function() {
         it('updates balances', async function() {
             expect(await this.tribe.balanceOf(this.delegator.address)).to.be.bignumber.equal(new BN(9900));
-            let delegatee = await this.delegator.delegateContracts(userAddress);
+            let delegatee = await this.delegator.delegateContract(userAddress);
             expect(await this.tribe.balanceOf(delegatee)).to.be.bignumber.equal(new BN(100));
         });
 
         it('updates delegated amount', async function() {
-            expect(await this.delegator.delegatedAmount()).to.be.bignumber.equal(new BN(100));
+            expect(await this.delegator.totalDelegated()).to.be.bignumber.equal(new BN(100));
         });
 
         it('maintains total token', async function() {
@@ -115,17 +115,17 @@ describe('TimelockedDelegator', function () {
 
       describe('Double Delegation', function() {
         beforeEach(async function() {
-          this.originalDelegatee = await this.delegator.delegateContracts(userAddress);
+          this.originalDelegatee = await this.delegator.delegateContract(userAddress);
           await this.delegator.delegate(userAddress, 100, {from: beneficiaryAddress});
         });
         it('updates balances', async function() {
             expect(await this.tribe.balanceOf(this.delegator.address)).to.be.bignumber.equal(new BN(9800));
-            let delegatee = await this.delegator.delegateContracts(userAddress);
+            let delegatee = await this.delegator.delegateContract(userAddress);
             expect(await this.tribe.balanceOf(delegatee)).to.be.bignumber.equal(new BN(200));
         });
 
         it('updates delegated amount', async function() {
-            expect(await this.delegator.delegatedAmount()).to.be.bignumber.equal(new BN(200));
+            expect(await this.delegator.totalDelegated()).to.be.bignumber.equal(new BN(200));
         });
 
         it('maintains total token', async function() {
@@ -139,7 +139,7 @@ describe('TimelockedDelegator', function () {
 
       describe('Undelegation', function() {
         beforeEach(async function() {
-          this.delegatee = await this.delegator.delegateContracts(userAddress);
+          this.delegatee = await this.delegator.delegateContract(userAddress);
           expectEvent(
               await this.delegator.undelegate(userAddress, {from: beneficiaryAddress}),
               'Undelegate',
@@ -155,7 +155,7 @@ describe('TimelockedDelegator', function () {
         });
 
         it('updates delegated amount', async function() {
-            expect(await this.delegator.delegatedAmount()).to.be.bignumber.equal(new BN(0));
+            expect(await this.delegator.totalDelegated()).to.be.bignumber.equal(new BN(0));
         });
 
         it('maintains total token', async function() {

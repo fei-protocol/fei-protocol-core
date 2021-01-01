@@ -1,8 +1,8 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./IPermissions.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "./IPermissions.sol";
 
 /// @title IPermissions implementation
 /// @author Fei Protocol

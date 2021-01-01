@@ -19,7 +19,7 @@ contract Tribe {
 
     /// @notice Total number of tokens in circulation
     // solhint-disable-next-line const-name-snakecase
-    uint public constant totalSupply = 10000000e18; // 10 million Tribe
+    uint public constant totalSupply = 1_000_000_000e18; // 1 billion Tribe
 
     /// @notice Allowance amounts on behalf of others
     mapping (address => mapping (address => uint96)) internal allowances;
