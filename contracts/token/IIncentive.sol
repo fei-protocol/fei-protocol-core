@@ -6,6 +6,8 @@ pragma solidity ^0.6.2;
 /// @dev should be appointed as a Minter or Burner as needed
 interface IIncentive {
 
+	// ----------- Fei only state changing api -----------
+
 	/// @notice apply incentives on transfer
 	/// @param sender the sender address of the FEI
 	/// @param receiver the receiver address of the FEI

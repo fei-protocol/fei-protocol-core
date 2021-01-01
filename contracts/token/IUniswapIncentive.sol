@@ -9,7 +9,15 @@ import "../external/Decimal.sol";
 /// @dev incentives are only appplied if the contract is appointed as a Minter or Burner, otherwise skipped
 interface IUniswapIncentive is IIncentive {
 
-	// Governor state changing api
+	// ----------- Events -----------
+
+    event TimeWeightUpdate(uint _weight, bool _active);
+
+    event GrowthRateUpdate(uint _growthRate);
+
+    event ExemptAddressUpdate(address indexed _account, bool _isExempt);
+
+	// ----------- Governor only state changing api -----------
 
 	/// @notice set an address to be exempted from Uniswap trading incentives
 	/// @param account the address to update
@@ -26,7 +34,7 @@ interface IUniswapIncentive is IIncentive {
 	/// @param active a flag signifying whether the time weight is currently growing or not
 	function setTimeWeight(uint32 blockNo, uint32 weight, uint32 growth, bool active) external;
 
-	// Getters
+	// ----------- Getters -----------
 
 	/// @notice return true if burn incentive equals mint
 	function isIncentiveParity() external view returns (bool);
