@@ -1,20 +1,27 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./IPCVDeposit.sol";
-import "../refs/UniRef.sol";
-import "../external/Decimal.sol";
 import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
+import "./IPCVDeposit.sol";
+import "../external/Decimal.sol";
+import "../refs/UniRef.sol";
 
 /// @title abstract implementation for Uniswap LP PCV Deposit
 /// @author Fei Protocol
 abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
 	using Decimal for Decimal.D256;
 
-    event Withdrawal(address indexed _caller, address indexed _to, uint _amount);
-
-	constructor (address core, address _pair, address _router, address _oracle) public
-		UniRef(core, _pair, _router, _oracle) {}
+	/// @notice Uniswap PCV Deposit constructor
+	/// @param _core Fei Core for reference
+	/// @param _pair Uniswap Pair to deposit to
+	/// @param _router Uniswap Router
+	/// @param _oracle oracle for reference
+	constructor(
+		address _core, 
+		address _pair, 
+		address _router, 
+		address _oracle
+	) public UniRef(_core, _pair, _router, _oracle) {}
 
 	function withdraw(address to, uint amountUnderlying) external override onlyPCVController {
     	uint totalUnderlying = totalValue();
@@ -25,8 +32,11 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
     	uint liquidityToWithdraw = ratioToWithdraw.mul(totalLiquidity).asUint256();
 
     	uint amountWithdrawn = _removeLiquidity(liquidityToWithdraw);
+		
     	_transferWithdrawn(to, amountWithdrawn);
+		
     	_burnFeiHeld();
+
     	emit Withdrawal(msg.sender, to, amountWithdrawn);
     }
 

@@ -15,6 +15,9 @@ abstract contract PCVSplitter {
 
 	event AllocationUpdate(address[] _pcvDeposits, uint[] _ratios);
 
+	/// @notice PCVSplitter constructor
+	/// @param _pcvDeposits list of PCV Deposits to split to
+	/// @param _ratios ratios for splitting PCV Deposit allocations
 	constructor(address[] memory _pcvDeposits, uint[] memory _ratios) public {
 		_setAllocation(_pcvDeposits, _ratios);
 	}
@@ -25,11 +28,14 @@ abstract contract PCVSplitter {
 	/// @return true if it is a valid allocation
 	function checkAllocation(address[] memory _pcvDeposits, uint[] memory _ratios) public pure returns (bool) {
 		require(_pcvDeposits.length == _ratios.length, "PCVSplitter: PCV Deposits and ratios are different lengths");
+
 		uint total;
 		for (uint i; i < _ratios.length; i++) {
 			total += _ratios[i];
 		}
+
 		require(total == ALLOCATION_GRANULARITY, "PCVSplitter: ratios do not total 100%");
+		
 		return true;
 	}
 	
@@ -48,8 +54,10 @@ abstract contract PCVSplitter {
 	/// @param _ratios new ratios corresponding to the PCV deposits. Must total ALLOCATION_GRANULARITY
 	function _setAllocation(address[] memory _pcvDeposits, uint[] memory _ratios) internal {
 		checkAllocation(_pcvDeposits, _ratios);
+
 		pcvDeposits = _pcvDeposits;
 		ratios = _ratios;
+
 		emit AllocationUpdate(_pcvDeposits, _ratios);
 	}
 
