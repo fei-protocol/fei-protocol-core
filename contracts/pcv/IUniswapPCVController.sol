@@ -6,12 +6,23 @@ import "../token/IUniswapIncentive.sol";
 /// @title a Uniswap PCV Controller interface
 /// @author Fei Protocol
 interface IUniswapPCVController {
-    // State updating API
+    
+    // ----------- Events -----------
+
+    event Reweight(address indexed _caller);
+
+	event PCVDepositUpdate(address indexed _pcvDeposit);
+
+	event ReweightIncentiveUpdate(uint _amount);
+
+	event ReweightMinDistanceUpdate(uint _basisPoints);
+
+    // ----------- State changing API -----------
 
     /// @notice reweights the linked PCV Deposit to the peg price. Needs to be reweight eligible
 	function reweight() external;
 
-    // Governor only state updating API
+    // ----------- Governor only state changing API -----------
 
     /// @notice reweights regardless of eligibility
     function forceReweight() external;
@@ -25,7 +36,7 @@ interface IUniswapPCVController {
     /// @notice sets the reweight min distance in basis points
 	function setReweightMinDistance(uint basisPoints) external;
 
-    // Getters
+    // ----------- Getters -----------
 
     /// @notice returns the linked pcv deposit contract
 	function pcvDeposit() external returns(IPCVDeposit);
