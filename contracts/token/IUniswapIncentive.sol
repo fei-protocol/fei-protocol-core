@@ -28,11 +28,11 @@ interface IUniswapIncentive is IIncentive {
 	function setTimeWeightGrowth(uint32 growthRate) external;
 
 	/// @notice sets all of the time weight parameters
-	/// @param blockNo the stored last block number of the time weight
+	// @param blockNo the stored last block number of the time weight
 	/// @param weight the stored last time weight
 	/// @param growth the growth rate of the time weight per block
 	/// @param active a flag signifying whether the time weight is currently growing or not
-	function setTimeWeight(uint32 blockNo, uint32 weight, uint32 growth, bool active) external;
+	function setTimeWeight(uint32 weight, uint32 growth, bool active) external;
 
 	// ----------- Getters -----------
 
