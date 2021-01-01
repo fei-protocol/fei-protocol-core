@@ -32,60 +32,64 @@ contract Permissions is IPermissions, AccessControl {
 		_;
 	}
 
-	function createRole(bytes32 role, bytes32 adminRole) public override onlyGovernor {
+	function createRole(bytes32 role, bytes32 adminRole) external override onlyGovernor {
 		_setRoleAdmin(role, adminRole);
 	}
 
-	function grantMinter(address minter) public override onlyGovernor {
+	function grantMinter(address minter) external override onlyGovernor {
 		grantRole(MINTER_ROLE, minter);
 	} 
 
-	function grantBurner(address burner) public override onlyGovernor {
+	function grantBurner(address burner) external override onlyGovernor {
 		grantRole(BURNER_ROLE, burner);
 	} 
 
-	function grantPCVController(address pcvController) public override onlyGovernor {
+	function grantPCVController(address pcvController) external override onlyGovernor {
 		grantRole(PCV_CONTROLLER_ROLE, pcvController);
 	}
 
-	function grantGovernor(address governor) public override onlyGovernor {
+	function grantGovernor(address governor) external override onlyGovernor {
 		grantRole(GOVERN_ROLE, governor);
 	}
 
-	function grantRevoker(address revoker) public override onlyGovernor {
+	function grantRevoker(address revoker) external override onlyGovernor {
 		grantRole(REVOKE_ROLE, revoker);
 	}
 
-	function revokeMinter(address minter) public override onlyGovernor {
+	function revokeMinter(address minter) external override onlyGovernor {
 		revokeRole(MINTER_ROLE, minter);
 	} 
 
-	function revokeBurner(address burner) public override onlyGovernor {
+	function revokeBurner(address burner) external override onlyGovernor {
 		revokeRole(BURNER_ROLE, burner);
 	} 
 
-	function revokePCVController(address pcvController) public override onlyGovernor {
+	function revokePCVController(address pcvController) external override onlyGovernor {
 		revokeRole(PCV_CONTROLLER_ROLE, pcvController);
 	}
 
-	function revokeGovernor(address governor) public override onlyGovernor {
+	function revokeGovernor(address governor) external override onlyGovernor {
 		revokeRole(GOVERN_ROLE, governor);
 	}
 
-	function revokeRevoker(address revoker) public override onlyGovernor {
+	function revokeRevoker(address revoker) external override onlyGovernor {
 		revokeRole(REVOKE_ROLE, revoker);
 	}
 
-	function revokeOverride(bytes32 role, address account) public override onlyRevoker {
+	function revokeOverride(bytes32 role, address account) external override onlyRevoker {
 		this.revokeRole(role, account);
 	}
 
-	function isMinter(address _address) public override view returns (bool) {
+	function isMinter(address _address) external override view returns (bool) {
 		return hasRole(MINTER_ROLE, _address);
 	}
 
-	function isBurner(address _address) public override view returns (bool) {
+	function isBurner(address _address) external override view returns (bool) {
 		return hasRole(BURNER_ROLE, _address);
+	}
+
+	function isPCVController(address _address) external override view returns (bool) {
+		return hasRole(PCV_CONTROLLER_ROLE, _address);
 	}
 
 	// only virtual for testing mock override
@@ -95,10 +99,6 @@ contract Permissions is IPermissions, AccessControl {
 
 	function isRevoker(address _address) public override view returns (bool) {
 		return hasRole(REVOKE_ROLE, _address);
-	}
-
-	function isPCVController(address _address) public override view returns (bool) {
-		return hasRole(PCV_CONTROLLER_ROLE, _address);
 	}
 
 	function _setupGovernor(address governor) internal {

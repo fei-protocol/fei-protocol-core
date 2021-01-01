@@ -27,16 +27,16 @@ contract Core is ICore, Permissions {
 		tribe = IERC20(address(_tribe));
 	}
 
-	function setFei(address token) public override onlyGovernor {
+	function setFei(address token) external override onlyGovernor {
 		fei = IFei(token);
 		emit FeiUpdate(token);
 	}
 
-	function setGenesisGroup(address _genesisGroup) public override onlyGovernor {
+	function setGenesisGroup(address _genesisGroup) external override onlyGovernor {
 		genesisGroup = _genesisGroup;
 	}
 
-	function allocateTribe(address to, uint amount) public override onlyGovernor {
+	function allocateTribe(address to, uint amount) external override onlyGovernor {
 		IERC20 _tribe = tribe;
 		require(_tribe.balanceOf(address(this)) > amount, "Core: Not enough Tribe");
 
@@ -45,7 +45,7 @@ contract Core is ICore, Permissions {
 		emit TribeAllocation(to, amount);
 	}
 
-	function completeGenesisGroup() override external {
+	function completeGenesisGroup() external override {
 		require(!hasGenesisGroupCompleted, "Core: Genesis Group already complete");
 		require(msg.sender == genesisGroup, "Core: Caller is not Genesis Group");
 

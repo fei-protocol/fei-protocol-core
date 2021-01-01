@@ -38,18 +38,18 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter {
 		_setScale(_scale);
 	}
 
-	function setScale(uint _scale) public override onlyGovernor {
+	function setScale(uint _scale) external override onlyGovernor {
 		_setScale(_scale);
 		emit ScaleUpdate(_scale);
 	}
 
-	function setBuffer(uint _buffer) public override onlyGovernor {
+	function setBuffer(uint _buffer) external override onlyGovernor {
 		require(_buffer < BUFFER_GRANULARITY, "BondingCurve: Buffer exceeds or matches granularity");
 		buffer = _buffer;
 		emit BufferUpdate(_buffer);
 	}
 
-	function setAllocation(address[] memory allocations, uint[] memory ratios) public override onlyGovernor {
+	function setAllocation(address[] calldata allocations, uint[] calldata ratios) external override onlyGovernor {
 		_setAllocation(allocations, ratios);
 	}
 
