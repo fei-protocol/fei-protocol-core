@@ -6,20 +6,26 @@ import "../external/Decimal.sol";
 /// @title generic oracle interface for Fei Protocol
 /// @author Fei Protocol
 interface IOracle {
+	
+    // ----------- Events -----------
 
-    // Open state changing API
+	event KillSwitchUpdate(bool _killSwitch);
+
+	event Update(uint _peg);
+
+    // ----------- State changing API -----------
 
     /// @notice updates the oracle price
     /// @return true if oracle is updated and false if unchanged
     function update() external returns (bool);
 
-    // Governor only state changing API
+    // ----------- Governor only state changing API -----------
 
     /// @notice sets the kill switch on the oracle feed
     /// @param _killSwitch the new value for the kill switch
     function setKillSwitch(bool _killSwitch) external;
 
-    // Getter functions
+    // ----------- Getters -----------
 
     /// @notice read the oracle price
     /// @return oracle price

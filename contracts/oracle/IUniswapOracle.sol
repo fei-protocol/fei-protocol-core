@@ -1,19 +1,23 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./IOracle.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
+import "./IOracle.sol";
 
 /// @title Uniswap oracle interface for Fei Protocol
 /// @author Fei Protocol
 /// @notice maintains the TWAP of a uniswap pair contract over a specified duration
 interface IUniswapOracle is IOracle {
-    // Governor only state changing API
+
+	// ----------- Events -----------
+    event DurationUpdate(uint32 _duration);
+
+    // ----------- Governor only state changing API -----------
 
     /// @notice set a new duration for the TWAP window
     function setDuration(uint32 _duration) external;
 
-    // Getter functions
+    // ----------- Getters -----------
 
     /// @notice the previous timestamp of the oracle snapshot
     function priorTimestamp() external returns(uint32);

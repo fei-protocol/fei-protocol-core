@@ -13,6 +13,7 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
 
 	IOracle public override uniswapOracle;
 	IBondingCurve public override bondingCurve;
+
 	bool public override killSwitch = true;
 
 	/// @notice the price in dollars at initialization
@@ -21,25 +22,29 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
 
 	event KillSwitchUpdate(bool _killSwitch);
 
-	// TODO remove hardcoded 4w
-	constructor(address _core, address _oracle, address _bondingCurve) public
-		CoreRef(_core)
-		Timed(4 weeks)
-	{
+	/// @notice BondingCurveOracle constructor
+	/// @param _core Fei Core to reference
+	/// @param _oracle Uniswap Oracle to report from
+	/// @param _bondingCurve Bonding curve to report from
+	/// @param _duration price thawing duration
+	constructor(
+		address _core, 
+		address _oracle, 
+		address _bondingCurve, 
+		uint32 _duration
+	) public CoreRef(_core) Timed(_duration) {
 		uniswapOracle = IOracle(_oracle);
 		bondingCurve = IBondingCurve(_bondingCurve);
 	}
 
-	function setKillSwitch(bool _killSwitch) public override onlyGovernor {
-		killSwitch = _killSwitch;
-		emit KillSwitchUpdate(_killSwitch);
-	}
-
-	function init(Decimal.D256 memory initialPeg) public override onlyGenesisGroup {
+	function init(Decimal.D256 calldata initialPeg) external override onlyGenesisGroup {
     	killSwitch = false;
+
     	(Decimal.D256 memory uniswapPeg, bool valid) = uniswapOracle.read();
 		require(valid, "BondingCurveOracle: Uniswap Oracle not valid");
+
     	initialPrice = uniswapPeg.div(initialPeg);
+
 		_initTimed();
     }
 
@@ -54,6 +59,11 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
     	(Decimal.D256 memory peg, bool valid) = getOracleValue();
     	return (thaw(peg), valid);
     }
+
+	function setKillSwitch(bool _killSwitch) external override onlyGovernor {
+		killSwitch = _killSwitch;
+		emit KillSwitchUpdate(_killSwitch);
+	}
 
     function thaw(Decimal.D256 memory peg) internal view returns (Decimal.D256 memory) {
     	if (isTimeEnded()) {

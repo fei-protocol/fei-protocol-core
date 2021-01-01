@@ -9,6 +9,8 @@ contract BondingCurveOrchestrator is Ownable {
 	uint public scale = 250_000_000e18;
 	// uint public scale = 250_000_000; // TEST MODE
 
+	uint32 public thawingDuration = 4 weeks;
+
 	function init(
 		address core, 
 		address uniswapOracle, 
@@ -25,7 +27,7 @@ contract BondingCurveOrchestrator is Ownable {
 		address[] memory allocations = new address[](1);
 		allocations[0] = address(ethUniswapPCVDeposit);
 		ethBondingCurve = address(new EthBondingCurve(scale, core, allocations, ratios, uniswapOracle));
-		bondingCurveOracle = address(new BondingCurveOracle(core, uniswapOracle, address(ethBondingCurve)));
+		bondingCurveOracle = address(new BondingCurveOracle(core, uniswapOracle, address(ethBondingCurve), thawingDuration));
 		return (
 			ethUniswapPCVDeposit,
 			ethBondingCurve,

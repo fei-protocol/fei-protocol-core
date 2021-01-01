@@ -5,9 +5,9 @@ pragma experimental ABIEncoderV2;
 // Referencing Uniswap Example Simple Oracle
 // https://github.com/Uniswap/uniswap-v2-periphery/blob/master/contracts/examples/ExampleOracleSimple.sol
 
+import "@uniswap/v2-periphery/contracts/libraries/UniswapV2OracleLibrary.sol";
 import "./IUniswapOracle.sol";
 import "../refs/CoreRef.sol";
-import "@uniswap/v2-periphery/contracts/libraries/UniswapV2OracleLibrary.sol";
 
 /// @title IUniswapOracle implementation contract
 /// @author Fei Protocol
@@ -15,30 +15,40 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 	using Decimal for Decimal.D256;
 
 	IUniswapV2Pair public override pair;
-	Decimal.D256 private twap = Decimal.zero();
-	uint public override priorCumulative; 
-	uint32 public override priorTimestamp;
-	uint32 public override duration;
-	bool public override killSwitch;
 	bool private isPrice0;
 
-	event KillSwitchUpdate(bool _killSwitch);
-	event DurationUpdate(uint32 _duration);
-	event Update(uint _twap);
+	uint public override priorCumulative; 
+	uint32 public override priorTimestamp;
 
-	constructor(address _core, address _pair, uint32 _duration, bool _isPrice0) public
-		CoreRef(_core)
-	{
+	Decimal.D256 private twap = Decimal.zero();
+	uint32 public override duration;
+
+	bool public override killSwitch;
+
+	/// @notice UniswapOracle constructor
+	/// @param _core Fei Core for reference
+	/// @param _pair Uniswap Pair to provide TWAP
+	/// @param _duration TWAP duration
+	/// @param _isPrice0 flag for using token0 or token1 for cumulative on Uniswap
+	constructor(
+		address _core, 
+		address _pair, 
+		uint32 _duration,
+		bool _isPrice0
+	) public CoreRef(_core) {
 		pair = IUniswapV2Pair(_pair);
-		duration = _duration;
-		// Relative to USD/ETH price
+		// Relative to USD per ETH price
 		isPrice0 = _isPrice0;
+
+		duration = _duration;
+
 		_init();
 	}
 
 	function update() external override returns (bool) {
 		(uint price0Cumulative, uint price1Cumulative, uint32 currentTimestamp) =
             UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
+
 		uint32 deltaTimestamp = currentTimestamp - priorTimestamp;
 		if(currentTimestamp <= priorTimestamp || deltaTimestamp < duration) {
 			return false;
@@ -52,7 +62,9 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 
 		priorTimestamp = currentTimestamp;
 		priorCumulative = currentCumulative;
+
 		emit Update(_twap.asUint256());
+
 		return true;
 	}
 
@@ -61,12 +73,12 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
     	return (twap, valid);
     }
  
-	function setKillSwitch(bool _killSwitch) public override onlyGovernor {
+	function setKillSwitch(bool _killSwitch) external override onlyGovernor {
 		killSwitch = _killSwitch;
 		emit KillSwitchUpdate(_killSwitch);
 	}
 
-	function setDuration(uint32 _duration) public override onlyGovernor {
+	function setDuration(uint32 _duration) external override onlyGovernor {
 		duration = _duration;
 		emit DurationUpdate(_duration);
 	}
@@ -74,7 +86,9 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 	function _init() internal {
         uint price0Cumulative = pair.price0CumulativeLast();
         uint price1Cumulative = pair.price1CumulativeLast();
+
         (,, uint32 currentTimestamp) = pair.getReserves();
+
         priorTimestamp = currentTimestamp;
 		priorCumulative = _getCumulative(price0Cumulative, price1Cumulative);
 	}

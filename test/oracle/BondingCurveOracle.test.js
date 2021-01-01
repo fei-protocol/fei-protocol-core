@@ -17,8 +17,9 @@ describe('BondingCurveOracle', function () {
     this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
     this.mockOracle = await MockOracle.new(500);
     this.bondingCurve = await MockBondingCurve.new(false, 80000);
-
-    this.oracle = await BondingCurveOracle.new(this.core.address, this.mockOracle.address, this.bondingCurve.address);
+    
+    let duration = 4 * 7 * 24 * 60 * 60;
+    this.oracle = await BondingCurveOracle.new(this.core.address, this.mockOracle.address, this.bondingCurve.address, duration);
   });
 
   describe('Read', function() {

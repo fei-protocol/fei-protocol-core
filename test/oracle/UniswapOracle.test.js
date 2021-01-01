@@ -94,7 +94,7 @@ describe('UniswapOracle', function () {
         expectEvent(
             await this.oracle.update(),
             'Update',
-            { _twap: '10384593717069655257060992658440' }
+            { _peg: '10384593717069655257060992658440' }
           );
       });
 
