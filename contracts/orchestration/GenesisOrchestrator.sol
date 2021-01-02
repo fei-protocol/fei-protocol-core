@@ -15,7 +15,8 @@ contract GenesisOrchestrator is Ownable {
 	function init(
 		address core, 
 		address ethBondingCurve, 
-		address ido
+		address ido, 
+		address tribeFeiPair
 	) public onlyOwner returns (address genesisGroup, address pool) {
 		genesisGroup = address(new GenesisGroup(
 			core, 
@@ -26,7 +27,7 @@ contract GenesisOrchestrator is Ownable {
 			EXCHANGE_RATE_DISCOUNT,
 			msg.sender
 		));
-		pool = address(new FeiPool(core, POOL_DURATION));
+		pool = address(new FeiPool(core, tribeFeiPair, POOL_DURATION));
 		return (genesisGroup, pool);
 	}
 

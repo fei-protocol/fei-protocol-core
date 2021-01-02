@@ -4,20 +4,21 @@ pragma experimental ABIEncoderV2;
 import "./Pool.sol";
 import "../refs/CoreRef.sol";
 
-/// @title A Pool for earning TRIBE with staked FEI
+/// @title A Pool for earning TRIBE with staked FEI/TRIBE LP tokens
 /// @author Fei Protocol
-/// @notice deposited FEI will earn TRIBE over time at a linearly decreasing rate
+/// @notice deposited LP tokens will earn TRIBE over time at a linearly decreasing rate
 contract FeiPool is Pool, CoreRef {
 	
 	/// @notice Fei Pool constructor
 	/// @param _core Fei Core to reference
+	/// @param _pair Uniswap pair to stake
 	/// @param _duration duration of staking rewards
-	constructor(address _core, uint32 _duration) public 
+	constructor(address _core, address _pair, uint32 _duration) public 
 		CoreRef(_core) Pool(_duration, "Fei USD Pool", "FPOOL") 
 	{
 		_setTokens(
 			address(tribe()),
-			address(fei())
+			_pair
 		);
 	}
 

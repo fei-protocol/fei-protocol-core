@@ -14,11 +14,13 @@ describe('Pool', function () {
   beforeEach(async function () {
     this.core = await Core.new({from: governorAddress});
     this.window = new BN(2 * 365 * 24 * 60 * 60);
-    this.pool = await FeiPool.new(this.core.address, this.window);
+    this.tribe = await Tribe.at(await this.core.tribe());
+    this.fei = await Fei.at(await this.core.fei());
+
+    // Using FEI instead of LP tokens as same effect
+    this.pool = await FeiPool.new(this.core.address, this.fei.address, this.window);
 
     this.core.grantMinter(minterAddress, {from: governorAddress});
-    this.fei = await Fei.at(await this.core.fei());
-    this.tribe = await Tribe.at(await this.core.tribe());
     this.fei.mint(userAddress, 100, {from: minterAddress});
     this.fei.approve(this.pool.address, 10000, {from: userAddress});
     this.fei.mint(secondUserAddress, 100, {from: minterAddress});

@@ -64,7 +64,8 @@ interface IGenesisOrchestrator {
 	function init(
 		address core, 
 		address ethBondingCurve, 
-		address ido
+		address ido,
+		address tribeFeiPair
 	) external returns (address genesisGroup, address pool);
 	function detonate() external;
 }
@@ -216,7 +217,8 @@ contract CoreOrchestrator is Ownable {
 		(genesisGroup, pool) = genesisOrchestrator.init(
 			address(core), 
 			ethBondingCurve, 
-			ido
+			ido,
+			tribeFeiPair
 		);
 		core.setGenesisGroup(genesisGroup);
 		core.allocateTribe(genesisGroup, tribeSupply * GENESIS_TRIBE_PERCENTAGE / 100);
