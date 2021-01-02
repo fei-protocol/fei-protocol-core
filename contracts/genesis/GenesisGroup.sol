@@ -151,8 +151,12 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		return Decimal.ratio(balanceOf(account), totalSupply());
 	}
 
-	function _feiTribeExchangeRate() internal view returns (Decimal.D256 memory) {
+	function _feiTribeExchangeRate() public view returns (Decimal.D256 memory) {
 		return Decimal.ratio(feiBalance(), tribeBalance()).div(exchangeRateDiscount);
+	}
+
+	function _feiTribeExchangeRate2() public view returns (Decimal.D256 memory) {
+		return Decimal.ratio(feiBalance(), tribeBalance());
 	}
 
 	function _feiEthExchangeRate() internal view returns (Decimal.D256 memory) {

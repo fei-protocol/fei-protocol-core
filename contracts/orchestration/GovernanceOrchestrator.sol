@@ -1,14 +1,12 @@
 pragma solidity ^0.6.0;
 
-import "../dao/GovernorAlpha.sol";
-import "../dao/Timelock.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "../dao/Timelock.sol";
+import "../dao/GovernorAlpha.sol";
 
 contract GovernanceOrchestrator is Ownable {
 
-	uint public timelockDelay = 3 days;
-
-	function init(address admin, address tribe) public onlyOwner returns (
+	function init(address admin, address tribe, uint timelockDelay) public onlyOwner returns (
 		address governorAlpha, address timelock
 	) {
 		timelock = address(new Timelock(admin, timelockDelay));

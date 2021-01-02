@@ -75,18 +75,18 @@ module.exports = async function(callback) {
   console.log(await tribe.balanceOf(await td.address));
   console.log('Staking pool stake: + fpool');
   await fei.approve(await pool.address, 10000, {from: accounts[0]});
-  let staked = await pool.deposit(10000, {from: accounts[0]});
+  let staked = await pool.deposit(accounts[0], 10000, {from: accounts[0]});
   console.log(staked['receipt']['gasUsed']);
   console.log(await pool.balanceOf(accounts[0]));
   console.log('Bonding Curve Purchase + before/afer at scale + balances');
   console.log(await bc.atScale());
   console.log(await fei.balanceOf(accounts[0]));
 
-  let bcPurchase = await bc.purchase(300000, accounts[0], {from: accounts[0], value: 300000});
+  let bcPurchase = await bc.purchase(accounts[0], 300000, {from: accounts[0], value: 300000});
   console.log(bcPurchase['receipt']['gasUsed']);
   console.log(await bc.atScale());
   console.log(await fei.balanceOf(accounts[0]));
-  bcPurchase = await bc.purchase(100000, accounts[0], {from: accounts[0], value: 100000});
+  bcPurchase = await bc.purchase(accounts[0], accounts[0], {from: accounts[0], value: 100000});
   console.log(bcPurchase['receipt']['gasUsed']);
   console.log(await bc.atScale());
   console.log(await fei.balanceOf(accounts[0]));
@@ -100,7 +100,7 @@ module.exports = async function(callback) {
   console.log('Claim + pool fei before/after');
   console.log(await pool.balanceOf(accounts[0]));
   await fei.approve(await pool.address, 100000, {from: accounts[0]});
-  let claimed = await pool.claim(accounts[0], {from: accounts[0]});
+  let claimed = await pool.claim(accounts[0], accounts[0], {from: accounts[0]});
   console.log(claimed['receipt']['gasUsed']);
   console.log(await pool.balanceOf(accounts[0]));
   callback();

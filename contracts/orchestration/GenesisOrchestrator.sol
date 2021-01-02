@@ -1,33 +1,31 @@
 pragma solidity ^0.6.0;
 
-import "../genesis/GenesisGroup.sol";
-import "../pool/FeiPool.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "../pool/FeiPool.sol";
+import "../genesis/GenesisGroup.sol";
 
 contract GenesisOrchestrator is Ownable {
-
-	uint32 public constant GENESIS_DURATION = 3 days;
-	// uint public constant GENESIS_DURATION = 40; // TEST MODE
-	uint public constant MAX_PRICE_BPS = 9000;
-	uint public constant EXCHANGE_RATE_DISCOUNT = 10;
-	uint32 public constant POOL_DURATION = 2 * 365 days;
 
 	function init(
 		address core, 
 		address ethBondingCurve, 
 		address ido, 
-		address tribeFeiPair
+		address tribeFeiPair,
+		uint32 genesisDuration,
+		uint maxPriceBPs,
+		uint exhangeRateDiscount,
+		uint32 poolDuration
 	) public onlyOwner returns (address genesisGroup, address pool) {
 		genesisGroup = address(new GenesisGroup(
 			core, 
 			ethBondingCurve, 
 			ido, 
-			GENESIS_DURATION, 
-			MAX_PRICE_BPS, 
-			EXCHANGE_RATE_DISCOUNT,
+			genesisDuration, 
+			maxPriceBPs, 
+			exhangeRateDiscount,
 			msg.sender
 		));
-		pool = address(new FeiPool(core, tribeFeiPair, POOL_DURATION));
+		pool = address(new FeiPool(core, tribeFeiPair, poolDuration));
 		return (genesisGroup, pool);
 	}
 

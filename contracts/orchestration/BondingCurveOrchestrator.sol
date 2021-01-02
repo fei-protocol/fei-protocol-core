@@ -1,21 +1,19 @@
 pragma solidity ^0.6.0;
 
-import "../pcv/EthUniswapPCVDeposit.sol";
-import "../bondingcurve/EthBondingCurve.sol";
-import "../oracle/BondingCurveOracle.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "../pcv/EthUniswapPCVDeposit.sol";
+import "../oracle/BondingCurveOracle.sol";
+import "../bondingcurve/EthBondingCurve.sol";
 
 contract BondingCurveOrchestrator is Ownable {
-	uint public scale = 250_000_000e18;
-	// uint public scale = 250_000_000; // TEST MODE
-
-	uint32 public thawingDuration = 4 weeks;
 
 	function init(
 		address core, 
 		address uniswapOracle, 
 		address pair, 
-		address router
+		address router, 
+		uint scale,
+		uint32 thawingDuration
 	) public onlyOwner returns(
 		address ethUniswapPCVDeposit,
 		address ethBondingCurve,

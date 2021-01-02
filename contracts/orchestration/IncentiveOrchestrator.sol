@@ -1,21 +1,21 @@
 pragma solidity ^0.6.0;
 
-import "../token/UniswapIncentive.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "../token/UniswapIncentive.sol";
 
 contract IncentiveOrchestrator is Ownable {
 
 	UniswapIncentive public uniswapIncentive;
 
-	uint32 public constant DEFAULT_INCENTIVE_GROWTH_RATE = 333; // about 1 unit per hour assuming 12s block time
 
 	function init(
 		address core,
 		address bondingCurveOracle, 
 		address pair, 
-		address router
+		address router,
+		uint32 growthRate
 	) public onlyOwner returns(address) {
-		return address(new UniswapIncentive(core, bondingCurveOracle, pair, router, DEFAULT_INCENTIVE_GROWTH_RATE));
+		return address(new UniswapIncentive(core, bondingCurveOracle, pair, router, growthRate));
 	}
 
 	function detonate() public onlyOwner {
