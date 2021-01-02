@@ -26,6 +26,10 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 
 	IBondingCurve private bondingcurve;
 
+	IBondingCurveOracle private bondingCurveOracle;
+
+	IPool private pool;
+
 	IDOInterface private ido;
 	uint private exchangeRateDiscount;
 
@@ -36,18 +40,20 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 	/// @param _core Fei Core address to reference
 	/// @param _bondingcurve Bonding curve address for purchase
 	/// @param _ido IDO contract to deploy
+	/// @param _oracle Bonding curve oracle
+	/// @param _pool Staking Pool
 	/// @param _duration duration of the Genesis Period
 	/// @param _maxPriceBPs max price of FEI allowed in Genesis Group in dollar terms
 	/// @param _exchangeRateDiscount a divisor on the FEI/TRIBE ratio at Genesis to deploy to the IDO
-	/// @param _orchestrator an orchestrator to launch governance from
 	constructor(
 		address _core, 
 		address _bondingcurve,
 		address _ido,
+		address _oracle,
+		address _pool,
 		uint32 _duration,
 		uint _maxPriceBPs,
-		uint _exchangeRateDiscount,
-		address _orchestrator
+		uint _exchangeRateDiscount
 	) public
 		CoreRef(_core)
 		ERC20("Fei Genesis Group", "FGEN")
@@ -58,11 +64,12 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		exchangeRateDiscount = _exchangeRateDiscount;
 		ido = IDOInterface(_ido);
 
+		pool = IPool(_pool);
+		bondingCurveOracle = IBondingCurveOracle(_oracle);
+
 		_initTimed();
 
 		maxGenesisPrice = Decimal.ratio(_maxPriceBPs, 10000);
-
-		orchestrator = IOrchestrator(_orchestrator);
 	}
 
 	modifier onlyGenesisPeriod() {
@@ -100,15 +107,13 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 
 		core().completeGenesisGroup();
 
-		orchestrator.launchGovernance();
-
-		IBondingCurveOracle(orchestrator.bondingCurveOracle()).init(_feiEthExchangeRate());
+		bondingCurveOracle.init(_feiEthExchangeRate());
 
 		address genesisGroup = address(this);
 		uint balance = genesisGroup.balance;
 		bondingcurve.purchase{value: balance}(genesisGroup, balance);
 
-		IPool(orchestrator.pool()).init();
+		pool.init();
 
 		ido.deploy(_feiTribeExchangeRate());
 

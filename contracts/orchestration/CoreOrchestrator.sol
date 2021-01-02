@@ -72,6 +72,7 @@ interface IGenesisOrchestrator {
 		address ethBondingCurve, 
 		address ido,
 		address tribeFeiPair,
+		address oracle,
 		uint32 genesisDuration,
 		uint maxPriceBPs,
 		uint exhangeRateDiscount,
@@ -260,6 +261,7 @@ contract CoreOrchestrator is Ownable {
 			ethBondingCurve, 
 			ido,
 			tribeFeiPair,
+			bondingCurveOracle,
 			GENESIS_DURATION,
 			MAX_GENESIS_PRICE_BPS,
 			EXCHANGE_RATE_DISCOUNT,
@@ -278,11 +280,6 @@ contract CoreOrchestrator is Ownable {
 			TIMELOCK_DELAY
 		);
 		governanceOrchestrator.detonate();
-	}
-
-	function launchGovernance() public {
-		require(msg.sender == core.genesisGroup(), "CoreOrchestrator: Caller is not GenesisGroup");
-		require(core.hasGenesisGroupCompleted(), "CoreOrchestrator: Still in Genesis Period");
 		core.grantGovernor(timelock);
 	}
 }

@@ -11,21 +11,23 @@ contract GenesisOrchestrator is Ownable {
 		address ethBondingCurve, 
 		address ido, 
 		address tribeFeiPair,
+		address oracle,
 		uint32 genesisDuration,
 		uint maxPriceBPs,
 		uint exhangeRateDiscount,
 		uint32 poolDuration
 	) public onlyOwner returns (address genesisGroup, address pool) {
+		pool = address(new FeiPool(core, tribeFeiPair, poolDuration));
 		genesisGroup = address(new GenesisGroup(
 			core, 
 			ethBondingCurve, 
-			ido, 
+			ido,
+			oracle,
+			pool, 
 			genesisDuration, 
 			maxPriceBPs, 
-			exhangeRateDiscount,
-			msg.sender
+			exhangeRateDiscount
 		));
-		pool = address(new FeiPool(core, tribeFeiPair, poolDuration));
 		return (genesisGroup, pool);
 	}
 
