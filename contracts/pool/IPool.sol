@@ -9,29 +9,32 @@ interface IPool {
 
 	// ----------- Events -----------
 
-    event Claim(address indexed _account, uint _amountReward);
+    event Claim(address indexed _from, address indexed _to, uint _amountReward);
 
-    event Deposit(address indexed _account, uint _amountStaked);
+    event Deposit(address indexed _from, address indexed _to, uint _amountStaked);
 
-    event Withdraw(address indexed _account, uint _amountStaked, uint _amountReward);
+    event Withdraw(address indexed _from, address indexed _to, uint _amountStaked, uint _amountReward);
 
     // ----------- State changing API -----------
 
     /// @notice collect redeemable rewards without unstaking
-    /// @param account the account to claim for
+    /// @param from the account to claim for
+    /// @param to the account to send rewards to
     /// @return the amount of reward claimed
     /// @dev redeeming on behalf of another account requires ERC-20 approval of the pool tokens
-    function claim(address account) external returns(uint);
+    function claim(address from, address to) external returns(uint);
     
     /// @notice deposit staked tokens
+    /// @param to the account to deposit to
     /// @param amount the amount of staked to deposit
     /// @dev requires ERC-20 approval of stakedToken for the Pool contract
-    function deposit(uint amount) external;
+    function deposit(address to, uint amount) external;
 
     /// @notice claim all rewards and withdraw stakedToken
+    /// @param to the account to send withdrawn tokens to
     /// @return amountStaked the amount of stakedToken withdrawn
     /// @return amountReward the amount of rewardToken received
-    function withdraw() external returns(uint amountStaked, uint amountReward);
+    function withdraw(address to) external returns(uint amountStaked, uint amountReward);
     
     /// @notice initializes the pool start time. Only callable once
     function init() external;
