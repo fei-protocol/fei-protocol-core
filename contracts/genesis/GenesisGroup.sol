@@ -107,10 +107,11 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 
 		core().completeGenesisGroup();
 
-		bondingCurveOracle.init(_feiEthExchangeRate());
-
 		address genesisGroup = address(this);
 		uint balance = genesisGroup.balance;
+
+		bondingCurveOracle.init(bondingcurve.getAveragePrice(balance));
+
 		bondingcurve.purchase{value: balance}(genesisGroup, balance);
 
 		pool.init();
@@ -158,14 +159,5 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 
 	function _feiTribeExchangeRate() public view returns (Decimal.D256 memory) {
 		return Decimal.ratio(feiBalance(), tribeBalance()).div(exchangeRateDiscount);
-	}
-
-	function _feiTribeExchangeRate2() public view returns (Decimal.D256 memory) {
-		return Decimal.ratio(feiBalance(), tribeBalance());
-	}
-
-	function _feiEthExchangeRate() internal view returns (Decimal.D256 memory) {
-		(uint amountFei, ) = getAmountOut(totalSupply(), true); 
-		return Decimal.ratio(amountFei, totalSupply());
 	}
 }

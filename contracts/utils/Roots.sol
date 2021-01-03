@@ -19,12 +19,12 @@ library Roots {
 
     // x^(3/2);
     function threeHalfsRoot(uint x) internal pure returns (uint) {
-        return sqrt(x ** 3);
+        return sqrt(x) ** 3;
     }
 
     // x^(2/3);
     function twoThirdsRoot(uint x) internal pure returns (uint) {
-        return cubeRoot(x * x);
+        return cubeRoot(x) ** 2;
     }
 
     function sqrt(uint y) internal pure returns (uint) {

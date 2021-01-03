@@ -33,7 +33,7 @@ describe('BondingCurveOracle', function () {
 
     describe('Initialized', function() {
       beforeEach(async function() {
-        await this.oracle.init(['1000000000000000000000'], {from: genesisGroup});
+        await this.oracle.init(['500000000000000000'], {from: genesisGroup});
       });
 
       describe('Kill switch', function() {

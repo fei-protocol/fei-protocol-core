@@ -121,7 +121,7 @@ contract CoreOrchestrator is Ownable {
 
 	uint32 public constant INCENTIVE_GROWTH_RATE = TEST_MODE ? 10_000 : 333; // about 1 unit per hour assuming 12s block time
 
-	uint public constant SCALE = TEST_MODE ? 250_000_000 : 250_000_000e18;
+	uint public constant SCALE = 250_000_000e18;
 
 	uint public constant REWEIGHT_INCENTIVE = 100e18;
 	uint public constant MIN_REWEIGHT_DISTANCE_BPS = 100;

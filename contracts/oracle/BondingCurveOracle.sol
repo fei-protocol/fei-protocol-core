@@ -37,17 +37,6 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
 		bondingCurve = IBondingCurve(_bondingCurve);
 	}
 
-	function init(Decimal.D256 calldata initialPeg) external override onlyGenesisGroup {
-    	killSwitch = false;
-
-    	(Decimal.D256 memory uniswapPeg, bool valid) = uniswapOracle.read();
-		require(valid, "BondingCurveOracle: Uniswap Oracle not valid");
-
-    	initialPrice = uniswapPeg.div(initialPeg);
-
-		_initTimed();
-    }
-
 	function update() external override returns (bool) {
 		return uniswapOracle.update();
 	}
@@ -64,6 +53,14 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
 		killSwitch = _killSwitch;
 		emit KillSwitchUpdate(_killSwitch);
 	}
+
+	function init(Decimal.D256 memory _initialPrice) public override onlyGenesisGroup {
+    	killSwitch = false;
+
+    	initialPrice = _initialPrice;
+
+		_initTimed();
+    }
 
     function thaw(Decimal.D256 memory peg) internal view returns (Decimal.D256 memory) {
     	if (isTimeEnded()) {
