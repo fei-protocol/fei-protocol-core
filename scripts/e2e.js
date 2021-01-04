@@ -13,6 +13,7 @@ const EthBondingCurve = artifacts.require("EthBondingCurve");
 const UniswapOracle = artifacts.require("UniswapOracle");
 const BondingCurveOracle = artifacts.require("BondingCurveOracle");
 const EthUniswapPCVController = artifacts.require("EthUniswapPCVController");
+const UniswapIncentive = artifacts.require("UniswapIncentive");
 
 module.exports = async function(callback) {
   let accounts = await web3.eth.getAccounts();
@@ -29,6 +30,7 @@ module.exports = async function(callback) {
   let ethPair = await IUniswapV2Pair.at(await co.ethFeiPair());
   let uo = await UniswapOracle.at(await co.uniswapOracle());
   let bco = await BondingCurveOracle.at(await co.bondingCurveOracle());
+  let ui = await UniswapIncentive.at(await co.uniswapIncentive());
   let controller = await EthUniswapPCVController.at(await co.ethUniswapPCVController());
 
   console.log('Init');
@@ -36,18 +38,13 @@ module.exports = async function(callback) {
 
   let ggPurchase = await gg.purchase(accounts[0], ethAmount, {from: accounts[0], value: ethAmount});
   let ggPurchaseGas = ggPurchase['receipt']['gasUsed'];
-  console.log(`Genesis Group Purchase of ${stringify(ethAmount)}: gas ${ggPurchaseGas}`); 
+  console.log(`Genesis Group Purchase of ${stringify(ethAmount)}`); 
   
   console.log('Sleeping for 60s');
   await sleep(60000);
   await uo.update();
   let price = await uo.read();
-  console.log(`Oracles: price ${price[0] / 1e18}`);
-
-  let bcAdjusted = await bc.getAdjustedAmount(ethAmount);
-  let amountOut = await bc._getBondingCurveAmountOut(bcAdjusted);
-  let bcPrice = await bc.getAveragePrice(ethAmount);
-  console.log(`BC avg=${bcPrice}, adjusted=${bcAdjusted}, amtOut=${amountOut}`);
+  console.log(`Uniswap Oracle: price ${price[0] / 1e18}`);
 
   let launch = await gg.launch({from: accounts[0]});
   let launchGas = launch['receipt']['gasUsed'];
@@ -55,83 +52,96 @@ module.exports = async function(callback) {
   let bcoInitPrice = await bco.initialPrice();
   let ggFei = await fei.balanceOf(await gg.address);
   let ggTribe = await tribe.balanceOf(await gg.address);
-  let deployRatio = ggFei.div(ggTribe).div(new BN(10));
-  console.log(`Launch: gas=${launchGas}, complete=${coreComplete}, initPrice= ${bcoInitPrice}, fei=${stringify(ggFei)}, tribe=${stringify(ggTribe)}, deployRatio=${deployRatio}`); 
+  console.log(`GG Launch: complete=${coreComplete}, initPrice= ${bcoInitPrice / 1e18}, fei=${stringify(ggFei)}, tribe=${stringify(ggTribe)}`); 
 
-
-  console.log('User Fei/Total Supply, Tribe balance:');
-  console.log(await fei.balanceOf(accounts[0]));
-  console.log(await fei.totalSupply());
-  console.log(await tribe.balanceOf(accounts[0]));
-  console.log('Redeem (gas, user fei, user tribe):');
   let redeem = await gg.redeem(accounts[0]);
-  console.log(redeem['receipt']['gasUsed']);
-  console.log(await fei.balanceOf(accounts[0]));
-  console.log(await tribe.balanceOf(accounts[0]));
+  let redeemGas = redeem['receipt']['gasUsed'];
+  let redeemFei = await fei.balanceOf(accounts[0]);
+  let redeemTribe = await tribe.balanceOf(accounts[0]);
+  console.log(`GG Redeem: fei=${stringify(redeemFei)}, tribe=${stringify(redeemTribe)}`);
 
   let idoReserves = await ido.getReserves();
+  let feiIdoReserves = idoReserves[0];
+  let tribeIdoReserves = idoReserves[1];
+  let idoTotalLiquidity  = await pair.totalSupply();
 
-  console.log('IDO redeem + updated balance/total:');
+  console.log(`IDO Reserves: fei=${stringify(feiIdoReserves)}, tribe=${stringify(tribeIdoReserves)}, liquidity=${stringify(idoTotalLiquidity)}`);
   let idoRedeem = await ido.release({from: accounts[0]});
-  console.log(idoRedeem['receipt']['gasUsed']);
+  let idoRedeemGas = idoRedeem['receipt']['gasUsed'];
   let idoLiquidity = await pair.balanceOf(accounts[0]);
-  console.log(idoLiquidity);
-  console.log(await pair.totalSupply());
-  console.log('IDO burn + updated reserves');
-  await pair.transfer(await pair.address, idoLiquidity, {from: accounts[0]});
-  await pair.burn(accounts[0]);
-  console.log(await ido.getReserves());
-  console.log('TRIBE claim: (with before + after balances)');
-  console.log(await tribe.balanceOf(accounts[0]));
-  let tribeRedeem = await td.release({from: accounts[0]});
-  console.log(tribeRedeem['receipt']['gasUsed']);
-  console.log(await tribe.balanceOf(accounts[0]));
-  console.log('TRIBE delegation: (with before + after delegation/delegator balance)');
-  console.log(await tribe.getCurrentVotes(accounts[1]));
-  console.log(await tribe.balanceOf(await td.address));
-  let delegation = await td.delegate(accounts[1], ethAmount, {from: accounts[0]});
-  console.log(delegation['receipt']['gasUsed']);
-  console.log(await tribe.getCurrentVotes(accounts[1]));
-  console.log(await tribe.balanceOf(await td.address));
 
-  console.log('Pair minting');
-  await fei.transfer(await pair.address, ethAmount, {from: accounts[0]});
-  await tribe.transfer(await pair.address, '10000000000000000000000', {from: accounts[0]});
-  await pair.mint(accounts[0], {from: accounts[0]});
+  console.log(`IDO Redeem: liquidity=${stringify(idoLiquidity)}`);
+
+  let adminPreRedeemedTribe = await tribe.balanceOf(accounts[0]);
+  let adminTribeRedeem = await td.release({from: accounts[0]})
+  let adminTribeRedeemGas = adminTribeRedeem['receipt']['gasUsed'];
+  let adminPostRedeemedTribe = await tribe.balanceOf(accounts[0]);
+  let adminNetRedeemed = adminPostRedeemedTribe.sub(adminPreRedeemedTribe);
+  console.log(`admin TRIBE claim: pre=${stringify(adminPreRedeemedTribe)}, post=${stringify(adminPostRedeemedTribe)}, net=${stringify(adminNetRedeemed)}`);
+
+  let preTimelockedTribe = await tribe.balanceOf(await td.address);
+  let adminDelegation = await td.delegate(accounts[1], ethAmount, {from: accounts[0]});
+  let adminDelegationGas = adminDelegation['receipt']['gasUsed'];
+  let adminDelegatedVotes = await tribe.getCurrentVotes(accounts[1]);
+  let remainingTimelockedTribe = await tribe.balanceOf(await td.address);
+  console.log(`TRIBE delegation: preBalance=${stringify(preTimelockedTribe)}, postBalance=${stringify(remainingTimelockedTribe)}, delegated=${stringify(adminDelegatedVotes)}`);
+
   let pairBalance = await pair.balanceOf(accounts[0]);
-  console.log(pairBalance);
-
-  console.log('Staking pool stake: + fpool');
   await pair.approve(await pool.address, pairBalance, {from: accounts[0]});
   let staked = await pool.deposit(accounts[0], pairBalance, {from: accounts[0]});
-  console.log(staked['receipt']['gasUsed']);
-  console.log(await pool.balanceOf(accounts[0]));
-  console.log('Bonding Curve Purchase + before/afer at scale + balances');
-  console.log(await bc.atScale());
-  console.log(await fei.balanceOf(accounts[0]));
+  let stakedGas = staked['receipt']['gasUsed'];
+  let poolBalance = await pool.balanceOf(accounts[0]);
+  console.log(`Staking pool stake: pool=${stringify(poolBalance)}`);
 
-  let bcPurchase = await bc.purchase(accounts[0], '300000000000000000000000', {from: accounts[0], value: '300000000000000000000000'});
-  console.log(bcPurchase['receipt']['gasUsed']);
-  console.log(await bc.atScale());
-  console.log(await fei.balanceOf(accounts[0]));
-  
-  bcPurchase = await bc.purchase(accounts[0], ethAmount, {from: accounts[0], value: ethAmount});
-  console.log(bcPurchase['receipt']['gasUsed']);
-  console.log(await bc.atScale());
-  console.log(await fei.balanceOf(accounts[0]));
-  console.log('Uni Sell below peg transfer burn');
-  let beforeBalance = await fei.balanceOf(accounts[0]);
+  let atScale = await bc.atScale();
+  let feiBefore = await fei.balanceOf(accounts[0]);
+  let triple = ethAmount.mul(new BN('3'));
+  let preScaleBCPurchase = await bc.purchase(accounts[0], triple, {from: accounts[0], value: triple});
+  let preScaleBCGas = preScaleBCPurchase['receipt']['gasUsed'];
+  let feiAfter = await fei.balanceOf(accounts[0]);
+  let netFei = feiAfter.sub(feiBefore);
+  console.log(`Bonding Curve Purchase Pre: eth=${stringify(triple)}, fei=${stringify(netFei)} atScaleBefore=${atScale}`);
 
-  let feiSell = await fei.transfer(await ethPair.address, '1000000000000000000000000', {from: accounts[0]});
-  console.log(feiSell['receipt']['gasUsed']);
-  let afterBalance = await fei.balanceOf(accounts[0]);
-  console.log(beforeBalance.sub(afterBalance));
-  console.log('Claim + pool fei before/after');
-  console.log(await pool.balanceOf(accounts[0]));
-  await fei.approve(await pool.address, ethAmount, {from: accounts[0]});
+  atScale = await bc.atScale();
+  feiBefore = await fei.balanceOf(accounts[0]);
+  let postScaleBCPurchase = await bc.purchase(accounts[0], ethAmount, {from: accounts[0], value: ethAmount});
+  let postScaleBCGas = postScaleBCPurchase['receipt']['gasUsed'];
+  feiAfter = await fei.balanceOf(accounts[0]);
+  netFei = feiAfter.sub(feiBefore);
+  console.log(`Bonding Curve Purchase Post: eth=${stringify(ethAmount)}, fei=${stringify(netFei)} atScaleBefore=${atScale}`);
+
+  feiBefore = await fei.balanceOf(accounts[0]);
+  let tenX = ethAmount.mul(new BN('10'));
+  let feiSell = await fei.transfer(await ethPair.address, tenX, {from: accounts[0]});
+  let feiSellGas = feiSell['receipt']['gasUsed'];
+  feiAfter = await fei.balanceOf(accounts[0]);
+  let burned = feiBefore.sub(feiAfter).sub(tenX);
+  console.log(`Uni Sell: amt=${stringify(tenX)}, burned=${stringify(burned)}`);
+
+  let poolBeforeClaim = await pool.balanceOf(accounts[0]);
+  let tribeBeforeClaim = await tribe.balanceOf(accounts[0]);
   let claimed = await pool.claim(accounts[0], accounts[0], {from: accounts[0]});
-  console.log(claimed['receipt']['gasUsed']);
-  console.log(await pool.balanceOf(accounts[0]));
+  let claimedGas = claimed['receipt']['gasUsed'];
+  let poolAfterClaim = await pool.balanceOf(accounts[0]);
+  let tribeAfterClaim = await tribe.balanceOf(accounts[0]);
+  let poolBurned = poolBeforeClaim.sub(poolAfterClaim);
+  let tribeEarned = tribeAfterClaim.sub(tribeBeforeClaim);
+  console.log(`Claim: poolBurned=${stringify(poolBurned)}, tribeEarned=${stringify(tribeEarned)}`);
+
+  let pairBeforeWithdraw = await pair.balanceOf(accounts[0]);
+  let withdraw = await pool.withdraw(accounts[0], {from: accounts[0]});
+  let withdrawGas = withdraw['receipt']['gasUsed'];
+  let poolAfterWithdraw = await pool.balanceOf(accounts[0]);
+  let pairAfterWithdraw = await pair.balanceOf(accounts[0]);
+
+  console.log(`Withdraw: pool=${stringify(poolAfterWithdraw)}, pairBefore=${stringify(pairBeforeWithdraw)}, pairAfter=${stringify(pairAfterWithdraw)}`);
+
+  console.log(`Gas:`);
+  console.log(`GenesisGroup: purchase=${ggPurchaseGas}, launch=${launchGas}, redeem: ${redeemGas}`);
+  console.log(`Admin: idoRedeem=${idoRedeemGas}, tribeRedeem=${adminTribeRedeemGas}, tribeDelegation=${adminDelegationGas}`);
+  console.log(`Bonding Curve: pre=${preScaleBCGas}, post=${postScaleBCGas}`);
+  console.log(`Uni: sell=${feiSellGas}`);
+  console.log(`Pool: stake=${stakedGas}, claim=${claimedGas}, withdraw=${withdrawGas}`);
   callback();
 }
 
