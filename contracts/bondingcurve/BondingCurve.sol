@@ -6,10 +6,11 @@ import "./IBondingCurve.sol";
 import "../utils/Roots.sol";
 import "../refs/OracleRef.sol";
 import "../pcv/PCVSplitter.sol";
+import "../utils/Timed.sol";
 
 /// @title an abstract bonding curve for purchasing FEI
 /// @author Fei Protocol
-abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter {
+abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     using Decimal for Decimal.D256;
     using Roots for uint;
 
@@ -18,6 +19,8 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter {
 
 	uint public override buffer = 100;
 	uint public constant BUFFER_GRANULARITY = 10_000;
+
+	uint public override incentiveAmount;
 
 	/// @notice constructor
 	/// @param _scale the Scale target where peg fixes
@@ -30,12 +33,16 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter {
 		address _core, 
 		address[] memory _pcvDeposits, 
 		uint[] memory _ratios, 
-		address _oracle
+		address _oracle,
+		uint32 _duration,
+		uint _incentive
 	) public
 		OracleRef(_core, _oracle)
 		PCVSplitter(_pcvDeposits, _ratios)
+		Timed(_duration)
 	{
 		_setScale(_scale);
+		incentiveAmount = _incentive;
 	}
 
 	function setScale(uint _scale) external override onlyGovernor {
@@ -51,6 +58,16 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter {
 
 	function setAllocation(address[] calldata allocations, uint[] calldata ratios) external override onlyGovernor {
 		_setAllocation(allocations, ratios);
+	}
+
+	function allocate() external override {
+		uint amount = getTotalPCVHeld();
+		require(amount != 0, "BondingCurve: No PCV held");
+
+		_allocate(amount);
+		_incentivize();
+		
+		emit Allocate(msg.sender, amount);
 	}
 
 	function atScale() public override view returns (bool) {
@@ -82,14 +99,14 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter {
 		return peg().mul(amountIn).asUint256();
 	}
 
+	function getTotalPCVHeld() public view override virtual returns(uint);
+
 	function _purchase(uint amountIn, address to) internal returns (uint amountOut) {
 	 	updateOracle();
 		
 	 	amountOut = getAmountOut(amountIn);
 	 	incrementTotalPurchased(amountOut);
 		fei().mint(to, amountOut);
-
-		_allocate(amountIn);
 
 		emit Purchase(to, amountIn, amountOut);
 
@@ -102,6 +119,13 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter {
 
 	function _setScale(uint _scale) internal {
 		scale = _scale;
+	}
+
+	function _incentivize() internal virtual {
+		if (isTimeEnded()) {
+			_initTimed();
+			fei().mint(msg.sender, incentiveAmount);
+		}
 	}
 
 	function _getBondingCurvePriceMultiplier() internal view virtual returns(Decimal.D256 memory);

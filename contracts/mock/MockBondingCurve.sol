@@ -6,6 +6,7 @@ import "../external/Decimal.sol";
 contract MockBondingCurve {
 
 	bool public atScale;
+	bool public allocated;
 	Decimal.D256 public getCurrentPrice;
 
 	constructor(bool _atScale, uint256 price) public {
@@ -19,6 +20,10 @@ contract MockBondingCurve {
 
 	function setCurrentPrice(uint256 price) public {
 		getCurrentPrice = Decimal.ratio(price, 100);
+	}
+
+	function allocate() public payable {
+		allocated = true;
 	}
 
 	function purchase(address to, uint amount) public payable returns (uint256 amountOut) {

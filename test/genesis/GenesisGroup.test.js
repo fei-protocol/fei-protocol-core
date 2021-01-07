@@ -144,6 +144,10 @@ describe('GenesisGroup', function () {
           expect(await balance.current(this.bc.address)).to.be.bignumber.equal(new BN(1000));
         });
 
+        it('allocates bonding curve', async function() {
+          expect(await this.bc.allocated()).to.be.equal(true);
+        });
+
         it('deploys IDO', async function() {
           expect(await this.ido.ratio()).to.be.bignumber.equal(new BN('5000000000000000000').div(new BN(10)));
         });
@@ -191,6 +195,10 @@ describe('GenesisGroup', function () {
       it('purchases on bondingCurve', async function() {
         expect(await balance.current(this.genesisGroup.address)).to.be.bignumber.equal(new BN(0));
         expect(await balance.current(this.bc.address)).to.be.bignumber.equal(new BN(1000));
+      });
+
+      it('allocates bonding curve', async function() {
+        expect(await this.bc.allocated()).to.be.equal(true);
       });
 
       it('deploys IDO', async function() {
