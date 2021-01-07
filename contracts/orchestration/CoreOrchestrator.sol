@@ -16,7 +16,9 @@ interface IBondingCurveOrchestrator {
 		address pair, 
 		address router, 
 		uint scale,
-		uint32 thawingDuration
+		uint32 thawingDuration,
+		uint32 bondingCurveIncentiveDuration,
+		uint bondingCurveIncentiveAmount
 	) external returns(
 		address ethUniswapPCVDeposit,
 		address ethBondingCurve,
@@ -115,6 +117,8 @@ contract CoreOrchestrator is Ownable {
 
 	uint32 public constant UNI_ORACLE_TWAP_DURATION = TEST_MODE ? 1 : 10 minutes; // 10 min twap
 
+	uint32 public constant BONDING_CURVE_INCENTIVE_DURATION = TEST_MODE ? 1 : 1 days; // 1 day duration
+
 	// ----------- Params -----------
 	uint public constant MAX_GENESIS_PRICE_BPS = 9000;
 	uint public constant EXCHANGE_RATE_DISCOUNT = 10;
@@ -122,8 +126,9 @@ contract CoreOrchestrator is Ownable {
 	uint32 public constant INCENTIVE_GROWTH_RATE = TEST_MODE ? 1_000_000 : 333; // about 1 unit per hour assuming 12s block time
 
 	uint public constant SCALE = 250_000_000e18;
+	uint public constant BONDING_CURVE_INCENTIVE = 500e18;
 
-	uint public constant REWEIGHT_INCENTIVE = 100e18;
+	uint public constant REWEIGHT_INCENTIVE = 500e18;
 	uint public constant MIN_REWEIGHT_DISTANCE_BPS = 100;
 
 	bool public constant USDC_PER_ETH_IS_PRICE_0 = true;
@@ -208,7 +213,17 @@ contract CoreOrchestrator is Ownable {
 	function initBondingCurve() public onlyOwner {
 		(ethUniswapPCVDeposit,
 		 ethBondingCurve,
-		 bondingCurveOracle) = bcOrchestrator.init(address(core), uniswapOracle, ethFeiPair, ROUTER, SCALE, THAWING_DURATION);
+		 bondingCurveOracle) = bcOrchestrator.init(
+			 address(core), 
+			 uniswapOracle, 
+			 ethFeiPair, 
+			 ROUTER, 
+			 SCALE, 
+			 THAWING_DURATION,
+			 BONDING_CURVE_INCENTIVE_DURATION,
+			 BONDING_CURVE_INCENTIVE
+		);
+
 		core.grantMinter(ethUniswapPCVDeposit);
 		core.grantMinter(ethBondingCurve);
 		IOracleRef(ethUniswapPCVDeposit).setOracle(bondingCurveOracle);

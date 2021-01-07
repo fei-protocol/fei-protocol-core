@@ -13,9 +13,18 @@ contract EthBondingCurve is BondingCurve {
 		address core, 
 		address[] memory pcvDeposits, 
 		uint[] memory ratios, 
-		address oracle
-	) public
-		BondingCurve(scale, core, pcvDeposits, ratios, oracle) {}
+		address oracle,
+		uint32 duration,
+		uint incentive
+	) public BondingCurve(
+			scale, 
+			core, 
+			pcvDeposits, 
+			ratios, 
+			oracle, 
+			duration,
+			incentive
+	) {}
 
 	function purchase(address to, uint amountIn) external override payable postGenesis returns (uint amountOut) {
 		require(msg.value == amountIn, "Bonding Curve: Sent value does not equal input");
@@ -36,5 +45,8 @@ contract EthBondingCurve is BondingCurve {
 		IPCVDeposit(pcvDeposit).deposit{value : amount}(amount);
 	}
 
+	function getTotalPCVHeld() public view override returns(uint) {
+		return address(this).balance;
+	}
 }
 

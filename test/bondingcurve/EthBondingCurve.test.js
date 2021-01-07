@@ -1,7 +1,7 @@
 const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
 const { accounts, contract } = require('@openzeppelin/test-environment');
 
-const { BN, expectEvent, expectRevert, balance } = require('@openzeppelin/test-helpers');
+const { BN, expectEvent, expectRevert, balance, time } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
 const MockEthPCVDeposit = contract.fromArtifact('MockEthPCVDeposit');
@@ -11,7 +11,7 @@ const MockOracle = contract.fromArtifact('MockOracle');
 const EthBondingCurve = contract.fromArtifact('EthBondingCurve');
 
 describe('EthBondingCurve', function () {
-  const [ userAddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress, genesisGroup ] = accounts;
+  const [ userAddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress, genesisGroup, keeperAddress ] = accounts;
 
   beforeEach(async function () {
     this.core = await Core.new({from: governorAddress});
@@ -22,7 +22,7 @@ describe('EthBondingCurve', function () {
     this.oracle = await MockOracle.new(500); // 500 USD per ETH exchange rate 
     this.pcvDeposit1 = await MockEthPCVDeposit.new(beneficiaryAddress1);
     this.pcvDeposit2 = await MockEthPCVDeposit.new(beneficiaryAddress2);
-    this.bondingCurve = await EthBondingCurve.new(100000, this.core.address, [this.pcvDeposit1.address, this.pcvDeposit2.address], [9000, 1000], this.oracle.address);
+    this.bondingCurve = await EthBondingCurve.new(100000, this.core.address, [this.pcvDeposit1.address, this.pcvDeposit2.address], [9000, 1000], this.oracle.address, 10, '100');
     await this.core.grantMinter(this.bondingCurve.address, {from: governorAddress});
   });
 
@@ -162,24 +162,62 @@ describe('EthBondingCurve', function () {
       beforeEach(async function () {
         this.beneficiaryBalance1 = await balance.current(beneficiaryAddress1);
         this.beneficiaryBalance2 = await balance.current(beneficiaryAddress2);
-      });
-      it('splits funds accurately', async function() {
         await this.bondingCurve.purchase(userAddress, "1000000000000000000", {value: "1000000000000000000"});
-        expect(await this.pcvDeposit1.totalValue()).to.be.bignumber.equal(new BN("900000000000000000"));
-        expect(await balance.current(beneficiaryAddress1)).to.be.bignumber.equal(this.beneficiaryBalance1.add(new BN("900000000000000000")));
-        expect(await this.pcvDeposit2.totalValue()).to.be.bignumber.equal(new BN("100000000000000000"));
-        expect(await balance.current(beneficiaryAddress2)).to.be.bignumber.equal(this.beneficiaryBalance2.add(new BN("100000000000000000")));
       });
 
-      it('respects an updated allocation', async function() {
-        await this.bondingCurve.setAllocation([this.pcvDeposit1.address, this.pcvDeposit2.address], [5000, 5000], {from: governorAddress});
-        await this.bondingCurve.purchase(userAddress, "1000000000000000000", {value: "1000000000000000000"});
-        expect(await this.pcvDeposit1.totalValue()).to.be.bignumber.equal(new BN("500000000000000000"));
-        expect(await balance.current(beneficiaryAddress1)).to.be.bignumber.equal(this.beneficiaryBalance1.add(new BN("500000000000000000")));
-        expect(await this.pcvDeposit2.totalValue()).to.be.bignumber.equal(new BN("500000000000000000"));
-        expect(await balance.current(beneficiaryAddress2)).to.be.bignumber.equal(this.beneficiaryBalance2.add(new BN("500000000000000000")));
+      describe('And Allocation', function() {
+        beforeEach(async function() {
+          await this.bondingCurve.allocate({from: keeperAddress}); 
+        });
 
-      });
+        it('splits funds accurately', async function() {
+          expect(await this.pcvDeposit1.totalValue()).to.be.bignumber.equal(new BN("900000000000000000"));
+          expect(await balance.current(beneficiaryAddress1)).to.be.bignumber.equal(this.beneficiaryBalance1.add(new BN("900000000000000000")));
+          expect(await this.pcvDeposit2.totalValue()).to.be.bignumber.equal(new BN("100000000000000000"));
+          expect(await balance.current(beneficiaryAddress2)).to.be.bignumber.equal(this.beneficiaryBalance2.add(new BN("100000000000000000")));
+        });
+        
+        it('incentivizes', async function() {
+          expect(await this.fei.balanceOf(keeperAddress)).to.be.bignumber.equal('100');
+        });
+
+        describe('Second Allocation', async function() {
+          it('no pcv reverts', async function() {
+            await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: No PCV held"); 
+          });
+
+          it('with pcv before period has no incentives', async function() {
+            await this.bondingCurve.purchase(userAddress, "1000000000000000000", {value: "1000000000000000000"});
+            await this.bondingCurve.allocate({from: keeperAddress});
+            expect(await this.fei.balanceOf(keeperAddress)).to.be.bignumber.equal('100');
+          });
+
+          it('with pcv after period has incentives', async function() {
+            await time.increase('10');
+            await this.bondingCurve.purchase(userAddress, "1000000000000000000", {value: "1000000000000000000"});
+            await this.bondingCurve.allocate({from: keeperAddress});
+            expect(await this.fei.balanceOf(keeperAddress)).to.be.bignumber.equal('200');
+          });
+        });
+      })
+
+      describe('Updated Allocation', function() {
+        beforeEach(async function() {
+          await this.bondingCurve.setAllocation([this.pcvDeposit1.address, this.pcvDeposit2.address], [5000, 5000], {from: governorAddress});
+          await this.bondingCurve.allocate({from: keeperAddress}); 
+        });
+
+        it('splits funds accurately', async function() {
+          expect(await this.pcvDeposit1.totalValue()).to.be.bignumber.equal(new BN("500000000000000000"));
+          expect(await balance.current(beneficiaryAddress1)).to.be.bignumber.equal(this.beneficiaryBalance1.add(new BN("500000000000000000")));
+          expect(await this.pcvDeposit2.totalValue()).to.be.bignumber.equal(new BN("500000000000000000"));
+          expect(await balance.current(beneficiaryAddress2)).to.be.bignumber.equal(this.beneficiaryBalance2.add(new BN("500000000000000000")));
+        });
+        
+        it('incentivizes', async function() {
+          expect(await this.fei.balanceOf(keeperAddress)).to.be.bignumber.equal('100');
+        });
+      })
     });
   });
 

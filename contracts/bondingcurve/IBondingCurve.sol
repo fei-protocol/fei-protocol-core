@@ -13,6 +13,8 @@ interface IBondingCurve {
 
     event Purchase(address indexed _to, uint _amountIn, uint _amountOut);
 
+	event Allocate(address indexed _caller, uint amount);
+
 	// ----------- State changing Api -----------
 
 	/// @notice purchase FEI for underlying tokens
@@ -21,6 +23,9 @@ interface IBondingCurve {
 	/// @return amountOut amount of FEI received
 	function purchase(address to, uint amountIn) external payable returns (uint amountOut);
 	
+	/// @notice batch allocate held PCV
+	function allocate() external;
+
 	// ----------- Governor only state changing api -----------
 
 	/// @notice sets the bonding curve price buffer
@@ -60,5 +65,10 @@ interface IBondingCurve {
 	/// @notice the total amount of FEI purchased on bonding curve. FEI_b from the whitepaper
 	function totalPurchased() external view returns(uint);
 
+	/// @notice the amount of PCV held in contract and ready to be allocated
+	function getTotalPCVHeld() external view returns(uint);
+
+	/// @notice amount of FEI paid for allocation when incentivized
+	function incentiveAmount() external view returns(uint);
 }
 

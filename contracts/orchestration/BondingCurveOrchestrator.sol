@@ -13,7 +13,9 @@ contract BondingCurveOrchestrator is Ownable {
 		address pair, 
 		address router, 
 		uint scale,
-		uint32 thawingDuration
+		uint32 thawingDuration,
+		uint32 bondingCurveIncentiveDuration,
+		uint bondingCurveIncentiveAmount
 	) public onlyOwner returns(
 		address ethUniswapPCVDeposit,
 		address ethBondingCurve,
@@ -24,8 +26,21 @@ contract BondingCurveOrchestrator is Ownable {
 		ratios[0] = 10000;
 		address[] memory allocations = new address[](1);
 		allocations[0] = address(ethUniswapPCVDeposit);
-		ethBondingCurve = address(new EthBondingCurve(scale, core, allocations, ratios, uniswapOracle));
-		bondingCurveOracle = address(new BondingCurveOracle(core, uniswapOracle, address(ethBondingCurve), thawingDuration));
+		ethBondingCurve = address(new EthBondingCurve(
+			scale, 
+			core, 
+			allocations, 
+			ratios, 
+			uniswapOracle, 
+			bondingCurveIncentiveDuration, 
+			bondingCurveIncentiveAmount
+		));
+		bondingCurveOracle = address(new BondingCurveOracle(
+			core, 
+			uniswapOracle, 
+			ethBondingCurve, 
+			thawingDuration
+		));
 		return (
 			ethUniswapPCVDeposit,
 			ethBondingCurve,

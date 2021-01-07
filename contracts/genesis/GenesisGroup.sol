@@ -113,6 +113,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		bondingCurveOracle.init(bondingcurve.getAveragePrice(balance));
 
 		bondingcurve.purchase{value: balance}(genesisGroup, balance);
+		bondingcurve.allocate();
 
 		pool.init();
 
