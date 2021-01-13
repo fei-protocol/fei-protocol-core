@@ -56,7 +56,14 @@ module.exports = {
      gas: 8e6,
      gasPrice: 20,
      network_id: "5777",       // Any network (default: none)
-    }
+    },
+
+    graph: {
+      host: "0.0.0.0",
+      gas: 8e6,
+      port: 8545,
+      network_id: "*",
+    },
 
     // Another network with more advanced options...
     // advanced: {
