@@ -13,7 +13,7 @@ interface IBondingCurve {
 
     event Purchase(address indexed _to, uint _amountIn, uint _amountOut);
 
-	event Allocate(address indexed _caller, uint amount);
+	event Allocate(address indexed _caller, uint _amount);
 
 	// ----------- State changing Api -----------
 

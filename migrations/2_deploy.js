@@ -5,9 +5,10 @@ const ControllerOrchestrator = artifacts.require("ControllerOrchestrator");
 const IDOOrchestrator = artifacts.require("IDOOrchestrator");
 const GenesisOrchestrator = artifacts.require("GenesisOrchestrator");
 const GovernanceOrchestrator = artifacts.require("GovernanceOrchestrator");
+const PCVDepositOrchestrator = artifacts.require("PCVDepositOrchestrator");
 
 module.exports = function(deployer, network, accounts) {
-  	var bc, incentive, controller, ido, genesis, gov, core;
+  	var pcvo, bc, incentive, controller, ido, genesis, gov, core;
 
 	deployer.then(function() {
 	  	return deployer.deploy(ControllerOrchestrator);
@@ -28,7 +29,11 @@ module.exports = function(deployer, network, accounts) {
 	 	return deployer.deploy(IncentiveOrchestrator);
 	}).then(function(instance) {
 		incentive = instance;
-	 	return deployer.deploy(CoreOrchestrator, 
+	 	return deployer.deploy(PCVDepositOrchestrator);
+	}).then(function(instance) {
+		pcvo = instance;
+	 	return deployer.deploy(CoreOrchestrator,
+	 		pcvo.address, 
 	 		bc.address, 
 	 		incentive.address, 
 	 		controller.address, 
@@ -51,7 +56,11 @@ module.exports = function(deployer, network, accounts) {
 	}).then(function(instance) {
 	 	return controller.transferOwnership(core.address);
 	}).then(function(instance) {
+	 	return pcvo.transferOwnership(core.address);
+	}).then(function(instance) {
 	 	return core.initPairs();
+	}).then(function(instance) {
+	 	return core.initPCVDeposit();
 	}).then(function(instance) {
 	 	return core.initBondingCurve();
 	}).then(function(instance) {
