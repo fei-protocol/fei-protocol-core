@@ -104,10 +104,14 @@ interface IGovernanceOrchestrator {
 	function detonate() external;
 }
 
+interface ITribe {
+	function setMinter(address minter_) external;
+}
+
 // solhint-disable-next-line max-states-count
 contract CoreOrchestrator is Ownable {
 	address public admin;
-	bool private constant TEST_MODE = false;
+	bool private constant TEST_MODE = true;
 
 	// ----------- Uniswap Addresses -----------
 	address public constant ETH_USDC_UNI_PAIR = address(0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc);
@@ -317,5 +321,6 @@ contract CoreOrchestrator is Ownable {
 		);
 		governanceOrchestrator.detonate();
 		core.grantGovernor(timelock);
+		ITribe(tribe).setMinter(timelock);
 	}
 }
