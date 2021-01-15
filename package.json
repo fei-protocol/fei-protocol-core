@@ -11,7 +11,8 @@
     "test": "mocha --timeout 10000 --exit --recursive $1",
     "testAll": "mocha --timeout 10000 --exit --recursive test",
     "deploy": "truffle migrate --network mainnet",
-    "verify": "truffle run verify Implementation --network mainnet"
+    "verify": "truffle run verify Implementation --network mainnet",
+    "abis": "node scripts/abis.js"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -20,6 +21,7 @@
     "@uniswap/lib": "^1.1.2",
     "@uniswap/v2-core": "^1.0.1",
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
+    "dotenv": "^8.2.0",
     "truffle": "^5.1.25"
   },
   "devDependencies": {
