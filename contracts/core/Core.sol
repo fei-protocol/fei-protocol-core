@@ -23,7 +23,7 @@ contract Core is ICore, Permissions {
 		Fei _fei = new Fei(address(this));
 		fei = IFei(address(_fei));
 
-		Tribe _tribe = new Tribe(address(this));
+		Tribe _tribe = new Tribe(address(this), msg.sender);
 		tribe = IERC20(address(_tribe));
 	}
 

@@ -1,13 +1,13 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-// Forked from Compound's COMP
-// Reference: https://github.com/compound-finance/compound-protocol/blob/master/contracts/Governance/Comp.sol
+// Forked from Tribeswap's UNI
+// Reference: https://etherscan.io/address/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984#code
 
 contract Tribe {
     /// @notice EIP-20 token name for this token
     // solhint-disable-next-line const-name-snakecase
-    string public constant name = "Fei Protocol Tribe";
+    string public constant name = "Tribe";
 
     /// @notice EIP-20 token symbol for this token
     // solhint-disable-next-line const-name-snakecase
@@ -19,7 +19,10 @@ contract Tribe {
 
     /// @notice Total number of tokens in circulation
     // solhint-disable-next-line const-name-snakecase
-    uint public constant totalSupply = 1_000_000_000e18; // 1 billion Tribe
+    uint public totalSupply = 1_000_000_000e18; // 1 billion Tribe
+
+    /// @notice Address which may mint new tokens
+    address public minter;
 
     /// @notice Allowance amounts on behalf of others
     mapping (address => mapping (address => uint96)) internal allowances;
@@ -48,8 +51,14 @@ contract Tribe {
     /// @notice The EIP-712 typehash for the delegation struct used by the contract
     bytes32 public constant DELEGATION_TYPEHASH = keccak256("Delegation(address delegatee,uint256 nonce,uint256 expiry)");
 
+    /// @notice The EIP-712 typehash for the permit struct used by the contract
+    bytes32 public constant PERMIT_TYPEHASH = keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
+
     /// @notice A record of states for signing / validating signatures
     mapping (address => uint) public nonces;
+
+    /// @notice An event thats emitted when the minter address is changed
+    event MinterChanged(address minter, address newMinter);
 
     /// @notice An event thats emitted when an account changes its delegate
     event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate);
@@ -66,10 +75,45 @@ contract Tribe {
     /**
      * @notice Construct a new Tribe token
      * @param account The initial account to grant all the tokens
+     * @param minter_ The account with minting ability
      */
-    constructor(address account) public {
+    constructor(address account, address minter_) public {
         balances[account] = uint96(totalSupply);
         emit Transfer(address(0), account, totalSupply);
+        minter = minter_;
+        emit MinterChanged(address(0), minter);
+    }
+
+    /**
+     * @notice Change the minter address
+     * @param minter_ The address of the new minter
+     */
+    function setMinter(address minter_) external {
+        require(msg.sender == minter, "Tribe::setMinter: only the minter can change the minter address");
+        emit MinterChanged(minter, minter_);
+        minter = minter_;
+    }
+
+    /**
+     * @notice Mint new tokens
+     * @param dst The address of the destination account
+     * @param rawAmount The number of tokens to be minted
+     */
+    function mint(address dst, uint rawAmount) external {
+        require(msg.sender == minter, "Tribe::mint: only the minter can mint");
+        require(dst != address(0), "Tribe::mint: cannot transfer to the zero address");
+
+        // mint the amount
+        uint96 amount = safe96(rawAmount, "Tribe::mint: amount exceeds 96 bits");
+        uint96 safeSupply = safe96(totalSupply, "Tribe::mint: totalSupply exceeds 96 bits");
+        totalSupply = add96(safeSupply, amount, "Tribe::mint: totalSupply exceeds 96 bits");
+
+        // transfer the amount to the recipient
+        balances[dst] = add96(balances[dst], amount, "Tribe::mint: transfer amount overflows");
+        emit Transfer(address(0), dst, amount);
+
+        // move delegates
+        _moveDelegates(address(0), delegates[dst], amount);
     }
 
     /**
@@ -102,6 +146,37 @@ contract Tribe {
 
         emit Approval(msg.sender, spender, amount);
         return true;
+    }
+
+    /**
+     * @notice Triggers an approval from owner to spends
+     * @param owner The address to approve from
+     * @param spender The address to be approved
+     * @param rawAmount The number of tokens that are approved (2^256-1 means infinite)
+     * @param deadline The time at which to expire the signature
+     * @param v The recovery byte of the signature
+     * @param r Half of the ECDSA signature pair
+     * @param s Half of the ECDSA signature pair
+     */
+    function permit(address owner, address spender, uint rawAmount, uint deadline, uint8 v, bytes32 r, bytes32 s) external {
+        uint96 amount;
+        if (rawAmount == uint(-1)) {
+            amount = uint96(-1);
+        } else {
+            amount = safe96(rawAmount, "Tribe::permit: amount exceeds 96 bits");
+        }
+
+        bytes32 domainSeparator = keccak256(abi.encode(DOMAIN_TYPEHASH, keccak256(bytes(name)), getChainId(), address(this)));
+        bytes32 structHash = keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, rawAmount, nonces[owner]++, deadline));
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
+        address signatory = ecrecover(digest, v, r, s);
+        require(signatory != address(0), "Tribe::permit: invalid signature");
+        require(signatory == owner, "Tribe::permit: unauthorized");
+        require(now <= deadline, "Tribe::permit: signature expired");
+
+        allowances[owner][spender] = amount;
+
+        emit Approval(owner, spender, amount);
     }
 
     /**
