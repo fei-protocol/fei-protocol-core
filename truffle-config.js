@@ -62,7 +62,7 @@ module.exports = {
       host: "0.0.0.0",
       gas: 8e6,
       port: 8545,
-      network_id: "*",
+      network_id: "1234567890",
     },
 
     // Another network with more advanced options...
