@@ -28,6 +28,8 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
 	/// @param _pcvDeposits the PCV Deposits for the PCVSplitter
 	/// @param _ratios the ratios for the PCVSplitter
 	/// @param _oracle the UniswapOracle to reference
+	/// @param _duration the duration between incentivizing allocations
+	/// @param _incentive the amount rewarded to the caller of an allocation
 	constructor(
 		uint _scale, 
 		address _core, 
