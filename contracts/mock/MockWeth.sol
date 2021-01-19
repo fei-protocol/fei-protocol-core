@@ -9,4 +9,9 @@ contract MockWeth is MockERC20 {
     function deposit() external payable {
     	mint(msg.sender, msg.value);
     }
+
+    function withdraw(uint amount) external payable {
+    	_burn(msg.sender, amount);
+    	_msgSender().transfer(amount);
+    }
 }
