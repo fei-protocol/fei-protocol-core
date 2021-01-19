@@ -48,4 +48,18 @@ contract IDO is IDOInterface, UniRef, LinearTokenTimelock {
 
 	    emit Deploy(feiAmount, tribeAmount);
 	} 
+
+	function swapFei(uint amountFei) external override onlyGenesisGroup returns(uint) {
+
+		(uint feiReserves, uint tribeReserves) = getReserves();
+
+		uint amountOut = UniswapV2Library.getAmountOut(amountFei, feiReserves, tribeReserves);
+
+		fei().transferFrom(msg.sender, address(pair), amountFei);
+
+		(uint amount0Out, uint amount1Out) = pair.token0() == address(fei()) ? (uint(0), amountOut) : (amountOut, uint(0));
+		pair.swap(amount0Out, amount1Out, msg.sender, new bytes(0));
+
+		return amountOut;
+	}
 }

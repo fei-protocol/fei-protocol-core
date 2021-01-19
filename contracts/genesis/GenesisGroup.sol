@@ -11,18 +11,10 @@ import "../pool/IPool.sol";
 import "../oracle/IBondingCurveOracle.sol";
 import "../bondingcurve/IBondingCurve.sol";
 
-interface IOrchestrator {
-	function launchGovernance() external;
-	function pool() external returns(address);
-	function bondingCurveOracle() external returns(address);
-}
-
 /// @title IGenesisGroup implementation
 /// @author Fei Protocol
 contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 	using Decimal for Decimal.D256;
-
-	IOrchestrator private orchestrator;
 
 	IBondingCurve private bondingcurve;
 
@@ -32,6 +24,11 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 
 	IDOInterface private ido;
 	uint private exchangeRateDiscount;
+
+	mapping(address => uint) public committedFGEN;
+	uint public totalCommittedFGEN;
+
+	uint public totalCommittedTribe;
 
 	/// @notice a cap on the genesis group purchase price
 	Decimal.D256 public maxGenesisPrice;
@@ -63,6 +60,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 
 		exchangeRateDiscount = _exchangeRateDiscount;
 		ido = IDOInterface(_ido);
+		fei().approve(_ido, uint(-1));
 
 		pool = IPool(_pool);
 		bondingCurveOracle = IBondingCurveOracle(_oracle);
@@ -86,17 +84,46 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		emit Purchase(to, value);
 	}
 
+	function commit(address from, address to, uint amount) external override onlyGenesisPeriod {
+		burnFrom(from, amount);
+
+		committedFGEN[to] = amount;
+		totalCommittedFGEN += amount;
+
+		emit Commit(from, to, amount);
+	}
+
 	function redeem(address to) external override postGenesis {
 		Decimal.D256 memory ratio = _fgenRatio(to);
-		require(!ratio.equals(Decimal.zero()), "GensisGroup: No balance to redeem");
+		uint committed = committedFGEN[to];
+		require(!ratio.equals(Decimal.zero()) || committed != 0, "GensisGroup: No balance to redeem");
+
+		uint tribeAmount; 
+		uint feiAmount;
 
 		uint amountIn = balanceOf(to);
-		burnFrom(to, amountIn);
+		if (amountIn != 0) {
+			burnFrom(to, amountIn);
 
-		uint feiAmount = ratio.mul(feiBalance()).asUint256();
-		fei().transfer(to, feiAmount);
+			feiAmount = ratio.mul(feiBalance()).asUint256();
+			fei().transfer(to, feiAmount);
 
-		uint tribeAmount = ratio.mul(tribeBalance()).asUint256();
+			// subtract purchased TRIBE amount
+			uint nonCommittedTribe = tribeBalance() - totalCommittedTribe;
+			tribeAmount = ratio.mul(nonCommittedTribe).asUint256();
+
+		}
+
+		if (committed != 0) {
+			uint committedTribe = totalCommittedTribe * committed / totalCommittedFGEN;
+			committedFGEN[to] = 0;
+			totalCommittedFGEN -= committed;
+
+			totalCommittedTribe -= committedTribe;
+			tribeAmount += committedTribe;
+
+		}
+
 		tribe().transfer(to, tribeAmount);
 
 		emit Redeem(to, amountIn, feiAmount, tribeAmount);
@@ -119,8 +146,27 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 
 		ido.deploy(_feiTribeExchangeRate());
 
+		uint amountFei = feiBalance() * totalCommittedFGEN / (totalSupply() + totalCommittedFGEN);
+		if (amountFei != 0) {
+			totalCommittedTribe = ido.swapFei(amountFei);
+		}
+
 		// solhint-disable-next-line not-rely-on-time
 		emit Launch(now);
+	}
+
+	// Add a backdoor out of Genesis in case of brick
+	function emergencyExit(address from, address to) external {
+		require(now > (startTime + duration + 3 days), "GenesisGroup: Not in exit window");
+
+		uint amountFGEN = balanceOf(from);
+		uint total = amountFGEN + committedFGEN[from];
+
+		require(address(this).balance >= total, "GenesisGroup: Not enough ETH to redeem");
+
+		burnFrom(from, amountFGEN);
+
+		payable(to).transfer(total);
 	}
 
 	function getAmountOut(

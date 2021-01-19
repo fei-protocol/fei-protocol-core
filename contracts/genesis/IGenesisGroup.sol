@@ -13,6 +13,8 @@ interface IGenesisGroup {
 
 	event Redeem(address indexed _to, uint _amountIn, uint _amountFei, uint _amountTribe);
 
+    event Commit(address indexed _from, address indexed _to, uint _amount);
+
 	event Launch(uint _timestamp);
 
     // ----------- State changing API -----------
@@ -25,6 +27,12 @@ interface IGenesisGroup {
     /// @notice redeem FGEN genesis tokens for FEI and TRIBE. Only callable post launch
     /// @param to address to send redeemed FEI and TRIBE to.
     function redeem(address to) external;
+
+    /// @notice commit Genesis FEI to purchase TRIBE in DEX offering
+    /// @param from address to source FGEN Genesis shares from
+    /// @param to address to earn TRIBE and redeem post launch
+    /// @param amount of FGEN Genesis shares to commit
+    function commit(address from, address to, uint amount) external;
 
     /// @notice launch Fei Protocol. Callable once Genesis Period has ended or the max price has been reached
     function launch() external;
