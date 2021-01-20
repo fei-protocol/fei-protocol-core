@@ -166,6 +166,60 @@ describe('GenesisGroup', function () {
     });
   });
 
+  describe('Pre-Commit', function() {
+    beforeEach(async function() {
+      await this.genesisGroup.purchase(userAddress, 750, {from: userAddress, value: 750});
+      await this.genesisGroup.purchase(secondUserAddress, 250, {from: secondUserAddress, value: 250});
+    });
+    describe('Single Commit', async function() {
+      describe('Self commit', async function() {
+        beforeEach(async function() {
+          await this.genesisGroup.commit(userAddress, userAddress, '500', {from: userAddress});
+          await time.increase('2000');
+        });
+        it('succeeds', async function() {
+          expect(await this.genesisGroup.balanceOf(userAddress)).to.be.bignumber.equal('250');
+          expect(await this.genesisGroup.committedFGEN(userAddress)).to.be.bignumber.equal('500');
+          expect(await this.genesisGroup.totalCommittedFGEN()).to.be.bignumber.equal('500');
+        });
+      });
+
+      describe('Commit other', async function() {
+        beforeEach(async function() {
+          await this.genesisGroup.commit(userAddress, secondUserAddress, '500', {from: userAddress});
+          await time.increase('2000');
+        });
+        it('succeeds', async function() {
+          expect(await this.genesisGroup.balanceOf(userAddress)).to.be.bignumber.equal('250');
+          expect(await this.genesisGroup.committedFGEN(secondUserAddress)).to.be.bignumber.equal('500');
+          expect(await this.genesisGroup.committedFGEN(userAddress)).to.be.bignumber.equal('0');
+          expect(await this.genesisGroup.totalCommittedFGEN()).to.be.bignumber.equal('500');
+        });
+      });
+
+      describe('Approved commit', function() {
+        beforeEach(async function() {
+          await this.genesisGroup.approve(secondUserAddress, 750, {from: userAddress});
+          await this.genesisGroup.commit(userAddress, userAddress, '500', {from: secondUserAddress});
+          await time.increase('2000');
+        });
+        it('succeeds', async function() {
+          expect(await this.genesisGroup.balanceOf(userAddress)).to.be.bignumber.equal('250');
+          expect(await this.genesisGroup.committedFGEN(userAddress)).to.be.bignumber.equal('500');
+          expect(await this.genesisGroup.committedFGEN(secondUserAddress)).to.be.bignumber.equal('0');
+          expect(await this.genesisGroup.totalCommittedFGEN()).to.be.bignumber.equal('500');
+        });
+      });
+
+      describe('Unapproved commit', function() {
+        it('reverts', async function() {
+          await expectRevert(this.genesisGroup.commit(userAddress, userAddress, '500', {from: secondUserAddress}), "ERC20: burn amount exceeds allowance");
+        });
+      });
+    });
+  });
+
+
   describe('Post Genesis Period', function() {
     beforeEach(async function() {
       await this.genesisGroup.purchase(userAddress, 750, {from: userAddress, value: 750});
@@ -180,6 +234,66 @@ describe('GenesisGroup', function () {
     describe('Purchase', function() {
       it('reverts', async function() {
         await expectRevert(this.genesisGroup.purchase(userAddress, 100, {from: userAddress, value: 100}), "GenesisGroup: Not in Genesis Period");
+      });
+    });
+
+    describe('Pre-Commit', function() {
+      it('reverts', async function() {
+        await expectRevert(this.genesisGroup.purchase(userAddress, 100, {from: userAddress, value: 100}), "GenesisGroup: Not in Genesis Period");
+      });
+    });
+
+    describe('Exit', function() {
+      describe('Before window', function() {
+        it('reverts', async function() {
+          await expectRevert(this.genesisGroup.emergencyExit(userAddress, userAddress, {from: userAddress}), "GenesisGroup: Not in exit window");
+        });
+      }); 
+
+      describe('After window', function() {
+        beforeEach(async function() {
+          await time.increase('300000'); // over escape window
+        });
+
+        describe('Self exit', async function() {
+          it('succeeds', async function() {
+            let beforeBalance = await balance.current(this.genesisGroup.address);
+            expect(await this.genesisGroup.balanceOf(userAddress)).to.be.bignumber.equal('750');
+            await this.genesisGroup.emergencyExit(userAddress, userAddress, {from: userAddress});
+            expect(await this.genesisGroup.balanceOf(userAddress)).to.be.bignumber.equal('0');
+            let afterBalance = await balance.current(this.genesisGroup.address);
+            expect(beforeBalance.sub(afterBalance)).to.be.bignumber.equal('750');
+          });
+        });
+
+        describe('Exit other', async function() {
+          it('succeeds', async function() {
+            let beforeBalance = await balance.current(secondUserAddress);
+            expect(await this.genesisGroup.balanceOf(userAddress)).to.be.bignumber.equal('750');
+            await this.genesisGroup.emergencyExit(userAddress, secondUserAddress, {from: userAddress});
+            expect(await this.genesisGroup.balanceOf(userAddress)).to.be.bignumber.equal('0');
+            let afterBalance = await balance.current(secondUserAddress);
+            expect(afterBalance.sub(beforeBalance)).to.be.bignumber.equal('750');
+          });
+        });
+
+        describe('Approved exit', function() {
+          it('succeeds', async function() {
+            await this.genesisGroup.approve(secondUserAddress, 750, {from: userAddress});
+            let beforeBalance = await balance.current(userAddress);
+            expect(await this.genesisGroup.balanceOf(userAddress)).to.be.bignumber.equal('750');
+            await this.genesisGroup.emergencyExit(userAddress, userAddress, {from: secondUserAddress});
+            expect(await this.genesisGroup.balanceOf(userAddress)).to.be.bignumber.equal('0');
+            let afterBalance = await balance.current(userAddress);
+            expect(afterBalance.sub(beforeBalance)).to.be.bignumber.equal('750');
+          });
+        });
+
+        describe('Unapproved exit', function() {
+          it('reverts', async function() {
+            await expectRevert(this.genesisGroup.emergencyExit(userAddress, userAddress, {from: secondUserAddress}), "ERC20: burn amount exceeds allowance");
+          });
+        });
       });
     });
 
