@@ -3,8 +3,9 @@ pragma solidity ^0.6.0;
 import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
+import "./IUniswapSingleEthRouter.sol";
 
-contract UniswapSingleEthRouter {
+contract UniswapSingleEthRouter is IUniswapSingleEthRouter {
 	IWETH public immutable WETH;
 	IUniswapV2Pair public immutable PAIR;
 
@@ -34,6 +35,7 @@ contract UniswapSingleEthRouter {
     function swapExactETHForTokens(uint amountOutMin, address to, uint deadline)
         public
         payable
+        override
         ensure(deadline)
         returns (uint amountOut)
     {
@@ -51,6 +53,7 @@ contract UniswapSingleEthRouter {
 
 	function swapExactTokensForETH(uint amountIn, uint amountOutMin, address to, uint deadline)
         public
+        override
         ensure(deadline)
         returns (uint amountOut)
     {
