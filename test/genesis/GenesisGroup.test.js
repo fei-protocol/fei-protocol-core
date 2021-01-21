@@ -20,12 +20,14 @@ describe('GenesisGroup', function () {
     this.fei = await Fei.at(await this.core.fei());
     this.tribe = await Tribe.at(await this.core.tribe());
     this.bc = await MockBondingCurve.new(false, 10);
-    this.ido = await MockIDO.new();
+    this.ido = await MockIDO.new(this.tribe.address, 10);
     this.bo = await MockBondingCurveOracle.new();
     this.pool = await MockPool.new();
     this.genesisGroup = await GenesisGroup.new(this.core.address, this.bc.address, this.ido.address, this.bo.address, this.pool.address, '1000', '9000', '10');
 
     await this.core.allocateTribe(this.genesisGroup.address, 10000, {from: governorAddress});
+    await this.core.allocateTribe(this.ido.address, 10000000, {from: governorAddress});
+
     await this.core.setGenesisGroup(this.genesisGroup.address, {from: governorAddress});
     await this.core.grantMinter(minterAddress, {from: governorAddress});
     // 5:1 FEI to TRIBE ratio
@@ -214,6 +216,40 @@ describe('GenesisGroup', function () {
       describe('Unapproved commit', function() {
         it('reverts', async function() {
           await expectRevert(this.genesisGroup.commit(userAddress, userAddress, '500', {from: secondUserAddress}), "ERC20: burn amount exceeds allowance");
+        });
+      });
+    });
+
+    describe('Double Commit', function() {
+
+      beforeEach(async function() {
+        await this.genesisGroup.commit(userAddress, userAddress, '500', {from: userAddress});
+        await this.genesisGroup.commit(secondUserAddress, secondUserAddress, '250', {from: secondUserAddress});
+        await time.increase('2000');
+        await this.genesisGroup.launch();
+      });
+
+      it('succeeds', async function() {
+        expect(await this.genesisGroup.balanceOf(userAddress)).to.be.bignumber.equal('250');
+        expect(await this.genesisGroup.committedFGEN(userAddress)).to.be.bignumber.equal('500');
+
+        expect(await this.genesisGroup.balanceOf(secondUserAddress)).to.be.bignumber.equal('0');
+        expect(await this.genesisGroup.committedFGEN(secondUserAddress)).to.be.bignumber.equal('250');
+
+        expect(await this.genesisGroup.totalCommittedFGEN()).to.be.bignumber.equal('750');
+      });
+     
+      describe('Redeem', function() {
+        it('partial', async function() {
+          expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal('0');
+          await this.genesisGroup.redeem(userAddress, {from: userAddress});
+          expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal('257500');
+        });
+
+        it('total', async function() {
+          expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal('0');
+          await this.genesisGroup.redeem(secondUserAddress, {from: secondUserAddress});
+          expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal('127500');        
         });
       });
     });
@@ -411,6 +447,16 @@ describe('GenesisGroup', function () {
           expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(2500));
           expect(await this.fei.balanceOf(this.genesisGroup.address)).to.be.bignumber.equal(new BN(0));
           expect(await this.tribe.balanceOf(this.genesisGroup.address)).to.be.bignumber.equal(new BN(0));
+        });
+      });
+
+      describe('Second Redeem', function() {
+        beforeEach(async function() {
+          await this.genesisGroup.redeem(userAddress, {from: userAddress});
+        });
+
+        it('reverts', async function() {
+          await expectRevert(this.genesisGroup.redeem(userAddress, {from: userAddress}), "GenesisGroup: No redeemable TRIBE");
         });
       });
     });
