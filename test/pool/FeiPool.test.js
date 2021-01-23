@@ -104,6 +104,12 @@ describe('Pool', function () {
           this.latest = await time.latest();
           this.expectedPoolFeiFirst = this.end.sub(this.latest).mul(new BN(100));
         });
+
+        it('too much deposit reverts', async function() {
+          let amount = await this.fei.balanceOf(userAddress);
+          await expectRevert(this.pool.deposit(userAddress, amount.add(new BN('1')), {from: userAddress}), "Pool: Balance too low to stake");
+        });
+
         it('updates balances', async function() {
           expect(await this.pool.balanceOf(userAddress)).to.be.bignumber.equal(this.expectedPoolFeiFirst);
           expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiFirst);
@@ -347,6 +353,11 @@ describe('Pool', function () {
                     this.latest = await time.latest();
                     this.expectedPoolFeiFirst = this.end.sub(this.latest).mul(new BN(100));
                   });
+
+                  it('second claim reverts', async function() {
+                    await expectRevert(this.pool.claim(userAddress, secondUserAddress, {from: secondUserAddress}), "Pool: User has no redeemable pool tokens");
+                  });
+
                   it('updates balances', async function() {
                     expect(await this.pool.balanceOf(userAddress)).to.be.bignumber.equal(this.expectedPoolFeiFirst);
                     expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiSecond.add(this.expectedPoolFeiFirst));
@@ -357,7 +368,6 @@ describe('Pool', function () {
                     expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(75001));
                     expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
                     expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(75001));
-
                   });
                 });
                 describe('Not Approved', function() {
@@ -466,6 +476,12 @@ describe('Pool', function () {
                   expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(100000));
                   expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100000));
+                });
+              });
+              describe('Deposit', function() {
+                it('reverts', async function() {
+                  await this.fei.mint(userAddress, '100', {from: minterAddress});
+                  await expectRevert(this.pool.deposit(userAddress, '100', {from: userAddress}), "Pool: Window has ended");
                 });
               });
             });
