@@ -22,6 +22,14 @@ describe('BondingCurveOracle', function () {
     this.oracle = await BondingCurveOracle.new(this.core.address, this.mockOracle.address, this.bondingCurve.address, duration);
   });
 
+  describe('Update', function() {
+    it('updates uniswap oracle', async function() {
+      expect(await this.mockOracle.updated()).to.be.equal(false);
+      await this.oracle.update();
+      expect(await this.mockOracle.updated()).to.be.equal(true);
+    });
+  });
+
   describe('Read', function() {
     describe('Uninitialized', function() {
       it('returns invalid', async function() {

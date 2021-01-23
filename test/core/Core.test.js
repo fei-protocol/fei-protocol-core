@@ -38,6 +38,11 @@ describe('Core', function () {
       );
       expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal('1000');
     });
+
+    it('not enough reverts', async function() {
+      let amount = await this.tribe.balanceOf(this.core.address);
+      await expectRevert(this.core.allocateTribe(userAddress, amount.add(new BN('1')), {from: governorAddress}), "Core: Not enough Tribe");
+    });
   });
 
   describe('Fei Update', function() {
@@ -436,26 +441,29 @@ describe('Core', function () {
     });
 
     describe('Access Control', function () {
-      describe('Minter', function() {
-        it('can revoke', async function() {
+      describe('Non-Revoker', function() {
+        it('cannot revoke', async function() {
+          await expectRevert(this.core.revokeOverride(this.minterRole, minterAddress, {from: userAddress}), "Permissions: Caller is not a revoker");
+        });
+      });
+
+      describe('Revoker', function() {
+        it('can revoke minter', async function() {
           await this.core.revokeOverride(this.minterRole, minterAddress, {from: revokeAddress});
           expect(await this.core.isMinter(minterAddress)).to.be.equal(false);
         });
-      });
-      describe('Burner', function() {
-        it('can revoke', async function() {
+
+        it('can revoke burner', async function() {
           await this.core.revokeOverride(this.burnerRole, burnerAddress, {from: revokeAddress});
           expect(await this.core.isBurner(burnerAddress)).to.be.equal(false);
         });
-      });
-      describe('PCV Controller', function() {
-        it('can revoke', async function() {
+
+        it('can revoke pcv controller', async function() {
           await this.core.revokeOverride(this.pcvControllerRole, pcvControllerAddress, {from: revokeAddress});
           expect(await this.core.isPCVController(pcvControllerAddress)).to.be.equal(false);
         });
-      });
-      describe('Governor', function() {
-        it('can revoke', async function() {
+
+        it('can revoke governor', async function() {
           await this.core.revokeOverride(this.governorRole, governorAddress, {from: revokeAddress});
           expect(await this.core.isGovernor(governorAddress)).to.be.equal(false);
         });

@@ -65,10 +65,6 @@ contract LinearTokenTimelock is Timed {
         uint elapsed = timestamp();
         uint _duration = duration;
 
-        if (elapsed > _duration) {
-            elapsed = _duration;
-        }
-
         uint totalAvailable = initialBalance * elapsed / _duration;
         uint netAvailable = totalAvailable - alreadyReleasedAmount();
         return netAvailable;
