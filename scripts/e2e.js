@@ -40,6 +40,11 @@ module.exports = async function(callback) {
   let ggPurchaseGas = ggPurchase['receipt']['gasUsed'];
   console.log(`Genesis Group Purchase of ${stringify(ethAmount)}`); 
   
+
+  let ggCommit = await gg.commit(accounts[0], accounts[0], ethAmount.div(new BN('2')), {from: accounts[0]});
+  let ggCommitGas = ggCommit['receipt']['gasUsed'];
+  console.log(`Genesis Group Commit of ${stringify(ethAmount)} / 2`); 
+
   console.log('Sleeping for 60s');
   await sleep(60000);
   await uo.update();
@@ -128,6 +133,9 @@ module.exports = async function(callback) {
   let tribeEarned = tribeAfterClaim.sub(tribeBeforeClaim);
   console.log(`Claim: poolBurned=${stringify(poolBurned)}, tribeEarned=${stringify(tribeEarned)}`);
 
+  console.log('Sleeping for 10s');
+  sleep(10000);
+
   let pairBeforeWithdraw = await pair.balanceOf(accounts[0]);
   let withdraw = await pool.withdraw(accounts[0], {from: accounts[0]});
   let withdrawGas = withdraw['receipt']['gasUsed'];
@@ -137,7 +145,7 @@ module.exports = async function(callback) {
   console.log(`Withdraw: pool=${stringify(poolAfterWithdraw)}, pairBefore=${stringify(pairBeforeWithdraw)}, pairAfter=${stringify(pairAfterWithdraw)}`);
 
   console.log(`Gas:`);
-  console.log(`GenesisGroup: purchase=${ggPurchaseGas}, launch=${launchGas}, redeem: ${redeemGas}`);
+  console.log(`GenesisGroup: purchase=${ggPurchaseGas}, launch=${launchGas}, redeem: ${redeemGas}, commit: ${ggCommitGas}`);
   console.log(`Admin: idoRedeem=${idoRedeemGas}, tribeRedeem=${adminTribeRedeemGas}, tribeDelegation=${adminDelegationGas}`);
   console.log(`Bonding Curve: pre=${preScaleBCGas}, post=${postScaleBCGas}`);
   console.log(`Uni: sell=${feiSellGas}`);

@@ -17,4 +17,9 @@ interface IDOInterface {
     /// @param feiRatio the exchange rate for FEI/TRIBE
     /// @dev the contract will mint any FEI necessary to do the listing. Assumes no existing LP
 	function deploy(Decimal.D256 calldata feiRatio) external;
+
+	/// @notice swaps Genesis Group FEI on Uniswap For TRIBE
+	/// @param amountFei the amount of FEI to swap
+	/// @return uint amount of TRIBE sent to Genesis Group
+	function swapFei(uint amountFei) external returns(uint);
 }
