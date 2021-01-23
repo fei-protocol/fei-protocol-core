@@ -27,6 +27,11 @@ describe('EthBondingCurve', function () {
   });
 
   describe('Purchase', function() {
+    describe('Average Price', function() {
+      it('is accurate', async function() {
+        expect((await this.bondingCurve.getAveragePrice('50'))[0]).to.be.equal('485163694230433348'); // about .48
+      });
+    });
     describe('Incorrect ETH sent', function() {
       it('Too little ETH', async function() {
         await expectRevert(this.bondingCurve.purchase(userAddress, "1000000000000000000", {value: "100"}), "Bonding Curve: Sent value does not equal input");
@@ -36,6 +41,14 @@ describe('EthBondingCurve', function () {
       });
     });
     describe('Correct ETH sent', function() {
+
+      describe('Invalid Oracle', function() {
+        it('reverts', async function() {
+          this.oracle.setValid(false);
+          await expectRevert(this.bondingCurve.purchase(userAddress, "50", {value: "50"}), "OracleRef: oracle invalid");     
+        })
+      });
+
       describe('Pre Scale', function() {
         beforeEach(async function() {
           expectEvent(
@@ -260,6 +273,10 @@ describe('EthBondingCurve', function () {
         expect(await this.bondingCurve.buffer()).to.be.bignumber.equal(new BN(1000));
       });
 
+      it('Governor set outside range reverts', async function() {
+        await expectRevert(this.bondingCurve.setBuffer(10000, {from: governorAddress}), "BondingCurve: Buffer exceeds or matches granularity");
+      });
+
       it('Non-governor set reverts', async function() {
         await expectRevert(this.bondingCurve.setBuffer(1000, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
@@ -281,6 +298,22 @@ describe('EthBondingCurve', function () {
 
       it('Non-governor set reverts', async function() {
         await expectRevert(this.bondingCurve.setAllocation([this.pcvDeposit1.address], [10000], {from: userAddress}), "CoreRef: Caller is not a governor");
+      });
+    });
+
+    describe('Core', function() {
+      it('Governor set succeeds', async function() {
+        expectEvent(
+          await this.bondingCurve.setCore(userAddress, {from: governorAddress}), 
+          'CoreUpdate', 
+          { _core : userAddress }
+        );
+
+        expect(await this.bondingCurve.core()).to.be.equal(userAddress);
+      });
+
+      it('Non-governor set reverts', async function() {
+        await expectRevert(this.bondingCurve.setCore(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
   });

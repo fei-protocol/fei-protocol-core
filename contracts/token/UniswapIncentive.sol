@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/utils/SafeCast.sol";
 import "@openzeppelin/contracts/math/Math.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./IUniswapIncentive.sol";
 import "../utils/SafeMath32.sol";
 import "../refs/UniRef.sol";
@@ -13,6 +14,7 @@ import "../oracle/IOracle.sol";
 contract UniswapIncentive is IUniswapIncentive, UniRef {
 	using Decimal for Decimal.D256;
     using SafeMath32 for uint32;
+    using SafeMath for uint;
     using SafeCast for uint;
 
     struct TimeWeightInfo {
@@ -149,8 +151,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         uint incentivizedAmount = amount;
         if (initialDeviation.equals(Decimal.zero())) {
             uint amountToPeg = getAmountToPegFei();
-            require(amount >= amountToPeg, "UniswapIncentive: Underflow");
-            incentivizedAmount = amount - amountToPeg;
+            incentivizedAmount = amount.sub(amountToPeg, "UniswapIncentive: Underflow");
         }
 
         Decimal.D256 memory multiplier = calculateSellPenaltyMultiplier(finalDeviation); 

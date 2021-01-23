@@ -46,11 +46,6 @@ abstract contract CoreRef is ICoreRef {
 		_;
 	}
 
-	modifier onlyCore() {
-		require(msg.sender == address(_core), "CoreRef: Caller is not core");
-		_;
-	}
-
 	modifier onlyFei() {
 		require(msg.sender == address(fei()), "CoreRef: Caller is not FEI");
 		_;

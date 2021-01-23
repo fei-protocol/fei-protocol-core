@@ -41,6 +41,7 @@ describe('GenesisGroup', function () {
     describe('Purchase', function() {
       describe('No value', function() {
         it('reverts', async function() {
+          await expectRevert(this.genesisGroup.isAtMaxPrice(), "GenesisGroup: No balance");
           await expectRevert(this.genesisGroup.purchase(userAddress, 0, {from: userAddress, value: 0}), "GenesisGroup: no value sent");
         });
       });
@@ -441,6 +442,10 @@ describe('GenesisGroup', function () {
           expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(7500));
           expect(await this.fei.balanceOf(this.genesisGroup.address)).to.be.bignumber.equal(new BN(12500));
           expect(await this.tribe.balanceOf(this.genesisGroup.address)).to.be.bignumber.equal(new BN(2500));
+        });
+
+        it('Second redeem reverts', async function() {
+          await expectRevert(this.genesisGroup.redeem(userAddress, {from: userAddress}), "GensisGroup: No balance to redeem");
         });
       });
 
