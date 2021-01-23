@@ -27,7 +27,43 @@ describe('IDO', function () {
     this.window = new BN(4 * 365 * 24 * 60 * 60);
     this.ido = await IDO.new(this.core.address, beneficiaryAddress, this.window, this.pair.address, this.router.address);
     await this.core.grantMinter(this.ido.address, {from: governorAddress});
+    await this.core.grantMinter(minterAddress, {from: governorAddress});
     await this.core.allocateTribe(this.ido.address, 100000, {from: governorAddress});
+  });
+
+  describe('Swap', function() {
+    describe('Not Genesis Group', function() {
+      it('reverts', async function() {
+        await expectRevert(this.ido.swapFei('5000', {from: userAddress}), "CoreRef: Caller is not GenesisGroup");
+      });
+    });
+
+    describe('From Genesis Group', function() {
+      beforeEach(async function() {
+        await this.pair.setReserves('500000', '100000');
+        await this.fei.mint(genesisGroup, '50000', {from: minterAddress});
+      });
+
+      describe('Not approved', function() {
+        it('reverts', async function() {
+          await expectRevert(this.ido.swapFei('50000', {from: genesisGroup}), "ERC20: transfer amount exceeds allowance");
+        });
+      });
+      describe('Approved', function() {
+        beforeEach(async function() {
+          await this.fei.approve(this.ido.address, '50000', {from: genesisGroup});
+          await this.ido.swapFei('50000', {from: genesisGroup});
+        });
+
+        it('genesis group balances', async function() {
+          expect(await this.fei.balanceOf(this.ido.address)).to.be.bignumber.equal(new BN(0));
+        });
+
+        it('updates pair balances', async function() {
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(50000));
+        });
+      });
+    });
   });
 
   describe('Deploy', function() {

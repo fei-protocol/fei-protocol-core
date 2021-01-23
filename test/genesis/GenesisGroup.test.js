@@ -327,7 +327,14 @@ describe('GenesisGroup', function () {
 
         describe('Unapproved exit', function() {
           it('reverts', async function() {
-            await expectRevert(this.genesisGroup.emergencyExit(userAddress, userAddress, {from: secondUserAddress}), "ERC20: burn amount exceeds allowance");
+            await expectRevert(this.genesisGroup.emergencyExit(userAddress, userAddress, {from: secondUserAddress}), "GenesisGroup: Not approved for emergency withdrawal");
+          });
+        });
+
+        describe('Second exit', function() {
+          it('reverts', async function() {
+            await this.genesisGroup.emergencyExit(userAddress, userAddress, {from: userAddress});
+            await expectRevert(this.genesisGroup.emergencyExit(userAddress, userAddress, {from: secondUserAddress}), "GenesisGroup: No FGEN or committed balance");
           });
         });
       });
@@ -358,8 +365,14 @@ describe('GenesisGroup', function () {
       it('second launch reverts', async function() {
         await expectRevert(this.genesisGroup.launch(), "Core: Genesis Group already complete");
       });
+
       it('inits Bonding Curve Oracle', async function() {
         expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('100000000000000000'));
+      });
+
+      it('emergencyExit fails', async function() {
+        await time.increase('300000'); // over escape window
+        await expectRevert(this.genesisGroup.emergencyExit(userAddress, userAddress, {from: secondUserAddress}), "GenesisGroup: Not enough ETH to redeem");
       });
     });
 
@@ -447,6 +460,14 @@ describe('GenesisGroup', function () {
           expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(2500));
           expect(await this.fei.balanceOf(this.genesisGroup.address)).to.be.bignumber.equal(new BN(0));
           expect(await this.tribe.balanceOf(this.genesisGroup.address)).to.be.bignumber.equal(new BN(0));
+        });
+
+        it('nothing left to redeem', async function() {
+          let remaining = await this.genesisGroup.getAmountsToRedeem(userAddress);
+          console.log(remaining);
+          expect(remaining.feiAmount).to.be.bignumber.equal(new BN('0'));
+          expect(remaining.genesisTribe).to.be.bignumber.equal(new BN('0'));
+          expect(remaining.idoTribe).to.be.bignumber.equal(new BN('0'));
         });
       });
 

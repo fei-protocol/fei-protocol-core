@@ -6,7 +6,7 @@ async function main () {
   await runCoverage(
     ['mock'],
     'npm run compile',
-    './node_modules/.bin/mocha --exit --timeout 10000 --recursive'.split(' '),
+    './node_modules/.bin/mocha --exit --timeout 10000 --recursive test/genesis'.split(' '),
   );
 }
 
