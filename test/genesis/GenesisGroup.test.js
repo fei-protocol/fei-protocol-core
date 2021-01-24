@@ -445,7 +445,7 @@ describe('GenesisGroup', function () {
         });
 
         it('Second redeem reverts', async function() {
-          await expectRevert(this.genesisGroup.redeem(userAddress, {from: userAddress}), "GensisGroup: No balance to redeem");
+          await expectRevert(this.genesisGroup.redeem(userAddress, {from: userAddress}), "GenesisGroup: No redeemable TRIBE");
         });
       });
 
