@@ -29,7 +29,7 @@ describe('EthBondingCurve', function () {
   describe('Purchase', function() {
     describe('Average Price', function() {
       it('is accurate', async function() {
-        expect((await this.bondingCurve.getAveragePrice('50'))[0]).to.be.equal('485163694230433348'); // about .48
+        expect((await this.bondingCurve.getAveragePrice('50000000'))[0]).to.be.equal('628095921919610746'); // about .48
       });
     });
     describe('Incorrect ETH sent', function() {
@@ -45,7 +45,7 @@ describe('EthBondingCurve', function () {
       describe('Invalid Oracle', function() {
         it('reverts', async function() {
           this.oracle.setValid(false);
-          await expectRevert(this.bondingCurve.purchase(userAddress, "50", {value: "50"}), "OracleRef: oracle invalid");     
+          await expectRevert(this.bondingCurve.purchase(userAddress, "50000000", {value: "50000000"}), "OracleRef: oracle invalid");     
         })
       });
 

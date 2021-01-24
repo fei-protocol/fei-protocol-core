@@ -39,7 +39,7 @@ contract EthBondingCurve is BondingCurve {
 		return address(this).balance;
 	}
 
-	// Represents the integral solved for upper bound of P(x) = ((k+X)/(k+S))^1/2 * O. Subtracting starting point (k+C)
+	// Represents the integral solved for upper bound of P(x) = ((k+X)/(k+S))^1/2 * O. Subtracting starting point C
 	function _getBondingCurveAmountOut(uint adjustedAmountIn) internal view override returns (uint amountOut) {
 		uint shiftTotal = _shift(totalPurchased); // k + C
 		uint radicand = (3 * adjustedAmountIn * _shift(scale).sqrt() / 2) + shiftTotal.threeHalfsRoot();
