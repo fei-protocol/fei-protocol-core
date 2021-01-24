@@ -469,7 +469,6 @@ describe('GenesisGroup', function () {
 
         it('nothing left to redeem', async function() {
           let remaining = await this.genesisGroup.getAmountsToRedeem(userAddress);
-          console.log(remaining);
           expect(remaining.feiAmount).to.be.bignumber.equal(new BN('0'));
           expect(remaining.genesisTribe).to.be.bignumber.equal(new BN('0'));
           expect(remaining.idoTribe).to.be.bignumber.equal(new BN('0'));

@@ -52,6 +52,16 @@ interface IIncentiveOrchestrator {
 	function detonate() external;
 }
 
+interface IRouterOrchestrator {
+	function init(
+		address pair, 
+		address weth,
+		address incentive
+	) external returns(address ethRouter);
+
+	function detonate() external;
+}
+
 interface IControllerOrchestrator {
 	function init(
 		address core, 
@@ -165,11 +175,13 @@ contract CoreOrchestrator is Ownable {
 	IIDOOrchestrator private idoOrchestrator;
 	IGenesisOrchestrator private genesisOrchestrator;
 	IGovernanceOrchestrator private governanceOrchestrator;
-	
+	IRouterOrchestrator private routerOrchestrator;
+
 	// ----------- Deployed Contracts -----------
 	Core public core;
 	address public fei;
 	address public tribe;
+	address public feiRouter;
 
 	address public ethUniswapPCVDeposit;
 	address public ethBondingCurve;
@@ -198,6 +210,7 @@ contract CoreOrchestrator is Ownable {
 		address _idoOrchestrator,
 		address _genesisOrchestrator, 
 		address _governanceOrchestrator,
+		address _routerOrchestrator,
 		address _admin
 	) public {
 		core = new Core();
@@ -213,6 +226,7 @@ contract CoreOrchestrator is Ownable {
 		controllerOrchestrator = IControllerOrchestrator(_controllerOrchestrator);
 		genesisOrchestrator = IGenesisOrchestrator(_genesisOrchestrator);
 		governanceOrchestrator = IGovernanceOrchestrator(_governanceOrchestrator);
+		routerOrchestrator = IRouterOrchestrator(_routerOrchestrator);
 
 		admin = _admin;
 		tribeSupply = IERC20(tribe).totalSupply();
@@ -269,6 +283,15 @@ contract CoreOrchestrator is Ownable {
 		incentiveOrchestrator.detonate();
 	}
 
+	function initRouter() public onlyOwner {
+		feiRouter = routerOrchestrator.init(ethFeiPair, WETH, uniswapIncentive);
+		
+		IUniswapIncentive(uniswapIncentive).setSellAllowlisted(feiRouter, true);
+		IUniswapIncentive(uniswapIncentive).setSellAllowlisted(ethUniswapPCVDeposit, true);
+		IUniswapIncentive(uniswapIncentive).setSellAllowlisted(ethUniswapPCVController, true);
+
+	}
+
 	function initController() public onlyOwner {
 		ethUniswapPCVController = controllerOrchestrator.init(
 			address(core), 
@@ -282,8 +305,10 @@ contract CoreOrchestrator is Ownable {
 		);
 		core.grantMinter(ethUniswapPCVController);
 		core.grantPCVController(ethUniswapPCVController);
+		
 		IUniswapIncentive(uniswapIncentive).setExemptAddress(ethUniswapPCVDeposit, true);
 		IUniswapIncentive(uniswapIncentive).setExemptAddress(ethUniswapPCVController, true);
+
 		controllerOrchestrator.detonate();
 	}
 

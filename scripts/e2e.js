@@ -14,6 +14,7 @@ const UniswapOracle = artifacts.require("UniswapOracle");
 const BondingCurveOracle = artifacts.require("BondingCurveOracle");
 const EthUniswapPCVController = artifacts.require("EthUniswapPCVController");
 const UniswapIncentive = artifacts.require("UniswapIncentive");
+const FeiRouter = artifacts.require("FeiRouter");
 
 module.exports = async function(callback) {
   let accounts = await web3.eth.getAccounts();
@@ -32,6 +33,7 @@ module.exports = async function(callback) {
   let bco = await BondingCurveOracle.at(await co.bondingCurveOracle());
   let ui = await UniswapIncentive.at(await co.uniswapIncentive());
   let controller = await EthUniswapPCVController.at(await co.ethUniswapPCVController());
+  let router = await FeiRouter.at(await co.feiRouter());
 
   console.log('Init');
   let ethAmount = new BN('100000000000000000000000');
@@ -117,7 +119,8 @@ module.exports = async function(callback) {
 
   feiBefore = await fei.balanceOf(accounts[0]);
   let tenX = ethAmount.mul(new BN('10'));
-  let feiSell = await fei.transfer(await ethPair.address, tenX, {from: accounts[0]});
+  await fei.approve(await router.address, tenX, {from: accounts[0]});
+  let feiSell = await router.sellFei(tenX, ethAmount, 0, accounts[0], ethAmount, {from: accounts[0]});
   let feiSellGas = feiSell['receipt']['gasUsed'];
   feiAfter = await fei.balanceOf(accounts[0]);
   let burned = feiBefore.sub(feiAfter).sub(tenX);

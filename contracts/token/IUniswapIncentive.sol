@@ -17,12 +17,19 @@ interface IUniswapIncentive is IIncentive {
 
     event ExemptAddressUpdate(address indexed _account, bool _isExempt);
 
+    event SellAllowedAddressUpdate(address indexed _account, bool _isSellAllowed);
+
 	// ----------- Governor only state changing api -----------
 
 	/// @notice set an address to be exempted from Uniswap trading incentives
 	/// @param account the address to update
 	/// @param isExempt a flag for whether to exempt or unexempt
  	function setExemptAddress(address account, bool isExempt) external;
+
+	/// @notice set an address to be able to send tokens to Uniswap
+	/// @param account the address to update
+	/// @param isAllowed a flag for whether the account is allowed to sell or not
+	function setSellAllowlisted(address account, bool isAllowed) external;
 
 	/// @notice set the time weight growth function
 	function setTimeWeightGrowth(uint32 growthRate) external;
@@ -41,6 +48,9 @@ interface IUniswapIncentive is IIncentive {
 
 	/// @notice returns true if account is marked as exempt
 	function isExemptAddress(address account) external view returns (bool);
+
+	/// @notice return true if the account is approved to sell to the Uniswap pool
+	function isSellAllowlisted(address account) external view returns (bool);
 
 	/// @notice the granularity of the time weight and growth rate
 	// solhint-disable-next-line func-name-mixedcase
