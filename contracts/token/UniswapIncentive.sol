@@ -29,6 +29,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     uint32 public constant override TIME_WEIGHT_GRANULARITY = 100_000;
 
     mapping(address => bool) private _exempt;
+    mapping(address => bool) private _allowlist;
 
     /// @notice UniswapIncentive constructor
     /// @param _core Fei Core to reference
@@ -48,7 +49,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     function incentivize(
     	address sender, 
     	address receiver, 
-    	address, 
+    	address operator, 
     	uint amountIn
     ) external override onlyFei {
         updateOracle();
@@ -58,6 +59,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     	}
 
     	if (isPair(receiver)) {
+            require(isSellAllowlisted(sender) || isSellAllowlisted(operator), "UniswapIncentive: Blocked Fei sender or operator");
     		incentivizeSell(sender, amountIn);
     	}
     }
@@ -65,6 +67,11 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     function setExemptAddress(address account, bool isExempt) external override onlyGovernor {
     	_exempt[account] = isExempt;
         emit ExemptAddressUpdate(account, isExempt);
+    }
+
+    function setSellAllowlisted(address account, bool isAllowed) external override onlyGovernor {
+        _allowlist[account] = isAllowed;
+        emit SellAllowedAddressUpdate(account, isAllowed);
     }
 
     function setTimeWeightGrowth(uint32 growthRate) external override onlyGovernor {
@@ -99,6 +106,10 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
 
     function isExemptAddress(address account) public view override returns (bool) {
     	return _exempt[account];
+    }
+
+    function isSellAllowlisted(address account) public view override returns(bool) {
+        return _allowlist[account];
     }
 
     function isIncentiveParity() public view override returns (bool) {
