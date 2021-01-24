@@ -8,8 +8,8 @@
     "build": "npm run compile",
     "compile": "truffle compile",
     "coverage": "scripts/coverage.js",
-    "test": "mocha --timeout 10000 --exit --recursive $1",
-    "testAll": "mocha --timeout 10000 --exit --recursive test",
+    "test": "mocha --timeout 10000 --exit --retries 10 --recursive $1",
+    "testAll": "mocha --timeout 10000 --exit --retries 10 --recursive test",
     "deploy": "truffle migrate --network mainnet",
     "verify": "truffle run verify Implementation --network mainnet",
     "abis": "node scripts/abis.js"

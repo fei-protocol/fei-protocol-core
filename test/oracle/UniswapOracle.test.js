@@ -91,14 +91,14 @@ describe('UniswapOracle', function () {
         await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
         await this.pair.setReserves(100000, 50000000);
         await time.increase(this.delta);
-        expectEvent(
-            await this.oracle.update(),
-            'Update',
-            { _peg: '10384593717069655257060992658440' }
-          );
       });
 
       it('updates', async function() {
+        expectEvent(
+          await this.oracle.update(),
+          'Update',
+          { _peg: '10384593717069655257060992658440' }
+        );
         expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.expectedCumulative);
         expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.expectedTime);
         expect((await this.oracle.read())[0].value).to.be.equal('10384593717069655257060992658440192000000000000000');
