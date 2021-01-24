@@ -27,8 +27,7 @@ contract EthBondingCurve is BondingCurve {
 			duration,
 			incentive
 	) {
-		// SHIFT = scale / 3; // Enforces a .50c starting price per bonding curve formula
-		SHIFT = 0;
+		SHIFT = scale / 3; // Enforces a .50c starting price per bonding curve formula
 	}
 
 	function purchase(address to, uint amountIn) external override payable postGenesis returns (uint amountOut) {
