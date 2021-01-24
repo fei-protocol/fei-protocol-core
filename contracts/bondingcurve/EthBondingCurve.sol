@@ -8,6 +8,8 @@ import "../pcv/IPCVDeposit.sol";
 /// @author Fei Protocol
 contract EthBondingCurve is BondingCurve {
 
+	uint internal immutable SHIFT; // k shift
+
 	constructor(
 		uint scale, 
 		address core, 
@@ -24,29 +26,36 @@ contract EthBondingCurve is BondingCurve {
 			oracle, 
 			duration,
 			incentive
-	) {}
+	) {
+		SHIFT = scale / 3; // Enforces a .50c starting price per bonding curve formula
+	}
 
 	function purchase(address to, uint amountIn) external override payable postGenesis returns (uint amountOut) {
 		require(msg.value == amountIn, "Bonding Curve: Sent value does not equal input");
 		return _purchase(amountIn, to);
 	}
 
-	// Represents the integral solved for upper bound of P(x) = (X/S)^1/2 * O
+	function getTotalPCVHeld() public view override returns(uint) {
+		return address(this).balance;
+	}
+
+	// Represents the integral solved for upper bound of P(x) = ((k+X)/(k+S))^1/2 * O. Subtracting starting point (k+C)
 	function _getBondingCurveAmountOut(uint adjustedAmountIn) internal view override returns (uint amountOut) {
-		uint radicand = (3 * adjustedAmountIn * scale.sqrt() / 2) + totalPurchased.threeHalfsRoot();
-		return radicand.twoThirdsRoot() - totalPurchased;
+		uint shiftTotal = _shift(totalPurchased); // k + C
+		uint radicand = (3 * adjustedAmountIn * _shift(scale).sqrt() / 2) + shiftTotal.threeHalfsRoot();
+		return radicand.twoThirdsRoot() - shiftTotal; // result - (k + C)
 	}
 
 	function _getBondingCurvePriceMultiplier() internal view override returns(Decimal.D256 memory) {
-		return Decimal.ratio(totalPurchased.sqrt(), scale.sqrt());
+		return Decimal.ratio(_shift(totalPurchased).sqrt(), _shift(scale).sqrt());
 	}
 
 	function _allocateSingle(uint amount, address pcvDeposit) internal override {
 		IPCVDeposit(pcvDeposit).deposit{value : amount}(amount);
 	}
 
-	function getTotalPCVHeld() public view override returns(uint) {
-		return address(this).balance;
+	function _shift(uint x) internal view returns(uint) {
+		return SHIFT + x;
 	}
 }
 
