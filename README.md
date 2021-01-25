@@ -9,6 +9,7 @@ Currently using Truffle/Ganache with mainnet chain forking for compiling and run
 
 ### Install
 `git clone https://github.com/fei-protocol/fei-protocol-core.git`
+
 `npm install`
 
 ### Testing
