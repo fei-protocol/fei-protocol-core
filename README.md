@@ -12,7 +12,8 @@ Currently using Truffle/Ganache with mainnet chain forking for compiling and run
 `npm install`
 
 ### Testing
-`npm run testAll`
+Entire suite: `npm run testAll`
+Single module/file: `npm run test <path to directory or file e.g. test/genesis, test/token/Fei.test.js>`
 
 ### Coverage
 `npm run coverage`
