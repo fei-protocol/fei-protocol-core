@@ -4,5 +4,18 @@ Smart contract code for Fei Protocol and the FEI stablecoin
 ## Documentation
 See the [Wiki](https://github.com/fei-protocol/fei-protocol-core/wiki)
 
+## Setup
+Currently using Truffle/Ganache with mainnet chain forking for compiling and running contracts locally
+
+### Install
+`git clone https://github.com/fei-protocol/fei-protocol-core.git`
+`npm install`
+
+### Testing
+`npm run testAll`
+
+### Coverage
+`npm run coverage`
+
 ## License
 Fei Protocol is under [the AGPL v3 license](LICENSE.md)
