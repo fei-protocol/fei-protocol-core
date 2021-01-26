@@ -22,10 +22,10 @@ module.exports = async function(callback) {
     value: five
   });
 
-  // Purchase 1 FGEN (account 1)
-  await genesis.purchase(accounts[1], one, {
+  // Purchase 5 FGEN (account 1)
+  await genesis.purchase(accounts[1], five, {
     from: accounts[1],
-    value: one,
+    value: five,
   });
 
   // Burn 0.5 FGEN (account 1)
