@@ -12,7 +12,7 @@ const MockOracle = contract.fromArtifact('MockOracle');
 const MockERC20 = contract.fromArtifact('MockERC20');
 
 describe('UniswapIncentive', function () {
-  const [ userAddress, minterAddress, governorAddress ] = accounts;
+  const [ userAddress, minterAddress, governorAddress, secondUserAddress ] = accounts;
 
   beforeEach(async function () {
 
@@ -34,6 +34,8 @@ describe('UniswapIncentive', function () {
     this.userBalance = new BN(50000000);
     await this.fei.mint(this.pair.address, 5000000, {from: minterAddress});
     this.pairBalance = new BN(5000000);
+
+    await this.incentive.setSellAllowlisted(userAddress, true, {from: governorAddress});
   });
 
   describe('Incentive Parity', function() {
@@ -264,6 +266,20 @@ describe('UniswapIncentive', function () {
     });
 
     describe('Sell', function() {
+      describe('not allowed seller', function() {
+        it('reverts', async function() {
+          await expectRevert(this.fei.transfer(this.pair.address, 500000, {from: secondUserAddress}), "UniswapIncentive: Blocked Fei sender or operator");
+        });
+      });
+
+      describe('approval for allowed seller', function() {
+        it('succeeds', async function() {
+          await this.fei.approve(userAddress, 500000, {from: secondUserAddress});
+          await this.fei.mint(secondUserAddress, 1000000, {from: minterAddress});
+          await this.fei.transferFrom(secondUserAddress, this.pair.address, 500000, {from: userAddress});
+        });
+      });
+
       describe('enough in wallet', function() {
         beforeEach(async function() {
           this.expectedBurn = new BN(20219); // with rounding error
@@ -856,6 +872,24 @@ describe('UniswapIncentive', function () {
 
       it('Non-governor set reverts', async function() {
         await expectRevert(this.incentive.setExemptAddress(userAddress, true, {from: userAddress}), "CoreRef: Caller is not a governor");
+      });
+    });
+
+    describe('Sell Allowed Addresses', function() {
+      it('Governor set succeeds', async function() {
+        expectEvent(
+          await this.incentive.setSellAllowlisted(secondUserAddress, true, {from: governorAddress}),
+          'SellAllowedAddressUpdate',
+          {
+            _account: secondUserAddress,
+            _isSellAllowed: true
+          }
+        );
+        expect(await this.incentive.isSellAllowlisted(secondUserAddress)).to.be.equal(true);
+      });
+
+      it('Non-governor set reverts', async function() {
+        await expectRevert(this.incentive.setSellAllowlisted(secondUserAddress, true, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
   });

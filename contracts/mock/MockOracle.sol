@@ -10,18 +10,25 @@ contract MockOracle is IOracle {
     // fixed exchange ratio
     uint256 _usdPerEth;
 	bool public override killSwitch;
+    bool public updated;
+    bool public valid = true;
 
     constructor(uint256 usdPerEth) public {
         _usdPerEth = usdPerEth;
     }
 
     function update() public override returns (bool) {
+        updated = true;
         return true;
     }
 
     function read() public view override returns (Decimal.D256 memory, bool) {
         Decimal.D256 memory price = Decimal.from(_usdPerEth); 
-        return (price, true);
+        return (price, valid);
+    }
+
+    function setValid(bool isValid) public {
+        valid = isValid;
     }
 
     function setExchangeRate(uint256 usdPerEth) public {

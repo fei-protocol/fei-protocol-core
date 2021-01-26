@@ -104,6 +104,12 @@ describe('Pool', function () {
           this.latest = await time.latest();
           this.expectedPoolFeiFirst = this.end.sub(this.latest).mul(new BN(100));
         });
+
+        it('too much deposit reverts', async function() {
+          let amount = await this.fei.balanceOf(userAddress);
+          await expectRevert(this.pool.deposit(userAddress, amount.add(new BN('1')), {from: userAddress}), "Pool: Balance too low to stake");
+        });
+
         it('updates balances', async function() {
           expect(await this.pool.balanceOf(userAddress)).to.be.bignumber.equal(this.expectedPoolFeiFirst);
           expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiFirst);
@@ -164,8 +170,13 @@ describe('Pool', function () {
             });
             describe('Withdraw', function() {
               beforeEach(async function() {
+                this.withdraw = await this.pool.withdraw(userAddress, {from: userAddress}); 
+
+              });
+
+              it('has event', async function() {
                 expectEvent(
-                  await this.pool.withdraw(userAddress, {from: userAddress}),
+                  this.withdraw,
                   'Withdraw',
                   {
                     _from: userAddress,
@@ -175,6 +186,7 @@ describe('Pool', function () {
                   }
                 );
               });
+
               it('updates balances', async function() {
                 expect(await this.pool.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
                 expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiSecond);
@@ -212,8 +224,12 @@ describe('Pool', function () {
             });
             describe('Withdraw To', function() {
               beforeEach(async function() {
+                this.withdraw = await this.pool.withdraw(secondUserAddress, {from: userAddress})
+              });
+
+              it('has event', async function() {
                 expectEvent(
-                  await this.pool.withdraw(secondUserAddress, {from: userAddress}),
+                  this.withdraw,
                   'Withdraw',
                   {
                     _from: userAddress,
@@ -223,6 +239,7 @@ describe('Pool', function () {
                   }
                 );
               });
+
               it('updates balances', async function() {
                 expect(await this.pool.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
                 expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiSecond);
@@ -239,8 +256,13 @@ describe('Pool', function () {
             });
             describe('Claim', function() {
               beforeEach(async function() {
-                expectEvent(
-                  await this.pool.claim(userAddress, userAddress, {from: userAddress}),
+                this.claim = await this.pool.claim(userAddress, userAddress, {from: userAddress});
+                this.latest = await time.latest();
+                this.expectedPoolFeiFirst = this.end.sub(this.latest).mul(new BN(100));
+              });
+
+              it('has event', async function() {
+                expectEvent(this.claim,
                   'Claim',
                   {
                     _from: userAddress,
@@ -248,8 +270,6 @@ describe('Pool', function () {
                     _amountReward: '75001'
                   }
                 );
-                this.latest = await time.latest();
-                this.expectedPoolFeiFirst = this.end.sub(this.latest).mul(new BN(100));
               });
               it('updates balances', async function() {
                 expect(await this.pool.balanceOf(userAddress)).to.be.bignumber.equal(this.expectedPoolFeiFirst);
@@ -297,8 +317,14 @@ describe('Pool', function () {
                   beforeEach(async function() {
                     let balance = await this.pool.balanceOf(userAddress);
                     await this.pool.approve(secondUserAddress, balance, {from: userAddress});
+                    this.claim = await this.pool.claim(userAddress, userAddress, {from: secondUserAddress});
+                    this.latest = await time.latest();
+                    this.expectedPoolFeiFirst = this.end.sub(this.latest).mul(new BN(100));
+                  });
+
+                  it('has event', async function() {
                     expectEvent(
-                      await this.pool.claim(userAddress, userAddress, {from: secondUserAddress}),
+                      this.claim,
                       'Claim',
                       {
                         _from: userAddress,
@@ -306,9 +332,8 @@ describe('Pool', function () {
                         _amountReward: '75001'
                       }
                     );
-                    this.latest = await time.latest();
-                    this.expectedPoolFeiFirst = this.end.sub(this.latest).mul(new BN(100));
                   });
+
                   it('updates balances', async function() {
                     expect(await this.pool.balanceOf(userAddress)).to.be.bignumber.equal(this.expectedPoolFeiFirst);
                     expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiSecond.add(this.expectedPoolFeiFirst));
@@ -335,8 +360,14 @@ describe('Pool', function () {
                   beforeEach(async function() {
                     let balance = await this.pool.balanceOf(userAddress);
                     await this.pool.approve(secondUserAddress, balance, {from: userAddress});
+                    this.claim = await this.pool.claim(userAddress, secondUserAddress, {from: secondUserAddress});
+                    this.latest = await time.latest();
+                    this.expectedPoolFeiFirst = this.end.sub(this.latest).mul(new BN(100));
+                  });
+
+                  it('has event', async function() {
                     expectEvent(
-                      await this.pool.claim(userAddress, secondUserAddress, {from: secondUserAddress}),
+                      this.claim,
                       'Claim',
                       {
                         _from: userAddress,
@@ -344,9 +375,12 @@ describe('Pool', function () {
                         _amountReward: '75001'
                       }
                     );
-                    this.latest = await time.latest();
-                    this.expectedPoolFeiFirst = this.end.sub(this.latest).mul(new BN(100));
                   });
+
+                  it('second claim reverts', async function() {
+                    await expectRevert(this.pool.claim(userAddress, secondUserAddress, {from: secondUserAddress}), "Pool: User has no redeemable pool tokens");
+                  });
+
                   it('updates balances', async function() {
                     expect(await this.pool.balanceOf(userAddress)).to.be.bignumber.equal(this.expectedPoolFeiFirst);
                     expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiSecond.add(this.expectedPoolFeiFirst));
@@ -357,7 +391,6 @@ describe('Pool', function () {
                     expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(75001));
                     expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
                     expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(75001));
-
                   });
                 });
                 describe('Not Approved', function() {
@@ -466,6 +499,12 @@ describe('Pool', function () {
                   expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(100000));
                   expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100000));
+                });
+              });
+              describe('Deposit', function() {
+                it('reverts', async function() {
+                  await this.fei.mint(userAddress, '100', {from: minterAddress});
+                  await expectRevert(this.pool.deposit(userAddress, '100', {from: userAddress}), "Pool: Window has ended");
                 });
               });
             });

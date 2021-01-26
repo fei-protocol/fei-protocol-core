@@ -65,14 +65,17 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 
     function redeemableReward(address account) public view override returns(uint amountReward, uint amountPool) {
 		amountPool = _redeemablePoolTokens(account);
-		return (releasedReward() * amountPool / _totalRedeemablePoolTokens(), amountPool);
+		uint totalRedeemablePool = _totalRedeemablePoolTokens();
+		if (totalRedeemablePool == 0) {
+			return (0, 0);
+		}
+		return (releasedReward() * amountPool / totalRedeemablePool, amountPool);
     }
 
 	function releasedReward() public view override returns (uint) {
 		uint total = rewardBalance();
 		uint unreleased = unreleasedReward();
-		require(total >= unreleased, "Pool: Released Reward underflow");
-		return total - unreleased;
+		return total.sub(unreleased, "Pool: Released Reward underflow");
 	}
 
 	function unreleasedReward() public view override returns (uint) {
@@ -100,15 +103,13 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 	function _totalRedeemablePoolTokens() internal view returns(uint) {
 		uint total = totalSupply();
 		uint balance = _twfb(uint(totalStaked));
-		require(total >= balance, "Pool: Total redeemable underflow");
-		return total - balance;
+		return total.sub(balance, "Pool: Total redeemable underflow");
 	}
 
 	function _redeemablePoolTokens(address account) internal view returns(uint) {
 		uint total = balanceOf(account);
 		uint balance = _twfb(stakedBalance[account]);
-		require(total >= balance, "Pool: Redeemable underflow");
-		return total - balance;
+		return total.sub(balance, "Pool: Redeemable underflow");
 	}
 
 	function _unreleasedReward(uint _totalReward, uint _duration, uint _time) internal view virtual returns (uint);

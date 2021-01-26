@@ -14,6 +14,7 @@ const UniswapOracle = artifacts.require("UniswapOracle");
 const BondingCurveOracle = artifacts.require("BondingCurveOracle");
 const EthUniswapPCVController = artifacts.require("EthUniswapPCVController");
 const UniswapIncentive = artifacts.require("UniswapIncentive");
+const FeiRouter = artifacts.require("FeiRouter");
 
 module.exports = async function(callback) {
   let accounts = await web3.eth.getAccounts();
@@ -32,6 +33,7 @@ module.exports = async function(callback) {
   let bco = await BondingCurveOracle.at(await co.bondingCurveOracle());
   let ui = await UniswapIncentive.at(await co.uniswapIncentive());
   let controller = await EthUniswapPCVController.at(await co.ethUniswapPCVController());
+  let router = await FeiRouter.at(await co.feiRouter());
 
   console.log('Init');
   let ethAmount = new BN('100000000000000000000000');
@@ -40,6 +42,11 @@ module.exports = async function(callback) {
   let ggPurchaseGas = ggPurchase['receipt']['gasUsed'];
   console.log(`Genesis Group Purchase of ${stringify(ethAmount)}`); 
   
+
+  let ggCommit = await gg.commit(accounts[0], accounts[0], ethAmount.div(new BN('2')), {from: accounts[0]});
+  let ggCommitGas = ggCommit['receipt']['gasUsed'];
+  console.log(`Genesis Group Commit of ${stringify(ethAmount)} / 2`); 
+
   console.log('Sleeping for 60s');
   await sleep(60000);
   await uo.update();
@@ -112,7 +119,8 @@ module.exports = async function(callback) {
 
   feiBefore = await fei.balanceOf(accounts[0]);
   let tenX = ethAmount.mul(new BN('10'));
-  let feiSell = await fei.transfer(await ethPair.address, tenX, {from: accounts[0]});
+  await fei.approve(await router.address, tenX, {from: accounts[0]});
+  let feiSell = await router.sellFei(tenX, ethAmount, 0, accounts[0], ethAmount, {from: accounts[0]});
   let feiSellGas = feiSell['receipt']['gasUsed'];
   feiAfter = await fei.balanceOf(accounts[0]);
   let burned = feiBefore.sub(feiAfter).sub(tenX);
@@ -128,6 +136,9 @@ module.exports = async function(callback) {
   let tribeEarned = tribeAfterClaim.sub(tribeBeforeClaim);
   console.log(`Claim: poolBurned=${stringify(poolBurned)}, tribeEarned=${stringify(tribeEarned)}`);
 
+  console.log('Sleeping for 10s');
+  sleep(10000);
+
   let pairBeforeWithdraw = await pair.balanceOf(accounts[0]);
   let withdraw = await pool.withdraw(accounts[0], {from: accounts[0]});
   let withdrawGas = withdraw['receipt']['gasUsed'];
@@ -137,7 +148,7 @@ module.exports = async function(callback) {
   console.log(`Withdraw: pool=${stringify(poolAfterWithdraw)}, pairBefore=${stringify(pairBeforeWithdraw)}, pairAfter=${stringify(pairAfterWithdraw)}`);
 
   console.log(`Gas:`);
-  console.log(`GenesisGroup: purchase=${ggPurchaseGas}, launch=${launchGas}, redeem: ${redeemGas}`);
+  console.log(`GenesisGroup: purchase=${ggPurchaseGas}, launch=${launchGas}, redeem: ${redeemGas}, commit: ${ggCommitGas}`);
   console.log(`Admin: idoRedeem=${idoRedeemGas}, tribeRedeem=${adminTribeRedeemGas}, tribeDelegation=${adminDelegationGas}`);
   console.log(`Bonding Curve: pre=${preScaleBCGas}, post=${postScaleBCGas}`);
   console.log(`Uni: sell=${feiSellGas}`);

@@ -6,9 +6,11 @@ const IDOOrchestrator = artifacts.require("IDOOrchestrator");
 const GenesisOrchestrator = artifacts.require("GenesisOrchestrator");
 const GovernanceOrchestrator = artifacts.require("GovernanceOrchestrator");
 const PCVDepositOrchestrator = artifacts.require("PCVDepositOrchestrator");
+const RouterOrchestrator = artifacts.require("RouterOrchestrator");
+const FeiRouter = artifacts.require("FeiRouter");
 
 module.exports = function(deployer, network, accounts) {
-  	var pcvo, bc, incentive, controller, ido, genesis, gov, core;
+  	var pcvo, bc, incentive, controller, ido, genesis, gov, core, routerOrchestrator;
 
 	deployer.then(function() {
 	  	return deployer.deploy(ControllerOrchestrator);
@@ -29,6 +31,9 @@ module.exports = function(deployer, network, accounts) {
 	 	return deployer.deploy(IncentiveOrchestrator);
 	}).then(function(instance) {
 		incentive = instance;
+	 	return deployer.deploy(RouterOrchestrator);
+	}).then(function(instance) {
+		routerOrchestrator = instance;
 	 	return deployer.deploy(PCVDepositOrchestrator);
 	}).then(function(instance) {
 		pcvo = instance;
@@ -39,7 +44,8 @@ module.exports = function(deployer, network, accounts) {
 	 		controller.address, 
 	 		ido.address, 
 	 		genesis.address, 
-	 		gov.address, 
+	 		gov.address,
+	 		routerOrchestrator.address, 
 	 		accounts[0]
 	 	);
 	}).then(function(instance) {
@@ -58,6 +64,8 @@ module.exports = function(deployer, network, accounts) {
 	}).then(function(instance) {
 	 	return pcvo.transferOwnership(core.address);
 	}).then(function(instance) {
+	 	return routerOrchestrator.transferOwnership(core.address);
+	}).then(function(instance) {
 	 	return core.initPairs();
 	}).then(function(instance) {
 	 	return core.initPCVDeposit();
@@ -73,5 +81,7 @@ module.exports = function(deployer, network, accounts) {
 	 	return core.initGenesis();
 	}).then(function(instance) {
 	 	return core.initGovernance();
+	}).then(function(instance) {
+	 	return core.initRouter();
 	});
 }
