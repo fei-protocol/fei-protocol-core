@@ -4,6 +4,7 @@ const { BN, expectEvent, expectRevert, time, balance } = require('@openzeppelin/
 const { expect } = require('chai');
 
 const MockIDO = contract.fromArtifact('MockIDO');
+const ForceEth = contract.fromArtifact('ForceEth');
 const MockBondingCurve = contract.fromArtifact('MockBondingCurve');
 const Core = contract.fromArtifact('Core');
 const GenesisGroup = contract.fromArtifact('GenesisGroup');
@@ -371,9 +372,21 @@ describe('GenesisGroup', function () {
         expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('100000000000000000'));
       });
 
-      it('emergencyExit fails', async function() {
-        await time.increase('300000'); // over escape window
-        await expectRevert(this.genesisGroup.emergencyExit(userAddress, userAddress, {from: secondUserAddress}), "GenesisGroup: Not enough ETH to redeem");
+      describe('Emergency Exit', function() {
+        beforeEach(async function() {
+          await time.increase('300000'); // over escape window
+        });
+
+        it('no ETH in contract reverts', async function() {
+          await expectRevert(this.genesisGroup.emergencyExit(userAddress, userAddress, {from: userAddress}), "GenesisGroup: Launch already happened");
+        });
+
+        it('forced ETH in contract reverts', async function() {
+          let forceEth = await ForceEth.new({value: new BN('100000000000')});
+          await forceEth.forceEth(this.genesisGroup.address);
+
+          await expectRevert(this.genesisGroup.emergencyExit(userAddress, userAddress, {from: userAddress}), "GenesisGroup: Launch already happened");
+        });
       });
     });
 
