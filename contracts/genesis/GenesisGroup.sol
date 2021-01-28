@@ -87,7 +87,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 	function commit(address from, address to, uint amount) external override onlyGenesisPeriod {
 		burnFrom(from, amount);
 
-		committedFGEN[to] = amount;
+		committedFGEN[to] += amount;
 		totalCommittedFGEN += amount;
 
 		emit Commit(from, to, amount);

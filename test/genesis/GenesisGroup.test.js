@@ -174,16 +174,28 @@ describe('GenesisGroup', function () {
       await this.genesisGroup.purchase(userAddress, 750, {from: userAddress, value: 750});
       await this.genesisGroup.purchase(secondUserAddress, 250, {from: secondUserAddress, value: 250});
     });
-    describe('Single Commit', async function() {
-      describe('Self commit', async function() {
+    describe('Single Commit', function() {
+      describe('Self commit', function() {
         beforeEach(async function() {
           await this.genesisGroup.commit(userAddress, userAddress, '500', {from: userAddress});
-          await time.increase('2000');
         });
+
         it('succeeds', async function() {
           expect(await this.genesisGroup.balanceOf(userAddress)).to.be.bignumber.equal('250');
           expect(await this.genesisGroup.committedFGEN(userAddress)).to.be.bignumber.equal('500');
           expect(await this.genesisGroup.totalCommittedFGEN()).to.be.bignumber.equal('500');
+        });
+
+        describe('Second commit', function() {
+          beforeEach(async function() {
+            await this.genesisGroup.commit(userAddress, userAddress, '250', {from: userAddress});
+          });
+
+          it('updates', async function() {
+            expect(await this.genesisGroup.balanceOf(userAddress)).to.be.bignumber.equal('0');
+            expect(await this.genesisGroup.committedFGEN(userAddress)).to.be.bignumber.equal('750');
+            expect(await this.genesisGroup.totalCommittedFGEN()).to.be.bignumber.equal('750');
+          });
         });
       });
 
