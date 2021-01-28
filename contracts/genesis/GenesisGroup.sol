@@ -71,7 +71,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 	}
 
 	modifier onlyGenesisPeriod() {
-		require(!isTimeEnded(), "GenesisGroup: Not in Genesis Period");
+		require(!isTimeEnded() && !core().hasGenesisGroupCompleted(), "GenesisGroup: Not in Genesis Period");
 		_;
 	}
 
