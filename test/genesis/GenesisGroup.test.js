@@ -158,8 +158,15 @@ describe('GenesisGroup', function () {
         it('inits Bonding Curve Oracle', async function() {
           expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('950000000000000000'));
         });
-      });
 
+        it('reverts purchase', async function() {
+          await expectRevert(this.genesisGroup.purchase(userAddress, 100, {from: userAddress, value: 100}), "GenesisGroup: Not in Genesis Period");
+        });
+
+        it('reverts pre-commit', async function() {
+          await expectRevert(this.genesisGroup.commit(userAddress, userAddress, '500', {from: userAddress}), "GenesisGroup: Not in Genesis Period");
+        });
+      });
     });
 
     describe('Redeem', function() {
