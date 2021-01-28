@@ -185,6 +185,21 @@ describe('GenesisGroup', function () {
           expect(await this.genesisGroup.committedFGEN(userAddress)).to.be.bignumber.equal('500');
           expect(await this.genesisGroup.totalCommittedFGEN()).to.be.bignumber.equal('500');
         });
+
+        describe('Exit', function() {
+          beforeEach(async function() {
+            await time.increase('300000');
+            await this.genesisGroup.emergencyExit(userAddress, userAddress, {from: userAddress});
+          });
+
+          it('decrements user committed', async function() {
+            expect(await this.genesisGroup.committedFGEN(userAddress)).to.be.bignumber.equal(new BN('0'));
+          });
+
+          it('decrements total committed', async function() {
+            expect(await this.genesisGroup.totalCommittedFGEN()).to.be.bignumber.equal(new BN('0'));
+          });
+        });
       });
 
       describe('Commit other', async function() {

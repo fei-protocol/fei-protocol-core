@@ -175,15 +175,17 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 	function emergencyExit(address from, address to) external {
 		require(now > (startTime + duration + 3 days), "GenesisGroup: Not in exit window");
 
-		uint amountFGEN = balanceOf(from);
-		uint total = amountFGEN + committedFGEN[from];
+		uint heldFGEN = balanceOf(from);
+		uint committed = committedFGEN[from];
+		uint total = heldFGEN + committed;
 
 		require(total != 0, "GenesisGroup: No FGEN or committed balance");
 		require(address(this).balance >= total, "GenesisGroup: Not enough ETH to redeem");
 		require(msg.sender == from || allowance(from, msg.sender) >= total, "GenesisGroup: Not approved for emergency withdrawal");
 
-		burnFrom(from, amountFGEN);
+		burnFrom(from, heldFGEN);
 		committedFGEN[from] = 0;
+		totalCommittedFGEN -= committed;
 
 		payable(to).transfer(total);
 	}
