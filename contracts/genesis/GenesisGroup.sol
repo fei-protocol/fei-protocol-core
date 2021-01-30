@@ -71,7 +71,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 	}
 
 	modifier onlyGenesisPeriod() {
-		require(!isTimeEnded(), "GenesisGroup: Not in Genesis Period");
+		require(!isTimeEnded() && !core().hasGenesisGroupCompleted(), "GenesisGroup: Not in Genesis Period");
 		_;
 	}
 
@@ -87,7 +87,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 	function commit(address from, address to, uint amount) external override onlyGenesisPeriod {
 		burnFrom(from, amount);
 
-		committedFGEN[to] = amount;
+		committedFGEN[to] += amount;
 		totalCommittedFGEN += amount;
 
 		emit Commit(from, to, amount);
@@ -128,7 +128,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		uint totalFGEN = circulatingFGEN + totalCommittedFGEN;
 
 		// subtract purchased TRIBE amount
-		uint totalGenesisTribe = tribeBalance() - totalCommittedTribe;
+		uint totalGenesisTribe = tribeBalance().sub(totalCommittedTribe);
 
 		if (circulatingFGEN != 0) {
 			feiAmount = feiBalance() * userFGEN / circulatingFGEN;
@@ -172,20 +172,23 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 	}
 
 	// Add a backdoor out of Genesis in case of brick
-	function emergencyExit(address from, address to) external {
+	function emergencyExit(address from, address payable to) external {
 		require(now > (startTime + duration + 3 days), "GenesisGroup: Not in exit window");
+		require(!core().hasGenesisGroupCompleted(), "GenesisGroup: Launch already happened");
 
-		uint amountFGEN = balanceOf(from);
-		uint total = amountFGEN + committedFGEN[from];
+		uint heldFGEN = balanceOf(from);
+		uint committed = committedFGEN[from];
+		uint total = heldFGEN + committed;
 
 		require(total != 0, "GenesisGroup: No FGEN or committed balance");
 		require(address(this).balance >= total, "GenesisGroup: Not enough ETH to redeem");
 		require(msg.sender == from || allowance(from, msg.sender) >= total, "GenesisGroup: Not approved for emergency withdrawal");
 
-		burnFrom(from, amountFGEN);
+		burnFrom(from, heldFGEN);
 		committedFGEN[from] = 0;
+		totalCommittedFGEN -= committed;
 
-		payable(to).transfer(total);
+		to.transfer(total);
 	}
 
 	function getAmountOut(

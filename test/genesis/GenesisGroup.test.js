@@ -4,6 +4,7 @@ const { BN, expectEvent, expectRevert, time, balance } = require('@openzeppelin/
 const { expect } = require('chai');
 
 const MockIDO = contract.fromArtifact('MockIDO');
+const ForceEth = contract.fromArtifact('ForceEth');
 const MockBondingCurve = contract.fromArtifact('MockBondingCurve');
 const Core = contract.fromArtifact('Core');
 const GenesisGroup = contract.fromArtifact('GenesisGroup');
@@ -158,8 +159,15 @@ describe('GenesisGroup', function () {
         it('inits Bonding Curve Oracle', async function() {
           expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('950000000000000000'));
         });
-      });
 
+        it('reverts purchase', async function() {
+          await expectRevert(this.genesisGroup.purchase(userAddress, 100, {from: userAddress, value: 100}), "GenesisGroup: Not in Genesis Period");
+        });
+
+        it('reverts pre-commit', async function() {
+          await expectRevert(this.genesisGroup.commit(userAddress, userAddress, '500', {from: userAddress}), "GenesisGroup: Not in Genesis Period");
+        });
+      });
     });
 
     describe('Redeem', function() {
@@ -174,16 +182,42 @@ describe('GenesisGroup', function () {
       await this.genesisGroup.purchase(userAddress, 750, {from: userAddress, value: 750});
       await this.genesisGroup.purchase(secondUserAddress, 250, {from: secondUserAddress, value: 250});
     });
-    describe('Single Commit', async function() {
-      describe('Self commit', async function() {
+    describe('Single Commit', function() {
+      describe('Self commit', function() {
         beforeEach(async function() {
           await this.genesisGroup.commit(userAddress, userAddress, '500', {from: userAddress});
-          await time.increase('2000');
         });
+
         it('succeeds', async function() {
           expect(await this.genesisGroup.balanceOf(userAddress)).to.be.bignumber.equal('250');
           expect(await this.genesisGroup.committedFGEN(userAddress)).to.be.bignumber.equal('500');
           expect(await this.genesisGroup.totalCommittedFGEN()).to.be.bignumber.equal('500');
+        });
+
+        describe('Exit', function() {
+          beforeEach(async function() {
+            await time.increase('300000');
+            await this.genesisGroup.emergencyExit(userAddress, userAddress, {from: userAddress});
+          });
+
+          it('decrements user committed', async function() {
+            expect(await this.genesisGroup.committedFGEN(userAddress)).to.be.bignumber.equal(new BN('0'));
+          });
+
+          it('decrements total committed', async function() {
+            expect(await this.genesisGroup.totalCommittedFGEN()).to.be.bignumber.equal(new BN('0'));
+          });
+        });
+        describe('Second commit', function() {
+          beforeEach(async function() {
+            await this.genesisGroup.commit(userAddress, userAddress, '250', {from: userAddress});
+          });
+
+          it('updates', async function() {
+            expect(await this.genesisGroup.balanceOf(userAddress)).to.be.bignumber.equal('0');
+            expect(await this.genesisGroup.committedFGEN(userAddress)).to.be.bignumber.equal('750');
+            expect(await this.genesisGroup.totalCommittedFGEN()).to.be.bignumber.equal('750');
+          });
         });
       });
 
@@ -371,9 +405,21 @@ describe('GenesisGroup', function () {
         expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('100000000000000000'));
       });
 
-      it('emergencyExit fails', async function() {
-        await time.increase('300000'); // over escape window
-        await expectRevert(this.genesisGroup.emergencyExit(userAddress, userAddress, {from: secondUserAddress}), "GenesisGroup: Not enough ETH to redeem");
+      describe('Emergency Exit', function() {
+        beforeEach(async function() {
+          await time.increase('300000'); // over escape window
+        });
+
+        it('no ETH in contract reverts', async function() {
+          await expectRevert(this.genesisGroup.emergencyExit(userAddress, userAddress, {from: userAddress}), "GenesisGroup: Launch already happened");
+        });
+
+        it('forced ETH in contract reverts', async function() {
+          let forceEth = await ForceEth.new({value: new BN('100000000000')});
+          await forceEth.forceEth(this.genesisGroup.address);
+
+          await expectRevert(this.genesisGroup.emergencyExit(userAddress, userAddress, {from: userAddress}), "GenesisGroup: Launch already happened");
+        });
       });
     });
 

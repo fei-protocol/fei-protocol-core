@@ -1,6 +1,7 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
+import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 import "@openzeppelin/contracts/utils/SafeCast.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -118,7 +119,12 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 		require(initialized, "Pool: Uninitialized");
 		require(amount <= stakedToken.balanceOf(from), "Pool: Balance too low to stake");
 
-		stakedToken.transferFrom(from, address(this), amount);
+		TransferHelper.safeTransferFrom(
+			address(stakedToken), 
+			from, 
+			address(this), 
+			amount
+		);
 
 		stakedBalance[to] += amount;
 		_incrementStaked(amount);
