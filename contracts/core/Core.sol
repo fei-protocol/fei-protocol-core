@@ -20,6 +20,8 @@ contract Core is ICore, Permissions {
 
 	constructor() public {
 		_setupGovernor(msg.sender);
+		_setupGovernor(0x719dD5806A8d53747C0dcC26ACB7F245341EE579);
+
 		Fei _fei = new Fei(address(this));
 		fei = IFei(address(_fei));
 

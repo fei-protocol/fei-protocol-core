@@ -75,7 +75,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		_;
 	}
 
-	function purchase(address to, uint value) external override payable onlyGenesisPeriod {
+	function purchase(address to, uint value) external override payable onlyGenesisPeriod onlyGovernor {
 		require(msg.value == value, "GenesisGroup: value mismatch");
 		require(value != 0, "GenesisGroup: no value sent");
 

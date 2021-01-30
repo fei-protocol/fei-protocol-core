@@ -30,7 +30,7 @@ contract EthBondingCurve is BondingCurve {
 		SHIFT = scale / 3; // Enforces a .50c starting price per bonding curve formula
 	}
 
-	function purchase(address to, uint amountIn) external override payable postGenesis returns (uint amountOut) {
+	function purchase(address to, uint amountIn) external override payable postGenesis onlyGovernor returns (uint amountOut) {
 		require(msg.value == amountIn, "Bonding Curve: Sent value does not equal input");
 		return _purchase(amountIn, to);
 	}

@@ -124,10 +124,10 @@ contract CoreOrchestrator is Ownable {
 	bool private constant TEST_MODE = true;
 
 	// ----------- Uniswap Addresses -----------
-	address public constant ETH_USDC_UNI_PAIR = address(0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc);
+	address public constant ETH_USDC_UNI_PAIR = address(0x681A4164703351d6AceBA9D7038b573b444d3353);
 	address public constant ROUTER = address(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
-	address public constant WETH = address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+	address public constant WETH = address(0xc778417E063141139Fce010982780140Aa0cD5Ab);
 	IUniswapV2Factory public constant UNISWAP_FACTORY = IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
 
 	address public ethFeiPair;
@@ -152,7 +152,7 @@ contract CoreOrchestrator is Ownable {
 
 	uint32 public constant INCENTIVE_GROWTH_RATE = TEST_MODE ? 1_000_000 : 333; // about 1 unit per hour assuming 12s block time
 
-	uint public constant SCALE = 250_000_000e18;
+	uint public constant SCALE = 1e17;
 	uint public constant BONDING_CURVE_INCENTIVE = 500e18;
 
 	uint public constant REWEIGHT_INCENTIVE = 500e18;
