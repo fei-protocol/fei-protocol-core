@@ -131,7 +131,8 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         Decimal.D256 memory initialDeviation,
         Decimal.D256 memory finalDeviation
     ) {
-        (initialDeviation, finalDeviation) = getPriceDeviations(-1 * int256(amount));
+        int256 signedAmount = amount.toInt256();
+        (initialDeviation, finalDeviation) = getPriceDeviations(-1 * signedAmount);
         weight = getTimeWeight();
 
         if (initialDeviation.equals(Decimal.zero())) {
@@ -153,7 +154,8 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         Decimal.D256 memory initialDeviation,
         Decimal.D256 memory finalDeviation
     ) {
-        (initialDeviation, finalDeviation) = getPriceDeviations(int256(amount));
+        int256 signedAmount = amount.toInt256();
+        (initialDeviation, finalDeviation) = getPriceDeviations(signedAmount);
 
         if (finalDeviation.equals(Decimal.zero())) {
             return (0, initialDeviation, finalDeviation);
