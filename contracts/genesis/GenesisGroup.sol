@@ -172,8 +172,9 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 	}
 
 	// Add a backdoor out of Genesis in case of brick
-	function emergencyExit(address from, address to) external {
+	function emergencyExit(address from, address payable to) external {
 		require(now > (startTime + duration + 3 days), "GenesisGroup: Not in exit window");
+		require(!core().hasGenesisGroupCompleted(), "GenesisGroup: Launch already happened");
 
 		uint heldFGEN = balanceOf(from);
 		uint committed = committedFGEN[from];
@@ -187,7 +188,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		committedFGEN[from] = 0;
 		totalCommittedFGEN -= committed;
 
-		payable(to).transfer(total);
+		to.transfer(total);
 	}
 
 	function getAmountOut(
