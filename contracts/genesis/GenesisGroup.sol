@@ -128,7 +128,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		uint totalFGEN = circulatingFGEN + totalCommittedFGEN;
 
 		// subtract purchased TRIBE amount
-		uint totalGenesisTribe = tribeBalance() - totalCommittedTribe;
+		uint totalGenesisTribe = tribeBalance().sub(totalCommittedTribe);
 
 		if (circulatingFGEN != 0) {
 			feiAmount = feiBalance() * userFGEN / circulatingFGEN;
