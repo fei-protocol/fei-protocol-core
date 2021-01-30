@@ -25,6 +25,14 @@ abstract contract Timed {
         return remainingTime() == 0;
     }
 
+    function setDuration(uint32 _duration) public {
+        duration = _duration;
+    }
+
+    function resetTimed() public {
+        _initTimed();
+    }
+
     /// @notice number of seconds remaining until time is up
     /// @return remaining
     function remainingTime() public view returns (uint32) {

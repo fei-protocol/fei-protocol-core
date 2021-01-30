@@ -29,6 +29,16 @@ contract Core is ICore, Permissions {
 		tribe = IERC20(address(_tribe));
 	}
 
+	function reset() external onlyGovernor {
+		Fei _fei = new Fei(address(this));
+		fei = IFei(address(_fei));
+
+		Tribe _tribe = new Tribe(address(this), msg.sender);
+		tribe = IERC20(address(_tribe));
+
+		hasGenesisGroupCompleted = false;
+	}
+
 	function setFei(address token) external override onlyGovernor {
 		fei = IFei(token);
 		emit FeiUpdate(token);

@@ -137,12 +137,12 @@ contract CoreOrchestrator is Ownable {
 	uint32 constant public RELEASE_WINDOW = TEST_MODE ? 4 days : 4 * 365 days;
 
 	uint public constant TIMELOCK_DELAY = TEST_MODE ? 1 hours : 3 days;
-	uint32 public constant GENESIS_DURATION = TEST_MODE ? 1 minutes : 3 days;
+	uint32 public constant GENESIS_DURATION = TEST_MODE ? 1 hours : 3 days;
 
-	uint32 public constant POOL_DURATION = TEST_MODE ? 2 days : 2 * 365 days;
-	uint32 public constant THAWING_DURATION = TEST_MODE ? 4 minutes : 4 weeks;
+	uint32 public constant POOL_DURATION = TEST_MODE ? 2 hours : 2 * 365 days;
+	uint32 public constant THAWING_DURATION = TEST_MODE ? 10 minutes : 4 weeks;
 
-	uint32 public constant UNI_ORACLE_TWAP_DURATION = TEST_MODE ? 1 : 10 minutes; // 10 min twap
+	uint32 public constant UNI_ORACLE_TWAP_DURATION = TEST_MODE ? 1 minutes : 10 minutes; // 10 min twap
 
 	uint32 public constant BONDING_CURVE_INCENTIVE_DURATION = TEST_MODE ? 1 : 1 days; // 1 day duration
 
@@ -152,7 +152,7 @@ contract CoreOrchestrator is Ownable {
 
 	uint32 public constant INCENTIVE_GROWTH_RATE = TEST_MODE ? 1_000_000 : 333; // about 1 unit per hour assuming 12s block time
 
-	uint public constant SCALE = 1e17;
+	uint public constant SCALE = 100e18;
 	uint public constant BONDING_CURVE_INCENTIVE = 500e18;
 
 	uint public constant REWEIGHT_INCENTIVE = 500e18;
