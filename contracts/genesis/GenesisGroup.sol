@@ -71,7 +71,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 	}
 
 	modifier onlyGenesisPeriod() {
-		require(!isTimeEnded(), "GenesisGroup: Not in Genesis Period");
+		require(!isTimeEnded() && !core().hasGenesisGroupCompleted(), "GenesisGroup: Not in Genesis Period");
 		_;
 	}
 
@@ -87,7 +87,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 	function commit(address from, address to, uint amount) external override onlyGenesisPeriod {
 		burnFrom(from, amount);
 
-		committedFGEN[to] = amount;
+		committedFGEN[to] += amount;
 		totalCommittedFGEN += amount;
 
 		emit Commit(from, to, amount);
@@ -128,7 +128,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		uint totalFGEN = circulatingFGEN + totalCommittedFGEN;
 
 		// subtract purchased TRIBE amount
-		uint totalGenesisTribe = tribeBalance() - totalCommittedTribe;
+		uint totalGenesisTribe = tribeBalance().sub(totalCommittedTribe);
 
 		if (circulatingFGEN != 0) {
 			feiAmount = feiBalance() * userFGEN / circulatingFGEN;

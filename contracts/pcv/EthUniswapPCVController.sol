@@ -119,7 +119,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 		
 		IWETH weth = IWETH(router.WETH());
 		weth.deposit{value: amount}();
-		weth.transfer(address(pair), amount);
+		assert(weth.transfer(address(pair), amount));
 
 		(uint amount0Out, uint amount1Out) = pair.token0() == address(weth) ? (uint(0), amountOut) : (amountOut, uint(0));
 		pair.swap(amount0Out, amount1Out, address(this), new bytes(0));
