@@ -21,15 +21,9 @@ contract Core is ICore, Permissions {
 	constructor() public {
 		_setupGovernor(msg.sender);
 		_setupGovernor(0x719dD5806A8d53747C0dcC26ACB7F245341EE579);
-
-		Fei _fei = new Fei(address(this));
-		fei = IFei(address(_fei));
-
-		Tribe _tribe = new Tribe(address(this), msg.sender);
-		tribe = IERC20(address(_tribe));
 	}
 
-	function reset() external onlyGovernor {
+	function init() external onlyGovernor {
 		Fei _fei = new Fei(address(this));
 		fei = IFei(address(_fei));
 

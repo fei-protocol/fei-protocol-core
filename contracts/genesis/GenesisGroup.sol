@@ -71,13 +71,13 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 	}
 
 	modifier onlyGenesisPeriod() {
-		require(!isTimeEnded() && !core().hasGenesisGroupCompleted(), "GenesisGroup: Not in Genesis Period");
+		require(!isTimeEnded() && !core().hasGenesisGroupCompleted(), "GG: Not in Genesis Period");
 		_;
 	}
 
 	function purchase(address to, uint value) external override payable onlyGenesisPeriod onlyGovernor {
-		require(msg.value == value, "GenesisGroup: value mismatch");
-		require(value != 0, "GenesisGroup: no value sent");
+		require(msg.value == value, "GG: value mismatch");
+		require(value != 0, "GG: no value sent");
 
 		_mint(to, value);
 
@@ -98,7 +98,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 
 		uint tribeAmount = genesisTribe + idoTribe;
 
-		require(tribeAmount != 0, "GenesisGroup: No redeemable TRIBE");
+		require(tribeAmount != 0, "GG: No redeemable TRIBE");
 
 		uint amountIn = balanceOf(to);
 		burnFrom(to, amountIn);
@@ -146,7 +146,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 	}
 
 	function launch() external override {
-		require(isTimeEnded() || isAtMaxPrice(), "GenesisGroup: Still in Genesis Period");
+		require(isTimeEnded() || isAtMaxPrice(), "GG: Still in Genesis Period");
 
 		core().completeGenesisGroup();
 
@@ -173,16 +173,16 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 
 	// Add a backdoor out of Genesis in case of brick
 	function emergencyExit(address from, address payable to) external {
-		require(now > (startTime + duration + 3 days), "GenesisGroup: Not in exit window");
-		require(!core().hasGenesisGroupCompleted(), "GenesisGroup: Launch already happened");
+		require(now > (startTime + duration + 3 days), "GG: Not in exit window");
+		require(!core().hasGenesisGroupCompleted(), "GG: Launch already happened");
 
 		uint heldFGEN = balanceOf(from);
 		uint committed = committedFGEN[from];
 		uint total = heldFGEN + committed;
 
-		require(total != 0, "GenesisGroup: No FGEN or committed balance");
-		require(address(this).balance >= total, "GenesisGroup: Not enough ETH to redeem");
-		require(msg.sender == from || allowance(from, msg.sender) >= total, "GenesisGroup: Not approved for emergency withdrawal");
+		require(total != 0, "GG: No FGEN or committed balance");
+		require(address(this).balance >= total, "GG: Not enough ETH to redeem");
+		require(msg.sender == from || allowance(from, msg.sender) >= total, "GG: Not approved for emergency withdrawal");
 
 		burnFrom(from, heldFGEN);
 		committedFGEN[from] = 0;
@@ -199,7 +199,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		if (!inclusive) {
 			totalIn += amountIn;
 		}
-		require(amountIn <= totalIn, "GenesisGroup: Not enough supply");
+		require(amountIn <= totalIn, "GG: Not enough supply");
 
 		uint totalFei = bondingcurve.getAmountOut(totalIn);
 		uint totalTribe = tribeBalance();
@@ -209,7 +209,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 
 	function isAtMaxPrice() public view override returns(bool) {
 		uint balance = address(this).balance;
-		require(balance != 0, "GenesisGroup: No balance");
+		require(balance != 0, "GG: No balance");
 
 		return bondingcurve.getAveragePrice(balance).greaterThanOrEqualTo(maxGenesisPrice);
 	}

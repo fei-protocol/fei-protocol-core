@@ -23,6 +23,9 @@
 //
 // const fs = require('fs');
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
+const PrivateKeyProvider = require('truffle-privatekey-provider');
+const privateKey = process.env.ETH_PRIVATE_KEY;
+const ropstenPrivateKey = process.env.ROPSTEN_PRIVATE_KEY;
 
 module.exports = {
   /**
@@ -63,6 +66,15 @@ module.exports = {
       gas: 8e6,
       port: 8545,
       network_id: "*",
+    },
+    ropsten: {
+      provider: () => new PrivateKeyProvider(ropstenPrivateKey, `https://eth-ropsten.alchemyapi.io/v2/sPcyUvkf13clVvGrO1wqk3XSZ-LCGR6n`),
+      network_id: 3,       // Ropsten's id
+      gas: 5500000,        // Ropsten has a lower block limit than mainnet
+      gasPrice: 4000000000,
+      confirmations: 2,    // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     },
 
     // Another network with more advanced options...

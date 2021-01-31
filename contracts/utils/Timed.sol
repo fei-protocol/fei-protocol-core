@@ -25,14 +25,6 @@ abstract contract Timed {
         return remainingTime() == 0;
     }
 
-    function setDuration(uint32 _duration) public {
-        duration = _duration;
-    }
-
-    function resetTimed() public {
-        _initTimed();
-    }
-
     /// @notice number of seconds remaining until time is up
     /// @return remaining
     function remainingTime() public view returns (uint32) {
@@ -49,7 +41,7 @@ abstract contract Timed {
 		return t > d ? d : t;
     }
 
-    function _initTimed() internal {
+    function _initTimed() public {
         // solhint-disable-next-line not-rely-on-time
         startTime = now.toUint32();
     }

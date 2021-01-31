@@ -214,8 +214,6 @@ contract CoreOrchestrator is Ownable {
 		address _admin
 	) public {
 		core = new Core();
-		tribe = address(core.tribe());
-		fei = address(core.fei());
 
 		core.grantRevoker(_admin);
 
@@ -229,10 +227,17 @@ contract CoreOrchestrator is Ownable {
 		routerOrchestrator = IRouterOrchestrator(_routerOrchestrator);
 
 		admin = _admin;
-		tribeSupply = IERC20(tribe).totalSupply();
 		if (TEST_MODE) {
 			core.grantGovernor(_admin);
 		}
+	}
+
+	function initCore() public onlyOwner {
+		core.init();
+
+		tribe = address(core.tribe());
+		fei = address(core.fei());
+		tribeSupply = IERC20(tribe).totalSupply();
 	}
 
 	function initPairs() public onlyOwner {
@@ -289,7 +294,6 @@ contract CoreOrchestrator is Ownable {
 		IUniswapIncentive(uniswapIncentive).setSellAllowlisted(feiRouter, true);
 		IUniswapIncentive(uniswapIncentive).setSellAllowlisted(ethUniswapPCVDeposit, true);
 		IUniswapIncentive(uniswapIncentive).setSellAllowlisted(ethUniswapPCVController, true);
-
 	}
 
 	function initController() public onlyOwner {

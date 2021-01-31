@@ -76,7 +76,7 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 	function releasedReward() public view override returns (uint) {
 		uint total = rewardBalance();
 		uint unreleased = unreleasedReward();
-		return total.sub(unreleased, "Pool: Released Reward underflow");
+		return total.sub(unreleased, "Pool: Reward underflow");
 	}
 
 	function unreleasedReward() public view override returns (uint) {
@@ -104,7 +104,7 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 	function _totalRedeemablePoolTokens() internal view returns(uint) {
 		uint total = totalSupply();
 		uint balance = _twfb(uint(totalStaked));
-		return total.sub(balance, "Pool: Total redeemable underflow");
+		return total.sub(balance, "Pool: redeemable underflow");
 	}
 
 	function _redeemablePoolTokens(address account) internal view returns(uint) {
@@ -149,7 +149,7 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 
 	function _claim(address from, address to) internal returns(uint) {
 		(uint amountReward, uint amountPool) = redeemableReward(from);
-		require(amountPool != 0, "Pool: User has no redeemable pool tokens");
+		require(amountPool != 0, "Pool: no redeemable");
 
 		burnFrom(from, amountPool);
 		_incrementClaimed(amountReward);
