@@ -26,6 +26,7 @@
 const PrivateKeyProvider = require('truffle-privatekey-provider');
 const privateKey = process.env.ETH_PRIVATE_KEY;
 const ropstenPrivateKey = process.env.ROPSTEN_PRIVATE_KEY;
+const ropstenAlchemyApiKey = process.env.ROPSTEN_ALCHEMY_API_KEY;
 
 module.exports = {
   /**
@@ -68,7 +69,7 @@ module.exports = {
       network_id: "*",
     },
     ropsten: {
-      provider: () => new PrivateKeyProvider(ropstenPrivateKey, `https://eth-ropsten.alchemyapi.io/v2/sPcyUvkf13clVvGrO1wqk3XSZ-LCGR6n`),
+      provider: () => new PrivateKeyProvider(ropstenPrivateKey, `https://eth-ropsten.alchemyapi.io/v2/${ropstenAlchemyApiKey}`),
       network_id: 3,       // Ropsten's id
       gas: 5500000,        // Ropsten has a lower block limit than mainnet
       gasPrice: 4000000000,
