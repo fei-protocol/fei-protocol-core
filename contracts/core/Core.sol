@@ -20,6 +20,11 @@ contract Core is ICore, Permissions {
 
 	constructor() public {
 		_setupGovernor(msg.sender);
+	}
+
+	function init() external onlyGovernor {
+		hasGenesisGroupCompleted = false;
+
 		Fei _fei = new Fei(address(this));
 		fei = IFei(address(_fei));
 

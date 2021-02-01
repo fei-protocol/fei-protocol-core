@@ -13,6 +13,8 @@ describe('Pool', function () {
 
   beforeEach(async function () {
     this.core = await Core.new({from: governorAddress});
+    await this.core.init({from: governorAddress});
+
     this.window = new BN(2 * 365 * 24 * 60 * 60);
     this.tribe = await Tribe.at(await this.core.tribe());
     this.fei = await Fei.at(await this.core.fei());

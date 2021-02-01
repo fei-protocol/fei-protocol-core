@@ -17,6 +17,8 @@ describe('IDO', function () {
 
   beforeEach(async function () {
     this.core = await Core.new({from: governorAddress});
+    await this.core.init({from: governorAddress});
+
     await this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
     this.fei = await Fei.at(await this.core.fei());
     this.tribe = await Tribe.at(await this.core.tribe());
