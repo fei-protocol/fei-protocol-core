@@ -268,6 +268,7 @@ describe('UniswapIncentive', function () {
     describe('Sell', function() {
       describe('not allowed seller', function() {
         it('reverts', async function() {
+          await this.fei.mint(secondUserAddress, 1000000, {from: minterAddress});
           await expectRevert(this.fei.transfer(this.pair.address, 500000, {from: secondUserAddress}), "UniswapIncentive: Blocked Fei sender or operator");
         });
       });
