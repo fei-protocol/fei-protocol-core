@@ -111,6 +111,26 @@ describe('EthBondingCurve', function () {
           expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("495000000000000000000");
         });
       });
+
+      describe('Crossing Scale Beyond Buffer', function() {
+        beforeEach(async function() {
+          expect((await this.bondingCurve.getAveragePrice("2000000000")).value).to.be.equal("1010101010101010101");
+          expect(await this.bondingCurve.atScale()).to.be.equal(false);
+          await this.bondingCurve.purchase(userAddress, "2000000000", {value: "2000000000"});
+        });
+
+        it('registers scale cross', async function() {
+          // Uses bonding curve for entire trade
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(990000000000));
+          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN(990000000000));
+          expect(await this.bondingCurve.atScale()).to.be.equal(true);
+        });
+
+        it('Correct current price', async function() {
+          expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("495000000000000000000");
+        });
+      });
+
       describe('Post Scale', function() {
         beforeEach(async function() {
            // First reach scale
