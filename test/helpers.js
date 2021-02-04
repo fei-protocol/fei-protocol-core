@@ -12,6 +12,12 @@ const MockCoreRef = contract.fromArtifact('MockCoreRef');
 const Tribe = contract.fromArtifact('Tribe');
 const MockTribe = contract.fromArtifact('MockTribe');
 const TimelockedDelegator = contract.fromArtifact('TimelockedDelegator');
+const MockIDO = contract.fromArtifact('MockIDO');
+const ForceEth = contract.fromArtifact('ForceEth');
+const MockBondingCurve = contract.fromArtifact('MockBondingCurve');
+const GenesisGroup = contract.fromArtifact('GenesisGroup');
+const MockBondingCurveOracle = contract.fromArtifact('MockBCO');
+const MockPool = contract.fromArtifact('MockPool');
 
 const [ userAddress, secondUserAddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress, genesisGroup, keeperAddress, pcvControllerAddress, minterAddress, burnerAddress, revokeAddress ] = accounts;
 
@@ -28,6 +34,11 @@ async function getCore(complete) {
     await core.grantRevoker(revokeAddress, {from: governorAddress});
 
     return core;
+}
+
+async function forceEth(to, amount) {
+    let forceEth = await ForceEth.new({value: amount});
+    await forceEth.forceEth(to);
 }
 
 module.exports = {
@@ -61,6 +72,13 @@ module.exports = {
     Tribe,
     MockTribe,
     TimelockedDelegator,
+    MockIDO,
+    ForceEth,
+    MockBondingCurve,
+    GenesisGroup,
+    MockBondingCurveOracle,
+    MockPool,
     // functions
-    getCore
+    getCore,
+    forceEth
 }

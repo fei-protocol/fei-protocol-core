@@ -1,6 +1,6 @@
 const {
   userAddress,
-  secondUseraddress,
+  secondUserAddress,
   beneficiaryAddress1,
   beneficiaryAddress2,
   governorAddress,
@@ -172,10 +172,10 @@ describe('EthBondingCurve', function () {
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
             expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
             expectEvent(
-              await this.bondingCurve.purchase(secondUseraddress, this.purchaseAmount, {value: this.purchaseAmount}),
+              await this.bondingCurve.purchase(secondUserAddress, this.purchaseAmount, {value: this.purchaseAmount}),
               'Purchase',
               {
-                _to: secondUseraddress,
+                _to: secondUserAddress,
                 _amountIn: this.purchaseAmount,
                 _amountOut: this.expectedFei2
               }
@@ -184,7 +184,7 @@ describe('EthBondingCurve', function () {
 
           it('correct FEI sent', async function() {
             expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.expectedFei1);
-            expect(await this.fei.balanceOf(secondUseraddress)).to.be.bignumber.equal(this.expectedFei2);
+            expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(this.expectedFei2);
           });
   
           it('totalPurchased', async function() {
