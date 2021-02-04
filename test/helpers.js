@@ -1,4 +1,4 @@
-const { accounts, contract } = require('@openzeppelin/test-environment');
+const { accounts, contract, web3 } = require('@openzeppelin/test-environment');
 
 const { BN, expectEvent, expectRevert, balance, time } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
@@ -10,6 +10,8 @@ const MockOracle = contract.fromArtifact('MockOracle');
 const EthBondingCurve = contract.fromArtifact('EthBondingCurve');
 const MockCoreRef = contract.fromArtifact('MockCoreRef');
 const Tribe = contract.fromArtifact('Tribe');
+const MockTribe = contract.fromArtifact('MockTribe');
+const TimelockedDelegator = contract.fromArtifact('TimelockedDelegator');
 
 const [ userAddress, secondUserAddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress, genesisGroup, keeperAddress, pcvControllerAddress, minterAddress, burnerAddress, revokeAddress ] = accounts;
 
@@ -30,6 +32,7 @@ async function getCore(complete) {
 
 module.exports = {
     // utils
+    web3,
     BN,
     expectEvent,
     expectRevert,
@@ -56,6 +59,8 @@ module.exports = {
     EthBondingCurve,
     MockCoreRef,
     Tribe,
+    MockTribe,
+    TimelockedDelegator,
     // functions
     getCore
 }
