@@ -1,24 +1,28 @@
-const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
-const { accounts, contract } = require('@openzeppelin/test-environment');
-
-const { BN, expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers');
-const { expect } = require('chai');
-
-const MockCoreRef = contract.fromArtifact('MockCoreRef');
-const Core = contract.fromArtifact('Core');
-const Tribe = contract.fromArtifact('Tribe');
+const { use } = require('chai');
+const {
+	userAddress,
+	minterAddress,
+	burnerAddress,
+	pcvControllerAddress,
+	governorAddress,
+	genesisGroup,
+	revokeAddress,
+	BN,
+	expectEvent,
+	expectRevert,
+	expect,
+	MockCoreRef,
+	Tribe,
+	getCore
+  } = require('../helpers');
 
 describe('Core', function () {
-  const [ userAddress, minterAddress, burnerAddress, governorAddress, pcvControllerAddress, genesisGroup, revokeAddress ] = accounts;
 
   beforeEach(async function () {
-    this.core = await Core.new({from: governorAddress});
+    this.core = await getCore(false);
     this.tribe = await Tribe.at(await this.core.tribe());
     this.coreRef = await MockCoreRef.new(this.core.address);
-    await this.core.grantMinter(minterAddress, {from: governorAddress});
-    await this.core.grantBurner(burnerAddress, {from: governorAddress});
-    await this.core.grantPCVController(pcvControllerAddress, {from: governorAddress});
-    await this.core.grantRevoker(revokeAddress, {from: governorAddress});
+
     this.minterRole = await this.core.MINTER_ROLE();
     this.burnerRole = await this.core.BURNER_ROLE();
     this.governorRole = await this.core.GOVERN_ROLE();
@@ -26,7 +30,7 @@ describe('Core', function () {
     this.revokeRole = await this.core.REVOKE_ROLE();
   });
 
-  describe('Allocation', function() {
+  describe('Allocate Tribe', function() {
     it('updates', async function() {
       expectEvent(
         await this.core.allocateTribe(userAddress, 1000, {from: governorAddress}),
@@ -42,7 +46,11 @@ describe('Core', function () {
     it('not enough reverts', async function() {
       let amount = await this.tribe.balanceOf(this.core.address);
       await expectRevert(this.core.allocateTribe(userAddress, amount.add(new BN('1')), {from: governorAddress}), "Core: Not enough Tribe");
-    });
+	});
+	
+	it('non governor reverts', async function() {
+		await expectRevert(this.core.allocateTribe(userAddress, '1000', {from: userAddress}), "Permissions: Caller is not a governor");
+	});
   });
 
   describe('Fei Update', function() {
@@ -55,7 +63,11 @@ describe('Core', function () {
         }
       );
       expect(await this.core.fei()).to.be.equal(userAddress);
-    });
+	});
+	
+	it('non governor reverts', async function() {
+		await expectRevert(this.core.setFei(userAddress, {from: userAddress}), "Permissions: Caller is not a governor");
+	});
   });
 
   describe('Genesis', function() {
@@ -91,7 +103,8 @@ describe('Core', function () {
             await this.core.completeGenesisGroup({from: genesisGroup}),
             'GenesisPeriodComplete',
             {}
-          );
+		  );
+		  expect(await this.core.hasGenesisGroupCompleted()).to.be.equal(true);
         });
         it('postGenesis succeeds', async function() {
           await this.coreRef.testPostGenesis();

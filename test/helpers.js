@@ -8,13 +8,23 @@ const Core = contract.fromArtifact('Core');
 const Fei = contract.fromArtifact('Fei');
 const MockOracle = contract.fromArtifact('MockOracle');
 const EthBondingCurve = contract.fromArtifact('EthBondingCurve');
+const MockCoreRef = contract.fromArtifact('MockCoreRef');
+const Tribe = contract.fromArtifact('Tribe');
 
-const [ userAddress, secondUseraddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress, genesisGroup, keeperAddress ] = accounts;
+const [ userAddress, secondUserAddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress, genesisGroup, keeperAddress, pcvControllerAddress, minterAddress, burnerAddress, revokeAddress ] = accounts;
 
-async function getCore() {
+async function getCore(complete) {
     let core = await Core.new({from: governorAddress});
     await core.setGenesisGroup(genesisGroup, {from: governorAddress});
-    await core.completeGenesisGroup({from: genesisGroup});
+    if (complete) {
+        await core.completeGenesisGroup({from: genesisGroup});
+    }
+
+    await core.grantMinter(minterAddress, {from: governorAddress});
+    await core.grantBurner(burnerAddress, {from: governorAddress});
+    await core.grantPCVController(pcvControllerAddress, {from: governorAddress});
+    await core.grantRevoker(revokeAddress, {from: governorAddress});
+
     return core;
 }
 
@@ -28,18 +38,24 @@ module.exports = {
     expect,
     // addresses
     userAddress,
-    secondUseraddress,
+    secondUserAddress,
     beneficiaryAddress1,
     beneficiaryAddress2,
     governorAddress,
     genesisGroup,
     keeperAddress,
+    pcvControllerAddress,
+    minterAddress,
+    burnerAddress,
+    revokeAddress,
     // contracts
     MockEthPCVDeposit,
     Core,
     Fei,
     MockOracle, 
     EthBondingCurve,
+    MockCoreRef,
+    Tribe,
     // functions
     getCore
 }
