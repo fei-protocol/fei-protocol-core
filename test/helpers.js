@@ -1,23 +1,30 @@
+const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
+
 const { accounts, contract, web3 } = require('@openzeppelin/test-environment');
 
 const { BN, expectEvent, expectRevert, balance, time } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
-const MockEthPCVDeposit = contract.fromArtifact('MockEthPCVDeposit');
 const Core = contract.fromArtifact('Core');
-const Fei = contract.fromArtifact('Fei');
-const MockOracle = contract.fromArtifact('MockOracle');
 const EthBondingCurve = contract.fromArtifact('EthBondingCurve');
-const MockCoreRef = contract.fromArtifact('MockCoreRef');
-const Tribe = contract.fromArtifact('Tribe');
-const MockTribe = contract.fromArtifact('MockTribe');
-const TimelockedDelegator = contract.fromArtifact('TimelockedDelegator');
-const MockIDO = contract.fromArtifact('MockIDO');
+const Fei = contract.fromArtifact('Fei');
 const ForceEth = contract.fromArtifact('ForceEth');
-const MockBondingCurve = contract.fromArtifact('MockBondingCurve');
 const GenesisGroup = contract.fromArtifact('GenesisGroup');
+const IDO = contract.fromArtifact('IDO');
+const TimelockedDelegator = contract.fromArtifact('TimelockedDelegator');
+const Tribe = contract.fromArtifact('Tribe');
+
+const MockBondingCurve = contract.fromArtifact('MockBondingCurve');
 const MockBondingCurveOracle = contract.fromArtifact('MockBCO');
+const MockCoreRef = contract.fromArtifact('MockCoreRef');
+const MockEthPCVDeposit = contract.fromArtifact('MockEthPCVDeposit');
+const MockIDO = contract.fromArtifact('MockIDO');
+const MockOracle = contract.fromArtifact('MockOracle');
+const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
 const MockPool = contract.fromArtifact('MockPool');
+const MockRouter = contract.fromArtifact('MockRouter');
+const MockTribe = contract.fromArtifact('MockTribe');
+
 
 const [ userAddress, secondUserAddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress, genesisGroup, keeperAddress, pcvControllerAddress, minterAddress, burnerAddress, revokeAddress ] = accounts;
 
@@ -43,6 +50,7 @@ async function forceEth(to, amount) {
 
 module.exports = {
     // utils
+    ZERO_ADDRESS,
     web3,
     BN,
     expectEvent,
@@ -63,21 +71,25 @@ module.exports = {
     burnerAddress,
     revokeAddress,
     // contracts
-    MockEthPCVDeposit,
     Core,
-    Fei,
-    MockOracle, 
     EthBondingCurve,
-    MockCoreRef,
-    Tribe,
-    MockTribe,
-    TimelockedDelegator,
-    MockIDO,
+    Fei,
     ForceEth,
-    MockBondingCurve,
     GenesisGroup,
+    IDO,
+    TimelockedDelegator,
+    Tribe,
+    // mock contracts
+    MockBondingCurve,
     MockBondingCurveOracle,
+    MockCoreRef,
+    MockEthPCVDeposit,
+    MockIDO,
+    MockOracle, 
+    MockPair,
     MockPool,
+    MockRouter,
+    MockTribe,
     // functions
     getCore,
     forceEth
