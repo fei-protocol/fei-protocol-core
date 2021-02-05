@@ -1,31 +1,52 @@
-const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
-const { accounts, contract } = require('@openzeppelin/test-environment');
-
-const { BN, expectEvent, expectRevert, balance, time } = require('@openzeppelin/test-helpers');
-const { expect } = require('chai');
-
-const UniswapOracle = contract.fromArtifact('UniswapOracle');
-const Core = contract.fromArtifact('Core');
-const MockPair = contract.fromArtifact('MockUniswapV2PairTrade');
+const {
+  userAddress,
+  governorAddress,
+  BN,
+  expectEvent,
+  expectRevert,
+  time,
+  expect,
+  UniswapOracle,
+  MockPairTrade,
+  getCore
+} = require('../helpers');
 
 describe('UniswapOracle', function () {
-  const [ userAddress, governorAddress ] = accounts;
 
   beforeEach(async function () {
-    this.core = await Core.new({from: governorAddress});
+    this.core = await getCore(true);
     this.startTime = await time.latest();
     this.delta = new BN(1000);
     await time.increase(this.delta);
     this.cursor = this.startTime.add(this.delta);
     this.cumulative = this.delta.mul(new BN(500e12));
-    this.pair = await MockPair.new(this.cumulative, 0, this.cursor, 100000, 50000000); // 500:1 FEI/ETH initial price
+    this.pair = await MockPairTrade.new(this.cumulative, 0, this.cursor, 100000, 50000000); // 500:1 FEI/ETH initial price
 
-    this.oracle = await UniswapOracle.new(this.core.address, this.pair.address, 600, true); // 10 min TWAP using price0
+    this.duration = new BN('600');
+    this.oracle = await UniswapOracle.new(this.core.address, this.pair.address, this.duration, true); // 10 min TWAP using price0
   });
 
-  it('initializes', async function() {
-    expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.cursor);
-    expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.delta.mul(new BN(500e12)));
+  describe('Init', function() {
+    it('priors', async function() {
+      expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.cursor);
+      expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.delta.mul(new BN(500e12)));
+    });
+
+    it('pair', async function() {
+      expect(await this.oracle.pair()).to.be.equal(this.pair.address);
+    });
+
+    it('duration', async function() {
+      expect(await this.oracle.duration()).to.be.bignumber.equal(this.duration);
+    });
+
+    it('killSwitch', async function() {
+      expect(await this.oracle.killSwitch()).to.be.equal(false);
+    });
+
+    it('isPrice0', async function() {
+      expect(await this.oracle.isPrice0()).to.be.equal(true);
+    });
   });
 
   describe('Read', function() {

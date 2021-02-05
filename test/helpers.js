@@ -13,6 +13,7 @@ const GenesisGroup = contract.fromArtifact('GenesisGroup');
 const IDO = contract.fromArtifact('IDO');
 const TimelockedDelegator = contract.fromArtifact('TimelockedDelegator');
 const Tribe = contract.fromArtifact('Tribe');
+const UniswapOracle = contract.fromArtifact('UniswapOracle');
 
 const MockBondingCurve = contract.fromArtifact('MockBondingCurve');
 const MockBondingCurveOracle = contract.fromArtifact('MockBCO');
@@ -21,6 +22,7 @@ const MockEthPCVDeposit = contract.fromArtifact('MockEthPCVDeposit');
 const MockIDO = contract.fromArtifact('MockIDO');
 const MockOracle = contract.fromArtifact('MockOracle');
 const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
+const MockPairTrade = contract.fromArtifact('MockUniswapV2PairTrade');
 const MockPool = contract.fromArtifact('MockPool');
 const MockRouter = contract.fromArtifact('MockRouter');
 const MockTribe = contract.fromArtifact('MockTribe');
@@ -79,6 +81,7 @@ module.exports = {
     IDO,
     TimelockedDelegator,
     Tribe,
+    UniswapOracle,
     // mock contracts
     MockBondingCurve,
     MockBondingCurveOracle,
@@ -87,6 +90,7 @@ module.exports = {
     MockIDO,
     MockOracle, 
     MockPair,
+    MockPairTrade,
     MockPool,
     MockRouter,
     MockTribe,
