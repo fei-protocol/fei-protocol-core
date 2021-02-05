@@ -43,10 +43,6 @@ describe('UniswapOracle', function () {
     it('killSwitch', async function() {
       expect(await this.oracle.killSwitch()).to.be.equal(false);
     });
-
-    it('isPrice0', async function() {
-      expect(await this.oracle.isPrice0()).to.be.equal(true);
-    });
   });
 
   describe('Read', function() {

@@ -5,6 +5,7 @@ const { accounts, contract, web3 } = require('@openzeppelin/test-environment');
 const { BN, expectEvent, expectRevert, balance, time } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
+const BondingCurveOracle = contract.fromArtifact('BondingCurveOracle');
 const Core = contract.fromArtifact('Core');
 const EthBondingCurve = contract.fromArtifact('EthBondingCurve');
 const Fei = contract.fromArtifact('Fei');
@@ -73,6 +74,7 @@ module.exports = {
     burnerAddress,
     revokeAddress,
     // contracts
+    BondingCurveOracle,
     Core,
     EthBondingCurve,
     Fei,
