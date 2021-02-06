@@ -12,7 +12,10 @@ contract MockBCO {
 }
 
 contract MockPool {
-	function init() public {}
+	bool public initialized;
+	function init() public {
+		initialized = true;
+	}
 }
 
 contract MockOrchestrator {
