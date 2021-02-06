@@ -8,11 +8,13 @@ contract MockIDO {
 
 	Decimal.D256 public ratio = Decimal.zero();
 	IERC20 public tribe;
+	IERC20 public fei;
 	uint multiplier;
 
 
-	constructor(address _tribe, uint _multiplier) public {
+	constructor(address _tribe, uint _multiplier, address _fei) public {
 		tribe = IERC20(_tribe);
+		fei = IERC20(_fei);
 		multiplier = _multiplier;
 	}
 
@@ -21,6 +23,8 @@ contract MockIDO {
 	}
 
 	function swapFei(uint amount) public returns (uint amountOut) {
+		fei.transferFrom(msg.sender, address(this), amount);
+
 		amountOut = amount * multiplier;
 
 		tribe.transfer(msg.sender, amountOut);
