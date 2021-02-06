@@ -30,8 +30,13 @@ interface IOracle {
     /// @notice read the oracle price
     /// @return oracle price
     /// @return true if price is valid
-    /// @dev price is to be denominated in USD per X where X can be ETH, etc.
+    /// @dev price is to be denominated in USD per X where X can be ETH, etc. 
+    /// @dev Can be innacurate if outdated, need to call `isOutdated()` to check
     function read() external view returns (Decimal.D256 memory, bool);
+
+    /// @notice determine if read value is stale
+    /// @return true if read value is stale
+    function isOutdated() external view returns(bool);
 
     /// @notice the kill switch for the oracle feed
     /// @return true if kill switch engaged

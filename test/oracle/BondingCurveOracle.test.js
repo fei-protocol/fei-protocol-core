@@ -30,6 +30,14 @@ describe('BondingCurveOracle', function () {
     });
   });
 
+  describe('isOutdated', function() {
+    it('reads uniswapOracle', async function() {
+      expect(await this.oracle.isOutdated()).to.be.equal(false);
+      await this.mockOracle.setOutdated(true);
+      expect(await this.oracle.isOutdated()).to.be.equal(true);
+    });
+  });
+
   describe('Read', function() {
     describe('Uninitialized', function() {
       it('returns invalid', async function() {
