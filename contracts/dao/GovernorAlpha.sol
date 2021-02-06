@@ -6,7 +6,7 @@ pragma experimental ABIEncoderV2;
 contract GovernorAlpha {
     /// @notice The name of this contract
     // solhint-disable-next-line const-name-snakecase
-    string public constant name = "Compound Governor Alpha";
+    string public constant name = "Fei Governor Alpha";
 
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
     function quorumVotes() public pure returns (uint) { return 1000000e18; } // 1,000,000 = 10% of Tribe
@@ -27,7 +27,7 @@ contract GovernorAlpha {
     TimelockInterface public timelock;
 
     /// @notice The address of the Fei governance token
-    CompInterface public tribe;
+    TribeInterface public tribe;
 
     /// @notice The address of the Governor Guardian
     address public guardian;
@@ -132,7 +132,7 @@ contract GovernorAlpha {
 
     constructor(address timelock_, address tribe_, address guardian_) public {
         timelock = TimelockInterface(timelock_);
-        tribe = CompInterface(tribe_);
+        tribe = TribeInterface(tribe_);
         guardian = guardian_;
     }
 
@@ -333,6 +333,6 @@ interface TimelockInterface {
     function executeTransaction(address target, uint value, string calldata signature, bytes calldata data, uint eta) external payable returns (bytes memory);
 }
 
-interface CompInterface {
+interface TribeInterface {
     function getPriorVotes(address account, uint blockNumber) external view returns (uint96);
 }
