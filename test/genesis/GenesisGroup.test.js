@@ -34,9 +34,8 @@ describe('GenesisGroup', function () {
     this.pool = await MockPool.new();
 
     this.duration = new BN('1000');
-    this.maxPrice = new BN('9000');
     this.exchangeRateDiscount = new BN('10');
-    this.genesisGroup = await GenesisGroup.new(this.core.address, this.bc.address, this.ido.address, this.bo.address, this.pool.address, this.duration, this.maxPrice, this.exchangeRateDiscount);
+    this.genesisGroup = await GenesisGroup.new(this.core.address, this.bc.address, this.ido.address, this.bo.address, this.pool.address, this.duration, this.exchangeRateDiscount);
 
     this.tribeGenesisAmount = new BN('10000');
     await this.core.allocateTribe(this.genesisGroup.address, this.tribeGenesisAmount, {from: governorAddress});
@@ -51,11 +50,6 @@ describe('GenesisGroup', function () {
   describe('Init', function() {
     it('totalCommittedFGEN', async function() {
       expect(await this.genesisGroup.totalCommittedFGEN()).to.be.bignumber.equal(new BN(0));
-    });
-
-    it('maxGenesisPrice', async function() {
-      expect(await this.genesisGroup.maxGenesisPrice()).to.be.bignumber.equal(this.maxPrice.mul(new BN('1000000000000000000')).div(new BN('10000')));
-      await expectRevert(this.genesisGroup.isAtMaxPrice(), "GenesisGroup: No balance");
     });
 
     it('isTimeEnded', async function() {
