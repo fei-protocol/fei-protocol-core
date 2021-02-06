@@ -158,7 +158,7 @@ contract CoreOrchestrator is Ownable {
 	uint public constant REWEIGHT_INCENTIVE = 500e18;
 	uint public constant MIN_REWEIGHT_DISTANCE_BPS = 100;
 
-	bool public constant USDC_PER_ETH_IS_PRICE_0 = true;
+	bool public constant USDC_PER_ETH_IS_PRICE_0 = false;
 
 
 	uint public tribeSupply;
