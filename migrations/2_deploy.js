@@ -46,7 +46,8 @@ module.exports = function(deployer, network, accounts) {
 	 		genesis.address, 
 	 		gov.address,
 	 		routerOrchestrator.address, 
-	 		accounts[0]
+	 		accounts[0],
+	 		{gas: 8000000}
 	 	);
 	}).then(function(instance) {
 		core = instance;
@@ -65,6 +66,8 @@ module.exports = function(deployer, network, accounts) {
 	 	return pcvo.transferOwnership(core.address);
 	}).then(function(instance) {
 	 	return routerOrchestrator.transferOwnership(core.address);
+	}).then(function(instance) {
+	 	return core.initCore();
 	}).then(function(instance) {
 	 	return core.initPairs();
 	}).then(function(instance) {

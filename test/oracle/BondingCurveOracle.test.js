@@ -1,19 +1,22 @@
-const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
-const { accounts, contract } = require('@openzeppelin/test-environment');
-
-const { BN, expectEvent, expectRevert, balance, time } = require('@openzeppelin/test-helpers');
-const { expect } = require('chai');
-
-const BondingCurveOracle = contract.fromArtifact('BondingCurveOracle');
-const Core = contract.fromArtifact('Core');
-const MockOracle = contract.fromArtifact('MockOracle');
-const MockBondingCurve = contract.fromArtifact('MockBondingCurve')
+const {
+  userAddress,
+  governorAddress,
+  genesisGroup,
+  BN,
+  expectEvent,
+  expectRevert,
+  time,
+  expect,
+  BondingCurveOracle,
+  MockBondingCurve,
+  MockOracle,
+  getCore
+} = require('../helpers');
 
 describe('BondingCurveOracle', function () {
-  const [ userAddress, governorAddress, genesisGroup ] = accounts;
 
   beforeEach(async function () {
-    this.core = await Core.new({from: governorAddress});
+    this.core = await getCore(true);
     this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
     this.mockOracle = await MockOracle.new(500);
     this.bondingCurve = await MockBondingCurve.new(false, 80000);
