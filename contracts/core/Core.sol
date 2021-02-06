@@ -41,7 +41,7 @@ contract Core is ICore, Permissions {
 
 	function allocateTribe(address to, uint amount) external override onlyGovernor {
 		IERC20 _tribe = tribe;
-		require(_tribe.balanceOf(address(this)) > amount, "Core: Not enough Tribe");
+		require(_tribe.balanceOf(address(this)) >= amount, "Core: Not enough Tribe");
 
 		_tribe.transfer(to, amount);
 
