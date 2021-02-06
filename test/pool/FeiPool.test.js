@@ -13,6 +13,8 @@ describe('Pool', function () {
 
   beforeEach(async function () {
     this.core = await Core.new({from: governorAddress});
+    await this.core.init({from: governorAddress});
+
     this.window = new BN(2 * 365 * 24 * 60 * 60);
     this.tribe = await Tribe.at(await this.core.tribe());
     this.fei = await Fei.at(await this.core.fei());
@@ -155,16 +157,21 @@ describe('Pool', function () {
                 it('updates balances', async function() {
                   expect(await this.pool.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(0));
-                  expect(await this.pool.totalSupply()).to.be.bignumber.equal(new BN(0));
                   expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
                   expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(100));
                   expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.stakedBalance(userAddress)).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.stakedBalance(secondUserAddress)).to.be.bignumber.equal(new BN(0));
-                  expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
-                  expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(100000));
+
                   expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(66666));
                   expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(33334));
+                });
+
+                it('updates totals', async function() {
+                  expect(await this.pool.totalSupply()).to.be.bignumber.equal(new BN(0));
+                  expect(await this.pool.totalStaked()).to.be.bignumber.equal(new BN(0));
+                  expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
+                  expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(100000));
                 });
               });
             });
@@ -189,14 +196,19 @@ describe('Pool', function () {
 
               it('updates balances', async function() {
                 expect(await this.pool.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
-                expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiSecond);
                 expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
                 expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(100));
                 expect(await this.pool.stakedBalance(userAddress)).to.be.bignumber.equal(new BN(0));
-                expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
-                expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(75001));
                 expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(75001));
               });
+
+              it('updates totals', async function() {
+                expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiSecond);
+                expect(await this.pool.totalStaked()).to.be.bignumber.equal(new BN(100));
+                expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
+                expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(75001));
+              });
+
               describe('Complete', function() {
                 beforeEach(async function() {
                   await time.increase(this.window.div(new BN(2)));
@@ -211,13 +223,17 @@ describe('Pool', function () {
                   });
                   it('updates balances', async function() {
                     expect(await this.pool.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(0));
-                    expect(await this.pool.totalSupply()).to.be.bignumber.equal(new BN(0));
                     expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(100));
                     expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(0));
                     expect(await this.pool.stakedBalance(secondUserAddress)).to.be.bignumber.equal(new BN(0));
+                    expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(24999));
+                  });
+
+                  it('updates totals', async function() {
+                    expect(await this.pool.totalSupply()).to.be.bignumber.equal(new BN(0));
+                    expect(await this.pool.totalStaked()).to.be.bignumber.equal(new BN(0));
                     expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
                     expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(100000));
-                    expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(24999));
                   });
                 });
               });
@@ -242,16 +258,20 @@ describe('Pool', function () {
 
               it('updates balances', async function() {
                 expect(await this.pool.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
-                expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiSecond);
                 expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
                 expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(100));
 
                 expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(100));
                 expect(await this.pool.stakedBalance(userAddress)).to.be.bignumber.equal(new BN(0));
-                expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
-                expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(75001));
                 expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
                 expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(75001));
+              });
+
+              it('updates totals', async function() {
+                expect(await this.pool.totalSupply()).to.be.bignumber.equal(this.expectedPoolFeiSecond);
+                expect(await this.pool.totalStaked()).to.be.bignumber.equal(new BN(100));
+                expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
+                expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(75001));
               });
             });
             describe('Claim', function() {
@@ -297,16 +317,20 @@ describe('Pool', function () {
                   it('updates balances', async function() {
                     expect(await this.pool.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
                     expect(await this.pool.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(0));
-                    expect(await this.pool.totalSupply()).to.be.bignumber.equal(new BN(0));
                     expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
                     expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(100));
                     expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(0));
                     expect(await this.pool.stakedBalance(userAddress)).to.be.bignumber.equal(new BN(0));
                     expect(await this.pool.stakedBalance(secondUserAddress)).to.be.bignumber.equal(new BN(0));
-                    expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
-                    expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(100000));
                     expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(87500));
                     expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(12500));
+                  });
+
+                  it('updates totals', async function() {
+                    expect(await this.pool.totalSupply()).to.be.bignumber.equal(new BN(0));
+                    expect(await this.pool.totalStaked()).to.be.bignumber.equal(new BN(0));
+                    expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
+                    expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(100000));
                   });
                 });
               });
@@ -439,16 +463,20 @@ describe('Pool', function () {
                 it('updates balances', async function() {
                   expect(await this.pool.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(0));
-                  expect(await this.pool.totalSupply()).to.be.bignumber.equal(new BN(0));
                   expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(50));
                   expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(150));
                   expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.stakedBalance(userAddress)).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.stakedBalance(secondUserAddress)).to.be.bignumber.equal(new BN(0));
-                  expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
-                  expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(100000));
                   expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(50000));
                   expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(50000));
+                });
+
+                it('updates totals', async function() {
+                  expect(await this.pool.totalSupply()).to.be.bignumber.equal(new BN(0));
+                  expect(await this.pool.totalStaked()).to.be.bignumber.equal(new BN(0));
+                  expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
+                  expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(100000));
                 });
               });
             });
@@ -492,13 +520,17 @@ describe('Pool', function () {
                 });
                 it('updates balances', async function() {
                   expect(await this.pool.balanceOf(userAddress)).to.be.bignumber.equal(new BN(0));
-                  expect(await this.pool.totalSupply()).to.be.bignumber.equal(new BN(0));
                   expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
                   expect(await this.fei.balanceOf(this.pool.address)).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.stakedBalance(userAddress)).to.be.bignumber.equal(new BN(0));
+                  expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100000));
+                });
+
+                it('updates totals', async function() {
+                  expect(await this.pool.totalSupply()).to.be.bignumber.equal(new BN(0));
+                  expect(await this.pool.totalStaked()).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.releasedReward()).to.be.bignumber.equal(new BN(0));
                   expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(100000));
-                  expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100000));
                 });
               });
               describe('Deposit', function() {
