@@ -49,7 +49,7 @@ describe('EthBondingCurve', function () {
     });
 
     it('getAmountOut', async function() {
-      expect(await this.bondingCurve.getAmountOut('50000000')).to.be.bignumber.equal(new BN('39802837636'));
+      expect(await this.bondingCurve.getAmountOut('50000000')).to.be.bignumber.equal(new BN('39803156936'));
     });
 
     it('scale', async function() {
@@ -161,7 +161,7 @@ describe('EthBondingCurve', function () {
           });
           
           it('current price', async function() {
-            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("566517931946107970529");
+            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("566516174074936002475");
           });
   
           it('total PCV held', async function() {
@@ -199,7 +199,7 @@ describe('EthBondingCurve', function () {
           });
           
           it('current price', async function() {
-            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("566517931946107970529");
+            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("566516174074936002475");
           });
   
           it('total PCV held', async function() {
@@ -268,7 +268,7 @@ describe('EthBondingCurve', function () {
       
       describe('Crossing Scale', function() {
         beforeEach(async function() {
-          this.expectedFei1 = new BN("121385382316");
+          this.expectedFei1 = new BN("121386199964");
           this.purchaseAmount =  new BN("200000000");
           expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei1);
           expectEvent(
