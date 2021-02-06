@@ -62,10 +62,4 @@ describe('Roots', function () {
       });
     });
   });
-
-  describe('2/3 Root', function() {
-    it('1.129e39', async function () {
-      expect(await this.roots.twoThirdsRoot(new BN("1129000000000000000000000000000000000000"))).to.be.bignumber.equal(new BN('108424965995569667616912100'));
-    });
-  });
 });
