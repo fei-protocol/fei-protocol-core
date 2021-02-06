@@ -1,7 +1,7 @@
 const { accounts, contract } = require('@openzeppelin/test-environment');
 
 const { BN, expectEvent, expectRevert, time, balance } = require('@openzeppelin/test-helpers');
-const { expect } = require('chai');
+const { expect, use } = require('chai');
 
 const MockIDO = contract.fromArtifact('MockIDO');
 const ForceEth = contract.fromArtifact('ForceEth');
@@ -12,6 +12,7 @@ const Fei = contract.fromArtifact('Fei');
 const Tribe = contract.fromArtifact('Tribe');
 const MockBondingCurveOracle = contract.fromArtifact('MockBCO');
 const MockPool = contract.fromArtifact('MockPool');
+const FlashGenesis = contract.fromArtifact("FlashGenesis");
 
 describe('GenesisGroup', function () {
   const [ userAddress, secondUserAddress, governorAddress, minterAddress ] = accounts;
@@ -33,6 +34,8 @@ describe('GenesisGroup', function () {
     await this.core.grantMinter(minterAddress, {from: governorAddress});
     // 5:1 FEI to TRIBE ratio
     this.fei.mint(this.genesisGroup.address, 50000, {from: minterAddress});
+
+    this.flashGenesis = await FlashGenesis.new(this.genesisGroup.address);
   });
 
   describe('During Genesis Period', function() {
@@ -157,7 +160,7 @@ describe('GenesisGroup', function () {
         });
 
         it('inits Bonding Curve Oracle', async function() {
-          expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('950000000000000000'));
+          expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('855000000000000000'));
         });
 
         it('reverts purchase', async function() {
@@ -375,6 +378,13 @@ describe('GenesisGroup', function () {
       });
     });
 
+    describe('Flash Launch', function() {
+      it('reverts', async function() {
+        await this.genesisGroup.approve(this.flashGenesis.address, '750', {from: userAddress});
+        await expectRevert(this.flashGenesis.zap(userAddress), "GenesisGroup: No redeeming in launch block");
+      });
+    });
+
     describe('Launch', function() {
       beforeEach(async function() {
         expectEvent(
@@ -402,7 +412,7 @@ describe('GenesisGroup', function () {
       });
 
       it('inits Bonding Curve Oracle', async function() {
-        expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('100000000000000000'));
+        expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('90000000000000000'));
       });
 
       describe('Emergency Exit', function() {
