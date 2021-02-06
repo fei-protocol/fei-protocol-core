@@ -26,9 +26,13 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
     function deposit(uint ethAmount) external override payable postGenesis {
     	require(ethAmount == msg.value, "Bonding Curve: Sent value does not equal input");
         
+        ethAmount = address(this).balance; // include any ETH dust from prior LP
+
         uint feiAmount = _getAmountFeiToDeposit(ethAmount);
 
         _addLiquidity(ethAmount, feiAmount);
+
+        _burnFeiHeld(); // burn any FEI dust from LP
 
         emit Deposit(msg.sender, ethAmount);
     }
