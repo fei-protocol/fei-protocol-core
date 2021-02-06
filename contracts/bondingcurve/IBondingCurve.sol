@@ -41,16 +41,19 @@ interface IBondingCurve {
 
 	/// @notice return current instantaneous bonding curve price 
 	/// @return price reported as FEI per X with X being the underlying asset
+	/// @dev Can be innacurate if outdated, need to call `oracle().isOutdated()` to check
 	function getCurrentPrice() external view returns(Decimal.D256 memory);
 
 	/// @notice return the average price of a transaction along bonding curve
 	/// @param amountIn the amount of underlying used to purchase
 	/// @return price reported as FEI per X with X being the underlying asset
+	/// @dev Can be innacurate if outdated, need to call `oracle().isOutdated()` to check
 	function getAveragePrice(uint amountIn) external view returns (Decimal.D256 memory);
 
 	/// @notice return amount of FEI received after a bonding curve purchase
 	/// @param amountIn the amount of underlying used to purchase
 	/// @return amountOut the amount of FEI received
+	/// @dev Can be innacurate if outdated, need to call `oracle().isOutdated()` to check
 	function getAmountOut(uint amountIn) external view returns (uint amountOut); 
 
 	/// @notice the Scale target at which bonding curve price fixes

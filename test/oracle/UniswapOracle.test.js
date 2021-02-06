@@ -101,6 +101,10 @@ describe('UniswapOracle', function () {
         expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.priorCumulativePrice);
         expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.cursor);
       });
+
+      it('not outdated', async function() {
+        expect(await this.oracle.isOutdated()).to.be.equal(false);
+      });
     });
 
     describe('Exceeds duration', function() {
@@ -110,6 +114,10 @@ describe('UniswapOracle', function () {
         await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
         await this.pair.setReserves(100000, 50000000);
         await time.increase(this.delta);
+      });
+
+      it('outdated', async function() {
+        expect(await this.oracle.isOutdated()).to.be.equal(true);
       });
 
       it('updates', async function() {

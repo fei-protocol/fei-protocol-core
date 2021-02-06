@@ -51,6 +51,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 	receive() external payable {}
 
 	function reweight() external override postGenesis {
+		updateOracle();
 		require(reweightEligible(), "EthUniswapPCVController: Not at incentive parity or not at min distance");
 		_reweight();
 		_incentivize();

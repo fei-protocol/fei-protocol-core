@@ -68,6 +68,12 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 		return true;
 	}
 
+	function isOutdated() external view override returns(bool) {
+		(,, uint32 currentTimestamp) = UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
+		uint32 deltaTimestamp = currentTimestamp - priorTimestamp;
+		return deltaTimestamp >= duration;
+	}
+
     function read() external view override returns (Decimal.D256 memory, bool) {
     	bool valid = !(killSwitch || twap.isZero());
     	return (twap, valid);

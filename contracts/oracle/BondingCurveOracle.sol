@@ -41,6 +41,10 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
 		return uniswapOracle.update();
 	}
 
+	function isOutdated() external view override returns(bool) {
+		return uniswapOracle.isOutdated();
+	}
+
     function read() external view override returns (Decimal.D256 memory, bool) {
     	if (killSwitch) {
     		return (Decimal.zero(), false);
