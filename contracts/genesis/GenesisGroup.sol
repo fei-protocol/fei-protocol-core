@@ -1,7 +1,6 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./IGenesisGroup.sol";
 import "./IDOInterface.sol";
@@ -13,7 +12,7 @@ import "../bondingcurve/IBondingCurve.sol";
 
 /// @title IGenesisGroup implementation
 /// @author Fei Protocol
-contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
+contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
 	using Decimal for Decimal.D256;
 
 	IBondingCurve private bondingcurve;
@@ -85,7 +84,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 	}
 
 	function commit(address from, address to, uint amount) external override onlyGenesisPeriod {
-		burnFrom(from, amount);
+		_burnFrom(from, amount);
 
 		committedFGEN[to] += amount;
 		totalCommittedFGEN += amount;
@@ -101,7 +100,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		require(tribeAmount != 0, "GenesisGroup: No redeemable TRIBE");
 
 		uint amountIn = balanceOf(to);
-		burnFrom(to, amountIn);
+		_burnFrom(to, amountIn);
 
 		uint committed = committedFGEN[to];
 		committedFGEN[to] = 0;
@@ -184,7 +183,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		require(address(this).balance >= total, "GenesisGroup: Not enough ETH to redeem");
 		require(msg.sender == from || allowance(from, msg.sender) >= total, "GenesisGroup: Not approved for emergency withdrawal");
 
-		burnFrom(from, heldFGEN);
+		_burnFrom(from, heldFGEN);
 		committedFGEN[from] = 0;
 		totalCommittedFGEN -= committed;
 
@@ -214,12 +213,12 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		return bondingcurve.getAveragePrice(balance).greaterThanOrEqualTo(maxGenesisPrice);
 	}
 
-	function burnFrom(address account, uint amount) public override {
-		// Sender doesn't need approval
-		if (msg.sender == account) {
-			increaseAllowance(account, amount);
+	function _burnFrom(address account, uint amount) internal {
+		if (msg.sender != account) {
+			uint256 decreasedAllowance = allowance(account, _msgSender()).sub(amount, "GenesisGroup: burn amount exceeds allowance");
+			_approve(account, _msgSender(), decreasedAllowance);
 		}
-		super.burnFrom(account, amount);
+        _burn(account, amount);
 	}
 
 	function _feiTribeExchangeRate() public view returns (Decimal.D256 memory) {

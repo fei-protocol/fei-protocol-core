@@ -250,7 +250,7 @@ describe('GenesisGroup', function () {
 
       describe('Unapproved commit', function() {
         it('reverts', async function() {
-          await expectRevert(this.genesisGroup.commit(userAddress, userAddress, '500', {from: secondUserAddress}), "ERC20: burn amount exceeds allowance");
+          await expectRevert(this.genesisGroup.commit(userAddress, userAddress, '500', {from: secondUserAddress}), "GenesisGroup: burn amount exceeds allowance");
         });
       });
     });
@@ -462,7 +462,7 @@ describe('GenesisGroup', function () {
           it('reverts', async function() {
             await expectRevert(
                this.genesisGroup.redeem(userAddress, {from: secondUserAddress}),
-              'ERC20: burn amount exceeds allowance'
+              'GenesisGroup: burn amount exceeds allowance'
             );
           });
         });
