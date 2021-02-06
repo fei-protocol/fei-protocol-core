@@ -55,9 +55,9 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 		}
 
 		uint currentCumulative = _getCumulative(price0Cumulative, price1Cumulative);
-		uint deltaCumulative = (currentCumulative - priorCumulative) / 1e12;
+		uint deltaCumulative = (currentCumulative - priorCumulative) * 1e12;
 
-		Decimal.D256 memory _twap = Decimal.ratio(2**112, deltaCumulative / deltaTimestamp);
+		Decimal.D256 memory _twap = Decimal.ratio(deltaCumulative / deltaTimestamp, 2**112);
 		twap = _twap;
 
 		priorTimestamp = currentTimestamp;
@@ -66,6 +66,12 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 		emit Update(_twap.asUint256());
 
 		return true;
+	}
+
+	function isOutdated() external view override returns(bool) {
+		(,, uint32 currentTimestamp) = UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
+		uint32 deltaTimestamp = currentTimestamp - priorTimestamp;
+		return deltaTimestamp >= duration;
 	}
 
     function read() external view override returns (Decimal.D256 memory, bool) {

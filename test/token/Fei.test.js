@@ -14,6 +14,8 @@ describe('Fei', function () {
 
   beforeEach(async function () {
     this.core = await MockCore.new();
+    await this.core.init();
+
     this.fei = await Fei.at(await this.core.fei());
     await this.core.grantMinter(minterAddress);
     await this.core.grantBurner(burnerAddress);
