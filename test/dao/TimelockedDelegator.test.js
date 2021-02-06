@@ -1,25 +1,45 @@
-const { accounts, contract, web3 } = require('@openzeppelin/test-environment');
-
-const { BN, expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers');
-const { expect } = require('chai');
-
-const MockTribe = contract.fromArtifact('MockTribe');
-const TimelockedDelegator = contract.fromArtifact('TimelockedDelegator');
+const {
+  userAddress,
+  secondUserAddress,
+  beneficiaryAddress1,
+  web3,
+  BN,
+  expectEvent,
+  expectRevert,
+  time,
+  expect,
+  MockTribe,
+  TimelockedDelegator
+} = require('../helpers');
 
 describe('TimelockedDelegator', function () {
-  const [ userAddress, beneficiaryAddress, badActorAddress ] = accounts;
 
   beforeEach(async function () {
-    this.tribe = await MockTribe.new({from: beneficiaryAddress});
+    this.tribe = await MockTribe.new({from: beneficiaryAddress1});
     this.window = new BN(4 * 365 * 24 * 60 * 60);
-    this.delegator = await TimelockedDelegator.new(this.tribe.address, beneficiaryAddress, this.window, {gas: 8000000, from: beneficiaryAddress});
-    await this.tribe.mint(this.delegator.address, 10000);
+    this.delegator = await TimelockedDelegator.new(this.tribe.address, beneficiaryAddress1, this.window, {gas: 8000000, from: beneficiaryAddress1});
+    this.totalTribe = new BN('10000');
+    await this.tribe.mint(this.delegator.address, this.totalTribe);
   });
 
-  describe('Timelocks', function() {
+  describe('Init', function() {
+    it('tribe', async function() {
+      expect(await this.delegator.tribe()).to.be.equal(this.tribe.address);
+    });
+
+    it('totalDelegated', async function() {
+      expect(await this.delegator.totalDelegated()).to.be.bignumber.equal(new BN('0'));
+    });
+
+    it('totalToken', async function() {
+      expect(await this.delegator.totalToken()).to.be.bignumber.equal(this.totalTribe);
+    });
+  });
+
+  describe('Release', function() {
     describe('Immediate', function() {
       it('reverts', async function() {
-        await expectRevert(this.delegator.release({from: beneficiaryAddress}), "LinearTokenTimelock: no tokens to release");
+        await expectRevert(this.delegator.release({from: beneficiaryAddress1}), "LinearTokenTimelock: no tokens to release");
       });
     });
 
@@ -28,37 +48,37 @@ describe('TimelockedDelegator', function () {
         this.quarter = this.window.div(new BN(4));
         await time.increase(this.quarter);
         expectEvent(
-          await this.delegator.release({from: beneficiaryAddress}),
+          await this.delegator.release({from: beneficiaryAddress1}),
           'Release',
           {
-            _beneficiary: beneficiaryAddress,
-            _amount: '2500'
+            _beneficiary: beneficiaryAddress1,
+            _amount: this.totalTribe.div(new BN(4))
           }
         );
       });
       it('releases tokens', async function() {
-        expect(await this.delegator.totalToken()).to.be.bignumber.equal(new BN(7500));
-        expect(await this.tribe.balanceOf(beneficiaryAddress)).to.be.bignumber.equal(new BN(2500));
+        expect(await this.delegator.totalToken()).to.be.bignumber.equal(this.totalTribe.mul(new BN(3)).div(new BN(4)));
+        expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(this.totalTribe.div(new BN(4)));
       });
 
       it('updates released amounts', async function() {
-        expect(await this.delegator.alreadyReleasedAmount()).to.be.bignumber.equal(new BN(2500));
+        expect(await this.delegator.alreadyReleasedAmount()).to.be.bignumber.equal(this.totalTribe.div(new BN(4)));
         expect(await this.delegator.availableForRelease()).to.be.bignumber.equal(new BN(0));
       });
 
       describe('Another Quarter', function() {
         beforeEach(async function() {
           await time.increase(this.quarter);
-          expect(await this.delegator.availableForRelease()).to.be.bignumber.equal(new BN(2500));
-          await this.delegator.release({from: beneficiaryAddress});
+          expect(await this.delegator.availableForRelease()).to.be.bignumber.equal(this.totalTribe.div(new BN(4)));
+          await this.delegator.release({from: beneficiaryAddress1});
         });
         it('releases tokens', async function() {
-          expect(await this.delegator.totalToken()).to.be.bignumber.equal(new BN(5000));
-          expect(await this.tribe.balanceOf(beneficiaryAddress)).to.be.bignumber.equal(new BN(5000));
+          expect(await this.delegator.totalToken()).to.be.bignumber.equal(this.totalTribe.div(new BN(2)));
+          expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(this.totalTribe.div(new BN(2)));
         });
 
         it('updates released amounts', async function() {
-          expect(await this.delegator.alreadyReleasedAmount()).to.be.bignumber.equal(new BN(5000));
+          expect(await this.delegator.alreadyReleasedAmount()).to.be.bignumber.equal(this.totalTribe.div(new BN(2)));
         });
       });
     });
@@ -66,15 +86,15 @@ describe('TimelockedDelegator', function () {
     describe('Total Window', function() {
       beforeEach(async function() {
         await time.increase(this.window);
-        await this.delegator.release({from: beneficiaryAddress});
+        await this.delegator.release({from: beneficiaryAddress1});
       });
       it('releases tokens', async function() {
         expect(await this.delegator.totalToken()).to.be.bignumber.equal(new BN(0));
-        expect(await this.tribe.balanceOf(beneficiaryAddress)).to.be.bignumber.equal(new BN(10000));
+        expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(this.totalTribe);
       });
 
       it('updates released amounts', async function() {
-        expect(await this.delegator.alreadyReleasedAmount()).to.be.bignumber.equal(new BN(10000));
+        expect(await this.delegator.alreadyReleasedAmount()).to.be.bignumber.equal(this.totalTribe);
         expect(await this.delegator.availableForRelease()).to.be.bignumber.equal(new BN(0));
       });
     });
@@ -83,13 +103,13 @@ describe('TimelockedDelegator', function () {
   describe('Delegation', function() {
     describe('Not enough Tribe', function() {
       it('reverts', async function() {
-        await expectRevert(this.delegator.delegate(userAddress, 10001, {from: beneficiaryAddress}), "TimelockedDelegator: Not enough Tribe");
+        await expectRevert(this.delegator.delegate(userAddress, 10001, {from: beneficiaryAddress1}), "TimelockedDelegator: Not enough Tribe");
       });
     }); 
     describe('Enough Tribe', function() {
       beforeEach(async function() {
         expectEvent(
-            await this.delegator.delegate(userAddress, 100, {from: beneficiaryAddress}),
+            await this.delegator.delegate(userAddress, 100, {from: beneficiaryAddress1}),
             'Delegate',
             {
               _delegatee: userAddress,
@@ -116,7 +136,7 @@ describe('TimelockedDelegator', function () {
       describe('Double Delegation', function() {
         beforeEach(async function() {
           this.originalDelegatee = await this.delegator.delegateContract(userAddress);
-          await this.delegator.delegate(userAddress, 100, {from: beneficiaryAddress});
+          await this.delegator.delegate(userAddress, 100, {from: beneficiaryAddress1});
         });
         it('updates balances', async function() {
             expect(await this.tribe.balanceOf(this.delegator.address)).to.be.bignumber.equal(new BN(9800));
@@ -141,7 +161,7 @@ describe('TimelockedDelegator', function () {
         beforeEach(async function() {
           this.delegatee = await this.delegator.delegateContract(userAddress);
           expectEvent(
-              await this.delegator.undelegate(userAddress, {from: beneficiaryAddress}),
+              await this.delegator.undelegate(userAddress, {from: beneficiaryAddress1}),
               'Undelegate',
               {
                 _delegatee: userAddress,
@@ -168,7 +188,7 @@ describe('TimelockedDelegator', function () {
 
         describe('Double Undelegation', function() {
           it('reverts', async function() {
-            await expectRevert(this.delegator.undelegate(userAddress, {from: beneficiaryAddress}), "TimelockedDelegator: Delegate contract nonexistent");
+            await expectRevert(this.delegator.undelegate(userAddress, {from: beneficiaryAddress1}), "TimelockedDelegator: Delegate contract nonexistent");
           });
         });
       });
@@ -184,6 +204,7 @@ describe('TimelockedDelegator', function () {
       expect(await this.delegator.totalToken()).to.be.bignumber.equal(new BN(20000));
     });
   });
+
   describe('Access', function() {
     describe('Delegate', function() {
       it('Non-beneficiary set reverts', async function() {
@@ -198,7 +219,7 @@ describe('TimelockedDelegator', function () {
     describe('Set Pending Beneficiary', function() {
       it('Beneficiary set succeeds', async function() {
         expectEvent(
-          await this.delegator.setPendingBeneficiary(userAddress, {from: beneficiaryAddress}),
+          await this.delegator.setPendingBeneficiary(userAddress, {from: beneficiaryAddress1}),
           'PendingBeneficiaryUpdate',
           {_pendingBeneficiary: userAddress}
         );
@@ -212,7 +233,7 @@ describe('TimelockedDelegator', function () {
 
     describe('Accept Beneficiary', function() {
       it('Pending Beneficiary succeeds', async function() {
-        await this.delegator.setPendingBeneficiary(userAddress, {from: beneficiaryAddress});
+        await this.delegator.setPendingBeneficiary(userAddress, {from: beneficiaryAddress1});
         expectEvent(
           await this.delegator.acceptBeneficiary({from: userAddress}),
           'BeneficiaryUpdate',
@@ -222,7 +243,7 @@ describe('TimelockedDelegator', function () {
       });
 
       it('Non pending beneficiary reverts', async function() {
-        await expectRevert(this.delegator.acceptBeneficiary({from: badActorAddress}), "LinearTokenTimelock: Caller is not pending beneficiary");
+        await expectRevert(this.delegator.acceptBeneficiary({from: secondUserAddress}), "LinearTokenTimelock: Caller is not pending beneficiary");
       });
     });
 

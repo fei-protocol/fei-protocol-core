@@ -46,7 +46,5 @@ interface IGenesisGroup {
     /// @return feiAmount the amount of FEI received by the user
     /// @return tribeAmount the amount of TRIBE received by the user
     function getAmountOut(uint amountIn, bool inclusive) external view returns (uint feiAmount, uint tribeAmount);
-
-    /// @notice check whether GenesisGroup has reached max FEI price. Sufficient condition for launch
-    function isAtMaxPrice() external view returns(bool);
+    
 }

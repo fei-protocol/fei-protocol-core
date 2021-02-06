@@ -51,6 +51,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 	receive() external payable {}
 
 	function reweight() external override postGenesis {
+		updateOracle();
 		require(reweightEligible(), "EthUniswapPCVController: Not at incentive parity or not at min distance");
 		_reweight();
 		_incentivize();
@@ -86,7 +87,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 	}
 
 	function _reweight() internal {
-		_withdrawAll();
+		_withdraw();
 		_returnToPeg();
 
 		uint balance = address(this).balance;
@@ -125,8 +126,8 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 		pair.swap(amount0Out, amount1Out, address(this), new bytes(0));
 	}
 
-	function _withdrawAll() internal {
-		uint value = pcvDeposit.totalValue();
+	function _withdraw() internal {
+		uint value = pcvDeposit.totalValue() * 9 / 10; // Only withdraw 90% to prevent rounding errors on Uni LP dust
 		pcvDeposit.withdraw(address(this), value);
 	}
 }

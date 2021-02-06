@@ -2,6 +2,7 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/math/Math.sol";
 import "./IBondingCurve.sol";
 import "../utils/Roots.sol";
 import "../refs/OracleRef.sol";
@@ -85,10 +86,11 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
 
 	function getAmountOut(uint amountIn) public view override returns (uint amountOut) {
 		uint adjustedAmount = getAdjustedAmount(amountIn);
+		amountOut = _getBufferAdjustedAmount(adjustedAmount);
 		if (atScale()) {
-			return _getBufferAdjustedAmount(adjustedAmount);
+			return amountOut;
 		}
-		return _getBondingCurveAmountOut(adjustedAmount);
+		return Math.max(amountOut, _getBondingCurveAmountOut(adjustedAmount)); // Cap price at buffer adjusted
 	}
 
 	function getAveragePrice(uint amountIn) public view override returns (Decimal.D256 memory) {

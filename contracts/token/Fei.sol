@@ -55,11 +55,9 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         emit Burning(account, msg.sender, amount);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint amount) internal override {
-        // If not minting or burning
-        if (from != address(0) && to != address(0)) {
-            _checkAndApplyIncentives(from, to, amount);      
-        }
+    function _transfer(address sender, address recipient, uint256 amount) internal override {
+        super._transfer(sender, recipient, amount);
+        _checkAndApplyIncentives(sender, recipient, amount);
     }
 
     function _checkAndApplyIncentives(address sender, address recipient, uint amount) internal {

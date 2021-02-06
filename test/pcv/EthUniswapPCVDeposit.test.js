@@ -1,5 +1,5 @@
 const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
-const { accounts, contract } = require('@openzeppelin/test-environment');
+const { accounts, contract, web3 } = require('@openzeppelin/test-environment');
 
 const { BN, expectEvent, expectRevert, balance } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
@@ -18,6 +18,8 @@ describe('EthUniswapPCVDeposit', function () {
 
   beforeEach(async function () {
     this.core = await Core.new({from: governorAddress});
+    await this.core.init({from: governorAddress});
+
     await this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
     await this.core.completeGenesisGroup({from: genesisGroup});
 
@@ -119,6 +121,34 @@ describe('EthUniswapPCVDeposit', function () {
 
         it('totalValue', async function() {
           expect(await this.allocation.totalValue()).to.be.bignumber.equal(new BN(199999)); // rounding error
+        });
+
+        it('no fei held', async function() {
+          expect(await this.fei.balanceOf(this.allocation.address)).to.be.bignumber.equal(new BN(0));
+        });
+      });
+
+      describe('Transfers held ETH and burns FEI', function() {
+        beforeEach(async function() {
+          await web3.eth.sendTransaction({from: userAddress, to:this.allocation.address, value: "100000"});
+          await this.fei.mint(this.allocation.address, "1000", {from: minterAddress});
+          await this.allocation.deposit("100000", {from: userAddress, value: "100000"});
+        });
+
+        it('liquidityOwned', async function() {
+          expect(await this.allocation.liquidityOwned()).to.be.bignumber.equal(new BN(LIQUIDITY_INCREMENT * 2));
+        });
+
+        it('pair reserves', async function() {
+          expect(await balance.current(this.pair.address)).to.be.bignumber.equal(new BN(400000));
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(150000000));
+          let result = await this.allocation.getReserves();
+          expect(result[0]).to.be.bignumber.equal(new BN(200000000));
+          expect(result[1]).to.be.bignumber.equal(new BN(400000));
+        });
+
+        it('totalValue', async function() {
+          expect(await this.allocation.totalValue()).to.be.bignumber.equal(new BN(266666)); // rounding error
         });
 
         it('no fei held', async function() {

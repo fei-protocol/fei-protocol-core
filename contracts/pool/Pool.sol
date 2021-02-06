@@ -138,6 +138,8 @@ abstract contract Pool is IPool, ERC20, Timed {
 	function _withdraw(address from, address to) internal returns(uint amountStaked) {
 		amountStaked = stakedBalance[from];
 		stakedBalance[from] = 0;
+		_decrementStaked(amountStaked);
+
 		stakedToken.transfer(to, amountStaked);
 
 		uint amountPool = balanceOf(from);
@@ -164,6 +166,10 @@ abstract contract Pool is IPool, ERC20, Timed {
 
 	function _incrementStaked(uint amount) internal {
 		totalStaked = totalStaked.add(amount.toUint128());
+	}
+
+	function _decrementStaked(uint amount) internal {
+		totalStaked = totalStaked.sub(amount.toUint128());
 	}
 
 	function _twfb(uint amount) internal view returns(uint) {
