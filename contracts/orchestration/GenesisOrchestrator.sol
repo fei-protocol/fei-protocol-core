@@ -13,7 +13,6 @@ contract GenesisOrchestrator is Ownable {
 		address tribeFeiPair,
 		address oracle,
 		uint32 genesisDuration,
-		uint maxPriceBPs,
 		uint exhangeRateDiscount,
 		uint32 poolDuration
 	) public onlyOwner returns (address genesisGroup, address pool) {
@@ -25,7 +24,6 @@ contract GenesisOrchestrator is Ownable {
 			oracle,
 			pool, 
 			genesisDuration, 
-			maxPriceBPs, 
 			exhangeRateDiscount
 		));
 		return (genesisGroup, pool);

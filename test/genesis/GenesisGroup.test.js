@@ -24,7 +24,7 @@ describe('GenesisGroup', function () {
     this.ido = await MockIDO.new(this.tribe.address, 10);
     this.bo = await MockBondingCurveOracle.new();
     this.pool = await MockPool.new();
-    this.genesisGroup = await GenesisGroup.new(this.core.address, this.bc.address, this.ido.address, this.bo.address, this.pool.address, '1000', '9000', '10');
+    this.genesisGroup = await GenesisGroup.new(this.core.address, this.bc.address, this.ido.address, this.bo.address, this.pool.address, '1000', '10');
 
     await this.core.allocateTribe(this.genesisGroup.address, 10000, {from: governorAddress});
     await this.core.allocateTribe(this.ido.address, 10000000, {from: governorAddress});
@@ -42,7 +42,6 @@ describe('GenesisGroup', function () {
     describe('Purchase', function() {
       describe('No value', function() {
         it('reverts', async function() {
-          await expectRevert(this.genesisGroup.isAtMaxPrice(), "GenesisGroup: No balance");
           await expectRevert(this.genesisGroup.purchase(userAddress, 0, {from: userAddress, value: 0}), "GenesisGroup: no value sent");
         });
       });
@@ -128,45 +127,9 @@ describe('GenesisGroup', function () {
       beforeEach(async function() {
         await this.genesisGroup.purchase(userAddress, 1000, {from: userAddress, value: 1000});
       });
-
-      describe('Below max price', function() {
-        it('reverts', async function() {
-          await expectRevert(this.genesisGroup.launch(), "GenesisGroup: Still in Genesis Period");
-        });
-      });
-      describe('Above max price', function() {
-        beforeEach(async function() {
-          await this.bc.setCurrentPrice(95);
-          expectEvent(
-            await this.genesisGroup.launch(),
-            'Launch',
-            {}
-          );
-        });
-        it('purchases on bondingCurve', async function() {
-          expect(await balance.current(this.genesisGroup.address)).to.be.bignumber.equal(new BN(0));
-          expect(await balance.current(this.bc.address)).to.be.bignumber.equal(new BN(1000));
-        });
-
-        it('allocates bonding curve', async function() {
-          expect(await this.bc.allocated()).to.be.equal(true);
-        });
-
-        it('deploys IDO', async function() {
-          expect(await this.ido.ratio()).to.be.bignumber.equal(new BN('5000000000000000000').div(new BN(10)));
-        });
-
-        it('inits Bonding Curve Oracle', async function() {
-          expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('950000000000000000'));
-        });
-
-        it('reverts purchase', async function() {
-          await expectRevert(this.genesisGroup.purchase(userAddress, 100, {from: userAddress, value: 100}), "GenesisGroup: Not in Genesis Period");
-        });
-
-        it('reverts pre-commit', async function() {
-          await expectRevert(this.genesisGroup.commit(userAddress, userAddress, '500', {from: userAddress}), "GenesisGroup: Not in Genesis Period");
-        });
+      
+      it('reverts', async function() {
+        await expectRevert(this.genesisGroup.launch(), "GenesisGroup: Still in Genesis Period");
       });
     });
 
