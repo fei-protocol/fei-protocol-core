@@ -30,6 +30,9 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 
 	uint public totalCommittedTribe;
 
+	uint public constant ORACLE_LISTING_PERCENT = 90;
+	uint public launchBlock;
+
 	/// @notice GenesisGroup constructor
 	/// @param _core Fei Core address to reference
 	/// @param _bondingcurve Bonding curve address for purchase
@@ -88,6 +91,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 
 	function redeem(address to) external override {
 		(uint feiAmount, uint genesisTribe, uint idoTribe) = getAmountsToRedeem(to); 
+		require(block.number > launchBlock, "GenesisGroup: No redeeming in launch block");
 
 		uint tribeAmount = genesisTribe + idoTribe;
 
@@ -142,11 +146,13 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		require(isTimeEnded(), "GenesisGroup: Still in Genesis Period");
 
 		core().completeGenesisGroup();
+		launchBlock = block.number;
 
 		address genesisGroup = address(this);
 		uint balance = genesisGroup.balance;
 
-		bondingCurveOracle.init(bondingcurve.getAveragePrice(balance));
+		Decimal.D256 memory oraclePrice = bondingcurve.getAveragePrice(balance).mul(ORACLE_LISTING_PERCENT).div(100);
+		bondingCurveOracle.init(oraclePrice);
 
 		bondingcurve.purchase{value: balance}(genesisGroup, balance);
 		bondingcurve.allocate();

@@ -1,3 +1,7 @@
+const { contract } = require('@openzeppelin/test-environment');
+
+const FlashGenesis = contract.fromArtifact("FlashGenesis");
+
 const {
   userAddress,
   secondUserAddress,
@@ -19,6 +23,7 @@ const {
   getCore,
   forceEth
 } = require('../helpers');
+
 
 describe('GenesisGroup', function () {
 
@@ -43,8 +48,10 @@ describe('GenesisGroup', function () {
 
     await this.core.setGenesisGroup(this.genesisGroup.address, {from: governorAddress});
     // 5:1 FEI to TRIBE ratio
+
     this.genesisFeiAmount = new BN('50000');
     this.fei.mint(this.genesisGroup.address, this.genesisFeiAmount, {from: minterAddress});
+    this.flashGenesis = await FlashGenesis.new(this.genesisGroup.address);
   });
 
   describe('Init', function() {
@@ -174,6 +181,17 @@ describe('GenesisGroup', function () {
     });
   });
 
+  describe('Flash Launch', function() {
+    beforeEach(async function() {
+      await this.genesisGroup.purchase(userAddress, 750, {from: userAddress, value: 750});
+      await time.increase('2000');
+    });
+
+    it('reverts', async function() {
+      await this.genesisGroup.approve(this.flashGenesis.address, '750', {from: userAddress});
+      await expectRevert(this.flashGenesis.zap(userAddress), "GenesisGroup: No redeeming in launch block");
+    });
+  });
   describe('Launch', function() {
     describe('During Genesis Period', function() {
       beforeEach(async function() {
@@ -216,7 +234,7 @@ describe('GenesisGroup', function () {
         });
   
         it('inits Bonding Curve Oracle', async function() {
-          expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('100000000000000000'));
+          expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('90000000000000000'));
         });
   
         it('inits pool', async function() {
@@ -260,7 +278,7 @@ describe('GenesisGroup', function () {
         });
   
         it('inits Bonding Curve Oracle', async function() {
-          expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('100000000000000000'));
+          expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('90000000000000000'));
         });
   
         it('inits pool', async function() {
