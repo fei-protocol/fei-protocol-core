@@ -592,7 +592,7 @@ describe('GenesisGroup', function () {
 
           describe('Not enough', function() {
             it('reverts', async function() {
-              await expectRevert(this.genesisGroup.commit(userAddress, userAddress, '500', {from: userAddress}), "GenesisGroup: burn amount exceeds balance");
+              await expectRevert(this.genesisGroup.commit(userAddress, userAddress, '500', {from: userAddress}), "ERC20: burn amount exceeds balance");
             });
           });
         });
