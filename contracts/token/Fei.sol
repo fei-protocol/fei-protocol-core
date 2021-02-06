@@ -2,14 +2,13 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./IIncentive.sol";
 import "./IFei.sol";
 import "../refs/CoreRef.sol";
 
 /// @title IFei implementation
 /// @author Fei Protocol
-contract Fei is IFei, ERC20, ERC20Burnable, CoreRef {
+contract Fei is IFei, ERC20Burnable, CoreRef {
 
     mapping (address => address) public override incentiveContract;
 

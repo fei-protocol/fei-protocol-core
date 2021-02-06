@@ -373,7 +373,7 @@ describe('Pool', function () {
                   it('reverts', async function() {
                     await expectRevert(
                       this.pool.claim(userAddress, userAddress, {from: secondUserAddress}),
-                      'ERC20: burn amount exceeds allowance'
+                      'Pool: burn amount exceeds allowance'
                     );
                   });
                 });
@@ -421,7 +421,7 @@ describe('Pool', function () {
                   it('reverts', async function() {
                     await expectRevert(
                       this.pool.claim(userAddress, secondUserAddress, {from: secondUserAddress}),
-                      'ERC20: burn amount exceeds allowance'
+                      'Pool: burn amount exceeds allowance'
                     );
                   });
                 });

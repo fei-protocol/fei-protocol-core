@@ -3,7 +3,6 @@ pragma experimental ABIEncoderV2;
 
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 import "@openzeppelin/contracts/utils/SafeCast.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./IPool.sol";
 import "../utils/Timed.sol";
@@ -13,7 +12,7 @@ import "../external/Decimal.sol";
 
 /// @title abstract implementation of IPool interface
 /// @author Fei Protocol
-abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
+abstract contract Pool is IPool, ERC20, Timed {
 	using Decimal for Decimal.D256;
 	using SafeMath128 for uint128;
 	using SafeCast for uint;
@@ -94,11 +93,12 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 		return rewardToken.balanceOf(address(this));
 	}
 
-	function burnFrom(address account, uint amount) public override {
-		if (msg.sender == account) {
-			increaseAllowance(account, amount);
+	function _burnFrom(address account, uint amount) internal {
+		if (msg.sender != account) {
+			uint256 decreasedAllowance = allowance(account, _msgSender()).sub(amount, "Pool: burn amount exceeds allowance");
+			_approve(account, _msgSender(), decreasedAllowance);
 		}
-		super.burnFrom(account, amount);
+        _burn(account, amount);
 	}
 
 	function _totalRedeemablePoolTokens() internal view returns(uint) {
@@ -144,7 +144,7 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 
 		uint amountPool = balanceOf(from);
 		if (amountPool != 0) {
-			_burn(from, amountPool);
+			_burnFrom(from, amountPool);
 		}
 		return amountStaked;	
 	}
@@ -153,7 +153,7 @@ abstract contract Pool is IPool, ERC20, ERC20Burnable, Timed {
 		(uint amountReward, uint amountPool) = redeemableReward(from);
 		require(amountPool != 0, "Pool: User has no redeemable pool tokens");
 
-		burnFrom(from, amountPool);
+		_burnFrom(from, amountPool);
 		_incrementClaimed(amountReward);
 
 		rewardToken.transfer(to, amountReward);
