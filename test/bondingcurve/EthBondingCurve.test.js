@@ -21,7 +21,10 @@ const {
 describe('EthBondingCurve', function () {
 
   beforeEach(async function () {
+    
     this.core = await getCore(true);
+    await this.core.init({from: governorAddress});
+
     this.fei = await Fei.at(await this.core.fei());
     
     this.oracle = await MockOracle.new(500); // 500 USD per ETH exchange rate 

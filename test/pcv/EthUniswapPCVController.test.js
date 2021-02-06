@@ -20,6 +20,8 @@ describe('EthUniswapPCVController', function () {
 
   beforeEach(async function () {
     this.core = await Core.new({from: governorAddress});
+    await this.core.init({from: governorAddress});
+
     await this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
     await this.core.completeGenesisGroup({from: genesisGroup});
 
