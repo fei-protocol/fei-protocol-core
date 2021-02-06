@@ -99,7 +99,6 @@ interface IGenesisOrchestrator {
 		address tribeFeiPair,
 		address oracle,
 		uint32 genesisDuration,
-		uint maxPriceBPs,
 		uint exhangeRateDiscount,
 		uint32 poolDuration
 	) external returns (address genesisGroup, address pool);
@@ -147,7 +146,6 @@ contract CoreOrchestrator is Ownable {
 	uint32 public constant BONDING_CURVE_INCENTIVE_DURATION = TEST_MODE ? 1 : 1 days; // 1 day duration
 
 	// ----------- Params -----------
-	uint public constant MAX_GENESIS_PRICE_BPS = 9000;
 	uint public constant EXCHANGE_RATE_DISCOUNT = 10;
 
 	uint32 public constant INCENTIVE_GROWTH_RATE = TEST_MODE ? 1_000_000 : 333; // about 1 unit per hour assuming 12s block time
@@ -334,7 +332,6 @@ contract CoreOrchestrator is Ownable {
 			tribeFeiPair,
 			bondingCurveOracle,
 			GENESIS_DURATION,
-			MAX_GENESIS_PRICE_BPS,
 			EXCHANGE_RATE_DISCOUNT,
 			POOL_DURATION
 		);

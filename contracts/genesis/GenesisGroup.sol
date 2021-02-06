@@ -30,9 +30,6 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 
 	uint public totalCommittedTribe;
 
-	/// @notice a cap on the genesis group purchase price
-	Decimal.D256 public maxGenesisPrice;
-
 	/// @notice GenesisGroup constructor
 	/// @param _core Fei Core address to reference
 	/// @param _bondingcurve Bonding curve address for purchase
@@ -40,7 +37,6 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 	/// @param _oracle Bonding curve oracle
 	/// @param _pool Staking Pool
 	/// @param _duration duration of the Genesis Period
-	/// @param _maxPriceBPs max price of FEI allowed in Genesis Group in dollar terms
 	/// @param _exchangeRateDiscount a divisor on the FEI/TRIBE ratio at Genesis to deploy to the IDO
 	constructor(
 		address _core, 
@@ -49,7 +45,6 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		address _oracle,
 		address _pool,
 		uint32 _duration,
-		uint _maxPriceBPs,
 		uint _exchangeRateDiscount
 	) public
 		CoreRef(_core)
@@ -66,8 +61,6 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		bondingCurveOracle = IBondingCurveOracle(_oracle);
 
 		_initTimed();
-
-		maxGenesisPrice = Decimal.ratio(_maxPriceBPs, 10000);
 	}
 
 	modifier onlyGenesisPeriod() {
@@ -146,7 +139,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 	}
 
 	function launch() external override {
-		require(isTimeEnded() || isAtMaxPrice(), "GenesisGroup: Still in Genesis Period");
+		require(isTimeEnded(), "GenesisGroup: Still in Genesis Period");
 
 		core().completeGenesisGroup();
 
@@ -205,13 +198,6 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
 		uint totalTribe = tribeBalance();
 
 		return (totalFei * amountIn / totalIn, totalTribe * amountIn / totalIn);
-	}
-
-	function isAtMaxPrice() public view override returns(bool) {
-		uint balance = address(this).balance;
-		require(balance != 0, "GenesisGroup: No balance");
-
-		return bondingcurve.getAveragePrice(balance).greaterThanOrEqualTo(maxGenesisPrice);
 	}
 
 	function burnFrom(address account, uint amount) public override {
