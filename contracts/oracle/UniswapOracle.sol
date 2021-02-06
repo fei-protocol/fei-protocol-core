@@ -8,11 +8,13 @@ pragma experimental ABIEncoderV2;
 import "@uniswap/v2-periphery/contracts/libraries/UniswapV2OracleLibrary.sol";
 import "./IUniswapOracle.sol";
 import "../refs/CoreRef.sol";
+import "../external/SafeMathCopy.sol";
 
 /// @title IUniswapOracle implementation contract
 /// @author Fei Protocol
 contract UniswapOracle is IUniswapOracle, CoreRef {
 	using Decimal for Decimal.D256;
+	using SafeMathCopy for uint;
 
 	IUniswapV2Pair public override pair;
 	bool private isPrice0;
@@ -49,13 +51,13 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 		(uint price0Cumulative, uint price1Cumulative, uint32 currentTimestamp) =
             UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
 
-		uint32 deltaTimestamp = currentTimestamp - priorTimestamp;
-		if(currentTimestamp <= priorTimestamp || deltaTimestamp < duration) {
+		uint32 deltaTimestamp = currentTimestamp - priorTimestamp; // allowing underflow per Uniswap Oracle spec
+		if(deltaTimestamp < duration) {
 			return false;
 		}
 
 		uint currentCumulative = _getCumulative(price0Cumulative, price1Cumulative);
-		uint deltaCumulative = (currentCumulative - priorCumulative) * 1e12;
+		uint deltaCumulative = (currentCumulative - priorCumulative).mul(1e12); // allowing underflow per Uniswap Oracle spec
 
 		Decimal.D256 memory _twap = Decimal.ratio(deltaCumulative / deltaTimestamp, 2**112);
 		twap = _twap;
@@ -70,7 +72,7 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 
 	function isOutdated() external view override returns(bool) {
 		(,, uint32 currentTimestamp) = UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
-		uint32 deltaTimestamp = currentTimestamp - priorTimestamp;
+		uint32 deltaTimestamp = currentTimestamp - priorTimestamp; // allowing underflow per Uniswap Oracle spec
 		return deltaTimestamp >= duration;
 	}
 

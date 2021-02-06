@@ -2,28 +2,23 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
-import "@openzeppelin/contracts/utils/SafeCast.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./IPool.sol";
 import "../utils/Timed.sol";
-import "../utils/SafeMath128.sol";
-import "../external/SafeMathCopy.sol";
 import "../external/Decimal.sol";
 
 /// @title abstract implementation of IPool interface
 /// @author Fei Protocol
 abstract contract Pool is IPool, ERC20, Timed {
 	using Decimal for Decimal.D256;
-	using SafeMath128 for uint128;
-	using SafeCast for uint;
 
 	bool internal initialized;
 
 	IERC20 public override rewardToken;
 	IERC20 public override stakedToken;
 
-	uint128 public override claimedRewards;
-	uint128 public override totalStaked;
+	uint public override claimedRewards;
+	uint public override totalStaked;
 
     mapping (address => uint) public override stakedBalance;
 
@@ -69,7 +64,7 @@ abstract contract Pool is IPool, ERC20, Timed {
 		if (totalRedeemablePool == 0) {
 			return (0, 0);
 		}
-		return (releasedReward() * amountPool / totalRedeemablePool, amountPool);
+		return (releasedReward().mul(amountPool) / totalRedeemablePool, amountPool);
     }
 
 	function releasedReward() public view override returns (uint) {
@@ -86,7 +81,7 @@ abstract contract Pool is IPool, ERC20, Timed {
 	}
 
 	function totalReward() public view override returns (uint) {
-		return rewardBalance() + uint(claimedRewards);
+		return rewardBalance().add(claimedRewards);
 	}
 
 	function rewardBalance() public view override returns (uint) {
@@ -103,7 +98,7 @@ abstract contract Pool is IPool, ERC20, Timed {
 
 	function _totalRedeemablePoolTokens() internal view returns(uint) {
 		uint total = totalSupply();
-		uint balance = _twfb(uint(totalStaked));
+		uint balance = _twfb(totalStaked);
 		return total.sub(balance, "Pool: Total redeemable underflow");
 	}
 
@@ -126,7 +121,7 @@ abstract contract Pool is IPool, ERC20, Timed {
 			amount
 		);
 
-		stakedBalance[to] += amount;
+		stakedBalance[to] = stakedBalance[to].add(amount);
 		_incrementStaked(amount);
 		
 		uint poolTokens = _twfb(amount);
@@ -161,19 +156,19 @@ abstract contract Pool is IPool, ERC20, Timed {
 	}
 
 	function _incrementClaimed(uint amount) internal {
-		claimedRewards = claimedRewards.add(amount.toUint128());
+		claimedRewards = claimedRewards.add(amount);
 	}
 
 	function _incrementStaked(uint amount) internal {
-		totalStaked = totalStaked.add(amount.toUint128());
+		totalStaked = totalStaked.add(amount);
 	}
 
 	function _decrementStaked(uint amount) internal {
-		totalStaked = totalStaked.sub(amount.toUint128());
+		totalStaked = totalStaked.sub(amount);
 	}
 
 	function _twfb(uint amount) internal view returns(uint) {
-		return amount * uint(remainingTime());
+		return amount.mul(remainingTime());
 	}
 
 	// Updates stored staked balance pro-rata for transfer and transferFrom
@@ -182,8 +177,8 @@ abstract contract Pool is IPool, ERC20, Timed {
  			Decimal.D256 memory ratio = Decimal.ratio(amount, balanceOf(from));
  			uint amountStaked = ratio.mul(stakedBalance[from]).asUint256();
 			
- 			stakedBalance[from] -= amountStaked;
- 			stakedBalance[to] += amountStaked;
+ 			stakedBalance[from] = stakedBalance[from].sub(amountStaked);
+ 			stakedBalance[to] = stakedBalance[to].add(amountStaked);
         }
     }
 

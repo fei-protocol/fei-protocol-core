@@ -4,9 +4,11 @@ pragma solidity ^0.6.0;
 // Reference: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/TokenTimelock.sol
 
 import "./Timed.sol";
+import "../external/SafeMathCopy.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract LinearTokenTimelock is Timed {
+    using SafeMathCopy for uint;
 
     // ERC20 basic token contract being held
     IERC20 public lockedToken;
@@ -33,8 +35,8 @@ contract LinearTokenTimelock is Timed {
     // Prevents incoming LP tokens from messing up calculations
     modifier balanceCheck() {
         if (totalToken() > lastBalance) {
-            uint delta = totalToken() - lastBalance;
-            initialBalance += delta;
+            uint delta = totalToken().sub(lastBalance);
+            initialBalance = initialBalance.add(delta);
         }
         _;
         lastBalance = totalToken();
@@ -58,15 +60,15 @@ contract LinearTokenTimelock is Timed {
     }
 
     function alreadyReleasedAmount() public view returns(uint) {
-        return initialBalance - totalToken();
+        return initialBalance.sub(totalToken());
     }
 
     function availableForRelease() public view returns(uint) {
         uint elapsed = timestamp();
         uint _duration = duration;
 
-        uint totalAvailable = initialBalance * elapsed / _duration;
-        uint netAvailable = totalAvailable - alreadyReleasedAmount();
+        uint totalAvailable = initialBalance.mul(elapsed) / _duration;
+        uint netAvailable = totalAvailable.sub(alreadyReleasedAmount());
         return netAvailable;
     }
 

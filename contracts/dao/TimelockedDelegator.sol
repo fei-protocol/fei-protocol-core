@@ -56,14 +56,14 @@ contract TimelockedDelegator is ITimelockedDelegator, LinearTokenTimelock {
 		require(amount <= tribeBalance(), "TimelockedDelegator: Not enough Tribe");
 
 		if (delegateContract[delegatee] != address(0)) {
-			amount += undelegate(delegatee);
+			amount = amount.add(undelegate(delegatee));
 		}
 		ITribe _tribe = tribe;
 		address _delegateContract = address(new Delegatee(delegatee, address(_tribe)));
 		delegateContract[delegatee] = _delegateContract;
 
 		delegateAmount[delegatee] = amount;
-		totalDelegated += amount;
+		totalDelegated = totalDelegated.add(amount);
 
 		_tribe.transfer(_delegateContract, amount);
 
@@ -77,7 +77,7 @@ contract TimelockedDelegator is ITimelockedDelegator, LinearTokenTimelock {
 		Delegatee(_delegateContract).withdraw();
 
 		uint amount = delegateAmount[delegatee];
-		totalDelegated -= amount;
+		totalDelegated = totalDelegated.sub(amount);
 
 		delegateContract[delegatee] = address(0);
 		delegateAmount[delegatee] = 0;
@@ -90,7 +90,7 @@ contract TimelockedDelegator is ITimelockedDelegator, LinearTokenTimelock {
 	/// @notice calculate total TRIBE held plus delegated
 	/// @dev used by LinearTokenTimelock to determine the released amount
 	function totalToken() public view override returns(uint256) {
-        return tribeBalance() + totalDelegated;
+        return tribeBalance().add(totalDelegated);
     }
 
 	/// @notice accept beneficiary role over timelocked TRIBE. Delegates all held (non-subdelegated) tribe to beneficiary

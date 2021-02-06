@@ -8,11 +8,15 @@ import "./IUniswapPCVController.sol";
 import "../refs/UniRef.sol";
 import "../oracle/IOracle.sol";
 import "../external/Decimal.sol";
+import "../external/SafeMathCopy.sol";
 
 /// @title a IUniswapPCVController implementation for ETH
 /// @author Fei Protocol
 contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 	using Decimal for Decimal.D256;
+	using SafeMathCopy for uint;
+
+	uint internal constant WITHDRAW_PERCENTAGE = 90;
 
 	IPCVDeposit public override pcvDeposit;
 	IUniswapIncentive public override incentiveContract;
@@ -127,7 +131,8 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 	}
 
 	function _withdraw() internal {
-		uint value = pcvDeposit.totalValue() * 9 / 10; // Only withdraw 90% to prevent rounding errors on Uni LP dust
+		// Only withdraw a portion to prevent rounding errors on Uni LP dust
+		uint value = pcvDeposit.totalValue().mul(WITHDRAW_PERCENTAGE) / 100;
 		pcvDeposit.withdraw(address(this), value);
 	}
 }

@@ -1,11 +1,13 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
+import "../external/SafeMathCopy.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /// @title abstract contract for splitting PCV into different deposits
 /// @author Fei Protocol
 abstract contract PCVSplitter {
+    using SafeMathCopy for uint;
 
 	/// @notice total allocation allowed representing 100%
 	uint public constant ALLOCATION_GRANULARITY = 10_000; 
@@ -31,7 +33,7 @@ abstract contract PCVSplitter {
 
 		uint total;
 		for (uint i; i < _ratios.length; i++) {
-			total += _ratios[i];
+			total = total.add(_ratios[i]);
 		}
 
 		require(total == ALLOCATION_GRANULARITY, "PCVSplitter: ratios do not total 100%");
@@ -66,7 +68,7 @@ abstract contract PCVSplitter {
 	function _allocate(uint total) internal {
 		uint granularity = ALLOCATION_GRANULARITY;
 		for (uint i; i < ratios.length; i++) {
-			uint amount = total * ratios[i] / granularity;
+			uint amount = total.mul(ratios[i]) / granularity;
 			_allocateSingle(amount, pcvDeposits[i]);
 		}
 	}

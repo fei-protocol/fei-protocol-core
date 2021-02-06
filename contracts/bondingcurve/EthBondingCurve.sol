@@ -42,8 +42,9 @@ contract EthBondingCurve is BondingCurve {
 	// Represents the integral solved for upper bound of P(x) = ((k+X)/(k+S))^1/2 * O. Subtracting starting point C
 	function _getBondingCurveAmountOut(uint adjustedAmountIn) internal view override returns (uint amountOut) {
 		uint shiftTotal = _shift(totalPurchased); // k + C
-		uint radicand = (3 * adjustedAmountIn * _shift(scale).sqrt() / 2) + (shiftTotal ** 3).sqrt();
-		return (radicand ** 2).cubeRoot() - shiftTotal; // result - (k + C)
+		uint shiftTotalCubed = shiftTotal.mul(shiftTotal.mul(shiftTotal));
+		uint radicand = (adjustedAmountIn.mul(3).mul(_shift(scale).sqrt()) / 2).add(shiftTotalCubed.sqrt());
+		return (radicand.mul(radicand)).cubeRoot() - shiftTotal; // result - (k + C)
 	}
 
 	function _getBondingCurvePriceMultiplier() internal view override returns(Decimal.D256 memory) {
@@ -55,7 +56,7 @@ contract EthBondingCurve is BondingCurve {
 	}
 
 	function _shift(uint x) internal view returns(uint) {
-		return SHIFT + x;
+		return SHIFT.add(x);
 	}
 }
 
