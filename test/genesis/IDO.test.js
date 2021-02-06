@@ -147,10 +147,27 @@ describe('IDO', function () {
       describe('After window', function() {
         beforeEach(async function() {
           await time.increase(this.window);
+          expectEvent(
+            await this.ido.release({from: beneficiaryAddress1}),
+            'Release',
+            {
+              _beneficiary: beneficiaryAddress1,
+              _amount: new BN(LIQUIDITY_INCREMENT)
+            }
+          );
         });
 
-        it('all available for release', async function() {
-          expect(await this.ido.availableForRelease()).to.be.bignumber.equal(new BN(LIQUIDITY_INCREMENT));
+        it('already released all', async function() {
+          expect(await this.ido.initialBalance()).to.be.bignumber.equal(new BN(LIQUIDITY_INCREMENT));
+          expect(await this.ido.alreadyReleasedAmount()).to.be.bignumber.equal(new BN(LIQUIDITY_INCREMENT));
+        });
+
+        it('nothing available for release', async function() {
+          expect(await this.ido.availableForRelease()).to.be.bignumber.equal(new BN(0));
+        });
+
+        it('updates user balances', async function() {
+          expect(await this.pair.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(new BN(LIQUIDITY_INCREMENT));
         });
       });
     });

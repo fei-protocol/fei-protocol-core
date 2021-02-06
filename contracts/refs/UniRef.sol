@@ -1,15 +1,19 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
+import "@openzeppelin/contracts/math/SignedSafeMath.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "./OracleRef.sol";
 import "./IUniRef.sol";
+import "../external/SafeMathCopy.sol";
 
 /// @title UniRef abstract implementation contract
 /// @author Fei Protocol
 abstract contract UniRef is IUniRef, OracleRef {
 	using Decimal for Decimal.D256;
 	using Babylonian for uint;
+    using SignedSafeMath for int256;
+    using SafeMathCopy for uint;
 
 	IUniswapV2Router02 public override router;
 	IUniswapV2Pair public override pair;
@@ -141,8 +145,8 @@ abstract contract UniRef is IUniRef, OracleRef {
     	uint reserveFei, 
     	uint reserveOther
     ) internal pure returns (Decimal.D256 memory) {
-    	uint k = reserveFei * reserveOther;
-    	uint adjustedReserveFei = uint(int256(reserveFei) + amountFei);
+    	uint k = reserveFei.mul(reserveOther);
+    	uint adjustedReserveFei = uint(int256(reserveFei).add(amountFei));
     	uint adjustedReserveOther = k / adjustedReserveFei;
     	return Decimal.ratio(adjustedReserveFei, adjustedReserveOther); // alt: adjustedReserveFei^2 / k
     }
@@ -183,7 +187,7 @@ abstract contract UniRef is IUniRef, OracleRef {
         if (price.lessThanOrEqualTo(peg)) {
             return Decimal.zero();
         }
-        Decimal.D256 memory delta = price.sub(peg, "UniRef: price exceeds peg"); // Should never error
+        Decimal.D256 memory delta = price.sub(peg, "Impossible underflow");
         return delta.div(peg);
     }
 }

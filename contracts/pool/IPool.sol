@@ -69,7 +69,7 @@ interface IPool {
 
     /// @notice the total amount of rewards previously claimed
     /// @return the total
-    function claimedRewards() external view returns(uint128);
+    function claimedRewards() external view returns(uint);
 
     /// @notice the ERC20 staked token
     /// @return the IERC20 implementation address
@@ -77,7 +77,7 @@ interface IPool {
 
     /// @notice the total amount of staked tokens in the contract
     /// @return the total
-    function totalStaked() external view returns(uint128);
+    function totalStaked() external view returns(uint);
 
     /// @notice the staked balance of a given account
     /// @param account the user account

@@ -82,8 +82,8 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
 	function commit(address from, address to, uint amount) external override onlyGenesisPeriod {
 		_burnFrom(from, amount);
 
-		committedFGEN[to] += amount;
-		totalCommittedFGEN += amount;
+		committedFGEN[to] = committedFGEN[to].add(amount);
+		totalCommittedFGEN = totalCommittedFGEN.add(amount);
 
 		emit Commit(from, to, amount);
 	}
@@ -92,7 +92,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
 		(uint feiAmount, uint genesisTribe, uint idoTribe) = getAmountsToRedeem(to); 
 		require(block.number > launchBlock, "GenesisGroup: No redeeming in launch block");
 
-		uint tribeAmount = genesisTribe + idoTribe;
+		uint tribeAmount = genesisTribe.add(idoTribe);
 
 		require(tribeAmount != 0, "GenesisGroup: No redeemable TRIBE");
 
@@ -101,9 +101,9 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
 
 		uint committed = committedFGEN[to];
 		committedFGEN[to] = 0;
-		totalCommittedFGEN -= committed;
+		totalCommittedFGEN = totalCommittedFGEN.sub(committed);
 
-		totalCommittedTribe -= idoTribe;
+		totalCommittedTribe = totalCommittedTribe.sub(idoTribe);
 
 
 		if (feiAmount != 0) {
@@ -121,21 +121,21 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
 		uint userCommittedFGEN = committedFGEN[to];
 
 		uint circulatingFGEN = totalSupply();
-		uint totalFGEN = circulatingFGEN + totalCommittedFGEN;
+		uint totalFGEN = circulatingFGEN.add(totalCommittedFGEN);
 
 		// subtract purchased TRIBE amount
 		uint totalGenesisTribe = tribeBalance().sub(totalCommittedTribe);
 
 		if (circulatingFGEN != 0) {
-			feiAmount = feiBalance() * userFGEN / circulatingFGEN;
+			feiAmount = feiBalance().mul(userFGEN) / circulatingFGEN;
 		}
 
 		if (totalFGEN != 0) {
-			genesisTribe = totalGenesisTribe * (userFGEN + userCommittedFGEN) / totalFGEN;
+			genesisTribe = totalGenesisTribe.mul(userFGEN.add(userCommittedFGEN)) / totalFGEN;
 		}
 
 		if (totalCommittedFGEN != 0) {
-			idoTribe = totalCommittedTribe * userCommittedFGEN / totalCommittedFGEN;
+			idoTribe = totalCommittedTribe.mul(userCommittedFGEN) / totalCommittedFGEN;
 		}
 
 		return (feiAmount, genesisTribe, idoTribe);
@@ -160,7 +160,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
 
 		ido.deploy(_feiTribeExchangeRate());
 
-		uint amountFei = feiBalance() * totalCommittedFGEN / (totalSupply() + totalCommittedFGEN);
+		uint amountFei = feiBalance().mul(totalCommittedFGEN) / (totalSupply().add(totalCommittedFGEN));
 		if (amountFei != 0) {
 			totalCommittedTribe = ido.swapFei(amountFei);
 		}
@@ -176,7 +176,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
 
 		uint heldFGEN = balanceOf(from);
 		uint committed = committedFGEN[from];
-		uint total = heldFGEN + committed;
+		uint total = heldFGEN.add(committed);
 
 		require(total != 0, "GenesisGroup: No FGEN or committed balance");
 		require(address(this).balance >= total, "GenesisGroup: Not enough ETH to redeem");
@@ -184,7 +184,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
 
 		_burnFrom(from, heldFGEN);
 		committedFGEN[from] = 0;
-		totalCommittedFGEN -= committed;
+		totalCommittedFGEN = totalCommittedFGEN.sub(committed);
 
 		to.transfer(total);
 	}
@@ -195,14 +195,14 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
 	) public view override returns (uint feiAmount, uint tribeAmount) {
 		uint totalIn = totalSupply();
 		if (!inclusive) {
-			totalIn += amountIn;
+			totalIn = totalIn.add(amountIn);
 		}
 		require(amountIn <= totalIn, "GenesisGroup: Not enough supply");
 
 		uint totalFei = bondingcurve.getAmountOut(totalIn);
 		uint totalTribe = tribeBalance();
 
-		return (totalFei * amountIn / totalIn, totalTribe * amountIn / totalIn);
+		return (totalFei.mul(amountIn) / totalIn, totalTribe.mul(amountIn) / totalIn);
 	}
 
 

@@ -118,7 +118,7 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
 	}
 
 	function incrementTotalPurchased(uint amount) internal {
-		totalPurchased += amount;
+		totalPurchased = totalPurchased.add(amount);
 	}
 
 	function _setScale(uint _scale) internal {
