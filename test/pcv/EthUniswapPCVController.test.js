@@ -123,12 +123,12 @@ describe('EthUniswapPCVController', function () {
           await this.pcvController.forceReweight({from: governorAddress});
         });
 
-        it('pair gets all ETH in swap', async function() {
-          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(100000));
+        it('pair gets all withdrawn ETH in swap', async function() {
+          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(90000));
         });
 
-        it('pcvDeposit gets no ETH', async function() {
-          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(0));
+        it('pcvDeposit only keeps non-withdrawn ETH', async function() {
+          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(10000));
           expect(await balance.current(this.pcvController.address)).to.be.bignumber.equal(new BN(0));
         });
 
