@@ -13,27 +13,27 @@ interface IPermissions {
     /// @param role the new role id
     /// @param adminRole the admin role id for `role`
     /// @dev can also be used to update admin of existing role
-	function createRole(bytes32 role, bytes32 adminRole) external;
+    function createRole(bytes32 role, bytes32 adminRole) external;
 
     /// @notice grants minter role to address
     /// @param minter new minter
-	function grantMinter(address minter) external;
+    function grantMinter(address minter) external;
 
     /// @notice grants burner role to address
     /// @param burner new burner
-	function grantBurner(address burner) external;
+    function grantBurner(address burner) external;
 
     /// @notice grants controller role to address
     /// @param pcvController new controller
-	function grantPCVController(address pcvController) external;
+    function grantPCVController(address pcvController) external;
 
     /// @notice grants governor role to address
     /// @param governor new governor
-	function grantGovernor(address governor) external;
+    function grantGovernor(address governor) external;
 
     /// @notice grants revoker role to address
     /// @param revoker new revoker
-	function grantRevoker(address revoker) external;
+    function grantRevoker(address revoker) external;
 
     /// @notice revokes minter role from address
     /// @param minter ex minter
@@ -67,17 +67,17 @@ interface IPermissions {
     /// @notice checks if address is a burner
     /// @param _address address to check
     /// @return true _address is a burner
-	function isBurner(address _address) external view returns (bool);
+    function isBurner(address _address) external view returns (bool);
 
     /// @notice checks if address is a minter
     /// @param _address address to check
     /// @return true _address is a minter
-	function isMinter(address _address) external view returns (bool);
+    function isMinter(address _address) external view returns (bool);
 
     /// @notice checks if address is a governor
     /// @param _address address to check
     /// @return true _address is a governor
-	function isGovernor(address _address) external view returns (bool);
+    function isGovernor(address _address) external view returns (bool);
 
     /// @notice checks if address is a revoker
     /// @param _address address to check
@@ -87,5 +87,5 @@ interface IPermissions {
     /// @notice checks if address is a controller
     /// @param _address address to check
     /// @return true _address is a controller
-	function isPCVController(address _address) external view returns (bool);
+    function isPCVController(address _address) external view returns (bool);
 }

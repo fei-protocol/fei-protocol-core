@@ -7,22 +7,27 @@ import "../external/Decimal.sol";
 /// @title Equal access to the first bonding curve transaction
 /// @author Fei Protocol
 interface IGenesisGroup {
-	// ----------- Events -----------
+    // ----------- Events -----------
 
-	event Purchase(address indexed _to, uint _value);
+    event Purchase(address indexed _to, uint256 _value);
 
-	event Redeem(address indexed _to, uint _amountIn, uint _amountFei, uint _amountTribe);
+    event Redeem(
+        address indexed _to,
+        uint256 _amountIn,
+        uint256 _amountFei,
+        uint256 _amountTribe
+    );
 
-    event Commit(address indexed _from, address indexed _to, uint _amount);
+    event Commit(address indexed _from, address indexed _to, uint256 _amount);
 
-	event Launch(uint _timestamp);
+    event Launch(uint256 _timestamp);
 
     // ----------- State changing API -----------
 
     /// @notice allows for entry into the Genesis Group via ETH. Only callable during Genesis Period.
     /// @param to address to send FGEN Genesis tokens to
     /// @param value amount of ETH to deposit
-    function purchase(address to, uint value) external payable;
+    function purchase(address to, uint256 value) external payable;
 
     /// @notice redeem FGEN genesis tokens for FEI and TRIBE. Only callable post launch
     /// @param to address to send redeemed FEI and TRIBE to.
@@ -32,11 +37,14 @@ interface IGenesisGroup {
     /// @param from address to source FGEN Genesis shares from
     /// @param to address to earn TRIBE and redeem post launch
     /// @param amount of FGEN Genesis shares to commit
-    function commit(address from, address to, uint amount) external;
+    function commit(
+        address from,
+        address to,
+        uint256 amount
+    ) external;
 
     /// @notice launch Fei Protocol. Callable once Genesis Period has ended or the max price has been reached
     function launch() external;
-
 
     // ----------- Getters -----------
 
@@ -45,6 +53,8 @@ interface IGenesisGroup {
     /// @param inclusive if true, assumes the `amountIn` is part of the existing FGEN supply. Set to false to simulate a new purchase.
     /// @return feiAmount the amount of FEI received by the user
     /// @return tribeAmount the amount of TRIBE received by the user
-    function getAmountOut(uint amountIn, bool inclusive) external view returns (uint feiAmount, uint tribeAmount);
-    
+    function getAmountOut(uint256 amountIn, bool inclusive)
+        external
+        view
+        returns (uint256 feiAmount, uint256 tribeAmount);
 }

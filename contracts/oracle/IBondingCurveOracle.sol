@@ -19,11 +19,11 @@ interface IBondingCurveOracle is IOracle {
     // ----------- Getters -----------
 
     /// @notice the referenced uniswap oracle price
-    function uniswapOracle() external returns(IOracle);
+    function uniswapOracle() external returns (IOracle);
 
     /// @notice the referenced bonding curve
-    function bondingCurve() external returns(IBondingCurve);
+    function bondingCurve() external returns (IBondingCurve);
 
     /// @notice the initial price denominated in USD per FEI to thaw from
-    function initialPrice() external returns(Decimal.D256 memory);
+    function initialPrice() external returns (Decimal.D256 memory);
 }

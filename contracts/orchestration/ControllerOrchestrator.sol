@@ -5,30 +5,32 @@ import "../pcv/EthUniswapPCVController.sol";
 import "./IOrchestrator.sol";
 
 contract ControllerOrchestrator is IControllerOrchestrator, Ownable {
+    function init(
+        address core,
+        address bondingCurveOracle,
+        address uniswapIncentive,
+        address ethUniswapPCVDeposit,
+        address pair,
+        address router,
+        uint256 reweightIncentive,
+        uint256 reweightMinDistanceBPs
+    ) public override onlyOwner returns (address) {
+        return
+            address(
+                new EthUniswapPCVController(
+                    core,
+                    ethUniswapPCVDeposit,
+                    bondingCurveOracle,
+                    uniswapIncentive,
+                    reweightIncentive,
+                    reweightMinDistanceBPs,
+                    pair,
+                    router
+                )
+            );
+    }
 
-	function init(
-		address core,
-		address bondingCurveOracle, 
-		address uniswapIncentive, 
-		address ethUniswapPCVDeposit,
-		address pair, 
-		address router,
-		uint reweightIncentive,
-		uint reweightMinDistanceBPs
-	) public override onlyOwner returns(address) {
-		return address(new EthUniswapPCVController(
-				core, 
-				ethUniswapPCVDeposit, 
-				bondingCurveOracle, 
-				uniswapIncentive,
-				reweightIncentive,
-				reweightMinDistanceBPs,
-				pair, 
-				router
-			));
-	}
-
-	function detonate() public override onlyOwner {
-		selfdestruct(payable(owner()));
-	}
+    function detonate() public override onlyOwner {
+        selfdestruct(payable(owner()));
+    }
 }

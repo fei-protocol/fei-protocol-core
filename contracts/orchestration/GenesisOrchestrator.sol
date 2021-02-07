@@ -6,31 +6,32 @@ import "../genesis/GenesisGroup.sol";
 import "./IOrchestrator.sol";
 
 contract GenesisOrchestrator is IGenesisOrchestrator, Ownable {
+    function init(
+        address core,
+        address ethBondingCurve,
+        address ido,
+        address tribeFeiPair,
+        address oracle,
+        uint256 genesisDuration,
+        uint256 exhangeRateDiscount,
+        uint256 poolDuration
+    ) public override onlyOwner returns (address genesisGroup, address pool) {
+        pool = address(new FeiPool(core, tribeFeiPair, poolDuration));
+        genesisGroup = address(
+            new GenesisGroup(
+                core,
+                ethBondingCurve,
+                ido,
+                oracle,
+                pool,
+                genesisDuration,
+                exhangeRateDiscount
+            )
+        );
+        return (genesisGroup, pool);
+    }
 
-	function init(
-		address core, 
-		address ethBondingCurve, 
-		address ido, 
-		address tribeFeiPair,
-		address oracle,
-		uint genesisDuration,
-		uint exhangeRateDiscount,
-		uint poolDuration
-	) public override onlyOwner returns (address genesisGroup, address pool) {
-		pool = address(new FeiPool(core, tribeFeiPair, poolDuration));
-		genesisGroup = address(new GenesisGroup(
-			core, 
-			ethBondingCurve, 
-			ido,
-			oracle,
-			pool, 
-			genesisDuration, 
-			exhangeRateDiscount
-		));
-		return (genesisGroup, pool);
-	}
-
-	function detonate() public override onlyOwner {
-		selfdestruct(payable(owner()));
-	}
+    function detonate() public override onlyOwner {
+        selfdestruct(payable(owner()));
+    }
 }

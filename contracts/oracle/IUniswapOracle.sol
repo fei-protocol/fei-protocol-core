@@ -8,26 +8,25 @@ import "./IOracle.sol";
 /// @author Fei Protocol
 /// @notice maintains the TWAP of a uniswap pair contract over a specified duration
 interface IUniswapOracle is IOracle {
-
-	// ----------- Events -----------
-    event DurationUpdate(uint _duration);
+    // ----------- Events -----------
+    event DurationUpdate(uint256 _duration);
 
     // ----------- Governor only state changing API -----------
 
     /// @notice set a new duration for the TWAP window
-    function setDuration(uint _duration) external;
+    function setDuration(uint256 _duration) external;
 
     // ----------- Getters -----------
 
     /// @notice the previous timestamp of the oracle snapshot
-    function priorTimestamp() external returns(uint32);
+    function priorTimestamp() external returns (uint32);
 
     /// @notice the previous cumulative price of the oracle snapshot
-    function priorCumulative() external returns(uint);
+    function priorCumulative() external returns (uint256);
 
     /// @notice the window over which the initial price will "thaw" to the true peg price
-    function duration() external returns(uint);
+    function duration() external returns (uint256);
 
     /// @notice the referenced uniswap pair contract
-    function pair() external returns(IUniswapV2Pair);
+    function pair() external returns (IUniswapV2Pair);
 }
