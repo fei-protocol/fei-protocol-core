@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/math/Math.sol";
 import "./IUniswapIncentive.sol";
 import "../utils/SafeMath32.sol";
 import "../refs/UniRef.sol";
-import "../oracle/IOracle.sol";
 
 /// @title IUniswapIncentive implementation
 /// @author Fei Protocol
