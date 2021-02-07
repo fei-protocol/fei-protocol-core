@@ -92,7 +92,13 @@ describe('Core', function () {
   describe('Genesis', function() {
     describe('Genesis Group', function() {
       it('governor set succeeds', async function() {
-        await this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
+		expectEvent(
+			await this.core.setGenesisGroup(genesisGroup, {from: governorAddress}),
+			'GenesisGroupUpdate',
+			{
+			  _genesisGroup : genesisGroup
+			}
+		);
         expect(await this.core.genesisGroup()).to.be.equal(genesisGroup);
       });
 

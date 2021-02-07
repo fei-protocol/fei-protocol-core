@@ -49,7 +49,6 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
 
 	function setScale(uint _scale) external override onlyGovernor {
 		_setScale(_scale);
-		emit ScaleUpdate(_scale);
 	}
 
 	function setBuffer(uint _buffer) external override onlyGovernor {
@@ -122,6 +121,7 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
 
 	function _setScale(uint _scale) internal {
 		scale = _scale;
+		emit ScaleUpdate(_scale);
 	}
 
 	function _incentivize() internal virtual {

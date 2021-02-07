@@ -14,6 +14,7 @@ interface ICore is IPermissions {
 
     event FeiUpdate(address indexed _fei);
     event TribeUpdate(address indexed _tribe);
+    event GenesisGroupUpdate(address indexed _genesisGroup);
     event TribeAllocation(address indexed _to, uint _amount);
     event GenesisPeriodComplete(uint _timestamp);
 
