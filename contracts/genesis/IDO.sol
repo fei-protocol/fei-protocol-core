@@ -33,6 +33,7 @@ contract IDO is IDOInterface, UniRef, LinearTokenTimelock {
 		uint feiAmount = feiRatio.mul(tribeAmount).asUint256();
 		_mintFei(feiAmount);
 
+		uint endOfTime = uint(-1);
 		router.addLiquidity(
 	        address(tribe()),
 	        address(fei()),
@@ -41,7 +42,7 @@ contract IDO is IDOInterface, UniRef, LinearTokenTimelock {
 	        tribeAmount,
 	        feiAmount,
 	        address(this),
-	        uint(-1)
+	        endOfTime
 	    );
 
 	    emit Deploy(feiAmount, tribeAmount);

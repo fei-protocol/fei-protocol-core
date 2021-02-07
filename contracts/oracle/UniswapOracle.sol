@@ -27,6 +27,9 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 
 	bool public override killSwitch;
 
+	uint private constant FIXED_POINT_GRANULARITY = 2**112;
+	uint private constant USDC_DECIMALS_MULTIPLIER = 1e12; // to normalize USDC and ETH wei units
+
 	/// @notice UniswapOracle constructor
 	/// @param _core Fei Core for reference
 	/// @param _pair Uniswap Pair to provide TWAP
@@ -57,9 +60,10 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 		}
 
 		uint currentCumulative = _getCumulative(price0Cumulative, price1Cumulative);
-		uint deltaCumulative = (currentCumulative - priorCumulative).mul(1e12); // allowing underflow per Uniswap Oracle spec
+		uint deltaCumulative = (currentCumulative - priorCumulative).mul(USDC_DECIMALS_MULTIPLIER); // allowing underflow per Uniswap Oracle spec
 
-		Decimal.D256 memory _twap = Decimal.ratio(deltaCumulative / deltaTimestamp, 2**112);
+		// Uniswap stores cumulative price variables as a fixed point 112x112 so we need to divide out the granularity
+		Decimal.D256 memory _twap = Decimal.ratio(deltaCumulative / deltaTimestamp, FIXED_POINT_GRANULARITY);
 		twap = _twap;
 
 		priorTimestamp = currentTimestamp;

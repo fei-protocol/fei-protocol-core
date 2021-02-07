@@ -6,6 +6,8 @@ import "../bondingcurve/EthBondingCurve.sol";
 
 contract BondingCurveOrchestrator is Ownable {
 
+	uint private constant SPLITTER_GRANULARITY = 10000;
+
 	function init(
 		address core, 
 		address uniswapOracle, 
@@ -19,7 +21,7 @@ contract BondingCurveOrchestrator is Ownable {
 		address bondingCurveOracle
 	) {
 		uint[] memory ratios = new uint[](1);
-		ratios[0] = 10000;
+		ratios[0] = SPLITTER_GRANULARITY; // 100% to the ethUniswapPCVDeposit
 		address[] memory allocations = new address[](1);
 		allocations[0] = address(ethUniswapPCVDeposit);
 		ethBondingCurve = address(new EthBondingCurve(

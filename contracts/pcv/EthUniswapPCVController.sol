@@ -16,7 +16,9 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 	using Decimal for Decimal.D256;
 	using SafeMathCopy for uint;
 
-	uint internal constant WITHDRAW_PERCENTAGE = 90;
+	uint internal constant WITHDRAW_AMOUNT_BPS = 9000;
+
+	uint internal constant BASIS_POINTS_GRANULARITY = 10000;
 
 	IPCVDeposit public override pcvDeposit;
 	IUniswapIncentive public override incentiveContract;
@@ -49,7 +51,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 		incentiveContract = IUniswapIncentive(_incentiveContract);
 
 		reweightIncentiveAmount = _incentiveAmount;
-		minDistanceForReweight = Decimal.ratio(_minDistanceForReweightBPs, 10000);
+		minDistanceForReweight = Decimal.ratio(_minDistanceForReweightBPs, BASIS_POINTS_GRANULARITY);
 	}
 
 	receive() external payable {}
@@ -76,7 +78,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 	}
 
 	function setReweightMinDistance(uint basisPoints) external override onlyGovernor {
-		minDistanceForReweight = Decimal.ratio(basisPoints, 10000);
+		minDistanceForReweight = Decimal.ratio(basisPoints, BASIS_POINTS_GRANULARITY);
 		emit ReweightMinDistanceUpdate(basisPoints);
 	}
 
@@ -132,7 +134,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 
 	function _withdraw() internal {
 		// Only withdraw a portion to prevent rounding errors on Uni LP dust
-		uint value = pcvDeposit.totalValue().mul(WITHDRAW_PERCENTAGE) / 100;
+		uint value = pcvDeposit.totalValue().mul(WITHDRAW_AMOUNT_BPS) / BASIS_POINTS_GRANULARITY;
 		pcvDeposit.withdraw(address(this), value);
 	}
 }
