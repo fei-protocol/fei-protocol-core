@@ -57,7 +57,9 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
 
 		exchangeRateDiscount = _exchangeRateDiscount;
 		ido = IDOInterface(_ido);
-		fei().approve(_ido, uint(-1));
+
+		uint maxTokens = uint(-1);
+		fei().approve(_ido, maxTokens);
 
 		pool = IPool(_pool);
 		bondingCurveOracle = IBondingCurveOracle(_oracle);

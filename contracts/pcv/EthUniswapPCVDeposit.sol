@@ -38,13 +38,14 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
     }
 
     function _removeLiquidity(uint liquidity) internal override returns (uint) {
+        uint endOfTime = uint(-1);
         (, uint amountWithdrawn) = router.removeLiquidityETH(
             address(fei()),
             liquidity,
             0,
             0,
             address(this),
-            uint(-1)
+            endOfTime
         );
         return amountWithdrawn;
     }
@@ -56,12 +57,13 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
     function _addLiquidity(uint ethAmount, uint feiAmount) internal {
         _mintFei(feiAmount);
         
+        uint endOfTime = uint(-1);
         router.addLiquidityETH{value : ethAmount}(address(fei()),
             feiAmount,
             0,
             0,
             address(this),
-            uint(-1)
+            endOfTime
         );
     }
 }

@@ -82,7 +82,8 @@ abstract contract UniRef is IUniRef, OracleRef {
 
     /// @notice approves a token for the router
     function approveToken(address _token) internal {
-    	IERC20(_token).approve(address(router), uint(-1));
+        uint maxTokens = uint(-1);
+    	IERC20(_token).approve(address(router), maxTokens);
     }
 
     function setupPair(address _pair) internal {
