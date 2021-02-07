@@ -10,12 +10,12 @@ import "./IOracle.sol";
 interface IUniswapOracle is IOracle {
 
 	// ----------- Events -----------
-    event DurationUpdate(uint32 _duration);
+    event DurationUpdate(uint _duration);
 
     // ----------- Governor only state changing API -----------
 
     /// @notice set a new duration for the TWAP window
-    function setDuration(uint32 _duration) external;
+    function setDuration(uint _duration) external;
 
     // ----------- Getters -----------
 
@@ -26,7 +26,7 @@ interface IUniswapOracle is IOracle {
     function priorCumulative() external returns(uint);
 
     /// @notice the window over which the initial price will "thaw" to the true peg price
-    function duration() external returns(uint32);
+    function duration() external returns(uint);
 
     /// @notice the referenced uniswap pair contract
     function pair() external returns(IUniswapV2Pair);

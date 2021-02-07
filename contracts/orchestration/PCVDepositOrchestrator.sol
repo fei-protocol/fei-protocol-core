@@ -11,7 +11,7 @@ contract PCVDepositOrchestrator is Ownable {
 		address pair, 
 		address router,
 		address oraclePair,
-		uint32 twapDuration,
+		uint twapDuration,
 		bool isPrice0
 	) public onlyOwner returns(
 		address ethUniswapPCVDeposit,

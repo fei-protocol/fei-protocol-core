@@ -12,9 +12,9 @@ contract GenesisOrchestrator is Ownable {
 		address ido, 
 		address tribeFeiPair,
 		address oracle,
-		uint32 genesisDuration,
+		uint genesisDuration,
 		uint exhangeRateDiscount,
-		uint32 poolDuration
+		uint poolDuration
 	) public onlyOwner returns (address genesisGroup, address pool) {
 		pool = address(new FeiPool(core, tribeFeiPair, poolDuration));
 		genesisGroup = address(new GenesisGroup(

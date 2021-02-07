@@ -46,7 +46,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
 		address _ido,
 		address _oracle,
 		address _pool,
-		uint32 _duration,
+		uint _duration,
 		uint _exchangeRateDiscount
 	) public
 		CoreRef(_core)

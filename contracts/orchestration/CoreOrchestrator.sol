@@ -14,7 +14,7 @@ interface IPCVDepositOrchestrator {
 		address pair, 
 		address router,
 		address oraclePair,
-		uint32 twapDuration,
+		uint twapDuration,
 		bool isPrice0
 	) external returns(
 		address ethUniswapPCVDeposit,
@@ -30,8 +30,8 @@ interface IBondingCurveOrchestrator {
 		address uniswapOracle, 
 		address ethUniswapPCVDeposit, 
 		uint scale,
-		uint32 thawingDuration,
-		uint32 bondingCurveIncentiveDuration,
+		uint thawingDuration,
+		uint bondingCurveIncentiveDuration,
 		uint bondingCurveIncentiveAmount
 	) external returns(
 		address ethBondingCurve,
@@ -83,7 +83,7 @@ interface IIDOOrchestrator {
 		address tribe, 
 		address pair, 
 		address router,
-		uint32 releaseWindowDuration
+		uint releaseWindowDuration
 	) external returns (
 		address ido,
 		address timelockedDelegator
@@ -98,9 +98,9 @@ interface IGenesisOrchestrator {
 		address ido,
 		address tribeFeiPair,
 		address oracle,
-		uint32 genesisDuration,
+		uint genesisDuration,
 		uint exhangeRateDiscount,
-		uint32 poolDuration
+		uint poolDuration
 	) external returns (address genesisGroup, address pool);
 	function detonate() external;
 }
@@ -132,17 +132,17 @@ contract CoreOrchestrator is Ownable {
 	address public tribeFeiPair;
 
 	// ----------- Time periods -----------
-	uint32 constant public RELEASE_WINDOW = 4 * 365 days;
+	uint constant public RELEASE_WINDOW = 4 * 365 days;
 
 	uint public constant TIMELOCK_DELAY = 2 days;
-	uint32 public constant GENESIS_DURATION = 3 days;
+	uint public constant GENESIS_DURATION = 3 days;
 
-	uint32 public constant POOL_DURATION = 2 * 365 days;
-	uint32 public constant THAWING_DURATION = 4 weeks;
+	uint public constant POOL_DURATION = 2 * 365 days;
+	uint public constant THAWING_DURATION = 4 weeks;
 
-	uint32 public constant UNI_ORACLE_TWAP_DURATION = 10 minutes; // 10 min twap
+	uint public constant UNI_ORACLE_TWAP_DURATION = 10 minutes; // 10 min twap
 
-	uint32 public constant BONDING_CURVE_INCENTIVE_DURATION = 1 days; // 1 day duration
+	uint public constant BONDING_CURVE_INCENTIVE_DURATION = 1 days; // 1 day duration
 
 	// ----------- Params -----------
 	uint public constant EXCHANGE_RATE_DISCOUNT = 10;

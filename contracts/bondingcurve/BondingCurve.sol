@@ -37,7 +37,7 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
 		address[] memory _pcvDeposits, 
 		uint[] memory _ratios, 
 		address _oracle,
-		uint32 _duration,
+		uint _duration,
 		uint _incentive
 	) public
 		OracleRef(_core, _oracle)
