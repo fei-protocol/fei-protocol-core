@@ -23,7 +23,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 	IUniswapIncentive public override incentiveContract;
 
 	uint public override reweightIncentiveAmount;
-	Decimal.D256 public minDistanceForReweight;
+	Decimal.D256 internal _minDistanceForReweight;
 
 	/// @notice EthUniswapPCVController constructor
 	/// @param _core Fei Core for reference
@@ -50,7 +50,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 		incentiveContract = IUniswapIncentive(_incentiveContract);
 
 		reweightIncentiveAmount = _incentiveAmount;
-		minDistanceForReweight = Decimal.ratio(_minDistanceForReweightBPs, BASIS_POINTS_GRANULARITY);
+		_minDistanceForReweight = Decimal.ratio(_minDistanceForReweightBPs, BASIS_POINTS_GRANULARITY);
 	}
 
 	receive() external payable {}
@@ -77,14 +77,18 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 	}
 
 	function setReweightMinDistance(uint basisPoints) external override onlyGovernor {
-		minDistanceForReweight = Decimal.ratio(basisPoints, BASIS_POINTS_GRANULARITY);
+		_minDistanceForReweight = Decimal.ratio(basisPoints, BASIS_POINTS_GRANULARITY);
 		emit ReweightMinDistanceUpdate(basisPoints);
 	}
 
 	function reweightEligible() public view override returns(bool) {
-		bool magnitude = getDistanceToPeg().greaterThan(minDistanceForReweight);
+		bool magnitude = getDistanceToPeg().greaterThan(_minDistanceForReweight);
 		bool time = incentiveContract.isIncentiveParity();
 		return magnitude && time;
+	}
+
+	function minDistanceForReweight() external view override returns(Decimal.D256 memory) {
+		return _minDistanceForReweight;
 	}
 
 	function _incentivize() internal ifMinterSelf {

@@ -3,8 +3,9 @@ pragma solidity ^0.6.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../oracle/BondingCurveOracle.sol";
 import "../bondingcurve/EthBondingCurve.sol";
+import "./IOrchestrator.sol";
 
-contract BondingCurveOrchestrator is Ownable {
+contract BondingCurveOrchestrator is IBondingCurveOrchestrator, Ownable {
 
 	uint private constant SPLITTER_GRANULARITY = 10000;
 
@@ -16,7 +17,7 @@ contract BondingCurveOrchestrator is Ownable {
 		uint thawingDuration,
 		uint bondingCurveIncentiveDuration,
 		uint bondingCurveIncentiveAmount
-	) public onlyOwner returns(
+	) public override onlyOwner returns(
 		address ethBondingCurve,
 		address bondingCurveOracle
 	) {
@@ -45,7 +46,7 @@ contract BondingCurveOrchestrator is Ownable {
 		);
 	}
 
-	function detonate() public onlyOwner {
+	function detonate() public override onlyOwner {
 		selfdestruct(payable(owner()));
 	}
 }

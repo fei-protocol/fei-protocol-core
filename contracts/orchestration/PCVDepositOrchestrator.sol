@@ -3,8 +3,9 @@ pragma solidity ^0.6.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../pcv/EthUniswapPCVDeposit.sol";
 import "../oracle/UniswapOracle.sol";
+import "./IOrchestrator.sol";
 
-contract PCVDepositOrchestrator is Ownable {
+contract PCVDepositOrchestrator is IPCVDepositOrchestrator, Ownable {
 
 	function init(
 		address core, 
@@ -13,7 +14,7 @@ contract PCVDepositOrchestrator is Ownable {
 		address oraclePair,
 		uint twapDuration,
 		bool isPrice0
-	) public onlyOwner returns(
+	) public override onlyOwner returns(
 		address ethUniswapPCVDeposit,
 		address uniswapOracle
 	) {
@@ -30,7 +31,7 @@ contract PCVDepositOrchestrator is Ownable {
 		);
 	}
 
-	function detonate() public onlyOwner {
+	function detonate() public override onlyOwner {
 		selfdestruct(payable(owner()));
 	}
 }

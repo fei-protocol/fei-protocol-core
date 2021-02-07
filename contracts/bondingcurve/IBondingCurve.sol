@@ -46,7 +46,7 @@ interface IBondingCurve {
 
 	/// @notice return the average price of a transaction along bonding curve
 	/// @param amountIn the amount of underlying used to purchase
-	/// @return price reported as FEI per X with X being the underlying asset
+	/// @return price reported as USD per FEI
 	/// @dev Can be innacurate if outdated, need to call `oracle().isOutdated()` to check
 	function getAveragePrice(uint amountIn) external view returns (Decimal.D256 memory);
 
