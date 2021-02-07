@@ -9,10 +9,10 @@ contract GovernorAlpha {
     string public constant name = "Compound Governor Alpha";
 
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
-    function quorumVotes() public pure returns (uint) { return 100000000e18; } // 100,000,000 = 10% of Tribe
+    function quorumVotes() public pure returns (uint) { return 1000000e18; } // 1,000,000 = 10% of Tribe
 
     /// @notice The number of votes required in order for a voter to become a proposer
-    function proposalThreshold() public pure returns (uint) { return 2500000e18; } // 2,500,000 = .25% of Tribe
+    function proposalThreshold() public pure returns (uint) { return 100000e18; } // 100,000 = 1% of Tribe
 
     /// @notice The maximum number of actions that can be included in a proposal
     function proposalMaxOperations() public pure returns (uint) { return 10; } // 10 actions
