@@ -3,8 +3,9 @@ pragma solidity ^0.6.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../genesis/IDO.sol";
 import "../dao/TimelockedDelegator.sol";
+import "./IOrchestrator.sol";
 
-contract IDOOrchestrator is Ownable {
+contract IDOOrchestrator is IIDOOrchestrator, Ownable {
 
 	function init(
 		address core, 
@@ -13,7 +14,7 @@ contract IDOOrchestrator is Ownable {
 		address pair, 
 		address router,
 		uint releaseWindowDuration
-	) public onlyOwner returns (
+	) public override onlyOwner returns (
 		address ido,
 		address timelockedDelegator
 	) {
@@ -21,7 +22,7 @@ contract IDOOrchestrator is Ownable {
 		timelockedDelegator = address(new TimelockedDelegator(tribe, admin, releaseWindowDuration));
 	}
 
-	function detonate() public onlyOwner {
+	function detonate() public override onlyOwner {
 		selfdestruct(payable(owner()));
 	}
 }

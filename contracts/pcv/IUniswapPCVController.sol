@@ -1,4 +1,5 @@
 pragma solidity ^0.6.2;
+pragma experimental ABIEncoderV2;
 
 import "./IPCVDeposit.sol";
 import "../token/IUniswapIncentive.sol";
@@ -49,4 +50,7 @@ interface IUniswapPCVController {
 
     /// @notice signal whether the reweight is available. Must have incentive parity and minimum distance from peg
 	function reweightEligible() external view returns(bool);
+
+    /// @notice minimum distance as a percentage from the peg for a reweight to be eligible
+    function minDistanceForReweight() external view returns(Decimal.D256 memory);
 }

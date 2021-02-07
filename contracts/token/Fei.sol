@@ -86,7 +86,7 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         }
     }
 
-    function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external {
+    function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external override {
         require(deadline >= block.timestamp, 'Fei: EXPIRED');
         bytes32 digest = keccak256(
             abi.encodePacked(

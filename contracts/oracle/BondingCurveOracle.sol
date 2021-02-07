@@ -16,9 +16,7 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
 
 	bool public override killSwitch = true;
 
-	/// @notice the price in dollars at initialization
-	/// @dev this price will "thaw" to the peg price over `duration` window
-	Decimal.D256 public initialPrice;
+	Decimal.D256 internal _initialPrice;
 
 	event KillSwitchUpdate(bool _killSwitch);
 
@@ -58,26 +56,29 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
 		emit KillSwitchUpdate(_killSwitch);
 	}
 
-	function init(Decimal.D256 memory _initialPrice) public override onlyGenesisGroup {
+	function init(Decimal.D256 memory initialPrice) public override onlyGenesisGroup {
     	killSwitch = false;
 
-    	initialPrice = _initialPrice;
+    	_initialPrice = initialPrice;
 
 		_initTimed();
     }
+
+	function initialPrice() external override returns(Decimal.D256 memory) {
+		return _initialPrice;
+	}
 
     function thaw(Decimal.D256 memory peg) internal view returns (Decimal.D256 memory) {
     	if (isTimeEnded()) {
     		return peg;
     	}
-		uint t = uint(timeSinceStart());
-		uint remaining = uint(remainingTime());
-		uint d = uint(duration);
+		uint elapsed = timeSinceStart();
+		uint remaining = remainingTime();
 
     	(Decimal.D256 memory uniswapPeg,) = uniswapOracle.read();
     	Decimal.D256 memory price = uniswapPeg.div(peg);
 
-    	Decimal.D256 memory weightedPrice = initialPrice.mul(remaining).add(price.mul(t)).div(d);
+    	Decimal.D256 memory weightedPrice = _initialPrice.mul(remaining).add(price.mul(elapsed)).div(duration);
     	return uniswapPeg.div(weightedPrice);
     }
 

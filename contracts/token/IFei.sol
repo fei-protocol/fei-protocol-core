@@ -20,6 +20,13 @@ interface IFei is IERC20 {
     /// @param amount the amount to burn
     function burn(uint amount) external;
 
+    /// @notice permit spending of FEI
+    /// @param owner the FEI holder
+    /// @param spender the approved operator
+    /// @param value the amount approved
+    /// @param deadline the deadline after which the approval is no longer valid
+    function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external;
+
     // ----------- Burner only state changing api -----------
 
     /// @notice burn FEI tokens from specified account

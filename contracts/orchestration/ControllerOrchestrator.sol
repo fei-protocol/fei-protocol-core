@@ -2,8 +2,9 @@ pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../pcv/EthUniswapPCVController.sol";
+import "./IOrchestrator.sol";
 
-contract ControllerOrchestrator is Ownable {
+contract ControllerOrchestrator is IControllerOrchestrator, Ownable {
 
 	function init(
 		address core,
@@ -14,7 +15,7 @@ contract ControllerOrchestrator is Ownable {
 		address router,
 		uint reweightIncentive,
 		uint reweightMinDistanceBPs
-	) public onlyOwner returns(address) {
+	) public override onlyOwner returns(address) {
 		return address(new EthUniswapPCVController(
 				core, 
 				ethUniswapPCVDeposit, 
@@ -27,7 +28,7 @@ contract ControllerOrchestrator is Ownable {
 			));
 	}
 
-	function detonate() public onlyOwner {
+	function detonate() public override onlyOwner {
 		selfdestruct(payable(owner()));
 	}
 }
