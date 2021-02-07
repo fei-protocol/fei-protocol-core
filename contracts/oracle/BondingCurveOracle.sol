@@ -20,8 +20,6 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
 	/// @dev this price will "thaw" to the peg price over `duration` window
 	Decimal.D256 public initialPrice;
 
-	event KillSwitchUpdate(bool _killSwitch);
-
 	/// @notice BondingCurveOracle constructor
 	/// @param _core Fei Core to reference
 	/// @param _oracle Uniswap Oracle to report from

@@ -20,7 +20,6 @@ abstract contract OracleRef is IOracleRef, CoreRef {
 
 	function setOracle(address _oracle) external override onlyGovernor {
 		_setOracle(_oracle);
-        emit OracleUpdate(_oracle);
 	}
 
     function invert(Decimal.D256 memory price) public override pure returns(Decimal.D256 memory) {
@@ -39,5 +38,6 @@ abstract contract OracleRef is IOracleRef, CoreRef {
 
     function _setOracle(address _oracle) internal {
     	oracle = IOracle(_oracle);
+		emit OracleUpdate(_oracle);
     }
 }

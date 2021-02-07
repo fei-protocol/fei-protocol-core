@@ -22,24 +22,24 @@ contract Core is ICore, Permissions {
 
 	function init() external onlyGovernor {
 		Fei _fei = new Fei(address(this));
-		fei = IFei(address(_fei));
+		_setFei(address(_fei));
 
 		Tribe _tribe = new Tribe(address(this), msg.sender);
-		tribe = IERC20(address(_tribe));
+		_setTribe(address(_tribe));
+
 	}
 
 	function setFei(address token) external override onlyGovernor {
-		fei = IFei(token);
-		emit FeiUpdate(token);
+		_setFei(token);
 	}
 
 	function setTribe(address token) external override onlyGovernor {
-		tribe = IERC20(token);
-		emit TribeUpdate(token);
+		_setTribe(token);
 	}
 
 	function setGenesisGroup(address _genesisGroup) external override onlyGovernor {
 		genesisGroup = _genesisGroup;
+		emit GenesisGroupUpdate(_genesisGroup);
 	}
 
 	function allocateTribe(address to, uint amount) external override onlyGovernor {
@@ -59,6 +59,16 @@ contract Core is ICore, Permissions {
 
 		// solhint-disable-next-line not-rely-on-time
 		emit GenesisPeriodComplete(block.timestamp);
+	}
+
+	function _setFei(address token) internal {
+		fei = IFei(token);
+		emit FeiUpdate(token);
+	}
+
+	function _setTribe(address token) internal {
+		tribe = IERC20(token);
+		emit TribeUpdate(token);
 	}
 }
 
