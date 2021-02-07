@@ -84,7 +84,6 @@ interface IGenesisOrchestrator is IOrchestrator {
 
 interface IGovernanceOrchestrator is IOrchestrator {
     function init(
-        address admin,
         address tribe,
         uint256 timelockDelay
     ) external returns (address governorAlpha, address timelock);
