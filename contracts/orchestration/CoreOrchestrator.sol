@@ -120,7 +120,6 @@ interface ITribe {
 // solhint-disable-next-line max-states-count
 contract CoreOrchestrator is Ownable {
 	address public admin;
-	bool private constant TEST_MODE = true;
 
 	// ----------- Uniswap Addresses -----------
 	address public constant ETH_USDC_UNI_PAIR = address(0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc);
@@ -133,24 +132,24 @@ contract CoreOrchestrator is Ownable {
 	address public tribeFeiPair;
 
 	// ----------- Time periods -----------
-	uint32 constant public RELEASE_WINDOW = TEST_MODE ? 4 days : 4 * 365 days;
+	uint32 constant public RELEASE_WINDOW = 4 * 365 days;
 
-	uint public constant TIMELOCK_DELAY = TEST_MODE ? 1 hours : 3 days;
-	uint32 public constant GENESIS_DURATION = TEST_MODE ? 1 minutes : 3 days;
+	uint public constant TIMELOCK_DELAY = 2 days;
+	uint32 public constant GENESIS_DURATION = 3 days;
 
-	uint32 public constant POOL_DURATION = TEST_MODE ? 2 days : 2 * 365 days;
-	uint32 public constant THAWING_DURATION = TEST_MODE ? 4 minutes : 4 weeks;
+	uint32 public constant POOL_DURATION = 2 * 365 days;
+	uint32 public constant THAWING_DURATION = 4 weeks;
 
-	uint32 public constant UNI_ORACLE_TWAP_DURATION = TEST_MODE ? 1 : 10 minutes; // 10 min twap
+	uint32 public constant UNI_ORACLE_TWAP_DURATION = 10 minutes; // 10 min twap
 
-	uint32 public constant BONDING_CURVE_INCENTIVE_DURATION = TEST_MODE ? 1 : 1 days; // 1 day duration
+	uint32 public constant BONDING_CURVE_INCENTIVE_DURATION = 1 days; // 1 day duration
 
 	// ----------- Params -----------
 	uint public constant EXCHANGE_RATE_DISCOUNT = 10;
 
-	uint32 public constant INCENTIVE_GROWTH_RATE = TEST_MODE ? 1_000_000 : 333; // about 1 unit per hour assuming 12s block time
+	uint32 public constant INCENTIVE_GROWTH_RATE = 66; // about 1 unit per 5 hours assuming 12s block time
 
-	uint public constant SCALE = 250_000_000e18;
+	uint public constant SCALE = 100_000_000e18;
 	uint public constant BONDING_CURVE_INCENTIVE = 500e18;
 
 	uint public constant REWEIGHT_INCENTIVE = 500e18;
@@ -163,7 +162,7 @@ contract CoreOrchestrator is Ownable {
 	uint public constant IDO_TRIBE_PERCENTAGE = 20;
 	uint public constant GENESIS_TRIBE_PERCENTAGE = 10;
 	uint public constant DEV_TRIBE_PERCENTAGE = 20;
-	uint public constant STAKING_TRIBE_PERCENTAGE = 20;
+	uint public constant STAKING_TRIBE_PERCENTAGE = 10;
 
 	// ----------- Orchestrators -----------
 	IPCVDepositOrchestrator private pcvDepositOrchestrator;
@@ -225,9 +224,6 @@ contract CoreOrchestrator is Ownable {
 		routerOrchestrator = IRouterOrchestrator(_routerOrchestrator);
 
 		admin = _admin;
-		if (TEST_MODE) {
-			core.grantGovernor(_admin);
-		}
 	}
 
 	function initCore() public onlyOwner {
