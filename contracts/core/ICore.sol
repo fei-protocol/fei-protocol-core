@@ -13,6 +13,7 @@ interface ICore is IPermissions {
 	// ----------- Events -----------
 
     event FeiUpdate(address indexed _fei);
+    event TribeUpdate(address indexed _tribe);
     event TribeAllocation(address indexed _to, uint _amount);
     event GenesisPeriodComplete(uint _timestamp);
 
@@ -21,6 +22,10 @@ interface ICore is IPermissions {
     /// @notice sets Fei address to a new address
     /// @param token new fei address
     function setFei(address token) external;
+
+    /// @notice sets Tribe address to a new address
+    /// @param token new tribe address
+    function setTribe(address token) external;
 
     /// @notice sets Genesis Group address
     /// @param _genesisGroup new genesis group address

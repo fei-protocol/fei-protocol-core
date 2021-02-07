@@ -72,6 +72,23 @@ describe('Core', function () {
 	});
   });
 
+  describe('Tribe Update', function() {
+    it('updates', async function() {
+      expectEvent(
+        await this.core.setTribe(userAddress, {from: governorAddress}),
+        'TribeUpdate',
+        {
+          _tribe : userAddress
+        }
+      );
+      expect(await this.core.tribe()).to.be.equal(userAddress);
+	});
+	
+	it('non governor reverts', async function() {
+		await expectRevert(this.core.setTribe(userAddress, {from: userAddress}), "Permissions: Caller is not a governor");
+	});
+  });
+
   describe('Genesis', function() {
     describe('Genesis Group', function() {
       it('governor set succeeds', async function() {
