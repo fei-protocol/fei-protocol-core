@@ -181,8 +181,8 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
 		uint total = heldFGEN.add(committed);
 
 		require(total != 0, "GenesisGroup: No FGEN or committed balance");
-		require(address(this).balance >= total, "GenesisGroup: Not enough ETH to redeem");
 		require(msg.sender == from || allowance(from, msg.sender) >= total, "GenesisGroup: Not approved for emergency withdrawal");
+		assert(address(this).balance >= total); // ETH can only be removed by launch which blocks this method or this method in event of launch failure
 
 		_burnFrom(from, heldFGEN);
 		committedFGEN[from] = 0;

@@ -544,6 +544,13 @@ describe('GenesisGroup', function () {
               expect(await this.genesisGroup.totalCommittedTribe()).to.be.bignumber.equal(new BN('0'));
               expect(await this.genesisGroup.totalCommittedFGEN()).to.be.bignumber.equal(new BN('0'));
             });
+
+            it('nothing left to redeem', async function() {
+              let remaining = await this.genesisGroup.getAmountsToRedeem(userAddress);
+              expect(remaining.feiAmount).to.be.bignumber.equal(new BN('0'));
+              expect(remaining.genesisTribe).to.be.bignumber.equal(new BN('0'));
+              expect(remaining.idoTribe).to.be.bignumber.equal(new BN('0'));
+            });
           });
         });
       });
