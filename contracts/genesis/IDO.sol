@@ -24,10 +24,8 @@ contract IDO is IDOInterface, UniRef, LinearTokenTimelock {
 		address _router
 	) public
 		UniRef(_core, _pair, _router, address(0)) // no oracle needed
-		LinearTokenTimelock(_beneficiary, _duration)
-	{
-		setLockedToken(_pair);
-	}
+		LinearTokenTimelock(_beneficiary, _duration, _pair)
+	{}
 
 	function deploy(Decimal.D256 calldata feiRatio) external override onlyGenesisGroup {
 		uint tribeAmount = tribeBalance();

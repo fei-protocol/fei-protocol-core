@@ -26,10 +26,14 @@ contract LinearTokenTimelock is Timed {
     event BeneficiaryUpdate(address indexed _beneficiary);
     event PendingBeneficiaryUpdate(address indexed _pendingBeneficiary);
 
-    constructor (address _beneficiary, uint32 _duration) public Timed(_duration) {
+    constructor (address _beneficiary, uint32 _duration, address _lockedToken) public Timed(_duration) {
         require(_duration != 0, "LinearTokenTimelock: duration is 0");
+        require(_beneficiary != address(0), "LinearTokenTimelock: Beneficiary must not be 0 address");
+
         beneficiary = _beneficiary;
         _initTimed();
+
+        _setLockedToken(_lockedToken);
     }
 
     // Prevents incoming LP tokens from messing up calculations
@@ -88,7 +92,7 @@ contract LinearTokenTimelock is Timed {
         pendingBeneficiary = address(0);
     }
 
-    function setLockedToken(address tokenAddress) internal {
+    function _setLockedToken(address tokenAddress) internal {
         lockedToken = IERC20(tokenAddress);
     }
 }
