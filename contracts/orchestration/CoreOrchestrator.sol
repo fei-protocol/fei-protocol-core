@@ -15,7 +15,7 @@ interface IPCVDepositOrchestrator {
 		address router,
 		address oraclePair,
 		uint32 twapDuration,
-		bool price0
+		bool isPrice0
 	) external returns(
 		address ethUniswapPCVDeposit,
 		address uniswapOracle
@@ -83,7 +83,7 @@ interface IIDOOrchestrator {
 		address tribe, 
 		address pair, 
 		address router,
-		uint32 releaseWindow
+		uint32 releaseWindowDuration
 	) external returns (
 		address ido,
 		address timelockedDelegator

@@ -68,7 +68,7 @@ contract LinearTokenTimelock is Timed {
     }
 
     function availableForRelease() public view returns(uint) {
-        uint elapsed = timestamp();
+        uint elapsed = timeSinceStart();
         uint _duration = duration;
 
         uint totalAvailable = initialBalance.mul(elapsed) / _duration;

@@ -162,10 +162,10 @@ abstract contract UniRef is IUniRef, OracleRef {
         Decimal.D256 memory finalDeviation
     ) {
         (Decimal.D256 memory price, uint reserveFei, uint reserveOther) = getUniswapPrice();
-        initialDeviation = calculateDeviation(price, peg());
+        initialDeviation = deviationBelowPeg(price, peg());
 
         Decimal.D256 memory finalPrice = getFinalPrice(amountIn, reserveFei, reserveOther);
-        finalDeviation = calculateDeviation(finalPrice, peg());
+        finalDeviation = deviationBelowPeg(finalPrice, peg());
         
         return (initialDeviation, finalDeviation);
     }
@@ -174,12 +174,12 @@ abstract contract UniRef is IUniRef, OracleRef {
     /// @dev will return Decimal.zero() if above peg
     function getDistanceToPeg() internal view returns(Decimal.D256 memory distance) {
         (Decimal.D256 memory price, , ) = getUniswapPrice();
-        return calculateDeviation(price, peg()); 
+        return deviationBelowPeg(price, peg()); 
     }
 
     /// @notice get deviation from peg as a percent given price
     /// @dev will return Decimal.zero() if above peg
-    function calculateDeviation(
+    function deviationBelowPeg(
         Decimal.D256 memory price, 
         Decimal.D256 memory peg
     ) internal pure returns (Decimal.D256 memory) {

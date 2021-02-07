@@ -28,17 +28,17 @@ abstract contract Timed {
     /// @notice number of seconds remaining until time is up
     /// @return remaining
     function remainingTime() public view returns (uint32) {
-        return duration.sub(timestamp());
+        return duration.sub(timeSinceStart());
     }
 
     /// @notice number of seconds since contract was initialized
     /// @return timestamp
     /// @dev will be less than or equal to duration
-    function timestamp() public view returns (uint32) {
-		uint32 d = duration;
+    function timeSinceStart() public view returns (uint32) {
+		uint32 _duration = duration;
 		// solhint-disable-next-line not-rely-on-time
-		uint32 t = block.timestamp.toUint32().sub(startTime);
-		return t > d ? d : t;
+		uint32 timePassed = block.timestamp.toUint32().sub(startTime);
+		return timePassed > _duration ? _duration : timePassed;
     }
 
     function _initTimed() internal {
