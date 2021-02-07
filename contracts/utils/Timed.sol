@@ -37,12 +37,12 @@ abstract contract Timed {
     function timeSinceStart() public view returns (uint32) {
 		uint32 _duration = duration;
 		// solhint-disable-next-line not-rely-on-time
-		uint32 timePassed = now.toUint32().sub(startTime);
+		uint32 timePassed = block.timestamp.toUint32().sub(startTime);
 		return timePassed > _duration ? _duration : timePassed;
     }
 
     function _initTimed() internal {
         // solhint-disable-next-line not-rely-on-time
-        startTime = now.toUint32();
+        startTime = block.timestamp.toUint32();
     }
 }

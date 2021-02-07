@@ -168,12 +168,12 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
 		}
 
 		// solhint-disable-next-line not-rely-on-time
-		emit Launch(now);
+		emit Launch(block.timestamp);
 	}
 
 	// Add a backdoor out of Genesis in case of brick
 	function emergencyExit(address from, address payable to) external {
-		require(now > (startTime + duration + 3 days), "GenesisGroup: Not in exit window");
+		require(block.timestamp > (startTime + duration + 3 days), "GenesisGroup: Not in exit window");
 		require(!core().hasGenesisGroupCompleted(), "GenesisGroup: Launch already happened");
 
 		uint heldFGEN = balanceOf(from);
