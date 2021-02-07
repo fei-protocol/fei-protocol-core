@@ -35,6 +35,11 @@ contract Core is ICore, Permissions {
 		emit FeiUpdate(token);
 	}
 
+	function setTribe(address token) external override onlyGovernor {
+		tribe = IERC20(token);
+		emit TribeUpdate(token);
+	}
+
 	function setGenesisGroup(address _genesisGroup) external override onlyGovernor {
 		genesisGroup = _genesisGroup;
 	}
