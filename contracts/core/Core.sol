@@ -1,10 +1,8 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Permissions.sol";
 import "./ICore.sol";
-import "../token/IFei.sol";
 import "../token/Fei.sol";
 import "../dao/Tribe.sol";
 

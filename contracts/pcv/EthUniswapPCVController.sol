@@ -6,7 +6,6 @@ import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 import "./IUniswapPCVController.sol";
 import "../refs/UniRef.sol";
-import "../oracle/IOracle.sol";
 import "../external/Decimal.sol";
 import "../external/SafeMathCopy.sol";
 
