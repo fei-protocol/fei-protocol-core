@@ -48,6 +48,12 @@ describe('IDO', function () {
       });
     });
 
+    describe('Bad Beneficiary', function() {
+      it('reverts', async function() {
+        await expectRevert(IDO.new(this.core.address, ZERO_ADDRESS, this.window, this.pair.address, this.router.address), "LinearTokenTimelock: Beneficiary must not be 0 address");
+      });
+    });
+
     it('pair', async function() {
       expect(await this.ido.pair()).to.be.equal(this.pair.address);
     });
