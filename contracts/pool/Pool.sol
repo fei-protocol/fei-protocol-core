@@ -10,180 +10,231 @@ import "../external/Decimal.sol";
 /// @title abstract implementation of IPool interface
 /// @author Fei Protocol
 abstract contract Pool is IPool, ERC20, Timed {
-	using Decimal for Decimal.D256;
+    using Decimal for Decimal.D256;
 
-	bool internal initialized;
+    bool internal initialized;
 
-	IERC20 public override rewardToken;
-	IERC20 public override stakedToken;
+    IERC20 public override rewardToken;
+    IERC20 public override stakedToken;
 
-	uint public override claimedRewards;
-	uint public override totalStaked;
+    uint256 public override claimedRewards;
+    uint256 public override totalStaked;
 
-    mapping (address => uint) public override stakedBalance;
+    mapping(address => uint256) public override stakedBalance;
 
-	/// @notice Pool constructor
-	/// @param _duration duration of the pool reward distribution
-	/// @param _name the name of the pool token
-	/// @param _ticker the token ticker for the pool token
-	constructor(
-		uint _duration,
-		string memory _name,
-		string memory _ticker
-	) public ERC20(_name, _ticker) Timed(_duration) {}
+    /// @notice Pool constructor
+    /// @param _duration duration of the pool reward distribution
+    /// @param _name the name of the pool token
+    /// @param _ticker the token ticker for the pool token
+    constructor(
+        uint256 _duration,
+        string memory _name,
+        string memory _ticker
+    ) public ERC20(_name, _ticker) Timed(_duration) {}
 
-	function claim(address from, address to) external override returns(uint amountReward) {
-		amountReward = _claim(from, to);
-		emit Claim(from, to, amountReward);
-		return amountReward;
-	}
-
-	function deposit(address to, uint amount) external override {
-		address from = msg.sender;
-		_deposit(from, to, amount);
-		emit Deposit(from, to, amount);
-	}
-
-	function withdraw(address to) external override returns(uint amountStaked, uint amountReward) {
-		address from = msg.sender;
-		amountReward = _claim(from, to);
-		amountStaked = _withdraw(from, to);
-		emit Withdraw(from, to, amountStaked, amountReward);
-		return (amountStaked, amountReward);
-	}
-
-	function init() public override virtual {
-		require(!initialized, "Pool: Already initialized");
-		_initTimed();
-		initialized = true;
-	}
-
-    function redeemableReward(address account) public view override returns(uint amountReward, uint amountPool) {
-		amountPool = _redeemablePoolTokens(account);
-		uint totalRedeemablePool = _totalRedeemablePoolTokens();
-		if (totalRedeemablePool == 0) {
-			return (0, 0);
-		}
-		return (releasedReward().mul(amountPool) / totalRedeemablePool, amountPool);
+    function claim(address from, address to)
+        external
+        override
+        returns (uint256 amountReward)
+    {
+        amountReward = _claim(from, to);
+        emit Claim(from, to, amountReward);
+        return amountReward;
     }
 
-	function releasedReward() public view override returns (uint) {
-		uint total = rewardBalance();
-		uint unreleased = unreleasedReward();
-		return total.sub(unreleased, "Pool: Released Reward underflow");
-	}
+    function deposit(address to, uint256 amount) external override {
+        address from = msg.sender;
+        _deposit(from, to, amount);
+        emit Deposit(from, to, amount);
+    }
 
-	function unreleasedReward() public view override returns (uint) {
-		if (isTimeEnded()) {
-			return 0;
-		}
-		return _unreleasedReward(totalReward(), uint(duration), uint(timeSinceStart()));
-	}
+    function withdraw(address to)
+        external
+        override
+        returns (uint256 amountStaked, uint256 amountReward)
+    {
+        address from = msg.sender;
+        amountReward = _claim(from, to);
+        amountStaked = _withdraw(from, to);
+        emit Withdraw(from, to, amountStaked, amountReward);
+        return (amountStaked, amountReward);
+    }
 
-	function totalReward() public view override returns (uint) {
-		return rewardBalance().add(claimedRewards);
-	}
+    function init() public virtual override {
+        require(!initialized, "Pool: Already initialized");
+        _initTimed();
+        initialized = true;
+    }
 
-	function rewardBalance() public view override returns (uint) {
-		return rewardToken.balanceOf(address(this));
-	}
+    function redeemableReward(address account)
+        public
+        view
+        override
+        returns (uint256 amountReward, uint256 amountPool)
+    {
+        amountPool = _redeemablePoolTokens(account);
+        uint256 totalRedeemablePool = _totalRedeemablePoolTokens();
+        if (totalRedeemablePool == 0) {
+            return (0, 0);
+        }
+        return (
+            releasedReward().mul(amountPool) / totalRedeemablePool,
+            amountPool
+        );
+    }
 
-	function _burnFrom(address account, uint amount) internal {
-		if (msg.sender != account) {
-			uint256 decreasedAllowance = allowance(account, _msgSender()).sub(amount, "Pool: burn amount exceeds allowance");
-			_approve(account, _msgSender(), decreasedAllowance);
-		}
+    function releasedReward() public view override returns (uint256) {
+        uint256 total = rewardBalance();
+        uint256 unreleased = unreleasedReward();
+        return total.sub(unreleased, "Pool: Released Reward underflow");
+    }
+
+    function unreleasedReward() public view override returns (uint256) {
+        if (isTimeEnded()) {
+            return 0;
+        }
+        return
+            _unreleasedReward(
+                totalReward(),
+                uint256(duration),
+                uint256(timeSinceStart())
+            );
+    }
+
+    function totalReward() public view override returns (uint256) {
+        return rewardBalance().add(claimedRewards);
+    }
+
+    function rewardBalance() public view override returns (uint256) {
+        return rewardToken.balanceOf(address(this));
+    }
+
+    function _burnFrom(address account, uint256 amount) internal {
+        if (msg.sender != account) {
+            uint256 decreasedAllowance =
+                allowance(account, _msgSender()).sub(
+                    amount,
+                    "Pool: burn amount exceeds allowance"
+                );
+            _approve(account, _msgSender(), decreasedAllowance);
+        }
         _burn(account, amount);
-	}
+    }
 
-	function _totalRedeemablePoolTokens() internal view returns(uint) {
-		uint total = totalSupply();
-		uint balance = _timeWeightedFinalBalance(totalStaked);
-		return total.sub(balance, "Pool: Total redeemable underflow");
-	}
+    function _totalRedeemablePoolTokens() internal view returns (uint256) {
+        uint256 total = totalSupply();
+        uint256 balance = _timeWeightedFinalBalance(totalStaked);
+        return total.sub(balance, "Pool: Total redeemable underflow");
+    }
 
-	function _redeemablePoolTokens(address account) internal view returns(uint) {
-		uint total = balanceOf(account);
-		uint balance = _timeWeightedFinalBalance(stakedBalance[account]);
-		return total.sub(balance, "Pool: Redeemable underflow");
-	}
+    function _redeemablePoolTokens(address account)
+        internal
+        view
+        returns (uint256)
+    {
+        uint256 total = balanceOf(account);
+        uint256 balance = _timeWeightedFinalBalance(stakedBalance[account]);
+        return total.sub(balance, "Pool: Redeemable underflow");
+    }
 
-	function _unreleasedReward(uint _totalReward, uint _duration, uint _time) internal view virtual returns (uint);
+    function _unreleasedReward(
+        uint256 _totalReward,
+        uint256 _duration,
+        uint256 _time
+    ) internal view virtual returns (uint256);
 
-	function _deposit(address from, address to, uint amount) internal {
-		require(initialized, "Pool: Uninitialized");
-		require(amount <= stakedToken.balanceOf(from), "Pool: Balance too low to stake");
+    function _deposit(
+        address from,
+        address to,
+        uint256 amount
+    ) internal {
+        require(initialized, "Pool: Uninitialized");
+        require(
+            amount <= stakedToken.balanceOf(from),
+            "Pool: Balance too low to stake"
+        );
 
-		TransferHelper.safeTransferFrom(
-			address(stakedToken), 
-			from, 
-			address(this), 
-			amount
-		);
+        TransferHelper.safeTransferFrom(
+            address(stakedToken),
+            from,
+            address(this),
+            amount
+        );
 
-		stakedBalance[to] = stakedBalance[to].add(amount);
-		_incrementStaked(amount);
-		
-		uint poolTokens = _timeWeightedFinalBalance(amount);
-		require(poolTokens != 0, "Pool: Window has ended");
+        stakedBalance[to] = stakedBalance[to].add(amount);
+        _incrementStaked(amount);
 
-		_mint(to, poolTokens);
-	}
+        uint256 poolTokens = _timeWeightedFinalBalance(amount);
+        require(poolTokens != 0, "Pool: Window has ended");
 
-	function _withdraw(address from, address to) internal returns(uint amountStaked) {
-		amountStaked = stakedBalance[from];
-		stakedBalance[from] = 0;
-		_decrementStaked(amountStaked);
+        _mint(to, poolTokens);
+    }
 
-		stakedToken.transfer(to, amountStaked);
+    function _withdraw(address from, address to)
+        internal
+        returns (uint256 amountStaked)
+    {
+        amountStaked = stakedBalance[from];
+        stakedBalance[from] = 0;
+        _decrementStaked(amountStaked);
 
-		uint amountPool = balanceOf(from);
-		if (amountPool != 0) {
-			_burnFrom(from, amountPool);
-		}
-		return amountStaked;	
-	}
+        stakedToken.transfer(to, amountStaked);
 
-	function _claim(address from, address to) internal returns(uint) {
-		(uint amountReward, uint amountPool) = redeemableReward(from);
-		require(amountPool != 0, "Pool: User has no redeemable pool tokens");
+        uint256 amountPool = balanceOf(from);
+        if (amountPool != 0) {
+            _burnFrom(from, amountPool);
+        }
+        return amountStaked;
+    }
 
-		_burnFrom(from, amountPool);
-		_incrementClaimed(amountReward);
+    function _claim(address from, address to) internal returns (uint256) {
+        (uint256 amountReward, uint256 amountPool) = redeemableReward(from);
+        require(amountPool != 0, "Pool: User has no redeemable pool tokens");
 
-		rewardToken.transfer(to, amountReward);
-		return amountReward;
-	}
+        _burnFrom(from, amountPool);
+        _incrementClaimed(amountReward);
 
-	function _incrementClaimed(uint amount) internal {
-		claimedRewards = claimedRewards.add(amount);
-	}
+        rewardToken.transfer(to, amountReward);
+        return amountReward;
+    }
 
-	function _incrementStaked(uint amount) internal {
-		totalStaked = totalStaked.add(amount);
-	}
+    function _incrementClaimed(uint256 amount) internal {
+        claimedRewards = claimedRewards.add(amount);
+    }
 
-	function _decrementStaked(uint amount) internal {
-		totalStaked = totalStaked.sub(amount);
-	}
+    function _incrementStaked(uint256 amount) internal {
+        totalStaked = totalStaked.add(amount);
+    }
 
-	function _timeWeightedFinalBalance(uint amount) internal view returns(uint) {
-		return amount.mul(remainingTime());
-	}
+    function _decrementStaked(uint256 amount) internal {
+        totalStaked = totalStaked.sub(amount);
+    }
 
-	// Updates stored staked balance pro-rata for transfer and transferFrom
-	function _beforeTokenTransfer(address from, address to, uint amount) internal override {
+    function _timeWeightedFinalBalance(uint256 amount)
+        internal
+        view
+        returns (uint256)
+    {
+        return amount.mul(remainingTime());
+    }
+
+    // Updates stored staked balance pro-rata for transfer and transferFrom
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal override {
         if (from != address(0) && to != address(0)) {
- 			Decimal.D256 memory ratio = Decimal.ratio(amount, balanceOf(from));
- 			uint amountStaked = ratio.mul(stakedBalance[from]).asUint256();
-			
- 			stakedBalance[from] = stakedBalance[from].sub(amountStaked);
- 			stakedBalance[to] = stakedBalance[to].add(amountStaked);
+            Decimal.D256 memory ratio = Decimal.ratio(amount, balanceOf(from));
+            uint256 amountStaked = ratio.mul(stakedBalance[from]).asUint256();
+
+            stakedBalance[from] = stakedBalance[from].sub(amountStaked);
+            stakedBalance[to] = stakedBalance[to].add(amountStaked);
         }
     }
 
-	function _setTokens(address _rewardToken, address _stakedToken) internal {
-		rewardToken = IERC20(_rewardToken);
-		stakedToken = IERC20(_stakedToken);	
-	}
+    function _setTokens(address _rewardToken, address _stakedToken) internal {
+        rewardToken = IERC20(_rewardToken);
+        stakedToken = IERC20(_stakedToken);
+    }
 }

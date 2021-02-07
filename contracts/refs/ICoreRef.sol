@@ -9,8 +9,7 @@ import "../core/ICore.sol";
 /// @author Fei Protocol
 /// @notice defines some modifiers and utilities around interacting with Core
 interface ICoreRef {
-
-	// ----------- Events -----------
+    // ----------- Events -----------
 
     event CoreUpdate(address indexed _core);
 
@@ -24,7 +23,7 @@ interface ICoreRef {
 
     /// @notice address of the Core contract referenced
     /// @return ICore implementation address
-	function core() external view returns (ICore);
+    function core() external view returns (ICore);
 
     /// @notice address of the Fei contract referenced by Core
     /// @return IFei implementation address
@@ -36,9 +35,9 @@ interface ICoreRef {
 
     /// @notice fei balance of contract
     /// @return fei amount held
-	function feiBalance() external view returns(uint);
+    function feiBalance() external view returns (uint256);
 
     /// @notice tribe balance of contract
     /// @return tribe amount held
-    function tribeBalance() external view returns(uint);
+    function tribeBalance() external view returns (uint256);
 }

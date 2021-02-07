@@ -9,14 +9,13 @@ import "../token/IFei.sol";
 /// @author Fei Protocol
 /// @notice maintains roles, access control, fei, tribe, genesisGroup, and the TRIBE treasury
 interface ICore is IPermissions {
-
-	// ----------- Events -----------
+    // ----------- Events -----------
 
     event FeiUpdate(address indexed _fei);
     event TribeUpdate(address indexed _tribe);
     event GenesisGroupUpdate(address indexed _genesisGroup);
-    event TribeAllocation(address indexed _to, uint _amount);
-    event GenesisPeriodComplete(uint _timestamp);
+    event TribeAllocation(address indexed _to, uint256 _amount);
+    event GenesisPeriodComplete(uint256 _timestamp);
 
     // ----------- Governor only state changing api -----------
 
@@ -35,29 +34,29 @@ interface ICore is IPermissions {
     /// @notice sends TRIBE tokens from treasury to an address
     /// @param to the address to send TRIBE to
     /// @param amount the amount of TRIBE to send
-    function allocateTribe(address to, uint amount) external;
+    function allocateTribe(address to, uint256 amount) external;
 
     // ----------- Genesis Group only state changing api -----------
 
     /// @notice marks the end of the genesis period
     /// @dev can only be called once
-	function completeGenesisGroup() external;
+    function completeGenesisGroup() external;
 
     // ----------- Getters -----------
 
     /// @notice the address of the FEI contract
     /// @return fei contract
-	function fei() external view returns (IFei);
+    function fei() external view returns (IFei);
 
     /// @notice the address of the TRIBE contract
     /// @return tribe contract
-	function tribe() external view returns (IERC20);
+    function tribe() external view returns (IERC20);
 
     /// @notice the address of the GenesisGroup contract
     /// @return genesis group contract
-    function genesisGroup() external view returns(address);
+    function genesisGroup() external view returns (address);
 
     /// @notice determines whether in genesis period or not
     /// @return true if in genesis period
-	function hasGenesisGroupCompleted() external view returns(bool);
+    function hasGenesisGroupCompleted() external view returns (bool);
 }

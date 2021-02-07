@@ -230,7 +230,7 @@ describe('EthUniswapPCVController', function () {
           'ReweightMinDistanceUpdate',
           { _basisPoints: '50' }
         );
-        expect(await this.pcvController.minDistanceForReweight()).to.be.bignumber.equal('5000000000000000');
+        expect((await this.pcvController.minDistanceForReweight())[0]).to.be.bignumber.equal('5000000000000000');
       });
 
       it('Non-governor set reverts', async function() {

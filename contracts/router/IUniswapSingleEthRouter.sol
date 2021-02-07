@@ -3,7 +3,6 @@ pragma solidity ^0.6.0;
 /// @title A Uniswap Router for token/ETH swaps
 /// @author Fei Protocol
 interface IUniswapSingleEthRouter {
-
     // ----------- state changing api -----------
 
     /// @notice swap ETH for tokens with some protections
@@ -12,10 +11,10 @@ interface IUniswapSingleEthRouter {
     /// @param deadline block timestamp after which trade is invalid
     /// @return amountOut the amount of tokens received
     function swapExactETHForTokens(
-        uint amountOutMin, 
-        address to, 
-        uint deadline
-    ) external payable returns(uint amountOut);
+        uint256 amountOutMin,
+        address to,
+        uint256 deadline
+    ) external payable returns (uint256 amountOut);
 
     /// @notice swap tokens for ETH with some protections
     /// @param amountIn amount of tokens to sell
@@ -24,9 +23,9 @@ interface IUniswapSingleEthRouter {
     /// @param deadline block timestamp after which trade is invalid
     /// @return amountOut the amount of ETH received
     function swapExactTokensForETH(
-        uint amountIn, 
-        uint amountOutMin, 
-        address to, 
-        uint deadline
-    ) external returns (uint amountOut);
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address to,
+        uint256 deadline
+    ) external returns (uint256 amountOut);
 }

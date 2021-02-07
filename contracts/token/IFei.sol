@@ -5,41 +5,59 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /// @title FEI stablecoin interface
 /// @author Fei Protocol
 interface IFei is IERC20 {
+    // ----------- Events -----------
 
-	// ----------- Events -----------
+    event Minting(
+        address indexed _to,
+        address indexed _minter,
+        uint256 _amount
+    );
 
-    event Minting(address indexed _to, address indexed _minter, uint _amount);
+    event Burning(
+        address indexed _to,
+        address indexed _burner,
+        uint256 _amount
+    );
 
-    event Burning(address indexed _to, address indexed _burner, uint _amount);
-
-    event IncentiveContractUpdate(address indexed _incentivized, address indexed _incentiveContract);
+    event IncentiveContractUpdate(
+        address indexed _incentivized,
+        address indexed _incentiveContract
+    );
 
     // ----------- State changing api -----------
 
     /// @notice burn FEI tokens from caller
     /// @param amount the amount to burn
-    function burn(uint amount) external;
+    function burn(uint256 amount) external;
 
     /// @notice permit spending of FEI
     /// @param owner the FEI holder
     /// @param spender the approved operator
     /// @param value the amount approved
     /// @param deadline the deadline after which the approval is no longer valid
-    function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external;
+    function permit(
+        address owner,
+        address spender,
+        uint256 value,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
 
     // ----------- Burner only state changing api -----------
 
     /// @notice burn FEI tokens from specified account
     /// @param account the account to burn from
     /// @param amount the amount to burn
-    function burnFrom(address account, uint amount) external;
+    function burnFrom(address account, uint256 amount) external;
 
     // ----------- Minter only state changing api -----------
 
     /// @notice mint FEI tokens
     /// @param account the account to mint to
     /// @param amount the amount to mint
-    function mint(address account, uint amount) external;
+    function mint(address account, uint256 amount) external;
 
     // ----------- Governor only state changing api -----------
 
@@ -52,5 +70,5 @@ interface IFei is IERC20 {
     /// @notice get associated incentive contract
     /// @param account the address to check
     /// @return the associated incentive contract, 0 address if N/A
-    function incentiveContract(address account) external view returns(address);
+    function incentiveContract(address account) external view returns (address);
 }

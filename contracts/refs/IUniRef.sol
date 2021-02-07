@@ -11,8 +11,7 @@ import "../external/Decimal.sol";
 /// @notice defines some modifiers and utilities around interacting with Uniswap
 /// @dev the uniswap pair should be FEI and another asset
 interface IUniRef {
-
-	// ----------- Events -----------
+    // ----------- Events -----------
 
     event PairUpdate(address indexed _pair);
 
@@ -27,21 +26,24 @@ interface IUniRef {
 
     /// @notice the Uniswap router contract
     /// @return the IUniswapV2Router02 router implementation address
-    function router() external view returns(IUniswapV2Router02);
+    function router() external view returns (IUniswapV2Router02);
 
     /// @notice the referenced Uniswap pair contract
     /// @return the IUniswapV2Pair router implementation address
-    function pair() external view returns(IUniswapV2Pair);
+    function pair() external view returns (IUniswapV2Pair);
 
     /// @notice the address of the non-fei underlying token
     /// @return the token address
-    function token() external view returns(address);
+    function token() external view returns (address);
 
     /// @notice pair reserves with fei listed first
     /// @dev uses the max of pair fei balance and fei reserves. Mitigates attack vectors which manipulate the pair balance
-    function getReserves() external view returns (uint feiReserves, uint tokenReserves);
+    function getReserves()
+        external
+        view
+        returns (uint256 feiReserves, uint256 tokenReserves);
 
     /// @notice amount of pair liquidity owned by this contract
     /// @return amount of LP tokens
-	function liquidityOwned() external view returns (uint);
+    function liquidityOwned() external view returns (uint256);
 }
