@@ -96,10 +96,8 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 	}
 
 	function _init() internal {
-        uint price0Cumulative = pair.price0CumulativeLast();
-        uint price1Cumulative = pair.price1CumulativeLast();
-
-        (,, uint32 currentTimestamp) = pair.getReserves();
+		(uint price0Cumulative, uint price1Cumulative, uint32 currentTimestamp) =
+            UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
 
         priorTimestamp = currentTimestamp;
 		priorCumulative = _getCumulative(price0Cumulative, price1Cumulative);
