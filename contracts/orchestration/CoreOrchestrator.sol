@@ -34,7 +34,7 @@ contract CoreOrchestrator is Ownable {
     // ----------- Time periods -----------
     uint256 public constant RELEASE_WINDOW = 4 * 365 days;
 
-    uint256 public constant TIMELOCK_DELAY = 2 days;
+    uint256 public constant TIMELOCK_DELAY = 1 days;
     uint256 public constant GENESIS_DURATION = 3 days;
 
     uint256 public constant POOL_DURATION = 2 * 365 days;
@@ -271,7 +271,6 @@ contract CoreOrchestrator is Ownable {
 
     function initGovernance() public onlyOwner {
         (governorAlpha, timelock) = governanceOrchestrator.init(
-            admin,
             tribe,
             TIMELOCK_DELAY
         );
