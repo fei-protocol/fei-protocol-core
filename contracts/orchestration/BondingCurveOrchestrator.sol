@@ -13,8 +13,8 @@ contract BondingCurveOrchestrator is Ownable {
 		address uniswapOracle, 
 		address ethUniswapPCVDeposit, 
 		uint scale,
-		uint32 thawingDuration,
-		uint32 bondingCurveIncentiveDuration,
+		uint thawingDuration,
+		uint bondingCurveIncentiveDuration,
 		uint bondingCurveIncentiveAmount
 	) public onlyOwner returns(
 		address ethBondingCurve,

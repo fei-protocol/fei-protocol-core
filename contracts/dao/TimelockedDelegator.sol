@@ -44,7 +44,7 @@ contract TimelockedDelegator is ITimelockedDelegator, LinearTokenTimelock {
 	/// @param _tribe the TRIBE token address
 	/// @param _beneficiary default delegate, admin, and timelock beneficiary
 	/// @param _duration duration of the token timelock window
-	constructor(address _tribe, address _beneficiary, uint32 _duration) public
+	constructor(address _tribe, address _beneficiary, uint _duration) public
 		LinearTokenTimelock(_beneficiary, _duration, _tribe)
 	{
 		tribe = ITribe(_tribe);

@@ -26,7 +26,7 @@ contract LinearTokenTimelock is Timed {
     event BeneficiaryUpdate(address indexed _beneficiary);
     event PendingBeneficiaryUpdate(address indexed _pendingBeneficiary);
 
-    constructor (address _beneficiary, uint32 _duration, address _lockedToken) public Timed(_duration) {
+    constructor (address _beneficiary, uint _duration, address _lockedToken) public Timed(_duration) {
         require(_duration != 0, "LinearTokenTimelock: duration is 0");
         require(_beneficiary != address(0), "LinearTokenTimelock: Beneficiary must not be 0 address");
 

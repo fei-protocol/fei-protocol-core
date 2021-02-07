@@ -16,7 +16,7 @@ contract EthBondingCurve is BondingCurve {
 		address[] memory pcvDeposits, 
 		uint[] memory ratios, 
 		address oracle,
-		uint32 duration,
+		uint duration,
 		uint incentive
 	) public BondingCurve(
 			scale, 

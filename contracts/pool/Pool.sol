@@ -27,7 +27,7 @@ abstract contract Pool is IPool, ERC20, Timed {
 	/// @param _name the name of the pool token
 	/// @param _ticker the token ticker for the pool token
 	constructor(
-		uint32 _duration,
+		uint _duration,
 		string memory _name,
 		string memory _ticker
 	) public ERC20(_name, _ticker) Timed(_duration) {}

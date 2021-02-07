@@ -12,7 +12,7 @@ contract IDOOrchestrator is Ownable {
 		address tribe, 
 		address pair, 
 		address router,
-		uint32 releaseWindowDuration
+		uint releaseWindowDuration
 	) public onlyOwner returns (
 		address ido,
 		address timelockedDelegator

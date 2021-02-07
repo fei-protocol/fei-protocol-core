@@ -23,7 +23,7 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 	uint32 public override priorTimestamp;
 
 	Decimal.D256 private twap = Decimal.zero();
-	uint32 public override duration;
+	uint public override duration;
 
 	bool public override killSwitch;
 
@@ -38,7 +38,7 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 	constructor(
 		address _core, 
 		address _pair, 
-		uint32 _duration,
+		uint _duration,
 		bool _isPrice0
 	) public CoreRef(_core) {
 		pair = IUniswapV2Pair(_pair);
@@ -90,7 +90,7 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 		emit KillSwitchUpdate(_killSwitch);
 	}
 
-	function setDuration(uint32 _duration) external override onlyGovernor {
+	function setDuration(uint _duration) external override onlyGovernor {
 		duration = _duration;
 		emit DurationUpdate(_duration);
 	}

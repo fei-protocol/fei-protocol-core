@@ -31,7 +31,7 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
 		address _core, 
 		address _oracle, 
 		address _bondingCurve, 
-		uint32 _duration
+		uint _duration
 	) public CoreRef(_core) Timed(_duration) {
 		uniswapOracle = IOracle(_oracle);
 		bondingCurve = IBondingCurve(_bondingCurve);

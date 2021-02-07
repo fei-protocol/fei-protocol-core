@@ -13,7 +13,7 @@ contract FeiPool is Pool, CoreRef {
 	/// @param _core Fei Core to reference
 	/// @param _pair Uniswap pair to stake
 	/// @param _duration duration of staking rewards
-	constructor(address _core, address _pair, uint32 _duration) public 
+	constructor(address _core, address _pair, uint _duration) public 
 		CoreRef(_core) Pool(_duration, "Fei USD Pool", "FPOOL") 
 	{
 		_setTokens(

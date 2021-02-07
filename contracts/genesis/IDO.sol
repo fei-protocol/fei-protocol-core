@@ -19,7 +19,7 @@ contract IDO is IDOInterface, UniRef, LinearTokenTimelock {
 	constructor(
 		address _core, 
 		address _beneficiary, 
-		uint32 _duration, 
+		uint _duration, 
 		address _pair, 
 		address _router
 	) public
