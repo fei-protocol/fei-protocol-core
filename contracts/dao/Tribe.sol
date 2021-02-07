@@ -172,7 +172,8 @@ contract Tribe {
         address signatory = ecrecover(digest, v, r, s);
         require(signatory != address(0), "Tribe::permit: invalid signature");
         require(signatory == owner, "Tribe::permit: unauthorized");
-        require(now <= deadline, "Tribe::permit: signature expired");
+        // solhint-disable-next-line not-rely-on-time
+        require(block.timestamp <= deadline, "Tribe::permit: signature expired");
 
         allowances[owner][spender] = amount;
 
@@ -248,7 +249,7 @@ contract Tribe {
         require(signatory != address(0), "Tribe::delegateBySig: invalid signature");
         require(nonce == nonces[signatory]++, "Tribe::delegateBySig: invalid nonce");
         // solhint-disable-next-line not-rely-on-time
-        require(now <= expiry, "Tribe::delegateBySig: signature expired");
+        require(block.timestamp <= expiry, "Tribe::delegateBySig: signature expired");
         return _delegate(signatory, delegatee);
     }
 

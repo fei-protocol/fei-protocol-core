@@ -60,7 +60,7 @@ contract Core is ICore, Permissions {
 		hasGenesisGroupCompleted = true;
 
 		// solhint-disable-next-line not-rely-on-time
-		emit GenesisPeriodComplete(now);
+		emit GenesisPeriodComplete(block.timestamp);
 	}
 }
 
