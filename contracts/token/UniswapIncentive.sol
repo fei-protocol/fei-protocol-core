@@ -114,7 +114,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         require(weight != 0, "UniswapIncentive: Incentive zero or not active");
 
         (Decimal.D256 memory price,,) = getUniswapPrice();
-        Decimal.D256 memory deviation = calculateDeviation(price, peg());
+        Decimal.D256 memory deviation = deviationBelowPeg(price, peg());
         require(!deviation.equals(Decimal.zero()), "UniswapIncentive: Price already at or above peg");
 
         Decimal.D256 memory incentive = calculateBuyIncentiveMultiplier(deviation, weight);

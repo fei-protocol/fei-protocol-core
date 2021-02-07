@@ -77,7 +77,7 @@ abstract contract Pool is IPool, ERC20, Timed {
 		if (isTimeEnded()) {
 			return 0;
 		}
-		return _unreleasedReward(totalReward(), uint(duration), uint(timestamp()));
+		return _unreleasedReward(totalReward(), uint(duration), uint(timeSinceStart()));
 	}
 
 	function totalReward() public view override returns (uint) {
@@ -98,13 +98,13 @@ abstract contract Pool is IPool, ERC20, Timed {
 
 	function _totalRedeemablePoolTokens() internal view returns(uint) {
 		uint total = totalSupply();
-		uint balance = _twfb(totalStaked);
+		uint balance = _timeWeightedFinalBalance(totalStaked);
 		return total.sub(balance, "Pool: Total redeemable underflow");
 	}
 
 	function _redeemablePoolTokens(address account) internal view returns(uint) {
 		uint total = balanceOf(account);
-		uint balance = _twfb(stakedBalance[account]);
+		uint balance = _timeWeightedFinalBalance(stakedBalance[account]);
 		return total.sub(balance, "Pool: Redeemable underflow");
 	}
 
@@ -124,7 +124,7 @@ abstract contract Pool is IPool, ERC20, Timed {
 		stakedBalance[to] = stakedBalance[to].add(amount);
 		_incrementStaked(amount);
 		
-		uint poolTokens = _twfb(amount);
+		uint poolTokens = _timeWeightedFinalBalance(amount);
 		require(poolTokens != 0, "Pool: Window has ended");
 
 		_mint(to, poolTokens);
@@ -167,7 +167,7 @@ abstract contract Pool is IPool, ERC20, Timed {
 		totalStaked = totalStaked.sub(amount);
 	}
 
-	function _twfb(uint amount) internal view returns(uint) {
+	function _timeWeightedFinalBalance(uint amount) internal view returns(uint) {
 		return amount.mul(remainingTime());
 	}
 

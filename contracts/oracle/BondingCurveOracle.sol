@@ -70,7 +70,7 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
     	if (isTimeEnded()) {
     		return peg;
     	}
-		uint t = uint(timestamp());
+		uint t = uint(timeSinceStart());
 		uint remaining = uint(remainingTime());
 		uint d = uint(duration);
 

@@ -12,7 +12,7 @@ contract PCVDepositOrchestrator is Ownable {
 		address router,
 		address oraclePair,
 		uint32 twapDuration,
-		bool price0
+		bool isPrice0
 	) public onlyOwner returns(
 		address ethUniswapPCVDeposit,
 		address uniswapOracle
@@ -20,7 +20,7 @@ contract PCVDepositOrchestrator is Ownable {
 		uniswapOracle = address(new UniswapOracle(core, 
 			oraclePair, 
 			twapDuration, 
-			price0
+			isPrice0
 		));
 		ethUniswapPCVDeposit = address(new EthUniswapPCVDeposit(core, pair, router, uniswapOracle));
 

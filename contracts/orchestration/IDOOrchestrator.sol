@@ -12,13 +12,13 @@ contract IDOOrchestrator is Ownable {
 		address tribe, 
 		address pair, 
 		address router,
-		uint32 releaseWindow
+		uint32 releaseWindowDuration
 	) public onlyOwner returns (
 		address ido,
 		address timelockedDelegator
 	) {
-		ido = address(new IDO(core, admin, releaseWindow, pair, router));
-		timelockedDelegator = address(new TimelockedDelegator(tribe, admin, releaseWindow));
+		ido = address(new IDO(core, admin, releaseWindowDuration, pair, router));
+		timelockedDelegator = address(new TimelockedDelegator(tribe, admin, releaseWindowDuration));
 	}
 
 	function detonate() public onlyOwner {
