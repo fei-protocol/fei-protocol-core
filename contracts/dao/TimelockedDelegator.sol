@@ -27,15 +27,21 @@ contract Delegatee is Ownable {
     }
 }
 
-/// @title ITimelockedDelegator implementation
+/// @title a timelock for TRIBE allowing for sub-delegation
 /// @author Fei Protocol
+/// @notice allows the timelocked TRIBE to be delegated by the beneficiary while locked
 contract TimelockedDelegator is ITimelockedDelegator, LinearTokenTimelock {
+    /// @notice associated delegate proxy contract for a delegatee
     mapping(address => address) public override delegateContract;
 
+    /// @notice associated delegated amount of TRIBE for a delegatee
+    /// @dev Using as source of truth to prevent accounting errors by transferring to Delegate contracts
     mapping(address => uint256) public override delegateAmount;
 
+    /// @notice the TRIBE token contract
     ITribe public override tribe;
 
+    /// @notice the total delegated amount of TRIBE
     uint256 public override totalDelegated;
 
     /// @notice Delegatee constructor
@@ -51,6 +57,9 @@ contract TimelockedDelegator is ITimelockedDelegator, LinearTokenTimelock {
         tribe.delegate(_beneficiary);
     }
 
+    /// @notice delegate locked TRIBE to a delegatee
+    /// @param delegatee the target address to delegate to
+    /// @param amount the amount of TRIBE to delegate. Will increment existing delegated TRIBE
     function delegate(address delegatee, uint256 amount)
         public
         override
@@ -61,11 +70,14 @@ contract TimelockedDelegator is ITimelockedDelegator, LinearTokenTimelock {
             "TimelockedDelegator: Not enough Tribe"
         );
 
+        // withdraw and include an existing delegation
         if (delegateContract[delegatee] != address(0)) {
             amount = amount.add(undelegate(delegatee));
         }
+
         ITribe _tribe = tribe;
-        address _delegateContract = address(new Delegatee(delegatee, address(_tribe)));
+        address _delegateContract =
+            address(new Delegatee(delegatee, address(_tribe)));
         delegateContract[delegatee] = _delegateContract;
 
         delegateAmount[delegatee] = amount;
@@ -76,6 +88,9 @@ contract TimelockedDelegator is ITimelockedDelegator, LinearTokenTimelock {
         emit Delegate(delegatee, amount);
     }
 
+    /// @notice return delegated TRIBE to the timelock
+    /// @param delegatee the target address to undelegate from
+    /// @return the amount of TRIBE returned
     function undelegate(address delegatee)
         public
         override

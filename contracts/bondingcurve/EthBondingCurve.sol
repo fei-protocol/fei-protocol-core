@@ -33,6 +33,10 @@ contract EthBondingCurve is BondingCurve {
         SHIFT = scale / 3; // Enforces a .50c starting price per bonding curve formula
     }
 
+    /// @notice purchase FEI for underlying tokens
+    /// @param to address to receive FEI
+    /// @param amountIn amount of underlying tokens input
+    /// @return amountOut amount of FEI received
     function purchase(address to, uint256 amountIn)
         external
         payable
@@ -67,6 +71,7 @@ contract EthBondingCurve is BondingCurve {
         return (radicand.mul(radicand)).cubeRoot() - shiftTotal; // result - (k + C)
     }
 
+    // Bonding curve formula is sqrt(k+x)/sqrt(k+S)
     function _getBondingCurvePriceMultiplier()
         internal
         view

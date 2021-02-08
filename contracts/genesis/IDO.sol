@@ -6,7 +6,7 @@ import "./IDOInterface.sol";
 import "../utils/LinearTokenTimelock.sol";
 import "../refs/UniRef.sol";
 
-/// @title IDOInterface implementation
+/// @title an initial DeFi offering for the TRIBE token
 /// @author Fei Protocol
 contract IDO is IDOInterface, UniRef, LinearTokenTimelock {
     /// @notice IDO constructor
@@ -27,6 +27,9 @@ contract IDO is IDOInterface, UniRef, LinearTokenTimelock {
         LinearTokenTimelock(_beneficiary, _duration, _pair)
     {}
 
+    /// @notice deploys all held TRIBE on Uniswap at the given ratio
+    /// @param feiRatio the exchange rate for FEI/TRIBE
+    /// @dev the contract will mint any FEI necessary to do the listing. Assumes no existing LP
     function deploy(Decimal.D256 calldata feiRatio)
         external
         override
@@ -34,9 +37,11 @@ contract IDO is IDOInterface, UniRef, LinearTokenTimelock {
     {
         uint256 tribeAmount = tribeBalance();
 
+        // calculate and mint amount of FEI for IDO
         uint256 feiAmount = feiRatio.mul(tribeAmount).asUint256();
         _mintFei(feiAmount);
 
+        // deposit liquidity
         uint256 endOfTime = uint256(-1);
         router.addLiquidity(
             address(tribe()),
@@ -52,6 +57,9 @@ contract IDO is IDOInterface, UniRef, LinearTokenTimelock {
         emit Deploy(feiAmount, tribeAmount);
     }
 
+    /// @notice swaps Genesis Group FEI on Uniswap For TRIBE
+    /// @param amountFei the amount of FEI to swap
+    /// @return uint amount of TRIBE sent to Genesis Group
     function swapFei(uint256 amountFei)
         external
         override

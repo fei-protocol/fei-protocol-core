@@ -19,38 +19,28 @@ interface IUniswapPCVController {
 
     // ----------- State changing API -----------
 
-    /// @notice reweights the linked PCV Deposit to the peg price. Needs to be reweight eligible
     function reweight() external;
 
     // ----------- Governor only state changing API -----------
 
-    /// @notice reweights regardless of eligibility
     function forceReweight() external;
 
-    /// @notice sets the target PCV Deposit address
     function setPCVDeposit(address _pcvDeposit) external;
 
-    /// @notice sets the reweight incentive amount
     function setReweightIncentive(uint256 amount) external;
 
-    /// @notice sets the reweight min distance in basis points
     function setReweightMinDistance(uint256 basisPoints) external;
 
     // ----------- Getters -----------
 
-    /// @notice returns the linked pcv deposit contract
     function pcvDeposit() external returns (IPCVDeposit);
 
-    /// @notice returns the linked Uniswap incentive contract
     function incentiveContract() external returns (IUniswapIncentive);
 
-    /// @notice gets the FEI reward incentive for reweighting
     function reweightIncentiveAmount() external returns (uint256);
 
-    /// @notice signal whether the reweight is available. Must have incentive parity and minimum distance from peg
     function reweightEligible() external view returns (bool);
 
-    /// @notice minimum distance as a percentage from the peg for a reweight to be eligible
     function minDistanceForReweight()
         external
         view

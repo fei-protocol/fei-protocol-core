@@ -6,9 +6,11 @@ import "./IIncentive.sol";
 import "./IFei.sol";
 import "../refs/CoreRef.sol";
 
-/// @title IFei implementation
+/// @title FEI stablecoin
 /// @author Fei Protocol
 contract Fei is IFei, ERC20Burnable, CoreRef {
+    
+    /// @notice get associated incentive contract, 0 address if N/A
     mapping(address => address) public override incentiveContract;
 
     // solhint-disable-next-line var-name-mixedcase
@@ -39,6 +41,8 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         );
     }
 
+    /// @param account the account to incentivize
+    /// @param incentive the associated incentive contract
     function setIncentiveContract(address account, address incentive)
         external
         override
@@ -48,6 +52,9 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         emit IncentiveContractUpdate(account, incentive);
     }
 
+    /// @notice mint FEI tokens
+    /// @param account the account to mint to
+    /// @param amount the amount to mint
     function mint(address account, uint256 amount)
         external
         override
@@ -57,11 +64,16 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         emit Minting(account, msg.sender, amount);
     }
 
+    /// @notice burn FEI tokens from caller
+    /// @param amount the amount to burn
     function burn(uint256 amount) public override(IFei, ERC20Burnable) {
         super.burn(amount);
         emit Burning(msg.sender, msg.sender, amount);
     }
 
+    /// @notice burn FEI tokens from specified account
+    /// @param account the account to burn from
+    /// @param amount the amount to burn
     function burnFrom(address account, uint256 amount)
         public
         override(IFei, ERC20Burnable)
@@ -122,7 +134,7 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
             );
         }
 
-        // all incentive
+        // all incentive, if active applies to every transfer
         address allIncentive = incentiveContract[address(0)];
         if (allIncentive != address(0)) {
             IIncentive(allIncentive).incentivize(
@@ -134,6 +146,11 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         }
     }
 
+    /// @notice permit spending of FEI
+    /// @param owner the FEI holder
+    /// @param spender the approved operator
+    /// @param value the amount approved
+    /// @param deadline the deadline after which the approval is no longer valid
     function permit(
         address owner,
         address spender,

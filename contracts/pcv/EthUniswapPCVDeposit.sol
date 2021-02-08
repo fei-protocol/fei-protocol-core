@@ -23,6 +23,8 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
 
     receive() external payable {}
 
+    /// @notice deposit tokens into the PCV allocation
+    /// @param ethAmount of tokens deposited
     function deposit(uint256 ethAmount) external payable override postGenesis {
         require(
             ethAmount == msg.value,

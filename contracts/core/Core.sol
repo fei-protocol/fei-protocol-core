@@ -6,13 +6,20 @@ import "./ICore.sol";
 import "../token/Fei.sol";
 import "../dao/Tribe.sol";
 
-/// @title ICore implementation
+/// @title Source of truth for Fei Protocol
 /// @author Fei Protocol
+/// @notice maintains roles, access control, fei, tribe, genesisGroup, and the TRIBE treasury
 contract Core is ICore, Permissions {
+
+    /// @notice the address of the FEI contract
     IFei public override fei;
+    
+    /// @notice the address of the TRIBE contract
     IERC20 public override tribe;
 
+    /// @notice the address of the GenesisGroup contract
     address public override genesisGroup;
+    /// @notice determines whether in genesis period or not
     bool public override hasGenesisGroupCompleted;
 
     constructor() public {
@@ -27,14 +34,20 @@ contract Core is ICore, Permissions {
         _setTribe(address(_tribe));
     }
 
+    /// @notice sets Fei address to a new address
+    /// @param token new fei address
     function setFei(address token) external override onlyGovernor {
         _setFei(token);
     }
 
+    /// @notice sets Tribe address to a new address
+    /// @param token new tribe address
     function setTribe(address token) external override onlyGovernor {
         _setTribe(token);
     }
 
+    /// @notice sets Genesis Group address
+    /// @param _genesisGroup new genesis group address
     function setGenesisGroup(address _genesisGroup)
         external
         override
@@ -44,6 +57,9 @@ contract Core is ICore, Permissions {
         emit GenesisGroupUpdate(_genesisGroup);
     }
 
+    /// @notice sends TRIBE tokens from treasury to an address
+    /// @param to the address to send TRIBE to
+    /// @param amount the amount of TRIBE to send
     function allocateTribe(address to, uint256 amount)
         external
         override
@@ -60,6 +76,8 @@ contract Core is ICore, Permissions {
         emit TribeAllocation(to, amount);
     }
 
+    /// @notice marks the end of the genesis period
+    /// @dev can only be called once
     function completeGenesisGroup() external override {
         require(
             !hasGenesisGroupCompleted,

@@ -7,15 +7,20 @@ import "./OracleRef.sol";
 import "./IUniRef.sol";
 import "../external/SafeMathCopy.sol";
 
-/// @title UniRef abstract implementation contract
+/// @title A Reference to Uniswap
 /// @author Fei Protocol
+/// @notice defines some modifiers and utilities around interacting with Uniswap
+/// @dev the uniswap pair should be FEI and another asset
 abstract contract UniRef is IUniRef, OracleRef {
     using Decimal for Decimal.D256;
     using Babylonian for uint256;
     using SignedSafeMath for int256;
     using SafeMathCopy for uint256;
 
+    /// @notice the Uniswap router contract
     IUniswapV2Router02 public override router;
+    
+    /// @notice the referenced Uniswap pair contract
     IUniswapV2Pair public override pair;
 
     /// @notice UniRef constructor
@@ -38,6 +43,9 @@ abstract contract UniRef is IUniRef, OracleRef {
         _approveToken(_pair);
     }
 
+    /// @notice set the new pair contract
+    /// @param _pair the new pair
+    /// @dev also approves the router for the new pair token and underlying token
     function setPair(address _pair) external override onlyGovernor {
         _setupPair(_pair);
 
@@ -45,6 +53,7 @@ abstract contract UniRef is IUniRef, OracleRef {
         _approveToken(_pair);
     }
 
+    /// @notice the address of the non-fei underlying token
     function token() public view override returns (address) {
         address token0 = pair.token0();
         if (address(fei()) == token0) {
@@ -53,6 +62,8 @@ abstract contract UniRef is IUniRef, OracleRef {
         return token0;
     }
 
+    /// @notice pair reserves with fei listed first
+    /// @dev uses the max of pair fei balance and fei reserves. Mitigates attack vectors which manipulate the pair balance
     function getReserves()
         public
         view
@@ -72,6 +83,8 @@ abstract contract UniRef is IUniRef, OracleRef {
         return (feiReserves, tokenReserves);
     }
 
+    /// @notice amount of pair liquidity owned by this contract
+    /// @return amount of LP tokens
     function liquidityOwned() public view override returns (uint256) {
         return pair.balanceOf(address(this));
     }

@@ -19,9 +19,13 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 
     uint256 internal constant BASIS_POINTS_GRANULARITY = 10000;
 
+    /// @notice returns the linked pcv deposit contract
     IPCVDeposit public override pcvDeposit;
+
+    /// @notice returns the linked Uniswap incentive contract
     IUniswapIncentive public override incentiveContract;
 
+    /// @notice gets the FEI reward incentive for reweighting
     uint256 public override reweightIncentiveAmount;
     Decimal.D256 internal _minDistanceForReweight;
 
@@ -56,6 +60,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 
     receive() external payable {}
 
+    /// @notice reweights the linked PCV Deposit to the peg price. Needs to be reweight eligible
     function reweight() external override postGenesis {
         updateOracle();
         require(
@@ -66,15 +71,18 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
         _incentivize();
     }
 
+    /// @notice reweights regardless of eligibility
     function forceReweight() external override onlyGovernor {
         _reweight();
     }
 
+    /// @notice sets the target PCV Deposit address
     function setPCVDeposit(address _pcvDeposit) external override onlyGovernor {
         pcvDeposit = IPCVDeposit(_pcvDeposit);
         emit PCVDepositUpdate(_pcvDeposit);
     }
 
+    /// @notice sets the reweight incentive amount
     function setReweightIncentive(uint256 amount)
         external
         override
@@ -84,6 +92,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
         emit ReweightIncentiveUpdate(amount);
     }
 
+    /// @notice sets the reweight min distance in basis points
     function setReweightMinDistance(uint256 basisPoints)
         external
         override
@@ -96,13 +105,16 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
         emit ReweightMinDistanceUpdate(basisPoints);
     }
 
+    /// @notice signal whether the reweight is available. Must have incentive parity and minimum distance from peg
     function reweightEligible() public view override returns (bool) {
         bool magnitude =
             _getDistanceToPeg().greaterThan(_minDistanceForReweight);
+        // incentive parity is achieved after a certain time relative to distance from peg
         bool time = incentiveContract.isIncentiveParity();
         return magnitude && time;
     }
 
+    /// @notice minimum distance as a percentage from the peg for a reweight to be eligible
     function minDistanceForReweight()
         external
         view
@@ -120,6 +132,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
         _withdraw();
         _returnToPeg();
 
+        // resupply PCV at peg ratio
         uint256 balance = address(this).balance;
         pcvDeposit.deposit{value: balance}(balance);
 
@@ -141,6 +154,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
             "EthUniswapPCVController: already at or above peg"
         );
 
+        // calculate amount ETH needed to return to peg then swap
         uint256 amountEth = _getAmountToPegOther();
         _swapEth(amountEth, ethReserves, feiReserves);
     }
