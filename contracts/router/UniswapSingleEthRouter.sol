@@ -5,6 +5,8 @@ import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 import "./IUniswapSingleEthRouter.sol";
 
+/// @title A Uniswap Router for token/ETH swaps
+/// @author Fei Protocol
 contract UniswapSingleEthRouter is IUniswapSingleEthRouter {
     // solhint-disable-next-line var-name-mixedcase
     IWETH public immutable WETH;
@@ -44,6 +46,11 @@ contract UniswapSingleEthRouter is IUniswapSingleEthRouter {
                 : (reserves1, reserves0, isETH0);
     }
 
+    /// @notice swap ETH for tokens with some protections
+    /// @param amountOutMin minimum tokens received
+    /// @param to address to send tokens
+    /// @param deadline block timestamp after which trade is invalid
+    /// @return amountOut the amount of tokens received
     function swapExactETHForTokens(
         uint256 amountOutMin,
         address to,
@@ -70,6 +77,12 @@ contract UniswapSingleEthRouter is IUniswapSingleEthRouter {
         PAIR.swap(amount0Out, amount1Out, to, new bytes(0));
     }
 
+    /// @notice swap tokens for ETH with some protections
+    /// @param amountIn amount of tokens to sell
+    /// @param amountOutMin minimum ETH received
+    /// @param to address to send ETH
+    /// @param deadline block timestamp after which trade is invalid
+    /// @return amountOut the amount of ETH received
     function swapExactTokensForETH(
         uint256 amountIn,
         uint256 amountOutMin,

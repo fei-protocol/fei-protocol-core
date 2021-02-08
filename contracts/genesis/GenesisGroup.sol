@@ -10,7 +10,7 @@ import "../pool/IPool.sol";
 import "../oracle/IBondingCurveOracle.sol";
 import "../bondingcurve/IBondingCurve.sol";
 
-/// @title IGenesisGroup implementation
+/// @title Equal access to the first bonding curve transaction and the IDO
 /// @author Fei Protocol
 contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
     using Decimal for Decimal.D256;
@@ -76,6 +76,9 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         _;
     }
 
+    /// @notice allows for entry into the Genesis Group via ETH. Only callable during Genesis Period.
+    /// @param to address to send FGEN Genesis tokens to
+    /// @param value amount of ETH to deposit
     function purchase(address to, uint256 value)
         external
         payable
@@ -90,6 +93,10 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         emit Purchase(to, value);
     }
 
+    /// @notice commit Genesis FEI to purchase TRIBE in DEX offering
+    /// @param from address to source FGEN Genesis shares from
+    /// @param to address to earn TRIBE and redeem post launch
+    /// @param amount of FGEN Genesis shares to commit
     function commit(
         address from,
         address to,
@@ -103,6 +110,8 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         emit Commit(from, to, amount);
     }
 
+    /// @notice redeem FGEN genesis tokens for FEI and TRIBE. Only callable post launch
+    /// @param to address to send redeemed FEI and TRIBE to.
     function redeem(address to) external override {
         (uint256 feiAmount, uint256 genesisTribe, uint256 idoTribe) =
             getAmountsToRedeem(to);
@@ -111,37 +120,42 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
             "GenesisGroup: No redeeming in launch block"
         );
 
+        // Total tribe to redeem
         uint256 tribeAmount = genesisTribe.add(idoTribe);
-
         require(tribeAmount != 0, "GenesisGroup: No redeemable TRIBE");
 
+        // Burn FGEN
         uint256 amountIn = balanceOf(to);
         _burnFrom(to, amountIn);
 
+        // Reset committed
         uint256 committed = committedFGEN[to];
         committedFGEN[to] = 0;
         totalCommittedFGEN = totalCommittedFGEN.sub(committed);
 
         totalCommittedTribe = totalCommittedTribe.sub(idoTribe);
 
+        // send FEI and TRIBE
         if (feiAmount != 0) {
             fei().transfer(to, feiAmount);
         }
-
         tribe().transfer(to, tribeAmount);
 
         emit Redeem(to, amountIn, feiAmount, tribeAmount);
     }
 
+    /// @notice launch Fei Protocol. Callable once Genesis Period has ended
     function launch() external override {
         require(isTimeEnded(), "GenesisGroup: Still in Genesis Period");
 
+        // Complete Genesis
         core().completeGenesisGroup();
         launchBlock = block.number;
 
         address genesisGroup = address(this);
         uint256 balance = genesisGroup.balance;
 
+        // Initialize bonding curve oracle
         Decimal.D256 memory oraclePrice =
             bondingcurve
                 .getAveragePrice(balance)
@@ -149,13 +163,16 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
                 .div(100);
         bondingCurveOracle.init(oraclePrice);
 
+        // bonding curve purchase and PCV allocation
         bondingcurve.purchase{value: balance}(genesisGroup, balance);
         bondingcurve.allocate();
 
+        // initialize staking pool and IDO
         pool.init();
 
         ido.deploy(_feiTribeExchangeRate());
 
+        // swap pre-committed FEI on IDO and store TRIBE
         uint256 amountFei =
             feiBalance().mul(totalCommittedFGEN) /
                 (totalSupply().add(totalCommittedFGEN));
@@ -197,6 +214,11 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         to.transfer(total);
     }
 
+    /// @notice calculate amount of FEI and TRIBE redeemable by an account post-genesis
+    /// @return feiAmount the amount of FEI received by the user
+    /// @return genesisTribe the amount of TRIBE received by the user per GenesisGroup
+    /// @return idoTribe the amount of TRIBE received by the user per pre-committed FEI trading in the IDO
+    /// @dev this function is only callable post launch
     function getAmountsToRedeem(address to)
         public
         view
@@ -213,20 +235,23 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         uint256 circulatingFGEN = totalSupply();
         uint256 totalFGEN = circulatingFGEN.add(totalCommittedFGEN);
 
-        // subtract purchased TRIBE amount
+        // subtract IDO purchased TRIBE amount
         uint256 totalGenesisTribe = tribeBalance().sub(totalCommittedTribe);
 
         if (circulatingFGEN != 0) {
+            // portion of remaining uncommitted FEI
             feiAmount = feiBalance().mul(userFGEN) / circulatingFGEN;
         }
 
         if (totalFGEN != 0) {
+            // portion including both committed and uncommitted FGEN
             genesisTribe =
                 totalGenesisTribe.mul(userFGEN.add(userCommittedFGEN)) /
                 totalFGEN;
         }
 
         if (totalCommittedFGEN != 0) {
+            // portion including only committed FGEN of IDO TRIBE
             idoTribe =
                 totalCommittedTribe.mul(userCommittedFGEN) /
                 totalCommittedFGEN;
@@ -235,6 +260,11 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         return (feiAmount, genesisTribe, idoTribe);
     }
 
+    /// @notice calculate amount of FEI and TRIBE received if the Genesis Group ended now.
+    /// @param amountIn amount of FGEN held or equivalently amount of ETH purchasing with
+    /// @param inclusive if true, assumes the `amountIn` is part of the existing FGEN supply. Set to false to simulate a new purchase.
+    /// @return feiAmount the amount of FEI received by the user
+    /// @return tribeAmount the amount of TRIBE received by the user
     function getAmountOut(uint256 amountIn, bool inclusive)
         public
         view
@@ -243,6 +273,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
     {
         uint256 totalIn = totalSupply();
         if (!inclusive) {
+            // exclusive from current supply, so we add it in
             totalIn = totalIn.add(amountIn);
         }
         require(amountIn <= totalIn, "GenesisGroup: Not enough supply");
@@ -250,6 +281,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         uint256 totalFei = bondingcurve.getAmountOut(totalIn);
         uint256 totalTribe = tribeBalance();
 
+        // return portions of total FEI and TRIBE
         return (
             totalFei.mul(amountIn) / totalIn,
             totalTribe.mul(amountIn) / totalIn

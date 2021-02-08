@@ -9,21 +9,30 @@ import "./IUniswapOracle.sol";
 import "../refs/CoreRef.sol";
 import "../external/SafeMathCopy.sol";
 
-/// @title IUniswapOracle implementation contract
+/// @title Uniswap Oracle for ETH/USDC
 /// @author Fei Protocol
+/// @notice maintains the TWAP of a uniswap pair contract over a specified duration
 contract UniswapOracle is IUniswapOracle, CoreRef {
     using Decimal for Decimal.D256;
     using SafeMathCopy for uint256;
 
+    /// @notice the referenced uniswap pair contract
     IUniswapV2Pair public override pair;
     bool private isPrice0;
 
+    /// @notice the previous cumulative price of the oracle snapshot
     uint256 public override priorCumulative;
+
+    /// @notice the previous timestamp of the oracle snapshot
     uint32 public override priorTimestamp;
 
     Decimal.D256 private twap = Decimal.zero();
+
+    /// @notice the window over which the initial price will "thaw" to the true peg price
     uint256 public override duration;
 
+    /// @notice the kill switch for the oracle feed
+    /// @dev if kill switch is true, read will return invalid
     bool public override killSwitch;
 
     uint256 private constant FIXED_POINT_GRANULARITY = 2**112;
@@ -49,6 +58,8 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
         _init();
     }
 
+    /// @notice updates the oracle price
+    /// @return true if oracle is updated and false if unchanged
     function update() external override returns (bool) {
         (
             uint256 price0Cumulative,
@@ -81,6 +92,8 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
         return true;
     }
 
+    /// @notice determine if read value is stale
+    /// @return true if read value is stale
     function isOutdated() external view override returns (bool) {
         (, , uint32 currentTimestamp) =
             UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
@@ -88,16 +101,24 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
         return deltaTimestamp >= duration;
     }
 
+    /// @notice read the oracle price
+    /// @return oracle price
+    /// @return true if price is valid
+    /// @dev price is to be denominated in USD per X where X can be ETH, etc.
+    /// @dev Can be innacurate if outdated, need to call `isOutdated()` to check
     function read() external view override returns (Decimal.D256 memory, bool) {
         bool valid = !(killSwitch || twap.isZero());
         return (twap, valid);
     }
 
+    /// @notice sets the kill switch on the oracle feed
+    /// @param _killSwitch the new value for the kill switch
     function setKillSwitch(bool _killSwitch) external override onlyGovernor {
         killSwitch = _killSwitch;
         emit KillSwitchUpdate(_killSwitch);
     }
 
+    /// @notice set a new duration for the TWAP window
     function setDuration(uint256 _duration) external override onlyGovernor {
         duration = _duration;
         emit DurationUpdate(_duration);

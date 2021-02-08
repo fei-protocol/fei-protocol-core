@@ -6,6 +6,8 @@ import "../refs/IOracleRef.sol";
 import "../token/IUniswapIncentive.sol";
 import "./IFeiRouter.sol";
 
+/// @title A Uniswap Router for FEI/ETH swaps
+/// @author Fei Protocol
 contract FeiRouter is UniswapSingleEthRouter, IFeiRouter {
     // solhint-disable-next-line var-name-mixedcase
     IUniswapIncentive public immutable INCENTIVE;
@@ -18,6 +20,11 @@ contract FeiRouter is UniswapSingleEthRouter, IFeiRouter {
         INCENTIVE = IUniswapIncentive(incentive);
     }
 
+    /// @notice buy FEI for ETH with some protections
+    /// @param minReward minimum mint reward for purchasing
+    /// @param amountOutMin minimum FEI received
+    /// @param to address to send FEI
+    /// @param deadline block timestamp after which trade is invalid
     function buyFei(
         uint256 minReward,
         uint256 amountOutMin,
@@ -34,6 +41,12 @@ contract FeiRouter is UniswapSingleEthRouter, IFeiRouter {
         return swapExactETHForTokens(amountOutMin, to, deadline);
     }
 
+    /// @notice sell FEI for ETH with some protections
+    /// @param maxPenalty maximum fei burn for purchasing
+    /// @param amountIn amount of FEI to sell
+    /// @param amountOutMin minimum ETH received
+    /// @param to address to send ETH
+    /// @param deadline block timestamp after which trade is invalid
     function sellFei(
         uint256 maxPenalty,
         uint256 amountIn,

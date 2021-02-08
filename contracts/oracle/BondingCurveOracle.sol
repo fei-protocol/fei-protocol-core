@@ -5,15 +5,21 @@ import "./IBondingCurveOracle.sol";
 import "../refs/CoreRef.sol";
 import "../utils/Timed.sol";
 
-/// @title IBondingCurveOracle implementation contract
+/// @title Bonding curve oracle
 /// @author Fei Protocol
+/// @notice peg is to be the current bonding curve price if pre-Scale
 /// @notice includes "thawing" on the initial purchase price at genesis. Time weights price from initial to true peg over a window.
 contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
     using Decimal for Decimal.D256;
 
+    /// @notice the referenced uniswap oracle price
     IOracle public override uniswapOracle;
+
+    /// @notice the referenced bonding curve
     IBondingCurve public override bondingCurve;
 
+    /// @notice the kill switch for the oracle feed
+    /// @dev if kill switch is true, read will return invalid
     bool public override killSwitch = true;
 
     Decimal.D256 internal _initialPrice;
@@ -33,19 +39,30 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
         bondingCurve = IBondingCurve(_bondingCurve);
     }
 
+    /// @notice sets the kill switch on the oracle feed
+    /// @param _killSwitch the new value for the kill switch
     function setKillSwitch(bool _killSwitch) external override onlyGovernor {
         killSwitch = _killSwitch;
         emit KillSwitchUpdate(_killSwitch);
     }
 
+    /// @notice updates the oracle price
+    /// @return true if oracle is updated and false if unchanged
     function update() external override returns (bool) {
         return uniswapOracle.update();
     }
 
+    /// @notice determine if read value is stale
+    /// @return true if read value is stale
     function isOutdated() external view override returns (bool) {
         return uniswapOracle.isOutdated();
     }
 
+    /// @notice read the oracle price
+    /// @return oracle price
+    /// @return true if price is valid
+    /// @dev price is to be denominated in USD per X where X can be ETH, etc.
+    /// @dev Can be innacurate if outdated, need to call `isOutdated()` to check
     function read() external view override returns (Decimal.D256 memory, bool) {
         if (killSwitch) {
             return (Decimal.zero(), false);
@@ -54,10 +71,14 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
         return (_thaw(peg), valid);
     }
 
+    /// @notice the initial price denominated in USD per FEI to thaw from
     function initialPrice() external override returns (Decimal.D256 memory) {
         return _initialPrice;
     }
 
+    /// @notice initializes the oracle with an initial peg price
+    /// @param initPrice a price denominated in USD per FEI
+    /// @dev divides the initial peg by the uniswap oracle price to get initialPrice. And kicks off thawing period
     function init(Decimal.D256 memory initPrice)
         public
         override
@@ -84,8 +105,11 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
         (Decimal.D256 memory uniswapPeg, ) = uniswapOracle.read();
         Decimal.D256 memory price = uniswapPeg.div(peg);
 
+        // average price time weighted from initial to target
         Decimal.D256 memory weightedPrice =
             _initialPrice.mul(remaining).add(price.mul(elapsed)).div(duration);
+
+        // divide from peg to return a peg FEI per X instead of a price USD per FEI
         return uniswapPeg.div(weightedPrice);
     }
 

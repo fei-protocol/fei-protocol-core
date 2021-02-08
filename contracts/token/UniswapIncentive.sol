@@ -7,8 +7,9 @@ import "./IUniswapIncentive.sol";
 import "../utils/SafeMath32.sol";
 import "../refs/UniRef.sol";
 
-/// @title IUniswapIncentive implementation
+/// @title Uniswap trading incentive contract
 /// @author Fei Protocol
+/// @dev incentives are only appplied if the contract is appointed as a Minter or Burner, otherwise skipped
 contract UniswapIncentive is IUniswapIncentive, UniRef {
     using Decimal for Decimal.D256;
     using SafeMath32 for uint32;
@@ -24,6 +25,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
 
     TimeWeightInfo private timeWeightInfo;
 
+    /// @notice the granularity of the time weight and growth rate
     uint32 public constant override TIME_WEIGHT_GRANULARITY = 100_000;
 
     mapping(address => bool) private _exempt;
@@ -65,6 +67,9 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         }
     }
 
+    /// @notice set an address to be exempted from Uniswap trading incentives
+    /// @param account the address to update
+    /// @param isExempt a flag for whether to exempt or unexempt
     function setExemptAddress(address account, bool isExempt)
         external
         override
@@ -74,6 +79,9 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         emit ExemptAddressUpdate(account, isExempt);
     }
 
+    /// @notice set an address to be able to send tokens to Uniswap
+    /// @param account the address to update
+    /// @param isAllowed a flag for whether the account is allowed to sell or not
     function setSellAllowlisted(address account, bool isAllowed)
         external
         override
@@ -83,6 +91,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         emit SellAllowedAddressUpdate(account, isAllowed);
     }
 
+    /// @notice set the time weight growth function
     function setTimeWeightGrowth(uint32 growthRate)
         external
         override
@@ -98,6 +107,11 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         emit GrowthRateUpdate(growthRate);
     }
 
+    /// @notice sets all of the time weight parameters
+    // @param blockNo the stored last block number of the time weight
+    /// @param weight the stored last time weight
+    /// @param growth the growth rate of the time weight per block
+    /// @param active a flag signifying whether the time weight is currently growing or not
     function setTimeWeight(
         uint32 weight,
         uint32 growth,
@@ -106,10 +120,13 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         _setTimeWeight(weight, growth, active);
     }
 
+    /// @notice the growth rate of the time weight per block
     function getGrowthRate() public view override returns (uint32) {
         return timeWeightInfo.growthRate;
     }
 
+    /// @notice the time weight of the current block
+    /// @dev factors in the stored block number and growth rate if active
     function getTimeWeight() public view override returns (uint32) {
         TimeWeightInfo memory tw = timeWeightInfo;
         if (!tw.active) {
@@ -120,10 +137,12 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return tw.weight.add(blockDelta * tw.growthRate);
     }
 
+    /// @notice returns true if time weight is active and growing at the growth rate
     function isTimeWeightActive() public view override returns (bool) {
         return timeWeightInfo.active;
     }
 
+    /// @notice returns true if account is marked as exempt
     function isExemptAddress(address account)
         public
         view
@@ -133,6 +152,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return _exempt[account];
     }
 
+    /// @notice return true if the account is approved to sell to the Uniswap pool
     function isSellAllowlisted(address account)
         public
         view
@@ -142,6 +162,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return _allowlist[account];
     }
 
+    /// @notice return true if burn incentive equals mint
     function isIncentiveParity() public view override returns (bool) {
         uint32 weight = getTimeWeight();
         require(weight != 0, "UniswapIncentive: Incentive zero or not active");
@@ -153,12 +174,18 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
             "UniswapIncentive: Price already at or above peg"
         );
 
-        Decimal.D256 memory incentive =
-            _calculateBuyIncentiveMultiplier(deviation, weight);
+        Decimal.D256 memory incentive = _calculateBuyIncentiveMultiplier(deviation, weight);
         Decimal.D256 memory penalty = _calculateSellPenaltyMultiplier(deviation);
         return incentive.equals(penalty);
     }
 
+    /// @notice get the incentive amount of a buy transfer
+    /// @param amount the FEI size of the transfer
+    /// @return incentive the FEI size of the mint incentive
+    /// @return weight the time weight of thhe incentive
+    /// @return initialDeviation the Decimal deviation from peg before a transfer
+    /// @return finalDeviation the Decimal deviation from peg after a transfer
+    /// @dev calculated based on a hypothetical buy, applies to any ERC20 FEI transfer from the pool
     function getBuyIncentive(uint256 amount)
         public
         view
@@ -171,16 +198,19 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         )
     {
         int256 signedAmount = amount.toInt256();
+        // A buy withdraws FEI from uni so use negative amountIn
         (initialDeviation, finalDeviation) = _getPriceDeviations(
             -1 * signedAmount
         );
         weight = getTimeWeight();
 
+        // buy started above peg
         if (initialDeviation.equals(Decimal.zero())) {
             return (0, weight, initialDeviation, finalDeviation);
         }
 
         uint256 incentivizedAmount = amount;
+        // if buy ends above peg, only incentivize amount to peg
         if (finalDeviation.equals(Decimal.zero())) {
             incentivizedAmount = _getAmountToPegFei();
         }
@@ -191,6 +221,12 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return (incentive, weight, initialDeviation, finalDeviation);
     }
 
+    /// @notice get the burn amount of a sell transfer
+    /// @param amount the FEI size of the transfer
+    /// @return penalty the FEI size of the burn incentive
+    /// @return initialDeviation the Decimal deviation from peg before a transfer
+    /// @return finalDeviation the Decimal deviation from peg after a transfer
+    /// @dev calculated based on a hypothetical sell, applies to any ERC20 FEI transfer to the pool
     function getSellPenalty(uint256 amount)
         public
         view
@@ -204,11 +240,13 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         int256 signedAmount = amount.toInt256();
         (initialDeviation, finalDeviation) = _getPriceDeviations(signedAmount);
 
+        // if trafe ends above peg, it was always above peg and no penalty needed
         if (finalDeviation.equals(Decimal.zero())) {
             return (0, initialDeviation, finalDeviation);
         }
 
         uint256 incentivizedAmount = amount;
+        // if trade started above but ended below, only penalize amount going below peg
         if (initialDeviation.equals(Decimal.zero())) {
             uint256 amountToPeg = _getAmountToPegFei();
             incentivizedAmount = amount.sub(
@@ -297,19 +335,20 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         Decimal.D256 memory finalDeviation,
         uint32 currentWeight
     ) internal {
-        // Reset after completion
+        // Reset when trade ends above peg
         if (finalDeviation.equals(Decimal.zero())) {
             _setTimeWeight(0, getGrowthRate(), false);
             return;
         }
-        // Init
+        // when trade starts above peg but ends below, activate time weight
         if (initialDeviation.equals(Decimal.zero())) {
             _setTimeWeight(0, getGrowthRate(), true);
             return;
         }
 
+        // when trade starts and ends below the peg, update the values
         uint256 updatedWeight = uint256(currentWeight);
-        // Partial buy
+        // Partial buy should update time weight
         if (initialDeviation.greaterThan(finalDeviation)) {
             Decimal.D256 memory remainingRatio =
                 finalDeviation.div(initialDeviation);
@@ -318,6 +357,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
                 .asUint256();
         }
 
+        // cap incentive at max penalty
         uint256 maxWeight =
             finalDeviation
                 .mul(100)

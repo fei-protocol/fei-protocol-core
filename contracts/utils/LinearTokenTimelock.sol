@@ -10,14 +10,16 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract LinearTokenTimelock is Timed {
     using SafeMathCopy for uint256;
 
-    // ERC20 basic token contract being held
+    /// @notice ERC20 basic token contract being held in timelock
     IERC20 public lockedToken;
 
-    // beneficiary of tokens after they are released
+    /// @notice beneficiary of tokens after they are released
     address public beneficiary;
 
+    /// @notice pending beneficiary appointed by current beneficiary
     address public pendingBeneficiary;
 
+    /// @notice initial balance of lockedToken
     uint256 public initialBalance;
 
     uint256 internal lastBalance;
@@ -61,6 +63,7 @@ contract LinearTokenTimelock is Timed {
         _;
     }
 
+    /// @notice releases unlocked tokens to beneficiary
     function release() external onlyBeneficiary balanceCheck {
         uint256 amount = availableForRelease();
         require(amount != 0, "LinearTokenTimelock: no tokens to release");
@@ -69,14 +72,17 @@ contract LinearTokenTimelock is Timed {
         emit Release(beneficiary, amount);
     }
 
+    /// @notice the total amount of tokens held by timelock
     function totalToken() public view virtual returns (uint256) {
         return lockedToken.balanceOf(address(this));
     }
 
+    /// @notice amount of tokens released to beneficiary
     function alreadyReleasedAmount() public view returns (uint256) {
         return initialBalance.sub(totalToken());
     }
 
+    /// @notice amount of held tokens unlocked and available for release
     function availableForRelease() public view returns (uint256) {
         uint256 elapsed = timeSinceStart();
         uint256 _duration = duration;
@@ -86,6 +92,7 @@ contract LinearTokenTimelock is Timed {
         return netAvailable;
     }
 
+    /// @notice current beneficiary can appoint new beneficiary, which must be accepted
     function setPendingBeneficiary(address _pendingBeneficiary)
         public
         onlyBeneficiary
@@ -94,6 +101,7 @@ contract LinearTokenTimelock is Timed {
         emit PendingBeneficiaryUpdate(_pendingBeneficiary);
     }
 
+    /// @notice pending beneficiary accepts new beneficiary
     function acceptBeneficiary() public virtual {
         _setBeneficiary(msg.sender);
     }
