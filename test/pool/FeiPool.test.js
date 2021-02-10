@@ -274,6 +274,13 @@ describe('Pool', function () {
                 expect(await this.pool.claimedRewards()).to.be.bignumber.equal(new BN(75001));
               });
             });
+
+            describe('Withdraw To Pool', function() {
+              it('reverts', async function() {
+                await expectRevert(this.pool.withdraw(this.pool.address, {from: userAddress}), "Pool: cannot claim to pool");
+              });
+            });
+
             describe('Claim', function() {
               beforeEach(async function() {
                 this.claim = await this.pool.claim(userAddress, userAddress, {from: userAddress});
@@ -376,6 +383,12 @@ describe('Pool', function () {
                       'Pool: burn amount exceeds allowance'
                     );
                   });
+                });
+              });
+
+              describe('Claim To Pool', function() {
+                it('reverts', async function() {
+                  await expectRevert(this.pool.claim(userAddress, this.pool.address, {from: userAddress}), "Pool: cannot claim to pool");
                 });
               });
 
