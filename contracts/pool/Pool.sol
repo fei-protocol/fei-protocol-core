@@ -229,6 +229,7 @@ abstract contract Pool is IPool, ERC20, Timed {
     function _claim(address from, address to) internal returns (uint256) {
         (uint256 amountReward, uint256 amountPool) = redeemableReward(from);
         require(amountPool != 0, "Pool: User has no redeemable pool tokens");
+        require(to != address(this), "Pool: cannot claim to pool");
 
         _burnFrom(from, amountPool);
         _incrementClaimed(amountReward);
