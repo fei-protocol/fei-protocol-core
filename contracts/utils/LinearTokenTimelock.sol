@@ -24,7 +24,7 @@ contract LinearTokenTimelock is Timed {
 
     uint256 internal lastBalance;
 
-    event Release(address indexed _beneficiary, uint256 _amount);
+    event Release(address indexed _beneficiary, address indexed _recipient, uint256 _amount);
     event BeneficiaryUpdate(address indexed _beneficiary);
     event PendingBeneficiaryUpdate(address indexed _pendingBeneficiary);
 
@@ -64,12 +64,14 @@ contract LinearTokenTimelock is Timed {
     }
 
     /// @notice releases unlocked tokens to beneficiary
-    function release() external onlyBeneficiary balanceCheck {
-        uint256 amount = availableForRelease();
-        require(amount != 0, "LinearTokenTimelock: no tokens to release");
+    function release(address to, uint amount) external onlyBeneficiary balanceCheck {
+        require(amount != 0, "LinearTokenTimelock: no amount desired");
 
-        lockedToken.transfer(beneficiary, amount);
-        emit Release(beneficiary, amount);
+        uint256 available = availableForRelease();
+        require(amount <= available, "LinearTokenTimelock: not enough released tokens");
+
+        lockedToken.transfer(to, amount);
+        emit Release(beneficiary, to, amount);
     }
 
     /// @notice the total amount of tokens held by timelock
