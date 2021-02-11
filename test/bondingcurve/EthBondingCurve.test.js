@@ -421,6 +421,19 @@ describe('EthBondingCurve', function () {
   });
 
   describe('Allocate', function() {
+
+    describe('Pre Launch', function() {
+      beforeEach(async function() {
+        this.core = await getCore(false);
+        await this.core.init({from: governorAddress});
+        await this.bondingCurve.setCore(this.core.address, {from: governorAddress});
+      });
+
+      it('reverts', async function() {
+        await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "CoreRef: Still in Genesis Period"); 
+      });
+    });
+
     describe('No Purchase', function() {
       it('reverts', async function() {
         await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: No PCV held"); 
