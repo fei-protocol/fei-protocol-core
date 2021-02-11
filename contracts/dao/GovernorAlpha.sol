@@ -205,7 +205,7 @@ contract GovernorAlpha {
 
     function cancel(uint proposalId) public {
         ProposalState state = state(proposalId);
-        require(state != ProposalState.Executed, "GovernorAlpha: cannot cancel executed proposal");
+        require(state == ProposalState.Active || state == ProposalState.Pending, "GovernorAlpha: can only cancel Active or Pending Proposal");
 
         Proposal storage proposal = proposals[proposalId];
         require(msg.sender == guardian || tribe.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold(), "GovernorAlpha: proposer above threshold");
