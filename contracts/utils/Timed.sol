@@ -16,7 +16,7 @@ abstract contract Timed {
     uint256 public duration;
 
     constructor(uint256 _duration) public {
-        duration = _duration;
+        _setDuration(_duration);
     }
 
     /// @notice return true if time period has ended
@@ -34,6 +34,9 @@ abstract contract Timed {
     /// @return timestamp
     /// @dev will be less than or equal to duration
     function timeSinceStart() public view returns (uint256) {
+        if (startTime == 0) {
+            return 0; // uninitialized
+        }
         uint256 _duration = duration;
         // solhint-disable-next-line not-rely-on-time
         uint256 timePassed = SafeMathCopy.sub(block.timestamp, startTime);
@@ -43,5 +46,9 @@ abstract contract Timed {
     function _initTimed() internal {
         // solhint-disable-next-line not-rely-on-time
         startTime = block.timestamp;
+    }
+
+    function _setDuration(uint _duration) internal {
+        duration = _duration;
     }
 }
