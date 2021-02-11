@@ -448,6 +448,8 @@ describe('EthBondingCurve', function () {
 
         this.keeperFei = await this.fei.balanceOf(keeperAddress);
 
+        await time.increase(this.incentiveDuration);
+
         await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount});
         expectEvent(await this.bondingCurve.allocate({from: keeperAddress}),
           'Allocate',

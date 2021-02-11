@@ -51,6 +51,8 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     {
         _setScale(_scale);
         incentiveAmount = _incentive;
+
+        _initTimed();
     }
 
     /// @notice sets the bonding curve Scale target
