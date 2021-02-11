@@ -235,6 +235,12 @@ describe('UniswapIncentive', function () {
     });
   });
 
+  describe('Self sell', function() {
+    it('reverts', async function() {
+      await expectRevert(this.pair.withdrawFei(this.pair.address, 1000000), "UniswapIncentive: cannot send self");
+    });
+  });
+
   describe('At peg', function() {
     beforeEach(async function() {
       await this.pair.setReserves(100000, 50000000);

@@ -52,6 +52,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         address operator,
         uint256 amountIn
     ) external override onlyFei {
+        require(sender != receiver, "UniswapIncentive: cannot send self");
         updateOracle();
 
         if (_isPair(sender)) {
