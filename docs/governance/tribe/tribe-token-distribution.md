@@ -4,7 +4,5 @@ description: Detailing the initial parameters of the TRIBE governance token dist
 
 # TRIBE Token Distribution
 
-{% embed url="https://medium.com/fei-protocol/the-tribe-token-distribution-887f26169e44" %}
-
-
+{% embed url="https://medium.com/fei-protocol/the-tribe-token-distribution-887f26169e44" caption="" %}
 

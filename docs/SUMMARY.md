@@ -4,11 +4,15 @@
 * [Audit Reports](audit.md)
 * [White Paper](white-paper/README.md)
   * [Implementation vs Whitepaper Diff](white-paper/implementation-vs-whitepaper-diff.md)
+* [Bug Bounty](bug-bounty.md)
+
+## Developers
+
+* [Development Guide](developers/development-guide.md)
+* [Feature Ideas](developers/feature-ideas.md)
 
 ## Protocol
 
-* [Orchestration](protocol/orchestration.md)
-* [IFei](protocol/ifei.md)
 * [Fei](protocol/fei.md)
 * [Incentives](protocol/incentives/README.md)
   * [IIncentive](protocol/incentives/iincentive.md)
@@ -26,19 +30,22 @@
   * [UniRef](protocol/references/uniref.md)
   * [IUniRef](protocol/references/iuniref.md)
 * [Trading](protocol/trading/README.md)
+  * [Bonding Curves](protocol/trading/bondingcurve/README.md)
+    * [EthBondingCurve](protocol/trading/bondingcurve/ethbondingcurve.md)
+    * [BondingCurve](protocol/trading/bondingcurve/bondingcurve.md)
+    * [IBondingCurve](protocol/trading/bondingcurve/ibondingcurve.md)
   * [FeiRouter](protocol/trading/feirouter.md)
   * [IFeiRouter](protocol/trading/ifeirouter.md)
   * [IUniswapSingleEthRouter](protocol/trading/iuniswapsingleethrouter.md)
   * [UniswapSingleEthRouter](protocol/trading/uniswapsingleethrouter.md)
 * [Genesis](protocol/genesis/README.md)
+  * [TimelockedDelegator](protocol/genesis/timelockeddelegator.md)
+  * [ITimelockedDelegator](protocol/genesis/itimelockeddelegator.md)
+  * [LinearTokenTimelock](protocol/genesis/lineartokentimelock.md)
   * [IDOInterface](protocol/genesis/idointerface.md)
   * [IDO](protocol/genesis/ido.md)
   * [GenesisGroup](protocol/genesis/genesisgroup.md)
   * [IGenesisGroup](protocol/genesis/igenesisgroup.md)
-* [Bonding Curves](protocol/bondingcurve/README.md)
-  * [EthBondingCurve](protocol/bondingcurve/ethbondingcurve.md)
-  * [BondingCurve](protocol/bondingcurve/bondingcurve.md)
-  * [IBondingCurve](protocol/bondingcurve/ibondingcurve.md)
 * [Oracles](protocol/oracles/README.md)
   * [IBondingCurveOracle](protocol/oracles/ibondingcurveoracle.md)
   * [BondingCurveOracle](protocol/oracles/bondingcurveoracle.md)
@@ -60,11 +67,10 @@
 
 ## Governance
 
-* [GovernorAlpha](governance/governoralpha.md)
+* [Fei DAO](governance/fei-dao/README.md)
+  * [Timelock](governance/fei-dao/timelock.md)
+  * [GovernorAlpha](governance/fei-dao/governoralpha.md)
+* [Fei Guardian](governance/fei-guardian.md)
 * [Tribe](governance/tribe/README.md)
   * [TRIBE Token Distribution](governance/tribe/tribe-token-distribution.md)
-* [Timelock](governance/timelock.md)
-* [LinearTokenTimelock](governance/lineartokentimelock.md)
-* [ITimelockedDelegator](governance/itimelockeddelegator.md)
-* [TimelockedDelegator](governance/timelockeddelegator.md)
 
