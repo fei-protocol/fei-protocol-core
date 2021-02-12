@@ -8,6 +8,20 @@
 
 The UniswapOracle contract maintains a uniswap TWAP.
 
+## Events
+
+`KillSwitchUpdate(uint _killSwitch)` - Oracle kill switch change
+
+* `_killSwitch` - new value of the kill switch flag
+
+`Update(uint _peg)` - new reported peg
+
+* `_peg` - new peg value
+
+`DurationUpdate(uint _duration)` - New TWAP duration
+
+* `_duration` - new value of the TWAP duration
+
 ## Implementation
 
 Maintains a pair contract to reference and a flag for whether the target price is token0 or token1 of the pair. Has a timestamp duration which must be exceeded between oracle updates. This duration is 10 minutes at launch.

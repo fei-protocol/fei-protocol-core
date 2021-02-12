@@ -8,6 +8,12 @@
 
 UniRef is an abstract contract which references a Uniswap pool. It defines some basic utilities useful for contracts referencing Uniswap. It leverages the OracleRef contract to calculate various quantities relating to spot vs peg price
 
+## Events
+
+`PairUpdate(uint _pair)` - Referenced Uniswap pair contract changed
+
+* `_pair` - new Uniswap Pair contract
+
 ## Implementation
 
 The contract allows for calculating uniswap quantities:

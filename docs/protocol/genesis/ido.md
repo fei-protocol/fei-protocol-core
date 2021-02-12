@@ -12,6 +12,13 @@ IDO is an Initial DeFi Offering contract for listing FEI and TRIBE at genesis la
 
 * Minter
 
+## Events
+
+`Deploy(uint _amountFei, uint _amountTribe)`
+
+* `_amountFei` - the amount of FEI deployed in IDO
+* `_amountTribe` - the amount of TRIBE deployed in IDO
+
 ## Implementation
 
 The IDO is deployed by the GenesisGroup contract. The GenesisGroup sets the initial exchange rate. The IDO should hold TRIBE tokens and mint the appropriate amount of FEI to match the given exchange rate. It will then send the TRIBE and FEI to Uniswap where it should be the only LP for the pair.

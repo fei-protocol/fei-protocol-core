@@ -12,6 +12,19 @@ An abstract contract for storing PCV in a Uniswap FEI liquidity pair
 
 * Minter
 
+## Events
+
+`Deposit(address indexed _from, uint _amount)` - Deposit to the PCV
+
+* `_from` - address of the depositor
+* `_amount` - amount deposited
+
+`Withdrawal(address indexed _caller, address indexed _to, uint _amount)` - Withdrawal of PCV
+
+* `_caller` - the PCV controller calling this function
+* `_to` - the recipient address of the PCV
+* `_amount` - amount withdrawn
+
 ## Implementation
 
 Uniswap PCV deposits should be able to receive PCV, mint the corresponding amount of FEI to match spot, and deposit to Uniswap. They should also be able to withdraw and read in the amount of non-fei PCV on unsiwap held in the contract.

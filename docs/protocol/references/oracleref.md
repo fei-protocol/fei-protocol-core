@@ -4,6 +4,12 @@
 
 [OracleRef.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/OracleRef.sol) implements [IOracleRef](https://github.com/fei-protocol/fei-protocol-core/wiki/IOracleRef), [CoreRef](https://github.com/fei-protocol/fei-protocol-core/wiki/CoreRef)
 
+## Events
+
+`OracleUpdate(address indexed _oracle)` - Referenced Oracle contract changed
+
+* `_oracle` - new oracle
+
 ## Description
 
 OracleRef is an abstract contract which references an oracle. It defines some basic utilities useful for contracts referencing an oracle.

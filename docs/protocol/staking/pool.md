@@ -8,6 +8,27 @@
 
 The pool contract should take an initial reward token deposit _R_ and release to a staked token _S_ over time. _R_ and _S_ should be different tokens. Staking should be completely fluid and reward the user with R based on the time weighted S deployed in the pool. A staked deposit of size _s_ should earn the token release proportional to the size of _s_ relative to the total amount staked _S_ at time _t_.
 
+## Events
+
+`Claim(address indexed _from, address indexed _to, uint _amountReward)` - Claim rewards without withdrawing
+
+* `_from` - account with the staked balances and rewards claimed from
+* `_to` - account rewards sent to
+* `_amountReward` - amount of reward token claimed
+
+`Deposit(address indexed _from, address indexed _to, uint _amountStaked)` - Deposit tokens to earn rewards
+
+* `_from` - account with the staked tokens deposited
+* `_to` - account receiving the ownership and rewards
+* `_amountStaked` - amount of staked token deposited
+
+`Withdraw(address indexed _from, address indexed _to, uint _amountStaked, uint _amountReward)` - Claim rewards and withdraw staked
+
+* `_from` - account with the staked tokens and rewards withdrawn
+* `_to` - account receiving the staked tokens and rewards
+* `_amountStaked` - amount staked withdrawn
+* `_amountReward` - amount reward earned
+
 ## Architecture
 
 We achieve this using the following schema:

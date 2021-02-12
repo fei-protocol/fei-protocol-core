@@ -13,6 +13,22 @@ A FEI incentive contract applied on transfers involving a Uniswap pair.
 * Minter
 * Burner
 
+## Events
+
+`TimeWeightUpdate(uint _weight, bool _active)` - Time Weight change
+
+* `_weight` - new time weight
+* `_active` - whether time weight is growing or not
+
+`GrowthRateUpdate(uint _growthRate)` - Governance change of time weight growth weight
+
+* `_growthRate` - new growth rate
+
+`ExemptAddressUpdate(address indexed _account, bool _isExempt)` - Governance change of an exempt address
+
+* `_account` - the address to update
+* `_isExempt` - whether the account is exempt or not
+
 ## Implementation
 
 The UniswapIncentive contract assumes that all transfers involving uniswap are either a sell or a buy. In either case, the hypothetical start and end price are calculated and compared to the peg. These are fed into the incentive function to produce a mint \(in the case of buy\) or sell \(in the case of burn\). Any address can be exempted from incentives by governance. We will go into detail on each.

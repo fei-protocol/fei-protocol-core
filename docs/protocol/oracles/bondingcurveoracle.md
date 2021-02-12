@@ -8,6 +8,16 @@
 
 The BondingCurveOracle contract pegs to a linked bonding curve price pre Scale and to a normal UniswapOracle post Scale.
 
+## Events
+
+`KillSwitchUpdate(uint _killSwitch)` - Oracle kill switch change
+
+* `_killSwitch` - new value of the kill switch flag
+
+`Update(uint _peg)` - new reported peg
+
+* `_peg` - new peg value
+
 ## Implementation
 
 Stores the bonding curve and Uniswap oracle contracts to reference. Reads from the appropriate source depending on whether pre or post scale.

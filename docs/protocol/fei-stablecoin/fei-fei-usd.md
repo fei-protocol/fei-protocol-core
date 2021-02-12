@@ -1,4 +1,4 @@
-# Fei
+# FEI \(Fei USD\)
 
 ## Contract
 

@@ -4,6 +4,12 @@
 
 [CoreRef.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/CoreRef.sol) implements [ICoreRef](https://github.com/fei-protocol/fei-protocol-core/wiki/ICoreRef)
 
+## Events
+
+`CoreUpdate(address indexed core)` - Referenced Fei Core contract update
+
+* `_core` - new Fei Core
+
 ## Description
 
 CoreRef is an abstract contract which references Core. It defines some basic modifiers and utilities useful for contracts referencing Core.
