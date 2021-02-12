@@ -24,7 +24,7 @@ It also has utilities relating to the peg _O_:
 * Check whether below peg or not
 * Get amount of a certain asset \(fei or other\) _dTarget_ to trade to bring back to peg. Let _R\_t_ be reserves of target asset before trade and _R\_o_ be the other asset.
 
-The goal is _\(R\_t + dTarget\)/\(R\_o - dOther\) = \(R\_t + dTarget\)^2 / k = O_ because this sets the new price post dTarget to O. Solving for _dTarget= Sqrt\(O_k\) - R\_t\*. We take the absolute value here and infer the direction based on whether above or below peg.
+The goal is _\(R\_t + dTarget\)/\(R\_o - dOther\) = \(R\_t + dTarget\)^2 / k = O_ because this sets the new price post dTarget to O. Solving for \_dTarget= Sqrt\(O\_k\) - R\_t\*. We take the absolute value here and infer the direction based on whether above or below peg.
 
 * get the price deviation from peg before and after a hypothetical trade. The deviation is defined as _abs\(P - O / O\)_. The protocol only needs to know the deviation when underpegged. Therefore at or above the peg returns 0 for the deviation. 
 

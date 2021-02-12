@@ -1,12 +1,12 @@
+---
+description: Orchestrators used to deploy and link Fei Protocol
+---
+
 # Orchestration
 
-## Contract
+## Overview
 
-[CoreOrchestrator.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/orchestration/CoreOrchestrator.sol)
-
-## Description
-
-Orchestrators used to deploy and link Fei Protocol
+Orchestrators are used to deploy Fei Protocol in order to ensure the effective parameterization and linking of all of the contracts, while protecting the Governor Role.
 
 ## Implementation
 

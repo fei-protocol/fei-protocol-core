@@ -1,12 +1,9 @@
 # Table of contents
 
-* [Initial page](README.md)
-* [Audit Reports](audit/README.md)
-  * [Goals](audit/consensys-audit-info.md)
-  * [Test-Suite-Output](audit/test-suite-output.md)
-  * [Audit-Info](audit/audit-info.md)
-  * [Test-Coverage-Report](audit/test-coverage-report.md)
-* [Implementation-vs-Whitepaper-Diff](implementation-vs-whitepaper-diff.md)
+* [Overview](README.md)
+* [Audit Reports](audit.md)
+* [White Paper](white-paper/README.md)
+  * [Implementation vs Whitepaper Diff](white-paper/implementation-vs-whitepaper-diff.md)
 
 ## Protocol
 
@@ -48,11 +45,11 @@
   * [IOracle](protocol/oracles/ioracle.md)
   * [IUniswapOracle](protocol/oracles/iuniswaporacle.md)
   * [UniswapOracle](protocol/oracles/uniswaporacle.md)
-* [Core](protocol/core-1/README.md)
-  * [ICore](protocol/core-1/icore.md)
-  * [IPermissions](protocol/core-1/ipermissions.md)
-  * [Permissions](protocol/core-1/permissions.md)
-  * [Core](protocol/core-1/core.md)
+* [Access Control](protocol/access-control/README.md)
+  * [ICore](protocol/access-control/icore.md)
+  * [IPermissions](protocol/access-control/ipermissions.md)
+  * [Permissions](protocol/access-control/permissions.md)
+  * [Core](protocol/access-control/core.md)
 * [Protocol Controlled Value](protocol/protocol-controlled-value/README.md)
   * [EthUniswapPCVDeposit](protocol/protocol-controlled-value/ethuniswappcvdeposit.md)
   * [EthUniswapPCVController](protocol/protocol-controlled-value/ethuniswappcvcontroller.md)
@@ -63,10 +60,11 @@
 
 ## Governance
 
-* [Tribe](governance/tribe.md)
+* [GovernorAlpha](governance/governoralpha.md)
+* [Tribe](governance/tribe/README.md)
+  * [TRIBE Token Distribution](governance/tribe/tribe-token-distribution.md)
 * [Timelock](governance/timelock.md)
 * [LinearTokenTimelock](governance/lineartokentimelock.md)
 * [ITimelockedDelegator](governance/itimelockeddelegator.md)
 * [TimelockedDelegator](governance/timelockeddelegator.md)
-* [GovernorAlpha](governance/governoralpha.md)
 
