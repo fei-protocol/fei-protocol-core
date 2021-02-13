@@ -2,12 +2,13 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./Pool.sol";
+import "./IFeiPool.sol";
 import "../refs/CoreRef.sol";
 
 /// @title A Pool for earning TRIBE with staked FEI/TRIBE LP tokens
 /// @author Fei Protocol
 /// @notice deposited LP tokens will earn TRIBE over time at a linearly decreasing rate
-contract FeiPool is Pool, CoreRef {
+contract FeiPool is IFeiPool, Pool, CoreRef {
     /// @notice Fei Pool constructor
     /// @param _core Fei Core to reference
     /// @param _pair Uniswap pair to stake
@@ -22,7 +23,7 @@ contract FeiPool is Pool, CoreRef {
 
     /// @notice sends tokens back to governance treasury. Only callable by governance
     /// @param amount the amount of tokens to send back to treasury
-    function governorWithdraw(uint256 amount) external onlyGovernor {
+    function governorWithdraw(uint256 amount) external override onlyGovernor {
         tribe().transfer(address(core()), amount);
     }
 
