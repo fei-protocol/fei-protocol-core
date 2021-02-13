@@ -154,10 +154,11 @@ describe('IDO', function () {
         beforeEach(async function() {
           await time.increase(this.window);
           expectEvent(
-            await this.ido.release({from: beneficiaryAddress1}),
+            await this.ido.release(beneficiaryAddress1, LIQUIDITY_INCREMENT, {from: beneficiaryAddress1}),
             'Release',
             {
               _beneficiary: beneficiaryAddress1,
+              _recipient: beneficiaryAddress1,
               _amount: new BN(LIQUIDITY_INCREMENT)
             }
           );
