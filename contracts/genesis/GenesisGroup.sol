@@ -185,7 +185,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
     }
 
     // Add a backdoor out of Genesis in case of brick
-    function emergencyExit(address from, address payable to) external {
+    function emergencyExit(address from, address payable to) external override {
         require(
             // solhint-disable-next-line not-rely-on-time
             block.timestamp > (startTime + duration + 3 days),
@@ -222,6 +222,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
     function getAmountsToRedeem(address to)
         public
         view
+        override
         postGenesis
         returns (
             uint256 feiAmount,

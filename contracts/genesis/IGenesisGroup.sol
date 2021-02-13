@@ -36,10 +36,21 @@ interface IGenesisGroup {
 
     function launch() external;
 
+    function emergencyExit(address from, address payable to) external;
+
     // ----------- Getters -----------
 
     function getAmountOut(uint256 amountIn, bool inclusive)
         external
         view
         returns (uint256 feiAmount, uint256 tribeAmount);
+
+    function getAmountsToRedeem(address to)
+        external
+        view
+        returns (
+            uint256 feiAmount,
+            uint256 genesisTribe,
+            uint256 idoTribe
+        );
 }
