@@ -31,11 +31,13 @@ The IDO is deployed by the GenesisGroup contract. The GenesisGroup sets the init
 
 The LP shares held by the contract vest linearly to the development team over a 4 year window from contract creation.
 
-## Read-Only Functions
-
 ## State-Changing Functions <a id="state-changing-functions"></a>
 
-### Governor-Only 
+### GenesisGroup-Only🚀
 
-### GenesisGroup-Only
+```javascript
+function deploy(Decimal.D256 calldata feiRatio) external;
+
+function swapFei(uint256 amountFei) external returns (uint256);
+```
 

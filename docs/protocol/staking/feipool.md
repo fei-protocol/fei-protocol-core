@@ -20,11 +20,13 @@ The init function is callable post genesis period.
 
 Additionally, TRIBE can be withdrawn via governance in the event of an emergency or reallocation.
 
-## Read-Only Functions
-
 ## State-Changing Functions <a id="state-changing-functions"></a>
 
-### Governor-Only 
+### Governor-Only⚖️
 
-### GenesisGroup-Only
+```javascript
+function governorWithdraw(uint256 amount) external onlyGovernor {
+    tribe().transfer(address(core()), amount);
+}
+```
 

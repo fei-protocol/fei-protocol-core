@@ -40,9 +40,37 @@ Updates to the bonding curve oracle update the linked uniswap oracle.
 
 ## Read-Only Functions
 
+```javascript
+function read() external view returns (Decimal.D256 memory, bool);
+
+function isOutdated() external view returns (bool);
+
+function killSwitch() external view returns (bool);
+
+function uniswapOracle() external returns (IOracle);
+
+function bondingCurve() external returns (IBondingCurve);
+
+function initialPrice() external returns (Decimal.D256 memory);
+```
+
 ## State-Changing Functions <a id="state-changing-functions"></a>
 
-### Governor-Only 
+### Public
 
-### GenesisGroup-Only
+```javascript
+function update() external returns (bool);
+```
+
+### Governor-Only⚖️
+
+```javascript
+function setKillSwitch(bool _killSwitch) external;
+```
+
+### GenesisGroup-Only🚀
+
+```javascript
+function init(Decimal.D256 calldata initialPrice) external;
+```
 

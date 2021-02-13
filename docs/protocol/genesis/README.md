@@ -28,21 +28,21 @@ Likewise pre-commitment is one-way, no way to revert back to uncommitted.
 
 ## Initial DEX Offering \(IDO\)
 
-As part of the Genesis launch, Fei Protocol will list [FEI](../fei-stablecoin/) and [TRIBE](../../governance/tribe/) on Uniswap. This will amount to 20% of the [TRIBE initial token distribution](../../governance/tribe/tribe-token-distribution.md). The liquidity for this IDO will be timelocked and owned by the Fei Core Team. See the section below for more details on the token timelocks.
+As part of the Genesis launch, Fei Protocol will list [FEI](../fei-stablecoin/) and [TRIBE](../../governance/tribe.md) on Uniswap. This will amount to 20% of the [TRIBE initial token distribution](). The liquidity for this IDO will be timelocked and owned by the Fei Core Team. See the section below for more details on the token timelocks.
 
 {% page-ref page="ido.md" %}
 
-{% page-ref page="lineartokentimelock.md" %}
+{% page-ref page="../references/lineartokentimelock.md" %}
 
 ## Fei Core Team Timelocks
 
-The Fei Core Team and investors will own timelocked [TRIBE](../../governance/tribe/) as well as the LP tokens associated with the IDO. These timelocks follow a linear release schedule over a 4 year window on the contract level. The Fei Core Team has elected to vest over 5 years, backweighted, however this vesting will be managed on the company level and not the contract level.
+The Fei Core Team and investors will own timelocked [TRIBE](../../governance/tribe.md) as well as the LP tokens associated with the IDO. These timelocks follow a linear release schedule over a 4 year window on the contract level. The Fei Core Team has elected to vest over 5 years, backweighted, however this vesting will be managed on the company level and not the contract level.
 
 The TRIBE will be held in a special timelock called the TimelockedDelegator which allows for sub-delegation of portions of the team's tokens. If you'd like to be considered as a sponsored delegate, reach out on Discord.
 
 {% page-ref page="timelockeddelegator.md" %}
 
-{% page-ref page="lineartokentimelock.md" %}
+{% page-ref page="../references/lineartokentimelock.md" %}
 
 
 

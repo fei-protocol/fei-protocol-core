@@ -97,9 +97,42 @@ Note emergency escape is out of scope for OpenZeppelin audit. There is an emerge
 
 ## Read-Only Functions
 
+
+
+```javascript
+function getAmountOut(uint256 amountIn, bool inclusive)
+    external
+    view
+    returns (uint256 feiAmount, uint256 tribeAmount);
+    
+function getAmountsToRedeem(address to)
+    external
+    view
+    returns (
+        uint256 feiAmount,
+        uint256 genesisTribe,
+        uint256 idoTribe
+    )
+```
+
 ## State-Changing Functions <a id="state-changing-functions"></a>
 
-### Governor-Only 
+### Public
 
-### GenesisGroup-Only
+```javascript
+function purchase(address to, uint256 value) external payable;
+
+function redeem(address to) external;
+
+function commit(
+    address from,
+    address to,
+    uint256 amount
+) external;
+
+function launch() external;
+
+function emergencyExit(address from, address payable to) external;
+
+```
 

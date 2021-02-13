@@ -13,7 +13,7 @@ description: 'The access control, source of truth, and DAO treasury for Fei Prot
 The Core contract is responsible for a few things:
 
 * Access control
-* Pointing to [FEI](../fei-stablecoin/), [TRIBE](../../governance/tribe/), and [GenesisGroup](../genesis/genesisgroup.md) contracts
+* Pointing to [FEI](../fei-stablecoin/), [TRIBE](../../governance/tribe.md), and [GenesisGroup](../genesis/genesisgroup.md) contracts
 * Stores whether GenesisGroup has completed
 * Escrowing DAO TRIBE treasury
 

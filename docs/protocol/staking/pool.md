@@ -77,9 +77,44 @@ Any withdrawn tokens \(staked or reward\) can be routed to a different destinati
 
 ## Read-Only Functions
 
+```javascript
+function rewardToken() external view returns (IERC20);
+
+function totalReward() external view returns (uint256);
+
+function redeemableReward(address account)
+    external
+    view
+    returns (uint256 amountReward, uint256 amountPool);
+
+function releasedReward() external view returns (uint256);
+
+function unreleasedReward() external view returns (uint256);
+
+function rewardBalance() external view returns (uint256);
+
+function claimedRewards() external view returns (uint256);
+
+function stakedToken() external view returns (IERC20);
+
+function totalStaked() external view returns (uint256);
+
+function stakedBalance(address account) external view returns (uint256);
+```
+
 ## State-Changing Functions <a id="state-changing-functions"></a>
 
-### Governor-Only 
+### Public
 
-### GenesisGroup-Only
+```javascript
+function claim(address from, address to) external returns (uint256);
+
+function deposit(address to, uint256 amount) external;
+
+function withdraw(address to)
+    external
+    returns (uint256 amountStaked, uint256 amountReward);
+
+function init() external;
+```
 

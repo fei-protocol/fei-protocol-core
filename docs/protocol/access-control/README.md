@@ -24,11 +24,11 @@ The Fei Core contract is responsible for managing access control, as well
 
 The Governor role is the most powerful role in Fei Protocol. It is capable of granting and revoking any other role. It can also update many protocol parameters unique to each contract. This include bonding curve targets, incentive formulas, oracle windows and more.
 
-While the role technically belongs to the [Timelock](../../governance/fei-dao/timelock.md), it is useful to look primarily at the [Fei DAO](../../governance/fei-dao/) as the only Governor at launch.
+While the role technically belongs to the [Timelock](), it is useful to look primarily at the [Fei DAO](../../governance/fei-dao.md) as the only Governor at launch.
 
 Having Governor be a role and not a single contract allows Fei Protocol to have flexibility in appointing automated governance contracts or having different tiers of governance with varying degrees of difficulty for execution criteria.
 
-{% page-ref page="../../governance/fei-dao/" %}
+{% page-ref page="../../governance/fei-dao.md" %}
 
 ### Minter 💰 
 

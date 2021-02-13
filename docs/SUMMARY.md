@@ -38,9 +38,10 @@
 * [Genesis](protocol/genesis/README.md)
   * [GenesisGroup](protocol/genesis/genesisgroup.md)
   * [IDO](protocol/genesis/ido.md)
-  * [LinearTokenTimelock](protocol/genesis/lineartokentimelock.md)
   * [TimelockedDelegator](protocol/genesis/timelockeddelegator.md)
-* [References](protocol/references/README.md)
+* [References/Utils](protocol/references/README.md)
+  * [LinearTokenTimelock](protocol/references/lineartokentimelock.md)
+  * [Timed](protocol/references/timed.md)
   * [CoreRef](protocol/references/coreref.md)
   * [OracleRef](protocol/references/oracleref.md)
   * [UniRef](protocol/references/uniref.md)
@@ -48,10 +49,7 @@
 
 ## Governance
 
-* [Fei DAO](governance/fei-dao/README.md)
-  * [Timelock](governance/fei-dao/timelock.md)
-  * [GovernorAlpha](governance/fei-dao/governoralpha.md)
+* [Fei DAO](governance/fei-dao.md)
+* [Tribe](governance/tribe.md)
 * [Fei Guardian](governance/fei-guardian.md)
-* [Tribe](governance/tribe/README.md)
-  * [TRIBE Token Distribution](governance/tribe/tribe-token-distribution.md)
 

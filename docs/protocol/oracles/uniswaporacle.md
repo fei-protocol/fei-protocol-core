@@ -51,9 +51,35 @@ The governor can change the duration if needed.
 
 ## Read-Only Functions
 
+```javascript
+function read() external view returns (Decimal.D256 memory, bool);
+
+function isOutdated() external view returns (bool);
+
+function killSwitch() external view returns (bool);
+
+function priorTimestamp() external returns (uint32);
+
+function priorCumulative() external returns (uint256);
+
+function duration() external returns (uint256);
+
+function pair() external returns (IUniswapV2Pair);
+```
+
 ## State-Changing Functions <a id="state-changing-functions"></a>
 
-### Governor-Only 
+### Public
 
-### GenesisGroup-Only
+```javascript
+function update() external returns (bool);
+```
+
+### Governor-Only⚖️
+
+```javascript
+function setKillSwitch(bool _killSwitch) external;
+
+function setDuration(uint256 _duration) external;
+```
 

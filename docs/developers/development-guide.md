@@ -25,7 +25,7 @@ Members of the Fei Core Team and Fei community will review the changes, with maj
 
 See the Fei DAO section on how to make proposals and potentially having your proposal sponsored. 
 
-{% page-ref page="../governance/fei-dao/" %}
+{% page-ref page="../governance/fei-dao.md" %}
 
 ## Ecosystem Development
 
