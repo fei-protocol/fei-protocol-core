@@ -6,9 +6,15 @@
 
 ## Events
 
-`OracleUpdate(address indexed _oracle)` - Referenced Oracle contract changed
+{% tabs %}
+{% tab title="OracleUpdate" %}
+Referenced oracle contract update
 
-* `_oracle` - new oracle
+| type | param | description |
+| :--- | :--- | :--- |
+| address indexed | \_oracle | new oracle |
+{% endtab %}
+{% endtabs %}
 
 ## Description
 
@@ -21,4 +27,12 @@ The contract allows for updating or reading from the oracle. The oracle price is
 The `invert` function allows for the reporting to be done in the reverse direction.
 
 It allows a governor to update the referenced Oracle
+
+## Read-Only Functions
+
+## State-Changing Functions <a id="state-changing-functions"></a>
+
+### Governor-Only 
+
+### GenesisGroup-Only
 

@@ -4,23 +4,53 @@
 
 [GenesisGroup.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/genesis/GenesisGroup.sol) implements [IGenesisGroup](https://github.com/fei-protocol/fei-protocol-core/wiki/IGenesisGroup), [CoreRef](https://github.com/fei-protocol/fei-protocol-core/wiki/CoreRef), [ERC20](https://docs.openzeppelin.com/contracts/3.x/api/token/erc20#ERC20), [ERC20Burnable](https://docs.openzeppelin.com/contracts/3.x/api/token/erc20#ERC20Burnable), [Timed](https://github.com/fei-protocol/fei-protocol-core/wiki/Timed)
 
+## Purchase
+
+Users who want to participate in Fei Protocol Genesis would do so by first purchasing into the Genesis Group contract. This is done with ETH. Behind the scenes this purchase awards the user with an ERC-20 token 1:1 for their ETH called FGEN, short for Fei Genesis. In other posts we refer to FGEN as "Genesis ETH". Because FGEN is fungible, it can be transferred and even sold if secondary markets arise.
+
+FGEN is used to account for the user's final outcome in Genesis.
+
 ## Events
 
-`Purchase(address indexed _to, uint _value)` - A purchase into the Genesis Group
+{% tabs %}
+{% tab title="Purchase" %}
+A purchase into the Genesis Group
 
-* `_to` - the address to send Fei Genesis ownership tokens \(FGEN\) to
-* `_value` - the amount of ETH deposited
+| type | param | description |
+| :--- | :--- | :--- |
+| address indexed | \_to | the address to send Fei Genesis share tokens \(FGEN\) to |
+| uint256 | \_value | the amount of ETH deposited |
+{% endtab %}
 
-`Redeem(address indexed _to, uint _amountIn, uint _amountFei, uint _amountTribe)` - Redeem Fei Genesis ownership tokens \(FGEN\) for FEI and TRIBE
+{% tab title="Commit" %}
+Pre-commit Genesis share tokens \(FGEN\) to buy TRIBE in IDO
 
-* `_to` - the address to send TRIBE and FEI to
-* `_amountIn` - the amount of FGEN redeemed
-* `_amountFei` - the amount of FEI received
-* `_amountTribe` - the amount of TRIBE received
+| type | param | description |
+| :--- | :--- | :--- |
+| address indexed | \_from | account with the FGEN to commit |
+| address indexed | \_to | account to receive and redeem the rewards post-genesis |
+| uint256 | \_amount | amount of FGEN committed |
+{% endtab %}
 
-`Launch(uint _timestamp)` - The completion of the Genesis Group and launch of Fei Protocol. Only emitted once
+{% tab title="Redeem" %}
+Redeem Fei Genesis share tokens \(FGEN\) for FEI and TRIBE
 
-* `_timestamp` - the block timestamp of deployment
+| type | param | description |
+| :--- | :--- | :--- |
+| address indexed | \_to | the address to send TRIBE and FEI to |
+| uint256 | \_amountIn | amount of FGEN redeemed |
+| uint256 | \_amountFei | amount of FEI received |
+| uint256 | \_amountTribe | amount of TRIBE received |
+{% endtab %}
+
+{% tab title="Launch" %}
+The completion of the Genesis Group and launch of Fei Protocol. Only emitted once
+
+| type | param | description |
+| :--- | :--- | :--- |
+| uint256 | \_timestamp | the block timestamp of deployment |
+{% endtab %}
+{% endtabs %}
 
 ## Description
 
@@ -64,4 +94,12 @@ The Genesis Group also initializes the BondingCurveOracle to the average price o
 Post launch, users can redeem their FGEN for a pro rata share of the FEI purchased on the bonding curve and the Genesis TRIBE allocation. Any contract can redeem on behalf of a user if they have FGEN approval. Redemptions must be for the entire held balance of FGEN.
 
 Note emergency escape is out of scope for OpenZeppelin audit. There is an emergency escape embedded within the Genesis Group contract that allows FGEN \(and committed FGEN\) to redeem for ETH 1:1 3 days AFTER the Genesis Group ends. This is intended only for the scenario where the launch functionality is bricked as a way for users to get their ETH back. This method is `emergencyExit(address from, address to)`
+
+## Read-Only Functions
+
+## State-Changing Functions <a id="state-changing-functions"></a>
+
+### Governor-Only 
+
+### GenesisGroup-Only
 

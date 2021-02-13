@@ -8,9 +8,9 @@
 
 A bonding curve implementation for purchasing FEI with ETH
 
-## [Permissions](https://github.com/fei-protocol/fei-protocol-core/wiki/Permissions)
+## [Access Control](../../access-control/) 
 
-* Minter
+* Minter💰
 
 ## Implementation
 

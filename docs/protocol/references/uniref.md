@@ -10,9 +10,15 @@ UniRef is an abstract contract which references a Uniswap pool. It defines some 
 
 ## Events
 
-`PairUpdate(uint _pair)` - Referenced Uniswap pair contract changed
+{% tabs %}
+{% tab title="PairUpdate" %}
+Referenced Uniswap pair contract update
 
-* `_pair` - new Uniswap Pair contract
+| type | param | description |
+| :--- | :--- | :--- |
+| address indexed | \_pair | new Uniswap pair contract |
+{% endtab %}
+{% endtabs %}
 
 ## Implementation
 
@@ -33,4 +39,12 @@ It also has utilities relating to the peg _O_:
 The goal is _\(R\_t + dTarget\)/\(R\_o - dOther\) = \(R\_t + dTarget\)^2 / k = O_ because this sets the new price post dTarget to O. Solving for \_dTarget= Sqrt\(O\_k\) - R\_t\*. We take the absolute value here and infer the direction based on whether above or below peg.
 
 * get the price deviation from peg before and after a hypothetical trade. The deviation is defined as _abs\(P - O / O\)_. The protocol only needs to know the deviation when underpegged. Therefore at or above the peg returns 0 for the deviation. 
+
+## Read-Only Functions
+
+## State-Changing Functions <a id="state-changing-functions"></a>
+
+### Governor-Only 
+
+### GenesisGroup-Only
 

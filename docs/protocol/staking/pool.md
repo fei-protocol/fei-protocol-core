@@ -10,24 +10,38 @@ The pool contract should take an initial reward token deposit _R_ and release to
 
 ## Events
 
-`Claim(address indexed _from, address indexed _to, uint _amountReward)` - Claim rewards without withdrawing
+{% tabs %}
+{% tab title="Deposit" %}
+Deposit tokens to earn rewards
 
-* `_from` - account with the staked balances and rewards claimed from
-* `_to` - account rewards sent to
-* `_amountReward` - amount of reward token claimed
+| type | param | description |
+| :--- | :--- | :--- |
+| address indexed | \_from | account with the staked tokens deposited |
+| address indexed | \_to | account receiving the ownership and rewards |
+| uint256 | \_amountStaked | amount of staked token deposited |
+{% endtab %}
 
-`Deposit(address indexed _from, address indexed _to, uint _amountStaked)` - Deposit tokens to earn rewards
+{% tab title="Claim" %}
+Claim rewards without withdrawing
 
-* `_from` - account with the staked tokens deposited
-* `_to` - account receiving the ownership and rewards
-* `_amountStaked` - amount of staked token deposited
+| type | param | description |
+| :--- | :--- | :--- |
+| address indexed | \_from | account with the staked balances and rewards claimed from |
+| address indexed | \_to | account rewards sent to |
+| uint256 | \_amountReward | amount of reward token claimed |
+{% endtab %}
 
-`Withdraw(address indexed _from, address indexed _to, uint _amountStaked, uint _amountReward)` - Claim rewards and withdraw staked
+{% tab title="Withdraw" %}
+Claim rewards and withdraw staked
 
-* `_from` - account with the staked tokens and rewards withdrawn
-* `_to` - account receiving the staked tokens and rewards
-* `_amountStaked` - amount staked withdrawn
-* `_amountReward` - amount reward earned
+| type | param | description |
+| :--- | :--- | :--- |
+| address indexed | \_from | account with the staked tokens and rewards withdrawn |
+| address indexed | \_to | account receiving the staked tokens and rewards |
+| uint256 | \_amountStaked | amount staked withdrawn |
+| uint256 | \_amountReward | amount reward earned |
+{% endtab %}
+{% endtabs %}
 
 ## Architecture
 
@@ -60,4 +74,12 @@ Accounts can claim, deposit, or withdraw on behalf of another with approval. Req
 * `withdraw` - Pool tokens
 
 Any withdrawn tokens \(staked or reward\) can be routed to a different destination address as well.
+
+## Read-Only Functions
+
+## State-Changing Functions <a id="state-changing-functions"></a>
+
+### Governor-Only 
+
+### GenesisGroup-Only
 

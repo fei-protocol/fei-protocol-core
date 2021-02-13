@@ -8,28 +8,46 @@
 
 A contract for moving reweighting Uniswap prices to the peg from a Uniswap PCV Deposit. ETH specific implementation.
 
-## [Permissions](https://github.com/fei-protocol/fei-protocol-core/wiki/Permissions)
+## [Access Control](../access-control/) 
 
-* Minter
-* PCV Controller
+* Minter💰
+* PCV Controller⚙️
 
 ## Events
 
-`Reweight(address indexed _caller)` - A Uniswap Reweight event
+{% tabs %}
+{% tab title="Reweight" %}
+A Uniswap Reweight event
 
-* `_caller` - the address triggering the reweight
+| type | param | description |
+| :--- | :--- | :--- |
+| address indexed | \_caller | the address triggering the reweight |
+{% endtab %}
 
-`PCVDepositUpdate(address indexed _pcvDeposit)` - Change the PCV Deposit contract
+{% tab title="PCVDepositUpdate" %}
+Change the PCV Deposit contract
 
-* `_pcvDeposit` - new pcv deposit contract
+| type | param | description |
+| :--- | :--- | :--- |
+| address indexed | \_pcvDeposit | new pcv deposit contract |
+{% endtab %}
 
-`ReweightIncentiveUpdate(uint _amount)` - Change the FEI reward for reweighting
+{% tab title="ReweightIncentiveUpdate" %}
+Change the FEI reward for reweighting
 
-* `_amount` - FEI reward amount
+| type | param | description |
+| :--- | :--- | :--- |
+| uint256 | \_amount | FEI reward amount |
+{% endtab %}
 
-`ReweightMinDistanceUpdate(uint _basisPoints)` - Change the min distance for a reweight
+{% tab title="ReweightMinDistanceUpdate" %}
+Change the min distance for a reweight
 
-* `_basisPoints` - Minimum reweight amount in basis points \(i.e. 1/10000\)
+| type | param | description |
+| :--- | :--- | :--- |
+| uint256 | \_basisPoints | Minimum reweight amount in basis points \(i.e. 1/10000\) |
+{% endtab %}
+{% endtabs %}
 
 ## Implementation
 
@@ -54,4 +72,41 @@ Governor contracts can also force a reweight at any time. Governor can also upda
 ### Reweight incentives
 
 Open reweight executions are incentivized with 500 FEI if the controller is appointed as a minter. Governance can adjust this incentive amount
+
+## Read-Only Functions
+
+```javascript
+function pcvDeposit() external returns (IPCVDeposit);
+
+function incentiveContract() external returns (IUniswapIncentive);
+
+function reweightIncentiveAmount() external returns (uint256);
+
+function reweightEligible() external view returns (bool);
+
+function minDistanceForReweight()
+    external
+    view
+    returns (Decimal.D256 memory);
+```
+
+## State-Changing Functions <a id="state-changing-functions"></a>
+
+### Public
+
+```javascript
+function reweight() external;
+```
+
+### Governor-Only⚖️
+
+```javascript
+function forceReweight() external;
+
+function setPCVDeposit(address _pcvDeposit) external;
+
+function setReweightIncentive(uint256 amount) external;
+
+function setReweightMinDistance(uint256 basisPoints) external;
+```
 

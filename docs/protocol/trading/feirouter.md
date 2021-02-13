@@ -16,3 +16,24 @@ For the `buyFei` method the `minReward` parameter is the minimum amount of FEI m
 
 For the `sellFei` method the `maxPenalty` parameter is the maximum amount of FEI burn the contract should allow without reverting. This is the burn applied by the [UniswapIncentive](https://github.com/fei-protocol/fei-protocol-core/wiki/UniswapIncentive) contract.
 
+## State-Changing Functions <a id="state-changing-functions"></a>
+
+### Public
+
+```javascript
+function buyFei(
+    uint256 minReward,
+    uint256 amountOutMin,
+    address to,
+    uint256 deadline
+) external payable returns (uint256 amountOut);
+
+function sellFei(
+    uint256 maxPenalty,
+    uint256 amountIn,
+    uint256 amountOutMin,
+    address to,
+    uint256 deadline
+) external returns (uint256 amountOut);
+```
+

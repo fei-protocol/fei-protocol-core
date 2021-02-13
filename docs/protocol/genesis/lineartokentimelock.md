@@ -25,3 +25,11 @@ The already released amount is _T - C_.
 
 The net amount available for release is the total available minus already released. The beneficiary can claim these at any time.
 
+## Read-Only Functions
+
+## State-Changing Functions <a id="state-changing-functions"></a>
+
+### Governor-Only 
+
+### GenesisGroup-Only
+

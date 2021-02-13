@@ -10,13 +10,23 @@ The BondingCurveOracle contract pegs to a linked bonding curve price pre Scale a
 
 ## Events
 
-`KillSwitchUpdate(uint _killSwitch)` - Oracle kill switch change
+{% tabs %}
+{% tab title="Update" %}
+ new reported peg
 
-* `_killSwitch` - new value of the kill switch flag
+| type | param | description |
+| :--- | :--- | :--- |
+| uint256 | \_peg | new peg value |
+{% endtab %}
 
-`Update(uint _peg)` - new reported peg
+{% tab title="KillSwitchUpdate" %}
+Oracle kill switch change
 
-* `_peg` - new peg value
+| type | param | description |
+| :--- | :--- | :--- |
+| bool | \_killSwitch | new value of the kill switch flag |
+{% endtab %}
+{% endtabs %}
 
 ## Implementation
 
@@ -27,4 +37,12 @@ Includes "Thawing". Thawing means that the initial pegged price is lower than th
 The initial price is stored as a Decimal from \[0,1\]. The current price is defined as uniswap peg divided current target peg which should also be \[0,1\]. The reported price is the time weighted price between the initial and current prices. The reported peg is the current uniswap peg divided by the reported price.
 
 Updates to the bonding curve oracle update the linked uniswap oracle.
+
+## Read-Only Functions
+
+## State-Changing Functions <a id="state-changing-functions"></a>
+
+### Governor-Only 
+
+### GenesisGroup-Only
 

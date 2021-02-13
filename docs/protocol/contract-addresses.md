@@ -7,12 +7,12 @@ description: A registry for Fei Protocol contract addresses
 | Contract | Mainnet Address |
 | :--- | :--- |
 | [Core](access-control/core.md) | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
-| Fei | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
-| UniswapIncentive | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
-| EthUniswapPCVDeposit | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
-| EthUniswapPCVController | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
-| UniswapOracle | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
-| BondingCurveOracle | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
-| FeiPool | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
-| GenesisGroup | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
+| [Fei](fei-stablecoin/fei-fei-usd.md) | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
+| [UniswapIncentive](fei-stablecoin/uniswapincentive.md) | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
+| [EthUniswapPCVDeposit](protocol-controlled-value/ethuniswappcvdeposit.md) | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
+| [EthUniswapPCVController](protocol-controlled-value/ethuniswappcvcontroller.md) | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
+| [UniswapOracle](oracles/uniswaporacle.md) | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
+| [BondingCurveOracle](oracles/bondingcurveoracle.md) | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
+| [FeiPool](staking/feipool.md) | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
+| [GenesisGroup](genesis/genesisgroup.md) | [0x000000000000000000000000](https://etherscan.io/address/0x0000000000000000000000000000000000000000) |
 

@@ -8,22 +8,32 @@
 
 An abstract contract for storing PCV in a Uniswap FEI liquidity pair
 
-## [Permissions](https://github.com/fei-protocol/fei-protocol-core/wiki/Permissions)
+## [Access Control](../access-control/) 
 
-* Minter
+* Minter💰
 
 ## Events
 
-`Deposit(address indexed _from, uint _amount)` - Deposit to the PCV
+{% tabs %}
+{% tab title="Deposit" %}
+Deposit to the PCV
 
-* `_from` - address of the depositor
-* `_amount` - amount deposited
+| type | param | description |
+| :--- | :--- | :--- |
+| address indexed | \_from | address of the depositor |
+| uint256 | \_amount | amount deposited |
+{% endtab %}
 
-`Withdrawal(address indexed _caller, address indexed _to, uint _amount)` - Withdrawal of PCV
+{% tab title="Withdrawal" %}
+Withdrawal of PCV
 
-* `_caller` - the PCV controller calling this function
-* `_to` - the recipient address of the PCV
-* `_amount` - amount withdrawn
+| type | param | description |
+| :--- | :--- | :--- |
+| address indexed | \_caller | the PCV controller calling this function |
+| address indexed | \_to | the recipient address of the PCV |
+| uint256 | \_amount | amount withdrawn |
+{% endtab %}
+{% endtabs %}
 
 ## Implementation
 
@@ -32,4 +42,24 @@ Uniswap PCV deposits should be able to receive PCV, mint the corresponding amoun
 When withdrawing, any excess fei held should be burned
 
 When depositing, if no existing LP exists then the oracle price should be used. The oracle should be a [BondingCurveOracle](https://github.com/fei-protocol/fei-protocol-core/wiki/BondingCurveOracle) subject to thawing and the bonding curve price.
+
+## Read-Only Functions
+
+```javascript
+function totalValue() external view returns (uint256);
+```
+
+## State-Changing Functions <a id="state-changing-functions"></a>
+
+### Public
+
+```javascript
+function deposit(uint256 amount) external payable;
+```
+
+### PCV Controller-Only ⚙️
+
+```javascript
+function withdraw(address to, uint256 amount) external;
+```
 

@@ -1,3 +1,7 @@
+---
+description: The Direct Incentives contract for FEI/ETH liquidity
+---
+
 # UniswapIncentive
 
 ## Contract
@@ -8,26 +12,51 @@
 
 A FEI incentive contract applied on transfers involving a Uniswap pair.
 
-## [Permissions](https://github.com/fei-protocol/fei-protocol-core/wiki/Permissions)
 
-* Minter
-* Burner
+
+## [Access Control](../access-control/) 
+
+* Minter💰
+* Burner🔥
 
 ## Events
 
-`TimeWeightUpdate(uint _weight, bool _active)` - Time Weight change
+{% tabs %}
+{% tab title="TimeWeightUpdate" %}
+Time Weight change
 
-* `_weight` - new time weight
-* `_active` - whether time weight is growing or not
+| type | param | description |
+| :--- | :--- | :--- |
+| uint256 | \_weight | new time weight |
+| uint256 | \_active | whether time weight is growing or not |
+{% endtab %}
 
-`GrowthRateUpdate(uint _growthRate)` - Governance change of time weight growth weight
+{% tab title="GrowthRateUpdate" %}
+Governance change of time weight growth weight
 
-* `_growthRate` - new growth rate
+| type | param | description |
+| :--- | :--- | :--- |
+| uint256 | \_growthRate | new growth rate |
+{% endtab %}
 
-`ExemptAddressUpdate(address indexed _account, bool _isExempt)` - Governance change of an exempt address
+{% tab title="ExemptAddressUpdate" %}
+Governance change of an exempt address 
 
-* `_account` - the address to update
-* `_isExempt` - whether the account is exempt or not
+| type | param | description |
+| :--- | :--- | :--- |
+| address indexed | \_account | the address to update |
+| bool | \_isExempt | whether the account is exempt or not |
+{% endtab %}
+
+{% tab title="SellAllowedAddressUpdate" %}
+Governance change of a sell allowlisted address 
+
+| type | param | description |
+| :--- | :--- | :--- |
+| address indexed | \_account | the address to update |
+| bool | \_isSellAllowed | whether the account is allowlisted or not |
+{% endtab %}
+{% endtabs %}
 
 ## Implementation
 
@@ -69,4 +98,70 @@ Trades should update the time weight as follows:
 Incentive parity is defined as a boolean which is true when the mint incentive equals the burn incentive. This happens when the time weight reaches a level on par with the distance with the peg. If the distance is 5%, a time weight of 5 would lead to incentive parity. The burn incentive `m^2 * 100` would equal the mint incentive `w*m`.
 
 Parity is used as a trigger condition for reweights in the [UniswapPCVController](https://github.com/fei-protocol/fei-protocol-core/wiki/UniswapPCVController)
+
+## Read-Only Functions
+
+```javascript
+function isIncentiveParity() external view returns (bool);
+
+function isExemptAddress(address account) external view returns (bool);
+
+function isSellAllowlisted(address account) external view returns (bool);
+
+function TIME_WEIGHT_GRANULARITY() external view returns (uint32);
+
+function getGrowthRate() external view returns (uint32);
+
+function getTimeWeight() external view returns (uint32);
+
+function isTimeWeightActive() external view returns (bool);
+
+function getBuyIncentive(uint256 amount)
+    external
+    view
+    returns (
+        uint256 incentive,
+        uint32 weight,
+        Decimal.D256 memory initialDeviation,
+        Decimal.D256 memory finalDeviation
+    );
+
+function getSellPenalty(uint256 amount)
+    external
+    view
+    returns (
+        uint256 penalty,
+        Decimal.D256 memory initialDeviation,
+        Decimal.D256 memory finalDeviation
+    );
+```
+
+## State-Changing Functions <a id="state-changing-functions"></a>
+
+### Governor-Only⚖️
+
+```javascript
+function setExemptAddress(address account, bool isExempt) external;
+
+function setSellAllowlisted(address account, bool isAllowed) external;
+
+function setTimeWeightGrowth(uint32 growthRate) external;
+
+function setTimeWeight(
+    uint32 weight,
+    uint32 growth,
+    bool active
+) external;
+```
+
+### Fei-Only🌲
+
+```javascript
+function incentivize(
+    address sender,
+    address receiver,
+    address operator,
+    uint256 amountIn
+) external
+```
 

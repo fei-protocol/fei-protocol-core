@@ -6,9 +6,15 @@
 
 ## Events
 
-`CoreUpdate(address indexed core)` - Referenced Fei Core contract update
+{% tabs %}
+{% tab title="CoreUpdate" %}
+Referenced Fei Core contract update
 
-* `_core` - new Fei Core
+| type | param | description |
+| :--- | :--- | :--- |
+| address indexed | \_core | new Fei Core |
+{% endtab %}
+{% endtabs %}
 
 ## Description
 
@@ -28,4 +34,12 @@ The contract defines modifiers of the following types:
 It allows the governor of a currently referenced Core contract to update to a new referenced Core contract
 
 It can read in referenced contract addresses including Core, Fei, Tribe or get token balances.
+
+## Read-Only Functions
+
+## State-Changing Functions <a id="state-changing-functions"></a>
+
+### Governor-Only 
+
+### GenesisGroup-Only
 

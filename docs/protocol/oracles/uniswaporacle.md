@@ -10,17 +10,31 @@ The UniswapOracle contract maintains a uniswap TWAP.
 
 ## Events
 
-`KillSwitchUpdate(uint _killSwitch)` - Oracle kill switch change
+{% tabs %}
+{% tab title="Update" %}
+ new reported peg
 
-* `_killSwitch` - new value of the kill switch flag
+| type | param | description |
+| :--- | :--- | :--- |
+| uint256 | \_peg | new peg value |
+{% endtab %}
 
-`Update(uint _peg)` - new reported peg
+{% tab title="KillSwitchUpdate" %}
+Oracle kill switch change
 
-* `_peg` - new peg value
+| type | param | description |
+| :--- | :--- | :--- |
+| bool | \_killSwitch | new value of the kill switch flag |
+{% endtab %}
 
-`DurationUpdate(uint _duration)` - New TWAP duration
+{% tab title="DurationUpdate" %}
+ New TWAP duration
 
-* `_duration` - new value of the TWAP duration
+| type | param | description |
+| :--- | :--- | :--- |
+| uint256 | \_duration | new value of the TWAP duration |
+{% endtab %}
+{% endtabs %}
 
 ## Implementation
 
@@ -34,4 +48,12 @@ Updates should:
 * update the peg and prior cumulative and timestamp
 
 The governor can change the duration if needed.
+
+## Read-Only Functions
+
+## State-Changing Functions <a id="state-changing-functions"></a>
+
+### Governor-Only 
+
+### GenesisGroup-Only
 

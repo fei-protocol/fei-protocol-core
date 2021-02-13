@@ -8,7 +8,7 @@
 
 An ETH implementation of UniswapPCVDeposit.
 
-## [Permissions](https://github.com/fei-protocol/fei-protocol-core/wiki/Permissions)
+## [Access Control](../access-control/) 
 
-* Minter
+* Minter💰
 

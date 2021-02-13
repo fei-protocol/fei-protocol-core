@@ -1,22 +1,68 @@
+---
+description: The access control module of Fei Protocol Core
+---
+
 # Permissions
 
-[Permissions.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/core/Permissions.sol) implements [IPermissions](https://github.com/fei-protocol/fei-protocol-core/wiki/IPermissions), [AccessControl](https://docs.openzeppelin.com/contracts/3.x/api/access#AccessControl)
+## Contract
+
+[Permissions.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/core/Permissions.sol) implements IPermissions, [AccessControl](https://docs.openzeppelin.com/contracts/3.x/api/access#AccessControl)
 
 ## Description
 
-The access control module of the Core contract. Maintains which roles exist, role admins, and which addresses have which roles.
+The [access control](./) module of the [Core](core.md) contract. Maintains which roles exist, role admins, and which addresses have which roles.
 
-## Implementation
+The contract essentially wraps the OpenZeppelin Access Control contract with some Fei Protocol-specific roles and functionality.
 
-The following 5 roles are defined:
+{% embed url="https://docs.openzeppelin.com/contracts/3.x/api/access\#AccessControl" %}
 
-* Governor - Able to grant and revoke all roles, also controls other protocol parameters
-* Minter - Able to mint FEI to any address
-* Burner - Able to burn FEI from any address
-* PCV Controller - Able to move PCV in and out of PCV Deposits
-* Revoker - Able to revoke any role
+Granting and revoking roles is gated for only Governor ⚖️ access. The Guardian🛡role can also revoke roles.
 
-The contract exposes setters only available to the governor, and getters open to all. One special setter allows the governor to create new roles, or update the admin of existing roles.
+## Read-Only Functions
 
-Another special setter allows the revoker role to revoke roles even though it is not the admin for those roles. The reason it works is because the Permissions contract is itself a governor, and the revoke override method has the contract do an external revoke call to itself.
+```javascript
+function isBurner(address _address) external view returns (bool);
+
+function isMinter(address _address) external view returns (bool);
+
+function isGovernor(address _address) external view returns (bool);
+
+function isRevoker(address _address) external view returns (bool);
+
+function isPCVController(address _address) external view returns (bool);
+```
+
+## State-Changing Functions <a id="state-changing-functions"></a>
+
+### Governor-Only⚖️
+
+```javascript
+function createRole(bytes32 role, bytes32 adminRole) external;
+
+function grantMinter(address minter) external;
+
+function grantBurner(address burner) external;
+
+function grantPCVController(address pcvController) external;
+
+function grantGovernor(address governor) external;
+
+function grantRevoker(address revoker) external;
+
+function revokeMinter(address minter) external;
+
+function revokeBurner(address burner) external;
+
+function revokePCVController(address pcvController) external;
+
+function revokeGovernor(address governor) external;
+
+function revokeRevoker(address revoker) external;
+```
+
+### Guardian-Only🛡
+
+```javascript
+function revokeOverride(bytes32 role, address account) external;
+```
 
