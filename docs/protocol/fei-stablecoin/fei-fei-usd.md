@@ -62,19 +62,37 @@ setting or unsetting an incentive contract for an incentivized address
 function incentiveContract(address account) external view returns (address);
 ```
 
+returns the mapped incentive contract if `account` is an incentivized address, otherwise returns the 0 address.
+
+{% hint style="info" %}
+if the 0 address has a mapped incentive contract, then this incentive contract is called for every single FEI transfer.
+{% endhint %}
+
 ## State-Changing Functions <a id="state-changing-functions"></a>
 
 ### Burner-Only🔥 
+
+### burnFrom
 
 ```javascript
 function burnFrom(address account, uint256 amount) external;
 ```
 
+Burns `amount` FEI from `account`. Reverts if the FEI balance of `account` is less than `amount`
+
+emits `Burning`
+
 ### Minter-Only💰 
+
+### mint
 
 ```javascript
 function mint(address account, uint256 amount) external;
 ```
+
+Mints `amount` FEI to `account`
+
+emits `Minting`
 
 ### Governor-Only⚖️ 
 
@@ -82,11 +100,25 @@ function mint(address account, uint256 amount) external;
 function setIncentiveContract(address account, address incentive) external;
 ```
 
+Sets the incentive contract `incentive` for `account`. If `incentive` is the 0 address this functions as an unset.
+
+emits `IncentiveContractUpdate`
+
 ### Public
+
+#### burn
 
 ```javascript
 function burn(uint256 amount) external;
+```
 
+Burns `amount` FEI from `msg.sender`. Reverts if the FEI balance of `msg.sender` is less than `amount`
+
+emits `Burning`
+
+#### permit
+
+```javascript
 function permit(
     address owner,
     address spender,
@@ -97,6 +129,8 @@ function permit(
     bytes32 s
 ) external;
 ```
+
+Sets the allowance for a `spender` for `value` FEI from `owner` via signature. Reverts if called after `deadline`
 
 
 

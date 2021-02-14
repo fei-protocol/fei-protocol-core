@@ -12,6 +12,8 @@ description: A reference to a Uniswap pair holding FEI
 
 UniRef is an abstract contract which references a Uniswap pool. It defines some basic utilities useful for contracts referencing Uniswap. It leverages the OracleRef contract to calculate various quantities relating to spot vs peg price
 
+![](../../.gitbook/assets/screen-shot-2021-02-14-at-12.40.56-pm.png)
+
 The contract allows for calculating uniswap quantities:
 
 * getReserves orders the reserves as \(fei, other\) and returns them. If the FEI balance of the pair contract exceeds the reserves, it uses the balance instead. This mitigates attack vectors which leverage multiple small uniswap transfers before executing a swap operation to evade burn fees.
