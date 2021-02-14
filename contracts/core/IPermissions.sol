@@ -19,7 +19,7 @@ interface IPermissions {
 
     function grantGovernor(address governor) external;
 
-    function grantRevoker(address revoker) external;
+    function grantGuardian(address guardian) external;
 
     function revokeMinter(address minter) external;
 
@@ -29,7 +29,7 @@ interface IPermissions {
 
     function revokeGovernor(address governor) external;
 
-    function revokeRevoker(address revoker) external;
+    function revokeGuardian(address guardian) external;
 
     // ----------- Revoker only state changing api -----------
 
@@ -43,7 +43,7 @@ interface IPermissions {
 
     function isGovernor(address _address) external view returns (bool);
 
-    function isRevoker(address _address) external view returns (bool);
+    function isGuardian(address _address) external view returns (bool);
 
     function isPCVController(address _address) external view returns (bool);
 }

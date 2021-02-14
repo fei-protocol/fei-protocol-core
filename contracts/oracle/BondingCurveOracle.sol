@@ -41,7 +41,7 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
 
     /// @notice sets the kill switch on the oracle feed
     /// @param _killSwitch the new value for the kill switch
-    function setKillSwitch(bool _killSwitch) external override onlyGovernor {
+    function setKillSwitch(bool _killSwitch) external override onlyGuardianOrGovernor {
         killSwitch = _killSwitch;
         emit KillSwitchUpdate(_killSwitch);
     }
