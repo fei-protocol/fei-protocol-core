@@ -10,5 +10,10 @@ The rational behind having a Guardian is that there can be issues in the protoco
 
 ## Responsibilities
 
-* revoke any role from any contract
+* revoke any role from any contract, except Governor⚖️
+* adjust bonding curve buffer
+* adjust oracle duration or kill switch
+* force a reweight or adjust reweight minimum distance
+* allow and block addresses from transferring to the ETH/FEI pair
+* Adjust incentive growth rate
 
