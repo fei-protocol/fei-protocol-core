@@ -1,6 +1,7 @@
 const {
   userAddress,
   governorAddress,
+  guardianAddress,
   BN,
   expectEvent,
   expectRevert,
@@ -180,13 +181,22 @@ describe('UniswapOracle', function () {
         expect(await this.oracle.killSwitch()).to.be.equal(true);
       });
 
+      it('Guardian set succeeds', async function() {
+        expectEvent(
+            await this.oracle.setKillSwitch(true, {from: guardianAddress}),
+            'KillSwitchUpdate',
+            { _killSwitch: true }
+          );
+        expect(await this.oracle.killSwitch()).to.be.equal(true);
+      });
+
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.oracle.setKillSwitch(false, {from: userAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.oracle.setKillSwitch(false, {from: userAddress}), "CoreRef: Caller is not a guardian or governor");
       });
     });
+
     describe('Duration', function() {
       it('Governor set succeeds', async function() {
-        await this.oracle.setDuration(1000, {from: governorAddress});
         expectEvent(
             await this.oracle.setDuration(1000, {from: governorAddress}),
             'DurationUpdate',
@@ -195,8 +205,17 @@ describe('UniswapOracle', function () {
         expect(await this.oracle.duration()).to.be.bignumber.equal(new BN(1000));
       });
 
+      it('Guardian set succeeds', async function() {
+        expectEvent(
+            await this.oracle.setDuration(1000, {from: guardianAddress}),
+            'DurationUpdate',
+            { _duration: '1000' }
+          );
+        expect(await this.oracle.duration()).to.be.bignumber.equal(new BN(1000));
+      });
+
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.oracle.setDuration(1000, {from: userAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.oracle.setDuration(1000, {from: userAddress}), "CoreRef: Caller is not a guardian or governor");
       });
     });
   });
