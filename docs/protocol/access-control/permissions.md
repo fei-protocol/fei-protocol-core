@@ -6,7 +6,7 @@ description: The access control module of Fei Protocol Core
 
 ## Contract
 
-[Permissions.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/core/Permissions.sol) implements IPermissions, [AccessControl](https://docs.openzeppelin.com/contracts/3.x/api/access#AccessControl)
+[Permissions.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/core/Permissions.sol) implements [IPermissions](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/core/IPermissions.sol), [AccessControl](https://docs.openzeppelin.com/contracts/3.x/api/access#AccessControl)
 
 ## Description
 

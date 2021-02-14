@@ -6,7 +6,7 @@ description: 'The access control, source of truth, and DAO treasury for Fei Prot
 
 ## Contract
 
-[Core.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/core/Core.sol) implements ICore, Permissions
+[Core.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/core/Core.sol) implements [ICore](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/core/ICore.sol), [Permissions](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/core/Permissions.sol)
 
 ## Description
 

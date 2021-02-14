@@ -21,12 +21,6 @@ To make a pull request with your changes, first create a branch with the name fo
 
 Members of the Fei Core Team and Fei community will review the changes, with major features having official audits from one of our audit partners. These audits will be sponsored by the core team, and you will get to work firsthand with the best auditors in the space.
 
-### Making Proposals
-
-See the Fei DAO section on how to make proposals and potentially having your proposal sponsored. 
-
-{% page-ref page="../governance/fei-dao.md" %}
-
 ## Ecosystem Development
 
 Fei Protocol is not an island. Our vision is to have many two-way integrations with other DeFi platforms including lending platforms, derivatives platforms, and AMMs. We also hope to have many community led bots, tooling, dashboards and even supporting features directly on Ethereum.

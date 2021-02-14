@@ -1,13 +1,31 @@
+---
+description: 'The protocol-owned, algorithmic reserve of Fei Protocol'
+---
+
 # Protocol Controlled Value
 
-#### PCV
+Protocol Controlled Value ****\(PCV\) is a categorization of Total Value Locked \(TVL\) that represents all assets that are not ultimately redeemable by users. Some commonly used examples of PCV are DAO treasuries and insurance funds. PCV can be extended conceptually to include any algorithmic management of protocol owned assets to facilitate protocol goals such as liquidity and stability.
 
-The ETH coming in at Genesis to the bonding curve will fund the Protocol Controlled Value \(PCV\) of Fei. Initially, 100% of this PCV will be used as FEI/ETH liquidity on Uniswap. The listing price and target peg for FEI on uniswap will use the bonding curve oracle mentioned in the previous section. Therefore FEI will be actually listing at a 10% discount to the FEI price received in the Genesis Group. We fully expect this discrepancy to be arbitraged away as the protocol incentives kick in and the thawing period ends.  
+## PCV Funding
 
+In general there are two ways for a protocol to fund PCV:
 
-The white paper describes having the bonding curve ETH going straight to Uniswap. However this is gas inefficient \(around 300k\) as each user purchase would also need to pay for a Uniswap liquidity provision. Thanks to a recommendation from Ashwin Ramachandran, we are splitting out this allocation to Uniswap into a separate flow available for keepers. This brings bonding curve purchases down to around 100k gas, a 66% reduction making it cheaper than most Uniswap purchases!  
+1. Fees for functionality
+2. Issuing a token
 
+Examples of the former include Compound and Aave insurance pools funded by a spread on borrowing interest rates.
 
-The way this works on the keeper side is that the allocate\(\) function will always be available for execution to send any ETH PCV to Uniswap. Even though it can be called any time, it will be incentivized once every 24 hours with a 500 FEI bonus for the caller.  
-****
+For the latter, examples include NXM token issuance, or just about any governance token in which the protocol holds some as a DAO treasury.
+
+The primary way Fei Protocol funds PCV is bonding curve FEI issuance. The bonding curve offers FEI in exchange for PCV such as ETH at an exchange rate determined by an oracle. It escrows this PCV until a keeper allocates it to various _PCV Deposit_ contracts.
+
+![](../../.gitbook/assets/bonding-curve-purchase.png)
+
+{% page-ref page="../bondingcurve/" %}
+
+## Generalized PCV
+
+Fei Protocol is designed to support generalized Protocol Controlled Value. The protocol can fundraise PCV in any ERC-20 token by issuing a bonding curve denominated in that asset, as long as there is a reliable oracle to handle pricing.
+
+_PCV Controllers_ are responsible for managing PCV among the various PCV Deposits. Future Fei Protocol upgrades can algorithmically adjust PCV based on market conditions or include unique two-way integrations with other protocols. These integrations can leveraging the utility tokens of other platforms or their functionality with other ERC-20s held by the protocol.
 

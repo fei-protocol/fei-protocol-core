@@ -1,26 +1,16 @@
+---
+description: A reference to a Uniswap pair holding FEI
+---
+
 # UniRef
 
 ## Contract
 
-[UniRef.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/UniRef.sol) implements [IUniRef](https://github.com/fei-protocol/fei-protocol-core/wiki/IUniRef), [OracleRef](https://github.com/fei-protocol/fei-protocol-core/wiki/OracleRef)
+[UniRef.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/UniRef.sol) implements [IUniRef](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/IUniRef.sol), [OracleRef](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/OracleRef.sol)
 
 ## Description
 
 UniRef is an abstract contract which references a Uniswap pool. It defines some basic utilities useful for contracts referencing Uniswap. It leverages the OracleRef contract to calculate various quantities relating to spot vs peg price
-
-## Events
-
-{% tabs %}
-{% tab title="PairUpdate" %}
-Referenced Uniswap pair contract update
-
-| type | param | description |
-| :--- | :--- | :--- |
-| address indexed | \_pair | new Uniswap pair contract |
-{% endtab %}
-{% endtabs %}
-
-## Implementation
 
 The contract allows for calculating uniswap quantities:
 
@@ -39,6 +29,18 @@ It also has utilities relating to the peg _O_:
 The goal is _\(R\_t + dTarget\)/\(R\_o - dOther\) = \(R\_t + dTarget\)^2 / k = O_ because this sets the new price post dTarget to O. Solving for \_dTarget= Sqrt\(O\_k\) - R\_t\*. We take the absolute value here and infer the direction based on whether above or below peg.
 
 * get the price deviation from peg before and after a hypothetical trade. The deviation is defined as _abs\(P - O / O\)_. The protocol only needs to know the deviation when underpegged. Therefore at or above the peg returns 0 for the deviation. 
+
+## Events
+
+{% tabs %}
+{% tab title="PairUpdate" %}
+Referenced Uniswap pair contract update
+
+| type | param | description |
+| :--- | :--- | :--- |
+| address indexed | \_pair | new Uniswap pair contract |
+{% endtab %}
+{% endtabs %}
 
 ## Read-Only Functions
 

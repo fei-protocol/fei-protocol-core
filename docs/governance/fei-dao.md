@@ -18,7 +18,7 @@ Here is a list of various parameter tunings and changes that the Fei DAO can mak
 * Set incentive growth rate
 * upgrade FEI or TRIBE
 * change [PCV](../protocol/protocol-controlled-value/) allocations
-* update [bonding curve](../protocol/trading/bondingcurve/bondingcurve.md) buffer and Scale target
+* update [bonding curve](../protocol/bondingcurve/bondingcurve.md) buffer and Scale target
 * adjust rewards from the [staking pool](../protocol/staking/)
 * upgrade oracles and other contracts throughout the system
 

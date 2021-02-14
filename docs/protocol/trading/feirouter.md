@@ -1,14 +1,16 @@
+---
+description: A Uniswap router for FEI/ETH swaps with incentive boundaries
+---
+
 # FeiRouter
 
 ## Contract
 
-FeiRouter.sol implements [IFeiRouter](https://github.com/fei-protocol/fei-protocol-core/wiki/IFeiRouter), [UniswapSingleEthRouter](https://github.com/fei-protocol/fei-protocol-core/wiki/UniswapSingleEthRouter)
+[FeiRouter.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/router/FeiRouter.sol) implements [IFeiRouter](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/router/FeiRouter.sol), [UniswapSingleEthRouter](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/router/UniswapSingleEthRouter.sol)
 
 ## Description
 
 A router for swapping FEI and ETH
-
-## Implementation
 
 The router implements methods for buying and selling Fei using the UniswapSingleEthRouter with a single added parameter.
 

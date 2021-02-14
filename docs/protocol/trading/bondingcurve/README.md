@@ -1,2 +1,0 @@
-# Bonding Curves
-

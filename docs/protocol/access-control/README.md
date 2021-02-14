@@ -38,7 +38,7 @@ Some example Minters:
 
 {% page-ref page="../protocol-controlled-value/ethuniswappcvdeposit.md" %}
 
-{% page-ref page="../trading/bondingcurve/ethbondingcurve.md" %}
+{% page-ref page="../bondingcurve/ethbondingcurve.md" %}
 
 ### Burner 🔥
 

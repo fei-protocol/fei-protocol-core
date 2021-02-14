@@ -1,8 +1,12 @@
+---
+description: A LinearTokenTimelock for TRIBE with the ability to sub-delegate locked tokens
+---
+
 # TimelockedDelegator
 
 ## Contract
 
-[TimelockedDelegator.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/dao/TimelockedDelegator.sol) implements [ITimelockedDelegator](https://github.com/fei-protocol/fei-protocol-core/wiki/ITimelockedDelegator), [LinearTokenTimelock](https://github.com/fei-protocol/fei-protocol-core/wiki/LinearTokenTimelock)
+[TimelockedDelegator.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/dao/TimelockedDelegator.sol) implements [ITimelockedDelegator](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/dao/ITimelockedDelegator.sol), [LinearTokenTimelock](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/utils/LinearTokenTimelock.sol)
 
 ## Events
 

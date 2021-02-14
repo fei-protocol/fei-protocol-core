@@ -1,8 +1,12 @@
+---
+description: A reference to an oracle contract
+---
+
 # OracleRef
 
 ## Contract
 
-[OracleRef.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/OracleRef.sol) implements [IOracleRef](https://github.com/fei-protocol/fei-protocol-core/wiki/IOracleRef), [CoreRef](https://github.com/fei-protocol/fei-protocol-core/wiki/CoreRef)
+[OracleRef.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/OracleRef.sol) implements [IOracleRef](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/IOracleRef.sol), [CoreRef](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/CoreRef.sol)
 
 ## Events
 

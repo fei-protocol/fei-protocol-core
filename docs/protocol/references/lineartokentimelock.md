@@ -1,8 +1,12 @@
+---
+description: A token timelock that releases continuously at the same rate
+---
+
 # LinearTokenTimelock
 
 ## Contract
 
-[LinearTokenTimelock.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/utils/LinearTokenTimelock.sol) implements [Timed](https://github.com/fei-protocol/fei-protocol-core/wiki/Timed)
+[LinearTokenTimelock.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/utils/LinearTokenTimelock.sol) implements [Timed](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/utils/Timed.sol)
 
 ## Description
 

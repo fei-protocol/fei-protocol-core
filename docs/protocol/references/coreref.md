@@ -1,8 +1,12 @@
+---
+description: A reference to Fei Core
+---
+
 # CoreRef
 
 ## Contract
 
-[CoreRef.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/CoreRef.sol) implements [ICoreRef](https://github.com/fei-protocol/fei-protocol-core/wiki/ICoreRef)
+[CoreRef.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/CoreRef.sol) implements [ICoreRef](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/ICoreRef.sol)
 
 ## Events
 

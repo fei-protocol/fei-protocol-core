@@ -1,3 +1,7 @@
+---
+description: A timer utility for keeping track of elapsed time within a window
+---
+
 # Timed
 
 ### Contract

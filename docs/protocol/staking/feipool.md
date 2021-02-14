@@ -1,8 +1,12 @@
+---
+description: A Pool for staking FEI/TRIBE Uniswap v2 LP tokens
+---
+
 # FeiPool
 
 ## Contract
 
-[FeiPool.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/pool/FeiPool.sol) implements [Pool](https://github.com/fei-protocol/fei-protocol-core/wiki/Pool), [CoreRef](https://github.com/fei-protocol/fei-protocol-core/wiki/CoreRef)
+[FeiPool.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/pool/FeiPool.sol) implements [Pool](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/pool/Pool.sol), [CoreRef](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/CoreRef.sol)
 
 ## Description
 

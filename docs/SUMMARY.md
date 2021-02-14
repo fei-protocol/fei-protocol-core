@@ -8,7 +8,7 @@
 ## Developers
 
 * [Development Guide](developers/development-guide.md)
-* [Feature Ideas](developers/feature-ideas.md)
+* [Feature Ideas \(TODO\)](developers/feature-ideas.md)
 
 ## Protocol
 
@@ -23,10 +23,10 @@
   * [EthUniswapPCVDeposit](protocol/protocol-controlled-value/ethuniswappcvdeposit.md)
   * [UniswapPCVDeposit](protocol/protocol-controlled-value/uniswappcvdeposit.md)
   * [EthUniswapPCVController](protocol/protocol-controlled-value/ethuniswappcvcontroller.md)
+* [Bonding Curves](protocol/bondingcurve/README.md)
+  * [EthBondingCurve](protocol/bondingcurve/ethbondingcurve.md)
+  * [BondingCurve](protocol/bondingcurve/bondingcurve.md)
 * [Trading](protocol/trading/README.md)
-  * [Bonding Curves](protocol/trading/bondingcurve/README.md)
-    * [EthBondingCurve](protocol/trading/bondingcurve/ethbondingcurve.md)
-    * [BondingCurve](protocol/trading/bondingcurve/bondingcurve.md)
   * [FeiRouter](protocol/trading/feirouter.md)
   * [UniswapSingleEthRouter](protocol/trading/uniswapsingleethrouter.md)
 * [Oracles](protocol/oracles/README.md)

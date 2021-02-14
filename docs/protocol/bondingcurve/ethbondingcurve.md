@@ -1,18 +1,16 @@
+---
+description: An ETH specific FEI bonding curve
+---
+
 # EthBondingCurve
 
 ## Contract
 
-[EthBondingCurve.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/bondingcurve/EthBondingCurve.sol) implements [BondingCurve](https://github.com/fei-protocol/fei-protocol-core/wiki/BondingCurve)
+[EthBondingCurve.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/bondingcurve/EthBondingCurve.sol) implements [BondingCurve](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/bondingcurve/BondingCurve.sol)
 
 ## Description
 
 A bonding curve implementation for purchasing FEI with ETH
-
-## [Access Control](../../access-control/) 
-
-* Minter💰
-
-## Implementation
 
 In the whitepaper, the price function is `(X/S)^1/2 * O` with X being the current FEI\_b, S being the Scale target and O being the oracle price.
 
@@ -21,4 +19,8 @@ In the whitepaper, the price function is `(X/S)^1/2 * O` with X being the curren
 The scale target is 250,000,000 FEI.
 
 The oracle used is the [UniswapOracle](https://github.com/fei-protocol/fei-protocol-core/wiki/UniswapOracle) as the goal of the bonding curve is to report relative to the true peg for pricing.
+
+## [Access Control](../access-control/) 
+
+* Minter💰
 
