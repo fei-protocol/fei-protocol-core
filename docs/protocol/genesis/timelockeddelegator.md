@@ -83,7 +83,7 @@ A reference to the [TRIBE](../../governance/tribe.md) contract.
 
 ## State-Changing Functions <a id="state-changing-functions"></a>
 
-### Beneficiary-Only 
+### Beneficiary-Only👑
 
 #### delegate
 

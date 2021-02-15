@@ -4,43 +4,59 @@ description: A timer utility for keeping track of elapsed time within a window
 
 # Timed
 
-### Contract
+## Contract
 
 [Timed.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/utils/Timed.sol)
 
-### Description
+## Description
 
 Abstract contract for managing timed events that complete after a period
-
-### Implementation
 
 The contract has a duration _d_ denominated in seconds. It has an effective timestamp _t_ on the range \[0,d\]. After the period has ended, _t_ stays fixed at _d_.
 
 When it is initialized, it sets the current block timestamp to _t=0_. The remaining time is _d-t_ and the completion condition is remaining = 0 \(_t=d_\).
 
+## Read-Only Functions
 
+### isTimeEnded
 
-
-
-```text
-function isTimeEnded() public view returns (bool) {
+```javascript
+function isTimeEnded() external view returns (bool);
 ```
 
-```text
-uint256 public startTime;
+Returns true if elapsed time _t_ is equal to the duration _d._ 
+
+### startTime
+
+```javascript
+function startTime() external view returns (uint256);
 ```
 
-```text
-uint256 public duration;
+Returns the starting block timestamp of the window.
+
+### duration
+
+```javascript
+function duration() external view returns (uint256);
 ```
 
-```text
-function timeSinceStart() public view returns (uint256) {
+Returns the duration _d_ of the window.
+
+### timeSinceStart
+
+```javascript
+function timeSinceStart() external view returns (uint256);
 ```
 
-```text
-function remainingTime() public view returns (uint256) {
+Returns the elapsed time _t_ since the startTime, with _d_ as the maximum.
+
+### remainingTime
+
+```javascript
+function remainingTime() external view returns (uint256);
 ```
 
+Returns the time remaining in the window _t - d_. 
 
+### 
 
