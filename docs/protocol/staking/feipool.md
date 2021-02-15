@@ -10,27 +10,29 @@ description: A Pool for staking FEI/TRIBE Uniswap v2 LP tokens
 
 ## Description
 
-A Pool contract which rewards staked FEI/TRIBE Uniswap LP token deposits with TRIBE tokens
+A [Pool](pool.md) contract which rewards staked FEI/TRIBE Uniswap LP token deposits with TRIBE tokens. Ownership is maintained by fungible FPOOL tokens.
 
-## Implementation
+The release schedule for the total reward amount _R_ of TRIBE is a linearly decreasing TRIBE distribution. The distribution function is:
 
-The release schedule for TRIBE is a linearly decreasing TRIBE distribution. The distribution function is _D\(x\) = 2R/d - 2Rx/d^2_ with a y intercept of 2R/d and a duration of d. This sets the total area under the curve to R which is the target release amount.
+![Distribution function for TRIBE](../../.gitbook/assets/screen-shot-2021-02-14-at-9.39.53-pm.png)
 
-We will set the "unreleased function" _U\(t\)_ equal to the integral from t to d of _D\(x\) dx_. This is the area under the distribution curve for the remainder of the period. Note that for t=d we have the output equal to 0 as all of the TRIBE should be released.
+This function has a duration of _d_ before it hits a 0 distribution rate. The area under the curve is _R,_ because the y-intercept is 2R/d, by simply multiplying base times height times 1/2.
 
-The contract follows the ERC20 specification with FPOOL as the token ticker
+We will set the "unreleased function" _U\(t\)_ equal to the area under this curve between the current elapsed time _t_  and the total duration _d._ Note that for t=d we have the output equal to 0 as all of the TRIBE should be released. The formula is as follows:
 
-The init function is callable post genesis period.
-
-Additionally, TRIBE can be withdrawn via governance in the event of an emergency or reallocation.
+![The unreleased function for FeiPool](../../.gitbook/assets/screen-shot-2021-02-14-at-9.43.38-pm.png)
 
 ## State-Changing Functions <a id="state-changing-functions"></a>
 
 ### Governor-Only⚖️
 
+#### governorWithdraw
+
 ```javascript
-function governorWithdraw(uint256 amount) external onlyGovernor {
-    tribe().transfer(address(core()), amount);
-}
+function governorWithdraw(uint256 amount) external;
 ```
+
+Withdraw `amount` TRIBE tokens from the pool to [Fei Core.](../access-control/core.md)
+
+
 

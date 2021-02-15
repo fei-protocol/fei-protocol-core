@@ -10,17 +10,7 @@ description: A fluid staking pool which rewards a different token than is staked
 
 ## Description
 
-The pool contract should take an initial reward token deposit _R_ and release to a staked token _S_ over time. _R_ and _S_ should be different tokens. Staking should be completely fluid and reward the user with R based on the time weighted S deployed in the pool. A staked deposit of size _s_ should earn the token release proportional to the size of _s_ relative to the total amount staked _S_ at time _t_.
-
-## Implementation
-
-Accounts can claim, deposit, or withdraw on behalf of another with approval. Required approvals:
-
-* `claim` - Pool tokens
-* `deposit` - Staked tokens
-* `withdraw` - Pool tokens
-
-Any withdrawn tokens \(staked or reward\) can be routed to a different destination address as well.
+The pool contract should take an initial reward token deposit _R_ and release to a staked token _S_ over time. _R_ and _S_ should be different tokens. Staking should be completely fluid and reward the user with R based on the time weighted S deployed in the pool.
 
 ## Events
 
@@ -59,44 +49,130 @@ Claim rewards and withdraw staked
 
 ## Read-Only Functions
 
+### rewardToken
+
 ```javascript
 function rewardToken() external view returns (IERC20);
+```
 
+Returns the address of the reward token as an interface.
+
+### totalReward
+
+```javascript
 function totalReward() external view returns (uint256);
+```
 
+Returns the total amount of rewards released over the entire window, including claimed, released, and unreleased.
+
+### redeemableReward
+
+```javascript
 function redeemableReward(address account)
     external
     view
     returns (uint256 amountReward, uint256 amountPool);
+```
 
+Returns the total `amountReward` of claimable `rewardToken` for address `account`, as well as the `amountPool` of Pool ERC-20 tokens that correspond and are redeemable.
+
+### releasedReward
+
+```javascript
 function releasedReward() external view returns (uint256);
+```
 
+Return the amount of `rewardToken` available for claiming by the pool. Calculated as `rewardBalance() - unreleasedReward()`.
+
+### unreleasedReward
+
+```javascript
 function unreleasedReward() external view returns (uint256);
+```
 
+The abstract unreleased reward function which can be customized for each implementation. Intuitively it should start at the `totalReward()` amount and then wind down to 0 over the `duration` of the window.
+
+### rewardBalance
+
+```javascript
 function rewardBalance() external view returns (uint256);
+```
 
+The amount of `rewardToken` held by the contract, released or unreleased.
+
+### claimedRewards
+
+```javascript
 function claimedRewards() external view returns (uint256);
+```
 
+The total amount of `rewardToken` already claimed by the Pool.
+
+### stakedToken
+
+```javascript
 function stakedToken() external view returns (IERC20);
+```
 
+The address of the staked ERC20 token as an interface
+
+### totalStaked
+
+```javascript
 function totalStaked() external view returns (uint256);
+```
 
+The total amount of `stakedToken` held in the contract by depositors.
+
+### stakedBalance
+
+```javascript
 function stakedBalance(address account) external view returns (uint256);
 ```
+
+Returns the amount of `stakedToken` deposited in the contract by `account`
 
 ## State-Changing Functions <a id="state-changing-functions"></a>
 
 ### Public
 
+#### deposit
+
+```javascript
+function deposit(address to, uint256 amount) external;
+```
+
+Deposits `amount` of the `stakedToken` and gives ownership and the Pool ERC-20 token to address `to`.
+
+emits `Deposit`
+
+#### claim
+
 ```javascript
 function claim(address from, address to) external returns (uint256);
+```
 
-function deposit(address to, uint256 amount) external;
+Claims available rewards from address `from` to address `to`. Claimable by an approved operator contract for the Pool ERC-20.
 
+emits `Claim`
+
+#### withdraw
+
+```javascript
 function withdraw(address to)
     external
     returns (uint256 amountStaked, uint256 amountReward);
+```
 
+Withdraws `amountStaked` of `stakedToken` and `amountReward` of `rewardToken` to address `to` based on the the Pool ERC-20 and staked balances of `msg.sender`
+
+emits `Withdraw`
+
+#### init
+
+```javascript
 function init() external;
 ```
+
+Starts the [Timed](../references/timed.md) for the reward release calculation. Only callable once.
 
