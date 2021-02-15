@@ -2,6 +2,7 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/SignedSafeMath.sol";
+import "@openzeppelin/contracts/utils/SafeCast.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "./OracleRef.sol";
 import "./IUniRef.sol";
@@ -16,6 +17,8 @@ abstract contract UniRef is IUniRef, OracleRef {
     using Babylonian for uint256;
     using SignedSafeMath for int256;
     using SafeMathCopy for uint256;
+    using SafeCast for uint256;
+    using SafeCast for int256;
 
     /// @notice the Uniswap router contract
     IUniswapV2Router02 public override router;
@@ -178,7 +181,8 @@ abstract contract UniRef is IUniRef, OracleRef {
         uint256 reserveOther
     ) internal pure returns (Decimal.D256 memory) {
         uint256 k = reserveFei.mul(reserveOther);
-        uint256 adjustedReserveFei = uint256(int256(reserveFei).add(amountFei));
+        int256 signedReservesFei = reserveFei.toInt256();
+        uint256 adjustedReserveFei = signedReservesFei.add(amountFei).toUint256();
         uint256 adjustedReserveOther = k / adjustedReserveFei;
         return Decimal.ratio(adjustedReserveFei, adjustedReserveOther); // alt: adjustedReserveFei^2 / k
     }
