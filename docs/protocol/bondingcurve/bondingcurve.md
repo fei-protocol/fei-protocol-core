@@ -190,6 +190,8 @@ function purchase(address to, uint256 amountIn)
 
 Purchase `amountOut` FEI along the bonding curve for `amountIn` ETH and send the FEI to address `to`.
 
+emits `Purchase`
+
 #### allocate
 
 ```javascript
@@ -197,6 +199,8 @@ function allocate() external;
 ```
 
 Allocate the PCV held by the bonding curve to the weighted PCV allocations returned by `getAllocation()`.
+
+emits `Allocate`
 
 ### Governor**- Or Guardian**-Only**⚖️🛡**
 
@@ -206,7 +210,9 @@ Allocate the PCV held by the bonding curve to the weighted PCV allocations retur
 function setBuffer(uint256 _buffer) external;
 ```
 
-Sets the buffer to `_buffer`
+Sets the buffer to `_buffer`. Must be less than `BUFFER_GRANULARITY`
+
+emits `BufferUpdate`
 
 ### Governor-Only**⚖️**
 
@@ -217,6 +223,8 @@ function setScale(uint256 _scale) external;
 ```
 
 Sets the Scale target to `_scale`
+
+emits `ScaleUpdate`
 
 #### **setAllocation**
 
