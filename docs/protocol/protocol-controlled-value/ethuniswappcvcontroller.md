@@ -16,23 +16,23 @@ A contract for moving reweighting Uniswap prices to the peg from a Uniswap PCV D
 
 Reweights have the goal of returning the Uniswap spot price of an associated PCV Deposit to the peg. The algorithm is as follows:
 
-* withdraw all existing PCV from the PCV Deposit
-* check if remaining LP exists, if so execute a trade with held assets to bring the spot price back up to peg
-* deposit remaining held balance back into the Uniswap PCV Deposit
-* burn excess held FEI
+1. withdraw 90% of the ETH from the UniswapPCVDeposit
+2. execute a trade with held ETH to bring the spot price back up to peg
+3. deposit remaining ETH balance back into the Uniswap PCV Deposit
+4. burn excess held FEI
 
 ### Reweight eligibility
 
-The reweight is open to the public when both of the following conditions are met:
+The reweight is open to a keeper when both of the following conditions are met:
 
 * the distance from the peg is at least the minimum \(initially 1%\)
-* the [UniswapIncentive](https://github.com/fei-protocol/fei-protocol-core/wiki/UniswapIncentive) contract is at incentive parity
+* the [UniswapIncentive](../fei-stablecoin/uniswapincentive.md) contract is at incentive parity
 
-Governor contracts can also force a reweight at any time. Governor can also update the minimum distance.
+Governor⚖️and Guardian🛡contracts can also force a reweight at any time, or update the minimum distance requirement.
 
 ### Reweight incentives
 
-Open reweight executions are incentivized with 500 FEI if the controller is appointed as a minter. Governance can adjust this incentive amount
+Reweight executions are incentivized with 500 FEI if the controller is appointed as a Minter💰. Governance can adjust this incentive amount.
 
 ## [Access Control](../access-control/) 
 
@@ -77,38 +77,96 @@ Change the min distance for a reweight
 
 ## Read-Only Functions
 
+### pcvDeposit
+
 ```javascript
 function pcvDeposit() external returns (IPCVDeposit);
+```
 
+Returns the PCV Deposit address this controller focuses on reweighting.
+
+### incentiveContract
+
+```javascript
 function incentiveContract() external returns (IUniswapIncentive);
+```
 
+Returns the [UniswapIncentive](../fei-stablecoin/uniswapincentive.md) contract used to determine reweight eligibility.
+
+### reweightIncentiveAmount
+
+```javascript
 function reweightIncentiveAmount() external returns (uint256);
+```
 
+Returns the amount of FEI received by any keeper who successfully executes a reweight.
+
+### reweightEligible
+
+```javascript
 function reweightEligible() external view returns (bool);
+```
 
+Returns true when the distance from the peg is at least the minimum \(initially 1%\) and the [UniswapIncentive](../fei-stablecoin/uniswapincentive.md) contract is at incentive parity, otherwise false.
+
+### minDistanceForReweight
+
+```javascript
 function minDistanceForReweight()
     external
     view
     returns (Decimal.D256 memory);
 ```
 
+Returns the minimum percent distance from the peg needed for keepers to reweight the peg.
+
 ## State-Changing Functions <a id="state-changing-functions"></a>
 
 ### Public
+
+#### reweight
 
 ```javascript
 function reweight() external;
 ```
 
-### Governor-Only⚖️
+Executes a reweight if `reweightEligible.`
+
+Rewards the caller with 500 FEI.
+
+### Governor- Or Guardian-Only⚖️🛡
+
+#### forceReweight
 
 ```javascript
 function forceReweight() external;
+```
 
-function setPCVDeposit(address _pcvDeposit) external;
+Forces a reweight execution. No FEI incentive for doing this. Fails if the Uniswap spot price is already at or above the peg.
 
-function setReweightIncentive(uint256 amount) external;
+#### setReweightMinDistance
 
+```javascript
 function setReweightMinDistance(uint256 basisPoints) external;
 ```
+
+Sets the minimum distance from the peg for a reweight to be eligible to `basisPoints`, measured in basis points \(i.e. 1/10000\).
+
+### Governor-Only⚖️
+
+#### setPCVDeposit
+
+```javascript
+function setPCVDeposit(address _pcvDeposit) external;
+```
+
+Sets the target PCV Deposit contract for reweight to `_pcvDeposit`
+
+#### setReweightIncentive
+
+```javascript
+function setReweightIncentive(uint256 amount) external;
+```
+
+Sets the keeper incentive for executing a reweight to `amount` of FEI
 

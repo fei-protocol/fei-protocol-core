@@ -12,9 +12,9 @@ description: A PCV deposit for holding Uniswap liquidity
 
 An abstract contract for storing PCV in a Uniswap FEI liquidity pair
 
-Uniswap PCV deposits should be able to receive PCV, mint the corresponding amount of FEI to match spot, and deposit to Uniswap. They should also be able to withdraw and read in the amount of non-fei PCV on unsiwap held in the contract.
+Uniswap PCV deposits should be able to receive PCV, mint the corresponding amount of FEI to match the Uniswap spot price, and deposit to Uniswap. They should also be able to withdraw and read in the amount of non-FEI PCV on Uniswap held in the contract.
 
-When withdrawing, any excess fei held should be burned
+When withdrawing, any excess FEI held should be burned.
 
 When depositing, if no existing LP exists then the oracle price should be used. The oracle should be a [BondingCurveOracle](https://github.com/fei-protocol/fei-protocol-core/wiki/BondingCurveOracle) subject to thawing and the bonding curve price.
 
@@ -51,6 +51,10 @@ Withdrawal of PCV
 function totalValue() external view returns (uint256);
 ```
 
+Returns the effective amount of non-FEI PCV held by the contract. 
+
+For example, if the deposit holds 50% of all ETH/FEI liquidity on Uniswap, and there are 100,000 ETH in Uniswap, the function should return 50,000e18 wei.
+
 ## State-Changing Functions <a id="state-changing-functions"></a>
 
 ### Public
@@ -59,9 +63,17 @@ function totalValue() external view returns (uint256);
 function deposit(uint256 amount) external payable;
 ```
 
+Deposits `amount` PCV into Uniswap by minting the necessary amount of FEI to make the liquidity provision.
+
+For example, if there are 50,000 ETH and 100,000,000 FEI on Uniswap, and the protocol receives another 500 ETH to deposit, the protocol will mint another 1,000,000 FEI to deposit at the current 2000 FEI/ETH spot price.
+
 ### PCV Controller-Only ⚙️
 
 ```javascript
 function withdraw(address to, uint256 amount) external;
 ```
+
+Withdraws `amount` PCV from Uniswap to address `to` by withdrawing the necessary amount of liquidity and burning the corresponding FEI.
+
+For example, if the protocol owns 50,000 ETH and 100,000,000 FEI worth of liquidity on Uniswap, a withdrawal of 500 ETH would liquidate 1% of the LP shares and burn the extra 1,000,000 FEI received before transferring the 500 ETH.
 

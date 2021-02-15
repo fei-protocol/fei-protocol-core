@@ -10,15 +10,21 @@ description: An ETH specific FEI bonding curve
 
 ## Description
 
-A bonding curve implementation for purchasing FEI with ETH
+A bonding curve implementation for purchasing FEI with ETH.
 
-In the whitepaper, the price function is `(X/S)^1/2 * O` with X being the current FEI\_b, S being the Scale target and O being the oracle price.
+Let _x_ be the current amount of FEI issued from the bonding curve, _S_ be the Scale target and _O_ be the oracle price reported as underlying per FEI. The price function used is:
 
-`k` below is out of scope for OpenZeppelin audit The implementation differs slightly from the whitepaper in that there is a shift variable `k` which starts us off further along the curve. The adjusted price formula looks like `((X+k)/(S+k))^1/2 * O`. The integral solved for the upper bound from current level of supply `C` + the `k` shift is equal to [link](https://ibb.co/3mrX90r)
+![Price function for FEI/ETH bonding curve](../../.gitbook/assets/screen-shot-2021-02-14-at-4.11.48-pm.png)
 
-The scale target is 250,000,000 FEI.
+The "k" shift is an additional feature since the white paper release. It helps shift the starting price upward so the protocol can retain more [PCV](../protocol-controlled-value/). K is initially set to `S/3` which makes the starting price $0.50 per FEI.
 
-The oracle used is the [UniswapOracle](https://github.com/fei-protocol/fei-protocol-core/wiki/UniswapOracle) as the goal of the bonding curve is to report relative to the true peg for pricing.
+The amount of FEI out for a given quantity of ETH input _Q_ is equal to the following:
+
+![](../../.gitbook/assets/bonding-curve-integral-with-shift.png)
+
+The Scale target is 100,000,000 FEI.
+
+The oracle used is the [UniswapOracle](https://github.com/fei-protocol/fei-protocol-core/wiki/UniswapOracle).
 
 ## [Access Control](../access-control/) 
 

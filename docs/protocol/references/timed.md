@@ -18,3 +18,29 @@ The contract has a duration _d_ denominated in seconds. It has an effective time
 
 When it is initialized, it sets the current block timestamp to _t=0_. The remaining time is _d-t_ and the completion condition is remaining = 0 \(_t=d_\).
 
+
+
+
+
+```text
+function isTimeEnded() public view returns (bool) {
+```
+
+```text
+uint256 public startTime;
+```
+
+```text
+uint256 public duration;
+```
+
+```text
+function timeSinceStart() public view returns (uint256) {
+```
+
+```text
+function remainingTime() public view returns (uint256) {
+```
+
+
+
