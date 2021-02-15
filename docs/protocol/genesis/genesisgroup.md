@@ -14,7 +14,7 @@ The Genesis Group Contract is responsible for launching Fei Protocol. It allows 
 
 ### FGEN
 
-The user's Genesis balances are managed by an ERC-20 token called FGEN. We refer to FGEN elsewhere as "Genesis shares". Because FGEN are fungible, they can be transferred and even sold if secondary markets arise.
+The user's Genesis balances are managed by an ERC-20 token called FGEN. We refer to FGEN elsewhere as "Genesis ETH". Because FGEN are fungible, they can be transferred and even sold if secondary markets arise.
 
 FGEN are used to account for the user's final outcome in Genesis.
 

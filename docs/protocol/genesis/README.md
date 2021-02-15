@@ -19,9 +19,9 @@ The Genesis Group contract is the entry point for users for participating in Gen
 * Emergency exit if the launch fails
 
 {% hint style="warning" %}
-Genesis entry is one-way. There is no way to redeem Genesis shares for ETH, unless the launch fails.
+Genesis entry is one-way. There is no way to redeem Genesis ETH for ETH, unless the launch fails.
 
-Likewise pre-commitment is one-way, no way to revert back to uncommitted.
+Likewise pre-commitment is one-way, no way to revert back to uncommitted Genesis ETH.
 {% endhint %}
 
 {% page-ref page="genesisgroup.md" %}
