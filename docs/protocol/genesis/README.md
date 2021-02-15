@@ -4,7 +4,7 @@ description: "The equal opportunity launch of Fei Protocol \U0001F680"
 
 # Genesis
 
-Fei Protocol Genesis starts at 0:00 UTC on March 1, 2021. It lasts for 3 days, ending March 4, 2021. Read the Medium announcement for more high level details around Genesis:
+Fei Protocol Genesis starts at 0:00 UTC on March 4, 2021. It lasts for 3 days, ending March 7, 2021. Read the Medium announcement for more high level details around Genesis:
 
 &lt;Link to medium announcement&gt;
 
@@ -28,7 +28,7 @@ Likewise pre-commitment is one-way, no way to revert back to uncommitted.
 
 ## Initial DEX Offering \(IDO\)
 
-As part of the Genesis launch, Fei Protocol will list [FEI](../fei-stablecoin/) and [TRIBE](../../governance/tribe.md) on Uniswap. This will amount to 20% of the [TRIBE initial token distribution](). The liquidity for this IDO will be timelocked and owned by the Fei Core Team. See the section below for more details on the token timelocks.
+As part of the Genesis launch, Fei Protocol will list [FEI](../fei-stablecoin/) and [TRIBE](../../governance/tribe.md) on Uniswap. This will amount to 20% of the [TRIBE initial token distribution](https://medium.com/fei-protocol/the-tribe-token-distribution-887f26169e44). The liquidity for this IDO will be timelocked and owned by the Fei Core Team. See the section below for more details on the token timelocks.
 
 {% page-ref page="ido.md" %}
 
