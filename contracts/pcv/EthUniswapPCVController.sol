@@ -96,7 +96,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
     function setReweightMinDistance(uint256 basisPoints)
         external
         override
-        onlyGuardianOrGovernor
+        onlyGovernor
     {
         _minDistanceForReweight = Decimal.ratio(
             basisPoints,

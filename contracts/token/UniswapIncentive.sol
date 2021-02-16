@@ -96,7 +96,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     function setTimeWeightGrowth(uint32 growthRate)
         external
         override
-        onlyGuardianOrGovernor
+        onlyGovernor
     {
         TimeWeightInfo memory tw = timeWeightInfo;
         timeWeightInfo = TimeWeightInfo(

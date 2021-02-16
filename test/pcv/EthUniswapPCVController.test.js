@@ -234,17 +234,8 @@ describe('EthUniswapPCVController', function () {
         expect((await this.pcvController.minDistanceForReweight())[0]).to.be.bignumber.equal('5000000000000000');
       });
 
-      it('Guardian set succeeds', async function() {
-        expectEvent(
-          await this.pcvController.setReweightMinDistance(50, {from: guardianAddress}),
-          'ReweightMinDistanceUpdate',
-          { _basisPoints: '50' }
-        );
-        expect((await this.pcvController.minDistanceForReweight())[0]).to.be.bignumber.equal('5000000000000000');
-      });
-
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.pcvController.setReweightMinDistance(50, {from: userAddress}), "CoreRef: Caller is not a guardian or governor");
+        await expectRevert(this.pcvController.setReweightMinDistance(50, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
 
