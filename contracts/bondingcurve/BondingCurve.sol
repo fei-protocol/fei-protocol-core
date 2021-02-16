@@ -61,7 +61,7 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     }
 
     /// @notice sets the bonding curve price buffer
-    function setBuffer(uint256 _buffer) external override onlyGuardianOrGovernor {
+    function setBuffer(uint256 _buffer) external override onlyGovernor {
         require(
             _buffer < BUFFER_GRANULARITY,
             "BondingCurve: Buffer exceeds or matches granularity"

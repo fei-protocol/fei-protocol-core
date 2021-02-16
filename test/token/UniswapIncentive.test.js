@@ -856,17 +856,8 @@ describe('UniswapIncentive', function () {
         expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(1000));
       });
 
-      it('Guardian set succeeds', async function() {
-        expectEvent(
-          await this.incentive.setTimeWeightGrowth(1000, {from: guardianAddress}),
-          'GrowthRateUpdate',
-          {_growthRate: '1000'}
-        );
-        expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(1000));
-      });
-
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.incentive.setTimeWeightGrowth(1000, {from: userAddress}), "CoreRef: Caller is not a guardian or governor");
+        await expectRevert(this.incentive.setTimeWeightGrowth(1000, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
 
