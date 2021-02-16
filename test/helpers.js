@@ -15,6 +15,7 @@ const IDO = contract.fromArtifact('IDO');
 const TimelockedDelegator = contract.fromArtifact('TimelockedDelegator');
 const Tribe = contract.fromArtifact('Tribe');
 const UniswapOracle = contract.fromArtifact('UniswapOracle');
+const FeiStakingRewards = contract.fromArtifact('FeiStakingRewards');
 
 const MockBondingCurve = contract.fromArtifact('MockBondingCurve');
 const MockBondingCurveOracle = contract.fromArtifact('MockBCO');
@@ -78,6 +79,7 @@ module.exports = {
     Core,
     EthBondingCurve,
     Fei,
+    FeiStakingRewards,
     ForceEth,
     GenesisGroup,
     IDO,

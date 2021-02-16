@@ -6,7 +6,6 @@ import "./IGenesisGroup.sol";
 import "./IDOInterface.sol";
 import "../utils/Timed.sol";
 import "../refs/CoreRef.sol";
-import "../pool/IPool.sol";
 import "../oracle/IBondingCurveOracle.sol";
 import "../bondingcurve/IBondingCurve.sol";
 
@@ -18,8 +17,6 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
     IBondingCurve private bondingcurve;
 
     IBondingCurveOracle private bondingCurveOracle;
-
-    IPool private pool;
 
     IDOInterface private ido;
     uint256 private exchangeRateDiscount;
@@ -62,7 +59,6 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         uint256 maxTokens = uint256(-1);
         fei().approve(_ido, maxTokens);
 
-        pool = IPool(_pool);
         bondingCurveOracle = IBondingCurveOracle(_oracle);
 
         _initTimed();
@@ -166,9 +162,6 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         // bonding curve purchase and PCV allocation
         bondingcurve.purchase{value: balance}(genesisGroup, balance);
         bondingcurve.allocate();
-
-        // initialize staking pool and IDO
-        pool.init();
 
         ido.deploy(_feiTribeExchangeRate());
 
