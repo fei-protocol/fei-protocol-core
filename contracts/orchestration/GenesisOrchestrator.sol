@@ -9,24 +9,21 @@ contract GenesisOrchestrator is IGenesisOrchestrator, Ownable {
         address core,
         address ethBondingCurve,
         address ido,
-        address tribeFeiPair,
         address oracle,
         uint256 genesisDuration,
-        uint256 exhangeRateDiscount,
-        uint256 poolDuration
-    ) public override onlyOwner returns (address genesisGroup, address pool) {
+        uint256 exhangeRateDiscount
+    ) public override onlyOwner returns (address genesisGroup) {
         genesisGroup = address(
             new GenesisGroup(
                 core,
                 ethBondingCurve,
                 ido,
                 oracle,
-                pool,
                 genesisDuration,
                 exhangeRateDiscount
             )
         );
-        return (genesisGroup, address(0));
+        return (genesisGroup);
     }
 
     function detonate() public override onlyOwner {

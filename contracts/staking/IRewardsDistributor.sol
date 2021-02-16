@@ -29,6 +29,10 @@ interface IRewardsDistributor {
         bool _killSwitch
     );
 
+    event StakingContractUpdate(
+        address _stakingContract
+    );
+
     // ----------- State changing API -----------
 
     function drip() external returns (uint256);
@@ -45,6 +49,7 @@ interface IRewardsDistributor {
 
     function setKillSwitch(bool _killSwitch) external;
 
+    function setStakingContract(address _stakingRewards) external;
 
     // ----------- Getters -----------
 

@@ -34,7 +34,6 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
     /// @param _bondingcurve Bonding curve address for purchase
     /// @param _ido IDO contract to deploy
     /// @param _oracle Bonding curve oracle
-    /// @param _pool Staking Pool
     /// @param _duration duration of the Genesis Period
     /// @param _exchangeRateDiscount a divisor on the FEI/TRIBE ratio at Genesis to deploy to the IDO
     constructor(
@@ -42,7 +41,6 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         address _bondingcurve,
         address _ido,
         address _oracle,
-        address _pool,
         uint256 _duration,
         uint256 _exchangeRateDiscount
     )

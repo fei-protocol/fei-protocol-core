@@ -92,6 +92,11 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
         emit IncentiveUpdate(_incentiveAmount);
     }
 
+    function setStakingContract(address _stakingContract) external override onlyGovernor {
+        stakingContract = IStakingRewards(_stakingContract);
+        emit StakingContractUpdate(_stakingContract);
+    }
+
     function setKillSwitch(bool _killSwitch) external override onlyGuardianOrGovernor {
         killSwitch = _killSwitch;
         emit KillSwitchUpdate(_killSwitch);

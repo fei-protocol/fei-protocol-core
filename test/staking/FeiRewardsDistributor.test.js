@@ -15,7 +15,7 @@ const {
     expectApprox
   } = require('../helpers');
 
-  describe('EthBondingCurve', function () {
+  describe('FeiRewardsDistributor', function () {
 
     beforeEach(async function () {
       
@@ -178,6 +178,29 @@ const {
             });
             it('updates incentive amount', async function() {
                expect(await this.distributor.incentiveAmount()).to.be.bignumber.equal(this.incentiveAmount.div(new BN('2')));
+            });
+        });
+    });
+
+    describe('setStakingContract', function() {
+        describe('Non-governor', function() {
+            it('reverts', async function() {
+                await expectRevert(this.distributor.setStakingContract(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
+            });
+        });
+
+        describe('Governor', function() {
+            beforeEach(async function() {
+                expectEvent(
+                    await this.distributor.setStakingContract(userAddress, {from: governorAddress}),
+                    'StakingContractUpdate',
+                    {
+                        _stakingContract: userAddress
+                    }
+                );
+            });
+            it('updates incentive amount', async function() {
+               expect(await this.distributor.stakingContract()).to.be.equal(userAddress);
             });
         });
     });

@@ -15,7 +15,7 @@ const {
     getCore
   } = require('../helpers');
 
-  describe('EthBondingCurve', function () {
+  describe('FeiStakingRewards', function () {
 
     beforeEach(async function () {
       
