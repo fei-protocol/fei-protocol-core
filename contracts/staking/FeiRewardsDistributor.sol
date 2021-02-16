@@ -8,8 +8,6 @@ import "../external/Decimal.sol";
 import { Math } from  "@openzeppelin/contracts/math/Math.sol";
 import { SafeMath } from  "@openzeppelin/contracts/math/SafeMath.sol";
 
-// TODO kill switch
-
 /// @title Distributor for TRIBE rewards to the staking contract
 /// @author Fei Protocol
 /// @notice distributes TRIBE over time at a linearly decreasing rate
@@ -27,6 +25,8 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
 
     uint256 public override incentiveAmount;
 
+    bool public override killSwitch;
+
     constructor(
         address _core,
         address _stakingContract,
@@ -41,9 +41,16 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
         stakingContract = IStakingRewards(_stakingContract);
         dripFrequency = _frequency;
         incentiveAmount = _incentiveAmount;
+
+        // solhint-disable-next-line not-rely-on-time
+        lastDistributionTime = block.timestamp;
+
+        _initTimed();
     }
 
-    function drip() external override returns(uint256) {
+    function drip() public override postGenesis returns(uint256) {
+        require(!killSwitch, "FeiRewardsDistributor: drip disabled");
+
         // solhint-disable-next-line not-rely-on-time
         require(block.timestamp >= nextDripAvailable(), "FeiRewardsDistributor: Not passed drip frequency");
         // solhint-disable-next-line not-rely-on-time
@@ -66,6 +73,7 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
     /// @param amount the amount of tokens to send back to treasury
     function governorWithdrawTribe(uint256 amount) external override onlyGovernor {
         tribe().transfer(address(core()), amount);
+        emit TribeWithdraw(amount);
     }
 
     /// @notice sends tokens back to governance treasury. Only callable by governance
@@ -76,10 +84,17 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
 
     function setDripFrequency(uint256 _frequency) external override onlyGovernor {
         dripFrequency = _frequency;
+        emit FrequencyUpdate(_frequency);
     }
 
     function setIncentiveAmount(uint256 _incentiveAmount) external override onlyGovernor {
         incentiveAmount = _incentiveAmount;
+        emit IncentiveUpdate(_incentiveAmount);
+    }
+
+    function setKillSwitch(bool _killSwitch) external override onlyGuardianOrGovernor {
+        killSwitch = _killSwitch;
+        emit KillSwitchUpdate(_killSwitch);
     }
 
     function nextDripAvailable() public view override returns (uint256) {
@@ -108,13 +123,12 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
         if (isTimeEnded()) {
             return 0;
         }
-        uint256 elapsedTime = Math.min(timeSinceStart().add(dripFrequency), duration);
         
         return
             _unreleasedReward(
                 totalReward(),
                 duration,
-                elapsedTime
+                timeSinceStart()
             );
     }
 
@@ -127,7 +141,7 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
         uint256 _totalReward,
         uint256 _duration,
         uint256 _time
-    ) internal view returns (uint256) {
+    ) internal pure returns (uint256) {
         // 2R*t/d
         Decimal.D256 memory start =
             Decimal.ratio(_totalReward, _duration).mul(2).mul(_time);

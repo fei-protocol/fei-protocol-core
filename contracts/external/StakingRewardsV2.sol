@@ -135,6 +135,8 @@ contract StakingRewardsV2 is RewardsDistributionRecipient, ReentrancyGuard {
     // Added to support recovering LP Rewards from other systems such as BAL to be distributed to holders
     function recoverERC20(address tokenAddress, address to, uint256 tokenAmount) external onlyRewardsDistribution {
         require(tokenAddress != address(stakingToken), "Cannot withdraw the staking token");
+        require(tokenAddress != address(rewardsToken), "Cannot withdraw the rewards token");
+
         IERC20(tokenAddress).safeTransfer(to, tokenAmount);
         emit Recovered(tokenAddress, to, tokenAmount);
     }

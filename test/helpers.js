@@ -3,7 +3,13 @@ const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
 const { accounts, contract, web3 } = require('@openzeppelin/test-environment');
 
 const { BN, expectEvent, expectRevert, balance, time } = require('@openzeppelin/test-helpers');
-const { expect } = require('chai');
+
+var chai = require('chai');
+
+//use default BigNumber
+chai.use(require('chai-bn')(BN));
+
+const { expect } = chai;
 
 const BondingCurveOracle = contract.fromArtifact('BondingCurveOracle');
 const Core = contract.fromArtifact('Core');
@@ -16,17 +22,20 @@ const TimelockedDelegator = contract.fromArtifact('TimelockedDelegator');
 const Tribe = contract.fromArtifact('Tribe');
 const UniswapOracle = contract.fromArtifact('UniswapOracle');
 const FeiStakingRewards = contract.fromArtifact('FeiStakingRewards');
+const FeiRewardsDistributor = contract.fromArtifact('FeiRewardsDistributor');
 
 const MockBondingCurve = contract.fromArtifact('MockBondingCurve');
 const MockBondingCurveOracle = contract.fromArtifact('MockBCO');
 const MockCoreRef = contract.fromArtifact('MockCoreRef');
 const MockEthPCVDeposit = contract.fromArtifact('MockEthPCVDeposit');
+const MockERC20 = contract.fromArtifact('MockERC20');
 const MockIDO = contract.fromArtifact('MockIDO');
 const MockOracle = contract.fromArtifact('MockOracle');
 const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
 const MockPairTrade = contract.fromArtifact('MockUniswapV2PairTrade');
 const MockPool = contract.fromArtifact('MockPool');
 const MockRouter = contract.fromArtifact('MockRouter');
+const MockStakingRewards = contract.fromArtifact('MockStakingRewards');
 const MockTribe = contract.fromArtifact('MockTribe');
 
 
@@ -50,6 +59,11 @@ async function getCore(complete) {
 async function forceEth(to, amount) {
     let forceEth = await ForceEth.new({value: amount});
     await forceEth.forceEth(to);
+}
+
+async function expectApprox(actual, expected) {
+    let delta = expected.div(new BN('1000'));
+    expect(actual).to.be.bignumber.closeTo(expected, delta);
 }
 
 module.exports = {
@@ -79,6 +93,7 @@ module.exports = {
     Core,
     EthBondingCurve,
     Fei,
+    FeiRewardsDistributor,
     FeiStakingRewards,
     ForceEth,
     GenesisGroup,
@@ -91,14 +106,17 @@ module.exports = {
     MockBondingCurveOracle,
     MockCoreRef,
     MockEthPCVDeposit,
+    MockERC20,
     MockIDO,
     MockOracle, 
     MockPair,
     MockPairTrade,
     MockPool,
     MockRouter,
+    MockStakingRewards,
     MockTribe,
     // functions
     getCore,
-    forceEth
+    forceEth,
+    expectApprox
 }

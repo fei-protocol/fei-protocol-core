@@ -1,4 +1,3 @@
-const { use } = require('chai');
 const {
     userAddress,
     secondUserAddress,
@@ -12,6 +11,7 @@ const {
     Fei,
     Tribe,
     FeiStakingRewards,
+    MockERC20,
     getCore
   } = require('../helpers');
 
@@ -24,96 +24,634 @@ const {
   
       this.fei = await Fei.at(await this.core.fei());
       this.tribe = await Tribe.at(await this.core.tribe());
-        
+  
       this.decimals = new BN('1000000000000000000');
-      this.window = new BN('1000000000000000');
+      this.window = new BN('1000000');
 
-      this.rewardAmount = new BN('10').mul(this.decimals);
+      this.rewardAmount = new BN('100000000').mul(this.decimals);
       this.stakedAmount = this.decimals;
 
       this.staking = await FeiStakingRewards.new(
           governorAddress, 
           this.tribe.address,
-          this.fei.address,
+          this.fei.address, // Using FEI instead of LP tokens for simplicity
           this.window
         );
 
       await this.fei.mint(userAddress, this.stakedAmount, {from: minterAddress});
       await this.fei.mint(secondUserAddress, this.stakedAmount.mul(new BN('10')), {from: minterAddress});
-
+      
       await this.core.allocateTribe(this.staking.address, this.rewardAmount, {from: governorAddress});
     });
   
     describe('Init', function() {
-    //   it('average price', async function() {
-    //     expect((await this.bondingCurve.getAveragePrice('50000000'))[0]).to.be.equal('628090883348720719'); // about .63c
-    //   });
+      it('rewardsToken', async function() {
+        expect(await this.staking.rewardsToken()).to.be.equal(this.tribe.address);
+      });
   
-    //   it('current price', async function() {
-    //     expect((await this.bondingCurve.getCurrentPrice())[0]).to.be.equal('1000000000000000000000'); // .50c
-    //   });
+      it('current price', async function() {
+        expect(await this.staking.stakingToken()).to.be.equal(this.fei.address);
+      });
   
-    //   it('getAmountOut', async function() {
-    //     expect(await this.bondingCurve.getAmountOut('50000000')).to.be.bignumber.equal(new BN('39803156936'));
-    //   });
+      it('periodFinish', async function() {
+        expect(await this.staking.periodFinish()).to.be.bignumber.equal(new BN('0'));
+      });
   
-    //   it('scale', async function() {
-    //       expect(await this.bondingCurve.scale()).to.be.bignumber.equal(this.scale);
-    //       expect(await this.bondingCurve.atScale()).to.be.equal(false);
-    //   });
+      it('rewardRate', async function() {
+        expect(await this.staking.rewardRate()).to.be.bignumber.equal(new BN('0'));
+      });
   
-    //   it('getTotalPCVHeld', async function() {
-    //     expect(await this.bondingCurve.getTotalPCVHeld()).to.be.bignumber.equal(new BN('0'));
-    //   });
+      it('rewardsDuration', async function() {
+        expect(await this.staking.rewardsDuration()).to.be.bignumber.equal(this.window);
+      });
   
-    //   it('totalPurchased', async function() {
-    //     expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN('0'));
-    //   });
+      it('lastUpdateTime', async function() {
+        expect(await this.staking.lastUpdateTime()).to.be.bignumber.equal(new BN('0'));
+      });
   
-    //   it('buffer', async function() {
-    //     expect(await this.bondingCurve.buffer()).to.be.bignumber.equal(this.buffer);
-    //     expect(await this.bondingCurve.BUFFER_GRANULARITY()).to.be.bignumber.equal('10000');
-    //   });
+      it('rewardPerTokenStored', async function() {
+        expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('0'));
+      });
   
-    //   it('incentive amount', async function() {
-    //     expect(await this.bondingCurve.incentiveAmount()).to.be.bignumber.equal(this.incentiveAmount);
-    //   });
+      it('totalSupply', async function() {
+        expect(await this.staking.totalSupply()).to.be.bignumber.equal(new BN('0'));
+      });
+
+      it('getRewardForDuration', async function() {
+        expect(await this.staking.getRewardForDuration()).to.be.bignumber.equal(new BN('0'));
+      });
     });
 
-    describe('Test', function() {
+    describe('notifyRewardAmount', function() {
+        describe('non-owner', function() {
+            it('reverts', async function() {
+                await expectRevert(this.staking.notifyRewardAmount(this.rewardAmount, {from: userAddress}), "Caller is not RewardsDistribution contract");
+            });
+        });
+        describe('too much notified', function() {
+            it('reverts', async function() {
+                await expectRevert(this.staking.notifyRewardAmount(this.rewardAmount.mul(new BN('2')), {from: governorAddress}), "Provided reward too high");
+            });
+        });
+
+        describe('full amount', function() {
+            beforeEach(async function() {
+                expectEvent(
+                    await this.staking.notifyRewardAmount(this.rewardAmount, {from: governorAddress}), 
+                    'RewardAdded',
+                    {
+                        reward: this.rewardAmount,
+                    }
+                );
+            });
+            it('rewardPerToken', async function() {
+                expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('0'));
+            });
+
+            it('rewardRate', async function() {
+                expect(await this.staking.rewardRate()).to.be.bignumber.equal(new BN('100000000000000000000'));
+            });
+        });
+
+        describe('half', function() {
+            beforeEach(async function() {
+                this.notifiedAmount = this.rewardAmount.div(new BN('2'));
+                expectEvent(
+                    await this.staking.notifyRewardAmount(this.notifiedAmount, {from: governorAddress}), 
+                    'RewardAdded',
+                    {
+                        reward: this.notifiedAmount,
+                    }
+                );
+            });
+            it('rewardPerToken', async function() {
+                expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('0'));
+            });
+
+            it('rewardRate', async function() {
+                expect(await this.staking.rewardRate()).to.be.bignumber.equal(new BN('50000000000000000000'));
+            });
+
+            describe('second half', function() {
+                beforeEach(async function() {
+                    this.notifiedAmount = this.rewardAmount.div(new BN('2'));
+                    expectEvent(
+                        await this.staking.notifyRewardAmount(this.notifiedAmount, {from: governorAddress}), 
+                        'RewardAdded',
+                        {
+                            reward: this.notifiedAmount,
+                        }
+                    );
+                });
+                it('rewardPerToken', async function() {
+                    expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('0'));
+                });
+    
+                it('rewardRate', async function() {
+                    expect(await this.staking.rewardRate()).to.be.bignumber.equal(new BN('100000000000000000000'));
+                });
+            });
+        });
+    });
+
+    describe('recoverERC20', function() {
+        describe('non-owner', function() {
+            it('reverts', async function() {
+                await expectRevert(this.staking.recoverERC20(this.tribe.address, userAddress, this.rewardAmount, {from: userAddress}), "Caller is not RewardsDistribution contract");
+            });
+        });
+        describe('invalid token', function() {
+            it('rewards reverts', async function() {
+                await expectRevert(this.staking.recoverERC20(this.tribe.address, governorAddress, this.rewardAmount, {from: governorAddress}), "Cannot withdraw the rewards token");
+            });
+
+            it('staking reverts', async function() {
+                await expectRevert(this.staking.recoverERC20(this.fei.address, governorAddress, this.rewardAmount, {from: governorAddress}), "Cannot withdraw the staking token");
+            });
+        });
+
+        describe('full amount', function() {
+            beforeEach(async function() {
+                this.token = await MockERC20.new();
+                await this.token.mint(this.staking.address, this.stakedAmount);
+                expectEvent(
+                    await this.staking.recoverERC20(this.token.address, governorAddress, this.stakedAmount, {from: governorAddress}), 
+                    'Recovered',
+                    {
+                        amount: this.stakedAmount,
+                    }
+                );
+            });
+
+            it('succeeds', async function() {
+                expect(await this.token.balanceOf(this.staking.address)).to.be.bignumber.equal(new BN('0'));
+            });
+        });
+    });
+
+
+    describe('stake', function() {
         beforeEach(async function() {
             await this.staking.notifyRewardAmount(this.rewardAmount, {from: governorAddress});
             
             await this.fei.approve(this.staking.address, this.stakedAmount, {from: userAddress});
             await this.fei.approve(this.staking.address, this.stakedAmount.mul(new BN('100')), {from: secondUserAddress});
 
-            await this.staking.stake(this.stakedAmount, {from: userAddress});
+        });
+
+        describe('alone from start', async function() {
+            beforeEach(async function() {
+                expectEvent(
+                    await this.staking.stake(this.stakedAmount, {from: userAddress}),
+                    'Staked',
+                    {
+                        user: userAddress,
+                        amount: this.stakedAmount
+                    }
+                );
+                await time.increase(this.window);
+            });
+
+            it('earns rewards', async function() {
+                expect(await this.staking.earned(userAddress)).to.be.bignumber.equal(this.rewardAmount);
+            });
+
+            it('updated balances', async function() {
+                expect(await this.staking.totalSupply()).to.be.bignumber.equal(this.stakedAmount);
+                expect(await this.staking.balanceOf(userAddress)).to.be.bignumber.equal(this.stakedAmount);
+                expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+            });
+
+            it('updates rates', async function() {
+                expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('0'));
+                expect(await this.staking.userRewardPerTokenPaid(userAddress)).to.be.bignumber.equal(new BN('0'));
+            });
+        });
+
+        describe('alone from halfway', async function() {
+            beforeEach(async function() {
+                await time.increase(this.window.div(new BN('2')));
+                expectEvent(
+                    await this.staking.stake(this.stakedAmount, {from: userAddress}),
+                    'Staked',
+                    {
+                        user: userAddress,
+                        amount: this.stakedAmount
+                    }
+                );
+                await time.increase(this.window.div(new BN('2')));
+            });
+
+            it('earns rewards', async function() {
+                expect(await this.staking.earned(userAddress)).to.be.bignumber.equal(this.rewardAmount.div(new BN('2')));
+            });
+
+            it('updated balances', async function() {
+                expect(await this.staking.totalSupply()).to.be.bignumber.equal(this.stakedAmount);
+                expect(await this.staking.balanceOf(userAddress)).to.be.bignumber.equal(this.stakedAmount);
+                expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+            });
+
+            it('updates rates', async function() {
+                expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('0'));
+                expect(await this.staking.userRewardPerTokenPaid(userAddress)).to.be.bignumber.equal(new BN('0'));
+            });
+        });
+
+        describe('second from start 50/50', async function() {
+
+            beforeEach(async function() {
+                await this.staking.stake(this.stakedAmount, {from: secondUserAddress});
+
+                expectEvent(
+                    await this.staking.stake(this.stakedAmount, {from: userAddress}),
+                    'Staked',
+                    {
+                        user: userAddress,
+                        amount: this.stakedAmount
+                    }
+                );
+                await time.increase(this.window);
+            });
+
+            it('earns rewards', async function() {
+                expect(await this.staking.earned(userAddress)).to.be.bignumber.equal(this.rewardAmount.div(new BN('2')));
+            });
+
+            it('updated balances', async function() {
+                expect(await this.staking.totalSupply()).to.be.bignumber.equal(this.stakedAmount.mul(new BN('2')));
+                expect(await this.staking.balanceOf(userAddress)).to.be.bignumber.equal(this.stakedAmount);
+                expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+            });
+
+            it('updates rates', async function() {
+                expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('0'));
+                expect(await this.staking.userRewardPerTokenPaid(userAddress)).to.be.bignumber.equal(new BN('0'));
+            });
+        });
+
+        describe('second from halfway 50/50', async function() {
+            beforeEach(async function() {
+                await this.staking.stake(this.stakedAmount, {from: secondUserAddress}),
+                await time.increase(this.window.div(new BN('2')));
+                expectEvent(
+                    await this.staking.stake(this.stakedAmount, {from: userAddress}),
+                    'Staked',
+                    {
+                        user: userAddress,
+                        amount: this.stakedAmount
+                    }
+                );
+                await time.increase(this.window.div(new BN('2')));
+            });
+
+            it('earns rewards', async function() {
+                expect(await this.staking.earned(userAddress)).to.be.bignumber.equal(this.rewardAmount.div(new BN('4')));
+            });
+
+            it('updated balances', async function() {
+                expect(await this.staking.totalSupply()).to.be.bignumber.equal(this.stakedAmount.mul(new BN('2')));
+                expect(await this.staking.balanceOf(userAddress)).to.be.bignumber.equal(this.stakedAmount);
+                expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+            });
+
+            it('updates rates', async function() {
+                expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('50000000000000000000000000'));
+                expect(await this.staking.userRewardPerTokenPaid(userAddress)).to.be.bignumber.equal(new BN('50000000000000000000000000'));
+            });
+        });
+    });
+
+    describe('withdraw', function() {
+        beforeEach(async function() {
+            await this.staking.notifyRewardAmount(this.rewardAmount, {from: governorAddress});
+            
+            await this.fei.approve(this.staking.address, this.stakedAmount, {from: userAddress});
+            await this.fei.approve(this.staking.address, this.stakedAmount.mul(new BN('100')), {from: secondUserAddress});
 
         });
 
-        it('earns rewards', async function() {
-            await this.staking.stake(this.stakedAmount.mul(new BN('4')), {from: secondUserAddress});
-            await this.staking.stake(this.stakedAmount.mul(new BN('5')), {from: secondUserAddress});
+        describe('alone from start', async function() {
+            beforeEach(async function() {
+                expectEvent(
+                    await this.staking.stake(this.stakedAmount, {from: userAddress}),
+                    'Staked',
+                    {
+                        user: userAddress,
+                        amount: this.stakedAmount
+                    }
+                );
+                await time.increase(this.window);
+                expectEvent(
+                    await this.staking.withdraw(this.stakedAmount, {from: userAddress}),
+                    'Withdrawn',
+                    {
+                        user: userAddress,
+                        amount: this.stakedAmount
+                    }
+                );
+            });
 
-            await time.increase(this.window.div(new BN('4')));
-            await this.staking.exit({from: secondUserAddress});
+            it('earns rewards', async function() {
+                expect(await this.staking.rewards(userAddress)).to.be.bignumber.equal(this.rewardAmount);
+                expect(await this.staking.earned(userAddress)).to.be.bignumber.equal(this.rewardAmount);
+            });
 
-            await time.increase(this.window.div(new BN('2')));
-            // expect(await this.staking.earned(userAddress)).to.be.bignumber.equal(this.rewardAmount);
-            await this.staking.stake(this.stakedAmount.mul(new BN('9')), {from: secondUserAddress});
+            it('updated balances', async function() {
+                expect(await this.staking.totalSupply()).to.be.bignumber.equal(new BN('0'));
+                expect(await this.staking.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+                expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.stakedAmount);
+            });
+
+            it('updates rates', async function() {
+                expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('100000000000000000000000000'));
+                expect(await this.staking.userRewardPerTokenPaid(userAddress)).to.be.bignumber.equal(new BN('100000000000000000000000000'));
+            });
+        });
+
+        describe('alone from halfway', async function() {
+            beforeEach(async function() {
+                await time.increase(this.window.div(new BN('2')));
+                expectEvent(
+                    await this.staking.stake(this.stakedAmount, {from: userAddress}),
+                    'Staked',
+                    {
+                        user: userAddress,
+                        amount: this.stakedAmount
+                    }
+                );
+                await time.increase(this.window.div(new BN('2')));
+                expectEvent(
+                    await this.staking.withdraw(this.stakedAmount, {from: userAddress}),
+                    'Withdrawn',
+                    {
+                        user: userAddress,
+                        amount: this.stakedAmount
+                    }
+                );
+            });
+
+            it('earns rewards', async function() {
+                expect(await this.staking.rewards(userAddress)).to.be.bignumber.equal(this.rewardAmount.div(new BN('2')));
+                expect(await this.staking.earned(userAddress)).to.be.bignumber.equal(this.rewardAmount.div(new BN('2')));
+            });
+
+            it('updated balances', async function() {
+                expect(await this.staking.totalSupply()).to.be.bignumber.equal(new BN('0'));
+                expect(await this.staking.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+                expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.stakedAmount);
+            });
+
+            it('updates rates', async function() {
+                expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('50000000000000000000000000'));
+                expect(await this.staking.userRewardPerTokenPaid(userAddress)).to.be.bignumber.equal(new BN('50000000000000000000000000'));
+            });
+        });
+
+        describe('second from start 50/50', async function() {
+
+            beforeEach(async function() {
+                await this.staking.stake(this.stakedAmount, {from: secondUserAddress});
+                expectEvent(
+                    await this.staking.stake(this.stakedAmount, {from: userAddress}),
+                    'Staked',
+                    {
+                        user: userAddress,
+                        amount: this.stakedAmount
+                    }
+                );
+                await time.increase(this.window);
+                expectEvent(
+                    await this.staking.withdraw(this.stakedAmount, {from: userAddress}),
+                    'Withdrawn',
+                    {
+                        user: userAddress,
+                        amount: this.stakedAmount
+                    }
+                );
+            });
+
+            it('earns rewards', async function() {
+                expect(await this.staking.rewards(userAddress)).to.be.bignumber.equal(this.rewardAmount.div(new BN('2')));
+                expect(await this.staking.earned(userAddress)).to.be.bignumber.equal(this.rewardAmount.div(new BN('2')));
+            });
+
+            it('updated balances', async function() {
+                expect(await this.staking.totalSupply()).to.be.bignumber.equal(this.stakedAmount);
+                expect(await this.staking.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+                expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.stakedAmount);
+            });
+
+            it('updates rates', async function() {
+                expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('50000000000000000000000000'));
+                expect(await this.staking.userRewardPerTokenPaid(userAddress)).to.be.bignumber.equal(new BN('50000000000000000000000000'));
+            });
+        });
+
+        describe('second from halfway 50/50', async function() {
+            beforeEach(async function() {
+                await this.staking.stake(this.stakedAmount, {from: secondUserAddress}),
+                await time.increase(this.window.div(new BN('2')));
+                expectEvent(
+                    await this.staking.stake(this.stakedAmount, {from: userAddress}),
+                    'Staked',
+                    {
+                        user: userAddress,
+                        amount: this.stakedAmount
+                    }
+                );
+                await time.increase(this.window.div(new BN('2')));
+                expectEvent(
+                    await this.staking.withdraw(this.stakedAmount, {from: userAddress}),
+                    'Withdrawn',
+                    {
+                        user: userAddress,
+                        amount: this.stakedAmount
+                    }
+                );
+            });
+
+            it('earns rewards', async function() {
+                expect(await this.staking.rewards(userAddress)).to.be.bignumber.equal(this.rewardAmount.div(new BN('4')));
+                expect(await this.staking.earned(userAddress)).to.be.bignumber.equal(this.rewardAmount.div(new BN('4')));
+            });
+
+            it('updated balances', async function() {
+                expect(await this.staking.totalSupply()).to.be.bignumber.equal(this.stakedAmount);
+                expect(await this.staking.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+                expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.stakedAmount);
+            });
+
+            it('updates rates', async function() {
+                expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('75000000000000000000000000'));
+                expect(await this.staking.userRewardPerTokenPaid(userAddress)).to.be.bignumber.equal(new BN('75000000000000000000000000'));
+            });
+        });
+    });
+
+    describe('exit', function() {
+        beforeEach(async function() {
+            await this.staking.notifyRewardAmount(this.rewardAmount, {from: governorAddress});
             
-            await time.increase(this.window.div(new BN('4')));
+            await this.fei.approve(this.staking.address, this.stakedAmount, {from: userAddress});
+            await this.fei.approve(this.staking.address, this.stakedAmount.mul(new BN('100')), {from: secondUserAddress});
 
-            await this.staking.exit({from: secondUserAddress});
-            expect(await this.staking.earned(userAddress)).to.be.bignumber.equal(this.rewardAmount);
+        });
 
-            await this.staking.exit({from: userAddress});
-            expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(this.rewardAmount);
-            // expect(await this.staking.earned(userAddress)).to.be.bignumber.equal();
-            // expect(await this.staking.earned(userAddress)).to.be.bignumber.equal(this.rewardAmount.div(new BN('10')));
+        describe('alone from start', async function() {
+            beforeEach(async function() {
+                expectEvent(
+                    await this.staking.stake(this.stakedAmount, {from: userAddress}),
+                    'Staked',
+                    {
+                        user: userAddress,
+                        amount: this.stakedAmount
+                    }
+                );
+                await time.increase(this.window);
+                expectEvent(
+                    await this.staking.exit({from: userAddress}),
+                    'RewardPaid',
+                    {
+                        user: userAddress,
+                    }
+                );
+            });
 
+            it('earns rewards', async function() {
+                expect(await this.staking.rewards(userAddress)).to.be.bignumber.equal(new BN('0'));
+                expect(await this.staking.earned(userAddress)).to.be.bignumber.equal(new BN('0'));
+                expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(this.rewardAmount);
+            });
 
-            await time.increase(this.window);
+            it('updated balances', async function() {
+                expect(await this.staking.totalSupply()).to.be.bignumber.equal(new BN('0'));
+                expect(await this.staking.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+                expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.stakedAmount);
+            });
+
+            it('updates rates', async function() {
+                expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('100000000000000000000000000'));
+                expect(await this.staking.userRewardPerTokenPaid(userAddress)).to.be.bignumber.equal(new BN('100000000000000000000000000'));
+            });
+        });
+
+        describe('alone from halfway', async function() {
+            beforeEach(async function() {
+                await time.increase(this.window.div(new BN('2')));
+                expectEvent(
+                    await this.staking.stake(this.stakedAmount, {from: userAddress}),
+                    'Staked',
+                    {
+                        user: userAddress,
+                        amount: this.stakedAmount
+                    }
+                );
+                await time.increase(this.window.div(new BN('2')));
+                expectEvent(
+                    await this.staking.exit({from: userAddress}),
+                    'RewardPaid',
+                    {
+                        user: userAddress,
+                    }
+                );
+            });
+
+            it('earns rewards', async function() {
+                expect(await this.staking.rewards(userAddress)).to.be.bignumber.equal(new BN('0'));
+                expect(await this.staking.earned(userAddress)).to.be.bignumber.equal(new BN('0'));
+                expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(this.rewardAmount.div(new BN('2')));
+            });
+
+            it('updated balances', async function() {
+                expect(await this.staking.totalSupply()).to.be.bignumber.equal(new BN('0'));
+                expect(await this.staking.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+                expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.stakedAmount);
+            });
+
+            it('updates rates', async function() {
+                expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('50000000000000000000000000'));
+                expect(await this.staking.userRewardPerTokenPaid(userAddress)).to.be.bignumber.equal(new BN('50000000000000000000000000'));
+            });
+        });
+
+        describe('second from start 50/50', async function() {
+            beforeEach(async function() {
+                await this.staking.stake(this.stakedAmount, {from: secondUserAddress});
+                expectEvent(
+                    await this.staking.stake(this.stakedAmount, {from: userAddress}),
+                    'Staked',
+                    {
+                        user: userAddress,
+                        amount: this.stakedAmount
+                    }
+                );
+                await time.increase(this.window);
+                expectEvent(
+                    await this.staking.exit({from: userAddress}),
+                    'RewardPaid',
+                    {
+                        user: userAddress,
+                    }
+                );
+            });
+
+            it('earns rewards', async function() {
+                expect(await this.staking.rewards(userAddress)).to.be.bignumber.equal(new BN('0'));
+                expect(await this.staking.earned(userAddress)).to.be.bignumber.equal(new BN('0'));
+                expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(this.rewardAmount.div(new BN('2')));
+            });
+
+            it('updated balances', async function() {
+                expect(await this.staking.totalSupply()).to.be.bignumber.equal(this.stakedAmount);
+                expect(await this.staking.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+                expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.stakedAmount);
+            });
+
+            it('updates rates', async function() {
+                expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('50000000000000000000000000'));
+                expect(await this.staking.userRewardPerTokenPaid(userAddress)).to.be.bignumber.equal(new BN('50000000000000000000000000'));
+            });
+        });
+
+        describe('second from halfway 50/50', async function() {
+            beforeEach(async function() {
+                await this.staking.stake(this.stakedAmount, {from: secondUserAddress}),
+                await time.increase(this.window.div(new BN('2')));
+                expectEvent(
+                    await this.staking.stake(this.stakedAmount, {from: userAddress}),
+                    'Staked',
+                    {
+                        user: userAddress,
+                        amount: this.stakedAmount
+                    }
+                );
+                await time.increase(this.window.div(new BN('2')));
+                expectEvent(
+                    await this.staking.exit({from: userAddress}),
+                    'RewardPaid',
+                    {
+                        user: userAddress,
+                    }
+                );
+            });
+
+            it('earns rewards', async function() {
+                expect(await this.staking.rewards(userAddress)).to.be.bignumber.equal(new BN('0'));
+                expect(await this.staking.earned(userAddress)).to.be.bignumber.equal(new BN('0'));
+                expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(this.rewardAmount.div(new BN('4')));
+            });
+
+            it('updated balances', async function() {
+                expect(await this.staking.totalSupply()).to.be.bignumber.equal(this.stakedAmount);
+                expect(await this.staking.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+                expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.stakedAmount);
+            });
+
+            it('updates rates', async function() {
+                expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('75000000000000000000000000'));
+                expect(await this.staking.userRewardPerTokenPaid(userAddress)).to.be.bignumber.equal(new BN('75000000000000000000000000'));
+            });
         });
     });
 });

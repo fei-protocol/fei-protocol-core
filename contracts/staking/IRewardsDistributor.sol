@@ -14,15 +14,19 @@ interface IRewardsDistributor {
     );
 
     event TribeWithdraw(
-        address indexed _amount
+        uint256 _amount
     );
 
     event FrequencyUpdate(
-        address indexed _frequency
+        uint256 _frequency
     );
 
     event IncentiveUpdate(
         uint256 _incentiveAmount
+    );
+
+    event KillSwitchUpdate(
+        bool _killSwitch
     );
 
     // ----------- State changing API -----------
@@ -39,7 +43,12 @@ interface IRewardsDistributor {
 
     function setIncentiveAmount(uint256 _incentiveAmount) external;
 
+    function setKillSwitch(bool _killSwitch) external;
+
+
     // ----------- Getters -----------
+
+    function killSwitch() external view returns (bool);
 
     function totalReward() external view returns (uint256);
 
