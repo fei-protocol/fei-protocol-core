@@ -28,6 +28,8 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     /// @notice the granularity of the time weight and growth rate
     uint32 public constant override TIME_WEIGHT_GRANULARITY = 100_000;
 
+    uint public constant INCENTIVE_CAP_PERCENTAGE = 30;
+
     mapping(address => bool) private _exempt;
     mapping(address => bool) private _allowlist;
 
@@ -163,7 +165,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return _allowlist[account];
     }
 
-    /// @notice return true if burn incentive equals mint
+    /// @notice return true if mint equals adjusted burn incentive 
     function isIncentiveParity() public view override returns (bool) {
         uint32 weight = getTimeWeight();
         require(weight != 0, "UniswapIncentive: Incentive zero or not active");
@@ -176,7 +178,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         );
 
         Decimal.D256 memory incentive = _calculateBuyIncentiveMultiplier(deviation, weight);
-        Decimal.D256 memory penalty = _calculateSellPenaltyMultiplier(deviation);
+        Decimal.D256 memory penalty = _getAdjustedSellPenaltyMultiplier(deviation);
         return incentive.equals(penalty);
     }
 
@@ -309,15 +311,15 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         Decimal.D256 memory deviation,
         uint32 weight
     ) internal pure returns (Decimal.D256 memory) {
-        Decimal.D256 memory correspondingPenalty =
-            _calculateSellPenaltyMultiplier(deviation);
+        Decimal.D256 memory adjustedPenalty =
+            _getAdjustedSellPenaltyMultiplier(deviation);
         Decimal.D256 memory buyMultiplier =
             deviation.mul(uint256(weight)).div(
                 uint256(TIME_WEIGHT_GRANULARITY)
             );
 
-        if (correspondingPenalty.lessThan(buyMultiplier)) {
-            return correspondingPenalty;
+        if (adjustedPenalty.lessThan(buyMultiplier)) {
+            return adjustedPenalty;
         }
 
         return buyMultiplier;
@@ -329,6 +331,14 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         returns (Decimal.D256 memory)
     {
         return deviation.mul(deviation).mul(100); // m^2 * 100
+    }
+
+    function _getAdjustedSellPenaltyMultiplier(Decimal.D256 memory deviation)
+        internal
+        pure
+        returns (Decimal.D256 memory)
+    {
+        return _calculateSellPenaltyMultiplier(deviation).mul(INCENTIVE_CAP_PERCENTAGE).div(100);
     }
 
     function _updateTimeWeight(
@@ -358,12 +368,12 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
                 .asUint256();
         }
 
-        // cap incentive at max penalty
+        // cap incentive at adjusted max penalty
         uint256 maxWeight =
             finalDeviation
-                .mul(100)
+                .mul(INCENTIVE_CAP_PERCENTAGE)
                 .mul(uint256(TIME_WEIGHT_GRANULARITY))
-                .asUint256(); // m^2*100 (sell) = t*m (buy)
+                .asUint256(); // 30*m^2 (adjusted sell) = t*m (buy)
         updatedWeight = Math.min(updatedWeight, maxWeight);
         _setTimeWeight(updatedWeight.toUint32(), getGrowthRate(), true);
     }

@@ -47,7 +47,7 @@ contract CoreOrchestrator is Ownable {
     // ----------- Params -----------
     uint256 public constant EXCHANGE_RATE_DISCOUNT = 10;
 
-    uint32 public constant INCENTIVE_GROWTH_RATE = 75; // a bit over 1 unit per 5 hours assuming 13s block time
+    uint32 public constant INCENTIVE_GROWTH_RATE = 25; // a bit over 1 unit per 15 hours assuming 13s block time
 
     uint256 public constant SCALE = 100_000_000e18;
     uint256 public constant BONDING_CURVE_INCENTIVE = 500e18;
