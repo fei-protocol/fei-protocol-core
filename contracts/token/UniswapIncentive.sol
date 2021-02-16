@@ -1,7 +1,6 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/utils/SafeCast.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 import "./IUniswapIncentive.sol";
 import "../utils/SafeMath32.sol";
@@ -14,7 +13,6 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     using Decimal for Decimal.D256;
     using SafeMath32 for uint32;
     using SafeMathCopy for uint256;
-    using SafeCast for uint256;
 
     struct TimeWeightInfo {
         uint32 blockNo;
