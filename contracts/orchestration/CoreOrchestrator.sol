@@ -113,7 +113,7 @@ contract CoreOrchestrator is Ownable {
 
         require(_admin != address(0), "CoreOrchestrator: no admin");
 
-        core.grantRevoker(_admin);
+        core.grantGuardian(_admin);
 
         pcvDepositOrchestrator = IPCVDepositOrchestrator(
             _pcvDepositOrchestrator

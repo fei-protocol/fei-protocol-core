@@ -29,7 +29,7 @@ const MockRouter = contract.fromArtifact('MockRouter');
 const MockTribe = contract.fromArtifact('MockTribe');
 
 
-const [ userAddress, secondUserAddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress, genesisGroup, keeperAddress, pcvControllerAddress, minterAddress, burnerAddress, revokeAddress ] = accounts;
+const [ userAddress, secondUserAddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress, genesisGroup, keeperAddress, pcvControllerAddress, minterAddress, burnerAddress, guardianAddress ] = accounts;
 
 async function getCore(complete) {
     let core = await Core.new({from: governorAddress});
@@ -41,7 +41,7 @@ async function getCore(complete) {
     await core.grantMinter(minterAddress, {from: governorAddress});
     await core.grantBurner(burnerAddress, {from: governorAddress});
     await core.grantPCVController(pcvControllerAddress, {from: governorAddress});
-    await core.grantRevoker(revokeAddress, {from: governorAddress});
+    await core.grantGuardian(guardianAddress, {from: governorAddress});
 
     return core;
 }
@@ -72,7 +72,7 @@ module.exports = {
     pcvControllerAddress,
     minterAddress,
     burnerAddress,
-    revokeAddress,
+    guardianAddress,
     // contracts
     BondingCurveOracle,
     Core,

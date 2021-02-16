@@ -11,17 +11,17 @@ contract Permissions is IPermissions, AccessControl {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PCV_CONTROLLER_ROLE = keccak256("PCV_CONTROLLER_ROLE");
     bytes32 public constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
-    bytes32 public constant REVOKE_ROLE = keccak256("REVOKE_ROLE");
+    bytes32 public constant GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
 
     constructor() public {
-        // Appointed as a governor so revoker can have indirect access to revoke ability
+        // Appointed as a governor so guardian can have indirect access to revoke ability
         _setupGovernor(address(this));
 
         _setRoleAdmin(MINTER_ROLE, GOVERN_ROLE);
         _setRoleAdmin(BURNER_ROLE, GOVERN_ROLE);
         _setRoleAdmin(PCV_CONTROLLER_ROLE, GOVERN_ROLE);
         _setRoleAdmin(GOVERN_ROLE, GOVERN_ROLE);
-        _setRoleAdmin(REVOKE_ROLE, GOVERN_ROLE);
+        _setRoleAdmin(GUARDIAN_ROLE, GOVERN_ROLE);
     }
 
     modifier onlyGovernor() {
@@ -32,8 +32,8 @@ contract Permissions is IPermissions, AccessControl {
         _;
     }
 
-    modifier onlyRevoker() {
-        require(isRevoker(msg.sender), "Permissions: Caller is not a revoker");
+    modifier onlyGuardian() {
+        require(isGuardian(msg.sender), "Permissions: Caller is not a guardian");
         _;
     }
 
@@ -77,10 +77,10 @@ contract Permissions is IPermissions, AccessControl {
         grantRole(GOVERN_ROLE, governor);
     }
 
-    /// @notice grants revoker role to address
-    /// @param revoker new revoker
-    function grantRevoker(address revoker) external override onlyGovernor {
-        grantRole(REVOKE_ROLE, revoker);
+    /// @notice grants guardian role to address
+    /// @param guardian new guardian
+    function grantGuardian(address guardian) external override onlyGovernor {
+        grantRole(GUARDIAN_ROLE, guardian);
     }
 
     /// @notice revokes minter role from address
@@ -111,10 +111,10 @@ contract Permissions is IPermissions, AccessControl {
         revokeRole(GOVERN_ROLE, governor);
     }
 
-    /// @notice revokes revoker role from address
-    /// @param revoker ex revoker
-    function revokeRevoker(address revoker) external override onlyGovernor {
-        revokeRole(REVOKE_ROLE, revoker);
+    /// @notice revokes guardian role from address
+    /// @param guardian ex guardian
+    function revokeGuardian(address guardian) external override onlyGovernor {
+        revokeRole(GUARDIAN_ROLE, guardian);
     }
 
     /// @notice revokes a role from address
@@ -123,8 +123,10 @@ contract Permissions is IPermissions, AccessControl {
     function revokeOverride(bytes32 role, address account)
         external
         override
-        onlyRevoker
+        onlyGuardian
     {
+        require(role != GOVERN_ROLE, "Permissions: Guardian cannot revoke governor");
+
         // External call because this contract is appointed as a governor and has access to revoke
         this.revokeRole(role, account);
     }
@@ -170,11 +172,11 @@ contract Permissions is IPermissions, AccessControl {
         return hasRole(GOVERN_ROLE, _address);
     }
 
-    /// @notice checks if address is a revoker
+    /// @notice checks if address is a guardian
     /// @param _address address to check
-    /// @return true _address is a revoker
-    function isRevoker(address _address) public view override returns (bool) {
-        return hasRole(REVOKE_ROLE, _address);
+    /// @return true _address is a guardian
+    function isGuardian(address _address) public view override returns (bool) {
+        return hasRole(GUARDIAN_ROLE, _address);
     }
 
     function _setupGovernor(address governor) internal {

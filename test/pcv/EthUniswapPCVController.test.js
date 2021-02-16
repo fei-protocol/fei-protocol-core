@@ -15,7 +15,7 @@ const MockWeth = contract.fromArtifact('MockWeth');
 const MockIncentive = contract.fromArtifact('MockUniswapIncentive');
 
 describe('EthUniswapPCVController', function () {
-  const [ userAddress, governorAddress, minterAddress, beneficiaryAddress, genesisGroup ] = accounts;
+  const [ userAddress, governorAddress, minterAddress, guardianAddress, genesisGroup ] = accounts;
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit
 
   beforeEach(async function () {
@@ -46,6 +46,7 @@ describe('EthUniswapPCVController', function () {
     );
     await this.core.grantPCVController(this.pcvController.address, {from: governorAddress});
     await this.core.grantMinter(minterAddress, {from: governorAddress});
+    await this.core.grantGuardian(guardianAddress, {from: governorAddress});
     await this.fei.mint(this.pair.address, 50000000, {from: minterAddress});
   });
 
@@ -53,7 +54,7 @@ describe('EthUniswapPCVController', function () {
     beforeEach(async function() {
       await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
       await this.fei.mint(this.pcvController.address, 50000000, {from: minterAddress}); // seed Fei to burn
-      await this.pcvController.forceReweight({from: governorAddress});
+      await this.pcvController.forceReweight({from: guardianAddress});
     });
     it('pcvDeposit gets all ETH', async function() {
       expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(100000));
@@ -96,9 +97,9 @@ describe('EthUniswapPCVController', function () {
           await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
           await this.fei.mint(this.pcvController.address, 50000000, {from: minterAddress}); // seed Fei to burn
           expectEvent(
-            await this.pcvController.forceReweight({from: governorAddress}),
+            await this.pcvController.forceReweight({from: guardianAddress}),
             'Reweight',
-            { _caller: governorAddress }
+            { _caller: guardianAddress }
           );
         });
 
@@ -204,7 +205,7 @@ describe('EthUniswapPCVController', function () {
   describe('Access', function() {
     describe('Force Reweight', function() {
       it('Non-governor call fails', async function() {
-        await expectRevert(this.pcvController.forceReweight({from: userAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.pcvController.forceReweight({from: userAddress}), "CoreRef: Caller is not a guardian or governor");
       });
     });
 
@@ -233,8 +234,17 @@ describe('EthUniswapPCVController', function () {
         expect((await this.pcvController.minDistanceForReweight())[0]).to.be.bignumber.equal('5000000000000000');
       });
 
+      it('Guardian set succeeds', async function() {
+        expectEvent(
+          await this.pcvController.setReweightMinDistance(50, {from: guardianAddress}),
+          'ReweightMinDistanceUpdate',
+          { _basisPoints: '50' }
+        );
+        expect((await this.pcvController.minDistanceForReweight())[0]).to.be.bignumber.equal('5000000000000000');
+      });
+
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.pcvController.setReweightMinDistance(50, {from: userAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.pcvController.setReweightMinDistance(50, {from: userAddress}), "CoreRef: Caller is not a guardian or governor");
       });
     });
 

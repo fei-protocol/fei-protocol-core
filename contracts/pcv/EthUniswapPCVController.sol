@@ -72,7 +72,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
     }
 
     /// @notice reweights regardless of eligibility
-    function forceReweight() external override onlyGovernor {
+    function forceReweight() external override onlyGuardianOrGovernor {
         _reweight();
     }
 
@@ -96,7 +96,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
     function setReweightMinDistance(uint256 basisPoints)
         external
         override
-        onlyGovernor
+        onlyGuardianOrGovernor
     {
         _minDistanceForReweight = Decimal.ratio(
             basisPoints,

@@ -88,7 +88,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     function setSellAllowlisted(address account, bool isAllowed)
         external
         override
-        onlyGovernor
+        onlyGuardianOrGovernor
     {
         _allowlist[account] = isAllowed;
         emit SellAllowedAddressUpdate(account, isAllowed);
@@ -98,7 +98,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     function setTimeWeightGrowth(uint32 growthRate)
         external
         override
-        onlyGovernor
+        onlyGuardianOrGovernor
     {
         TimeWeightInfo memory tw = timeWeightInfo;
         timeWeightInfo = TimeWeightInfo(
@@ -111,7 +111,6 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     }
 
     /// @notice sets all of the time weight parameters
-    // @param blockNo the stored last block number of the time weight
     /// @param weight the stored last time weight
     /// @param growth the growth rate of the time weight per block
     /// @param active a flag signifying whether the time weight is currently growing or not

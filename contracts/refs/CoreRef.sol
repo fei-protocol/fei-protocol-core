@@ -53,6 +53,15 @@ abstract contract CoreRef is ICoreRef {
         _;
     }
 
+    modifier onlyGuardianOrGovernor() {
+        require(
+            _core.isGovernor(msg.sender) ||
+            _core.isGuardian(msg.sender),
+            "CoreRef: Caller is not a guardian or governor"
+        );
+        _;
+    }
+
     modifier onlyFei() {
         require(msg.sender == address(fei()), "CoreRef: Caller is not FEI");
         _;
