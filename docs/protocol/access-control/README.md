@@ -58,7 +58,7 @@ PCV Controller Example:
 
 ### Guardian 🛡️
 
-The Guardian enables quick feature shutdowns during unforeseen events. It can revoke any role from the above described role types. It can adjust and shut off additional protocol parameters. It cannot manage PCV or mint FEI.
+The Guardian enables quick feature shutdowns during unforeseen events. It can revoke any role from the above described role types. It can also shut off additional protocol functionality, and force reweights. It cannot manage PCV or mint FEI.
 
 {% page-ref page="../../governance/fei-guardian.md" %}
 
