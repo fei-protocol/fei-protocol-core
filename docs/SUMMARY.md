@@ -3,7 +3,7 @@
 * [Overview](README.md)
 * [Audit Reports](audit.md)
 * [White Paper](whitepaper.md)
-* [Bug Bounty](bug-bounty.md)
+* [Bug Bounties](bug-bounty.md)
 
 ## Developers
 

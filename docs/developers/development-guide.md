@@ -1,12 +1,14 @@
 ---
-description: A help manual for contributing to Fei Protocol and the broader FEI ecosystem
+description: >-
+  A manual on how to start contributing to the Fei Protocol and the broader FEI
+  ecosystem
 ---
 
 # Development Guide
 
 ## Protocol Development
 
-Fei Protocol is completely controlled by the DAO at launch. The Fei Core Team has established the following suggested workflow for making protocol changes:
+Fei Protocol is completely controlled by the DAO at launch. The Fei Core Team has established the following suggested workflows for making protocol changes:
 
 1. Propose idea in [\#development in Discord](https://discord.gg/p4jmUATf4C)
 2. Informal discussion in Discord
