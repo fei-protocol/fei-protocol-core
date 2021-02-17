@@ -1,12 +1,12 @@
 ---
-description: The Core access control module to Fei Protocol
+description: Fei Protocol's Core access control module
 ---
 
 # Access Control
 
-Fei Protocol uses access control to define which contracts in the system have what responsibilities.
+Fei Protocol uses access control to define the system's contracts responsibilities.
 
-The following roles exist within the system:
+System Roles:
 
 * Governor ⚖️
 * Minter 💰
@@ -14,7 +14,7 @@ The following roles exist within the system:
 * PCV Controller ⚙️
 * Guardian 🛡️
 
-The Fei Core contract is responsible for managing access control, as well
+The Fei Core contract manages access control.
 
 {% page-ref page="core.md" %}
 
@@ -22,19 +22,19 @@ The Fei Core contract is responsible for managing access control, as well
 
 ### Governor ⚖️
 
-The Governor role is the most powerful role in Fei Protocol. It is capable of granting and revoking any other role. It can also update many protocol parameters unique to each contract. This include bonding curve targets, incentive formulas, oracle windows and more.
+The Governor role is the most powerful role in Fei Protocol. It grants and revokes all other roles in the platform. It manages a multitude of protocol parameters unique to each contract \(bonding curve targets, incentive formulas, oracle windows, and more\).
 
-While the role technically belongs to the Timelock, it is useful to think primarily of the [Fei DAO](../../governance/fei-dao.md) as the only Governor at launch, as the Fei DAO is the admin of the Timelock.
+Implementing Governor as a role and not a single contract grants Fei Protocol flexibility to appoint automated governance contracts or different tiers of governance with varying degrees of difficulty for execution criteria.
 
-Having Governor be a role and not a single contract allows Fei Protocol to have flexibility in appointing automated governance contracts or having different tiers of governance with varying degrees of difficulty for execution criteria.
+While the role technically belongs to the Timelock, it is valuable to think of the [Fei DAO](../../governance/fei-dao.md) as the only Governor at launch, since the Fei DAO is the admin of the Timelock.
 
 {% page-ref page="../../governance/fei-dao.md" %}
 
 ### Minter 💰 
 
-Minters are able to create [Fei USD](../fei-stablecoin/fei-fei-usd.md) and add it to any address. This can be a reward for an action like supporting the peg, or it could be an issuance mechanism for funding [PCV](../protocol-controlled-value/) on a bonding curve.
+Minters create \(mint\) [Fei USD](../fei-stablecoin/fei-fei-usd.md) and add it to any address. Minting can be a reward for the actions of supporting the peg, or an issuance mechanism for funding PCV on a bonding curve.
 
-Some example Minters:
+Minter Examples:
 
 {% page-ref page="../protocol-controlled-value/ethuniswappcvdeposit.md" %}
 
@@ -42,23 +42,23 @@ Some example Minters:
 
 ### Burner 🔥
 
-Burners are able to remove portions of [Fei USD](../fei-stablecoin/fei-fei-usd.md) from any address. This would generally happen as a penalty for an action like hurting the peg.
+Burners remove \(burn\) portions of [Fei USD](../fei-stablecoin/fei-fei-usd.md) from any address. Burning occurs as a disincentive for the actions of hurting the peg.
 
-An example Burner:
+Burner Example:
 
 {% page-ref page="../fei-stablecoin/uniswapincentive.md" %}
 
 ### PCV Controller ⚙️
 
-PCV Controllers are able to move [PCV](../protocol-controlled-value/) from any contract and redeploy it elsewhere. This is done to reweight the peg, facilitate integrations, or protect against adverse conditions.
+PCV Controllers can move [PCV](../protocol-controlled-value/) from any contract and redeploy it elsewhere. This is done to reweight the peg, facilitate integrations, or protect against adverse conditions.
 
-An example PCV Controller:
+PCV Controller Example:
 
 {% page-ref page="../protocol-controlled-value/ethuniswappcvcontroller.md" %}
 
 ### Guardian 🛡️
 
-The Guardian role maintains the ability to revoke any role from any of the above role types. It can also adjust and shut off some other protocol parameters. It cannot manage PCV or mint FEI. The intention behind having this role is to allow for quick feature shutdowns in the event of an unforseen bug or issue. 
+The Guardian enables quick feature shutdowns during unforeseen events. It can revoke any role from the above described role types. It can adjust and shut off additional protocol parameters. It cannot manage PCV or mint FEI.
 
 {% page-ref page="../../governance/fei-guardian.md" %}
 

@@ -1,10 +1,8 @@
 ---
-description: >-
-  For developers who want to help with the Fei ecosystem and are looking for
-  ideas on what to build
+description: For developers who want to help with FEI ecosystem and need inspiration
 ---
 
-# Feature Ideas \(TODO\)
+# TODO
 
 ## Protocol
 

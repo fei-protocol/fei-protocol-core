@@ -8,9 +8,9 @@ description: >-
 
 ## Protocol Development
 
-Fei Protocol is completely controlled by the DAO at launch. The Fei Core Team has established the following suggested workflows for making protocol changes:
+Fei Protocol is controlled by the DAO at launch. The Fei Core Team offers this workflow for making protocol changes:
 
-1. Propose idea in [\#development in Discord](https://discord.gg/p4jmUATf4C)
+1. Introduce idea in [\#development in Discord](https://discord.gg/p4jmUATf4C)
 2. Informal discussion in Discord
 3. Formal proposal on our forum
 4. Snapshot voting on snapshot.page
@@ -19,15 +19,15 @@ Fei Protocol is completely controlled by the DAO at launch. The Fei Core Team ha
 
 ### Pull Requests
 
-To make a pull request with your changes, first create a branch with the name format `FIP-<number>-<description>`.
+To make a pull request with changes, create a branch with the name format: `FIP-<number>-<description>`.
 
-Members of the Fei Core Team and Fei community will review the changes, with major features having official audits from one of our audit partners. These audits will be sponsored by the core team, and you will get to work firsthand with the best auditors in the space.
+Members of the Fei Core Team and the growing Fei community will review proposed changes. Major features will require official audits from our audit partners. Audits will be initiated and sponsored by us and will enable our contributors to work firsthand with the best auditors in the space.
 
 ## Ecosystem Development
 
-Fei Protocol is not an island. Our vision is to have many two-way integrations with other DeFi platforms including lending platforms, derivatives platforms, and AMMs. We also hope to have many community led bots, tooling, dashboards and even supporting features directly on Ethereum.
+Our goal is to enable as many two-way integrations with other DeFi platforms including lending platforms, derivatives platforms, and AMMs. We expect and encourage the development of community-led bots, tooling, dashboards, and even supporting features directly on Ethereum.
 
-To pursue an integration with another platform, you will have to follow that platform's governance procedures and engage with that community. The Fei Core Team is excited to help sponsor community led integrations both with time and tokens.
+Platform integrations have to follow respective platform governance procedures and community engagement. The Fei Core Team is excited at the opportunity to collaborate and sponsor community-led integrations with resources and tokens.
 
 
 

@@ -8,7 +8,7 @@
 ## Developers
 
 * [Development Guide](developers/development-guide.md)
-* [Feature Ideas \(TODO\)](developers/feature-ideas.md)
+* [TODO](developers/feature-ideas.md)
 
 ## Protocol
 
