@@ -7,10 +7,10 @@ const GenesisOrchestrator = artifacts.require("GenesisOrchestrator");
 const GovernanceOrchestrator = artifacts.require("GovernanceOrchestrator");
 const PCVDepositOrchestrator = artifacts.require("PCVDepositOrchestrator");
 const RouterOrchestrator = artifacts.require("RouterOrchestrator");
-const FeiRouter = artifacts.require("FeiRouter");
+const StakingOrchestrator = artifacts.require("StakingOrchestrator");
 
 module.exports = function(deployer, network, accounts) {
-  	var pcvo, bc, incentive, controller, ido, genesis, gov, core, routerOrchestrator;
+  	var pcvo, bc, incentive, controller, ido, genesis, gov, core, routerOrchestrator, stakingOrchestrator;
 
 	deployer.then(function() {
 	  	return deployer.deploy(ControllerOrchestrator);
@@ -37,6 +37,9 @@ module.exports = function(deployer, network, accounts) {
 	 	return deployer.deploy(PCVDepositOrchestrator);
 	}).then(function(instance) {
 		pcvo = instance;
+	 	return deployer.deploy(StakingOrchestrator);
+	}).then(function(instance) {
+		stakingOrchestrator = instance;
 	 	return deployer.deploy(CoreOrchestrator,
 	 		pcvo.address, 
 	 		bc.address, 
@@ -45,7 +48,8 @@ module.exports = function(deployer, network, accounts) {
 	 		ido.address, 
 	 		genesis.address, 
 	 		gov.address,
-	 		routerOrchestrator.address, 
+			routerOrchestrator.address,
+			stakingOrchestrator.address, 
 	 		accounts[0],
 	 		{gas: 8000000}
 	 	);
@@ -67,6 +71,8 @@ module.exports = function(deployer, network, accounts) {
 	}).then(function(instance) {
 	 	return routerOrchestrator.transferOwnership(core.address);
 	}).then(function(instance) {
+		return stakingOrchestrator.transferOwnership(core.address);
+   }).then(function(instance) {
 	 	return core.initCore();
 	}).then(function(instance) {
 	 	return core.initPairs();
@@ -79,12 +85,14 @@ module.exports = function(deployer, network, accounts) {
 	}).then(function(instance) {
 	 	return core.initController();
 	}).then(function(instance) {
-	 	return core.initIDO();
+		 return core.initIDO();
 	}).then(function(instance) {
-	 	return core.initGenesis();
-	}).then(function(instance) {
+		return core.initStaking();
+    }).then(function(instance) {
 	 	return core.initGovernance();
 	}).then(function(instance) {
 	 	return core.initRouter();
-	});
+	}).then(function(instance) {
+		return core.initGenesis();
+   });
 }
