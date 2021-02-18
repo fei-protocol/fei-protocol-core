@@ -4,7 +4,7 @@ Smart contract code for Fei Protocol and the FEI stablecoin
 
 ## Documentation
 
-See the [Wiki](https://github.com/fei-protocol/fei-protocol-core/wiki)
+See the [docs](https://docs.fei.money)
 
 ## Setup
 
@@ -18,9 +18,9 @@ Currently using Truffle/Ganache with mainnet chain forking for compiling and run
 
 ### Testing
 
-Entire suite: `npm run testAll`
+Entire suite: `npm run test`
 
-Single module/file: `npm run test <path to directory or file e.g. test/genesis, test/token/Fei.test.js>`
+Single module/file: `mocha --timeout 10000 --exit --recursive <path-to-directory/file>`
 
 ### Coverage
 

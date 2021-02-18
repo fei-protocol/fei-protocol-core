@@ -39,6 +39,7 @@ contract CoreOrchestrator is Ownable {
     uint256 public constant GENESIS_DURATION = 3 days;
 
     uint256 public constant POOL_DURATION = 2 * 365 days;
+    
     uint256 public constant DRIP_FREQUENCY = 1 weeks;
 
     uint256 public constant THAWING_DURATION = 2 weeks;
