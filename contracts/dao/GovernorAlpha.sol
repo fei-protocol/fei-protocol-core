@@ -18,10 +18,10 @@ contract GovernorAlpha {
     function proposalMaxOperations() public pure returns (uint) { return 10; } // 10 actions
 
     /// @notice The delay before voting on a proposal may take place, once proposed
-    function votingDelay() public pure returns (uint) { return 3333; } // ~0.5 days in blocks (assuming 13s blocks)
+    function votingDelay() public pure returns (uint) { return 1; } // ~0.5 days in blocks (assuming 13s blocks)
 
     /// @notice The duration of voting on a proposal, in blocks
-    function votingPeriod() public pure returns (uint) { return 10000; } // ~1.5 days in blocks (assuming 13s blocks)
+    function votingPeriod() public pure returns (uint) { return 100; } // ~1.5 days in blocks (assuming 13s blocks)
 
     /// @notice The address of the Fei Protocol Timelock
     TimelockInterface public timelock;
