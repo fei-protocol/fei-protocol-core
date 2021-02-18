@@ -1,7 +1,7 @@
 ---
 description: >-
-  A manual on how to start contributing to the Fei Protocol and the broader FEI
-  ecosystem
+  A guide on how to engage and start contributing to the Fei Protocol and the
+  broader FEI ecosystem
 ---
 
 # Development Guide
