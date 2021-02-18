@@ -10,13 +10,13 @@ description: The access control module of Fei Protocol Core
 
 ## Description
 
-The [access control](./) module of the [Core](core.md) contract. Maintains which roles exist, role admins, and which addresses have which roles.
+The [access control](./) module of the [Core](core.md) contract. It maintains which roles exist, role admins, and which addresses have which roles.
 
-The contract essentially wraps the OpenZeppelin Access Control contract with some Fei Protocol-specific roles and functionality.
+The contract expands the OpenZeppelin Access Control contract with some Fei Protocol-specific roles and functionality.
 
 {% embed url="https://docs.openzeppelin.com/contracts/3.x/api/access\#AccessControl" %}
 
-Granting and revoking roles is gated for only Governor ⚖️ access. The Guardian🛡role can also revoke roles.
+Granting and revoking roles is gated for only Governor ⚖️ access. The Guardian🛡role can also revoke roles in certain circumstances.
 
 ## Read-Only Functions
 
@@ -72,7 +72,7 @@ function createRole(bytes32 role, bytes32 adminRole) external;
 
 assigns role `role` a new admin role `adminRole`
 
-This can be used either to create a new access control role or reassign an admin for an existing role.
+This function can be used either to create a new access control role or reassign an admin for an existing role.
 
 #### grantMinter
 
