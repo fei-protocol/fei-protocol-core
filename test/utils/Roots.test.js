@@ -1,9 +1,8 @@
-const { contract } = require('@openzeppelin/test-environment');
-
-const { BN } = require('@openzeppelin/test-helpers');
-const { expect } = require('chai');
-
-const Roots = contract.fromArtifact('RootsWrapper');
+const {
+  BN,
+  expect,
+  Roots
+} = require('../helpers');
 
 describe('Roots', function () {
   beforeEach(async function() {

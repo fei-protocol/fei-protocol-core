@@ -1,29 +1,29 @@
-const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
-const { accounts, contract } = require('@openzeppelin/test-environment');
-
-const { BN, expectEvent, expectRevert, balance } = require('@openzeppelin/test-helpers');
-const { expect } = require('chai');
-
-const EthUniswapPCVController = contract.fromArtifact('EthUniswapPCVController');
-const Core = contract.fromArtifact('Core');
-const Fei = contract.fromArtifact('Fei');
-const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
-const MockOracle = contract.fromArtifact('MockOracle');
-const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
-const MockRouter = contract.fromArtifact('MockRouter');
-const MockWeth = contract.fromArtifact('MockWeth');
-const MockIncentive = contract.fromArtifact('MockUniswapIncentive');
+const {
+  userAddress, 
+  governorAddress, 
+  minterAddress, 
+  guardianAddress, 
+  BN,
+  expectEvent,
+  expectRevert,
+  balance,
+  expect,
+  EthUniswapPCVController,
+  Fei,
+  MockPCVDeposit,
+  MockOracle,
+  MockPair,
+  MockRouter,
+  MockWeth,
+  MockIncentive,
+  getCore
+} = require('../helpers');
 
 describe('EthUniswapPCVController', function () {
-  const [ userAddress, governorAddress, minterAddress, guardianAddress, genesisGroup ] = accounts;
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit
 
   beforeEach(async function () {
-    this.core = await Core.new({from: governorAddress});
-    await this.core.init({from: governorAddress});
-
-    await this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
-    await this.core.completeGenesisGroup({from: genesisGroup});
+    this.core = await getCore(true);
 
     this.fei = await Fei.at(await this.core.fei());
     this.oracle = await MockOracle.new(500);
@@ -45,8 +45,6 @@ describe('EthUniswapPCVController', function () {
       this.router.address
     );
     await this.core.grantPCVController(this.pcvController.address, {from: governorAddress});
-    await this.core.grantMinter(minterAddress, {from: governorAddress});
-    await this.core.grantGuardian(guardianAddress, {from: governorAddress});
     await this.fei.mint(this.pair.address, 50000000, {from: minterAddress});
   });
 

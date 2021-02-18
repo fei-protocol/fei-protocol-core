@@ -1,23 +1,39 @@
-const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
-const { accounts, contract } = require('@openzeppelin/test-environment');
+// const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
+// const { accounts, contract } = require('@openzeppelin/test-environment');
 
-const { BN, expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers');
-const { expect } = require('chai');
+// const { BN, expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers');
+// const { expect } = require('chai');
 
-const Fei = contract.fromArtifact('Fei');
-const Core = contract.fromArtifact('Core');
-const UniswapIncentive = contract.fromArtifact('UniswapIncentive');
-const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
-const MockOracle = contract.fromArtifact('MockOracle');
-const MockERC20 = contract.fromArtifact('MockERC20');
+// const Fei = contract.fromArtifact('Fei');
+// const Core = contract.fromArtifact('Core');
+// const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
+// const MockOracle = contract.fromArtifact('MockOracle');
+// const MockERC20 = contract.fromArtifact('MockERC20');
+
+const {
+  userAddress,
+  minterAddress,
+  governorAddress,
+  secondUserAddress,
+  guardianAddress,
+  BN,
+  expectEvent,
+  expectRevert,
+  time,
+  expect,
+  Fei,
+  UniswapIncentive,
+  MockPair,
+  MockOracle,
+  MockERC20,
+  getCore
+} = require('../helpers');
 
 describe('UniswapIncentive', function () {
-  const [ userAddress, minterAddress, governorAddress, secondUserAddress, guardianAddress ] = accounts;
 
   beforeEach(async function () {
 
-    this.core = await Core.new({from: governorAddress});
-    await this.core.init({from: governorAddress});
+    this.core = await getCore(true);
     
     this.fei = await Fei.at(await this.core.fei());
     this.oracle = await MockOracle.new(500); // 500:1 USD/ETH exchange rate
@@ -29,8 +45,6 @@ describe('UniswapIncentive', function () {
 
     await this.core.grantMinter(this.incentive.address, {from: governorAddress});
     await this.core.grantBurner(this.incentive.address, {from: governorAddress});
-    await this.core.grantMinter(minterAddress, {from: governorAddress});
-    await this.core.grantGuardian(guardianAddress, {from: governorAddress});
     await this.fei.setIncentiveContract(this.pair.address, this.incentive.address, {from: governorAddress});
     await this.fei.mint(userAddress, 50000000, {from: minterAddress});
 
