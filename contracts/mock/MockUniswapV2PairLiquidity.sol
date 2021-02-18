@@ -20,29 +20,28 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../external/Decimal.sol";
 import "@uniswap/lib/contracts/libraries/FixedPoint.sol";
-import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
+contract MockUniswapV2PairLiquidity {
     using SafeMath for uint256;
     using Decimal for Decimal.D256;
 
     uint112 private reserve0;           // uses single storage slot, accessible via getReserves
     uint112 private reserve1;           // uses single storage slot, accessible via getReserves
     uint256 private liquidity;
-    address public override token0;
-    address public override token1;
+    address public token0;
+    address public token1;
 
     constructor(address _token0, address _token1) public {
         token0 = _token0;
         token1 = _token1;
     } 
 
-    function getReserves() external view override returns (uint112, uint112, uint32) {
+    function getReserves() external view returns (uint112, uint112, uint32) {
         return (reserve0, reserve1, 0);
     }
 
-    function mint(address to) public override returns (uint) {
+    function mint(address to) public returns (uint) {
         _mint(to, liquidity);
         return liquidity;
     }
@@ -82,36 +81,9 @@ contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
         IERC20(token1).transfer(to, amount);
     }
 
-    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external override { 
+    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external { 
         // No - op;
     }
-
-
-    /**
-     * Should not use
-     */
-
-    function name() external pure override returns (string memory) { return "Uniswap V2"; }
-    function symbol() external pure override returns (string memory) { return "UNI-V2"; }
-    function decimals() external pure override returns (uint8) { return 18; }
-
-    function DOMAIN_SEPARATOR() external view override returns (bytes32) { revert("Should not use"); }
-    function PERMIT_TYPEHASH() external pure override returns (bytes32) { revert("Should not use"); }
-    function nonces(address owner) external view override returns (uint) { revert("Should not use"); }
-
-    function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external override { revert("Should not use"); }
-
-    function MINIMUM_LIQUIDITY() external pure override returns (uint) { revert("Should not use"); }
-    function factory() external view override returns (address) { revert("Should not use"); }
-    function price0CumulativeLast() external view override returns (uint) { revert("Should not use"); }
-    function price1CumulativeLast() external view override returns (uint) { revert("Should not use"); }
-    function kLast() external view override returns (uint) { revert("Should not use"); }
-
-    function skim(address to) external override { revert("Should not use"); }
-    function sync() external override { revert("Should not use"); }
-    function burn(address to) external override returns (uint amount0, uint amount1) { revert("Should not use"); }
-
-    function initialize(address, address) external override { revert("Should not use"); }
 
     // @openzeppelin/contracts/token/ERC20/ERC20.sol
 
@@ -124,14 +96,14 @@ contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
     /**
      * @dev See {IERC20-totalSupply}.
      */
-    function totalSupply() public view override returns (uint256) {
+    function totalSupply() public view returns (uint256) {
         return _totalSupply;
     }
 
     /**
      * @dev See {IERC20-balanceOf}.
      */
-    function balanceOf(address account) public override view returns (uint256) {
+    function balanceOf(address account) public view returns (uint256) {
         return _balances[account];
     }
 
@@ -143,7 +115,7 @@ contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
      * - `recipient` cannot be the zero address.
      * - the caller must have a balance of at least `amount`.
      */
-    function transfer(address recipient, uint256 amount) public override returns (bool) {
+    function transfer(address recipient, uint256 amount) public returns (bool) {
         _transfer(msg.sender, recipient, amount);
         return true;
     }
@@ -151,7 +123,7 @@ contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
     /**
      * @dev See {IERC20-allowance}.
      */
-    function allowance(address owner, address spender) public override view returns (uint256) {
+    function allowance(address owner, address spender) public view returns (uint256) {
         return _allowances[owner][spender];
     }
 
@@ -162,7 +134,7 @@ contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
      *
      * - `spender` cannot be the zero address.
      */
-    function approve(address spender, uint256 amount) public override returns (bool) {
+    function approve(address spender, uint256 amount) public returns (bool) {
         _approve(msg.sender, spender, amount);
         return true;
     }
@@ -179,7 +151,7 @@ contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
      * - the caller must have allowance for `sender`'s tokens of at least
      * `amount`.
      */
-    function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
+    function transferFrom(address sender, address recipient, uint256 amount) public returns (bool) {
         _transfer(sender, recipient, amount);
         _approve(sender, msg.sender, _allowances[sender][msg.sender].sub(amount, "ERC20: transfer amount exceeds allowance"));
         return true;
@@ -241,7 +213,6 @@ contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
 
         _balances[sender] = _balances[sender].sub(amount, "ERC20: transfer amount exceeds balance");
         _balances[recipient] = _balances[recipient].add(amount);
-        emit Transfer(sender, recipient, amount);
     }
 
     /** @dev Creates `amount` tokens and assigns them to `account`, increasing
@@ -258,7 +229,6 @@ contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
 
         _totalSupply = _totalSupply.add(amount);
         _balances[account] = _balances[account].add(amount);
-        emit Transfer(address(0), account, amount);
     }
 
     /**
@@ -277,7 +247,6 @@ contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
 
         _balances[account] = _balances[account].sub(amount, "ERC20: burn amount exceeds balance");
         _totalSupply = _totalSupply.sub(amount);
-        emit Transfer(account, address(0), amount);
     }
 
     /**
@@ -298,7 +267,6 @@ contract MockUniswapV2PairLiquidity is IUniswapV2Pair {
         require(spender != address(0), "ERC20: approve to the zero address");
 
         _allowances[owner][spender] = amount;
-        emit Approval(owner, spender, amount);
     }
 
     /**

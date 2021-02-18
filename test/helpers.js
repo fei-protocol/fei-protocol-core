@@ -29,7 +29,7 @@ const UniswapOracle = contract.fromArtifact('UniswapOracle');
 
 
 const MockBondingCurve = contract.fromArtifact('MockBondingCurve');
-const MockBondingCurveOracle = contract.fromArtifact('MockBCO');
+const MockBondingCurveOracle = contract.fromArtifact('MockBondingCurveOracle');
 const MockCoreRef = contract.fromArtifact('MockCoreRef');
 const MockERC20 = contract.fromArtifact('MockERC20');
 const MockEthPCVDeposit = contract.fromArtifact('MockEthPCVDeposit');
@@ -39,7 +39,6 @@ const MockOracle = contract.fromArtifact('MockOracle');
 const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
 const MockPairTrade = contract.fromArtifact('MockUniswapV2PairTrade');
 const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
-const MockPool = contract.fromArtifact('MockPool');
 const MockRouter = contract.fromArtifact('MockRouter');
 const MockTribe = contract.fromArtifact('MockTribe');
 const MockUniswapIncentive = contract.fromArtifact('MockUniswapIncentive');
@@ -127,7 +126,6 @@ module.exports = {
     MockPair,
     MockPairTrade,
     MockPCVDeposit,
-    MockPool,
     MockRouter,
     MockTribe,
     MockUniswapIncentive,

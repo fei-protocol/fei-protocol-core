@@ -6,17 +6,17 @@ import "../refs/CoreRef.sol";
 
 contract MockIncentive is IIncentive, CoreRef {
 
-	constructor(address core) 
+	constructor(address core) public
 		CoreRef(core)
-	public {}
+	{}
 
     uint256 constant private INCENTIVE = 100;
 
     function incentivize(
     	address sender, 
-    	address receiver, 
-    	address spender, 
-    	uint256 amountIn
+    	address, 
+    	address, 
+    	uint256
     ) public override {
         fei().mint(sender, INCENTIVE);
     }
