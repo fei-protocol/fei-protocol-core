@@ -8,7 +8,7 @@ description: >-
 
 ## Protocol Development
 
-Fei Protocol is controlled by the DAO at launch. The Fei Core Team offers this workflow for making protocol changes:
+Fei Protocol is controlled by the DAO at launch. The Fei Core Team suggests this workflow for making protocol changes:
 
 1. Introduce idea in [\#development in Discord](https://discord.gg/p4jmUATf4C)
 2. Informal discussion in Discord
@@ -21,13 +21,13 @@ Fei Protocol is controlled by the DAO at launch. The Fei Core Team offers this w
 
 To make a pull request with changes, create a branch with the name format: `FIP-<number>-<description>`.
 
-Members of the Fei Core Team and the growing Fei community will review proposed changes. Major features will require official audits from our audit partners. Audits will be initiated and sponsored by us and will enable our contributors to work firsthand with the best auditors in the space.
+Members of the Fei Core Team and the growing Fei community should review all proposed changes. Upon review, major features will be considered for audit reviews by our audit partners. Audits can be initiated and sponsored by the Fei Core Team and would enable our contributors to collaborate directly with the best auditors in the space.
 
 ## Ecosystem Development
 
 Our goal is to enable as many two-way integrations with other DeFi platforms including lending platforms, derivatives platforms, and AMMs. We expect and encourage the development of community-led bots, tooling, dashboards, and even supporting features directly on Ethereum.
 
-Platform integrations have to follow respective platform governance procedures and community engagement. The Fei Core Team is excited at the opportunity to collaborate and sponsor community-led integrations with resources and tokens.
+Platform integrations should follow respective platform governance procedures and community engagement. The Fei Core Team is excited at the opportunity to collaborate and sponsor community-led integrations with resources and tokens.
 
 
 
