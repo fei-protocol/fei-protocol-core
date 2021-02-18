@@ -6,12 +6,12 @@ import "../external/Decimal.sol";
 
 contract MockUniswapIncentive is MockIncentive {
 
-	constructor(address core) 
+	constructor(address core) public
 		MockIncentive(core)
-	public {}
+	{}
 
-    bool isParity = false;
-    bool isExempt = false;
+    bool public isParity = false;
+    bool public isExempt = false;
 
     function isIncentiveParity() external view returns (bool) {
         return isParity;
@@ -21,7 +21,7 @@ contract MockUniswapIncentive is MockIncentive {
         isParity = _isParity;
     }
 
-    function isExemptAddress(address account) public returns (bool) {
+    function isExemptAddress(address) public view returns (bool) {
         return isExempt;
     }
 
@@ -29,13 +29,13 @@ contract MockUniswapIncentive is MockIncentive {
         isExempt = exempt;
     }
 
-    function updateOracle() external returns(bool) {
+    function updateOracle() external pure returns(bool) {
         return true;
     }
 
-    function setExemptAddress(address account, bool isExempt) external {}
+    function setExemptAddress(address account, bool _isExempt) external {}
 
-    function getBuyIncentive(uint amount) external returns(uint,        
+    function getBuyIncentive(uint amount) external pure returns(uint,        
         uint32 weight,
         Decimal.D256 memory initialDeviation,
         Decimal.D256 memory finalDeviation
@@ -43,7 +43,7 @@ contract MockUniswapIncentive is MockIncentive {
         return (amount * 10 / 100, weight, initialDeviation, finalDeviation);
     }
 
-    function getSellPenalty(uint amount) external returns(uint,    
+    function getSellPenalty(uint amount) external pure returns(uint,    
         Decimal.D256 memory initialDeviation,
         Decimal.D256 memory finalDeviation) 
     {

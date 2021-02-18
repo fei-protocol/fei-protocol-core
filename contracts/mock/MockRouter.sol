@@ -23,10 +23,10 @@ contract MockRouter {
     function addLiquidityETH(
         address token,
         uint amountTokenDesired,
-        uint amountTokenMin,
-        uint amountETHMin,
+        uint,
+        uint,
         address to,
-        uint deadline
+        uint
     ) external payable returns (uint amountToken, uint amountETH, uint liquidity) {
         address pair = address(PAIR);
         amountToken = amountTokenDesired;
@@ -46,11 +46,11 @@ contract MockRouter {
         address token1,
         uint amountToken0Desired,
         uint amountToken1Desired,
-        uint amountToken0Min,
-        uint amountToken1Min,
+        uint,
+        uint,
         address to,
-        uint deadline
-    ) external returns (uint amountToken0, uint amountToken1, uint liquidity) {
+        uint
+    ) external returns (uint, uint, uint liquidity) {
         address pair = address(PAIR);
 
         liquidity = LIQUIDITY_INCREMENT;
@@ -66,12 +66,12 @@ contract MockRouter {
     }
 
     function removeLiquidityETH(
-        address token,
+        address,
         uint liquidity,
-        uint amountTokenMin,
-        uint amountETHMin,
+        uint,
+        uint,
         address to,
-        uint deadline
+        uint
     ) external returns (uint amountToken, uint amountETH) {
 
         Decimal.D256 memory percentWithdrawal = Decimal.ratio(liquidity, totalLiquidity);

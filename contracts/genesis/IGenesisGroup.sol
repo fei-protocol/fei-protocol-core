@@ -53,4 +53,15 @@ interface IGenesisGroup {
             uint256 genesisTribe,
             uint256 idoTribe
         );
+
+    function committedFGEN(address account) external view returns (uint256);
+
+    function totalCommittedFGEN() external view returns (uint256);
+
+    function totalCommittedTribe() external view returns (uint256);
+
+    // solhint-disable-next-line func-name-mixedcase
+    function ORACLE_LISTING_PERCENT() external view returns (uint256);
+
+    function launchBlock() external view returns (uint256);
 }

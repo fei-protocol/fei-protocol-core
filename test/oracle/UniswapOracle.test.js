@@ -16,6 +16,7 @@ describe('UniswapOracle', function () {
 
   beforeEach(async function () {
     this.core = await getCore(true);
+    
     this.startTime = await time.latest();
     this.delta = new BN(1000);
     this.hundredTwelve = new BN(2).pow(new BN(112));

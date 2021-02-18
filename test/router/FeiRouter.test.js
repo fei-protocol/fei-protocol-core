@@ -1,31 +1,30 @@
-const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
-
-const { accounts, contract } = require('@openzeppelin/test-environment');
-
-const { BN, expectEvent, expectRevert, ether, time } = require('@openzeppelin/test-helpers');
-const { expect } = require('chai');
-
-const Fei = contract.fromArtifact('Fei');
-const Core = contract.fromArtifact('Core');
-const UniswapPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
-const MockUniswapIncentive = contract.fromArtifact('MockUniswapIncentive');
-const MockWeth = contract.fromArtifact('MockWeth');
-const FeiRouter = contract.fromArtifact('FeiRouter');
+const {
+  minterAddress, 
+  userAddress, 
+  BN,
+  expectRevert,
+  time,
+  MAX_UINT256,
+  Fei,
+  FeiRouter,
+  MockUniswapIncentive,
+  MockPair,
+  MockWeth,
+  getCore,
+  ether
+} = require('../helpers');
 
 describe('FeiRouter', function () {
-  const [ minterAddress, userAddress, incentivizedAddress, operatorAddress ] = accounts;
 
   beforeEach(async function () {
-    this.core = await Core.new();
-    await this.core.init();
+    this.core = await getCore(true);
 
     this.fei = await Fei.at(await this.core.fei());
-    await this.core.grantMinter(minterAddress);
 
     this.weth = await MockWeth.new();
     this.weth.deposit({value: ether("1")});
 
-    this.pair = await UniswapPair.new(this.fei.address, this.weth.address);
+    this.pair = await MockPair.new(this.fei.address, this.weth.address);
     this.pair.setReserves("50000000", "100000");
 
     this.incentive = await MockUniswapIncentive.new(this.core.address);

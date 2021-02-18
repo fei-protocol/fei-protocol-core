@@ -72,7 +72,7 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
     }
 
     /// @notice the initial price denominated in USD per FEI to thaw from
-    function initialPrice() external override returns (Decimal.D256 memory) {
+    function initialPrice() external view override returns (Decimal.D256 memory) {
         return _initialPrice;
     }
 

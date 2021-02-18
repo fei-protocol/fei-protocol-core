@@ -18,13 +18,38 @@ describe('BondingCurveOracle', function () {
 
   beforeEach(async function () {
     this.core = await getCore(true);
-    this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
+
     this.mockOracle = await MockOracle.new(500);
     this.bondingCurve = await MockBondingCurve.new(false, 80000);
     
-    let duration = 4 * 7 * 24 * 60 * 60;
-    this.oracle = await BondingCurveOracle.new(this.core.address, this.mockOracle.address, this.bondingCurve.address, duration);
+    this.duration = new BN(4 * 7 * 24 * 60 * 60);
+    this.oracle = await BondingCurveOracle.new(this.core.address, this.mockOracle.address, this.bondingCurve.address, this.duration);
   });
+
+  describe('Init', function() {
+    it('Timed', async function() {
+      expect(await this.oracle.isTimeEnded()).to.be.equal(false);
+      expect(await this.oracle.remainingTime()).to.be.bignumber.equal(this.duration);
+      expect(await this.oracle.timeSinceStart()).to.be.bignumber.equal(new BN('0'));
+    });
+
+    it('uniswapOracle', async function() {
+      expect(await this.oracle.uniswapOracle()).to.be.equal(this.mockOracle.address);
+    });
+
+    it('bondingCurve', async function() {
+      expect(await this.oracle.bondingCurve()).to.be.equal(this.bondingCurve.address);
+    });
+
+    it('killSwitch', async function() {
+      expect(await this.oracle.killSwitch()).to.be.equal(true);
+    });
+
+    it('initialPrice', async function() {
+      expect((await this.oracle.initialPrice())[0]).to.be.equal('0');
+    });
+  });
+
 
   describe('Update', function() {
     it('updates uniswap oracle', async function() {
@@ -54,6 +79,10 @@ describe('BondingCurveOracle', function () {
     describe('Initialized', function() {
       beforeEach(async function() {
         await this.oracle.init(['500000000000000000'], {from: genesisGroup});
+      });
+
+      it('initialPrice', async function() {
+        expect((await this.oracle.initialPrice())[0]).to.be.equal('500000000000000000');
       });
 
       describe('Kill switch', function() {

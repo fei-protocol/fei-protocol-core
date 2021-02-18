@@ -14,9 +14,9 @@ interface IBondingCurveOracle is IOracle {
 
     // ----------- Getters -----------
 
-    function uniswapOracle() external returns (IOracle);
+    function uniswapOracle() external view returns (IOracle);
 
-    function bondingCurve() external returns (IBondingCurve);
+    function bondingCurve() external view returns (IBondingCurve);
 
-    function initialPrice() external returns (Decimal.D256 memory);
+    function initialPrice() external view returns (Decimal.D256 memory);
 }
