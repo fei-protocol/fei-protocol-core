@@ -19,7 +19,6 @@ describe('Core', function () {
 
   beforeEach(async function () {
     this.core = await getCore(false);
-    await this.core.init({from: governorAddress});
     
     this.tribe = await Tribe.at(await this.core.tribe());
     this.coreRef = await MockCoreRef.new(this.core.address);

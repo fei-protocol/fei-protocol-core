@@ -29,7 +29,6 @@ describe('GenesisGroup', function () {
 
   beforeEach(async function () {
     this.core = await getCore(false);
-    await this.core.init({from: governorAddress});
     
     this.fei = await Fei.at(await this.core.fei());
     this.tribe = await Tribe.at(await this.core.tribe());
