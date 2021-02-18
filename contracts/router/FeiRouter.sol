@@ -57,7 +57,7 @@ contract FeiRouter is UniswapSingleEthRouter, IFeiRouter {
         IOracleRef(address(INCENTIVE)).updateOracle();
 
         uint256 penalty = 0;
-        if (!INCENTIVE.isExemptAddress(to)) {
+        if (!INCENTIVE.isExemptAddress(msg.sender)) {
             (penalty, , ) = INCENTIVE.getSellPenalty(amountIn);
         }
         require(penalty <= maxPenalty, "FeiRouter: Penalty too high");
