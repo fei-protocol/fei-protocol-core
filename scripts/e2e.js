@@ -8,13 +8,22 @@ const Fei = artifacts.require("Fei");
 const Tribe = artifacts.require("Tribe");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 const TimelockedDelegator = artifacts.require("TimelockedDelegator");
-const Pool = artifacts.require("Pool");
+const StakingRewards = artifacts.require("FeiStakingRewards");
+const FeiRewardsDistributor = artifacts.require("FeiRewardsDistributor");
+
 const EthBondingCurve = artifacts.require("EthBondingCurve");
 const UniswapOracle = artifacts.require("UniswapOracle");
 const BondingCurveOracle = artifacts.require("BondingCurveOracle");
 const EthUniswapPCVController = artifacts.require("EthUniswapPCVController");
 const UniswapIncentive = artifacts.require("UniswapIncentive");
 const FeiRouter = artifacts.require("FeiRouter");
+
+// Assumes the following:
+// Genesis <60s
+// Scale = 100,000,000 in wei
+// oracle update twap window is every second
+// Staking has a window of 200s
+// token timelock has a small release window ~100,000
 
 module.exports = async function(callback) {
   let accounts = await web3.eth.getAccounts();
@@ -26,7 +35,9 @@ module.exports = async function(callback) {
   let ido = await IDO.at(await co.ido());
   let pair = await IUniswapV2Pair.at(await ido.pair());
   let td = await TimelockedDelegator.at(await co.timelockedDelegator());
-  let pool = await Pool.at(await co.pool());
+  let staking = await StakingRewards.at(await co.feiStakingRewards());
+  let distributor = await FeiRewardsDistributor.at(await co.feiRewardsDistributor());
+
   let bc = await EthBondingCurve.at(await co.ethBondingCurve());
   let ethPair = await IUniswapV2Pair.at(await co.ethFeiPair());
   let uo = await UniswapOracle.at(await co.uniswapOracle());
@@ -67,20 +78,30 @@ module.exports = async function(callback) {
   let redeemTribe = await tribe.balanceOf(accounts[0]);
   console.log(`GG Redeem: fei=${stringify(redeemFei)}, tribe=${stringify(redeemTribe)}`);
 
+  let drip = await distributor.drip();
+  let dripGas = drip['receipt']['gasUsed'];
+  console.log(`Drip: gas=${dripGas}`);
+
   let idoReserves = await ido.getReserves();
   let feiIdoReserves = idoReserves[0];
   let tribeIdoReserves = idoReserves[1];
-  let idoTotalLiquidity  = await pair.totalSupply();
+  let idoTotalLiquidity = await pair.totalSupply();
 
   console.log(`IDO Reserves: fei=${stringify(feiIdoReserves)}, tribe=${stringify(tribeIdoReserves)}, liquidity=${stringify(idoTotalLiquidity)}`);
-  let idoRedeem = await ido.release({from: accounts[0]});
+  await ido.release(accounts[0], '1', {from: accounts[0]}); //poke
+
+  let idoReleaseAmount = await ido.availableForRelease();
+  let idoRedeem = await ido.release(accounts[0], idoReleaseAmount, {from: accounts[0]});
   let idoRedeemGas = idoRedeem['receipt']['gasUsed'];
   let idoLiquidity = await pair.balanceOf(accounts[0]);
 
   console.log(`IDO Redeem: liquidity=${stringify(idoLiquidity)}`);
 
+  await td.release(accounts[0], '1', {from: accounts[0]}); // poke
+
   let adminPreRedeemedTribe = await tribe.balanceOf(accounts[0]);
-  let adminTribeRedeem = await td.release({from: accounts[0]})
+  let tribeReleaseAmount = await td.availableForRelease();
+  let adminTribeRedeem = await td.release(accounts[0], tribeReleaseAmount, {from: accounts[0]});
   let adminTribeRedeemGas = adminTribeRedeem['receipt']['gasUsed'];
   let adminPostRedeemedTribe = await tribe.balanceOf(accounts[0]);
   let adminNetRedeemed = adminPostRedeemedTribe.sub(adminPreRedeemedTribe);
@@ -94,11 +115,11 @@ module.exports = async function(callback) {
   console.log(`TRIBE delegation: preBalance=${stringify(preTimelockedTribe)}, postBalance=${stringify(remainingTimelockedTribe)}, delegated=${stringify(adminDelegatedVotes)}`);
 
   let pairBalance = await pair.balanceOf(accounts[0]);
-  await pair.approve(await pool.address, pairBalance, {from: accounts[0]});
-  let staked = await pool.deposit(accounts[0], pairBalance, {from: accounts[0]});
+  await pair.approve(await staking.address, pairBalance, {from: accounts[0]});
+  let staked = await staking.stake(pairBalance, {from: accounts[0]});
   let stakedGas = staked['receipt']['gasUsed'];
-  let poolBalance = await pool.balanceOf(accounts[0]);
-  console.log(`Staking pool stake: pool=${stringify(poolBalance)}`);
+  let stakingBalance = await staking.balanceOf(accounts[0]);
+  console.log(`Staking pool stake: pool=${stringify(stakingBalance)}`);
 
   let atScale = await bc.atScale();
   let feiBefore = await fei.balanceOf(accounts[0]);
@@ -126,33 +147,25 @@ module.exports = async function(callback) {
   let burned = feiBefore.sub(feiAfter).sub(tenX);
   console.log(`Uni Sell: amt=${stringify(tenX)}, burned=${stringify(burned)}`);
 
-  let poolBeforeClaim = await pool.balanceOf(accounts[0]);
-  let tribeBeforeClaim = await tribe.balanceOf(accounts[0]);
-  let claimed = await pool.claim(accounts[0], accounts[0], {from: accounts[0]});
-  let claimedGas = claimed['receipt']['gasUsed'];
-  let poolAfterClaim = await pool.balanceOf(accounts[0]);
-  let tribeAfterClaim = await tribe.balanceOf(accounts[0]);
-  let poolBurned = poolBeforeClaim.sub(poolAfterClaim);
-  let tribeEarned = tribeAfterClaim.sub(tribeBeforeClaim);
-  console.log(`Claim: poolBurned=${stringify(poolBurned)}, tribeEarned=${stringify(tribeEarned)}`);
-
-  console.log('Sleeping for 10s');
-  sleep(10000);
+  console.log('Sleeping for 30s');
+  await sleep(30000);
 
   let pairBeforeWithdraw = await pair.balanceOf(accounts[0]);
-  let withdraw = await pool.withdraw(accounts[0], {from: accounts[0]});
-  let withdrawGas = withdraw['receipt']['gasUsed'];
-  let poolAfterWithdraw = await pool.balanceOf(accounts[0]);
+  let tribeBeforeClaim = await tribe.balanceOf(accounts[0]);
+  let claimed = await staking.exit({from: accounts[0]});
+  let claimedGas = claimed['receipt']['gasUsed'];
+  let tribeAfterClaim = await tribe.balanceOf(accounts[0]);
+  let tribeEarned = tribeAfterClaim.sub(tribeBeforeClaim);
   let pairAfterWithdraw = await pair.balanceOf(accounts[0]);
 
-  console.log(`Withdraw: pool=${stringify(poolAfterWithdraw)}, pairBefore=${stringify(pairBeforeWithdraw)}, pairAfter=${stringify(pairAfterWithdraw)}`);
+  console.log(`Exit: pairBefore=${stringify(pairBeforeWithdraw)}, pairAfter=${stringify(pairAfterWithdraw)}, tribeEarned=${stringify(tribeEarned)}`);
 
   console.log(`Gas:`);
   console.log(`GenesisGroup: purchase=${ggPurchaseGas}, launch=${launchGas}, redeem: ${redeemGas}, commit: ${ggCommitGas}`);
   console.log(`Admin: idoRedeem=${idoRedeemGas}, tribeRedeem=${adminTribeRedeemGas}, tribeDelegation=${adminDelegationGas}`);
   console.log(`Bonding Curve: pre=${preScaleBCGas}, post=${postScaleBCGas}`);
   console.log(`Uni: sell=${feiSellGas}`);
-  console.log(`Pool: stake=${stakedGas}, claim=${claimedGas}, withdraw=${withdrawGas}`);
+  console.log(`Pool: stake=${stakedGas}, exit=${claimedGas}`);
   callback();
 }
 

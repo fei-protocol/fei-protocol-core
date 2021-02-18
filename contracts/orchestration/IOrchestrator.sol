@@ -74,12 +74,21 @@ interface IGenesisOrchestrator is IOrchestrator {
         address core,
         address ethBondingCurve,
         address ido,
-        address tribeFeiPair,
         address oracle,
         uint256 genesisDuration,
-        uint256 exhangeRateDiscount,
-        uint256 poolDuration
-    ) external returns (address genesisGroup, address pool);
+        uint256 exhangeRateDiscount
+    ) external returns (address genesisGroup);
+}
+
+interface IStakingOrchestrator is IOrchestrator {
+    function init(
+        address core,
+        address tribeFeiPair,
+        address tribe,
+        uint stakingDuration,
+        uint dripFrequency,
+        uint incentiveAmount
+    ) external returns (address stakingRewards, address distributor);
 }
 
 interface IGovernanceOrchestrator is IOrchestrator {

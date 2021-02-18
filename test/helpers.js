@@ -26,6 +26,8 @@ const TimelockedDelegator = contract.fromArtifact('TimelockedDelegator');
 const Tribe = contract.fromArtifact('Tribe');
 const UniswapIncentive = contract.fromArtifact('UniswapIncentive');
 const UniswapOracle = contract.fromArtifact('UniswapOracle');
+const FeiStakingRewards = contract.fromArtifact('FeiStakingRewards');
+const FeiRewardsDistributor = contract.fromArtifact('FeiRewardsDistributor');
 
 
 const MockBondingCurve = contract.fromArtifact('MockBondingCurve');
@@ -33,6 +35,7 @@ const MockBondingCurveOracle = contract.fromArtifact('MockBondingCurveOracle');
 const MockCoreRef = contract.fromArtifact('MockCoreRef');
 const MockERC20 = contract.fromArtifact('MockERC20');
 const MockEthPCVDeposit = contract.fromArtifact('MockEthPCVDeposit');
+const MockERC20 = contract.fromArtifact('MockERC20');
 const MockIDO = contract.fromArtifact('MockIDO');
 const MockIncentive = contract.fromArtifact('MockUniswapIncentive');
 const MockOracle = contract.fromArtifact('MockOracle');
@@ -40,6 +43,7 @@ const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
 const MockPairTrade = contract.fromArtifact('MockUniswapV2PairTrade');
 const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
 const MockRouter = contract.fromArtifact('MockRouter');
+const MockStakingRewards = contract.fromArtifact('MockStakingRewards');
 const MockTribe = contract.fromArtifact('MockTribe');
 const MockUniswapIncentive = contract.fromArtifact('MockUniswapIncentive');
 const MockWeth = contract.fromArtifact('MockWeth');
@@ -105,6 +109,8 @@ module.exports = {
     EthUniswapPCVController,
     EthUniswapPCVDeposit,
     Fei,
+    FeiRewardsDistributor,
+    FeiStakingRewards,
     FeiRouter,
     ForceEth,
     GenesisGroup,
@@ -127,6 +133,7 @@ module.exports = {
     MockPairTrade,
     MockPCVDeposit,
     MockRouter,
+    MockStakingRewards,
     MockTribe,
     MockUniswapIncentive,
     MockWeth,

@@ -19,7 +19,6 @@ const {
   MockBondingCurve,
   GenesisGroup,
   MockBondingCurveOracle,
-  MockPool,
   getCore,
   forceEth
 } = require('../helpers');
@@ -35,11 +34,10 @@ describe('GenesisGroup', function () {
     this.bc = await MockBondingCurve.new(false, 10);
     this.ido = await MockIDO.new(this.tribe.address, 10, this.fei.address);
     this.bo = await MockBondingCurveOracle.new();
-    this.pool = await MockPool.new();
 
     this.duration = new BN('1000');
     this.exchangeRateDiscount = new BN('10');
-    this.genesisGroup = await GenesisGroup.new(this.core.address, this.bc.address, this.ido.address, this.bo.address, this.pool.address, this.duration, this.exchangeRateDiscount);
+    this.genesisGroup = await GenesisGroup.new(this.core.address, this.bc.address, this.ido.address, this.bo.address, this.duration, this.exchangeRateDiscount);
 
     this.tribeGenesisAmount = new BN('10000');
     await this.core.allocateTribe(this.genesisGroup.address, this.tribeGenesisAmount, {from: governorAddress});
@@ -235,10 +233,6 @@ describe('GenesisGroup', function () {
         it('inits Bonding Curve Oracle', async function() {
           expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('90000000000000000'));
         });
-  
-        it('inits pool', async function() {
-          expect(await this.pool.initialized()).to.be.equal(true);
-        });
     
         describe('Second Launch', function() {
           it('reverts', async function() {
@@ -278,10 +272,6 @@ describe('GenesisGroup', function () {
   
         it('inits Bonding Curve Oracle', async function() {
           expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('90000000000000000'));
-        });
-  
-        it('inits pool', async function() {
-          expect(await this.pool.initialized()).to.be.equal(true);
         });
       });
     });

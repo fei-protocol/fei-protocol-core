@@ -7,6 +7,7 @@ import "../token/IUniswapIncentive.sol";
 import "../token/IFei.sol";
 import "../refs/IOracleRef.sol";
 import "../core/Core.sol";
+import "../staking/IRewardsDistributor.sol";
 import "./IOrchestrator.sol";
 
 interface ITribe {
@@ -38,6 +39,9 @@ contract CoreOrchestrator is Ownable {
     uint256 public constant GENESIS_DURATION = 3 days;
 
     uint256 public constant POOL_DURATION = 2 * 365 days;
+    
+    uint256 public constant DRIP_FREQUENCY = 1 weeks;
+
     uint256 public constant THAWING_DURATION = 2 weeks;
 
     uint256 public constant UNI_ORACLE_TWAP_DURATION = 10 minutes; // 10 min twap
@@ -72,6 +76,7 @@ contract CoreOrchestrator is Ownable {
     IGenesisOrchestrator private genesisOrchestrator;
     IGovernanceOrchestrator private governanceOrchestrator;
     IRouterOrchestrator private routerOrchestrator;
+    IStakingOrchestrator private stakingOrchestrator;
 
     // ----------- Deployed Contracts -----------
     Core public core;
@@ -93,7 +98,9 @@ contract CoreOrchestrator is Ownable {
     address public timelockedDelegator;
 
     address public genesisGroup;
-    address public pool;
+
+    address public feiStakingRewards;
+    address public feiRewardsDistributor;
 
     address public governorAlpha;
     address public timelock;
@@ -107,6 +114,7 @@ contract CoreOrchestrator is Ownable {
         address _genesisOrchestrator,
         address _governanceOrchestrator,
         address _routerOrchestrator,
+        address _stakingOrchestrator,
         address _admin
     ) public {
         core = new Core();
@@ -129,6 +137,7 @@ contract CoreOrchestrator is Ownable {
             _governanceOrchestrator
         );
         routerOrchestrator = IRouterOrchestrator(_routerOrchestrator);
+        stakingOrchestrator = IStakingOrchestrator(_stakingOrchestrator);
 
         admin = _admin;
     }
@@ -247,26 +256,42 @@ contract CoreOrchestrator is Ownable {
     }
 
     function initGenesis() public onlyOwner {
-        (genesisGroup, pool) = genesisOrchestrator.init(
+        (genesisGroup) = genesisOrchestrator.init(
             address(core),
             ethBondingCurve,
             ido,
-            tribeFeiPair,
             bondingCurveOracle,
             GENESIS_DURATION,
-            EXCHANGE_RATE_DISCOUNT,
-            POOL_DURATION
+            EXCHANGE_RATE_DISCOUNT
         );
         core.setGenesisGroup(genesisGroup);
         core.allocateTribe(
             genesisGroup,
             (tribeSupply * GENESIS_TRIBE_PERCENTAGE) / 100
         );
+
+        genesisOrchestrator.detonate();
+    }
+
+    function initStaking() public onlyOwner {
+        (feiStakingRewards, feiRewardsDistributor) = stakingOrchestrator.init(
+            address(core),
+            tribeFeiPair,
+            tribe,
+            POOL_DURATION,
+            DRIP_FREQUENCY,
+            REWEIGHT_INCENTIVE
+        );
+
         core.allocateTribe(
-            pool,
+            feiRewardsDistributor,
             (tribeSupply * STAKING_TRIBE_PERCENTAGE) / 100
         );
-        genesisOrchestrator.detonate();
+        core.grantMinter(feiRewardsDistributor);
+
+        IRewardsDistributor(feiRewardsDistributor).setStakingContract(feiStakingRewards);
+
+        stakingOrchestrator.detonate();
     }
 
     function initGovernance() public onlyOwner {

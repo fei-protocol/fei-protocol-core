@@ -1,7 +1,6 @@
 pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../pool/FeiPool.sol";
 import "../genesis/GenesisGroup.sol";
 import "./IOrchestrator.sol";
 
@@ -10,25 +9,21 @@ contract GenesisOrchestrator is IGenesisOrchestrator, Ownable {
         address core,
         address ethBondingCurve,
         address ido,
-        address tribeFeiPair,
         address oracle,
         uint256 genesisDuration,
-        uint256 exhangeRateDiscount,
-        uint256 poolDuration
-    ) public override onlyOwner returns (address genesisGroup, address pool) {
-        pool = address(new FeiPool(core, tribeFeiPair, poolDuration));
+        uint256 exhangeRateDiscount
+    ) public override onlyOwner returns (address genesisGroup) {
         genesisGroup = address(
             new GenesisGroup(
                 core,
                 ethBondingCurve,
                 ido,
                 oracle,
-                pool,
                 genesisDuration,
                 exhangeRateDiscount
             )
         );
-        return (genesisGroup, pool);
+        return (genesisGroup);
     }
 
     function detonate() public override onlyOwner {
