@@ -24,13 +24,21 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
     IDOInterface private ido;
     uint256 private exchangeRateDiscount;
 
-    mapping(address => uint256) public committedFGEN;
-    uint256 public totalCommittedFGEN;
+    /// @notice amount of FGEN pre-committed and burned per account
+    mapping(address => uint256) public override committedFGEN;
 
-    uint256 public totalCommittedTribe;
+    /// @notice total amount of FGEN pre-committed and burned
+    uint256 public override totalCommittedFGEN;
 
-    uint256 public constant ORACLE_LISTING_PERCENT = 90;
-    uint256 public launchBlock;
+    /// @notice total amount of TRIBE coming from the IDO and pre-committed FGEN
+    /// @dev is 0 pre-launch
+    uint256 public override totalCommittedTribe;
+
+    /// @notice percent multiplier on the average genesis price to give to bondingCurveOracle
+    uint256 public constant override ORACLE_LISTING_PERCENT = 90;
+    
+    /// @notice the block number of the genesis launch
+    uint256 public override launchBlock;
 
     /// @notice GenesisGroup constructor
     /// @param _core Fei Core address to reference
