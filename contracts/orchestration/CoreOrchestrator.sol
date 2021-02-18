@@ -38,7 +38,7 @@ contract CoreOrchestrator is Ownable {
     uint256 public constant GENESIS_DURATION = 3 days;
 
     uint256 public constant POOL_DURATION = 2 * 365 days;
-    uint256 public constant THAWING_DURATION = 4 weeks;
+    uint256 public constant THAWING_DURATION = 2 weeks;
 
     uint256 public constant UNI_ORACLE_TWAP_DURATION = 10 minutes; // 10 min twap
 
