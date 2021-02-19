@@ -18,8 +18,8 @@ At each transfer \(or transferFrom\) the following addresses are checked for a m
 
 * FEI sender
 * FEI receiver
-* FEI operator \(msg.sender\) - usually the same as the sender unless using transferFrom with an approved contract
-* the zero address - representing an incentive to be applied on ALL transfers
+* FEI operator \(msg.sender\) - commonly the same as the sender unless using transferFrom with an approved contract
+* the zero address - represens an incentive to be applied on ALL transfers
 
 If an incentive contract is found, it is called with all of the transfer parameters. Any incentive is applied after the token balances update from the transfer.
 
