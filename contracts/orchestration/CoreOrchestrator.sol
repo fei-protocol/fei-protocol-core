@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../token/IUniswapIncentive.sol";
 import "../token/IFei.sol";
+import "../external/UniswapV2Pair.sol";
 import "../refs/IOracleRef.sol";
 import "../core/Core.sol";
 import "../staking/IRewardsDistributor.sol";
@@ -151,7 +152,9 @@ contract CoreOrchestrator is Ownable {
     }
 
     function initPairs() public onlyOwner {
-        ethFeiPair = UNISWAP_FACTORY.createPair(fei, WETH);
+        UniswapV2Pair _ethFeiPair = new UniswapV2Pair();
+        _ethFeiPair.initialize(fei, WETH);
+        ethFeiPair = address(_ethFeiPair);
         tribeFeiPair = UNISWAP_FACTORY.createPair(tribe, fei);
     }
 
