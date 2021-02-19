@@ -10,7 +10,7 @@ description: The Fei USD stablecoin
 
 ## Description
 
-FEI is a normal ERC-20 using the OpenZeppelin ERC-20Burnable code with the following differences:
+FEI is a regular ERC-20 token, based on the OpenZeppelin ERC-20Burnable code with the following modifications:
 
 Minting and burning to any address are uncapped and accessible by any address with the Minter💰and Burner🔥 role, respectively.
 
