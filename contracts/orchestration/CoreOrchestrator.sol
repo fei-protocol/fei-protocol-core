@@ -18,7 +18,7 @@ interface ITribe {
 contract CoreOrchestrator is Ownable {
     address public admin;
 
-    bool public constant ROPSTEN = false;
+    bool public constant ROPSTEN = true;
 
     // ----------- Uniswap Addresses -----------
     address public constant ETH_USDC_UNI_PAIR = ROPSTEN ? 
