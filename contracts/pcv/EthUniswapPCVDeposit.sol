@@ -2,7 +2,9 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./UniswapPCVDeposit.sol";
+import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 
 /// @title implementation for an ETH Uniswap LP PCV Deposit
 /// @author Fei Protocol
@@ -47,16 +49,12 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
         override
         returns (uint256)
     {
-        uint256 endOfTime = uint256(-1);
-        (, uint256 amountWithdrawn) =
-            router.removeLiquidityETH(
-                address(fei()),
-                liquidity,
-                0,
-                0,
-                address(this),
-                endOfTime
-            );
+        IWETH weth = IWETH(token());
+        pair.transfer(address(pair), liquidity); // send liquidity to pair
+        pair.burn(address(this));
+
+        uint amountWithdrawn = IERC20(address(weth)).balanceOf(address(this));
+        weth.withdraw(amountWithdrawn);
         return amountWithdrawn;
     }
 
@@ -65,16 +63,11 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
     }
 
     function _addLiquidity(uint256 ethAmount, uint256 feiAmount) internal {
-        _mintFei(feiAmount);
+        fei().mint(address(pair), feiAmount);
+        IWETH weth = IWETH(token());
 
-        uint256 endOfTime = uint256(-1);
-        router.addLiquidityETH{value: ethAmount}(
-            address(fei()),
-            feiAmount,
-            0,
-            0,
-            address(this),
-            endOfTime
-        );
+        weth.deposit{value: ethAmount}();
+        assert(weth.transfer(address(pair), ethAmount));
+        pair.mint(address(this));
     }
 }
