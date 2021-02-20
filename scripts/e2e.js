@@ -28,6 +28,7 @@ const FeiRouter = artifacts.require("FeiRouter");
 module.exports = async function(callback) {
   let accounts = await web3.eth.getAccounts();
   let co = await CoreOrchestrator.deployed();
+  let core = await Core.at(await co.core());
   let fei = await Fei.at(await core.fei());
   let tribe = await Tribe.at(await core.tribe());
   let gg = await GenesisGroup.at(await co.genesisGroup());
@@ -86,15 +87,6 @@ module.exports = async function(callback) {
   let tribeIdoReserves = idoReserves[1];
   let idoTotalLiquidity = await pair.totalSupply();
 
-  //
-  // setPendingBeneficiary(
-  // Accept beneficiary
-  // ido.release
-
-
-  // addLiquidity(
-  // use interface iUniswapV2Router02
-  //
   console.log(`IDO Reserves: fei=${stringify(feiIdoReserves)}, tribe=${stringify(tribeIdoReserves)}, liquidity=${stringify(idoTotalLiquidity)}`);
   await ido.release(accounts[0], '1', {from: accounts[0]}); //poke
 
