@@ -19,7 +19,6 @@ const FeiRouter = artifacts.require("FeiRouter");
 module.exports = async function(callback) {
   let accounts = await web3.eth.getAccounts();
   let co = await CoreOrchestrator.deployed();
-  let core = await Core.at(await co.core());
   let fei = await Fei.at(await core.fei());
   let tribe = await Tribe.at(await core.tribe());
   let gg = await GenesisGroup.at(await co.genesisGroup());
@@ -27,6 +26,7 @@ module.exports = async function(callback) {
   let pair = await IUniswapV2Pair.at(await ido.pair());
   let td = await TimelockedDelegator.at(await co.timelockedDelegator());
   let pool = await Pool.at(await co.pool());
+
   let bc = await EthBondingCurve.at(await co.ethBondingCurve());
   let ethPair = await IUniswapV2Pair.at(await co.ethFeiPair());
   let uo = await UniswapOracle.at(await co.uniswapOracle());
@@ -72,6 +72,15 @@ module.exports = async function(callback) {
   let tribeIdoReserves = idoReserves[1];
   let idoTotalLiquidity  = await pair.totalSupply();
 
+  //
+  // setPendingBeneficiary(
+  // Accept beneficiary
+  // ido.release
+
+
+  // addLiquidity(
+  // use interface iUniswapV2Router02
+  //
   console.log(`IDO Reserves: fei=${stringify(feiIdoReserves)}, tribe=${stringify(tribeIdoReserves)}, liquidity=${stringify(idoTotalLiquidity)}`);
   let idoRedeem = await ido.release({from: accounts[0]});
   let idoRedeemGas = idoRedeem['receipt']['gasUsed'];

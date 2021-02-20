@@ -3,6 +3,7 @@ const CoreOrchestrator = artifacts.require("CoreOrchestrator");
 const UniswapOracle = artifacts.require("UniswapOracle");
 const UniswapIncentive = artifacts.require("UniswapIncentive");
 const BondingCurveOracle = artifacts.require("BondingCurveOracle");
+const FeiRouter = artifacts.require("FeiRouter");
 
 
 module.exports = async function(callback) {
@@ -11,12 +12,14 @@ module.exports = async function(callback) {
     let uniswapOracle = await UniswapOracle.at(await co.uniswapOracle());
     let uniswapIncentive = await UniswapIncentive.at(await co.uniswapIncentive());
     let bondingCurveOracle = await BondingCurveOracle.at(await co.bondingCurveOracle());
+    let feiRouter = await FeiRouter.at(await co.feiRouter());
 
     console.log({
         uniswapOracle: uniswapOracle.address,
         genesis: genesis.address,
         uniswapIncentive: uniswapIncentive.address,
         bondingCurveOracle: bondingCurveOracle.address,
+        feiRouter: feiRouter.address,
     });
 
     await uniswapOracle.update();
@@ -25,17 +28,9 @@ module.exports = async function(callback) {
 
     let accounts = await web3.eth.getAccounts();
 
-    // let launch = await genesis.launch({from: accounts[0]});
+    let launch = await genesis.launch({from: accounts[0]});
 
     console.log("Launch called on Genesis Group");
-
-    //
-
-    // let nullAddress = "0x0000000000000000000000000000000000000000";
-    // let seven = "7000000000000000000";
-    // let five = "5000000000000000000";
-    // let one = "1000000000000000000";
-    // let half = "500000000000000000";
 
 
     callback();

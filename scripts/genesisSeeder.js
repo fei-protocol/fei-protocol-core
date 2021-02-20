@@ -14,12 +14,13 @@ module.exports = async function(callback) {
   let seven = "7000000000000000000";
   let five = "5000000000000000000";
   let one = "1000000000000000000";
+  let oneHundredTwentyThousand = "120000000000000000000000";
   let half = "500000000000000000";
 
   // Purchase 5 FGEN (account 0)
-  await genesis.purchase(accounts[0], five, {
+  await genesis.purchase(accounts[0], oneHundredTwentyThousand, {
     from: accounts[0],
-    value: five
+    value: oneHundredTwentyThousand
   });
 
   // Purchase 5 FGEN (account 1)
