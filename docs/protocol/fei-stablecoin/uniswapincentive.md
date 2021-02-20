@@ -10,29 +10,29 @@ description: The Direct Incentives contract for FEI/ETH liquidity
 
 ## Description
 
-A FEI incentive contract applied on transfers involving a Uniswap pair.
+The FEI incentive contract applied on transfers involving a Uniswap pair.
 
-The UniswapIncentive contract assumes that all transfers involving uniswap are either a sell or a buy. In either case, the hypothetical start and end price are calculated and compared to the peg to get a magnitude distance _m_. See UniRef for more details on how these formulas are derived.
+The UniswapIncentive contract assumes that all transfers involving Uniswap are either a sell or a buy. In either case, the hypothetical start and end price are calculated then compared to the peg to capture the magnitude distance _m_. See UniRef for more details on how these formulas are derived.
 
 {% page-ref page="../references/uniref.md" %}
 
-These are fed into the incentive function to produce a mint \(in the case of buy\) or burn \(in the case of sell\). Any address can be exempted from incentives by governance. We will go into detail on each.
+These parameters are fed into the incentive function to produce a mint \(in the case of buy\) or burn \(in the case of sell\) action. Any address can be exempted from incentives by governance.
 
 ### Sell \(Burn\)
 
-Any transfer going TO the uniswap pool is treated as a sell. This has the counterintuitive effect of treating liquidity provision as a sell.
+All transfers going TO the uniswap pool are treated as a sell. This has the counterintuitive effect of treating liquidity provision as a sell.
 
-The final magnitude _m_ deviation from the peg at the end of the hypothetical trade is used. The burn formula for sell amount _x_ is as follows: 
+The final magnitude _m_ deviation from the peg at the end of the hypothetical trade is used to calculate the burn amount. The burn formula for sell amount _x_ is: 
 
 ![Burn formula for UniswapIncentive](../../.gitbook/assets/screen-shot-2021-02-14-at-12.46.10-pm.png)
 
-The burn should only apply if the trade ends up below the peg, and if the incentive contract is appointed as a Burner🔥.
+The burn is only applied to trades below the peg when incentive contract is appointed as a Burner🔥.
 
 #### Exclusive vs Inclusive Fees
 
-An exclusive fee is one applied as an additional transfer beyond the expected transfer. i.e. if I send you 100 FEI with a 1% exclusive fee you get 100 FEI and I have to pay 1 FEI from my remaining balance.
+An exclusive fee is implemented as an additional transfer beyond the expected transfer. i.e. when a sender transfers 100 FEI with a 1% exclusive fee, the recepient receives 100 FEI, and the sender is charged 1 FEI from their remaining balance.
 
-An inclusive fee is one applied "in-flight" as a part of the transfer. i.e. if I send you 100 FEI with a 1% exclusive fee you get 99 FEI and the 1 FEI fee comes out of the amount transferred.
+An inclusive fee is implemented "in-flight" as a part of the transfer. i.e. when a sender transfers 100 FEI with a 1% inclusive fee, the recepient receives 99 FEI, since the recepient is charged 1 FEI from the transfered amount.
 
 Fei Protocol uses an exclusive fee for the Direct Incentives. They have the advantage of not affecting the expected ERC-20 transfer behavior of equal debits and credits, which can lead to easier integrations. A noteworthy drawback is that if the sender is a pooled contract, then the pool could be forced to pay the burn on behalf of the sender. For this reason only approved addresses can sell directly on the FEI/ETH incentivized Uniswap pair.
 
@@ -40,21 +40,21 @@ Fei Protocol uses an exclusive fee for the Direct Incentives. They have the adva
 Only approved addresses can send FEI to Uniswap, blocking selling and liquidity provision.
 {% endhint %}
 
-The [FeiRouter](../trading/feirouter.md) is approved for selling, and is the only way for end users to sell FEI at launch.
+The [FeiRouter](../trading/feirouter.md) is approved for selling and is the only way for end-users to sell FEI at launch.
 
-Fei Protocol can use either inclusive or exclusive burn fees in the future, and even upgrade the existing exclusive fee to an inclusive one if needed.
+Fei Protocol can use either inclusive or exclusive burn fees in the future, and even upgrade the existing exclusive fees to an inclusive type if needed.
 
 ### Buy \(Mint\)
 
-Any transfer going FROM the uniswap pool is treated as a buy. This has the counterintuitive effect of treating liquidity withdrawal events as buys.
+All transfer going FROM the uniswap pool are treated as a buy. This has the counterintuitive effect of treating liquidity withdrawal events as buys.
 
-The initial magnitude _m_ deviation from the peg before the hypothetical trade is used to maximize the potential mint. _w_ is a time weight we discuss in the next section. The mint formula for buy amount _x_ is as follows: 
+The initial magnitude _m_ deviation from the peg before the hypothetical trade is used to maximize the potential mint amount. _w_ is the time weight we discuss in the next section. The mint formula for buy amount _x_ is: 
 
 ![Mint incentive formula for UniswapIncentive](../../.gitbook/assets/screen-shot-2021-02-14-at-12.58.57-pm.png)
 
-This caps the mint function at 30% of the output of the burn function so that burns are always greater or equal for a given magnitude _m,_ regardless of the path taken to the current distance from the peg.
+Current implementation caps the mint function at 30% of the output of the burn function. This ensures that burns are always greater or equal for a given magnitude _m,_ regardless of the path taken to the current distance from the peg.
 
-Because incentives are applied flatly over the entire trade size _x_, a series of smaller sells could end up with a lower penalty than one large one. The amount paid in the best case is rarely below 30% of the worst case, hence we cap the reward at 30% of the worst case burn to make sure the mint doesn't exceed some best case burn and lead to a flash profit opportunity.
+Since incentives are applied flatly over the entire trade size _x_, a series of smaller sells could end up with a lower burn than a single large sell. The amount paid in the best case is rarely below 30% of the worst case, hence we cap the reward at 30% of the worst-case burn to make sure the mint doesn't exceed some best-case burn and lead to a flash profit opportunity.
 
 The mint should only apply if the trade starts below the peg, and if the incentive contract is appointed as a Minter.
 
