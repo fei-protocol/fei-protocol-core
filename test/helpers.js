@@ -35,7 +35,6 @@ const MockBondingCurveOracle = contract.fromArtifact('MockBondingCurveOracle');
 const MockCoreRef = contract.fromArtifact('MockCoreRef');
 const MockERC20 = contract.fromArtifact('MockERC20');
 const MockEthPCVDeposit = contract.fromArtifact('MockEthPCVDeposit');
-const MockERC20 = contract.fromArtifact('MockERC20');
 const MockIDO = contract.fromArtifact('MockIDO');
 const MockIncentive = contract.fromArtifact('MockUniswapIncentive');
 const MockOracle = contract.fromArtifact('MockOracle');
