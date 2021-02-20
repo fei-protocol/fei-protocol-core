@@ -27,7 +27,6 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     uint32 public constant override TIME_WEIGHT_GRANULARITY = 100_000;
 
     mapping(address => bool) private _exempt;
-    mapping(address => bool) private _allowlist;
 
     /// @notice UniswapIncentive constructor
     /// @param _core Fei Core to reference
@@ -47,7 +46,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     function incentivize(
         address sender,
         address receiver,
-        address operator,
+        address,
         uint256 amountIn
     ) external override onlyFei {
         require(sender != receiver, "UniswapIncentive: cannot send self");
@@ -58,10 +57,6 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         }
 
         if (_isPair(receiver)) {
-            require(
-                isSellAllowlisted(sender) || isSellAllowlisted(operator),
-                "UniswapIncentive: Blocked Fei sender or operator"
-            );
             _incentivizeSell(sender, amountIn);
         }
     }
@@ -76,18 +71,6 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     {
         _exempt[account] = isExempt;
         emit ExemptAddressUpdate(account, isExempt);
-    }
-
-    /// @notice set an address to be able to send tokens to Uniswap
-    /// @param account the address to update
-    /// @param isAllowed a flag for whether the account is allowed to sell or not
-    function setSellAllowlisted(address account, bool isAllowed)
-        external
-        override
-        onlyGuardianOrGovernor
-    {
-        _allowlist[account] = isAllowed;
-        emit SellAllowedAddressUpdate(account, isAllowed);
     }
 
     /// @notice set the time weight growth function
@@ -148,16 +131,6 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         returns (bool)
     {
         return _exempt[account];
-    }
-
-    /// @notice return true if the account is approved to sell to the Uniswap pool
-    function isSellAllowlisted(address account)
-        public
-        view
-        override
-        returns (bool)
-    {
-        return _allowlist[account];
     }
 
     /// @notice return true if burn incentive equals mint

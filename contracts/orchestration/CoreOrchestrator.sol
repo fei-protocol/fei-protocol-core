@@ -199,16 +199,6 @@ contract CoreOrchestrator is Ownable {
 
     function initRouter() public onlyOwner {
         feiRouter = routerOrchestrator.init(ethFeiPair, WETH, uniswapIncentive);
-
-        IUniswapIncentive(uniswapIncentive).setSellAllowlisted(feiRouter, true);
-        IUniswapIncentive(uniswapIncentive).setSellAllowlisted(
-            ethUniswapPCVDeposit,
-            true
-        );
-        IUniswapIncentive(uniswapIncentive).setSellAllowlisted(
-            ethUniswapPCVController,
-            true
-        );
     }
 
     function initController() public onlyOwner {
