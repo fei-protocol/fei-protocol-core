@@ -9,52 +9,75 @@ import "../refs/UniRef.sol";
 /// @title abstract implementation for Uniswap LP PCV Deposit
 /// @author Fei Protocol
 abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
-	using Decimal for Decimal.D256;
+    using Decimal for Decimal.D256;
 
-	/// @notice Uniswap PCV Deposit constructor
-	/// @param _core Fei Core for reference
-	/// @param _pair Uniswap Pair to deposit to
-	/// @param _router Uniswap Router
-	/// @param _oracle oracle for reference
-	constructor(
-		address _core, 
-		address _pair, 
-		address _router, 
-		address _oracle
-	) public UniRef(_core, _pair, _router, _oracle) {}
+    /// @notice Uniswap PCV Deposit constructor
+    /// @param _core Fei Core for reference
+    /// @param _pair Uniswap Pair to deposit to
+    /// @param _router Uniswap Router
+    /// @param _oracle oracle for reference
+    constructor(
+        address _core,
+        address _pair,
+        address _router,
+        address _oracle
+    ) public UniRef(_core, _pair, _router, _oracle) {}
 
-	function withdraw(address to, uint amountUnderlying) external override onlyPCVController {
-    	uint totalUnderlying = totalValue();
-    	require(amountUnderlying <= totalUnderlying, "UniswapPCVDeposit: Insufficient underlying");
+    /// @notice withdraw tokens from the PCV allocation
+    /// @param amountUnderlying of tokens withdrawn
+    /// @param to the address to send PCV to
+    function withdraw(address to, uint256 amountUnderlying)
+        external
+        override
+        onlyPCVController
+    {
+        uint256 totalUnderlying = totalValue();
+        require(
+            amountUnderlying <= totalUnderlying,
+            "UniswapPCVDeposit: Insufficient underlying"
+        );
 
-    	uint totalLiquidity = liquidityOwned();
-    	Decimal.D256 memory ratioToWithdraw = Decimal.ratio(amountUnderlying, totalUnderlying);
-    	uint liquidityToWithdraw = ratioToWithdraw.mul(totalLiquidity).asUint256();
+        uint256 totalLiquidity = liquidityOwned();
 
-    	uint amountWithdrawn = _removeLiquidity(liquidityToWithdraw);
-		
-    	_transferWithdrawn(to, amountWithdrawn);
-		
-    	_burnFeiHeld();
+        // ratio of LP tokens needed to get out the desired amount
+        Decimal.D256 memory ratioToWithdraw =
+            Decimal.ratio(amountUnderlying, totalUnderlying);
+        
+        // amount of LP tokens factoring in ratio
+        uint256 liquidityToWithdraw =
+            ratioToWithdraw.mul(totalLiquidity).asUint256();
 
-    	emit Withdrawal(msg.sender, to, amountWithdrawn);
+        uint256 amountWithdrawn = _removeLiquidity(liquidityToWithdraw);
+
+        _transferWithdrawn(to, amountWithdrawn);
+
+        _burnFeiHeld();
+
+        emit Withdrawal(msg.sender, to, amountWithdrawn);
     }
 
-	function totalValue() public view override returns(uint) {
-		(, uint tokenReserves) = getReserves();
-    	return ratioOwned().mul(tokenReserves).asUint256();
+    /// @notice returns total value of PCV in the Deposit
+    function totalValue() public view override returns (uint256) {
+        (, uint256 tokenReserves) = getReserves();
+        return _ratioOwned().mul(tokenReserves).asUint256();
     }
 
-	function _getAmountFeiToDeposit(uint amountToken) internal view returns (uint amountFei) {
-		(uint feiReserves, uint tokenReserves) = getReserves();
-		if (feiReserves == 0 || tokenReserves == 0) {
-			return peg().mul(amountToken).asUint256();
-		}
-		return UniswapV2Library.quote(amountToken, tokenReserves, feiReserves);
-	}
+    function _getAmountFeiToDeposit(uint256 amountToken)
+        internal
+        view
+        returns (uint256 amountFei)
+    {
+        (uint256 feiReserves, uint256 tokenReserves) = getReserves();
+        if (feiReserves == 0 || tokenReserves == 0) {
+            return peg().mul(amountToken).asUint256();
+        }
+        return UniswapV2Library.quote(amountToken, tokenReserves, feiReserves);
+    }
 
-    function _removeLiquidity(uint amount) internal virtual returns(uint);
+    function _removeLiquidity(uint256 amount)
+        internal
+        virtual
+        returns (uint256);
 
-    function _transferWithdrawn(address to, uint amount) internal virtual;
-
+    function _transferWithdrawn(address to, uint256 amount) internal virtual;
 }

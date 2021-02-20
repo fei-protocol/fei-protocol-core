@@ -1,9 +1,8 @@
-const { contract } = require('@openzeppelin/test-environment');
-
-const { BN } = require('@openzeppelin/test-helpers');
-const { expect } = require('chai');
-
-const Roots = contract.fromArtifact('RootsWrapper');
+const {
+  BN,
+  expect,
+  Roots
+} = require('../helpers');
 
 describe('Roots', function () {
   beforeEach(async function() {
@@ -60,12 +59,6 @@ describe('Roots', function () {
       it('100000000000000000000', async function () {
         expect(await this.roots.cubeRoot("100000000000000000000")).to.be.bignumber.equal(new BN(4641588));
       });
-    });
-  });
-
-  describe('2/3 Root', function() {
-    it('1.129e39', async function () {
-      expect(await this.roots.twoThirdsRoot(new BN("1129000000000000000000000000000000000000"))).to.be.bignumber.equal(new BN('108424965995569667616912100'));
     });
   });
 });

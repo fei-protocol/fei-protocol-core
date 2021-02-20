@@ -4,89 +4,118 @@ pragma solidity ^0.6.0;
 // Reference: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/TokenTimelock.sol
 
 import "./Timed.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./ILinearTokenTimelock.sol";
+import "../external/SafeMathCopy.sol";
 
-contract LinearTokenTimelock is Timed {
+contract LinearTokenTimelock is ILinearTokenTimelock, Timed {
+    using SafeMathCopy for uint256;
 
-    // ERC20 basic token contract being held
-    IERC20 public lockedToken;
+    /// @notice ERC20 basic token contract being held in timelock
+    IERC20 public override lockedToken;
 
-    // beneficiary of tokens after they are released
-    address public beneficiary;
+    /// @notice beneficiary of tokens after they are released
+    address public override beneficiary;
 
-    address public pendingBeneficiary;
+    /// @notice pending beneficiary appointed by current beneficiary
+    address public override pendingBeneficiary;
 
-    uint public initialBalance;
+    /// @notice initial balance of lockedToken
+    uint256 public override initialBalance;
 
-    uint internal lastBalance;
+    uint256 internal lastBalance;
 
-    event Release(address indexed _beneficiary, uint _amount);
-    event BeneficiaryUpdate(address indexed _beneficiary);
-    event PendingBeneficiaryUpdate(address indexed _pendingBeneficiary);
-
-    constructor (address _beneficiary, uint32 _duration) public Timed(_duration) {
+    constructor(
+        address _beneficiary,
+        uint256 _duration,
+        address _lockedToken
+    ) public Timed(_duration) {
         require(_duration != 0, "LinearTokenTimelock: duration is 0");
+        require(
+            _beneficiary != address(0),
+            "LinearTokenTimelock: Beneficiary must not be 0 address"
+        );
+
         beneficiary = _beneficiary;
         _initTimed();
+
+        _setLockedToken(_lockedToken);
     }
 
     // Prevents incoming LP tokens from messing up calculations
     modifier balanceCheck() {
         if (totalToken() > lastBalance) {
-            uint delta = totalToken() - lastBalance;
-            initialBalance += delta;
+            uint256 delta = totalToken().sub(lastBalance);
+            initialBalance = initialBalance.add(delta);
         }
         _;
         lastBalance = totalToken();
     }
 
     modifier onlyBeneficiary() {
-        require(msg.sender == beneficiary, "LinearTokenTimelock: Caller is not a beneficiary");
+        require(
+            msg.sender == beneficiary,
+            "LinearTokenTimelock: Caller is not a beneficiary"
+        );
         _;
     }
 
-    function release() external onlyBeneficiary balanceCheck {
-        uint amount = availableForRelease();
-        require(amount != 0, "LinearTokenTimelock: no tokens to release");
+    /// @notice releases unlocked tokens to beneficiary
+    function release(address to, uint amount) external override onlyBeneficiary balanceCheck {
+        require(amount != 0, "LinearTokenTimelock: no amount desired");
 
-        lockedToken.transfer(beneficiary, amount);
-        emit Release(beneficiary, amount);
+        uint256 available = availableForRelease();
+        require(amount <= available, "LinearTokenTimelock: not enough released tokens");
+
+        lockedToken.transfer(to, amount);
+        emit Release(beneficiary, to, amount);
     }
 
-    function totalToken() public view virtual returns(uint) {
+    /// @notice the total amount of tokens held by timelock
+    function totalToken() public view override virtual returns (uint256) {
         return lockedToken.balanceOf(address(this));
     }
 
-    function alreadyReleasedAmount() public view returns(uint) {
-        return initialBalance - totalToken();
+    /// @notice amount of tokens released to beneficiary
+    function alreadyReleasedAmount() public view override returns (uint256) {
+        return initialBalance.sub(totalToken());
     }
 
-    function availableForRelease() public view returns(uint) {
-        uint elapsed = timestamp();
-        uint _duration = duration;
+    /// @notice amount of held tokens unlocked and available for release
+    function availableForRelease() public view override returns (uint256) {
+        uint256 elapsed = timeSinceStart();
+        uint256 _duration = duration;
 
-        uint totalAvailable = initialBalance * elapsed / _duration;
-        uint netAvailable = totalAvailable - alreadyReleasedAmount();
+        uint256 totalAvailable = initialBalance.mul(elapsed) / _duration;
+        uint256 netAvailable = totalAvailable.sub(alreadyReleasedAmount());
         return netAvailable;
     }
 
-    function setPendingBeneficiary(address _pendingBeneficiary) public onlyBeneficiary {
+    /// @notice current beneficiary can appoint new beneficiary, which must be accepted
+    function setPendingBeneficiary(address _pendingBeneficiary)
+        public
+        override
+        onlyBeneficiary
+    {
         pendingBeneficiary = _pendingBeneficiary;
         emit PendingBeneficiaryUpdate(_pendingBeneficiary);
     }
 
-    function acceptBeneficiary() public virtual {
+    /// @notice pending beneficiary accepts new beneficiary
+    function acceptBeneficiary() public override virtual {
         _setBeneficiary(msg.sender);
     }
 
     function _setBeneficiary(address newBeneficiary) internal {
-        require(newBeneficiary == pendingBeneficiary, "LinearTokenTimelock: Caller is not pending beneficiary");
+        require(
+            newBeneficiary == pendingBeneficiary,
+            "LinearTokenTimelock: Caller is not pending beneficiary"
+        );
         beneficiary = newBeneficiary;
         emit BeneficiaryUpdate(newBeneficiary);
         pendingBeneficiary = address(0);
     }
 
-    function setLockedToken(address tokenAddress) internal {
+    function _setLockedToken(address tokenAddress) internal {
         lockedToken = IERC20(tokenAddress);
     }
 }

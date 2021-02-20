@@ -1,4 +1,3 @@
-
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
@@ -8,92 +7,139 @@ pragma experimental ABIEncoderV2;
 import "@uniswap/v2-periphery/contracts/libraries/UniswapV2OracleLibrary.sol";
 import "./IUniswapOracle.sol";
 import "../refs/CoreRef.sol";
+import "../external/SafeMathCopy.sol";
 
-/// @title IUniswapOracle implementation contract
+/// @title Uniswap Oracle for ETH/USDC
 /// @author Fei Protocol
+/// @notice maintains the TWAP of a uniswap pair contract over a specified duration
 contract UniswapOracle is IUniswapOracle, CoreRef {
-	using Decimal for Decimal.D256;
+    using Decimal for Decimal.D256;
+    using SafeMathCopy for uint256;
 
-	IUniswapV2Pair public override pair;
-	bool private isPrice0;
+    /// @notice the referenced uniswap pair contract
+    IUniswapV2Pair public override pair;
+    bool private isPrice0;
 
-	uint public override priorCumulative; 
-	uint32 public override priorTimestamp;
+    /// @notice the previous cumulative price of the oracle snapshot
+    uint256 public override priorCumulative;
 
-	Decimal.D256 private twap = Decimal.zero();
-	uint32 public override duration;
+    /// @notice the previous timestamp of the oracle snapshot
+    uint32 public override priorTimestamp;
 
-	bool public override killSwitch;
+    Decimal.D256 private twap = Decimal.zero();
 
-	/// @notice UniswapOracle constructor
-	/// @param _core Fei Core for reference
-	/// @param _pair Uniswap Pair to provide TWAP
-	/// @param _duration TWAP duration
-	/// @param _isPrice0 flag for using token0 or token1 for cumulative on Uniswap
-	constructor(
-		address _core, 
-		address _pair, 
-		uint32 _duration,
-		bool _isPrice0
-	) public CoreRef(_core) {
-		pair = IUniswapV2Pair(_pair);
-		// Relative to USD per ETH price
-		isPrice0 = _isPrice0;
+    /// @notice the window over which the initial price will "thaw" to the true peg price
+    uint256 public override duration;
 
-		duration = _duration;
+    /// @notice the kill switch for the oracle feed
+    /// @dev if kill switch is true, read will return invalid
+    bool public override killSwitch;
 
-		_init();
-	}
+    uint256 private constant FIXED_POINT_GRANULARITY = 2**112;
+    uint256 private constant USDC_DECIMALS_MULTIPLIER = 1e12; // to normalize USDC and ETH wei units
 
-	function update() external override returns (bool) {
-		(uint price0Cumulative, uint price1Cumulative, uint32 currentTimestamp) =
-            UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
+    /// @notice UniswapOracle constructor
+    /// @param _core Fei Core for reference
+    /// @param _pair Uniswap Pair to provide TWAP
+    /// @param _duration TWAP duration
+    /// @param _isPrice0 flag for using token0 or token1 for cumulative on Uniswap
+    constructor(
+        address _core,
+        address _pair,
+        uint256 _duration,
+        bool _isPrice0
+    ) public CoreRef(_core) {
+        pair = IUniswapV2Pair(_pair);
+        // Relative to USD per ETH price
+        isPrice0 = _isPrice0;
 
-		uint32 deltaTimestamp = currentTimestamp - priorTimestamp;
-		if(currentTimestamp <= priorTimestamp || deltaTimestamp < duration) {
-			return false;
-		}
+        duration = _duration;
 
-		uint currentCumulative = _getCumulative(price0Cumulative, price1Cumulative);
-		uint deltaCumulative = (currentCumulative - priorCumulative) / 1e12;
-
-		Decimal.D256 memory _twap = Decimal.ratio(2**112, deltaCumulative / deltaTimestamp);
-		twap = _twap;
-
-		priorTimestamp = currentTimestamp;
-		priorCumulative = currentCumulative;
-
-		emit Update(_twap.asUint256());
-
-		return true;
-	}
-
-    function read() external view override returns (Decimal.D256 memory, bool) {
-    	bool valid = !(killSwitch || twap.isZero());
-    	return (twap, valid);
+        _init();
     }
- 
-	function setKillSwitch(bool _killSwitch) external override onlyGovernor {
-		killSwitch = _killSwitch;
-		emit KillSwitchUpdate(_killSwitch);
-	}
 
-	function setDuration(uint32 _duration) external override onlyGovernor {
-		duration = _duration;
-		emit DurationUpdate(_duration);
-	}
+    /// @notice updates the oracle price
+    /// @return true if oracle is updated and false if unchanged
+    function update() external override returns (bool) {
+        (
+            uint256 price0Cumulative,
+            uint256 price1Cumulative,
+            uint32 currentTimestamp
+        ) = UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
 
-	function _init() internal {
-        uint price0Cumulative = pair.price0CumulativeLast();
-        uint price1Cumulative = pair.price1CumulativeLast();
+        uint32 deltaTimestamp = currentTimestamp - priorTimestamp; // allowing underflow per Uniswap Oracle spec
+        if (deltaTimestamp < duration) {
+            return false;
+        }
 
-        (,, uint32 currentTimestamp) = pair.getReserves();
+        uint256 currentCumulative = _getCumulative(price0Cumulative, price1Cumulative);
+        uint256 deltaCumulative =
+            (currentCumulative - priorCumulative).mul(USDC_DECIMALS_MULTIPLIER); // allowing underflow per Uniswap Oracle spec
+
+        // Uniswap stores cumulative price variables as a fixed point 112x112 so we need to divide out the granularity
+        Decimal.D256 memory _twap =
+            Decimal.ratio(
+                deltaCumulative / deltaTimestamp,
+                FIXED_POINT_GRANULARITY
+            );
+        twap = _twap;
 
         priorTimestamp = currentTimestamp;
-		priorCumulative = _getCumulative(price0Cumulative, price1Cumulative);
-	}
+        priorCumulative = currentCumulative;
 
-    function _getCumulative(uint price0Cumulative, uint price1Cumulative) internal view returns (uint) {
-		return isPrice0 ? price0Cumulative : price1Cumulative;
-	}
+        emit Update(_twap.asUint256());
+
+        return true;
+    }
+
+    /// @notice determine if read value is stale
+    /// @return true if read value is stale
+    function isOutdated() external view override returns (bool) {
+        (, , uint32 currentTimestamp) =
+            UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
+        uint32 deltaTimestamp = currentTimestamp - priorTimestamp; // allowing underflow per Uniswap Oracle spec
+        return deltaTimestamp >= duration;
+    }
+
+    /// @notice read the oracle price
+    /// @return oracle price
+    /// @return true if price is valid
+    /// @dev price is to be denominated in USD per X where X can be ETH, etc.
+    /// @dev Can be innacurate if outdated, need to call `isOutdated()` to check
+    function read() external view override returns (Decimal.D256 memory, bool) {
+        bool valid = !(killSwitch || twap.isZero());
+        return (twap, valid);
+    }
+
+    /// @notice sets the kill switch on the oracle feed
+    /// @param _killSwitch the new value for the kill switch
+    function setKillSwitch(bool _killSwitch) external override onlyGuardianOrGovernor {
+        killSwitch = _killSwitch;
+        emit KillSwitchUpdate(_killSwitch);
+    }
+
+    /// @notice set a new duration for the TWAP window
+    function setDuration(uint256 _duration) external override onlyGovernor {
+        duration = _duration;
+        emit DurationUpdate(_duration);
+    }
+
+    function _init() internal {
+        (
+            uint256 price0Cumulative,
+            uint256 price1Cumulative,
+            uint32 currentTimestamp
+        ) = UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
+
+        priorTimestamp = currentTimestamp;
+        priorCumulative = _getCumulative(price0Cumulative, price1Cumulative);
+    }
+
+    function _getCumulative(uint256 price0Cumulative, uint256 price1Cumulative)
+        internal
+        view
+        returns (uint256)
+    {
+        return isPrice0 ? price0Cumulative : price1Cumulative;
+    }
 }

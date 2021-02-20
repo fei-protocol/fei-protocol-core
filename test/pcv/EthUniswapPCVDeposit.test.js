@@ -1,25 +1,30 @@
-const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
-const { accounts, contract } = require('@openzeppelin/test-environment');
 
-const { BN, expectEvent, expectRevert, balance } = require('@openzeppelin/test-helpers');
-const { expect } = require('chai');
 
-const EthUniswapPCVDeposit = contract.fromArtifact('EthUniswapPCVDeposit');
-const Core = contract.fromArtifact('Core');
-const Fei = contract.fromArtifact('Fei');
-const MockERC20 = contract.fromArtifact('MockERC20');
-const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
-const MockRouter = contract.fromArtifact('MockRouter');
-const MockOracle = contract.fromArtifact('MockOracle');
+const {
+  userAddress, 
+  governorAddress, 
+  minterAddress, 
+  beneficiaryAddress1,
+  web3,
+  BN,
+  expectEvent,
+  expectRevert,
+  balance,
+  expect,
+  EthUniswapPCVDeposit,
+  Fei,
+  MockERC20,
+  MockOracle,
+  MockPair,
+  MockRouter,
+  getCore
+} = require('../helpers');
 
 describe('EthUniswapPCVDeposit', function () {
-  const [ userAddress, governorAddress, minterAddress, beneficiaryAddress, genesisGroup ] = accounts;
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit
 
   beforeEach(async function () {
-    this.core = await Core.new({from: governorAddress});
-    await this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
-    await this.core.completeGenesisGroup({from: genesisGroup});
+    this.core = await getCore(true);
 
     this.fei = await Fei.at(await this.core.fei());
     this.token = await MockERC20.new();
@@ -28,7 +33,6 @@ describe('EthUniswapPCVDeposit', function () {
     this.router = await MockRouter.new(this.pair.address);
     this.allocation = await EthUniswapPCVDeposit.new(this.core.address, this.pair.address, this.router.address, this.oracle.address);
     await this.core.grantMinter(this.allocation.address, {from: governorAddress});
-    await this.core.grantMinter(minterAddress, {from: governorAddress});
 
     await this.pair.set(100000, 50000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 500:1 FEI/ETH with 10k liquidity
   });
@@ -126,6 +130,34 @@ describe('EthUniswapPCVDeposit', function () {
         });
       });
 
+      describe('Transfers held ETH and burns FEI', function() {
+        beforeEach(async function() {
+          await web3.eth.sendTransaction({from: userAddress, to:this.allocation.address, value: "100000"});
+          await this.fei.mint(this.allocation.address, "1000", {from: minterAddress});
+          await this.allocation.deposit("100000", {from: userAddress, value: "100000"});
+        });
+
+        it('liquidityOwned', async function() {
+          expect(await this.allocation.liquidityOwned()).to.be.bignumber.equal(new BN(LIQUIDITY_INCREMENT * 2));
+        });
+
+        it('pair reserves', async function() {
+          expect(await balance.current(this.pair.address)).to.be.bignumber.equal(new BN(400000));
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(150000000));
+          let result = await this.allocation.getReserves();
+          expect(result[0]).to.be.bignumber.equal(new BN(200000000));
+          expect(result[1]).to.be.bignumber.equal(new BN(400000));
+        });
+
+        it('totalValue', async function() {
+          expect(await this.allocation.totalValue()).to.be.bignumber.equal(new BN(266666)); // rounding error
+        });
+
+        it('no fei held', async function() {
+          expect(await this.fei.balanceOf(this.allocation.address)).to.be.bignumber.equal(new BN(0));
+        });
+      });
+
       describe('After price move', function() {
         beforeEach(async function() {
           // Simulate ETH doubling to 1000:1
@@ -167,36 +199,36 @@ describe('EthUniswapPCVDeposit', function () {
   describe('Withdraw', function() {
     describe('Reverts', function() {
       it('not pcv controller', async function() {
-        await expectRevert(this.allocation.withdraw(beneficiaryAddress, "100000", {from: userAddress}), "CoreRef: Caller is not a PCV controller");
+        await expectRevert(this.allocation.withdraw(beneficiaryAddress1, "100000", {from: userAddress}), "CoreRef: Caller is not a PCV controller");
       });
 
       it('no balance', async function() {
         await this.core.grantPCVController(userAddress, {from: governorAddress});
-        await expectRevert(this.allocation.withdraw(beneficiaryAddress, "100000", {from: userAddress}), "UniswapPCVDeposit: Insufficient underlying");
+        await expectRevert(this.allocation.withdraw(beneficiaryAddress1, "100000", {from: userAddress}), "UniswapPCVDeposit: Insufficient underlying");
       });
     });
     describe('With Balance', function() {
       beforeEach(async function() {
         await this.core.grantPCVController(userAddress, {from: governorAddress});
         await this.allocation.deposit("100000", {from: userAddress, value: "100000"});
-        this.beneficiaryBalance = await balance.current(beneficiaryAddress);
+        this.beneficiaryBalance = await balance.current(beneficiaryAddress1);
       });
 
       describe('Partial', function() {
         beforeEach(async function() {
           expectEvent(
-            await this.allocation.withdraw(beneficiaryAddress, "50000", {from: userAddress}),
+            await this.allocation.withdraw(beneficiaryAddress1, "50000", {from: userAddress}),
             'Withdrawal',
             {
               _caller: userAddress,
-              _to: beneficiaryAddress,
+              _to: beneficiaryAddress1,
               _amount: "50000"
             }
           );
         });
 
         it('user balance updates', async function() {
-          expect(await balance.current(beneficiaryAddress)).to.be.bignumber.equal(new BN(50000).add(this.beneficiaryBalance));
+          expect(await balance.current(beneficiaryAddress1)).to.be.bignumber.equal(new BN(50000).add(this.beneficiaryBalance));
         });
 
         it('no fei held', async function() {
@@ -218,11 +250,11 @@ describe('EthUniswapPCVDeposit', function () {
 
       describe('Total', function() {
         beforeEach(async function() {
-          await this.allocation.withdraw(beneficiaryAddress, "100000", {from: userAddress});
+          await this.allocation.withdraw(beneficiaryAddress1, "100000", {from: userAddress});
         });
 
         it('user balance updates', async function() {
-          expect(await balance.current(beneficiaryAddress)).to.be.bignumber.equal(new BN(100000).add(this.beneficiaryBalance));
+          expect(await balance.current(beneficiaryAddress1)).to.be.bignumber.equal(new BN(100000).add(this.beneficiaryBalance));
         });
 
         it('no fei held', async function() {

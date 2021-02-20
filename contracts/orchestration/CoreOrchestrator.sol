@@ -1,115 +1,13 @@
 pragma solidity ^0.6.0;
 
-import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../token/IUniswapIncentive.sol";
 import "../token/IFei.sol";
 import "../refs/IOracleRef.sol";
 import "../core/Core.sol";
-
-interface IPCVDepositOrchestrator {
-    function init(
-        address core,
-        address pair,
-        address router,
-        address oraclePair,
-        uint32 twapDuration,
-        bool price0
-    ) external returns (address ethUniswapPCVDeposit, address uniswapOracle);
-
-    function detonate() external;
-}
-
-interface IBondingCurveOrchestrator {
-    function init(
-        address core,
-        address uniswapOracle,
-        address ethUniswapPCVDeposit,
-        uint256 scale,
-        uint32 thawingDuration,
-        uint32 bondingCurveIncentiveDuration,
-        uint256 bondingCurveIncentiveAmount
-    ) external returns (address ethBondingCurve, address bondingCurveOracle);
-
-    function detonate() external;
-}
-
-interface IIncentiveOrchestrator {
-    function init(
-        address core,
-        address bondingCurveOracle,
-        address fei,
-        address router,
-        uint32 growthRate
-    ) external returns (address uniswapIncentive);
-
-    function detonate() external;
-}
-
-interface IRouterOrchestrator {
-    function init(
-        address pair,
-        address weth,
-        address incentive
-    ) external returns (address ethRouter);
-
-    function detonate() external;
-}
-
-interface IControllerOrchestrator {
-    function init(
-        address core,
-        address bondingCurveOracle,
-        address uniswapIncentive,
-        address ethUniswapPCVDeposit,
-        address fei,
-        address router,
-        uint256 reweightIncentive,
-        uint256 reweightMinDistanceBPs
-    ) external returns (address ethUniswapPCVController);
-
-    function detonate() external;
-}
-
-interface IIDOOrchestrator {
-    function init(
-        address core,
-        address admin,
-        address tribe,
-        address pair,
-        address router,
-        uint32 releaseWindow
-    ) external returns (address ido, address timelockedDelegator);
-
-    function detonate() external;
-}
-
-interface IGenesisOrchestrator {
-    function init(
-        address core,
-        address ethBondingCurve,
-        address ido,
-        address tribeFeiPair,
-        address oracle,
-        uint32 genesisDuration,
-        uint256 maxPriceBPs,
-        uint256 exhangeRateDiscount,
-        uint32 poolDuration
-    ) external returns (address genesisGroup, address pool);
-
-    function detonate() external;
-}
-
-interface IGovernanceOrchestrator {
-    function init(
-        address admin,
-        address tribe,
-        uint256 timelockDelay
-    ) external returns (address governorAlpha, address timelock);
-
-    function detonate() external;
-}
+import "../staking/IRewardsDistributor.sol";
+import "./IOrchestrator.sol";
 
 interface ITribe {
     function setMinter(address minter_) external;
@@ -118,7 +16,6 @@ interface ITribe {
 // solhint-disable-next-line max-states-count
 contract CoreOrchestrator is Ownable {
     address public admin;
-    bool private constant TEST_MODE = true;
 
     // ----------- Uniswap Addresses -----------
     address public constant ETH_USDC_UNI_PAIR =
@@ -128,46 +25,44 @@ contract CoreOrchestrator is Ownable {
 
     address public constant WETH =
         address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
-    IUniswapV2Factory public constant UNISWAP_FACTORY =
-        IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
 
     address public ethFeiPair;
     address public tribeFeiPair;
 
     // ----------- Time periods -----------
-    uint32 public constant RELEASE_WINDOW = TEST_MODE ? 4 days : 4 * 365 days;
+    uint256 public constant RELEASE_WINDOW = 4 * 365 days;
 
-    uint256 public constant TIMELOCK_DELAY = TEST_MODE ? 1 hours : 3 days;
-    uint32 public constant GENESIS_DURATION = TEST_MODE ? 3 minutes : 3 days;
+    uint256 public constant TIMELOCK_DELAY = 1 days;
+    uint256 public constant GENESIS_DURATION = 3 days;
 
-    uint32 public constant POOL_DURATION = TEST_MODE ? 2 days : 2 * 365 days;
-    uint32 public constant THAWING_DURATION = TEST_MODE ? 4 minutes : 4 weeks;
+    uint256 public constant POOL_DURATION = 2 * 365 days;
 
-    uint32 public constant UNI_ORACLE_TWAP_DURATION =
-        TEST_MODE ? 1 : 10 minutes; // 10 min twap
+    uint256 public constant DRIP_FREQUENCY = 1 weeks;
 
-    uint32 public constant BONDING_CURVE_INCENTIVE_DURATION =
-        TEST_MODE ? 1 : 1 days; // 1 day duration
+    uint256 public constant THAWING_DURATION = 2 weeks;
+
+    uint256 public constant UNI_ORACLE_TWAP_DURATION = 10 minutes; // 10 min twap
+
+    uint256 public constant BONDING_CURVE_INCENTIVE_DURATION = 1 days; // 1 day duration
 
     // ----------- Params -----------
-    uint256 public constant MAX_GENESIS_PRICE_BPS = 9000;
     uint256 public constant EXCHANGE_RATE_DISCOUNT = 10;
 
-    uint32 public constant INCENTIVE_GROWTH_RATE = TEST_MODE ? 1_000_000 : 333; // about 1 unit per hour assuming 12s block time
+    uint32 public constant INCENTIVE_GROWTH_RATE = 25; // a bit over 1 unit per 15 hours assuming 13s block time
 
-    uint256 public constant SCALE = 250_000_000e18;
+    uint256 public constant SCALE = 100_000_000e18;
     uint256 public constant BONDING_CURVE_INCENTIVE = 500e18;
 
     uint256 public constant REWEIGHT_INCENTIVE = 500e18;
     uint256 public constant MIN_REWEIGHT_DISTANCE_BPS = 100;
 
-    bool public constant USDC_PER_ETH_IS_PRICE_0 = true;
+    bool public constant USDC_PER_ETH_IS_PRICE_0 = false;
 
     uint256 public tribeSupply;
     uint256 public constant IDO_TRIBE_PERCENTAGE = 20;
     uint256 public constant GENESIS_TRIBE_PERCENTAGE = 10;
     uint256 public constant DEV_TRIBE_PERCENTAGE = 20;
-    uint256 public constant STAKING_TRIBE_PERCENTAGE = 20;
+    uint256 public constant STAKING_TRIBE_PERCENTAGE = 10;
 
     // ----------- Orchestrators -----------
     IPCVDepositOrchestrator private pcvDepositOrchestrator;
@@ -178,6 +73,8 @@ contract CoreOrchestrator is Ownable {
     IGenesisOrchestrator private genesisOrchestrator;
     IGovernanceOrchestrator private governanceOrchestrator;
     IRouterOrchestrator private routerOrchestrator;
+    IStakingOrchestrator private stakingOrchestrator;
+    IPairOrchestrator private pairOrchestrator;
 
     // ----------- Deployed Contracts -----------
     Core public core;
@@ -199,7 +96,9 @@ contract CoreOrchestrator is Ownable {
     address public timelockedDelegator;
 
     address public genesisGroup;
-    address public pool;
+
+    address public feiStakingRewards;
+    address public feiRewardsDistributor;
 
     address public governorAlpha;
     address public timelock;
@@ -213,13 +112,15 @@ contract CoreOrchestrator is Ownable {
         address _genesisOrchestrator,
         address _governanceOrchestrator,
         address _routerOrchestrator,
+        address _stakingOrchestrator,
+        address _pairOrchestrator,
         address _admin
     ) public {
         core = new Core();
-        tribe = address(core.tribe());
-        fei = address(core.fei());
 
-        core.grantRevoker(_admin);
+        require(_admin != address(0), "CoreOrchestrator: no admin");
+
+        core.grantGuardian(_admin);
 
         pcvDepositOrchestrator = IPCVDepositOrchestrator(
             _pcvDepositOrchestrator
@@ -235,17 +136,22 @@ contract CoreOrchestrator is Ownable {
             _governanceOrchestrator
         );
         routerOrchestrator = IRouterOrchestrator(_routerOrchestrator);
+        stakingOrchestrator = IStakingOrchestrator(_stakingOrchestrator);
+        pairOrchestrator = IPairOrchestrator(_pairOrchestrator);
 
         admin = _admin;
+    }
+
+    function initCore() public onlyOwner {
+        core.init();
+
+        tribe = address(core.tribe());
+        fei = address(core.fei());
         tribeSupply = IERC20(tribe).totalSupply();
-        if (TEST_MODE) {
-            core.grantGovernor(_admin);
-        }
     }
 
     function initPairs() public onlyOwner {
-        ethFeiPair = UNISWAP_FACTORY.createPair(fei, WETH);
-        tribeFeiPair = UNISWAP_FACTORY.createPair(tribe, fei);
+        (ethFeiPair, tribeFeiPair) = pairOrchestrator.init(tribe, WETH, fei);
     }
 
     function initPCVDeposit() public onlyOwner() {
@@ -349,32 +255,48 @@ contract CoreOrchestrator is Ownable {
     }
 
     function initGenesis() public onlyOwner {
-        (genesisGroup, pool) = genesisOrchestrator.init(
+        (genesisGroup) = genesisOrchestrator.init(
             address(core),
             ethBondingCurve,
             ido,
-            tribeFeiPair,
             bondingCurveOracle,
             GENESIS_DURATION,
-            MAX_GENESIS_PRICE_BPS,
-            EXCHANGE_RATE_DISCOUNT,
-            POOL_DURATION
+            EXCHANGE_RATE_DISCOUNT
         );
         core.setGenesisGroup(genesisGroup);
         core.allocateTribe(
             genesisGroup,
             (tribeSupply * GENESIS_TRIBE_PERCENTAGE) / 100
         );
+
+        genesisOrchestrator.detonate();
+    }
+
+    function initStaking() public onlyOwner {
+        (feiStakingRewards, feiRewardsDistributor) = stakingOrchestrator.init(
+            address(core),
+            tribeFeiPair,
+            tribe,
+            POOL_DURATION,
+            DRIP_FREQUENCY,
+            REWEIGHT_INCENTIVE
+        );
+
         core.allocateTribe(
-            pool,
+            feiRewardsDistributor,
             (tribeSupply * STAKING_TRIBE_PERCENTAGE) / 100
         );
-        genesisOrchestrator.detonate();
+        core.grantMinter(feiRewardsDistributor);
+
+        IRewardsDistributor(feiRewardsDistributor).setStakingContract(
+            feiStakingRewards
+        );
+
+        stakingOrchestrator.detonate();
     }
 
     function initGovernance() public onlyOwner {
         (governorAlpha, timelock) = governanceOrchestrator.init(
-            admin,
             tribe,
             TIMELOCK_DELAY
         );

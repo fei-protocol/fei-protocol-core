@@ -1,225 +1,313 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./IGenesisGroup.sol";
 import "./IDOInterface.sol";
 import "../utils/Timed.sol";
 import "../refs/CoreRef.sol";
-import "../pool/IPool.sol";
 import "../oracle/IBondingCurveOracle.sol";
 import "../bondingcurve/IBondingCurve.sol";
 
-/// @title IGenesisGroup implementation
+/// @title Equal access to the first bonding curve transaction and the IDO
 /// @author Fei Protocol
-contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, ERC20Burnable, Timed {
-	using Decimal for Decimal.D256;
+contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
+    using Decimal for Decimal.D256;
 
-	IBondingCurve private bondingcurve;
+    IBondingCurve private bondingcurve;
 
-	IBondingCurveOracle private bondingCurveOracle;
+    IBondingCurveOracle private bondingCurveOracle;
 
-	IPool private pool;
+    IDOInterface private ido;
+    uint256 private exchangeRateDiscount;
 
-	IDOInterface private ido;
-	uint private exchangeRateDiscount;
+    /// @notice amount of FGEN pre-committed and burned per account
+    mapping(address => uint256) public override committedFGEN;
 
-	mapping(address => uint) public committedFGEN;
-	uint public totalCommittedFGEN;
+    /// @notice total amount of FGEN pre-committed and burned
+    uint256 public override totalCommittedFGEN;
 
-	uint public totalCommittedTribe;
+    /// @notice total amount of TRIBE coming from the IDO and pre-committed FGEN
+    /// @dev is 0 pre-launch
+    uint256 public override totalCommittedTribe;
 
-	/// @notice a cap on the genesis group purchase price
-	Decimal.D256 public maxGenesisPrice;
+    /// @notice percent multiplier on the average genesis price to give to bondingCurveOracle
+    uint256 public constant override ORACLE_LISTING_PERCENT = 90;
+    
+    /// @notice the block number of the genesis launch
+    uint256 public override launchBlock;
 
-	/// @notice GenesisGroup constructor
-	/// @param _core Fei Core address to reference
-	/// @param _bondingcurve Bonding curve address for purchase
-	/// @param _ido IDO contract to deploy
-	/// @param _oracle Bonding curve oracle
-	/// @param _pool Staking Pool
-	/// @param _duration duration of the Genesis Period
-	/// @param _maxPriceBPs max price of FEI allowed in Genesis Group in dollar terms
-	/// @param _exchangeRateDiscount a divisor on the FEI/TRIBE ratio at Genesis to deploy to the IDO
-	constructor(
-		address _core, 
-		address _bondingcurve,
-		address _ido,
-		address _oracle,
-		address _pool,
-		uint32 _duration,
-		uint _maxPriceBPs,
-		uint _exchangeRateDiscount
-	) public
-		CoreRef(_core)
-		ERC20("Fei Genesis Group", "FGEN")
-		Timed(_duration)
-	{
-		bondingcurve = IBondingCurve(_bondingcurve);
+    /// @notice GenesisGroup constructor
+    /// @param _core Fei Core address to reference
+    /// @param _bondingcurve Bonding curve address for purchase
+    /// @param _ido IDO contract to deploy
+    /// @param _oracle Bonding curve oracle
+    /// @param _duration duration of the Genesis Period
+    /// @param _exchangeRateDiscount a divisor on the FEI/TRIBE ratio at Genesis to deploy to the IDO
+    constructor(
+        address _core,
+        address _bondingcurve,
+        address _ido,
+        address _oracle,
+        uint256 _duration,
+        uint256 _exchangeRateDiscount
+    )
+        public
+        CoreRef(_core)
+        ERC20("Fei Genesis Group", "FGEN")
+        Timed(_duration)
+    {
+        bondingcurve = IBondingCurve(_bondingcurve);
 
-		exchangeRateDiscount = _exchangeRateDiscount;
-		ido = IDOInterface(_ido);
-		fei().approve(_ido, uint(-1));
+        exchangeRateDiscount = _exchangeRateDiscount;
+        ido = IDOInterface(_ido);
 
-		pool = IPool(_pool);
-		bondingCurveOracle = IBondingCurveOracle(_oracle);
+        uint256 maxTokens = uint256(-1);
+        fei().approve(_ido, maxTokens);
 
-		_initTimed();
+        bondingCurveOracle = IBondingCurveOracle(_oracle);
 
-		maxGenesisPrice = Decimal.ratio(_maxPriceBPs, 10000);
-	}
+        _initTimed();
+    }
 
-	modifier onlyGenesisPeriod() {
-		require(!isTimeEnded(), "GenesisGroup: Not in Genesis Period");
-		_;
-	}
+    modifier onlyGenesisPeriod() {
+        require(
+            !isTimeEnded() && !core().hasGenesisGroupCompleted(),
+            "GenesisGroup: Not in Genesis Period"
+        );
+        _;
+    }
 
-	function purchase(address to, uint value) external override payable onlyGenesisPeriod {
-		require(msg.value == value, "GenesisGroup: value mismatch");
-		require(value != 0, "GenesisGroup: no value sent");
+    /// @notice allows for entry into the Genesis Group via ETH. Only callable during Genesis Period.
+    /// @param to address to send FGEN Genesis tokens to
+    /// @param value amount of ETH to deposit
+    function purchase(address to, uint256 value)
+        external
+        payable
+        override
+        onlyGenesisPeriod
+    {
+        require(msg.value == value, "GenesisGroup: value mismatch");
+        require(value != 0, "GenesisGroup: no value sent");
 
-		_mint(to, value);
+        _mint(to, value);
 
-		emit Purchase(to, value);
-	}
+        emit Purchase(to, value);
+    }
 
-	function commit(address from, address to, uint amount) external override onlyGenesisPeriod {
-		burnFrom(from, amount);
+    /// @notice commit Genesis FEI to purchase TRIBE in DEX offering
+    /// @param from address to source FGEN Genesis shares from
+    /// @param to address to earn TRIBE and redeem post launch
+    /// @param amount of FGEN Genesis shares to commit
+    function commit(
+        address from,
+        address to,
+        uint256 amount
+    ) external override onlyGenesisPeriod {
+        _burnFrom(from, amount);
 
-		committedFGEN[to] = amount;
-		totalCommittedFGEN += amount;
+        committedFGEN[to] = committedFGEN[to].add(amount);
+        totalCommittedFGEN = totalCommittedFGEN.add(amount);
 
-		emit Commit(from, to, amount);
-	}
+        emit Commit(from, to, amount);
+    }
 
-	function redeem(address to) external override {
-		(uint feiAmount, uint genesisTribe, uint idoTribe) = getAmountsToRedeem(to); 
+    /// @notice redeem FGEN genesis tokens for FEI and TRIBE. Only callable post launch
+    /// @param to address to send redeemed FEI and TRIBE to.
+    function redeem(address to) external override {
+        (uint256 feiAmount, uint256 genesisTribe, uint256 idoTribe) =
+            getAmountsToRedeem(to);
+        require(
+            block.number > launchBlock,
+            "GenesisGroup: No redeeming in launch block"
+        );
 
-		uint tribeAmount = genesisTribe + idoTribe;
+        // Total tribe to redeem
+        uint256 tribeAmount = genesisTribe.add(idoTribe);
+        require(tribeAmount != 0, "GenesisGroup: No redeemable TRIBE");
 
-		require(tribeAmount != 0, "GenesisGroup: No redeemable TRIBE");
+        // Burn FGEN
+        uint256 amountIn = balanceOf(to);
+        _burnFrom(to, amountIn);
 
-		uint amountIn = balanceOf(to);
-		burnFrom(to, amountIn);
+        // Reset committed
+        uint256 committed = committedFGEN[to];
+        committedFGEN[to] = 0;
+        totalCommittedFGEN = totalCommittedFGEN.sub(committed);
 
-		uint committed = committedFGEN[to];
-		committedFGEN[to] = 0;
-		totalCommittedFGEN -= committed;
+        totalCommittedTribe = totalCommittedTribe.sub(idoTribe);
 
-		totalCommittedTribe -= idoTribe;
+        // send FEI and TRIBE
+        if (feiAmount != 0) {
+            fei().transfer(to, feiAmount);
+        }
+        tribe().transfer(to, tribeAmount);
 
+        emit Redeem(to, amountIn, feiAmount, tribeAmount);
+    }
 
-		if (feiAmount != 0) {
-			fei().transfer(to, feiAmount);
-		}
-		
-		tribe().transfer(to, tribeAmount);
+    /// @notice launch Fei Protocol. Callable once Genesis Period has ended
+    function launch() external override {
+        require(isTimeEnded(), "GenesisGroup: Still in Genesis Period");
 
-		emit Redeem(to, amountIn, feiAmount, tribeAmount);
-	}
+        // Complete Genesis
+        core().completeGenesisGroup();
+        launchBlock = block.number;
 
-	function getAmountsToRedeem(address to) public view postGenesis returns (uint feiAmount, uint genesisTribe, uint idoTribe) {
-		
-		uint userFGEN = balanceOf(to);
-		uint userCommittedFGEN = committedFGEN[to];
+        address genesisGroup = address(this);
+        uint256 balance = genesisGroup.balance;
 
-		uint circulatingFGEN = totalSupply();
-		uint totalFGEN = circulatingFGEN + totalCommittedFGEN;
+        // Initialize bonding curve oracle
+        Decimal.D256 memory oraclePrice =
+            bondingcurve
+                .getAveragePrice(balance)
+                .mul(ORACLE_LISTING_PERCENT)
+                .div(100);
+        bondingCurveOracle.init(oraclePrice);
 
-		// subtract purchased TRIBE amount
-		uint totalGenesisTribe = tribeBalance() - totalCommittedTribe;
+        // bonding curve purchase and PCV allocation
+        bondingcurve.purchase{value: balance}(genesisGroup, balance);
+        bondingcurve.allocate();
 
-		if (circulatingFGEN != 0) {
-			feiAmount = feiBalance() * userFGEN / circulatingFGEN;
-		}
+        ido.deploy(_feiTribeExchangeRate());
 
-		if (totalFGEN != 0) {
-			genesisTribe = totalGenesisTribe * (userFGEN + userCommittedFGEN) / totalFGEN;
-		}
+        // swap pre-committed FEI on IDO and store TRIBE
+        uint256 amountFei =
+            feiBalance().mul(totalCommittedFGEN) /
+                (totalSupply().add(totalCommittedFGEN));
+        if (amountFei != 0) {
+            totalCommittedTribe = ido.swapFei(amountFei);
+        }
 
-		if (totalCommittedFGEN != 0) {
-			idoTribe = totalCommittedTribe * userCommittedFGEN / totalCommittedFGEN;
-		}
+        // solhint-disable-next-line not-rely-on-time
+        emit Launch(block.timestamp);
+    }
 
-		return (feiAmount, genesisTribe, idoTribe);
-	}
+    // Add a backdoor out of Genesis in case of brick
+    function emergencyExit(address from, address payable to) external override {
+        require(
+            // solhint-disable-next-line not-rely-on-time
+            block.timestamp > (startTime + duration + 3 days),
+            "GenesisGroup: Not in exit window"
+        );
+        require(
+            !core().hasGenesisGroupCompleted(),
+            "GenesisGroup: Launch already happened"
+        );
 
-	function launch() external override {
-		require(isTimeEnded() || isAtMaxPrice(), "GenesisGroup: Still in Genesis Period");
+        uint256 heldFGEN = balanceOf(from);
+        uint256 committed = committedFGEN[from];
+        uint256 total = heldFGEN.add(committed);
 
-		core().completeGenesisGroup();
+        require(total != 0, "GenesisGroup: No FGEN or committed balance");
+        require(
+            msg.sender == from || allowance(from, msg.sender) >= total,
+            "GenesisGroup: Not approved for emergency withdrawal"
+        );
+        assert(address(this).balance >= total); // ETH can only be removed by launch which blocks this method or this method in event of launch failure
 
-		address genesisGroup = address(this);
-		uint balance = genesisGroup.balance;
+        _burnFrom(from, heldFGEN);
+        committedFGEN[from] = 0;
+        totalCommittedFGEN = totalCommittedFGEN.sub(committed);
 
-		bondingCurveOracle.init(bondingcurve.getAveragePrice(balance));
+        to.transfer(total);
+    }
 
-		bondingcurve.purchase{value: balance}(genesisGroup, balance);
-		bondingcurve.allocate();
+    /// @notice calculate amount of FEI and TRIBE redeemable by an account post-genesis
+    /// @return feiAmount the amount of FEI received by the user
+    /// @return genesisTribe the amount of TRIBE received by the user per GenesisGroup
+    /// @return idoTribe the amount of TRIBE received by the user per pre-committed FEI trading in the IDO
+    /// @dev this function is only callable post launch
+    function getAmountsToRedeem(address to)
+        public
+        view
+        override
+        postGenesis
+        returns (
+            uint256 feiAmount,
+            uint256 genesisTribe,
+            uint256 idoTribe
+        )
+    {
+        uint256 userFGEN = balanceOf(to);
+        uint256 userCommittedFGEN = committedFGEN[to];
 
-		pool.init();
+        uint256 circulatingFGEN = totalSupply();
+        uint256 totalFGEN = circulatingFGEN.add(totalCommittedFGEN);
 
-		ido.deploy(_feiTribeExchangeRate());
+        // subtract IDO purchased TRIBE amount
+        uint256 totalGenesisTribe = tribeBalance().sub(totalCommittedTribe);
 
-		uint amountFei = feiBalance() * totalCommittedFGEN / (totalSupply() + totalCommittedFGEN);
-		if (amountFei != 0) {
-			totalCommittedTribe = ido.swapFei(amountFei);
-		}
+        if (circulatingFGEN != 0) {
+            // portion of remaining uncommitted FEI
+            feiAmount = feiBalance().mul(userFGEN) / circulatingFGEN;
+        }
 
-		// solhint-disable-next-line not-rely-on-time
-		emit Launch(now);
-	}
+        if (totalFGEN != 0) {
+            // portion including both committed and uncommitted FGEN
+            genesisTribe =
+                totalGenesisTribe.mul(userFGEN.add(userCommittedFGEN)) /
+                totalFGEN;
+        }
 
-	// Add a backdoor out of Genesis in case of brick
-	function emergencyExit(address from, address to) external {
-		require(now > (startTime + duration + 3 days), "GenesisGroup: Not in exit window");
+        if (totalCommittedFGEN != 0) {
+            // portion including only committed FGEN of IDO TRIBE
+            idoTribe =
+                totalCommittedTribe.mul(userCommittedFGEN) /
+                totalCommittedFGEN;
+        }
 
-		uint amountFGEN = balanceOf(from);
-		uint total = amountFGEN + committedFGEN[from];
+        return (feiAmount, genesisTribe, idoTribe);
+    }
 
-		require(total != 0, "GenesisGroup: No FGEN or committed balance");
-		require(address(this).balance >= total, "GenesisGroup: Not enough ETH to redeem");
-		require(msg.sender == from || allowance(from, msg.sender) >= total, "GenesisGroup: Not approved for emergency withdrawal");
+    /// @notice calculate amount of FEI and TRIBE received if the Genesis Group ended now.
+    /// @param amountIn amount of FGEN held or equivalently amount of ETH purchasing with
+    /// @param inclusive if true, assumes the `amountIn` is part of the existing FGEN supply. Set to false to simulate a new purchase.
+    /// @return feiAmount the amount of FEI received by the user
+    /// @return tribeAmount the amount of TRIBE received by the user
+    function getAmountOut(uint256 amountIn, bool inclusive)
+        public
+        view
+        override
+        returns (uint256 feiAmount, uint256 tribeAmount)
+    {
+        uint256 totalIn = totalSupply();
+        if (!inclusive) {
+            // exclusive from current supply, so we add it in
+            totalIn = totalIn.add(amountIn);
+        }
+        require(amountIn <= totalIn, "GenesisGroup: Not enough supply");
 
-		burnFrom(from, amountFGEN);
-		committedFGEN[from] = 0;
+        uint256 totalFei = bondingcurve.getAmountOut(totalIn);
+        uint256 totalTribe = tribeBalance();
 
-		payable(to).transfer(total);
-	}
+        // return portions of total FEI and TRIBE
+        return (
+            totalFei.mul(amountIn) / totalIn,
+            totalTribe.mul(amountIn) / totalIn
+        );
+    }
 
-	function getAmountOut(
-		uint amountIn, 
-		bool inclusive
-	) public view override returns (uint feiAmount, uint tribeAmount) {
-		uint totalIn = totalSupply();
-		if (!inclusive) {
-			totalIn += amountIn;
-		}
-		require(amountIn <= totalIn, "GenesisGroup: Not enough supply");
+    function _burnFrom(address account, uint256 amount) internal {
+        if (msg.sender != account) {
+            uint256 decreasedAllowance =
+                allowance(account, _msgSender()).sub(
+                    amount,
+                    "GenesisGroup: burn amount exceeds allowance"
+                );
+            _approve(account, _msgSender(), decreasedAllowance);
+        }
+        _burn(account, amount);
+    }
 
-		uint totalFei = bondingcurve.getAmountOut(totalIn);
-		uint totalTribe = tribeBalance();
-
-		return (totalFei * amountIn / totalIn, totalTribe * amountIn / totalIn);
-	}
-
-	function isAtMaxPrice() public view override returns(bool) {
-		uint balance = address(this).balance;
-		require(balance != 0, "GenesisGroup: No balance");
-
-		return bondingcurve.getAveragePrice(balance).greaterThanOrEqualTo(maxGenesisPrice);
-	}
-
-	function burnFrom(address account, uint amount) public override {
-		// Sender doesn't need approval
-		if (msg.sender == account) {
-			increaseAllowance(account, amount);
-		}
-		super.burnFrom(account, amount);
-	}
-
-	function _feiTribeExchangeRate() public view returns (Decimal.D256 memory) {
-		return Decimal.ratio(feiBalance(), tribeBalance()).div(exchangeRateDiscount);
-	}
+    function _feiTribeExchangeRate()
+        internal
+        view
+        returns (Decimal.D256 memory)
+    {
+        return
+            Decimal.ratio(feiBalance(), tribeBalance()).div(
+                exchangeRateDiscount
+            );
+    }
 }

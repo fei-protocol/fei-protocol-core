@@ -2,24 +2,20 @@ pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../router/FeiRouter.sol";
+import "./IOrchestrator.sol";
 
-contract RouterOrchestrator is Ownable {
+contract RouterOrchestrator is IRouterOrchestrator, Ownable {
+    function init(
+        address pair,
+        address weth,
+        address incentive
+    ) public override onlyOwner returns (address ethRouter) {
+        ethRouter = address(new FeiRouter(pair, weth, incentive));
 
-	function init(
-		address pair, 
-		address weth,
-		address incentive
-	) public onlyOwner returns(address ethRouter) {
-		
-		ethRouter = address(new FeiRouter(pair, 
-			weth, 
-			incentive
-		));
+        return ethRouter;
+    }
 
-		return ethRouter;
-	}
-
-	function detonate() public onlyOwner {
-		selfdestruct(payable(owner()));
-	}
+    function detonate() public override onlyOwner {
+        selfdestruct(payable(owner()));
+    }
 }

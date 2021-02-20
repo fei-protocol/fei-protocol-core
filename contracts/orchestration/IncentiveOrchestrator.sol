@@ -2,8 +2,9 @@ pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../token/UniswapIncentive.sol";
+import "./IOrchestrator.sol";
 
-contract IncentiveOrchestrator is Ownable {
+contract IncentiveOrchestrator is IIncentiveOrchestrator, Ownable {
 
 	UniswapIncentive public uniswapIncentive;
 
@@ -14,11 +15,11 @@ contract IncentiveOrchestrator is Ownable {
 		address pair, 
 		address router,
 		uint32 growthRate
-	) public onlyOwner returns(address) {
+	) public override onlyOwner returns(address) {
 		return address(new UniswapIncentive(core, bondingCurveOracle, pair, router, growthRate));
 	}
 
-	function detonate() public onlyOwner {
+	function detonate() public override onlyOwner {
 		selfdestruct(payable(owner()));
 	}
 }

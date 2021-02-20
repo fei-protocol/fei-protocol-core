@@ -1,32 +1,69 @@
-const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
-const { accounts, contract } = require('@openzeppelin/test-environment');
-
-const { BN, expectEvent, expectRevert, balance, time } = require('@openzeppelin/test-helpers');
-const { expect } = require('chai');
-
-const BondingCurveOracle = contract.fromArtifact('BondingCurveOracle');
-const Core = contract.fromArtifact('Core');
-const MockOracle = contract.fromArtifact('MockOracle');
-const MockBondingCurve = contract.fromArtifact('MockBondingCurve')
+const {
+  userAddress,
+  governorAddress,
+  genesisGroup,
+  guardianAddress,
+  BN,
+  expectEvent,
+  expectRevert,
+  time,
+  expect,
+  BondingCurveOracle,
+  MockBondingCurve,
+  MockOracle,
+  getCore
+} = require('../helpers');
 
 describe('BondingCurveOracle', function () {
-  const [ userAddress, governorAddress, genesisGroup ] = accounts;
 
   beforeEach(async function () {
-    this.core = await Core.new({from: governorAddress});
-    this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
+    this.core = await getCore(true);
+
     this.mockOracle = await MockOracle.new(500);
     this.bondingCurve = await MockBondingCurve.new(false, 80000);
     
-    let duration = 4 * 7 * 24 * 60 * 60;
-    this.oracle = await BondingCurveOracle.new(this.core.address, this.mockOracle.address, this.bondingCurve.address, duration);
+    this.duration = new BN(4 * 7 * 24 * 60 * 60);
+    this.oracle = await BondingCurveOracle.new(this.core.address, this.mockOracle.address, this.bondingCurve.address, this.duration);
   });
+
+  describe('Init', function() {
+    it('Timed', async function() {
+      expect(await this.oracle.isTimeEnded()).to.be.equal(false);
+      expect(await this.oracle.remainingTime()).to.be.bignumber.equal(this.duration);
+      expect(await this.oracle.timeSinceStart()).to.be.bignumber.equal(new BN('0'));
+    });
+
+    it('uniswapOracle', async function() {
+      expect(await this.oracle.uniswapOracle()).to.be.equal(this.mockOracle.address);
+    });
+
+    it('bondingCurve', async function() {
+      expect(await this.oracle.bondingCurve()).to.be.equal(this.bondingCurve.address);
+    });
+
+    it('killSwitch', async function() {
+      expect(await this.oracle.killSwitch()).to.be.equal(true);
+    });
+
+    it('initialPrice', async function() {
+      expect((await this.oracle.initialPrice())[0]).to.be.equal('0');
+    });
+  });
+
 
   describe('Update', function() {
     it('updates uniswap oracle', async function() {
       expect(await this.mockOracle.updated()).to.be.equal(false);
       await this.oracle.update();
       expect(await this.mockOracle.updated()).to.be.equal(true);
+    });
+  });
+
+  describe('isOutdated', function() {
+    it('reads uniswapOracle', async function() {
+      expect(await this.oracle.isOutdated()).to.be.equal(false);
+      await this.mockOracle.setOutdated(true);
+      expect(await this.oracle.isOutdated()).to.be.equal(true);
     });
   });
 
@@ -42,6 +79,10 @@ describe('BondingCurveOracle', function () {
     describe('Initialized', function() {
       beforeEach(async function() {
         await this.oracle.init(['500000000000000000'], {from: genesisGroup});
+      });
+
+      it('initialPrice', async function() {
+        expect((await this.oracle.initialPrice())[0]).to.be.equal('500000000000000000');
       });
 
       describe('Kill switch', function() {
@@ -140,8 +181,17 @@ describe('BondingCurveOracle', function () {
         expect(await this.oracle.killSwitch()).to.be.equal(true);
       });
 
+      it('Guardian set succeeds', async function() {
+        expectEvent(
+            await this.oracle.setKillSwitch(true, {from: guardianAddress}),
+            'KillSwitchUpdate',
+            { _killSwitch: true }
+          );
+        expect(await this.oracle.killSwitch()).to.be.equal(true);
+      });
+
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.oracle.setKillSwitch(false, {from: userAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.oracle.setKillSwitch(false, {from: userAddress}), "CoreRef: Caller is not a guardian or governor");
       });
     });
   });
