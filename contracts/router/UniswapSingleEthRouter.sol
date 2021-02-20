@@ -3,11 +3,15 @@ pragma solidity ^0.6.0;
 import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../external/SafeMathCopy.sol";
 import "./IUniswapSingleEthRouter.sol";
 
 /// @title A Uniswap Router for token/ETH swaps
 /// @author Fei Protocol
 contract UniswapSingleEthRouter is IUniswapSingleEthRouter {
+    using SafeMathCopy for uint256;
+
     // solhint-disable-next-line var-name-mixedcase
     IWETH public immutable WETH;
 
@@ -108,6 +112,53 @@ contract UniswapSingleEthRouter is IUniswapSingleEthRouter {
             msg.sender,
             address(PAIR),
             amountIn
+        );
+
+        (uint256 amount0Out, uint256 amount1Out) =
+            isETH0 ? (amountOut, uint256(0)) : (uint256(0), amountOut);
+        PAIR.swap(amount0Out, amount1Out, address(this), new bytes(0));
+
+        IWETH(WETH).withdraw(amountOut);
+
+        TransferHelper.safeTransferETH(to, amountOut);
+    }
+
+
+    /// @notice swap tokens for ETH with some protections
+    /// @param amountIn amount of tokens to sell
+    /// @param amountOutMin minimum ETH received
+    /// @param to address to send ETH
+    /// @param deadline block timestamp after which trade is invalid
+    /// @return amountOut the amount of ETH received
+    function swapExactTokensForETHSupportingFeeOnTransfer(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address to,
+        uint256 deadline
+    ) public override ensure(deadline) returns (uint256 amountOut) {
+
+        (uint256 reservesETH, uint256 reservesOther, bool isETH0) =
+            _getReserves();
+        address token = isETH0 ? PAIR.token1() : PAIR.token0();
+
+        TransferHelper.safeTransferFrom(
+            token,
+            msg.sender,
+            address(PAIR),
+            amountIn
+        );
+
+        uint256 effectiveAmountIn = IERC20(token).balanceOf(address(PAIR)).sub(reservesOther);
+
+        amountOut = UniswapV2Library.getAmountOut(
+            effectiveAmountIn,
+            reservesOther,
+            reservesETH
+        );
+
+        require(
+            amountOut >= amountOutMin,
+            "UniswapSingleEthRouter: INSUFFICIENT_OUTPUT_AMOUNT"
         );
 
         (uint256 amount0Out, uint256 amount1Out) =
