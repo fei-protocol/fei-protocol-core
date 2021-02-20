@@ -39,20 +39,8 @@ contract IDO is IDOInterface, UniRef, LinearTokenTimelock {
 
         // calculate and mint amount of FEI for IDO
         uint256 feiAmount = feiRatio.mul(tribeAmount).asUint256();
-        _mintFei(feiAmount);
 
-        // deposit liquidity
-        uint256 endOfTime = uint256(-1);
-        router.addLiquidity(
-            address(tribe()),
-            address(fei()),
-            tribeAmount,
-            feiAmount,
-            tribeAmount,
-            feiAmount,
-            address(this),
-            endOfTime
-        );
+        _addLiquidity(feiAmount, tribeAmount);
 
         emit Deploy(feiAmount, tribeAmount);
     }

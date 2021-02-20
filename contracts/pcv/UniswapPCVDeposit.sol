@@ -74,10 +74,5 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
         return UniswapV2Library.quote(amountToken, tokenReserves, feiReserves);
     }
 
-    function _removeLiquidity(uint256 amount)
-        internal
-        virtual
-        returns (uint256);
-
     function _transferWithdrawn(address to, uint256 amount) internal virtual;
 }

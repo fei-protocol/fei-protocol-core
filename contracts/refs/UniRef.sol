@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/math/SignedSafeMath.sol";
 import "@openzeppelin/contracts/utils/SafeCast.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
+import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 import "./OracleRef.sol";
 import "./IUniRef.sol";
 import "../external/SafeMathCopy.sol";
@@ -119,6 +120,24 @@ abstract contract UniRef is IUniRef, OracleRef {
 
     function _isPair(address account) internal view returns (bool) {
         return address(pair) == account;
+    }
+
+    function _addLiquidity(
+        uint256 feiAmount,
+        uint256 tokenAmount
+    ) internal returns (uint256) {
+        fei().mint(address(pair), feiAmount);
+        TransferHelper.safeTransfer(token(), address(pair), tokenAmount);
+        pair.mint(address(this));
+        return liquidityOwned();
+    }
+
+    function _removeLiquidity(
+        uint256 liquidity
+    ) internal returns (uint256) {
+        pair.transfer(address(pair), liquidity); // send liquidity to pair
+        pair.burn(address(this));
+        return IERC20(token()).balanceOf(address(this));
     }
 
     /// @notice utility for calculating absolute distance from peg based on reserves

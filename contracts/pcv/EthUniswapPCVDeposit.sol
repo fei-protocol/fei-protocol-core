@@ -37,37 +37,19 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
 
         uint256 feiAmount = _getAmountFeiToDeposit(ethAmount);
 
-        _addLiquidity(ethAmount, feiAmount);
+        IWETH weth = IWETH(token());
+        weth.deposit{value: ethAmount}();
+
+        _addLiquidity(feiAmount, ethAmount);
 
         _burnFeiHeld(); // burn any FEI dust from LP
 
         emit Deposit(msg.sender, ethAmount);
     }
 
-    function _removeLiquidity(uint256 liquidity)
-        internal
-        override
-        returns (uint256)
-    {
-        IWETH weth = IWETH(token());
-        pair.transfer(address(pair), liquidity); // send liquidity to pair
-        pair.burn(address(this));
-
-        uint amountWithdrawn = IERC20(address(weth)).balanceOf(address(this));
-        weth.withdraw(amountWithdrawn);
-        return amountWithdrawn;
-    }
-
     function _transferWithdrawn(address to, uint256 amount) internal override {
-        payable(to).sendValue(amount);
-    }
-
-    function _addLiquidity(uint256 ethAmount, uint256 feiAmount) internal {
-        fei().mint(address(pair), feiAmount);
         IWETH weth = IWETH(token());
-
-        weth.deposit{value: ethAmount}();
-        assert(weth.transfer(address(pair), ethAmount));
-        pair.mint(address(this));
+        weth.withdraw(amount);
+        payable(to).sendValue(amount);
     }
 }
