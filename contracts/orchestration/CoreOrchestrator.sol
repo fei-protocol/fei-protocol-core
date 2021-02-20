@@ -1,11 +1,9 @@
 pragma solidity ^0.6.0;
 
-import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../token/IUniswapIncentive.sol";
 import "../token/IFei.sol";
-import "../external/UniswapV2Pair.sol";
 import "../refs/IOracleRef.sol";
 import "../core/Core.sol";
 import "../staking/IRewardsDistributor.sol";
@@ -27,8 +25,6 @@ contract CoreOrchestrator is Ownable {
 
     address public constant WETH =
         address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
-    IUniswapV2Factory public constant UNISWAP_FACTORY =
-        IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
 
     address public ethFeiPair;
     address public tribeFeiPair;
@@ -78,6 +74,7 @@ contract CoreOrchestrator is Ownable {
     IGovernanceOrchestrator private governanceOrchestrator;
     IRouterOrchestrator private routerOrchestrator;
     IStakingOrchestrator private stakingOrchestrator;
+    IPairOrchestrator private pairOrchestrator;
 
     // ----------- Deployed Contracts -----------
     Core public core;
@@ -116,6 +113,7 @@ contract CoreOrchestrator is Ownable {
         address _governanceOrchestrator,
         address _routerOrchestrator,
         address _stakingOrchestrator,
+        address _pairOrchestrator,
         address _admin
     ) public {
         core = new Core();
@@ -139,6 +137,7 @@ contract CoreOrchestrator is Ownable {
         );
         routerOrchestrator = IRouterOrchestrator(_routerOrchestrator);
         stakingOrchestrator = IStakingOrchestrator(_stakingOrchestrator);
+        pairOrchestrator = IPairOrchestrator(_pairOrchestrator);
 
         admin = _admin;
     }
@@ -152,10 +151,7 @@ contract CoreOrchestrator is Ownable {
     }
 
     function initPairs() public onlyOwner {
-        UniswapV2Pair _ethFeiPair = new UniswapV2Pair();
-        _ethFeiPair.initialize(fei, WETH);
-        ethFeiPair = address(_ethFeiPair);
-        tribeFeiPair = UNISWAP_FACTORY.createPair(tribe, fei);
+        (ethFeiPair, tribeFeiPair) = pairOrchestrator.init(tribe, WETH, fei);
     }
 
     function initPCVDeposit() public onlyOwner() {

@@ -4,6 +4,14 @@ interface IOrchestrator {
     function detonate() external;
 }
 
+interface IPairOrchestrator is IOrchestrator {
+    function init(
+        address tribe,
+        address weth,
+        address fei
+    ) external returns (address ethFeiPair, address tribeFeiPair);
+}
+
 interface IPCVDepositOrchestrator is IOrchestrator {
     function init(
         address core,
