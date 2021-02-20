@@ -18,21 +18,10 @@
  *
  */
 
-<<<<<<< HEAD
-const HDWalletProvider = require('@truffle/hdwallet-provider');
-// const infuraKey = "fj4jll3k.....";
-//
-// const fs = require('fs');
-const mnemonic = "extra mushroom pink alert bitter shrug venue shield initial happy diamond blossom menu quarter dutch";
-
-const privKeyRopsten = "9f8e5755bad48d638f5421479a95974c9516ff10e06248bbb01754cf5ed27d98"
-const PrivateKeyProvider = require("truffle-privatekey-provider");
-=======
 const PrivateKeyProvider = require('truffle-privatekey-provider');
 const privateKey = process.env.ETH_PRIVATE_KEY;
 const ropstenPrivateKey = process.env.ROPSTEN_PRIVATE_KEY;
 const ropstenAlchemyApiKey = process.env.ROPSTEN_ALCHEMY_API_KEY;
->>>>>>> Pre-Release-Custom-Pool
 
 module.exports = {
   /**
@@ -67,45 +56,6 @@ module.exports = {
      gasPrice: 20,
      network_id: "5777",       // Any network (default: none)
     },
-
-<<<<<<< HEAD
-    graph: {
-      host: "0.0.0.0",
-      gas: 8e6,
-      port: 8545,
-      network_id: "1234567890",
-    },
-
-    // Another network with more advanced options...
-    // advanced: {
-      // port: 8777,             // Custom port
-      // network_id: 1342,       // Custom network
-      // gas: 8500000,           // Gas sent with each transaction (default: ~6700000)
-      // gasPrice: 20000000000,  // 20 gwei (in wei) (default: 100 gwei)
-      // from: <address>,        // Account to send txs from (default: accounts[0])
-      // websockets: true        // Enable EventEmitter interface for web3 (default: false)
-    // },
-
-    // Useful for deploying to a public network.
-    // NB: It's important to wrap the provider as a function.
-    ropsten: {
-        provider: () => new PrivateKeyProvider(privKeyRopsten, "https://ropsten.infura.io/v3/2beddfdab6a04bc1be5817af8b3763e1"),
-      // provider: () => new HDWalletProvider(mnemonic, ``),
-      network_id: 3,       // Ropsten's id
-      gas: 5500000,        // Ropsten has a lower block limit than mainnet
-      confirmations: 2,    // # of confs to wait between deployments. (default: 0)
-      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
-      skipDryRun: true ,    // Skip dry run before migrations? (default: false for public nets )
-        from: "0x8B5DeE05D0343Ce6744a51c02d7e8E20e2fb54Fc",
-    },
-
-    // Useful for private networks
-    // private: {
-      // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
-      // network_id: 2111,   // This network is yours, in the cloud.
-      // production: true    // Treats this network as if it was a public net. (default: false)
-    // }
-=======
     ropsten: {
       provider: () => new PrivateKeyProvider(ropstenPrivateKey, `https://eth-ropsten.alchemyapi.io/v2/${ropstenAlchemyApiKey}`),
       network_id: 3,       // Ropsten's id
@@ -115,7 +65,6 @@ module.exports = {
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
       skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     },
->>>>>>> Pre-Release-Custom-Pool
   },
 
   // Set default mocha options here, use special reporters etc.
