@@ -52,7 +52,6 @@ describe('UniswapIncentive', function () {
     await this.fei.mint(this.pair.address, 5000000, {from: minterAddress});
     this.pairBalance = new BN(5000000);
 
-    await this.incentive.setSellAllowlisted(userAddress, true, {from: governorAddress});
   });
 
   describe('Incentive Parity', function() {
@@ -896,36 +895,6 @@ describe('UniswapIncentive', function () {
 
       it('Non-governor set reverts', async function() {
         await expectRevert(this.incentive.setExemptAddress(userAddress, true, {from: userAddress}), "CoreRef: Caller is not a governor");
-      });
-    });
-
-    describe('Sell Allowed Addresses', function() {
-      it('Governor set succeeds', async function() {
-        expectEvent(
-          await this.incentive.setSellAllowlisted(secondUserAddress, true, {from: governorAddress}),
-          'SellAllowedAddressUpdate',
-          {
-            _account: secondUserAddress,
-            _isSellAllowed: true
-          }
-        );
-        expect(await this.incentive.isSellAllowlisted(secondUserAddress)).to.be.equal(true);
-      });
-
-      it('Governor set succeeds', async function() {
-        expectEvent(
-          await this.incentive.setSellAllowlisted(secondUserAddress, true, {from: guardianAddress}),
-          'SellAllowedAddressUpdate',
-          {
-            _account: secondUserAddress,
-            _isSellAllowed: true
-          }
-        );
-        expect(await this.incentive.isSellAllowlisted(secondUserAddress)).to.be.equal(true);
-      });
-
-      it('Non-governor set reverts', async function() {
-        await expectRevert(this.incentive.setSellAllowlisted(secondUserAddress, true, {from: userAddress}), "CoreRef: Caller is not a guardian or governor");
       });
     });
   });
