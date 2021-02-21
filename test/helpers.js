@@ -37,6 +37,7 @@ const MockERC20 = contract.fromArtifact('MockERC20');
 const MockEthPCVDeposit = contract.fromArtifact('MockEthPCVDeposit');
 const MockIDO = contract.fromArtifact('MockIDO');
 const MockIncentive = contract.fromArtifact('MockUniswapIncentive');
+const MockIncentivized = contract.fromArtifact('MockIncentivized');
 const MockOracle = contract.fromArtifact('MockOracle');
 const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
 const MockPairTrade = contract.fromArtifact('MockUniswapV2PairTrade');
@@ -47,7 +48,7 @@ const MockTribe = contract.fromArtifact('MockTribe');
 const MockUniswapIncentive = contract.fromArtifact('MockUniswapIncentive');
 const MockWeth = contract.fromArtifact('MockWeth');
 
-const [ userAddress, secondUserAddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress, genesisGroup, keeperAddress, pcvControllerAddress, minterAddress, burnerAddress, guardianAddress, incentivizedAddress, operatorAddress ] = accounts;
+const [ userAddress, secondUserAddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress, genesisGroup, keeperAddress, pcvControllerAddress, minterAddress, burnerAddress, guardianAddress ] = accounts;
 
 async function getCore(complete) {
     let core = await Core.new({from: governorAddress});
@@ -94,13 +95,11 @@ module.exports = {
     beneficiaryAddress2,
     governorAddress,
     genesisGroup,
-    incentivizedAddress,
     keeperAddress,
     pcvControllerAddress,
     minterAddress,
     burnerAddress,
     guardianAddress,
-    operatorAddress,
     // contracts
     BondingCurveOracle,
     Core,
@@ -127,6 +126,7 @@ module.exports = {
     MockERC20,
     MockIDO,
     MockIncentive,
+    MockIncentivized,
     MockOracle, 
     MockPair,
     MockPairTrade,
