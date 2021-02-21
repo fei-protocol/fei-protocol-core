@@ -41,7 +41,7 @@ interface IRouterOrchestrator is IOrchestrator {
     function init(
         address pair,
         address weth,
-        address incentive
+        address core
     ) external returns (address ethRouter);
 }
 

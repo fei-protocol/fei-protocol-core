@@ -8,9 +8,9 @@ contract RouterOrchestrator is IRouterOrchestrator, Ownable {
     function init(
         address pair,
         address weth,
-        address incentive
+        address core
     ) public override onlyOwner returns (address ethRouter) {
-        ethRouter = address(new FeiRouter(pair, weth, incentive));
+        ethRouter = address(new FeiRouter(pair, weth, core));
 
         return ethRouter;
     }
