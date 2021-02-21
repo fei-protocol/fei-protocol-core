@@ -145,7 +145,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
             "UniswapIncentive: Price already at or above peg"
         );
 
-        Decimal.D256 memory incentive = _calculateBuyIncentiveMultiplier(deviation, weight);
+        Decimal.D256 memory incentive = _calculateBuyIncentiveMultiplier(deviation, deviation, weight);
         Decimal.D256 memory penalty = _calculateSellPenaltyMultiplier(deviation);
         return incentive.equals(penalty);
     }
@@ -187,7 +187,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         }
 
         Decimal.D256 memory multiplier =
-            _calculateBuyIncentiveMultiplier(initialDeviation, weight);
+            _calculateBuyIncentiveMultiplier(initialDeviation, finalDeviation, weight);
         incentive = multiplier.mul(incentivizedAmount).asUint256();
         return (incentive, weight, initialDeviation, finalDeviation);
     }
@@ -227,7 +227,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         }
 
         Decimal.D256 memory multiplier =
-            _calculateSellPenaltyMultiplier(finalDeviation);
+            _calculateIntegratedSellPenaltyMultiplier(initialDeviation, finalDeviation);
         penalty = multiplier.mul(incentivizedAmount).asUint256();
         return (penalty, initialDeviation, finalDeviation);
     }
@@ -276,13 +276,14 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     }
 
     function _calculateBuyIncentiveMultiplier(
-        Decimal.D256 memory deviation,
+        Decimal.D256 memory initialDeviation,
+        Decimal.D256 memory finalDeviation,
         uint32 weight
     ) internal pure returns (Decimal.D256 memory) {
         Decimal.D256 memory correspondingPenalty =
-            _calculateSellPenaltyMultiplier(deviation);
+            _calculateIntegratedSellPenaltyMultiplier(finalDeviation, initialDeviation); // flip direction
         Decimal.D256 memory buyMultiplier =
-            deviation.mul(uint256(weight)).div(
+            initialDeviation.mul(uint256(weight)).div(
                 uint256(TIME_WEIGHT_GRANULARITY)
             );
 
@@ -291,6 +292,28 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         }
 
         return buyMultiplier;
+    }
+
+    // The sell penalty smoothed over the curve
+    function _calculateIntegratedSellPenaltyMultiplier(Decimal.D256 memory initialDeviation, Decimal.D256 memory finalDeviation)
+        internal
+        pure
+        returns (Decimal.D256 memory)
+    {
+        if (initialDeviation.equals(finalDeviation)) {
+            return _calculateSellPenaltyMultiplier(initialDeviation);
+        }
+        Decimal.D256 memory numerator = _sellPenaltyBound(finalDeviation).sub(_sellPenaltyBound(initialDeviation));
+        Decimal.D256 memory denominator = finalDeviation.sub(initialDeviation);
+        return numerator.div(denominator);
+    }
+
+    function _sellPenaltyBound(Decimal.D256 memory deviation)         
+        internal
+        pure
+        returns (Decimal.D256 memory)
+    {
+        return deviation.pow(3).mul(33);
     }
 
     function _calculateSellPenaltyMultiplier(Decimal.D256 memory deviation)
