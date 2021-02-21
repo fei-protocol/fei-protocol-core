@@ -264,6 +264,8 @@ emits `GrowthRateUpdate`
 
 ### Fei-Only🌲
 
+#### incentivize
+
 ```javascript
 function incentivize(
     address sender,
