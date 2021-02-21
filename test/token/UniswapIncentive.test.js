@@ -1,21 +1,7 @@
-// const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
-// const { accounts, contract } = require('@openzeppelin/test-environment');
-
-// const { BN, expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers');
-// const { expect } = require('chai');
-
-// const Fei = contract.fromArtifact('Fei');
-// const Core = contract.fromArtifact('Core');
-// const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
-// const MockOracle = contract.fromArtifact('MockOracle');
-// const MockERC20 = contract.fromArtifact('MockERC20');
-
 const {
   userAddress,
   minterAddress,
   governorAddress,
-  secondUserAddress,
-  guardianAddress,
   BN,
   expectEvent,
   expectRevert,
@@ -46,9 +32,10 @@ describe('UniswapIncentive', function () {
     await this.core.grantMinter(this.incentive.address, {from: governorAddress});
     await this.core.grantBurner(this.incentive.address, {from: governorAddress});
     await this.fei.setIncentiveContract(this.pair.address, this.incentive.address, {from: governorAddress});
+    
     await this.fei.mint(userAddress, 50000000, {from: minterAddress});
-
     this.userBalance = new BN(50000000);
+
     await this.fei.mint(this.pair.address, 5000000, {from: minterAddress});
     this.pairBalance = new BN(5000000);
 
@@ -288,33 +275,19 @@ describe('UniswapIncentive', function () {
     });
 
     describe('Sell', function() {
-      describe('not allowed seller', function() {
-        it('reverts', async function() {
-          await this.fei.mint(secondUserAddress, 1000000, {from: minterAddress});
-          await expectRevert(this.fei.transfer(this.pair.address, 500000, {from: secondUserAddress}), "UniswapIncentive: Blocked Fei sender or operator");
-        });
-      });
-
-      describe('approval for allowed seller', function() {
-        it('succeeds', async function() {
-          await this.fei.approve(userAddress, 500000, {from: secondUserAddress});
-          await this.fei.mint(secondUserAddress, 1000000, {from: minterAddress});
-          await this.fei.transferFrom(secondUserAddress, this.pair.address, 500000, {from: userAddress});
-        });
-      });
 
       describe('enough in wallet', function() {
         beforeEach(async function() {
-          this.expectedBurn = new BN(20219); // with rounding error
+          this.expectedBurn = new BN(6672); // with rounding error
           await this.fei.transfer(this.pair.address, 500000, {from: userAddress});
         });
 
         it('user balance updates', async function() {
-          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.userBalance.sub(new BN(500000)).sub(this.expectedBurn));
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.userBalance.sub(new BN(500000)));
         });
 
         it('pair balance updates', async function() {
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.add(new BN(500000)));
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.add(new BN(500000)).sub(this.expectedBurn));
         });
 
         it('burn incentive', async function() {
@@ -331,9 +304,9 @@ describe('UniswapIncentive', function () {
         });
       });
 
-      describe('not enough in wallet', function() {
+      describe('exceeds transfer size', function() {
         it('reverts', async function() {
-          await expectRevert(this.fei.transfer(this.pair.address, 10000000, {from: userAddress}), "ERC20: burn amount exceeds balance");
+          await expectRevert(this.fei.transfer(this.pair.address, 10000000, {from: userAddress}), "UniswapIncentive: Burn exceeds trade size");
         });
       });
     });
@@ -428,17 +401,17 @@ describe('UniswapIncentive', function () {
       describe('past the peg', function() {
         describe('enough in wallet', function() {
           beforeEach(async function() {
-            this.expectedBurn = new BN(20929);
+            this.expectedBurn = new BN(6906);
             this.transferAmount = new BN(1000000);
             await this.fei.transfer(this.pair.address, 1000000, {from: userAddress});
           });
 
           it('user balance updates', async function() {
-            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.userBalance.sub(this.transferAmount).sub(this.expectedBurn));
+            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.userBalance.sub(this.transferAmount));
           });
 
           it('pair balance updates', async function() {
-            expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.add(this.transferAmount));
+            expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.add(this.transferAmount).sub(this.expectedBurn));
           });
 
           it('burn incentive', async function() {
@@ -455,9 +428,9 @@ describe('UniswapIncentive', function () {
           });
         });
 
-        describe('not enough in wallet', function() {
+        describe('beyond trade size', function() {
           it('reverts', async function() {
-            await expectRevert(this.fei.transfer(this.pair.address, 10000000, {from: userAddress}), "ERC20: burn amount exceeds balance");
+            await expectRevert(this.fei.transfer(this.pair.address, 10000000, {from: userAddress}), "UniswapIncentive: Burn exceeds trade size");
           });
         });
       });
@@ -470,7 +443,7 @@ describe('UniswapIncentive', function () {
       await this.pair.setReserves(100000, 51000000);
       let block = await time.latestBlock();
       // Set growth rate to 1 per block, starting at next block (the block preceeding the withdrawal)
-      await this.incentive.setTimeWeight(0, 100000, true, {from: governorAddress});
+      await this.incentive.setTimeWeight(0, 25000, true, {from: governorAddress});
     });
 
     describe('Buy', function() {
@@ -498,8 +471,8 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight stays active', async function() {
-          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(200000));
-          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(50000));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
@@ -528,8 +501,8 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight stays active', async function() {
-          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(200000));
-          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(50000));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
@@ -537,7 +510,7 @@ describe('UniswapIncentive', function () {
       describe('to peg', function() {
         beforeEach(async function() {
           this.transferAmount = new BN(502500);
-          this.expectedMint = new BN(10049);
+          this.expectedMint = new BN(2512);
           await this.pair.withdrawFei(userAddress, 502500);
         });
 
@@ -558,7 +531,7 @@ describe('UniswapIncentive', function () {
 
         it('resets time weight', async function() {
           expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(0));
-          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(false);
         });
       });
@@ -566,7 +539,7 @@ describe('UniswapIncentive', function () {
       describe('past peg', function() {
         beforeEach(async function() {
           this.transferAmount = new BN(1000000);
-          this.expectedMint = new BN(10049); // should be same as to peg
+          this.expectedMint = new BN(2512); // should be same as to peg
           await this.pair.withdrawFei(userAddress, 1000000);
         });
 
@@ -587,7 +560,7 @@ describe('UniswapIncentive', function () {
 
         it('resets time weight', async function() {
           expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(0));
-          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(false);
         });
       });
@@ -595,7 +568,7 @@ describe('UniswapIncentive', function () {
       describe('short of peg', function() {
         beforeEach(async function() {
           this.transferAmount = new BN(100000);
-          this.expectedMint = new BN(2000);
+          this.expectedMint = new BN(500);
           await this.pair.withdrawFei(userAddress, 100000);
         });
 
@@ -615,8 +588,8 @@ describe('UniswapIncentive', function () {
         });
 
         it('partially updates time weight', async function() {
-          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(80043));
-          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(20010));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
@@ -624,7 +597,7 @@ describe('UniswapIncentive', function () {
       describe('double time weight', function() {
         beforeEach(async function() {
           this.transferAmount = new BN(502500);
-          this.expectedMint = new BN(20099);
+          this.expectedMint = new BN(5024);
           await time.advanceBlock();
           await this.pair.withdrawFei(userAddress, 502500);
         });
@@ -646,7 +619,7 @@ describe('UniswapIncentive', function () {
 
         it('resets time weight', async function() {
           expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(0));
-          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(false);
         });
       });
@@ -654,7 +627,7 @@ describe('UniswapIncentive', function () {
       describe('double time weight short of peg', function() {
         beforeEach(async function() {
           this.transferAmount = new BN(100000);
-          this.expectedMint = new BN(4000);
+          this.expectedMint = new BN(1000);
           await time.advanceBlock();
           await this.pair.withdrawFei(userAddress, 100000);
         });
@@ -675,8 +648,8 @@ describe('UniswapIncentive', function () {
         });
 
         it('partially updates time weight', async function() {
-          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(160086));
-          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(40021));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
@@ -684,7 +657,7 @@ describe('UniswapIncentive', function () {
       describe('time weight exceeds burn', function() {
         beforeEach(async function() {
           this.transferAmount = new BN(502500);
-          this.expectedMint = new BN(20099);
+          this.expectedMint = new BN(6632);
           await time.advanceBlock();
           await time.advanceBlock();
           await time.advanceBlock();
@@ -708,7 +681,7 @@ describe('UniswapIncentive', function () {
 
         it('resets time weight', async function() {
           expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(0));
-          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(false);
         });
       });
@@ -739,8 +712,8 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight stays active', async function() {
-          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(200000));
-          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(50000));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
@@ -769,25 +742,25 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight stays active', async function() {
-          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(200000));
-          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(50000));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
 
       describe('enough in wallet', function() {
         beforeEach(async function() {
-          this.expectedBurn = new BN(364841);
+          this.expectedBurn = new BN(173463);
           this.transferAmount = new BN(1000000);
           await this.fei.transfer(this.pair.address, 1000000, {from: userAddress});
         });
 
         it('user balance updates', async function() {
-          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.userBalance.sub(this.transferAmount).sub(this.expectedBurn));
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.userBalance.sub(this.transferAmount));
         });
 
         it('pair balance updates', async function() {
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.add(this.transferAmount));
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.add(this.transferAmount).sub(this.expectedBurn));
         });
 
         it('burn incentive', async function() {
@@ -798,31 +771,29 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight updates', async function() {
-          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(100000));
-          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(25000));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
 
       describe('time weight too high', function() {
         beforeEach(async function() {
-          this.expectedBurn = new BN(5763);
+          this.expectedBurn = new BN(4806);
           this.transferAmount = new BN(100000);
-          await time.advanceBlock();
-          await time.advanceBlock();
-          await time.advanceBlock();
-          await time.advanceBlock();
-          await time.advanceBlock();
+          for (let i = 0; i < 20; i++) {
+            await time.advanceBlock();
+          }
 
           await this.fei.transfer(this.pair.address, 100000, {from: userAddress});
         });
 
         it('user balance updates', async function() {
-          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.userBalance.sub(this.transferAmount).sub(this.expectedBurn));
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.userBalance.sub(this.transferAmount));
         });
 
         it('pair balance updates', async function() {
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.add(this.transferAmount));
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.add(this.transferAmount).sub(this.expectedBurn));
         });
 
         it('burn incentive', async function() {
@@ -834,14 +805,14 @@ describe('UniswapIncentive', function () {
 
         it('time weight update capped', async function() {
           expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(240070));
-          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
       });
 
-      describe('not enough in wallet', function() {
+      describe('burn exceeds trade', function() {
         it('reverts', async function() {
-          await expectRevert(this.fei.transfer(this.pair.address, 10000000, {from: userAddress}), "ERC20: burn amount exceeds balance");
+          await expectRevert(this.fei.transfer(this.pair.address, 10000000, {from: userAddress}), "UniswapIncentive: Burn exceeds trade size");
         });
       });
     });
