@@ -1,5 +1,7 @@
 pragma solidity ^0.6.0;
 
+import "../token/IUniswapIncentive.sol";
+
 /// @title FeiRouter interface
 /// @author Fei Protocol
 interface IFeiRouter {
@@ -19,4 +21,6 @@ interface IFeiRouter {
         address to,
         uint256 deadline
     ) external returns (uint256 amountOut);
+
+    function incentiveContract() external view returns(IUniswapIncentive);
 }

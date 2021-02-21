@@ -49,7 +49,6 @@ interface IControllerOrchestrator is IOrchestrator {
     function init(
         address core,
         address bondingCurveOracle,
-        address uniswapIncentive,
         address ethUniswapPCVDeposit,
         address fei,
         address router,
