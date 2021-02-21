@@ -22,9 +22,6 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
     /// @notice returns the linked pcv deposit contract
     IPCVDeposit public override pcvDeposit;
 
-    /// @notice returns the linked Uniswap incentive contract
-    IUniswapIncentive public override incentiveContract;
-
     /// @notice gets the FEI reward incentive for reweighting
     uint256 public override reweightIncentiveAmount;
     Decimal.D256 internal _minDistanceForReweight;
@@ -33,7 +30,6 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
     /// @param _core Fei Core for reference
     /// @param _pcvDeposit PCV Deposit to reweight
     /// @param _oracle oracle for reference
-    /// @param _incentiveContract incentive contract for reference
     /// @param _incentiveAmount amount of FEI for triggering a reweight
     /// @param _minDistanceForReweightBPs minimum distance from peg to reweight in basis points
     /// @param _pair Uniswap pair contract to reweight
@@ -42,14 +38,12 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
         address _core,
         address _pcvDeposit,
         address _oracle,
-        address _incentiveContract,
         uint256 _incentiveAmount,
         uint256 _minDistanceForReweightBPs,
         address _pair,
         address _router
     ) public UniRef(_core, _pair, _router, _oracle) {
         pcvDeposit = IPCVDeposit(_pcvDeposit);
-        incentiveContract = IUniswapIncentive(_incentiveContract);
 
         reweightIncentiveAmount = _incentiveAmount;
         _minDistanceForReweight = Decimal.ratio(
@@ -110,7 +104,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
         bool magnitude =
             _getDistanceToPeg().greaterThan(_minDistanceForReweight);
         // incentive parity is achieved after a certain time relative to distance from peg
-        bool time = incentiveContract.isIncentiveParity();
+        bool time = incentiveContract().isIncentiveParity();
         return magnitude && time;
     }
 
@@ -122,6 +116,11 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
         returns (Decimal.D256 memory)
     {
         return _minDistanceForReweight;
+    }
+
+    /// @notice returns the linked Uniswap incentive contract
+    function incentiveContract() public view override returns(IUniswapIncentive) {
+        return IUniswapIncentive(fei().incentiveContract(address(pair)));
     }
 
     function _incentivize() internal ifMinterSelf {

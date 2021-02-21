@@ -34,11 +34,12 @@ describe('EthUniswapPCVController', function () {
     this.pcvDeposit = await MockPCVDeposit.new(this.pair.address);
     this.incentive = await MockIncentive.new(this.core.address);
 
+    await this.fei.setIncentiveContract(this.pair.address, this.incentive.address, {from: governorAddress});
+
     this.pcvController = await EthUniswapPCVController.new(
       this.core.address, 
       this.pcvDeposit.address, 
       this.oracle.address, 
-      this.incentive.address,
       '100000000000000000000',
       '100',
       this.pair.address,
@@ -246,6 +247,13 @@ describe('EthUniswapPCVController', function () {
 
       it('Non-governor set reverts', async function() {
         await expectRevert(this.pcvController.setPair(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
+      });
+    });
+
+    describe('Incentive Contract', function() {
+      it('updates automatically', async function() {
+        await this.fei.setIncentiveContract(this.pair.address, userAddress, {from: governorAddress});
+        expect(await this.pcvController.incentiveContract()).to.be.equal(userAddress);
       });
     });
 

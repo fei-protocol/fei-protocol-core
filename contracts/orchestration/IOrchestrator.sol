@@ -41,7 +41,7 @@ interface IRouterOrchestrator is IOrchestrator {
     function init(
         address pair,
         address weth,
-        address incentive
+        address core
     ) external returns (address ethRouter);
 }
 
@@ -49,7 +49,6 @@ interface IControllerOrchestrator is IOrchestrator {
     function init(
         address core,
         address bondingCurveOracle,
-        address uniswapIncentive,
         address ethUniswapPCVDeposit,
         address fei,
         address router,

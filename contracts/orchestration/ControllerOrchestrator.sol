@@ -8,7 +8,6 @@ contract ControllerOrchestrator is IControllerOrchestrator, Ownable {
     function init(
         address core,
         address bondingCurveOracle,
-        address uniswapIncentive,
         address ethUniswapPCVDeposit,
         address pair,
         address router,
@@ -21,7 +20,6 @@ contract ControllerOrchestrator is IControllerOrchestrator, Ownable {
                     core,
                     ethUniswapPCVDeposit,
                     bondingCurveOracle,
-                    uniswapIncentive,
                     reweightIncentive,
                     reweightMinDistanceBPs,
                     pair,

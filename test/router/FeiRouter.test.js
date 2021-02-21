@@ -1,8 +1,10 @@
 const {
   minterAddress, 
   userAddress, 
+  governorAddress,
   BN,
   expectRevert,
+  expect,
   time,
   MAX_UINT256,
   Fei,
@@ -28,13 +30,22 @@ describe('FeiRouter', function () {
     this.pair.setReserves("50000000", "100000");
 
     this.incentive = await MockUniswapIncentive.new(this.core.address);
+    this.core.grantMinter(this.incentive.address, {from: governorAddress});
+    await this.fei.setIncentiveContract(this.pair.address, this.incentive.address, {from: governorAddress});
 
-    this.router = await FeiRouter.new(this.pair.address, this.weth.address, this.incentive.address);
+    this.router = await FeiRouter.new(this.pair.address, this.weth.address, this.core.address);
   
     this.fei.approve(this.router.address, "1000000000000", {from: userAddress});
     this.fei.mint(userAddress, "1000000000000", {from: minterAddress});
 
     this.weth.mint(this.router.address, "1000000000");
+  });
+
+  describe('Incentive Contract', function() {
+    it('updates automatically', async function() {
+      await this.fei.setIncentiveContract(this.pair.address, userAddress, {from: governorAddress});
+      expect(await this.router.incentiveContract()).to.be.equal(userAddress);
+    });
   });
 
   describe('Buy', function () {

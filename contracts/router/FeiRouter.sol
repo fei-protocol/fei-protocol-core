@@ -3,21 +3,22 @@ pragma experimental ABIEncoderV2;
 
 import "./UniswapSingleEthRouter.sol";
 import "../refs/IOracleRef.sol";
-import "../token/IUniswapIncentive.sol";
+import "../core/ICore.sol";
 import "./IFeiRouter.sol";
 
 /// @title A Uniswap Router for FEI/ETH swaps
 /// @author Fei Protocol
 contract FeiRouter is UniswapSingleEthRouter, IFeiRouter {
+
     // solhint-disable-next-line var-name-mixedcase
-    IUniswapIncentive public immutable INCENTIVE;
+    ICore public immutable CORE;
 
     constructor(
         address pair,
         address weth,
-        address incentive
+        address core
     ) public UniswapSingleEthRouter(pair, weth) {
-        INCENTIVE = IUniswapIncentive(incentive);
+        CORE = ICore(core);
     }
 
     /// @notice buy FEI for ETH with some protections
@@ -31,11 +32,12 @@ contract FeiRouter is UniswapSingleEthRouter, IFeiRouter {
         address to,
         uint256 deadline
     ) external payable override returns (uint256 amountOut) {
-        IOracleRef(address(INCENTIVE)).updateOracle();
+        IUniswapIncentive incentive = incentiveContract();
+        IOracleRef(address(incentive)).updateOracle();
 
         uint256 reward = 0;
-        if (!INCENTIVE.isExemptAddress(to)) {
-            (reward, , , ) = INCENTIVE.getBuyIncentive(amountOutMin);
+        if (!incentive.isExemptAddress(to)) {
+            (reward, , , ) = incentive.getBuyIncentive(amountOutMin);
         }
         require(reward >= minReward, "FeiRouter: Not enough reward");
         return swapExactETHForTokens(amountOutMin, to, deadline);
@@ -54,13 +56,18 @@ contract FeiRouter is UniswapSingleEthRouter, IFeiRouter {
         address to,
         uint256 deadline
     ) external override returns (uint256 amountOut) {
-        IOracleRef(address(INCENTIVE)).updateOracle();
+        IUniswapIncentive incentive = incentiveContract();
+        IOracleRef(address(incentive)).updateOracle();
 
         uint256 penalty = 0;
-        if (!INCENTIVE.isExemptAddress(msg.sender)) {
-            (penalty, , ) = INCENTIVE.getSellPenalty(amountIn);
+        if (!incentive.isExemptAddress(msg.sender)) {
+            (penalty, , ) = incentive.getSellPenalty(amountIn);
         }
         require(penalty <= maxPenalty, "FeiRouter: Penalty too high");
         return swapExactTokensForETH(amountIn, amountOutMin, to, deadline);
+    }
+
+    function incentiveContract() public view override returns(IUniswapIncentive) {
+        return IUniswapIncentive(CORE.fei().incentiveContract(address(PAIR)));
     }
 }

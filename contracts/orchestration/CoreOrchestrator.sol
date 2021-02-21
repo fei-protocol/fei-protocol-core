@@ -198,14 +198,13 @@ contract CoreOrchestrator is Ownable {
     }
 
     function initRouter() public onlyOwner {
-        feiRouter = routerOrchestrator.init(ethFeiPair, WETH, uniswapIncentive);
+        feiRouter = routerOrchestrator.init(ethFeiPair, WETH, address(core));
     }
 
     function initController() public onlyOwner {
         ethUniswapPCVController = controllerOrchestrator.init(
             address(core),
             bondingCurveOracle,
-            uniswapIncentive,
             ethUniswapPCVDeposit,
             ethFeiPair,
             ROUTER,
