@@ -37,6 +37,7 @@ describe('FeiRouter', function () {
   
     this.fei.approve(this.router.address, "1000000000000", {from: userAddress});
     this.fei.mint(userAddress, "1000000000000", {from: minterAddress});
+    this.fei.mint(this.pair.address, "50000000", {from: minterAddress});
 
     this.weth.mint(this.router.address, "1000000000");
   });

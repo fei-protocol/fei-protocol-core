@@ -17,4 +17,11 @@ interface IUniswapSingleEthRouter {
         address to,
         uint256 deadline
     ) external returns (uint256 amountOut);
+
+    function swapExactTokensForETHSupportingFeeOnTransfer(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address to,
+        uint256 deadline
+    ) external returns (uint256 amountOut);
 }

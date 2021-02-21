@@ -271,7 +271,8 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         _updateTimeWeight(initialDeviation, finalDeviation, weight);
 
         if (penalty != 0) {
-            fei().burnFrom(target, penalty);
+            require(penalty <= amount, "UniswapIncentive: Burn exceeds trade size");
+            fei().burnFrom(address(pair), penalty); // burn from the recipient which is the pair
         }
     }
 

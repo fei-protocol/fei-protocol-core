@@ -64,7 +64,7 @@ contract FeiRouter is UniswapSingleEthRouter, IFeiRouter {
             (penalty, , ) = incentive.getSellPenalty(amountIn);
         }
         require(penalty <= maxPenalty, "FeiRouter: Penalty too high");
-        return swapExactTokensForETH(amountIn, amountOutMin, to, deadline);
+        return swapExactTokensForETHSupportingFeeOnTransfer(amountIn, amountOutMin, to, deadline);
     }
 
     function incentiveContract() public view override returns(IUniswapIncentive) {
