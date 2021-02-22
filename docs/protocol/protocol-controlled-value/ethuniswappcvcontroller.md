@@ -14,7 +14,7 @@ A contract for moving reweighting Uniswap prices to the peg from a Uniswap PCV D
 
 ### Reweight
 
-Reweights have the goal of returning the Uniswap spot price of an associated PCV Deposit to the peg. The algorithm is as follows:
+Reweights are used to return the Uniswap spot price of an associated PCV Deposit to the peg. The algorithm is as follows:
 
 1. withdraw 90% of the ETH from the UniswapPCVDeposit
 2. execute a trade with held ETH to bring the spot price back up to peg
@@ -28,7 +28,7 @@ The reweight is open to a keeper when both of the following conditions are met:
 * the distance from the peg is at least the minimum \(initially 1%\)
 * the [UniswapIncentive](../fei-stablecoin/uniswapincentive.md) contract is at incentive parity
 
-Governor⚖️and Guardian🛡contracts can also force a reweight at any time, or update the minimum distance requirement.
+Governor⚖️and Guardian🛡contracts can force a reweight at any time, or update the minimum distance requirement.
 
 ### Reweight incentives
 
