@@ -26,15 +26,15 @@ The final magnitude _m_ deviation from the peg at the end of the hypothetical tr
 
 ![Burn formula for UniswapIncentive](../../.gitbook/assets/screen-shot-2021-02-14-at-12.46.10-pm.png)
 
-The burn is only applied to trades below the peg when incentive contract is appointed as a Burner🔥.
+The burn is only applied to trades below the peg when the incentive contract is appointed as a Burner🔥.
 
 #### Exclusive vs Inclusive Fees
 
-An exclusive fee is implemented as an additional transfer beyond the expected transfer. i.e. when a sender transfers 100 FEI with a 1% exclusive fee, the recepient receives 100 FEI, and the sender is charged 1 FEI from their remaining balance.
+An exclusive fee is implemented as an additional transfer beyond the expected transfer. i.e. when a sender transfers 100 FEI with a 1% exclusive fee, the recipient receives 100 FEI, and the sender is charged 1 FEI from their remaining balance.
 
-An inclusive fee is implemented "in-flight" as a part of the transfer. i.e. when a sender transfers 100 FEI with a 1% inclusive fee, the recepient receives 99 FEI, since the recepient is charged 1 FEI from the transfered amount.
+An inclusive fee is implemented "in-flight" as a part of the transfer. i.e. when a sender transfers 100 FEI with a 1% inclusive fee, the recipient receives 99 FEI, since the recipient is charged 1 FEI from the transferred amount.
 
-Fei Protocol uses an exclusive fee for the Direct Incentives. They have the advantage of not affecting the expected ERC-20 transfer behavior of equal debits and credits, which can lead to easier integrations. A noteworthy drawback is that if the sender is a pooled contract, then the pool could be forced to pay the burn on behalf of the sender. For this reason only approved addresses can sell directly on the FEI/ETH incentivized Uniswap pair.
+Fei Protocol uses an exclusive fee for the Direct Incentives. They have the advantage of not affecting the expected ERC-20 transfer behavior of equal debits and credits, which can lead to easier integrations. A noteworthy drawback is that if the sender is a pooled contract, then the pool could be forced to pay the burn on behalf of the sender. For this reason, only approved addresses can sell directly on the FEI/ETH incentivized Uniswap pair.
 
 {% hint style="warning" %}
 Only approved addresses can send FEI to Uniswap, blocking selling and liquidity provision.
@@ -46,7 +46,7 @@ Fei Protocol can use either inclusive or exclusive burn fees in the future, and 
 
 ### Buy \(Mint\)
 
-All transfer going FROM the uniswap pool are treated as a buy. This has the counterintuitive effect of treating liquidity withdrawal events as buys.
+All transfers going FROM the uniswap pool are treated as a buy. This has the counterintuitive effect of treating liquidity withdrawal events as buys.
 
 The initial magnitude _m_ deviation from the peg before the hypothetical trade is used to maximize the potential mint amount. _w_ is the time weight we discuss in the next section. The mint formula for buy amount _x_ is: 
 
@@ -56,11 +56,11 @@ Current implementation caps the mint function at 30% of the output of the burn f
 
 Since incentives are applied flatly over the entire trade size _x_, a series of smaller sells could end up with a lower burn than a single large sell. The amount paid in the best case is rarely below 30% of the worst case, hence we cap the reward at 30% of the worst-case burn to make sure the mint doesn't exceed some best-case burn and lead to a flash profit opportunity.
 
-The mint should only apply if the trade starts below the peg, and if the incentive contract is appointed as a Minter.
+The mint should only apply if the trade starts below the peg and if the incentive contract is appointed as a Minter.
 
 ### Time Weight
 
-The time weight is a scaling factor to make the incentive structured more like an auction. The trader willing to accept the lowest mint will come in and buy first before the reward gets higher.
+The time weight _w_ is a scaling factor utilized to make the incentive mint structured like an auction. The trader willing to accept the lowest mint will execute a buy before the reward gets higher.
 
 The time weight grows linearly at a rate set by governance. Its granularity is 100,000 per block. I.e. a growth rate of 1000 would increment the weight by one unit every 100 blocks. It should only grow while "active" and will only be active when the last trade ended below the peg.
 
@@ -68,12 +68,12 @@ Trades should update the time weight as follows:
 
 * If ending above peg, set to 0 and deactivate
 * If ending below the peg but starting above, set to 0 and activate
-* If starting and ending below peg, update pro-rata with a buy based on percent towards peg. For example, if trade starts at 10% deviation and ends at 1%, time weight should be scaled by 1%/10% =.10.
+* If starting and ending below peg, update pro-rata with a buy based on percent towards peg. E.g., if a trade starts at 10% deviation and ends at 1%, time weight should be scaled by 1%/10% =.10.
 * If starting and ending below the peg, cap the time weight at the max incentive for the ending distance
 
 ### Incentive Parity
 
-Incentive parity is defined as a boolean which is true when the mint incentive equals its max, i.e. the adjusted burn incentive. 
+Incentive parity is defined as a boolean expression, which is true when the mint incentive equals its max, i.e. the adjusted burn incentive. 
 
 ![Condition for incentive parity](../../.gitbook/assets/screen-shot-2021-02-14-at-1.13.12-pm.png)
 
@@ -139,7 +139,7 @@ returns true if the conditions for incentive parity \(see above\) are met, other
 function isExemptAddress(address account) external view returns (bool);
 ```
 
-returns true if `account` is exempted form incentives, otherwise false
+returns true if `account` is exempted from incentives, otherwise false
 
 ### isSellAllowlisted
 
@@ -236,7 +236,7 @@ function setTimeWeight(
 ) external;
 ```
 
-set the current time weight to `weight`, growing at rate `growth` and active flag to `active` starting from the current block.
+set the current time weight to `weight`, growing at a rate `growth` and active flag to `active` starting from the current block.
 
 emits `TimeWeightUpdate` and `GrowthRateUpdate` if the growth rate changes
 
