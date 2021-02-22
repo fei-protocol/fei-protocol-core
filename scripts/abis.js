@@ -1,6 +1,6 @@
 require('dotenv').config();
 const fs = require('fs');
-const dir = process.env.GRAPH_ABI_DIR;
+const dir = process.env.APP_ABI_DIR;
 const abisDir = dir + '/abis/';
 const buildDir = './build/contracts/';
 if (!fs.existsSync(dir)) {
