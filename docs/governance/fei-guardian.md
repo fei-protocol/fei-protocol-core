@@ -18,7 +18,6 @@ The Governor⚖️ can revoke the Guardian🛡ability at any time
 
 * revoke any role from any contract, except Governor⚖️
 * toggle oracle kill switch
-* force a reweight
-* toggle allowlisted addresses from transferring to the ETH/FEI pair
 * toggle staking rewards dripping
+* force a reweight
 

@@ -4,32 +4,31 @@ description: TRIBE rewards for liquidity provision
 
 # Staking
 
-Fei Protocol has a staking pool in which FEI/TRIBE Uniswap LP tokens are deposited and TRIBE is earned over time. The total reward balance is 10% of the initial TRIBE supply distributed over 2 years. The rewards decrease linearly so they are front loaded. Our novel pool contract has the benefit of being completely fluid with no epochs. Traders can deposit, withdraw, and claim whenever they want. This does come with a side effect of dilution on unclaimed balances.
+Fei Protocol has a staking pool in which FEI/TRIBE Uniswap LP tokens are deposited and TRIBE is earned over time.
 
-{% hint style="info" %}
-To improve returns in the staking pool we recommend claiming weekly
+## Rewards Distribution
+
+The total reward balance is 100,000,000 TRIBE, distributed over 2 years. This represents 10% of the initial TRIBE supply. The rewards distribution rate decreases linearly.
+
+![TRIBE distribution function after 1 year](../../.gitbook/assets/tribe-release.svg)
+
+Distribution is gated by the FeiRewardsDistributor. It calculates the amount which should be released at any given time and drips it to FeiStakingRewards weekly.
+
+{% hint style="success" %}
+The drip can be called by any user or contract, and the caller is rewarded a flat 500 FEI incentive for triggering the call.
 {% endhint %}
 
-## Pool Math
+## Staking
 
-The Pool contract uses a concept called "time-weighted final balance" to keep track of the token-seconds a user has deposited into the pool. To calculate the time-weighted final balance, simply take the number of seconds until the end of the pool window and multiply them by the number of tokens staked. Let _d_ be the duration of the window and _t_ be the number of seconds into the window:
+Fei Protocol staking allows users to earn more TRIBE tokens while providing liquidity for TRIBE. This is commonly referred to as a [Pool 2](https://blog.chain.link/defi-yield-farming-explained/#:~:text=Pool%202%20refers%20to%20Yield,take%20profits%20on%20their%20yield.) in terms of yield farming. 
 
-![](../../.gitbook/assets/screen-shot-2021-02-13-at-9.17.09-pm.png)
+The rewards are split evenly among all participants at any given time. In addition, staking is completely fluid. This means users can deposit, earn TRIBE for a few blocks, claim that TRIBE, and then withdraw their staked tokens at their will. In other words, there are no lockups on staked tokens.
 
-When a user deposits tokens into the pool, they receive the time weighted final balance equivalent of their tokens in "FPOOL" tokens.
+In particular, users are staking FEI/TRIBE Uniswap v2 LP tokens to earn the TRIBE rewards. It is possible for the [Fei DAO](../../governance/fei-dao.md) to adjust the distribution rate and the staked token if the need arises.
 
-To calculate how many of the FPOOL tokens are redeemable at any given time, simply subtract the _current_ time weighted final balance from the total amount of FPOOL held by a user. The remainder is the number of token-seconds that the user has staked in the pool up until now.
+{% hint style="info" %}
+Fei Protocol uses the battle-tested StakingRewards contract used by Synthetix, Yams, and Set Protocol among others.
+{% endhint %}
 
-The rewards are released into the pool according to an arbitrary reward function. The [FeiPool](feipool.md) contract uses a linearly decreasing reward schedule.
 
-The amount of tokens redeemable by a user at any given time is the proportion of redeemable FPOOL tokens to the total redeemable multiplied by the number of released, unclaimed rewards.
-
-When a user withdraws, they claim all rewards and have their initial stake returned.
-
-The Fei Pool contracts have the following properties: 
-
-1.  All rewards take into account time and volume in the pool proportionally when determining ownership of released rewards 
-2. Assuming rewards are claimed continuously, this model achieves the desired property of fluidity and time weighted ownership 
-3. Any new supply "dilutes" ownership in unclaimed rewards over time but not immediately
-4. Transfers of FPOOL should update the staked balances of the holders pro-rata
 
