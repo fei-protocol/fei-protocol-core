@@ -77,7 +77,7 @@ Governance change of Buffer
 function getCurrentPrice() external view returns (Decimal.D256 memory);
 ```
 
-Returns current instantaneous bonding curve price. The price reported as FEI per X with X being the underlying asset. This is analogous to the peg reported by the oracle.
+Returns current instantaneous bonding curve price. The price reported as FEI per X, with X being the underlying asset. This is analogous to the peg reported by the oracle.
 
 {% page-ref page="../oracles/" %}
 
