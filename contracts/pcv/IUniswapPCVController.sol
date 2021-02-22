@@ -33,11 +33,11 @@ interface IUniswapPCVController {
 
     // ----------- Getters -----------
 
-    function pcvDeposit() external returns (IPCVDeposit);
+    function pcvDeposit() external view returns (IPCVDeposit);
 
-    function incentiveContract() external returns (IUniswapIncentive);
+    function incentiveContract() external view returns (IUniswapIncentive);
 
-    function reweightIncentiveAmount() external returns (uint256);
+    function reweightIncentiveAmount() external view returns (uint256);
 
     function reweightEligible() external view returns (bool);
 

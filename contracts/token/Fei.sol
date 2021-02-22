@@ -2,6 +2,7 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 import "./IIncentive.sol";
 import "./IFei.sol";
 import "../refs/CoreRef.sol";
@@ -48,6 +49,7 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         override
         onlyGovernor
     {
+        require(Address.isContract(account) || account == address(0), "Fei: incentivized is not a contract or zero");
         incentiveContract[account] = incentive;
         emit IncentiveContractUpdate(account, incentive);
     }

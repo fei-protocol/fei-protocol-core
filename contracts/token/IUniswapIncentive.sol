@@ -15,16 +15,9 @@ interface IUniswapIncentive is IIncentive {
 
     event ExemptAddressUpdate(address indexed _account, bool _isExempt);
 
-    event SellAllowedAddressUpdate(
-        address indexed _account,
-        bool _isSellAllowed
-    );
-
     // ----------- Governor only state changing api -----------
 
     function setExemptAddress(address account, bool isExempt) external;
-
-    function setSellAllowlisted(address account, bool isAllowed) external;
 
     function setTimeWeightGrowth(uint32 growthRate) external;
 
@@ -39,8 +32,6 @@ interface IUniswapIncentive is IIncentive {
     function isIncentiveParity() external view returns (bool);
 
     function isExemptAddress(address account) external view returns (bool);
-
-    function isSellAllowlisted(address account) external view returns (bool);
 
     // solhint-disable-next-line func-name-mixedcase
     function TIME_WEIGHT_GRANULARITY() external view returns (uint32);

@@ -26,10 +26,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     /// @notice the granularity of the time weight and growth rate
     uint32 public constant override TIME_WEIGHT_GRANULARITY = 100_000;
 
-    uint public constant INCENTIVE_CAP_PERCENTAGE = 30;
-
     mapping(address => bool) private _exempt;
-    mapping(address => bool) private _allowlist;
 
     /// @notice UniswapIncentive constructor
     /// @param _core Fei Core to reference
@@ -49,7 +46,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     function incentivize(
         address sender,
         address receiver,
-        address operator,
+        address,
         uint256 amountIn
     ) external override onlyFei {
         require(sender != receiver, "UniswapIncentive: cannot send self");
@@ -60,10 +57,6 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         }
 
         if (_isPair(receiver)) {
-            require(
-                isSellAllowlisted(sender) || isSellAllowlisted(operator),
-                "UniswapIncentive: Blocked Fei sender or operator"
-            );
             _incentivizeSell(sender, amountIn);
         }
     }
@@ -78,18 +71,6 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     {
         _exempt[account] = isExempt;
         emit ExemptAddressUpdate(account, isExempt);
-    }
-
-    /// @notice set an address to be able to send tokens to Uniswap
-    /// @param account the address to update
-    /// @param isAllowed a flag for whether the account is allowed to sell or not
-    function setSellAllowlisted(address account, bool isAllowed)
-        external
-        override
-        onlyGuardianOrGovernor
-    {
-        _allowlist[account] = isAllowed;
-        emit SellAllowedAddressUpdate(account, isAllowed);
     }
 
     /// @notice set the time weight growth function
@@ -152,17 +133,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return _exempt[account];
     }
 
-    /// @notice return true if the account is approved to sell to the Uniswap pool
-    function isSellAllowlisted(address account)
-        public
-        view
-        override
-        returns (bool)
-    {
-        return _allowlist[account];
-    }
-
-    /// @notice return true if mint equals adjusted burn incentive 
+    /// @notice return true if burn incentive equals mint
     function isIncentiveParity() public view override returns (bool) {
         uint32 weight = getTimeWeight();
         require(weight != 0, "UniswapIncentive: Incentive zero or not active");
@@ -174,8 +145,8 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
             "UniswapIncentive: Price already at or above peg"
         );
 
-        Decimal.D256 memory incentive = _calculateBuyIncentiveMultiplier(deviation, weight);
-        Decimal.D256 memory penalty = _getAdjustedSellPenaltyMultiplier(deviation);
+        Decimal.D256 memory incentive = _calculateBuyIncentiveMultiplier(deviation, deviation, weight);
+        Decimal.D256 memory penalty = _calculateSellPenaltyMultiplier(deviation);
         return incentive.equals(penalty);
     }
 
@@ -216,7 +187,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         }
 
         Decimal.D256 memory multiplier =
-            _calculateBuyIncentiveMultiplier(initialDeviation, weight);
+            _calculateBuyIncentiveMultiplier(initialDeviation, finalDeviation, weight);
         incentive = multiplier.mul(incentivizedAmount).asUint256();
         return (incentive, weight, initialDeviation, finalDeviation);
     }
@@ -256,7 +227,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         }
 
         Decimal.D256 memory multiplier =
-            _calculateSellPenaltyMultiplier(finalDeviation);
+            _calculateIntegratedSellPenaltyMultiplier(initialDeviation, finalDeviation);
         penalty = multiplier.mul(incentivizedAmount).asUint256();
         return (penalty, initialDeviation, finalDeviation);
     }
@@ -300,26 +271,50 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         _updateTimeWeight(initialDeviation, finalDeviation, weight);
 
         if (penalty != 0) {
-            fei().burnFrom(target, penalty);
+            require(penalty <= amount, "UniswapIncentive: Burn exceeds trade size");
+            fei().burnFrom(address(pair), penalty); // burn from the recipient which is the pair
         }
     }
 
     function _calculateBuyIncentiveMultiplier(
-        Decimal.D256 memory deviation,
+        Decimal.D256 memory initialDeviation,
+        Decimal.D256 memory finalDeviation,
         uint32 weight
     ) internal pure returns (Decimal.D256 memory) {
-        Decimal.D256 memory adjustedPenalty =
-            _getAdjustedSellPenaltyMultiplier(deviation);
+        Decimal.D256 memory correspondingPenalty =
+            _calculateIntegratedSellPenaltyMultiplier(finalDeviation, initialDeviation); // flip direction
         Decimal.D256 memory buyMultiplier =
-            deviation.mul(uint256(weight)).div(
+            initialDeviation.mul(uint256(weight)).div(
                 uint256(TIME_WEIGHT_GRANULARITY)
             );
 
-        if (adjustedPenalty.lessThan(buyMultiplier)) {
-            return adjustedPenalty;
+        if (correspondingPenalty.lessThan(buyMultiplier)) {
+            return correspondingPenalty;
         }
 
         return buyMultiplier;
+    }
+
+    // The sell penalty smoothed over the curve
+    function _calculateIntegratedSellPenaltyMultiplier(Decimal.D256 memory initialDeviation, Decimal.D256 memory finalDeviation)
+        internal
+        pure
+        returns (Decimal.D256 memory)
+    {
+        if (initialDeviation.equals(finalDeviation)) {
+            return _calculateSellPenaltyMultiplier(initialDeviation);
+        }
+        Decimal.D256 memory numerator = _sellPenaltyBound(finalDeviation).sub(_sellPenaltyBound(initialDeviation));
+        Decimal.D256 memory denominator = finalDeviation.sub(initialDeviation);
+        return numerator.div(denominator);
+    }
+
+    function _sellPenaltyBound(Decimal.D256 memory deviation)         
+        internal
+        pure
+        returns (Decimal.D256 memory)
+    {
+        return deviation.pow(3).mul(33);
     }
 
     function _calculateSellPenaltyMultiplier(Decimal.D256 memory deviation)
@@ -328,14 +323,6 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         returns (Decimal.D256 memory)
     {
         return deviation.mul(deviation).mul(100); // m^2 * 100
-    }
-
-    function _getAdjustedSellPenaltyMultiplier(Decimal.D256 memory deviation)
-        internal
-        pure
-        returns (Decimal.D256 memory)
-    {
-        return _calculateSellPenaltyMultiplier(deviation).mul(INCENTIVE_CAP_PERCENTAGE).div(100);
     }
 
     function _updateTimeWeight(
@@ -365,12 +352,12 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
                 .asUint256();
         }
 
-        // cap incentive at adjusted max penalty
+        // cap incentive at max penalty
         uint256 maxWeight =
             finalDeviation
-                .mul(INCENTIVE_CAP_PERCENTAGE)
+                .mul(100)
                 .mul(uint256(TIME_WEIGHT_GRANULARITY))
-                .asUint256(); // 30*m^2 (adjusted sell) = t*m (buy)
+                .asUint256(); // m^2*100 (sell) = t*m (buy)
         updatedWeight = Math.min(updatedWeight, maxWeight);
         _setTimeWeight(updatedWeight.toUint32(), getGrowthRate(), true);
     }
