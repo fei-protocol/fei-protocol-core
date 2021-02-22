@@ -23,7 +23,7 @@ The Fei Protocol primarily funds PCV via bonding curve FEI issuance. The bonding
 
 ## Generalized PCV
 
-Fei Protocol is designed to support generalized Protocol Controlled Value. The protocol can fundraise PCV in any ERC-20 token by issuing a bonding curve denominated in that asset, contingent upon a reliable oracle to handle pricing.
+Fei Protocol is designed to support generalized Protocol Controlled Value. The protocol can fundraise PCV in any ERC-20 token by issuing a bonding curve denominated in that asset, contingent upon a reliable oracle to handle asset pricing.
 
-_PCV Controllers_ are responsible for managing PCV among the various PCV Deposits. Future Fei Protocol upgrades can algorithmically adjust PCV based on market conditions or include unique two-way integrations with other protocols. These integrations can leverage the utility tokens of other platforms or their functionality with other ERC-20 tokens held by the protocol.
+_PCV Controllers_ manage PCV among the various PCV Deposits. Future Fei Protocol upgrades can algorithmically adjust PCV based on market conditions or include unique two-way integrations with other protocols. These integrations can leverage the utility tokens of other platforms or their functionality with other ERC-20 tokens held by the protocol.
 
