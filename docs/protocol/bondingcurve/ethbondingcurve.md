@@ -12,11 +12,15 @@ description: An ETH specific FEI bonding curve
 
 A bonding curve implementation for purchasing FEI with ETH.
 
-Let _x_ be the current amount of FEI issued from the bonding curve, _S_ be the Scale target and _O_ be the oracle price reported as underlying per FEI. The price function used is:
+The price function used is:
+
+* _x_ - the current amount of FEI issued from the bonding curve
+* _S_ - the Scale target
+* _O_ - the oracle price reported as underlying per FEI
 
 ![Price function for FEI/ETH bonding curve](../../.gitbook/assets/screen-shot-2021-02-14-at-4.11.48-pm.png)
 
-The "k" shift is an additional feature since the white paper release. It helps shift the starting price upward so the protocol can retain more [PCV](../protocol-controlled-value/). K is initially set to `S/3` which makes the starting price $0.50 per FEI.
+The "k" shift is an additional feature since the white paper release. It shifts the starting price upward so the protocol can retain more [PCV](../protocol-controlled-value/). k is initially set to `S/3` which makes the starting price $0.50 per FEI.
 
 The amount of FEI out for a given quantity of ETH input _Q_ is equal to the following:
 
