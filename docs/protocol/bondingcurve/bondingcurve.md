@@ -198,7 +198,7 @@ Allocate the PCV held by the bonding curve to the weighted PCV allocations retur
 
 emits `Allocate`
 
-### Governor**- Or Guardian**-Only**⚖️🛡**
+### Governor-Only**⚖️**
 
 #### **setBuffer**
 
@@ -209,8 +209,6 @@ function setBuffer(uint256 _buffer) external;
 Sets the buffer to `_buffer`. Must be less than `BUFFER_GRANULARITY`
 
 emits `BufferUpdate`
-
-### Governor-Only**⚖️**
 
 #### **setScale**
 

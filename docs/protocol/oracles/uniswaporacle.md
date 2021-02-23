@@ -135,6 +135,8 @@ Enables or disables the oracle depending on the `_killSwitch` flag passed in.
 
 emits `KillSwitchUpdate`
 
+### Governor-Only⚖️
+
 #### setDuration
 
 ```javascript

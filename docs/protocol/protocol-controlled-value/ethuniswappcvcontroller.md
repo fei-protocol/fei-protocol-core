@@ -144,6 +144,8 @@ function forceReweight() external;
 
 Forces a reweight execution. No FEI incentive for doing this. Fails if the Uniswap spot price is already at or above the peg.
 
+### Governor-Only⚖️
+
 #### setReweightMinDistance
 
 ```javascript
@@ -151,8 +153,6 @@ function setReweightMinDistance(uint256 basisPoints) external;
 ```
 
 Sets the minimum distance from the peg for a reweight to be eligible to `basisPoints`, measured in basis points \(i.e. 1/10000\).
-
-### Governor-Only⚖️
 
 #### setPCVDeposit
 

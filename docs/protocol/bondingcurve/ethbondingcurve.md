@@ -24,7 +24,9 @@ The "k" shift is an additional feature since the white paper release. It shifts 
 
 The amount of FEI out for a given quantity of ETH input _Q_ is equal to the following:
 
-![](../../.gitbook/assets/bonding-curve-integral-with-shift.png)
+![The amount out from the bonding curve for ETH input Q](../../.gitbook/assets/screen-shot-2021-02-23-at-8.01.30-am.png)
+
+y is the cumulative amount of FEI sold by the bonding curve after the trade and C is the current cumulative, so their difference is the amount sent to the user.
 
 The Scale target is 100,000,000 FEI.
 

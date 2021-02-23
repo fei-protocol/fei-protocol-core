@@ -20,19 +20,19 @@ These parameters are fed into the incentive function to produce a mint \(in the 
 
 ### Sell \(Burn\)
 
-All transfers going TO the uniswap pool are treated as a sell. This has the counterintuitive effect of treating liquidity provision as a sell.
+All FEI transfers going TO the uniswap pool are treated as a sell. This has the counterintuitive effect of treating liquidity provision as a sell.
 
-The final magnitude _m_ deviation from the peg at the end of the hypothetical trade is used to calculate the burn amount. The burn formula for sell amount _x_ is: 
+The implementation integrates the burn function from the [white paper](../../whitepaper.md) with respect to the distance from the peg. This creates a nice path independent property where a trader is no better off doing one large trade or many small trades, ignoring fees. The burn formula for sell amount _x_ is: 
 
-![Burn formula for UniswapIncentive](../../.gitbook/assets/screen-shot-2021-02-14-at-12.46.10-pm.png)
+![Burn formula for selling FEI](../../.gitbook/assets/screen-shot-2021-02-23-at-8.10.49-am.png)
 
 The burn is only applied to trades below the peg when the incentive contract is appointed as a Burner🔥.
 
-An exclusive fee is implemented as an additional transfer beyond the expected transfer. i.e. when a sender transfers 100 FEI with a 1% exclusive fee, the recipient receives 100 FEI, and the sender is charged 1 FEI from their remaining balance.
+The burn is taken from the in-flight trade amount. If the burn is 5% on a 100 FEI transfer then the recipient gets 95 FEI. 
 
-An inclusive fee is implemented "in-flight" as a part of the transfer. i.e. when a sender transfers 100 FEI with a 1% inclusive fee, the recipient receives 99 FEI, since the recipient is charged 1 FEI from the transferred amount.
-
-Fei Protocol uses an exclusive fee for the Direct Incentives. They have the advantage of not affecting the expected ERC-20 transfer behavior of equal debits and credits, which can lead to easier integrations. A noteworthy drawback is that if the sender is a pooled contract, then the pool could be forced to pay the burn on behalf of the sender. For this reason, only approved addresses can sell directly on the FEI/ETH incentivized Uniswap pair.
+{% hint style="info" %}
+The entire trade size including the burn is used to calculate the slippage for the end deviation from the peg. This could lead to a higher than expected burn for large trades when below peg.
+{% endhint %}
 
 ### Buy \(Mint\)
 
@@ -40,11 +40,11 @@ All transfers going FROM the uniswap pool are treated as a buy. This has the cou
 
 The initial magnitude _m_ deviation from the peg before the hypothetical trade is used to maximize the potential mint amount. _w_ is the time weight we discuss in the next section. The mint formula for buy amount _x_ is: 
 
-![Mint incentive formula for UniswapIncentive](../../.gitbook/assets/screen-shot-2021-02-14-at-12.58.57-pm.png)
+![Incentive formula for buying FEI](../../.gitbook/assets/screen-shot-2021-02-23-at-8.21.09-am.png)
 
-Current implementation caps the mint function at 30% of the output of the burn function. This ensures that burns are always greater or equal for a given magnitude _m,_ regardless of the path taken to the current distance from the peg.
+The incentive formula is normally just the right-hand side of the above min function. It is linear in the time weight `w(t)` and the distance from the peg `m`
 
-Since incentives are applied flatly over the entire trade size _x_, a series of smaller sells could end up with a lower burn than a single large sell. The amount paid in the best case is rarely below 30% of the worst case, hence we cap the reward at 30% of the worst-case burn to make sure the mint doesn't exceed some best-case burn and lead to a flash profit opportunity.
+When the incentive function for a trade reaches the same level as the burn for the same trade _in reverse_, the incentive function maxes out. This is because we don't want a trader to be able to profit by buying and selling with a flash loan under any circumstances.
 
 The mint should only apply if the trade starts below the peg and if the incentive contract is appointed as a Minter.
 
@@ -63,9 +63,9 @@ Trades should update the time weight as follows:
 
 ### Incentive Parity
 
-Incentive parity is defined as a boolean expression, which is true when the mint incentive equals its max, i.e. the adjusted burn incentive. 
+Incentive parity is defined as a boolean expression, which is true when the mint incentive equals its max for the current distance from the peg `m`. It simplifies down to the following:
 
-![Condition for incentive parity](../../.gitbook/assets/screen-shot-2021-02-14-at-1.13.12-pm.png)
+![Condition for Incentive Parity](../../.gitbook/assets/screen-shot-2021-02-14-at-1.13.12-pm%20%281%29.png)
 
 Parity is used as a trigger condition for reweights in the [UniswapPCVController](https://github.com/fei-protocol/fei-protocol-core/wiki/UniswapPCVController)
 
@@ -130,14 +130,6 @@ function isExemptAddress(address account) external view returns (bool);
 ```
 
 returns true if `account` is exempted from incentives, otherwise false
-
-### isSellAllowlisted
-
-```javascript
-function isSellAllowlisted(address account) external view returns (bool);
-```
-
-returns true if `account` is approved for selling, otherwise false
 
 ### TIME\_WEIGHT\_GRANULARITY
 
@@ -230,28 +222,6 @@ set the current time weight to `weight`, growing at a rate `growth` and active f
 
 emits `TimeWeightUpdate` and `GrowthRateUpdate` if the growth rate changes
 
-### Governor- Or Guardian-Only⚖️🛡
-
-#### setSellAllowlisted
-
-```javascript
-function setSellAllowlisted(address account, bool isAllowed) external;
-```
-
-set `account` sell allowed status to `isAllowed`
-
-emits `SellAllowedAddressUpdate`
-
-#### setTimeWeightGrowth
-
-```javascript
-function setTimeWeightGrowth(uint32 growthRate) external;
-```
-
-set the time weight growth rate to `growthRate` per block
-
-emits `GrowthRateUpdate`
-
 ### Fei-Only🌲
 
 #### incentivize
@@ -281,11 +251,6 @@ applies the sell penalty based on `amountIn` if:
 * contract is a Burner🔥
 * `receiver` is the ETH/FEI incentivized pair
 * `sender` is not exempt
-* `sender` or `operator` is an approved selling contract
-
-{% hint style="danger" %}
-a FEI transfer into the ETH/FEI Uniswap pair reverts if `sender` or `operator` is not approved
-{% endhint %}
 
 
 
