@@ -4,15 +4,15 @@ description: Determining the target FEI price
 
 # Oracles
 
-Fei Protocol has two different oracles that different components in the system point to. The first is the primary oracle which reads the USDC/ETH 10 minute time-weighted average price \(TWAP\). This oracle uses a snapshot approach, so for each 10 minute interval the peg is fixed from the perspective of Fei Protocol. The only contract in Fei Protocol that uses this primary oracle is the [bonding curve](../bondingcurve/).
+Fei Protocol has two distinct oracles that different components in the system point to. The primary oracle reads the USDC/ETH 10 minute time-weighted average price \(TWAP\). This oracle uses a snapshot approach, so for each 10-minute interval the peg is fixed from the Fei Protocol perspective. The only contract in Fei Protocol that uses the primary oracle is the [bonding curve](../bondingcurve/).
 
 {% embed url="https://uniswap.org/docs/v2/core-concepts/oracles/" caption="Uniswap Oracles" %}
 
-Every other component in the system uses the "bonding curve oracle" which is the secondary oracle. Pre-Scale, this oracle references the bonding curve price rather than the primary oracle price. For example, if the bonding curve is at a multiplier of $0.75, then the direct peg incentives on uniswap are targeting the distance from a $0.75 FEI price rather than the long term intended $1. 
+All other components in the system use the secondary oracle, "bonding curve oracle". Pre-Scale, this oracle references the bonding curve price rather than the primary oracle price. E.g., if the bonding curve is at a multiplier of $0.75, then the direct peg incentives on uniswap are targeting the distance from a $0.75 FEI price rather than the long term intended $1. 
 
 ## Thawing
 
-An important feature of the bonding curve oracle is the ability to "thaw" from a lower target price up to the target bonding curve price. This is used to mitigate unhealthy arbitrage opportunities that arise due to Genesis participation. This arbitrage is a general feature of any system which has the following properties:
+An important feature of the bonding curve oracle is the ability to "thaw" from a lower target price up to the target bonding curve price. Thawing is used to mitigate unhealthy arbitrage opportunities that arise due to Genesis participation. This arbitrage is a general feature of any system which has the following properties:
 
 * A group of user transactions are bundled together
 * There is open participation in the group
