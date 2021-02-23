@@ -12,7 +12,7 @@ All other components in the system use the secondary oracle, "bonding curve orac
 
 ## Thawing
 
-An important feature of the bonding curve oracle is the ability to "thaw" from a lower target price up to the target bonding curve price. Thawing is used to mitigate unhealthy arbitrage opportunities that arise due to Genesis participation. This arbitrage is a general feature of any system which has the following properties:
+An important feature of the bonding curve oracle is the ability to "thaw" from a lower target price up to the target bonding curve price. Thawing is used to mitigate arbitrage opportunities that arise due to Genesis participation. This type of arbitrage is a general feature of any system which has the following properties:
 
 * A group of user transactions are bundled together
 * There is open participation in the group
