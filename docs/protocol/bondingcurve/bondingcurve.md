@@ -94,7 +94,7 @@ function getAverageUSDPrice(uint256 amountIn)
     returns (Decimal.D256 memory);
 ```
 
-Return the average price of a transaction of size `amountIn` ETH along bonding curve. The price here is reported as USD per FEI.
+Returns the average price of a transaction of size `amountIn` ETH along bonding curve. The price here is reported as USD per FEI.
 
 {% hint style="warning" %}
 Can be inaccurate if outdated, need to call `oracle().isOutdated()` to check
