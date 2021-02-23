@@ -8,7 +8,7 @@ description: Protocol changes since the white paper release
 
 #### Thawing
 
-The white paper specification for the Genesis Group doesn’t address the unintended effect that the average price paid is always lower than the "next price" which is the price that is listed on Uniswap. This creates a perverse incentive to participate in the Genesis Group to arbitrage the group. To solve this we have implemented "thawing" where the list price of FEI/ETH starts at a discount to the average genesis price and thaws up to the target peg over 2 weeks.
+The white paper specification for the Genesis Group doesn’t address the unintended effect that the average price paid is always lower than the "next price" which is the price that is listed on Uniswap. This creates a perverse incentive to participate in the Genesis Group to arbitrage the group. To solve this we have implemented "thawing" where the list price of FEI/ETH starts at the average genesis price and thaws up to the target peg over 2 weeks.
 
 {% page-ref page="oracles/" %}
 
