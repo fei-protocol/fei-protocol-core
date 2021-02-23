@@ -160,7 +160,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         // Initialize bonding curve oracle
         Decimal.D256 memory oraclePrice =
             bondingcurve
-                .getAveragePrice(balance)
+                .getAverageUSDPrice(balance)
                 .mul(ORACLE_LISTING_PERCENT)
                 .div(100);
         bondingCurveOracle.init(oraclePrice);

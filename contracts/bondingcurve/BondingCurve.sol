@@ -131,7 +131,7 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     /// @param amountIn the amount of underlying used to purchase
     /// @return price reported as USD per FEI
     /// @dev Can be innacurate if outdated, need to call `oracle().isOutdated()` to check
-    function getAveragePrice(uint256 amountIn)
+    function getAverageUSDPrice(uint256 amountIn)
         public
         view
         override
