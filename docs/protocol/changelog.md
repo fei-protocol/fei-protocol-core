@@ -44,13 +44,13 @@ In the white paper, the bonding curve starts at a 0 price and approaches the peg
 
 #### Restricted Selling
 
-In the original implementation, a user could transfer tokens straight from a liquidity pool \(such as a Uniswap LP pool\) into the primary ETH/FEI incentivized pair. In such instance, the LP would subsidize the user's disincentive burn for selling. To mitigate this behavior, we restrict all transfers of FEI into the incentivized pair to only governance allowlisted addresses. The list includes the custom [FeiRouter](trading/feirouter.md).
+In the original implementation, a user could transfer tokens straight from a liquidity pool \(such as a Uniswap LP pool\) into the primary ETH/FEI incentivized pair. In such an instance, the LP would subsidize the user's disincentive burn for selling. To mitigate this behavior, we restrict all transfers of FEI into the incentivized pair to only governance allowlisted addresses. The list includes the custom [FeiRouter](trading/feirouter.md).
 
 {% page-ref page="fei-stablecoin/" %}
 
 #### Router
 
-We added a custom Uniswap router which allows the user to bound their buy rewards or sell penalties when trading on the incentivized uniswap pool.
+A custom Uniswap router that allows the user to bound their buy rewards or sell penalties when trading on the incentivized uniswap pool.
 
 {% page-ref page="trading/" %}
 
