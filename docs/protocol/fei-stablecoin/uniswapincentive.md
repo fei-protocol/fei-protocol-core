@@ -28,21 +28,11 @@ The final magnitude _m_ deviation from the peg at the end of the hypothetical tr
 
 The burn is only applied to trades below the peg when the incentive contract is appointed as a Burner🔥.
 
-#### Exclusive vs Inclusive Fees
-
 An exclusive fee is implemented as an additional transfer beyond the expected transfer. i.e. when a sender transfers 100 FEI with a 1% exclusive fee, the recipient receives 100 FEI, and the sender is charged 1 FEI from their remaining balance.
 
 An inclusive fee is implemented "in-flight" as a part of the transfer. i.e. when a sender transfers 100 FEI with a 1% inclusive fee, the recipient receives 99 FEI, since the recipient is charged 1 FEI from the transferred amount.
 
 Fei Protocol uses an exclusive fee for the Direct Incentives. They have the advantage of not affecting the expected ERC-20 transfer behavior of equal debits and credits, which can lead to easier integrations. A noteworthy drawback is that if the sender is a pooled contract, then the pool could be forced to pay the burn on behalf of the sender. For this reason, only approved addresses can sell directly on the FEI/ETH incentivized Uniswap pair.
-
-{% hint style="warning" %}
-Only approved addresses can send FEI to Uniswap, blocking selling and liquidity provision.
-{% endhint %}
-
-The [FeiRouter](../trading/feirouter.md) is approved for selling and is the only way for end-users to sell FEI at launch.
-
-Fei Protocol can use either inclusive or exclusive burn fees in the future, and even upgrade the existing exclusive fees to an inclusive type if needed.
 
 ### Buy \(Mint\)
 

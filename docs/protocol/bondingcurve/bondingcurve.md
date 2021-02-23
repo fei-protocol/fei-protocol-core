@@ -81,24 +81,20 @@ Returns current instantaneous bonding curve price. The price reported as FEI per
 
 {% page-ref page="../oracles/" %}
 
-We understand that this price is of a different character from the one returned by `getAveragePrice(uint256 amountIn)`. We hope it doesn't cause too much confusion.
-
 {% hint style="warning" %}
 Can be inaccurate if outdated, need to call `oracle().isOutdated()` to check
 {% endhint %}
 
-### getAveragePrice
+### getAverageUSDPrice
 
 ```javascript
-function getAveragePrice(uint256 amountIn)
+function getAverageUSDPrice(uint256 amountIn)
     external
     view
     returns (Decimal.D256 memory);
 ```
 
 Return the average price of a transaction of size `amountIn` ETH along bonding curve. The price here is reported as USD per FEI.
-
-We understand that this price is of a different character from the one returned by `getCurrentPrice()`. We hope it doesn't cause too much confusion.
 
 {% hint style="warning" %}
 Can be inaccurate if outdated, need to call `oracle().isOutdated()` to check

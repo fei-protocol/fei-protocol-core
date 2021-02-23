@@ -20,6 +20,18 @@ The Direct Incentives are applied only when interacting with an _incentivized ad
 
 The Governor⚖️ can set and unset incentive contracts for any address. It can also exempt addresses from incentives.
 
+### Inclusive Fee On Transfer
+
+For the burn penalties applied to incentivized trading, or any fee-on-transfer, there are two options. The first is an inclusive fee which is most common. The fee is taken from the "in-flight" amount of the trade. Alice sends Bob 100 FEI with a 10% inclusive fee and Bob receives 90 FEI. An exclusive fee is where the fee is taken outside of the amount sent from the sender. Alice sends Bob 100 FEI with a 10% exclusive fee and Bob receives 100 FEI. Alice pays the remaining 10 from her wallet.
+
+Fei Protocol v1 uses an "inclusive" fee on transfer when applying Direct Incentives on Uniswap sells. There are certain issues with this approach, the main one being that Fei Protocol cannot differentiate between selling and liquidity provision. Therefore the fee applies to all FEI transfers to the pool including providing LP.
+
+{% hint style="warning" %}
+LPing the FEI/ETH Uniswap pool also incurs a burn penalty, because it transfers FEI into the pool like a sell would
+{% endhint %}
+
+
+
 ## Collateralization
 
 The FEI stablecoin is collateralized by a [PCV](../protocol-controlled-value/) reserve. Fei Protocol prioritizes liquidity when deploying this reserve to make sure users are able to trade FEI at high volume. 
@@ -31,18 +43,4 @@ The collateralization ratio of FEI at any time is calculated as follows, with th
 ![Collateralization ratio of Fei Protocol ](../../.gitbook/assets/screen-shot-2021-02-13-at-4.43.36-pm.png)
 
 The formula ignores "Protocol controlled FEI" because any FEI that the protocol holds will never be sold for PCV, only burned. Protocol controlled FEI can have second-order, short-term inflationary effects. For instance, FEI deposited into a lending market by Fei Protocol could increase the circulating supply when borrowed. The interest accrued and eventual withdrawal of that FEI ultimately have a net deflationary effect in the long term.
-
-## Sell Allowlist
-
-Fei Protocol v1 uses an "exclusive" fee on transfer when applying Direct Incentives on Uniswap sells. This means that the burn comes from the seller's balance. There are certain issues with this approach, the main one being that if a seller can transfer tokens directly from a pool such as a staking or liquidity pool, the pool can subsidize the seller's burn. 
-
-This issue and the desire for precaution around the primary pool have led to the design decision to block all FEI transfers into the Uniswap FEI/ETH pair unless the sender is approved by the Fei DAO. The initial contracts approved at launch are the PCV Deposit and Controllers, and the FeiRouter.
-
-{% hint style="info" %}
-LPing the FEI/ETH Uniswap pool is not allowed, because liquidity provision requires a FEI transfer into the FEI/ETH pool. 
-{% endhint %}
-
-{% page-ref page="../protocol-controlled-value/" %}
-
-{% page-ref page="../trading/" %}
 
