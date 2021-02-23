@@ -60,8 +60,5 @@ interface IGenesisGroup {
 
     function totalCommittedTribe() external view returns (uint256);
 
-    // solhint-disable-next-line func-name-mixedcase
-    function ORACLE_LISTING_PERCENT() external view returns (uint256);
-
     function launchBlock() external view returns (uint256);
 }

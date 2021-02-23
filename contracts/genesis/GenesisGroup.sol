@@ -30,9 +30,6 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
     /// @notice total amount of TRIBE coming from the IDO and pre-committed FGEN
     /// @dev is 0 pre-launch
     uint256 public override totalCommittedTribe;
-
-    /// @notice percent multiplier on the average genesis price to give to bondingCurveOracle
-    uint256 public constant override ORACLE_LISTING_PERCENT = 90;
     
     /// @notice the block number of the genesis launch
     uint256 public override launchBlock;
@@ -158,12 +155,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         uint256 balance = genesisGroup.balance;
 
         // Initialize bonding curve oracle
-        Decimal.D256 memory oraclePrice =
-            bondingcurve
-                .getAverageUSDPrice(balance)
-                .mul(ORACLE_LISTING_PERCENT)
-                .div(100);
-        bondingCurveOracle.init(oraclePrice);
+        bondingCurveOracle.init(bondingcurve.getAverageUSDPrice(balance));
 
         // bonding curve purchase and PCV allocation
         bondingcurve.purchase{value: balance}(genesisGroup, balance);

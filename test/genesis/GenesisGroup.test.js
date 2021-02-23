@@ -231,7 +231,7 @@ describe('GenesisGroup', function () {
         });
   
         it('inits Bonding Curve Oracle', async function() {
-          expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('90000000000000000'));
+          expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('100000000000000000'));
         });
     
         describe('Second Launch', function() {
@@ -271,7 +271,7 @@ describe('GenesisGroup', function () {
         });
   
         it('inits Bonding Curve Oracle', async function() {
-          expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('90000000000000000'));
+          expect(await this.bo.initPrice()).to.be.bignumber.equal(new BN('100000000000000000'));
         });
       });
     });
