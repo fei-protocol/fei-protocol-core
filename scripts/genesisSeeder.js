@@ -10,17 +10,13 @@ module.exports = async function(callback) {
 
   let accounts = await web3.eth.getAccounts();
 
-  let nullAddress = "0x0000000000000000000000000000000000000000";
-  let seven = "7000000000000000000";
   let five = "5000000000000000000";
-  let one = "1000000000000000000";
-  let oneHundredTwentyThousand = "120000000000000000000000";
-  let half = "500000000000000000";
+  let tenThousand = "10000000000000000000000";
 
   // Purchase 5 FGEN (account 0)
-  await genesis.purchase(accounts[0], oneHundredTwentyThousand, {
+  await genesis.purchase(accounts[0], tenThousand, {
     from: accounts[0],
-    value: oneHundredTwentyThousand
+    value: tenThousand
   });
 
   // Purchase 5 FGEN (account 1)
@@ -28,25 +24,6 @@ module.exports = async function(callback) {
     from: accounts[1],
     value: five,
   });
-
-  // Burn 0.5 FGEN (account 1)
-  await genesis.burn(half, {
-    from: accounts[1],
-  });
-
-  // Transfer 0.5 FGEN  (account 1)
-  await genesis.transfer(accounts[2], half, {
-    from: accounts[1],
-  });
-
-  // Purchase and Redeem FGEN (account 2)
-  await genesis.purchase(accounts[2], seven, {
-    from: accounts[2],
-    value: seven,
-  });
-//   await genesis.redeem(accounts[2], {
-//     from: accounts[2],
-//   });
 
   callback();
 
