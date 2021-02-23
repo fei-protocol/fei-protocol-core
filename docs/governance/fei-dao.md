@@ -14,9 +14,8 @@ Here is a list of various parameter tunings and changes that the Fei DAO can mak
 
 * grant/revoke [roles](../protocol/access-control/)
 * add/remove incentive contracts for [FEI](../protocol/fei-stablecoin/)
-* allowlist addresses for selling on the incentivized exchange or exempt from direct incentives
-* Set incentive growth rate
-* upgrade FEI or TRIBE
+* exempt addresses from direct incentives
+* Set the [peg support incentive](../protocol/fei-stablecoin/) growth rate
 * change [PCV](../protocol/protocol-controlled-value/) allocations
 * update [bonding curve](../protocol/bondingcurve/bondingcurve.md) buffer and Scale target
 * adjust rewards from the [staking pool](../protocol/staking/)
