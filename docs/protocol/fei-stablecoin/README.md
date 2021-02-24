@@ -8,7 +8,7 @@ description: A description of Fei USD and how it interacts with incentive contra
 
 FEI \(Fei USD\) is designed to allow for flexible upgrades and arbitrary incentive mechanisms to support the $1 peg target. 
 
-Its issuance is controlled by the Minter💰role, and any contract with this role can mint FEI to any address. The Burner🔥 role can burn FEI from any address, and is useful for deflation and disincentives. 
+Its issuance is controlled by the Minter💰role, and any contract with this role can mint FEI to any address. The Burner🔥 role can burn FEI from any address, and is utilized for deflation and disincentives. 
 
 ## Direct Incentives
 
