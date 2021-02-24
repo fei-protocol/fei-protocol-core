@@ -18,7 +18,7 @@ Updates to the bonding curve oracle update the linked uniswap oracle.
 
 ### Thawing
 
-Includes "thawing". Thawing means that the initial pegged price is lower than the target uniswap/bonding curve price. The reported peg linearly converges on the target peg over a preset duration. The duration _d_ is 2 weeks. At the beginning of the window it should fully report the peg at the initial price _I_ and at the end it should fully report the peg at the target price _T_. Let _t_ be the timestamp between \[0,d\]. The reported oracle price _O_ during the thawing period is:
+Additionally, the contract includes the "thawing" process. Thawing implements the initial pegged price lower than the target uniswap/bonding curve price. The reported peg linearly converges on the target peg over a preset duration window. The duration window _d_ is 2 weeks. At the beginning of the window it reports the peg at the initial price _I_ and at the end it will report the peg at the target price _T_. Let _t_ be the timestamp between \[0,d\]. The reported oracle price _O_ during the thawing period is:
 
 ![](../../.gitbook/assets/screen-shot-2021-02-14-at-5.23.16-pm.png)
 
@@ -50,7 +50,7 @@ Oracle kill switch change
 function read() external view returns (Decimal.D256 memory, bool);
 ```
 
-Reads the oracle value and reports the peg as FEI per underlying. The boolean returned signifies whether the reported value is valid. Invalid generally means the oracle is uninitialized or the kill switch is engaged.
+Reads the oracle value and reports the peg as FEI per underlying. The boolean value returned informs whether the reported oracle value is valid. Invalid value means the oracle is uninitialized or the kill switch is engaged.
 
 #### isOutdated
 
@@ -58,7 +58,7 @@ Reads the oracle value and reports the peg as FEI per underlying. The boolean re
 function isOutdated() external view returns (bool);
 ```
 
-Pass through calls `uniswapOracle.isOutdated()` if false, then many read functions relying on the oracle would be inaccurate.
+Pass through calls `uniswapOracle.isOutdated()`, if false, then multiple read functions relying on the oracle would be inaccurate.
 
 #### killSwitch
 
@@ -66,7 +66,7 @@ Pass through calls `uniswapOracle.isOutdated()` if false, then many read functio
 function killSwitch() external view returns (bool);
 ```
 
-The kill switch value, if true then the read function returns invalid.
+The kill switch status value, if true then the read function returns invalid.
 
 #### uniswapOracle
 
