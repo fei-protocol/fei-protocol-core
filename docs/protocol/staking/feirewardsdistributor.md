@@ -181,7 +181,7 @@ Returns whether the contract is paused or not. If the switch is true, `drip()` w
 function drip() external returns (uint256);
 ```
 
-Send `releasedReward()` [TRIBE](../../governance/tribe.md) to the `stakingRewards()` contract and updates the reward rate.
+Sends `releasedReward()` [TRIBE](../../governance/tribe.md) to the `stakingRewards()` contract and updates the reward rate.
 
 Incentivizes the caller with `incentiveAmount()` [FEI](../fei-stablecoin/fei-fei-usd.md).
 
@@ -197,7 +197,7 @@ Only callable when `nextDripAvailable()` is below the current block timestamp an
 function governorWithdraw(uint256 amount) external;
 ```
 
-Withdraw `amount` TRIBE tokens from the pool to [Fei Core.](../access-control/core.md)
+Withdraws `amount` TRIBE tokens from the pool to [Fei Core.](../access-control/core.md)
 
 #### governorRecover
 
@@ -205,7 +205,7 @@ Withdraw `amount` TRIBE tokens from the pool to [Fei Core.](../access-control/co
 function governorRecover(address tokenAddress, address to, uint256 amount) external;
 ```
 
-Recover `tokenAddress` ERC20 tokens from the FeiStakingRewards contract to address `to`. This is used if there were AMM rewards distributed.
+Recovers `tokenAddress` ERC20 tokens from the FeiStakingRewards contract to address `to`. This is used if there were AMM rewards distributed.
 
 #### setDripFrequency
 
