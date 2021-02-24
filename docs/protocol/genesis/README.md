@@ -4,7 +4,7 @@ description: "The equal opportunity launch of Fei Protocol \U0001F680"
 
 # Genesis
 
-Fei Protocol Genesis starts at 0:00 UTC on March 4, 2021. It will last 3 days, ending March 7, 2021. Additional details about the Genesis event are available in our Medium announcement \(Medium announcement will be a hyperlink\)
+Fei Protocol Genesis starts at 0:00 UTC on March 4, 2021. It will last 3 days, ending March 7, 2021. Additional details about the Genesis event are available in our Medium announcement \(&lt;Medium announcement&gt; will be a hyperlink\)
 
 ## Genesis Group
 
