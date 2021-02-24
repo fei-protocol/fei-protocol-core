@@ -10,7 +10,7 @@ description: The escrow contract responsible for dripping TRIBE into the staking
 
 ## Description
 
-The FeiRewardsDistributor is the contract responsible for sending rewards to the FeiStakingRewards contract each week. 
+The FeiRewardsDistributor contract is responsible for sending rewards to the FeiStakingRewards contract each week. 
 
 It has one public method exposed for keepers to execute this drip functionality, which rewards the caller with a fixed amount of [FEI](../fei-stablecoin/).
 
@@ -24,7 +24,7 @@ The release schedule for the total reward amount _R_ of TRIBE is a linearly decr
 
 This function has a duration of _d_ before it hits a 0 distribution rate. The area under the curve is _R,_ because the y-intercept is 2R/d, by simply multiplying base times height times 1/2.
 
-We will set the "unreleased function" _U\(t\)_ equal to the area under this curve between the current elapsed time _t_  and the total duration _d._ Note that for t=d we have the output equal to 0 as all of the TRIBE should be released. The formula is as follows:
+Set the "unreleased function" _U\(t\)_ equal to the area under this curve between the current elapsed time _t_  and the total duration _d._ Note that for t=d the output is equal to 0 as all of the TRIBE should be released. The formula is:
 
 ![The unreleased function for FeiPool](../../.gitbook/assets/screen-shot-2021-02-14-at-9.43.38-pm.png)
 
@@ -137,7 +137,7 @@ Returns the total amount of rewards released over the entire window, including c
 function releasedReward() external view returns (uint256);
 ```
 
-Return the amount of `rewardToken` available for claiming by the pool. Calculated as `rewardBalance() - unreleasedReward()`.
+Returns the amount of `rewardToken` available for claiming by the pool. Calculated as `rewardBalance() - unreleasedReward()`.
 
 ### unreleasedReward
 
@@ -145,7 +145,7 @@ Return the amount of `rewardToken` available for claiming by the pool. Calculate
 function unreleasedReward() external view returns (uint256);
 ```
 
-The unreleased reward function following the formula shown in the description. It should start at the `totalReward()` amount and then wind down to 0 over the `duration` of the window.
+The unreleased reward function following the formula shown in the Release Schedule section above. It starts at the `totalReward()` amount and then wind down to 0 over the `duration` of the window.
 
 ### rewardBalance
 
@@ -205,7 +205,7 @@ Withdraw `amount` TRIBE tokens from the pool to [Fei Core.](../access-control/co
 function governorRecover(address tokenAddress, address to, uint256 amount) external;
 ```
 
-Recover `tokenAddress` ERC20 tokens from the FeiStakingRewards contract to address `to`. This is used if there were ever AMM rewards distributed for instance.
+Recover `tokenAddress` ERC20 tokens from the FeiStakingRewards contract to address `to`. This is used if there were AMM rewards distributed.
 
 #### setDripFrequency
 
