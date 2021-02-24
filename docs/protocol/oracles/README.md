@@ -4,7 +4,7 @@ description: Determining the target FEI price
 
 # Oracles
 
-Fei Protocol has two distinct oracles that different components in the system point to. The primary oracle reads the USDC/ETH 10 minute time-weighted average price \(TWAP\). This oracle uses a snapshot approach, so for each 10-minute interval the peg is fixed from the Fei Protocol perspective. The only contract in Fei Protocol that uses the primary oracle is the [bonding curve](../bondingcurve/).
+Fei Protocol has two distinct oracles that different components in the system point to. The primary oracle reads the USDC/ETH 10 minute time-weighted average price \(TWAP\). This oracle uses a snapshot approach, so for each 10-minute interval the peg is fixed from the Fei Protocol perspective. The only contract in Fei Protocol that uses this primary oracle is the [bonding curve](../bondingcurve/).
 
 {% embed url="https://uniswap.org/docs/v2/core-concepts/oracles/" caption="Uniswap Oracles" %}
 
