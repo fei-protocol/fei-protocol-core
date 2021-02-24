@@ -31,12 +31,9 @@ module.exports = async function(callback) {
   let core = await Core.at(await co.core());
   let fei = await Fei.at(await core.fei());
   let tribe = await Tribe.at(await core.tribe());
-  let gg = await GenesisGroup.at(await co.genesisGroup());
   let ido = await IDO.at(await co.ido());
   let pair = await IUniswapV2Pair.at(await ido.pair());
   let td = await TimelockedDelegator.at(await co.timelockedDelegator());
-  let staking = await StakingRewards.at(await co.feiStakingRewards());
-  let distributor = await FeiRewardsDistributor.at(await co.feiRewardsDistributor());
 
   let bc = await EthBondingCurve.at(await co.ethBondingCurve());
   let ethPair = await IUniswapV2Pair.at(await co.ethFeiPair());
@@ -46,7 +43,15 @@ module.exports = async function(callback) {
   let controller = await EthUniswapPCVController.at(await co.ethUniswapPCVController());
   let router = await FeiRouter.at(await co.feiRouter());
 
-  console.log('Init');
+  console.log('Init Staking');
+  await co.initStaking();
+  console.log('Init Genesis');
+  await co.initGenesis();
+
+  let staking = await StakingRewards.at(await co.feiStakingRewards());
+  let distributor = await FeiRewardsDistributor.at(await co.feiRewardsDistributor());
+  let gg = await GenesisGroup.at(await co.genesisGroup());
+
   let ethAmount = new BN('100000000000000000000000');
 
   let ggPurchase = await gg.purchase(accounts[0], ethAmount, {from: accounts[0], value: ethAmount});

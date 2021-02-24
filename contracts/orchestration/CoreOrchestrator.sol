@@ -292,4 +292,9 @@ contract CoreOrchestrator is Ownable {
         core.grantGovernor(timelock);
         ITribe(tribe).setMinter(timelock);
     }
+
+    function renounceGovernor() public onlyOwner {
+        core.revokeGovernor(address(this));
+        renounceOwnership();
+    }
 }
