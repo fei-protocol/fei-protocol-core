@@ -10,7 +10,7 @@ description: "The Fei Protocol Genesis Group contract \U0001F680"
 
 ## Description
 
-The Genesis Group Contract is responsible for launching Fei Protocol. It allows for pro rata access to the first bonding curve transaction, and includes a TRIBE distribution.
+The Genesis Group Contract is responsible for launching Fei Protocol. It allows for pro-rata access to the first bonding curve transaction and includes a TRIBE distribution.
 
 ### FGEN
 
