@@ -570,6 +570,11 @@ describe('GenesisGroup', function () {
           expect(await this.genesisGroup.totalCommittedFGEN()).to.be.bignumber.equal(this.userCommittedFGEN);
         });
 
+        it('updates getAmountOut', async function() {
+          let amountsOut = await this.genesisGroup.getAmountOut(this.userCommittedFGEN, true);
+          expect(amountsOut[1]).to.be.bignumber.equal(this.tribeGenesisAmount.div(new BN('2')));
+        });
+
         describe('Second commit', function() {
           describe('Enough', function() {
             beforeEach(async function() {
@@ -583,6 +588,11 @@ describe('GenesisGroup', function () {
 
             it('updates totals', async function() {
               expect(await this.genesisGroup.totalCommittedFGEN()).to.be.bignumber.equal(this.userFGEN);
+            });
+
+            it('updates getAmountOut', async function() {
+              let amountsOut = await this.genesisGroup.getAmountOut('250', true);
+              expect(amountsOut[1]).to.be.bignumber.equal(this.tribeGenesisAmount.div(new BN('4')));
             });
           });
 

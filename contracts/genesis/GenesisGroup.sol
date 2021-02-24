@@ -263,7 +263,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         override
         returns (uint256 feiAmount, uint256 tribeAmount)
     {
-        uint256 totalIn = totalSupply();
+        uint256 totalIn = totalSupply().add(totalCommittedFGEN);
         if (!inclusive) {
             // exclusive from current supply, so we add it in
             totalIn = totalIn.add(amountIn);
