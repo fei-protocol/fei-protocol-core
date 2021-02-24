@@ -4,13 +4,11 @@ description: "The equal opportunity launch of Fei Protocol \U0001F680"
 
 # Genesis
 
-Fei Protocol Genesis starts at 0:00 UTC on March 4, 2021. It lasts for 3 days, ending March 7, 2021. Read the Medium announcement for more high level details around Genesis:
-
-&lt;Link to medium announcement&gt;
+Fei Protocol Genesis starts at 0:00 UTC on March 4, 2021. It will last 3 days, ending March 7, 2021. Additional details about the Genesis event are available in our Medium announcement \(Medium announcement will be a hyperlink\)
 
 ## Genesis Group
 
-The Genesis Group contract is the entry point for users for participating in Genesis. It provides users the ability to:
+The Genesis Group contract is the user entry point for Genesis participation. It provides users the ability to:
 
 * Enter Genesis with an ETH commitment
 * Optionally pre-buy TRIBE with Genesis FEI
@@ -21,14 +19,14 @@ The Genesis Group contract is the entry point for users for participating in Gen
 {% hint style="warning" %}
 Genesis entry is one-way. There is no way to redeem committed ETH, unless the launch fails.
 
-Likewise pre-buying TRIBE is one-way, no way to revert back to uncommitted Genesis ETH.
+Optional pre-buying of TRIBE is one-way. There is no way to revert back to uncommitted Genesis ETH.
 {% endhint %}
 
 {% page-ref page="genesisgroup.md" %}
 
 ## Initial DEX Offering \(IDO\)
 
-As part of the Genesis launch, Fei Protocol will list [FEI](../fei-stablecoin/) and [TRIBE](../../governance/tribe.md) on Uniswap. This will amount to 20% of the [TRIBE initial token distribution](https://medium.com/fei-protocol/the-tribe-token-distribution-887f26169e44). The liquidity for this IDO will be timelocked and owned by the Fei Core Team. See the section below for more details on the token timelocks.
+As part of the Genesis launch, Fei Protocol will list [FEI](../fei-stablecoin/) and [TRIBE](../../governance/tribe.md) on Uniswap. This will amount to 20% of the [TRIBE initial token distribution](https://medium.com/fei-protocol/the-tribe-token-distribution-887f26169e44). The liquidity for this IDO will be timelocked and owned by the Fei Core Team.
 
 {% page-ref page="ido.md" %}
 
