@@ -12,16 +12,16 @@ Fei Protocol Genesis starts at 0:00 UTC on March 4, 2021. It lasts for 3 days, e
 
 The Genesis Group contract is the entry point for users for participating in Genesis. It provides users the ability to:
 
-* Purchase entry for ETH
-* Pre-commit Genesis FEI to purchase on the IDO
+* Enter Genesis with an ETH commitment
+* Optionally pre-buy TRIBE with Genesis FEI
 * Launch Fei Protocol
 * Redeem rewards after launch
 * Emergency exit if the launch fails
 
 {% hint style="warning" %}
-Genesis entry is one-way. There is no way to redeem Genesis ETH for ETH, unless the launch fails.
+Genesis entry is one-way. There is no way to redeem committed ETH, unless the launch fails.
 
-Pre-commitment is one-way, no way to revert back to uncommitted Genesis ETH.
+Likewise pre-buying TRIBE is one-way, no way to revert back to uncommitted Genesis ETH.
 {% endhint %}
 
 {% page-ref page="genesisgroup.md" %}

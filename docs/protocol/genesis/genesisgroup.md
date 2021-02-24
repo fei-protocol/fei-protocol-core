@@ -14,13 +14,17 @@ The Genesis Group Contract is responsible for launching Fei Protocol. It allows 
 
 ### FGEN
 
-The user's Genesis balances are managed by an ERC-20 token called FGEN. We refer to FGEN elsewhere as "Genesis ETH". Because FGEN are fungible, they can be transferred and even sold if secondary markets arise.
+The user's Genesis balances are managed by an ERC-20 token called FGEN. This is a tokenized version of the committed ETH. Because FGEN are fungible, they can be transferred and even sold if secondary markets arise.
 
 FGEN are used to account for the user's final outcome in Genesis.
 
 ### Outcome determination
 
-At redemption time, users have a combination of FGEN and committed FGEN \(notated as cFGEN even though it is not an ERC-20\). The ratios of these to the totals determine how much FEI and TRIBE the user earns. The TRIBE can be further split into "Genesis TRIBE" which are the bonus allocation to the Genesis Group and "IDO TRIBE" which come from exchanging pre-committed FEI in the IDO. The ownership is calculated as follows:
+{% hint style="info" %}
+FGEN maps to "committed ETH" and committed FGEN maps to "pre buying" TRIBE.
+{% endhint %}
+
+At redemption time, users have a combination of FGEN and committed FGEN \(notated as cFGEN even though the committed version is not an ERC-20\). The ratios of these to the totals determine how much FEI and TRIBE the user earns. The TRIBE can be further split into "Genesis TRIBE" which are the bonus allocation to the Genesis Group and "IDO TRIBE" which come from exchanging pre-committed FEI in the IDO. The ownership is calculated as follows:
 
 ![](../../.gitbook/assets/screen-shot-2021-02-14-at-7.32.33-pm.png)
 
@@ -106,7 +110,7 @@ Reverts if called pre-launch, as there is no way to know the redeemable amount f
 
 ### Public
 
-#### purchase
+purchase
 
 ```javascript
 function purchase(address to, uint256 value) external payable;
@@ -115,6 +119,10 @@ function purchase(address to, uint256 value) external payable;
 Purchase awards the user with an ERC-20 token 1:1 for their ETH called FGEN. This amount should be equal to `value`.  Only available during the Genesis Period.
 
 emits `Purchase`
+
+{% hint style="info" %}
+purchase\(\) maps to an "ETH commitment" which outputs FGEN.
+{% endhint %}
 
 #### commit
 
@@ -129,6 +137,10 @@ function commit(
 Pre-commit `amount` of FGEN to have the associated Genesis FEI participate in the initial DEX offering of TRIBE on Uniswap. Burn FGEN from the `from` address and grant the pre-commitment rewards to the `to` address. This can only be done during the Genesis Period.
 
 emits `Commit`
+
+{% hint style="info" %}
+`commit`\(\) maps to a "TRIBE pre-buy"
+{% endhint %}
 
 {% hint style="warning" %}
 When a user pre-commits, their FGEN is burned. This makes it a one-way action. 
@@ -148,7 +160,7 @@ Launching is only open at the end of the Genesis Period. The following actions h
 * Allocate bonding curve ETH to the PCV deposit
 * Initialize the FEI/TRIBE staking pool
 * Deploy the IDO FEI/TRIBE funds to Uniswap.
-* Execute the swap of pre-committed FEI for TRIBE on the IDO
+* Execute the swap of FEI for pre-buying TRIBE on the IDO
 
 emits `Launch`
 
