@@ -12,7 +12,7 @@ description: An ETH/USDC Uniswap TWAP snapshot oracle
 
 The UniswapOracle contract maintains a uniswap TWAP.
 
-Maintains a pair contract to reference and a flag for whether the target price is token0 or token1 of the pair. Has a timestamp duration which must be exceeded between oracle updates. This duration is 10 minutes at launch.
+It maintains a pair contract to reference and a flag for whether the target price is token0 or token1 of the pair. Has a timestamp duration that must be exceeded between oracle updates. The duration is set to 10 minutes at launch.
 
 Updates should:
 
@@ -21,7 +21,7 @@ Updates should:
 * divide the ratio between the cumulative price and timestamp to get a peg price, then divide by 2^112 to resolve an integer from the stored fixed point 112x112 that Uniswap uses.
 * update the peg and prior cumulative and timestamp
 
-The governor can change the duration if needed.
+The Governor ⚖️can change the duration.
 
 ## Events
 
@@ -59,7 +59,7 @@ Oracle kill switch change
 function read() external view returns (Decimal.D256 memory, bool);
 ```
 
-Reads the oracle value and reports the peg as FEI per underlying. The boolean returned signifies whether the reported value is valid. Invalid generally means the oracle is uninitialized or the kill switch is engaged.
+Reads the oracle value and reports the peg as FEI per underlying. The boolean value returned informs whether the reported value is valid. Invalid generally means the oracle is uninitialized or the kill switch is engaged.
 
 #### isOutdated
 
@@ -67,7 +67,7 @@ Reads the oracle value and reports the peg as FEI per underlying. The boolean re
 function isOutdated() external view returns (bool);
 ```
 
-Returns true if the oracle is still within the `duration` window. If false, then many read functions relying on the oracle would be inaccurate.
+Returns true, if the oracle is still within the `duration` window. If false, then most read functions relying on the oracle would be inaccurate.
 
 #### killSwitch
 
@@ -75,7 +75,7 @@ Returns true if the oracle is still within the `duration` window. If false, then
 function killSwitch() external view returns (bool);
 ```
 
-The kill switch value, if true then the read function returns invalid.
+The kill switch status value, if true, then the read function returns invalid.
 
 #### priorTimestamp
 
