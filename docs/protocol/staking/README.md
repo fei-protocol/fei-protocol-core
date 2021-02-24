@@ -15,7 +15,7 @@ The total reward balance is 100,000,000 TRIBE, distributed over 2 years. This re
 Distribution is gated by the FeiRewardsDistributor. It calculates the amount which should be released at any given time and drips it to FeiStakingRewards weekly.
 
 {% hint style="success" %}
-The drip can be called by any user or contract, and the caller is rewarded a 500 FEI incentive for triggering the call.
+The drip can be called by any user or contract, the caller is rewarded a 500 FEI incentive for triggering the call.
 {% endhint %}
 
 ## Staking
