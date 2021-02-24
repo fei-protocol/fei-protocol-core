@@ -12,7 +12,7 @@ description: An oracle which references a bonding curve price
 
 The BondingCurveOracle contract pegs to a linked bonding curve price pre Scale and to a normal UniswapOracle post Scale.
 
-Stores the bonding curve and Uniswap oracle contracts to reference. Reads from the appropriate source depending on whether pre or post scale.
+The contract stores the bonding curve \(pre-Scale\) and Uniswap \(post-scale\) oracle contracts to reference.
 
 Updates to the bonding curve oracle update the linked uniswap oracle.
 
