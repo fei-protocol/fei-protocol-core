@@ -55,8 +55,8 @@ describe('UniswapIncentive', function () {
           await time.advanceBlock();
           await time.advanceBlock();
         });
-        it('reverts', async function() {
-          await expectRevert(this.incentive.isIncentiveParity(), "UniswapIncentive: Incentive zero or not active");
+        it('returns false', async function() {
+          expect(await this.incentive.isIncentiveParity()).to.be.equal(false);
         });
       });
       describe('Active Time Weight', function() {
@@ -68,8 +68,8 @@ describe('UniswapIncentive', function () {
           await time.advanceBlock();
           await time.advanceBlock();
         });
-        it('reverts', async function() {
-          await expectRevert(this.incentive.isIncentiveParity(), "UniswapIncentive: Price already at or above peg");
+        it('returns false', async function() {
+          expect(await this.incentive.isIncentiveParity()).to.be.equal(false);
         });
       });
     });
@@ -87,8 +87,8 @@ describe('UniswapIncentive', function () {
           await time.advanceBlock();
           await time.advanceBlock();
         });
-        it('reverts', async function() {
-          await expectRevert(this.incentive.isIncentiveParity(), "UniswapIncentive: Incentive zero or not active");
+        it('returns false', async function() {
+          expect(await this.incentive.isIncentiveParity()).to.be.equal(false);
         });
       });
 
@@ -101,8 +101,8 @@ describe('UniswapIncentive', function () {
           await time.advanceBlock();
           await time.advanceBlock();
         });
-        it('reverts', async function() {
-          await expectRevert(this.incentive.isIncentiveParity(), "UniswapIncentive: Price already at or above peg");
+        it('returns false', async function() {
+          expect(await this.incentive.isIncentiveParity()).to.be.equal(false);
         });
       });
     });
@@ -120,8 +120,8 @@ describe('UniswapIncentive', function () {
           await time.advanceBlock();
           await time.advanceBlock();
         });
-        it('reverts', async function() {
-          await expectRevert(this.incentive.isIncentiveParity(), "UniswapIncentive: Incentive zero or not active");
+        it('returns false', async function() {
+          expect(await this.incentive.isIncentiveParity()).to.be.equal(false);
         });
       });
 
