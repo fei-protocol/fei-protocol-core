@@ -455,12 +455,12 @@ const {
                         );
                     });
                     it('updates balances', async function() {
-                        await expectApprox(await this.distributor.rewardBalance(), this.tribeBefore.sub(this.secondExpectedDrip));
+                        await expectApprox(await this.distributor.rewardBalance(), new BN('0'));
                         await expectApprox(await this.tribe.balanceOf(this.staking.address), this.totalDrip);
                         await expectApprox(await this.distributor.distributedRewards(), this.totalDrip);
                         await expectApprox(await this.distributor.totalReward(), this.rewardAmount);
                         await expectApprox(await this.distributor.releasedReward(), new BN('0'));
-                        await expectApprox(await this.distributor.unreleasedReward(), this.tribeBefore.sub(this.secondExpectedDrip));
+                        await expectApprox(await this.distributor.unreleasedReward(), new BN('0'));
                     });
 
                     it('incentivizes', async function() {

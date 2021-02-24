@@ -69,6 +69,8 @@ interface IRewardsDistributor {
 
     function lastDistributionTime() external view returns (uint256);
 
+    function isDripAvailable() external view returns (bool);
+
     function nextDripAvailable() external view returns (uint256);
 
     function dripFrequency() external view returns (uint256);

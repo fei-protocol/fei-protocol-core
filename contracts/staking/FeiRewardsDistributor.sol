@@ -48,11 +48,12 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
         _initTimed();
     }
 
+    /// @notice sends the unlocked amount of TRIBE to the stakingRewards contract
+    /// @return amount of TRIBE sent
     function drip() public override postGenesis returns(uint256) {
         require(!killSwitch, "FeiRewardsDistributor: drip disabled");
 
-        // solhint-disable-next-line not-rely-on-time
-        require(block.timestamp >= nextDripAvailable(), "FeiRewardsDistributor: Not passed drip frequency");
+        require(isDripAvailable(), "FeiRewardsDistributor: Not passed drip frequency");
         // solhint-disable-next-line not-rely-on-time
         lastDistributionTime = block.timestamp;
 
@@ -82,28 +83,39 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
         stakingContract.recoverERC20(tokenAddress, to, amount);
     }
 
+    /// @notice sets the drip frequency
     function setDripFrequency(uint256 _frequency) external override onlyGovernor {
         dripFrequency = _frequency;
         emit FrequencyUpdate(_frequency);
     }
 
+    /// @notice sets the incentive amount for calling drip
     function setIncentiveAmount(uint256 _incentiveAmount) external override onlyGovernor {
         incentiveAmount = _incentiveAmount;
         emit IncentiveUpdate(_incentiveAmount);
     }
 
+    /// @notice sets the staking contract to send TRIBE rewards to
     function setStakingContract(address _stakingContract) external override onlyGovernor {
         stakingContract = IStakingRewards(_stakingContract);
         emit StakingContractUpdate(_stakingContract);
     }
 
+    /// @notice returns true if the drip functionality is paused
     function setKillSwitch(bool _killSwitch) external override onlyGuardianOrGovernor {
         killSwitch = _killSwitch;
         emit KillSwitchUpdate(_killSwitch);
     }
 
+    /// @notice returns the block timestamp when drip will next be available
     function nextDripAvailable() public view override returns (uint256) {
         return lastDistributionTime.add(dripFrequency);
+    }
+
+    /// @notice return true if the dripFrequency has passed since the last drip
+    function isDripAvailable() public view override returns (bool) {
+        // solhint-disable-next-line not-rely-on-time
+        return block.timestamp >= nextDripAvailable();
     }
 
     /// @notice the total amount of rewards owned by contract and unlocked for release
