@@ -34,7 +34,7 @@ As part of the Genesis launch, Fei Protocol will list [FEI](../fei-stablecoin/) 
 
 ## Fei Core Team Timelocks
 
-The Fei Core Team and investors will own timelocked [TRIBE](../../governance/tribe.md) as well as the LP tokens associated with the IDO. These timelocks follow a linear release schedule over a 4 year window on the contract level. The Fei Core Team has elected to vest over 5 years, back-weighted. The vesting will be managed at the company level and not the contract level.
+The Fei Core Team and investors will own timelocked [TRIBE](../../governance/tribe.md) as well as the LP tokens associated with the IDO. These timelocks follow a linear release schedule over a 4 year window on the contract level. The Fei Core Team has elected a back-weighted 5 year vesting period. The vesting will be managed at the company level and not the contract level.
 
 The TRIBE will be held in a special timelock called the TimelockedDelegator which allows for sub-delegation of portions of the team's tokens. If you'd like to be considered as a sponsored delegate, reach out on Discord.
 
