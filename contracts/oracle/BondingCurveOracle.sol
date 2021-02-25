@@ -18,7 +18,7 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
     /// @notice the referenced bonding curve
     IBondingCurve public override bondingCurve;
 
-    Decimal.D256 internal _initialPrice;
+    Decimal.D256 internal _initialUSDPrice;
 
     /// @notice BondingCurveOracle constructor
     /// @param _core Fei Core to reference
@@ -62,13 +62,13 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
     }
 
     /// @notice the initial price denominated in USD per FEI to thaw from
-    function initialPrice() external view override returns (Decimal.D256 memory) {
-        return _initialPrice;
+    function initialUSDPrice() external view override returns (Decimal.D256 memory) {
+        return _initialUSDPrice;
     }
 
     /// @notice initializes the oracle with an initial peg price
     /// @param initPrice a price denominated in USD per FEI
-    /// @dev divides the initial peg by the uniswap oracle price to get initialPrice. And kicks off thawing period
+    /// @dev divides the initial peg by the uniswap oracle price to get initialUSDPrice. And kicks off thawing period
     function init(Decimal.D256 memory initPrice)
         public
         override
@@ -79,7 +79,7 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
         if (initPrice.greaterThan(Decimal.one())) {
             initPrice = Decimal.one();
         }
-        _initialPrice = initPrice;
+        _initialUSDPrice = initPrice;
 
         _initTimed();
     }
@@ -100,7 +100,7 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
 
         // average price time weighted from initial to target
         Decimal.D256 memory weightedPrice =
-            _initialPrice.mul(remaining).add(price.mul(elapsed)).div(duration);
+            _initialUSDPrice.mul(remaining).add(price.mul(elapsed)).div(duration);
 
         // divide from peg to return a peg FEI per X instead of a price USD per FEI
         return uniswapPeg.div(weightedPrice);

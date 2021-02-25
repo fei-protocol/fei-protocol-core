@@ -45,8 +45,8 @@ describe('BondingCurveOracle', function () {
       expect(await this.oracle.paused()).to.be.equal(true);
     });
 
-    it('initialPrice', async function() {
-      expect((await this.oracle.initialPrice())[0]).to.be.equal('0');
+    it('initialUSDPrice', async function() {
+      expect((await this.oracle.initialUSDPrice())[0]).to.be.equal('0');
     });
   });
 
@@ -81,8 +81,8 @@ describe('BondingCurveOracle', function () {
         await this.oracle.init(['500000000000000000'], {from: genesisGroup});
       });
 
-      it('initialPrice', async function() {
-        expect((await this.oracle.initialPrice())[0]).to.be.equal('500000000000000000');
+      it('initialUSDPrice', async function() {
+        expect((await this.oracle.initialUSDPrice())[0]).to.be.equal('500000000000000000');
       });
 
       describe('Paused', function() {
@@ -174,8 +174,8 @@ describe('BondingCurveOracle', function () {
         await this.oracle.init(['1500000000000000000'], {from: genesisGroup});
       });
 
-      it('initialPrice', async function() {
-        expect((await this.oracle.initialPrice())[0]).to.be.equal('1000000000000000000'); // capped at one
+      it('initialUSDPrice', async function() {
+        expect((await this.oracle.initialUSDPrice())[0]).to.be.equal('1000000000000000000'); // capped at one
       });
 
       describe('Beginning of Thawing Period', function() {
