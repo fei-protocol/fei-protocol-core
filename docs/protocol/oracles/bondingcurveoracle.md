@@ -32,14 +32,6 @@ Additionally, the contract includes the "thawing" process. Thawing implements th
 | :--- | :--- | :--- |
 | uint256 | \_peg | new peg value |
 {% endtab %}
-
-{% tab title="KillSwitchUpdate" %}
-Oracle kill switch change
-
-| type | param | description |
-| :--- | :--- | :--- |
-| bool | \_killSwitch | new value of the kill switch flag |
-{% endtab %}
 {% endtabs %}
 
 ## Read-Only Functions
@@ -59,14 +51,6 @@ function isOutdated() external view returns (bool);
 ```
 
 Pass through calls `uniswapOracle.isOutdated()`, if false, then multiple read functions relying on the oracle would be inaccurate.
-
-#### killSwitch
-
-```javascript
-function killSwitch() external view returns (bool);
-```
-
-The kill switch status value, if true then the read function returns invalid.
 
 #### uniswapOracle
 
@@ -103,18 +87,6 @@ function update() external returns (bool);
 ```
 
 Pass-through updates `uniswapOracle`
-
-### Governor- Or Guardian-Only⚖️🛡
-
-#### setKillSwitch
-
-```javascript
-function setKillSwitch(bool _killSwitch) external;
-```
-
-Enables or disables the oracle depending on the `_killSwitch` flag passed in.
-
-emits `KillSwitchUpdate`
 
 ### GenesisGroup-Only🚀
 

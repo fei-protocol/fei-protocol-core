@@ -34,14 +34,6 @@ The Governor ⚖️can change the duration.
 | uint256 | \_peg | new peg value |
 {% endtab %}
 
-{% tab title="KillSwitchUpdate" %}
-Oracle kill switch change
-
-| type | param | description |
-| :--- | :--- | :--- |
-| bool | \_killSwitch | new value of the kill switch flag |
-{% endtab %}
-
 {% tab title="DurationUpdate" %}
  New TWAP duration
 
@@ -68,14 +60,6 @@ function isOutdated() external view returns (bool);
 ```
 
 Returns true, if the oracle is still within the `duration` window. If false, then most read functions relying on the oracle would be inaccurate.
-
-#### killSwitch
-
-```javascript
-function killSwitch() external view returns (bool);
-```
-
-The kill switch status value, if true, then the read function returns invalid.
 
 #### priorTimestamp
 
@@ -122,18 +106,6 @@ function update() external returns (bool);
 Updates the oracle with new time-weighted average price data from Uniswap if the `duration` window has passed since the last update. Returns true if updated, and false otherwise.
 
 emits `Update`
-
-### Governor- Or Guardian-Only⚖️🛡
-
-#### setKillSwitch
-
-```javascript
-function setKillSwitch(bool _killSwitch) external;
-```
-
-Enables or disables the oracle depending on the `_killSwitch` flag passed in.
-
-emits `KillSwitchUpdate`
 
 ### Governor-Only⚖️
 

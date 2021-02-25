@@ -64,14 +64,6 @@ Change in the FEI reward for dripping
 | uint256 | \_incentiveAmount | new incentive amount |
 {% endtab %}
 
-{% tab title="KillSwitchUpdate" %}
-Updates the pause kill switch
-
-| type | param | description |
-| :--- | :--- | :--- |
-| bool | \_killSwitch | the new kill switch value |
-{% endtab %}
-
 {% tab title="StakingContractUpdate" %}
 A change in the staking contract to send TRIBE to.
 
@@ -163,14 +155,6 @@ function distributedRewards() external view returns (uint256);
 
 The total amount of [TRIBE](../../governance/tribe.md) already distributed to [FeiStakingRewards](feistakingrewards.md).
 
-### killSwitch
-
-```javascript
-function killSwitch() external view returns (bool);
-```
-
-Returns whether the contract is paused or not. If the switch is true, `drip()` will revert
-
 ## State-Changing Functions <a id="state-changing-functions"></a>
 
 ### Public
@@ -230,14 +214,4 @@ function setStakingContract(address _stakingRewards) external;
 ```
 
 Sets the staking contract to send TRIBE to.
-
-### Guardian- Or Governor-Only🛡⚖️
-
-#### setKillSwitch
-
-```javascript
-function setKillSwitch(bool _killSwitch) external;
-```
-
-Pauses the contract's ability to `drip()` when set to true,
 
