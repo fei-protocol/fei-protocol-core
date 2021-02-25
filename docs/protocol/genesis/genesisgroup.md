@@ -24,7 +24,7 @@ FGEN are used to account for the user's final outcome in Genesis.
 FGEN maps to "committed ETH" and committed FGEN maps to "pre buying" TRIBE.
 {% endhint %}
 
-At redemption time, users could have a combination of FGEN and committed-FGEN \(cFGEN\) tokens. cFGNE are not ERC-20 tokens and are only utilized during Genesis. The ratios of these to the totals determine how much FEI and TRIBE each user receives. The TRIBE can be further split into "Genesis TRIBE" which are the bonus allocation to the Genesis Group and "IDO TRIBE" which come from exchanging pre-committed FEI in the IDO.
+At redemption time, users could have a combination of FGEN and committed-FGEN \(cFGEN\) tokens. cFGEN are not ERC-20 tokens and are only utilized during Genesis. The ratios of FGEN and cFGEN to the totals determine how much FEI and TRIBE each user receives. The TRIBE can be further split into "Genesis TRIBE" which are the bonus allocation to the Genesis Group and "IDO TRIBE" which come from exchanging pre-committed FEI in the IDO.
 
 Genesis allocation formulas:
 
