@@ -76,6 +76,9 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
     {
         _unpause();
         
+        if (initPrice.greaterThan(Decimal.one())) {
+            initPrice = Decimal.one();
+        }
         _initialPrice = initPrice;
 
         _initTimed();

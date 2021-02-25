@@ -168,5 +168,62 @@ describe('BondingCurveOracle', function () {
         });
       });
     });
+
+    describe('Initialized Above One', function() {
+      beforeEach(async function() {
+        await this.oracle.init(['1500000000000000000'], {from: genesisGroup});
+      });
+
+      it('initialPrice', async function() {
+        expect((await this.oracle.initialPrice())[0]).to.be.equal('1000000000000000000'); // capped at one
+      });
+
+      describe('Beginning of Thawing Period', function() {
+        describe('At Scale', function() {
+          beforeEach(async function() {
+            await this.bondingCurve.setScale(true);
+          });
+          it('returns uniswap oracle info', async function() {
+            let result = await this.oracle.read();
+            expect(result[0].value).to.be.equal('500000000000000000000');
+            expect(result[1]).to.be.equal(true);
+          });
+        });
+      });
+
+      describe('Halfway through Thawing Period', function() {
+        beforeEach(async function() {
+          let d = await this.oracle.duration();
+          await time.increase(d.div(new BN(2)));
+        });
+        describe('At Scale', function() {
+          beforeEach(async function() {
+            await this.bondingCurve.setScale(true);
+          });
+          it('returns uniswap oracle info', async function() {
+            let result = await this.oracle.read();
+            expect(result[0].value).to.be.equal('500000000000000000000');
+            expect(result[1]).to.be.equal(true);
+          });
+        });
+      });
+
+      describe('End of Thawing Period', function() {
+        beforeEach(async function() {
+          await time.increase(await this.oracle.duration());
+        });
+
+        describe('At Scale', function() {
+          beforeEach(async function() {
+            await this.bondingCurve.setScale(true);
+          });
+          it('returns uniswap oracle info', async function() {
+            let result = await this.oracle.read();
+            expect(result[0].value).to.be.equal('500000000000000000000');
+            expect(result[1]).to.be.equal(true);
+          });
+        });
+      });
+    });
   });
 });
