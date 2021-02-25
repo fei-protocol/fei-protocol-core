@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "./ICoreRef.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 /// @title A Reference to Core
 /// @author Fei Protocol
@@ -81,6 +82,11 @@ abstract contract CoreRef is ICoreRef, Pausable {
             _core.hasGenesisGroupCompleted(),
             "CoreRef: Still in Genesis Period"
         );
+        _;
+    }
+
+    modifier nonContract() {
+        require(!Address.isContract(msg.sender), "CoreRef: Caller is a contract");
         _;
     }
 

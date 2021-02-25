@@ -10,6 +10,7 @@ const {
   expect,
   EthUniswapPCVController,
   Fei,
+  MockBot,
   MockPCVDeposit,
   MockOracle,
   MockPair,
@@ -146,6 +147,14 @@ describe('EthUniswapPCVController', function () {
         await expectRevert(this.pcvController.reweight(), "Pausable: paused");
       });
     });
+
+    describe('From Contract', function() {
+      it('reverts', async function() {
+        let bot = await MockBot.new();
+        await expectRevert(bot.controllerReweight(this.pcvController.address), "CoreRef: Caller is a contract");
+      });
+    });
+
     describe('Not at incentive parity', function () {
       it('reverts', async function() {
         await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/ETH with 10k liquidity

@@ -55,7 +55,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
     receive() external payable {}
 
     /// @notice reweights the linked PCV Deposit to the peg price. Needs to be reweight eligible
-    function reweight() external override postGenesis whenNotPaused {
+    function reweight() external override postGenesis whenNotPaused nonContract {
         updateOracle();
         require(
             reweightEligible(),

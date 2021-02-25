@@ -11,6 +11,7 @@ const {
     MockStakingRewards,
     FeiRewardsDistributor,
     MockERC20,
+    MockBot,
     getCore,
     expectApprox
   } = require('../helpers');
@@ -211,6 +212,13 @@ const {
             it('reverts', async function() {
               await this.distributor.pause({from: governorAddress});
               await expectRevert(this.distributor.drip(), "Pausable: paused");
+            });
+        });
+
+        describe('From Contract', function() {
+            it('reverts', async function() {
+              let bot = await MockBot.new();
+              await expectRevert(bot.distributorDrip(this.distributor.address), "CoreRef: Caller is a contract");
             });
         });
 

@@ -144,7 +144,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
     }
 
     /// @notice launch Fei Protocol. Callable once Genesis Period has ended
-    function launch() external override {
+    function launch() external override nonContract {
         require(isTimeEnded(), "GenesisGroup: Still in Genesis Period");
 
         // Complete Genesis
