@@ -42,6 +42,7 @@ contract EthBondingCurve is BondingCurve {
         payable
         override
         postGenesis
+        whenNotPaused
         returns (uint256 amountOut)
     {
         require(

@@ -41,8 +41,8 @@ describe('BondingCurveOracle', function () {
       expect(await this.oracle.bondingCurve()).to.be.equal(this.bondingCurve.address);
     });
 
-    it('killSwitch', async function() {
-      expect(await this.oracle.killSwitch()).to.be.equal(true);
+    it('paused', async function() {
+      expect(await this.oracle.paused()).to.be.equal(true);
     });
 
     it('initialPrice', async function() {
@@ -85,9 +85,9 @@ describe('BondingCurveOracle', function () {
         expect((await this.oracle.initialPrice())[0]).to.be.equal('500000000000000000');
       });
 
-      describe('Kill switch', function() {
+      describe('Paused', function() {
         beforeEach(async function() {
-          await this.oracle.setKillSwitch(true, {from: governorAddress});
+          await this.oracle.pause({from: governorAddress});
         });
         it('returns invalid', async function() {
           let result = await this.oracle.read();
@@ -166,32 +166,6 @@ describe('BondingCurveOracle', function () {
             expect(result[1]).to.be.equal(true);
           });
         });
-      });
-    });
-  });
-
-  describe('Access', function() {
-    describe('Kill Switch', function() {
-      it('Governor set succeeds', async function() {
-        expectEvent(
-            await this.oracle.setKillSwitch(true, {from: governorAddress}),
-            'KillSwitchUpdate',
-            { _killSwitch: true }
-          );
-        expect(await this.oracle.killSwitch()).to.be.equal(true);
-      });
-
-      it('Guardian set succeeds', async function() {
-        expectEvent(
-            await this.oracle.setKillSwitch(true, {from: guardianAddress}),
-            'KillSwitchUpdate',
-            { _killSwitch: true }
-          );
-        expect(await this.oracle.killSwitch()).to.be.equal(true);
-      });
-
-      it('Non-governor set reverts', async function() {
-        await expectRevert(this.oracle.setKillSwitch(false, {from: userAddress}), "CoreRef: Caller is not a guardian or governor");
       });
     });
   });

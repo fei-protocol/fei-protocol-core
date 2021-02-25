@@ -25,8 +25,6 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
 
     uint256 public override incentiveAmount;
 
-    bool public override killSwitch;
-
     constructor(
         address _core,
         address _stakingContract,
@@ -50,9 +48,7 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
 
     /// @notice sends the unlocked amount of TRIBE to the stakingRewards contract
     /// @return amount of TRIBE sent
-    function drip() public override postGenesis returns(uint256) {
-        require(!killSwitch, "FeiRewardsDistributor: drip disabled");
-
+    function drip() public override postGenesis whenNotPaused returns(uint256) {
         require(isDripAvailable(), "FeiRewardsDistributor: Not passed drip frequency");
         // solhint-disable-next-line not-rely-on-time
         lastDistributionTime = block.timestamp;
@@ -99,12 +95,6 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
     function setStakingContract(address _stakingContract) external override onlyGovernor {
         stakingContract = IStakingRewards(_stakingContract);
         emit StakingContractUpdate(_stakingContract);
-    }
-
-    /// @notice returns true if the drip functionality is paused
-    function setKillSwitch(bool _killSwitch) external override onlyGuardianOrGovernor {
-        killSwitch = _killSwitch;
-        emit KillSwitchUpdate(_killSwitch);
     }
 
     /// @notice returns the block timestamp when drip will next be available

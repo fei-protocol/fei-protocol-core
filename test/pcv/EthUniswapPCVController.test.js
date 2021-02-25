@@ -140,6 +140,12 @@ describe('EthUniswapPCVController', function () {
   });
 
   describe('External Reweight', function() {
+    describe('Paused', function() {
+      it('reverts', async function() {
+        await this.pcvController.pause({from: governorAddress});
+        await expectRevert(this.pcvController.reweight(), "Pausable: paused");
+      });
+    });
     describe('Not at incentive parity', function () {
       it('reverts', async function() {
         await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/ETH with 10k liquidity

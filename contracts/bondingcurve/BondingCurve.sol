@@ -79,7 +79,7 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     }
 
     /// @notice batch allocate held PCV
-    function allocate() external override postGenesis {
+    function allocate() external override postGenesis whenNotPaused {
         uint256 amount = getTotalPCVHeld();
         require(amount != 0, "BondingCurve: No PCV held");
 

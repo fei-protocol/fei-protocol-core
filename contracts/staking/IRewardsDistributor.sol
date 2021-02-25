@@ -25,10 +25,6 @@ interface IRewardsDistributor {
         uint256 _incentiveAmount
     );
 
-    event KillSwitchUpdate(
-        bool _killSwitch
-    );
-
     event StakingContractUpdate(
         address _stakingContract
     );
@@ -47,13 +43,9 @@ interface IRewardsDistributor {
 
     function setIncentiveAmount(uint256 _incentiveAmount) external;
 
-    function setKillSwitch(bool _killSwitch) external;
-
     function setStakingContract(address _stakingRewards) external;
 
     // ----------- Getters -----------
-
-    function killSwitch() external view returns (bool);
 
     function totalReward() external view returns (uint256);
 

@@ -31,10 +31,6 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
     /// @notice the window over which the initial price will "thaw" to the true peg price
     uint256 public override duration;
 
-    /// @notice the kill switch for the oracle feed
-    /// @dev if kill switch is true, read will return invalid
-    bool public override killSwitch;
-
     uint256 private constant FIXED_POINT_GRANULARITY = 2**112;
     uint256 private constant USDC_DECIMALS_MULTIPLIER = 1e12; // to normalize USDC and ETH wei units
 
@@ -60,7 +56,7 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 
     /// @notice updates the oracle price
     /// @return true if oracle is updated and false if unchanged
-    function update() external override returns (bool) {
+    function update() external override whenNotPaused returns (bool) {
         (
             uint256 price0Cumulative,
             uint256 price1Cumulative,
@@ -107,15 +103,8 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
     /// @dev price is to be denominated in USD per X where X can be ETH, etc.
     /// @dev Can be innacurate if outdated, need to call `isOutdated()` to check
     function read() external view override returns (Decimal.D256 memory, bool) {
-        bool valid = !(killSwitch || twap.isZero());
+        bool valid = !(paused() || twap.isZero());
         return (twap, valid);
-    }
-
-    /// @notice sets the kill switch on the oracle feed
-    /// @param _killSwitch the new value for the kill switch
-    function setKillSwitch(bool _killSwitch) external override onlyGuardianOrGovernor {
-        killSwitch = _killSwitch;
-        emit KillSwitchUpdate(_killSwitch);
     }
 
     /// @notice set a new duration for the TWAP window

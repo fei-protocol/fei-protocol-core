@@ -44,8 +44,8 @@ describe('UniswapOracle', function () {
       expect(await this.oracle.duration()).to.be.bignumber.equal(this.duration);
     });
 
-    it('killSwitch', async function() {
-      expect(await this.oracle.killSwitch()).to.be.equal(false);
+    it('paused', async function() {
+      expect(await this.oracle.paused()).to.be.equal(false);
     });
   });
 
@@ -66,9 +66,9 @@ describe('UniswapOracle', function () {
         await this.oracle.update();
       });
 
-      describe('Kill switch', function() {
+      describe('Paused', function() {
         beforeEach(async function() {
-          await this.oracle.setKillSwitch(true, {from: governorAddress});
+          await this.oracle.pause({from: governorAddress});
         });
 
         it('returns invalid', async function() {
@@ -78,7 +78,7 @@ describe('UniswapOracle', function () {
         });
       });
 
-      describe('No kill switch', function() {
+      describe('Unpaused', function() {
         it('returns valid', async function() {
           let result = await this.oracle.read();
           expect(result[0].value).to.be.equal('499999999999999999999');
@@ -91,8 +91,15 @@ describe('UniswapOracle', function () {
     beforeEach(async function() {
       this.priorCumulativePrice = await this.oracle.priorCumulative();
       this.priorTime = await this.oracle.priorTimestamp();      
-    }) 
-
+    });
+    
+    describe('Paused', function() {
+      it('reverts', async function() {
+        await this.oracle.pause({from: governorAddress});
+        await expectRevert(this.oracle.update(), "Pausable: paused");
+      });
+    });
+    
     describe('Within duration', function() {
       beforeEach(async function() {
         await this.pair.set(this.cumulative.add(this.hundredTwelve.mul(this.delta).mul(new BN(500)).div(new BN(1e12))), 0, this.cursor.add(new BN(1000)));
@@ -172,30 +179,6 @@ describe('UniswapOracle', function () {
   });
 
   describe('Access', function() {
-    describe('Kill Switch', function() {
-      it('Governor set succeeds', async function() {
-        expectEvent(
-            await this.oracle.setKillSwitch(true, {from: governorAddress}),
-            'KillSwitchUpdate',
-            { _killSwitch: true }
-          );
-        expect(await this.oracle.killSwitch()).to.be.equal(true);
-      });
-
-      it('Guardian set succeeds', async function() {
-        expectEvent(
-            await this.oracle.setKillSwitch(true, {from: guardianAddress}),
-            'KillSwitchUpdate',
-            { _killSwitch: true }
-          );
-        expect(await this.oracle.killSwitch()).to.be.equal(true);
-      });
-
-      it('Non-governor set reverts', async function() {
-        await expectRevert(this.oracle.setKillSwitch(false, {from: userAddress}), "CoreRef: Caller is not a guardian or governor");
-      });
-    });
-
     describe('Duration', function() {
       it('Governor set succeeds', async function() {
         expectEvent(
