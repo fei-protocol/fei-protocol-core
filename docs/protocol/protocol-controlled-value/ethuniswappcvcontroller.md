@@ -16,10 +16,14 @@ A contract for moving reweighting Uniswap prices to the peg from a Uniswap PCV D
 
 Reweights are used to return the Uniswap spot price of an associated PCV Deposit to the peg. The algorithm is as follows:
 
-1. withdraw 90% of the ETH from the UniswapPCVDeposit
+1. withdraw 99% of the ETH from the UniswapPCVDeposit
 2. execute a trade with held ETH to bring the spot price back up to peg
 3. deposit remaining ETH balance back into the Uniswap PCV Deposit
 4. burn excess held FEI
+
+{% hint style="info" %}
+Only 99% is withdrawn because if there are no other LPs there could be rounding errors against dust
+{% endhint %}
 
 ### Reweight eligibility
 
