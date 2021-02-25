@@ -95,3 +95,21 @@ Sets the currently referenced [Fei Core](../access-control/core.md) contract to 
 
 emits `CoreUpdate`
 
+### Guardian- Or Governor-Only🛡⚖️
+
+#### pause
+
+```javascript
+function pause() external;
+```
+
+Puts the contract in the paused state which can shut down pausable external functions
+
+#### unpause
+
+```javascript
+function unpause() external;
+```
+
+Puts the contract in the unpaused state which can reopen pausable external functions
+
