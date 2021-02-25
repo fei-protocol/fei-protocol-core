@@ -10,9 +10,9 @@ description: A reference to Fei Core
 
 ## Description
 
-CoreRef is an abstract contract which references Core. It defines some basic modifiers and utilities useful for contracts referencing Core.
+CoreRef is an abstract contract which references Core. It defines basic modifiers and utilities useful for contracts referencing Core.
 
-Almost all Fei Protocol contracts should implement the CoreRef contract.
+Most of all Fei Protocol contracts implement the CoreRef contract.
 
 The contract defines modifiers of the following types:
 

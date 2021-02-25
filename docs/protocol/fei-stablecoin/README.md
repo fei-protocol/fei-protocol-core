@@ -22,9 +22,9 @@ The Governor⚖️ can set and unset incentive contracts for any address. It can
 
 ### Inclusive Fee On Transfer
 
-For the burn penalties applied to incentivized trading, or any fee-on-transfer, there are two options. The first is an inclusive fee which is most common. The fee is taken from the "in-flight" amount of the trade. Alice sends Bob 100 FEI with a 10% inclusive fee and Bob receives 90 FEI. An exclusive fee is where the fee is taken outside of the amount sent from the sender. Alice sends Bob 100 FEI with a 10% exclusive fee and Bob receives 100 FEI. Alice pays the remaining 10 from her wallet.
+Fees applied to incentivized trading or transfers can be either inclusive or exclusive. The inclusive fees are more commonly utilized in DeFi. Inclusive fees are applied "in-flight", meaning that the fee is extracted from the transfer or the trade amount itself.  Exclusive fees are applied on top of the transfer or trade amount itself. The exclusive fee is commonly applied to the party initiating the transaction.
 
-Fei Protocol v1 uses an "inclusive" fee on transfer when applying Direct Incentives on Uniswap sells. There are certain issues with this approach, the main one being that Fei Protocol cannot differentiate between selling and liquidity provision. Therefore the fee applies to all FEI transfers to the pool including providing LP.
+Fei Protocol v1 uses an "inclusive" fee on transfers when applying Direct Incentives on Uniswap sells. There are certain considerations with this approach, the main one being that Fei Protocol cannot differentiate between selling and liquidity provision. Therefore the fee applies to all FEI transfers to the pool including providing LP.
 
 {% hint style="warning" %}
 LPing the FEI/ETH Uniswap pool also incurs a burn penalty, because it transfers FEI into the pool like a sell would

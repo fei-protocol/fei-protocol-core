@@ -14,7 +14,7 @@ The Genesis Group Contract is responsible for launching Fei Protocol. It allows 
 
 ### FGEN
 
-The user's Genesis balances are managed by an FGEN ERC-20 token. This is a tokenized version of the committed ETH. FGEN tokens are fungible and can be transferred and even sold if secondary markets arise.
+The user's Genesis balances are managed by an FGEN ERC-20 token. FGEN are a tokenized version of the committed ETH. FGEN tokens are fungible and can be transferred and even sold if secondary markets arise.
 
 FGEN are used to account for the user's final outcome in Genesis.
 
@@ -24,7 +24,9 @@ FGEN are used to account for the user's final outcome in Genesis.
 FGEN maps to "committed ETH" and committed FGEN maps to "pre buying" TRIBE.
 {% endhint %}
 
-At redemption time, users have a combination of FGEN and committed FGEN \(notated as cFGEN even though the committed version is not an ERC-20\). The ratios of these to the totals determine how much FEI and TRIBE the user earns. The TRIBE can be further split into "Genesis TRIBE" which are the bonus allocation to the Genesis Group and "IDO TRIBE" which come from exchanging pre-committed FEI in the IDO. The ownership is calculated as follows:
+At redemption time, users could have a combination of FGEN and committed-FGEN \(cFGEN\) tokens. cFGNE are not ERC-20 tokens and are only utilized during Genesis. The ratios of these to the totals determine how much FEI and TRIBE each user receives. The TRIBE can be further split into "Genesis TRIBE" which are the bonus allocation to the Genesis Group and "IDO TRIBE" which come from exchanging pre-committed FEI in the IDO.
+
+Genesis allocation formulas:
 
 ![](../../.gitbook/assets/screen-shot-2021-02-14-at-7.32.33-pm.png)
 
@@ -100,7 +102,7 @@ function getAmountsToRedeem(address to)
     )
 ```
 
-For an address `to`, returns how much FEI they have available for redemption `feiAmount`, how much TRIBE they have available from the Genesis bonus `genesisTribe`, and how much TRIBE they have available from the IDO pre-commitment `idoTribe`, if any.
+For an address `to`, returns how much FEI is available for redemption `feiAmount`, how much TRIBE is available from the Genesis bonus `genesisTribe`, and how much TRIBE is available from the IDO pre-commitment `idoTribe`, if any.
 
 {% hint style="danger" %}
 Reverts if called pre-launch, as there is no way to know the redeemable amount for a user
@@ -110,13 +112,13 @@ Reverts if called pre-launch, as there is no way to know the redeemable amount f
 
 ### Public
 
-purchase
+#### purchase
 
 ```javascript
 function purchase(address to, uint256 value) external payable;
 ```
 
-Purchase awards the user with an ERC-20 token 1:1 for their ETH called FGEN. This amount should be equal to `value`.  Only available during the Genesis Period.
+Purchase awards the user with an ERC-20 token 1:1 for their ETH called FGEN. This amount equals to `value`.  Only available during the Genesis Period.
 
 emits `Purchase`
 
@@ -170,7 +172,7 @@ emits `Launch`
 function redeem(address to) external;
 ```
 
-Redeem FGEN and committed FGEN from `to` for a pro rata share of the FEI purchased on the bonding curve and the Genesis TRIBE allocation. Any contract can redeem on behalf of a user if they have FGEN approval. Redemptions must be for the entire held balance of FGEN and committed FGEN.
+Redeem FGEN and cFGEN from `to` for a pro rata share of the FEI purchased on the bonding curve and the Genesis TRIBE allocation. Any contract can redeem on behalf of a user if they have FGEN approval. Redemptions must be for the entire held balance of FGEN and cFGEN.
 
 emits `Redeem`
 
@@ -180,7 +182,7 @@ emits `Redeem`
 function emergencyExit(address from, address payable to) external;
 ```
 
-Redeem all FGEN and pre-committed FGEN held by the address `from` for ETH 1:1, sending the ETH to address `to`. This is intended only for the scenario where the launch functionality is bricked as a way for users to get their ETH back.
+Redeem all FGEN and cFGEN held by the address `from` for ETH 1:1, sending the ETH to address `to`. This is intended only for the scenario where the launch functionality is bricked as a way for users to get their ETH back.
 
 Only available 3 days AFTER the Genesis Period ends, if launch has not been called.
 
