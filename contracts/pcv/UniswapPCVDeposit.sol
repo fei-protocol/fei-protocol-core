@@ -30,6 +30,7 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
         external
         override
         onlyPCVController
+        whenNotPaused
     {
         uint256 totalUnderlying = totalValue();
         require(

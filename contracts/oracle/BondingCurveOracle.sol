@@ -18,10 +18,6 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
     /// @notice the referenced bonding curve
     IBondingCurve public override bondingCurve;
 
-    /// @notice the kill switch for the oracle feed
-    /// @dev if kill switch is true, read will return invalid
-    bool public override killSwitch = true;
-
     Decimal.D256 internal _initialPrice;
 
     /// @notice BondingCurveOracle constructor
@@ -37,13 +33,7 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
     ) public CoreRef(_core) Timed(_duration) {
         uniswapOracle = IOracle(_oracle);
         bondingCurve = IBondingCurve(_bondingCurve);
-    }
-
-    /// @notice sets the kill switch on the oracle feed
-    /// @param _killSwitch the new value for the kill switch
-    function setKillSwitch(bool _killSwitch) external override onlyGuardianOrGovernor {
-        killSwitch = _killSwitch;
-        emit KillSwitchUpdate(_killSwitch);
+        _pause();
     }
 
     /// @notice updates the oracle price
@@ -64,7 +54,7 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
     /// @dev price is to be denominated in USD per X where X can be ETH, etc.
     /// @dev Can be innacurate if outdated, need to call `isOutdated()` to check
     function read() external view override returns (Decimal.D256 memory, bool) {
-        if (killSwitch) {
+        if (paused()) {
             return (Decimal.zero(), false);
         }
         (Decimal.D256 memory peg, bool valid) = _getOracleValue();
@@ -84,8 +74,8 @@ contract BondingCurveOracle is IBondingCurveOracle, CoreRef, Timed {
         override
         onlyGenesisGroup
     {
-        killSwitch = false;
-
+        _unpause();
+        
         _initialPrice = initPrice;
 
         _initTimed();

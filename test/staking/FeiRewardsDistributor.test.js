@@ -47,8 +47,8 @@ const {
     });
   
     describe('Init', function() {
-      it('killSwitch', async function() {
-        expect(await this.distributor.killSwitch()).to.be.equal(false);
+      it('paused', async function() {
+        expect(await this.distributor.paused()).to.be.equal(false);
       });
 
       it('stakingContract', async function() {
@@ -205,30 +205,15 @@ const {
         });
     });
 
-    describe('setKillSwitch', function() {
-        describe('Non-governor', function() {
-            it('reverts', async function() {
-                await expectRevert(this.distributor.setKillSwitch(true, {from: userAddress}), "CoreRef: Caller is not a guardian or governor");
-            });
-        });
-
-        describe('Governor', function() {
-            beforeEach(async function() {
-                expectEvent(
-                    await this.distributor.setKillSwitch(true, {from: governorAddress}),
-                    'KillSwitchUpdate',
-                    {
-                        _killSwitch: true
-                    }
-                );
-            });
-            it('updates kill switchh', async function() {
-               expect(await this.distributor.killSwitch()).to.be.equal(true);
-            });
-        });
-    });
-
     describe('drip', function() {
+
+        describe('Paused', function() {
+            it('reverts', async function() {
+              await this.distributor.pause({from: governorAddress});
+              await expectRevert(this.distributor.drip(), "Pausable: paused");
+            });
+        });
+
         describe('immediate', function() {
             describe('before frequency', function() {
                 it('reverts', async function() {

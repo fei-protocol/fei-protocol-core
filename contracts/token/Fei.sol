@@ -61,6 +61,7 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         external
         override
         onlyMinter
+        whenNotPaused
     {
         _mint(account, amount);
         emit Minting(account, msg.sender, amount);
@@ -80,6 +81,7 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         public
         override(IFei, ERC20Burnable)
         onlyBurner
+        whenNotPaused
     {
         _burn(account, amount);
         emit Burning(account, msg.sender, amount);

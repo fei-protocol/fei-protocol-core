@@ -2,11 +2,12 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./ICoreRef.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 
 /// @title A Reference to Core
 /// @author Fei Protocol
 /// @notice defines some modifiers and utilities around interacting with Core
-abstract contract CoreRef is ICoreRef {
+abstract contract CoreRef is ICoreRef, Pausable {
     ICore private _core;
 
     /// @notice CoreRef constructor
@@ -88,6 +89,16 @@ abstract contract CoreRef is ICoreRef {
     function setCore(address core) external override onlyGovernor {
         _core = ICore(core);
         emit CoreUpdate(core);
+    }
+
+    /// @notice set pausable methods to paused
+    function pause() public override onlyGuardianOrGovernor {
+        _pause();
+    }
+
+    /// @notice set pausable methods to unpaused
+    function unpause() public override onlyGuardianOrGovernor {
+        _unpause();
     }
 
     /// @notice address of the Core contract referenced

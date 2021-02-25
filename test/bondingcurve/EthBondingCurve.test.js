@@ -5,7 +5,6 @@ const {
   beneficiaryAddress2,
   governorAddress,
   keeperAddress,
-  guardianAddress,
   BN,
   expectEvent,
   expectRevert,
@@ -77,6 +76,13 @@ describe('EthBondingCurve', function () {
   describe('Purchase', function() {
     beforeEach(async function() {
       this.purchaseAmount = new BN("50000000");
+    });
+
+    describe('Paused', function() {
+      it('reverts', async function() {
+        await this.bondingCurve.pause({from: governorAddress});
+        await expectRevert(this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount}), "Pausable: paused");
+      });
     });
 
     describe('Incorrect ETH sent', function() {
@@ -421,6 +427,13 @@ describe('EthBondingCurve', function () {
 
   describe('Allocate', function() {
 
+    describe('Paused', function() {
+      it('reverts', async function() {
+        await this.bondingCurve.pause({from: governorAddress});
+        await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "Pausable: paused");
+      });
+    });
+
     describe('Pre Launch', function() {
       beforeEach(async function() {
         this.core = await getCore(false);
@@ -657,6 +670,39 @@ describe('EthBondingCurve', function () {
 
     it('Non-governor set reverts', async function() {
       await expectRevert(this.bondingCurve.setCore(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
+    });
+  });
+
+  describe('Pausable', function() {
+    it('init', async function() {
+      expect(await this.bondingCurve.paused()).to.be.equal(false);
+    });
+
+    describe('Pause', function() {
+      it('Governor succeeds', async function() {
+        await this.bondingCurve.pause({from: governorAddress});
+        expect(await this.bondingCurve.paused()).to.be.equal(true);
+      });
+
+      it('Non-governor reverts', async function() {
+        await expectRevert(this.bondingCurve.pause({from: userAddress}), "CoreRef: Caller is not a guardian or governor");
+      });
+    });
+
+    describe('Unpause', function() {
+      beforeEach(async function() {
+        await this.bondingCurve.pause({from: governorAddress});
+        expect(await this.bondingCurve.paused()).to.be.equal(true);
+      });
+
+      it('Governor succeeds', async function() {
+        await this.bondingCurve.unpause({from: governorAddress});
+        expect(await this.bondingCurve.paused()).to.be.equal(false);
+      });
+
+      it('Non-governor reverts', async function() {
+        await expectRevert(this.bondingCurve.unpause({from: userAddress}), "CoreRef: Caller is not a guardian or governor");
+      });
     });
   });
 });
