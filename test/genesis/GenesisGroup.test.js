@@ -186,7 +186,7 @@ describe('GenesisGroup', function () {
 
     it('reverts', async function() {
       await this.genesisGroup.approve(this.flashGenesis.address, '750', {from: userAddress});
-      await expectRevert(this.flashGenesis.zap(userAddress), "GenesisGroup: No redeeming in launch block");
+      await expectRevert(this.flashGenesis.zap(userAddress), "CoreRef: Caller is a contract");
     });
   });
   describe('Launch', function() {

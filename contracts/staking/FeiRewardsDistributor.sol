@@ -48,7 +48,7 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
 
     /// @notice sends the unlocked amount of TRIBE to the stakingRewards contract
     /// @return amount of TRIBE sent
-    function drip() public override postGenesis whenNotPaused returns(uint256) {
+    function drip() public override postGenesis whenNotPaused nonContract returns(uint256) {
         require(isDripAvailable(), "FeiRewardsDistributor: Not passed drip frequency");
         // solhint-disable-next-line not-rely-on-time
         lastDistributionTime = block.timestamp;

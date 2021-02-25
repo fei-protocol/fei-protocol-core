@@ -32,6 +32,7 @@ const FeiRewardsDistributor = contract.fromArtifact('FeiRewardsDistributor');
 
 const MockBondingCurve = contract.fromArtifact('MockBondingCurve');
 const MockBondingCurveOracle = contract.fromArtifact('MockBondingCurveOracle');
+const MockBot = contract.fromArtifact('MockBot');
 const MockCoreRef = contract.fromArtifact('MockCoreRef');
 const MockERC20 = contract.fromArtifact('MockERC20');
 const MockEthPCVDeposit = contract.fromArtifact('MockEthPCVDeposit');
@@ -121,6 +122,7 @@ module.exports = {
     // mock contracts
     MockBondingCurve,
     MockBondingCurveOracle,
+    MockBot,
     MockCoreRef,
     MockEthPCVDeposit,
     MockERC20,

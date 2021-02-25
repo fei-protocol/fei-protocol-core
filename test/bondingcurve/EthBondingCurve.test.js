@@ -14,6 +14,7 @@ const {
   MockEthPCVDeposit,
   Fei,
   MockOracle, 
+  MockBot,
   EthBondingCurve,
   getCore
 } = require('../helpers');
@@ -431,6 +432,13 @@ describe('EthBondingCurve', function () {
       it('reverts', async function() {
         await this.bondingCurve.pause({from: governorAddress});
         await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "Pausable: paused");
+      });
+    });
+
+    describe('From Contract', function() {
+      it('reverts', async function() {
+        let bot = await MockBot.new();
+        await expectRevert(bot.bondingCurveAllocate(this.bondingCurve.address), "CoreRef: Caller is a contract");
       });
     });
 

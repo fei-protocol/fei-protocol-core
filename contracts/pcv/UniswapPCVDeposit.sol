@@ -68,11 +68,7 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
         view
         returns (uint256 amountFei)
     {
-        (uint256 feiReserves, uint256 tokenReserves) = getReserves();
-        if (feiReserves == 0 || tokenReserves == 0) {
-            return peg().mul(amountToken).asUint256();
-        }
-        return UniswapV2Library.quote(amountToken, tokenReserves, feiReserves);
+        return peg().mul(amountToken).asUint256();
     }
 
     function _removeLiquidity(uint256 amount)
