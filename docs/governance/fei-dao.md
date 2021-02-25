@@ -4,13 +4,13 @@ description: The Decentralized Autonomous Organization driving Fei Protocol upgr
 
 # Fei DAO
 
-A core principle of Fei Protocol is its fully decentralized design and minimal dependence on any centralized assets or protocols on Ethereum. Fei Protocol has a DAO called the Fei DAO from the very beginning. This DAO is responsible for utilizing all of the flexible and powerful features of Fei Protocol to continue to enhance the protocol in an ever evolving DeFi space. 
+A core principle of Fei Protocol is its fully decentralized design and minimal dependence on any centralized assets or protocols on Ethereum. Fei Protocol has a DAO called the Fei DAO from the start. The DAO is responsible for utilizing all of the flexible and powerful features of Fei Protocol to continually enhance the protocol in an ever-evolving DeFi space. 
 
 ## Responsibilities
 
 A key benefit of Fei Protocol's design is the minimization of governance for peg maintenance related activities. Aside from some inevitable tuning that will be needed in the early days, the Fei DAO is primarily responsible for two things: upgrades and integrations.
 
-Here is a list of various parameter tunings and changes that the Fei DAO can make:
+Parameter tuning and changes that the Fei DAO can make:
 
 * grant/revoke [roles](../protocol/access-control/)
 * add/remove incentive contracts for [FEI](../protocol/fei-stablecoin/)
@@ -23,7 +23,9 @@ Here is a list of various parameter tunings and changes that the Fei DAO can mak
 
 ## Design
 
-The Fei DAO is forked from the Compound [Governor Alpha](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/dao/GovernorAlpha.sol) and [Timelock](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/dao/Timelock.sol). They have the following parameter tweaks from Compound:
+The Fei DAO is forked from the Compound [Governor Alpha](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/dao/GovernorAlpha.sol) and [Timelock](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/dao/Timelock.sol).
+
+Parameter modifications from Compound:
 
 * 2.5% Quorum
 * .25% proposal threshold
@@ -34,9 +36,9 @@ The Fei DAO is forked from the Compound [Governor Alpha](https://github.com/fei-
 
 {% embed url="https://www.diffchecker.com/x7AJ999N" caption="Fei DAO vs Compound DAO" %}
 
-A nice feature of Fei Protocol is the flexible [access control](../protocol/access-control/) system. The Timelock is appointed as a Governor⚖️, but it doesn't have to be the only one. It also doesn't have to be a Governor forever. Fei Protocol can appoint autonomous governors to adjust parameters and [PCV](../protocol/protocol-controlled-value/) based on market conditions. There can even be a tiered governance structure where certain changes require higher quorum thresholds and longer timelocks.
+Fei Protocol implementation enables a flexible [access control](../protocol/access-control/) system. The Timelock is appointed as a Governor⚖️, but it doesn't have to be the only one. It also doesn't have to be a Governor forever. Fei Protocol can appoint autonomous governors to adjust parameters and [PCV](../protocol/protocol-controlled-value/) based on market conditions. A tiered governance structure can be implemented where certain changes require higher quorum thresholds and longer timelocks.
 
-Ultimately the Fei DAO gets to make all of these decisions as the protocol evolves.
+Ultimately the Fei DAO makes all of these decisions as the protocol evolves.
 
 
 
