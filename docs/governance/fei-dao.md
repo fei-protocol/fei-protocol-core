@@ -8,7 +8,7 @@ A core principle of Fei Protocol is its fully decentralized design and minimal d
 
 ## Responsibilities
 
-A key benefit of Fei Protocol's design is the minimization of governance for peg maintenance related activities. Aside from some inevitable tuning that will be needed in the early days, the Fei DAO is primarily responsible for two things: upgrades and integrations.
+Fei Protocol design and implementation minimize the governance for peg maintenance related activities. Beyond the inherent need for the initial protocol tuning, the Fei DAO is primarily responsible for two things: upgrades and integrations.
 
 Parameter tuning and changes that the Fei DAO can make:
 
@@ -25,7 +25,7 @@ Parameter tuning and changes that the Fei DAO can make:
 
 The Fei DAO is forked from the Compound [Governor Alpha](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/dao/GovernorAlpha.sol) and [Timelock](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/dao/Timelock.sol).
 
-Parameter modifications from Compound:
+Parameter modifications from Compound implementation:
 
 * 2.5% Quorum
 * .25% proposal threshold
@@ -36,7 +36,7 @@ Parameter modifications from Compound:
 
 {% embed url="https://www.diffchecker.com/x7AJ999N" caption="Fei DAO vs Compound DAO" %}
 
-Fei Protocol implementation enables a flexible [access control](../protocol/access-control/) system. The Timelock is appointed as a Governor⚖️, but it doesn't have to be the only one. It also doesn't have to be a Governor forever. Fei Protocol can appoint autonomous governors to adjust parameters and [PCV](../protocol/protocol-controlled-value/) based on market conditions. A tiered governance structure can be implemented where certain changes require higher quorum thresholds and longer timelocks.
+Fei Protocol implementation enables a flexible [access control](../protocol/access-control/) system. The Timelock is appointed as a Governor⚖️, but it doesn't have to be the only one. It also doesn't have to be a Governor forever. Fei Protocol can appoint autonomous governors to adjust parameters and [PCV](../protocol/protocol-controlled-value/) based on market conditions. Additionally, a tiered governance structure can be implemented where certain changes require higher quorum thresholds and longer timelocks.
 
 Ultimately the Fei DAO makes all of these decisions as the protocol evolves.
 
