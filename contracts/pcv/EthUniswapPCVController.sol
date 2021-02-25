@@ -15,7 +15,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
     using Decimal for Decimal.D256;
     using SafeMathCopy for uint256;
 
-    uint256 internal constant WITHDRAW_AMOUNT_BPS = 9000;
+    uint256 internal constant WITHDRAW_AMOUNT_BPS = 9900;
 
     uint256 internal constant BASIS_POINTS_GRANULARITY = 10000;
 

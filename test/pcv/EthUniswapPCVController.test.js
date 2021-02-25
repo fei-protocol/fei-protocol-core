@@ -124,11 +124,11 @@ describe('EthUniswapPCVController', function () {
         });
 
         it('pair gets all withdrawn ETH in swap', async function() {
-          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(90000));
+          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(99000));
         });
 
         it('pcvDeposit only keeps non-withdrawn ETH', async function() {
-          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(10000));
+          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(1000));
           expect(await balance.current(this.pcvController.address)).to.be.bignumber.equal(new BN(0));
         });
 
