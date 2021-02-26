@@ -11,12 +11,12 @@ module.exports = async function(callback) {
 
 
     // Get FEI-TRIBE LP tokens on accounts[1]
-    await ido.setPendingBeneficiary(accounts[1], {from: accounts[1]});
+    await ido.setPendingBeneficiary(accounts[1], {from: accounts[0]});
     await ido.acceptBeneficiary({from: accounts[1]});
     await ido.release(accounts[1], 1, {from: accounts[1]});
     let availableForRelease = await ido.availableForRelease();
     await ido.release(accounts[1], availableForRelease, {from: accounts[1]});
-    await distributor.drip();
+    await distributor.drip({ from: accounts[1]});
 
     callback();
 
