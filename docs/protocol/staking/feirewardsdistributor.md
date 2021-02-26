@@ -69,7 +69,7 @@ A change in the staking contract to send TRIBE to.
 
 | type | param | description |
 | :--- | :--- | :--- |
-| bool | \_killSwitch | the new kill switch value |
+| address indexed | \_stakingContract | the new staking contract |
 {% endtab %}
 {% endtabs %}
 
@@ -90,6 +90,14 @@ function dripFrequency() external view returns (uint256);
 ```
 
 The minimum frequency allowed between rewards distribution.
+
+### isDripAvailable
+
+```javascript
+function isDripAvailable() external view returns (bool);
+```
+
+Returns true if `nextDripAvailable()` preceeds the current block timestamp
 
 ### nextDripAvailable
 
