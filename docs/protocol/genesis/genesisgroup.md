@@ -148,24 +148,6 @@ emits `Commit`
 When a user pre-commits, their FGEN is burned. This makes it a one-way action. 
 {% endhint %}
 
-#### launch
-
-```javascript
-function launch() external;
-```
-
-Launching is only open at the end of the Genesis Period. The following actions happen at launch:
-
-* Mark Genesis Group as completed in Core \(for other contracts to reference\)
-* Initializing the BondingCurveOracle price for thawing
-* Making the first bonding curve purchase of FEI with all held ETH. \(needs to happen after oracle init so the FEI is deployed at right ratio on Uniswap\)
-* Allocate bonding curve ETH to the PCV deposit
-* Initialize the FEI/TRIBE staking pool
-* Deploy the IDO FEI/TRIBE funds to Uniswap.
-* Execute the swap of FEI for pre-buying TRIBE on the IDO
-
-emits `Launch`
-
 #### redeem
 
 ```javascript
@@ -185,4 +167,24 @@ function emergencyExit(address from, address payable to) external;
 Redeem all FGEN and cFGEN held by the address `from` for ETH 1:1, sending the ETH to address `to`. This is intended only for the scenario where the launch functionality is bricked as a way for users to get their ETH back.
 
 Only available 3 days AFTER the Genesis Period ends, if launch has not been called.
+
+### EOA-Only 👤
+
+#### launch
+
+```javascript
+function launch() external;
+```
+
+Launching is only open at the end of the Genesis Period. The following actions happen at launch:
+
+* Mark Genesis Group as completed in Core \(for other contracts to reference\)
+* Initializing the BondingCurveOracle price for thawing
+* Making the first bonding curve purchase of FEI with all held ETH. \(needs to happen after oracle init so the FEI is deployed at right ratio on Uniswap\)
+* Allocate bonding curve ETH to the PCV deposit
+* Initialize the FEI/TRIBE staking pool
+* Deploy the IDO FEI/TRIBE funds to Uniswap.
+* Execute the swap of FEI for pre-buying TRIBE on the IDO
+
+emits `Launch`
 

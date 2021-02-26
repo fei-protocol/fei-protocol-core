@@ -53,6 +53,10 @@ function read() external view returns (Decimal.D256 memory, bool);
 
 Reads the oracle value and reports the peg as FEI per underlying. The boolean value returned informs whether the reported value is valid. Invalid generally means the oracle is uninitialized or the kill switch is engaged.
 
+{% hint style="info" %}
+This method is [pausable](../../governance/fei-guardian.md). If paused, it won't revert but it will return valid as false
+{% endhint %}
+
 #### isOutdated
 
 ```javascript
@@ -106,6 +110,10 @@ function update() external returns (bool);
 Updates the oracle with new time-weighted average price data from Uniswap if the `duration` window has passed since the last update. Returns true if updated, and false otherwise.
 
 emits `Update`
+
+{% hint style="info" %}
+This method is [pausable](../../governance/fei-guardian.md)
+{% endhint %}
 
 ### Governor-Only⚖️
 

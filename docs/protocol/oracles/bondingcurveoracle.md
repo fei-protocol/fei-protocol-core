@@ -42,7 +42,11 @@ Additionally, the contract includes the "thawing" process. Thawing implements th
 function read() external view returns (Decimal.D256 memory, bool);
 ```
 
-Reads the oracle value and reports the peg as FEI per underlying. The boolean value returned informs whether the reported oracle value is valid. Invalid value means the oracle is uninitialized or the kill switch is engaged.
+Reads the oracle value and reports the peg as FEI per underlying. The boolean value returned informs whether the reported oracle value is valid. Invalid value means the oracle is uninitialized or the contract is paused.
+
+{% hint style="info" %}
+This method is [pausable](../../governance/fei-guardian.md). If paused, it won't revert but it will return valid as false
+{% endhint %}
 
 #### isOutdated
 

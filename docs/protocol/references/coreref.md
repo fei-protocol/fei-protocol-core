@@ -6,7 +6,7 @@ description: A reference to Fei Core
 
 ## Contract
 
-[CoreRef.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/CoreRef.sol) implements [ICoreRef](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/ICoreRef.sol)
+[CoreRef.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/CoreRef.sol) implements [ICoreRef](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/ICoreRef.sol), [Pausable](https://docs.openzeppelin.com/contracts/3.x/api/utils#Pausable)
 
 ## Description
 
@@ -103,7 +103,7 @@ emits `CoreUpdate`
 function pause() external;
 ```
 
-Puts the contract in the paused state which can shut down pausable external functions
+Puts the contract in the paused state which can shut down [pausable](https://docs.openzeppelin.com/contracts/3.x/api/utils#Pausable) external functions
 
 #### unpause
 
@@ -111,5 +111,5 @@ Puts the contract in the paused state which can shut down pausable external func
 function unpause() external;
 ```
 
-Puts the contract in the unpaused state which can reopen pausable external functions
+Puts the contract in the unpaused state which can reopen [pausable](https://docs.openzeppelin.com/contracts/3.x/api/utils#Pausable) external functions
 

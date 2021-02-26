@@ -157,9 +157,9 @@ The total amount of [TRIBE](../../governance/tribe.md) already distributed to [F
 
 ## State-Changing Functions <a id="state-changing-functions"></a>
 
-### Public
+### EOA-Only 👤
 
-#### drip
+### drip
 
 ```javascript
 function drip() external returns (uint256);
@@ -170,7 +170,7 @@ Sends `releasedReward()` [TRIBE](../../governance/tribe.md) to the `stakingRewar
 Incentivizes the caller with `incentiveAmount()` [FEI](../fei-stablecoin/fei-fei-usd.md).
 
 {% hint style="info" %}
-Only callable when `nextDripAvailable()` is below the current block timestamp and the contract is not paused
+Only callable when `nextDripAvailable()` is below the current block timestamp and the contract is not [paused](../../governance/fei-guardian.md)
 {% endhint %}
 
 ### Governor-Only⚖️

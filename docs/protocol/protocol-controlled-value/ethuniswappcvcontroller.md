@@ -126,7 +126,7 @@ Returns the minimum percent distance from the peg needed for keepers to reweight
 
 ## State-Changing Functions <a id="state-changing-functions"></a>
 
-### Public
+### EOA-Only 👤
 
 #### reweight
 
@@ -137,6 +137,10 @@ function reweight() external;
 Executes a reweight if `reweightEligible.`
 
 Rewards the caller with 500 FEI.
+
+{% hint style="info" %}
+This method is [pausable](../../governance/fei-guardian.md)
+{% endhint %}
 
 ### Governor- Or Guardian-Only⚖️🛡
 

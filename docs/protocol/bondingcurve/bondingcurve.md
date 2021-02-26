@@ -188,6 +188,12 @@ Purchase `amountOut` FEI along the bonding curve for `amountIn` ETH and send the
 
 emits `Purchase`
 
+{% hint style="info" %}
+This method is [pausable](../../governance/fei-guardian.md)
+{% endhint %}
+
+### EOA-Only 👤
+
 #### allocate
 
 ```javascript
@@ -197,6 +203,10 @@ function allocate() external;
 Allocate the PCV held by the bonding curve to the weighted PCV allocations returned by `getAllocation()`.
 
 emits `Allocate`
+
+{% hint style="info" %}
+This method is [pausable](../../governance/fei-guardian.md)
+{% endhint %}
 
 ### Governor-Only**⚖️**
 
