@@ -78,11 +78,6 @@ abstract contract UniRef is IUniRef, OracleRef {
         (feiReserves, tokenReserves) = address(fei()) == token0
             ? (reserve0, reserve1)
             : (reserve1, reserve0);
-
-        uint256 feiBalance = fei().balanceOf(address(pair));
-        if (feiBalance > feiReserves) {
-            feiReserves = feiBalance;
-        }
         return (feiReserves, tokenReserves);
     }
 
