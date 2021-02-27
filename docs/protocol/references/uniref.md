@@ -78,10 +78,6 @@ function getReserves()
 
 Returns the reserves of the referenced UniswapV2Pair contract, ordered as FEI, and the other token.
 
-{% hint style="info" %}
-The feiReserves returned takes the max of the actual pair reserves and the pair token balance for FEI. This mitigates attacks which attempt to circumvent incentives by interacting directly with the Uniswap pair contract in non-standard ways.
-{% endhint %}
-
 ### liquidityOwned
 
 ```javascript

@@ -34,6 +34,10 @@ The burn is taken from the in-flight trade amount. If the burn is 5% on a 100 FE
 The entire trade size including the burn is used to calculate the slippage for the end deviation from the peg. This could lead to a higher than expected burn for large trades when below peg.
 {% endhint %}
 
+{% hint style="warning" %}
+The trade will revert if the burn would be greater than or equal to the entire transfer amount
+{% endhint %}
+
 ### Buy \(Mint\)
 
 All transfers going FROM the uniswap pool are treated as a buy. This has the counterintuitive effect of treating liquidity withdrawal events as buys.
