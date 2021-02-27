@@ -460,6 +460,47 @@ describe('UniswapIncentive', function () {
     });
   });
 
+  describe('Way below peg', function() {
+    beforeEach(async function() {
+      // 600 FEI/ETH = 20% away
+      await this.pair.setReserves(100000, 60000000);
+      let block = await time.latestBlock();
+      // Set growth rate to 10 per block, starting at next block (the block preceeding the withdrawal)
+      await this.incentive.setTimeWeight(0, 1000000, true, {from: governorAddress});
+    });
+
+    describe('Buy', function() {
+      describe('mint exceeds amount', function() {
+        beforeEach(async function() {
+          this.transferAmount = new BN(1000);
+          this.expectedMint = new BN(1000); // should be capped at amount
+          await this.pair.withdrawFei(userAddress, 1000);
+        });
+
+        it('user balance updates', async function() {
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.transferAmount.add(this.userBalance).add(this.expectedMint));
+        });
+
+        it('pair balance updates', async function() {
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.sub(this.transferAmount));
+        });
+
+        it('mint incentive', async function() {
+          var user = await this.fei.balanceOf(userAddress);
+          var pair = await this.fei.balanceOf(this.pair.address);
+
+          expect(user.add(pair).sub(this.userBalance).sub(this.pairBalance)).to.be.bignumber.equal(this.expectedMint);
+        });
+
+        it('updates time weight', async function() {
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(999840));
+          expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(1000000));
+          expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
+        });
+      });
+    });
+  });
+
   describe('Below peg', function() {
     beforeEach(async function() {
       // 510 FEI/ETH = 2% away
