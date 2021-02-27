@@ -72,7 +72,7 @@ module.exports = async function(callback) {
   let launch = await gg.launch({from: accounts[0]});
   let launchGas = launch['receipt']['gasUsed'];
   let coreComplete = await core.hasGenesisGroupCompleted();
-  let bcoInitPrice = await bco.initialPrice();
+  let bcoInitPrice = await bco.initialUSDPrice();
   let ggFei = await fei.balanceOf(await gg.address);
   let ggTribe = await tribe.balanceOf(await gg.address);
   console.log(`GG Launch: complete=${coreComplete}, initPrice= ${bcoInitPrice / 1e18}, fei=${stringify(ggFei)}, tribe=${stringify(ggTribe)}`); 
@@ -142,6 +142,10 @@ module.exports = async function(callback) {
   feiAfter = await fei.balanceOf(accounts[0]);
   netFei = feiAfter.sub(feiBefore);
   console.log(`Bonding Curve Purchase Post: eth=${stringify(ethAmount)}, fei=${stringify(netFei)} atScaleBefore=${atScale}`);
+
+  let allocate = await bc.allocate();
+  let allocateGas = allocate['receipt']['gasUsed'];
+  console.log(`Allocate: gas=${allocateGas}`);
 
   feiBefore = await fei.balanceOf(accounts[0]);
   let tenX = ethAmount.mul(new BN('10'));
