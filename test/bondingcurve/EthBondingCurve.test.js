@@ -438,7 +438,15 @@ describe('EthBondingCurve', function () {
     describe('From Contract', function() {
       it('reverts', async function() {
         let bot = await MockBot.new();
-        await expectRevert(bot.bondingCurveAllocate(this.bondingCurve.address), "CoreRef: Caller is a contract");
+        await expectRevert(bot.bondingCurveAllocate(this.bondingCurve.address), "BondingCurve: Caller is a contract");
+      });
+
+      it('genesis group succeeds', async function() {
+        let bot = await MockBot.new();
+        this.purchaseAmount = new BN("1000000000000000000")
+        await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount});
+        await this.core.setGenesisGroup(bot.address, {from: governorAddress});
+        await bot.bondingCurveAllocate(this.bondingCurve.address);
       });
     });
 
