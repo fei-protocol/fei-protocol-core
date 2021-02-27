@@ -277,7 +277,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         _updateTimeWeight(initialDeviation, finalDeviation, weight);
 
         if (penalty != 0) {
-            require(penalty <= amount, "UniswapIncentive: Burn exceeds trade size");
+            require(penalty < amount, "UniswapIncentive: Burn exceeds trade size");
             fei().burnFrom(address(pair), penalty); // burn from the recipient which is the pair
         }
     }
@@ -312,7 +312,12 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         }
         Decimal.D256 memory numerator = _sellPenaltyBound(finalDeviation).sub(_sellPenaltyBound(initialDeviation));
         Decimal.D256 memory denominator = finalDeviation.sub(initialDeviation);
-        return numerator.div(denominator);
+
+        Decimal.D256 memory multiplier = numerator.div(denominator);
+        if (multiplier.greaterThan(Decimal.one())) {
+            return Decimal.one();
+        }
+        return multiplier;
     }
 
     function _sellPenaltyBound(Decimal.D256 memory deviation)         
@@ -328,7 +333,11 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         pure
         returns (Decimal.D256 memory)
     {
-        return deviation.mul(deviation).mul(100); // m^2 * 100
+        Decimal.D256 memory multiplier = deviation.mul(deviation).mul(100); // m^2 * 100
+        if (multiplier.greaterThan(Decimal.one())) {
+            return Decimal.one();
+        }
+        return multiplier;
     }
 
     function _updateTimeWeight(

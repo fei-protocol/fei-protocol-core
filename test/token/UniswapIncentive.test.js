@@ -429,8 +429,31 @@ describe('UniswapIncentive', function () {
         });
 
         describe('beyond trade size', function() {
-          it('reverts', async function() {
-            await expectRevert(this.fei.transfer(this.pair.address, 10000000, {from: userAddress}), "UniswapIncentive: Burn exceeds trade size");
+          beforeEach(async function() {
+            this.expectedBurn = new BN(9502526); // burns everything but amount to peg
+            this.transferAmount = new BN(10000000);
+            await this.fei.transfer(this.pair.address, 10000000, {from: userAddress});
+          });
+
+          it('user balance updates', async function() {
+            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.userBalance.sub(this.transferAmount));
+          });
+
+          it('pair balance updates', async function() {
+            expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(this.pairBalance.add(this.transferAmount).sub(this.expectedBurn));
+          });
+
+          it('burn incentive', async function() {
+            var user = await this.fei.balanceOf(userAddress);
+            var pair = await this.fei.balanceOf(this.pair.address);
+
+            expect(this.userBalance.add(this.pairBalance).sub(user).sub(pair)).to.be.bignumber.equal(this.expectedBurn);
+          });
+
+          it('activates time weight', async function() {
+            expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(0));
+            expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(333));
+            expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
           });
         });
       });
