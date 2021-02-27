@@ -60,10 +60,11 @@ module.exports = {
     ropsten: {
       provider: () => new PrivateKeyProvider(ropstenPrivateKey, `https://eth-ropsten.alchemyapi.io/v2/${ropstenAlchemyApiKey}`),
       network_id: 3,       // Ropsten's id
+      networkCheckTimeout: 1000000000,
       gas: 5500000,        // Ropsten has a lower block limit than mainnet
       gasPrice: 4000000000, // 4 gwei
       confirmations: 1,    // # of confs to wait between deployments. (default: 0)
-      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      timeoutBlocks: 50000,  // # of blocks before a deployment times out  (minimum/default: 50)
       skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     },
   },
