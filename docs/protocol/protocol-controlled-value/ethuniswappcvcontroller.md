@@ -77,6 +77,14 @@ Change the min distance for a reweight
 | :--- | :--- | :--- |
 | uint256 | \_basisPoints | Minimum reweight amount in basis points \(i.e. 1/10000\) |
 {% endtab %}
+
+{% tab title="ReweightWithdrawBPsUpdate" %}
+Change the amount of PCV withdrawn during a reweight
+
+| type | param | description |
+| :--- | :--- | :--- |
+| uint256 | \_reweightWithdrawBPs | amount of PCV withdrawn for a reweight in basis point terms \(1/10000\). |
+{% endtab %}
 {% endtabs %}
 
 ## Read-Only Functions
@@ -162,6 +170,18 @@ function setReweightMinDistance(uint256 basisPoints) external;
 
 Sets the minimum distance from the peg for a reweight to be eligible to `basisPoints`, measured in basis points \(i.e. 1/10000\).
 
+emits `ReweightMinDistanceUpdate`
+
+#### setReweightWithdrawBPs
+
+```javascript
+function setReweightWithdrawBPs(uint256 _reweightWithdrawBPs) external;
+```
+
+Sets the percentage of the PCV withdrawn when executing a reweight in terms of basis points
+
+emits `ReweightWithdrawBPsUpdate`
+
 #### setPCVDeposit
 
 ```javascript
@@ -170,6 +190,8 @@ function setPCVDeposit(address _pcvDeposit) external;
 
 Sets the target PCV Deposit contract for reweight to `_pcvDeposit`
 
+emits `PCVDepositUpdate`
+
 #### setReweightIncentive
 
 ```javascript
@@ -177,4 +199,6 @@ function setReweightIncentive(uint256 amount) external;
 ```
 
 Sets the keeper incentive for executing a reweight to `amount` of FEI
+
+emits `ReweightIncentiveUpdate`
 

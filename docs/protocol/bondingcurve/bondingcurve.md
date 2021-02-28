@@ -67,6 +67,14 @@ Governance change of Buffer
 | :--- | :--- | :--- |
 | uint256 | \_buffer | new buffer |
 {% endtab %}
+
+{% tab title="IncentiveAmountUpdate" %}
+Changes the FEI reward for calling `allocate()`
+
+| type | param | description |
+| :--- | :--- | :--- |
+| uint256 | \_incentiveAmount | new incentive amount |
+{% endtab %}
 {% endtabs %}
 
 ## Read-Only Functions
@@ -229,6 +237,26 @@ function setScale(uint256 _scale) external;
 Sets the Scale target to `_scale`
 
 emits `ScaleUpdate`
+
+#### setIncentiveAmount
+
+```javascript
+function setIncentiveAmount(uint256 _incentiveAmount) external;
+```
+
+Sets the `incentiveAmount` to `_incentiveAmount`
+
+emits `IncentiveAmountUpdate`
+
+#### **setIncentiveFrequency**
+
+```javascript
+function setIncentiveFrequency(uint256 _frequency) external;
+```
+
+Sets the [Timed](../references/timed.md) duration to `_frequency`
+
+emits `DurationUpdate`
 
 #### **setAllocation**
 
