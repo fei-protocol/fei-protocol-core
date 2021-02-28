@@ -113,6 +113,14 @@ function reweightIncentiveAmount() external returns (uint256);
 
 Returns the amount of FEI received by any keeper who successfully executes a reweight.
 
+### reweightWithdrawBPs
+
+```javascript
+function reweightWithdrawBPs() external returns (uint256);
+```
+
+Returns the amount of PCV withdrawn during a reweight in basis points terms.
+
 ### reweightEligible
 
 ```javascript
