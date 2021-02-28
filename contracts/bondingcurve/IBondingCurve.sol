@@ -10,6 +10,8 @@ interface IBondingCurve {
 
     event BufferUpdate(uint256 _buffer);
 
+    event IncentiveAmountUpdate(uint256 _incentiveAmount);
+
     event Purchase(address indexed _to, uint256 _amountIn, uint256 _amountOut);
 
     event Allocate(address indexed _caller, uint256 _amount);
@@ -33,6 +35,10 @@ interface IBondingCurve {
         address[] calldata pcvDeposits,
         uint256[] calldata ratios
     ) external;
+
+    function setIncentiveAmount(uint256 _incentiveAmount) external;
+
+    function setIncentiveFrequency(uint256 _frequency) external;
 
     // ----------- Getters -----------
 

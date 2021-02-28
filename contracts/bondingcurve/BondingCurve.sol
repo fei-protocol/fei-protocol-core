@@ -70,6 +70,17 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         emit BufferUpdate(_buffer);
     }
 
+    /// @notice sets the allocate incentive amount
+    function setIncentiveAmount(uint256 _incentiveAmount) external override onlyGovernor {
+        incentiveAmount = _incentiveAmount;
+        emit IncentiveAmountUpdate(_incentiveAmount);
+    }
+
+    /// @notice sets the allocate incentive frequency
+    function setIncentiveFrequency(uint256 _frequency) external override onlyGovernor {
+        _setDuration(_frequency);
+    }
+
     /// @notice sets the allocation of incoming PCV
     function setAllocation(
         address[] calldata allocations,

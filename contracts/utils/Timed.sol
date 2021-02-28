@@ -14,6 +14,10 @@ abstract contract Timed {
     /// @notice the duration of the timed period
     uint256 public duration;
 
+    event DurationUpdate(uint256 _duration);
+
+    event TimerReset(uint256 _startTime);
+
     constructor(uint256 _duration) public {
         _setDuration(_duration);
     }
@@ -45,9 +49,13 @@ abstract contract Timed {
     function _initTimed() internal {
         // solhint-disable-next-line not-rely-on-time
         startTime = block.timestamp;
+        
+        // solhint-disable-next-line not-rely-on-time
+        emit TimerReset(block.timestamp);
     }
 
     function _setDuration(uint _duration) internal {
         duration = _duration;
+        emit DurationUpdate(_duration);
     }
 }

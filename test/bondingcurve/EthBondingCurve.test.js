@@ -689,6 +689,40 @@ describe('EthBondingCurve', function () {
     });
   });
 
+  describe('Incentive Amount', function() {
+    it('Governor set succeeds', async function() {
+      this.incentiveAmount = new BN('10');
+      expectEvent(
+        await this.bondingCurve.setIncentiveAmount(this.incentiveAmount, {from: governorAddress}), 
+        'IncentiveAmountUpdate', 
+        { _incentiveAmount : this.incentiveAmount }
+      );
+
+      expect(await this.bondingCurve.incentiveAmount()).to.be.bignumber.equal(this.incentiveAmount);
+    });
+
+    it('Non-governor set reverts', async function() {
+      await expectRevert(this.bondingCurve.setIncentiveAmount(new BN('10'), {from: userAddress}), "CoreRef: Caller is not a governor");
+    });
+  });
+
+  describe('Incentive Frequency', function() {
+    it('Governor set succeeds', async function() {
+      this.incentiveFrequency = new BN('70');
+      expectEvent(
+        await this.bondingCurve.setIncentiveFrequency(this.incentiveFrequency, {from: governorAddress}), 
+        'DurationUpdate', 
+        { _duration : this.incentiveFrequency }
+      );
+
+      expect(await this.bondingCurve.duration()).to.be.bignumber.equal(this.incentiveFrequency);
+    });
+
+    it('Non-governor set reverts', async function() {
+      await expectRevert(this.bondingCurve.setIncentiveFrequency(new BN('10'), {from: userAddress}), "CoreRef: Caller is not a governor");
+    });
+  });
+
   describe('Pausable', function() {
     it('init', async function() {
       expect(await this.bondingCurve.paused()).to.be.equal(false);

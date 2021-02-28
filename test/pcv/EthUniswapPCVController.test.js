@@ -238,6 +238,26 @@ describe('EthUniswapPCVController', function () {
       });
     });
 
+    describe('Reweight Withdraw Basis Points', function() {
+      it('Governor set succeeds', async function() {
+        this.withdrawBPs = new BN('5000')
+        expectEvent(
+          await this.pcvController.setReweightWithdrawBPs(this.withdrawBPs, {from: governorAddress}),
+          'ReweightWithdrawBPsUpdate',
+          { _reweightWithdrawBPs: this.withdrawBPs }
+        );
+        expect(await this.pcvController.reweightWithdrawBPs()).to.be.bignumber.equal(this.withdrawBPs);
+      });
+
+      it('Non-governor set reverts', async function() {
+        await expectRevert(this.pcvController.setReweightWithdrawBPs(new BN('5000'), {from: userAddress}), "CoreRef: Caller is not a governor");
+      });
+
+      it('Too large reverts', async function() {
+        await expectRevert(this.pcvController.setReweightWithdrawBPs(new BN('50000'), {from: governorAddress}), "EthUniswapPCVController: withdraw percent too high");
+      });
+    });
+
     describe('Reweight Min Distance', function() {
       it('Governor set succeeds', async function() {
         expectEvent(

@@ -33,33 +33,32 @@ contract CoreOrchestrator is Ownable {
     address public tribeFeiPair;
 
     // ----------- Time periods -----------
-    uint256 public constant RELEASE_WINDOW = 4 * 365 days;
+    uint256 public constant TOKEN_TIMELOCK_RELEASE_WINDOW = 4 * 365 days;
 
-    uint256 public constant TIMELOCK_DELAY = 1 days;
+    uint256 public constant DAO_TIMELOCK_DELAY = 1 days;
     uint256 public constant GENESIS_DURATION = 3 days;
 
-    uint256 public constant POOL_DURATION = 2 * 365 days;
+    uint256 public constant STAKING_REWARDS_DURATION = 2 * 365 days;
     
-    uint256 public constant DRIP_FREQUENCY = 1 weeks;
+    uint256 public constant STAKING_REWARDS_DRIP_FREQUENCY = 1 weeks;
 
     uint256 public constant THAWING_DURATION = 2 weeks;
 
     uint256 public constant UNI_ORACLE_TWAP_DURATION = 10 minutes; // 10 min twap
 
-    uint256 public constant BONDING_CURVE_INCENTIVE_DURATION = 1 days; // 1 day duration
+    uint256 public constant BONDING_CURVE_ALLOCATE_INCENTIVE_FREQUENCY = 1 days; // 1 day duration
 
     // ----------- Params -----------
-    uint256 public constant EXCHANGE_RATE_DISCOUNT = 10;
+    uint256 public constant GENESIS_FEI_TRIBE_EXCHANGE_RATE_DISCOUNT = 10;
 
     uint32 public constant INCENTIVE_GROWTH_RATE = 75; // a bit over 1 unit per 5 hours assuming 13s block time
 
     uint256 public constant SCALE = 100_000_000e18;
-    uint256 public constant BONDING_CURVE_INCENTIVE = 500e18;
+    uint256 public constant FEI_KEEPER_INCENTIVE = 500e18;
 
-    uint256 public constant REWEIGHT_INCENTIVE = 500e18;
     uint256 public constant MIN_REWEIGHT_DISTANCE_BPS = 100;
 
-    bool public constant USDC_PER_ETH_IS_PRICE_0 = false;
+    bool public constant USDC_PER_ETH_IS_PRICE_0 = false; // for the ETH_USDC pair
 
     uint256 public tribeSupply;
     uint256 public constant IDO_TRIBE_PERCENTAGE = 20;
@@ -175,8 +174,8 @@ contract CoreOrchestrator is Ownable {
             ethUniswapPCVDeposit,
             SCALE,
             THAWING_DURATION,
-            BONDING_CURVE_INCENTIVE_DURATION,
-            BONDING_CURVE_INCENTIVE
+            BONDING_CURVE_ALLOCATE_INCENTIVE_FREQUENCY,
+            FEI_KEEPER_INCENTIVE
         );
         core.grantMinter(ethBondingCurve);
         IOracleRef(ethUniswapPCVDeposit).setOracle(bondingCurveOracle);
@@ -208,7 +207,7 @@ contract CoreOrchestrator is Ownable {
             ethUniswapPCVDeposit,
             ethFeiPair,
             ROUTER,
-            REWEIGHT_INCENTIVE,
+            FEI_KEEPER_INCENTIVE,
             MIN_REWEIGHT_DISTANCE_BPS
         );
         core.grantMinter(ethUniswapPCVController);
@@ -233,7 +232,7 @@ contract CoreOrchestrator is Ownable {
             tribe,
             tribeFeiPair,
             ROUTER,
-            RELEASE_WINDOW
+            TOKEN_TIMELOCK_RELEASE_WINDOW
         );
         core.grantMinter(ido);
         core.allocateTribe(ido, (tribeSupply * IDO_TRIBE_PERCENTAGE) / 100);
@@ -251,7 +250,7 @@ contract CoreOrchestrator is Ownable {
             ido,
             bondingCurveOracle,
             GENESIS_DURATION,
-            EXCHANGE_RATE_DISCOUNT
+            GENESIS_FEI_TRIBE_EXCHANGE_RATE_DISCOUNT
         );
         core.setGenesisGroup(genesisGroup);
         core.allocateTribe(
@@ -267,9 +266,9 @@ contract CoreOrchestrator is Ownable {
             address(core),
             tribeFeiPair,
             tribe,
-            POOL_DURATION,
-            DRIP_FREQUENCY,
-            REWEIGHT_INCENTIVE
+            STAKING_REWARDS_DURATION,
+            STAKING_REWARDS_DRIP_FREQUENCY,
+            FEI_KEEPER_INCENTIVE
         );
 
         core.allocateTribe(
@@ -286,7 +285,7 @@ contract CoreOrchestrator is Ownable {
     function initGovernance() public onlyOwner {
         (governorAlpha, timelock) = governanceOrchestrator.init(
             tribe,
-            TIMELOCK_DELAY
+            DAO_TIMELOCK_DELAY
         );
         governanceOrchestrator.detonate();
         core.grantGovernor(timelock);
