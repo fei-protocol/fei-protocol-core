@@ -24,7 +24,6 @@ module.exports = async function(callback) {
   let tribe = await Tribe.at(await core.tribe());
   let ido = await IDO.at(await co.ido());
   let pair = await IUniswapV2Pair.at(await ido.pair());
-  let ethPair = await IUniswapV2Pair.at(await co.ethFeiPair());
   let uo = await UniswapOracle.at(await co.uniswapOracle());
   let bco = await BondingCurveOracle.at(await co.bondingCurveOracle());
 
