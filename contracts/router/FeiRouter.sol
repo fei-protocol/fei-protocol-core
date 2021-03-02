@@ -49,7 +49,7 @@ contract FeiRouter is IFeiRouter {
         uint256 deadline
     ) external payable override ensure(deadline) returns (uint256 amountOut) {
 
-        (uint256 reservesETH, uint256 reservesOther, bool isETH0) = _getReserves();
+        (uint256 reservesETH, uint256 reservesOther, bool isWETHPairToken0) = _getReserves();
 
         uint256 amountIn = msg.value;
         amountOut = UniswapV2Library.getAmountOut(
@@ -62,16 +62,20 @@ contract FeiRouter is IFeiRouter {
             amountOut >= amountOutMin,
             "FeiRouter: Insufficient output amount"
         );
+        // Convert sent ETH to wrapped ETH and assert successful transfer to pair
         IWETH(WETH).deposit{value: amountIn}();
         assert(IWETH(WETH).transfer(address(PAIR), amountIn));
 
-        address fei = isETH0 ? PAIR.token1() : PAIR.token0();
+        address fei = isWETHPairToken0 ? PAIR.token1() : PAIR.token0();
+
+        // Check fei balance of recipient before to compare against
         uint256 feiBalanceBefore = IERC20(fei).balanceOf(to);
 
         (uint256 amount0Out, uint256 amount1Out) =
-            isETH0 ? (uint256(0), amountOut) : (amountOut, uint256(0));
+            isWETHPairToken0 ? (uint256(0), amountOut) : (amountOut, uint256(0));
         PAIR.swap(amount0Out, amount1Out, to, new bytes(0));
 
+        // Check that FEI recipient got at least minReward on top of trade amount
         uint256 feiBalanceAfter = IERC20(fei).balanceOf(to);
         uint256 reward = feiBalanceAfter.sub(feiBalanceBefore).sub(amountOut);
         require(reward >= minReward, "FeiRouter: Not enough reward");
@@ -92,15 +96,17 @@ contract FeiRouter is IFeiRouter {
         address to,
         uint256 deadline
     ) external override ensure(deadline) returns (uint256 amountOut) {
-        (uint256 reservesETH, uint256 reservesOther, bool isETH0) =
+        (uint256 reservesETH, uint256 reservesOther, bool isWETHPairToken0) =
             _getReserves();
 
-        address fei = isETH0 ? PAIR.token1() : PAIR.token0();
+        address fei = isWETHPairToken0 ? PAIR.token1() : PAIR.token0();
 
         IERC20(fei).transferFrom(msg.sender, address(PAIR), amountIn);
 
+        // Figure out how much the PAIR actually received net of FEI burn
         uint256 effectiveAmountIn = IERC20(fei).balanceOf(address(PAIR)).sub(reservesOther);
 
+        // Check that burned fee-on-transfer is not more than the maxPenalty
         if (effectiveAmountIn < amountIn) {
             uint256 penalty = amountIn - effectiveAmountIn;
             require(penalty <= maxPenalty, "FeiRouter: Penalty too high");
@@ -117,7 +123,7 @@ contract FeiRouter is IFeiRouter {
         );
 
         (uint256 amount0Out, uint256 amount1Out) =
-            isETH0 ? (amountOut, uint256(0)) : (uint256(0), amountOut);
+            isWETHPairToken0 ? (amountOut, uint256(0)) : (uint256(0), amountOut);
 
         PAIR.swap(amount0Out, amount1Out, address(this), new bytes(0));
 
@@ -133,14 +139,14 @@ contract FeiRouter is IFeiRouter {
         returns (
             uint256 reservesETH,
             uint256 reservesOther,
-            bool isETH0
+            bool isWETHPairToken0
         )
     {
         (uint256 reserves0, uint256 reserves1, ) = PAIR.getReserves();
-        isETH0 = PAIR.token0() == address(WETH);
+        isWETHPairToken0 = PAIR.token0() == address(WETH);
         return
-            isETH0
-                ? (reserves0, reserves1, isETH0)
-                : (reserves1, reserves0, isETH0);
+            isWETHPairToken0
+                ? (reserves0, reserves1, isWETHPairToken0)
+                : (reserves1, reserves0, isWETHPairToken0);
     }
 }
