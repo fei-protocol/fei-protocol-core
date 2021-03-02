@@ -63,8 +63,9 @@ module.exports = async function(callback) {
   let ggCommitGas = ggCommit['receipt']['gasUsed'];
   console.log(`Genesis Group Commit of ${stringify(ethAmount)} / 2`); 
 
-  console.log('Sleeping for 60s');
-  await sleep(60000);
+  console.log('Sleeping for 20s');
+  await sleep(20000);
+
   await uo.update();
   let price = await uo.read();
   console.log(`Uniswap Oracle: price ${price[0] / 1e18}`);
@@ -82,6 +83,9 @@ module.exports = async function(callback) {
   let redeemFei = await fei.balanceOf(accounts[0]);
   let redeemTribe = await tribe.balanceOf(accounts[0]);
   console.log(`GG Redeem: fei=${stringify(redeemFei)}, tribe=${stringify(redeemTribe)}`);
+
+  console.log('Sleeping for 100s');
+  await sleep(100000);
 
   let drip = await distributor.drip();
   let dripGas = drip['receipt']['gasUsed'];
