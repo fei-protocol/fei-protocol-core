@@ -197,7 +197,7 @@ contract CoreOrchestrator is Ownable {
     }
 
     function initRouter() public onlyOwner {
-        feiRouter = routerOrchestrator.init(ethFeiPair, WETH, address(core));
+        feiRouter = routerOrchestrator.init(ethFeiPair, WETH);
     }
 
     function initController() public onlyOwner {

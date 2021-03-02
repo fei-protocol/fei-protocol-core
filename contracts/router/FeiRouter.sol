@@ -1,24 +1,40 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./UniswapSingleEthRouter.sol";
-import "../refs/IOracleRef.sol";
-import "../core/ICore.sol";
+import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
+import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
+import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../external/SafeMathCopy.sol";
 import "./IFeiRouter.sol";
 
 /// @title A Uniswap Router for FEI/ETH swaps
 /// @author Fei Protocol
-contract FeiRouter is UniswapSingleEthRouter, IFeiRouter {
+contract FeiRouter is IFeiRouter {
+    using SafeMathCopy for uint256;
 
     // solhint-disable-next-line var-name-mixedcase
-    ICore public immutable CORE;
+    IWETH public immutable WETH;
+
+    // solhint-disable-next-line var-name-mixedcase
+    IUniswapV2Pair public immutable PAIR;
 
     constructor(
         address pair,
-        address weth,
-        address core
-    ) public UniswapSingleEthRouter(pair, weth) {
-        CORE = ICore(core);
+        address weth
+    ) public {
+        PAIR = IUniswapV2Pair(pair);
+        WETH = IWETH(weth);
+    }
+
+    modifier ensure(uint256 deadline) {
+        // solhint-disable-next-line not-rely-on-time
+        require(deadline >= block.timestamp, "FeiRouter: Expired");
+        _;
+    }
+
+    receive() external payable {
+        assert(msg.sender == address(WETH)); // only accept ETH via fallback from the WETH contract
     }
 
     /// @notice buy FEI for ETH with some protections
@@ -31,16 +47,36 @@ contract FeiRouter is UniswapSingleEthRouter, IFeiRouter {
         uint256 amountOutMin,
         address to,
         uint256 deadline
-    ) external payable override returns (uint256 amountOut) {
-        IUniswapIncentive incentive = incentiveContract();
-        IOracleRef(address(incentive)).updateOracle();
+    ) external payable override ensure(deadline) returns (uint256 amountOut) {
 
-        uint256 reward = 0;
-        if (!incentive.isExemptAddress(to)) {
-            (reward, , , ) = incentive.getBuyIncentive(amountOutMin);
-        }
+        (uint256 reservesETH, uint256 reservesOther, bool isETH0) = _getReserves();
+
+        uint256 amountIn = msg.value;
+        amountOut = UniswapV2Library.getAmountOut(
+            amountIn,
+            reservesETH,
+            reservesOther
+        );
+        
+        require(
+            amountOut >= amountOutMin,
+            "FeiRouter: Insufficient output amount"
+        );
+        IWETH(WETH).deposit{value: amountIn}();
+        assert(IWETH(WETH).transfer(address(PAIR), amountIn));
+
+        address fei = isETH0 ? PAIR.token1() : PAIR.token0();
+        uint256 feiBalanceBefore = IERC20(fei).balanceOf(to);
+
+        (uint256 amount0Out, uint256 amount1Out) =
+            isETH0 ? (uint256(0), amountOut) : (amountOut, uint256(0));
+        PAIR.swap(amount0Out, amount1Out, to, new bytes(0));
+
+        uint256 feiBalanceAfter = IERC20(fei).balanceOf(to);
+        uint256 reward = feiBalanceAfter.sub(feiBalanceBefore).sub(amountOut);
         require(reward >= minReward, "FeiRouter: Not enough reward");
-        return swapExactETHForTokens(amountOutMin, to, deadline);
+
+        return amountOut;
     }
 
     /// @notice sell FEI for ETH with some protections
@@ -55,19 +91,56 @@ contract FeiRouter is UniswapSingleEthRouter, IFeiRouter {
         uint256 amountOutMin,
         address to,
         uint256 deadline
-    ) external override returns (uint256 amountOut) {
-        IUniswapIncentive incentive = incentiveContract();
-        IOracleRef(address(incentive)).updateOracle();
+    ) external override ensure(deadline) returns (uint256 amountOut) {
+        (uint256 reservesETH, uint256 reservesOther, bool isETH0) =
+            _getReserves();
 
-        uint256 penalty = 0;
-        if (!incentive.isExemptAddress(msg.sender)) {
-            (penalty, , ) = incentive.getSellPenalty(amountIn);
+        address fei = isETH0 ? PAIR.token1() : PAIR.token0();
+
+        IERC20(fei).transferFrom(msg.sender, address(PAIR), amountIn);
+
+        uint256 effectiveAmountIn = IERC20(fei).balanceOf(address(PAIR)).sub(reservesOther);
+
+        if (effectiveAmountIn < amountIn) {
+            uint256 penalty = amountIn - effectiveAmountIn;
+            require(penalty <= maxPenalty, "FeiRouter: Penalty too high");
         }
-        require(penalty <= maxPenalty, "FeiRouter: Penalty too high");
-        return swapExactTokensForETHSupportingFeeOnTransfer(amountIn, amountOutMin, to, deadline);
+
+        amountOut = UniswapV2Library.getAmountOut(
+            effectiveAmountIn,
+            reservesOther,
+            reservesETH
+        );
+        require(
+            amountOut >= amountOutMin,
+            "FeiRouter: Insufficient output amount"
+        );
+
+        (uint256 amount0Out, uint256 amount1Out) =
+            isETH0 ? (amountOut, uint256(0)) : (uint256(0), amountOut);
+
+        PAIR.swap(amount0Out, amount1Out, address(this), new bytes(0));
+
+        IWETH(WETH).withdraw(amountOut);
+
+        TransferHelper.safeTransferETH(to, amountOut);
+        return amountOut;
     }
 
-    function incentiveContract() public view override returns(IUniswapIncentive) {
-        return IUniswapIncentive(CORE.fei().incentiveContract(address(PAIR)));
+    function _getReserves()
+        internal
+        view
+        returns (
+            uint256 reservesETH,
+            uint256 reservesOther,
+            bool isETH0
+        )
+    {
+        (uint256 reserves0, uint256 reserves1, ) = PAIR.getReserves();
+        isETH0 = PAIR.token0() == address(WETH);
+        return
+            isETH0
+                ? (reserves0, reserves1, isETH0)
+                : (reserves1, reserves0, isETH0);
     }
 }

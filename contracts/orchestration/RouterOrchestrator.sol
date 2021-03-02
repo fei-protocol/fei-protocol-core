@@ -7,10 +7,9 @@ import "./IOrchestrator.sol";
 contract RouterOrchestrator is IRouterOrchestrator, Ownable {
     function init(
         address pair,
-        address weth,
-        address core
+        address weth
     ) public override onlyOwner returns (address ethRouter) {
-        ethRouter = address(new FeiRouter(pair, weth, core));
+        ethRouter = address(new FeiRouter(pair, weth));
 
         return ethRouter;
     }
