@@ -155,8 +155,8 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     /// @param amount the FEI size of the transfer
     /// @return incentive the FEI size of the mint incentive
     /// @return weight the time weight of thhe incentive
-    /// @return initialDeviation the Decimal deviation from peg before a transfer
-    /// @return finalDeviation the Decimal deviation from peg after a transfer
+    /// @return _initialDeviation the Decimal deviation from peg before a transfer
+    /// @return _finalDeviation the Decimal deviation from peg after a transfer
     /// @dev calculated based on a hypothetical buy, applies to any ERC20 FEI transfer from the pool
     function getBuyIncentive(uint256 amount)
         public
@@ -165,13 +165,19 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         returns (
             uint256 incentive,
             uint32 weight,
-            Decimal.D256 memory initialDeviation,
-            Decimal.D256 memory finalDeviation
+            Decimal.D256 memory _initialDeviation,
+            Decimal.D256 memory _finalDeviation
         )
     {
         int256 signedAmount = amount.toInt256();
         // A buy withdraws FEI from uni so use negative amountIn
-        (initialDeviation, finalDeviation) = _getPriceDeviations(
+        (
+            Decimal.D256 memory initialDeviation, 
+            Decimal.D256 memory finalDeviation, 
+            Decimal.D256 memory peg,
+            uint256 reserveFei,
+            uint256 reserveOther
+        ) = _getPriceDeviations(
             -1 * signedAmount
         );
         weight = getTimeWeight();
@@ -184,7 +190,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         uint256 incentivizedAmount = amount;
         // if buy ends above peg, only incentivize amount to peg
         if (finalDeviation.equals(Decimal.zero())) {
-            incentivizedAmount = _getAmountToPegFei();
+            incentivizedAmount = _getAmountToPegFei(reserveFei, reserveOther, peg);
         }
 
         Decimal.D256 memory multiplier =
@@ -196,8 +202,8 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     /// @notice get the burn amount of a sell transfer
     /// @param amount the FEI size of the transfer
     /// @return penalty the FEI size of the burn incentive
-    /// @return initialDeviation the Decimal deviation from peg before a transfer
-    /// @return finalDeviation the Decimal deviation from peg after a transfer
+    /// @return _initialDeviation the Decimal deviation from peg before a transfer
+    /// @return _finalDeviation the Decimal deviation from peg after a transfer
     /// @dev calculated based on a hypothetical sell, applies to any ERC20 FEI transfer to the pool
     function getSellPenalty(uint256 amount)
         public
@@ -205,12 +211,19 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         override
         returns (
             uint256 penalty,
-            Decimal.D256 memory initialDeviation,
-            Decimal.D256 memory finalDeviation
+            Decimal.D256 memory _initialDeviation,
+            Decimal.D256 memory _finalDeviation
         )
     {
         int256 signedAmount = amount.toInt256();
-        (initialDeviation, finalDeviation) = _getPriceDeviations(signedAmount);
+        
+        (
+            Decimal.D256 memory initialDeviation, 
+            Decimal.D256 memory finalDeviation, 
+            Decimal.D256 memory peg,
+            uint256 reserveFei,
+            uint256 reserveOther
+        ) = _getPriceDeviations(signedAmount);
 
         // if trafe ends above peg, it was always above peg and no penalty needed
         if (finalDeviation.equals(Decimal.zero())) {
@@ -220,7 +233,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         uint256 incentivizedAmount = amount;
         // if trade started above but ended below, only penalize amount going below peg
         if (initialDeviation.equals(Decimal.zero())) {
-            uint256 amountToPeg = _getAmountToPegFei();
+            uint256 amountToPeg = _getAmountToPegFei(reserveFei, reserveOther, peg);
             incentivizedAmount = amount.sub(
                 amountToPeg,
                 "UniswapIncentive: Underflow"
