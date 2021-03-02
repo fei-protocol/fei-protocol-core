@@ -31,7 +31,7 @@ module.exports = async function(callback) {
   let reserves = await ui.getReserves();
   let peg = await ui.peg();
   let pegBN = new BN(peg.value).div(new BN('1000000000000000000'));
-  console.log(`Pegging to ${stringify(pegBN)}`);
+  console.log(`Pegging to ${pegBN}`);
 
   console.log('Sync');
   let targetFei = reserves[1].mul(pegBN);
@@ -41,30 +41,45 @@ module.exports = async function(callback) {
   await fei.mint(ethPair.address, targetFei, {from: accounts[0]});
   await ethPair.sync();
 
-  await ui.setExemptAddress(accounts[0], true, {from: accounts[0]});
-
   console.log('Selling At');
-  reserves = await ui.getReserves()
+  reserves = await ui.getReserves();
+  console.log(`Fei reserves=${stringify(reserves[0])}, Eth reserves=${stringify(reserves[1])}`);
+  console.log(`User Fei balance=${stringify(await fei.balanceOf(accounts[0]))}`);
+
   let twoPercent = reserves[0].div(new BN('50'));
+  console.log(`Sell amount=${stringify(twoPercent)}`);
+
   let maxBurn = twoPercent;
   let sell = await router.sellFei(maxBurn, twoPercent, 0, accounts[0], MAX_UINT256, {from: accounts[0]});
-  console.log(sell.logs);
+  let sellAtGas = sell['receipt']['gasUsed'];
 
   console.log('Buying Below');
   reserves = await ui.getReserves();
+  console.log(`Fei reserves=${stringify(reserves[0])}, Tribe reserves=${stringify(reserves[1])}`);
+  console.log(`User Fei balance=${stringify(await fei.balanceOf(accounts[0]))}`);
+
   let buy = await router.buyFei(0, 0, accounts[0], MAX_UINT256, {value: twoPercent.mul(new BN('2')).div(pegBN), from: accounts[0]});
-  console.log(buy.logs);
+  let buyBelowGas = buy['receipt']['gasUsed'];
 
   console.log('Buying Above');
   reserves = await ui.getReserves();
+  console.log(`Fei reserves=${stringify(reserves[0])}, Tribe reserves=${stringify(reserves[1])}`);
+  console.log(`User Fei balance=${stringify(await fei.balanceOf(accounts[0]))}`);
+
   buy = await router.buyFei(0, 0, accounts[0], MAX_UINT256, {value: twoPercent.div(pegBN), from: accounts[0]});
-  console.log(buy.logs);
+  let buyAboveGas = buy['receipt']['gasUsed'];
 
   console.log('Selling Above');
   reserves = await ui.getReserves();
-  sell = await router.sellFei(maxBurn, twoPercent, 0, accounts[0], MAX_UINT256, {from: accounts[0]});
-  console.log(sell.logs);
+  console.log(`Fei reserves=${stringify(reserves[0])}, Tribe reserves=${stringify(reserves[1])}`);
+  console.log(`User Fei balance=${stringify(await fei.balanceOf(accounts[0]))}`);
 
+  sell = await router.sellFei(maxBurn, twoPercent, 0, accounts[0], MAX_UINT256, {from: accounts[0]});
+  let sellAboveGas = sell['receipt']['gasUsed'];
+
+  console.log(`Post-User Fei balance=${stringify(await fei.balanceOf(accounts[0]))}`);
+
+  console.log(`Gas: sellAt=${sellAtGas}, sellAbove=${sellAboveGas}, buyBelow=${buyBelowGas}, buyAbove=${buyAboveGas}`);
   callback();
 }
 
