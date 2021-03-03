@@ -28,7 +28,7 @@ module.exports = async function(callback) {
   let bco = await BondingCurveOracle.at(await co.bondingCurveOracle());
 
   console.log('Init Genesis');
-  await co.initGenesis();
+  await co.beginGenesis();
 
   await sleep(1000);
   await uo.update();

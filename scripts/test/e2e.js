@@ -46,7 +46,7 @@ module.exports = async function(callback) {
   console.log('Init Staking');
   await co.initStaking();
   console.log('Init Genesis');
-  await co.initGenesis();
+  await co.beginGenesis();
 
   let staking = await StakingRewards.at(await co.feiStakingRewards());
   let distributor = await FeiRewardsDistributor.at(await co.feiRewardsDistributor());
