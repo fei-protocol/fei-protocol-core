@@ -60,6 +60,10 @@ describe('GenesisGroup', function () {
       expect(await this.genesisGroup.isTimeEnded()).to.be.equal(false);
     });
 
+    it('isTimeStarted', async function() {
+      expect(await this.genesisGroup.isTimeStarted()).to.be.equal(false);
+    });
+
     describe('getAmountOut', function() {  
       describe('Inclusive', function() {
         it('reverts', async function() {
@@ -82,8 +86,33 @@ describe('GenesisGroup', function () {
       });
     });
   });
+  describe('Before Genesis Period', function() {
+    describe('Purchase', function() {
+      it('reverts', async function() {
+        this.purchaseAmount = new BN('500');
+        await expectRevert(
+          this.genesisGroup.purchase(userAddress, this.purchaseAmount, {from: userAddress, value: this.purchaseAmount}),
+          "Timed: time not started"
+        );
+      });
+    });
+
+    describe('Commit', function() {
+      it('reverts', async function() {
+        this.userCommittedFGEN = new BN('500');
+        await expectRevert(
+          this.genesisGroup.commit(userAddress, userAddress, this.userCommittedFGEN, {from: userAddress}),
+          "Timed: time not started"
+        );      
+      });
+    });
+  });
 
   describe('Purchase', function() {
+    beforeEach(async function() {
+      await this.genesisGroup.initGenesis({from: governorAddress});
+    });
+
     describe('During Genesis Period', function() {
       describe('No value', function() {
         it('reverts', async function() {
@@ -173,13 +202,14 @@ describe('GenesisGroup', function () {
         await time.increase('2000');
       });
       it('reverts', async function() {
-        await expectRevert(this.genesisGroup.purchase(userAddress, 100, {from: userAddress, value: 100}), "GenesisGroup: Not in Genesis Period");
+        await expectRevert(this.genesisGroup.purchase(userAddress, 100, {from: userAddress, value: 100}), "Timed: time ended");
       });
     });
   });
 
   describe('Flash Launch', function() {
     beforeEach(async function() {
+      await this.genesisGroup.initGenesis({from: governorAddress});
       await this.genesisGroup.purchase(userAddress, 750, {from: userAddress, value: 750});
       await time.increase('2000');
     });
@@ -190,13 +220,16 @@ describe('GenesisGroup', function () {
     });
   });
   describe('Launch', function() {
+    beforeEach(async function() {
+      await this.genesisGroup.initGenesis({from: governorAddress});
+    });
     describe('During Genesis Period', function() {
       beforeEach(async function() {
         await this.genesisGroup.purchase(userAddress, 1000, {from: userAddress, value: 1000});
       });
 
       it('reverts', async function() {
-        await expectRevert(this.genesisGroup.launch(), "GenesisGroup: Still in Genesis Period");
+        await expectRevert(this.genesisGroup.launch(), "Timed: time not ended");
       });
     });
     
@@ -278,6 +311,10 @@ describe('GenesisGroup', function () {
   });
 
   describe('Redeem', function() {
+    beforeEach(async function() {
+      await this.genesisGroup.initGenesis({from: governorAddress});
+    });
+
     describe('During Genesis Period', function() {
       it('reverts', async function() {
         await expectRevert(this.genesisGroup.redeem(userAddress, {from: userAddress}), "CoreRef: Still in Genesis Period");
@@ -548,6 +585,7 @@ describe('GenesisGroup', function () {
 
   describe('Pre-Commit', function() {
     beforeEach(async function() {
+      await this.genesisGroup.initGenesis({from: governorAddress});
       this.userFGEN = new BN('750');
       this.secondUserFGEN = new BN('250');
       await this.genesisGroup.purchase(userAddress, this.userFGEN, {from: userAddress, value: this.userFGEN});
@@ -693,12 +731,15 @@ describe('GenesisGroup', function () {
       });
 
       it('reverts', async function() {
-        await expectRevert(this.genesisGroup.commit(userAddress, userAddress, 100, {from: userAddress}), "GenesisGroup: Not in Genesis Period");
+        await expectRevert(this.genesisGroup.commit(userAddress, userAddress, 100, {from: userAddress}), "Timed: time ended");
       });
     });
   });
 
   describe('Exit', function() {
+    beforeEach(async function() {
+      await this.genesisGroup.initGenesis({from: governorAddress});
+    });
     describe('During Genesis Period', function() {
       it('reverts', async function() {
         await this.genesisGroup.purchase(userAddress, 750, {from: userAddress, value: 750});

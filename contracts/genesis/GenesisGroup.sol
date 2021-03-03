@@ -63,16 +63,13 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         fei().approve(_ido, maxTokens);
 
         bondingCurveOracle = IBondingCurveOracle(_oracle);
-
-        _initTimed();
     }
 
-    modifier onlyGenesisPeriod() {
-        require(
-            !isTimeEnded(),
-            "GenesisGroup: Not in Genesis Period"
-        );
-        _;
+    function initGenesis() external override onlyGovernor {
+        _initTimed();
+        
+        // solhint-disable-next-line not-rely-on-time
+        emit InitGenesis(block.timestamp);
     }
 
     /// @notice allows for entry into the Genesis Group via ETH. Only callable during Genesis Period.
@@ -82,7 +79,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         external
         payable
         override
-        onlyGenesisPeriod
+        duringTime
     {
         require(msg.value == value, "GenesisGroup: value mismatch");
         require(value != 0, "GenesisGroup: no value sent");
@@ -100,7 +97,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         address from,
         address to,
         uint256 amount
-    ) external override onlyGenesisPeriod {
+    ) external override duringTime {
         _burnFrom(from, amount);
 
         committedFGEN[to] = committedFGEN[to].add(amount);
@@ -144,8 +141,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
     }
 
     /// @notice launch Fei Protocol. Callable once Genesis Period has ended
-    function launch() external override nonContract {
-        require(isTimeEnded(), "GenesisGroup: Still in Genesis Period");
+    function launch() external override nonContract afterTime {
 
         // Complete Genesis
         core().completeGenesisGroup();
