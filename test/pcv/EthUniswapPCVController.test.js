@@ -36,6 +36,7 @@ describe('EthUniswapPCVController', function () {
     this.incentive = await MockIncentive.new(this.core.address);
 
     await this.fei.setIncentiveContract(this.pair.address, this.incentive.address, {from: governorAddress});
+    await this.incentive.setExempt(true);
 
     this.pcvController = await EthUniswapPCVController.new(
       this.core.address, 
@@ -118,6 +119,7 @@ describe('EthUniswapPCVController', function () {
 
       describe('Not enough to reweight', function() {
         beforeEach(async function() {
+          await this.fei.mint(this.pair.address, 10000000000, {from: minterAddress});
           await this.pair.set(100000, 10000000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 100000:1 FEI/ETH with 10k liquidity
           await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
           await this.fei.mint(this.pcvController.address, 50000000, {from: minterAddress}); // seed Fei to burn

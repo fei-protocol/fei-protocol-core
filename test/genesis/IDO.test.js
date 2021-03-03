@@ -37,6 +37,7 @@ describe('IDO', function () {
     this.ido = await IDO.new(this.core.address, beneficiaryAddress1, this.window, this.pair.address, this.router.address);
     await this.core.grantMinter(this.ido.address, {from: governorAddress});
     await this.core.allocateTribe(this.ido.address, 100000, {from: governorAddress});
+    await this.core.allocateTribe(this.pair.address, 100000, {from: governorAddress});
   });
 
   describe('Init', function() {
