@@ -128,9 +128,9 @@ abstract contract UniRef is IUniRef, OracleRef {
         uint256 radicand = peg.mul(reserveTarget).mul(reserveOther).asUint256();
         uint256 root = radicand.sqrt();
         if (root > reserveTarget) {
-            return root - reserveTarget;
+            return (root - reserveTarget).mul(1000).div(997);
         }
-        return reserveTarget - root;
+        return (reserveTarget - root).mul(1000).div(997);
     }
 
     /// @notice calculate amount of Fei needed to trade back to the peg
@@ -183,8 +183,9 @@ abstract contract UniRef is IUniRef, OracleRef {
     ) internal pure returns (Decimal.D256 memory) {
         uint256 k = reserveFei.mul(reserveOther);
         int256 signedReservesFei = reserveFei.toInt256();
-        uint256 adjustedReserveFei =
-            signedReservesFei.add(amountFei).toUint256();
+        int256 amountFeiWithFee = amountFei.mul(997).div(1000);
+
+        uint256 adjustedReserveFei = signedReservesFei.add(amountFeiWithFee).toUint256();
         uint256 adjustedReserveOther = k / adjustedReserveFei;
         return Decimal.ratio(adjustedReserveFei, adjustedReserveOther); // alt: adjustedReserveFei^2 / k
     }

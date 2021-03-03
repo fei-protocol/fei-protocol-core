@@ -105,10 +105,10 @@ describe('EthUniswapPCVController', function () {
         });
 
         it('pair gets some ETH in swap', async function() {
-          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(995));
+          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(997));
         });
         it('pcvDeposit gets remaining ETH', async function() {
-          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(99005));
+          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(99003));
           expect(await balance.current(this.pcvController.address)).to.be.bignumber.equal(new BN(0));
         });
 
@@ -184,10 +184,10 @@ describe('EthUniswapPCVController', function () {
         });
 
         it('pair gets some ETH in swap', async function() {
-          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(995));
+          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(997));
         });
         it('pcvDeposit gets remaining ETH', async function() {
-          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(99005));
+          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(99003));
           expect(await balance.current(this.pcvController.address)).to.be.bignumber.equal(new BN(0));
         });
         it('user FEI balance is 0', async function() {
@@ -206,10 +206,10 @@ describe('EthUniswapPCVController', function () {
         });
 
         it('pair gets some ETH in swap', async function() {
-          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(995));
+          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(997));
         });
         it('pcvDeposit gets remaining ETH', async function() {
-          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(99005));
+          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(99003));
           expect(await balance.current(this.pcvController.address)).to.be.bignumber.equal(new BN(0));
         });
         it('user FEI balance updates', async function() {
