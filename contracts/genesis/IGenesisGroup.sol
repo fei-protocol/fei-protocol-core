@@ -20,8 +20,6 @@ interface IGenesisGroup {
 
     event Commit(address indexed _from, address indexed _to, uint256 _amount);
 
-    event InitGenesis(uint256 _timestamp);
-
     event Launch(uint256 _timestamp);
 
     // ----------- Governor-only state changing API -----------

@@ -67,9 +67,6 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
 
     function initGenesis() external override onlyGovernor {
         _initTimed();
-        
-        // solhint-disable-next-line not-rely-on-time
-        emit InitGenesis(block.timestamp);
     }
 
     /// @notice allows for entry into the Genesis Group via ETH. Only callable during Genesis Period.
