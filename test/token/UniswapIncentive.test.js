@@ -278,7 +278,7 @@ describe('UniswapIncentive', function () {
 
       describe('enough in wallet', function() {
         beforeEach(async function() {
-          this.expectedBurn = new BN(6672); // with rounding error
+          this.expectedBurn = new BN(6631); // with rounding error
           await this.fei.transfer(this.pair.address, 500000, {from: userAddress});
         });
 
@@ -401,7 +401,7 @@ describe('UniswapIncentive', function () {
       describe('past the peg', function() {
         describe('enough in wallet', function() {
           beforeEach(async function() {
-            this.expectedBurn = new BN(6906);
+            this.expectedBurn = new BN(6810);
             this.transferAmount = new BN(1000000);
             await this.fei.transfer(this.pair.address, 1000000, {from: userAddress});
           });
@@ -430,7 +430,7 @@ describe('UniswapIncentive', function () {
 
         describe('beyond trade size', function() {
           beforeEach(async function() {
-            this.expectedBurn = new BN(9502526); // burns everything but amount to peg
+            this.expectedBurn = new BN(9501030); // burns everything but amount to peg
             this.transferAmount = new BN(10000000);
             await this.fei.transfer(this.pair.address, 10000000, {from: userAddress});
           });
@@ -573,9 +573,9 @@ describe('UniswapIncentive', function () {
 
       describe('to peg', function() {
         beforeEach(async function() {
-          this.transferAmount = new BN(502500);
-          this.expectedMint = new BN(2512);
-          await this.pair.withdrawFei(userAddress, 502500);
+          this.transferAmount = new BN(505000);
+          this.expectedMint = new BN(2519);
+          await this.pair.withdrawFei(userAddress, this.transferAmount);
         });
 
         it('user balance updates', async function() {
@@ -603,7 +603,7 @@ describe('UniswapIncentive', function () {
       describe('past peg', function() {
         beforeEach(async function() {
           this.transferAmount = new BN(1000000);
-          this.expectedMint = new BN(2512); // should be same as to peg
+          this.expectedMint = new BN(2519); // should be same as to peg
           await this.pair.withdrawFei(userAddress, 1000000);
         });
 
@@ -652,7 +652,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('partially updates time weight', async function() {
-          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(20010));
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(20030));
           expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
@@ -660,10 +660,10 @@ describe('UniswapIncentive', function () {
 
       describe('double time weight', function() {
         beforeEach(async function() {
-          this.transferAmount = new BN(502500);
-          this.expectedMint = new BN(5024);
+          this.transferAmount = new BN(505000);
+          this.expectedMint = new BN(5039);
           await time.advanceBlock();
-          await this.pair.withdrawFei(userAddress, 502500);
+          await this.pair.withdrawFei(userAddress, this.transferAmount);
         });
 
         it('user balance updates', async function() {
@@ -712,7 +712,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('partially updates time weight', async function() {
-          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(40021));
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(40061));
           expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
@@ -720,12 +720,12 @@ describe('UniswapIncentive', function () {
 
       describe('time weight exceeds burn', function() {
         beforeEach(async function() {
-          this.transferAmount = new BN(502500);
-          this.expectedMint = new BN(6632);
+          this.transferAmount = new BN(505000);
+          this.expectedMint = new BN(6652);
           await time.advanceBlock();
           await time.advanceBlock();
           await time.advanceBlock();
-          await this.pair.withdrawFei(userAddress, 502500);
+          await this.pair.withdrawFei(userAddress, this.transferAmount);
         });
 
         it('user balance updates', async function() {
@@ -814,7 +814,7 @@ describe('UniswapIncentive', function () {
 
       describe('enough in wallet', function() {
         beforeEach(async function() {
-          this.expectedBurn = new BN(173463);
+          this.expectedBurn = new BN(172878);
           this.transferAmount = new BN(1000000);
           await this.fei.transfer(this.pair.address, 1000000, {from: userAddress});
         });
@@ -843,7 +843,7 @@ describe('UniswapIncentive', function () {
 
       describe('time weight too high', function() {
         beforeEach(async function() {
-          this.expectedBurn = new BN(4806);
+          this.expectedBurn = new BN(4805);
           this.transferAmount = new BN(100000);
           for (let i = 0; i < 20; i++) {
             await time.advanceBlock();
@@ -868,7 +868,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('time weight update capped', async function() {
-          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(240070));
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(240010));
           expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
