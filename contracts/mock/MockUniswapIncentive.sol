@@ -13,6 +13,17 @@ contract MockUniswapIncentive is MockIncentive {
     bool public isParity = false;
     bool public isExempt = false;
 
+    function incentivize(
+    	address sender, 
+    	address recipient, 
+    	address, 
+    	uint256
+    ) public override {
+        if (!isExempt) {
+            super.incentivize(sender, recipient, address(0), 0);
+        }
+    }
+
     function isIncentiveParity() external view returns (bool) {
         return isParity;
     }

@@ -21,6 +21,4 @@ interface IFeiRouter {
         address to,
         uint256 deadline
     ) external returns (uint256 amountOut);
-
-    function incentiveContract() external view returns(IUniswapIncentive);
 }
