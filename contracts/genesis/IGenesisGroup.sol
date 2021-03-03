@@ -22,6 +22,10 @@ interface IGenesisGroup {
 
     event Launch(uint256 _timestamp);
 
+    // ----------- Governor-only state changing API -----------
+    
+    function initGenesis() external;
+
     // ----------- State changing API -----------
 
     function purchase(address to, uint256 value) external payable;

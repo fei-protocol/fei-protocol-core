@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../token/IUniswapIncentive.sol";
 import "../token/IFei.sol";
+import "../genesis/IGenesisGroup.sol";
 import "../refs/IOracleRef.sol";
 import "../core/Core.sol";
 import "../staking/IRewardsDistributor.sol";
@@ -259,6 +260,10 @@ contract CoreOrchestrator is Ownable {
         );
 
         genesisOrchestrator.detonate();
+    }
+
+    function beginGenesis() public onlyOwner {
+        IGenesisGroup(genesisGroup).initGenesis();
     }
 
     function initStaking() public onlyOwner {

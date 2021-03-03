@@ -90,12 +90,11 @@ module.exports = function(deployer, network, accounts) {
 	 	return core.initGovernance();
 	}).then(function(instance) {
 	 	return core.initRouter();
+	}).then(function(instance) {
+		return core.initGenesis();
 	});
 	// Init Genesis and staking separate
 	// .then(function(instance) {
 	// 	return core.initStaking();
     // })
-	// .then(function(instance) {
-	// 	return core.initGenesis();
-	// });
 }
