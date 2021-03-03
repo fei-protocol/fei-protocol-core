@@ -111,10 +111,6 @@ describe('Fei', function () {
       expect(await this.fei.incentiveContract(this.incentivizedAddress)).to.be.bignumber.equal(this.incentive.address);
     });
 
-    it('non-contract reverts', async function() {
-      await expectRevert(this.fei.setIncentiveContract(userAddress, this.incentive.address, {from: governorAddress}), "Fei: incentivized is not a contract");
-    });
-
     describe('via transfer', function () {
       describe('on sender', function () {
         beforeEach(async function () {

@@ -49,7 +49,6 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         override
         onlyGovernor
     {
-        require(Address.isContract(account) || account == address(0), "Fei: incentivized is not a contract or zero");
         incentiveContract[account] = incentive;
         emit IncentiveContractUpdate(account, incentive);
     }
