@@ -159,13 +159,14 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 
         updateOracle();
 
+        Decimal.D256 memory _peg = peg();
         require(
-            _isBelowPeg(peg()),
+            _isBelowPeg(_peg),
             "EthUniswapPCVController: already at or above peg"
         );
 
         // calculate amount ETH needed to return to peg then swap
-        uint256 amountEth = _getAmountToPegOther();
+        uint256 amountEth = _getAmountToPegOther(feiReserves, ethReserves, _peg);
         _swapEth(amountEth, ethReserves, feiReserves);
     }
 
