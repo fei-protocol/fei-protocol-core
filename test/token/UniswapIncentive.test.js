@@ -652,7 +652,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('partially updates time weight', async function() {
-          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(20030));
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(20010));
           expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });
@@ -712,7 +712,7 @@ describe('UniswapIncentive', function () {
         });
 
         it('partially updates time weight', async function() {
-          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(40061));
+          expect(await this.incentive.getTimeWeight()).to.be.bignumber.equal(new BN(40021));
           expect(await this.incentive.getGrowthRate()).to.be.bignumber.equal(new BN(25000));
           expect(await this.incentive.isTimeWeightActive()).to.be.equal(true);
         });

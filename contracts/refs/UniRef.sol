@@ -183,7 +183,7 @@ abstract contract UniRef is IUniRef, OracleRef {
     ) internal pure returns (Decimal.D256 memory) {
         uint256 k = reserveFei.mul(reserveOther);
         int256 signedReservesFei = reserveFei.toInt256();
-        int256 amountFeiWithFee = amountFei.mul(997).div(1000);
+        int256 amountFeiWithFee = amountFei > 0 ? amountFei.mul(997).div(1000) : amountFei; // buys already have fee factored in on uniswap's other token side
 
         uint256 adjustedReserveFei = signedReservesFei.add(amountFeiWithFee).toUint256();
         uint256 adjustedReserveOther = k / adjustedReserveFei;
