@@ -56,7 +56,7 @@ The mint should only apply if the trade starts below the peg and if the incentiv
 
 The time weight _w_ is a scaling factor utilized to make the incentive mint structured like an auction. The trader willing to accept the lowest mint will execute a buy before the reward gets higher.
 
-The time weight grows linearly at a rate set by governance. Its granularity is 100,000 per block. I.e. a growth rate of 1000 would increment the weight by one unit every 100 blocks. It should only grow while "active" and will only be active when the last trade ended below the peg.
+The time weight grows linearly at a rate of 75/100,000 per block, which equals 1 after approximately 5 hours. It should only grow while "active" and will only be active when the last trade ended below the peg. The rate can be changed by governance. 
 
 Trades should update the time weight as follows:
 
