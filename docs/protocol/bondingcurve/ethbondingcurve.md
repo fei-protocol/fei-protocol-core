@@ -30,6 +30,10 @@ y is the cumulative amount of FEI sold by the bonding curve after the trade and 
 
 The Scale target is 100,000,000 FEI.
 
+**‌**Post-Scale, the Bonding curve sets the exchange rate at $1 + b, where _b_ is a buffer. The buffer is initially set to 1% to allow for variance above $1. Governance can vote to converge b to 0 as the liquidity increases and volatility decreases.
+
+![Price function for FEI/ETH bonding curve post-Scale](../../.gitbook/assets/screen-shot-2021-03-04-at-3.12.28-pm.png)
+
 The oracle used is the [UniswapOracle](https://github.com/fei-protocol/fei-protocol-core/wiki/UniswapOracle).
 
 ## [Access Control](../access-control/) 
