@@ -22,6 +22,6 @@ The bonding curve is currently only available to advanced users and arbitrage bo
 Users can only sell FEI through the FeiRouter
 {% endhint %}
 
-The router is accessible via Fei Protocol UI, with parameters to protect against slippage and bound penalties. Due to a vulnerability in the way direct incentives are calculated on user's balances, all FEI transfers into the pair that don't go through the router or an internal contract are blocked.  
+The router is accessible via Fei Protocol UI, with parameters to protect against slippage and bound penalties.  
 
 
