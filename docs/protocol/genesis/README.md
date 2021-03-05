@@ -19,7 +19,7 @@ The Genesis Group contract is the user entry point for Genesis participation. It
 {% hint style="warning" %}
 Genesis entry is one-way. There is no way to redeem committed ETH, unless the launch fails.
 
-Optional pre-buying of TRIBE is one-way. There is no way to revert back to uncommitted Genesis ETH.
+Optional pre-swapping of TRIBE is one-way. There is no way to revert back to uncommitted Genesis ETH.
 {% endhint %}
 
 {% page-ref page="genesisgroup.md" %}
