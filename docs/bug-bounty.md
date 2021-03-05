@@ -14,7 +14,7 @@ The bug bounty program is focused on its smart contracts and website and the pre
 
 ## All bug submissions must go through Immunefi's bug submission process on the Fei bug bounty page.
 
-"Fei bug bounty page" would then be linked to the page on Immunefi. When you hit the "Submit bug report" button, you will be sent to bugs.immunefi.com which will guide you through the process of creating a bug report.
+The Fei bug bounty page will be linked here when it is launched. When you hit the "Submit bug report" button, you will be sent to bugs.immunefi.com which will guide you through the process of creating a bug report.
 
 **Rewards by threat level**
 
