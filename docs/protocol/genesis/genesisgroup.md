@@ -30,7 +30,7 @@ Genesis allocation formulas:
 
 ![](../../.gitbook/assets/screen-shot-2021-02-14-at-7.32.33-pm.png)
 
-Both the held FGEN and pre-committed balance are used to determine ownership of the Genesis TRIBE. Only the held FGEN is used for determining FEI ownership because the pre-committed FGEN FEI allocation is used to swap for TRIBE. Of the IDO TRIBE allocation, users get the pro-rata percentage of their pre-committed FGEN over all of the pre-committed FGEN.
+Both the held FGEN and pre-converted balance are used to determine ownership of the Genesis TRIBE. Only the held FGEN is used for determining FEI ownership because the pre-converted FGEN FEI allocation is used to swap for TRIBE. Of the IDO TRIBE allocation, users get the pro-rata percentage of their pre-converted FGEN over all of the pre-converted FGEN.
 
 ## Events
 
