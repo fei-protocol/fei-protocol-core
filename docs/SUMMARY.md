@@ -8,7 +8,6 @@
 ## Developers
 
 * [Development Guide](developers/development-guide.md)
-* [TODO](developers/feature-ideas.md)
 
 ## Protocol
 
@@ -33,8 +32,8 @@
   * [BondingCurveOracle](protocol/oracles/bondingcurveoracle.md)
   * [UniswapOracle](protocol/oracles/uniswaporacle.md)
 * [Staking](protocol/staking/README.md)
-  * [Pool](protocol/staking/pool.md)
-  * [FeiPool](protocol/staking/feipool.md)
+  * [FeiRewardsDistributor](protocol/staking/feirewardsdistributor.md)
+  * [FeiStakingRewards](protocol/staking/feistakingrewards.md)
 * [Genesis](protocol/genesis/README.md)
   * [GenesisGroup](protocol/genesis/genesisgroup.md)
   * [IDO](protocol/genesis/ido.md)

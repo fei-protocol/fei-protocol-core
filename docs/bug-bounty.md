@@ -1,3 +1,7 @@
+---
+description: Community engagement incentives
+---
+
 # Bug Bounties
 
 **Program overview**

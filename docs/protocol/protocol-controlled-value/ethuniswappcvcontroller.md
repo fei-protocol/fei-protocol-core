@@ -14,12 +14,16 @@ A contract for moving reweighting Uniswap prices to the peg from a Uniswap PCV D
 
 ### Reweight
 
-Reweights have the goal of returning the Uniswap spot price of an associated PCV Deposit to the peg. The algorithm is as follows:
+Reweights are used to return the Uniswap spot price of an associated PCV Deposit to the peg. The algorithm is as follows:
 
-1. withdraw 90% of the ETH from the UniswapPCVDeposit
+1. withdraw 99% of the ETH from the UniswapPCVDeposit
 2. execute a trade with held ETH to bring the spot price back up to peg
 3. deposit remaining ETH balance back into the Uniswap PCV Deposit
 4. burn excess held FEI
+
+{% hint style="info" %}
+Only 99% is withdrawn because if there are no other LPs there could be rounding errors against dust
+{% endhint %}
 
 ### Reweight eligibility
 
@@ -28,7 +32,7 @@ The reweight is open to a keeper when both of the following conditions are met:
 * the distance from the peg is at least the minimum \(initially 1%\)
 * the [UniswapIncentive](../fei-stablecoin/uniswapincentive.md) contract is at incentive parity
 
-Governor⚖️and Guardian🛡contracts can also force a reweight at any time, or update the minimum distance requirement.
+Governor⚖️and Guardian🛡contracts can force a reweight at any time, or update the minimum distance requirement.
 
 ### Reweight incentives
 
@@ -73,6 +77,14 @@ Change the min distance for a reweight
 | :--- | :--- | :--- |
 | uint256 | \_basisPoints | Minimum reweight amount in basis points \(i.e. 1/10000\) |
 {% endtab %}
+
+{% tab title="ReweightWithdrawBPsUpdate" %}
+Change the amount of PCV withdrawn during a reweight
+
+| type | param | description |
+| :--- | :--- | :--- |
+| uint256 | \_reweightWithdrawBPs | amount of PCV withdrawn for a reweight in basis point terms \(1/10000\). |
+{% endtab %}
 {% endtabs %}
 
 ## Read-Only Functions
@@ -101,6 +113,14 @@ function reweightIncentiveAmount() external returns (uint256);
 
 Returns the amount of FEI received by any keeper who successfully executes a reweight.
 
+### reweightWithdrawBPs
+
+```javascript
+function reweightWithdrawBPs() external returns (uint256);
+```
+
+Returns the amount of PCV withdrawn during a reweight in basis points terms.
+
 ### reweightEligible
 
 ```javascript
@@ -122,7 +142,7 @@ Returns the minimum percent distance from the peg needed for keepers to reweight
 
 ## State-Changing Functions <a id="state-changing-functions"></a>
 
-### Public
+### EOA-Only 👤
 
 #### reweight
 
@@ -134,6 +154,10 @@ Executes a reweight if `reweightEligible.`
 
 Rewards the caller with 500 FEI.
 
+{% hint style="info" %}
+This method is [pausable](../../governance/fei-guardian.md)
+{% endhint %}
+
 ### Governor- Or Guardian-Only⚖️🛡
 
 #### forceReweight
@@ -144,6 +168,8 @@ function forceReweight() external;
 
 Forces a reweight execution. No FEI incentive for doing this. Fails if the Uniswap spot price is already at or above the peg.
 
+### Governor-Only⚖️
+
 #### setReweightMinDistance
 
 ```javascript
@@ -152,7 +178,17 @@ function setReweightMinDistance(uint256 basisPoints) external;
 
 Sets the minimum distance from the peg for a reweight to be eligible to `basisPoints`, measured in basis points \(i.e. 1/10000\).
 
-### Governor-Only⚖️
+emits `ReweightMinDistanceUpdate`
+
+#### setReweightWithdrawBPs
+
+```javascript
+function setReweightWithdrawBPs(uint256 _reweightWithdrawBPs) external;
+```
+
+Sets the percentage of the PCV withdrawn when executing a reweight in terms of basis points
+
+emits `ReweightWithdrawBPsUpdate`
 
 #### setPCVDeposit
 
@@ -162,6 +198,8 @@ function setPCVDeposit(address _pcvDeposit) external;
 
 Sets the target PCV Deposit contract for reweight to `_pcvDeposit`
 
+emits `PCVDepositUpdate`
+
 #### setReweightIncentive
 
 ```javascript
@@ -169,4 +207,6 @@ function setReweightIncentive(uint256 amount) external;
 ```
 
 Sets the keeper incentive for executing a reweight to `amount` of FEI
+
+emits `ReweightIncentiveUpdate`
 

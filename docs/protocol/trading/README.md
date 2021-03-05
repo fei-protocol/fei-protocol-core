@@ -14,7 +14,7 @@ Users can acquire FEI in the following ways:
 * Buying from the [bonding curve](../bondingcurve/ethbondingcurve.md)
 * Buying directly on the ETH/FEI Uniswap pool
 
-The bonding curve is currently only available to advanced users and arbitrage bots. We'll be working on a feature which optimizes the trading price of our UI by going to the bonding curve if it has a better deal. 
+The bonding curve is currently only available to advanced users and arbitrage bots. The Fei Core Team is considering a feature to optimize the trading price of Fei Protocol UI by going to the bonding curve if offers a better deal. 
 
 ## Selling FEI
 
@@ -22,6 +22,6 @@ The bonding curve is currently only available to advanced users and arbitrage bo
 Users can only sell FEI through the FeiRouter
 {% endhint %}
 
-The router is accessible via our UI, where we have parameters to protect against slippage and bound penalties. Due to a vulnerability in the way direct incentives are calculated on user's balances, we have blocked all FEI transfers into the pair that don't go through our router or an internal contract.  
+The router is accessible via Fei Protocol UI, with parameters to protect against slippage and bound penalties.  
 
 

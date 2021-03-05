@@ -6,7 +6,7 @@ description: Supporting contracts for Fei Protocol
 
 ## References
 
-Reference contracts \(refs\) are simply extensions to feature contracts that provide utilities related to a certain functionality. There are 3 reference contracts in Fei Protocol:
+Reference contracts \(refs\) are extensions to feature contracts that provide utilities related to certain functionality. There are 3 reference contracts in Fei Protocol:
 
 {% page-ref page="coreref.md" %}
 

@@ -10,19 +10,19 @@ description: A generic FEI bonding curve
 
 ## Description
 
-An abstract bonding curve for purchasing FEI and routing the purchase asset to PCV.
+An abstract bonding curve for purchasing FEI and routing of the purchased asset to PCV.
 
 The amount of PCV it takes in a purchase transaction to bring the curve to a total amount of FEI issued _T_ is determined by integrating the price function between the current FEI amount issued _C_ by the bonding curve and the target amount _T_ after the transaction. 
 
 ![Amount of PCV out for a purchase](../../.gitbook/assets/screen-shot-2021-02-14-at-3.04.23-pm.png)
 
-The quantity _T-C_ is the amount of FEI received by the transaction. Because _C_ is a known constant, we can solve for _T_ by setting the formula equal to a PCV purchase quantity _Q_ and rearranging terms.
+The quantity _T-C_ is the amount of FEI received by the transaction. Since _C_ is a known constant, we solve for _T_ by setting the formula equal to a PCV purchase quantity _Q_ and rearranging terms.
 
-Once post scale, the price should simply be $1 + _b_  times the peg, where the peg is reported as X per FEI. In the implementation we actually use $1 - _b_ because the peg is inverted so the price relationship is also inverted.
+Post scale, the price should be $1 + _b_  times the peg, where _b_ is the variance buffer and the peg is reported as X per FEI. In the implementation, we use $1 - _b_ because the peg is inverted so the price relationship is also inverted.
 
 ### Allocation
 
-Incoming PCV should be held temporarily to allow for batch transactions via the `allocate()` function. The PCV allocation should be split into a weighted list of PCV deposit contracts, \(see [PCVSplitter](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/pcv/PCVSplitter.sol)\). While allocations can be called at any time, there is a 500 FEI incentive for calling it after each 24 hour window. To determine whether you will receive an incentive, simply call `isTimeEnded()` on the contract. The time until the next incentive is available is `remainingTime()`.
+Incoming PCV is held temporarily to allow for batch transactions via the `allocate()` function. The PCV allocation gets split into a weighted list of PCV deposit contracts, \(see [PCVSplitter](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/pcv/PCVSplitter.sol)\). While allocations can be called at any time, there is a 500 FEI incentive for calling it after each 24 hour window. To determine eligibility for the incentive, simply call `isTimeEnded()` on the contract. The time until the next incentive is available is `remainingTime()`.
 
 {% page-ref page="../references/timed.md" %}
 
@@ -67,6 +67,14 @@ Governance change of Buffer
 | :--- | :--- | :--- |
 | uint256 | \_buffer | new buffer |
 {% endtab %}
+
+{% tab title="IncentiveAmountUpdate" %}
+Changes the FEI reward for calling `allocate()`
+
+| type | param | description |
+| :--- | :--- | :--- |
+| uint256 | \_incentiveAmount | new incentive amount |
+{% endtab %}
 {% endtabs %}
 
 ## Read-Only Functions
@@ -77,28 +85,24 @@ Governance change of Buffer
 function getCurrentPrice() external view returns (Decimal.D256 memory);
 ```
 
-Returns current instantaneous bonding curve price. Price reported as FEI per X with X being the underlying asset. This is analogous to the peg reported by the oracle.
+Returns current instantaneous bonding curve price. The price reported as FEI per X, with X being the underlying asset. This is analogous to the peg reported by the oracle.
 
 {% page-ref page="../oracles/" %}
-
-We understand that this price is of a different character from the one returned by `getAveragePrice(uint256 amountIn)`. We hope it doesn't cause too much confusion.
 
 {% hint style="warning" %}
 Can be inaccurate if outdated, need to call `oracle().isOutdated()` to check
 {% endhint %}
 
-### getAveragePrice
+### getAverageUSDPrice
 
 ```javascript
-function getAveragePrice(uint256 amountIn)
+function getAverageUSDPrice(uint256 amountIn)
     external
     view
     returns (Decimal.D256 memory);
 ```
 
-Return the average price of a transaction of size `amountIn` ETH along bonding curve. The price here is reported as USD per FEI.
-
-We understand that this price is of a different character from the one returned by `getCurrentPrice()`. We hope it doesn't cause too much confusion.
+Returns the average price of a transaction of size `amountIn` ETH along bonding curve. The price here is reported as USD per FEI.
 
 {% hint style="warning" %}
 Can be inaccurate if outdated, need to call `oracle().isOutdated()` to check
@@ -192,6 +196,12 @@ Purchase `amountOut` FEI along the bonding curve for `amountIn` ETH and send the
 
 emits `Purchase`
 
+{% hint style="info" %}
+This method is [pausable](../../governance/fei-guardian.md)
+{% endhint %}
+
+### EOA-Only 👤
+
 #### allocate
 
 ```javascript
@@ -202,7 +212,11 @@ Allocate the PCV held by the bonding curve to the weighted PCV allocations retur
 
 emits `Allocate`
 
-### Governor**- Or Guardian**-Only**⚖️🛡**
+{% hint style="info" %}
+This method is [pausable](../../governance/fei-guardian.md)
+{% endhint %}
+
+### Governor-Only**⚖️**
 
 #### **setBuffer**
 
@@ -214,8 +228,6 @@ Sets the buffer to `_buffer`. Must be less than `BUFFER_GRANULARITY`
 
 emits `BufferUpdate`
 
-### Governor-Only**⚖️**
-
 #### **setScale**
 
 ```javascript
@@ -225,6 +237,26 @@ function setScale(uint256 _scale) external;
 Sets the Scale target to `_scale`
 
 emits `ScaleUpdate`
+
+#### setIncentiveAmount
+
+```javascript
+function setIncentiveAmount(uint256 _incentiveAmount) external;
+```
+
+Sets the `incentiveAmount` to `_incentiveAmount`
+
+emits `IncentiveAmountUpdate`
+
+#### **setIncentiveFrequency**
+
+```javascript
+function setIncentiveFrequency(uint256 _frequency) external;
+```
+
+Sets the [Timed](../references/timed.md) duration to `_frequency`
+
+emits `DurationUpdate`
 
 #### **setAllocation**
 

@@ -6,9 +6,15 @@ description: Protocol changes since the white paper release
 
 ## Pre-Launch - Feb 2021
 
+#### Guardian🛡Role 
+
+The Guardian maintains the ability to revoke roles, and pause certain contracts and methods. It can also force reweights.
+
+{% page-ref page="../governance/fei-guardian.md" %}
+
 #### Thawing
 
-The white paper specification for the Genesis Group doesn’t address the unintended effect that the average price paid is always lower than the "next price" which is the price that is listed on Uniswap. This creates a perverse incentive to participate in the Genesis Group to arbitrage the group. To solve this we have implemented "thawing" where the list price starts at a discount to the average genesis price and slowly thaws up to the target peg.
+The white paper specification for the Genesis Group doesn’t address the unintended effect that the average price paid is always lower than the "next price" which is the price that is listed on Uniswap. This creates a perverse incentive to participate in the Genesis Group to arbitrage the group. To solve this we have implemented "thawing" where the list price of FEI/ETH starts at the average genesis price and thaws up to the target peg over 2 weeks.
 
 {% page-ref page="oracles/" %}
 
@@ -26,13 +32,13 @@ PCV reweights receive a flat reward in FEI rather than the percentage approach m
 
 #### Escape Genesis
 
-In the unlikely event that the GenesisGroup launch function is frozen in a bad state, we’ve added a way to convert FGEN Genesis shares back into ETH. This opens 3 days post Genesis.
+In the unlikely event that the GenesisGroup launch function is frozen in a bad state, we’ve added a way to exit back into ETH. This opens 3 days post Genesis.
 
 {% page-ref page="genesis/" %}
 
-#### Pre-Buy TRIBE
+#### Pre-Swap TRIBE
 
-To mitigate frontrunning of TRIBE in the DEX offering, we allow users to pre-commit a portion of their Genesis Group FEI stake to buy TRIBE. This gives users the ability to participate in the very first TRIBE purchase at the best IDO price.
+To mitigate frontrunning of TRIBE in the DEX offering, we allow users to pre-swap a portion of their Genesis Group FEI stake to buy TRIBE. This gives users the ability to participate in the very first TRIBE purchase at the best IDO price.
 
 {% page-ref page="genesis/" %}
 
@@ -42,15 +48,15 @@ In the white paper, the bonding curve starts at a 0 price and approaches the peg
 
 {% page-ref page="bondingcurve/" %}
 
-#### Restricted Selling
+#### Sell Disincentive \(Burn\) Calculation
 
-In the original implementation, a user could transfer tokens straight from a liquidity pool \(such as a Uniswap LP pool\) into the primary ETH/FEI incentivized pair. In such instance, the LP would subsidize the user's disincentive burn for selling. To mitigate this behavior, we restrict all transfers of FEI into the incentivized pair to only governance allowlisted addresses. The list includes the custom [FeiRouter](trading/feirouter.md).
+The current implementation integrates the burn function from the [white paper](../whitepaper.md) with respect to the distance from the peg.
 
-{% page-ref page="fei-stablecoin/" %}
+{% page-ref page="fei-stablecoin/uniswapincentive.md" %}
 
 #### Router
 
-We added a custom Uniswap router which allows the user to bound their buy rewards or sell penalties when trading on the incentivized uniswap pool.
+A custom Uniswap router that allows the user to bound their buy rewards or sell penalties when trading on the incentivized uniswap pool.
 
 {% page-ref page="trading/" %}
 

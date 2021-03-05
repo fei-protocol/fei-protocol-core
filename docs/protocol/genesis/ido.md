@@ -14,7 +14,7 @@ IDO is an Initial DeFi Offering contract for listing FEI and TRIBE at genesis la
 
 The IDO is deployed by the GenesisGroup contract. The GenesisGroup sets the initial exchange rate. The IDO should hold TRIBE tokens and mint the appropriate amount of FEI to match the given exchange rate. It will then send the TRIBE and FEI to Uniswap where it should be the only LP for the pair.
 
-The LP shares held by the contract vest linearly to the Fei Core Team and investors over a 4 year window from contract creation.
+The LP shares held by the contract timelock linearly to the Fei Core Team and early-backers over a 4 year window from contract creation.
 
 ## [Access Control](../access-control/) 
 

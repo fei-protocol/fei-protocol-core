@@ -10,7 +10,7 @@ description: The Fei USD stablecoin
 
 ## Description
 
-FEI is a normal ERC-20 using the OpenZeppelin ERC-20Burnable code with the following differences:
+FEI is a regular ERC-20 token, based on the OpenZeppelin ERC-20Burnable code with the following modifications:
 
 Minting and burning to any address are uncapped and accessible by any address with the Minter💰and Burner🔥 role, respectively.
 
@@ -18,8 +18,8 @@ At each transfer \(or transferFrom\) the following addresses are checked for a m
 
 * FEI sender
 * FEI receiver
-* FEI operator \(msg.sender\) - usually the same as the sender unless using transferFrom with an approved contract
-* the zero address - representing an incentive to be applied on ALL transfers
+* FEI operator \(msg.sender\) - commonly the same as the sender unless using transferFrom with an approved contract
+* the zero address - represens an incentive to be applied on ALL transfers
 
 If an incentive contract is found, it is called with all of the transfer parameters. Any incentive is applied after the token balances update from the transfer.
 
@@ -101,6 +101,10 @@ function setIncentiveContract(address account, address incentive) external;
 ```
 
 Sets the incentive contract `incentive` for `account`. If `incentive` is the 0 address this functions as an unset.
+
+{% hint style="warning" %}
+Reverts if `account`is not a deployed contract
+{% endhint %}
 
 emits `IncentiveContractUpdate`
 

@@ -10,17 +10,17 @@ description: A LinearTokenTimelock for TRIBE with the ability to sub-delegate lo
 
 ## Description
 
-A token timelock for TRIBE which allows for subdelegation. These are managed by the Fei Core Team to distribute vested TRIBE and voting rights to team members and investors.
+A TRIBE token timelock which allows subdelegation. Managed by the Fei Core Team to distribute vested TRIBE and voting rights to team members and investors.
 
-The contract should receive TRIBE tokens that vest linearly over a 4 year schedule to a beneficiary. 
+The contract receives TRIBE tokens that vest linearly over a 4 year schedule to a beneficiary. 
 
 {% page-ref page="../references/lineartokentimelock.md" %}
 
 ### Sub-Delegation
 
-During this period, any TRIBE even that held in the timelock can be sub delegated to any address. This works because the TimelockedDelegator creates a proxy delegate contract which escrows the TRIBE and sub-delegates. It can then withdraw voting rights at any time. 
+During the elected timelock period, any TRIBE in the timelock can be sub-delegated to any address. The TimelockedDelegator creates a proxy delegate contract which escrows the TRIBE and sub-delegates. It can then withdraw voting rights at any time. 
 
-The beneficiary decides where to delegate and undelegate. All TRIBE held in the timelock that is not sub delegated is delegated to the beneficiary.
+The beneficiary decides where to delegate and undelegate. All TRIBE held in the timelock that is not sub-delegated is delegated to the beneficiary.
 
 ## Events
 

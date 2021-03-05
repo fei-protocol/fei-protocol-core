@@ -14,7 +14,7 @@ OracleRef is an abstract contract which references an oracle. It defines some ba
 
 The contract allows for updating or reading from the oracle. The oracle price is reported as FEI per X where X is some other asset like ETH, USDC, or USD depending on the oracle needs.
 
-It allows a Governor⚖️to change the referenced Oracle
+It allows Governor⚖️to change the referenced Oracle
 
 {% page-ref page="../oracles/" %}
 

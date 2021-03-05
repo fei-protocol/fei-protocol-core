@@ -12,7 +12,7 @@ description: The access control module of Fei Protocol Core
 
 The [access control](./) module of the [Core](core.md) contract. It maintains which roles exist, role admins, and which addresses have which roles.
 
-The contract expands the OpenZeppelin Access Control contract with some Fei Protocol-specific roles and functionality.
+The contract expands the OpenZeppelin Access Control contract with additional Fei Protocol-specific roles and functionality.
 
 {% embed url="https://docs.openzeppelin.com/contracts/3.x/api/access\#AccessControl" %}
 

@@ -12,7 +12,7 @@ description: A Uniswap router for FEI/ETH swaps with incentive boundaries
 
 A router for swapping FEI and ETH
 
-The router implements methods for buying and selling Fei using the UniswapSingleEthRouter with a single added slippage parameter to bound Direct Incentives.
+The router implements methods for buying and selling FEI using the UniswapSingleEthRouter with a single added slippage parameter to bound Direct Incentives.
 
 For the `buyFei` method the `minReward` parameter is the minimum amount of FEI mint the contract should allow without reverting. This is the mint applied by the [UniswapIncentive](https://github.com/fei-protocol/fei-protocol-core/wiki/UniswapIncentive) contract.
 

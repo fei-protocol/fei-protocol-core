@@ -16,6 +16,26 @@ The contract has a duration _d_ denominated in seconds. It has an effective time
 
 When it is initialized, it sets the current block timestamp to _t=0_. The remaining time is _d-t_ and the completion condition is remaining = 0 \(_t=d_\).
 
+## Events
+
+{% tabs %}
+{% tab title="DurationUpdate" %}
+Change in the duration of the timer
+
+| type | param | description |
+| :--- | :--- | :--- |
+| uint256 | \_duration | new duration |
+{% endtab %}
+
+{% tab title="TimerReset" %}
+A reset of the timer
+
+| type | param | description |
+| :--- | :--- | :--- |
+| uint256 | \_startTime | new timer start |
+{% endtab %}
+{% endtabs %}
+
 ## Read-Only Functions
 
 ### isTimeEnded

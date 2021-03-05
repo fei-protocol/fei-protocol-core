@@ -6,13 +6,13 @@ description: A reference to Fei Core
 
 ## Contract
 
-[CoreRef.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/CoreRef.sol) implements [ICoreRef](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/ICoreRef.sol)
+[CoreRef.sol](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/CoreRef.sol) implements [ICoreRef](https://github.com/fei-protocol/fei-protocol-core/blob/master/contracts/refs/ICoreRef.sol), [Pausable](https://docs.openzeppelin.com/contracts/3.x/api/utils#Pausable)
 
 ## Description
 
-CoreRef is an abstract contract which references Core. It defines some basic modifiers and utilities useful for contracts referencing Core.
+CoreRef is an abstract contract which references Core. It defines basic modifiers and utilities useful for contracts referencing Core.
 
-Almost all Fei Protocol contracts should implement the CoreRef contract.
+Most of all Fei Protocol contracts implement the CoreRef contract.
 
 The contract defines modifiers of the following types:
 
@@ -94,4 +94,22 @@ function setCore(address core) external;
 Sets the currently referenced [Fei Core](../access-control/core.md) contract to `core`
 
 emits `CoreUpdate`
+
+### Guardian- Or Governor-Only🛡⚖️
+
+#### pause
+
+```javascript
+function pause() external;
+```
+
+Puts the contract in the paused state which can shut down [pausable](https://docs.openzeppelin.com/contracts/3.x/api/utils#Pausable) external functions
+
+#### unpause
+
+```javascript
+function unpause() external;
+```
+
+Puts the contract in the unpaused state which can reopen [pausable](https://docs.openzeppelin.com/contracts/3.x/api/utils#Pausable) external functions
 

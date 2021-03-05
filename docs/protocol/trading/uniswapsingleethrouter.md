@@ -17,7 +17,7 @@ The router implements only two of the standard [Uniswap router](https://uniswap.
 * `swapExactETHForTokens`
 * `swapExactTokensForETH`
 
-Both have the same standard behavior as the Uniswap router, namely specifying a `amountOutMin` to protect against slippage and a `deadline` to timebox trades
+Both have the same standard behavior as the Uniswap router, specifying a `amountOutMin` to protect against slippage and a `deadline` to timebox trades.
 
 ## State-Changing Functions <a id="state-changing-functions"></a>
 

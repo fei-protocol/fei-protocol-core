@@ -10,7 +10,7 @@ description: A token timelock that releases continuously at the same rate
 
 ## Description
 
-A timelock for releasing tokens over a continuous linear schedule. There is an appointed beneficary who controls the tokens when vested. The beneficiary can set a new one if needed using the offer-accept pattern.
+A timelock for releasing tokens over a continuous linear schedule. There is an appointed beneficiary who controls the tokens when vested. The beneficiary can set a new one if needed using the offer-accept pattern.
 
 ### Release Calculation
 

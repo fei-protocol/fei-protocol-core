@@ -6,11 +6,11 @@ description: 'The fair, scalable issuance mechanism for FEI'
 
 ## Bonding Curves
 
-Bonding curves are price functions for a token which usually take in the current circulating supply as a parameter in the formula. They are generally monotonically increasing, as early adopters should get a better deal than later adopters.
+Bonding curves are price functions for a token that usually take in the current circulating supply as a parameter in the formula. They are generally monotonically increasing, facilitating greater incentives for early adopters.
 
-When coupled with a smart contract, bonding curves can escrow, buy and sell tokens in accordance with the price function. The contract can even take fees for buying and selling as a fundraising mechanism for [Protocol Controlled Value](../protocol-controlled-value/). 
+When coupled with a smart contract, bonding curves can escrow, buy and sell tokens in accordance with the price function. The contract can take fees for buying and selling as a fundraising mechanism for [Protocol Controlled Value](../protocol-controlled-value/). 
 
-Here is a link to a well-done article by Linum Labs with more details:
+Article by Linum Labs with more details:
 
 {% embed url="https://medium.com/linum-labs/intro-to-bonding-curves-and-shapes-bf326bc4e11a" %}
 
@@ -18,7 +18,7 @@ Here is a link to a well-done article by Linum Labs with more details:
 
 ## Fei Protocol Bonding Curves
 
-Fei Protocol's primary issuance mechanism for FEI are bonding curves. These bonding curves can have any parameterization but should follow the below pattern:
+Fei Protocol's primary issuance mechanism for FEI are bonding curves. These bonding curves can have any parameterization but should follow this pattern:
 
 * Use a curve with a desirable growth rate
 * Have a "shift" that determines the starting price
@@ -31,7 +31,7 @@ Fei Protocol's primary issuance mechanism for FEI are bonding curves. These bond
 The Fei Core Team feels strongly that Fei Protocol should only issue bonding curves denominated in decentralized tokens
 {% endhint %}
 
-Fei Protocol bonding curves have some other unique features. Firstly, they are buy-only, which means that purchasers must go elsewhere to sell their FEI. Luckily, the protocol prioritizes PCV liquidity with the assets it receives from the curve. Secondly, the price function is not based on the total circulating supply of FEI but only based on the amount of FEI purchased on that single bonding curve.
+Fei Protocol bonding curves have unique features. They are buy-only, meaning that purchasers must go elsewhere to sell their FEI. The Fei Protocol prioritizes PCV liquidity with the assets it receives from the curve. Additionally, the price function of a bonding curve is not based on the total circulating supply of FEI but only based on the amount of FEI purchased on that specific bonding curve.
 
-Fei Protocol is launching with a single, ETH denominated bonding curve with plans for many more as the protocol scales.
+Fei Protocol is launching with a single, ETH denominated bonding curve with plans for more as the protocol scales.
 
