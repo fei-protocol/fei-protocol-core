@@ -141,11 +141,11 @@ Pre-commit `amount` of FGEN to have the associated Genesis FEI participate in th
 emits `Commit`
 
 {% hint style="info" %}
-`commit`\(\) maps to a "TRIBE pre-buy"
+`commit`\(\) maps to a "TRIBE pre-swap"
 {% endhint %}
 
 {% hint style="warning" %}
-When a user pre-commits, their FGEN is burned. This makes it a one-way action. 
+When a user pre-converts, their FGEN is burned. This makes it a one-way action. 
 {% endhint %}
 
 #### redeem
