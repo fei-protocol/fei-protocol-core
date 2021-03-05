@@ -3,18 +3,16 @@ pragma experimental ABIEncoderV2;
 
 import "../external/Decimal.sol";
 
-/// @title an initial DeFi offering for the TRIBE token
+/// @title IDO interface
 /// @author Fei Protocol
 interface IDOInterface {
+    // ----------- Events -----------
 
-	// ----------- Events -----------
+    event Deploy(uint256 _amountFei, uint256 _amountTribe);
 
-	event Deploy(uint _amountFei, uint _amountTribe);
+    // ----------- Genesis Group only state changing API -----------
 
-	// ----------- Genesis Group only state changing API -----------
+    function deploy(Decimal.D256 calldata feiRatio) external;
 
-    /// @notice deploys all held TRIBE on Uniswap at the given ratio
-    /// @param feiRatio the exchange rate for FEI/TRIBE
-    /// @dev the contract will mint any FEI necessary to do the listing. Assumes no existing LP
-	function deploy(Decimal.D256 calldata feiRatio) external;
+    function swapFei(uint256 amountFei) external returns (uint256);
 }

@@ -1,19 +1,18 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/utils/SafeCast.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 import "./IUniswapIncentive.sol";
 import "../utils/SafeMath32.sol";
 import "../refs/UniRef.sol";
-import "../oracle/IOracle.sol";
 
-/// @title IUniswapIncentive implementation
+/// @title Uniswap trading incentive contract
 /// @author Fei Protocol
+/// @dev incentives are only appplied if the contract is appointed as a Minter or Burner, otherwise skipped
 contract UniswapIncentive is IUniswapIncentive, UniRef {
-	using Decimal for Decimal.D256;
+    using Decimal for Decimal.D256;
     using SafeMath32 for uint32;
-    using SafeCast for uint;
+    using SafeMathCopy for uint256;
 
     struct TimeWeightInfo {
         uint32 blockNo;
@@ -24,6 +23,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
 
     TimeWeightInfo private timeWeightInfo;
 
+    /// @notice the granularity of the time weight and growth rate
     uint32 public constant override TIME_WEIGHT_GRANULARITY = 100_000;
 
     mapping(address => bool) private _exempt;
@@ -33,54 +33,81 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     /// @param _oracle Oracle to reference
     /// @param _pair Uniswap Pair to incentivize
     /// @param _router Uniswap Router
-	constructor(
-        address _core, 
-        address _oracle, 
-        address _pair, 
+    constructor(
+        address _core,
+        address _oracle,
+        address _pair,
         address _router,
         uint32 _growthRate
     ) public UniRef(_core, _pair, _router, _oracle) {
-        _setTimeWeight(0, _growthRate, false);    
+        _setTimeWeight(0, _growthRate, false);
     }
 
     function incentivize(
-    	address sender, 
-    	address receiver, 
-    	address, 
-    	uint amountIn
+        address sender,
+        address receiver,
+        address,
+        uint256 amountIn
     ) external override onlyFei {
+        require(sender != receiver, "UniswapIncentive: cannot send self");
         updateOracle();
 
-    	if (isPair(sender)) {
-    		incentivizeBuy(receiver, amountIn);
-    	}
+        if (_isPair(sender)) {
+            _incentivizeBuy(receiver, amountIn);
+        }
 
-    	if (isPair(receiver)) {
-    		incentivizeSell(sender, amountIn);
-    	}
+        if (_isPair(receiver)) {
+            _incentivizeSell(sender, amountIn);
+        }
     }
 
-    function setExemptAddress(address account, bool isExempt) external override onlyGovernor {
-    	_exempt[account] = isExempt;
+    /// @notice set an address to be exempted from Uniswap trading incentives
+    /// @param account the address to update
+    /// @param isExempt a flag for whether to exempt or unexempt
+    function setExemptAddress(address account, bool isExempt)
+        external
+        override
+        onlyGovernor
+    {
+        _exempt[account] = isExempt;
         emit ExemptAddressUpdate(account, isExempt);
     }
 
-    function setTimeWeightGrowth(uint32 growthRate) external override onlyGovernor {
+    /// @notice set the time weight growth function
+    function setTimeWeightGrowth(uint32 growthRate)
+        external
+        override
+        onlyGovernor
+    {
         TimeWeightInfo memory tw = timeWeightInfo;
-        timeWeightInfo = TimeWeightInfo(tw.blockNo, tw.weight, growthRate, tw.active);
+        timeWeightInfo = TimeWeightInfo(
+            tw.blockNo,
+            tw.weight,
+            growthRate,
+            tw.active
+        );
         emit GrowthRateUpdate(growthRate);
     }
 
-    function setTimeWeight(uint32 weight, uint32 growth, bool active) external override onlyGovernor {
+    /// @notice sets all of the time weight parameters
+    /// @param weight the stored last time weight
+    /// @param growth the growth rate of the time weight per block
+    /// @param active a flag signifying whether the time weight is currently growing or not
+    function setTimeWeight(
+        uint32 weight,
+        uint32 growth,
+        bool active
+    ) external override onlyGovernor {
         _setTimeWeight(weight, growth, active);
-        // TimeWeightInfo memory tw = timeWeightInfo;
-        // timeWeightInfo = TimeWeightInfo(blockNo, tw.weight, tw.growthRate, tw.active);
     }
 
+    /// @notice the growth rate of the time weight per block
     function getGrowthRate() public view override returns (uint32) {
         return timeWeightInfo.growthRate;
     }
 
+    /// @notice the time weight of the current block
+    /// @dev factors in the stored block number and growth rate if active
     function getTimeWeight() public view override returns (uint32) {
         TimeWeightInfo memory tw = timeWeightInfo;
         if (!tw.active) {
@@ -91,160 +118,285 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return tw.weight.add(blockDelta * tw.growthRate);
     }
 
+    /// @notice returns true if time weight is active and growing at the growth rate
     function isTimeWeightActive() public view override returns (bool) {
-    	return timeWeightInfo.active;
+        return timeWeightInfo.active;
     }
 
-    function isExemptAddress(address account) public view override returns (bool) {
-    	return _exempt[account];
+    /// @notice returns true if account is marked as exempt
+    function isExemptAddress(address account)
+        public
+        view
+        override
+        returns (bool)
+    {
+        return _exempt[account];
     }
 
+    /// @notice return true if burn incentive equals mint
     function isIncentiveParity() public view override returns (bool) {
         uint32 weight = getTimeWeight();
-        require(weight != 0, "UniswapIncentive: Incentive zero or not active");
+        if (weight == 0) {
+            return false;
+        }
 
-        (Decimal.D256 memory price,,) = getUniswapPrice();
-        Decimal.D256 memory deviation = calculateDeviation(price, peg());
-        require(!deviation.equals(Decimal.zero()), "UniswapIncentive: Price already at or above peg");
+        (Decimal.D256 memory price, , ) = _getUniswapPrice();
+        Decimal.D256 memory deviation = _deviationBelowPeg(price, peg());
+        if (deviation.equals(Decimal.zero())) {
+            return false;
+        }
 
-        Decimal.D256 memory incentive = calculateBuyIncentiveMultiplier(deviation, weight);
-        Decimal.D256 memory penalty = calculateSellPenaltyMultiplier(deviation);
+        Decimal.D256 memory incentive = _calculateBuyIncentiveMultiplier(deviation, deviation, weight);
+        Decimal.D256 memory penalty = _calculateSellPenaltyMultiplier(deviation);
         return incentive.equals(penalty);
     }
 
-    function getBuyIncentive(uint amount) public view override returns(
-        uint incentive, 
-        uint32 weight,
-        Decimal.D256 memory initialDeviation,
-        Decimal.D256 memory finalDeviation
-    ) {
-        (initialDeviation, finalDeviation) = getPriceDeviations(-1 * int256(amount));
+    /// @notice get the incentive amount of a buy transfer
+    /// @param amount the FEI size of the transfer
+    /// @return incentive the FEI size of the mint incentive
+    /// @return weight the time weight of thhe incentive
+    /// @return _initialDeviation the Decimal deviation from peg before a transfer
+    /// @return _finalDeviation the Decimal deviation from peg after a transfer
+    /// @dev calculated based on a hypothetical buy, applies to any ERC20 FEI transfer from the pool
+    function getBuyIncentive(uint256 amount)
+        public
+        view
+        override
+        returns (
+            uint256 incentive,
+            uint32 weight,
+            Decimal.D256 memory _initialDeviation,
+            Decimal.D256 memory _finalDeviation
+        )
+    {
+        int256 signedAmount = amount.toInt256();
+        // A buy withdraws FEI from uni so use negative amountIn
+        (
+            Decimal.D256 memory initialDeviation, 
+            Decimal.D256 memory finalDeviation, 
+            Decimal.D256 memory peg,
+            uint256 reserveFei,
+            uint256 reserveOther
+        ) = _getPriceDeviations(
+            -1 * signedAmount
+        );
         weight = getTimeWeight();
 
+        // buy started above peg
         if (initialDeviation.equals(Decimal.zero())) {
             return (0, weight, initialDeviation, finalDeviation);
         }
 
-        uint incentivizedAmount = amount;
+        uint256 incentivizedAmount = amount;
+        // if buy ends above peg, only incentivize amount to peg
         if (finalDeviation.equals(Decimal.zero())) {
-            incentivizedAmount = getAmountToPegFei();
+            incentivizedAmount = _getAmountToPegFei(reserveFei, reserveOther, peg);
         }
 
-        Decimal.D256 memory multiplier = calculateBuyIncentiveMultiplier(initialDeviation, weight);
+        Decimal.D256 memory multiplier =
+            _calculateBuyIncentiveMultiplier(initialDeviation, finalDeviation, weight);
         incentive = multiplier.mul(incentivizedAmount).asUint256();
         return (incentive, weight, initialDeviation, finalDeviation);
     }
 
-    function getSellPenalty(uint amount) public view override returns(
-        uint penalty, 
-        Decimal.D256 memory initialDeviation,
-        Decimal.D256 memory finalDeviation
-    ) {
-        (initialDeviation, finalDeviation) = getPriceDeviations(int256(amount));
+    /// @notice get the burn amount of a sell transfer
+    /// @param amount the FEI size of the transfer
+    /// @return penalty the FEI size of the burn incentive
+    /// @return _initialDeviation the Decimal deviation from peg before a transfer
+    /// @return _finalDeviation the Decimal deviation from peg after a transfer
+    /// @dev calculated based on a hypothetical sell, applies to any ERC20 FEI transfer to the pool
+    function getSellPenalty(uint256 amount)
+        public
+        view
+        override
+        returns (
+            uint256 penalty,
+            Decimal.D256 memory _initialDeviation,
+            Decimal.D256 memory _finalDeviation
+        )
+    {
+        int256 signedAmount = amount.toInt256();
+        
+        (
+            Decimal.D256 memory initialDeviation, 
+            Decimal.D256 memory finalDeviation, 
+            Decimal.D256 memory peg,
+            uint256 reserveFei,
+            uint256 reserveOther
+        ) = _getPriceDeviations(signedAmount);
 
+        // if trafe ends above peg, it was always above peg and no penalty needed
         if (finalDeviation.equals(Decimal.zero())) {
             return (0, initialDeviation, finalDeviation);
         }
 
-        uint incentivizedAmount = amount;
+        uint256 incentivizedAmount = amount;
+        // if trade started above but ended below, only penalize amount going below peg
         if (initialDeviation.equals(Decimal.zero())) {
-            uint amountToPeg = getAmountToPegFei();
-            require(amount >= amountToPeg, "UniswapIncentive: Underflow");
-            incentivizedAmount = amount - amountToPeg;
+            uint256 amountToPeg = _getAmountToPegFei(reserveFei, reserveOther, peg);
+            incentivizedAmount = amount.sub(
+                amountToPeg,
+                "UniswapIncentive: Underflow"
+            );
         }
 
-        Decimal.D256 memory multiplier = calculateSellPenaltyMultiplier(finalDeviation); 
-        penalty = multiplier.mul(incentivizedAmount).asUint256(); 
-        return (penalty, initialDeviation, finalDeviation);   
+        Decimal.D256 memory multiplier =
+            _calculateIntegratedSellPenaltyMultiplier(initialDeviation, finalDeviation);
+        penalty = multiplier.mul(incentivizedAmount).asUint256();
+        return (penalty, initialDeviation, finalDeviation);
     }
 
-    function incentivizeBuy(address target, uint amountIn) internal ifMinterSelf {
-    	if (isExemptAddress(target)) {
-    		return;
-    	}
+    function _incentivizeBuy(address target, uint256 amountIn)
+        internal
+        ifMinterSelf
+    {
+        if (isExemptAddress(target)) {
+            return;
+        }
 
-        (uint incentive, uint32 weight,
-        Decimal.D256 memory initialDeviation, 
-        Decimal.D256 memory finalDeviation) = getBuyIncentive(amountIn);
+        (
+            uint256 incentive,
+            uint32 weight,
+            Decimal.D256 memory initialDeviation,
+            Decimal.D256 memory finalDeviation
+        ) = getBuyIncentive(amountIn);
 
-        updateTimeWeight(initialDeviation, finalDeviation, weight);
+        _updateTimeWeight(initialDeviation, finalDeviation, weight);
         if (incentive != 0) {
-            fei().mint(target, incentive);         
+            fei().mint(target, incentive);
         }
     }
 
-    function incentivizeSell(address target, uint amount) internal ifBurnerSelf {
-    	if (isExemptAddress(target)) {
-    		return;
-    	}
+    function _incentivizeSell(address target, uint256 amount)
+        internal
+        ifBurnerSelf
+    {
+        if (isExemptAddress(target)) {
+            return;
+        }
 
-        (uint penalty, Decimal.D256 memory initialDeviation,
-        Decimal.D256 memory finalDeviation) = getSellPenalty(amount);
+        (
+            uint256 penalty,
+            Decimal.D256 memory initialDeviation,
+            Decimal.D256 memory finalDeviation
+        ) = getSellPenalty(amount);
 
         uint32 weight = getTimeWeight();
-        updateTimeWeight(initialDeviation, finalDeviation, weight);
+        _updateTimeWeight(initialDeviation, finalDeviation, weight);
 
         if (penalty != 0) {
-            fei().burnFrom(target, penalty);
+            require(penalty < amount, "UniswapIncentive: Burn exceeds trade size");
+            fei().burnFrom(address(pair), penalty); // burn from the recipient which is the pair
         }
     }
 
-    function calculateBuyIncentiveMultiplier(
-        Decimal.D256 memory deviation,
+    function _calculateBuyIncentiveMultiplier(
+        Decimal.D256 memory initialDeviation,
+        Decimal.D256 memory finalDeviation,
         uint32 weight
     ) internal pure returns (Decimal.D256 memory) {
-        Decimal.D256 memory correspondingPenalty = calculateSellPenaltyMultiplier(deviation);
-        Decimal.D256 memory buyMultiplier = deviation.mul(uint(weight)).div(uint(TIME_WEIGHT_GRANULARITY));
-        
+        Decimal.D256 memory correspondingPenalty =
+            _calculateIntegratedSellPenaltyMultiplier(finalDeviation, initialDeviation); // flip direction
+        Decimal.D256 memory buyMultiplier =
+            initialDeviation.mul(uint256(weight)).div(
+                uint256(TIME_WEIGHT_GRANULARITY)
+            );
+
         if (correspondingPenalty.lessThan(buyMultiplier)) {
             return correspondingPenalty;
         }
-        
+
         return buyMultiplier;
     }
 
-    function calculateSellPenaltyMultiplier(
-        Decimal.D256 memory deviation
-    ) internal pure returns (Decimal.D256 memory) {
-        return deviation.mul(deviation).mul(100); // m^2 * 100
+    // The sell penalty smoothed over the curve
+    function _calculateIntegratedSellPenaltyMultiplier(Decimal.D256 memory initialDeviation, Decimal.D256 memory finalDeviation)
+        internal
+        pure
+        returns (Decimal.D256 memory)
+    {
+        if (initialDeviation.equals(finalDeviation)) {
+            return _calculateSellPenaltyMultiplier(initialDeviation);
+        }
+        Decimal.D256 memory numerator = _sellPenaltyBound(finalDeviation).sub(_sellPenaltyBound(initialDeviation));
+        Decimal.D256 memory denominator = finalDeviation.sub(initialDeviation);
+
+        Decimal.D256 memory multiplier = numerator.div(denominator);
+        if (multiplier.greaterThan(Decimal.one())) {
+            return Decimal.one();
+        }
+        return multiplier;
     }
 
-    function updateTimeWeight (
-        Decimal.D256 memory initialDeviation, 
-        Decimal.D256 memory finalDeviation, 
+    function _sellPenaltyBound(Decimal.D256 memory deviation)         
+        internal
+        pure
+        returns (Decimal.D256 memory)
+    {
+        return deviation.pow(3).mul(33);
+    }
+
+    function _calculateSellPenaltyMultiplier(Decimal.D256 memory deviation)
+        internal
+        pure
+        returns (Decimal.D256 memory)
+    {
+        Decimal.D256 memory multiplier = deviation.mul(deviation).mul(100); // m^2 * 100
+        if (multiplier.greaterThan(Decimal.one())) {
+            return Decimal.one();
+        }
+        return multiplier;
+    }
+
+    function _updateTimeWeight(
+        Decimal.D256 memory initialDeviation,
+        Decimal.D256 memory finalDeviation,
         uint32 currentWeight
     ) internal {
-        // Reset after completion
+        // Reset when trade ends above peg
         if (finalDeviation.equals(Decimal.zero())) {
             _setTimeWeight(0, getGrowthRate(), false);
             return;
-        } 
-        // Init
+        }
+        // when trade starts above peg but ends below, activate time weight
         if (initialDeviation.equals(Decimal.zero())) {
             _setTimeWeight(0, getGrowthRate(), true);
             return;
         }
 
-        uint updatedWeight = uint(currentWeight);
-        // Partial buy
+        // when trade starts and ends below the peg, update the values
+        uint256 updatedWeight = uint256(currentWeight);
+        // Partial buy should update time weight
         if (initialDeviation.greaterThan(finalDeviation)) {
-            Decimal.D256 memory remainingRatio = finalDeviation.div(initialDeviation);
-            updatedWeight = remainingRatio.mul(uint(currentWeight)).asUint256();
+            Decimal.D256 memory remainingRatio =
+                finalDeviation.div(initialDeviation);
+            updatedWeight = remainingRatio
+                .mul(uint256(currentWeight))
+                .asUint256();
         }
-        
-        uint maxWeight = finalDeviation.mul(100).mul(uint(TIME_WEIGHT_GRANULARITY)).asUint256(); // m^2*100 (sell) = t*m (buy) 
+
+        // cap incentive at max penalty
+        uint256 maxWeight =
+            finalDeviation
+                .mul(100)
+                .mul(uint256(TIME_WEIGHT_GRANULARITY))
+                .asUint256(); // m^2*100 (sell) = t*m (buy)
         updatedWeight = Math.min(updatedWeight, maxWeight);
         _setTimeWeight(updatedWeight.toUint32(), getGrowthRate(), true);
     }
 
-    function _setTimeWeight(uint32 weight, uint32 growthRate, bool active) internal {
+    function _setTimeWeight(
+        uint32 weight,
+        uint32 growthRate,
+        bool active
+    ) internal {
         uint32 currentGrowth = getGrowthRate();
 
         uint32 blockNo = block.number.toUint32();
 
         timeWeightInfo = TimeWeightInfo(blockNo, weight, growthRate, active);
 
-        emit TimeWeightUpdate(weight, active);   
+        emit TimeWeightUpdate(weight, active);
         if (currentGrowth != growthRate) {
             emit GrowthRateUpdate(growthRate);
         }

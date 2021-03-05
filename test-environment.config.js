@@ -1,6 +1,7 @@
 module.exports = {
   accounts: {
     ether: 1e6,
+    amount: 13, // Number of unlocked accounts
   },
 
   contracts: {

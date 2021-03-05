@@ -26,15 +26,15 @@ contract MockBondingCurve {
 		allocated = true;
 	}
 
-	function purchase(address to, uint amount) public payable returns (uint256 amountOut) {
+	function purchase(address, uint) public payable returns (uint256 amountOut) {
 		return 1;
 	}
 
-	function getAmountOut(uint amount) public view returns(uint) {
+	function getAmountOut(uint amount) public pure returns(uint) {
 		return 10 * amount;
 	}
 
-	function getAveragePrice(uint256 amountIn) public view returns (Decimal.D256 memory) {
+	function getAverageUSDPrice(uint256 ) public view returns (Decimal.D256 memory) {
 		return getCurrentPrice;
 	}
 }

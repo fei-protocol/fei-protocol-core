@@ -6,18 +6,33 @@ import "../refs/CoreRef.sol";
 
 contract MockIncentive is IIncentive, CoreRef {
 
-	constructor(address core) 
+	constructor(address core) public
 		CoreRef(core)
-	public {}
+	{}
 
     uint256 constant private INCENTIVE = 100;
+	bool public isMint = true;
+	bool public incentivizeRecipient;
 
     function incentivize(
     	address sender, 
-    	address receiver, 
-    	address spender, 
-    	uint256 amountIn
-    ) public override {
-        fei().mint(sender, INCENTIVE);
+    	address recipient, 
+    	address, 
+    	uint256
+    ) public override virtual {
+		if (isMint) {
+			address target = incentivizeRecipient ? recipient : sender;
+        	fei().mint(target, INCENTIVE);
+		} else {
+			fei().burnFrom(recipient, INCENTIVE);
+		}
     }
+
+	function setIsMint(bool _isMint) public {
+		isMint = _isMint;
+	}
+
+	function setIncentivizeRecipient(bool _incentivizeRecipient) public {
+		incentivizeRecipient = _incentivizeRecipient;
+	}
 }

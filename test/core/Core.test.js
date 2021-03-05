@@ -1,32 +1,36 @@
-const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
-const { accounts, contract } = require('@openzeppelin/test-environment');
-
-const { BN, expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers');
-const { expect } = require('chai');
-
-const MockCoreRef = contract.fromArtifact('MockCoreRef');
-const Core = contract.fromArtifact('Core');
-const Tribe = contract.fromArtifact('Tribe');
+const {
+	userAddress,
+	minterAddress,
+	burnerAddress,
+	pcvControllerAddress,
+	governorAddress,
+	genesisGroup,
+	guardianAddress,
+	BN,
+	expectEvent,
+	expectRevert,
+	expect,
+	MockCoreRef,
+	Tribe,
+	getCore
+  } = require('../helpers');
 
 describe('Core', function () {
-  const [ userAddress, minterAddress, burnerAddress, governorAddress, pcvControllerAddress, genesisGroup, revokeAddress ] = accounts;
 
   beforeEach(async function () {
-    this.core = await Core.new({from: governorAddress});
+    this.core = await getCore(false);
+    
     this.tribe = await Tribe.at(await this.core.tribe());
     this.coreRef = await MockCoreRef.new(this.core.address);
-    await this.core.grantMinter(minterAddress, {from: governorAddress});
-    await this.core.grantBurner(burnerAddress, {from: governorAddress});
-    await this.core.grantPCVController(pcvControllerAddress, {from: governorAddress});
-    await this.core.grantRevoker(revokeAddress, {from: governorAddress});
+
     this.minterRole = await this.core.MINTER_ROLE();
     this.burnerRole = await this.core.BURNER_ROLE();
     this.governorRole = await this.core.GOVERN_ROLE();
     this.pcvControllerRole = await this.core.PCV_CONTROLLER_ROLE();
-    this.revokeRole = await this.core.REVOKE_ROLE();
+    this.guardianRole = await this.core.GUARDIAN_ROLE();
   });
 
-  describe('Allocation', function() {
+  describe('Allocate Tribe', function() {
     it('updates', async function() {
       expectEvent(
         await this.core.allocateTribe(userAddress, 1000, {from: governorAddress}),
@@ -38,6 +42,15 @@ describe('Core', function () {
       );
       expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal('1000');
     });
+
+    it('not enough reverts', async function() {
+      let amount = await this.tribe.balanceOf(this.core.address);
+      await expectRevert(this.core.allocateTribe(userAddress, amount.add(new BN('1')), {from: governorAddress}), "Core: Not enough Tribe");
+	});
+	
+	it('non governor reverts', async function() {
+		await expectRevert(this.core.allocateTribe(userAddress, '1000', {from: userAddress}), "Permissions: Caller is not a governor");
+	});
   });
 
   describe('Fei Update', function() {
@@ -50,13 +63,40 @@ describe('Core', function () {
         }
       );
       expect(await this.core.fei()).to.be.equal(userAddress);
-    });
+	});
+	
+	it('non governor reverts', async function() {
+		await expectRevert(this.core.setFei(userAddress, {from: userAddress}), "Permissions: Caller is not a governor");
+	});
+  });
+
+  describe('Tribe Update', function() {
+    it('updates', async function() {
+      expectEvent(
+        await this.core.setTribe(userAddress, {from: governorAddress}),
+        'TribeUpdate',
+        {
+          _tribe : userAddress
+        }
+      );
+      expect(await this.core.tribe()).to.be.equal(userAddress);
+	});
+	
+	it('non governor reverts', async function() {
+		await expectRevert(this.core.setTribe(userAddress, {from: userAddress}), "Permissions: Caller is not a governor");
+	});
   });
 
   describe('Genesis', function() {
     describe('Genesis Group', function() {
       it('governor set succeeds', async function() {
-        await this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
+		expectEvent(
+			await this.core.setGenesisGroup(genesisGroup, {from: governorAddress}),
+			'GenesisGroupUpdate',
+			{
+			  _genesisGroup : genesisGroup
+			}
+		);
         expect(await this.core.genesisGroup()).to.be.equal(genesisGroup);
       });
 
@@ -86,7 +126,8 @@ describe('Core', function () {
             await this.core.completeGenesisGroup({from: genesisGroup}),
             'GenesisPeriodComplete',
             {}
-          );
+		  );
+		  expect(await this.core.hasGenesisGroupCompleted()).to.be.equal(true);
         });
         it('postGenesis succeeds', async function() {
           await this.coreRef.testPostGenesis();
@@ -377,87 +418,90 @@ describe('Core', function () {
   	});
   });
 
-  describe('Revoker', function () {
+  describe('Guardian', function () {
     describe('Role', function () {
       describe('Has access', function () {
         it('is registered in core', async function() {
-          expect(await this.core.isRevoker(revokeAddress)).to.be.equal(true);
+          expect(await this.core.isGuardian(guardianAddress)).to.be.equal(true);
         });
       });
       describe('Access revoked', function () {
         beforeEach(async function() {
-          await this.core.revokeRevoker(revokeAddress, {from: governorAddress});
+          await this.core.revokeGuardian(guardianAddress, {from: governorAddress});
         });
 
         it('is not registered in core', async function() {
-          expect(await this.core.isRevoker(revokeAddress)).to.be.equal(false);
+          expect(await this.core.isGuardian(guardianAddress)).to.be.equal(false);
         });
       });
       describe('Access renounced', function() {
         beforeEach(async function() {
-          await this.core.renounceRole(this.revokeRole, revokeAddress, {from: revokeAddress});
+          await this.core.renounceRole(this.guardianRole, guardianAddress, {from: guardianAddress});
         });
 
         it('is not registered in core', async function() {
-          expect(await this.core.isRevoker(revokeAddress)).to.be.equal(false);
+          expect(await this.core.isGuardian(guardianAddress)).to.be.equal(false);
         });
       });
       describe('Member Count', function() {
         it('is one', async function() {
-          expect(await this.core.getRoleMemberCount(this.revokeRole)).to.be.bignumber.equal(new BN(1));
+          expect(await this.core.getRoleMemberCount(this.guardianRole)).to.be.bignumber.equal(new BN(1));
         });
         it('updates to two', async function() {
-          await this.core.grantRevoker(userAddress, {from: governorAddress});
-          expect(await this.core.getRoleMemberCount(this.revokeRole)).to.be.bignumber.equal(new BN(2));
+          await this.core.grantGuardian(userAddress, {from: governorAddress});
+          expect(await this.core.getRoleMemberCount(this.guardianRole)).to.be.bignumber.equal(new BN(2));
         });
       });
       describe('Admin', function() {
         it('is governor', async function() {
-          expect(await this.core.getRoleAdmin(this.revokeRole)).to.be.equal(this.governorRole);
+          expect(await this.core.getRoleAdmin(this.guardianRole)).to.be.equal(this.governorRole);
         });
       });
     });
     describe('Access', function () {
       it('onlyMinter reverts', async function() {
-        await expectRevert(this.coreRef.testMinter({from: revokeAddress}), "CoreRef: Caller is not a minter");
+        await expectRevert(this.coreRef.testMinter({from: guardianAddress}), "CoreRef: Caller is not a minter");
       });
 
       it('onlyBurner reverts', async function() {
-        await expectRevert(this.coreRef.testBurner({from: revokeAddress}), "CoreRef: Caller is not a burner");
+        await expectRevert(this.coreRef.testBurner({from: guardianAddress}), "CoreRef: Caller is not a burner");
       });
 
       it('onlyGovernor reverts', async function() {
-        await expectRevert(this.coreRef.testGovernor({from: revokeAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.coreRef.testGovernor({from: guardianAddress}), "CoreRef: Caller is not a governor");
       });
 
       it('onlyPCVController reverts', async function() {
-        await expectRevert(this.coreRef.testPCVController({from: revokeAddress}), "CoreRef: Caller is not a PCV controller");
+        await expectRevert(this.coreRef.testPCVController({from: guardianAddress}), "CoreRef: Caller is not a PCV controller");
       });
     });
 
     describe('Access Control', function () {
-      describe('Minter', function() {
-        it('can revoke', async function() {
-          await this.core.revokeOverride(this.minterRole, minterAddress, {from: revokeAddress});
+      describe('Non-Guardian', function() {
+        it('cannot revoke', async function() {
+          await expectRevert(this.core.revokeOverride(this.minterRole, minterAddress, {from: userAddress}), "Permissions: Caller is not a guardian");
+        });
+      });
+
+      describe('Guardian', function() {
+        it('can revoke minter', async function() {
+          await this.core.revokeOverride(this.minterRole, minterAddress, {from: guardianAddress});
           expect(await this.core.isMinter(minterAddress)).to.be.equal(false);
         });
-      });
-      describe('Burner', function() {
-        it('can revoke', async function() {
-          await this.core.revokeOverride(this.burnerRole, burnerAddress, {from: revokeAddress});
+
+        it('can revoke burner', async function() {
+          await this.core.revokeOverride(this.burnerRole, burnerAddress, {from: guardianAddress});
           expect(await this.core.isBurner(burnerAddress)).to.be.equal(false);
         });
-      });
-      describe('PCV Controller', function() {
-        it('can revoke', async function() {
-          await this.core.revokeOverride(this.pcvControllerRole, pcvControllerAddress, {from: revokeAddress});
+
+        it('can revoke pcv controller', async function() {
+          await this.core.revokeOverride(this.pcvControllerRole, pcvControllerAddress, {from: guardianAddress});
           expect(await this.core.isPCVController(pcvControllerAddress)).to.be.equal(false);
         });
-      });
-      describe('Governor', function() {
-        it('can revoke', async function() {
-          await this.core.revokeOverride(this.governorRole, governorAddress, {from: revokeAddress});
-          expect(await this.core.isGovernor(governorAddress)).to.be.equal(false);
+
+        it('cannot revoke governor', async function() {
+          await expectRevert(this.core.revokeOverride(this.governorRole, governorAddress, {from: guardianAddress}), "Permissions: Guardian cannot revoke governor");
+          expect(await this.core.isGovernor(governorAddress)).to.be.equal(true);
         });
       });
     });

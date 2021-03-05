@@ -13,7 +13,7 @@ contract MockEthUniswapPCVDeposit is MockEthPCVDeposit {
         pair = _pair;
     }
 
-    fallback() external payable {
+    receive() external payable {
 
     }
 }

@@ -1,58 +1,106 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Permissions.sol";
 import "./ICore.sol";
-import "../token/IFei.sol";
 import "../token/Fei.sol";
 import "../dao/Tribe.sol";
 
-/// @title ICore implementation
+/// @title Source of truth for Fei Protocol
 /// @author Fei Protocol
+/// @notice maintains roles, access control, fei, tribe, genesisGroup, and the TRIBE treasury
 contract Core is ICore, Permissions {
 
-	IFei public override fei;
-	IERC20 public override tribe;
+    /// @notice the address of the FEI contract
+    IFei public override fei;
+    
+    /// @notice the address of the TRIBE contract
+    IERC20 public override tribe;
 
-	address public override genesisGroup;
-	bool public override hasGenesisGroupCompleted;
+    /// @notice the address of the GenesisGroup contract
+    address public override genesisGroup;
+    /// @notice determines whether in genesis period or not
+    bool public override hasGenesisGroupCompleted;
 
-	constructor() public {
-		_setupGovernor(msg.sender);
-		Fei _fei = new Fei(address(this));
-		fei = IFei(address(_fei));
+    constructor() public {
+        _setupGovernor(msg.sender);
+    }
 
-		Tribe _tribe = new Tribe(address(this), msg.sender);
-		tribe = IERC20(address(_tribe));
-	}
+    function init() external onlyGovernor {
+        Fei _fei = new Fei(address(this));
+        _setFei(address(_fei));
 
-	function setFei(address token) external override onlyGovernor {
-		fei = IFei(token);
-		emit FeiUpdate(token);
-	}
+        Tribe _tribe = new Tribe(address(this), msg.sender);
+        _setTribe(address(_tribe));
+    }
 
-	function setGenesisGroup(address _genesisGroup) external override onlyGovernor {
-		genesisGroup = _genesisGroup;
-	}
+    /// @notice sets Fei address to a new address
+    /// @param token new fei address
+    function setFei(address token) external override onlyGovernor {
+        _setFei(token);
+    }
 
-	function allocateTribe(address to, uint amount) external override onlyGovernor {
-		IERC20 _tribe = tribe;
-		require(_tribe.balanceOf(address(this)) > amount, "Core: Not enough Tribe");
+    /// @notice sets Tribe address to a new address
+    /// @param token new tribe address
+    function setTribe(address token) external override onlyGovernor {
+        _setTribe(token);
+    }
 
-		_tribe.transfer(to, amount);
+    /// @notice sets Genesis Group address
+    /// @param _genesisGroup new genesis group address
+    function setGenesisGroup(address _genesisGroup)
+        external
+        override
+        onlyGovernor
+    {
+        genesisGroup = _genesisGroup;
+        emit GenesisGroupUpdate(_genesisGroup);
+    }
 
-		emit TribeAllocation(to, amount);
-	}
+    /// @notice sends TRIBE tokens from treasury to an address
+    /// @param to the address to send TRIBE to
+    /// @param amount the amount of TRIBE to send
+    function allocateTribe(address to, uint256 amount)
+        external
+        override
+        onlyGovernor
+    {
+        IERC20 _tribe = tribe;
+        require(
+            _tribe.balanceOf(address(this)) >= amount,
+            "Core: Not enough Tribe"
+        );
 
-	function completeGenesisGroup() external override {
-		require(!hasGenesisGroupCompleted, "Core: Genesis Group already complete");
-		require(msg.sender == genesisGroup, "Core: Caller is not Genesis Group");
+        _tribe.transfer(to, amount);
 
-		hasGenesisGroupCompleted = true;
+        emit TribeAllocation(to, amount);
+    }
 
-		// solhint-disable-next-line not-rely-on-time
-		emit GenesisPeriodComplete(now);
-	}
+    /// @notice marks the end of the genesis period
+    /// @dev can only be called once
+    function completeGenesisGroup() external override {
+        require(
+            !hasGenesisGroupCompleted,
+            "Core: Genesis Group already complete"
+        );
+        require(
+            msg.sender == genesisGroup,
+            "Core: Caller is not Genesis Group"
+        );
+
+        hasGenesisGroupCompleted = true;
+
+        // solhint-disable-next-line not-rely-on-time
+        emit GenesisPeriodComplete(block.timestamp);
+    }
+
+    function _setFei(address token) internal {
+        fei = IFei(token);
+        emit FeiUpdate(token);
+    }
+
+    function _setTribe(address token) internal {
+        tribe = IERC20(token);
+        emit TribeUpdate(token);
+    }
 }
-

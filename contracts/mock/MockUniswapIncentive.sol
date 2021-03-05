@@ -2,14 +2,27 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./MockIncentive.sol";
+import "../external/Decimal.sol";
 
 contract MockUniswapIncentive is MockIncentive {
 
-	constructor(address core) 
+	constructor(address core) public
 		MockIncentive(core)
-	public {}
+	{}
 
-    bool isParity = false;
+    bool public isParity = false;
+    bool public isExempt = false;
+
+    function incentivize(
+    	address sender, 
+    	address recipient, 
+    	address, 
+    	uint256
+    ) public override {
+        if (!isExempt) {
+            super.incentivize(sender, recipient, address(0), 0);
+        }
+    }
 
     function isIncentiveParity() external view returns (bool) {
         return isParity;
@@ -19,5 +32,32 @@ contract MockUniswapIncentive is MockIncentive {
         isParity = _isParity;
     }
 
-    function setExemptAddress(address account, bool isExempt) external {}
+    function isExemptAddress(address) public view returns (bool) {
+        return isExempt;
+    }
+
+    function setExempt(bool exempt) public {
+        isExempt = exempt;
+    }
+
+    function updateOracle() external pure returns(bool) {
+        return true;
+    }
+
+    function setExemptAddress(address account, bool _isExempt) external {}
+
+    function getBuyIncentive(uint amount) external pure returns(uint,        
+        uint32 weight,
+        Decimal.D256 memory initialDeviation,
+        Decimal.D256 memory finalDeviation
+    ) {
+        return (amount * 10 / 100, weight, initialDeviation, finalDeviation);
+    }
+
+    function getSellPenalty(uint amount) external pure returns(uint,    
+        Decimal.D256 memory initialDeviation,
+        Decimal.D256 memory finalDeviation) 
+    {
+        return (amount * 10 / 100, initialDeviation, finalDeviation);
+    }
 }

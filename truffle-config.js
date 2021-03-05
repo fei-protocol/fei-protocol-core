@@ -18,11 +18,12 @@
  *
  */
 
-// const HDWalletProvider = require('@truffle/hdwallet-provider');
-// const infuraKey = "fj4jll3k.....";
-//
-// const fs = require('fs');
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
+const PrivateKeyProvider = require('truffle-privatekey-provider');
+const HDWalletProvider = require("@truffle/hdwallet-provider");
+const privateKey = process.env.ETH_PRIVATE_KEY;
+const ropstenPrivateKey = process.env.ROPSTEN_PRIVATE_KEY;
+const ropstenAlchemyApiKey = process.env.ROPSTEN_ALCHEMY_API_KEY;
+const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
 
 module.exports = {
   /**
@@ -58,40 +59,30 @@ module.exports = {
      network_id: "5777",       // Any network (default: none)
     },
 
-    graph: {
-      host: "0.0.0.0",
-      gas: 8e6,
-      port: 8545,
-      network_id: "*",
+    ropsten: {
+      provider: () => new PrivateKeyProvider(ropstenPrivateKey, `https://eth-ropsten.alchemyapi.io/v2/${ropstenAlchemyApiKey}`),
+      network_id: 3,       // Ropsten's id
+      networkCheckTimeout: 1000000000,
+      gas: 5500000,        // Ropsten has a lower block limit than mainnet
+      gasPrice: 4000000000, // 4 gwei
+      confirmations: 1,    // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 50000,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     },
 
-    // Another network with more advanced options...
-    // advanced: {
-      // port: 8777,             // Custom port
-      // network_id: 1342,       // Custom network
-      // gas: 8500000,           // Gas sent with each transaction (default: ~6700000)
-      // gasPrice: 20000000000,  // 20 gwei (in wei) (default: 100 gwei)
-      // from: <address>,        // Account to send txs from (default: accounts[0])
-      // websockets: true        // Enable EventEmitter interface for web3 (default: false)
-    // },
-
-    // Useful for deploying to a public network.
-    // NB: It's important to wrap the provider as a function.
-    // ropsten: {
-      // provider: () => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/YOUR-PROJECT-ID`),
-      // network_id: 3,       // Ropsten's id
-      // gas: 5500000,        // Ropsten has a lower block limit than mainnet
-      // confirmations: 2,    // # of confs to wait between deployments. (default: 0)
-      // timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
-      // skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
-    // },
-
-    // Useful for private networks
-    // private: {
-      // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
-      // network_id: 2111,   // This network is yours, in the cloud.
-      // production: true    // Treats this network as if it was a public net. (default: false)
-    // }
+    mainnet: {
+      provider: () => new HDWalletProvider({
+        privateKeys: [privateKey], 
+        providerOrUrl: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`
+      }),
+      network_id: 1,       // Ropsten's id
+      networkCheckTimeout: 1000000000,
+      gas: 2000000,        // Ropsten has a lower block limit than mainnet
+      gasPrice: 100000000000, // 100 gwei
+      confirmations: 1,    // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 50000,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    },
   },
 
   // Set default mocha options here, use special reporters etc.
