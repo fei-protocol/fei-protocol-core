@@ -184,7 +184,7 @@ Launching is only open at the end of the Genesis Period. The following actions h
 * Allocate bonding curve ETH to the PCV deposit
 * Initialize the FEI/TRIBE staking pool
 * Deploy the IDO FEI/TRIBE funds to Uniswap.
-* Execute the swap of FEI for pre-buying TRIBE on the IDO
+* Execute the swap of FEI for pre-swappingTRIBE on the IDO
 
 emits `Launch`
 
