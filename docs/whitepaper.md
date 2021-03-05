@@ -4,7 +4,7 @@ description: The Fei Protocol white paper
 
 # White Paper
 
-The Fei Protocol white paper is a static document explaining the concept and inspiration for v1 of the protocol. We have only fixed a few typos found by the community.
+The Fei Protocol white paper is a static document explaining the concept and inspiration for v1 of the protocol.
 
 White Paper:
 

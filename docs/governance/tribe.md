@@ -25,7 +25,7 @@ High-level TRIBE distribution:
 * 13% Fei Core Team
 * 10% Genesis Group
 * 10% Staking Rewards
-* 5% Early-backers
+* 5% Fei Core Team investors
 * 2% Grants
 
 Medium announcement provides more details regarding the distribution.

@@ -8,6 +8,7 @@
 ## Developers
 
 * [Development Guide](developers/development-guide.md)
+* [Testing Guide](developers/testing-guide.md)
 
 ## Protocol
 
@@ -27,7 +28,6 @@
   * [BondingCurve](protocol/bondingcurve/bondingcurve.md)
 * [Trading](protocol/trading/README.md)
   * [FeiRouter](protocol/trading/feirouter.md)
-  * [UniswapSingleEthRouter](protocol/trading/uniswapsingleethrouter.md)
 * [Oracles](protocol/oracles/README.md)
   * [BondingCurveOracle](protocol/oracles/bondingcurveoracle.md)
   * [UniswapOracle](protocol/oracles/uniswaporacle.md)

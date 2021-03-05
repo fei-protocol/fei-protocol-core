@@ -4,6 +4,8 @@ description: Community engagement incentives
 
 # Bug Bounties
 
+## Bug Bounties
+
 **Program overview**
 
 Fei Protocol's goal is to maintain a liquid market in which ETH/FEI trades closely to the ETH/USD price. FEI achieves this via a new stability mechanism known as direct incentives. Direct incentive stable coins use dynamic mint rewards and burn penalties on DEX trade volume to maintain the peg. Governance can add and update DEX integrations and other incentives as needed, which uses the TRIBE governance token.

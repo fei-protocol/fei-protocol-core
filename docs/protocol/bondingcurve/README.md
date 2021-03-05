@@ -6,7 +6,7 @@ description: 'The fair, scalable issuance mechanism for FEI'
 
 ## Bonding Curves
 
-Bonding curves are price functions for a token that usually take in the current circulating supply as a parameter in the formula. They are generally monotonically increasing, facilitating greater incentives for early adopters.
+Bonding curves are price functions for a token that generally involve the token being minted by the bonding curve in exchange for an underlying asset. They can take in the current circulating supply as a parameter in the formula. They are generally monotonically increasing, facilitating greater incentives for early adopters.
 
 When coupled with a smart contract, bonding curves can escrow, buy and sell tokens in accordance with the price function. The contract can take fees for buying and selling as a fundraising mechanism for [Protocol Controlled Value](../protocol-controlled-value/). 
 
