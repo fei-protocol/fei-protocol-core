@@ -21,7 +21,7 @@ FGEN are used to account for the user's final outcome in Genesis.
 ### Outcome determination
 
 {% hint style="info" %}
-FGEN maps to "committed ETH" and committed FGEN maps to "pre buying" TRIBE.
+FGEN maps to "committed ETH" and committed-FGEN maps to "pre-swapping" TRIBE.
 {% endhint %}
 
 At redemption time, users could have a combination of FGEN and committed-FGEN \(cFGEN\) tokens. cFGEN are not ERC-20 tokens and are only utilized during Genesis. The ratios of FGEN and cFGEN to the totals determine how much FEI and TRIBE each user receives. The TRIBE can be further split into "Genesis TRIBE" which are the bonus allocation to the Genesis Group and "IDO TRIBE" which come from exchanging pre-committed FEI in the IDO.
@@ -30,7 +30,7 @@ Genesis allocation formulas:
 
 ![](../../.gitbook/assets/screen-shot-2021-02-14-at-7.32.33-pm.png)
 
-Both the held FGEN and pre-committed balance are used to determine ownership of the Genesis TRIBE. Only the held FGEN is used for determining FEI ownership because the pre-committed FGEN FEI allocation is used to buy TRIBE. Of the IDO TRIBE allocation, users get the pro-rata percentage of their pre-committed FGEN over all of the pre-committed FGEN.
+Both the held FGEN and pre-committed balance are used to determine ownership of the Genesis TRIBE. Only the held FGEN is used for determining FEI ownership because the pre-committed FGEN FEI allocation is used to swap for TRIBE. Of the IDO TRIBE allocation, users get the pro-rata percentage of their pre-committed FGEN over all of the pre-committed FGEN.
 
 ## Events
 
