@@ -36,9 +36,9 @@ In the unlikely event that the GenesisGroup launch function is frozen in a bad s
 
 {% page-ref page="genesis/" %}
 
-#### Pre-Buy TRIBE
+#### Pre-Swap TRIBE
 
-To mitigate frontrunning of TRIBE in the DEX offering, we allow users to pre-buy a portion of their Genesis Group FEI stake to buy TRIBE. This gives users the ability to participate in the very first TRIBE purchase at the best IDO price.
+To mitigate frontrunning of TRIBE in the DEX offering, we allow users to pre-swap a portion of their Genesis Group FEI stake to buy TRIBE. This gives users the ability to participate in the very first TRIBE purchase at the best IDO price.
 
 {% page-ref page="genesis/" %}
 
@@ -47,6 +47,12 @@ To mitigate frontrunning of TRIBE in the DEX offering, we allow users to pre-buy
 In the white paper, the bonding curve starts at a 0 price and approaches the peg at the scale target. To achieve lower undercollateralization in the PCV, we’ve added a “k” shift to initiate the bonding curve higher up at an elevated starting price.
 
 {% page-ref page="bondingcurve/" %}
+
+#### Sell Disincentive \(Burn\) Calculation
+
+The current implementation integrates the burn function from the [white paper](../whitepaper.md) with respect to the distance from the peg.
+
+{% page-ref page="fei-stablecoin/uniswapincentive.md" %}
 
 #### Router
 
