@@ -4,14 +4,14 @@ description: "The equal opportunity launch of Fei Protocol \U0001F680"
 
 # Genesis
 
-Fei Protocol Genesis starts at 0:00 UTC on March 4, 2021. It will last 3 days, ending March 7, 2021. Additional details about the Genesis event are available in our Medium announcement \(&lt;Medium announcement&gt; will be a hyperlink\)
+Fei Protocol Genesis starts at 0:00 UTC on March 22, 2021. It will last 3 days, ending March 25, 2021. Additional details about the Genesis event are available in our Medium announcement \(&lt;Medium announcement&gt; will be a hyperlink\)
 
 ## Genesis Group
 
 The Genesis Group contract is the user entry point for Genesis participation. It provides users the ability to:
 
 * Enter Genesis with an ETH commitment
-* Optionally pre-buy TRIBE with Genesis FEI
+* Optionally pre-swap TRIBE with Genesis FEI
 * Launch Fei Protocol
 * Redeem rewards after launch
 * Emergency exit if the launch fails
