@@ -18,3 +18,7 @@ An ETH implementation of UniswapPCVDeposit.
 
 * Minter💰
 
+## ABIs
+
+{% file src="../../.gitbook/assets/ethuniswappcvdeposit.json" caption="EthUniswapPCVDeposit ABI" %}
+

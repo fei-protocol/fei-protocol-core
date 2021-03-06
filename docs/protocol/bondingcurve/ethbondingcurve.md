@@ -40,3 +40,7 @@ The oracle used is the [UniswapOracle](https://github.com/fei-protocol/fei-proto
 
 * Minter💰
 
+## ABIs
+
+{% file src="../../.gitbook/assets/ethbondingcurve.json" caption="EthBondingCurve ABI" %}
+

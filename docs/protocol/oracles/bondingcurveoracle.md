@@ -84,11 +84,9 @@ The initial price to thaw from during the thawing period reported as USD per FEI
 This is capped at $1 even if the genesis group pays more than $1 due to the buffer
 {% endhint %}
 
-## State-Changing Functions <a id="state-changing-functions"></a>
+## Public State-Changing Functions
 
-### Public
-
-#### update
+### update
 
 ```javascript
 function update() external returns (bool);
@@ -96,13 +94,21 @@ function update() external returns (bool);
 
 Pass-through updates `uniswapOracle`
 
-### GenesisGroup-Only🚀
+## GenesisGroup-Only🚀 State-Changing Functions
 
-#### init
+### init
 
 ```javascript
 function init(Decimal.D256 calldata initialPrice) external;
 ```
 
 called by the [GenesisGroup](../genesis/genesisgroup.md) with the initial price to thaw from
+
+## ABIs
+
+{% file src="../../.gitbook/assets/bondingcurveoracle.json" caption="BondingCurveOracle ABI" %}
+
+{% file src="../../.gitbook/assets/ibondingcurveoracle.json" caption="BondingCurveOracle Interface ABI" %}
+
+{% file src="../../.gitbook/assets/ioracle.json" caption="Oracle Interface ABI" %}
 

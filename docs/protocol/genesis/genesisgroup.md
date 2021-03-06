@@ -108,11 +108,9 @@ For an address `to`, returns how much FEI is available for redemption `feiAmount
 Reverts if called pre-launch, as there is no way to know the redeemable amount for a user
 {% endhint %}
 
-## State-Changing Functions <a id="state-changing-functions"></a>
+## Public State-Changing Functions
 
-### Public
-
-#### purchase
+### purchase
 
 ```javascript
 function purchase(address to, uint256 value) external payable;
@@ -126,7 +124,7 @@ emits `Purchase`
 purchase\(\) maps to an "ETH commitment" which outputs FGEN.
 {% endhint %}
 
-#### commit
+### commit
 
 ```javascript
 function commit(
@@ -148,7 +146,7 @@ emits `Commit`
 When a user pre-converts, their FGEN is burned. This makes it a one-way action. 
 {% endhint %}
 
-#### redeem
+### redeem
 
 ```javascript
 function redeem(address to) external;
@@ -158,7 +156,7 @@ Redeem FGEN and cFGEN from `to` for a pro rata share of the FEI purchased on the
 
 emits `Redeem`
 
-#### emergencyExit
+### emergencyExit
 
 ```javascript
 function emergencyExit(address from, address payable to) external;
@@ -168,9 +166,9 @@ Redeem all FGEN and cFGEN held by the address `from` for ETH 1:1, sending the ET
 
 Only available 3 days AFTER the Genesis Period ends, if launch has not been called.
 
-### EOA-Only 👤
+## EOA-Only 👤 State-Changing Functions
 
-#### launch
+### launch
 
 ```javascript
 function launch() external;
@@ -187,4 +185,10 @@ Launching is only open at the end of the Genesis Period. The following actions h
 * Execute the swap of FEI for pre-swappingTRIBE on the IDO
 
 emits `Launch`
+
+## ABIs
+
+{% file src="../../.gitbook/assets/genesisgroup.json" caption="GenesisGroup ABI" %}
+
+{% file src="../../.gitbook/assets/igenesisgroup.json" caption="GenesisGroup Interface ABI" %}
 

@@ -115,11 +115,9 @@ function alreadyReleasedAmount() external view returns (uint256);
 
 The amount of `lockedToken` already released by the beneficiary.
 
-## State-Changing Functions <a id="state-changing-functions"></a>
+## Public State-Changing Functions
 
-### Public
-
-#### acceptBeneficiary
+### acceptBeneficiary
 
 ```javascript
 function acceptBeneficiary() external;
@@ -129,7 +127,7 @@ Accepts the beneficiary role for `msg.sender`. Must already be the pending benef
 
 emits `BeneficiaryUpdate`
 
-### Beneficiary-Only👑
+## Beneficiary-Only👑 State-Changing Functions
 
 ```javascript
 function release(address to, uint amount) external;
@@ -139,7 +137,7 @@ Releases `amount` of timelocked tokens to address `to`. The `amount` must be les
 
 emits `Release`
 
-#### setPendingBeneficiary
+### setPendingBeneficiary
 
 ```javascript
 function setPendingBeneficiary(address _pendingBeneficiary) external;
@@ -148,4 +146,10 @@ function setPendingBeneficiary(address _pendingBeneficiary) external;
 Sets the pending beneficiary to `_pendingBeneficiary`.
 
 emits `PendingBeneficiaryUpdate`
+
+## ABIs
+
+{% file src="../../.gitbook/assets/lineartokentimelock.json" caption="LinearTokenTimelock ABI" %}
+
+{% file src="../../.gitbook/assets/ilineartokentimelock.json" caption="LinearTokenTimelock Interface ABI" %}
 

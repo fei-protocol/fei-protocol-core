@@ -59,9 +59,9 @@ function invert(Decimal.D256 calldata price)
 
 Inverts a `price` to be reported in the reverse direction. When applied to `peg` it reports X per FEI wher X is some underlying asset.
 
-## State-Changing Functions <a id="state-changing-functions"></a>
+## Public State-Changing Functions
 
-### Public
+### updateOracle
 
 ```javascript
 function updateOracle() external returns (bool);
@@ -69,7 +69,9 @@ function updateOracle() external returns (bool);
 
 Pass-through updates the referenced oracle.
 
-### Governor-Only⚖️
+## Governor-Only⚖️ State-Changing Functions
+
+### setOracle
 
 ```javascript
 function setOracle(address _oracle) external;
@@ -79,5 +81,9 @@ Sets the address of the referenced oracle to `_oracle`.
 
 emits `OracleUpdate`
 
-### 
+## ABIs
+
+{% file src="../../.gitbook/assets/oracleref.json" caption="OracleRef ABI" %}
+
+{% file src="../../.gitbook/assets/ioracleref.json" caption="OracleRef Interface ABI" %}
 
