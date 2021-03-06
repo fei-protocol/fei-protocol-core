@@ -18,6 +18,10 @@ The UniswapIncentive contract assumes that all transfers involving Uniswap are e
 
 These parameters are fed into the incentive function to produce a mint \(in the case of buy\) or burn \(in the case of sell\) action. Any address can be exempted from incentives by governance.
 
+{% hint style="info" %}
+The below incentives only apply to the FEI portion of the trade that would be below the peg. When calculating "x", the contract uses the "distance from peg FEI" method in [UniRef](../references/uniref.md).
+{% endhint %}
+
 ### Sell \(Burn\)
 
 All FEI transfers going TO the uniswap pool are treated as a sell. This has the counterintuitive effect of treating liquidity provision as a sell.
@@ -51,6 +55,10 @@ The incentive formula is normally just the right-hand side of the above min func
 When the incentive function for a trade reaches the same level as the burn for the same trade _in reverse_, the incentive function maxes out. This is because we don't want a trader to be able to profit by buying and selling with a flash loan under any circumstances.
 
 The mint should only apply if the trade starts below the peg and if the incentive contract is appointed as a Minter.
+
+### Incentivized Amount
+
+The incentivized
 
 ### Time Weight
 

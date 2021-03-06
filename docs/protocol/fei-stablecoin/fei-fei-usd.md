@@ -102,10 +102,6 @@ function setIncentiveContract(address account, address incentive) external;
 
 Sets the incentive contract `incentive` for `account`. If `incentive` is the 0 address this functions as an unset.
 
-{% hint style="warning" %}
-Reverts if `account`is not a deployed contract
-{% endhint %}
-
 emits `IncentiveContractUpdate`
 
 ### Public

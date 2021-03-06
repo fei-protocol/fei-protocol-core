@@ -141,7 +141,7 @@ Pre-commit `amount` of FGEN to have the associated Genesis FEI participate in th
 emits `Commit`
 
 {% hint style="info" %}
-`commit`\(\) maps to a "TRIBE pre-swap"
+`commit`\(\) maps conceptually to a "TRIBE pre-swap"
 {% endhint %}
 
 {% hint style="warning" %}
