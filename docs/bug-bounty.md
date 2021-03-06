@@ -14,7 +14,7 @@ The bug bounty program is focused on its smart contracts and website and the pre
 
 ## All bug submissions must go through Immunefi's bug submission process on the Fei bug bounty page.
 
-The Fei bug bounty page will be linked here when it is launched. When you hit the "Submit bug report" button, you will be sent to [bugs.immunefi.com](https://bugs.immunefi.com/) which will guide you through the process of creating a bug report.
+The Fei bug bounty page will be linked here when it is launched. When a hacker hits the "Submit bug report" button, they will be sent to [bugs.immunefi.com](https://bugs.immunefi.com/) which will guide them through the process of creating a bug report.
 
 **Rewards by threat level**
 
@@ -42,7 +42,7 @@ Low **USD 200**
 
 Payouts are handled by the **Fei Protocol** team directly and are denominated in USD. However, payouts are done in **TRIBE or FEI**.
 
-\*Critical-level smart contract vulnerabilities that result in the loss of user funds will have rewards additionally capped at 10% of the funds potentially affected based on the vulnerability that was identified. These rewards are additionally only payable in **TRIBE** and have a vesting schedule lasting between 6-12 months with a minimum of 6 months for rewards up to USD 400 000, with an additional month added for every USD 100 000 tranche, rounded up.
+\*Critical-level smart contract vulnerabilities that result in the loss of user funds will have rewards additionally capped at 10% of the funds potentially affected based on the vulnerability that was identified. These rewards are additionally only payable in **TRIBE** and have a vesting schedule lasting between 6-12 months with a minimum of 6 months for rewards up to USD 400 000, with an additional month added for every USD 100,000 tranche, rounded up.
 
 **Assets in Scope**
 
@@ -102,7 +102,7 @@ We are especially interested in receiving and rewarding vulnerabilities of the f
 * SSL/TLS issues \(weak crypto, improper setup\)
 * URL redirect
 * Clickjacking
-* Misleading Unicode text \(e.g.,using right to left override characters\)
+* Misleading Unicode text \(e.g., using right to left override characters\)
 * Coercing the application to display/return specific text to other users
 
 **Out of Scope & Rules**
@@ -140,7 +140,7 @@ The following vulnerabilities are excluded from the rewards for this bug bounty 
 * DDoS vulnerabilities
 * Attacks requiring privileged access from within the organization
 
-The bug bounty program prohibits the following activites: 
+The bug bounty program prohibits the following activities: 
 
 * Any testing with mainnet or public testnet contracts; all testing should be done on private testnets
 * Any testing with pricing oracles or third party smart contracts
