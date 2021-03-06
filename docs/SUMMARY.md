@@ -2,15 +2,6 @@
 
 * [Overview](README.md)
 * [White Paper](whitepaper.md)
-<!-- 
-* [Audit Reports](audit.md)
-* [Bug Bounties](bug-bounty.md)
-
-## Developers
-
-* [Development Guide](developers/development-guide.md)
-* [Testing Guide](developers/testing-guide.md) 
--->
 
 ## Protocol
 
