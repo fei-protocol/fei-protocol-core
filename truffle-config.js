@@ -18,12 +18,12 @@
  *
  */
 
-const PrivateKeyProvider = require('truffle-privatekey-provider');
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const privateKey = process.env.ETH_PRIVATE_KEY;
-const ropstenPrivateKey = process.env.ROPSTEN_PRIVATE_KEY;
+const testnetPrivateKey = process.env.TESTNET_PRIVATE_KEY;
 const ropstenAlchemyApiKey = process.env.ROPSTEN_ALCHEMY_API_KEY;
 const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
+const rinkebyAlchemyApiKey = process.env.RINKEBY_ALCHEMY_API_KEY;
 
 module.exports = {
   /**
@@ -60,11 +60,28 @@ module.exports = {
     },
 
     ropsten: {
-      provider: () => new PrivateKeyProvider(ropstenPrivateKey, `https://eth-ropsten.alchemyapi.io/v2/${ropstenAlchemyApiKey}`),
+      provider: () => new HDWalletProvider({
+        privateKeys: [testnetPrivateKey], 
+        providerOrUrl: `https://eth-ropsten.alchemyapi.io/v2/${ropstenAlchemyApiKey}`
+      }),
       network_id: 3,       // Ropsten's id
       networkCheckTimeout: 1000000000,
       gas: 5500000,        // Ropsten has a lower block limit than mainnet
       gasPrice: 4000000000, // 4 gwei
+      confirmations: 1,    // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 50000,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    },
+
+    rinkeby: {
+      provider: () => new HDWalletProvider({
+        privateKeys: [testnetPrivateKey], 
+        providerOrUrl: `https://eth-rinkeby.alchemyapi.io/v2/${rinkebyAlchemyApiKey}`
+      }),
+      network_id: 4,       // Rinkeby's id
+      networkCheckTimeout: 1000000,
+      gas: 5500000,        
+      gasPrice: 2000000000, // 2 gwei
       confirmations: 1,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 50000,  // # of blocks before a deployment times out  (minimum/default: 50)
       skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
@@ -75,9 +92,9 @@ module.exports = {
         privateKeys: [privateKey], 
         providerOrUrl: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`
       }),
-      network_id: 1,       // Ropsten's id
+      network_id: 1,       // Mainnet's id
       networkCheckTimeout: 1000000000,
-      gas: 2000000,        // Ropsten has a lower block limit than mainnet
+      gas: 2000000,        
       gasPrice: 100000000000, // 100 gwei
       confirmations: 1,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 50000,  // # of blocks before a deployment times out  (minimum/default: 50)

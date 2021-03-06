@@ -11,6 +11,7 @@
     "test": "mocha --timeout 10000 --exit --retries 10 --recursive",
     "deploy": "truffle migrate --network mainnet",
     "deploy-ropsten": "truffle migrate --network ropsten",
+    "deploy-rinkeby": "truffle migrate --network rinkeby",
     "abis": "node scripts/abis.js"
   },
   "author": "joeysantoro",
