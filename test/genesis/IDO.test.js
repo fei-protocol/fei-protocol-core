@@ -37,7 +37,6 @@ describe('IDO', function () {
     this.ido = await IDO.new(this.core.address, beneficiaryAddress1, this.window, this.pair.address, this.router.address);
     await this.core.grantMinter(this.ido.address, {from: governorAddress});
     await this.core.allocateTribe(this.ido.address, 100000, {from: governorAddress});
-    await this.core.allocateTribe(this.pair.address, 100000, {from: governorAddress});
   });
 
   describe('Init', function() {
@@ -91,6 +90,7 @@ describe('IDO', function () {
       beforeEach(async function() {
         await this.pair.setReserves('500000', '100000');
         await this.fei.mint(genesisGroup, '50000', {from: minterAddress});
+        await this.core.allocateTribe(this.pair.address, 100000, {from: governorAddress});
       });
 
       describe('Not approved', function() {
