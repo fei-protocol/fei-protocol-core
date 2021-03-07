@@ -12,7 +12,7 @@ Fei Protocol's goal is to maintain a liquid market in which ETH/FEI trades close
 
 The bug bounty program is focused on its smart contracts and website and the prevention of the loss of user funds and the disruption of the governance system.
 
-## All bug submissions must go through Immunefi's bug submission process on the Fei bug bounty page.
+## All bug submissions must go through Immunefi's bug submission process on the [Fei bug bounty page](https://immunefi.com/bounty/feiprotocol).
 
 The Fei bug bounty page can be viewed at [https://immunefi.com/bounty/feiprotocol](https://immunefi.com/bounty/feiprotocol). When a hacker hits the "Submit bug report" button, they will be sent to [bugs.immunefi.com](https://bugs.immunefi.com/) which will guide them through the process of creating a bug report.
 
