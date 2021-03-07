@@ -12,7 +12,7 @@ description: A reference to a Uniswap pair holding FEI
 
 UniRef is an abstract contract which references a Uniswap pool. It defines basic utilities for contracts referencing Uniswap. It leverages the [OracleRef](oracleref.md) contract to calculate various quantities relating to spot vs peg price. Let _R_  be the reserves of the referenced Uniswap pair, FEI/ETH for example. The UniRef calculates the price at the start and end of a hypothetical trade of size _x_ via the below formulas. It can then calculate the magnitude of the distance from the peg _m_ given an oracle price _O:_ 
 
-![Formula for start and end price of a trade of size x, and distance from peg m](../../.gitbook/assets/screen-shot-2021-02-14-at-12.40.56-pm%20%281%29%20%281%29.png)
+![Formula for start and end price of a trade of size x, and distance from peg m](../../.gitbook/assets/screen-shot-2021-02-14-at-12.40.56-pm%20%281%29%20%281%29%20%281%29.png)
 
 It has other utilities relating to the peg _O_:
 
