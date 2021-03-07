@@ -1,8 +1,8 @@
 # Table of contents
 
 * [Overview](README.md)
-* [Audit Reports](audit.md)
 * [White Paper](whitepaper.md)
+* [Audit Reports](audit.md)
 * [Bug Bounties](bug-bounty.md)
 
 ## Developers
