@@ -10,6 +10,8 @@ interface IBondingCurve {
 
     event BufferUpdate(uint256 _buffer);
 
+    event IncentiveAmountUpdate(uint256 _incentiveAmount);
+
     event Purchase(address indexed _to, uint256 _amountIn, uint256 _amountOut);
 
     event Allocate(address indexed _caller, uint256 _amount);
@@ -34,11 +36,15 @@ interface IBondingCurve {
         uint256[] calldata ratios
     ) external;
 
+    function setIncentiveAmount(uint256 _incentiveAmount) external;
+
+    function setIncentiveFrequency(uint256 _frequency) external;
+
     // ----------- Getters -----------
 
     function getCurrentPrice() external view returns (Decimal.D256 memory);
 
-    function getAveragePrice(uint256 amountIn)
+    function getAverageUSDPrice(uint256 amountIn)
         external
         view
         returns (Decimal.D256 memory);

@@ -22,7 +22,7 @@ abstract contract UniRef is IUniRef, OracleRef {
 
     /// @notice the Uniswap router contract
     IUniswapV2Router02 public override router;
-    
+
     /// @notice the referenced Uniswap pair contract
     IUniswapV2Pair public override pair;
 
@@ -78,11 +78,6 @@ abstract contract UniRef is IUniRef, OracleRef {
         (feiReserves, tokenReserves) = address(fei()) == token0
             ? (reserve0, reserve1)
             : (reserve1, reserve0);
-
-        uint256 feiBalance = fei().balanceOf(address(pair));
-        if (feiBalance > feiReserves) {
-            feiReserves = feiBalance;
-        }
         return (feiReserves, tokenReserves);
     }
 
@@ -133,21 +128,27 @@ abstract contract UniRef is IUniRef, OracleRef {
         uint256 radicand = peg.mul(reserveTarget).mul(reserveOther).asUint256();
         uint256 root = radicand.sqrt();
         if (root > reserveTarget) {
-            return root - reserveTarget;
+            return (root - reserveTarget).mul(1000).div(997);
         }
-        return reserveTarget - root;
+        return (reserveTarget - root).mul(1000).div(997);
     }
 
     /// @notice calculate amount of Fei needed to trade back to the peg
-    function _getAmountToPegFei() internal view returns (uint256) {
-        (uint256 feiReserves, uint256 tokenReserves) = getReserves();
-        return _getAmountToPeg(feiReserves, tokenReserves, peg());
+    function _getAmountToPegFei(
+        uint256 feiReserves,
+        uint256 tokenReserves,
+        Decimal.D256 memory peg
+    ) internal pure returns (uint256) {
+        return _getAmountToPeg(feiReserves, tokenReserves, peg);
     }
 
     /// @notice calculate amount of the not Fei token needed to trade back to the peg
-    function _getAmountToPegOther() internal view returns (uint256) {
-        (uint256 feiReserves, uint256 tokenReserves) = getReserves();
-        return _getAmountToPeg(tokenReserves, feiReserves, invert(peg()));
+    function _getAmountToPegOther(
+        uint256 feiReserves,
+        uint256 tokenReserves,
+        Decimal.D256 memory peg
+    ) internal pure returns (uint256) {
+        return _getAmountToPeg(tokenReserves, feiReserves, invert(peg));
     }
 
     /// @notice get uniswap price and reserves
@@ -182,7 +183,9 @@ abstract contract UniRef is IUniRef, OracleRef {
     ) internal pure returns (Decimal.D256 memory) {
         uint256 k = reserveFei.mul(reserveOther);
         int256 signedReservesFei = reserveFei.toInt256();
-        uint256 adjustedReserveFei = signedReservesFei.add(amountFei).toUint256();
+        int256 amountFeiWithFee = amountFei > 0 ? amountFei.mul(997).div(1000) : amountFei; // buys already have fee factored in on uniswap's other token side
+
+        uint256 adjustedReserveFei = signedReservesFei.add(amountFeiWithFee).toUint256();
         uint256 adjustedReserveOther = k / adjustedReserveFei;
         return Decimal.ratio(adjustedReserveFei, adjustedReserveOther); // alt: adjustedReserveFei^2 / k
     }
@@ -197,18 +200,29 @@ abstract contract UniRef is IUniRef, OracleRef {
         view
         returns (
             Decimal.D256 memory initialDeviation,
-            Decimal.D256 memory finalDeviation
+            Decimal.D256 memory finalDeviation,
+            Decimal.D256 memory _peg,
+            uint256 feiReserves,
+            uint256 tokenReserves
         )
     {
+        _peg = peg();
+
         (Decimal.D256 memory price, uint256 reserveFei, uint256 reserveOther) =
             _getUniswapPrice();
-        initialDeviation = _deviationBelowPeg(price, peg());
+        initialDeviation = _deviationBelowPeg(price, _peg);
 
         Decimal.D256 memory finalPrice =
             _getFinalPrice(amountIn, reserveFei, reserveOther);
-        finalDeviation = _deviationBelowPeg(finalPrice, peg());
+        finalDeviation = _deviationBelowPeg(finalPrice, _peg);
 
-        return (initialDeviation, finalDeviation);
+        return (
+            initialDeviation,
+            finalDeviation,
+            _peg,
+            reserveFei,
+            reserveOther
+        );
     }
 
     /// @notice return current percent distance from peg

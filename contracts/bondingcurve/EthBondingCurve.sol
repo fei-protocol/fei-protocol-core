@@ -42,6 +42,7 @@ contract EthBondingCurve is BondingCurve {
         payable
         override
         postGenesis
+        whenNotPaused
         returns (uint256 amountOut)
     {
         require(
@@ -68,7 +69,7 @@ contract EthBondingCurve is BondingCurve {
             (adjustedAmountIn.mul(3).mul(_shift(scale).sqrt()) / 2).add(
                 shiftTotalCubed.sqrt()
             );
-        return (radicand.mul(radicand)).cubeRoot() - shiftTotal; // result - (k + C)
+        return (radicand.cubeRoot() ** 2).sub(shiftTotal); // result - (k + C)
     }
 
     // Bonding curve formula is sqrt(k+x)/sqrt(k+S)

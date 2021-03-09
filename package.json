@@ -18,6 +18,8 @@
   "license": "AGPL-3.0-only",
   "dependencies": {
     "@openzeppelin/contracts": "^3.4.0",
+    "@openzeppelin/cli": "^2.8.2",
+    "@truffle/hdwallet-provider": "^1.2.2",
     "@uniswap/lib": "^1.1.2",
     "@uniswap/v2-core": "^1.0.1",
     "@uniswap/v2-periphery": "^1.1.0-beta.0",

@@ -41,12 +41,12 @@ describe('BondingCurveOracle', function () {
       expect(await this.oracle.bondingCurve()).to.be.equal(this.bondingCurve.address);
     });
 
-    it('killSwitch', async function() {
-      expect(await this.oracle.killSwitch()).to.be.equal(true);
+    it('paused', async function() {
+      expect(await this.oracle.paused()).to.be.equal(true);
     });
 
-    it('initialPrice', async function() {
-      expect((await this.oracle.initialPrice())[0]).to.be.equal('0');
+    it('initialUSDPrice', async function() {
+      expect((await this.oracle.initialUSDPrice())[0]).to.be.equal('0');
     });
   });
 
@@ -81,13 +81,13 @@ describe('BondingCurveOracle', function () {
         await this.oracle.init(['500000000000000000'], {from: genesisGroup});
       });
 
-      it('initialPrice', async function() {
-        expect((await this.oracle.initialPrice())[0]).to.be.equal('500000000000000000');
+      it('initialUSDPrice', async function() {
+        expect((await this.oracle.initialUSDPrice())[0]).to.be.equal('500000000000000000');
       });
 
-      describe('Kill switch', function() {
+      describe('Paused', function() {
         beforeEach(async function() {
-          await this.oracle.setKillSwitch(true, {from: governorAddress});
+          await this.oracle.pause({from: governorAddress});
         });
         it('returns invalid', async function() {
           let result = await this.oracle.read();
@@ -168,30 +168,61 @@ describe('BondingCurveOracle', function () {
         });
       });
     });
-  });
 
-  describe('Access', function() {
-    describe('Kill Switch', function() {
-      it('Governor set succeeds', async function() {
-        expectEvent(
-            await this.oracle.setKillSwitch(true, {from: governorAddress}),
-            'KillSwitchUpdate',
-            { _killSwitch: true }
-          );
-        expect(await this.oracle.killSwitch()).to.be.equal(true);
+    describe('Initialized Above One', function() {
+      beforeEach(async function() {
+        await this.oracle.init(['1500000000000000000'], {from: genesisGroup});
       });
 
-      it('Guardian set succeeds', async function() {
-        expectEvent(
-            await this.oracle.setKillSwitch(true, {from: guardianAddress}),
-            'KillSwitchUpdate',
-            { _killSwitch: true }
-          );
-        expect(await this.oracle.killSwitch()).to.be.equal(true);
+      it('initialUSDPrice', async function() {
+        expect((await this.oracle.initialUSDPrice())[0]).to.be.equal('1000000000000000000'); // capped at one
       });
 
-      it('Non-governor set reverts', async function() {
-        await expectRevert(this.oracle.setKillSwitch(false, {from: userAddress}), "CoreRef: Caller is not a guardian or governor");
+      describe('Beginning of Thawing Period', function() {
+        describe('At Scale', function() {
+          beforeEach(async function() {
+            await this.bondingCurve.setScale(true);
+          });
+          it('returns uniswap oracle info', async function() {
+            let result = await this.oracle.read();
+            expect(result[0].value).to.be.equal('500000000000000000000');
+            expect(result[1]).to.be.equal(true);
+          });
+        });
+      });
+
+      describe('Halfway through Thawing Period', function() {
+        beforeEach(async function() {
+          let d = await this.oracle.duration();
+          await time.increase(d.div(new BN(2)));
+        });
+        describe('At Scale', function() {
+          beforeEach(async function() {
+            await this.bondingCurve.setScale(true);
+          });
+          it('returns uniswap oracle info', async function() {
+            let result = await this.oracle.read();
+            expect(result[0].value).to.be.equal('500000000000000000000');
+            expect(result[1]).to.be.equal(true);
+          });
+        });
+      });
+
+      describe('End of Thawing Period', function() {
+        beforeEach(async function() {
+          await time.increase(await this.oracle.duration());
+        });
+
+        describe('At Scale', function() {
+          beforeEach(async function() {
+            await this.bondingCurve.setScale(true);
+          });
+          it('returns uniswap oracle info', async function() {
+            let result = await this.oracle.read();
+            expect(result[0].value).to.be.equal('500000000000000000000');
+            expect(result[1]).to.be.equal(true);
+          });
+        });
       });
     });
   });

@@ -30,9 +30,6 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
     /// @notice total amount of TRIBE coming from the IDO and pre-committed FGEN
     /// @dev is 0 pre-launch
     uint256 public override totalCommittedTribe;
-
-    /// @notice percent multiplier on the average genesis price to give to bondingCurveOracle
-    uint256 public constant override ORACLE_LISTING_PERCENT = 90;
     
     /// @notice the block number of the genesis launch
     uint256 public override launchBlock;
@@ -66,16 +63,10 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         fei().approve(_ido, maxTokens);
 
         bondingCurveOracle = IBondingCurveOracle(_oracle);
-
-        _initTimed();
     }
 
-    modifier onlyGenesisPeriod() {
-        require(
-            !isTimeEnded(),
-            "GenesisGroup: Not in Genesis Period"
-        );
-        _;
+    function initGenesis() external override onlyGovernor {
+        _initTimed();
     }
 
     /// @notice allows for entry into the Genesis Group via ETH. Only callable during Genesis Period.
@@ -85,7 +76,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         external
         payable
         override
-        onlyGenesisPeriod
+        duringTime
     {
         require(msg.value == value, "GenesisGroup: value mismatch");
         require(value != 0, "GenesisGroup: no value sent");
@@ -103,7 +94,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         address from,
         address to,
         uint256 amount
-    ) external override onlyGenesisPeriod {
+    ) external override duringTime {
         _burnFrom(from, amount);
 
         committedFGEN[to] = committedFGEN[to].add(amount);
@@ -147,8 +138,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
     }
 
     /// @notice launch Fei Protocol. Callable once Genesis Period has ended
-    function launch() external override {
-        require(isTimeEnded(), "GenesisGroup: Still in Genesis Period");
+    function launch() external override nonContract afterTime {
 
         // Complete Genesis
         core().completeGenesisGroup();
@@ -158,12 +148,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         uint256 balance = genesisGroup.balance;
 
         // Initialize bonding curve oracle
-        Decimal.D256 memory oraclePrice =
-            bondingcurve
-                .getAveragePrice(balance)
-                .mul(ORACLE_LISTING_PERCENT)
-                .div(100);
-        bondingCurveOracle.init(oraclePrice);
+        bondingCurveOracle.init(bondingcurve.getAverageUSDPrice(balance));
 
         // bonding curve purchase and PCV allocation
         bondingcurve.purchase{value: balance}(genesisGroup, balance);
@@ -271,7 +256,7 @@ contract GenesisGroup is IGenesisGroup, CoreRef, ERC20, Timed {
         override
         returns (uint256 feiAmount, uint256 tribeAmount)
     {
-        uint256 totalIn = totalSupply();
+        uint256 totalIn = totalSupply().add(totalCommittedFGEN);
         if (!inclusive) {
             // exclusive from current supply, so we add it in
             totalIn = totalIn.add(amountIn);

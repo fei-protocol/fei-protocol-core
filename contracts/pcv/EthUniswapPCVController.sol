@@ -15,7 +15,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
     using Decimal for Decimal.D256;
     using SafeMathCopy for uint256;
 
-    uint256 internal constant WITHDRAW_AMOUNT_BPS = 9000;
+    uint256 public override reweightWithdrawBPs = 9900;
 
     uint256 internal constant BASIS_POINTS_GRANULARITY = 10000;
 
@@ -55,7 +55,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
     receive() external payable {}
 
     /// @notice reweights the linked PCV Deposit to the peg price. Needs to be reweight eligible
-    function reweight() external override postGenesis {
+    function reweight() external override postGenesis whenNotPaused nonContract {
         updateOracle();
         require(
             reweightEligible(),
@@ -84,6 +84,17 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
     {
         reweightIncentiveAmount = amount;
         emit ReweightIncentiveUpdate(amount);
+    }
+
+    /// @notice sets the reweight withdrawal BPs
+    function setReweightWithdrawBPs(uint256 _reweightWithdrawBPs)
+        external
+        override
+        onlyGovernor
+    {
+        require(_reweightWithdrawBPs <= BASIS_POINTS_GRANULARITY, "EthUniswapPCVController: withdraw percent too high");
+        reweightWithdrawBPs = _reweightWithdrawBPs;
+        emit ReweightWithdrawBPsUpdate(_reweightWithdrawBPs);
     }
 
     /// @notice sets the reweight min distance in basis points
@@ -148,13 +159,14 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
 
         updateOracle();
 
+        Decimal.D256 memory _peg = peg();
         require(
-            _isBelowPeg(peg()),
+            _isBelowPeg(_peg),
             "EthUniswapPCVController: already at or above peg"
         );
 
         // calculate amount ETH needed to return to peg then swap
-        uint256 amountEth = _getAmountToPegOther();
+        uint256 amountEth = _getAmountToPegOther(feiReserves, ethReserves, _peg);
         _swapEth(amountEth, ethReserves, feiReserves);
     }
 
@@ -183,7 +195,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
     function _withdraw() internal {
         // Only withdraw a portion to prevent rounding errors on Uni LP dust
         uint256 value =
-            pcvDeposit.totalValue().mul(WITHDRAW_AMOUNT_BPS) /
+            pcvDeposit.totalValue().mul(reweightWithdrawBPs) /
                 BASIS_POINTS_GRANULARITY;
         pcvDeposit.withdraw(address(this), value);
     }

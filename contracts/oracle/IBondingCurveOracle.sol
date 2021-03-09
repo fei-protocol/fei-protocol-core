@@ -10,7 +10,7 @@ import "../external/Decimal.sol";
 interface IBondingCurveOracle is IOracle {
     // ----------- Genesis Group only state changing API -----------
 
-    function init(Decimal.D256 calldata initialPrice) external;
+    function init(Decimal.D256 calldata initialUSDPrice) external;
 
     // ----------- Getters -----------
 
@@ -18,5 +18,5 @@ interface IBondingCurveOracle is IOracle {
 
     function bondingCurve() external view returns (IBondingCurve);
 
-    function initialPrice() external view returns (Decimal.D256 memory);
+    function initialUSDPrice() external view returns (Decimal.D256 memory);
 }

@@ -31,12 +31,9 @@ module.exports = async function(callback) {
   let core = await Core.at(await co.core());
   let fei = await Fei.at(await core.fei());
   let tribe = await Tribe.at(await core.tribe());
-  let gg = await GenesisGroup.at(await co.genesisGroup());
   let ido = await IDO.at(await co.ido());
   let pair = await IUniswapV2Pair.at(await ido.pair());
   let td = await TimelockedDelegator.at(await co.timelockedDelegator());
-  let staking = await StakingRewards.at(await co.feiStakingRewards());
-  let distributor = await FeiRewardsDistributor.at(await co.feiRewardsDistributor());
 
   let bc = await EthBondingCurve.at(await co.ethBondingCurve());
   let ethPair = await IUniswapV2Pair.at(await co.ethFeiPair());
@@ -46,7 +43,15 @@ module.exports = async function(callback) {
   let controller = await EthUniswapPCVController.at(await co.ethUniswapPCVController());
   let router = await FeiRouter.at(await co.feiRouter());
 
-  console.log('Init');
+  console.log('Init Staking');
+  await co.initStaking();
+  console.log('Init Genesis');
+  await co.beginGenesis();
+
+  let staking = await StakingRewards.at(await co.feiStakingRewards());
+  let distributor = await FeiRewardsDistributor.at(await co.feiRewardsDistributor());
+  let gg = await GenesisGroup.at(await co.genesisGroup());
+
   let ethAmount = new BN('100000000000000000000000');
 
   let ggPurchase = await gg.purchase(accounts[0], ethAmount, {from: accounts[0], value: ethAmount});
@@ -58,8 +63,9 @@ module.exports = async function(callback) {
   let ggCommitGas = ggCommit['receipt']['gasUsed'];
   console.log(`Genesis Group Commit of ${stringify(ethAmount)} / 2`); 
 
-  console.log('Sleeping for 60s');
-  await sleep(60000);
+  console.log('Sleeping for 20s');
+  await sleep(20000);
+
   await uo.update();
   let price = await uo.read();
   console.log(`Uniswap Oracle: price ${price[0] / 1e18}`);
@@ -67,7 +73,7 @@ module.exports = async function(callback) {
   let launch = await gg.launch({from: accounts[0]});
   let launchGas = launch['receipt']['gasUsed'];
   let coreComplete = await core.hasGenesisGroupCompleted();
-  let bcoInitPrice = await bco.initialPrice();
+  let bcoInitPrice = await bco.initialUSDPrice();
   let ggFei = await fei.balanceOf(await gg.address);
   let ggTribe = await tribe.balanceOf(await gg.address);
   console.log(`GG Launch: complete=${coreComplete}, initPrice= ${bcoInitPrice / 1e18}, fei=${stringify(ggFei)}, tribe=${stringify(ggTribe)}`); 
@@ -77,6 +83,9 @@ module.exports = async function(callback) {
   let redeemFei = await fei.balanceOf(accounts[0]);
   let redeemTribe = await tribe.balanceOf(accounts[0]);
   console.log(`GG Redeem: fei=${stringify(redeemFei)}, tribe=${stringify(redeemTribe)}`);
+
+  console.log('Sleeping for 100s');
+  await sleep(100000);
 
   let drip = await distributor.drip();
   let dripGas = drip['receipt']['gasUsed'];
@@ -137,6 +146,10 @@ module.exports = async function(callback) {
   feiAfter = await fei.balanceOf(accounts[0]);
   netFei = feiAfter.sub(feiBefore);
   console.log(`Bonding Curve Purchase Post: eth=${stringify(ethAmount)}, fei=${stringify(netFei)} atScaleBefore=${atScale}`);
+
+  let allocate = await bc.allocate();
+  let allocateGas = allocate['receipt']['gasUsed'];
+  console.log(`Allocate: gas=${allocateGas}`);
 
   feiBefore = await fei.balanceOf(accounts[0]);
   let tenX = ethAmount.mul(new BN('10'));

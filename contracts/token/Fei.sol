@@ -49,7 +49,6 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         override
         onlyGovernor
     {
-        require(Address.isContract(account) || account == address(0), "Fei: incentivized is not a contract or zero");
         incentiveContract[account] = incentive;
         emit IncentiveContractUpdate(account, incentive);
     }
@@ -61,6 +60,7 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         external
         override
         onlyMinter
+        whenNotPaused
     {
         _mint(account, amount);
         emit Minting(account, msg.sender, amount);
@@ -80,6 +80,7 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         public
         override(IFei, ERC20Burnable)
         onlyBurner
+        whenNotPaused
     {
         _burn(account, amount);
         emit Burning(account, msg.sender, amount);

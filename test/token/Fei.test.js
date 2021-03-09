@@ -22,6 +22,12 @@ describe('Fei', function () {
   });
 
   describe('mint', function () {
+    describe('Paused', function() {
+      it('reverts', async function() {
+        await this.fei.pause({from: governorAddress});
+        await expectRevert(this.fei.mint(userAddress, 100, { from: minterAddress }), "Pausable: paused");
+      });
+    });
     describe('not from minter', function () {
       it('reverts', async function () {
         await expectRevert(this.fei.mint(userAddress, 100), "CoreRef: Caller is not a minter");
@@ -48,6 +54,12 @@ describe('Fei', function () {
   });
 
   describe('burn', function () {
+    describe('Paused', function() {
+      it('reverts', async function() {
+        await this.fei.pause({from: governorAddress});
+        await expectRevert(this.fei.burnFrom(userAddress, 100, { from: burnerAddress }), "Pausable: paused");
+      });
+    });
     describe('not from burner', function () {
       it('reverts', async function () {
         await expectRevert(this.fei.burnFrom(userAddress, 100), "CoreRef: Caller is not a burner");
@@ -97,10 +109,6 @@ describe('Fei', function () {
 
     it('incentive contract registered', async function () {
       expect(await this.fei.incentiveContract(this.incentivizedAddress)).to.be.bignumber.equal(this.incentive.address);
-    });
-
-    it('non-contract reverts', async function() {
-      await expectRevert(this.fei.setIncentiveContract(userAddress, this.incentive.address, {from: governorAddress}), "Fei: incentivized is not a contract");
     });
 
     describe('via transfer', function () {

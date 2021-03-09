@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../token/IUniswapIncentive.sol";
 import "../token/IFei.sol";
+import "../genesis/IGenesisGroup.sol";
 import "../refs/IOracleRef.sol";
 import "../core/Core.sol";
 import "../staking/IRewardsDistributor.sol";
@@ -38,33 +39,33 @@ contract CoreOrchestrator is Ownable {
     address public tribeFeiPair;
 
     // ----------- Time periods -----------
-    uint256 public constant RELEASE_WINDOW = ROPSTEN ?  3 days : 100_000;
 
-    uint256 public constant TIMELOCK_DELAY = ROPSTEN ? 10 minutes : 10;
-    uint256 public constant GENESIS_DURATION = ROPSTEN ? 30 minutes : 55;
+    uint256 public constant TOKEN_TIMELOCK_RELEASE_WINDOW = 10 minutes;
 
-    uint256 public constant POOL_DURATION =  ROPSTEN ? 3 days : 200;
+    uint256 public constant DAO_TIMELOCK_DELAY = 10;
+    uint256 public constant GENESIS_DURATION = 20;
+
+    uint256 public constant STAKING_REWARDS_DURATION = 6 minutes;
     
-    uint256 public constant DRIP_FREQUENCY = ROPSTEN ? 10 minutes : 1;
+    uint256 public constant STAKING_REWARDS_DRIP_FREQUENCY = 2 minutes;
 
-    uint256 public constant THAWING_DURATION = ROPSTEN ? 4 hours : 10 minutes;
+    uint256 public constant THAWING_DURATION = 10 minutes;
 
-    uint256 public constant UNI_ORACLE_TWAP_DURATION = ROPSTEN ? 1 minutes : 1;
+    uint256 public constant UNI_ORACLE_TWAP_DURATION = 1;
 
-    uint256 public constant BONDING_CURVE_INCENTIVE_DURATION = 10 minutes;
+    uint256 public constant BONDING_CURVE_ALLOCATE_INCENTIVE_FREQUENCY = 10 minutes;
 
     // ----------- Params -----------
-    uint256 public constant EXCHANGE_RATE_DISCOUNT = 10;
+    uint256 public constant GENESIS_FEI_TRIBE_EXCHANGE_RATE_DISCOUNT = 10;
 
-    uint32 public constant INCENTIVE_GROWTH_RATE = 75; // a bit over 1 unit per 5 hours assuming 13s block time
+    uint32 public constant INCENTIVE_GROWTH_RATE = 50000; // a bit over 1 unit per 5 hours assuming 13s block time
 
-    uint256 public constant SCALE = ROPSTEN ? 100e18 : 100_000_000;
-    uint256 public constant BONDING_CURVE_INCENTIVE = ROPSTEN ? 5e18 : 5000;
+    uint256 public constant SCALE = 100_000_000e18;
+    uint256 public constant FEI_KEEPER_INCENTIVE = 500e18;
 
-    uint256 public constant REWEIGHT_INCENTIVE = ROPSTEN ? 5e18 : 5000;
     uint256 public constant MIN_REWEIGHT_DISTANCE_BPS = 100;
 
-    bool public constant USDC_PER_ETH_IS_PRICE_0 = false;
+    bool public constant USDC_PER_ETH_IS_PRICE_0 = false; // for the ETH_USDC pair
 
     uint256 public tribeSupply;
     uint256 public constant IDO_TRIBE_PERCENTAGE = 20;
@@ -181,8 +182,8 @@ contract CoreOrchestrator is Ownable {
             ethUniswapPCVDeposit,
             SCALE,
             THAWING_DURATION,
-            BONDING_CURVE_INCENTIVE_DURATION,
-            BONDING_CURVE_INCENTIVE
+            BONDING_CURVE_ALLOCATE_INCENTIVE_FREQUENCY,
+            FEI_KEEPER_INCENTIVE
         );
         core.grantMinter(ethBondingCurve);
         IOracleRef(ethUniswapPCVDeposit).setOracle(bondingCurveOracle);
@@ -204,7 +205,7 @@ contract CoreOrchestrator is Ownable {
     }
 
     function initRouter() public onlyOwner {
-        feiRouter = routerOrchestrator.init(ethFeiPair, WETH, address(core));
+        feiRouter = routerOrchestrator.init(ethFeiPair, WETH);
     }
 
     function initController() public onlyOwner {
@@ -214,7 +215,7 @@ contract CoreOrchestrator is Ownable {
             ethUniswapPCVDeposit,
             ethFeiPair,
             ROUTER,
-            REWEIGHT_INCENTIVE,
+            FEI_KEEPER_INCENTIVE,
             MIN_REWEIGHT_DISTANCE_BPS
         );
         core.grantMinter(ethUniswapPCVController);
@@ -239,7 +240,7 @@ contract CoreOrchestrator is Ownable {
             tribe,
             tribeFeiPair,
             ROUTER,
-            RELEASE_WINDOW
+            TOKEN_TIMELOCK_RELEASE_WINDOW
         );
         core.grantMinter(ido);
         core.allocateTribe(ido, (tribeSupply * IDO_TRIBE_PERCENTAGE) / 100);
@@ -257,7 +258,7 @@ contract CoreOrchestrator is Ownable {
             ido,
             bondingCurveOracle,
             GENESIS_DURATION,
-            EXCHANGE_RATE_DISCOUNT
+            GENESIS_FEI_TRIBE_EXCHANGE_RATE_DISCOUNT
         );
         core.setGenesisGroup(genesisGroup);
         core.allocateTribe(
@@ -268,14 +269,18 @@ contract CoreOrchestrator is Ownable {
         genesisOrchestrator.detonate();
     }
 
+    function beginGenesis() public onlyOwner {
+        IGenesisGroup(genesisGroup).initGenesis();
+    }
+
     function initStaking() public onlyOwner {
         (feiStakingRewards, feiRewardsDistributor) = stakingOrchestrator.init(
             address(core),
             tribeFeiPair,
             tribe,
-            POOL_DURATION,
-            DRIP_FREQUENCY,
-            REWEIGHT_INCENTIVE
+            STAKING_REWARDS_DURATION,
+            STAKING_REWARDS_DRIP_FREQUENCY,
+            FEI_KEEPER_INCENTIVE
         );
 
         core.allocateTribe(
@@ -292,10 +297,15 @@ contract CoreOrchestrator is Ownable {
     function initGovernance() public onlyOwner {
         (governorAlpha, timelock) = governanceOrchestrator.init(
             tribe,
-            TIMELOCK_DELAY
+            DAO_TIMELOCK_DELAY
         );
         governanceOrchestrator.detonate();
         core.grantGovernor(timelock);
         ITribe(tribe).setMinter(timelock);
+    }
+
+    function renounceGovernor() public onlyOwner {
+        core.revokeGovernor(address(this));
+        renounceOwnership();
     }
 }

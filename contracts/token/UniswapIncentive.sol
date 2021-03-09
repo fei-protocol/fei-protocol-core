@@ -136,14 +136,15 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     /// @notice return true if burn incentive equals mint
     function isIncentiveParity() public view override returns (bool) {
         uint32 weight = getTimeWeight();
-        require(weight != 0, "UniswapIncentive: Incentive zero or not active");
+        if (weight == 0) {
+            return false;
+        }
 
         (Decimal.D256 memory price, , ) = _getUniswapPrice();
         Decimal.D256 memory deviation = _deviationBelowPeg(price, peg());
-        require(
-            !deviation.equals(Decimal.zero()),
-            "UniswapIncentive: Price already at or above peg"
-        );
+        if (deviation.equals(Decimal.zero())) {
+            return false;
+        }
 
         Decimal.D256 memory incentive = _calculateBuyIncentiveMultiplier(deviation, deviation, weight);
         Decimal.D256 memory penalty = _calculateSellPenaltyMultiplier(deviation);
@@ -154,8 +155,8 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     /// @param amount the FEI size of the transfer
     /// @return incentive the FEI size of the mint incentive
     /// @return weight the time weight of thhe incentive
-    /// @return initialDeviation the Decimal deviation from peg before a transfer
-    /// @return finalDeviation the Decimal deviation from peg after a transfer
+    /// @return _initialDeviation the Decimal deviation from peg before a transfer
+    /// @return _finalDeviation the Decimal deviation from peg after a transfer
     /// @dev calculated based on a hypothetical buy, applies to any ERC20 FEI transfer from the pool
     function getBuyIncentive(uint256 amount)
         public
@@ -164,13 +165,19 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         returns (
             uint256 incentive,
             uint32 weight,
-            Decimal.D256 memory initialDeviation,
-            Decimal.D256 memory finalDeviation
+            Decimal.D256 memory _initialDeviation,
+            Decimal.D256 memory _finalDeviation
         )
     {
         int256 signedAmount = amount.toInt256();
         // A buy withdraws FEI from uni so use negative amountIn
-        (initialDeviation, finalDeviation) = _getPriceDeviations(
+        (
+            Decimal.D256 memory initialDeviation, 
+            Decimal.D256 memory finalDeviation, 
+            Decimal.D256 memory peg,
+            uint256 reserveFei,
+            uint256 reserveOther
+        ) = _getPriceDeviations(
             -1 * signedAmount
         );
         weight = getTimeWeight();
@@ -183,7 +190,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         uint256 incentivizedAmount = amount;
         // if buy ends above peg, only incentivize amount to peg
         if (finalDeviation.equals(Decimal.zero())) {
-            incentivizedAmount = _getAmountToPegFei();
+            incentivizedAmount = _getAmountToPegFei(reserveFei, reserveOther, peg);
         }
 
         Decimal.D256 memory multiplier =
@@ -195,8 +202,8 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
     /// @notice get the burn amount of a sell transfer
     /// @param amount the FEI size of the transfer
     /// @return penalty the FEI size of the burn incentive
-    /// @return initialDeviation the Decimal deviation from peg before a transfer
-    /// @return finalDeviation the Decimal deviation from peg after a transfer
+    /// @return _initialDeviation the Decimal deviation from peg before a transfer
+    /// @return _finalDeviation the Decimal deviation from peg after a transfer
     /// @dev calculated based on a hypothetical sell, applies to any ERC20 FEI transfer to the pool
     function getSellPenalty(uint256 amount)
         public
@@ -204,12 +211,19 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         override
         returns (
             uint256 penalty,
-            Decimal.D256 memory initialDeviation,
-            Decimal.D256 memory finalDeviation
+            Decimal.D256 memory _initialDeviation,
+            Decimal.D256 memory _finalDeviation
         )
     {
         int256 signedAmount = amount.toInt256();
-        (initialDeviation, finalDeviation) = _getPriceDeviations(signedAmount);
+        
+        (
+            Decimal.D256 memory initialDeviation, 
+            Decimal.D256 memory finalDeviation, 
+            Decimal.D256 memory peg,
+            uint256 reserveFei,
+            uint256 reserveOther
+        ) = _getPriceDeviations(signedAmount);
 
         // if trafe ends above peg, it was always above peg and no penalty needed
         if (finalDeviation.equals(Decimal.zero())) {
@@ -219,7 +233,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         uint256 incentivizedAmount = amount;
         // if trade started above but ended below, only penalize amount going below peg
         if (initialDeviation.equals(Decimal.zero())) {
-            uint256 amountToPeg = _getAmountToPegFei();
+            uint256 amountToPeg = _getAmountToPegFei(reserveFei, reserveOther, peg);
             incentivizedAmount = amount.sub(
                 amountToPeg,
                 "UniswapIncentive: Underflow"
@@ -271,7 +285,7 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         _updateTimeWeight(initialDeviation, finalDeviation, weight);
 
         if (penalty != 0) {
-            require(penalty <= amount, "UniswapIncentive: Burn exceeds trade size");
+            require(penalty < amount, "UniswapIncentive: Burn exceeds trade size");
             fei().burnFrom(address(pair), penalty); // burn from the recipient which is the pair
         }
     }
@@ -306,7 +320,12 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         }
         Decimal.D256 memory numerator = _sellPenaltyBound(finalDeviation).sub(_sellPenaltyBound(initialDeviation));
         Decimal.D256 memory denominator = finalDeviation.sub(initialDeviation);
-        return numerator.div(denominator);
+
+        Decimal.D256 memory multiplier = numerator.div(denominator);
+        if (multiplier.greaterThan(Decimal.one())) {
+            return Decimal.one();
+        }
+        return multiplier;
     }
 
     function _sellPenaltyBound(Decimal.D256 memory deviation)         
@@ -322,7 +341,11 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         pure
         returns (Decimal.D256 memory)
     {
-        return deviation.mul(deviation).mul(100); // m^2 * 100
+        Decimal.D256 memory multiplier = deviation.mul(deviation).mul(100); // m^2 * 100
+        if (multiplier.greaterThan(Decimal.one())) {
+            return Decimal.one();
+        }
+        return multiplier;
     }
 
     function _updateTimeWeight(

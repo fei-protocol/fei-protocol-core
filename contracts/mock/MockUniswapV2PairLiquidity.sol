@@ -82,7 +82,13 @@ contract MockUniswapV2PairLiquidity {
     }
 
     function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external { 
-        // No - op;
+        if (amount0Out != 0) {
+            IERC20(token0).transfer(to, amount0Out);
+        }
+
+        if (amount1Out != 0) {
+            IERC20(token1).transfer(to, amount1Out);
+        }
     }
 
     // @openzeppelin/contracts/token/ERC20/ERC20.sol

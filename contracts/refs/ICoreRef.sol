@@ -16,6 +16,10 @@ interface ICoreRef {
 
     function setCore(address core) external;
 
+    function pause() external;
+
+    function unpause() external;
+
     // ----------- Getters -----------
 
     function core() external view returns (ICore);

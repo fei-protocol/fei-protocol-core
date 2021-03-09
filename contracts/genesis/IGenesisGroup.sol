@@ -22,6 +22,10 @@ interface IGenesisGroup {
 
     event Launch(uint256 _timestamp);
 
+    // ----------- Governor-only state changing API -----------
+    
+    function initGenesis() external;
+
     // ----------- State changing API -----------
 
     function purchase(address to, uint256 value) external payable;
@@ -59,9 +63,6 @@ interface IGenesisGroup {
     function totalCommittedFGEN() external view returns (uint256);
 
     function totalCommittedTribe() external view returns (uint256);
-
-    // solhint-disable-next-line func-name-mixedcase
-    function ORACLE_LISTING_PERCENT() external view returns (uint256);
 
     function launchBlock() external view returns (uint256);
 }

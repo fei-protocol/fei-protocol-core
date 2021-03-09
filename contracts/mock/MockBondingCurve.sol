@@ -34,7 +34,7 @@ contract MockBondingCurve {
 		return 10 * amount;
 	}
 
-	function getAveragePrice(uint256 ) public view returns (Decimal.D256 memory) {
+	function getAverageUSDPrice(uint256 ) public view returns (Decimal.D256 memory) {
 		return getCurrentPrice;
 	}
 }

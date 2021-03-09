@@ -11,6 +11,7 @@ const {
     MockStakingRewards,
     FeiRewardsDistributor,
     MockERC20,
+    MockBot,
     getCore,
     expectApprox
   } = require('../helpers');
@@ -47,8 +48,8 @@ const {
     });
   
     describe('Init', function() {
-      it('killSwitch', async function() {
-        expect(await this.distributor.killSwitch()).to.be.equal(false);
+      it('paused', async function() {
+        expect(await this.distributor.paused()).to.be.equal(false);
       });
 
       it('stakingContract', async function() {
@@ -205,30 +206,22 @@ const {
         });
     });
 
-    describe('setKillSwitch', function() {
-        describe('Non-governor', function() {
-            it('reverts', async function() {
-                await expectRevert(this.distributor.setKillSwitch(true, {from: userAddress}), "CoreRef: Caller is not a guardian or governor");
-            });
-        });
-
-        describe('Governor', function() {
-            beforeEach(async function() {
-                expectEvent(
-                    await this.distributor.setKillSwitch(true, {from: governorAddress}),
-                    'KillSwitchUpdate',
-                    {
-                        _killSwitch: true
-                    }
-                );
-            });
-            it('updates kill switchh', async function() {
-               expect(await this.distributor.killSwitch()).to.be.equal(true);
-            });
-        });
-    });
-
     describe('drip', function() {
+
+        describe('Paused', function() {
+            it('reverts', async function() {
+              await this.distributor.pause({from: governorAddress});
+              await expectRevert(this.distributor.drip(), "Pausable: paused");
+            });
+        });
+
+        describe('From Contract', function() {
+            it('reverts', async function() {
+              let bot = await MockBot.new();
+              await expectRevert(bot.distributorDrip(this.distributor.address), "CoreRef: Caller is a contract");
+            });
+        });
+
         describe('immediate', function() {
             describe('before frequency', function() {
                 it('reverts', async function() {
@@ -455,12 +448,12 @@ const {
                         );
                     });
                     it('updates balances', async function() {
-                        await expectApprox(await this.distributor.rewardBalance(), this.tribeBefore.sub(this.secondExpectedDrip));
+                        await expectApprox(await this.distributor.rewardBalance(), new BN('0'));
                         await expectApprox(await this.tribe.balanceOf(this.staking.address), this.totalDrip);
                         await expectApprox(await this.distributor.distributedRewards(), this.totalDrip);
                         await expectApprox(await this.distributor.totalReward(), this.rewardAmount);
                         await expectApprox(await this.distributor.releasedReward(), new BN('0'));
-                        await expectApprox(await this.distributor.unreleasedReward(), this.tribeBefore.sub(this.secondExpectedDrip));
+                        await expectApprox(await this.distributor.unreleasedReward(), new BN('0'));
                     });
 
                     it('incentivizes', async function() {
