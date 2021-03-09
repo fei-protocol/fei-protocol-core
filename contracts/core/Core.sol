@@ -1,6 +1,7 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
+import "@openzeppelin/contracts/proxy/Initializable.sol";
 import "./Permissions.sol";
 import "./ICore.sol";
 import "../token/Fei.sol";
@@ -9,7 +10,7 @@ import "../dao/Tribe.sol";
 /// @title Source of truth for Fei Protocol
 /// @author Fei Protocol
 /// @notice maintains roles, access control, fei, tribe, genesisGroup, and the TRIBE treasury
-contract Core is ICore, Permissions {
+contract Core is ICore, Permissions, Initializable {
 
     /// @notice the address of the FEI contract
     IFei public override fei;
@@ -22,11 +23,9 @@ contract Core is ICore, Permissions {
     /// @notice determines whether in genesis period or not
     bool public override hasGenesisGroupCompleted;
 
-    constructor() public {
+    function init() external override initializer {
         _setupGovernor(msg.sender);
-    }
-
-    function init() external onlyGovernor {
+        
         Fei _fei = new Fei(address(this));
         _setFei(address(_fei));
 

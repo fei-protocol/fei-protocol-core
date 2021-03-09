@@ -18,6 +18,10 @@ interface ICore is IPermissions {
 
     // ----------- Governor only state changing api -----------
 
+    function init() external;
+
+    // ----------- Governor only state changing api -----------
+
     function setFei(address token) external;
 
     function setTribe(address token) external;
