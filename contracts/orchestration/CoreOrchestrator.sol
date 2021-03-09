@@ -236,6 +236,8 @@ contract CoreOrchestrator is Ownable {
             TOKEN_TIMELOCK_RELEASE_WINDOW
         );
         core.grantMinter(ido);
+        core.grantBurner(ido);
+
         core.allocateTribe(ido, (tribeSupply * IDO_TRIBE_PERCENTAGE) / 100);
         core.allocateTribe(
             timelockedDelegator,

@@ -83,6 +83,9 @@ contract IDO is IDOInterface, UniRef, LinearTokenTimelock {
                 : (amountOut, uint256(0));
         pair.swap(amount0Out, amount1Out, msg.sender, new bytes(0));
 
+        fei().burnFrom(address(pair), amountFei);
+        pair.sync();
+        
         return amountOut;
     }
 }
