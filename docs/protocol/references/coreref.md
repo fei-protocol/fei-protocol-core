@@ -81,9 +81,7 @@ function tribeBalance() external view returns (uint256);
 
 Returns the amount of TRIBE held by this contract
 
-## State-Changing Functions <a id="state-changing-functions"></a>
-
-### Governor-Only⚖️
+## Governor-Only⚖️ State-Changing Functions
 
 ### setCore
 
@@ -95,9 +93,9 @@ Sets the currently referenced [Fei Core](../access-control/core.md) contract to 
 
 emits `CoreUpdate`
 
-### Guardian- Or Governor-Only🛡⚖️
+## Guardian- Or Governor-Only🛡⚖️ State-Changing Functions
 
-#### pause
+### pause
 
 ```javascript
 function pause() external;
@@ -105,11 +103,17 @@ function pause() external;
 
 Puts the contract in the paused state which can shut down [pausable](https://docs.openzeppelin.com/contracts/3.x/api/utils#Pausable) external functions
 
-#### unpause
+### unpause
 
 ```javascript
 function unpause() external;
 ```
 
 Puts the contract in the unpaused state which can reopen [pausable](https://docs.openzeppelin.com/contracts/3.x/api/utils#Pausable) external functions
+
+## ABIs
+
+{% file src="../../.gitbook/assets/coreref.json" caption="CoreRef ABI" %}
+
+{% file src="../../.gitbook/assets/icoreref.json" caption="CoreRef Interface ABI" %}
 

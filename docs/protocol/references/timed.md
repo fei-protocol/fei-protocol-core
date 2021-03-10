@@ -78,5 +78,7 @@ function remainingTime() external view returns (uint256);
 
 Returns the time remaining in the window _t - d_. 
 
-### 
+## ABIs
+
+{% file src="../../.gitbook/assets/timed.json" caption="Timed" %}
 

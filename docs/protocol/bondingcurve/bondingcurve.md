@@ -179,11 +179,9 @@ function incentiveAmount() external view returns (uint256);
 
 Returns the amount of FEI sent to the keeper who calls `allocate()` while the incentive is active.
 
-## State-Changing Functions <a id="state-changing-functions"></a>
+## Public State-Changing Functions
 
-### Public
-
-#### purchase
+### purchase
 
 ```javascript
 function purchase(address to, uint256 amountIn)
@@ -200,9 +198,9 @@ emits `Purchase`
 This method is [pausable](../../governance/fei-guardian.md)
 {% endhint %}
 
-### EOA-Only 👤
+## EOA-Only 👤 State-Changing Functions
 
-#### allocate
+### allocate
 
 ```javascript
 function allocate() external;
@@ -216,9 +214,9 @@ emits `Allocate`
 This method is [pausable](../../governance/fei-guardian.md)
 {% endhint %}
 
-### Governor-Only**⚖️**
+## Governor-Only**⚖️** State-Changing Functions
 
-#### **setBuffer**
+### **setBuffer**
 
 ```javascript
 function setBuffer(uint256 _buffer) external;
@@ -228,7 +226,7 @@ Sets the buffer to `_buffer`. Must be less than `BUFFER_GRANULARITY`
 
 emits `BufferUpdate`
 
-#### **setScale**
+### **setScale**
 
 ```javascript
 function setScale(uint256 _scale) external;
@@ -238,7 +236,7 @@ Sets the Scale target to `_scale`
 
 emits `ScaleUpdate`
 
-#### setIncentiveAmount
+### setIncentiveAmount
 
 ```javascript
 function setIncentiveAmount(uint256 _incentiveAmount) external;
@@ -248,7 +246,7 @@ Sets the `incentiveAmount` to `_incentiveAmount`
 
 emits `IncentiveAmountUpdate`
 
-#### **setIncentiveFrequency**
+### **setIncentiveFrequency**
 
 ```javascript
 function setIncentiveFrequency(uint256 _frequency) external;
@@ -258,7 +256,7 @@ Sets the [Timed](../references/timed.md) duration to `_frequency`
 
 emits `DurationUpdate`
 
-#### **setAllocation**
+### **setAllocation**
 
 ```javascript
 function setAllocation(
@@ -268,4 +266,10 @@ function setAllocation(
 ```
 
 Sets the PCV allocation to `pcvDeposits` with weights `ratios`. The ratios must sum to `ALLOCATION_GRANULARITY` which is constant at 10,000.
+
+## ABIs
+
+{% file src="../../.gitbook/assets/bondingcurve.json" caption="BondingCurve ABI" %}
+
+{% file src="../../.gitbook/assets/ibondingcurve.json" caption="BondingCurve Interface ABI" %}
 

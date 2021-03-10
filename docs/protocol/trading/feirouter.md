@@ -18,11 +18,9 @@ For the `buyFei` method the `minReward` parameter is the minimum amount of FEI m
 
 For the `sellFei` method the `maxPenalty` parameter is the maximum amount of FEI burn the contract should allow without reverting. This is the burn applied by the [UniswapIncentive](https://github.com/fei-protocol/fei-protocol-core/wiki/UniswapIncentive) contract.
 
-## State-Changing Functions <a id="state-changing-functions"></a>
+## Public State-Changing Functions
 
-### Public
-
-#### buyFei
+### buyFei
 
 ```javascript
 function buyFei(
@@ -39,7 +37,7 @@ Calculates the reward received by calculating how much the balance of "to" incre
 
 Revert if the FEI reward received is less than `minReward`.
 
-#### sellFei
+### sellFei
 
 ```javascript
 function sellFei(
@@ -56,4 +54,10 @@ Sell `amountIn` FEI to receive at least `amountOutMin` ETH and send the FEI to a
 Calculates the penalty by calculating the amount that was removed from in-flight after the FEI transfer to Uniswap.
 
 Revert if the FEI penalty received is more than `maxPenalty`.
+
+## ABIs
+
+{% file src="../../.gitbook/assets/feirouter.json" caption="FeiRouter ABI" %}
+
+{% file src="../../.gitbook/assets/ifeirouter.json" caption="FeiRouter Interface ABI" %}
 

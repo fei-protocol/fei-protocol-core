@@ -23,15 +23,9 @@ To run the unit tests, run `npm run test`
 
 Here is a sample output:
 
-{% file src="../.gitbook/assets/fei\_tests.txt" caption="Unit Tests" %}
+{% file src="../.gitbook/assets/fei\_tests \(1\).txt" caption="Unit Tests" %}
 
-## Unit Test Coverage
-
-To run the unit test coverage module, run `npm run coverage`
-
-Here is a sample output: 
-
-{% file src="../.gitbook/assets/fei\_coverage.txt" caption="Test Coverage" %}
+{% file src="../.gitbook/assets/fei\_coverage \(1\).txt" caption="Test Coverage" %}
 
 ## Integration Tests
 
@@ -53,6 +47,4 @@ Keep ganache-cli and the truffle console running, and execute the following test
 To run this test, within the truffle console run `exec scripts/test/e2e.js`
 
 This test will go through all of the main user flows, log some related info and gas price
-
-
 

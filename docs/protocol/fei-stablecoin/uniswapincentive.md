@@ -206,11 +206,9 @@ function getSellPenalty(uint256 amount)
 
 returns the sell penalty amount `penalty` a FEI transfer of `amount` into the FEI/ETH incentivized Uniswap pool. Also returns the `initialDeviation` and `finalDeviation` which are equal to _m_ start and end, respectively.
 
-## State-Changing Functions <a id="state-changing-functions"></a>
+## Governor-Only⚖️ State-Changing Functions
 
-### Governor-Only⚖️
-
-#### setExemptAddress
+### setExemptAddress
 
 ```javascript
 function setExemptAddress(address account, bool isExempt) external;
@@ -220,7 +218,7 @@ set `account` incentive exempt status to `isExempt`
 
 emits `ExemptAddressUpdate`
 
-#### setTimeWeight
+### setTimeWeight
 
 ```javascript
 function setTimeWeight(
@@ -234,9 +232,9 @@ set the current time weight to `weight`, growing at a rate `growth` and active f
 
 emits `TimeWeightUpdate` and `GrowthRateUpdate` if the growth rate changes
 
-### Fei-Only🌲
+## Fei-Only🌲
 
-#### incentivize
+### incentivize
 
 ```javascript
 function incentivize(
@@ -264,5 +262,9 @@ applies the sell penalty based on `amountIn` if:
 * `receiver` is the ETH/FEI incentivized pair
 * `sender` is not exempt
 
+## ABIs
 
+{% file src="../../.gitbook/assets/uniswapincentive.json" caption="UniswapIncentive ABI" %}
+
+{% file src="../../.gitbook/assets/iuniswapincentive.json" caption="UniswapIncentive Interface ABI" %}
 

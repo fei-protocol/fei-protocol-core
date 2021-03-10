@@ -163,9 +163,7 @@ function distributedRewards() external view returns (uint256);
 
 The total amount of [TRIBE](../../governance/tribe.md) already distributed to [FeiStakingRewards](feistakingrewards.md).
 
-## State-Changing Functions <a id="state-changing-functions"></a>
-
-### EOA-Only 👤
+## EOA-Only 👤 State-Changing Functions
 
 ### drip
 
@@ -181,9 +179,9 @@ Incentivizes the caller with `incentiveAmount()` [FEI](../fei-stablecoin/fei-fei
 Only callable when `nextDripAvailable()` is below the current block timestamp and the contract is not [paused](../../governance/fei-guardian.md)
 {% endhint %}
 
-### Governor-Only⚖️
+## Governor-Only⚖️ State-Changing Functions
 
-#### governorWithdrawTribe
+### governorWithdrawTribe
 
 ```javascript
 function governorWithdraw(uint256 amount) external;
@@ -191,7 +189,7 @@ function governorWithdraw(uint256 amount) external;
 
 Withdraws `amount` TRIBE tokens from the pool to [Fei Core.](../access-control/core.md)
 
-#### governorRecover
+### governorRecover
 
 ```javascript
 function governorRecover(address tokenAddress, address to, uint256 amount) external;
@@ -199,7 +197,7 @@ function governorRecover(address tokenAddress, address to, uint256 amount) exter
 
 Recovers `tokenAddress` ERC20 tokens from the FeiStakingRewards contract to address `to`. This is used if there were AMM rewards distributed.
 
-#### setDripFrequency
+### setDripFrequency
 
 ```javascript
 function setDripFrequency(uint256 _frequency) external;
@@ -207,7 +205,7 @@ function setDripFrequency(uint256 _frequency) external;
 
 Sets the frequency with which the contract calls the FeiStakingRewards.
 
-#### setIncentiveAmount
+### setIncentiveAmount
 
 ```javascript
 function setIncentiveAmount(uint256 _incentiveAmount) external;
@@ -215,11 +213,17 @@ function setIncentiveAmount(uint256 _incentiveAmount) external;
 
 Sets the incentive amount for calling `drip()`.
 
-#### setStakingContract
+### setStakingContract
 
 ```javascript
 function setStakingContract(address _stakingRewards) external;
 ```
 
 Sets the staking contract to send TRIBE to.
+
+## ABIs
+
+{% file src="../../.gitbook/assets/feirewardsdistributor.json" caption="FeiRewardsDistributor ABI" %}
+
+{% file src="../../.gitbook/assets/irewardsdistributor.json" caption="RewardsDistributor Interface ABI" %}
 

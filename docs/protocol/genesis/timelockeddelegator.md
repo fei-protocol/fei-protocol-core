@@ -107,3 +107,9 @@ Withdraws all TRIBE from the delegate proxy contract associated with `delegatee`
 
 emits `Undelegate`
 
+## ABIs
+
+{% file src="../../.gitbook/assets/timelockeddelegator.json" caption="TimelockedDelegator ABI" %}
+
+{% file src="../../.gitbook/assets/itimelockeddelegator.json" caption="TimelockedDelegator Interface ABI" %}
+

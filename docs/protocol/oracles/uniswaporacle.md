@@ -45,7 +45,7 @@ The Governor ⚖️can change the duration.
 
 ## Read-Only Functions
 
-#### read
+### read
 
 ```javascript
 function read() external view returns (Decimal.D256 memory, bool);
@@ -57,7 +57,7 @@ Reads the oracle value and reports the peg as FEI per underlying. The boolean va
 This method is [pausable](../../governance/fei-guardian.md). If paused, it won't revert but it will return valid as false
 {% endhint %}
 
-#### isOutdated
+### isOutdated
 
 ```javascript
 function isOutdated() external view returns (bool);
@@ -65,7 +65,7 @@ function isOutdated() external view returns (bool);
 
 Returns true, if the oracle is still within the `duration` window. If false, then most read functions relying on the oracle would be inaccurate.
 
-#### priorTimestamp
+### priorTimestamp
 
 ```javascript
 function priorTimestamp() external returns (uint32);
@@ -73,7 +73,7 @@ function priorTimestamp() external returns (uint32);
 
 Returns the prior timestamp used in the time-weighted average price calculation from the Uniswap pair.
 
-#### priorCumulative
+### priorCumulative
 
 ```javascript
 function priorCumulative() external returns (uint256);
@@ -81,7 +81,7 @@ function priorCumulative() external returns (uint256);
 
 Returns the prior cumulative price used in the time-weighted average price calculation from the Uniswap pair.
 
-#### duration
+### duration
 
 ```javascript
 function duration() external returns (uint256);
@@ -89,7 +89,7 @@ function duration() external returns (uint256);
 
 Returns the duration of the time-weighted average price.
 
-#### pair
+### pair
 
 ```javascript
 function pair() external returns (IUniswapV2Pair);
@@ -97,11 +97,9 @@ function pair() external returns (IUniswapV2Pair);
 
 Returns the referenced Uniswap pair for the oracle.
 
-## State-Changing Functions <a id="state-changing-functions"></a>
+## Public State-Changing Functions
 
-### Public
-
-#### update
+### update
 
 ```javascript
 function update() external returns (bool);
@@ -115,9 +113,9 @@ emits `Update`
 This method is [pausable](../../governance/fei-guardian.md)
 {% endhint %}
 
-### Governor-Only⚖️
+## Governor-Only⚖️ State-Changing Functions
 
-#### setDuration
+### setDuration
 
 ```javascript
 function setDuration(uint256 _duration) external;
@@ -126,4 +124,12 @@ function setDuration(uint256 _duration) external;
 Changes the time-weighted average price to `_duration` second snapshots
 
 emits `DurationUpdate`
+
+## ABIs
+
+{% file src="../../.gitbook/assets/uniswaporacle.json" caption="Uniswap Oracle ABI" %}
+
+{% file src="../../.gitbook/assets/iuniswaporacle.json" caption="Uniswap Oracle Interface ABI" %}
+
+{% file src="../../.gitbook/assets/ioracle.json" caption="Oracle Interface ABI" %}
 

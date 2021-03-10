@@ -33,11 +33,9 @@ The IDO initialization with FEI and TRIBE. Only emitted once
 {% endtab %}
 {% endtabs %}
 
-## State-Changing Functions <a id="state-changing-functions"></a>
+## GenesisGroup-Only🚀 State-Changing Functions
 
-### GenesisGroup-Only🚀
-
-#### deploy
+### deploy
 
 ```javascript
 function deploy(Decimal.D256 calldata feiRatio) external;
@@ -45,11 +43,17 @@ function deploy(Decimal.D256 calldata feiRatio) external;
 
 Initializes the FEI/TRIBE Uniswap pool with liquidity based on the amount of TRIBE held by the contract and `feiRatio` times that amount worth of FEI. The FEI for this are minted by the IDO to itself. 
 
-#### swapFei
+### swapFei
 
 ```javascript
 function swapFei(uint256 amountFei) external returns (uint256);
 ```
 
 Swaps `amountFei` worth of FEI from the [GenesisGroup](genesisgroup.md) contract to the FEI/TRIBE Uniswap pool and back. The IDO must be approved for the FEI transfer.
+
+## ABIs
+
+{% file src="../../.gitbook/assets/ido.json" caption="IDO ABI" %}
+
+{% file src="../../.gitbook/assets/idointerface.json" caption="IDO Interface ABI" %}
 

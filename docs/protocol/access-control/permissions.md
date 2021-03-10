@@ -60,11 +60,9 @@ function isPCVController(address _address) external view returns (bool);
 
 returns true if `_address` has the PCV Controller⚙️role
 
-## State-Changing Functions <a id="state-changing-functions"></a>
+## Governor-Only⚖️ State-Changing Functions
 
-### Governor-Only⚖️
-
-#### createRole
+### createRole
 
 ```javascript
 function createRole(bytes32 role, bytes32 adminRole) external;
@@ -74,7 +72,7 @@ assigns role `role` a new admin role `adminRole`
 
 This function can be used either to create a new access control role or reassign an admin for an existing role.
 
-#### grantMinter
+### grantMinter
 
 ```javascript
 function grantMinter(address minter) external;
@@ -82,7 +80,7 @@ function grantMinter(address minter) external;
 
 assigns Minter💰role to `minter`
 
-#### grantBurner
+### grantBurner
 
 ```javascript
 function grantBurner(address burner) external;
@@ -90,7 +88,7 @@ function grantBurner(address burner) external;
 
 assigns Burner🔥role to `burner`
 
-#### grantPCVController
+### grantPCVController
 
 ```javascript
 function grantPCVController(address pcvController) external;
@@ -98,7 +96,7 @@ function grantPCVController(address pcvController) external;
 
 assigns PCV Controller⚙️ role to `pcvController`
 
-#### grantGovernor
+### grantGovernor
 
 ```javascript
 function grantGovernor(address governor) external;
@@ -106,7 +104,7 @@ function grantGovernor(address governor) external;
 
 assigns Governor⚖️role to `governor`
 
-#### grantGuardian
+### grantGuardian
 
 ```javascript
 function grantGuardian(address guardian) external;
@@ -114,7 +112,7 @@ function grantGuardian(address guardian) external;
 
 assigns Guardian🛡role to `guardian`
 
-#### revokeMinter
+### revokeMinter
 
 ```javascript
 function revokeMinter(address minter) external;
@@ -122,7 +120,7 @@ function revokeMinter(address minter) external;
 
 revokes Minter💰role from `minter`
 
-#### revokeBurner
+### revokeBurner
 
 ```javascript
 function revokeBurner(address burner) external;
@@ -130,7 +128,7 @@ function revokeBurner(address burner) external;
 
 revokes Burner🔥role from `burner`
 
-#### revokePCVController
+### revokePCVController
 
 ```javascript
 function revokePCVController(address pcvController) external;
@@ -138,7 +136,7 @@ function revokePCVController(address pcvController) external;
 
 revokes PCV Controller⚙️ role from `pcvController`
 
-#### revokeGovernor
+### revokeGovernor
 
 ```javascript
 function revokeGovernor(address governor) external;
@@ -146,7 +144,7 @@ function revokeGovernor(address governor) external;
 
 revokes Governor⚖️role from `governor`
 
-#### revokeGuardian
+### revokeGuardian
 
 ```javascript
 function revokeGuardian(address guardian) external;
@@ -154,7 +152,9 @@ function revokeGuardian(address guardian) external;
 
 revokes Guardian🛡role from `guardian`
 
-### Guardian-Only🛡
+## Guardian-Only🛡State-Changing Functions
+
+### revokeOverride
 
 ```javascript
 function revokeOverride(bytes32 role, address account) external;
@@ -163,4 +163,10 @@ function revokeOverride(bytes32 role, address account) external;
 revokes `role` from `account`
 
 fails if role is equal to Governor⚖️
+
+## ABIs
+
+{% file src="../../.gitbook/assets/permissions.json" caption="Permissions ABI" %}
+
+{% file src="../../.gitbook/assets/ipermissions.json" caption="Permissions Interface ABI" %}
 

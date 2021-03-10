@@ -140,11 +140,9 @@ function minDistanceForReweight()
 
 Returns the minimum percent distance from the peg needed for keepers to reweight the peg.
 
-## State-Changing Functions <a id="state-changing-functions"></a>
+## EOA-Only 👤 State-Changing Functions
 
-### EOA-Only 👤
-
-#### reweight
+### reweight
 
 ```javascript
 function reweight() external;
@@ -158,9 +156,9 @@ Rewards the caller with 500 FEI.
 This method is [pausable](../../governance/fei-guardian.md)
 {% endhint %}
 
-### Governor- Or Guardian-Only⚖️🛡
+## Governor- Or Guardian-Only⚖️🛡 State-Changing Functions
 
-#### forceReweight
+### forceReweight
 
 ```javascript
 function forceReweight() external;
@@ -168,9 +166,9 @@ function forceReweight() external;
 
 Forces a reweight execution. No FEI incentive for doing this. Fails if the Uniswap spot price is already at or above the peg.
 
-### Governor-Only⚖️
+## Governor-Only⚖️ State-Changing Functions
 
-#### setReweightMinDistance
+### setReweightMinDistance
 
 ```javascript
 function setReweightMinDistance(uint256 basisPoints) external;
@@ -180,7 +178,7 @@ Sets the minimum distance from the peg for a reweight to be eligible to `basisPo
 
 emits `ReweightMinDistanceUpdate`
 
-#### setReweightWithdrawBPs
+### setReweightWithdrawBPs
 
 ```javascript
 function setReweightWithdrawBPs(uint256 _reweightWithdrawBPs) external;
@@ -190,7 +188,7 @@ Sets the percentage of the PCV withdrawn when executing a reweight in terms of b
 
 emits `ReweightWithdrawBPsUpdate`
 
-#### setPCVDeposit
+### setPCVDeposit
 
 ```javascript
 function setPCVDeposit(address _pcvDeposit) external;
@@ -200,7 +198,7 @@ Sets the target PCV Deposit contract for reweight to `_pcvDeposit`
 
 emits `PCVDepositUpdate`
 
-#### setReweightIncentive
+### setReweightIncentive
 
 ```javascript
 function setReweightIncentive(uint256 amount) external;
@@ -209,4 +207,10 @@ function setReweightIncentive(uint256 amount) external;
 Sets the keeper incentive for executing a reweight to `amount` of FEI
 
 emits `ReweightIncentiveUpdate`
+
+## ABIs
+
+{% file src="../../.gitbook/assets/ethuniswappcvcontroller.json" caption="EthUniswapPCVController ABI" %}
+
+{% file src="../../.gitbook/assets/iuniswappcvcontroller.json" caption="UniswapPCVController Interface ABI" %}
 
