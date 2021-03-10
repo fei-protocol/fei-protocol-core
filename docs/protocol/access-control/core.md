@@ -115,11 +115,9 @@ function hasGenesisGroupCompleted() external view returns (bool);
 
 returns true if after genesis period and launched, false otherwise
 
-## State-Changing Functions <a id="state-changing-functions"></a>
+## Governor-Only⚖️ State-Changing Functions
 
-### Governor-Only⚖️ 
-
-#### setFei
+### setFei
 
 ```javascript
 function setFei(address token) external;
@@ -129,7 +127,7 @@ sets the reference [FEI](../fei-stablecoin/fei-fei-usd.md) contract
 
 emits `FeiUpdate`
 
-#### setTribe
+### setTribe
 
 ```javascript
 function setTribe(address token) external;
@@ -139,7 +137,7 @@ sets the reference [TRIBE](../../governance/tribe.md) contract
 
 emits `TribeUpdate`
 
-#### setGenesisGroup
+### setGenesisGroup
 
 ```javascript
 function setGenesisGroup(address _genesisGroup) external;
@@ -149,7 +147,7 @@ sets the reference [GenesisGroup](../genesis/genesisgroup.md) contract to `_gene
 
 emits `GenesisGroupUpdate`
 
-#### allocateTribe
+### allocateTribe
 
 ```javascript
 function allocateTribe(address to, uint256 amount) external;
@@ -159,9 +157,9 @@ distribute `amount` [TRIBE](../../governance/tribe.md) from Core to an external 
 
 emits `TribeAllocation`
 
-### GenesisGroup-Only🚀
+## GenesisGroup-Only🚀 State-Changing Functions
 
-#### completeGenesisGroup
+### completeGenesisGroup
 
 ```javascript
 function completeGenesisGroup() external;
@@ -172,4 +170,10 @@ called during Fei Protocol launch to unlock the remaining protocol functionality
 emits `GenesisPeriodComplete`
 
 {% page-ref page="../genesis/genesisgroup.md" %}
+
+## ABIs
+
+{% file src="../../.gitbook/assets/core.json" caption="Core ABI" %}
+
+{% file src="../../.gitbook/assets/icore.json" caption="Core Interface ABI" %}
 

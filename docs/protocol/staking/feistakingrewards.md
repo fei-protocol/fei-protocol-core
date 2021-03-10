@@ -63,3 +63,9 @@ Documented on the Synthetix website:
 
 {% embed url="https://docs.synthetix.io/contracts/source/contracts/StakingRewards/" %}
 
+## ABIs
+
+{% file src="../../.gitbook/assets/feistakingrewards.json" caption="FeiStakingRewards ABI" %}
+
+{% file src="../../.gitbook/assets/istakingrewards.json" caption="StakingRewards Interface ABI" %}
+

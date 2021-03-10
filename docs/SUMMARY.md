@@ -1,14 +1,7 @@
 # Table of contents
 
 * [Overview](README.md)
-* [Audit Reports](audit.md)
 * [White Paper](whitepaper.md)
-* [Bug Bounties](bug-bounty.md)
-
-## Developers
-
-* [Development Guide](developers/development-guide.md)
-* [Testing Guide](developers/testing-guide.md)
 
 ## Protocol
 

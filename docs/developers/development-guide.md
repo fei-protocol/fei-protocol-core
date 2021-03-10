@@ -29,5 +29,3 @@ Our goal is to enable as many two-way integrations with other DeFi platforms inc
 
 Platform integrations should follow respective platform governance procedures and community engagement. The Fei Core Team is excited at the opportunity to collaborate and sponsor community-led integrations with resources and tokens.
 
-
-

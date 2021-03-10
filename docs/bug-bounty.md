@@ -10,11 +10,11 @@ description: Community engagement incentives
 
 Fei Protocol's goal is to maintain a liquid market in which ETH/FEI trades closely to the ETH/USD price. FEI achieves this via a new stability mechanism known as direct incentives. Direct incentive stable coins use dynamic mint rewards and burn penalties on DEX trade volume to maintain the peg. Governance can add and update DEX integrations and other incentives as needed, which uses the TRIBE governance token.
 
-The bug bounty program is focused on its smart contracts and website and the prevention of the loss of user funds and the disruption of the governance system. 
+The bug bounty program is focused on its smart contracts and website and the prevention of the loss of user funds and the disruption of the governance system.
 
-## All bug submissions must go through Immunefi's bug submission process on the Fei bug bounty page.
+## All bug submissions must go through Immunefi's bug submission process on the [Fei bug bounty page](https://immunefi.com/bounty/feiprotocol).
 
-The Fei bug bounty page will be linked here when it is launched. When a hacker hits the "Submit bug report" button, they will be sent to [bugs.immunefi.com](https://bugs.immunefi.com/) which will guide them through the process of creating a bug report.
+The Fei bug bounty page can be viewed at [https://immunefi.com/bounty/feiprotocol](https://immunefi.com/bounty/feiprotocol). When a hacker hits the "Submit bug report" button, they will be sent to [bugs.immunefi.com](https://bugs.immunefi.com/) which will guide them through the process of creating a bug report.
 
 **Rewards by threat level**
 
@@ -50,7 +50,7 @@ Payouts are handled by the **Fei Protocol** team directly and are denominated in
 
 We are especially interested in receiving and rewarding vulnerabilities of the following types:
 
- **Smart Contracts and Blockchain**
+**Smart Contracts and Blockchain**
 
 * Re-entrancy
 * Logic errors
@@ -140,7 +140,7 @@ The following vulnerabilities are excluded from the rewards for this bug bounty 
 * DDoS vulnerabilities
 * Attacks requiring privileged access from within the organization
 
-The bug bounty program prohibits the following activities: 
+The bug bounty program prohibits the following activities:
 
 * Any testing with mainnet or public testnet contracts; all testing should be done on private testnets
 * Any testing with pricing oracles or third party smart contracts

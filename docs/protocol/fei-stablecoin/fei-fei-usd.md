@@ -58,6 +58,8 @@ setting or unsetting an incentive contract for an incentivized address
 
 ## Read-Only Functions
 
+### incentiveContract
+
 ```javascript
 function incentiveContract(address account) external view returns (address);
 ```
@@ -68,9 +70,7 @@ returns the mapped incentive contract if `account` is an incentivized address, o
 if the 0 address has a mapped incentive contract, then this incentive contract is called for every single FEI transfer.
 {% endhint %}
 
-## State-Changing Functions <a id="state-changing-functions"></a>
-
-### Burner-Only🔥 
+## Burner-Only🔥 State-Changing Functions
 
 ### burnFrom
 
@@ -82,7 +82,7 @@ Burns `amount` FEI from `account`. Reverts if the FEI balance of `account` is le
 
 emits `Burning`
 
-### Minter-Only💰 
+## Minter-Only💰 State-Changing Functions
 
 ### mint
 
@@ -94,7 +94,9 @@ Mints `amount` FEI to `account`
 
 emits `Minting`
 
-### Governor-Only⚖️ 
+## Governor-Only⚖️ State-Changing Functions
+
+### setIncentiveContract
 
 ```javascript
 function setIncentiveContract(address account, address incentive) external;
@@ -104,9 +106,9 @@ Sets the incentive contract `incentive` for `account`. If `incentive` is the 0 a
 
 emits `IncentiveContractUpdate`
 
-### Public
+## Public State-Changing Functions
 
-#### burn
+### burn
 
 ```javascript
 function burn(uint256 amount) external;
@@ -116,7 +118,7 @@ Burns `amount` FEI from `msg.sender`. Reverts if the FEI balance of `msg.sender`
 
 emits `Burning`
 
-#### permit
+### permit
 
 ```javascript
 function permit(
@@ -132,5 +134,9 @@ function permit(
 
 Sets the allowance for a `spender` for `value` FEI from `owner` via signature. Reverts if called after `deadline`
 
+## ABIs
 
+{% file src="../../.gitbook/assets/fei.json" caption="Fei ABI" %}
+
+{% file src="../../.gitbook/assets/ifei.json" caption="Fei Interface ABI" %}
 

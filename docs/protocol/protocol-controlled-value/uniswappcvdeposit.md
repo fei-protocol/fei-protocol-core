@@ -55,9 +55,9 @@ Returns the effective amount of non-FEI PCV held by the contract.
 
 E.g., if the deposit holds 50% of all ETH/FEI liquidity on Uniswap, and there are 100,000 ETH in Uniswap, the function should return 50,000e18 wei.
 
-## State-Changing Functions <a id="state-changing-functions"></a>
+## Public State-Changing Functions
 
-### Public
+### deposit
 
 ```javascript
 function deposit(uint256 amount) external payable;
@@ -67,7 +67,9 @@ Deposits `amount` PCV into Uniswap by minting the necessary amount of FEI to mak
 
 E.g., if there are 50,000 ETH and 100,000,000 FEI on Uniswap, and the protocol receives another 500 ETH to deposit, the protocol will mint another 1,000,000 FEI to deposit at the current 2000 FEI/ETH spot price.
 
-### PCV Controller-Only ⚙️
+## PCV Controller-Only ⚙️ State-Changing Functions
+
+### withdraw
 
 ```javascript
 function withdraw(address to, uint256 amount) external;
@@ -76,4 +78,12 @@ function withdraw(address to, uint256 amount) external;
 Withdraws `amount` PCV from Uniswap to address `to` by withdrawing the necessary amount of liquidity and burning the corresponding FEI.
 
 E.g., if the protocol owns 50,000 ETH and 100,000,000 FEI worth of liquidity on Uniswap, a withdrawal of 500 ETH would liquidate 1% of the LP shares and burn the extra 1,000,000 FEI received before transferring the 500 ETH.
+
+## ABIs
+
+{% file src="../../.gitbook/assets/uniswappcvdeposit.json" caption="UniswapPCVDeposit ABI" %}
+
+{% file src="../../.gitbook/assets/ipcvdeposit.json" caption="PCVDeposit Interface ABI" %}
+
+
 
