@@ -43,8 +43,6 @@ module.exports = async function(callback) {
   let controller = await EthUniswapPCVController.at(await co.ethUniswapPCVController());
   let router = await FeiRouter.at(await co.feiRouter());
 
-  console.log('Init Staking');
-  await co.initStaking();
   console.log('Init Genesis');
   await co.beginGenesis();
 
@@ -76,6 +74,7 @@ module.exports = async function(callback) {
   let bcoInitPrice = await bco.initialUSDPrice();
   let ggFei = await fei.balanceOf(await gg.address);
   let ggTribe = await tribe.balanceOf(await gg.address);
+  
   console.log(`GG Launch: complete=${coreComplete}, initPrice= ${bcoInitPrice / 1e18}, fei=${stringify(ggFei)}, tribe=${stringify(ggTribe)}`); 
 
   let redeem = await gg.redeem(accounts[0]);
