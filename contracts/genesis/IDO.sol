@@ -88,4 +88,9 @@ contract IDO is IDOInterface, UniRef, LinearTokenTimelock {
         
         return amountOut;
     }
+
+    /// @notice unlock override to beneficiary of timelock
+    function unlockLiquidity() external override onlyGovernor {
+        _release(beneficiary, totalToken());
+    }
 }

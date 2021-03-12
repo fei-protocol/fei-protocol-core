@@ -80,6 +80,22 @@ describe('IDO', function () {
     });
   });
 
+  describe('UnlockLiquidity', function() {
+    describe('Not Governor', function() {
+      it('reverts', async function() {
+        await expectRevert(this.ido.unlockLiquidity({from: userAddress}), "CoreRef: Caller is not a governor");
+      });
+    });
+
+    describe('From Governor', function() {
+      beforeEach(async function() {
+        await this.ido.unlockLiquidity({from: governorAddress});
+      });
+      it('succeeds', async function() {
+        expect(await this.ido.totalToken()).to.be.bignumber.equal(new BN('0'));
+      });
+    });
+  });
 
   describe('Swap', function() {
     describe('Not Genesis Group', function() {

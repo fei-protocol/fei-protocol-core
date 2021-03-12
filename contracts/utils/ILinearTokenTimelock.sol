@@ -15,6 +15,8 @@ interface ILinearTokenTimelock {
 
     function release(address to, uint amount) external;
 
+    function releaseMax(address to) external;
+
     function setPendingBeneficiary(address _pendingBeneficiary) external;
 
     function acceptBeneficiary() external;

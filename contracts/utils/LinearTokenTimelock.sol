@@ -59,15 +59,19 @@ contract LinearTokenTimelock is ILinearTokenTimelock, Timed {
         _;
     }
 
-    /// @notice releases unlocked tokens to beneficiary
-    function release(address to, uint amount) external override onlyBeneficiary balanceCheck {
+    /// @notice releases `amount` unlocked tokens to address `to`
+    function release(address to, uint256 amount) external override onlyBeneficiary balanceCheck {
         require(amount != 0, "LinearTokenTimelock: no amount desired");
 
         uint256 available = availableForRelease();
         require(amount <= available, "LinearTokenTimelock: not enough released tokens");
 
-        lockedToken.transfer(to, amount);
-        emit Release(beneficiary, to, amount);
+        _release(to, amount);
+    }
+
+    /// @notice releases maximum unlocked tokens to address `to`
+    function releaseMax(address to) external override onlyBeneficiary balanceCheck {
+        _release(to, availableForRelease());
     }
 
     /// @notice the total amount of tokens held by timelock
@@ -117,5 +121,10 @@ contract LinearTokenTimelock is ILinearTokenTimelock, Timed {
 
     function _setLockedToken(address tokenAddress) internal {
         lockedToken = IERC20(tokenAddress);
+    }
+
+    function _release(address to, uint256 amount) internal {
+        lockedToken.transfer(to, amount);
+        emit Release(beneficiary, to, amount);
     }
 }
