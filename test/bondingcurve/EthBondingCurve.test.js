@@ -453,7 +453,6 @@ describe('EthBondingCurve', function () {
     describe('Pre Launch', function() {
       beforeEach(async function() {
         this.core = await getCore(false);
-        await this.core.init({from: governorAddress});
         await this.bondingCurve.setCore(this.core.address, {from: governorAddress});
       });
 
