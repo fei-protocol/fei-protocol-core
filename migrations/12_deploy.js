@@ -1,11 +1,14 @@
 const CoreOrchestrator = artifacts.require("CoreOrchestrator");
+const Core = artifacts.require("Core");
 
 module.exports = function(deployer) {
 	deployer.then(function() {
 	 	return CoreOrchestrator.deployed();
 	}).then(function(instance) {
 		coreOrchestrator = instance;
-	 	return coreOrchestrator.initCore();
+		return deployer.deploy(Core);
+    }).then(function(instance) {
+	 	return coreOrchestrator.initCore(instance.address);
 	}).then(function() {
 	 	return coreOrchestrator.initPairs();
 	}).then(function() {

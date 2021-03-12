@@ -7,7 +7,7 @@ import "../token/IUniswapIncentive.sol";
 import "../token/IFei.sol";
 import "../genesis/IGenesisGroup.sol";
 import "../refs/IOracleRef.sol";
-import "../core/Core.sol";
+import "../core/ICore.sol";
 import "../staking/IRewardsDistributor.sol";
 import "./IOrchestrator.sol";
 
@@ -64,8 +64,20 @@ contract CoreOrchestrator is Ownable {
     uint256 public tribeSupply;
     uint256 public constant IDO_TRIBE_PERCENTAGE = 20;
     uint256 public constant GENESIS_TRIBE_PERCENTAGE = 10;
-    uint256 public constant DEV_TRIBE_PERCENTAGE = 20;
     uint256 public constant STAKING_TRIBE_PERCENTAGE = 10;
+
+    uint256 public constant TRIBE_GRANTS_AMT = 20_000_000e18;
+    uint256[9] public TRIBE_TIMELOCK_AMTS = [
+        uint256(160_000_000e18),
+        5_000_000e18,
+        5_000_000e18,
+        5_000_000e18,
+        5_000_000e18,
+        10e18,
+        10e18,
+        10e18,
+        10e18
+    ];
 
     // ----------- Orchestrators -----------
     IPCVDepositOrchestrator private pcvDepositOrchestrator;
@@ -79,7 +91,7 @@ contract CoreOrchestrator is Ownable {
     IStakingOrchestrator private stakingOrchestrator;
 
     // ----------- Deployed Contracts -----------
-    Core public core;
+    ICore public core;
     address public fei;
     address public tribe;
     address public feiRouter;
@@ -96,6 +108,7 @@ contract CoreOrchestrator is Ownable {
 
     address public ido;
     address public timelockedDelegator;
+    address[] public timelockedDelegators;
 
     address public genesisGroup;
 
@@ -117,11 +130,7 @@ contract CoreOrchestrator is Ownable {
         address _stakingOrchestrator,
         address _admin
     ) public {
-        core = new Core();
-
         require(_admin != address(0), "CoreOrchestrator: no admin");
-
-        core.grantGuardian(_admin);
 
         pcvDepositOrchestrator = IPCVDepositOrchestrator(
             _pcvDepositOrchestrator
@@ -142,8 +151,11 @@ contract CoreOrchestrator is Ownable {
         admin = _admin;
     }
 
-    function initCore() public onlyOwner {
+    function initCore(address _core) public onlyOwner {
+        core = ICore(_core);
+
         core.init();
+        core.grantGuardian(admin);
 
         tribe = address(core.tribe());
         fei = address(core.fei());
@@ -237,11 +249,29 @@ contract CoreOrchestrator is Ownable {
         );
         core.grantMinter(ido);
         core.allocateTribe(ido, (tribeSupply * IDO_TRIBE_PERCENTAGE) / 100);
-        core.allocateTribe(
-            timelockedDelegator,
-            (tribeSupply * DEV_TRIBE_PERCENTAGE) / 100
-        );
+
         idoOrchestrator.detonate();
+    }
+
+    function initTimelocks(address[] memory _timelockedDelegators) public onlyOwner {
+        require(timelockedDelegators.length == 0, "Already initialized");
+
+        uint256 length = TRIBE_TIMELOCK_AMTS.length;
+        require(_timelockedDelegators.length == length, "Length mismatch");
+
+        for (uint i = 0; i < length; i++) {
+            core.allocateTribe(
+                _timelockedDelegators[i],
+                TRIBE_TIMELOCK_AMTS[i]
+            );
+        }
+
+        core.allocateTribe(
+            admin,
+            TRIBE_GRANTS_AMT
+        );
+
+        timelockedDelegators = _timelockedDelegators;
     }
 
     function initGenesis() public onlyOwner {

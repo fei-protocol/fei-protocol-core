@@ -72,5 +72,5 @@ module.exports = function(deployer, network, accounts) {
 	 	return routerOrchestrator.transferOwnership(coreOrchestrator.address);
 	}).then(function(instance) {
 		return stakingOrchestrator.transferOwnership(coreOrchestrator.address);
-   });
+    });
 }
