@@ -91,6 +91,8 @@ contract MockUniswapV2PairLiquidity {
         }
     }
 
+    function sync() external { } // no-op 
+
     // @openzeppelin/contracts/token/ERC20/ERC20.sol
 
     mapping (address => uint256) private _balances;
