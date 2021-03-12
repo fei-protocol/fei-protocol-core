@@ -19,6 +19,7 @@
  */
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
+const etherscanApiKey = process.env.ETHERSCAN_API_KEY;
 const privateKey = process.env.ETH_PRIVATE_KEY;
 const testnetPrivateKey = process.env.TESTNET_PRIVATE_KEY;
 const ropstenAlchemyApiKey = process.env.ROPSTEN_ALCHEMY_API_KEY;
@@ -123,5 +124,12 @@ module.exports = {
     }
   },
 
-  plugins: ["solidity-coverage"]
+  api_keys: {
+    etherscan: etherscanApiKey
+  },
+
+  plugins: [
+    "solidity-coverage",
+    "truffle-plugin-verify"
+  ]
 }
