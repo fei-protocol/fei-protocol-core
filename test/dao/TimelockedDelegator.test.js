@@ -90,6 +90,22 @@ describe('TimelockedDelegator', function () {
         });
       });
 
+      describe('ReleaseMax Another Quarter', function() {
+        beforeEach(async function() {
+          await time.increase(this.quarter);
+          expect(await this.delegator.availableForRelease()).to.be.bignumber.equal(this.quarterAmount);
+          await this.delegator.releaseMax(beneficiaryAddress1, {from: beneficiaryAddress1});
+        });
+        it('releases tokens', async function() {
+          expect(await this.delegator.totalToken()).to.be.bignumber.equal(this.totalTribe.div(new BN(2)));
+          expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(this.totalTribe.div(new BN(2)));
+        });
+
+        it('updates released amounts', async function() {
+          expect(await this.delegator.alreadyReleasedAmount()).to.be.bignumber.equal(this.totalTribe.div(new BN(2)));
+        });
+      });
+
       describe('Excess Release', function() {
         it('reverts', async function() {
           await time.increase(this.quarter);

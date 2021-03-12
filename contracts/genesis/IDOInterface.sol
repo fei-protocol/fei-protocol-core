@@ -15,4 +15,9 @@ interface IDOInterface {
     function deploy(Decimal.D256 calldata feiRatio) external;
 
     function swapFei(uint256 amountFei) external returns (uint256);
+
+    // ----------- Governor only state changing API -----------
+
+    function unlockLiquidity() external;
+
 }
