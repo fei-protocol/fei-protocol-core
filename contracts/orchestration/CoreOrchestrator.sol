@@ -21,14 +21,14 @@ contract CoreOrchestrator is Ownable {
 
     // ----------- Uniswap Addresses -----------
     address public constant ETH_USDC_UNI_PAIR =
-        address(0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc);
+        address(0x397ff1542f962076d0bfe58ea045ffa2d347aca0);
     address public constant ROUTER =
-        address(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+        address(0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F);
 
     address public constant WETH =
         address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
     IUniswapV2Factory public constant UNISWAP_FACTORY =
-        IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
+        IUniswapV2Factory(0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac);
 
     address public ethFeiPair;
     address public tribeFeiPair;
