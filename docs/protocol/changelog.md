@@ -42,6 +42,14 @@ To mitigate frontrunning of TRIBE in the DEX offering, we allow users to pre-swa
 
 {% page-ref page="genesis/" %}
 
+#### IDO Normalization
+
+Given that the pre-swap creates a large slippage and back-running opportunity, a trader could arbitrage the group by joining Genesis and pre-swapping 100% of the FEI for TRIBE with the intention of immediately selling back out.
+
+We now normalize the IDO price **to what the Genesis Group pays including slippage** by burning directly from the pool to prevent this backrunning opportunity.
+
+{% page-ref page="genesis/ido.md" %}
+
 #### Bonding Curve Shift
 
 In the white paper, the bonding curve starts at a 0 price and approaches the peg at the scale target. To achieve lower undercollateralization in the PCV, we’ve added a “k” shift to initiate the bonding curve higher up at an elevated starting price.
