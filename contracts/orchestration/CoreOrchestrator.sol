@@ -68,15 +68,15 @@ contract CoreOrchestrator is Ownable {
 
     uint256 public constant TRIBE_GRANTS_AMT = 20_000_000e18;
     uint256[9] public TRIBE_TIMELOCK_AMTS = [
-        uint256(160_000_000e18),
+        uint256(129_322_000e18),
         5_000_000e18,
         5_000_000e18,
         5_000_000e18,
         5_000_000e18,
-        10e18,
-        10e18,
-        10e18,
-        10e18
+        4_000_000e18,
+        5_114_000e18,
+        3_410_000e18,
+        18_154_000e18
     ];
 
     // ----------- Orchestrators -----------
