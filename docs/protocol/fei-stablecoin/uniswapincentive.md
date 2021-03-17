@@ -206,6 +206,32 @@ function getSellPenalty(uint256 amount)
 
 returns the sell penalty amount `penalty` a FEI transfer of `amount` into the FEI/ETH incentivized Uniswap pool. Also returns the `initialDeviation` and `finalDeviation` which are equal to _m_ start and end, respectively.
 
+### getSellPenaltyMultiplier
+
+```javascript
+function getSellPenaltyMultiplier(
+    Decimal.D256 calldata initialDeviation,
+    Decimal.D256 calldata finalDeviation
+) external view returns (Decimal.D256 memory);
+```
+
+Returns the sell penalty multiplier applied to a trade which starts at `initialDeviation` from the peg and ends at `finalDeviation` from the peg. To return the instantaneous multiplier, set initial and final equal to each other.
+
+### getBuyIncentiveMultiplier
+
+```javascript
+function getBuyIncentiveMultiplier(
+    Decimal.D256 calldata initialDeviation,
+    Decimal.D256 calldata finalDeviation
+) external view returns (Decimal.D256 memory);
+```
+
+Returns the buy incentive multiplier applied to a trade which starts at `initialDeviation` from the peg and ends at `finalDeviation` from the peg. To return the instantaneous multiplier, set initial and final equal to each other.
+
+{% hint style="info" %}
+`getBuyIncentiveMultiplier()` uses the current time weight for calculating incentives.
+{% endhint %}
+
 ## Governor-Only⚖️ State-Changing Functions
 
 ### setExemptAddress
