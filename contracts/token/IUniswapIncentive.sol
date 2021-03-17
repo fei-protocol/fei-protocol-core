@@ -60,4 +60,14 @@ interface IUniswapIncentive is IIncentive {
             Decimal.D256 memory initialDeviation,
             Decimal.D256 memory finalDeviation
         );
+
+    function getSellPenaltyMultiplier(
+        Decimal.D256 calldata initialDeviation,
+        Decimal.D256 calldata finalDeviation
+    ) external view returns (Decimal.D256 memory);
+
+    function getBuyIncentiveMultiplier(
+        Decimal.D256 calldata initialDeviation,
+        Decimal.D256 calldata finalDeviation
+    ) external view returns (Decimal.D256 memory);
 }

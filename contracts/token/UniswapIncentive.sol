@@ -246,6 +246,26 @@ contract UniswapIncentive is IUniswapIncentive, UniRef {
         return (penalty, initialDeviation, finalDeviation);
     }
 
+    /// @notice returns the multiplier used to calculate the sell penalty
+    /// @param initialDeviation the percent from peg at start of trade
+    /// @param finalDeviation the percent from peg at the end of trade
+    function getSellPenaltyMultiplier(
+        Decimal.D256 calldata initialDeviation,
+        Decimal.D256 calldata finalDeviation
+    ) external view override returns (Decimal.D256 memory) {
+        return _calculateIntegratedSellPenaltyMultiplier(initialDeviation, finalDeviation);
+    }
+
+    /// @notice returns the multiplier used to calculate the buy reward
+    /// @param initialDeviation the percent from peg at start of trade
+    /// @param finalDeviation the percent from peg at the end of trade
+    function getBuyIncentiveMultiplier(
+        Decimal.D256 calldata initialDeviation,
+        Decimal.D256 calldata finalDeviation
+    ) external view override returns (Decimal.D256 memory) {
+        return _calculateBuyIncentiveMultiplier(initialDeviation, finalDeviation, getTimeWeight());
+    }
+
     function _incentivizeBuy(address target, uint256 amountIn)
         internal
         ifMinterSelf
