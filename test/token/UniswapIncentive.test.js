@@ -242,6 +242,179 @@ describe('UniswapIncentive', function () {
     });
   });
 
+  describe('Deviation from peg', function() {
+    describe('Below', function() {
+      it('1%', async function() {
+        let deviation = await this.incentive.deviationBelowPeg(['10100'], ['10000']);
+        expect(deviation[0]).to.be.equal('10000000000000000');
+      });
+
+      it('10%', async function() {
+        let deviation = await this.incentive.deviationBelowPeg(['11000'], ['10000']);
+        expect(deviation[0]).to.be.equal('100000000000000000');
+      });
+    });
+
+    describe('At Peg', function() {
+      it('0%', async function() {
+        let deviation = await this.incentive.deviationBelowPeg(['10000'], ['10000']);
+        expect(deviation[0]).to.be.equal('0');
+      });
+    });
+
+    describe('Above', function() {
+      it('1%', async function() {
+        let deviation = await this.incentive.deviationBelowPeg(['9900'], ['10000']);
+        expect(deviation[0]).to.be.equal('0');
+      });
+
+      it('10%', async function() {
+        let deviation = await this.incentive.deviationBelowPeg(['9000'], ['10000']);
+        expect(deviation[0]).to.be.equal('0');
+      });
+    });
+  });
+
+  describe('Get Buy Incentive Multiplier', function() {
+    describe('1% initial', function() {
+
+      describe('0% final', function() {
+        it('Time weight 0', async function() {
+          await this.incentive.setTimeWeight('0', '0', true, {from: governorAddress});
+          let multiplier = await this.incentive.getBuyIncentiveMultiplier(['10000000000000000'], ['0']);
+          expect(multiplier[0]).to.be.equal('0');
+        });
+
+        it('Time weight 1', async function() {
+          await this.incentive.setTimeWeight('100000', '0', true, {from: governorAddress});
+          let multiplier = await this.incentive.getBuyIncentiveMultiplier(['10000000000000000'], ['0']);
+          expect(multiplier[0]).to.be.equal('3300000000000000');
+        });
+
+        it('Time weight 5', async function() {
+          await this.incentive.setTimeWeight('500000', '0', true, {from: governorAddress});
+          let multiplier = await this.incentive.getBuyIncentiveMultiplier(['10000000000000000'], ['0']);
+          expect(multiplier[0]).to.be.equal('3300000000000000');
+        });
+      });
+
+      describe('1% final', function() {
+        it('Time weight 0', async function() {
+          await this.incentive.setTimeWeight('0', '0', true, {from: governorAddress});
+          let multiplier = await this.incentive.getBuyIncentiveMultiplier(['10000000000000000'], ['10000000000000000']);
+          expect(multiplier[0]).to.be.equal('0');
+        });
+
+        it('Time weight 1', async function() {
+          await this.incentive.setTimeWeight('100000', '0', true, {from: governorAddress});
+          let multiplier = await this.incentive.getBuyIncentiveMultiplier(['10000000000000000'], ['10000000000000000']);
+          expect(multiplier[0]).to.be.equal('10000000000000000');
+        });
+
+        it('Time weight 5', async function() {
+          await this.incentive.setTimeWeight('500000', '0', true, {from: governorAddress});
+          let multiplier = await this.incentive.getBuyIncentiveMultiplier(['10000000000000000'], ['10000000000000000']);
+          expect(multiplier[0]).to.be.equal('10000000000000000');
+        });
+      });
+    });
+
+    describe('5% initial', function() {
+      describe('0% final', function() {
+        it('Time weight 0', async function() {
+          await this.incentive.setTimeWeight('0', '0', true, {from: governorAddress});
+          let multiplier = await this.incentive.getBuyIncentiveMultiplier(['50000000000000000'], ['0']);
+          expect(multiplier[0]).to.be.equal('0');
+        });
+
+        it('Time weight 1', async function() {
+          await this.incentive.setTimeWeight('100000', '0', true, {from: governorAddress});
+          let multiplier = await this.incentive.getBuyIncentiveMultiplier(['50000000000000000'], ['0']);
+          expect(multiplier[0]).to.be.equal('50000000000000000');
+        });
+
+        it('Time weight 5', async function() {
+          await this.incentive.setTimeWeight('500000', '0', true, {from: governorAddress});
+          let multiplier = await this.incentive.getBuyIncentiveMultiplier(['50000000000000000'], ['0']);
+          expect(multiplier[0]).to.be.equal('82500000000000000');
+        });
+      });
+
+      describe('1% final', function() {
+        it('Time weight 0', async function() {
+          await this.incentive.setTimeWeight('0', '0', true, {from: governorAddress});
+          let multiplier = await this.incentive.getBuyIncentiveMultiplier(['50000000000000000'], ['10000000000000000']);
+          expect(multiplier[0]).to.be.equal('0');
+        });
+
+        it('Time weight 1', async function() {
+          await this.incentive.setTimeWeight('100000', '0', true, {from: governorAddress});
+          let multiplier = await this.incentive.getBuyIncentiveMultiplier(['50000000000000000'], ['10000000000000000']);
+          expect(multiplier[0]).to.be.equal('50000000000000000');
+        });
+
+        it('Time weight 5', async function() {
+          await this.incentive.setTimeWeight('500000', '0', true, {from: governorAddress});
+          let multiplier = await this.incentive.getBuyIncentiveMultiplier(['50000000000000000'], ['10000000000000000']);
+          expect(multiplier[0]).to.be.equal('102300000000000000');
+        });
+      });
+
+      describe('5% final', function() {
+        it('Time weight 0', async function() {
+          await this.incentive.setTimeWeight('0', '0', true, {from: governorAddress});
+          let multiplier = await this.incentive.getBuyIncentiveMultiplier(['50000000000000000'], ['50000000000000000']);
+          expect(multiplier[0]).to.be.equal('0');
+        });
+
+        it('Time weight 1', async function() {
+          await this.incentive.setTimeWeight('100000', '0', true, {from: governorAddress});
+          let multiplier = await this.incentive.getBuyIncentiveMultiplier(['50000000000000000'], ['50000000000000000']);
+          expect(multiplier[0]).to.be.equal('50000000000000000');
+        });
+
+        it('Time weight 5', async function() {
+          await this.incentive.setTimeWeight('500000', '0', true, {from: governorAddress});
+          let multiplier = await this.incentive.getBuyIncentiveMultiplier(['50000000000000000'], ['50000000000000000']);
+          expect(multiplier[0]).to.be.equal('250000000000000000');
+        });
+      });
+    });
+  });
+
+  describe('Get Sell Multiplier', function() {
+    describe('0% initial', function() {
+      it('1% final', async function() {
+        let multiplier = await this.incentive.getSellPenaltyMultiplier(['0'], ['10000000000000000']);
+        expect(multiplier[0]).to.be.equal('3300000000000000');
+      });
+
+      it('5% final', async function() {
+        let multiplier = await this.incentive.getSellPenaltyMultiplier(['0'], ['50000000000000000']);
+        expect(multiplier[0]).to.be.equal('82500000000000000');
+      });
+    });
+
+    describe('1% initial', function() {
+      it('1% final', async function() {
+        let multiplier = await this.incentive.getSellPenaltyMultiplier(['10000000000000000'], ['10000000000000000']);
+        expect(multiplier[0]).to.be.equal('10000000000000000');
+      });
+
+      it('5% final', async function() {
+        let multiplier = await this.incentive.getSellPenaltyMultiplier(['10000000000000000'], ['50000000000000000']);
+        expect(multiplier[0]).to.be.equal('102300000000000000');
+      });
+    });
+
+    describe('5% initial', function() {
+      it('5% final', async function() {
+        let multiplier = await this.incentive.getSellPenaltyMultiplier(['50000000000000000'], ['50000000000000000']);
+        expect(multiplier[0]).to.be.equal('250000000000000000');
+      });
+    });
+  });
+
   describe('At peg', function() {
     beforeEach(async function() {
       await this.pair.setReserves(100000, 50000000);

@@ -30,5 +30,10 @@ interface IUniRef {
         view
         returns (uint256 feiReserves, uint256 tokenReserves);
 
+    function deviationBelowPeg(
+        Decimal.D256 calldata price,
+        Decimal.D256 calldata peg
+    ) external pure returns (Decimal.D256 memory);
+
     function liquidityOwned() external view returns (uint256);
 }

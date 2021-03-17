@@ -81,6 +81,15 @@ abstract contract UniRef is IUniRef, OracleRef {
         return (feiReserves, tokenReserves);
     }
 
+    /// @notice get deviation from peg as a percent given price
+    /// @dev will return Decimal.zero() if above peg
+    function deviationBelowPeg(
+        Decimal.D256 calldata price,
+        Decimal.D256 calldata peg
+    ) external pure override returns (Decimal.D256 memory) {
+        return _deviationBelowPeg(price, peg);
+    }
+
     /// @notice amount of pair liquidity owned by this contract
     /// @return amount of LP tokens
     function liquidityOwned() public view override returns (uint256) {
