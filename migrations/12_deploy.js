@@ -27,7 +27,8 @@ module.exports = function(deployer) {
 	 	return coreOrchestrator.initRouter();
 	}).then(function() {
 		return coreOrchestrator.initGenesis();
-	}).then(function() {
-		return coreOrchestrator.initStaking();
-    });
+	})
+	// .then(function() {
+	// 	return coreOrchestrator.initStaking();
+    // });
 }
