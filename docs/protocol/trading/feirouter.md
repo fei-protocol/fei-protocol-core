@@ -31,11 +31,15 @@ function buyFei(
 ) external payable returns (uint256 amountOut);
 ```
 
-Buy at least `amountOutMin` FEI for ETH and send the ETH to address `to` before the block timestamp exceeds `deadline`. 
+Buy at least `amountOutMin` FEI for ETH and send the FEI to address `to` before the block timestamp exceeds `deadline`. 
 
 Calculates the reward received by calculating how much the balance of "to" increased beyond the expected amountOut.
 
 Revert if the FEI reward received is less than `minReward`.
+
+{% hint style="warning" %}
+If you get a `UNISWAP_V2:TRANSFER`\_`FAILED` error then you may have ran out of gas, or there was another error inside the UniswapIncentive hook execution for the FEI transfer
+{% endhint %}
 
 ### sellFei
 
@@ -49,7 +53,7 @@ function sellFei(
 ) external returns (uint256 amountOut);
 ```
 
-Sell `amountIn` FEI to receive at least `amountOutMin` ETH and send the FEI to address `to` before the block timestamp exceeds `deadline`. 
+Sell `amountIn` FEI to receive at least `amountOutMin` ETH and send the ETH to address `to` before the block timestamp exceeds `deadline`. 
 
 Calculates the penalty by calculating the amount that was removed from in-flight after the FEI transfer to Uniswap.
 
