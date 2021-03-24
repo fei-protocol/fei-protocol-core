@@ -293,6 +293,11 @@ contract GovernorAlpha {
         guardian = address(0);
     }
 
+    function __transferGuardian(address newGuardian) public {
+        require(msg.sender == guardian, "GovernorAlpha: sender must be gov guardian");
+        guardian = newGuardian;
+    }
+
     function __queueSetTimelockPendingAdmin(address newPendingAdmin, uint eta) public {
         require(msg.sender == guardian, "GovernorAlpha: sender must be gov guardian");
         timelock.queueTransaction(address(timelock), 0, "setPendingAdmin(address)", abi.encode(newPendingAdmin), eta);

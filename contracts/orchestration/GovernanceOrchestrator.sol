@@ -8,6 +8,7 @@ import "./IOrchestrator.sol";
 contract GovernanceOrchestrator is IGovernanceOrchestrator, Ownable {
     function init(
         address tribe,
+        address admin,
         uint256 timelockDelay
     )
         public
@@ -30,7 +31,7 @@ contract GovernanceOrchestrator is IGovernanceOrchestrator, Ownable {
         _timelock.executeTransaction(timelock, 0, "setPendingAdmin(address)", abi.encode(governorAlpha), timestamp);
 
         _governorAlpha.__acceptAdmin();
-        _governorAlpha.__abdicate();
+        _governorAlpha.__transferGuardian(admin);
 
         assert(_timelock.admin() == governorAlpha);
         assert(_timelock.delay() == timelockDelay);

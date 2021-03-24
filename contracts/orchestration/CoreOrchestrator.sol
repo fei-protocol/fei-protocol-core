@@ -322,6 +322,7 @@ contract CoreOrchestrator is Ownable {
     function initGovernance() public onlyOwner {
         (governorAlpha, timelock) = governanceOrchestrator.init(
             tribe,
+            admin,
             DAO_TIMELOCK_DELAY
         );
         governanceOrchestrator.detonate();

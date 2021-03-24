@@ -92,6 +92,7 @@ interface IStakingOrchestrator is IOrchestrator {
 interface IGovernanceOrchestrator is IOrchestrator {
     function init(
         address tribe,
+        address admin,
         uint256 timelockDelay
     ) external returns (address governorAlpha, address timelock);
 }
