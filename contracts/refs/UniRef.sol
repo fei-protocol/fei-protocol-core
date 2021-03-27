@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/utils/SafeCast.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "./OracleRef.sol";
 import "./IUniRef.sol";
-import "../external/SafeMathCopy.sol";
 
 /// @title A Reference to Uniswap
 /// @author Fei Protocol

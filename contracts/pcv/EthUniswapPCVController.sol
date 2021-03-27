@@ -1,13 +1,11 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 import "./IUniswapPCVController.sol";
 import "../refs/UniRef.sol";
-import "../external/Decimal.sol";
-import "../external/SafeMathCopy.sol";
+import "../external/UniswapV2Library.sol";
 
 /// @title a IUniswapPCVController implementation for ETH
 /// @author Fei Protocol
