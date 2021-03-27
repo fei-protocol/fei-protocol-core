@@ -8,7 +8,7 @@ description: Protocol changes since the white paper release
 
 #### Guardian🛡Role 
 
-The Guardian maintains the ability to revoke roles, and pause certain contracts and methods. It can also force reweights.
+The Guardian maintains the ability to revoke roles, and pause certain contracts and methods, and cancel Fei DAO proposals. It can also force reweights.
 
 {% page-ref page="../governance/fei-guardian.md" %}
 

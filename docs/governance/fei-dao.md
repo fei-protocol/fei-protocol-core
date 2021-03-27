@@ -33,8 +33,9 @@ Parameter modifications from Compound implementation:
 * 36 hour voting period \(10000 blocks\)
 * 24 hour timelock delay
 * Instead of the COMP token, the Fei DAO is controlled by [TRIBE](tribe.md)
+* The Guardian can transfer the Guardian role
 
-{% embed url="https://www.diffchecker.com/x7AJ999N" caption="Fei DAO vs Compound DAO" %}
+{% embed url="https://www.diffchecker.com/kXPkUHOo" caption="Fei DAO vs Compound DAO" %}
 
 Fei Protocol implementation enables a flexible [access control](../protocol/access-control/) system. The Timelock is appointed as a Governor⚖️, but it doesn't have to be the only one. It also doesn't have to be a Governor forever. Fei Protocol can appoint autonomous governors to adjust parameters and [PCV](../protocol/protocol-controlled-value/) based on market conditions. Additionally, a tiered governance structure can be implemented where certain changes require higher quorum thresholds and longer timelocks.
 

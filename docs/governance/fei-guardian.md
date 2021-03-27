@@ -19,6 +19,7 @@ The Governor⚖️ can revoke the Guardian🛡ability at any time
 * revoke any role from any contract, except Governor⚖️
 * pause and unpause contracts
 * force a reweight
+* cancel Fei DAO proposals
 
 ## Pausability
 
