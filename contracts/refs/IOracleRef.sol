@@ -2,7 +2,6 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "../oracle/IOracle.sol";
-import "../external/Decimal.sol";
 
 /// @title OracleRef interface
 /// @author Fei Protocol

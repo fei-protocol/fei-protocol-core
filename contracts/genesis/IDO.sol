@@ -1,8 +1,8 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 import "./IDOInterface.sol";
+import "../external/UniswapV2Library.sol";
 import "../utils/LinearTokenTimelock.sol";
 import "../refs/UniRef.sol";
 

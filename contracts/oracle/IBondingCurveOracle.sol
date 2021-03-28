@@ -3,7 +3,6 @@ pragma experimental ABIEncoderV2;
 
 import "./IOracle.sol";
 import "../bondingcurve/IBondingCurve.sol";
-import "../external/Decimal.sol";
 
 /// @title bonding curve oracle interface for Fei Protocol
 /// @author Fei Protocol

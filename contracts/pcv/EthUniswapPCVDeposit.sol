@@ -1,7 +1,6 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/utils/Address.sol";
 import "./UniswapPCVDeposit.sol";
 
 /// @title implementation for an ETH Uniswap LP PCV Deposit

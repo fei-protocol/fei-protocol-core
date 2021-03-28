@@ -4,10 +4,10 @@ pragma experimental ABIEncoderV2;
 // Referencing Uniswap Example Simple Oracle
 // https://github.com/Uniswap/uniswap-v2-periphery/blob/master/contracts/examples/ExampleOracleSimple.sol
 
-import "@uniswap/v2-periphery/contracts/libraries/UniswapV2OracleLibrary.sol";
 import "./IUniswapOracle.sol";
 import "../refs/CoreRef.sol";
 import "../external/SafeMathCopy.sol";
+import "../external/UniswapV2OracleLibrary.sol";
 
 /// @title Uniswap Oracle for ETH/USDC
 /// @author Fei Protocol

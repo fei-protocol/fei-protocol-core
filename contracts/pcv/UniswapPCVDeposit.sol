@@ -1,9 +1,7 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 import "./IPCVDeposit.sol";
-import "../external/Decimal.sol";
 import "../refs/UniRef.sol";
 
 /// @title abstract implementation for Uniswap LP PCV Deposit
