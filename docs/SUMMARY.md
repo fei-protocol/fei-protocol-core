@@ -2,6 +2,8 @@
 
 * [Overview](README.md)
 * [White Paper](whitepaper.md)
+* [Audits](audit.md)
+* [Bug Bounty](bug-bounty.md)
 
 ## Protocol
 
