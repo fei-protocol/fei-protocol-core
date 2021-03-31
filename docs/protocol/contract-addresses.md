@@ -16,6 +16,7 @@ The contracts marked with 🔄can be changed by governance, which would mean new
 | 🔄[Fei DAO Timelock](../governance/fei-dao.md) | [0x639572471f2f318464dc01066a56867130e45E25](https://etherscan.io/address/0x639572471f2f318464dc01066a56867130e45E25) |
 | [Fei](fei-stablecoin/fei-fei-usd.md) | [0x956F47F50A910163D8BF957Cf5846D573E7f87CA](https://etherscan.io/address/0x956F47F50A910163D8BF957Cf5846D573E7f87CA) |
 | 🔄[UniswapIncentive](fei-stablecoin/uniswapincentive.md)  | [0xfe5b6c2a87A976dCe20130c423C679f4d6044cD7](https://etherscan.io/address/0xfe5b6c2a87A976dCe20130c423C679f4d6044cD7) |
+| 🔄[EthBondingCurve](bondingcurve/ethbondingcurve.md) | [0xe1578B4a32Eaefcd563a9E6d0dc02a4213f673B7](https://etherscan.io/address/0xe1578B4a32Eaefcd563a9E6d0dc02a4213f673B7) |
 | 🔄[EthUniswapPCVDeposit](protocol-controlled-value/ethuniswappcvdeposit.md) | [0x9b0C6299D08fe823f2C0598d97A1141507e4ad86](https://etherscan.io/address/0x9b0C6299D08fe823f2C0598d97A1141507e4ad86) |
 | 🔄[EthUniswapPCVController](protocol-controlled-value/ethuniswappcvcontroller.md) | [0x7a165F8518A9Ec7d5DA15f4B77B1d7128B5D9188](https://etherscan.io/address/0x7a165F8518A9Ec7d5DA15f4B77B1d7128B5D9188) |
 | 🔄[UniswapOracle](oracles/uniswaporacle.md) | [0x087F35bd241e41Fc28E43f0E8C58d283DD55bD65](https://etherscan.io/address/0x087F35bd241e41Fc28E43f0E8C58d283DD55bD65) |
