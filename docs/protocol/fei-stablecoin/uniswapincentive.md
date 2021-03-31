@@ -62,7 +62,7 @@ The mint should only apply if the trade starts below the peg and if the incentiv
 
 ### Incentivized Amount
 
-The incentivized
+The incentivized amount on Uniswap FEI-ETH trades is only calculated based on the amount that pushes FEI below the peg for a sell or up to the peg for a buy. For example say a trade starts 1% below the peg and ends 1% above, only approximately half of the trade will get the bonus.
 
 ### Time Weight
 
