@@ -2,7 +2,7 @@
 description: Results and reports of Fei Protocol audit engagements
 ---
 
-# Audit Reports
+# Audits
 
 ## OpenZeppelin
 

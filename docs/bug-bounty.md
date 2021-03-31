@@ -2,7 +2,7 @@
 description: Community engagement incentives
 ---
 
-# Bug Bounties
+# Bug Bounty
 
 ## Bug Bounties
 

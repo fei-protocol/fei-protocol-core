@@ -10,6 +10,10 @@ description: The Direct Incentives contract for FEI/ETH liquidity
 
 ## Description
 
+{% hint style="info" %}
+Because this contract can be swapped for a new UniswapIncentive, for integrations we recommend calling`incentiveContract(0x94B0A3d511b6EcDb17eBF877278Ab030acb0A878)`on the FEI token to always read the currently applied UniswapIncentive on the ETH-FEI pair
+{% endhint %}
+
 The FEI incentive contract applied on transfers involving a Uniswap pair.
 
 The UniswapIncentive contract assumes that all transfers involving Uniswap are either a sell or a buy. In either case, the hypothetical start and end price are calculated then compared to the peg to capture the magnitude distance _m_. See UniRef for more details on how these formulas are derived.
