@@ -6,7 +6,7 @@ description: Results and reports of Fei Protocol audit engagements
 
 ## OpenZeppelin
 
-[OpenZeppelin](https://openzeppelin.com/security-audits/) conducted Fei Protocol's primary audit. The audit was performed by 4 auditors over 4 weeks each. The final outcome of the report: [openzeppelin\_audit](https://blog.openzeppelin.com/fei-protocol-audit/)
+[OpenZeppelin](https://openzeppelin.com/security-audits/) conducted Fei Protocol's primary audit. The audit was performed by 3 auditors over 5 weeks. The final outcome of the report: [openzeppelin\_audit](https://blog.openzeppelin.com/fei-protocol-audit/)
 
 ## ConsenSys Diligence
 
