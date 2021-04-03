@@ -26,5 +26,10 @@ The contracts marked with 🔄can be changed by governance, which would mean new
 | [GenesisGroup](genesis/genesisgroup.md) | [0xBFfB152b9392e38CdDc275D818a3Db7FE364596b](https://etherscan.io/address/0xBFfB152b9392e38CdDc275D818a3Db7FE364596b) |
 | [FeiRouter](trading/feirouter.md) | [0x9271D303b57c204636C38Df0eD339b18Bf98f909](https://etherscan.io/address/0x9271D303b57c204636C38Df0eD339b18Bf98f909) |
 
+### External Addresses
 
+| Contract | Mainnet Address |
+| :--- | :--- |
+| [FEI-ETH UniV2 Pair](https://info.uniswap.org/pair/0x94B0A3d511b6EcDb17eBF877278Ab030acb0A878) | [0x94B0A3d511b6EcDb17eBF877278Ab030acb0A878](https://etherscan.io/address/0x94B0A3d511b6EcDb17eBF877278Ab030acb0A878) |
+| [FEI-TRIBE UniV2 Pair](https://info.uniswap.org/pair/0x9928e4046d7c6513326cCeA028cD3e7a91c7590A) | [0x9928e4046d7c6513326cCeA028cD3e7a91c7590A](https://etherscan.io/address/0x9928e4046d7c6513326cCeA028cD3e7a91c7590A) |
 
