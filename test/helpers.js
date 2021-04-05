@@ -14,6 +14,7 @@ const { expect } = chai;
 const BondingCurveOracle = contract.fromArtifact('BondingCurveOracle');
 const Core = contract.fromArtifact('Core');
 const EthBondingCurve = contract.fromArtifact('EthBondingCurve');
+const EthReserveStabilizer = contract.fromArtifact('EthReserveStabilizer');
 const EthUniswapPCVController = contract.fromArtifact('EthUniswapPCVController');
 const EthUniswapPCVDeposit = contract.fromArtifact('EthUniswapPCVDeposit');
 const Fei = contract.fromArtifact('Fei');
@@ -105,6 +106,7 @@ module.exports = {
     BondingCurveOracle,
     Core,
     EthBondingCurve,
+    EthReserveStabilizer,
     EthUniswapPCVController,
     EthUniswapPCVDeposit,
     Fei,
