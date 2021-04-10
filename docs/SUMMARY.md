@@ -44,6 +44,7 @@
 ## Governance
 
 * [Fei DAO](governance/fei-dao.md)
+* [Snapshot Voting](governance/snapshot-voting.md)
 * [Tribe](governance/tribe.md)
 * [Fei Guardian](governance/fei-guardian.md)
 
