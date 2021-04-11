@@ -26,6 +26,7 @@ const TimelockedDelegator = contract.fromArtifact('TimelockedDelegator');
 const Tribe = contract.fromArtifact('Tribe');
 const UniswapIncentive = contract.fromArtifact('UniswapIncentive');
 const UniswapOracle = contract.fromArtifact('UniswapOracle');
+const CollateralizationOracle = contract.fromArtifact('CollateralizationOracle');
 const FeiStakingRewards = contract.fromArtifact('FeiStakingRewards');
 const FeiRewardsDistributor = contract.fromArtifact('FeiRewardsDistributor');
 
@@ -119,6 +120,7 @@ module.exports = {
     Tribe,
     UniswapIncentive,
     UniswapOracle,
+    CollateralizationOracle,
     // mock contracts
     MockBondingCurve,
     MockBondingCurveOracle,
@@ -129,7 +131,7 @@ module.exports = {
     MockIDO,
     MockIncentive,
     MockIncentivized,
-    MockOracle, 
+    MockOracle,
     MockPair,
     MockPairTrade,
     MockPCVDeposit,
