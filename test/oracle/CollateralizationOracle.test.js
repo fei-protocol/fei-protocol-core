@@ -26,12 +26,13 @@ describe('CollateralizationOracle', function () {
     this.core = await getCore(true);
 
     this.fei = await Fei.at(await this.core.fei());
-    this.ethPriceOracle = await MockOracle.new(500);
+    this.ethUsdPriceOracle = await MockOracle.new(500);
+    this.ethFeiPriceOracle = await MockOracle.new(500);
     this.token = await MockWeth.new();
     this.pair = await MockPair.new(this.token.address, this.fei.address);
     this.router = await MockRouter.new(this.pair.address);
     await this.router.setWETH(this.token.address);
-    this.pcvDeposit = await EthUniswapPCVDeposit.new(this.core.address, this.pair.address, this.router.address, this.ethPriceOracle.address);
+    this.pcvDeposit = await EthUniswapPCVDeposit.new(this.core.address, this.pair.address, this.router.address, this.ethUsdPriceOracle.address);
     await this.core.grantMinter(this.pcvDeposit.address, {from: governorAddress});
     this.incentive = await MockIncentive.new(this.core.address);
 
@@ -40,14 +41,19 @@ describe('CollateralizationOracle', function () {
 
     this.collateralizationOracle = await CollateralizationOracle.new(
       this.core.address,
-      this.ethPriceOracle.address,
+      this.ethUsdPriceOracle.address,
+      this.ethFeiPriceOracle.address,
       this.pcvDeposit.address
     );
   });
 
   describe('Init', function() {
-    it('ethPriceOracle', async function() {
-      expect(await this.collateralizationOracle.ethPriceOracle()).to.be.equal(this.ethPriceOracle.address);
+    it('ethUsdPriceOracle', async function() {
+      expect(await this.collateralizationOracle.ethUsdPriceOracle()).to.be.equal(this.ethUsdPriceOracle.address);
+    });
+
+    it('ethFeiPriceOracle', async function() {
+      expect(await this.collateralizationOracle.ethFeiPriceOracle()).to.be.equal(this.ethFeiPriceOracle.address);
     });
 
     it('not paused', async function() {
@@ -80,6 +86,16 @@ describe('CollateralizationOracle', function () {
     it('ethUsd', async function() {
       let result = await this.collateralizationOracle.ethUsd();
       expect(result).to.be.bignumber.equal(new BN(500));
+    });
+
+    it('collateralizationRatio', async function() {
+      let result = await this.collateralizationOracle.collateralizationRatio();
+      expect(result).to.be.bignumber.equal('1250000000000000000');
+    });
+
+    it('overCollateralized', async function() {
+      let result = await this.collateralizationOracle.overCollateralized();
+      expect(result).to.be.equal(true);
     });
   });
 
@@ -114,7 +130,7 @@ describe('CollateralizationOracle', function () {
 
       it('current collateralization ratio', async function() {
         let result = await this.collateralizationOracle.read();
-        expect(result[0].value).to.be.equal('1250000000000000000'); // 1.25 with 18 decimals
+        expect(result[0].value).to.be.bignumber.equal('1250000000000000000'); // 1.25 with 18 decimals
         expect(result[1]).to.be.equal(true); // valid
       });
     });
