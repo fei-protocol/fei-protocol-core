@@ -6,14 +6,17 @@ import "@openzeppelin/contracts/math/Math.sol";
 import "./IUniswapPCVController.sol";
 import "../refs/UniRef.sol";
 import "../external/UniswapV2Library.sol";
+import "../utils/Timed.sol";
 
 /// @title a IUniswapPCVController implementation for ETH
 /// @author Fei Protocol
-contract EthUniswapPCVController is IUniswapPCVController, UniRef {
+contract EthUniswapPCVController is IUniswapPCVController, UniRef, Timed {
     using Decimal for Decimal.D256;
     using SafeMathCopy for uint256;
 
     uint256 public override reweightWithdrawBPs = 9900;
+
+    uint256 internal _reweightDuration = 4 hours;
 
     uint256 internal constant BASIS_POINTS_GRANULARITY = 10000;
 
@@ -40,7 +43,7 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
         uint256 _minDistanceForReweightBPs,
         address _pair,
         address _router
-    ) public UniRef(_core, _pair, _router, _oracle) {
+    ) public UniRef(_core, _pair, _router, _oracle) Timed(_reweightDuration) {
         pcvDeposit = IPCVDeposit(_pcvDeposit);
 
         reweightIncentiveAmount = _incentiveAmount;
@@ -48,16 +51,19 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
             _minDistanceForReweightBPs,
             BASIS_POINTS_GRANULARITY
         );
+
+        // start timer
+        _initTimed();
     }
 
     receive() external payable {}
 
     /// @notice reweights the linked PCV Deposit to the peg price. Needs to be reweight eligible
-    function reweight() external override postGenesis whenNotPaused nonContract {
+    function reweight() external override whenNotPaused {
         updateOracle();
         require(
             reweightEligible(),
-            "EthUniswapPCVController: Not at incentive parity or not at min distance"
+            "EthUniswapPCVController: Not passed reweight time or not at min distance"
         );
         _reweight();
         _incentivize();
@@ -108,12 +114,21 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
         emit ReweightMinDistanceUpdate(basisPoints);
     }
 
+    /// @notice sets the reweight duration
+    function setDuration(uint256 _duration)
+        external
+        override
+        onlyGovernor
+    {
+       _setDuration(_duration);
+    }
+
     /// @notice signal whether the reweight is available. Must have incentive parity and minimum distance from peg
     function reweightEligible() public view override returns (bool) {
         bool magnitude =
             _getDistanceToPeg().greaterThan(_minDistanceForReweight);
         // incentive parity is achieved after a certain time relative to distance from peg
-        bool time = incentiveContract().isIncentiveParity();
+        bool time = isTimeEnded();
         return magnitude && time;
     }
 
@@ -145,6 +160,9 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef {
         pcvDeposit.deposit{value: balance}(balance);
 
         _burnFeiHeld();
+
+        // reset timer
+        _initTimed();
 
         emit Reweight(msg.sender);
     }
