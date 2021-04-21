@@ -10,7 +10,10 @@ import "@openzeppelin/contracts/utils/Address.sol";
 /// @author Fei Protocol
 contract EthReserveStabilizer is OracleRef, IReserveStabilizer {
 
+    /// @notice the USD per FEI exchange rate denominated in basis points (1/10000)
     uint256 public override usdPerFeiBasisPoints;
+    
+    /// @notice the denominator for basis granularity (10,000)
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     constructor(
@@ -20,13 +23,14 @@ contract EthReserveStabilizer is OracleRef, IReserveStabilizer {
     ) public OracleRef(_core, _oracle) {
         require(_usdPerFeiBasisPoints <= BASIS_POINTS_GRANULARITY, "ReserveStabilizer: Exceeds bp granularity");
         usdPerFeiBasisPoints = _usdPerFeiBasisPoints;
+        emit UsdPerFeiRateUpdate(_usdPerFeiBasisPoints);
     }
 
     receive() external payable {}
 
     /// @notice exchange FEI for ETH from the reserves
     /// @param feiAmount of FEI to sell
-    function exchangeFeiForEth(uint256 feiAmount) public override whenNotPaused returns (uint256 amountOut) {
+    function exchangeFeiForEth(uint256 feiAmount) external override whenNotPaused returns (uint256 amountOut) {
         updateOracle();
 
         fei().burnFrom(msg.sender, feiAmount);
