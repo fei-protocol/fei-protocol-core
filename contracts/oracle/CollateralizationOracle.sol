@@ -36,71 +36,6 @@ contract CollateralizationOracle is IOracle, CoreRef {
         ethUniswapPCVDeposit = UniswapPCVDeposit(_ethUniswapPCVDeposit);
     }
 
-    /// @notice get the current circulating suply of FEI
-    /// @return number of FEI in circulation
-    function _circulatingFei() internal view returns(uint256) {
-      (uint256 feiInPool, uint256 ethInPool) = ethUniswapPCVDeposit.getReserves();
-      uint256 ethPcv = ethUniswapPCVDeposit.totalValue();
-      uint256 feiPcv = Decimal.ratio(ethPcv, ethInPool).mul(feiInPool).asUint256();
-
-      return fei().totalSupply() - feiPcv;
-    }
-
-    /// @notice get the current ETH controlled by the protocol
-    /// @return number of ETH in control of the protocol
-    function _ethPcv() internal view returns(uint256) {
-      return ethUniswapPCVDeposit.totalValue();
-    }
-
-    /// @notice get the current ETHUSD price from the ethUsdPriceOracle
-    /// @return price in USD per ETH
-    function _ethUsd() internal view returns(uint256) {
-      (Decimal.D256 memory ethPriceValue,) = ethUsdPriceOracle.read();
-
-      return ethPriceValue.asUint256();
-    }
-
-    /// @notice get the current ETH and FEI in the Uniswap pool
-    /// @return number of ETH in pool
-    /// @return number of FEI in pool
-    /// @return validity of the ETH-FEI price oracle
-    function _ethFeiInPool() internal view returns(uint256, uint256, bool) {
-      // external calls
-      (uint256 feiInPool, uint256 ethInPool) = ethUniswapPCVDeposit.getReserves();
-      (Decimal.D256 memory ethFei, bool ethFeiPriceOracleIsValid) = ethFeiPriceOracle.read();
-
-      // resistant eth/fei in pool
-      Decimal.D256 memory k = Decimal.from(feiInPool).mul(ethInPool);
-      uint256 resistantEthInPool = k.div(ethFei).asUint256().sqrt();
-      uint256 resistantFeiInPool = k.div(resistantEthInPool).asUint256();
-
-      return (resistantEthInPool, resistantFeiInPool, ethFeiPriceOracleIsValid);
-    }
-
-    /// @notice get the current collateralization ratio
-    /// @return collateralization ratio
-    /// @return true if price is valid
-    /// @dev price is to be denominated in percentage, with 18 decimals (1.25e18 for 125%)
-    function _collateralizationRatio() internal view returns(Decimal.D256 memory, bool) {
-      // external calls
-      uint256 ethPcv = ethUniswapPCVDeposit.totalValue();
-      uint256 feiTotalSupply = fei().totalSupply();
-      (Decimal.D256 memory ethUsd, bool ethUsdPriceOracleIsValid) = ethUsdPriceOracle.read();
-      (
-        uint256 resistantEthInPool,
-        uint256 resistantFeiInPool,
-        bool ethFeiPriceOracleIsValid
-      ) = _ethFeiInPool();
-
-      // compute collateralization ratio & validity
-      uint256 feiPcv = Decimal.ratio(ethPcv, resistantEthInPool).mul(resistantFeiInPool).asUint256();
-      uint256 circulatingFei = feiTotalSupply - feiPcv;
-      Decimal.D256 memory ratio = ethUsd.mul(ethPcv).div(circulatingFei);
-      bool valid = !paused() && ethUsdPriceOracleIsValid && ethFeiPriceOracleIsValid;
-
-      return (ratio, valid);
-    }
-
     /// @notice updates the oracle price
     /// @return true if oracle is updated and false if unchanged
     function update() external override whenNotPaused returns (bool) {
@@ -125,19 +60,27 @@ contract CollateralizationOracle is IOracle, CoreRef {
     /// @notice get the current circulating suply of FEI
     /// @return number of FEI in circulation
     function circulatingFei() external view returns(uint256) {
-      return _circulatingFei();
+        return _circulatingFei();
     }
 
     /// @notice get the current ETH controlled by the protocol
     /// @return number of ETH in control of the protocol
     function ethPcv() external view returns(uint256) {
-      return _ethPcv();
+        return _ethPcv();
     }
 
     /// @notice get the current ETHUSD price from the ethUsdPriceOracle
     /// @return price in USD per ETH
     function ethUsd() external view returns(uint256) {
-      return _ethUsd();
+        return _ethUsd();
+    }
+
+    /// @notice get the current ETH and FEI in the Uniswap pool (using resistant oracle)
+    /// @return number of ETH in pool
+    /// @return number of FEI in pool
+    /// @return validity of the ETH-FEI price oracle
+    function ethFeiInPool() external view returns(uint256, uint256, bool) {
+        return _ethFeiInPool();
     }
 
     /// @notice get the current collateralization ratio
@@ -164,5 +107,70 @@ contract CollateralizationOracle is IOracle, CoreRef {
     /// @dev Can be innacurate if outdated, need to call `isOutdated()` to check
     function read() external view override returns (Decimal.D256 memory, bool) {
         return _collateralizationRatio();
+    }
+
+    /// @notice get the current circulating suply of FEI
+    /// @return number of FEI in circulation
+    function _circulatingFei() internal view returns(uint256) {
+        (uint256 feiInPool, uint256 ethInPool) = ethUniswapPCVDeposit.getReserves();
+        uint256 ethUniswapPcv = ethUniswapPCVDeposit.totalValue();
+        uint256 feiPcv = Decimal.ratio(ethUniswapPcv, ethInPool).mul(feiInPool).asUint256();
+
+        return fei().totalSupply() - feiPcv;
+    }
+
+    /// @notice get the current ETH controlled by the protocol
+    /// @return number of ETH in control of the protocol
+    function _ethPcv() internal view returns(uint256) {
+        return ethUniswapPCVDeposit.totalValue();
+    }
+
+    /// @notice get the current ETHUSD price from the ethUsdPriceOracle
+    /// @return price in USD per ETH
+    function _ethUsd() internal view returns(uint256) {
+        (Decimal.D256 memory ethPriceValue,) = ethUsdPriceOracle.read();
+
+        return ethPriceValue.mul(1000000000000000000).asUint256();
+    }
+
+    /// @notice get the current ETH and FEI in the Uniswap pool
+    /// @return number of ETH in pool
+    /// @return number of FEI in pool
+    /// @return validity of the ETH-FEI price oracle
+    function _ethFeiInPool() internal view returns(uint256, uint256, bool) {
+        // external calls
+        (uint256 feiInPool, uint256 ethInPool) = ethUniswapPCVDeposit.getReserves();
+        (Decimal.D256 memory ethFei, bool ethFeiPriceOracleIsValid) = ethFeiPriceOracle.read();
+
+        // resistant eth/fei in pool
+        Decimal.D256 memory k = Decimal.from(feiInPool).mul(ethInPool);
+        uint256 resistantEthInPool = k.div(ethFei.asUint256()).asUint256().sqrt();
+        uint256 resistantFeiInPool = k.div(resistantEthInPool).asUint256();
+
+        return (resistantEthInPool, resistantFeiInPool, ethFeiPriceOracleIsValid);
+    }
+
+    /// @notice get the current collateralization ratio
+    /// @return collateralization ratio
+    /// @return true if price is valid
+    /// @dev price is to be denominated in percentage, with 18 decimals (1.25e18 for 125%)
+    function _collateralizationRatio() internal view returns(Decimal.D256 memory, bool) {
+        // external calls
+        uint256 ethUniswapPcv = ethUniswapPCVDeposit.totalValue();
+        uint256 feiTotalSupply = fei().totalSupply();
+        (Decimal.D256 memory ethUsdPriceOracleValue, bool ethUsdPriceOracleIsValid) = ethUsdPriceOracle.read();
+        (
+            uint256 resistantEthInPool,
+            uint256 resistantFeiInPool,
+            bool ethFeiPriceOracleIsValid
+        ) = _ethFeiInPool();
+
+        // compute collateralization ratio & validity
+        uint256 feiPcv = Decimal.ratio(ethUniswapPcv, resistantEthInPool).mul(resistantFeiInPool).asUint256();
+        uint256 currentlyCirculatingFei = feiTotalSupply - feiPcv;
+        Decimal.D256 memory ratio = ethUsdPriceOracleValue.mul(1000000000000000000).div(currentlyCirculatingFei).mul(ethUniswapPcv).div(1000000000000000000);
+        bool valid = !paused() && ethUsdPriceOracleIsValid && ethFeiPriceOracleIsValid;
+
+        return (ratio, valid);
     }
 }

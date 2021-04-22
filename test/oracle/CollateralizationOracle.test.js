@@ -85,7 +85,14 @@ describe('CollateralizationOracle', function () {
 
     it('ethUsd', async function() {
       let result = await this.collateralizationOracle.ethUsd();
-      expect(result).to.be.bignumber.equal(new BN(500));
+      expect(result / 1e18).to.be.equal(500);
+    });
+
+    it('ethFeiInPool', async function() {
+      let result = await this.collateralizationOracle.ethFeiInPool();
+      expect(result[0]).to.be.bignumber.equal(new BN(200000)); // eth in pool
+      expect(result[1]).to.be.bignumber.equal(new BN(100000000)); // fei in pool
+      expect(result[2]).to.be.equal(true);
     });
 
     it('collateralizationRatio', async function() {
