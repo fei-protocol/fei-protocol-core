@@ -109,7 +109,9 @@ contract CollateralizationOracle is IOracle, CoreRef {
 
         (Decimal.D256 memory ratio,) = _collateralizationRatio();
 
-        emit Update(ratio.asUint256());
+        if (updated) {
+            emit Update(ratio.asUint256());
+        }
 
         return updated;
     }
