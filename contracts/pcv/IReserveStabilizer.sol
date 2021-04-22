@@ -17,7 +17,7 @@ interface IReserveStabilizer {
 
     // ----------- State changing api -----------
 
-    function exchangeFeiForEth(uint256 feiAmount) external returns (uint256);
+    function exchangeFei(uint256 feiAmount) external returns (uint256);
 
     // ----------- PCV Controller only state changing api -----------
 

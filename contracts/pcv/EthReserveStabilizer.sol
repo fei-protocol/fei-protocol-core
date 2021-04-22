@@ -30,7 +30,7 @@ contract EthReserveStabilizer is OracleRef, IReserveStabilizer {
 
     /// @notice exchange FEI for ETH from the reserves
     /// @param feiAmount of FEI to sell
-    function exchangeFeiForEth(uint256 feiAmount) external override whenNotPaused returns (uint256 amountOut) {
+    function exchangeFei(uint256 feiAmount) external override whenNotPaused returns (uint256 amountOut) {
         updateOracle();
 
         fei().burnFrom(msg.sender, feiAmount);

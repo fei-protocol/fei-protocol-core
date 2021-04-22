@@ -39,7 +39,7 @@ const {
       describe('Enough FEI', function() {
         it('exchanges for appropriate amount of ETH', async function() {
           let reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
-          await this.reserveStabilizer.exchangeFeiForEth(40000000, {from: userAddress});
+          await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
           let reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
 
           expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(new BN('90000'));
@@ -53,7 +53,7 @@ const {
           await this.oracle.setExchangeRate('800');
 
           let reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
-          await this.reserveStabilizer.exchangeFeiForEth(40000000, {from: userAddress});
+          await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
           let reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
 
           expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(new BN('45000'));
@@ -67,7 +67,7 @@ const {
           await this.reserveStabilizer.setUsdPerFeiRate('9500', {from: governorAddress});
 
           let reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
-          await this.reserveStabilizer.exchangeFeiForEth(40000000, {from: userAddress});
+          await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
           let reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
 
           expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(new BN('95000'));
@@ -78,21 +78,21 @@ const {
 
       describe('Not Enough FEI', function() {
         it('reverts', async function() {
-          await expectRevert(this.reserveStabilizer.exchangeFeiForEth(50000000, {from: userAddress}), "ERC20: burn amount exceeds balance");
+          await expectRevert(this.reserveStabilizer.exchangeFei(50000000, {from: userAddress}), "ERC20: burn amount exceeds balance");
         });
       });
 
       describe('Not Enough ETH', function() {
         it('reverts', async function() {
           await this.fei.mint(userAddress, new BN('4000000000000000000000000000'), {from: minterAddress});  
-          await expectRevert(this.reserveStabilizer.exchangeFeiForEth(new BN('4000000000000000000000000000'), {from: userAddress}), "revert");
+          await expectRevert(this.reserveStabilizer.exchangeFei(new BN('4000000000000000000000000000'), {from: userAddress}), "revert");
         });
       });
 
       describe('Paused', function() {
         it('reverts', async function() {
           await this.reserveStabilizer.pause({from: governorAddress});
-          await expectRevert(this.reserveStabilizer.exchangeFeiForEth(new BN('400000'), {from: userAddress}), "Pausable: paused");
+          await expectRevert(this.reserveStabilizer.exchangeFei(new BN('400000'), {from: userAddress}), "Pausable: paused");
         });
       });
     });

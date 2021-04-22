@@ -16,7 +16,7 @@ contract EthPCVDripper is CoreRef, Timed {
    uint256 public amountToDrip;
 
    event Dripped(uint256 amount);
-   event Withdrawl(address indexed to, uint256 amount);
+   event Withdrawal(address indexed to, uint256 amount);
 
    /// @notice Uniswap PCV Deposit constructor
    /// @param _core Fei Core for reference
@@ -43,7 +43,7 @@ contract EthPCVDripper is CoreRef, Timed {
        onlyPCVController
    {
        payable(to).sendValue(amount);
-       emit Withdrawl(to, amount);
+       emit Withdrawal(to, amount);
    }
  
    /// @notice drip ETH to target
