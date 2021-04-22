@@ -52,11 +52,17 @@ contract EthPCVDripper is CoreRef, Timed {
        afterTime
        whenNotPaused
    {
+       require(isTargetBalanceLow(), "EthPCVDripper: target balance too high");
+
        // reset timer
        _initTimed();
 
        // drip
        payable(target).sendValue(amountToDrip);
        emit Dripped(amountToDrip);
+   }
+
+   function isTargetBalanceLow() public view returns(bool) {
+       return target.balance < amountToDrip;
    }
 }

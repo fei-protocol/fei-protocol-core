@@ -1,6 +1,5 @@
 const {
     userAddress,
-    beneficiaryAddress1,
     governorAddress, 
     pcvControllerAddress,
     web3,
@@ -10,7 +9,9 @@ const {
     balance,
     expect,
     EthPCVDripper,
-    getCore
+    MockPCVDeposit,
+    getCore,
+    beneficiaryAddress1
   } = require('../helpers');
   
   describe('EthPCVDripper', function () {
@@ -18,8 +19,10 @@ const {
     beforeEach(async function () {
       this.core = await getCore(true);
       
+      this.pcvDeposit = await MockPCVDeposit.new(beneficiaryAddress1);
       this.dripAmount = new BN('500000000000000000');
-      this.pcvDripper = await EthPCVDripper.new(this.core.address, beneficiaryAddress1, '1000', this.dripAmount);
+
+      this.pcvDripper = await EthPCVDripper.new(this.core.address, this.pcvDeposit.address, '1000', this.dripAmount);
 
       await web3.eth.sendTransaction({from: userAddress, to: this.pcvDripper.address, value: "1000000000000000000"});
     });
@@ -40,23 +43,80 @@ const {
       });
   
       describe('After time', function() {
-
-          it('succeeds', async function() {
+          beforeEach(async function() {
             await time.increase('1000');
-
-            let dripperBalanceBefore = await balance.current(this.pcvDripper.address);
-            let beneficiaryBalanceBefore = await balance.current(beneficiaryAddress1);
-            await this.pcvDripper.drip();
-            let dripperBalanceAfter = await balance.current(this.pcvDripper.address);
-            let beneficiaryBalanceAfter = await balance.current(beneficiaryAddress1);
-
-            expect(dripperBalanceBefore.sub(dripperBalanceAfter)).to.be.bignumber.equal(this.dripAmount);
-            expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore)).to.be.bignumber.equal(this.dripAmount);
-
-            // timer reset
-            expect(await this.pcvDripper.isTimeEnded()).to.be.equal(false);
           });
+          describe('Target balance low enough', function() {
+            it('succeeds', async function() {
+                let dripperBalanceBefore = await balance.current(this.pcvDripper.address);
+                let beneficiaryBalanceBefore = await balance.current(this.pcvDeposit.address);
+                await this.pcvDripper.drip();
+                let dripperBalanceAfter = await balance.current(this.pcvDripper.address);
+                let beneficiaryBalanceAfter = await balance.current(this.pcvDeposit.address);
+    
+                expect(dripperBalanceBefore.sub(dripperBalanceAfter)).to.be.bignumber.equal(this.dripAmount);
+                expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore)).to.be.bignumber.equal(this.dripAmount);
+    
+                // timer reset
+                expect(await this.pcvDripper.isTimeEnded()).to.be.equal(false);
+            });
+        });
+
+        describe('Target balance too high', function() {
+            beforeEach(async function() {
+                await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: this.dripAmount});
+            });
+
+            it('reverts', async function() {        
+                await expectRevert(this.pcvDripper.drip(), "EthPCVDripper: target balance too high");
+            });
+        });
       });
+
+      describe('Second attempt', function() {
+        beforeEach(async function() {
+            await time.increase('1000');
+            await this.pcvDripper.drip();
+        });
+
+        describe('Before time', function() {
+            it('reverts', async function() {
+                await expectRevert(this.pcvDripper.drip(), "Timed: time not ended");
+            });
+        });
+
+        describe('After time', function() {
+            describe('Target balance low enough', function() {
+                beforeEach(async function() {
+                    await this.pcvDeposit.withdraw(userAddress, this.dripAmount);
+                    await time.increase('1000');
+                });
+                it('succeeds', async function() {
+                    let dripperBalanceBefore = await balance.current(this.pcvDripper.address);
+                    let beneficiaryBalanceBefore = await balance.current(this.pcvDeposit.address);
+                    await this.pcvDripper.drip();
+                    let dripperBalanceAfter = await balance.current(this.pcvDripper.address);
+                    let beneficiaryBalanceAfter = await balance.current(this.pcvDeposit.address);
+        
+                    expect(dripperBalanceBefore.sub(dripperBalanceAfter)).to.be.bignumber.equal(this.dripAmount);
+                    expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore)).to.be.bignumber.equal(this.dripAmount);
+        
+                    // timer reset
+                    expect(await this.pcvDripper.isTimeEnded()).to.be.equal(false);
+                });
+            });
+    
+            describe('Target balance too high', function() {
+                beforeEach(async function() {
+                    await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: this.dripAmount});
+                    await time.increase('1000');
+                });
+
+                it('reverts', async function() {        
+                    await expectRevert(this.pcvDripper.drip(), "EthPCVDripper: target balance too high");
+                });
+            });
+        });
     });
   
     describe('Withdraw', function() {
@@ -81,3 +141,4 @@ const {
       });
     });
   });
+});
