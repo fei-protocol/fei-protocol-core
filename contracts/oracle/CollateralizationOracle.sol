@@ -144,15 +144,17 @@ contract CollateralizationOracle is IOracle, CoreRef {
     /// @return collateralization ratio
     /// @dev price is to be denominated in percentage, with 18 decimals (1.25e18 for 125%)
     function collateralizationRatio() external view returns(uint256) {
-      (Decimal.D256 memory ratio,) = _collateralizationRatio();
-      return ratio.mul(1000000000000000000).asUint256();
+        (Decimal.D256 memory ratio, bool valid) = _collateralizationRatio();
+        require(valid, "CollateralizationOracle: invalid price oracle values or paused.");
+        return ratio.mul(1000000000000000000).asUint256();
     }
 
-    /// @notice get a boolean wheter  current collateralization ratio
+    /// @notice get a boolean whether current collateralization ratio is > 1
     /// @return true if the protocol is currently overcollateralized
     function overCollateralized() external view returns(bool) {
-      (Decimal.D256 memory ratio,) = _collateralizationRatio();
-      return ratio.mul(1000000000000000000).asUint256() > 1000000000000000000;
+        (Decimal.D256 memory ratio, bool valid) = _collateralizationRatio();
+        require(valid, "CollateralizationOracle: invalid price oracle values or paused.");
+        return ratio.greaterThan(Decimal.one());
     }
 
     /// @notice read the oracle value
