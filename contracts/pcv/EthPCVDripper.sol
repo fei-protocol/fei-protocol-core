@@ -10,7 +10,7 @@ contract EthPCVDripper is CoreRef, Timed {
    using Address for address payable;
  
    /// @notice target address to drip to
-   address public target;
+   address payable public target;
 
    /// @notice amount to drip after each window
    uint256 public amountToDrip;
@@ -22,7 +22,7 @@ contract EthPCVDripper is CoreRef, Timed {
    /// @param _core Fei Core for reference
    constructor(
        address _core,
-       address _target,
+       address payable _target,
        uint256 _frequency,
        uint256 _amountToDrip
    ) public CoreRef(_core) Timed(_frequency) {
@@ -38,11 +38,11 @@ contract EthPCVDripper is CoreRef, Timed {
    /// @notice withdraw ETH from the PCV dripper
    /// @param amount of tokens withdrawn
    /// @param to the address to send PCV to
-   function withdrawETH(address to, uint256 amount)
+   function withdrawETH(address payable to, uint256 amount)
        external
        onlyPCVController
    {
-       payable(to).sendValue(amount);
+       to.sendValue(amount);
        emit Withdrawal(to, amount);
    }
  
@@ -58,7 +58,7 @@ contract EthPCVDripper is CoreRef, Timed {
        _initTimed();
 
        // drip
-       payable(target).sendValue(amountToDrip);
+       target.sendValue(amountToDrip);
        emit Dripped(amountToDrip);
    }
 

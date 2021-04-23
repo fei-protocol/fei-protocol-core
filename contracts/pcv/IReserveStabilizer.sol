@@ -21,7 +21,7 @@ interface IReserveStabilizer {
 
     // ----------- PCV Controller only state changing api -----------
 
-    function withdraw(address to, uint256 amount) external;
+    function withdraw(address payable to, uint256 amount) external;
 
     // ----------- Governor only state changing api -----------
 
