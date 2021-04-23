@@ -1,7 +1,6 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./IPCVDeposit.sol";
 import "./IReserveStabilizer.sol";
 import "../refs/OracleRef.sol";
 import "@openzeppelin/contracts/utils/Address.sol";

@@ -18,8 +18,11 @@ contract EthPCVDripper is CoreRef, Timed {
    event Dripped(uint256 amount);
    event Withdrawal(address indexed to, uint256 amount);
 
-   /// @notice Uniswap PCV Deposit constructor
+   /// @notice ETH PCV Dripper constructor
    /// @param _core Fei Core for reference
+   /// @param _target address to drip to
+   /// @param _frequency frequency of dripping
+   /// @param _amountToDrip amount to drip on each drip
    constructor(
        address _core,
        address payable _target,
@@ -62,6 +65,7 @@ contract EthPCVDripper is CoreRef, Timed {
        emit Dripped(amountToDrip);
    }
 
+   /// @notice checks whether the target balance is less than the drip amount
    function isTargetBalanceLow() public view returns(bool) {
        return target.balance < amountToDrip;
    }
