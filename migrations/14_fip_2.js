@@ -8,6 +8,6 @@ module.exports = function(deployer) {
     deployer.then(function() {
         return deployer.deploy(EthReserveStabilizer, core, oracle, "9500");
     }).then(function(instance) {
-       return deployer.deploy(EthPCVDripper, core, instance.address, "60", "5000000000000000000"); // 5 ETH per minute
+       return deployer.deploy(EthPCVDripper, core, instance.address, "3600", "5000000000000000000000"); // 5000 ETH per hour
     })
 }
