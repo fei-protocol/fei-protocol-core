@@ -14,7 +14,7 @@ On the pop up window, select the wallet you'd like to connect and click "next". 
 
 ![](../../.gitbook/assets/image%20%284%29.png)
 
-You can see your connected wallet in the top right corner of the site.
+You can view your connected wallet in the top right corner of the site.
 
 ![](../../.gitbook/assets/image%20%2814%29.png)
 

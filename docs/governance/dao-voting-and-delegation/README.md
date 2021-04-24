@@ -14,6 +14,10 @@ To access these features, start by connecting your Metamask wallet.
 
 {% page-ref page="vote-on-an-active-proposal.md" %}
 
+Steps to disconnect your wallet or change between addresses are shown here.
+
+{% page-ref page="disconnect-your-wallet.md" %}
+
 
 
 

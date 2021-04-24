@@ -49,6 +49,7 @@
   * [Connect Your Wallet](governance/dao-voting-and-delegation/connect-your-wallet.md)
   * [Delegate Votes](governance/dao-voting-and-delegation/delegate-votes.md)
   * [Vote on an Active Proposal](governance/dao-voting-and-delegation/vote-on-an-active-proposal.md)
+  * [Disconnect Your Wallet](governance/dao-voting-and-delegation/disconnect-your-wallet.md)
 * [Tribe](governance/tribe.md)
 * [Fei Guardian](governance/fei-guardian.md)
 

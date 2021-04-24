@@ -96,5 +96,5 @@ If you delegated votes to another address, this section will display a link to t
 
 ![](../../.gitbook/assets/image%20%2819%29.png)
 
-Note that if you delegated by signature, this update will not be reflected until the receiving delegate address submits your signature as an on chain transaction.
+Note that if you delegated by signature, this update will not be reflected until the receiving delegate address submits your signature as an on-chain transaction.
 

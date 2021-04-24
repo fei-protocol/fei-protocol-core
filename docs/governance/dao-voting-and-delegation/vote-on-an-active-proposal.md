@@ -26,5 +26,11 @@ On the voting pop up, select your preferred option and click the "submit your vo
 
 Confirm and sign the transaction via Metamask.
 
+## Confirm your vote status:
 
+Start by navigating to your address's voter page. If you are among the top 100 addresses by voting power, you can link to your voter page through the "top voters" table at the bottom of the Fei Protocol governance page. Alternatively, you can view your address's voter page by pasting the following link into your browser with the relevant details.
+
+> > https://www.withtally.com/voter/\[your ethereum address\]/Governance/Fei
+
+On your address's voting page, scroll down to the recent vote section. Your most recent vote will be displayed at the top of the table.
 
