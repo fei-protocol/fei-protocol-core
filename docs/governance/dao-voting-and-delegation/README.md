@@ -12,11 +12,11 @@ To access these features, start by connecting your Metamask wallet.
 
 {% page-ref page="delegate-votes.md" %}
 
-&gt;Vote on an active proposal 
+{% page-ref page="vote-on-an-active-proposal.md" %}
 
-Steps to disconnect your wallet or change between addresses are shown here.
 
-&gt;disconnect your wallet
+
+
 
 
 

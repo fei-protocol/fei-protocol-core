@@ -20,13 +20,7 @@ Note that tokens you own are not active for voting until you delegate. **You mus
 
 Select the active proposal that you'd like to vote on. You can access this from the [Fei Protocol Governance](https://www.withtally.com/governance/fei) page, and then scroll down below the delegate voting power chart.
 
-\*screenshot\*
-
-\*screenshot\*
-
 Click on the "vote" button in the upper right corner of the page.
-
-\*screenshot\*
 
 On the voting pop up, select your preferred option and click the "submit your vote" button.
 
