@@ -9,7 +9,7 @@ description: How to signal support of proposals
 Snapshot voting is a way to vote off-chain without spending any ETH to signal support for a given proposal or path forward for a DAO vote.
 
 {% hint style="warning" %}
-Snapshot votes are NOT binding, all on-chain proposals must pass through the [Fei DAO](../fei-dao.md)
+Snapshot votes are NOT binding, all on-chain proposals must pass through the [Fei DAO](fei-dao.md)
 {% endhint %}
 
 Snapshot votes can calculate voting power at a certain point in time \(block\) and customized token balances, including delegations or tokens held in staked LP tokens, for example.
