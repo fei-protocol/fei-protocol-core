@@ -12,7 +12,7 @@ Snapshot voting is a way to vote off-chain without spending any ETH to signal su
 Snapshot votes are NOT binding, all on-chain proposals must pass through the [Fei DAO](fei-dao.md)
 {% endhint %}
 
-Snapshot votes can calculate voting power at a certain point in time \(block\) and customized token balances, including delegations or tokens held in staked LP tokens for example.
+Snapshot votes can calculate voting power at a certain point in time \(block\) and customized token balances, including delegations or tokens held in staked LP tokens, for example.
 
 ## How to Vote
 
