@@ -50,38 +50,6 @@ Confirm and sign the transaction via Metamask.
 
 ![](../.gitbook/assets/image%20%2818%29.png)
 
-## Delegate votes by signature:
-
-Delegation by signature allows you to delegate your votes to another address, and let a third party, such as the individual receiving your votes, pay for submitting the delegation transaction on chain. 
-
-{% hint style="warning" %}
-Currently, it's not possible to delegate by signature using a hardware wallet device. This is due to device providers not yet supporting EIP 712 message signing.
-{% endhint %}
-
-Navigate to the delegate leaderboard at the bottom of the Fei Protocol governance page. If your preferred delegate is not in the top 10 addresses by voting power, click on the "view all" link to see additional delegates.
-
-![](../.gitbook/assets/image%20%288%29.png)
-
-Click on the address you'd like to support to view their voter page. Then click on the "delegate vote" button on the right hand side.
-
-![](../.gitbook/assets/image%20%2817%29.png)
-
-Select "delegation by signature", and then click the "create new signature" button.
-
-![](../.gitbook/assets/image%20%282%29.png)
-
-Confirm and sign the message via Metamask. 
-
-![](../.gitbook/assets/image%20%2816%29.png)
-
-You will now see the message hash in the "generated signature" field. 
-
-![](../.gitbook/assets/image%20%289%29.png)
-
-Choosing to "send transaction to network" will simply submit your delegation as an on-chain transaction, and you must pay for gas yourself - this is equivalent to regular delegation transactions. 
-
-If your chosen delegate has opted in, you can select the option to "send signature to protocol advocate", and the receiving delegate address will pay transaction fees on your behalf.
-
 ## Confirm your delegation status:
 
 Start by navigating to your address's voter page. If you are among the top 100 addresses by voting power, you can link to your voter page through the "top voters" table at the bottom of the governance page. Alternatively, you can view your address's voter page by pasting the following link into your browser with the relevant details.
