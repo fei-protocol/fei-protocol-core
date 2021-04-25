@@ -134,7 +134,7 @@ const {
     });
 
     describe('Withdraw', function() {
-      it('enough eth succeeds', async function() {
+      it('enough tribe succeeds', async function() {
         let dripperBalanceBefore = await this.tribe.balanceOf(this.tribeDripper.address);
         let beneficiaryBalanceBefore = await this.tribe.balanceOf(beneficiaryAddress1);
 
@@ -146,7 +146,7 @@ const {
         expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore)).to.be.bignumber.equal(new BN('10000'));
       });
 
-      it('not enough eth reverts', async function() {
+      it('not enough tribe reverts', async function() {
         await expectRevert(this.tribeDripper.withdraw(beneficiaryAddress1, this.totalDripAmount.mul(new BN('2')), {from: pcvControllerAddress}), "revert");
       });
 
