@@ -6,7 +6,7 @@ description: How to Delegate Your Voting Power
 
 Before getting started, ensure that you have connected your wallet. 
 
-You can delegate votes to yourself or to another address. 
+You can delegate votes to yourself or to another address. **This only has to be done once.**
 
 {% hint style="warning" %}
 Note that tokens you own are not active for voting until you delegate. **You must delegate to yourself if you wish to vote on proposals directly with your own tokens.**
