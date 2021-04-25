@@ -9,7 +9,6 @@
 
 ---
 
-* [Snapshot Voting](snapshot-voting.md)
 * [DAO Voting and Delegation](dao-voting-and-delegation/README.md)
   * [Connect Your Wallet](dao-voting-and-delegation/connect-your-wallet.md)
   * [Delegate Votes](dao-voting-and-delegation/delegate-votes.md)
@@ -55,6 +54,7 @@
 ## Governance
 
 * [Fei DAO](governance/fei-dao.md)
+* [Snapshot Voting](governance/snapshot-voting.md)
 * [Tribe](governance/tribe.md)
 * [Fei Guardian](governance/fei-guardian.md)
 
