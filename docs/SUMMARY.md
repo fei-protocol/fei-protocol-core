@@ -28,6 +28,8 @@
   * [FEI \(Fei USD\)](protocol/fei-stablecoin/fei-fei-usd.md)
   * [UniswapIncentive](protocol/fei-stablecoin/uniswapincentive.md)
 * [Protocol Controlled Value](protocol/protocol-controlled-value/README.md)
+  * [EthReserveStabilizer](protocol/protocol-controlled-value/ethreservestabilizer.md)
+  * [EthPCVDripper](protocol/protocol-controlled-value/ethpcvdripper.md)
   * [EthUniswapPCVDeposit](protocol/protocol-controlled-value/ethuniswappcvdeposit.md)
   * [UniswapPCVDeposit](protocol/protocol-controlled-value/uniswappcvdeposit.md)
   * [EthUniswapPCVController](protocol/protocol-controlled-value/ethuniswappcvcontroller.md)

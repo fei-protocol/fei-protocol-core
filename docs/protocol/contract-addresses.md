@@ -25,6 +25,8 @@ The contracts marked with 🔄can be changed by governance, which would mean new
 | [FeiStakingRewards](staking/feistakingrewards.md) | [0x18305DaAe09Ea2F4D51fAa33318be5978D251aBd](https://etherscan.io/address/0x18305DaAe09Ea2F4D51fAa33318be5978D251aBd) |
 | [GenesisGroup](genesis/genesisgroup.md) | [0xBFfB152b9392e38CdDc275D818a3Db7FE364596b](https://etherscan.io/address/0xBFfB152b9392e38CdDc275D818a3Db7FE364596b) |
 | [FeiRouter](trading/feirouter.md) | [0x9271D303b57c204636C38Df0eD339b18Bf98f909](https://etherscan.io/address/0x9271D303b57c204636C38Df0eD339b18Bf98f909) |
+| 🔄[EthReserveStabilizer](protocol-controlled-value/ethreservestabilizer.md) | [0xa08A721dFB595753FFf335636674D76C455B275C](https://etherscan.io/address/0xa08A721dFB595753FFf335636674D76C455B275C) |
+| 🔄[EthPCVDripper](protocol-controlled-value/ethpcvdripper.md) | [0xDa079A280FC3e33Eb11A78708B369D5Ca2da54fE](https://etherscan.io/address/0xDa079A280FC3e33Eb11A78708B369D5Ca2da54fE) |
 
 ### External Addresses
 

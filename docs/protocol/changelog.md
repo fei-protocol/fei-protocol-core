@@ -4,6 +4,39 @@ description: Protocol changes since the white paper release
 
 # Changelog
 
+## FIP-2 - April 29, 2021
+
+FIP-2 allows FEI redemption at $0.95 and doubles the FEI-TRIBE LP staking rewards
+
+**EthReserveStabilizer**
+
+Responsible for exchanging FEI for ETH at $0.95 relative to the UniswapOracle price. Has the Burner🔥role so that approval is not needed to interact with it. ****Receives ETH in 5k batches from the EthPCVDripper every hour. 
+
+{% page-ref page="protocol-controlled-value/ethreservestabilizer.md" %}
+
+#### EthPCVDripper
+
+Drips ETH to the EthReserveStabilizer in 5k increments every hour. The dripper prevents the EthReserveStabilizer from holding more than 10k ETH allowing a smoother and safer release of potentially large amounts of ETH to target contracts.
+
+The drip can be called by any address and is not incentivized directly with FEI
+
+300k ETH are sent to the EthPCVDripper from the [EthUniswapPCVDeposit](protocol-controlled-value/ethuniswappcvdeposit.md)
+
+{% page-ref page="protocol-controlled-value/ethpcvdripper.md" %}
+
+#### TribeDripper
+
+When the FeiRewardsDistributor receives new TRIBE, it allocates an amount proportional to all prior drips to the very first drip, frontloading the distribution. If the 100 million TRIBE are sent directly to the distributor then the following week would have 6x rewards \(1x base rewards + 100% boost x 5 drips\).
+
+To smoothen out the front-loading, the TribeDripper sends the 100 million TRIBE to the FeiRewardsDistributor over 3 weeks using 47m, 31m, and 22m TRIBE respectively.
+
+Week 1: 1x base rewards + 47% boost x 5 drips = ~3.35x  
+Week 2: 1.47x base rewards + 31% x 6 drips = ~3.33x  
+Week 3: 1.78x base rewards + 22% x 7 drips = ~3.32x  
+Week 4+: 2x base rewards
+
+The TribeDripper is at [https://etherscan.io/address/0x65b3Ea26c492de0c2f2D8Abe84eB831796d6eDb1](https://etherscan.io/address/0x65b3Ea26c492de0c2f2D8Abe84eB831796d6eDb1) with an unincentivized function drip\(\) that can be called weekly for 3 drips
+
 ## Pre-Launch - Feb 2021
 
 #### Guardian🛡Role 

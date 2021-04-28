@@ -8,7 +8,7 @@ Fei Protocol has a staking pool in which FEI/TRIBE Uniswap LP tokens are deposit
 
 ## Rewards Distribution
 
-The total reward balance is 100,000,000 TRIBE, distributed over 2 years. This represents 10% of the initial TRIBE supply. The rewards distribution rate decreases linearly.
+As of FIP-2, the total reward balance is 200,000,000 TRIBE, distributed over 2 years. This represents 20% of the initial TRIBE supply. The rewards distribution rate decreases linearly.
 
 ![TRIBE distribution function after 1 year](../../.gitbook/assets/tribe-release.svg)
 
