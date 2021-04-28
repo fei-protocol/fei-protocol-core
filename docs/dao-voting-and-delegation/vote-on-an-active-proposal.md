@@ -22,9 +22,15 @@ Select the active proposal that you'd like to vote on. You can access this from 
 
 Click on the "vote" button in the upper right corner of the page.
 
+![](../.gitbook/assets/image%20%2824%29.png)
+
 On the voting pop up, select your preferred option and click the "submit your vote" button.
 
+![](../.gitbook/assets/image%20%2826%29.png)
+
 Confirm and sign the transaction via Metamask.
+
+![](../.gitbook/assets/image%20%2825%29.png)
 
 ## Confirm your vote status:
 
