@@ -9,6 +9,9 @@
 
 ---
 
+* [Staking FEI:TRIBE LP](staking-fei-tribe-lp/README.md)
+  * [Steps for Staking](staking-fei-tribe-lp/steps-for-staking.md)
+  * [Unstaking](staking-fei-tribe-lp/unstaking.md)
 * [DAO Voting and Delegation](dao-voting-and-delegation/README.md)
   * [Connect Your Wallet](dao-voting-and-delegation/connect-your-wallet.md)
   * [Delegate Votes](dao-voting-and-delegation/delegate-votes.md)
