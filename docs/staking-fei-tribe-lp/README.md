@@ -8,5 +8,5 @@ description: Staking in Fei Protocol User Guide
 
 Before participating in LP Pool Staking you should further research and explore the [risks and potential rewards](https://uniswap.org/docs/v2/advanced-topics/understanding-returns/) associated with providing staking pool liquidity. Loss of funds is possible due to a number of factors such as IL \(Impermanent Loss\), reward token \(TRIBE\) volatility, and associated transaction \([gas fees](https://ethereumprice.org/gas/)\) costs.
 
-Fei Protocol staking pool is set for 2 years, with a linearly decreasing rate for reward release of 200M TRIBE tokens. Addtional program details and contracts available [here](https://docs.fei.money/protocol/staking).
+Fei Protocol staking pool is set for 2 years, with a linearly decreasing rate for reward release of 200M TRIBE tokens. Additional program details and contracts available [here](https://docs.fei.money/protocol/staking).
 
