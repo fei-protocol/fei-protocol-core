@@ -12,14 +12,17 @@ To acquire FEI, we recommend using the [Fei app](https://app.fei.money/exchange)
 
 **2. Acquire TRIBE:**
 
-To acquire TRIBE, you need to use [Uniswap](https://app.uniswap.org/#/swap) or another secondary market.  
+To acquire TRIBE, you need to use [Uniswap](https://app.uniswap.org/#/swap) or another secondary market.
+
 Add TRIBE as a token by clicking on “select a token”:
 
 ![](https://lh5.googleusercontent.com/Oo6fW9E1wRxJHHg4A7HD6gm7dkpC_cRRzIkOnKZF7-ARlNbermFYhPLzTSQiI1827LfZ9AEJYtoqfU9_1A0b1joO2Ag-z5QHUGIh7hg2hjbnDP6YmjQfbKD8kXvKtm9uiPIhItuW)
 
-If TRIBE is not an option in the drop down menu, paste in the [contract address](https://docs.fei.money/protocol/contract-addresses) **\(0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B\)** to add TRIBE:
+{% hint style="info" %}
+ If TRIBE is not an option in the drop down menu, paste in the [contract address](https://docs.fei.money/protocol/contract-addresses) **\(0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B\)** to add TRIBE:
 
 ![](https://lh3.googleusercontent.com/CNY8BoEh5pptCMLh9Sc8KyWm-0QGREheh8E7Cm0rUxbZdKB2lqMBsDrUIsv04F6ipoGHPEWDVadQRCiNt31ih_f68nrEKBm7cMvh63henl4TrKoA8qGTBPbi8BlJPcokvWIqd1ZX)
+{% endhint %}
 
 Now you will have the ability to insert the desired amount of TRIBE.
 
@@ -51,10 +54,12 @@ You can view the status of your staking rewards as well as claim rewards:
 
 ![](https://lh3.googleusercontent.com/-i9dx4lJSrXp8kRG6gulOWYC8Bf8yRor6ZrEG3wSu7rueviWFw_EC9LWYmjBdy0x_jsknQZbsqDOX1WPafiUnjMIlkcMxIzpvw0Y7_nkB017U-VHqsskIZtyMtWBvwdvm7Ne3g4l)
 
-**Notes:**
-
+{% hint style="info" %}
 * You can claim rewards at any time, and they will never disappear. 
 * We recommend that you consider the cost of gas fees relative to your reward amount when claiming rewards.
   * For smaller investors, the current [gas price](https://ethereumprice.org/gas/) might be of interest when claiming the reward.
 * The cadence at which to claim is up to you, rewards will not disappear over time.
+{% endhint %}
+
+
 
