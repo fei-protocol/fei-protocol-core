@@ -5,7 +5,7 @@ description: 'Steps for unstaking FEI:TRIBE LP Tokens'
 # Unstaking
 
 {% hint style="warning" %}
-_If you would like to participate in the on-chain DAO vote, you must withdraw your LP tokens, and have TRIBE in your wallet, as LP tokens are not eligible for on-chai voting._
+_If you would like to participate in the on-chain DAO vote, you must withdraw your LP tokens, and have TRIBE in your wallet, as LP tokens are not eligible for on-chain voting._
 {% endhint %}
 
 When you decide to unstake and exchange your LP tokens into FEI and TRIBE, you should follow these simple steps:
