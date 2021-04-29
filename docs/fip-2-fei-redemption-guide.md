@@ -4,7 +4,7 @@ description: Steps for redeeming FEI for ETH from EthReserveStabilizer Contract
 
 # FIP-2 FEI Redemption Guide
 
-If you own FEI and would like to redeem it at $0.95 USD for ETH, you can go to the [Fei app Redeem tab](https://app.fei.money/redeem) once redemption starts at roughly 2:15PM PT on Thursday, April 29th.
+If you own FEI and would like to redeem it at $0.95 USD for ETH, you can go to the [Fei app Redeem tab](https://app.fei.money/redeem).
 
 **Redemption Steps:**
 
