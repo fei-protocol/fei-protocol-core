@@ -10,3 +10,7 @@ Before participating in LP Pool Staking you should further research and explore 
 
 Fei Protocol staking pool is set for 2 years, with a linearly decreasing rate for reward release of 200M TRIBE tokens. Additional program details and contracts available [here](https://docs.fei.money/protocol/staking).
 
+{% page-ref page="steps-for-staking.md" %}
+
+{% page-ref page="unstaking.md" %}
+
