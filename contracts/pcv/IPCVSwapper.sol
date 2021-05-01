@@ -7,6 +7,7 @@ interface IPCVSwapper {
     // ----------- Events -----------
     event UpdateTokenSpent(address _tokenFrom);
     event UpdateTokenReceived(address _tokenTo);
+    event UpdateReceivingAddress(address _tokenReceivingAddress);
 
     event Swap(
         address indexed _caller,
@@ -42,10 +43,12 @@ interface IPCVSwapper {
 
     function setTokenSpent(address _tokenSpent) external;
     function setTokenReceived(address _tokenReceived) external;
+    function setReceivingAddress(address _tokenReceivingAddress) external;
 
     // ----------- Getters -----------
 
     function getTokenSpent() external view returns (address);
     function getTokenReceived() external view returns (address);
+    function getReceivingAddress() external view returns (address);
 
 }
