@@ -18,6 +18,7 @@ const EthReserveStabilizer = contract.fromArtifact('EthReserveStabilizer');
 const EthPCVDripper = contract.fromArtifact('EthPCVDripper');
 const EthUniswapPCVController = contract.fromArtifact('EthUniswapPCVController');
 const EthUniswapPCVDeposit = contract.fromArtifact('EthUniswapPCVDeposit');
+const PCVSwapperUniswap = contract.fromArtifact('PCVSwapperUniswap');
 const Fei = contract.fromArtifact('Fei');
 const FeiRouter = contract.fromArtifact('FeiRouter');
 const ForceEth = contract.fromArtifact('ForceEth');
@@ -112,6 +113,7 @@ module.exports = {
     EthPCVDripper,
     EthUniswapPCVController,
     EthUniswapPCVDeposit,
+    PCVSwapperUniswap,
     Fei,
     FeiRewardsDistributor,
     FeiStakingRewards,
@@ -135,7 +137,7 @@ module.exports = {
     MockIDO,
     MockIncentive,
     MockIncentivized,
-    MockOracle, 
+    MockOracle,
     MockPair,
     MockPairTrade,
     MockPCVDeposit,

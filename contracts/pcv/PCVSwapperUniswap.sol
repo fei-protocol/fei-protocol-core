@@ -71,7 +71,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     /// @param token address of the ERC20 to send
     /// @param amount amount of ERC20 to send
     function withdrawERC20(address to, address token, uint256 amount) external override onlyPCVController {
-        require(IERC20(token).transfer(to, amount), "PCVSwapperUniswap: transferERC20 failed");
+        require(IERC20(token).transfer(to, amount), "PCVSwapperUniswap: transferERC20 failed.");
         emit WithdrawERC20(msg.sender, to, token, amount);
     }
 
@@ -99,14 +99,14 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     /// @notice Sets the maximum slippage vs Oracle price accepted during swaps
     /// @param _maximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
     function setMaximumSlippage(uint256 _maximumSlippageBasisPoints) external onlyGovernor {
-        require(_maximumSlippageBasisPoints <= BASIS_POINTS_GRANULARITY, "PCVSwapperUniswap: Exceeds bp granularity");
+        require(_maximumSlippageBasisPoints <= BASIS_POINTS_GRANULARITY, "PCVSwapperUniswap: Exceeds bp granularity.");
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
     }
 
     /// @notice Sets the maximum tokens spent on each swap
     /// @param _maxSpentPerSwap the maximum number of tokens to be swapped on each call
     function setMaxSpentPerSwap(uint256 _maxSpentPerSwap) external onlyGovernor {
-        require(_maxSpentPerSwap != 0, "PCVSwapperUniswap: Cannot swap 0");
+        require(_maxSpentPerSwap != 0, "PCVSwapperUniswap: Cannot swap 0.");
         maxSpentPerSwap = _maxSpentPerSwap;
     }
 
@@ -119,6 +119,12 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     /// @notice sets the minimum time between swaps
     function setSwapFrequency(uint256 _duration) external onlyGovernor {
        _setDuration(_duration);
+    }
+
+    /// @notice Get the minimum time between swaps
+    /// @return the time between swaps
+    function getSwapFrequency() external view returns (uint256) {
+      return duration;
     }
 
     /// @notice Get the token to spend
@@ -142,9 +148,9 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     /// @notice Swap tokenSpent for tokenReceived
     function swap() external override afterTime whenNotPaused {
       uint256 balance = IERC20(tokenSpent).balanceOf(address(this));
-      require(balance != 0, "PCVSwapperUniswap: no tokenSpent left");
+      require(balance != 0, "PCVSwapperUniswap: no tokenSpent left.");
       if (tokenBuyLimit != 0) {
-        require(IERC20(tokenReceived).balanceOf(tokenReceivingAddress) < tokenBuyLimit, "PCVSwapperUniswap: tokenBuyLimit reached");
+        require(IERC20(tokenReceived).balanceOf(tokenReceivingAddress) < tokenBuyLimit, "PCVSwapperUniswap: tokenBuyLimit reached.");
       }
 
       // Get pair reserves
@@ -165,17 +171,16 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
       // Check spot price vs oracle price discounted by max slippage
       // E.g. for a max slippage of 3%, spot price must be >= 97% oraclePrice
       (Decimal.D256 memory twap, bool oracleValid) = oracle.read();
-      require(oracleValid, "PCVSwapperUniswap: invalid oracle");
+      require(oracleValid, "PCVSwapperUniswap: invalid oracle.");
       uint256 oracleAmountOut = twap.mul(amount).asUint256();
       Decimal.D256 memory maxSlippage = Decimal.ratio(BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, BASIS_POINTS_GRANULARITY);
       Decimal.D256 memory oraclePriceMinusSlippage = maxSlippage.mul(oracleAmountOut);
-      require(Decimal.lessThanOrEqualTo(oraclePriceMinusSlippage, Decimal.from(amountOut)), "PCVSwapperUniswap: slippage too high");
+      require(oraclePriceMinusSlippage.asUint256() <= amountOut, "PCVSwapperUniswap: slippage too high.");
 
       // Reset timer
       _initTimed();
 
       // Perform swap
-      assert(IERC20(tokenSpent).transfer(address(pair), amount));
       (uint256 amount0Out, uint256 amount1Out) =
           pair.token0() == address(tokenSpent)
               ? (uint256(0), amountOut)
