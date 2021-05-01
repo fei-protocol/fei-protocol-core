@@ -116,6 +116,11 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
       tokenBuyLimit = _tokenBuyLimit;
     }
 
+    /// @notice sets the minimum time between swaps
+    function setSwapFrequency(uint256 _duration) external onlyGovernor {
+       _setDuration(_duration);
+    }
+
     /// @notice Get the token to spend
     /// @return The address of the token to spend
     function getTokenSpent() external view override returns (address) {
