@@ -44,7 +44,8 @@ const {
         this.weth.address, // tokenSpent
         this.fei.address, // tokenReceived
         userAddress, // tokenReceivingAddress
-        '100'+e18 // maxSpentPerSwap
+        '100'+e18, // maxSpentPerSwap
+        false // invertOraclePrice
       );
 
       await this.core.grantPCVController(pcvControllerAddress, {from: governorAddress});
@@ -237,6 +238,17 @@ const {
         expect(await this.swapper.getSwapFrequency()).to.be.bignumber.equal('1000');
         await this.swapper.setSwapFrequency('2000', { from: governorAddress });
         expect(await this.swapper.getSwapFrequency()).to.be.bignumber.equal('2000');
+      });
+      it('setInvertOraclePrice() revert if not governor', async function() {
+        await expectRevert(
+          this.swapper.setInvertOraclePrice(true),
+          'CoreRef: Caller is not a governor.'
+        );
+      });
+      it('setInvertOraclePrice()', async function() {
+        expect(await this.swapper.invertOraclePrice()).to.be.equal(false);
+        await this.swapper.setInvertOraclePrice(true, {from: governorAddress})
+        expect(await this.swapper.invertOraclePrice()).to.be.equal(true);
       });
     });
 
