@@ -26,6 +26,8 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     uint256 public tokenBuyLimit = 0;
     /// @notice the maximum amount of tokens to spend on every swap
     uint256 public maxSpentPerSwap;
+    /// @notice should we use (1 / oraclePrice) instead of oraclePrice ?
+    bool public invertOraclePrice;
     /// @notice the maximum amount of slippage vs oracle price
     uint256 public maximumSlippageBasisPoints = 300; // default 3%
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
@@ -39,12 +41,14 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         address _tokenSpent,
         address _tokenReceived,
         address _tokenReceivingAddress,
-        uint256 _maxSpentPerSwap
+        uint256 _maxSpentPerSwap,
+        bool _invertOraclePrice
     ) public UniRef(_core, _pair, _router, _oracle) Timed(_swapFrequency) {
         tokenSpent = _tokenSpent;
         tokenReceived = _tokenReceived;
         tokenReceivingAddress = _tokenReceivingAddress;
         maxSpentPerSwap = _maxSpentPerSwap;
+        invertOraclePrice = _invertOraclePrice;
 
         emit UpdateTokenSpent(_tokenSpent);
         emit UpdateTokenReceived(_tokenReceived);
@@ -121,6 +125,11 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
        _setDuration(_duration);
     }
 
+    /// @notice sets invertOraclePrice : use (1 / oraclePrice) if true
+    function setInvertOraclePrice(bool _invertOraclePrice) external onlyGovernor {
+        invertOraclePrice = _invertOraclePrice;
+    }
+
     /// @notice Get the minimum time between swaps
     /// @return the time between swaps
     function getSwapFrequency() external view returns (uint256) {
@@ -172,7 +181,12 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
       // E.g. for a max slippage of 3%, spot price must be >= 97% oraclePrice
       (Decimal.D256 memory twap, bool oracleValid) = oracle.read();
       require(oracleValid, "PCVSwapperUniswap: invalid oracle.");
-      uint256 oracleAmountOut = twap.mul(amount).asUint256();
+      Decimal.D256 memory oracleAmountOut;
+      if (invertOraclePrice) {
+        oracleAmountOut = Decimal.from(amount).div(twap);
+      } else {
+        oracleAmountOut = twap.mul(amount);
+      }
       Decimal.D256 memory maxSlippage = Decimal.ratio(BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, BASIS_POINTS_GRANULARITY);
       Decimal.D256 memory oraclePriceMinusSlippage = maxSlippage.mul(oracleAmountOut);
       require(oraclePriceMinusSlippage.asUint256() <= amountOut, "PCVSwapperUniswap: slippage too high.");
