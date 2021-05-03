@@ -132,12 +132,6 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         invertOraclePrice = _invertOraclePrice;
     }
 
-    /// @notice Get the minimum time between swaps
-    /// @return the time between swaps
-    function getSwapFrequency() external view returns (uint256) {
-      return duration;
-    }
-
     /// @notice Get the token to spend
     /// @return The address of the token to spend
     function getTokenSpent() external view override returns (address) {
@@ -156,42 +150,46 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
       return tokenReceivingAddress;
     }
 
+    /// @notice Get the minimum time between swaps
+    /// @return the time between swaps
+    function getSwapFrequency() external view returns (uint256) {
+      return duration;
+    }
+
+    function getOraclePrice() external view returns (uint256) {
+      (Decimal.D256 memory twap,) = oracle.read();
+      return twap.asUint256();
+    }
+
+    function getNextAmountSpent() external view returns (uint256) {
+      return _getExpectedAmountIn();
+    }
+
+    function getNextAmountReceived() external view returns (uint256) {
+      return _getExpectedAmountOut(_getExpectedAmountIn());
+    }
+
+    function getNextAmountReceivedThreshold() external view returns (uint256) {
+      return _getMinimumAcceptableAmountOut(_getExpectedAmountIn());
+    }
+
+    function getDecimalNormalizer() external view returns (uint256, bool) {
+      return _getDecimalNormalizer();
+    }
+
     /// @notice Swap tokenSpent for tokenReceived
     function swap() external override afterTime whenNotPaused {
-      uint256 balance = IERC20(tokenSpent).balanceOf(address(this));
-      require(balance != 0, "PCVSwapperUniswap: no tokenSpent left.");
       if (tokenBuyLimit != 0) {
         require(ERC20(tokenReceived).balanceOf(tokenReceivingAddress) < tokenBuyLimit, "PCVSwapperUniswap: tokenBuyLimit reached.");
       }
 
-      // Get pair reserves
-      (uint256 _token0, uint256 _token1) = getReserves();
-      (uint256 tokenSpentReserves, uint256 tokenReceivedReserves) =
-          pair.token0() == tokenSpent
-              ? (_token0, _token1)
-              : (_token1, _token0);
-
-      // Prepare swap
-      uint256 amount = Math.min(maxSpentPerSwap, balance);
-      uint256 amountOut = UniswapV2Library.getAmountOut(
-        amount,
-        tokenSpentReserves,
-        tokenReceivedReserves
-      );
+      uint256 amountIn = _getExpectedAmountIn();
+      uint256 amountOut = _getExpectedAmountOut(amountIn);
+      uint minimumAcceptableAmountOut = _getMinimumAcceptableAmountOut(amountIn);
 
       // Check spot price vs oracle price discounted by max slippage
       // E.g. for a max slippage of 3%, spot price must be >= 97% oraclePrice
-      (Decimal.D256 memory twap, bool oracleValid) = oracle.read();
-      require(oracleValid, "PCVSwapperUniswap: invalid oracle.");
-      Decimal.D256 memory oracleAmountOut;
-      if (invertOraclePrice) {
-        oracleAmountOut = Decimal.from(amount).div(twap);
-      } else {
-        oracleAmountOut = twap.mul(amount);
-      }
-      Decimal.D256 memory maxSlippage = Decimal.ratio(BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, BASIS_POINTS_GRANULARITY);
-      Decimal.D256 memory oraclePriceMinusSlippage = maxSlippage.mul(oracleAmountOut);
-      require(oraclePriceMinusSlippage.asUint256() <= amountOut, "PCVSwapperUniswap: slippage too high.");
+      require(minimumAcceptableAmountOut <= amountOut, "PCVSwapperUniswap: slippage too high.");
 
       // Reset timer
       _initTimed();
@@ -209,8 +207,68 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         msg.sender,
         tokenSpent,
         tokenReceived,
-        amount,
+        amountIn,
         amountOut
       );
+    }
+
+    function _getExpectedAmountIn() internal view returns (uint256) {
+      uint256 balance = ERC20(tokenSpent).balanceOf(address(this));
+      require(balance != 0, "PCVSwapperUniswap: no tokenSpent left.");
+      return Math.min(maxSpentPerSwap, balance);
+    }
+
+    function _getExpectedAmountOut(uint256 amountIn) internal view returns (uint256) {
+      // Get pair reserves
+      (uint256 _token0, uint256 _token1) = getReserves();
+      (uint256 tokenSpentReserves, uint256 tokenReceivedReserves) =
+          pair.token0() == tokenSpent
+              ? (_token0, _token1)
+              : (_token1, _token0);
+
+      // Prepare swap
+      uint256 amountOut = UniswapV2Library.getAmountOut(
+        amountIn,
+        tokenReceivedReserves,
+        tokenSpentReserves
+      );
+
+      return amountOut;
+    }
+
+    function _getMinimumAcceptableAmountOut(uint256 amountIn) internal view returns (uint256) {
+      (Decimal.D256 memory twap, bool oracleValid) = oracle.read();
+      require(oracleValid, "PCVSwapperUniswap: invalid oracle.");
+      Decimal.D256 memory oracleAmountOut;
+      if (invertOraclePrice) {
+        oracleAmountOut = Decimal.from(amountIn).div(twap);
+      } else {
+        oracleAmountOut = twap.mul(amountIn);
+      }
+      Decimal.D256 memory maxSlippage = Decimal.ratio(BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, BASIS_POINTS_GRANULARITY);
+      (uint256 decimalNormalizer, bool normalizerDirection) = _getDecimalNormalizer();
+      Decimal.D256 memory oraclePriceMinusSlippage;
+      if (normalizerDirection) {
+        oraclePriceMinusSlippage = maxSlippage.mul(oracleAmountOut).div(decimalNormalizer);
+      } else {
+        oraclePriceMinusSlippage = maxSlippage.mul(oracleAmountOut).mul(decimalNormalizer);
+      }
+      return oraclePriceMinusSlippage.asUint256();
+    }
+
+    function _getDecimalNormalizer() internal view returns (uint256, bool) {
+      uint8 decimalsTokenSpent = ERC20(tokenSpent).decimals();
+      uint8 decimalsTokenReceived = ERC20(tokenReceived).decimals();
+
+      uint256 n;
+      bool direction;
+      if (decimalsTokenSpent >= decimalsTokenReceived) {
+        direction = true;
+        n = Decimal.from(10).pow(decimalsTokenSpent - decimalsTokenReceived).asUint256();
+      } else {
+        direction = false;
+        n = Decimal.from(10).pow(decimalsTokenReceived - decimalsTokenSpent).asUint256();
+      }
+      return (n, direction);
     }
 }

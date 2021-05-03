@@ -29,7 +29,7 @@ const {
       this.weth = await MockWeth.new();
       this.fei = await Fei.at(await this.core.fei());
       this.pair = await MockPair.new(this.fei.address, this.weth.address);
-      this.pair.setReserves('62500000'+e18, '25000'+e18);
+      this.pair.setReserves('25000'+e18, '62500000'+e18);
       //await web3.eth.sendTransaction({from: userAddress, to: this.pair.address, value: '25000'+e18});
       await this.fei.mint(this.pair.address, '62500000'+e18, {from: minterAddress});
       this.router = await FeiRouter.new(this.pair.address, this.weth.address);
@@ -179,6 +179,26 @@ const {
     describe('Getters', function() {
       it('getSwapFrequency()', async function() {
         expect(await this.swapper.getSwapFrequency()).to.be.bignumber.equal('1000');
+      });
+      it('getOraclePrice()', async function() {
+        expect(await this.swapper.getOraclePrice()).to.be.bignumber.equal('2500');
+      });
+      it('getNextAmountSpent()', async function() {
+        await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '100'+e18});
+        expect(await this.swapper.getNextAmountSpent()).to.be.bignumber.equal('100000000000000000000'); // 100e18
+      });
+      it('getNextAmountReceived()', async function() {
+        await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '100'+e18});
+        expect(await this.swapper.getNextAmountReceived()).to.be.bignumber.equal('248259939361825041733566');
+      });
+      it('getNextAmountReceivedThreshold()', async function() {
+        await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '100'+e18});
+        expect(await this.swapper.getNextAmountReceivedThreshold()).to.be.bignumber.equal('242500000000000000000000');
+      });
+      it('getDecimalNormalizer()', async function() {
+        const decimalNormalizer = await this.swapper.getDecimalNormalizer();
+        expect(decimalNormalizer[0]).to.be.bignumber.equal('1');
+        expect(decimalNormalizer[1]).to.be.equal(true);
       });
     });
 
