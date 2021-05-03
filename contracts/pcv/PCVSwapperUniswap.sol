@@ -6,13 +6,15 @@ import "../refs/UniRef.sol";
 import "../utils/Timed.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "../external/UniswapV2Library.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 
 /// @title implementation for PCV Swapper that swaps ERC20 tokens on Uniswap
 /// @author eswak
 contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
+    using SafeERC20 for ERC20;
     using Decimal for Decimal.D256;
     using SafeMathCopy for uint256;
 
@@ -75,7 +77,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     /// @param token address of the ERC20 to send
     /// @param amount amount of ERC20 to send
     function withdrawERC20(address to, address token, uint256 amount) external override onlyPCVController {
-        require(IERC20(token).transfer(to, amount), "PCVSwapperUniswap: transferERC20 failed.");
+        ERC20(token).safeTransfer(to, amount);
         emit WithdrawERC20(msg.sender, to, token, amount);
     }
 
@@ -159,7 +161,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
       uint256 balance = IERC20(tokenSpent).balanceOf(address(this));
       require(balance != 0, "PCVSwapperUniswap: no tokenSpent left.");
       if (tokenBuyLimit != 0) {
-        require(IERC20(tokenReceived).balanceOf(tokenReceivingAddress) < tokenBuyLimit, "PCVSwapperUniswap: tokenBuyLimit reached.");
+        require(ERC20(tokenReceived).balanceOf(tokenReceivingAddress) < tokenBuyLimit, "PCVSwapperUniswap: tokenBuyLimit reached.");
       }
 
       // Get pair reserves
@@ -195,6 +197,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
       _initTimed();
 
       // Perform swap
+      ERC20(tokenSpent).safeTransfer(address(pair), amountIn);
       (uint256 amount0Out, uint256 amount1Out) =
           pair.token0() == address(tokenSpent)
               ? (uint256(0), amountOut)
