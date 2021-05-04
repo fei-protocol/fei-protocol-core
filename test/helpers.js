@@ -14,6 +14,7 @@ const { expect } = chai;
 const BondingCurveOracle = contract.fromArtifact('BondingCurveOracle');
 const Core = contract.fromArtifact('Core');
 const EthBondingCurve = contract.fromArtifact('EthBondingCurve');
+const EthPCVDepositAdapter = contract.fromArtifact('EthPCVDepositAdapter');
 const EthUniswapPCVController = contract.fromArtifact('EthUniswapPCVController');
 const EthUniswapPCVDeposit = contract.fromArtifact('EthUniswapPCVDeposit');
 const Fei = contract.fromArtifact('Fei');
@@ -28,7 +29,7 @@ const UniswapIncentive = contract.fromArtifact('UniswapIncentive');
 const UniswapOracle = contract.fromArtifact('UniswapOracle');
 const FeiStakingRewards = contract.fromArtifact('FeiStakingRewards');
 const FeiRewardsDistributor = contract.fromArtifact('FeiRewardsDistributor');
-
+const RatioPCVController = contract.fromArtifact('RatioPCVController');
 
 const MockBondingCurve = contract.fromArtifact('MockBondingCurve');
 const MockBondingCurveOracle = contract.fromArtifact('MockBondingCurveOracle');
@@ -105,6 +106,7 @@ module.exports = {
     BondingCurveOracle,
     Core,
     EthBondingCurve,
+    EthPCVDepositAdapter,
     EthUniswapPCVController,
     EthUniswapPCVDeposit,
     Fei,
@@ -119,6 +121,7 @@ module.exports = {
     Tribe,
     UniswapIncentive,
     UniswapOracle,
+    RatioPCVController,
     // mock contracts
     MockBondingCurve,
     MockBondingCurveOracle,
