@@ -9,6 +9,10 @@ import "../refs/UniRef.sol";
 abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
     using Decimal for Decimal.D256;
 
+    uint256 public maxBasisPointsFromPegLP = 50;
+
+    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
+
     /// @notice Uniswap PCV Deposit constructor
     /// @param _core Fei Core for reference
     /// @param _pair Uniswap Pair to deposit to
@@ -46,7 +50,7 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
         uint256 liquidityToWithdraw =
             ratioToWithdraw.mul(totalLiquidity).asUint256();
 
-        uint256 amountWithdrawn = _removeLiquidity(liquidityToWithdraw);
+        uint256 amountWithdrawn = _removeLiquidity(liquidityToWithdraw, amountUnderlying);
 
         _transferWithdrawn(to, amountWithdrawn);
 
@@ -69,10 +73,14 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
         return peg().mul(amountToken).asUint256();
     }
 
-    function _removeLiquidity(uint256 amount)
+    function _removeLiquidity(uint256 amountLiquidity, uint256 amountUnderlying)
         internal
         virtual
         returns (uint256);
 
     function _transferWithdrawn(address to, uint256 amount) internal virtual;
+
+    function _getMinLiquidity(uint256 amount) internal view returns (uint256 amountMin) {
+        return amount * (BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP) / BASIS_POINTS_GRANULARITY;
+    }
 }

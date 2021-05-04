@@ -20,15 +20,19 @@ contract MockRouter {
     uint256 private totalLiquidity;
     uint256 private constant LIQUIDITY_INCREMENT = 10000;
 
+    uint256 private amountMinThreshold;
+
     function addLiquidityETH(
         address token,
         uint amountTokenDesired,
-        uint,
+        uint amountToken0Min,
         uint,
         address to,
         uint
     ) external payable returns (uint amountToken, uint amountETH, uint liquidity) {
         address pair = address(PAIR);
+        checkAmountMin(amountToken0Min);
+
         amountToken = amountTokenDesired;
         amountETH = msg.value;
         liquidity = LIQUIDITY_INCREMENT;
@@ -41,17 +45,26 @@ contract MockRouter {
         PAIR.setReserves(newReserve0, newReserve1);
     }
 
+    function checkAmountMin(uint256 amount) public view {
+        require(amountMinThreshold == 0 || amountMinThreshold > amount, "amount liquidity revert");
+    }
+
+    function setAmountMin(uint256 amount) public {
+        amountMinThreshold = amount;
+    }
+
     function addLiquidity(
         address token0,
         address token1,
         uint amountToken0Desired,
         uint amountToken1Desired,
-        uint,
+        uint amountToken0Min,
         uint,
         address to,
         uint
     ) external returns (uint, uint, uint liquidity) {
         address pair = address(PAIR);
+        checkAmountMin(amountToken0Min);
 
         liquidity = LIQUIDITY_INCREMENT;
 
@@ -68,11 +81,12 @@ contract MockRouter {
     function removeLiquidityETH(
         address,
         uint liquidity,
-        uint,
+        uint amountToken0Min,
         uint,
         address to,
         uint
     ) external returns (uint amountToken, uint amountETH) {
+        checkAmountMin(amountToken0Min);
 
         Decimal.D256 memory percentWithdrawal = Decimal.ratio(liquidity, totalLiquidity);
         Decimal.D256 memory ratio = ratioOwned(to);
