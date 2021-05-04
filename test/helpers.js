@@ -15,6 +15,8 @@ const BondingCurveOracle = contract.fromArtifact('BondingCurveOracle');
 const Core = contract.fromArtifact('Core');
 const EthBondingCurve = contract.fromArtifact('EthBondingCurve');
 const EthPCVDepositAdapter = contract.fromArtifact('EthPCVDepositAdapter');
+const EthReserveStabilizer = contract.fromArtifact('EthReserveStabilizer');
+const EthPCVDripper = contract.fromArtifact('EthPCVDripper');
 const EthUniswapPCVController = contract.fromArtifact('EthUniswapPCVController');
 const EthUniswapPCVDeposit = contract.fromArtifact('EthUniswapPCVDeposit');
 const Fei = contract.fromArtifact('Fei');
@@ -25,6 +27,7 @@ const IDO = contract.fromArtifact('IDO');
 const Roots = contract.fromArtifact('RootsWrapper');
 const TimelockedDelegator = contract.fromArtifact('TimelockedDelegator');
 const Tribe = contract.fromArtifact('Tribe');
+const TribeDripper = contract.fromArtifact("TribeDripper");
 const UniswapIncentive = contract.fromArtifact('UniswapIncentive');
 const UniswapOracle = contract.fromArtifact('UniswapOracle');
 const FeiStakingRewards = contract.fromArtifact('FeiStakingRewards');
@@ -107,6 +110,8 @@ module.exports = {
     Core,
     EthBondingCurve,
     EthPCVDepositAdapter,
+    EthReserveStabilizer,
+    EthPCVDripper,
     EthUniswapPCVController,
     EthUniswapPCVDeposit,
     Fei,
@@ -119,6 +124,7 @@ module.exports = {
     IDO,
     TimelockedDelegator,
     Tribe,
+    TribeDripper,
     UniswapIncentive,
     UniswapOracle,
     RatioPCVController,
