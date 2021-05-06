@@ -117,14 +117,42 @@ describe('EthUniswapPCVDeposit', function () {
 
       describe('Pool price changes under threshold', function() {
         it('reverts', async function() {
-          await this.router.setAmountMin(39700000);
+          await this.router.setAmountMin(39000000);
           await expectRevert(this.pcvDeposit.deposit("100000", {from: userAddress, value: "100000"}), "amount liquidity revert");
+        });
+
+        describe('after threshold update', function() {
+          beforeEach(async function() {
+            await this.router.setAmountMin(39000000);
+            await this.pcvDeposit.setMaxBasisPointsFromPegLP(300, {from: governorAddress});
+            await this.pcvDeposit.deposit("100000", {from: userAddress, value: "100000"});
+          });
+  
+          it('liquidityOwned', async function() {
+            expect(await this.pcvDeposit.liquidityOwned()).to.be.bignumber.equal(new BN(LIQUIDITY_INCREMENT * 2));
+          });
+  
+          it('pair reserves', async function() {
+            expect(await balance.current(this.pair.address)).to.be.bignumber.equal(new BN(300000));
+            expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(130000000)); // deposits at oracle price
+            let result = await this.pcvDeposit.getReserves();
+            expect(result[0]).to.be.bignumber.equal(new BN(130000000));
+            expect(result[1]).to.be.bignumber.equal(new BN(300000));
+          });
+  
+          it('totalValue', async function() {
+            expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(199999)); // rounding error
+          });
+  
+          it('no fei held', async function() {
+            expect(await this.fei.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal(new BN(0));
+          });
         });
       });
 
       describe('Pool price changes over threshold', function() {
         beforeEach(async function() {
-          await this.router.setAmountMin(40200000);
+          await this.router.setAmountMin(41000000);
           await this.pcvDeposit.deposit("100000", {from: userAddress, value: "100000"});
         });
 
@@ -274,40 +302,6 @@ describe('EthUniswapPCVDeposit', function () {
 
       describe('Total', function() {
         beforeEach(async function() {
-          await this.pcvDeposit.withdraw(beneficiaryAddress1, "100000", {from: pcvControllerAddress});
-        });
-
-        it('user balance updates', async function() {
-          expect(await balance.current(beneficiaryAddress1)).to.be.bignumber.equal(new BN(100000).add(this.beneficiaryBalance));
-        });
-
-        it('no fei held', async function() {
-          expect(await this.fei.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal(new BN(0));
-        });
-
-        it('liquidityOwned', async function() {
-          expect(await this.pcvDeposit.liquidityOwned()).to.be.bignumber.equal(new BN(0));
-        });
-
-        it('pair balances update', async function() {
-          expect(await balance.current(this.pair.address)).to.be.bignumber.equal(new BN(100000));
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(45000000));
-          let result = await this.pcvDeposit.getReserves();
-          expect(result[0]).to.be.bignumber.equal(new BN(45000000));
-          expect(result[1]).to.be.bignumber.equal(new BN(100000));
-        });
-      });
-
-      describe('Pool price changes under threshold', function() {
-        it('reverts', async function() {
-          await this.router.setAmountMin(39700000);
-          await expectRevert(this.pcvDeposit.withdraw(beneficiaryAddress1, "100000", {from: pcvControllerAddress}), "amount liquidity revert");
-        });
-      });
-
-      describe('Pool price changes over threshold', function() {
-        beforeEach(async function() {
-          await this.router.setAmountMin(40200000);
           await this.pcvDeposit.withdraw(beneficiaryAddress1, "100000", {from: pcvControllerAddress});
         });
 

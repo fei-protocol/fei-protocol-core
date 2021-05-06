@@ -9,7 +9,7 @@ import "../refs/UniRef.sol";
 abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
     using Decimal for Decimal.D256;
 
-    uint256 public maxBasisPointsFromPegLP = 50;
+    uint256 public maxBasisPointsFromPegLP = 100;
 
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
@@ -50,7 +50,7 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
         uint256 liquidityToWithdraw =
             ratioToWithdraw.mul(totalLiquidity).asUint256();
 
-        uint256 amountWithdrawn = _removeLiquidity(liquidityToWithdraw, amountUnderlying);
+        uint256 amountWithdrawn = _removeLiquidity(liquidityToWithdraw);
 
         _transferWithdrawn(to, amountWithdrawn);
 
@@ -58,6 +58,10 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
 
         emit Withdrawal(msg.sender, to, amountWithdrawn);
     }
+
+    function setMaxBasisPointsFromPegLP(uint256 _maxBasisPointsFromPegLP) public onlyGovernor {
+        maxBasisPointsFromPegLP = _maxBasisPointsFromPegLP;
+    } 
 
     /// @notice returns total value of PCV in the Deposit
     function totalValue() public view override returns (uint256) {
@@ -73,14 +77,14 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
         return peg().mul(amountToken).asUint256();
     }
 
-    function _removeLiquidity(uint256 amountLiquidity, uint256 amountUnderlying)
+    function _removeLiquidity(uint256 amountLiquidity)
         internal
         virtual
         returns (uint256);
 
     function _transferWithdrawn(address to, uint256 amount) internal virtual;
 
-    function _getMinLiquidity(uint256 amount) internal view returns (uint256 amountMin) {
-        return amount * (BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP) / BASIS_POINTS_GRANULARITY;
+    function _getMinLiquidity(uint256 amount) internal view returns (uint256) {
+        return amount.mul(BASIS_POINTS_GRANULARITY.sub(maxBasisPointsFromPegLP)).div(BASIS_POINTS_GRANULARITY);
     }
 }
