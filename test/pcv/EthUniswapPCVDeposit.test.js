@@ -329,6 +329,28 @@ describe('EthUniswapPCVDeposit', function () {
   });
 
   describe('Access', function() {
+    describe('setMaxBasisPointsFromPegLP', function() {
+      it('Governor set succeeds', async function() {
+        expectEvent(
+          await this.pcvDeposit.setMaxBasisPointsFromPegLP(300, {from: governorAddress}), 
+          'MaxBasisPointsFromPegLPUpdate', 
+          { 
+            oldMaxBasisPointsFromPegLP : '100',
+            newMaxBasisPointsFromPegLP : '300'
+          }
+        );
+        expect(await this.pcvDeposit.maxBasisPointsFromPegLP()).to.be.bignumber.equal('300');
+      });
+
+      it('Non-governor set reverts', async function() {
+        await expectRevert(this.pcvDeposit.setMaxBasisPointsFromPegLP(300, {from: userAddress}), "CoreRef: Caller is not a governor");
+      });
+
+      it('over 100%', async function() {
+        await expectRevert(this.pcvDeposit.setMaxBasisPointsFromPegLP(10001, {from: governorAddress}), "UniswapPCVDeposit: basis points from peg too high");
+      });
+    });
+
     describe('Pair', function() {
       it('Governor set succeeds', async function() {
         let pair2 = await MockPair.new(this.token.address, this.fei.address);

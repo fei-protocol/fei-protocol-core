@@ -13,6 +13,8 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
 
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
+    event MaxBasisPointsFromPegLPUpdate(uint256 oldMaxBasisPointsFromPegLP, uint256 newMaxBasisPointsFromPegLP);
+
     /// @notice Uniswap PCV Deposit constructor
     /// @param _core Fei Core for reference
     /// @param _pair Uniswap Pair to deposit to
@@ -60,7 +62,12 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
     }
 
     function setMaxBasisPointsFromPegLP(uint256 _maxBasisPointsFromPegLP) public onlyGovernor {
+        require(_maxBasisPointsFromPegLP <= BASIS_POINTS_GRANULARITY, "UniswapPCVDeposit: basis points from peg too high");
+
+        uint256 oldMaxBasisPointsFromPegLP = maxBasisPointsFromPegLP;
         maxBasisPointsFromPegLP = _maxBasisPointsFromPegLP;
+
+        emit MaxBasisPointsFromPegLPUpdate(oldMaxBasisPointsFromPegLP, _maxBasisPointsFromPegLP);
     } 
 
     /// @notice returns total value of PCV in the Deposit
