@@ -4,11 +4,11 @@ pragma experimental ABIEncoderV2;
 import "./IPCVSwapper.sol";
 import "../refs/UniRef.sol";
 import "../utils/Timed.sol";
+import "../external/UniswapV2Library.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "../external/UniswapV2Library.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 
 /// @title implementation for PCV Swapper that swaps ERC20 tokens on Uniswap
@@ -22,7 +22,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     address public tokenSpent;
     /// @notice the token to receive on swap (inbound)
     address public tokenReceived;
-    /// @notice the adress that will receive the inbound tokens
+    /// @notice the address that will receive the inbound tokens
     address public tokenReceivingAddress;
     /// @notice the maximum amount of tokens to buy (0 = unlimited)
     uint256 public tokenBuyLimit = 0;
@@ -59,12 +59,17 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         _initTimed();
     }
 
+    /// @notice All received ETH is wrapped to WETH
     receive() external payable {
       IWETH weth = IWETH(router.WETH());
       weth.deposit{value: msg.value}();
     }
 
-    /// @notice withdraw ETH from the reserves
+    // =======================================================================
+    // IPCVSwapper interface override
+    // =======================================================================
+
+    /// @notice withdraw ETH from the contract
     /// @param to address to send ETH
     /// @param amountOut amount of ETH to send
     function withdrawETH(address payable to, uint256 amountOut) external override onlyPCVController {
@@ -72,10 +77,10 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         emit WithdrawETH(msg.sender, to, amountOut);
     }
 
-    /// @notice withdraw ERC20 from the reserves
+    /// @notice withdraw ERC20 from the contract
     /// @param to address destination of the ERC20
     /// @param token address of the ERC20 to send
-    /// @param amount amount of ERC20 to send
+    /// @param amount quantity of ERC20 to send
     function withdrawERC20(address to, address token, uint256 amount) external override onlyPCVController {
         ERC20(token).safeTransfer(to, amount);
         emit WithdrawERC20(msg.sender, to, token, amount);
@@ -101,6 +106,10 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
       tokenReceivingAddress = _tokenReceivingAddress;
       emit UpdateReceivingAddress(_tokenReceivingAddress);
     }
+
+    // =======================================================================
+    // Setters
+    // =======================================================================
 
     /// @notice Sets the maximum slippage vs Oracle price accepted during swaps
     /// @param _maximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
@@ -132,6 +141,10 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         invertOraclePrice = _invertOraclePrice;
     }
 
+    // =======================================================================
+    // Getters
+    // =======================================================================
+
     /// @notice Get the token to spend
     /// @return The address of the token to spend
     function getTokenSpent() external view override returns (address) {
@@ -156,26 +169,45 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
       return duration;
     }
 
+    /// @notice Get the current oracle price used for maximum slippage backstop
+    /// @return the current oracle price
     function getOraclePrice() external view returns (uint256) {
       (Decimal.D256 memory twap,) = oracle.read();
       return twap.asUint256();
     }
 
+    /// @notice Get the expected number of token to be spent on next swap
+    /// @return the number of tokens about to be spent
     function getNextAmountSpent() external view returns (uint256) {
       return _getExpectedAmountIn();
     }
 
+    /// @notice Get the expected number of token to be received on next swap
+    /// @return the number of tokens about to be received
     function getNextAmountReceived() external view returns (uint256) {
       return _getExpectedAmountOut(_getExpectedAmountIn());
     }
 
+    /// @notice Get the minimum number of tokens to receive on next swap (based
+    ///     on oracle price), under which the swap will revert.
+    /// @return the minimum number of tokens to be received on next swap
     function getNextAmountReceivedThreshold() external view returns (uint256) {
       return _getMinimumAcceptableAmountOut(_getExpectedAmountIn());
     }
 
+    /// @notice Get the decimal normalizer between tokenSpent and tokenReceived
+    ///     e.g. if tokenSpent has 18 decimals and tokenReceived has 6 decimals,
+    //      this function will return 1e12.
+    /// @return the decimal normalizer number.
+    /// @return a boolean to indicate the normalizer direction (does tokenSpent
+    ///     has more decimals than tokenReceived, or the other way around?).
     function getDecimalNormalizer() external view returns (uint256, bool) {
       return _getDecimalNormalizer();
     }
+
+    // =======================================================================
+    // External functions
+    // =======================================================================
 
     /// @notice Swap tokenSpent for tokenReceived
     function swap() external override afterTime whenNotPaused {
@@ -212,12 +244,18 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
       );
     }
 
+    // =======================================================================
+    // Internal functions
+    // =======================================================================
+
+    /// @notice see external function getNextAmountSpent()
     function _getExpectedAmountIn() internal view returns (uint256) {
       uint256 balance = ERC20(tokenSpent).balanceOf(address(this));
       require(balance != 0, "PCVSwapperUniswap: no tokenSpent left.");
       return Math.min(maxSpentPerSwap, balance);
     }
 
+    /// @notice see external function getNextAmountReceived()
     function _getExpectedAmountOut(uint256 amountIn) internal view returns (uint256) {
       // Get pair reserves
       (uint256 _token0, uint256 _token1) = getReserves();
@@ -236,6 +274,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
       return amountOut;
     }
 
+    /// @notice see external function getNextAmountReceivedThreshold()
     function _getMinimumAcceptableAmountOut(uint256 amountIn) internal view returns (uint256) {
       (Decimal.D256 memory twap, bool oracleValid) = oracle.read();
       require(oracleValid, "PCVSwapperUniswap: invalid oracle.");
@@ -256,6 +295,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
       return oraclePriceMinusSlippage.asUint256();
     }
 
+    /// @notice see external function getDecimalNormalizer()
     function _getDecimalNormalizer() internal view returns (uint256, bool) {
       uint8 decimalsTokenSpent = ERC20(tokenSpent).decimals();
       uint8 decimalsTokenReceived = ERC20(tokenReceived).decimals();
