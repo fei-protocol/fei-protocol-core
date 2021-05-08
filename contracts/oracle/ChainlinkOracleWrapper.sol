@@ -25,13 +25,16 @@ contract ChainlinkOracleWrapper is IOracle, CoreRef {
     /// @notice ChainlinkOracleWrapper constructor
     /// @param _core Fei Core for reference
     /// @param _chainlinkOracle reference to the target Chainlink oracle
+    /// @param _k constant to multiply Chainlink oracle value by
     /// @param _reverse should the price feed be inverted ?
     constructor(
         address _core,
         AggregatorV3Interface _chainlinkOracle,
+        uint256 _k,
         bool _reverse
     ) public CoreRef(_core) {
         chainlinkOracle = AggregatorV3Interface(_chainlinkOracle);
+        k = _k;
         reverse = _reverse;
     }
 
