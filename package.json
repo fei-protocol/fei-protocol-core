@@ -17,8 +17,9 @@
   "author": "joeysantoro",
   "license": "AGPL-3.0-only",
   "dependencies": {
-    "@openzeppelin/contracts": "^3.4.0",
+    "@chainlink/contracts": "^0.1.7",
     "@openzeppelin/cli": "^2.8.2",
+    "@openzeppelin/contracts": "^3.4.0",
     "@truffle/hdwallet-provider": "^1.2.2",
     "@uniswap/lib": "^1.1.2",
     "@uniswap/v2-core": "^1.0.1",
