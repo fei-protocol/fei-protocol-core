@@ -12,7 +12,7 @@ To acquire FEI, we recommend using the [Fei app](https://app.fei.money/exchange)
 
 **2. Acquire TRIBE:**
 
-To acquire TRIBE, you need to use [Uniswap](https://app.uniswap.org/#/swap) or another secondary market.
+To acquire TRIBE, you need to use [Uniswap](https://app.uniswap.org/#/swap?use=V2) or another secondary market.
 
 Add TRIBE as a token by clicking on “select a token”:
 
