@@ -28,7 +28,7 @@ Now you will have the ability to insert the desired amount of TRIBE.
 
 **3. Approve FEI and TRIBE on** [**Uniswap**](https://app.uniswap.org/#/add/v2/0x956f47f50a910163d8bf957cf5846d573e7f87ca/0xc7283b66eb1eb5fb86327f08e1b5816b0720212b)**:**
 
-Once you have 50/50 TRIBE and FEI in value, you can add them as liquidity [here](https://app.uniswap.org/#/add/0x956f47f50a910163d8bf957cf5846d573e7f87ca/0xc7283b66eb1eb5fb86327f08e1b5816b0720212b). But first**,** approve Uniswap FEI and TRIBE as they are ERC-20 tokens:
+Once you have 50/50 TRIBE and FEI in value, you can add them as liquidity [here](https://app.uniswap.org/#/add/v2/0x956f47f50a910163d8bf957cf5846d573e7f87ca/0xc7283b66eb1eb5fb86327f08e1b5816b0720212b). But first**,** approve Uniswap FEI and TRIBE as they are ERC-20 tokens:
 
 ![](https://lh5.googleusercontent.com/bnJIFVlqxfj65EiHqelXZgiCoOJ7Q9hOFeKukT-VW2tO5I6QHsNEQJZESLJAo18LzB1w9bbvyTYBFV-ntYhdzWSYU3fHov_zRQO6F8sINr2NcQocUHypcoyOJg68uZ9Q2SZCnj6D)
 
