@@ -128,18 +128,22 @@ const {
             );
           });
           it('withdrawERC20() emit WithdrawERC20', async function() {
-            // send 1 ETH, gets converted to 1 WETH
-            await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '1'+e18});
+            expect(await this.fei.balanceOf(this.swapper.address)).to.be.bignumber.equal('0');
+            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal('0');
+            await this.fei.mint(this.swapper.address, '1'+e18, {from: minterAddress});
+            expect(await this.fei.balanceOf(this.swapper.address)).to.be.bignumber.equal('1'+e18);
             await expectEvent(
-              await this.swapper.withdrawERC20(userAddress, this.weth.address, '1'+e18, {from: pcvControllerAddress}),
+              await this.swapper.withdrawERC20(userAddress, this.fei.address, '1'+e18, {from: pcvControllerAddress}),
               'WithdrawERC20',
               {
                 _caller: pcvControllerAddress,
                 _to: userAddress,
-                _token: this.weth.address,
+                _token: this.fei.address,
                 _amount: '1'+e18
               }
             );
+            expect(await this.fei.balanceOf(this.swapper.address)).to.be.bignumber.equal('0');
+            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal('1'+e18);
           });
         });
         describe('As Anyone', function() {
