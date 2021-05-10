@@ -19,11 +19,11 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     using SafeMathCopy for uint256;
 
     /// @notice the token to spend on swap (outbound)
-    address public tokenSpent;
+    address private tokenSpent;
     /// @notice the token to receive on swap (inbound)
-    address public tokenReceived;
+    address private tokenReceived;
     /// @notice the address that will receive the inbound tokens
-    address public tokenReceivingAddress;
+    address private tokenReceivingAddress;
     /// @notice the maximum amount of tokens to buy (0 = unlimited)
     uint256 public tokenBuyLimit = 0;
     /// @notice the maximum amount of tokens to spend on every swap

@@ -177,9 +177,6 @@ const {
     });
 
     describe('Getters', function() {
-      it('getSwapFrequency()', async function() {
-        expect(await this.swapper.getSwapFrequency()).to.be.bignumber.equal('1000');
-      });
       it('getOraclePrice()', async function() {
         expect(await this.swapper.getOraclePrice()).to.be.bignumber.equal('2500');
       });
