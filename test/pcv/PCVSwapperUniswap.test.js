@@ -298,7 +298,7 @@ const {
         await this.oracle.setValid(false);
         await time.increase('1000');
         await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '100'+e18});
-        await expectRevert(this.swapper.swap(), 'PCVSwapperUniswap: invalid oracle.');
+        await expectRevert(this.swapper.swap(), 'OracleRef: oracle invalid.');
       });
       it('revert if slippage is too high', async function() {
         await time.increase('1000');

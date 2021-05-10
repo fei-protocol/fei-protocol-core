@@ -276,14 +276,11 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
 
     /// @notice see external function getNextAmountReceivedThreshold()
     function _getMinimumAcceptableAmountOut(uint256 amountIn) internal view returns (uint256) {
-      (Decimal.D256 memory twap, bool oracleValid) = oracle.read();
-      require(oracleValid, "PCVSwapperUniswap: invalid oracle.");
-      Decimal.D256 memory oracleAmountOut;
+      Decimal.D256 memory twap = peg();
       if (invertOraclePrice) {
-        oracleAmountOut = Decimal.from(amountIn).div(twap);
-      } else {
-        oracleAmountOut = twap.mul(amountIn);
+        twap = invert(twap);
       }
+      Decimal.D256 memory oracleAmountOut = twap.mul(amountIn);
       Decimal.D256 memory maxSlippage = Decimal.ratio(BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, BASIS_POINTS_GRANULARITY);
       (uint256 decimalNormalizer, bool normalizerDirection) = _getDecimalNormalizer();
       Decimal.D256 memory oraclePriceMinusSlippage;
