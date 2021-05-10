@@ -17,27 +17,14 @@ contract ChainlinkOracleWrapper is IOracle, CoreRef {
     AggregatorV3Interface public chainlinkOracle;
     uint256 public oracleDecimalsNormalizer;
 
-    /// @notice multiply the Chainlink oracle value by this constant, for instance for decimal corrections
-    uint256 public k;
-    uint256 public BASIS_POINTS_GRANULARITY = 10_000;
-
-    /// @notice should this oracle return 1 / oraclePrice instead of oraclePrice ?
-    bool public reverse;
-
     /// @notice ChainlinkOracleWrapper constructor
     /// @param _core Fei Core for reference
     /// @param _chainlinkOracle reference to the target Chainlink oracle
-    /// @param _k constant to multiply Chainlink oracle value by
-    /// @param _reverse should the price feed be inverted ?
     constructor(
         address _core,
-        address _chainlinkOracle,
-        uint256 _k,
-        bool _reverse
+        address _chainlinkOracle
     ) public CoreRef(_core) {
         chainlinkOracle = AggregatorV3Interface(_chainlinkOracle);
-        k = _k;
-        reverse = _reverse;
 
         _init();
     }
@@ -67,13 +54,6 @@ contract ChainlinkOracleWrapper is IOracle, CoreRef {
         bool valid = !paused() && price > 0;
 
         Decimal.D256 memory value = Decimal.from(uint256(price)).div(oracleDecimalsNormalizer);
-        if (reverse) {
-          value = Decimal.one().div(value);
-        }
-        if (k != BASIS_POINTS_GRANULARITY) {
-          value = value.mul(k).div(BASIS_POINTS_GRANULARITY);
-        }
-
         return (value, valid);
     }
 }
