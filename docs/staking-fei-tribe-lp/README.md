@@ -10,6 +10,9 @@ Before participating in LP Pool Staking you should further research and explore 
 
 Fei Protocol staking pool is set for 2 years, with a linearly decreasing rate for reward release of 200M TRIBE tokens. Additional program details and contracts available [here](https://docs.fei.money/protocol/staking).
 
+Currently, the Fei Protocol staking pool only accepts LP Tokens from the Fei-Tribe Uniswap v2 pool. Please ensure that you are using Uniswap v2 when making LP's.  
+
+
 {% page-ref page="steps-for-staking.md" %}
 
 {% page-ref page="unstaking.md" %}
