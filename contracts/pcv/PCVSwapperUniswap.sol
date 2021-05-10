@@ -258,7 +258,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     /// @notice see external function getNextAmountReceived()
     function _getExpectedAmountOut(uint256 amountIn) internal view returns (uint256) {
       // Get pair reserves
-      (uint256 _token0, uint256 _token1) = getReserves();
+      (uint256 _token0, uint256 _token1, ) = pair.getReserves();
       (uint256 tokenSpentReserves, uint256 tokenReceivedReserves) =
           pair.token0() == tokenSpent
               ? (_token0, _token1)
@@ -267,8 +267,8 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
       // Prepare swap
       uint256 amountOut = UniswapV2Library.getAmountOut(
         amountIn,
-        tokenReceivedReserves,
-        tokenSpentReserves
+        tokenSpentReserves,
+        tokenReceivedReserves
       );
 
       return amountOut;

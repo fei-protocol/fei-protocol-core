@@ -29,7 +29,7 @@ const {
       this.weth = await MockWeth.new();
       this.fei = await Fei.at(await this.core.fei());
       this.pair = await MockPair.new(this.fei.address, this.weth.address);
-      this.pair.setReserves('25000'+e18, '62500000'+e18);
+      this.pair.setReserves('62500000'+e18, '25000'+e18);
       //await web3.eth.sendTransaction({from: userAddress, to: this.pair.address, value: '25000'+e18});
       await this.fei.mint(this.pair.address, '62500000'+e18, {from: minterAddress});
       this.router = await FeiRouter.new(this.pair.address, this.weth.address);
