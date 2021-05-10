@@ -91,6 +91,7 @@ module.exports = {
     TribeDripper,
     UniswapIncentive,
     UniswapOracle,
+    ChainlinkOracleWrapper,
     // mock contracts
     MockBondingCurve,
     MockBondingCurveOracle,
@@ -102,6 +103,7 @@ module.exports = {
     MockIncentive,
     MockIncentivized,
     MockOracle,
+    MockChainlinkOracle,
     MockPair,
     MockPairTrade,
     MockPCVDeposit,
