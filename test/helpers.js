@@ -30,6 +30,7 @@ const Tribe = contract.fromArtifact('Tribe');
 const TribeDripper = contract.fromArtifact("TribeDripper");
 const UniswapIncentive = contract.fromArtifact('UniswapIncentive');
 const UniswapOracle = contract.fromArtifact('UniswapOracle');
+const ChainlinkOracleWrapper = contract.fromArtifact('ChainlinkOracleWrapper');
 const FeiStakingRewards = contract.fromArtifact('FeiStakingRewards');
 const FeiRewardsDistributor = contract.fromArtifact('FeiRewardsDistributor');
 
@@ -44,6 +45,7 @@ const MockIDO = contract.fromArtifact('MockIDO');
 const MockIncentive = contract.fromArtifact('MockUniswapIncentive');
 const MockIncentivized = contract.fromArtifact('MockIncentivized');
 const MockOracle = contract.fromArtifact('MockOracle');
+const MockChainlinkOracle = contract.fromArtifact('MockChainlinkOracle');
 const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
 const MockPairTrade = contract.fromArtifact('MockUniswapV2PairTrade');
 const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
@@ -127,6 +129,7 @@ module.exports = {
     TribeDripper,
     UniswapIncentive,
     UniswapOracle,
+    ChainlinkOracleWrapper,
     // mock contracts
     MockBondingCurve,
     MockBondingCurveOracle,
@@ -138,6 +141,7 @@ module.exports = {
     MockIncentive,
     MockIncentivized,
     MockOracle,
+    MockChainlinkOracle,
     MockPair,
     MockPairTrade,
     MockPCVDeposit,
