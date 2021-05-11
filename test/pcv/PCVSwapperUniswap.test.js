@@ -1,6 +1,7 @@
 const {
     time,
     userAddress,
+    secondUserAddress,
     minterAddress,
     guardianAddress,
     governorAddress,
@@ -45,7 +46,8 @@ const {
         this.fei.address, // tokenReceived
         userAddress, // tokenReceivingAddress
         '100'+e18, // maxSpentPerSwap
-        false // invertOraclePrice
+        false, // invertOraclePrice
+        '200'+e18 // swap incentive = 200 FEI
       );
 
       await this.core.grantPCVController(pcvControllerAddress, {from: governorAddress});
@@ -321,6 +323,21 @@ const {
         await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '50'+e18});
         await this.swapper.swap({from: userAddress});
         expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal('124376992277398866659880');
+      });
+      it('no FEI incentive to caller if swapper is not a Minter', async function() {
+        await time.increase('1000');
+        await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '50'+e18});
+        expect((await this.fei.balanceOf(secondUserAddress)) / 1e18).to.be.equal(0);
+        await this.swapper.swap({from: secondUserAddress});
+        expect((await this.fei.balanceOf(secondUserAddress)) / 1e18).to.be.equal(0);
+      });
+      it('send FEI incentive to caller if swapper is Minter', async function() {
+        await time.increase('1000');
+        await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '50'+e18});
+        await this.core.grantMinter(this.swapper.address, {from: governorAddress});
+        expect((await this.fei.balanceOf(secondUserAddress)) / 1e18).to.be.equal(0);
+        await this.swapper.swap({from: secondUserAddress});
+        expect((await this.fei.balanceOf(secondUserAddress)) / 1e18).to.be.equal(200);
       });
     });
   });

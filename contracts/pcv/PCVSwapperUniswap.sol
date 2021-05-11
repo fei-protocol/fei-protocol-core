@@ -30,6 +30,8 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     uint256 public maxSpentPerSwap;
     /// @notice should we use (1 / oraclePrice) instead of oraclePrice ?
     bool public invertOraclePrice;
+    /// @notice the incentive for calling swap() function, in FEI
+    uint256 public swapIncentiveAmount;
     /// @notice the maximum amount of slippage vs oracle price
     uint256 public maximumSlippageBasisPoints = 300; // default 3%
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
@@ -44,13 +46,15 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         address _tokenReceived,
         address _tokenReceivingAddress,
         uint256 _maxSpentPerSwap,
-        bool _invertOraclePrice
+        bool _invertOraclePrice,
+        uint256 _swapIncentiveAmount
     ) public UniRef(_core, _pair, _router, _oracle) Timed(_swapFrequency) {
         tokenSpent = _tokenSpent;
         tokenReceived = _tokenReceived;
         tokenReceivingAddress = _tokenReceivingAddress;
         maxSpentPerSwap = _maxSpentPerSwap;
         invertOraclePrice = _invertOraclePrice;
+        swapIncentiveAmount = _swapIncentiveAmount;
 
         emit UpdateTokenSpent(_tokenSpent);
         emit UpdateTokenReceived(_tokenReceived);
@@ -242,11 +246,19 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         amountIn,
         amountOut
       );
+
+      // Incentivize call with FEI rewards
+      _incentivize();
     }
 
     // =======================================================================
     // Internal functions
     // =======================================================================
+
+    /// @notice incentivize a call with {swapIncentiveAmount} FEI rewards
+    function _incentivize() internal ifMinterSelf {
+        fei().mint(msg.sender, swapIncentiveAmount);
+    }
 
     /// @notice see external function getNextAmountSpent()
     function _getExpectedAmountIn() internal view returns (uint256) {
