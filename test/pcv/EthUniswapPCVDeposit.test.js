@@ -33,6 +33,8 @@ describe('EthUniswapPCVDeposit', function () {
     this.oracle = await MockOracle.new(400); // 400:1 oracle price
     this.router = await MockRouter.new(this.pair.address);
     this.pcvDeposit = await EthUniswapPCVDeposit.new(this.core.address, this.pair.address, this.router.address, this.oracle.address);
+    await this.pcvDeposit.setMaxBasisPointsFromPegLP(100, {from: governorAddress});
+
     await this.core.grantMinter(this.pcvDeposit.address, {from: governorAddress});
 
     await this.pair.set(100000, 50000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 500:1 FEI/ETH with 10k liquidity

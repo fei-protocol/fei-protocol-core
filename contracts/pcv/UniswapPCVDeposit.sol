@@ -9,7 +9,7 @@ import "../refs/UniRef.sol";
 abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
     using Decimal for Decimal.D256;
 
-    uint256 public maxBasisPointsFromPegLP = 100;
+    uint256 public maxBasisPointsFromPegLP = 10000;
 
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
