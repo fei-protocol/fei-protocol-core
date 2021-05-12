@@ -46,6 +46,7 @@ const {
         this.fei.address, // tokenReceived
         userAddress, // tokenReceivingAddress
         '100'+e18, // maxSpentPerSwap
+        '300', // maximumSlippageBasisPoints
         false, // invertOraclePrice
         '200'+e18 // swap incentive = 200 FEI
       );

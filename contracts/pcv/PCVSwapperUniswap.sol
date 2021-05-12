@@ -33,7 +33,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     /// @notice the incentive for calling swap() function, in FEI
     uint256 public swapIncentiveAmount;
     /// @notice the maximum amount of slippage vs oracle price
-    uint256 public maximumSlippageBasisPoints = 300; // default 3%
+    uint256 public maximumSlippageBasisPoints;
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     constructor(
@@ -46,6 +46,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         address _tokenReceived,
         address _tokenReceivingAddress,
         uint256 _maxSpentPerSwap,
+        uint256 _maximumSlippageBasisPoints,
         bool _invertOraclePrice,
         uint256 _swapIncentiveAmount
     ) public UniRef(_core, _pair, _router, _oracle) Timed(_swapFrequency) {
@@ -53,6 +54,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         tokenReceived = _tokenReceived;
         tokenReceivingAddress = _tokenReceivingAddress;
         maxSpentPerSwap = _maxSpentPerSwap;
+        maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
         invertOraclePrice = _invertOraclePrice;
         swapIncentiveAmount = _swapIncentiveAmount;
 
