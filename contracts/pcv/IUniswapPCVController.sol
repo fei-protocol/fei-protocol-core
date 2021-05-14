@@ -29,6 +29,8 @@ interface IUniswapPCVController {
 
     function setPCVDeposit(address _pcvDeposit) external;
 
+    function setDuration(uint256 _duration) external;
+
     function setReweightIncentive(uint256 amount) external;
 
     function setReweightMinDistance(uint256 basisPoints) external;
