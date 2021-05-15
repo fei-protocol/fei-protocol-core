@@ -24,7 +24,7 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
 
     /// @notice deposit tokens into the PCV allocation
     /// @param ethAmount of tokens deposited
-    function deposit(uint256 ethAmount) external payable override postGenesis whenNotPaused {
+    function deposit(uint256 ethAmount) external payable override whenNotPaused {
         require(
             ethAmount == msg.value,
             "Bonding Curve: Sent value does not equal input"

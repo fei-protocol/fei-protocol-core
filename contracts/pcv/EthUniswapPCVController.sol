@@ -142,11 +142,6 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef, Timed {
         return _minDistanceForReweight;
     }
 
-    /// @notice returns the linked Uniswap incentive contract
-    function incentiveContract() public view override returns(IUniswapIncentive) {
-        return IUniswapIncentive(fei().incentiveContract(address(pair)));
-    }
-
     function _incentivize() internal ifMinterSelf {
         fei().mint(msg.sender, reweightIncentiveAmount);
     }

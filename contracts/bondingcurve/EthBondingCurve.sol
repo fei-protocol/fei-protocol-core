@@ -41,7 +41,6 @@ contract EthBondingCurve is BondingCurve {
         external
         payable
         override
-        postGenesis
         whenNotPaused
         returns (uint256 amountOut)
     {

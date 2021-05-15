@@ -15,7 +15,5 @@ contract MockCoreRef is CoreRef {
 	function testPCVController() public view onlyPCVController {}
 
 	function testGovernor() public view onlyGovernor {}
-
-	function testPostGenesis() public view postGenesis {}
 }
 

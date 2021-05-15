@@ -69,27 +69,6 @@ abstract contract CoreRef is ICoreRef, Pausable {
         _;
     }
 
-    modifier onlyGenesisGroup() {
-        require(
-            msg.sender == _core.genesisGroup(),
-            "CoreRef: Caller is not GenesisGroup"
-        );
-        _;
-    }
-
-    modifier postGenesis() {
-        require(
-            _core.hasGenesisGroupCompleted(),
-            "CoreRef: Still in Genesis Period"
-        );
-        _;
-    }
-
-    modifier nonContract() {
-        require(!Address.isContract(msg.sender), "CoreRef: Caller is a contract");
-        _;
-    }
-
     /// @notice set new Core reference address
     /// @param core the new core address
     function setCore(address core) external override onlyGovernor {

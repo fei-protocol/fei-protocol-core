@@ -2,7 +2,8 @@ pragma solidity ^0.6.2;
 pragma experimental ABIEncoderV2;
 
 import "./IPCVDeposit.sol";
-import "../token/IUniswapIncentive.sol";
+import "../external/Decimal.sol";
+
 
 /// @title a Uniswap PCV Controller interface
 /// @author Fei Protocol
@@ -40,8 +41,6 @@ interface IUniswapPCVController {
     // ----------- Getters -----------
 
     function pcvDeposit() external view returns (IPCVDeposit);
-
-    function incentiveContract() external view returns (IUniswapIncentive);
 
     function reweightIncentiveAmount() external view returns (uint256);
 
