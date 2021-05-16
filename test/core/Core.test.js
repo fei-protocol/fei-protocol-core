@@ -104,39 +104,6 @@ describe('Core', function () {
         await expectRevert(this.core.setGenesisGroup(genesisGroup, {from: userAddress}), "Permissions: Caller is not a governor");
       });
     });
-
-    describe('Modifiers', function() {
-      beforeEach(async function() {
-        await this.core.setGenesisGroup(genesisGroup, {from: governorAddress});
-      });
-
-      describe('Pre Genesis Completion', function() {
-        it('postGenesis reverts', async function() {
-          await expectRevert(this.coreRef.testPostGenesis(), "CoreRef: Still in Genesis Period");
-        });
-
-        it('non genesis group complete fails', async function() {
-          await expectRevert(this.core.completeGenesisGroup({from: userAddress}), "Core: Caller is not Genesis Group");
-        });
-      });
-
-      describe('Post Genesis Completion', function() {
-        beforeEach(async function() {
-          expectEvent(
-            await this.core.completeGenesisGroup({from: genesisGroup}),
-            'GenesisPeriodComplete',
-            {}
-		  );
-		  expect(await this.core.hasGenesisGroupCompleted()).to.be.equal(true);
-        });
-        it('postGenesis succeeds', async function() {
-          await this.coreRef.testPostGenesis();
-        });
-        it('second complete reverts', async function() {
-          await expectRevert(this.core.completeGenesisGroup({from: genesisGroup}), "Core: Genesis Group already complete");
-        });
-      });
-    });
   });
 
   describe('Minter', function () {
