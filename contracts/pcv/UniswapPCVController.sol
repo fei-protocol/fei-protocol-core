@@ -177,27 +177,31 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         );
 
         // calculate amount ETH needed to return to peg then swap
-        uint256 amountEth = _getAmountToPegOther(feiReserves, ethReserves, _peg);
-        _swapEth(amountEth, ethReserves, feiReserves);
+        uint256 amount = _getAmountToPegOther(feiReserves, tokenReserves, _peg);
+
+        IERC20 erc20 = IERC20(token);
+        uint256 balance = erc20.balanceOf(address(this));
+        
+        amount = Math.min(amount, balance);
+
+        SafeERC20.safeTransfer(erc20, address(pair), amount);
+
+        _swap(token, amount, tokenReserves, feiReserves);
     }
 
-    function _swapEth(
-        uint256 amountEth,
-        uint256 ethReserves,
-        uint256 feiReserves
-    ) internal {
-        uint256 balance = address(this).balance;
-        uint256 amount = Math.min(amountEth, balance);
 
-        uint256 amountOut =
-            UniswapV2Library.getAmountOut(amount, ethReserves, feiReserves);
+    function _swap(
+        address tokenIn,
+        uint256 amount,
+        uint256 reservesIn,
+        uint256 reservesOut
+    ) internal returns (uint256 amountOut) {
 
-        IWETH weth = IWETH(router.WETH());
-        weth.deposit{value: amount}();
-        assert(weth.transfer(address(pair), amount));
+        amountOut = UniswapV2Library.getAmountOut(amount, reservesIn, reservesOut);
+
 
         (uint256 amount0Out, uint256 amount1Out) =
-            pair.token0() == address(weth)
+            pair.token0() == address(tokenIn)
                 ? (uint256(0), amountOut)
                 : (amountOut, uint256(0));
         pair.swap(amount0Out, amount1Out, address(this), new bytes(0));

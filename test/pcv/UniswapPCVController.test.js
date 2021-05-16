@@ -15,12 +15,11 @@ const {
 
 const UniswapPCVController = contract.fromArtifact('UniswapPCVController');
 const Fei = contract.fromArtifact('Fei');
-const MockIncentive = contract.fromArtifact('MockUniswapIncentive');
 const MockOracle = contract.fromArtifact('MockOracle');
 const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
-const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
+const MockPCVDeposit = contract.fromArtifact('MockERC20UniswapPCVDeposit');
 const MockRouter = contract.fromArtifact('MockRouter');
-const MockWeth = contract.fromArtifact('MockWeth');
+const MockERC20 = contract.fromArtifact('MockERC20');
 
 describe('UniswapPCVController', function () {
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit
@@ -30,15 +29,10 @@ describe('UniswapPCVController', function () {
 
     this.fei = await Fei.at(await this.core.fei());
     this.oracle = await MockOracle.new(500);
-    this.token = await MockWeth.new();
+    this.token = await MockERC20.new();
     this.pair = await MockPair.new(this.token.address, this.fei.address);
     this.router = await MockRouter.new(this.pair.address);
-    await this.router.setWETH(this.token.address);
-    this.pcvDeposit = await MockPCVDeposit.new(this.pair.address);
-    this.incentive = await MockIncentive.new(this.core.address);
-
-    await this.fei.setIncentiveContract(this.pair.address, this.incentive.address, {from: governorAddress});
-    await this.incentive.setExempt(true);
+    this.pcvDeposit = await MockPCVDeposit.new(this.token.address);
 
     this.pcvController = await UniswapPCVController.new(
       this.core.address, 
@@ -55,6 +49,7 @@ describe('UniswapPCVController', function () {
 
   describe('Sole LP', function() {
     beforeEach(async function() {
+      await this.token.mint(this.pcvDeposit.address, 100000);
       await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
       await this.fei.mint(this.pcvController.address, 50000000, {from: minterAddress}); // seed Fei to burn
       await this.pcvController.forceReweight({from: guardianAddress});
@@ -71,6 +66,7 @@ describe('UniswapPCVController', function () {
   describe('With Other LP', function() {
     describe('At peg', function() {
       beforeEach(async function() {
+        await this.token.mint(this.pcvDeposit.address, 100000);
         await this.pair.set(100000, 50000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 500:1 FEI/ETH with 10k liquidity
         await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
         await this.fei.mint(this.pcvController.address, 50000000, {from: minterAddress}); // seed Fei to burn
@@ -83,6 +79,7 @@ describe('UniswapPCVController', function () {
 
     describe('Above peg', function() {
       beforeEach(async function() {
+        await this.token.mint(this.pcvDeposit.address, 100000);
         await this.pair.set(100000, 49000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/ETH with 10k liquidity
         await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
         await this.fei.mint(this.pcvController.address, 50000000, {from: minterAddress}); // seed Fei to burn
@@ -96,6 +93,7 @@ describe('UniswapPCVController', function () {
     describe('Below peg', function() {
       describe('Enough to reweight', function() {
         beforeEach(async function() {
+          await this.token.mint(this.pcvDeposit.address, 100000);
           await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/ETH with 10k liquidity
           await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
           await this.fei.mint(this.pcvController.address, 50000000, {from: minterAddress}); // seed Fei to burn
@@ -122,6 +120,7 @@ describe('UniswapPCVController', function () {
       describe('Not enough to reweight', function() {
         beforeEach(async function() {
           await this.fei.mint(this.pair.address, 10000000000, {from: minterAddress});
+          await this.token.mint(this.pcvDeposit.address, 100000);
           await this.pair.set(100000, 10000000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 100000:1 FEI/ETH with 10k liquidity
           await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
           await this.fei.mint(this.pcvController.address, 50000000, {from: minterAddress}); // seed Fei to burn
@@ -154,6 +153,7 @@ describe('UniswapPCVController', function () {
 
     describe('Not yet at time', function () {
       beforeEach(async function() {
+        await this.token.mint(this.pair.address, 100000);
         await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/ETH with 10k liquidity
       });
 
@@ -175,6 +175,7 @@ describe('UniswapPCVController', function () {
 
         describe('After Reweight', function() {
           beforeEach(async function() {
+            await this.token.mint(this.pcvDeposit.address, 100000);
             await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
             await this.pcvController.reweight({from: userAddress});
           });
@@ -188,6 +189,7 @@ describe('UniswapPCVController', function () {
 
     describe('Not at min distance', function () {
       it('reverts', async function() {
+        await this.token.mint(this.pair.address, 100000);
         await this.pair.set(100000, 50400000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 504:1 FEI/ETH with 10k liquidity
         await time.increase(new BN('14400'));
 
@@ -198,6 +200,7 @@ describe('UniswapPCVController', function () {
 
     describe('No incentive for caller if controller not minter', function() {
         beforeEach(async function() {
+          await this.token.mint(this.pcvDeposit.address, 100000);
           await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/ETH with 10k liquidity
           await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
           await time.increase(new BN('14400'));
@@ -219,6 +222,7 @@ describe('UniswapPCVController', function () {
 
     describe('Incentive for caller if controller is a minter', function() {
         beforeEach(async function() {
+          await this.token.mint(this.pcvDeposit.address, 100000);
           await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/ETH with 10k liquidity
           await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
           await time.increase(new BN('14400'));
