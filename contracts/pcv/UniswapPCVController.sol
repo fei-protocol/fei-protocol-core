@@ -168,27 +168,30 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
             return;
         }
 
-        updateOracle();
-
         Decimal.D256 memory _peg = peg();
-        require(
-            _isBelowPeg(_peg),
-            "EthUniswapPCVController: already at or above peg"
-        );
 
-        // calculate amount ETH needed to return to peg then swap
-        uint256 amount = _getAmountToPegOther(feiReserves, tokenReserves, _peg);
+        if (_isBelowPeg(_peg)) {
+            // calculate amount of token needed to return to peg then swap
+            uint256 amount = _getAmountToPegOther(feiReserves, tokenReserves, _peg);
 
-        IERC20 erc20 = IERC20(token);
-        uint256 balance = erc20.balanceOf(address(this));
-        
-        amount = Math.min(amount, balance);
+            IERC20 erc20 = IERC20(token);
+            uint256 balance = erc20.balanceOf(address(this));
+            
+            amount = Math.min(amount, balance);
 
-        SafeERC20.safeTransfer(erc20, address(pair), amount);
+            SafeERC20.safeTransfer(erc20, address(pair), amount);
 
-        _swap(token, amount, tokenReserves, feiReserves);
+            _swap(token, amount, tokenReserves, feiReserves);
+            
+        } else {
+            // calculate amount FEI needed to return to peg then swap
+            uint256 amount = _getAmountToPegFei(feiReserves, tokenReserves, _peg);
+
+            fei().mint(address(pair), amount);
+
+            _swap(address(fei()), amount, feiReserves, tokenReserves);
+        }
     }
-
 
     function _swap(
         address tokenIn,
@@ -199,9 +202,8 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
 
         amountOut = UniswapV2Library.getAmountOut(amount, reservesIn, reservesOut);
 
-
         (uint256 amount0Out, uint256 amount1Out) =
-            pair.token0() == address(tokenIn)
+            pair.token0() == tokenIn
                 ? (uint256(0), amountOut)
                 : (amountOut, uint256(0));
         pair.swap(amount0Out, amount1Out, address(this), new bytes(0));
