@@ -65,7 +65,6 @@ abstract contract UniRef is IUniRef, OracleRef {
     }
 
     /// @notice pair reserves with fei listed first
-    /// @dev uses the max of pair fei balance and fei reserves. Mitigates attack vectors which manipulate the pair balance
     function getReserves()
         public
         view
@@ -120,10 +119,6 @@ abstract contract UniRef is IUniRef, OracleRef {
         emit PairUpdate(_pair);
     }
 
-    function _isPair(address account) internal view returns (bool) {
-        return address(pair) == account;
-    }
-
     /// @notice utility for calculating absolute distance from peg based on reserves
     /// @param reserveTarget pair reserves of the asset desired to trade with
     /// @param reserveOther pair reserves of the non-traded asset
@@ -175,59 +170,6 @@ abstract contract UniRef is IUniRef, OracleRef {
         (reserveFei, reserveOther) = getReserves();
         return (
             Decimal.ratio(reserveFei, reserveOther),
-            reserveFei,
-            reserveOther
-        );
-    }
-
-    /// @notice get final uniswap price after hypothetical FEI trade
-    /// @param amountFei a signed integer representing FEI trade. Positive=sell, negative=buy
-    /// @param reserveFei fei reserves
-    /// @param reserveOther non-fei reserves
-    function _getFinalPrice(
-        int256 amountFei,
-        uint256 reserveFei,
-        uint256 reserveOther
-    ) internal pure returns (Decimal.D256 memory) {
-        uint256 k = reserveFei.mul(reserveOther);
-        int256 signedReservesFei = reserveFei.toInt256();
-        int256 amountFeiWithFee = amountFei > 0 ? amountFei.mul(997).div(1000) : amountFei; // buys already have fee factored in on uniswap's other token side
-
-        uint256 adjustedReserveFei = signedReservesFei.add(amountFeiWithFee).toUint256();
-        uint256 adjustedReserveOther = k / adjustedReserveFei;
-        return Decimal.ratio(adjustedReserveFei, adjustedReserveOther); // alt: adjustedReserveFei^2 / k
-    }
-
-    /// @notice return the percent distance from peg before and after a hypothetical trade
-    /// @param amountIn a signed amount of FEI to be traded. Positive=sell, negative=buy
-    /// @return initialDeviation the percent distance from peg before trade
-    /// @return finalDeviation the percent distance from peg after hypothetical trade
-    /// @dev deviations will return Decimal.zero() if above peg
-    function _getPriceDeviations(int256 amountIn)
-        internal
-        view
-        returns (
-            Decimal.D256 memory initialDeviation,
-            Decimal.D256 memory finalDeviation,
-            Decimal.D256 memory _peg,
-            uint256 feiReserves,
-            uint256 tokenReserves
-        )
-    {
-        _peg = peg();
-
-        (Decimal.D256 memory price, uint256 reserveFei, uint256 reserveOther) =
-            _getUniswapPrice();
-        initialDeviation = _deviationBelowPeg(price, _peg);
-
-        Decimal.D256 memory finalPrice =
-            _getFinalPrice(amountIn, reserveFei, reserveOther);
-        finalDeviation = _deviationBelowPeg(finalPrice, _peg);
-
-        return (
-            initialDeviation,
-            finalDeviation,
-            _peg,
             reserveFei,
             reserveOther
         );
