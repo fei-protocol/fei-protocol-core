@@ -3,10 +3,11 @@ pragma experimental ABIEncoderV2;
 
 import "./IPCVDeposit.sol";
 import "../refs/UniRef.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 /// @title abstract implementation for Uniswap LP PCV Deposit
 /// @author Fei Protocol
-abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
+contract UniswapPCVDeposit is IPCVDeposit, UniRef {
     using Decimal for Decimal.D256;
 
     uint256 public maxBasisPointsFromPegLP = 10000;
@@ -26,6 +27,28 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
         address _router,
         address _oracle
     ) public UniRef(_core, _pair, _router, _oracle) {}
+
+    receive() external payable {
+        _wrap();
+    }
+
+    /// @notice deposit tokens into the PCV allocation
+    /// @param amount of tokens deposited
+    function deposit(uint256 amount) external payable override whenNotPaused {
+        if (msg.value != 0) {
+            _wrap();
+        }
+        uint256 balance = IERC20(token).balanceOf(address(this));
+        require(balance >= amount, "UniswapPCVDeposit: balance too low");
+
+        uint256 feiAmount = _getAmountFeiToDeposit(balance);
+
+        _addLiquidity(balance, feiAmount);
+
+        _burnFeiHeld(); // burn any FEI dust from LP
+
+        emit Deposit(msg.sender, balance);
+    }
 
     /// @notice withdraw tokens from the PCV allocation
     /// @param amountUnderlying of tokens withdrawn
@@ -54,7 +77,7 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
 
         uint256 amountWithdrawn = _removeLiquidity(liquidityToWithdraw);
 
-        _transferWithdrawn(to, amountWithdrawn);
+        SafeERC20.safeTransfer(IERC20(token), to, amountWithdrawn);
 
         _burnFeiHeld();
 
@@ -84,12 +107,39 @@ abstract contract UniswapPCVDeposit is IPCVDeposit, UniRef {
         return peg().mul(amountToken).asUint256();
     }
 
-    function _removeLiquidity(uint256 amountLiquidity)
+    function _removeLiquidity(uint256 liquidity)
         internal
-        virtual
-        returns (uint256);
+        returns (uint256)
+    {
+        uint256 endOfTime = uint256(-1);
+        (, uint256 amountWithdrawn) =
+            router.removeLiquidity(
+                address(fei()),
+                token,
+                liquidity,
+                0,
+                0,
+                address(this),
+                endOfTime
+            );
+        return amountWithdrawn;
+    }
 
-    function _transferWithdrawn(address to, uint256 amount) internal virtual;
+    function _addLiquidity(uint256 tokenAmount, uint256 feiAmount) internal {
+        _mintFei(feiAmount);
+
+        uint256 endOfTime = uint256(-1);
+        router.addLiquidity(
+            address(fei()),
+            token,
+            feiAmount,
+            tokenAmount,
+            _getMinLiquidity(feiAmount),
+            _getMinLiquidity(tokenAmount),
+            address(this),
+            endOfTime
+        );
+    }
 
     function _getMinLiquidity(uint256 amount) internal view returns (uint256) {
         return amount.mul(BASIS_POINTS_GRANULARITY.sub(maxBasisPointsFromPegLP)).div(BASIS_POINTS_GRANULARITY);

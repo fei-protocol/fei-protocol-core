@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 import "./IUniswapPCVController.sol";
 import "../refs/UniRef.sol";
@@ -10,7 +10,7 @@ import "../utils/Timed.sol";
 
 /// @title a IUniswapPCVController implementation for ETH
 /// @author Fei Protocol
-contract EthUniswapPCVController is IUniswapPCVController, UniRef, Timed {
+contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     using Decimal for Decimal.D256;
     using SafeMathCopy for uint256;
 
@@ -56,11 +56,8 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef, Timed {
         _initTimed();
     }
 
-    receive() external payable {}
-
     /// @notice reweights the linked PCV Deposit to the peg price. Needs to be reweight eligible
     function reweight() external override whenNotPaused {
-        updateOracle();
         require(
             reweightEligible(),
             "EthUniswapPCVController: Not passed reweight time or not at min distance"
@@ -151,8 +148,11 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef, Timed {
         _returnToPeg();
 
         // resupply PCV at peg ratio
-        uint256 balance = address(this).balance;
-        pcvDeposit.deposit{value: balance}(balance);
+        IERC20 erc20 = IERC20(token);
+        uint256 balance = erc20.balanceOf(address(this));
+
+        SafeERC20.safeTransfer(erc20, address(pcvDeposit), balance);
+        pcvDeposit.deposit(balance);
 
         _burnFeiHeld();
 
@@ -163,8 +163,8 @@ contract EthUniswapPCVController is IUniswapPCVController, UniRef, Timed {
     }
 
     function _returnToPeg() internal {
-        (uint256 feiReserves, uint256 ethReserves) = getReserves();
-        if (feiReserves == 0 || ethReserves == 0) {
+        (uint256 feiReserves, uint256 tokenReserves) = getReserves();
+        if (feiReserves == 0 || tokenReserves == 0) {
             return;
         }
 

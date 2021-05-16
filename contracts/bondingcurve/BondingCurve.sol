@@ -1,21 +1,26 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 import "./IBondingCurve.sol";
 import "../utils/Roots.sol";
 import "../refs/OracleRef.sol";
 import "../pcv/PCVSplitter.sol";
+import "../pcv/IPCVDeposit.sol";
 import "../utils/Timed.sol";
 
-/// @title an abstract bonding curve for purchasing FEI
+/// @title a bonding curve for purchasing FEI
 /// @author Fei Protocol
-abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
+contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     using Decimal for Decimal.D256;
     using Roots for uint256;
 
     /// @notice the Scale target at which bonding curve price fixes
     uint256 public override scale;
+
+    /// @notice the ERC20 token for this bonding curve
+    IERC20 public token;
 
     /// @notice the total amount of FEI purchased on bonding curve. FEI_b from the whitepaper
     uint256 public override totalPurchased; // FEI_b for this curve
@@ -55,6 +60,27 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         _initTimed();
     }
 
+    /// @notice purchase FEI for underlying tokens
+    /// @param to address to receive FEI
+    /// @param amountIn amount of underlying tokens input
+    /// @return amountOut amount of FEI received
+    function purchase(address to, uint256 amountIn)
+        external
+        payable
+        virtual
+        override
+        whenNotPaused
+        returns (uint256 amountOut)
+    {
+        SafeERC20.safeTransferFrom(token, msg.sender, address(this), amountIn);
+        return _purchase(amountIn, to);
+    }
+
+    /// @notice the amount of PCV held in contract and ready to be allocated
+    function getTotalPCVHeld() public view virtual override returns (uint256) {
+        return token.balanceOf(address(this));
+    }
+
     /// @notice sets the bonding curve Scale target
     function setScale(uint256 _scale) external override onlyGovernor {
         _setScale(_scale);
@@ -91,7 +117,6 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
 
     /// @notice batch allocate held PCV
     function allocate() external override whenNotPaused {
-        require((!Address.isContract(msg.sender)) || msg.sender == core().genesisGroup(), "BondingCurve: Caller is a contract");
         uint256 amount = getTotalPCVHeld();
         require(amount != 0, "BondingCurve: No PCV held");
 
@@ -154,9 +179,6 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         return Decimal.ratio(adjustedAmount, amountOut);
     }
 
-    /// @notice the amount of PCV held in contract and ready to be allocated
-    function getTotalPCVHeld() public view virtual override returns (uint256);
-
     /// @notice multiplies amount in by the peg to convert to FEI
     function _getAdjustedAmount(uint256 amountIn)
         internal
@@ -204,7 +226,9 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         internal
         view
         virtual
-        returns (Decimal.D256 memory);
+        returns (Decimal.D256 memory) {
+            return Decimal.one();
+        }
 
     /// @notice returns the integral of the bonding curve solved for the amount of tokens out for a certain amount of value in
     /// @param adjustedAmountIn this is the value in FEI of the underlying asset coming in
@@ -212,7 +236,9 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         internal
         view
         virtual
-        returns (uint256);
+        returns (uint256) {
+            return adjustedAmountIn;
+        }
 
     /// @notice returns the buffer on the post-scale bonding curve price
     function _getBufferMultiplier() internal view returns (Decimal.D256 memory) {
@@ -227,5 +253,14 @@ abstract contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         returns (uint256)
     {
         return _getBufferMultiplier().mul(amountIn).asUint256();
+    }
+
+    function _allocateSingle(uint256 amount, address pcvDeposit)
+        internal
+        virtual
+        override
+    {
+        SafeERC20.safeTransfer(token, pcvDeposit, amount);
+        IPCVDeposit(pcvDeposit).deposit(amount);
     }
 }

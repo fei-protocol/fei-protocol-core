@@ -13,7 +13,7 @@ const {
   getCore
 } = require('../helpers');
 
-const EthUniswapPCVController = contract.fromArtifact('EthUniswapPCVController');
+const UniswapPCVController = contract.fromArtifact('UniswapPCVController');
 const Fei = contract.fromArtifact('Fei');
 const MockIncentive = contract.fromArtifact('MockUniswapIncentive');
 const MockOracle = contract.fromArtifact('MockOracle');
@@ -22,7 +22,7 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
 const MockRouter = contract.fromArtifact('MockRouter');
 const MockWeth = contract.fromArtifact('MockWeth');
 
-describe('EthUniswapPCVController', function () {
+describe('UniswapPCVController', function () {
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit
 
   beforeEach(async function () {
@@ -40,7 +40,7 @@ describe('EthUniswapPCVController', function () {
     await this.fei.setIncentiveContract(this.pair.address, this.incentive.address, {from: governorAddress});
     await this.incentive.setExempt(true);
 
-    this.pcvController = await EthUniswapPCVController.new(
+    this.pcvController = await UniswapPCVController.new(
       this.core.address, 
       this.pcvDeposit.address, 
       this.oracle.address, 
@@ -306,13 +306,6 @@ describe('EthUniswapPCVController', function () {
 
       it('Non-governor set reverts', async function() {
         await expectRevert(this.pcvController.setPair(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
-      });
-    });
-
-    describe('Incentive Contract', function() {
-      it('updates automatically', async function() {
-        await this.fei.setIncentiveContract(this.pair.address, userAddress, {from: governorAddress});
-        expect(await this.pcvController.incentiveContract()).to.be.equal(userAddress);
       });
     });
 
