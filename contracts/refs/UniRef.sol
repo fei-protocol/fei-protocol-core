@@ -25,6 +25,9 @@ abstract contract UniRef is IUniRef, OracleRef {
     /// @notice the referenced Uniswap pair contract
     IUniswapV2Pair public override pair;
 
+    /// @notice the address of the non-fei underlying token
+    address public override token;
+
     /// @notice UniRef constructor
     /// @param _core Fei Core to reference
     /// @param _pair Uniswap pair to reference
@@ -41,7 +44,7 @@ abstract contract UniRef is IUniRef, OracleRef {
         router = IUniswapV2Router02(_router);
 
         _approveToken(address(fei()));
-        _approveToken(token());
+        _approveToken(token);
         _approveToken(_pair);
     }
 
@@ -51,17 +54,8 @@ abstract contract UniRef is IUniRef, OracleRef {
     function setPair(address _pair) external override onlyGovernor {
         _setupPair(_pair);
 
-        _approveToken(token());
+        _approveToken(token);
         _approveToken(_pair);
-    }
-
-    /// @notice the address of the non-fei underlying token
-    function token() public view override returns (address) {
-        address token0 = pair.token0();
-        if (address(fei()) == token0) {
-            return pair.token1();
-        }
-        return token0;
     }
 
     /// @notice pair reserves with fei listed first
@@ -117,6 +111,16 @@ abstract contract UniRef is IUniRef, OracleRef {
     function _setupPair(address _pair) internal {
         pair = IUniswapV2Pair(_pair);
         emit PairUpdate(_pair);
+
+        token = _token();
+    }
+
+    function _token() internal view returns (address) {
+        address token0 = pair.token0();
+        if (address(fei()) == token0) {
+            return pair.token1();
+        }
+        return token0;
     }
 
     /// @notice utility for calculating absolute distance from peg based on reserves
