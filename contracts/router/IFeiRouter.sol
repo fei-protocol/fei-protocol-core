@@ -1,7 +1,5 @@
 pragma solidity ^0.6.0;
 
-import "../token/IUniswapIncentive.sol";
-
 /// @title FeiRouter interface
 /// @author Fei Protocol
 interface IFeiRouter {

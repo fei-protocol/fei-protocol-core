@@ -10,10 +10,12 @@ const {
 	expectEvent,
 	expectRevert,
 	expect,
-	MockCoreRef,
-	Tribe,
+	contract,
 	getCore
   } = require('../helpers');
+
+const Tribe = contract.fromArtifact('Tribe');
+const MockCoreRef = contract.fromArtifact('MockCoreRef');
 
 describe('Core', function () {
 

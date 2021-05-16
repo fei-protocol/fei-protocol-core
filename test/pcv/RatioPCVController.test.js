@@ -3,16 +3,18 @@
 const {
     userAddress, 
     governorAddress,
+    pcvControllerAddress,
     BN,
     expectRevert,
     balance,
     expect,
-    MockPCVDeposit,
-    getCore,
-    RatioPCVController,
-    pcvControllerAddress
+    contract,
+    getCore
   } = require('../helpers');
-  
+
+const RatioPCVController = contract.fromArtifact('RatioPCVController');
+const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
+
   describe('RatioPCVController', function () {
   
     beforeEach(async function () {

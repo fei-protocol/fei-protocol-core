@@ -7,14 +7,16 @@ const {
   expect,
   time,
   MAX_UINT256,
-  Fei,
-  FeiRouter,
-  MockUniswapIncentive,
-  MockPair,
-  MockWeth,
+  contract,
   getCore,
   ether
 } = require('../helpers');
+
+const Fei = contract.fromArtifact('Fei');
+const FeiRouter = contract.fromArtifact('FeiRouter');
+const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
+const MockUniswapIncentive = contract.fromArtifact('MockUniswapIncentive');
+const MockWeth = contract.fromArtifact('MockWeth');
 
 describe('FeiRouter', function () {
 

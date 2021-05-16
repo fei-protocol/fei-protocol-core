@@ -12,14 +12,16 @@ const {
   expectRevert,
   balance,
   expect,
-  EthUniswapPCVDeposit,
-  Fei,
-  MockERC20,
-  MockOracle,
-  MockPair,
-  MockRouter,
+  contract,
   getCore
 } = require('../helpers');
+
+const EthUniswapPCVDeposit = contract.fromArtifact('EthUniswapPCVDeposit');
+const Fei = contract.fromArtifact('Fei');
+const MockERC20 = contract.fromArtifact('MockERC20');
+const MockOracle = contract.fromArtifact('MockOracle');
+const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
+const MockRouter = contract.fromArtifact('MockRouter');
 
 describe('EthUniswapPCVDeposit', function () {
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit

@@ -11,47 +11,8 @@ chai.use(require('chai-bn')(BN));
 
 const { expect } = chai;
 
-const BondingCurveOracle = contract.fromArtifact('BondingCurveOracle');
-const Core = contract.fromArtifact('Core');
-const EthBondingCurve = contract.fromArtifact('EthBondingCurve');
-const EthPCVDepositAdapter = contract.fromArtifact('EthPCVDepositAdapter');
-const EthReserveStabilizer = contract.fromArtifact('EthReserveStabilizer');
-const EthPCVDripper = contract.fromArtifact('EthPCVDripper');
-const EthUniswapPCVController = contract.fromArtifact('EthUniswapPCVController');
-const EthUniswapPCVDeposit = contract.fromArtifact('EthUniswapPCVDeposit');
-const Fei = contract.fromArtifact('Fei');
-const FeiRouter = contract.fromArtifact('FeiRouter');
 const ForceEth = contract.fromArtifact('ForceEth');
-const GenesisGroup = contract.fromArtifact('GenesisGroup');
-const IDO = contract.fromArtifact('IDO');
-const Roots = contract.fromArtifact('RootsWrapper');
-const TimelockedDelegator = contract.fromArtifact('TimelockedDelegator');
-const Tribe = contract.fromArtifact('Tribe');
-const TribeDripper = contract.fromArtifact("TribeDripper");
-const UniswapIncentive = contract.fromArtifact('UniswapIncentive');
-const UniswapOracle = contract.fromArtifact('UniswapOracle');
-const FeiStakingRewards = contract.fromArtifact('FeiStakingRewards');
-const FeiRewardsDistributor = contract.fromArtifact('FeiRewardsDistributor');
-const RatioPCVController = contract.fromArtifact('RatioPCVController');
-
-const MockBondingCurve = contract.fromArtifact('MockBondingCurve');
-const MockBondingCurveOracle = contract.fromArtifact('MockBondingCurveOracle');
-const MockBot = contract.fromArtifact('MockBot');
-const MockCoreRef = contract.fromArtifact('MockCoreRef');
-const MockERC20 = contract.fromArtifact('MockERC20');
-const MockEthPCVDeposit = contract.fromArtifact('MockEthPCVDeposit');
-const MockIDO = contract.fromArtifact('MockIDO');
-const MockIncentive = contract.fromArtifact('MockUniswapIncentive');
-const MockIncentivized = contract.fromArtifact('MockIncentivized');
-const MockOracle = contract.fromArtifact('MockOracle');
-const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
-const MockPairTrade = contract.fromArtifact('MockUniswapV2PairTrade');
-const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
-const MockRouter = contract.fromArtifact('MockRouter');
-const MockStakingRewards = contract.fromArtifact('MockStakingRewards');
-const MockTribe = contract.fromArtifact('MockTribe');
-const MockUniswapIncentive = contract.fromArtifact('MockUniswapIncentive');
-const MockWeth = contract.fromArtifact('MockWeth');
+const Core = contract.fromArtifact('Core');
 
 const [ userAddress, secondUserAddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress, genesisGroup, keeperAddress, pcvControllerAddress, minterAddress, burnerAddress, guardianAddress ] = accounts;
 
@@ -93,6 +54,7 @@ module.exports = {
     balance,
     time,
     expect,
+    contract,
     // addresses
     userAddress,
     secondUserAddress,
@@ -105,48 +67,6 @@ module.exports = {
     minterAddress,
     burnerAddress,
     guardianAddress,
-    // contracts
-    BondingCurveOracle,
-    Core,
-    EthBondingCurve,
-    EthPCVDepositAdapter,
-    EthReserveStabilizer,
-    EthPCVDripper,
-    EthUniswapPCVController,
-    EthUniswapPCVDeposit,
-    Fei,
-    FeiRewardsDistributor,
-    FeiStakingRewards,
-    FeiRouter,
-    ForceEth,
-    GenesisGroup,
-    Roots,
-    IDO,
-    TimelockedDelegator,
-    Tribe,
-    TribeDripper,
-    UniswapIncentive,
-    UniswapOracle,
-    RatioPCVController,
-    // mock contracts
-    MockBondingCurve,
-    MockBondingCurveOracle,
-    MockBot,
-    MockCoreRef,
-    MockEthPCVDeposit,
-    MockERC20,
-    MockIDO,
-    MockIncentive,
-    MockIncentivized,
-    MockOracle, 
-    MockPair,
-    MockPairTrade,
-    MockPCVDeposit,
-    MockRouter,
-    MockStakingRewards,
-    MockTribe,
-    MockUniswapIncentive,
-    MockWeth,
     // functions
     getCore,
     forceEth,

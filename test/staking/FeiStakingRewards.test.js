@@ -8,12 +8,14 @@ const {
     expectRevert,
     time,
     expect,
-    Fei,
-    Tribe,
-    FeiStakingRewards,
-    MockERC20,
+    contract,
     getCore
   } = require('../helpers');
+
+const Fei = contract.fromArtifact('Fei');
+const Tribe = contract.fromArtifact('Tribe');
+const FeiStakingRewards = contract.fromArtifact('FeiStakingRewards');
+const MockERC20 = contract.fromArtifact('MockERC20');
 
   describe('FeiStakingRewards', function () {
 

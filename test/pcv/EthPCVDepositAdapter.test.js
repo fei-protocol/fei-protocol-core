@@ -6,10 +6,12 @@ const {
     balance,
     web3,
     expect,
-    MockPCVDeposit,
-    EthPCVDepositAdapter
+    contract,
   } = require('../helpers');
   
+const EthPCVDepositAdapter = contract.fromArtifact('EthPCVDepositAdapter');
+const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
+
   describe('EthPCVDepositAdapter', function () {
   
     beforeEach(async function () {

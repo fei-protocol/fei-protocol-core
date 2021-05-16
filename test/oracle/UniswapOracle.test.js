@@ -1,16 +1,17 @@
 const {
   userAddress,
   governorAddress,
-  guardianAddress,
   BN,
   expectEvent,
   expectRevert,
   time,
   expect,
-  UniswapOracle,
-  MockPairTrade,
+  contract,
   getCore
 } = require('../helpers');
+
+const UniswapOracle = contract.fromArtifact('UniswapOracle');
+const MockPairTrade = contract.fromArtifact('MockUniswapV2PairTrade');
 
 describe('UniswapOracle', function () {
 

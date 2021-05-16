@@ -10,14 +10,15 @@ const {
   expectRevert,
   balance,
   time,
+  contract,
   expect,
-  MockEthPCVDeposit,
-  Fei,
-  MockOracle, 
-  MockBot,
-  EthBondingCurve,
   getCore
 } = require('../helpers');
+
+const EthBondingCurve = contract.fromArtifact('EthBondingCurve');
+const Fei = contract.fromArtifact('Fei');
+const MockEthPCVDeposit = contract.fromArtifact('MockEthPCVDeposit');
+const MockOracle = contract.fromArtifact('MockOracle');
 
 describe('EthBondingCurve', function () {
 
@@ -432,21 +433,6 @@ describe('EthBondingCurve', function () {
       it('reverts', async function() {
         await this.bondingCurve.pause({from: governorAddress});
         await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "Pausable: paused");
-      });
-    });
-
-    describe('From Contract', function() {
-      it('reverts', async function() {
-        let bot = await MockBot.new();
-        await expectRevert(bot.bondingCurveAllocate(this.bondingCurve.address), "BondingCurve: Caller is a contract");
-      });
-
-      it('genesis group succeeds', async function() {
-        let bot = await MockBot.new();
-        this.purchaseAmount = new BN("1000000000000000000")
-        await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount});
-        await this.core.setGenesisGroup(bot.address, {from: governorAddress});
-        await bot.bondingCurveAllocate(this.bondingCurve.address);
       });
     });
 

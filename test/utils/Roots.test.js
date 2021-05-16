@@ -1,8 +1,10 @@
 const {
   BN,
   expect,
-  Roots
+  contract
 } = require('../helpers');
+
+const Roots = contract.fromArtifact('RootsWrapper');
 
 describe('Roots', function () {
   beforeEach(async function() {

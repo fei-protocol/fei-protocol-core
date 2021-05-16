@@ -6,13 +6,15 @@ const {
 	BN, 
 	expectEvent,
 	expectRevert,
-	expect,
-	Fei,
-  MockIncentive,
-  MockIncentivized,
+  expect,
+  contract,
 	getCore,
 	governorAddress
 } = require('../helpers');
+
+const Fei = contract.fromArtifact('Fei');
+const MockIncentive = contract.fromArtifact('MockUniswapIncentive');
+const MockIncentivized = contract.fromArtifact('MockIncentivized');
 
 describe('Fei', function () {
 

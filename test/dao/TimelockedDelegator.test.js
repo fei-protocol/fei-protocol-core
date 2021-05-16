@@ -8,9 +8,11 @@ const {
   expectRevert,
   time,
   expect,
-  MockTribe,
-  TimelockedDelegator
+  contract
 } = require('../helpers');
+
+const TimelockedDelegator = contract.fromArtifact('TimelockedDelegator');
+const MockTribe = contract.fromArtifact('MockTribe');
 
 describe('TimelockedDelegator', function () {
 

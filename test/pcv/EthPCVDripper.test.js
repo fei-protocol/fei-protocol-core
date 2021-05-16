@@ -8,12 +8,14 @@ const {
     time,
     balance,
     expect,
-    EthPCVDripper,
-    MockPCVDeposit,
+    contract,
     getCore,
     beneficiaryAddress1
   } = require('../helpers');
   
+const EthPCVDripper = contract.fromArtifact('EthPCVDripper');
+const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
+
   describe('EthPCVDripper', function () {
   
     beforeEach(async function () {

@@ -10,13 +10,15 @@ const {
     expectRevert,
     balance,
     expect,
-    EthReserveStabilizer,
-    MockPCVDeposit,
-    Fei,
-    MockOracle,
+    contract,
     getCore
   } = require('../helpers');
   
+const EthReserveStabilizer = contract.fromArtifact('EthReserveStabilizer');
+const Fei = contract.fromArtifact('Fei');
+const MockOracle = contract.fromArtifact('MockOracle');
+const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
+
   describe('EthReserveStabilizer', function () {
   
     beforeEach(async function () {
