@@ -417,20 +417,6 @@ describe('EthBondingCurve', function () {
       });
     });
 
-<<<<<<< HEAD
-    describe('Pre Launch', function() {
-      beforeEach(async function() {
-        this.core = await getCore(false);
-        await this.bondingCurve.setCore(this.core.address, {from: governorAddress});
-      });
-
-      it('reverts', async function() {
-        await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "CoreRef: Still in Genesis Period"); 
-      });
-    });
-
-=======
->>>>>>> 53a9a9b (erc20 versions)
     describe('No Purchase', function() {
       it('reverts', async function() {
         await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: No PCV held"); 

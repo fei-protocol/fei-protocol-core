@@ -30,7 +30,7 @@ describe('EthUniswapPCVDeposit', function () {
 
     this.fei = await Fei.at(await this.core.fei());
     this.weth = await MockWeth.new();
-    this.pair = await MockPair.new(this.weth.address, this.fei.address);
+    this.pair = await MockPair.new(this.fei.address, this.weth.address);
     this.oracle = await MockOracle.new(400); // 400:1 oracle price
     this.router = await MockRouter.new(this.pair.address);
     this.router.setWETH(this.weth.address);
@@ -39,7 +39,7 @@ describe('EthUniswapPCVDeposit', function () {
 
     await this.core.grantMinter(this.pcvDeposit.address, {from: governorAddress});
 
-    await this.pair.set(100000, 50000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 500:1 FEI/ETH with 10k liquidity
+    await this.pair.set(50000000, 100000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 500:1 FEI/ETH with 10k liquidity
     await this.fei.mint(this.pair.address, 50000000, {from: minterAddress});  
     await this.weth.mint(this.pair.address, 100000);  
   });
