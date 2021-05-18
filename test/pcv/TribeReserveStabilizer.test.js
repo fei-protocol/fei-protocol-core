@@ -12,27 +12,27 @@ const {
     getCore
   } = require('../helpers');
   
-const ReserveStabilizer = contract.fromArtifact('ReserveStabilizer');
+const TribeReserveStabilizer = contract.fromArtifact('TribeReserveStabilizer');
 const Fei = contract.fromArtifact('Fei');
+const Tribe = contract.fromArtifact('Tribe');
 const MockOracle = contract.fromArtifact('MockOracle');
-const MockERC20 = contract.fromArtifact('MockERC20');
 const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
 
-  describe('ReserveStabilizer', function () {
+  describe('TribeReserveStabilizer', function () {
   
     beforeEach(async function () {
       this.core = await getCore(true);
   
       this.fei = await Fei.at(await this.core.fei());
-      this.token = await MockERC20.new();
+      this.tribe = await Tribe.at(await this.core.tribe());
       this.oracle = await MockOracle.new(400); // 400:1 oracle price
       this.pcvDeposit = await MockPCVDeposit.new(userAddress);
 
-      this.reserveStabilizer = await ReserveStabilizer.new(this.core.address, this.oracle.address, this.token.address, '9000');
+      this.reserveStabilizer = await TribeReserveStabilizer.new(this.core.address, this.oracle.address, '9000');
 
       await this.core.grantBurner(this.reserveStabilizer.address, {from: governorAddress});
 
-      await this.token.mint(this.reserveStabilizer.address, "1000000000000000000");
+      await this.tribe.setMinter(this.reserveStabilizer.address, {from: governorAddress});
 
       await this.fei.mint(userAddress, 40000000, {from: minterAddress});  
     });
@@ -40,11 +40,11 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
     describe('Exchange', function() {
       describe('Enough FEI', function() {
         it('exchanges for appropriate amount of token', async function() {
-          let reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
+          let userBalanceBefore = await this.tribe.balanceOf(userAddress);
           await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-          let reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
+          let userBalanceAfter = await this.tribe.balanceOf(userAddress);
 
-          expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(new BN('90000'));
+          expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(new BN('90000'));
 
           expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
         });
@@ -54,11 +54,11 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
         it('exchanges for appropriate amount of token', async function() {
           await this.oracle.setExchangeRate('800');
 
-          let reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
+          let userBalanceBefore = await this.tribe.balanceOf(userAddress);
           await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-          let reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
+          let userBalanceAfter = await this.tribe.balanceOf(userAddress);
 
-          expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(new BN('45000'));
+          expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(new BN('45000'));
 
           expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
         });
@@ -68,11 +68,11 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
         it('exchanges for appropriate amount of token', async function() {
           await this.reserveStabilizer.setUsdPerFeiRate('9500', {from: governorAddress});
 
-          let reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
+          let userBalanceBefore = await this.tribe.balanceOf(userAddress);
           await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-          let reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
+          let userBalanceAfter = await this.tribe.balanceOf(userAddress);
 
-          expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(new BN('95000'));
+          expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(new BN('95000'));
 
           expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
         });
@@ -81,13 +81,6 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
       describe('Not Enough FEI', function() {
         it('reverts', async function() {
           await expectRevert(this.reserveStabilizer.exchangeFei(50000000, {from: userAddress}), "ERC20: burn amount exceeds balance");
-        });
-      });
-
-      describe('Not Enough token', function() {
-        it('reverts', async function() {
-          await this.fei.mint(userAddress, new BN('4000000000000000000000000000'), {from: minterAddress});  
-          await expectRevert(this.reserveStabilizer.exchangeFei(new BN('4000000000000000000000000000'), {from: userAddress}), "revert");
         });
       });
 
@@ -100,25 +93,31 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
     });
   
     describe('Withdraw', function() {
-      it('enough token succeeds', async function() {
-        let reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
-        let userBalanceBefore = await this.token.balanceOf(userAddress);
+        it('reverts', async function() {
+            await expectRevert(this.reserveStabilizer.withdraw(userAddress, '1000000000', {from: pcvControllerAddress}), "TribeReserveStabilizer: nothing to withdraw");
+        });
+    });
 
-        await this.reserveStabilizer.withdraw(userAddress, '10000', {from: pcvControllerAddress});
-        let reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
-        let userBalanceAfter = await this.token.balanceOf(userAddress);
+    describe('Mint', function() {
+        it('governor succeeds', async function() {
+          await this.reserveStabilizer.mint(userAddress, '10000', {from: governorAddress});
+          expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN('10000'));
+        });
+  
+        it('non-governor reverts', async function() {
+          await expectRevert(this.reserveStabilizer.mint(userAddress, '10000', {from: userAddress}), "CoreRef: Caller is not a governor");
+        });
+    });
 
-        expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(new BN('10000'));
-        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(new BN('10000'));
-      });
-
-      it('not enough token reverts', async function() {
-        await expectRevert(this.reserveStabilizer.withdraw(userAddress, '10000000000000000000', {from: pcvControllerAddress}), "revert");
-      });
-
-      it('non pcvController', async function() {
-        await expectRevert(this.reserveStabilizer.withdraw(userAddress, '10000', {from: userAddress}), "CoreRef: Caller is not a PCV controller");
-      });
+    describe('Set Minter', function() {
+        it('governor succeeds', async function() {
+          await this.reserveStabilizer.setMinter(userAddress, {from: governorAddress});
+          expect(await this.tribe.minter()).to.be.equal(userAddress);
+        });
+  
+        it('non-governor reverts', async function() {
+          await expectRevert(this.reserveStabilizer.setMinter(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
+        });
     });
 
     describe('Set USD per FEI', function() {

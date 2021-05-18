@@ -51,7 +51,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer {
     /// @notice withdraw ETH from the reserves
     /// @param to address to send ETH
     /// @param amountOut amount of ETH to send
-    function withdraw(address payable to, uint256 amountOut) external override onlyPCVController {
+    function withdraw(address payable to, uint256 amountOut) external virtual override onlyPCVController {
         _transfer(to, amountOut);
         emit Withdrawal(msg.sender, to, amountOut);
     }
