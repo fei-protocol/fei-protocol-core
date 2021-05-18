@@ -86,6 +86,12 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         _setScale(_scale);
     }
 
+    /// @notice sets the ERC20 token for the contract
+    function setToken(address _token) external override onlyGovernor {
+        token = IERC20(_token);
+        emit TokenUpdate(_token);
+    }
+
     /// @notice sets the bonding curve price buffer
     function setBuffer(uint256 _buffer) external override onlyGovernor {
         require(
