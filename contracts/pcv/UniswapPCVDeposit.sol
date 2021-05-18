@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 contract UniswapPCVDeposit is IPCVDeposit, UniRef {
     using Decimal for Decimal.D256;
 
-    uint256 public maxBasisPointsFromPegLP = 10000;
+    uint256 public maxBasisPointsFromPegLP;
 
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
@@ -25,8 +25,12 @@ contract UniswapPCVDeposit is IPCVDeposit, UniRef {
         address _core,
         address _pair,
         address _router,
-        address _oracle
-    ) public UniRef(_core, _pair, _router, _oracle) {}
+        address _oracle,
+        uint256 _maxBasisPointsFromPegLP
+    ) public UniRef(_core, _pair, _router, _oracle) {
+        maxBasisPointsFromPegLP = _maxBasisPointsFromPegLP;
+        emit MaxBasisPointsFromPegLPUpdate(0, _maxBasisPointsFromPegLP);
+    }
 
     receive() external payable {
         _wrap();

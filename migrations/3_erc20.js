@@ -18,7 +18,7 @@ module.exports = function(deployer) {
     let tenPow18 = ether('1');
 
     deployer.then(function() {
-        return deployer.deploy(UniswapPCVDeposit, coreAddress, pair, router, oracle);
+        return deployer.deploy(UniswapPCVDeposit, coreAddress, pair, router, oracle, '100');
     }).then(function(instance) {
         pcvDeposit = instance;
         return deployer.deploy(UniswapPCVController, coreAddress, instance.address, oracle, tenPow18.mul(new BN('500')), new BN('100'), pair, router);
