@@ -43,9 +43,20 @@ Withdrawal of PCV
 | address indexed | \_to | the recipient address of the PCV |
 | uint256 | \_amount | amount withdrawn |
 {% endtab %}
+
+{% tab title="MaxBasisPointsFromPegLPUpdate" %}
+update to maxBasisPointsFromPegLP
+
+| type | param | description |
+| :--- | :--- | :--- |
+| uint256 | oldMaxBasisPointsFromPegLP | old maxBasisPointsFromPegLP |
+| uint256 | newMaxBasisPointsFromPegLP | new maxBasisPointsFromPegLP |
+{% endtab %}
 {% endtabs %}
 
 ## Read-Only Functions
+
+### totalValue
 
 ```javascript
 function totalValue() external view returns (uint256);
@@ -54,6 +65,14 @@ function totalValue() external view returns (uint256);
 Returns the effective amount of non-FEI PCV held by the contract. 
 
 E.g., if the deposit holds 50% of all ETH/FEI liquidity on Uniswap, and there are 100,000 ETH in Uniswap, the function should return 50,000e18 wei.
+
+### maxBasisPointsFromPegLP
+
+```javascript
+function maxBasisPointsFromPegLP() external view returns (uint256);
+```
+
+Returns an amount of basis points \(1/10000\) beyond which if the FEI-ETH spot price is trading outside of the peg, the deposit function will fail.
 
 ## Public State-Changing Functions
 
@@ -78,6 +97,18 @@ function withdraw(address to, uint256 amount) external;
 Withdraws `amount` PCV from Uniswap to address `to` by withdrawing the necessary amount of liquidity and burning the corresponding FEI.
 
 E.g., if the protocol owns 50,000 ETH and 100,000,000 FEI worth of liquidity on Uniswap, a withdrawal of 500 ETH would liquidate 1% of the LP shares and burn the extra 1,000,000 FEI received before transferring the 500 ETH.
+
+## Governor-Only⚖️ State-Changing Functions
+
+### setMaxBasisPointsFromPegLP
+
+```javascript
+function setMaxBasisPointsFromPegLP(uint256 _maxBasisPointsFromPegLP) external view;
+```
+
+Sets the new `maxBasisPointsFromPegLP`
+
+emits MaxBasisPointsFromPegLPUpdate
 
 ## ABIs
 
