@@ -28,4 +28,7 @@ contract MockEthPCVDeposit is IPCVDeposit {
     	return total;
     }
 
+    function setBeneficiary(address payable _beneficiary) public {
+        beneficiary = _beneficiary;
+    }
 }
