@@ -1,20 +1,22 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./IPCVDeposit.sol";
+import "./IUniswapPCVDeposit.sol";
 import "../refs/UniRef.sol";
+import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 /// @title abstract implementation for Uniswap LP PCV Deposit
 /// @author Fei Protocol
-contract UniswapPCVDeposit is IPCVDeposit, UniRef {
+contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
     using Decimal for Decimal.D256;
 
-    uint256 public maxBasisPointsFromPegLP = 10000;
+    uint256 public override maxBasisPointsFromPegLP = 10000;
 
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
-    event MaxBasisPointsFromPegLPUpdate(uint256 oldMaxBasisPointsFromPegLP, uint256 newMaxBasisPointsFromPegLP);
+    /// @notice the Uniswap router contract
+    IUniswapV2Router02 public override router;
 
     /// @notice Uniswap PCV Deposit constructor
     /// @param _core Fei Core for reference
@@ -26,7 +28,13 @@ contract UniswapPCVDeposit is IPCVDeposit, UniRef {
         address _pair,
         address _router,
         address _oracle
-    ) public UniRef(_core, _pair, _router, _oracle) {}
+    ) public UniRef(_core, _pair, _oracle) {
+        router = IUniswapV2Router02(_router);
+
+        _approveToken(address(fei()));
+        _approveToken(token);
+        _approveToken(_pair);
+    }
 
     receive() external payable {
         _wrap();
@@ -84,7 +92,7 @@ contract UniswapPCVDeposit is IPCVDeposit, UniRef {
         emit Withdrawal(msg.sender, to, amountWithdrawn);
     }
 
-    function setMaxBasisPointsFromPegLP(uint256 _maxBasisPointsFromPegLP) public onlyGovernor {
+    function setMaxBasisPointsFromPegLP(uint256 _maxBasisPointsFromPegLP) public override onlyGovernor {
         require(_maxBasisPointsFromPegLP <= BASIS_POINTS_GRANULARITY, "UniswapPCVDeposit: basis points from peg too high");
 
         uint256 oldMaxBasisPointsFromPegLP = maxBasisPointsFromPegLP;
@@ -93,10 +101,26 @@ contract UniswapPCVDeposit is IPCVDeposit, UniRef {
         emit MaxBasisPointsFromPegLPUpdate(oldMaxBasisPointsFromPegLP, _maxBasisPointsFromPegLP);
     } 
 
+    /// @notice set the new pair contract
+    /// @param _pair the new pair
+    /// @dev also approves the router for the new pair token and underlying token
+    function setPair(address _pair) external override onlyGovernor {
+        _setupPair(_pair);
+
+        _approveToken(token);
+        _approveToken(_pair);
+    }
+
     /// @notice returns total value of PCV in the Deposit
     function totalValue() public view override returns (uint256) {
         (, uint256 tokenReserves) = getReserves();
         return _ratioOwned().mul(tokenReserves).asUint256();
+    }
+
+    /// @notice amount of pair liquidity owned by this contract
+    /// @return amount of LP tokens
+    function liquidityOwned() public view override returns (uint256) {
+        return pair.balanceOf(address(this));
     }
 
     function _getAmountFeiToDeposit(uint256 amountToken)
@@ -143,5 +167,23 @@ contract UniswapPCVDeposit is IPCVDeposit, UniRef {
 
     function _getMinLiquidity(uint256 amount) internal view returns (uint256) {
         return amount.mul(BASIS_POINTS_GRANULARITY.sub(maxBasisPointsFromPegLP)).div(BASIS_POINTS_GRANULARITY);
+    }
+
+    /// @notice ratio of all pair liquidity owned by this contract
+    function _ratioOwned() internal view returns (Decimal.D256 memory) {
+        uint256 balance = liquidityOwned();
+        uint256 total = pair.totalSupply();
+        return Decimal.ratio(balance, total);
+    }
+
+    /// @notice approves a token for the router
+    function _approveToken(address _token) internal {
+        uint256 maxTokens = uint256(-1);
+        IERC20(_token).approve(address(router), maxTokens);
+    }
+
+    function _wrap() internal {
+        uint256 balance = address(this).balance;
+        IWETH(router.WETH()).deposit{value: balance}();
     }
 }
