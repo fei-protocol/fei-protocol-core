@@ -2,12 +2,13 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./IReserveStabilizer.sol";
+import "../pcv/IPCVDeposit.sol";
 import "../refs/OracleRef.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
 /// @title implementation for an ETH Reserve Stabilizer
 /// @author Fei Protocol
-contract ReserveStabilizer is OracleRef, IReserveStabilizer {
+contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
 
     /// @notice the USD per FEI exchange rate denominated in basis points (1/10000)
     uint256 public override usdPerFeiBasisPoints;
@@ -51,9 +52,18 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer {
     /// @notice withdraw ETH from the reserves
     /// @param to address to send ETH
     /// @param amountOut amount of ETH to send
-    function withdraw(address payable to, uint256 amountOut) external virtual override onlyPCVController {
+    function withdraw(address to, uint256 amountOut) external virtual override onlyPCVController {
         _transfer(to, amountOut);
         emit Withdrawal(msg.sender, to, amountOut);
+    }
+
+    /// @notice new PCV deposited to the stabilizer
+    /// @dev no-op because the token transfer already happened
+    function deposit(uint256 amount) external payable override {}
+
+    /// @notice returns the amount of the held ERC-20
+    function totalValue() public view override virtual returns(uint256) {
+        return token.balanceOf(address(this));
     }
 
     /// @notice sets the USD per FEI exchange rate rate
@@ -64,7 +74,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer {
         emit UsdPerFeiRateUpdate(_usdPerFeiBasisPoints);
     }
 
-    function _transfer(address payable to, uint256 amount) internal virtual {
+    function _transfer(address to, uint256 amount) internal virtual {
         token.transfer(to, amount);
     }
 }

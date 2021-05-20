@@ -9,19 +9,9 @@ interface IReserveStabilizer {
 
     event UsdPerFeiRateUpdate(uint256 basisPoints);
 
-    event Withdrawal(
-        address indexed _caller,
-        address indexed _to,
-        uint256 _amount
-    );
-
     // ----------- State changing api -----------
 
     function exchangeFei(uint256 feiAmount) external returns (uint256);
-
-    // ----------- PCV Controller only state changing api -----------
-
-    function withdraw(address payable to, uint256 amount) external;
 
     // ----------- Governor only state changing api -----------
 

@@ -15,7 +15,12 @@ contract EthReserveStabilizer is ReserveStabilizer {
 
     receive() external payable {}
 
-    function _transfer(address payable to, uint256 amount) internal override {
-        Address.sendValue(to, amount);
+    /// @notice returns the amount of the held ETH
+    function totalValue() public view override returns(uint256) {
+        return address(this).balance;
+    }
+
+    function _transfer(address to, uint256 amount) internal override {
+        Address.sendValue(payable(to), amount);
     }
 }

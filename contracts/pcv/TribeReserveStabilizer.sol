@@ -19,8 +19,13 @@ contract TribeReserveStabilizer is ReserveStabilizer {
     ) public ReserveStabilizer(_core, _oracle, IERC20(address(0)), _usdPerFeiBasisPoints) {}
 
     /// @dev reverts because this contract doesn't hold any TRIBE
-    function withdraw(address payable, uint256) external override {
+    function withdraw(address, uint256) external override {
         revert("TribeReserveStabilizer: nothing to withdraw");
+    }
+
+    /// @notice returns the amount of the held TRIBE
+    function totalValue() public view override returns(uint256) {
+        return tribeBalance();
     }
 
     /// @notice mints TRIBE to the target address
@@ -37,7 +42,7 @@ contract TribeReserveStabilizer is ReserveStabilizer {
         _tribe.setMinter(newMinter);
     }
 
-    function _transfer(address payable to, uint256 amount) internal override {
+    function _transfer(address to, uint256 amount) internal override {
         _mint(to, amount);
     }
 
