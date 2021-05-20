@@ -90,6 +90,12 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         _setScale(_scale);
     }
 
+    /// @notice resets the totalPurchased
+    function reset() external override onlyGovernor {
+        totalPurchased = 0;
+        emit Reset();
+    }
+
     /// @notice sets the ERC20 token for the contract
     function setToken(address _token) external override onlyGovernor {
         token = IERC20(_token);

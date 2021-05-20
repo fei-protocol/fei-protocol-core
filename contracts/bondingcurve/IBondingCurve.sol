@@ -20,6 +20,8 @@ interface IBondingCurve {
 
     event Allocate(address indexed _caller, uint256 _amount);
 
+    event Reset();
+    
     // ----------- State changing Api -----------
 
     function purchase(address to, uint256 amountIn)
@@ -30,6 +32,8 @@ interface IBondingCurve {
     function allocate() external;
 
     // ----------- Governor only state changing api -----------
+
+    function reset() external;
 
     function setBuffer(uint256 _buffer) external;
 

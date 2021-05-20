@@ -325,6 +325,24 @@ describe('EthBondingCurve', function () {
           it('total PCV held', async function() {
             expect(await this.bondingCurve.getTotalPCVHeld()).to.be.bignumber.equal(this.purchaseAmount.mul(new BN(2)));
           });
+
+          describe('reset', function() {
+            beforeEach(async function() {
+              expectEvent(
+                await this.bondingCurve.reset({from: governorAddress}),
+                'Reset',
+                {}
+              );
+            });
+
+            it('totalPurchased', async function() {
+              expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(new BN('0'));
+            });
+
+            it('at Scale', async function() {
+              expect(await this.bondingCurve.atScale()).to.be.equal(false);
+            });
+          });
         });
 
         describe('Buffer Change', function() {
