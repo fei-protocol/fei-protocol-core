@@ -34,8 +34,7 @@ describe('EthUniswapPCVDeposit', function () {
     this.oracle = await MockOracle.new(400); // 400:1 oracle price
     this.router = await MockRouter.new(this.pair.address);
     this.router.setWETH(this.weth.address);
-    this.pcvDeposit = await UniswapPCVDeposit.new(this.core.address, this.pair.address, this.router.address, this.oracle.address);
-    await this.pcvDeposit.setMaxBasisPointsFromPegLP(100, {from: governorAddress});
+    this.pcvDeposit = await UniswapPCVDeposit.new(this.core.address, this.pair.address, this.router.address, this.oracle.address, '100');
 
     await this.core.grantMinter(this.pcvDeposit.address, {from: governorAddress});
 

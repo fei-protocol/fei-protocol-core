@@ -27,7 +27,11 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
 
     /// @notice the buffer applied on top of the peg purchase price once at Scale
     uint256 public override buffer = 100;
-    uint256 public constant BUFFER_GRANULARITY = 10_000;
+    
+    /// @notice the discount applied on top of peg before at Scale
+    uint256 public override discount = 100;
+
+    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice amount of FEI paid for allocation when incentivized
     uint256 public override incentiveAmount;
@@ -86,6 +90,12 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         _setScale(_scale);
     }
 
+    /// @notice resets the totalPurchased
+    function reset() external override onlyGovernor {
+        totalPurchased = 0;
+        emit Reset();
+    }
+
     /// @notice sets the ERC20 token for the contract
     function setToken(address _token) external override onlyGovernor {
         token = IERC20(_token);
@@ -95,11 +105,21 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     /// @notice sets the bonding curve price buffer
     function setBuffer(uint256 _buffer) external override onlyGovernor {
         require(
-            _buffer < BUFFER_GRANULARITY,
+            _buffer < BASIS_POINTS_GRANULARITY,
             "BondingCurve: Buffer exceeds or matches granularity"
         );
         buffer = _buffer;
         emit BufferUpdate(_buffer);
+    }
+
+    /// @notice sets the bonding curve price discount
+    function setDiscount(uint256 _discount) external override onlyGovernor {
+        require(
+            _discount < BASIS_POINTS_GRANULARITY,
+            "BondingCurve: Buffer exceeds or matches granularity"
+        );
+        discount = _discount;
+        emit DiscountUpdate(_discount);
     }
 
     /// @notice sets the allocate incentive amount
@@ -233,7 +253,8 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         view
         virtual
         returns (Decimal.D256 memory) {
-            return Decimal.one();
+            uint256 granularity = BASIS_POINTS_GRANULARITY;
+            return Decimal.ratio(granularity - discount, granularity);
         }
 
     /// @notice returns the integral of the bonding curve solved for the amount of tokens out for a certain amount of value in
@@ -243,12 +264,13 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         view
         virtual
         returns (uint256) {
-            return adjustedAmountIn;
+            require(adjustedAmountIn <= scale, "BondingCurve: purchase exceeds Scale");
+            return Decimal.from(adjustedAmountIn).div(_getBondingCurvePriceMultiplier()).asUint256();
         }
 
     /// @notice returns the buffer on the post-scale bonding curve price
     function _getBufferMultiplier() internal view returns (Decimal.D256 memory) {
-        uint256 granularity = BUFFER_GRANULARITY;
+        uint256 granularity = BASIS_POINTS_GRANULARITY;
         // uses granularity - buffer (i.e. 1-b) instead of 1+b because the peg is inverted
         return Decimal.ratio(granularity - buffer, granularity);
     }
