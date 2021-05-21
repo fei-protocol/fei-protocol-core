@@ -356,6 +356,27 @@ describe('EthUniswapPCVDeposit', function () {
       });
     });
 
+    describe('withdrawERC20', function() {
+      it('PCVController succeeds', async function() {
+        this.weth.mint(this.pcvDeposit.address, new BN('1000'));
+        expectEvent(
+          await this.pcvDeposit.withdrawERC20(this.weth.address, userAddress, new BN('1000'), {from: pcvControllerAddress}), 
+          'WithdrawERC20', 
+          { 
+            _caller : pcvControllerAddress,
+            _token : this.weth.address,
+            _to: userAddress,
+            _amount: '1000'
+          }
+        );
+        expect(await this.weth.balanceOf(userAddress)).to.be.bignumber.equal('1000');
+      });
+
+      it('Non-PCVController fails', async function() {
+        await expectRevert(this.pcvDeposit.withdrawERC20(this.weth.address, userAddress, new BN('1000'), {from: userAddress}), "CoreRef: Caller is not a PCV controller");
+      });
+    });
+
     describe('Pair', function() {
       it('Governor set succeeds', async function() {
         let pair2 = await MockPair.new(this.weth.address, this.fei.address);

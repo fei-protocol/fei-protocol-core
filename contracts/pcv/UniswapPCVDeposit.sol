@@ -92,6 +92,15 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         emit Withdrawal(msg.sender, to, amountWithdrawn);
     }
 
+    /// @notice withdraw ERC20 from the contract
+    /// @param token address of the ERC20 to send
+    /// @param to address destination of the ERC20
+    /// @param amount quantity of ERC20 to send
+    function withdrawERC20(IERC20 token, address to, uint256 amount) external override onlyPCVController {
+        SafeERC20.safeTransfer(token, to, amount);
+        emit WithdrawERC20(msg.sender, address(token), to, amount);
+    }
+    
     function setMaxBasisPointsFromPegLP(uint256 _maxBasisPointsFromPegLP) public override onlyGovernor {
         require(_maxBasisPointsFromPegLP <= BASIS_POINTS_GRANULARITY, "UniswapPCVDeposit: basis points from peg too high");
 
