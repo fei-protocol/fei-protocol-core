@@ -17,7 +17,6 @@ const {
     MockOracle,
     MockWeth,
     MockPair,
-    FeiRouter,
     getCore
   } = require('../helpers');
 
@@ -33,13 +32,12 @@ const {
       this.pair.setReserves('62500000'+e18, '25000'+e18);
       //await web3.eth.sendTransaction({from: userAddress, to: this.pair.address, value: '25000'+e18});
       await this.fei.mint(this.pair.address, '62500000'+e18, {from: minterAddress});
-      this.router = await FeiRouter.new(this.pair.address, this.weth.address);
       this.oracle = await MockOracle.new(2500); // 2500:1 oracle price
 
       this.swapper = await PCVSwapperUniswap.new(
         this.core.address, // core
         this.pair.address, // pair
-        this.router.address, // router
+        this.weth.address, // weth
         this.oracle.address, // oracle
         '1000', // default minimum interval between swaps
         this.weth.address, // tokenSpent
