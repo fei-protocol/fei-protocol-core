@@ -18,6 +18,7 @@ const EthReserveStabilizer = contract.fromArtifact('EthReserveStabilizer');
 const EthPCVDripper = contract.fromArtifact('EthPCVDripper');
 const EthUniswapPCVController = contract.fromArtifact('EthUniswapPCVController');
 const EthUniswapPCVDeposit = contract.fromArtifact('EthUniswapPCVDeposit');
+const PCVSwapperUniswap = contract.fromArtifact('PCVSwapperUniswap');
 const Fei = contract.fromArtifact('Fei');
 const FeiRouter = contract.fromArtifact('FeiRouter');
 const ForceEth = contract.fromArtifact('ForceEth');
@@ -29,6 +30,7 @@ const Tribe = contract.fromArtifact('Tribe');
 const TribeDripper = contract.fromArtifact("TribeDripper");
 const UniswapIncentive = contract.fromArtifact('UniswapIncentive');
 const UniswapOracle = contract.fromArtifact('UniswapOracle');
+const ChainlinkOracleWrapper = contract.fromArtifact('ChainlinkOracleWrapper');
 const FeiStakingRewards = contract.fromArtifact('FeiStakingRewards');
 const FeiRewardsDistributor = contract.fromArtifact('FeiRewardsDistributor');
 
@@ -43,6 +45,7 @@ const MockIDO = contract.fromArtifact('MockIDO');
 const MockIncentive = contract.fromArtifact('MockUniswapIncentive');
 const MockIncentivized = contract.fromArtifact('MockIncentivized');
 const MockOracle = contract.fromArtifact('MockOracle');
+const MockChainlinkOracle = contract.fromArtifact('MockChainlinkOracle');
 const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
 const MockPairTrade = contract.fromArtifact('MockUniswapV2PairTrade');
 const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
@@ -112,6 +115,7 @@ module.exports = {
     EthPCVDripper,
     EthUniswapPCVController,
     EthUniswapPCVDeposit,
+    PCVSwapperUniswap,
     Fei,
     FeiRewardsDistributor,
     FeiStakingRewards,
@@ -125,6 +129,7 @@ module.exports = {
     TribeDripper,
     UniswapIncentive,
     UniswapOracle,
+    ChainlinkOracleWrapper,
     // mock contracts
     MockBondingCurve,
     MockBondingCurveOracle,
@@ -135,7 +140,8 @@ module.exports = {
     MockIDO,
     MockIncentive,
     MockIncentivized,
-    MockOracle, 
+    MockOracle,
+    MockChainlinkOracle,
     MockPair,
     MockPairTrade,
     MockPCVDeposit,
