@@ -12,12 +12,16 @@ interface IBondingCurve {
 
     event BufferUpdate(uint256 _buffer);
 
+    event DiscountUpdate(uint256 _discount);
+
     event IncentiveAmountUpdate(uint256 _incentiveAmount);
 
     event Purchase(address indexed _to, uint256 _amountIn, uint256 _amountOut);
 
     event Allocate(address indexed _caller, uint256 _amount);
 
+    event Reset();
+    
     // ----------- State changing Api -----------
 
     function purchase(address to, uint256 amountIn)
@@ -29,7 +33,11 @@ interface IBondingCurve {
 
     // ----------- Governor only state changing api -----------
 
+    function reset() external;
+
     function setBuffer(uint256 _buffer) external;
+
+    function setDiscount(uint256 _discount) external;
 
     function setToken(address _token) external;
 
@@ -63,6 +71,8 @@ interface IBondingCurve {
     function atScale() external view returns (bool);
 
     function buffer() external view returns (uint256);
+
+    function discount() external view returns (uint256);
 
     function totalPurchased() external view returns (uint256);
 
