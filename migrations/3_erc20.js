@@ -21,7 +21,7 @@ module.exports = function(deployer) {
         return deployer.deploy(UniswapPCVDeposit, coreAddress, pair, router, oracle, '100');
     }).then(function(instance) {
         pcvDeposit = instance;
-        return deployer.deploy(UniswapPCVController, coreAddress, instance.address, oracle, tenPow18.mul(new BN('500')), new BN('100'), pair, router);
+        return deployer.deploy(UniswapPCVController, coreAddress, instance.address, oracle, tenPow18.mul(new BN('500')), new BN('100'), pair);
     }).then(function() {
         return deployer.deploy(BondingCurve, tenPow18.mul(new BN('10000000')), coreAddress, [pcvDeposit.address], [10000], oracle, '100', tenPow18.mul(new BN('500')));
     }).then(function(instance) {

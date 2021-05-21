@@ -18,7 +18,6 @@ const Fei = contract.fromArtifact('Fei');
 const MockOracle = contract.fromArtifact('MockOracle');
 const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
 const MockPCVDeposit = contract.fromArtifact('MockERC20UniswapPCVDeposit');
-const MockRouter = contract.fromArtifact('MockRouter');
 const MockERC20 = contract.fromArtifact('MockERC20');
 
 describe('UniswapPCVController', function () {
@@ -31,7 +30,6 @@ describe('UniswapPCVController', function () {
     this.oracle = await MockOracle.new(500);
     this.token = await MockERC20.new();
     this.pair = await MockPair.new(this.token.address, this.fei.address);
-    this.router = await MockRouter.new(this.pair.address);
     this.pcvDeposit = await MockPCVDeposit.new(this.token.address);
 
     this.pcvController = await UniswapPCVController.new(
@@ -40,8 +38,7 @@ describe('UniswapPCVController', function () {
       this.oracle.address, 
       '100000000000000000000',
       '100',
-      this.pair.address,
-      this.router.address
+      this.pair.address
     );
     await this.core.grantBurner(this.pcvController.address, {from: governorAddress});
     await this.core.grantMinter(this.pcvController.address, {from: governorAddress});
