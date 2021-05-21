@@ -14,8 +14,6 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     using Decimal for Decimal.D256;
     using SafeMathCopy for uint256;
 
-    uint256 public override reweightWithdrawBPs = 9900;
-
     uint256 internal _reweightDuration = 4 hours;
 
     uint256 internal constant BASIS_POINTS_GRANULARITY = 10000;
@@ -64,6 +62,9 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         );
         _reweight();
         _incentivize();
+
+        // reset timer
+        _initTimed();
     }
 
     /// @notice reweights regardless of eligibility
@@ -85,17 +86,6 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     {
         reweightIncentiveAmount = amount;
         emit ReweightIncentiveUpdate(amount);
-    }
-
-    /// @notice sets the reweight withdrawal BPs
-    function setReweightWithdrawBPs(uint256 _reweightWithdrawBPs)
-        external
-        override
-        onlyGovernor
-    {
-        require(_reweightWithdrawBPs <= BASIS_POINTS_GRANULARITY, "EthUniswapPCVController: withdraw percent too high");
-        reweightWithdrawBPs = _reweightWithdrawBPs;
-        emit ReweightWithdrawBPsUpdate(_reweightWithdrawBPs);
     }
 
     /// @notice sets the reweight min distance in basis points
@@ -144,25 +134,6 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     }
 
     function _reweight() internal {
-        _withdraw();
-        _returnToPeg();
-
-        // resupply PCV at peg ratio
-        IERC20 erc20 = IERC20(token);
-        uint256 balance = erc20.balanceOf(address(this));
-
-        SafeERC20.safeTransfer(erc20, address(pcvDeposit), balance);
-        pcvDeposit.deposit(balance);
-
-        _burnFeiHeld();
-
-        // reset timer
-        _initTimed();
-
-        emit Reweight(msg.sender);
-    }
-
-    function _returnToPeg() internal {
         (uint256 feiReserves, uint256 tokenReserves) = getReserves();
         if (feiReserves == 0 || tokenReserves == 0) {
             return;
@@ -171,27 +142,47 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         Decimal.D256 memory _peg = peg();
 
         if (_isBelowPeg(_peg)) {
-            // calculate amount of token needed to return to peg then swap
-            uint256 amount = _getAmountToPegOther(feiReserves, tokenReserves, _peg);
-
-            IERC20 erc20 = IERC20(token);
-            uint256 balance = erc20.balanceOf(address(this));
-            
-            amount = Math.min(amount, balance);
-
-            SafeERC20.safeTransfer(erc20, address(pair), amount);
-
-            _swap(token, amount, tokenReserves, feiReserves);
-            
+            _rebase(_peg, feiReserves, tokenReserves);
         } else {
-            // calculate amount FEI needed to return to peg then swap
-            uint256 amount = _getAmountToPegFei(feiReserves, tokenReserves, _peg);
-
-            fei().mint(address(pair), amount);
-
-            _swap(address(fei()), amount, feiReserves, tokenReserves);
+            _reverseReweight(_peg, feiReserves, tokenReserves);
         }
+
+        emit Reweight(msg.sender);
     }
+
+    function _rebase(
+        Decimal.D256 memory _peg,
+        uint256 feiReserves, 
+        uint256 tokenReserves
+    ) internal {
+        // Calculate the ideal amount of FEI in the pool for the reserves of the non-FEI token
+        uint256 targetAmount = _peg.mul(tokenReserves).asUint256();
+
+        // burn the excess FEI not needed from the pool
+        uint256 burnAmount = feiReserves.sub(targetAmount);
+        fei().burnFrom(address(pair), burnAmount);
+
+        // sync the pair to restore the reserves 
+        pair.sync();
+    }
+
+    function _reverseReweight(        
+        Decimal.D256 memory _peg,
+        uint256 feiReserves, 
+        uint256 tokenReserves
+    ) internal {
+        // calculate amount FEI needed to return to peg then swap
+        uint256 amountIn = _getAmountToPegFei(feiReserves, tokenReserves, _peg);
+
+        IFei _fei = fei();
+        _fei.mint(address(pair), amountIn);
+
+        _swap(address(_fei), amountIn, feiReserves, tokenReserves);
+
+        // Redeposit purchased tokens
+        _deposit();
+    }
+
 
     function _swap(
         address tokenIn,
@@ -209,11 +200,12 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         pair.swap(amount0Out, amount1Out, address(this), new bytes(0));
     }
 
-    function _withdraw() internal {
-        // Only withdraw a portion to prevent rounding errors on Uni LP dust
-        uint256 value =
-            pcvDeposit.totalValue().mul(reweightWithdrawBPs) /
-                BASIS_POINTS_GRANULARITY;
-        pcvDeposit.withdraw(address(this), value);
+    function _deposit() internal {
+        // resupply PCV at peg ratio
+        IERC20 erc20 = IERC20(token);
+        uint256 balance = erc20.balanceOf(address(this));
+
+        SafeERC20.safeTransfer(erc20, address(pcvDeposit), balance);
+        pcvDeposit.deposit(balance);
     }
 }

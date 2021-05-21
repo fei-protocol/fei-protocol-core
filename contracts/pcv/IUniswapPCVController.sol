@@ -18,8 +18,6 @@ interface IUniswapPCVController {
 
     event ReweightMinDistanceUpdate(uint256 _basisPoints);
 
-    event ReweightWithdrawBPsUpdate(uint256 _reweightWithdrawBPs);
-
     // ----------- State changing API -----------
 
     function reweight() external;
@@ -35,8 +33,6 @@ interface IUniswapPCVController {
     function setReweightIncentive(uint256 amount) external;
 
     function setReweightMinDistance(uint256 basisPoints) external;
-
-    function setReweightWithdrawBPs(uint256 _reweightWithdrawBPs) external;
     
     // ----------- Getters -----------
 
@@ -45,8 +41,6 @@ interface IUniswapPCVController {
     function reweightIncentiveAmount() external view returns (uint256);
 
     function reweightEligible() external view returns (bool);
-
-    function reweightWithdrawBPs() external view returns (uint256);
 
     function minDistanceForReweight()
         external
