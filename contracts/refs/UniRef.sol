@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/math/SignedSafeMath.sol";
 import "@openzeppelin/contracts/utils/SafeCast.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
+import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "./OracleRef.sol";
 import "./IUniRef.sol";
 
@@ -203,5 +204,10 @@ abstract contract UniRef is IUniRef, OracleRef {
         }
         Decimal.D256 memory delta = price.sub(peg, "Impossible underflow");
         return delta.div(peg);
+    }
+
+    function _wrap() internal {
+        uint256 balance = address(this).balance;
+        IWETH(router.WETH()).deposit{value: balance}();
     }
 }

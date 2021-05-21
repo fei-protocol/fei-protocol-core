@@ -17,7 +17,7 @@ contract MockRouter {
         PAIR = IMockUniswapV2PairLiquidity(pair);
     }
 
-    uint256 private totalLiquidity;
+    uint256 public totalLiquidity;
     uint256 private constant LIQUIDITY_INCREMENT = 10000;
 
     uint256 private amountMinThreshold;
@@ -67,33 +67,41 @@ contract MockRouter {
         checkAmountMin(amountToken0Min);
 
         liquidity = LIQUIDITY_INCREMENT;
+        totalLiquidity += LIQUIDITY_INCREMENT;
 
         IERC20(token0).transferFrom(to, pair, amountToken0Desired);
         IERC20(token1).transferFrom(to, pair, amountToken1Desired);
 
         PAIR.mintAmount(to, LIQUIDITY_INCREMENT);
+
+        (uint112 reserves0, uint112 reserves1, ) = PAIR.getReserves();
+
+        uint112 newReserve0 = uint112(reserves0) + uint112(amountToken0Desired);
+        uint112 newReserve1 = uint112(reserves1) + uint112(amountToken1Desired);
+        PAIR.setReserves(newReserve0, newReserve1);
     }
 
     function setWETH(address weth) public {
         WETH = weth;
     }
 
-    function removeLiquidityETH(
+    function removeLiquidity(
+        address,
         address,
         uint liquidity,
         uint amountToken0Min,
         uint,
         address to,
         uint
-    ) external returns (uint amountToken, uint amountETH) {
+    ) external returns (uint amountFei, uint amountToken) {
         checkAmountMin(amountToken0Min);
 
         Decimal.D256 memory percentWithdrawal = Decimal.ratio(liquidity, totalLiquidity);
         Decimal.D256 memory ratio = ratioOwned(to);
-        (amountETH, amountToken) = PAIR.burnEth(to, ratio.mul(percentWithdrawal));
+        (amountFei, amountToken) = PAIR.burnToken(to, ratio.mul(percentWithdrawal));
 
         (uint112 reserves0, uint112 reserves1, ) = PAIR.getReserves();
-        uint112 newReserve0 = uint112(reserves0) - uint112(amountETH);
+        uint112 newReserve0 = uint112(reserves0) - uint112(amountFei);
         uint112 newReserve1 = uint112(reserves1) - uint112(amountToken);
 
         PAIR.setReserves(newReserve0, newReserve1);
