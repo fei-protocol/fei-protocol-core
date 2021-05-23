@@ -7,10 +7,10 @@ const {
   expectEvent,
   expectRevert,
   balance,
+  time,
   expect,
   EthUniswapPCVController,
   Fei,
-  MockBot,
   MockPCVDeposit,
   MockOracle,
   MockPair,
@@ -150,27 +150,47 @@ describe('EthUniswapPCVController', function () {
       });
     });
 
-    describe('From Contract', function() {
-      it('reverts', async function() {
-        let bot = await MockBot.new();
-        await expectRevert(bot.controllerReweight(this.pcvController.address), "CoreRef: Caller is a contract");
-      });
-    });
-
-    describe('Not at incentive parity', function () {
-      it('reverts', async function() {
+    describe('Not yet at time', function () {
+      beforeEach(async function() {
         await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/ETH with 10k liquidity
+      });
+
+      it('reverts', async function() {
+        expect(await this.pcvController.isTimeEnded()).to.be.equal(false);
         expect(await this.pcvController.reweightEligible()).to.be.equal(false);
-        await expectRevert(this.pcvController.reweight(), "EthUniswapPCVController: Not at incentive parity or not at min distance");
+        await expectRevert(this.pcvController.reweight(), "EthUniswapPCVController: Not passed reweight time or not at min distance");
       })
+
+      describe('After time period passes', function() {
+        beforeEach(async function() {
+          await time.increase(new BN('14400'));
+        });
+
+        it('Reweight eligible', async function() {
+          expect(await this.pcvController.isTimeEnded()).to.be.equal(true);
+          expect(await this.pcvController.reweightEligible()).to.be.equal(true);
+        });
+
+        describe('After Reweight', function() {
+          beforeEach(async function() {
+            await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
+            await this.pcvController.reweight({from: userAddress});
+          });
+          it('timer resets', async function() {
+            expect(await this.pcvController.isTimeEnded()).to.be.equal(false);
+            expect(await this.pcvController.reweightEligible()).to.be.equal(false);
+          });
+        });
+      });
     });
 
     describe('Not at min distance', function () {
       it('reverts', async function() {
         await this.pair.set(100000, 50400000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 504:1 FEI/ETH with 10k liquidity
-        await this.incentive.setIncentiveParity(true);
+        await time.increase(new BN('14400'));
+
         expect(await this.pcvController.reweightEligible()).to.be.equal(false);
-        await expectRevert(this.pcvController.reweight(), "EthUniswapPCVController: Not at incentive parity or not at min distance");
+        await expectRevert(this.pcvController.reweight(), "EthUniswapPCVController: Not passed reweight time or not at min distance");
       })
     });
 
@@ -178,7 +198,7 @@ describe('EthUniswapPCVController', function () {
         beforeEach(async function() {
           await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/ETH with 10k liquidity
           await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
-          await this.incentive.setIncentiveParity(true);
+          await time.increase(new BN('14400'));
           expect(await this.pcvController.reweightEligible()).to.be.equal(true);
           await this.pcvController.reweight({from: userAddress});
         });
@@ -199,7 +219,7 @@ describe('EthUniswapPCVController', function () {
         beforeEach(async function() {
           await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/ETH with 10k liquidity
           await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
-          await this.incentive.setIncentiveParity(true);     
+          await time.increase(new BN('14400'));
           await this.core.grantMinter(this.pcvController.address, {from: governorAddress});     
           expect(await this.pcvController.reweightEligible()).to.be.equal(true);
           await this.pcvController.reweight({from: userAddress});
