@@ -83,7 +83,7 @@ Incentive parity is defined as a boolean expression, which is true when the mint
 
 ![Condition for Incentive Parity](../../.gitbook/assets/screen-shot-2021-02-14-at-1.13.12-pm%20%281%29.png)
 
-Parity is used as a trigger condition for reweights in the [UniswapPCVController](https://github.com/fei-protocol/fei-protocol-core/wiki/UniswapPCVController)
+Incentive parity was a trigger condition for reweights in the [UniswapPCVController](https://github.com/fei-protocol/fei-protocol-core/wiki/UniswapPCVController) until [FIP-3](https://docs.fei.money/protocol/changelog#fip-3-regular-reweights-may-23-2021).
 
 ## [Access Control](../access-control/) 
 
