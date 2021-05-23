@@ -10,7 +10,7 @@ contract EthReserveStabilizer is ReserveStabilizer {
     constructor(
         address _core,
         address _oracle,
-        uint _usdPerFeiBasisPoints
+        uint256 _usdPerFeiBasisPoints
     ) public ReserveStabilizer(_core, _oracle, IERC20(address(0)), _usdPerFeiBasisPoints) {}
 
     receive() external payable {}

@@ -69,7 +69,7 @@ abstract contract Timed {
         emit TimerReset(block.timestamp);
     }
 
-    function _setDuration(uint _duration) internal {
+    function _setDuration(uint256 _duration) internal {
         duration = _duration;
         emit DurationUpdate(_duration);
     }

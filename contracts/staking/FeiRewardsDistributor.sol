@@ -53,7 +53,7 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
         // solhint-disable-next-line not-rely-on-time
         lastDistributionTime = block.timestamp;
 
-        uint amount = releasedReward();
+        uint256 amount = releasedReward();
         require(amount != 0, "FeiRewardsDistributor: no rewards");
         distributedRewards = distributedRewards.add(amount);
 

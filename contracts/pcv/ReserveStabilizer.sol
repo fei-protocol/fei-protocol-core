@@ -22,7 +22,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
         address _core,
         address _oracle,
         IERC20 _token,
-        uint _usdPerFeiBasisPoints
+        uint256 _usdPerFeiBasisPoints
     ) public OracleRef(_core, _oracle) {
         require(_usdPerFeiBasisPoints <= BASIS_POINTS_GRANULARITY, "ReserveStabilizer: Exceeds bp granularity");
         usdPerFeiBasisPoints = _usdPerFeiBasisPoints;

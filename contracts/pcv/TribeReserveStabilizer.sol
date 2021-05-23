@@ -15,7 +15,7 @@ contract TribeReserveStabilizer is ReserveStabilizer {
     constructor(
         address _core,
         address _oracle,
-        uint _usdPerFeiBasisPoints
+        uint256 _usdPerFeiBasisPoints
     ) public ReserveStabilizer(_core, _oracle, IERC20(address(0)), _usdPerFeiBasisPoints) {}
 
     /// @dev reverts because this contract doesn't hold any TRIBE

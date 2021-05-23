@@ -230,7 +230,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
 
       uint256 amountIn = _getExpectedAmountIn();
       uint256 amountOut = _getExpectedAmountOut(amountIn);
-      uint minimumAcceptableAmountOut = _getMinimumAcceptableAmountOut(amountIn);
+      uint256 minimumAcceptableAmountOut = _getMinimumAcceptableAmountOut(amountIn);
 
       // Check spot price vs oracle price discounted by max slippage
       // E.g. for a max slippage of 3%, spot price must be >= 97% oraclePrice
