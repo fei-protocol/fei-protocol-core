@@ -1,0 +1,36 @@
+version: 2.1
+
+jobs:
+  build:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:14
+    steps:
+      - checkout
+      - run:
+          name: 'Update NPM'
+          command: sudo npm install -g npm@6.13.4
+      - run:
+          name: Install dependencies
+          command: npm install
+      - run:
+          name: Compile contracts
+          command: npm run compile
+
+  test:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:14
+    steps:
+      - checkout
+      - run:
+          name: Run tests
+          command: npm run test
+
+workflows:
+  build_and_test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
