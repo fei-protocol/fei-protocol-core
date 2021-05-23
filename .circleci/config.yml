@@ -1,10 +1,10 @@
 version: 2.1
 
 jobs:
-  build:
+  build_and_test:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:14
+      - image: circleci/node:12
     steps:
       - checkout
       - run:
@@ -16,21 +16,11 @@ jobs:
       - run:
           name: Compile contracts
           command: npm run compile
-
-  test:
-    working_directory: ~/repo
-    docker:
-      - image: circleci/node:14
-    steps:
-      - checkout
       - run:
           name: Run tests
           command: npm run test
 
 workflows:
-  build_and_test:
+  main:
     jobs:
-      - build
-      - test:
-          requires:
-            - build
+      - build_and_test
