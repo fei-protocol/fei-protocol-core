@@ -232,9 +232,9 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         uint256 radicand = peg.mul(reserveTarget).mul(reserveOther).asUint256();
         uint256 root = radicand.sqrt();
         if (root > reserveTarget) {
-            return (root - reserveTarget).mul(1000).div(997);
+            return (root - reserveTarget).mul(1000).div(997); // divide to include the .3% uniswap fee
         }
-        return (reserveTarget - root).mul(1000).div(997);
+        return (reserveTarget - root).mul(1000).div(997); // divide to include the .3% uniswap fee
     }
 
     /// @notice calculate amount of Fei needed to trade back to the peg

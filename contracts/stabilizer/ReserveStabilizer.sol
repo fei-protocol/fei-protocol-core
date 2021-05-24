@@ -9,7 +9,8 @@ import "../refs/OracleRef.sol";
 /// @title implementation for an ETH Reserve Stabilizer
 /// @author Fei Protocol
 contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
-
+    using SafeMath for uint256;
+    
     /// @notice the USD per FEI exchange rate denominated in basis points (1/10000)
     uint256 public override usdPerFeiBasisPoints;
     
@@ -47,7 +48,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
     /// @notice returns the amount out of ETH from the reserves
     /// @param amountFeiIn the amount of FEI in
     function getAmountOut(uint256 amountFeiIn) public view override returns(uint256) {
-        uint256 adjustedAmountIn = amountFeiIn * usdPerFeiBasisPoints / BASIS_POINTS_GRANULARITY;
+        uint256 adjustedAmountIn = amountFeiIn.mul(usdPerFeiBasisPoints) / BASIS_POINTS_GRANULARITY;
         return invert(peg()).mul(adjustedAmountIn).asUint256();
     }
 
