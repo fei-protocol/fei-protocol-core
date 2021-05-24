@@ -14,7 +14,7 @@ import "../utils/Timed.sol";
 contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     using Decimal for Decimal.D256;
     using Babylonian for uint256;
-    using SafeMathCopy for uint256;
+    using SafeMath for uint256;
 
     uint256 internal _reweightDuration = 4 hours;
 

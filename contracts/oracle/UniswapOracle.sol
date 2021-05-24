@@ -6,7 +6,6 @@ pragma experimental ABIEncoderV2;
 
 import "./IUniswapOracle.sol";
 import "../refs/CoreRef.sol";
-import "../external/SafeMathCopy.sol";
 import "../external/UniswapV2OracleLibrary.sol";
 
 /// @title Uniswap Oracle for ETH/USDC
@@ -14,7 +13,7 @@ import "../external/UniswapV2OracleLibrary.sol";
 /// @notice maintains the TWAP of a uniswap pair contract over a specified duration
 contract UniswapOracle is IUniswapOracle, CoreRef {
     using Decimal for Decimal.D256;
-    using SafeMathCopy for uint256;
+    using SafeMath for uint256;
 
     /// @notice the referenced uniswap pair contract
     IUniswapV2Pair public override pair;

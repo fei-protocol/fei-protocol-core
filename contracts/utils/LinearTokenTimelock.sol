@@ -5,10 +5,10 @@ pragma solidity ^0.6.0;
 
 import "./Timed.sol";
 import "./ILinearTokenTimelock.sol";
-import "../external/SafeMathCopy.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 contract LinearTokenTimelock is ILinearTokenTimelock, Timed {
-    using SafeMathCopy for uint256;
+    using SafeMath for uint256;
 
     /// @notice ERC20 basic token contract being held in timelock
     IERC20 public override lockedToken;

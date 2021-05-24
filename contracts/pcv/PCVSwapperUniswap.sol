@@ -16,7 +16,7 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     using SafeERC20 for ERC20;
     using Decimal for Decimal.D256;
-    using SafeMathCopy for uint256;
+    using SafeMath for uint256;
 
     /// @notice the token to spend on swap (outbound)
     address private tokenSpent;

@@ -1,13 +1,13 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "../external/SafeMathCopy.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /// @title abstract contract for splitting PCV into different deposits
 /// @author Fei Protocol
 abstract contract PCVSplitter {
-    using SafeMathCopy for uint256;
+    using SafeMath for uint256;
 
     /// @notice total allocation allowed representing 100%
     uint256 public constant ALLOCATION_GRANULARITY = 10_000;

@@ -1,9 +1,9 @@
  pragma solidity >=0.6.0;
 
- import "./SafeMathCopy.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
  library UniswapV2Library {
-    using SafeMathCopy for uint;
+    using SafeMath for uint;
 
     // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
     function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
