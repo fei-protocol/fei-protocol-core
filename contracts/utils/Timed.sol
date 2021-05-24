@@ -1,12 +1,9 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/utils/SafeCast.sol";
-
 /// @title an abstract contract for timed events
 /// @author Fei Protocol
 abstract contract Timed {
-    using SafeCast for uint256;
 
     /// @notice the start timestamp of the timed period
     uint256 public startTime;
@@ -52,7 +49,6 @@ abstract contract Timed {
             return 0; // uninitialized
         }
         uint256 _duration = duration;
-        // solhint-disable-next-line not-rely-on-time
         uint256 timePassed = block.timestamp - startTime; // block timestamp always >= startTime
         return timePassed > _duration ? _duration : timePassed;
     }
@@ -62,10 +58,8 @@ abstract contract Timed {
     }
 
     function _initTimed() internal {
-        // solhint-disable-next-line not-rely-on-time
         startTime = block.timestamp;
         
-        // solhint-disable-next-line not-rely-on-time
         emit TimerReset(block.timestamp);
     }
 

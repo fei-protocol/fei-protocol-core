@@ -2,9 +2,7 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
 import "./IIncentive.sol";
-import "./IFei.sol";
 import "../refs/CoreRef.sol";
 
 /// @title FEI stablecoin
@@ -163,7 +161,6 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         bytes32 r,
         bytes32 s
     ) external override {
-        // solhint-disable-next-line not-rely-on-time
         require(deadline >= block.timestamp, "Fei: EXPIRED");
         bytes32 digest =
             keccak256(

@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 /// @author Fei Protocol
 contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
     using Decimal for Decimal.D256;
+    using SafeMathCopy for uint256;
 
     uint256 public override maxBasisPointsFromPegLP;
 

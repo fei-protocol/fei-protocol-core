@@ -4,7 +4,6 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 import "./IBondingCurve.sol";
-import "../utils/Roots.sol";
 import "../refs/OracleRef.sol";
 import "../pcv/PCVSplitter.sol";
 import "../pcv/IPCVDeposit.sol";
@@ -14,7 +13,6 @@ import "../utils/Timed.sol";
 /// @author Fei Protocol
 contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     using Decimal for Decimal.D256;
-    using Roots for uint256;
 
     /// @notice the Scale target at which bonding curve price fixes
     uint256 public override scale;

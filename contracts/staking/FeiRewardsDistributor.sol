@@ -40,7 +40,6 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
         dripFrequency = _frequency;
         incentiveAmount = _incentiveAmount;
 
-        // solhint-disable-next-line not-rely-on-time
         lastDistributionTime = block.timestamp;
 
         _initTimed();
@@ -50,7 +49,6 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
     /// @return amount of TRIBE sent
     function drip() public override whenNotPaused returns(uint256) {
         require(isDripAvailable(), "FeiRewardsDistributor: Not passed drip frequency");
-        // solhint-disable-next-line not-rely-on-time
         lastDistributionTime = block.timestamp;
 
         uint256 amount = releasedReward();
@@ -104,7 +102,6 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
 
     /// @notice return true if the dripFrequency has passed since the last drip
     function isDripAvailable() public view override returns (bool) {
-        // solhint-disable-next-line not-rely-on-time
         return block.timestamp >= nextDripAvailable();
     }
 

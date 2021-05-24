@@ -108,7 +108,6 @@ contract Timelock {
     }
 
     function getBlockTimestamp() internal view returns (uint) {
-        // solhint-disable-next-line not-rely-on-time
         return block.timestamp;
     }
 }

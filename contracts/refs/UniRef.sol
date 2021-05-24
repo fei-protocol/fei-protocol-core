@@ -1,7 +1,6 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "./OracleRef.sol";
 import "./IUniRef.sol";
 
@@ -10,9 +9,6 @@ import "./IUniRef.sol";
 /// @notice defines some utilities around interacting with Uniswap
 /// @dev the uniswap pair should be FEI and another asset
 abstract contract UniRef is IUniRef, OracleRef {
-    using Decimal for Decimal.D256;
-    using Babylonian for uint256;
-    using SafeMathCopy for uint256;
 
     /// @notice the referenced Uniswap pair contract
     IUniswapV2Pair public override pair;

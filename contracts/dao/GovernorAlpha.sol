@@ -179,7 +179,6 @@ contract GovernorAlpha {
     function queue(uint proposalId) public {
         require(state(proposalId) == ProposalState.Succeeded, "GovernorAlpha: proposal can only be queued if it is succeeded");
         Proposal storage proposal = proposals[proposalId];
-        // solhint-disable-next-line not-rely-on-time
         uint eta = add256(block.timestamp, timelock.delay());
         for (uint i = 0; i < proposal.targets.length; i++) {
             _queueOrRevert(proposal.targets[i], proposal.values[i], proposal.signatures[i], proposal.calldatas[i], eta);
@@ -242,7 +241,6 @@ contract GovernorAlpha {
             return ProposalState.Succeeded;
         } else if (proposal.executed) {
             return ProposalState.Executed;
-        // solhint-disable-next-line not-rely-on-time
         } else if (block.timestamp >= add256(proposal.eta, timelock.GRACE_PERIOD())) {
             return ProposalState.Expired;
         } else {

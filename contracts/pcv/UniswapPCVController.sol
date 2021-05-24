@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/Math.sol";
+import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "./IUniswapPCVController.sol";
 import "../refs/UniRef.sol";
 import "../external/UniswapV2Library.sol";
@@ -12,6 +13,7 @@ import "../utils/Timed.sol";
 /// @author Fei Protocol
 contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     using Decimal for Decimal.D256;
+    using Babylonian for uint256;
     using SafeMathCopy for uint256;
 
     uint256 internal _reweightDuration = 4 hours;

@@ -6,7 +6,6 @@ import "../refs/OracleRef.sol";
 import "../utils/Timed.sol";
 import "../external/UniswapV2Library.sol";
 import "@openzeppelin/contracts/math/Math.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
@@ -40,11 +39,13 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     /// @notice Uniswap pair to swap on
     IUniswapV2Pair public pair;
 
+    // solhint-disable-next-line var-name-mixedcase
     IWETH public immutable WETH;
 
     constructor(
         address _core,
         IUniswapV2Pair _pair,
+        // solhint-disable-next-line var-name-mixedcase
         IWETH _WETH,
         address _oracle,
         uint256 _swapFrequency,

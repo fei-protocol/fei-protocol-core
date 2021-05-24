@@ -4,7 +4,6 @@ pragma experimental ABIEncoderV2;
 import "./IReserveStabilizer.sol";
 import "../pcv/IPCVDeposit.sol";
 import "../refs/OracleRef.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
 
 /// @title implementation for an ETH Reserve Stabilizer
 /// @author Fei Protocol
