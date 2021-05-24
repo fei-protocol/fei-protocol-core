@@ -93,6 +93,7 @@ module.exports = {
     expectEvent,
     expectRevert,
     balance,
+    contract,
     time,
     expect,
     // addresses

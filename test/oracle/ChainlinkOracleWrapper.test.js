@@ -1,16 +1,11 @@
 const {
-  userAddress,
-  governorAddress,
-  guardianAddress,
-  BN,
-  expectEvent,
-  expectRevert,
-  time,
   expect,
-  ChainlinkOracleWrapper,
-  MockChainlinkOracle,
+  contract,
   getCore
 } = require('../helpers');
+
+const ChainlinkOracleWrapper = contract.fromArtifact('ChainlinkOracleWrapper');
+const MockChainlinkOracle = contract.fromArtifact('MockChainlinkOracle');
 
 const e8 = '00000000';
 const e18 = '000000000000000000';
