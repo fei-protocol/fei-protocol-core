@@ -1,4 +1,4 @@
-pragma solidity ^0.6.2;
+pragma solidity ^0.6.0;
 
 /// @title a Reserve Stabilizer interface
 /// @author Fei Protocol
