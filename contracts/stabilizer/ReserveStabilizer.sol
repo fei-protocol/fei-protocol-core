@@ -34,6 +34,8 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
     /// @notice exchange FEI for ETH from the reserves
     /// @param feiAmount of FEI to sell
     function exchangeFei(uint256 feiAmount) external override whenNotPaused returns (uint256 amountOut) {
+        updateOracle();
+
         fei().burnFrom(msg.sender, feiAmount);
 
         amountOut = getAmountOut(feiAmount);

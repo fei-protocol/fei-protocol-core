@@ -149,6 +149,8 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
             return;
         }
 
+        updateOracle();
+
         Decimal.D256 memory _peg = peg();
 
         if (_isBelowPeg(_peg)) {

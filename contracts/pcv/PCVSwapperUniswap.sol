@@ -230,6 +230,8 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
         require(ERC20(tokenReceived).balanceOf(tokenReceivingAddress) < tokenBuyLimit, "PCVSwapperUniswap: tokenBuyLimit reached.");
       }
 
+      updateOracle();
+
       uint256 amountIn = _getExpectedAmountIn();
       uint256 amountOut = _getExpectedAmountOut(amountIn);
       uint256 minimumAcceptableAmountOut = _getMinimumAcceptableAmountOut(amountIn);

@@ -56,6 +56,8 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         uint256 balance = IERC20(token).balanceOf(address(this));
         require(balance >= amount, "UniswapPCVDeposit: balance too low");
 
+        updateOracle();
+
         uint256 feiAmount = _getAmountFeiToDeposit(balance);
 
         _addLiquidity(balance, feiAmount);
