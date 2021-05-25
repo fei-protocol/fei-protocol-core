@@ -146,7 +146,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         view
         returns (uint256 amountFei)
     {
-        return peg().mul(amountToken).asUint256();
+        return readOracle().mul(amountToken).asUint256();
     }
 
     function _removeLiquidity(uint256 liquidity)

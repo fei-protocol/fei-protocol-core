@@ -49,7 +49,7 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     /// @notice the peg price of the referenced oracle
     /// @return the peg as a Decimal
     /// @dev the peg is defined as FEI per X with X being ETH, dollars, etc
-    function peg() public view override returns (Decimal.D256 memory) {
+    function readOracle() public view override returns (Decimal.D256 memory) {
         (Decimal.D256 memory _peg, bool valid) = oracle.read();
         require(valid, "OracleRef: oracle invalid");
         return _peg;

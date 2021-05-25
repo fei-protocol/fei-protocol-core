@@ -49,7 +49,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
     /// @param amountFeiIn the amount of FEI in
     function getAmountOut(uint256 amountFeiIn) public view override returns(uint256) {
         uint256 adjustedAmountIn = amountFeiIn.mul(usdPerFeiBasisPoints) / BASIS_POINTS_GRANULARITY;
-        return invert(peg()).mul(adjustedAmountIn).asUint256();
+        return invert(readOracle()).mul(adjustedAmountIn).asUint256();
     }
 
     /// @notice withdraw ETH from the reserves

@@ -114,7 +114,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     /// @notice signal whether the reweight is available. Must have incentive parity and minimum distance from peg
     function reweightEligible() public view override returns (bool) {
         bool magnitude =
-            _getDistanceToPeg().greaterThan(_minDistanceForReweight);
+            _getDistanceToreadOracle().greaterThan(_minDistanceForReweight);
         // incentive parity is achieved after a certain time relative to distance from peg
         bool time = isTimeEnded();
         return magnitude && time;
@@ -151,7 +151,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
 
         updateOracle();
 
-        Decimal.D256 memory _peg = peg();
+        Decimal.D256 memory _peg = readOracle();
 
         if (_isBelowPeg(_peg)) {
             _rebase(_peg, feiReserves, tokenReserves);
@@ -276,13 +276,13 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
 
     /// @notice return current percent distance from peg
     /// @dev will return Decimal.zero() if above peg
-    function _getDistanceToPeg()
+    function _getDistanceToreadOracle()
         internal
         view
         returns (Decimal.D256 memory distance)
     {
         (Decimal.D256 memory price, , ) = _getUniswapPrice();
-        return _deviationBelowPeg(price, peg());
+        return _deviationBelowPeg(price, readOracle());
     }
 
     /// @notice get deviation from peg as a percent given price

@@ -301,7 +301,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
 
     /// @notice see external function getNextAmountReceivedThreshold()
     function _getMinimumAcceptableAmountOut(uint256 amountIn) internal view returns (uint256) {
-      Decimal.D256 memory twap = peg();
+      Decimal.D256 memory twap = readOracle();
       if (invertOraclePrice) {
         twap = invert(twap);
       }

@@ -23,7 +23,7 @@ interface IOracleRef {
 
     function oracle() external view returns (IOracle);
 
-    function peg() external view returns (Decimal.D256 memory);
+    function readOracle() external view returns (Decimal.D256 memory);
 
     function invert(Decimal.D256 calldata price)
         external

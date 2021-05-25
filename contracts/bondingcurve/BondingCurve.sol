@@ -166,9 +166,9 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         returns (Decimal.D256 memory)
     {
         if (atScale()) {
-            return peg().mul(_getBufferMultiplier());
+            return readOracle().mul(_getBufferMultiplier());
         }
-        return peg().div(_getBondingCurvePriceMultiplier());
+        return readOracle().div(_getBondingCurvePriceMultiplier());
     }
 
     /// @notice return amount of FEI received after a bonding curve purchase
@@ -210,7 +210,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         view
         returns (uint256)
     {
-        return peg().mul(amountIn).asUint256();
+        return readOracle().mul(amountIn).asUint256();
     }
 
     /// @notice mint FEI and send to buyer destination
