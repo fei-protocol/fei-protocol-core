@@ -47,7 +47,7 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
           expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(new BN('90000'));
 
           expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
-          expect(await this.reserveStabilizer.totalValue()).to.be.bignumber.equal(new BN('0'));
+          expect(await this.reserveStabilizer.balance()).to.be.bignumber.equal(new BN('0'));
         });
       });
 
@@ -62,7 +62,7 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
           expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(new BN('45000'));
 
           expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
-          expect(await this.reserveStabilizer.totalValue()).to.be.bignumber.equal(new BN('0'));
+          expect(await this.reserveStabilizer.balance()).to.be.bignumber.equal(new BN('0'));
         });
       });
   
@@ -77,7 +77,7 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
           expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(new BN('95000'));
 
           expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
-          expect(await this.reserveStabilizer.totalValue()).to.be.bignumber.equal(new BN('0'));
+          expect(await this.reserveStabilizer.balance()).to.be.bignumber.equal(new BN('0'));
         });
       });
 

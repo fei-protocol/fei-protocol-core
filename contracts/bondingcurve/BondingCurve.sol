@@ -80,7 +80,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     }
 
     /// @notice the amount of PCV held in contract and ready to be allocated
-    function getTotalPCVHeld() public view virtual override returns (uint256) {
+    function balance() public view virtual override returns (uint256) {
         return token.balanceOf(address(this));
     }
 
@@ -142,7 +142,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
 
     /// @notice batch allocate held PCV
     function allocate() external override whenNotPaused {
-        uint256 amount = getTotalPCVHeld();
+        uint256 amount = balance();
         require(amount != 0, "BondingCurve: No PCV held");
 
         _allocate(amount);
@@ -288,6 +288,6 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         override
     {
         SafeERC20.safeTransfer(token, pcvDeposit, amount);
-        IPCVDeposit(pcvDeposit).deposit(amount);
+        IPCVDeposit(pcvDeposit).deposit();
     }
 }

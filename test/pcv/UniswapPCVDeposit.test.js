@@ -47,7 +47,8 @@ describe('EthUniswapPCVDeposit', function () {
     describe('Paused', function() {
       it('reverts', async function() {
         await this.pcvDeposit.pause({from: governorAddress});
-        await expectRevert(this.pcvDeposit.deposit("100000", {from: userAddress, value: "100000"}), "Pausable: paused");
+        await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
+        await expectRevert(this.pcvDeposit.deposit({from: userAddress}), "Pausable: paused");
       });
     });
 
@@ -63,13 +64,14 @@ describe('EthUniswapPCVDeposit', function () {
         expect(result[0]).to.be.bignumber.equal(new BN(50000000));
         expect(result[1]).to.be.bignumber.equal(new BN(100000));
       });
-      it('totalValue', async function(){
-        expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(0));
+      it('balance', async function(){
+        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(0));
       });
     });
     describe('Post deposit values', function() {
       beforeEach(async function() {
-        await this.pcvDeposit.deposit("100000", {from: userAddress, value: "100000"});
+        await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
+        await this.pcvDeposit.deposit({from: userAddress});
       });
 
       describe('No existing liquidity', function() {
@@ -85,8 +87,8 @@ describe('EthUniswapPCVDeposit', function () {
           expect(result[1]).to.be.bignumber.equal(new BN(200000));
         });
 
-        it('totalValue', async function() {
-          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(100000));
+        it('balance', async function() {
+          expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
         });
 
         it('no fei held', async function() {
@@ -95,7 +97,8 @@ describe('EthUniswapPCVDeposit', function () {
       });      
       describe('With existing liquidity', function() {
         beforeEach(async function() {
-          await this.pcvDeposit.deposit("100000", {from: userAddress, value: "100000"});
+          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
+          await this.pcvDeposit.deposit({from: userAddress});
         });
 
         it('liquidityOwned', async function() {
@@ -110,8 +113,8 @@ describe('EthUniswapPCVDeposit', function () {
           expect(result[1]).to.be.bignumber.equal(new BN(300000));
         });
 
-        it('totalValue', async function() {
-          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(199999)); // rounding error
+        it('balance', async function() {
+          expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(199999)); // rounding error
         });
 
         it('no fei held', async function() {
@@ -122,14 +125,16 @@ describe('EthUniswapPCVDeposit', function () {
       describe('Pool price changes under threshold', function() {
         it('reverts', async function() {
           await this.router.setAmountMin(39000000);
-          await expectRevert(this.pcvDeposit.deposit("100000", {from: userAddress, value: "100000"}), "amount liquidity revert");
+          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
+          await expectRevert(this.pcvDeposit.deposit({from: userAddress}), "amount liquidity revert");
         });
 
         describe('after threshold update', function() {
           beforeEach(async function() {
             await this.router.setAmountMin(39000000);
             await this.pcvDeposit.setMaxBasisPointsFromPegLP(300, {from: governorAddress});
-            await this.pcvDeposit.deposit("100000", {from: userAddress, value: "100000"});
+            await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
+            await this.pcvDeposit.deposit({from: userAddress});
           });
   
           it('liquidityOwned', async function() {
@@ -144,8 +149,8 @@ describe('EthUniswapPCVDeposit', function () {
             expect(result[1]).to.be.bignumber.equal(new BN(300000));
           });
   
-          it('totalValue', async function() {
-            expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(199999)); // rounding error
+          it('balance', async function() {
+            expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(199999)); // rounding error
           });
   
           it('no fei held', async function() {
@@ -157,7 +162,8 @@ describe('EthUniswapPCVDeposit', function () {
       describe('Pool price changes over threshold', function() {
         beforeEach(async function() {
           await this.router.setAmountMin(41000000);
-          await this.pcvDeposit.deposit("100000", {from: userAddress, value: "100000"});
+          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
+          await this.pcvDeposit.deposit({from: userAddress});
         });
 
         it('liquidityOwned', async function() {
@@ -172,8 +178,8 @@ describe('EthUniswapPCVDeposit', function () {
           expect(result[1]).to.be.bignumber.equal(new BN(300000));
         });
 
-        it('totalValue', async function() {
-          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(199999)); // rounding error
+        it('balance', async function() {
+          expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(199999)); // rounding error
         });
 
         it('no fei held', async function() {
@@ -183,9 +189,10 @@ describe('EthUniswapPCVDeposit', function () {
 
       describe('Transfers held ETH and burns FEI', function() {
         beforeEach(async function() {
-          await web3.eth.sendTransaction({from: userAddress, to:this.pcvDeposit.address, value: "100000"});
+          await this.weth.mint(this.pcvDeposit.address, "100000");
+          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
           await this.fei.mint(this.pcvDeposit.address, "1000", {from: minterAddress});
-          await this.pcvDeposit.deposit("100000", {from: userAddress, value: "100000"});
+          await this.pcvDeposit.deposit({from: userAddress});
         });
 
         it('liquidityOwned', async function() {
@@ -200,8 +207,8 @@ describe('EthUniswapPCVDeposit', function () {
           expect(result[1]).to.be.bignumber.equal(new BN(400000));
         });
 
-        it('totalValue', async function() {
-          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(266666)); // rounding error
+        it('balance', async function() {
+          expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(266666)); // rounding error
         });
 
         it('no fei held', async function() {
@@ -213,7 +220,8 @@ describe('EthUniswapPCVDeposit', function () {
         beforeEach(async function() {
           await this.oracle.setExchangeRate(600); // 600:1 oracle price
           // Then deposit
-          await this.pcvDeposit.deposit("100000", {from: userAddress, value: "100000"});
+          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
+          await this.pcvDeposit.deposit({from: userAddress});
         });
 
         it('liquidityOwned', async function() {
@@ -228,18 +236,12 @@ describe('EthUniswapPCVDeposit', function () {
           expect(result[1]).to.be.bignumber.equal(new BN(300000));
         });
 
-        it('totalValue', async function() {
-          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(199999)); // rounding error
+        it('balance', async function() {
+          expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(199999)); // rounding error
         });
 
         it('no fei held', async function() {
           expect(await this.fei.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal(new BN(0));
-        });
-      });
-
-      describe('Incorrect ETH amount', function() {
-        it('reverts', async function() {
-          await expectRevert(this.pcvDeposit.deposit("100000", {from: userAddress, value: "10"}), "UniswapPCVDeposit: balance too low");
         });
       });
     });
@@ -266,7 +268,8 @@ describe('EthUniswapPCVDeposit', function () {
     });
     describe('With Balance', function() {
       beforeEach(async function() {
-        await this.pcvDeposit.deposit("100000", {from: userAddress, value: "100000"});
+        await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
+        await this.pcvDeposit.deposit({from: userAddress});
         this.beneficiaryBalance = await this.weth.balanceOf(beneficiaryAddress1);
       });
 

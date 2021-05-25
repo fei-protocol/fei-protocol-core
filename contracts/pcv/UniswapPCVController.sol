@@ -217,7 +217,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         uint256 balance = erc20.balanceOf(address(this));
 
         SafeERC20.safeTransfer(erc20, address(pcvDeposit), balance);
-        pcvDeposit.deposit(balance);
+        pcvDeposit.deposit();
     }
 
     /// @notice utility for calculating absolute distance from peg based on reserves

@@ -77,7 +77,7 @@ interface IBondingCurve {
 
     function totalPurchased() external view returns (uint256);
 
-    function getTotalPCVHeld() external view returns (uint256);
+    function balance() external view returns (uint256);
 
     function incentiveAmount() external view returns (uint256);
 }

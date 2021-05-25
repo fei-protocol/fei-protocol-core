@@ -13,11 +13,14 @@ contract MockEthPCVDeposit is IPCVDeposit {
 		beneficiary = _beneficiary;
 	}
 
-    function deposit(uint256 amount) external override payable {
-    	require(amount == msg.value, "MockEthPCVDeposit: Sent value does not equal input");
-    	beneficiary.transfer(amount);
-        total += amount;
+    receive() external payable {
+        total += msg.value;
+        if (beneficiary != address(this)) {
+    	    beneficiary.transfer(msg.value);
+        }
     }
+
+    function deposit() external override {}
 
     function withdraw(address to, uint256 amount) external override {
         require(address(this).balance >= amount, "MockEthPCVDeposit: Not enough value held");
@@ -25,7 +28,7 @@ contract MockEthPCVDeposit is IPCVDeposit {
         payable(to).transfer(amount);
     }
 
-    function totalValue() external view override returns(uint256) {
+    function balance() external view override returns(uint256) {
     	return total;
     }
 
