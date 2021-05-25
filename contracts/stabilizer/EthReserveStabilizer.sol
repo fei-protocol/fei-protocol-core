@@ -17,7 +17,7 @@ contract EthReserveStabilizer is ReserveStabilizer {
     receive() external payable {}
 
     /// @notice returns the amount of the held ETH
-    function totalValue() public view override returns(uint256) {
+    function balance() public view override returns(uint256) {
         return address(this).balance;
     }
 

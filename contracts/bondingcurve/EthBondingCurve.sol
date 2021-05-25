@@ -47,7 +47,7 @@ contract EthBondingCurve is BondingCurve {
         return _purchase(amountIn, to);
     }
 
-    function getTotalPCVHeld() public view override returns (uint256) {
+    function balance() public view override returns (uint256) {
         return address(this).balance;
     }
 
@@ -55,6 +55,7 @@ contract EthBondingCurve is BondingCurve {
         internal
         override
     {
-        IPCVDeposit(pcvDeposit).deposit{value: amount}(amount);
+        Address.sendValue(payable(pcvDeposit), amount);
+        IPCVDeposit(pcvDeposit).deposit();
     }
 }

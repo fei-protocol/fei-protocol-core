@@ -9,7 +9,8 @@ const {
     balance,
     expect,
     contract,
-    getCore
+    getCore,
+    web3
   } = require('../helpers');
 
 const RatioPCVController = contract.fromArtifact('RatioPCVController');
@@ -26,8 +27,7 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
       await this.pcvDeposit.setBeneficiary(this.pcvDeposit.address);
 
       this.pcvAmount = new BN('10000000000');
-      await this.pcvDeposit.deposit(this.pcvAmount, {from: userAddress, value: this.pcvAmount});
-
+      await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: this.pcvAmount});
     });
   
     describe('Withdraw', function() {

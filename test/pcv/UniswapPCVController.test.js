@@ -49,11 +49,10 @@ describe('UniswapPCVController', function () {
   describe('Sole LP', function() {
     beforeEach(async function() {
       await this.token.mint(this.pcvDeposit.address, 100000);
-      await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
       await this.pcvController.forceReweight({from: guardianAddress});
     });
     it('pcvDeposit gets all tokens', async function() {
-      expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(100000));
+      expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
       expect(await balance.current(this.pcvController.address)).to.be.bignumber.equal(new BN(0));
     });
   });
@@ -63,7 +62,6 @@ describe('UniswapPCVController', function () {
       beforeEach(async function() {
         await this.token.mint(this.pcvDeposit.address, 100000);
         await this.pair.set(100000, 50000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 500:1 FEI/ETH with 10k liquidity
-        await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
       });
 
       it('reverts', async function() {
@@ -76,7 +74,6 @@ describe('UniswapPCVController', function () {
         await this.token.mint(this.pcvDeposit.address, 100000);
         await this.token.mint(this.pair.address, 100000);
         await this.pair.set(100000, 49000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/ETH with 10k liquidity
-        await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
         expectEvent(
           await this.pcvController.forceReweight({from: guardianAddress}),
           'Reweight',
@@ -89,7 +86,7 @@ describe('UniswapPCVController', function () {
       });
 
       it('pcvDeposit gets remaining tokens', async function() {
-        expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(101005));
+        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(101005));
         expect(await this.token.balanceOf(this.pcvController.address)).to.be.bignumber.equal(new BN(0));
       });
     });
@@ -100,7 +97,6 @@ describe('UniswapPCVController', function () {
           await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
           await this.token.mint(this.pcvDeposit.address, 100000);
           await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/ETH with 10k liquidity
-          await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
           expectEvent(
             await this.pcvController.forceReweight({from: guardianAddress}),
             'Reweight',
@@ -112,7 +108,7 @@ describe('UniswapPCVController', function () {
           expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
         });
         it('pcvDeposit ETH value remains constant', async function() {
-          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
         });
         it('pair FEI balance rebases', async function() {
           expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(50000000));
@@ -126,7 +122,6 @@ describe('UniswapPCVController', function () {
         await this.oracle.setExchangeRate(400);
         await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
         await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/ETH with 10k liquidity
-        await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
         expectEvent(
           await this.pcvController.forceReweight({from: guardianAddress}),
           'Reweight',
@@ -138,7 +133,7 @@ describe('UniswapPCVController', function () {
         expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
       });
       it('pcvDeposit ETH value remains constant', async function() {
-        expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(100000));
+        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
       });
       it('pair FEI balance rebases', async function() {
         expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(40000000));
@@ -179,7 +174,6 @@ describe('UniswapPCVController', function () {
         describe('After Reweight', function() {
           beforeEach(async function() {
             await this.token.mint(this.pcvDeposit.address, 100000);
-            await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
             await this.pcvController.reweight({from: userAddress});
           });
           it('timer resets', async function() {
@@ -206,7 +200,6 @@ describe('UniswapPCVController', function () {
           await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
           await this.token.mint(this.pcvDeposit.address, 100000);
           await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/ETH with 10k liquidity
-          await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
           await time.increase(new BN('14400'));
           await this.core.revokeMinter(this.pcvController.address, {from: governorAddress});     
           expect(await this.pcvController.reweightEligible()).to.be.equal(true);
@@ -217,7 +210,7 @@ describe('UniswapPCVController', function () {
           expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
         });
         it('pcvDeposit ETH value remains constant', async function() {
-          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
         });
         it('pair FEI balance rebases', async function() {
           expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(50000000));
@@ -229,7 +222,6 @@ describe('UniswapPCVController', function () {
           await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
           await this.token.mint(this.pcvDeposit.address, 100000);
           await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/ETH with 10k liquidity
-          await this.pcvDeposit.deposit(100000, {value: 100000}); // deposit LP
           await time.increase(new BN('14400'));
           await this.core.grantMinter(this.pcvController.address, {from: governorAddress});     
           expect(await this.pcvController.reweightEligible()).to.be.equal(true);
@@ -240,7 +232,7 @@ describe('UniswapPCVController', function () {
           expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
         });
         it('pcvDeposit ETH value remains constant', async function() {
-          expect(await this.pcvDeposit.totalValue()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
         });
         it('pair FEI balance rebases', async function() {
           expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(50000000));

@@ -50,10 +50,10 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
           });
           describe('Target balance low enough', function() {
             it('succeeds', async function() {
-                let dripperBalanceBefore = await balance.current(this.pcvDripper.address);
+                let dripperBalanceBefore = await this.pcvDripper.balance();
                 let beneficiaryBalanceBefore = await balance.current(this.pcvDeposit.address);
                 await this.pcvDripper.drip();
-                let dripperBalanceAfter = await balance.current(this.pcvDripper.address);
+                let dripperBalanceAfter = await this.pcvDripper.balance();
                 let beneficiaryBalanceAfter = await balance.current(this.pcvDeposit.address);
     
                 expect(dripperBalanceBefore.sub(dripperBalanceAfter)).to.be.bignumber.equal(this.dripAmount);
@@ -94,10 +94,10 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
                     await time.increase('1000');
                 });
                 it('succeeds', async function() {
-                    let dripperBalanceBefore = await balance.current(this.pcvDripper.address);
+                    let dripperBalanceBefore = await this.pcvDripper.balance();
                     let beneficiaryBalanceBefore = await balance.current(this.pcvDeposit.address);
                     await this.pcvDripper.drip();
-                    let dripperBalanceAfter = await balance.current(this.pcvDripper.address);
+                    let dripperBalanceAfter = await this.pcvDripper.balance();
                     let beneficiaryBalanceAfter = await balance.current(this.pcvDeposit.address);
         
                     expect(dripperBalanceBefore.sub(dripperBalanceAfter)).to.be.bignumber.equal(this.dripAmount);
@@ -123,11 +123,11 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
   
     describe('Withdraw', function() {
       it('enough eth succeeds', async function() {
-        let dripperBalanceBefore = await balance.current(this.pcvDripper.address);
+        let dripperBalanceBefore = await this.pcvDripper.balance();
         let beneficiaryBalanceBefore = await balance.current(beneficiaryAddress1);
 
-        await this.pcvDripper.withdrawETH(beneficiaryAddress1, '10000', {from: pcvControllerAddress});
-        let dripperBalanceAfter = await balance.current(this.pcvDripper.address);
+        await this.pcvDripper.withdraw(beneficiaryAddress1, '10000', {from: pcvControllerAddress});
+        let dripperBalanceAfter = await this.pcvDripper.balance();
         let beneficiaryBalanceAfter = await balance.current(beneficiaryAddress1);
 
         expect(dripperBalanceBefore.sub(dripperBalanceAfter)).to.be.bignumber.equal(new BN('10000'));
@@ -135,11 +135,11 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
       });
 
       it('not enough eth reverts', async function() {
-        await expectRevert(this.pcvDripper.withdrawETH(beneficiaryAddress1, '10000000000000000000', {from: pcvControllerAddress}), "revert");
+        await expectRevert(this.pcvDripper.withdraw(beneficiaryAddress1, '10000000000000000000', {from: pcvControllerAddress}), "revert");
       });
 
       it('non pcvController', async function() {
-        await expectRevert(this.pcvDripper.withdrawETH(beneficiaryAddress1, '10000', {from: beneficiaryAddress1}), "CoreRef: Caller is not a PCV controller");
+        await expectRevert(this.pcvDripper.withdraw(beneficiaryAddress1, '10000', {from: beneficiaryAddress1}), "CoreRef: Caller is not a PCV controller");
       });
     });
   });

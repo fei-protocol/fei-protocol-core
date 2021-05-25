@@ -48,23 +48,17 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
     }
 
     /// @notice deposit tokens into the PCV allocation
-    /// @param amount of tokens deposited
-    function deposit(uint256 amount) external payable override whenNotPaused {
-        if (msg.value != 0) {
-            _wrap();
-        }
-        uint256 balance = IERC20(token).balanceOf(address(this));
-        require(balance >= amount, "UniswapPCVDeposit: balance too low");
-
+    function deposit() external override whenNotPaused {
         updateOracle();
 
-        uint256 feiAmount = _getAmountFeiToDeposit(balance);
+        uint256 heldBalance = IERC20(token).balanceOf(address(this));
+        uint256 feiAmount = _getAmountFeiToDeposit(heldBalance);
 
-        _addLiquidity(balance, feiAmount);
+        _addLiquidity(heldBalance, feiAmount);
 
         _burnFeiHeld(); // burn any FEI dust from LP
 
-        emit Deposit(msg.sender, balance);
+        emit Deposit(msg.sender, heldBalance);
     }
 
     /// @notice withdraw tokens from the PCV allocation
@@ -76,7 +70,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         onlyPCVController
         whenNotPaused
     {
-        uint256 totalUnderlying = totalValue();
+        uint256 totalUnderlying = balance();
         require(
             amountUnderlying <= totalUnderlying,
             "UniswapPCVDeposit: Insufficient underlying"
@@ -129,8 +123,8 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         _approveToken(_pair);
     }
 
-    /// @notice returns total value of PCV in the Deposit
-    function totalValue() public view override returns (uint256) {
+    /// @notice returns total balance of PCV in the Deposit
+    function balance() public view override returns (uint256) {
         (, uint256 tokenReserves) = getReserves();
         return _ratioOwned().mul(tokenReserves).asUint256();
     }
@@ -189,9 +183,9 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
 
     /// @notice ratio of all pair liquidity owned by this contract
     function _ratioOwned() internal view returns (Decimal.D256 memory) {
-        uint256 balance = liquidityOwned();
+        uint256 liquidity = liquidityOwned();
         uint256 total = pair.totalSupply();
-        return Decimal.ratio(balance, total);
+        return Decimal.ratio(liquidity, total);
     }
 
     /// @notice approves a token for the router
@@ -201,7 +195,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
     }
 
     function _wrap() internal {
-        uint256 balance = address(this).balance;
-        IWETH(router.WETH()).deposit{value: balance}();
+        uint256 amount = address(this).balance;
+        IWETH(router.WETH()).deposit{value: amount}();
     }
 }

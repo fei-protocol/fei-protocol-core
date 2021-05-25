@@ -15,7 +15,7 @@ interface IPCVDeposit {
 
     // ----------- State changing api -----------
 
-    function deposit(uint256 amount) external payable;
+    function deposit() external;
 
     // ----------- PCV Controller only state changing api -----------
 
@@ -23,5 +23,5 @@ interface IPCVDeposit {
 
     // ----------- Getters -----------
 
-    function totalValue() external view returns (uint256);
+    function balance() external view returns (uint256);
 }

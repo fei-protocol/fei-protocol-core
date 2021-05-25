@@ -27,7 +27,7 @@ contract RatioPCVController is CoreRef {
         whenNotPaused
     {
         require(basisPoints <= BASIS_POINTS_GRANULARITY, "RatioPCVController: basisPoints too high");
-        uint256 amount = pcvDeposit.totalValue() * basisPoints / BASIS_POINTS_GRANULARITY;
+        uint256 amount = pcvDeposit.balance() * basisPoints / BASIS_POINTS_GRANULARITY;
         require(amount != 0, "RatioPCVController: no value to withdraw");
 
         pcvDeposit.withdraw(to, amount);

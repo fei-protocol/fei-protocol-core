@@ -25,7 +25,7 @@ contract TribeReserveStabilizer is ReserveStabilizer {
     }
 
     /// @notice returns the amount of the held TRIBE
-    function totalValue() public view override returns(uint256) {
+    function balance() public view override returns(uint256) {
         return tribeBalance();
     }
 
