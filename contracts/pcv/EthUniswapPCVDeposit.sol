@@ -70,8 +70,8 @@ contract EthUniswapPCVDeposit is UniswapPCVDeposit {
         router.addLiquidityETH{value: ethAmount}(
             address(fei()),
             feiAmount,
-            0,
-            0,
+            _getMinLiquidity(feiAmount),
+            _getMinLiquidity(ethAmount),
             address(this),
             endOfTime
         );

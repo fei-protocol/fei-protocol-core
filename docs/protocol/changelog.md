@@ -4,7 +4,44 @@ description: Protocol changes since the white paper release
 
 # Changelog
 
-## FIP-2 - April 29, 2021
+## FIP-3: Regular Reweights - May 23, 2021
+
+FIP-3 reinstates reweights on the FEI-ETH Uniswap pair with a fixed cadence. This removes the "incentive parity" trigger condition for reweights on the EthUniswapPCVController.
+
+Included parameter changes:
+
+* Set reweight frequency to 4 hours
+* Lower the min distance below peg for a reweight from 1% to 0.5%
+* Lower reweight keeper reward to 200 FEI
+
+  
+The code for these changes can be found here: [https://github.com/fei-protocol/fei-protocol-core/pull/96](https://github.com/fei-protocol/fei-protocol-core/pull/96)
+
+## FIP-5: Bonding Curve Allocation Update - May 18, 2021
+
+FIP-5 updates the bonding curve allocation to send funds to the [EthReserveStabilizer](protocol-controlled-value/ethreservestabilizer.md) via the [EthPCVDripper](protocol-controlled-value/ethpcvdripper.md) instead of to the [EthUniswapPCVDeposit](protocol-controlled-value/ethuniswappcvdeposit.md) as before.
+
+It also includes an update to the [EthUniswapPCVDeposit](protocol-controlled-value/ethuniswappcvdeposit.md) where deposits can only occur when the FEI-ETH spot price is within 1% of the oracle price.
+
+**EthPCVDepositAdapter**
+
+An adapter contract that allows ETH transfers to conform to the IPCVDeposit interface.
+
+{% page-ref page="protocol-controlled-value/ethpcvdepositadapter.md" %}
+
+
+
+**RatioPCVController**
+
+A PCV controller that allows for withdrawals of a percentage rather than a raw amount of PCV. This is useful for contracts like the [EthUniswapPCVDeposit](protocol-controlled-value/ethuniswappcvdeposit.md) where the ETH amount held varies based on market conditions.
+
+{% page-ref page="protocol-controlled-value/ratiopcvcontroller.md" %}
+
+
+
+The code for these changes can be found here: [https://github.com/fei-protocol/fei-protocol-core/pull/98](https://github.com/fei-protocol/fei-protocol-core/pull/98)
+
+## FIP-2: FEI Redemption and TRIBE Staking Rewards - April 29, 2021
 
 FIP-2 allows FEI redemption at $0.95 and doubles the FEI-TRIBE LP staking rewards
 

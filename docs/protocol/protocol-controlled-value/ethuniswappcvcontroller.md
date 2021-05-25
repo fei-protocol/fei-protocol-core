@@ -29,14 +29,16 @@ Only 99% is withdrawn because if there are no other LPs there could be rounding 
 
 The reweight is open to a keeper when both of the following conditions are met:
 
-* the distance from the peg is at least the minimum \(initially 1%\)
-* the [UniswapIncentive](../fei-stablecoin/uniswapincentive.md) contract is at incentive parity
+* the distance below the peg is at least the minimum \(currently 0.5%\)
+* The frequency window has passed \(currently 4h\)
 
-Governor⚖️and Guardian🛡contracts can force a reweight at any time, or update the minimum distance requirement.
+Governor⚖️and Guardian🛡contracts can force a reweight at any time
+
+Governor⚖️ contracts can also update the minimum distance and frequency.
 
 ### Reweight incentives
 
-Reweight executions are incentivized with 500 FEI if the controller is appointed as a Minter💰. Governance can adjust this incentive amount.
+Reweight executions are incentivized with 200 FEI if the controller is appointed as a Minter💰. Governance can adjust this incentive amount.
 
 ## [Access Control](../access-control/) 
 
@@ -127,7 +129,7 @@ Returns the amount of PCV withdrawn during a reweight in basis points terms.
 function reweightEligible() external view returns (bool);
 ```
 
-Returns true when the distance from the peg is at least the minimum \(initially 1%\) and the [UniswapIncentive](../fei-stablecoin/uniswapincentive.md) contract is at incentive parity, otherwise false.
+Returns true when the distance from the peg is at least the minimum and the reweight frequency has passed.
 
 ### minDistanceForReweight
 
@@ -138,7 +140,7 @@ function minDistanceForReweight()
     returns (Decimal.D256 memory);
 ```
 
-Returns the minimum percent distance from the peg needed for keepers to reweight the peg.
+Returns the minimum percent distance below the peg needed for keepers to reweight the peg. If the peg is above then the reweight won't occur.
 
 ## EOA-Only 👤 State-Changing Functions
 
@@ -150,7 +152,7 @@ function reweight() external;
 
 Executes a reweight if `reweightEligible.`
 
-Rewards the caller with 500 FEI.
+Rewards the caller with 200 FEI.
 
 {% hint style="info" %}
 This method is [pausable](../../governance/fei-guardian.md)
@@ -174,7 +176,7 @@ Forces a reweight execution. No FEI incentive for doing this. Fails if the Unisw
 function setReweightMinDistance(uint256 basisPoints) external;
 ```
 
-Sets the minimum distance from the peg for a reweight to be eligible to `basisPoints`, measured in basis points \(i.e. 1/10000\).
+Sets the minimum distance below the peg for a reweight to be eligible to `basisPoints`, measured in basis points \(i.e. 1/10000\). This distance must be below the peg, above does not trigger a reweight.
 
 emits `ReweightMinDistanceUpdate`
 
