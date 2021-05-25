@@ -239,17 +239,6 @@ const {
         await this.swapper.setMaxSpentPerSwap('50'+e18, { from: governorAddress });
         expect(await this.swapper.maxSpentPerSwap()).to.be.bignumber.equal('50'+e18);
       });
-      it('setTokenBuyLimit() revert if not governor', async function() {
-        await expectRevert(
-          this.swapper.setTokenBuyLimit('500000'+e18),
-          'CoreRef: Caller is not a governor.'
-        );
-      });
-      it('setTokenBuyLimit()', async function() {
-        expect(await this.swapper.tokenBuyLimit()).to.be.bignumber.equal('0');
-        await this.swapper.setTokenBuyLimit('500000'+e18, { from: governorAddress });
-        expect(await this.swapper.tokenBuyLimit()).to.be.bignumber.equal('500000'+e18);
-      });
       it('setSwapFrequency() revert if not governor', async function() {
         await expectRevert(
           this.swapper.setSwapFrequency('2000'),
@@ -287,17 +276,6 @@ const {
       });
       it('revert if time is not elapsed', async function() {
         await expectRevert(this.swapper.swap(), 'Timed: time not ended.');
-      });
-      it('revert if buy limit is exceeded', async function() {
-        await time.increase('1000');
-        await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '50'+e18});
-        await this.swapper.setTokenBuyLimit('1', {from: governorAddress});
-        // first swap is successful but pushes the target's balance above limit
-        await this.swapper.swap({from: userAddress});
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal('124376992277398866659880');
-        await time.increase('1000');
-        // second swap fails because the target's balance is above limit
-        await expectRevert(this.swapper.swap(), 'PCVSwapperUniswap: tokenBuyLimit reached.');
       });
       it('revert if oracle is invalid', async function() {
         await this.oracle.setValid(false);

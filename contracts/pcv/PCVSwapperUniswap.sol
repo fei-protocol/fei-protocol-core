@@ -26,8 +26,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     address private tokenReceived;
     /// @notice the address that will receive the inbound tokens
     address private tokenReceivingAddress;
-    /// @notice the maximum amount of tokens to buy (0 = unlimited)
-    uint256 public tokenBuyLimit = 0;
     /// @notice the maximum amount of tokens to spend on every swap
     uint256 public maxSpentPerSwap;
     /// @notice should we use (1 / oraclePrice) instead of oraclePrice ?
@@ -141,12 +139,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
         maxSpentPerSwap = _maxSpentPerSwap;
     }
 
-    /// @notice Sets the maximum amount of tokens to buy
-    /// @param _tokenBuyLimit the amount of tokens above which swaps will revert
-    function setTokenBuyLimit(uint256 _tokenBuyLimit) external onlyGovernor {
-      tokenBuyLimit = _tokenBuyLimit;
-    }
-
     /// @notice sets the minimum time between swaps
     function setSwapFrequency(uint256 _duration) external onlyGovernor {
        _setDuration(_duration);
@@ -227,10 +219,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
 
     /// @notice Swap tokenSpent for tokenReceived
     function swap() external override afterTime whenNotPaused {
-      if (tokenBuyLimit != 0) {
-        require(ERC20(tokenReceived).balanceOf(tokenReceivingAddress) < tokenBuyLimit, "PCVSwapperUniswap: tokenBuyLimit reached.");
-      }
-
       updateOracle();
 
       uint256 amountIn = _getExpectedAmountIn();
