@@ -76,7 +76,9 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
 
     /// @notice All received ETH is wrapped to WETH
     receive() external payable {
-      WETH.deposit{value: msg.value}();
+      if (msg.sender != address(WETH)) {
+        WETH.deposit{value: msg.value}();
+      }
     }
 
     // =======================================================================
@@ -87,6 +89,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     /// @param to address to send ETH
     /// @param amountOut amount of ETH to send
     function withdrawETH(address payable to, uint256 amountOut) external override onlyPCVController {
+        WETH.withdraw(amountOut);
         Address.sendValue(to, amountOut);
         emit WithdrawETH(msg.sender, to, amountOut);
     }

@@ -29,7 +29,7 @@ const {
       this.weth = await MockWeth.new();
       this.fei = await Fei.at(await this.core.fei());
       this.pair = await MockPair.new(this.fei.address, this.weth.address);
-      this.pair.setReserves('62500000'+e18, '25000'+e18);
+      await this.pair.setReserves('62500000'+e18, '25000'+e18);
       //await web3.eth.sendTransaction({from: userAddress, to: this.pair.address, value: '25000'+e18});
       await this.fei.mint(this.pair.address, '62500000'+e18, {from: minterAddress});
       this.oracle = await MockOracle.new(2500); // 2500:1 oracle price
@@ -120,13 +120,31 @@ const {
       });
       describe('Withdraw', function() {
         describe('As PCVController', function() {
-          it('revert withdrawETH() insufficient balance (all ETH is wrapped)', async function() {
-            // send 1 ETH, gets converted to 1 WETH
-            await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '1'+e18});
-            await expectRevert(
-              this.swapper.withdrawETH(userAddress, 1, {from: pcvControllerAddress}),
-              'Address: insufficient balance'
+          it('withdrawETH() emit WithdrawETH', async function() {
+            await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '10'+e18});
+            await expectEvent(
+              await this.swapper.withdrawETH(userAddress, '10'+e18, {from: pcvControllerAddress}),
+              'WithdrawETH',
+              {
+                _caller: pcvControllerAddress,
+                _to: userAddress,
+                _amount: '10'+e18
+              }
             );
+          });
+          it('withdrawETH() unwraps WETH', async function() {
+            // swapper starts with 0 WETH
+            expect(await this.weth.balanceOf(this.swapper.address)).to.be.bignumber.equal('0');
+            // swapper gets 10 WETH
+            await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '10'+e18});
+            expect(await this.weth.balanceOf(this.swapper.address)).to.be.bignumber.equal('10'+e18);
+            // call withdrawETH
+            await this.swapper.withdrawETH(secondUserAddress, '10'+e18, {from: pcvControllerAddress})
+            // no more WETH on the swapper
+            expect(await this.weth.balanceOf(this.swapper.address)).to.be.bignumber.equal('0'+e18);
+            // withdraw target address doesn't have WETH, but unwrapped ETH
+            expect(await this.weth.balanceOf(secondUserAddress)).to.be.bignumber.equal('0'+e18);
+            expect(await web3.eth.getBalance(secondUserAddress)).to.be.bignumber.equal('1000010'+e18);
           });
           it('withdrawERC20() emit WithdrawERC20', async function() {
             expect(await this.fei.balanceOf(this.swapper.address)).to.be.bignumber.equal('0');
