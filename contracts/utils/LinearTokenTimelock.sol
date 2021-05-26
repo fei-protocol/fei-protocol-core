@@ -27,7 +27,7 @@ contract LinearTokenTimelock is ILinearTokenTimelock, Timed {
         address _beneficiary,
         uint256 _duration,
         address _lockedToken
-    ) public Timed(_duration) {
+    ) Timed(_duration) {
         require(_duration != 0, "LinearTokenTimelock: duration is 0");
         require(
             _beneficiary != address(0),

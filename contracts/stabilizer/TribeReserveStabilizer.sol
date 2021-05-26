@@ -16,10 +16,10 @@ contract TribeReserveStabilizer is ReserveStabilizer {
         address _core,
         address _oracle,
         uint256 _usdPerFeiBasisPoints
-    ) public ReserveStabilizer(_core, _oracle, IERC20(address(0)), _usdPerFeiBasisPoints) {}
+    ) ReserveStabilizer(_core, _oracle, IERC20(address(0)), _usdPerFeiBasisPoints) {}
 
     /// @dev reverts because this contract doesn't hold any TRIBE
-    function withdraw(address, uint256) external override {
+    function withdraw(address, uint256) external pure override {
         revert("TribeReserveStabilizer: nothing to withdraw");
     }
 

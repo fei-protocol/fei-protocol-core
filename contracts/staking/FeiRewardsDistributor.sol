@@ -29,7 +29,7 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
         uint256 _duration,
         uint256 _frequency,
         uint256 _incentiveAmount
-    ) public 
+    ) 
         CoreRef(_core) 
         Timed(_duration)
     {

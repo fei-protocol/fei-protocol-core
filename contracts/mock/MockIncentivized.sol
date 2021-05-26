@@ -5,9 +5,7 @@ import "../refs/CoreRef.sol";
 
 contract MockIncentivized is CoreRef {
 
-	constructor(address core) public
-		CoreRef(core)
-	{}
+	constructor(address core) CoreRef(core) {}
 
     function sendFei(
         address to,

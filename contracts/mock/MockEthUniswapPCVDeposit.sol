@@ -7,9 +7,7 @@ contract MockEthUniswapPCVDeposit is MockEthPCVDeposit {
 
     address public pair;
 
-	constructor(address _pair) 
-        MockEthPCVDeposit(payable(this))
-    public {
+	constructor(address _pair) MockEthPCVDeposit(payable(this)) {
         pair = _pair;
     }
 }

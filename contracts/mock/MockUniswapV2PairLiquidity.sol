@@ -32,7 +32,7 @@ contract MockUniswapV2PairLiquidity {
     address public token0;
     address public token1;
 
-    constructor(address _token0, address _token1) public {
+    constructor(address _token0, address _token1) {
         token0 = _token0;
         token1 = _token1;
     } 
@@ -91,7 +91,7 @@ contract MockUniswapV2PairLiquidity {
         IERC20(token1).transfer(to, amount1);
     }
 
-    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external { 
+    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata) external { 
         if (amount0Out != 0) {
             IERC20(token0).transfer(to, amount0Out);
         }

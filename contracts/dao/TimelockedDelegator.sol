@@ -13,7 +13,7 @@ contract Delegatee is Ownable {
     /// @notice Delegatee constructor
     /// @param _delegatee the address to delegate TRIBE to
     /// @param _tribe the TRIBE token address
-    constructor(address _delegatee, address _tribe) public {
+    constructor(address _delegatee, address _tribe) {
         tribe = ITribe(_tribe);
         tribe.delegate(_delegatee);
     }
@@ -52,7 +52,7 @@ contract TimelockedDelegator is ITimelockedDelegator, LinearTokenTimelock {
         address _tribe,
         address _beneficiary,
         uint256 _duration
-    ) public LinearTokenTimelock(_beneficiary, _duration, _tribe) {
+    ) LinearTokenTimelock(_beneficiary, _duration, _tribe) {
         tribe = ITribe(_tribe);
         tribe.delegate(_beneficiary);
     }

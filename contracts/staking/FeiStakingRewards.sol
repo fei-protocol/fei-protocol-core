@@ -12,7 +12,7 @@ contract FeiStakingRewards is StakingRewardsV2 {
         address _tribe,
         address _pair,
         uint256 _duration
-    ) public 
+    ) 
         StakingRewardsV2(_distributor, _tribe, _pair, _duration) 
     {}
 }

@@ -6,9 +6,7 @@ import "../refs/CoreRef.sol";
 
 contract MockIncentive is IIncentive, CoreRef {
 
-	constructor(address core) public
-		CoreRef(core)
-	{}
+	constructor(address core) CoreRef(core) {}
 
     uint256 constant private INCENTIVE = 100;
 	bool public isMint = true;

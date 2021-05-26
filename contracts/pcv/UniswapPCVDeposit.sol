@@ -30,7 +30,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         address _router,
         address _oracle,
         uint256 _maxBasisPointsFromPegLP
-    ) public UniRef(_core, _pair, _oracle) {
+    ) UniRef(_core, _pair, _oracle) {
         router = IUniswapV2Router02(_router);
 
         _approveToken(address(fei()));

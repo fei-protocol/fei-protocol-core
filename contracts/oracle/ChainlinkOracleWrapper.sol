@@ -21,7 +21,7 @@ contract ChainlinkOracleWrapper is IOracle, CoreRef {
     constructor(
         address _core,
         address _chainlinkOracle
-    ) public CoreRef(_core) {
+    ) CoreRef(_core) {
         chainlinkOracle = AggregatorV3Interface(_chainlinkOracle);
 
         _init();
@@ -34,13 +34,13 @@ contract ChainlinkOracleWrapper is IOracle, CoreRef {
 
     /// @notice updates the oracle price
     /// @return true if oracle is updated and false if unchanged
-    function update() external override whenNotPaused returns (bool) {
+    function update() external view override whenNotPaused returns (bool) {
         return false;
     }
 
     /// @notice determine if read value is stale
     /// @return true if read value is stale
-    function isOutdated() external view override returns (bool) {
+    function isOutdated() external pure override returns (bool) {
         return false;
     }
 

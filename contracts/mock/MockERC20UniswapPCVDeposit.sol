@@ -8,7 +8,7 @@ contract MockERC20UniswapPCVDeposit is IPCVDeposit {
 
 	IERC20 public token;
 
-	constructor(IERC20 _token) public {
+	constructor(IERC20 _token) {
 		token = _token;
 	}
 

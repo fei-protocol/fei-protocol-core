@@ -9,7 +9,7 @@ contract MockBondingCurve {
 	bool public allocated;
 	Decimal.D256 public getCurrentPrice;
 
-	constructor(bool _atScale, uint256 price) public {
+	constructor(bool _atScale, uint256 price) {
 		setScale(_atScale);
 		setCurrentPrice(price);
 	}

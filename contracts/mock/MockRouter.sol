@@ -13,7 +13,7 @@ contract MockRouter {
     IMockUniswapV2PairLiquidity private PAIR;
     address public WETH;
 
-    constructor(address pair) public {
+    constructor(address pair) {
         PAIR = IMockUniswapV2PairLiquidity(pair);
     }
 
@@ -79,6 +79,8 @@ contract MockRouter {
         uint112 newReserve0 = uint112(reserves0) + uint112(amountToken0Desired);
         uint112 newReserve1 = uint112(reserves1) + uint112(amountToken1Desired);
         PAIR.setReserves(newReserve0, newReserve1);
+
+        return (0, 0, liquidity);
     }
 
     function setWETH(address weth) public {

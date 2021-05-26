@@ -16,7 +16,6 @@ contract EthBondingCurve is BondingCurve {
         uint256 duration,
         uint256 incentive
     )
-        public
         BondingCurve(
             scale,
             core,

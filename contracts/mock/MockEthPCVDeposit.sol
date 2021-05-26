@@ -8,7 +8,7 @@ contract MockEthPCVDeposit is IPCVDeposit {
 	address payable beneficiary;
     uint256 total = 0;
 
-	constructor(address payable _beneficiary) public {
+	constructor(address payable _beneficiary) {
 		beneficiary = _beneficiary;
 	}
 

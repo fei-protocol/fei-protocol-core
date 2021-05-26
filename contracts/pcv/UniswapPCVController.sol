@@ -40,7 +40,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         uint256 _incentiveAmount,
         uint256 _minDistanceForReweightBPs,
         address _pair
-    ) public UniRef(_core, _pair, _oracle) Timed(_reweightDuration) {
+    ) UniRef(_core, _pair, _oracle) Timed(_reweightDuration) {
         pcvDeposit = IPCVDeposit(_pcvDeposit);
 
         reweightIncentiveAmount = _incentiveAmount;

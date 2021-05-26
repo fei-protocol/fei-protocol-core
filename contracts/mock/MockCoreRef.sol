@@ -4,9 +4,7 @@ pragma solidity ^0.8.0;
 import "../refs/CoreRef.sol";
 
 contract MockCoreRef is CoreRef {
-	constructor(address core) 
-		CoreRef(core)
-	public {}
+	constructor(address core) CoreRef(core) {}
 
 	function testMinter() public view onlyMinter {}
 

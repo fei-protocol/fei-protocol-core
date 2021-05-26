@@ -12,7 +12,7 @@ interface ICoreRef {
 
     // ----------- Governor only state changing api -----------
 
-    function setCore(address core) external;
+    function setCore(address newCore) external;
 
     function pause() external;
 

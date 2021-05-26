@@ -18,7 +18,7 @@ contract MockUniswapV2PairTrade {
         uint32 _blockTimestampLast,
         uint112 r0,
         uint112 r1
-    ) public {
+    ) {
         set(_price0CumulativeLast, _price1CumulativeLast, _blockTimestampLast);
         setReserves(r0, r1);
     }

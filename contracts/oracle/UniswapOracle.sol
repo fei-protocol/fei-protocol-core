@@ -42,7 +42,7 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
         address _pair,
         uint256 _duration,
         bool _isPrice0
-    ) public CoreRef(_core) {
+    ) CoreRef(_core) {
         pair = IUniswapV2Pair(_pair);
         // Relative to USD per ETH price
         isPrice0 = _isPrice0;
@@ -61,13 +61,22 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
             uint32 currentTimestamp
         ) = UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
 
-        uint32 deltaTimestamp = currentTimestamp - priorTimestamp; // allowing underflow per Uniswap Oracle spec
+        uint32 deltaTimestamp;
+        unchecked {
+            deltaTimestamp = currentTimestamp - priorTimestamp; // allowing underflow per Uniswap Oracle spec
+        }
+
         if (deltaTimestamp < duration) {
             return false;
         }
 
         uint256 currentCumulative = _getCumulative(price0Cumulative, price1Cumulative);
-        uint256 deltaCumulative = (currentCumulative - priorCumulative) * USDC_DECIMALS_MULTIPLIER; // allowing underflow per Uniswap Oracle spec
+        
+        uint256 deltaCumulative;
+        unchecked {
+            deltaCumulative = (currentCumulative - priorCumulative); // allowing underflow per Uniswap Oracle spec
+        }
+        deltaCumulative = deltaCumulative * USDC_DECIMALS_MULTIPLIER; 
 
         // Uniswap stores cumulative price variables as a fixed point 112x112 so we need to divide out the granularity
         Decimal.D256 memory _twap =

@@ -13,7 +13,7 @@ contract MockOracle is IOracle {
     bool public outdated;
     bool public valid = true;
 
-    constructor(uint256 usdPerEth) public {
+    constructor(uint256 usdPerEth) {
         _usdPerEth = usdPerEth;
     }
 

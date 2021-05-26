@@ -6,9 +6,7 @@ import "../external/Decimal.sol";
 
 contract MockUniswapIncentive is MockIncentive {
 
-	constructor(address core) public
-		MockIncentive(core)
-	{}
+	constructor(address core) MockIncentive(core) {}
 
     bool public isParity = false;
     bool public isExempt = false;
