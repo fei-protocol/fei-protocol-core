@@ -47,8 +47,8 @@ interface IPCVSwapper {
 
     // ----------- Getters -----------
 
-    function getTokenSpent() external view returns (address);
-    function getTokenReceived() external view returns (address);
-    function getReceivingAddress() external view returns (address);
+    function tokenSpent() external view returns (address);
+    function tokenReceived() external view returns (address);
+    function tokenReceivingAddress() external view returns (address);
 
 }

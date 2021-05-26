@@ -63,14 +63,14 @@ const {
 
     describe('IPCVSwapper interface override', function() {
       describe('Getters', function() {
-        it('getTokenSpent()', async function() {
-          expect(await this.swapper.getTokenSpent()).to.equal(this.weth.address);
+        it('tokenSpent()', async function() {
+          expect(await this.swapper.tokenSpent()).to.equal(this.weth.address);
         });
-        it('getTokenReceived()', async function() {
-          expect(await this.swapper.getTokenReceived()).to.equal(this.fei.address);
+        it('tokenReceived()', async function() {
+          expect(await this.swapper.tokenReceived()).to.equal(this.fei.address);
         });
-        it('getReceivingAddress()', async function() {
-          expect(await this.swapper.getReceivingAddress()).to.equal(userAddress);
+        it('tokenReceivingAddress()', async function() {
+          expect(await this.swapper.tokenReceivingAddress()).to.equal(userAddress);
         });
       });
       describe('Setters', function() {

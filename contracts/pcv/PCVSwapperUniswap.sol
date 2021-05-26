@@ -21,11 +21,11 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     using SafeMath for uint256;
 
     /// @notice the token to spend on swap (outbound)
-    address private tokenSpent;
+    address public override tokenSpent;
     /// @notice the token to receive on swap (inbound)
-    address private tokenReceived;
+    address public override tokenReceived;
     /// @notice the address that will receive the inbound tokens
-    address private tokenReceivingAddress;
+    address public override tokenReceivingAddress;
     /// @notice the maximum amount of tokens to spend on every swap
     uint256 public maxSpentPerSwap;
     /// @notice should we use (1 / oraclePrice) instead of oraclePrice ?
@@ -155,24 +155,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     // =======================================================================
     // Getters
     // =======================================================================
-
-    /// @notice Get the token to spend
-    /// @return The address of the token to spend
-    function getTokenSpent() external view override returns (address) {
-      return tokenSpent;
-    }
-
-    /// @notice Get the token to receive
-    /// @return The address of the token to receive
-    function getTokenReceived() external view override returns (address) {
-      return tokenReceived;
-    }
-
-    /// @notice Get the address receiving the inbound swapped tokens
-    /// @return The address receiving tokens
-    function getReceivingAddress() external view override returns (address) {
-      return tokenReceivingAddress;
-    }
 
     /// @notice Get the minimum time between swaps
     /// @return the time between swaps
