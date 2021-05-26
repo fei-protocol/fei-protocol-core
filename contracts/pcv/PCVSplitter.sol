@@ -1,14 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /// @title abstract contract for splitting PCV into different deposits
 /// @author Fei Protocol
 abstract contract PCVSplitter {
-    using SafeMath for uint256;
 
     /// @notice total allocation allowed representing 100%
     uint256 public constant ALLOCATION_GRANULARITY = 10_000;
@@ -21,9 +18,7 @@ abstract contract PCVSplitter {
     /// @notice PCVSplitter constructor
     /// @param _pcvDeposits list of PCV Deposits to split to
     /// @param _ratios ratios for splitting PCV Deposit allocations
-    constructor(address[] memory _pcvDeposits, uint256[] memory _ratios)
-        public
-    {
+    constructor(address[] memory _pcvDeposits, uint256[] memory _ratios) {
         _setAllocation(_pcvDeposits, _ratios);
     }
 
@@ -42,7 +37,7 @@ abstract contract PCVSplitter {
 
         uint256 total;
         for (uint256 i; i < _ratios.length; i++) {
-            total = total.add(_ratios[i]);
+            total = total + _ratios[i];
         }
 
         require(
@@ -89,7 +84,7 @@ abstract contract PCVSplitter {
     function _allocate(uint256 total) internal {
         uint256 granularity = ALLOCATION_GRANULARITY;
         for (uint256 i; i < ratios.length; i++) {
-            uint256 amount = total.mul(ratios[i]) / granularity;
+            uint256 amount = total * ratios[i] / granularity;
             _allocateSingle(amount, pcvDeposits[i]);
         }
     }

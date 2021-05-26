@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 /// @title an abstract contract for timed events
 /// @author Fei Protocol
@@ -16,7 +15,7 @@ abstract contract Timed {
 
     event TimerReset(uint256 _startTime);
 
-    constructor(uint256 _duration) public {
+    constructor(uint256 _duration) {
         _setDuration(_duration);
     }
 

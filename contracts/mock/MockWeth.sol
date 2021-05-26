@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 import "./MockERC20.sol";
 
@@ -13,6 +12,6 @@ contract MockWeth is MockERC20 {
 
     function withdraw(uint amount) external payable {
     	_burn(msg.sender, amount);
-    	_msgSender().transfer(amount);
+    	payable(msg.sender).transfer(amount);
     }
 }

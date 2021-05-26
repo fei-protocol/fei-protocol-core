@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 import "../refs/CoreRef.sol";
 
@@ -18,7 +17,7 @@ contract MockIncentivized is CoreRef {
     }
 
     function approve(address account) public {
-        fei().approve(account, uint(-1));
+        fei().approve(account, type(uint).max);
     }
 
     function sendFeiFrom(

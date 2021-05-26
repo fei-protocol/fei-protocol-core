@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 import "./OracleRef.sol";
 import "./IUniRef.sol";
@@ -25,7 +24,7 @@ abstract contract UniRef is IUniRef, OracleRef {
         address _core,
         address _pair,
         address _oracle
-    ) public OracleRef(_core, _oracle) {
+    ) OracleRef(_core, _oracle) {
         _setupPair(_pair);
     }
 

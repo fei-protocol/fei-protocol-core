@@ -1,17 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 import "./IUniswapPCVDeposit.sol";
 import "../refs/UniRef.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-/// @title abstract implementation for Uniswap LP PCV Deposit
+/// @title implementation for Uniswap LP PCV Deposit
 /// @author Fei Protocol
 contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
     using Decimal for Decimal.D256;
-    using SafeMath for uint256;
 
     uint256 public override maxBasisPointsFromPegLP;
 
@@ -147,7 +145,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         internal
         returns (uint256)
     {
-        uint256 endOfTime = uint256(-1);
+        uint256 endOfTime = type(uint256).max;
         (, uint256 amountWithdrawn) =
             router.removeLiquidity(
                 address(fei()),
@@ -164,7 +162,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
     function _addLiquidity(uint256 tokenAmount, uint256 feiAmount) internal {
         _mintFei(feiAmount);
 
-        uint256 endOfTime = uint256(-1);
+        uint256 endOfTime = type(uint256).max;
         router.addLiquidity(
             address(fei()),
             token,
@@ -178,7 +176,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
     }
 
     function _getMinLiquidity(uint256 amount) internal view returns (uint256) {
-        return amount.mul(BASIS_POINTS_GRANULARITY.sub(maxBasisPointsFromPegLP)).div(BASIS_POINTS_GRANULARITY);
+        return amount * (BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP) / BASIS_POINTS_GRANULARITY;
     }
 
     /// @notice ratio of all pair liquidity owned by this contract
@@ -190,7 +188,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
 
     /// @notice approves a token for the router
     function _approveToken(address _token) internal {
-        uint256 maxTokens = uint256(-1);
+        uint256 maxTokens = type(uint256).max;
         IERC20(_token).approve(address(router), maxTokens);
     }
 

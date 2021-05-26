@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 import "./ICoreRef.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
 /// @title A Reference to Core
@@ -14,7 +13,7 @@ abstract contract CoreRef is ICoreRef, Pausable {
 
     /// @notice CoreRef constructor
     /// @param core Fei Core to reference
-    constructor(address core) public {
+    constructor(address core) {
         _core = ICore(core);
     }
 

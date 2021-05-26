@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/Math.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "./IBondingCurve.sol";
 import "../refs/OracleRef.sol";
 import "../pcv/PCVSplitter.sol";
@@ -52,7 +51,6 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         uint256 _duration,
         uint256 _incentive
     )
-        public
         OracleRef(_core, _oracle)
         PCVSplitter(_pcvDeposits, _ratios)
         Timed(_duration)
@@ -230,7 +228,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     }
 
     function _incrementTotalPurchased(uint256 amount) internal {
-        totalPurchased = totalPurchased.add(amount);
+        totalPurchased = totalPurchased + amount;
     }
 
     function _setScale(uint256 _scale) internal {

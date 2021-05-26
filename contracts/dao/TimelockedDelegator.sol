@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./ITimelockedDelegator.sol";
@@ -73,7 +72,7 @@ contract TimelockedDelegator is ITimelockedDelegator, LinearTokenTimelock {
 
         // withdraw and include an existing delegation
         if (delegateContract[delegatee] != address(0)) {
-            amount = amount.add(undelegate(delegatee));
+            amount = amount + undelegate(delegatee);
         }
 
         ITribe _tribe = tribe;
@@ -82,7 +81,7 @@ contract TimelockedDelegator is ITimelockedDelegator, LinearTokenTimelock {
         delegateContract[delegatee] = _delegateContract;
 
         delegateAmount[delegatee] = amount;
-        totalDelegated = totalDelegated.add(amount);
+        totalDelegated = totalDelegated + amount;
 
         _tribe.transfer(_delegateContract, amount);
 
@@ -107,7 +106,7 @@ contract TimelockedDelegator is ITimelockedDelegator, LinearTokenTimelock {
         Delegatee(_delegateContract).withdraw();
 
         uint256 amount = delegateAmount[delegatee];
-        totalDelegated = totalDelegated.sub(amount);
+        totalDelegated = totalDelegated - amount;
 
         delegateContract[delegatee] = address(0);
         delegateAmount[delegatee] = 0;
@@ -120,7 +119,7 @@ contract TimelockedDelegator is ITimelockedDelegator, LinearTokenTimelock {
     /// @notice calculate total TRIBE held plus delegated
     /// @dev used by LinearTokenTimelock to determine the released amount
     function totalToken() public view override returns (uint256) {
-        return _tribeBalance().add(totalDelegated);
+        return _tribeBalance() + totalDelegated;
     }
 
     /// @notice accept beneficiary role over timelocked TRIBE. Delegates all held (non-subdelegated) tribe to beneficiary
