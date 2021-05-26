@@ -1,19 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 import "../refs/CoreRef.sol";
 import "../utils/Timed.sol";
 import "./IRewardsDistributor.sol";
 import "../external/Decimal.sol";
-import { Math } from  "@openzeppelin/contracts/math/Math.sol";
-import { SafeMath } from  "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 /// @title Distributor for TRIBE rewards to the staking contract
 /// @author Fei Protocol
 /// @notice distributes TRIBE over time at a linearly decreasing rate
 contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
-    using SafeMath for uint256;
     using Decimal for Decimal.D256;
 
     uint256 public override distributedRewards;
@@ -32,7 +29,7 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
         uint256 _duration,
         uint256 _frequency,
         uint256 _incentiveAmount
-    ) public 
+    ) 
         CoreRef(_core) 
         Timed(_duration)
     {
@@ -54,7 +51,7 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
 
         uint256 amount = releasedReward();
         require(amount != 0, "FeiRewardsDistributor: no rewards");
-        distributedRewards = distributedRewards.add(amount);
+        distributedRewards = distributedRewards + amount;
 
         tribe().transfer(address(stakingContract), amount);
         stakingContract.notifyRewardAmount(amount);
@@ -98,7 +95,7 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
 
     /// @notice returns the block timestamp when drip will next be available
     function nextDripAvailable() public view override returns (uint256) {
-        return lastDistributionTime.add(dripFrequency);
+        return lastDistributionTime + dripFrequency;
     }
 
     /// @notice return true if the dripFrequency has passed since the last drip
@@ -110,12 +107,12 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
     function releasedReward() public view override returns (uint256) {
         uint256 total = rewardBalance();
         uint256 unreleased = unreleasedReward();
-        return total.sub(unreleased, "Pool: Released Reward underflow");
+        return total - unreleased;
     }
     
     /// @notice the total amount of rewards distributed by the contract over entire period
     function totalReward() public view override returns (uint256) {
-        return rewardBalance().add(distributedRewards);
+        return rewardBalance() + distributedRewards;
     }
 
     /// @notice the total balance of rewards owned by contract, locked or unlocked

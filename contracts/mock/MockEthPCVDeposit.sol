@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 import "../pcv/IPCVDeposit.sol";
 
@@ -9,7 +8,7 @@ contract MockEthPCVDeposit is IPCVDeposit {
 	address payable beneficiary;
     uint256 total = 0;
 
-	constructor(address payable _beneficiary) public {
+	constructor(address payable _beneficiary) {
 		beneficiary = _beneficiary;
 	}
 

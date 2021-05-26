@@ -1,15 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 import "../token/IIncentive.sol";
 import "../refs/CoreRef.sol";
 
 contract MockIncentive is IIncentive, CoreRef {
 
-	constructor(address core) public
-		CoreRef(core)
-	{}
+	constructor(address core) CoreRef(core) {}
 
     uint256 constant private INCENTIVE = 100;
 	bool public isMint = true;

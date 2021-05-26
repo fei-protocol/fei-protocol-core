@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
  
 import "./IPCVDeposit.sol"; 
 import "../refs/CoreRef.sol";
@@ -30,7 +29,7 @@ contract EthPCVDripper is CoreRef, Timed, IPCVDeposit {
        address payable _target,
        uint256 _frequency,
        uint256 _amountToDrip
-   ) public CoreRef(_core) Timed(_frequency) {
+   ) CoreRef(_core) Timed(_frequency) {
        target = _target;
        amountToDrip = _amountToDrip;
 

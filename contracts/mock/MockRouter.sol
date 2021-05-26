@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../external/Decimal.sol";
 import "./IMockUniswapV2PairLiquidity.sol";
 
@@ -14,7 +13,7 @@ contract MockRouter {
     IMockUniswapV2PairLiquidity private PAIR;
     address public WETH;
 
-    constructor(address pair) public {
+    constructor(address pair) {
         PAIR = IMockUniswapV2PairLiquidity(pair);
     }
 
@@ -80,6 +79,8 @@ contract MockRouter {
         uint112 newReserve0 = uint112(reserves0) + uint112(amountToken0Desired);
         uint112 newReserve1 = uint112(reserves1) + uint112(amountToken1Desired);
         PAIR.setReserves(newReserve0, newReserve1);
+
+        return (0, 0, liquidity);
     }
 
     function setWETH(address weth) public {

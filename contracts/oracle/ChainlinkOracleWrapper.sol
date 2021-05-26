@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 import "./IOracle.sol";
 import "../refs/CoreRef.sol";
@@ -11,7 +10,6 @@ import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
 /// @notice Reads a Chainlink oracle value & wrap it under the standard Fei oracle interface
 contract ChainlinkOracleWrapper is IOracle, CoreRef {
     using Decimal for Decimal.D256;
-    using SafeMath for uint256;
 
     /// @notice the referenced chainlink oracle
     AggregatorV3Interface public chainlinkOracle;
@@ -23,7 +21,7 @@ contract ChainlinkOracleWrapper is IOracle, CoreRef {
     constructor(
         address _core,
         address _chainlinkOracle
-    ) public CoreRef(_core) {
+    ) CoreRef(_core) {
         chainlinkOracle = AggregatorV3Interface(_chainlinkOracle);
 
         _init();
@@ -36,13 +34,13 @@ contract ChainlinkOracleWrapper is IOracle, CoreRef {
 
     /// @notice updates the oracle price
     /// @return true if oracle is updated and false if unchanged
-    function update() external override whenNotPaused returns (bool) {
+    function update() external view override whenNotPaused returns (bool) {
         return false;
     }
 
     /// @notice determine if read value is stale
     /// @return true if read value is stale
-    function isOutdated() external view override returns (bool) {
+    function isOutdated() external pure override returns (bool) {
         return false;
     }
 

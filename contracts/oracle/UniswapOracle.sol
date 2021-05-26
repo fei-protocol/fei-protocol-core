@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 // Referencing Uniswap Example Simple Oracle
 // https://github.com/Uniswap/uniswap-v2-periphery/blob/master/contracts/examples/ExampleOracleSimple.sol
@@ -14,7 +13,6 @@ import "../external/UniswapV2OracleLibrary.sol";
 /// @notice maintains the TWAP of a uniswap pair contract over a specified duration
 contract UniswapOracle is IUniswapOracle, CoreRef {
     using Decimal for Decimal.D256;
-    using SafeMath for uint256;
 
     /// @notice the referenced uniswap pair contract
     IUniswapV2Pair public override pair;
@@ -44,7 +42,7 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
         address _pair,
         uint256 _duration,
         bool _isPrice0
-    ) public CoreRef(_core) {
+    ) CoreRef(_core) {
         pair = IUniswapV2Pair(_pair);
         // Relative to USD per ETH price
         isPrice0 = _isPrice0;
@@ -63,14 +61,22 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
             uint32 currentTimestamp
         ) = UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
 
-        uint32 deltaTimestamp = currentTimestamp - priorTimestamp; // allowing underflow per Uniswap Oracle spec
+        uint32 deltaTimestamp;
+        unchecked {
+            deltaTimestamp = currentTimestamp - priorTimestamp; // allowing underflow per Uniswap Oracle spec
+        }
+
         if (deltaTimestamp < duration) {
             return false;
         }
 
         uint256 currentCumulative = _getCumulative(price0Cumulative, price1Cumulative);
-        uint256 deltaCumulative =
-            (currentCumulative - priorCumulative).mul(USDC_DECIMALS_MULTIPLIER); // allowing underflow per Uniswap Oracle spec
+        
+        uint256 deltaCumulative;
+        unchecked {
+            deltaCumulative = (currentCumulative - priorCumulative); // allowing underflow per Uniswap Oracle spec
+        }
+        deltaCumulative = deltaCumulative * USDC_DECIMALS_MULTIPLIER; 
 
         // Uniswap stores cumulative price variables as a fixed point 112x112 so we need to divide out the granularity
         Decimal.D256 memory _twap =

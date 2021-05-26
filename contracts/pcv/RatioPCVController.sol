@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 import "../refs/CoreRef.sol";
 import "./IPCVDeposit.sol";
@@ -17,7 +16,7 @@ contract RatioPCVController is CoreRef {
     /// @param _core Fei Core for reference
     constructor(
         address _core
-    ) public CoreRef(_core) {}
+    ) CoreRef(_core) {}
 
     /// @notice withdraw tokens from the input PCV deposit in basis points terms
     /// @param to the address to send PCV to

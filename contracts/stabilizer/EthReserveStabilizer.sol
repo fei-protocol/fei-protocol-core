@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 import "./ReserveStabilizer.sol";
 
@@ -12,7 +11,7 @@ contract EthReserveStabilizer is ReserveStabilizer {
         address _core,
         address _oracle,
         uint256 _usdPerFeiBasisPoints
-    ) public ReserveStabilizer(_core, _oracle, IERC20(address(0)), _usdPerFeiBasisPoints) {}
+    ) ReserveStabilizer(_core, _oracle, IERC20(address(0)), _usdPerFeiBasisPoints) {}
 
     receive() external payable {}
 

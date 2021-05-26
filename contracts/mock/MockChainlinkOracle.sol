@@ -1,25 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
 
 contract MockChainlinkOracle is AggregatorV3Interface {
 
     // fixed value
-    int256 public _value;
-    uint8 public _decimals;
+    int256 public value;
+    uint8 public override decimals;
 
-    constructor(int256 value, uint8 decimals) public {
-        _value = value;
-        _decimals = decimals;
+    constructor(int256 _value, uint8 _decimals) {
+        value = _value;
+        decimals = _decimals;
     }
 
-    function decimals() external override view returns (uint8) {
-      return _decimals;
-    }
-
-    function description() external override view returns (string memory) {
+    function description() external override pure returns (string memory) {
       return "MockChainlinkOracle";
     }
 
@@ -30,7 +25,7 @@ contract MockChainlinkOracle is AggregatorV3Interface {
         uint256 updatedAt,
         uint80 answeredInRound
     ) {
-      return (_roundId, _value, 1620651856, 1620651856, _roundId);
+      return (_roundId, value, 1620651856, 1620651856, _roundId);
     }
 
     function latestRoundData() external override view returns (
@@ -40,10 +35,10 @@ contract MockChainlinkOracle is AggregatorV3Interface {
         uint256 updatedAt,
         uint80 answeredInRound
     ) {
-      return (42, _value, 1620651856, 1620651856, 42);
+      return (42, value, 1620651856, 1620651856, 42);
     }
 
-    function version() external override view returns (uint256) {
+    function version() external override pure returns (uint256) {
       return 1;
     }
 }

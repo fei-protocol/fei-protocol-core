@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@uniswap/lib/contracts/libraries/FixedPoint.sol";
 
@@ -18,7 +18,7 @@ contract MockUniswapV2PairTrade {
         uint32 _blockTimestampLast,
         uint112 r0,
         uint112 r1
-    ) public {
+    ) {
         set(_price0CumulativeLast, _price1CumulativeLast, _blockTimestampLast);
         setReserves(r0, r1);
     }

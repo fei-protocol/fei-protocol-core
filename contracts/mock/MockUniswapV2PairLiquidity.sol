@@ -15,10 +15,9 @@
 */
 
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../external/Decimal.sol";
 import "@uniswap/lib/contracts/libraries/FixedPoint.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -33,7 +32,7 @@ contract MockUniswapV2PairLiquidity {
     address public token0;
     address public token1;
 
-    constructor(address _token0, address _token1) public {
+    constructor(address _token0, address _token1) {
         token0 = _token0;
         token1 = _token1;
     } 
@@ -92,7 +91,7 @@ contract MockUniswapV2PairLiquidity {
         IERC20(token1).transfer(to, amount1);
     }
 
-    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external { 
+    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata) external { 
         if (amount0Out != 0) {
             IERC20(token0).transfer(to, amount0Out);
         }

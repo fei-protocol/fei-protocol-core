@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/Math.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "./IUniswapPCVController.sol";
 import "../refs/UniRef.sol";
@@ -15,7 +14,6 @@ import "../utils/Timed.sol";
 contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     using Decimal for Decimal.D256;
     using Babylonian for uint256;
-    using SafeMath for uint256;
 
     uint256 internal _reweightDuration = 4 hours;
 
@@ -42,7 +40,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         uint256 _incentiveAmount,
         uint256 _minDistanceForReweightBPs,
         address _pair
-    ) public UniRef(_core, _pair, _oracle) Timed(_reweightDuration) {
+    ) UniRef(_core, _pair, _oracle) Timed(_reweightDuration) {
         pcvDeposit = IPCVDeposit(_pcvDeposit);
 
         reweightIncentiveAmount = _incentiveAmount;
@@ -171,7 +169,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         uint256 targetAmount = _peg.mul(tokenReserves).asUint256();
 
         // burn the excess FEI not needed from the pool
-        uint256 burnAmount = feiReserves.sub(targetAmount);
+        uint256 burnAmount = feiReserves - targetAmount;
         fei().burnFrom(address(pair), burnAmount);
 
         // sync the pair to restore the reserves 
@@ -232,9 +230,9 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         uint256 radicand = peg.mul(reserveTarget).mul(reserveOther).asUint256();
         uint256 root = radicand.sqrt();
         if (root > reserveTarget) {
-            return (root - reserveTarget).mul(1000).div(997); // divide to include the .3% uniswap fee
+            return (root - reserveTarget) * 1000 / 997; // divide to include the .3% uniswap fee
         }
-        return (reserveTarget - root).mul(1000).div(997); // divide to include the .3% uniswap fee
+        return (reserveTarget - root) * 1000 / 997; // divide to include the .3% uniswap fee
     }
 
     /// @notice calculate amount of Fei needed to trade back to the peg

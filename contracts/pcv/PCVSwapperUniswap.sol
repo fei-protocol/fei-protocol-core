@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 import "./IPCVSwapper.sol";
 import "../refs/OracleRef.sol";
 import "../utils/Timed.sol";
 import "../external/UniswapV2Library.sol";
-import "@openzeppelin/contracts/math/Math.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 
@@ -17,7 +16,6 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     using SafeERC20 for ERC20;
     using Decimal for Decimal.D256;
-    using SafeMath for uint256;
 
     /// @notice the token to spend on swap (outbound)
     address private tokenSpent;
@@ -57,7 +55,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
         uint256 _maximumSlippageBasisPoints,
         bool _invertOraclePrice,
         uint256 _swapIncentiveAmount
-    ) public OracleRef(_core, _oracle) Timed(_swapFrequency) {
+    ) OracleRef(_core, _oracle) Timed(_swapFrequency) {
         pair = _pair;
         WETH = _WETH;
         tokenSpent = _tokenSpent;

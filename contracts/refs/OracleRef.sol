@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 import "./IOracleRef.sol";
 import "./CoreRef.sol";
@@ -17,7 +16,7 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     /// @notice OracleRef constructor
     /// @param _core Fei Core to reference
     /// @param _oracle oracle to reference
-    constructor(address _core, address _oracle) public CoreRef(_core) {
+    constructor(address _core, address _oracle) CoreRef(_core) {
         _setOracle(_oracle);
     }
 
