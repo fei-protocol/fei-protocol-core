@@ -71,6 +71,7 @@ contract EthPCVDripper is CoreRef, Timed, IPCVDeposit {
        emit Dripped(amountToDrip);
    }
 
+    /// @notice get the balance of ETH held by the contract
     function balance() public view override returns (uint256) {
         return address(this).balance;
     }

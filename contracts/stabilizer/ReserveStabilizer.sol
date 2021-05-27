@@ -5,7 +5,7 @@ import "./IReserveStabilizer.sol";
 import "../pcv/IPCVDeposit.sol";
 import "../refs/OracleRef.sol";
 
-/// @title implementation for an ETH Reserve Stabilizer
+/// @title implementation for an ERC20 Reserve Stabilizer
 /// @author Fei Protocol
 contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
     using Decimal for Decimal.D256;
@@ -31,7 +31,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
         token = _token;
     }
 
-    /// @notice exchange FEI for ETH from the reserves
+    /// @notice exchange FEI for tokens from the reserves
     /// @param feiAmount of FEI to sell
     function exchangeFei(uint256 feiAmount) external override whenNotPaused returns (uint256 amountOut) {
         updateOracle();
@@ -44,16 +44,16 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
         emit FeiExchange(msg.sender, feiAmount, amountOut);
     }
 
-    /// @notice returns the amount out of ETH from the reserves
+    /// @notice returns the amount out of tokens from the reserves for a given amount of FEI
     /// @param amountFeiIn the amount of FEI in
     function getAmountOut(uint256 amountFeiIn) public view override returns(uint256) {
         uint256 adjustedAmountIn = amountFeiIn * usdPerFeiBasisPoints / BASIS_POINTS_GRANULARITY;
         return invert(readOracle()).mul(adjustedAmountIn).asUint256();
     }
 
-    /// @notice withdraw ETH from the reserves
-    /// @param to address to send ETH
-    /// @param amountOut amount of ETH to send
+    /// @notice withdraw tokens from the reserves
+    /// @param to address to send tokens
+    /// @param amountOut amount of tokens to send
     function withdraw(address to, uint256 amountOut) external virtual override onlyPCVController {
         _transfer(to, amountOut);
         emit Withdrawal(msg.sender, to, amountOut);

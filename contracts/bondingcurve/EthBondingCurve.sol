@@ -45,6 +45,7 @@ contract EthBondingCurve is BondingCurve {
         return _purchase(amountIn, to);
     }
 
+    /// @notice get the balance of ETH held by the contract and ready to be allocated
     function balance() public view override returns (uint256) {
         return address(this).balance;
     }

@@ -9,7 +9,7 @@ import "../pcv/PCVSplitter.sol";
 import "../pcv/IPCVDeposit.sol";
 import "../utils/Timed.sol";
 
-/// @title a bonding curve for purchasing FEI
+/// @title a bonding curve for purchasing FEI with ERC-20 tokens
 /// @author Fei Protocol
 contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     using Decimal for Decimal.D256;
@@ -18,7 +18,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     uint256 public override scale;
 
     /// @notice the ERC20 token for this bonding curve
-    IERC20 public token;
+    IERC20 public override token;
 
     /// @notice the total amount of FEI purchased on bonding curve. FEI_b from the whitepaper
     uint256 public override totalPurchased; // FEI_b for this curve

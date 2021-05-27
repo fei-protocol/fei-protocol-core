@@ -9,7 +9,7 @@ import "../refs/UniRef.sol";
 import "../external/UniswapV2Library.sol";
 import "../utils/Timed.sol";
 
-/// @title a IUniswapPCVController implementation for ETH
+/// @title a PCV controller for reweighting the Uniswap pair price to a peg
 /// @author Fei Protocol
 contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     using Decimal for Decimal.D256;
@@ -24,7 +24,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     uint256 public override reweightIncentiveAmount;
     Decimal.D256 internal _minDistanceForReweight;
 
-    /// @notice EthUniswapPCVController constructor
+    /// @notice UniswapPCVController constructor
     /// @param _core Fei Core for reference
     /// @param _pcvDeposit PCV Deposit to reweight
     /// @param _oracle oracle for reference
@@ -57,7 +57,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     function reweight() external override whenNotPaused {
         require(
             reweightEligible(),
-            "EthUniswapPCVController: Not passed reweight time or not at min distance"
+            "UniswapPCVController: Not passed reweight time or not at min distance"
         );
         _reweight();
         _incentivize();

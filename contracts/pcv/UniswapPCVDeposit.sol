@@ -102,6 +102,8 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         emit WithdrawERC20(msg.sender, address(token), to, amount);
     }
     
+    /// @notice sets the new slippage parameter for depositing liquidity
+    /// @param _maxBasisPointsFromPegLP the new distance in basis points (1/10000) from peg beyond which a liquidity provision will fail 
     function setMaxBasisPointsFromPegLP(uint256 _maxBasisPointsFromPegLP) public override onlyGovernor {
         require(_maxBasisPointsFromPegLP <= BASIS_POINTS_GRANULARITY, "UniswapPCVDeposit: basis points from peg too high");
 
@@ -121,7 +123,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         _approveToken(_pair);
     }
 
-    /// @notice returns total balance of PCV in the Deposit
+    /// @notice returns total balance of PCV in the Deposit excluding the FEI
     function balance() public view override returns (uint256) {
         (, uint256 tokenReserves) = getReserves();
         return _ratioOwned().mul(tokenReserves).asUint256();
@@ -175,6 +177,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         );
     }
 
+    /// @notice used as slippage protection when adding liquidity to the pool
     function _getMinLiquidity(uint256 amount) internal view returns (uint256) {
         return amount * (BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP) / BASIS_POINTS_GRANULARITY;
     }
