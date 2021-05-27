@@ -112,7 +112,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     /// @notice signal whether the reweight is available. Must have incentive parity and minimum distance from peg
     function reweightEligible() public view override returns (bool) {
         bool magnitude =
-            _getDistanceToreadOracle().greaterThan(_minDistanceForReweight);
+            _getDistanceToPeg().greaterThan(_minDistanceForReweight);
         // incentive parity is achieved after a certain time relative to distance from peg
         bool time = isTimeEnded();
         return magnitude && time;
@@ -274,7 +274,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
 
     /// @notice return current percent distance from peg
     /// @dev will return Decimal.zero() if above peg
-    function _getDistanceToreadOracle()
+    function _getDistanceToPeg()
         internal
         view
         returns (Decimal.D256 memory distance)
