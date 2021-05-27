@@ -75,20 +75,6 @@ const {
       });
       describe('Setters', function() {
         describe('As Governor', function() {
-          it('setTokenSpent() emit UpdateTokenSpent', async function() {
-            await expectEvent(
-              await this.swapper.setTokenSpent('0x6B175474E89094C44Da98b954EedeAC495271d0F', {from: governorAddress}),
-              'UpdateTokenSpent',
-              { _tokenFrom: '0x6B175474E89094C44Da98b954EedeAC495271d0F' }
-            );
-          });
-          it('setTokenReceived() emit UpdateTokenReceived', async function() {
-            await expectEvent(
-              await this.swapper.setTokenReceived('0x6B175474E89094C44Da98b954EedeAC495271d0F', {from: governorAddress}),
-              'UpdateTokenReceived',
-              { _tokenTo: '0x6B175474E89094C44Da98b954EedeAC495271d0F' }
-            );
-          });
           it('setReceivingAddress() emit UpdateReceivingAddress', async function() {
             await expectEvent(
               await this.swapper.setReceivingAddress(userAddress, {from: governorAddress}),
@@ -98,18 +84,6 @@ const {
           });
         });
         describe('As Anyone', function() {
-          it('revert setTokenSpent() onlyGovernor', async function() {
-            await expectRevert(
-              this.swapper.setTokenSpent('0x6B175474E89094C44Da98b954EedeAC495271d0F'),
-              'CoreRef: Caller is not a governor.'
-            );
-          });
-          it('revert setTokenReceived() onlyGovernor', async function() {
-            await expectRevert(
-              this.swapper.setTokenReceived('0x6B175474E89094C44Da98b954EedeAC495271d0F'),
-              'CoreRef: Caller is not a governor.'
-            );
-          });
           it('revert setReceivingAddress() onlyGovernor', async function() {
             await expectRevert(
               this.swapper.setReceivingAddress(userAddress),

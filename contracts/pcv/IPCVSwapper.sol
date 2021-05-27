@@ -5,8 +5,6 @@ pragma solidity ^0.6.2;
 interface IPCVSwapper {
 
     // ----------- Events -----------
-    event UpdateTokenSpent(address _tokenFrom);
-    event UpdateTokenReceived(address _tokenTo);
     event UpdateReceivingAddress(address _tokenReceivingAddress);
 
     event Swap(
@@ -41,8 +39,6 @@ interface IPCVSwapper {
 
     // ----------- Governor only state changing api -----------
 
-    function setTokenSpent(address _tokenSpent) external;
-    function setTokenReceived(address _tokenReceived) external;
     function setReceivingAddress(address _tokenReceivingAddress) external;
 
     // ----------- Getters -----------

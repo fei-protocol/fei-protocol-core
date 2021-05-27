@@ -21,9 +21,9 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     using SafeMath for uint256;
 
     /// @notice the token to spend on swap (outbound)
-    address public override tokenSpent;
+    address public immutable override tokenSpent;
     /// @notice the token to receive on swap (inbound)
-    address public override tokenReceived;
+    address public immutable override tokenReceived;
     /// @notice the address that will receive the inbound tokens
     address public override tokenReceivingAddress;
     /// @notice the maximum amount of tokens to spend on every swap
@@ -67,9 +67,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
         invertOraclePrice = _invertOraclePrice;
         swapIncentiveAmount = _swapIncentiveAmount;
 
-        emit UpdateTokenSpent(_tokenSpent);
-        emit UpdateTokenReceived(_tokenReceived);
-
         // start timer
         _initTimed();
     }
@@ -101,20 +98,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     function withdrawERC20(address to, address token, uint256 amount) external override onlyPCVController {
         ERC20(token).safeTransfer(to, amount);
         emit WithdrawERC20(msg.sender, to, token, amount);
-    }
-
-    /// @notice Sets the token to spend
-    /// @param _tokenSpent the address of the token to spend
-    function setTokenSpent(address _tokenSpent) external override onlyGovernor {
-        tokenSpent = _tokenSpent;
-        emit UpdateTokenSpent(_tokenSpent);
-    }
-
-    /// @notice Sets the token to receive
-    /// @param _tokenReceived the address of the token to receive
-    function setTokenReceived(address _tokenReceived) external override onlyGovernor {
-      tokenReceived = _tokenReceived;
-      emit UpdateTokenReceived(_tokenReceived);
     }
 
     /// @notice Sets the address receiving swap's inbound tokens
