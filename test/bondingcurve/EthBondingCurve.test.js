@@ -646,6 +646,25 @@ describe('EthBondingCurve', function () {
     });
   });
 
+  describe('Discount', function() {
+    it('Governor set succeeds', async function() {
+      expectEvent(
+        await this.bondingCurve.setDiscount(1000, {from: governorAddress}),
+        'DiscountUpdate',
+        {_discount: new BN(1000)}
+      );
+      expect(await this.bondingCurve.discount()).to.be.bignumber.equal(new BN(1000));
+    });
+
+    it('Governor set outside range reverts', async function() {
+      await expectRevert(this.bondingCurve.setDiscount(10000, {from: governorAddress}), "BondingCurve: Buffer exceeds or matches granularity");
+    });
+
+    it('Non-governor set reverts', async function() {
+      await expectRevert(this.bondingCurve.setDiscount(1000, {from: userAddress}), "CoreRef: Caller is not a governor");
+    });
+  });
+
   describe('Core', function() {
     it('Governor set succeeds', async function() {
       expectEvent(

@@ -240,6 +240,16 @@ describe('UniswapPCVController', function () {
     });
   });
 
+  describe('Deviation Below Peg', function() {
+    it('above returns 0', async function() {
+      expect((await this.pcvController.deviationBelowPeg(['400'], ['500']))[0]).to.be.equal('0');
+    });
+
+    it('below returns appropriate value', async function() {
+      expect((await this.pcvController.deviationBelowPeg(['500'], ['400']))[0]).to.be.equal('250000000000000000');
+    });
+  });
+
   describe('Access', function() {
     describe('Force Reweight', function() {
       it('Non-governor call fails', async function() {
@@ -274,6 +284,17 @@ describe('UniswapPCVController', function () {
 
       it('Non-governor set reverts', async function() {
         await expectRevert(this.pcvController.setReweightMinDistance(50, {from: userAddress}), "CoreRef: Caller is not a governor");
+      });
+    });
+
+    describe('Duration', function() {
+      it('Governor set succeeds', async function() {
+        await this.pcvController.setDuration(10, {from: governorAddress});
+        expect(await this.pcvController.duration()).to.be.bignumber.equal('10');
+      });
+
+      it('Non-governor set reverts', async function() {
+        await expectRevert(this.pcvController.setDuration('10', {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
 

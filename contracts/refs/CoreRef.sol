@@ -23,12 +23,6 @@ abstract contract CoreRef is ICoreRef, Pausable {
         }
     }
 
-    modifier ifBurnerSelf() {
-        if (_core.isBurner(address(this))) {
-            _;
-        }
-    }
-
     modifier onlyMinter() {
         require(_core.isMinter(msg.sender), "CoreRef: Caller is not a minter");
         _;

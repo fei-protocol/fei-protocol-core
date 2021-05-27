@@ -45,7 +45,7 @@ const {
         userAddress, // tokenReceivingAddress
         '100'+e18, // maxSpentPerSwap
         '300', // maximumSlippageBasisPoints
-        false, // invertOraclePrice
+        // false, // invertOraclePrice
         '200'+e18 // swap incentive = 200 FEI
       );
 
