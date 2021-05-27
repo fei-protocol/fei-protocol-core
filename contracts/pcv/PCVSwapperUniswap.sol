@@ -31,7 +31,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     /// @notice should we use (1 / oraclePrice) instead of oraclePrice ?
     bool public invertOraclePrice;
     /// @notice the incentive for calling swap() function, in FEI
-    uint256 public swapIncentiveAmount;
+    uint256 public immutable swapIncentiveAmount;
     /// @notice the maximum amount of slippage vs oracle price
     uint256 public maximumSlippageBasisPoints;
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
