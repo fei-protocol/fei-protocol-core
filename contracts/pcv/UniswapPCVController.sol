@@ -15,8 +15,6 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     using Decimal for Decimal.D256;
     using Babylonian for uint256;
 
-    uint256 internal _reweightDuration = 4 hours;
-
     uint256 internal constant BASIS_POINTS_GRANULARITY = 10000;
 
     /// @notice returns the linked pcv deposit contract
@@ -33,14 +31,16 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     /// @param _incentiveAmount amount of FEI for triggering a reweight
     /// @param _minDistanceForReweightBPs minimum distance from peg to reweight in basis points
     /// @param _pair Uniswap pair contract to reweight
+    /// @param _reweightFrequency the frequency between reweights
     constructor(
         address _core,
         address _pcvDeposit,
         address _oracle,
         uint256 _incentiveAmount,
         uint256 _minDistanceForReweightBPs,
-        address _pair
-    ) UniRef(_core, _pair, _oracle) Timed(_reweightDuration) {
+        address _pair,
+        uint256 _reweightFrequency
+    ) UniRef(_core, _pair, _oracle) Timed(_reweightFrequency) {
         pcvDeposit = IPCVDeposit(_pcvDeposit);
 
         reweightIncentiveAmount = _incentiveAmount;

@@ -38,7 +38,8 @@ describe('UniswapPCVController', function () {
       this.oracle.address, 
       '100000000000000000000',
       '100',
-      this.pair.address
+      this.pair.address,
+      '14400'
     );
     await this.core.grantBurner(this.pcvController.address, {from: governorAddress});
     await this.core.grantMinter(this.pcvController.address, {from: governorAddress});
