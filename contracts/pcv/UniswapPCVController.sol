@@ -109,13 +109,30 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
        _setDuration(_duration);
     }
 
-    /// @notice signal whether the reweight is available. Must have incentive parity and minimum distance from peg
+    /// @notice signal whether the reweight is available. Must have passed reweight frequency and minimum distance from peg
     function reweightEligible() public view override returns (bool) {
         bool magnitude =
-            _getDistanceToPeg().greaterThan(_minDistanceForReweight);
-        // incentive parity is achieved after a certain time relative to distance from peg
+            getDistanceToPeg().greaterThan(_minDistanceForReweight);
         bool time = isTimeEnded();
         return magnitude && time;
+    }
+
+    /// @notice return current percent distance from peg
+    function getDistanceToPeg()
+        public
+        view
+        override
+        returns (Decimal.D256 memory distance)
+    {
+        (Decimal.D256 memory price, , ) = _getUniswapPrice();
+        Decimal.D256 memory peg = readOracle();
+        Decimal.D256 memory delta;
+        if (price.lessThanOrEqualTo(peg)) {
+            delta = peg.sub(price);
+        } else {
+            delta = price.sub(peg);
+        }
+        return delta.div(peg);
     }
 
     /// @notice minimum distance as a percentage from the peg for a reweight to be eligible
@@ -126,15 +143,6 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         returns (Decimal.D256 memory)
     {
         return _minDistanceForReweight;
-    }
-
-    /// @notice get deviation from peg as a percent given price
-    /// @dev will return Decimal.zero() if above peg
-    function deviationBelowPeg(
-        Decimal.D256 calldata price,
-        Decimal.D256 calldata peg
-    ) external pure returns (Decimal.D256 memory) {
-        return _deviationBelowPeg(price, peg);
     }
 
     function _incentivize() internal ifMinterSelf {
@@ -270,31 +278,5 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     function _isBelowPeg(Decimal.D256 memory peg) internal view returns (bool) {
         (Decimal.D256 memory price, , ) = _getUniswapPrice();
         return peg.lessThan(price);
-    }
-
-    /// @notice return current percent distance from peg
-    /// @dev will return Decimal.zero() if above peg
-    function _getDistanceToPeg()
-        internal
-        view
-        returns (Decimal.D256 memory distance)
-    {
-        (Decimal.D256 memory price, , ) = _getUniswapPrice();
-        return _deviationBelowPeg(price, readOracle());
-    }
-
-    /// @notice get deviation from peg as a percent given price
-    /// @dev will return Decimal.zero() if above peg
-    function _deviationBelowPeg(
-        Decimal.D256 memory price,
-        Decimal.D256 memory peg
-    ) internal pure returns (Decimal.D256 memory) {
-        // If price <= peg, then FEI is more expensive and above peg
-        // In this case we can just return zero for deviation
-        if (price.lessThanOrEqualTo(peg)) {
-            return Decimal.zero();
-        }
-        Decimal.D256 memory delta = price.sub(peg, "Impossible underflow");
-        return delta.div(peg);
     }
 }

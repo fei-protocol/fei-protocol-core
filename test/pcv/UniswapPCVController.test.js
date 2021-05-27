@@ -10,7 +10,8 @@ const {
   time,
   expect,
   contract,
-  getCore
+  getCore,
+  burnerAddress
 } = require('../helpers');
 
 const UniswapPCVController = contract.fromArtifact('UniswapPCVController');
@@ -62,7 +63,7 @@ describe('UniswapPCVController', function () {
     describe('At peg', function() {
       beforeEach(async function() {
         await this.token.mint(this.pcvDeposit.address, 100000);
-        await this.pair.set(100000, 50000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 500:1 FEI/ETH with 10k liquidity
+        await this.pair.set(100000, 50000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 500:1 FEI/token with 10k liquidity
       });
 
       it('reverts', async function() {
@@ -74,7 +75,7 @@ describe('UniswapPCVController', function () {
       beforeEach(async function() {
         await this.token.mint(this.pcvDeposit.address, 100000);
         await this.token.mint(this.pair.address, 100000);
-        await this.pair.set(100000, 49000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/ETH with 10k liquidity
+        await this.pair.set(100000, 49000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
         expectEvent(
           await this.pcvController.forceReweight({from: guardianAddress}),
           'Reweight',
@@ -97,7 +98,7 @@ describe('UniswapPCVController', function () {
         beforeEach(async function() {
           await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
           await this.token.mint(this.pcvDeposit.address, 100000);
-          await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/ETH with 10k liquidity
+          await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
           expectEvent(
             await this.pcvController.forceReweight({from: guardianAddress}),
             'Reweight',
@@ -105,10 +106,10 @@ describe('UniswapPCVController', function () {
           );
         });
 
-        it('pair gets no ETH in swap', async function() {
+        it('pair gets no token in swap', async function() {
           expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
         });
-        it('pcvDeposit ETH value remains constant', async function() {
+        it('pcvDeposit token value remains constant', async function() {
           expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
         });
         it('pair FEI balance rebases', async function() {
@@ -122,7 +123,7 @@ describe('UniswapPCVController', function () {
         await this.token.mint(this.pcvDeposit.address, 100000);
         await this.oracle.setExchangeRate(400);
         await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
-        await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/ETH with 10k liquidity
+        await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
         expectEvent(
           await this.pcvController.forceReweight({from: guardianAddress}),
           'Reweight',
@@ -130,10 +131,10 @@ describe('UniswapPCVController', function () {
         );
       });
 
-      it('pair gets no ETH in swap', async function() {
+      it('pair gets no token in swap', async function() {
         expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
       });
-      it('pcvDeposit ETH value remains constant', async function() {
+      it('pcvDeposit token value remains constant', async function() {
         expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
       });
       it('pair FEI balance rebases', async function() {
@@ -153,13 +154,13 @@ describe('UniswapPCVController', function () {
     describe('Not yet at time', function () {
       beforeEach(async function() {
         await this.token.mint(this.pair.address, 100000);
-        await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/ETH with 10k liquidity
+        await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/token with 10k liquidity
       });
 
       it('reverts', async function() {
         expect(await this.pcvController.isTimeEnded()).to.be.equal(false);
         expect(await this.pcvController.reweightEligible()).to.be.equal(false);
-        await expectRevert(this.pcvController.reweight(), "EthUniswapPCVController: Not passed reweight time or not at min distance");
+        await expectRevert(this.pcvController.reweight(), "UniswapPCVController: Not passed reweight time or not at min distance");
       })
 
       describe('After time period passes', function() {
@@ -188,29 +189,51 @@ describe('UniswapPCVController', function () {
     describe('Not at min distance', function () {
       it('reverts', async function() {
         await this.token.mint(this.pair.address, 100000);
-        await this.pair.set(100000, 50400000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 504:1 FEI/ETH with 10k liquidity
+        await this.pair.set(100000, 50400000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 504:1 FEI/token with 10k liquidity
         await time.increase(new BN('14400'));
 
         expect(await this.pcvController.reweightEligible()).to.be.equal(false);
-        await expectRevert(this.pcvController.reweight(), "EthUniswapPCVController: Not passed reweight time or not at min distance");
+        await expectRevert(this.pcvController.reweight(), "UniswapPCVController: Not passed reweight time or not at min distance");
       })
+    });
+
+    describe('Above peg', function() {
+      beforeEach(async function() {
+        await this.fei.burnFrom(this.pair.address, 1000000, {from: burnerAddress}); // burn down to 49m
+        await this.token.mint(this.pcvDeposit.address, 100000);
+        await this.token.mint(this.pair.address, 100000);
+        await this.pair.set(100000, 49000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
+        await time.increase(new BN('14400'));
+        expect(await this.pcvController.reweightEligible()).to.be.equal(true);
+        await this.pcvController.reweight({from: userAddress});
+      });
+
+      it('pair loses some tokens in swap', async function() {
+        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(98995));
+      });
+      it('pcvDeposit tokens value goes up', async function() {
+        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(101005));
+      });
+      it('pair FEI balance rebases', async function() {
+        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(49498970));
+      });
     });
 
     describe('No incentive for caller if controller not minter', function() {
         beforeEach(async function() {
           await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
           await this.token.mint(this.pcvDeposit.address, 100000);
-          await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/ETH with 10k liquidity
+          await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/token with 10k liquidity
           await time.increase(new BN('14400'));
           await this.core.revokeMinter(this.pcvController.address, {from: governorAddress});     
           expect(await this.pcvController.reweightEligible()).to.be.equal(true);
           await this.pcvController.reweight({from: userAddress});
         });
 
-        it('pair gets no ETH in swap', async function() {
+        it('pair gets no tokens in swap', async function() {
           expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
         });
-        it('pcvDeposit ETH value remains constant', async function() {
+        it('pcvDeposit tokens value remains constant', async function() {
           expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
         });
         it('pair FEI balance rebases', async function() {
@@ -222,32 +245,22 @@ describe('UniswapPCVController', function () {
         beforeEach(async function() {
           await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
           await this.token.mint(this.pcvDeposit.address, 100000);
-          await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/ETH with 10k liquidity
+          await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
           await time.increase(new BN('14400'));
           await this.core.grantMinter(this.pcvController.address, {from: governorAddress});     
           expect(await this.pcvController.reweightEligible()).to.be.equal(true);
           await this.pcvController.reweight({from: userAddress});
         });
 
-        it('pair gets no ETH in swap', async function() {
+        it('pair gets no tokens in swap', async function() {
           expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
         });
-        it('pcvDeposit ETH value remains constant', async function() {
+        it('pcvDeposit token value remains constant', async function() {
           expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
         });
         it('pair FEI balance rebases', async function() {
           expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(50000000));
         });
-    });
-  });
-
-  describe('Deviation Below Peg', function() {
-    it('above returns 0', async function() {
-      expect((await this.pcvController.deviationBelowPeg(['400'], ['500']))[0]).to.be.equal('0');
-    });
-
-    it('below returns appropriate value', async function() {
-      expect((await this.pcvController.deviationBelowPeg(['500'], ['400']))[0]).to.be.equal('250000000000000000');
     });
   });
 

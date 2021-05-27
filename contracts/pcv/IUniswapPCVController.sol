@@ -42,6 +42,11 @@ interface IUniswapPCVController {
 
     function reweightEligible() external view returns (bool);
 
+    function getDistanceToPeg()
+        external
+        view
+        returns (Decimal.D256 memory);
+        
     function minDistanceForReweight()
         external
         view
