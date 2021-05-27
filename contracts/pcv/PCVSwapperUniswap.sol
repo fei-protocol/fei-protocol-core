@@ -37,7 +37,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice Uniswap pair to swap on
-    IUniswapV2Pair public pair;
+    IUniswapV2Pair public immutable pair;
 
     // solhint-disable-next-line var-name-mixedcase
     IWETH public immutable WETH;
