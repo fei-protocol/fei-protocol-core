@@ -237,10 +237,10 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
       bool direction;
       if (decimalsTokenSpent >= decimalsTokenReceived) {
         direction = true;
-        n = Decimal.from(10).pow(decimalsTokenSpent - decimalsTokenReceived).asUint256();
+        n = uint256(10)**(decimalsTokenSpent - decimalsTokenReceived);
       } else {
         direction = false;
-        n = Decimal.from(10).pow(decimalsTokenReceived - decimalsTokenSpent).asUint256();
+        n = uint256(10)**(decimalsTokenReceived - decimalsTokenSpent);
       }
       return (n, direction);
     }
