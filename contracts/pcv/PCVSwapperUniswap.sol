@@ -136,52 +136,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     }
 
     // =======================================================================
-    // Getters
-    // =======================================================================
-
-    /// @notice Get the minimum time between swaps
-    /// @return the time between swaps
-    function getSwapFrequency() external view returns (uint256) {
-      return duration;
-    }
-
-    /// @notice Get the current oracle price used for maximum slippage backstop
-    /// @return the current oracle price
-    function getOraclePrice() external view returns (uint256) {
-      (Decimal.D256 memory twap,) = oracle.read();
-      return twap.asUint256();
-    }
-
-    /// @notice Get the expected number of token to be spent on next swap
-    /// @return the number of tokens about to be spent
-    function getNextAmountSpent() external view returns (uint256) {
-      return _getExpectedAmountIn();
-    }
-
-    /// @notice Get the expected number of token to be received on next swap
-    /// @return the number of tokens about to be received
-    function getNextAmountReceived() external view returns (uint256) {
-      return _getExpectedAmountOut(_getExpectedAmountIn());
-    }
-
-    /// @notice Get the minimum number of tokens to receive on next swap (based
-    ///     on oracle price), under which the swap will revert.
-    /// @return the minimum number of tokens to be received on next swap
-    function getNextAmountReceivedThreshold() external view returns (uint256) {
-      return _getMinimumAcceptableAmountOut(_getExpectedAmountIn());
-    }
-
-    /// @notice Get the decimal normalizer between tokenSpent and tokenReceived
-    ///     e.g. if tokenSpent has 18 decimals and tokenReceived has 6 decimals,
-    //      this function will return 1e12.
-    /// @return the decimal normalizer number.
-    /// @return a boolean to indicate the normalizer direction (does tokenSpent
-    ///     has more decimals than tokenReceived, or the other way around?).
-    function getDecimalNormalizer() external view returns (uint256, bool) {
-      return _getDecimalNormalizer();
-    }
-
-    // =======================================================================
     // External functions
     // =======================================================================
 

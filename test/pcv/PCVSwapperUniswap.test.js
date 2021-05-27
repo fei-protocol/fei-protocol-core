@@ -173,29 +173,6 @@ const {
       });
     });
 
-    describe('Getters', function() {
-      it('getOraclePrice()', async function() {
-        expect(await this.swapper.getOraclePrice()).to.be.bignumber.equal('2500');
-      });
-      it('getNextAmountSpent()', async function() {
-        await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '100'+e18});
-        expect(await this.swapper.getNextAmountSpent()).to.be.bignumber.equal('100000000000000000000'); // 100e18
-      });
-      it('getNextAmountReceived()', async function() {
-        await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '100'+e18});
-        expect(await this.swapper.getNextAmountReceived()).to.be.bignumber.equal('248259939361825041733566');
-      });
-      it('getNextAmountReceivedThreshold()', async function() {
-        await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '100'+e18});
-        expect(await this.swapper.getNextAmountReceivedThreshold()).to.be.bignumber.equal('242500000000000000000000');
-      });
-      it('getDecimalNormalizer()', async function() {
-        const decimalNormalizer = await this.swapper.getDecimalNormalizer();
-        expect(decimalNormalizer[0]).to.be.bignumber.equal('1');
-        expect(decimalNormalizer[1]).to.be.equal(true);
-      });
-    });
-
     describe('Setters', function() {
       it('setMaximumSlippage() revert if not governor', async function() {
         await expectRevert(
@@ -238,9 +215,9 @@ const {
         );
       });
       it('setSwapFrequency()', async function() {
-        expect(await this.swapper.getSwapFrequency()).to.be.bignumber.equal('1000');
+        expect(await this.swapper.duration()).to.be.bignumber.equal('1000');
         await this.swapper.setSwapFrequency('2000', { from: governorAddress });
-        expect(await this.swapper.getSwapFrequency()).to.be.bignumber.equal('2000');
+        expect(await this.swapper.duration()).to.be.bignumber.equal('2000');
       });
       it('setInvertOraclePrice() revert if not governor', async function() {
         await expectRevert(
