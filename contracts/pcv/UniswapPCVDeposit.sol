@@ -1,12 +1,12 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
 import "./IUniswapPCVDeposit.sol";
 import "../refs/UniRef.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-/// @title abstract implementation for Uniswap LP PCV Deposit
+/// @title implementation for Uniswap LP PCV Deposit
 /// @author Fei Protocol
 contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
     using Decimal for Decimal.D256;
@@ -30,7 +30,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         address _router,
         address _oracle,
         uint256 _maxBasisPointsFromPegLP
-    ) public UniRef(_core, _pair, _oracle) {
+    ) UniRef(_core, _pair, _oracle) {
         router = IUniswapV2Router02(_router);
 
         _approveToken(address(fei()));
@@ -46,21 +46,17 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
     }
 
     /// @notice deposit tokens into the PCV allocation
-    /// @param amount of tokens deposited
-    function deposit(uint256 amount) external payable override whenNotPaused {
-        if (msg.value != 0) {
-            _wrap();
-        }
-        uint256 balance = IERC20(token).balanceOf(address(this));
-        require(balance >= amount, "UniswapPCVDeposit: balance too low");
+    function deposit() external override whenNotPaused {
+        updateOracle();
 
-        uint256 feiAmount = _getAmountFeiToDeposit(balance);
+        uint256 heldBalance = IERC20(token).balanceOf(address(this));
+        uint256 feiAmount = _getAmountFeiToDeposit(heldBalance);
 
-        _addLiquidity(balance, feiAmount);
+        _addLiquidity(heldBalance, feiAmount);
 
         _burnFeiHeld(); // burn any FEI dust from LP
 
-        emit Deposit(msg.sender, balance);
+        emit Deposit(msg.sender, heldBalance);
     }
 
     /// @notice withdraw tokens from the PCV allocation
@@ -72,7 +68,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         onlyPCVController
         whenNotPaused
     {
-        uint256 totalUnderlying = totalValue();
+        uint256 totalUnderlying = balance();
         require(
             amountUnderlying <= totalUnderlying,
             "UniswapPCVDeposit: Insufficient underlying"
@@ -106,6 +102,8 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         emit WithdrawERC20(msg.sender, address(token), to, amount);
     }
     
+    /// @notice sets the new slippage parameter for depositing liquidity
+    /// @param _maxBasisPointsFromPegLP the new distance in basis points (1/10000) from peg beyond which a liquidity provision will fail 
     function setMaxBasisPointsFromPegLP(uint256 _maxBasisPointsFromPegLP) public override onlyGovernor {
         require(_maxBasisPointsFromPegLP <= BASIS_POINTS_GRANULARITY, "UniswapPCVDeposit: basis points from peg too high");
 
@@ -125,8 +123,8 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         _approveToken(_pair);
     }
 
-    /// @notice returns total value of PCV in the Deposit
-    function totalValue() public view override returns (uint256) {
+    /// @notice returns total balance of PCV in the Deposit excluding the FEI
+    function balance() public view override returns (uint256) {
         (, uint256 tokenReserves) = getReserves();
         return _ratioOwned().mul(tokenReserves).asUint256();
     }
@@ -142,14 +140,14 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         view
         returns (uint256 amountFei)
     {
-        return peg().mul(amountToken).asUint256();
+        return readOracle().mul(amountToken).asUint256();
     }
 
     function _removeLiquidity(uint256 liquidity)
         internal
         returns (uint256)
     {
-        uint256 endOfTime = uint256(-1);
+        uint256 endOfTime = type(uint256).max;
         (, uint256 amountWithdrawn) =
             router.removeLiquidity(
                 address(fei()),
@@ -166,7 +164,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
     function _addLiquidity(uint256 tokenAmount, uint256 feiAmount) internal {
         _mintFei(feiAmount);
 
-        uint256 endOfTime = uint256(-1);
+        uint256 endOfTime = type(uint256).max;
         router.addLiquidity(
             address(fei()),
             token,
@@ -179,25 +177,26 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         );
     }
 
+    /// @notice used as slippage protection when adding liquidity to the pool
     function _getMinLiquidity(uint256 amount) internal view returns (uint256) {
-        return amount.mul(BASIS_POINTS_GRANULARITY.sub(maxBasisPointsFromPegLP)).div(BASIS_POINTS_GRANULARITY);
+        return amount * (BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP) / BASIS_POINTS_GRANULARITY;
     }
 
     /// @notice ratio of all pair liquidity owned by this contract
     function _ratioOwned() internal view returns (Decimal.D256 memory) {
-        uint256 balance = liquidityOwned();
+        uint256 liquidity = liquidityOwned();
         uint256 total = pair.totalSupply();
-        return Decimal.ratio(balance, total);
+        return Decimal.ratio(liquidity, total);
     }
 
     /// @notice approves a token for the router
     function _approveToken(address _token) internal {
-        uint256 maxTokens = uint256(-1);
+        uint256 maxTokens = type(uint256).max;
         IERC20(_token).approve(address(router), maxTokens);
     }
 
     function _wrap() internal {
-        uint256 balance = address(this).balance;
-        IWETH(router.WETH()).deposit{value: balance}();
+        uint256 amount = address(this).balance;
+        IWETH(router.WETH()).deposit{value: amount}();
     }
 }

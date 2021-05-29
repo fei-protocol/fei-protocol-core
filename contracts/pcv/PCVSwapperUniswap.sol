@@ -1,14 +1,13 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
 import "./IPCVSwapper.sol";
 import "../refs/OracleRef.sol";
 import "../utils/Timed.sol";
 import "../external/UniswapV2Library.sol";
-import "@openzeppelin/contracts/math/Math.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 
@@ -17,7 +16,6 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     using SafeERC20 for ERC20;
     using Decimal for Decimal.D256;
-    using SafeMathCopy for uint256;
 
     /// @notice the token to spend on swap (outbound)
     address private tokenSpent;
@@ -40,11 +38,13 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     /// @notice Uniswap pair to swap on
     IUniswapV2Pair public pair;
 
+    // solhint-disable-next-line var-name-mixedcase
     IWETH public immutable WETH;
 
     constructor(
         address _core,
         IUniswapV2Pair _pair,
+        // solhint-disable-next-line var-name-mixedcase
         IWETH _WETH,
         address _oracle,
         uint256 _swapFrequency,
@@ -55,7 +55,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
         uint256 _maximumSlippageBasisPoints,
         bool _invertOraclePrice,
         uint256 _swapIncentiveAmount
-    ) public OracleRef(_core, _oracle) Timed(_swapFrequency) {
+    ) OracleRef(_core, _oracle) Timed(_swapFrequency) {
         pair = _pair;
         WETH = _WETH;
         tokenSpent = _tokenSpent;
@@ -228,9 +228,11 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
         require(ERC20(tokenReceived).balanceOf(tokenReceivingAddress) < tokenBuyLimit, "PCVSwapperUniswap: tokenBuyLimit reached.");
       }
 
+      updateOracle();
+
       uint256 amountIn = _getExpectedAmountIn();
       uint256 amountOut = _getExpectedAmountOut(amountIn);
-      uint minimumAcceptableAmountOut = _getMinimumAcceptableAmountOut(amountIn);
+      uint256 minimumAcceptableAmountOut = _getMinimumAcceptableAmountOut(amountIn);
 
       // Check spot price vs oracle price discounted by max slippage
       // E.g. for a max slippage of 3%, spot price must be >= 97% oraclePrice
@@ -297,7 +299,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
 
     /// @notice see external function getNextAmountReceivedThreshold()
     function _getMinimumAcceptableAmountOut(uint256 amountIn) internal view returns (uint256) {
-      Decimal.D256 memory twap = peg();
+      Decimal.D256 memory twap = readOracle();
       if (invertOraclePrice) {
         twap = invert(twap);
       }

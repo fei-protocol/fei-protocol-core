@@ -1,12 +1,13 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
  
+import "./IPCVDeposit.sol"; 
 import "../refs/CoreRef.sol";
 import "../utils/Timed.sol";
 
 /// @title a PCV dripper
 /// @author Fei Protocol
-contract EthPCVDripper is CoreRef, Timed {
+contract EthPCVDripper is CoreRef, Timed, IPCVDeposit {
    using Address for address payable;
  
    /// @notice target address to drip to
@@ -28,7 +29,7 @@ contract EthPCVDripper is CoreRef, Timed {
        address payable _target,
        uint256 _frequency,
        uint256 _amountToDrip
-   ) public CoreRef(_core) Timed(_frequency) {
+   ) CoreRef(_core) Timed(_frequency) {
        target = _target;
        amountToDrip = _amountToDrip;
 
@@ -41,14 +42,19 @@ contract EthPCVDripper is CoreRef, Timed {
    /// @notice withdraw ETH from the PCV dripper
    /// @param amount of tokens withdrawn
    /// @param to the address to send PCV to
-   function withdrawETH(address payable to, uint256 amount)
+   function withdraw(address to, uint256 amount)
        external
+       override
        onlyPCVController
    {
-       to.sendValue(amount);
+       payable(to).sendValue(amount);
        emit Withdrawal(to, amount);
    }
  
+   /// @notice new PCV deposited to the dripper
+   /// @dev no-op because the ETH transfer already happened
+   function deposit() external override {}
+
    /// @notice drip ETH to target
    function drip()
        external
@@ -64,6 +70,11 @@ contract EthPCVDripper is CoreRef, Timed {
        target.sendValue(amountToDrip);
        emit Dripped(amountToDrip);
    }
+
+    /// @notice get the balance of ETH held by the contract
+    function balance() public view override returns (uint256) {
+        return address(this).balance;
+    }
 
    /// @notice checks whether the target balance is less than the drip amount
    function isTargetBalanceLow() public view returns(bool) {

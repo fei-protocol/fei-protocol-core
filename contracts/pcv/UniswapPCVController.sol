@@ -1,20 +1,19 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/Math.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "./IUniswapPCVController.sol";
 import "../refs/UniRef.sol";
 import "../external/UniswapV2Library.sol";
 import "../utils/Timed.sol";
 
-/// @title a IUniswapPCVController implementation for ETH
+/// @title a PCV controller for reweighting the Uniswap pair price to a peg
 /// @author Fei Protocol
 contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     using Decimal for Decimal.D256;
-    using SafeMathCopy for uint256;
-
-    uint256 internal _reweightDuration = 4 hours;
+    using Babylonian for uint256;
 
     uint256 internal constant BASIS_POINTS_GRANULARITY = 10000;
 
@@ -25,21 +24,23 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     uint256 public override reweightIncentiveAmount;
     Decimal.D256 internal _minDistanceForReweight;
 
-    /// @notice EthUniswapPCVController constructor
+    /// @notice UniswapPCVController constructor
     /// @param _core Fei Core for reference
     /// @param _pcvDeposit PCV Deposit to reweight
     /// @param _oracle oracle for reference
     /// @param _incentiveAmount amount of FEI for triggering a reweight
     /// @param _minDistanceForReweightBPs minimum distance from peg to reweight in basis points
     /// @param _pair Uniswap pair contract to reweight
+    /// @param _reweightFrequency the frequency between reweights
     constructor(
         address _core,
         address _pcvDeposit,
         address _oracle,
         uint256 _incentiveAmount,
         uint256 _minDistanceForReweightBPs,
-        address _pair
-    ) public UniRef(_core, _pair, _oracle) Timed(_reweightDuration) {
+        address _pair,
+        uint256 _reweightFrequency
+    ) UniRef(_core, _pair, _oracle) Timed(_reweightFrequency) {
         pcvDeposit = IPCVDeposit(_pcvDeposit);
 
         reweightIncentiveAmount = _incentiveAmount;
@@ -56,7 +57,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     function reweight() external override whenNotPaused {
         require(
             reweightEligible(),
-            "EthUniswapPCVController: Not passed reweight time or not at min distance"
+            "UniswapPCVController: Not passed reweight time or not at min distance"
         );
         _reweight();
         _incentivize();
@@ -108,13 +109,30 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
        _setDuration(_duration);
     }
 
-    /// @notice signal whether the reweight is available. Must have incentive parity and minimum distance from peg
+    /// @notice signal whether the reweight is available. Must have passed reweight frequency and minimum distance from peg
     function reweightEligible() public view override returns (bool) {
         bool magnitude =
-            _getDistanceToPeg().greaterThan(_minDistanceForReweight);
-        // incentive parity is achieved after a certain time relative to distance from peg
+            getDistanceToPeg().greaterThan(_minDistanceForReweight);
         bool time = isTimeEnded();
         return magnitude && time;
+    }
+
+    /// @notice return current percent distance from peg
+    function getDistanceToPeg()
+        public
+        view
+        override
+        returns (Decimal.D256 memory distance)
+    {
+        (Decimal.D256 memory price, , ) = _getUniswapPrice();
+        Decimal.D256 memory peg = readOracle();
+        Decimal.D256 memory delta;
+        if (price.lessThanOrEqualTo(peg)) {
+            delta = peg.sub(price);
+        } else {
+            delta = price.sub(peg);
+        }
+        return delta.div(peg);
     }
 
     /// @notice minimum distance as a percentage from the peg for a reweight to be eligible
@@ -127,15 +145,6 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         return _minDistanceForReweight;
     }
 
-    /// @notice get deviation from peg as a percent given price
-    /// @dev will return Decimal.zero() if above peg
-    function deviationBelowPeg(
-        Decimal.D256 calldata price,
-        Decimal.D256 calldata peg
-    ) external pure returns (Decimal.D256 memory) {
-        return _deviationBelowPeg(price, peg);
-    }
-
     function _incentivize() internal ifMinterSelf {
         fei().mint(msg.sender, reweightIncentiveAmount);
     }
@@ -146,7 +155,9 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
             return;
         }
 
-        Decimal.D256 memory _peg = peg();
+        updateOracle();
+
+        Decimal.D256 memory _peg = readOracle();
 
         if (_isBelowPeg(_peg)) {
             _rebase(_peg, feiReserves, tokenReserves);
@@ -166,7 +177,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         uint256 targetAmount = _peg.mul(tokenReserves).asUint256();
 
         // burn the excess FEI not needed from the pool
-        uint256 burnAmount = feiReserves.sub(targetAmount);
+        uint256 burnAmount = feiReserves - targetAmount;
         fei().burnFrom(address(pair), burnAmount);
 
         // sync the pair to restore the reserves 
@@ -212,7 +223,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         uint256 balance = erc20.balanceOf(address(this));
 
         SafeERC20.safeTransfer(erc20, address(pcvDeposit), balance);
-        pcvDeposit.deposit(balance);
+        pcvDeposit.deposit();
     }
 
     /// @notice utility for calculating absolute distance from peg based on reserves
@@ -227,9 +238,9 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         uint256 radicand = peg.mul(reserveTarget).mul(reserveOther).asUint256();
         uint256 root = radicand.sqrt();
         if (root > reserveTarget) {
-            return (root - reserveTarget).mul(1000).div(997);
+            return (root - reserveTarget) * 1000 / 997; // divide to include the .3% uniswap fee
         }
-        return (reserveTarget - root).mul(1000).div(997);
+        return (reserveTarget - root) * 1000 / 997; // divide to include the .3% uniswap fee
     }
 
     /// @notice calculate amount of Fei needed to trade back to the peg
@@ -267,31 +278,5 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     function _isBelowPeg(Decimal.D256 memory peg) internal view returns (bool) {
         (Decimal.D256 memory price, , ) = _getUniswapPrice();
         return peg.lessThan(price);
-    }
-
-    /// @notice return current percent distance from peg
-    /// @dev will return Decimal.zero() if above peg
-    function _getDistanceToPeg()
-        internal
-        view
-        returns (Decimal.D256 memory distance)
-    {
-        (Decimal.D256 memory price, , ) = _getUniswapPrice();
-        return _deviationBelowPeg(price, peg());
-    }
-
-    /// @notice get deviation from peg as a percent given price
-    /// @dev will return Decimal.zero() if above peg
-    function _deviationBelowPeg(
-        Decimal.D256 memory price,
-        Decimal.D256 memory peg
-    ) internal pure returns (Decimal.D256 memory) {
-        // If price <= peg, then FEI is more expensive and above peg
-        // In this case we can just return zero for deviation
-        if (price.lessThanOrEqualTo(peg)) {
-            return Decimal.zero();
-        }
-        Decimal.D256 memory delta = price.sub(peg, "Impossible underflow");
-        return delta.div(peg);
     }
 }

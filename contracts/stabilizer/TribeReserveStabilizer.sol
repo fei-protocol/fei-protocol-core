@@ -1,5 +1,5 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
 import "./ReserveStabilizer.sol";
 
@@ -15,16 +15,16 @@ contract TribeReserveStabilizer is ReserveStabilizer {
     constructor(
         address _core,
         address _oracle,
-        uint _usdPerFeiBasisPoints
-    ) public ReserveStabilizer(_core, _oracle, IERC20(address(0)), _usdPerFeiBasisPoints) {}
+        uint256 _usdPerFeiBasisPoints
+    ) ReserveStabilizer(_core, _oracle, IERC20(address(0)), _usdPerFeiBasisPoints) {}
 
     /// @dev reverts because this contract doesn't hold any TRIBE
-    function withdraw(address, uint256) external override {
+    function withdraw(address, uint256) external pure override {
         revert("TribeReserveStabilizer: nothing to withdraw");
     }
 
     /// @notice returns the amount of the held TRIBE
-    function totalValue() public view override returns(uint256) {
+    function balance() public view override returns(uint256) {
         return tribeBalance();
     }
 

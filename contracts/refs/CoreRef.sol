@@ -1,8 +1,8 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
 import "./ICoreRef.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
 /// @title A Reference to Core
@@ -12,19 +12,13 @@ abstract contract CoreRef is ICoreRef, Pausable {
     ICore private _core;
 
     /// @notice CoreRef constructor
-    /// @param core Fei Core to reference
-    constructor(address core) public {
-        _core = ICore(core);
+    /// @param coreAddress Fei Core to reference
+    constructor(address coreAddress) {
+        _core = ICore(coreAddress);
     }
 
     modifier ifMinterSelf() {
         if (_core.isMinter(address(this))) {
-            _;
-        }
-    }
-
-    modifier ifBurnerSelf() {
-        if (_core.isBurner(address(this))) {
             _;
         }
     }
@@ -70,10 +64,10 @@ abstract contract CoreRef is ICoreRef, Pausable {
     }
 
     /// @notice set new Core reference address
-    /// @param core the new core address
-    function setCore(address core) external override onlyGovernor {
-        _core = ICore(core);
-        emit CoreUpdate(core);
+    /// @param newCore the new core address
+    function setCore(address newCore) external override onlyGovernor {
+        _core = ICore(newCore);
+        emit CoreUpdate(newCore);
     }
 
     /// @notice set pausable methods to paused

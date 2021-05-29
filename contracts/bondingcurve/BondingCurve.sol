@@ -1,26 +1,24 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/Math.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "./IBondingCurve.sol";
-import "../utils/Roots.sol";
 import "../refs/OracleRef.sol";
 import "../pcv/PCVSplitter.sol";
 import "../pcv/IPCVDeposit.sol";
 import "../utils/Timed.sol";
 
-/// @title a bonding curve for purchasing FEI
+/// @title a bonding curve for purchasing FEI with ERC-20 tokens
 /// @author Fei Protocol
 contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     using Decimal for Decimal.D256;
-    using Roots for uint256;
 
     /// @notice the Scale target at which bonding curve price fixes
     uint256 public override scale;
 
     /// @notice the ERC20 token for this bonding curve
-    IERC20 public token;
+    IERC20 public override token;
 
     /// @notice the total amount of FEI purchased on bonding curve. FEI_b from the whitepaper
     uint256 public override totalPurchased; // FEI_b for this curve
@@ -53,7 +51,6 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         uint256 _duration,
         uint256 _incentive
     )
-        public
         OracleRef(_core, _oracle)
         PCVSplitter(_pcvDeposits, _ratios)
         Timed(_duration)
@@ -81,7 +78,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     }
 
     /// @notice the amount of PCV held in contract and ready to be allocated
-    function getTotalPCVHeld() public view virtual override returns (uint256) {
+    function balance() public view virtual override returns (uint256) {
         return token.balanceOf(address(this));
     }
 
@@ -143,7 +140,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
 
     /// @notice batch allocate held PCV
     function allocate() external override whenNotPaused {
-        uint256 amount = getTotalPCVHeld();
+        uint256 amount = balance();
         require(amount != 0, "BondingCurve: No PCV held");
 
         _allocate(amount);
@@ -167,9 +164,9 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         returns (Decimal.D256 memory)
     {
         if (atScale()) {
-            return peg().mul(_getBufferMultiplier());
+            return readOracle().mul(_getBufferMultiplier());
         }
-        return peg().div(_getBondingCurvePriceMultiplier());
+        return readOracle().div(_getBondingCurvePriceMultiplier());
     }
 
     /// @notice return amount of FEI received after a bonding curve purchase
@@ -211,7 +208,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         view
         returns (uint256)
     {
-        return peg().mul(amountIn).asUint256();
+        return readOracle().mul(amountIn).asUint256();
     }
 
     /// @notice mint FEI and send to buyer destination
@@ -231,7 +228,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     }
 
     function _incrementTotalPurchased(uint256 amount) internal {
-        totalPurchased = totalPurchased.add(amount);
+        totalPurchased = totalPurchased + amount;
     }
 
     function _setScale(uint256 _scale) internal {
@@ -289,6 +286,6 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         override
     {
         SafeERC20.safeTransfer(token, pcvDeposit, amount);
-        IPCVDeposit(pcvDeposit).deposit(amount);
+        IPCVDeposit(pcvDeposit).deposit();
     }
 }

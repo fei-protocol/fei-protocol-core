@@ -1,14 +1,14 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
 import "./IReserveStabilizer.sol";
 import "../pcv/IPCVDeposit.sol";
 import "../refs/OracleRef.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
 
-/// @title implementation for an ETH Reserve Stabilizer
+/// @title implementation for an ERC20 Reserve Stabilizer
 /// @author Fei Protocol
 contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
+    using Decimal for Decimal.D256;
 
     /// @notice the USD per FEI exchange rate denominated in basis points (1/10000)
     uint256 public override usdPerFeiBasisPoints;
@@ -22,8 +22,8 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
         address _core,
         address _oracle,
         IERC20 _token,
-        uint _usdPerFeiBasisPoints
-    ) public OracleRef(_core, _oracle) {
+        uint256 _usdPerFeiBasisPoints
+    ) OracleRef(_core, _oracle) {
         require(_usdPerFeiBasisPoints <= BASIS_POINTS_GRANULARITY, "ReserveStabilizer: Exceeds bp granularity");
         usdPerFeiBasisPoints = _usdPerFeiBasisPoints;
         emit UsdPerFeiRateUpdate(_usdPerFeiBasisPoints);
@@ -31,9 +31,11 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
         token = _token;
     }
 
-    /// @notice exchange FEI for ETH from the reserves
+    /// @notice exchange FEI for tokens from the reserves
     /// @param feiAmount of FEI to sell
     function exchangeFei(uint256 feiAmount) external override whenNotPaused returns (uint256 amountOut) {
+        updateOracle();
+
         fei().burnFrom(msg.sender, feiAmount);
 
         amountOut = getAmountOut(feiAmount);
@@ -42,16 +44,16 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
         emit FeiExchange(msg.sender, feiAmount, amountOut);
     }
 
-    /// @notice returns the amount out of ETH from the reserves
+    /// @notice returns the amount out of tokens from the reserves for a given amount of FEI
     /// @param amountFeiIn the amount of FEI in
     function getAmountOut(uint256 amountFeiIn) public view override returns(uint256) {
         uint256 adjustedAmountIn = amountFeiIn * usdPerFeiBasisPoints / BASIS_POINTS_GRANULARITY;
-        return invert(peg()).mul(adjustedAmountIn).asUint256();
+        return invert(readOracle()).mul(adjustedAmountIn).asUint256();
     }
 
-    /// @notice withdraw ETH from the reserves
-    /// @param to address to send ETH
-    /// @param amountOut amount of ETH to send
+    /// @notice withdraw tokens from the reserves
+    /// @param to address to send tokens
+    /// @param amountOut amount of tokens to send
     function withdraw(address to, uint256 amountOut) external virtual override onlyPCVController {
         _transfer(to, amountOut);
         emit Withdrawal(msg.sender, to, amountOut);
@@ -59,10 +61,10 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
 
     /// @notice new PCV deposited to the stabilizer
     /// @dev no-op because the token transfer already happened
-    function deposit(uint256 amount) external payable override {}
+    function deposit() external override {}
 
     /// @notice returns the amount of the held ERC-20
-    function totalValue() public view override virtual returns(uint256) {
+    function balance() public view override virtual returns(uint256) {
         return token.balanceOf(address(this));
     }
 

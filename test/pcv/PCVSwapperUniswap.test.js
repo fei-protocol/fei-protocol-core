@@ -7,18 +7,18 @@ const {
     governorAddress,
     pcvControllerAddress,
     web3,
-    BN,
     expectRevert,
     expectEvent,
-    balance,
+    contract,
     expect,
-    PCVSwapperUniswap,
-    Fei,
-    MockOracle,
-    MockWeth,
-    MockPair,
     getCore
   } = require('../helpers');
+
+  const PCVSwapperUniswap = contract.fromArtifact('PCVSwapperUniswap');
+  const Fei = contract.fromArtifact('Fei');
+  const MockOracle = contract.fromArtifact('MockOracle');
+  const MockWeth = contract.fromArtifact('MockWeth');
+  const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
 
   const e18 = '000000000000000000';
 
@@ -45,7 +45,7 @@ const {
         userAddress, // tokenReceivingAddress
         '100'+e18, // maxSpentPerSwap
         '300', // maximumSlippageBasisPoints
-        false, // invertOraclePrice
+        // false, // invertOraclePrice
         '200'+e18 // swap incentive = 200 FEI
       );
 

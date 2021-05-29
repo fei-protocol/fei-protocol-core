@@ -5,83 +5,83 @@ const {
     governorAddress, 
     minterAddress, 
     pcvControllerAddress,
+    web3,
     BN,
     expectRevert,
+    balance,
     expect,
     contract,
     getCore
   } = require('../helpers');
   
-const ReserveStabilizer = contract.fromArtifact('ReserveStabilizer');
+const EthReserveStabilizer = contract.fromArtifact('EthReserveStabilizer');
 const Fei = contract.fromArtifact('Fei');
 const MockOracle = contract.fromArtifact('MockOracle');
-const MockERC20 = contract.fromArtifact('MockERC20');
 const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
 
-  describe('ReserveStabilizer', function () {
+  describe('EthReserveStabilizer', function () {
   
     beforeEach(async function () {
       this.core = await getCore(true);
   
       this.fei = await Fei.at(await this.core.fei());
-      this.token = await MockERC20.new();
       this.oracle = await MockOracle.new(400); // 400:1 oracle price
       this.pcvDeposit = await MockPCVDeposit.new(userAddress);
 
-      this.reserveStabilizer = await ReserveStabilizer.new(this.core.address, this.oracle.address, this.token.address, '9000');
+      this.reserveStabilizer = await EthReserveStabilizer.new(this.core.address, this.oracle.address, '9000');
 
       await this.core.grantBurner(this.reserveStabilizer.address, {from: governorAddress});
 
       this.initialBalance = new BN('1000000000000000000')
-      await this.token.mint(this.reserveStabilizer.address, this.initialBalance);
+      await web3.eth.sendTransaction({from: userAddress, to: this.reserveStabilizer.address, value: this.initialBalance});
 
       await this.fei.mint(userAddress, 40000000, {from: minterAddress});  
     });
   
     describe('Exchange', function() {
       describe('Enough FEI', function() {
-        it('exchanges for appropriate amount of token', async function() {
-          let reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
+        it('exchanges for appropriate amount of ETH', async function() {
+          let reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
           await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-          let reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
+          let reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
 
           this.expectedOut = new BN('90000');
           expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
 
           expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
-          expect(await this.reserveStabilizer.totalValue()).to.be.bignumber.equal(this.initialBalance.sub(this.expectedOut));
+          expect(await this.reserveStabilizer.balance()).to.be.bignumber.equal(this.initialBalance.sub(this.expectedOut));
         });
       });
 
       describe('Double Oracle price', function() {
-        it('exchanges for appropriate amount of token', async function() {
+        it('exchanges for appropriate amount of ETH', async function() {
           await this.oracle.setExchangeRate('800');
 
-          let reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
+          let reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
           await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-          let reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
+          let reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
 
           this.expectedOut = new BN('45000');
           expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
 
           expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
-          expect(await this.reserveStabilizer.totalValue()).to.be.bignumber.equal(this.initialBalance.sub(this.expectedOut));
+          expect(await this.reserveStabilizer.balance()).to.be.bignumber.equal(this.initialBalance.sub(this.expectedOut));
         });
       });
   
       describe('Higher usd per fei', function() {
-        it('exchanges for appropriate amount of token', async function() {
+        it('exchanges for appropriate amount of ETH', async function() {
           await this.reserveStabilizer.setUsdPerFeiRate('9500', {from: governorAddress});
 
-          let reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
+          let reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
           await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-          let reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
+          let reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
 
           this.expectedOut = new BN('95000');
           expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
 
           expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
-          expect(await this.reserveStabilizer.totalValue()).to.be.bignumber.equal(this.initialBalance.sub(this.expectedOut));
+          expect(await this.reserveStabilizer.balance()).to.be.bignumber.equal(this.initialBalance.sub(this.expectedOut));
         });
       });
 
@@ -91,7 +91,7 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
         });
       });
 
-      describe('Not Enough token', function() {
+      describe('Not Enough ETH', function() {
         it('reverts', async function() {
           await this.fei.mint(userAddress, new BN('4000000000000000000000000000'), {from: minterAddress});  
           await expectRevert(this.reserveStabilizer.exchangeFei(new BN('4000000000000000000000000000'), {from: userAddress}), "revert");
@@ -107,19 +107,19 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
     });
   
     describe('Withdraw', function() {
-      it('enough token succeeds', async function() {
-        let reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
-        let userBalanceBefore = await this.token.balanceOf(userAddress);
+      it('enough eth succeeds', async function() {
+        let reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
+        let userBalanceBefore = await balance.current(userAddress);
 
         await this.reserveStabilizer.withdraw(userAddress, '10000', {from: pcvControllerAddress});
-        let reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
-        let userBalanceAfter = await this.token.balanceOf(userAddress);
+        let reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
+        let userBalanceAfter = await balance.current(userAddress);
 
         expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(new BN('10000'));
         expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(new BN('10000'));
       });
 
-      it('not enough token reverts', async function() {
+      it('not enough eth reverts', async function() {
         await expectRevert(this.reserveStabilizer.withdraw(userAddress, '10000000000000000000', {from: pcvControllerAddress}), "revert");
       });
 

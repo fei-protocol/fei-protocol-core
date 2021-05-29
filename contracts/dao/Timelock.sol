@@ -1,6 +1,7 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 // Forked from Compound
 // See https://github.com/compound-finance/compound-protocol/blob/master/contracts/Timelock.sol
@@ -25,7 +26,7 @@ contract Timelock {
     mapping (bytes32 => bool) public queuedTransactions;
 
 
-    constructor(address admin_, uint delay_) public {
+    constructor(address admin_, uint delay_) {
         require(delay_ >= MINIMUM_DELAY, "Timelock: Delay must exceed minimum delay.");
         require(delay_ <= MAXIMUM_DELAY, "Timelock: Delay must not exceed maximum delay.");
         require(admin_ != address(0), "Timelock: Admin must not be 0 address");
@@ -108,7 +109,6 @@ contract Timelock {
     }
 
     function getBlockTimestamp() internal view returns (uint) {
-        // solhint-disable-next-line not-rely-on-time
         return block.timestamp;
     }
 }

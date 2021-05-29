@@ -1,7 +1,8 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
 import "../external/Decimal.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IBondingCurve {
     // ----------- Events -----------
@@ -76,7 +77,9 @@ interface IBondingCurve {
 
     function totalPurchased() external view returns (uint256);
 
-    function getTotalPCVHeld() external view returns (uint256);
+    function balance() external view returns (uint256);
+
+    function token() external view returns (IERC20);
 
     function incentiveAmount() external view returns (uint256);
 }

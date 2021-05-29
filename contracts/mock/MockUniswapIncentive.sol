@@ -1,14 +1,12 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
 import "./MockIncentive.sol";
 import "../external/Decimal.sol";
 
 contract MockUniswapIncentive is MockIncentive {
 
-	constructor(address core) public
-		MockIncentive(core)
-	{}
+	constructor(address core) MockIncentive(core) {}
 
     bool public isParity = false;
     bool public isExempt = false;

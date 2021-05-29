@@ -1,5 +1,5 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
 import "../core/ICore.sol";
 
@@ -12,7 +12,7 @@ interface ICoreRef {
 
     // ----------- Governor only state changing api -----------
 
-    function setCore(address core) external;
+    function setCore(address newCore) external;
 
     function pause() external;
 

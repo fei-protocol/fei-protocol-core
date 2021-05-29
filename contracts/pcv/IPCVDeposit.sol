@@ -1,4 +1,5 @@
-pragma solidity ^0.6.2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
 /// @title a PCV Deposit interface
 /// @author Fei Protocol
@@ -14,7 +15,7 @@ interface IPCVDeposit {
 
     // ----------- State changing api -----------
 
-    function deposit(uint256 amount) external payable;
+    function deposit() external;
 
     // ----------- PCV Controller only state changing api -----------
 
@@ -22,5 +23,5 @@ interface IPCVDeposit {
 
     // ----------- Getters -----------
 
-    function totalValue() external view returns (uint256);
+    function balance() external view returns (uint256);
 }

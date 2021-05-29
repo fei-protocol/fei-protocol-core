@@ -1,5 +1,5 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
 import "../oracle/IOracle.sol";
 
@@ -22,7 +22,7 @@ interface IOracleRef {
 
     function oracle() external view returns (IOracle);
 
-    function peg() external view returns (Decimal.D256 memory);
+    function readOracle() external view returns (Decimal.D256 memory);
 
     function invert(Decimal.D256 calldata price)
         external

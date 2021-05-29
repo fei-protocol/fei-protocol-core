@@ -1,5 +1,5 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
 import "./BondingCurve.sol";
 
@@ -16,7 +16,6 @@ contract EthBondingCurve is BondingCurve {
         uint256 duration,
         uint256 incentive
     )
-        public
         BondingCurve(
             scale,
             core,
@@ -46,7 +45,8 @@ contract EthBondingCurve is BondingCurve {
         return _purchase(amountIn, to);
     }
 
-    function getTotalPCVHeld() public view override returns (uint256) {
+    /// @notice get the balance of ETH held by the contract and ready to be allocated
+    function balance() public view override returns (uint256) {
         return address(this).balance;
     }
 
@@ -54,6 +54,7 @@ contract EthBondingCurve is BondingCurve {
         internal
         override
     {
-        IPCVDeposit(pcvDeposit).deposit{value: amount}(amount);
+        Address.sendValue(payable(pcvDeposit), amount);
+        IPCVDeposit(pcvDeposit).deposit();
     }
 }

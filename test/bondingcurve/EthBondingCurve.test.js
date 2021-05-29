@@ -57,8 +57,8 @@ describe('EthBondingCurve', function () {
         expect(await this.bondingCurve.atScale()).to.be.equal(false);
     });
 
-    it('getTotalPCVHeld', async function() {
-      expect(await this.bondingCurve.getTotalPCVHeld()).to.be.bignumber.equal(new BN('0'));
+    it('balance', async function() {
+      expect(await this.bondingCurve.balance()).to.be.bignumber.equal(new BN('0'));
     });
 
     it('totalPurchased', async function() {
@@ -136,7 +136,7 @@ describe('EthBondingCurve', function () {
         });
 
         it('total PCV held', async function() {
-          expect(await this.bondingCurve.getTotalPCVHeld()).to.be.bignumber.equal(this.purchaseAmount);
+          expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount);
         });
 
         describe('Second Purchase', function() {
@@ -172,7 +172,7 @@ describe('EthBondingCurve', function () {
           });
   
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.getTotalPCVHeld()).to.be.bignumber.equal(this.purchaseAmount.mul(new BN(2)));
+            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(new BN(2)));
           });
         });
 
@@ -210,7 +210,7 @@ describe('EthBondingCurve', function () {
           });
   
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.getTotalPCVHeld()).to.be.bignumber.equal(this.purchaseAmount.mul(new BN(2)));
+            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(new BN(2)));
           });
         });
 
@@ -249,7 +249,7 @@ describe('EthBondingCurve', function () {
           });
   
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.getTotalPCVHeld()).to.be.bignumber.equal(this.purchaseAmount.mul(new BN(2)));
+            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(new BN(2)));
           });
         });
       });
@@ -287,7 +287,7 @@ describe('EthBondingCurve', function () {
         });
 
         it('total PCV held', async function() {
-          expect(await this.bondingCurve.getTotalPCVHeld()).to.be.bignumber.equal(this.purchaseAmount);
+          expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount);
         });
 
         describe('Post Scale', function() {
@@ -323,7 +323,7 @@ describe('EthBondingCurve', function () {
           });
   
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.getTotalPCVHeld()).to.be.bignumber.equal(this.purchaseAmount.mul(new BN(2)));
+            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(new BN(2)));
           });
 
           describe('reset', function() {
@@ -380,7 +380,7 @@ describe('EthBondingCurve', function () {
           });
   
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.getTotalPCVHeld()).to.be.bignumber.equal(this.purchaseAmount.mul(new BN(2)));
+            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(new BN(2)));
           });
         });
 
@@ -419,7 +419,7 @@ describe('EthBondingCurve', function () {
           });
   
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.getTotalPCVHeld()).to.be.bignumber.equal(this.purchaseAmount.mul(new BN(2)));
+            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(new BN(2)));
           });
         });
       });
@@ -643,6 +643,25 @@ describe('EthBondingCurve', function () {
 
     it('Non-governor set reverts', async function() {
       await expectRevert(this.bondingCurve.setBuffer(1000, {from: userAddress}), "CoreRef: Caller is not a governor");
+    });
+  });
+
+  describe('Discount', function() {
+    it('Governor set succeeds', async function() {
+      expectEvent(
+        await this.bondingCurve.setDiscount(1000, {from: governorAddress}),
+        'DiscountUpdate',
+        {_discount: new BN(1000)}
+      );
+      expect(await this.bondingCurve.discount()).to.be.bignumber.equal(new BN(1000));
+    });
+
+    it('Governor set outside range reverts', async function() {
+      await expectRevert(this.bondingCurve.setDiscount(10000, {from: governorAddress}), "BondingCurve: Buffer exceeds or matches granularity");
+    });
+
+    it('Non-governor set reverts', async function() {
+      await expectRevert(this.bondingCurve.setDiscount(1000, {from: userAddress}), "CoreRef: Caller is not a governor");
     });
   });
 
