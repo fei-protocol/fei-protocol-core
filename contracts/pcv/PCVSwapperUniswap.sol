@@ -18,25 +18,23 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     using Decimal for Decimal.D256;
 
     /// @notice the token to spend on swap (outbound)
-    address private tokenSpent;
+    address public immutable override tokenSpent;
     /// @notice the token to receive on swap (inbound)
-    address private tokenReceived;
+    address public immutable override tokenReceived;
     /// @notice the address that will receive the inbound tokens
-    address private tokenReceivingAddress;
-    /// @notice the maximum amount of tokens to buy (0 = unlimited)
-    uint256 public tokenBuyLimit = 0;
+    address public override tokenReceivingAddress;
     /// @notice the maximum amount of tokens to spend on every swap
     uint256 public maxSpentPerSwap;
     /// @notice should we use (1 / oraclePrice) instead of oraclePrice ?
     bool public invertOraclePrice;
     /// @notice the incentive for calling swap() function, in FEI
-    uint256 public swapIncentiveAmount;
+    uint256 public immutable swapIncentiveAmount;
     /// @notice the maximum amount of slippage vs oracle price
     uint256 public maximumSlippageBasisPoints;
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice Uniswap pair to swap on
-    IUniswapV2Pair public pair;
+    IUniswapV2Pair public immutable pair;
 
     // solhint-disable-next-line var-name-mixedcase
     IWETH public immutable WETH;
@@ -66,16 +64,15 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
         invertOraclePrice = _invertOraclePrice;
         swapIncentiveAmount = _swapIncentiveAmount;
 
-        emit UpdateTokenSpent(_tokenSpent);
-        emit UpdateTokenReceived(_tokenReceived);
-
         // start timer
         _initTimed();
     }
 
     /// @notice All received ETH is wrapped to WETH
     receive() external payable {
-      WETH.deposit{value: msg.value}();
+      if (msg.sender != address(WETH)) {
+        WETH.deposit{value: msg.value}();
+      }
     }
 
     // =======================================================================
@@ -86,6 +83,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     /// @param to address to send ETH
     /// @param amountOut amount of ETH to send
     function withdrawETH(address payable to, uint256 amountOut) external override onlyPCVController {
+        WETH.withdraw(amountOut);
         Address.sendValue(to, amountOut);
         emit WithdrawETH(msg.sender, to, amountOut);
     }
@@ -97,20 +95,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     function withdrawERC20(address to, address token, uint256 amount) external override onlyPCVController {
         ERC20(token).safeTransfer(to, amount);
         emit WithdrawERC20(msg.sender, to, token, amount);
-    }
-
-    /// @notice Sets the token to spend
-    /// @param _tokenSpent the address of the token to spend
-    function setTokenSpent(address _tokenSpent) external override onlyGovernor {
-        tokenSpent = _tokenSpent;
-        emit UpdateTokenSpent(_tokenSpent);
-    }
-
-    /// @notice Sets the token to receive
-    /// @param _tokenReceived the address of the token to receive
-    function setTokenReceived(address _tokenReceived) external override onlyGovernor {
-      tokenReceived = _tokenReceived;
-      emit UpdateTokenReceived(_tokenReceived);
     }
 
     /// @notice Sets the address receiving swap's inbound tokens
@@ -138,12 +122,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
         maxSpentPerSwap = _maxSpentPerSwap;
     }
 
-    /// @notice Sets the maximum amount of tokens to buy
-    /// @param _tokenBuyLimit the amount of tokens above which swaps will revert
-    function setTokenBuyLimit(uint256 _tokenBuyLimit) external onlyGovernor {
-      tokenBuyLimit = _tokenBuyLimit;
-    }
-
     /// @notice sets the minimum time between swaps
     function setSwapFrequency(uint256 _duration) external onlyGovernor {
        _setDuration(_duration);
@@ -155,79 +133,11 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     }
 
     // =======================================================================
-    // Getters
-    // =======================================================================
-
-    /// @notice Get the token to spend
-    /// @return The address of the token to spend
-    function getTokenSpent() external view override returns (address) {
-      return tokenSpent;
-    }
-
-    /// @notice Get the token to receive
-    /// @return The address of the token to receive
-    function getTokenReceived() external view override returns (address) {
-      return tokenReceived;
-    }
-
-    /// @notice Get the address receiving the inbound swapped tokens
-    /// @return The address receiving tokens
-    function getReceivingAddress() external view override returns (address) {
-      return tokenReceivingAddress;
-    }
-
-    /// @notice Get the minimum time between swaps
-    /// @return the time between swaps
-    function getSwapFrequency() external view returns (uint256) {
-      return duration;
-    }
-
-    /// @notice Get the current oracle price used for maximum slippage backstop
-    /// @return the current oracle price
-    function getOraclePrice() external view returns (uint256) {
-      (Decimal.D256 memory twap,) = oracle.read();
-      return twap.asUint256();
-    }
-
-    /// @notice Get the expected number of token to be spent on next swap
-    /// @return the number of tokens about to be spent
-    function getNextAmountSpent() external view returns (uint256) {
-      return _getExpectedAmountIn();
-    }
-
-    /// @notice Get the expected number of token to be received on next swap
-    /// @return the number of tokens about to be received
-    function getNextAmountReceived() external view returns (uint256) {
-      return _getExpectedAmountOut(_getExpectedAmountIn());
-    }
-
-    /// @notice Get the minimum number of tokens to receive on next swap (based
-    ///     on oracle price), under which the swap will revert.
-    /// @return the minimum number of tokens to be received on next swap
-    function getNextAmountReceivedThreshold() external view returns (uint256) {
-      return _getMinimumAcceptableAmountOut(_getExpectedAmountIn());
-    }
-
-    /// @notice Get the decimal normalizer between tokenSpent and tokenReceived
-    ///     e.g. if tokenSpent has 18 decimals and tokenReceived has 6 decimals,
-    //      this function will return 1e12.
-    /// @return the decimal normalizer number.
-    /// @return a boolean to indicate the normalizer direction (does tokenSpent
-    ///     has more decimals than tokenReceived, or the other way around?).
-    function getDecimalNormalizer() external view returns (uint256, bool) {
-      return _getDecimalNormalizer();
-    }
-
-    // =======================================================================
     // External functions
     // =======================================================================
 
     /// @notice Swap tokenSpent for tokenReceived
     function swap() external override afterTime whenNotPaused {
-      if (tokenBuyLimit != 0) {
-        require(ERC20(tokenReceived).balanceOf(tokenReceivingAddress) < tokenBuyLimit, "PCVSwapperUniswap: tokenBuyLimit reached.");
-      }
-
       updateOracle();
 
       uint256 amountIn = _getExpectedAmountIn();
@@ -324,10 +234,10 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
       bool direction;
       if (decimalsTokenSpent >= decimalsTokenReceived) {
         direction = true;
-        n = Decimal.from(10).pow(decimalsTokenSpent - decimalsTokenReceived).asUint256();
+        n = uint256(10)**(decimalsTokenSpent - decimalsTokenReceived);
       } else {
         direction = false;
-        n = Decimal.from(10).pow(decimalsTokenReceived - decimalsTokenSpent).asUint256();
+        n = uint256(10)**(decimalsTokenReceived - decimalsTokenSpent);
       }
       return (n, direction);
     }
