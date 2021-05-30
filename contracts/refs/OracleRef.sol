@@ -13,6 +13,9 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     /// @notice the oracle reference by the contract
     IOracle public override oracle;
 
+    /// @notice the backup oracle reference by the contract
+    IOracle public override backupOracle;
+
     /// @notice OracleRef constructor
     /// @param _core Fei Core to reference
     /// @param _oracle oracle to reference
@@ -24,6 +27,12 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     /// @param _oracle the new oracle to reference
     function setOracle(address _oracle) external override onlyGovernor {
         _setOracle(_oracle);
+    }
+
+    /// @notice sets the referenced backup oracle
+    /// @param _backupOracle the new backup oracle to reference
+    function setBackupOracle(address _backupOracle) external override onlyGovernor {
+        _setBackupOracle(_backupOracle);
     }
 
     /// @notice invert a peg price
@@ -50,6 +59,9 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     /// @dev the peg is defined as FEI per X with X being ETH, dollars, etc
     function readOracle() public view override returns (Decimal.D256 memory) {
         (Decimal.D256 memory _peg, bool valid) = oracle.read();
+        if (!valid && address(backupOracle) != address(0)) {
+            (_peg, valid) = backupOracle.read();
+        }
         require(valid, "OracleRef: oracle invalid");
         return _peg;
     }
@@ -57,5 +69,10 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     function _setOracle(address _oracle) internal {
         oracle = IOracle(_oracle);
         emit OracleUpdate(_oracle);
+    }
+
+    function _setBackupOracle(address _backupOracle) internal {
+        backupOracle = IOracle(_backupOracle);
+        emit BackupOracleUpdate(_backupOracle);
     }
 }
