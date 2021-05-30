@@ -57,11 +57,6 @@ interface IBondingCurve {
 
     function getCurrentPrice() external view returns (Decimal.D256 memory);
 
-    function getAverageUSDPrice(uint256 amountIn)
-        external
-        view
-        returns (Decimal.D256 memory);
-
     function getAmountOut(uint256 amountIn)
         external
         view

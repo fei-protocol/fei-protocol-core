@@ -40,12 +40,8 @@ describe('EthBondingCurve', function () {
   });
 
   describe('Init', function() {
-    it('average price', async function() {
-      expect((await this.bondingCurve.getAverageUSDPrice('50000000'))[0]).to.be.equal('990000000020592000'); // $.99
-    });
-
     it('current price', async function() {
-      expect((await this.bondingCurve.getCurrentPrice())[0]).to.be.equal('505050505050505050505'); // $.99
+      expect((await this.bondingCurve.getCurrentPrice())[0]).to.be.equal('1010101010101010101'); // ~1.01 FEI/$
     });
 
     it('getAmountOut', async function() {
@@ -132,7 +128,7 @@ describe('EthBondingCurve', function () {
         });
         
         it('current price', async function() {
-          expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("505050505050505050505");
+          expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("1010101010101010101");
         });
 
         it('total PCV held', async function() {
@@ -168,7 +164,7 @@ describe('EthBondingCurve', function () {
           });
           
           it('current price', async function() {
-            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("505050505050505050505");
+            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("1010101010101010101");
           });
   
           it('total PCV held', async function() {
@@ -206,7 +202,7 @@ describe('EthBondingCurve', function () {
           });
           
           it('current price', async function() {
-            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("505050505050505050505");
+            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("1010101010101010101");
           });
   
           it('total PCV held', async function() {
@@ -245,7 +241,7 @@ describe('EthBondingCurve', function () {
           });
           
           it('current price', async function() {
-            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("404040404040404040404");
+            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("1010101010101010101");
           });
   
           it('total PCV held', async function() {
@@ -283,7 +279,7 @@ describe('EthBondingCurve', function () {
         });
         
         it('current price', async function() {
-          expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("495000000000000000000");
+          expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("990099009900990099");
         });
 
         it('total PCV held', async function() {
@@ -292,7 +288,7 @@ describe('EthBondingCurve', function () {
 
         describe('Post Scale', function() {
           beforeEach(async function() {
-            this.expectedFei2 = this.purchaseAmount.mul(new BN('495'));
+            this.expectedFei2 = new BN('99009900990');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
             expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
             expectEvent(
@@ -319,7 +315,7 @@ describe('EthBondingCurve', function () {
           });
           
           it('current price', async function() {
-            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("495000000000000000000");
+            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("990099009900990099");
           });
   
           it('total PCV held', async function() {
@@ -349,7 +345,7 @@ describe('EthBondingCurve', function () {
           beforeEach(async function() {
             // 5% buffer
             await this.bondingCurve.setBuffer(500, {from: governorAddress});
-            this.expectedFei2 = this.purchaseAmount.mul(new BN('475'));
+            this.expectedFei2 = new BN('95238095238');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
             expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
             expectEvent(
@@ -376,7 +372,7 @@ describe('EthBondingCurve', function () {
           });
           
           it('current price', async function() {
-            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("475000000000000000000");
+            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("952380952380952380");
           });
   
           it('total PCV held', async function() {
@@ -388,7 +384,7 @@ describe('EthBondingCurve', function () {
           beforeEach(async function() {
             // 20% decrease
             await this.oracle.setExchangeRate(600);
-            this.expectedFei2 = this.purchaseAmount.mul(new BN('594'));
+            this.expectedFei2 = new BN('118811881188');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
             expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
             expectEvent(
@@ -415,7 +411,7 @@ describe('EthBondingCurve', function () {
           });
           
           it('current price', async function() {
-            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("594000000000000000000");
+            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("990099009900990099");
           });
   
           it('total PCV held', async function() {

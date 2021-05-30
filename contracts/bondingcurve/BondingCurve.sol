@@ -9,8 +9,11 @@ import "../pcv/PCVSplitter.sol";
 import "../pcv/IPCVDeposit.sol";
 import "../utils/Timed.sol";
 
-/// @title a bonding curve for purchasing FEI with ERC-20 tokens
-/// @author Fei Protocol
+/**
+ * @title a bonding curve for purchasing FEI with ERC-20 tokens
+ * @author Fei Protocol
+ * 
+ */ 
 contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     using Decimal for Decimal.D256;
 
@@ -155,7 +158,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     }
 
     /// @notice return current instantaneous bonding curve price
-    /// @return price reported as FEI per X with X being the underlying asset
+    /// @return price reported as FEI per USD
     /// @dev Can be innacurate if outdated, need to call `oracle().isOutdated()` to check
     function getCurrentPrice()
         public
@@ -164,9 +167,9 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         returns (Decimal.D256 memory)
     {
         if (atScale()) {
-            return readOracle().mul(_getBufferMultiplier());
+            return _getBufferMultiplier();
         }
-        return readOracle().div(_getBondingCurvePriceMultiplier());
+        return _getBondingCurvePriceMultiplier();
     }
 
     /// @notice return amount of FEI received after a bonding curve purchase
@@ -179,36 +182,23 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         override
         returns (uint256 amountOut)
     {
-        uint256 adjustedAmount = _getAdjustedAmount(amountIn);
-        amountOut = _getBufferAdjustedAmount(adjustedAmount);
-        if (atScale()) {
-            return amountOut;
+        // the FEI value of the input amount
+        uint256 adjustedAmount = readOracle().mul(amountIn).asUint256();
+
+        Decimal.D256 memory price = getCurrentPrice();
+
+        if (!atScale()) {
+            uint256 preScaleAmount = scale - totalPurchased;
+
+            // crossing scale
+            if (adjustedAmount > preScaleAmount) {
+                uint256 postScaleAmount = adjustedAmount - preScaleAmount;
+                // combined pricing of pre-scale price times the amount to reach scale and post-scale price times remainder
+                return price.mul(preScaleAmount).add(_getBufferMultiplier().mul(postScaleAmount)).asUint256();
+            }
         }
-        return Math.max(amountOut, _getBondingCurveAmountOut(adjustedAmount)); // Cap price at buffer adjusted
-    }
 
-    /// @notice return the average price of a transaction along bonding curve
-    /// @param amountIn the amount of underlying used to purchase
-    /// @return price reported as USD per FEI
-    /// @dev Can be innacurate if outdated, need to call `oracle().isOutdated()` to check
-    function getAverageUSDPrice(uint256 amountIn)
-        public
-        view
-        override
-        returns (Decimal.D256 memory)
-    {
-        uint256 adjustedAmount = _getAdjustedAmount(amountIn);
-        uint256 amountOut = getAmountOut(amountIn);
-        return Decimal.ratio(adjustedAmount, amountOut);
-    }
-
-    /// @notice multiplies amount in by the peg to convert to FEI
-    function _getAdjustedAmount(uint256 amountIn)
-        internal
-        view
-        returns (uint256)
-    {
-        return readOracle().mul(amountIn).asUint256();
+        amountOut = price.mul(adjustedAmount).asUint256();
     }
 
     /// @notice mint FEI and send to buyer destination
@@ -219,6 +209,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         updateOracle();
 
         amountOut = getAmountOut(amountIn);
+
         _incrementTotalPurchased(amountOut);
         fei().mint(to, amountOut);
 
@@ -251,35 +242,18 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         virtual
         returns (Decimal.D256 memory) {
             uint256 granularity = BASIS_POINTS_GRANULARITY;
-            return Decimal.ratio(granularity - discount, granularity);
-        }
-
-    /// @notice returns the integral of the bonding curve solved for the amount of tokens out for a certain amount of value in
-    /// @param adjustedAmountIn this is the value in FEI of the underlying asset coming in
-    function _getBondingCurveAmountOut(uint256 adjustedAmountIn)
-        internal
-        view
-        virtual
-        returns (uint256) {
-            require(adjustedAmountIn <= scale, "BondingCurve: purchase exceeds Scale");
-            return Decimal.from(adjustedAmountIn).div(_getBondingCurvePriceMultiplier()).asUint256();
+            // uses 1/1-b because the oracle price is inverted
+            return Decimal.ratio(granularity, granularity - discount);
         }
 
     /// @notice returns the buffer on the post-scale bonding curve price
     function _getBufferMultiplier() internal view returns (Decimal.D256 memory) {
         uint256 granularity = BASIS_POINTS_GRANULARITY;
-        // uses granularity - buffer (i.e. 1-b) instead of 1+b because the peg is inverted
-        return Decimal.ratio(granularity - buffer, granularity);
+        // uses 1/1+b because the oracle price is inverted
+        return Decimal.ratio(granularity, granularity + buffer);
     }
 
-    function _getBufferAdjustedAmount(uint256 amountIn)
-        internal
-        view
-        returns (uint256)
-    {
-        return _getBufferMultiplier().mul(amountIn).asUint256();
-    }
-
+    // Allocates a portion of escrowed PCV to a target PCV deposit
     function _allocateSingle(uint256 amount, address pcvDeposit)
         internal
         virtual
