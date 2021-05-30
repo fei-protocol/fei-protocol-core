@@ -5,7 +5,7 @@
   "description": "",
   "files": [],
   "scripts": {
-    "compile": "npx hardat compile",
+    "compile": "npx hardhat compile",
     "coverage": "scripts/coverage.js",
     "coverage:hardhat": "npx hardhat coverage",
     "console": "npx hardhat console",

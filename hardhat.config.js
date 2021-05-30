@@ -12,7 +12,6 @@ const rinkebyAlchemyApiKey = process.env.RINKEBY_ALCHEMY_API_KEY;
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  solidity: '0.8.4',
   gasReporter: {
     enabled: !!process.env.REPORT_GAS,
   },
@@ -28,10 +27,13 @@ module.exports = {
       //   accounts: [testnetPrivateKey],
     },
   },
-  settings: {
-    optimizer: {
-      enabled: true,
-      runs: 200,
+  solidity: {
+    version: '0.8.4',
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
     },
   },
 };
