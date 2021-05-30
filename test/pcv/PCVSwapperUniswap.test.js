@@ -1,3 +1,4 @@
+const { BN } = require('@openzeppelin/test-helpers/src/setup');
 const {
     time,
     userAddress,
@@ -113,12 +114,13 @@ const {
             await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '10'+e18});
             expect(await this.weth.balanceOf(this.swapper.address)).to.be.bignumber.equal('10'+e18);
             // call withdrawETH
+            let balanceBefore = new BN(await web3.eth.getBalance(secondUserAddress));
             await this.swapper.withdrawETH(secondUserAddress, '10'+e18, {from: pcvControllerAddress})
             // no more WETH on the swapper
             expect(await this.weth.balanceOf(this.swapper.address)).to.be.bignumber.equal('0'+e18);
             // withdraw target address doesn't have WETH, but unwrapped ETH
             expect(await this.weth.balanceOf(secondUserAddress)).to.be.bignumber.equal('0'+e18);
-            expect(await web3.eth.getBalance(secondUserAddress)).to.be.bignumber.equal('1000010'+e18);
+            expect(await web3.eth.getBalance(secondUserAddress)).to.be.bignumber.equal(new BN('10'+e18).add(balanceBefore));
           });
           it('withdrawERC20() emit WithdrawERC20', async function() {
             expect(await this.fei.balanceOf(this.swapper.address)).to.be.bignumber.equal('0');
