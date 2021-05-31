@@ -230,6 +230,23 @@ const {
         await this.swapper.setInvertOraclePrice(true, {from: governorAddress})
         expect(await this.swapper.invertOraclePrice()).to.be.equal(true);
       });
+      it('setSwapIncentiveAmount() revert if not governor', async function() {
+        await expectRevert(
+          this.swapper.setSwapIncentiveAmount('10'+e18),
+          'CoreRef: Caller is not a governor.'
+        );
+      });
+      it('setSwapIncentiveAmount() emit UpdateSwapIncentiveAmount', async function() {
+        expect(await this.swapper.swapIncentiveAmount()).to.be.bignumber.equal('200'+e18);
+        await expectEvent(
+          await this.swapper.setSwapIncentiveAmount('10'+e18, {from: governorAddress}),
+          'UpdateSwapIncentiveAmount',
+          {
+            swapIncentiveAmount: '10'+e18
+          }
+        );
+        expect(await this.swapper.swapIncentiveAmount()).to.be.bignumber.equal('10'+e18);
+      });
     });
 
     describe('Swap', function() {

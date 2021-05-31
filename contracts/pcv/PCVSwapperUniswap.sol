@@ -20,6 +20,9 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     using Decimal for Decimal.D256;
     using SafeMath for uint256;
 
+    // ----------- Events -----------
+    event UpdateSwapIncentiveAmount(uint256 swapIncentiveAmount);
+
     /// @notice the token to spend on swap (outbound)
     address public immutable override tokenSpent;
     /// @notice the token to receive on swap (inbound)
@@ -31,7 +34,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     /// @notice should we use (1 / oraclePrice) instead of oraclePrice ?
     bool public invertOraclePrice;
     /// @notice the incentive for calling swap() function, in FEI
-    uint256 public immutable swapIncentiveAmount;
+    uint256 public swapIncentiveAmount;
     /// @notice the maximum amount of slippage vs oracle price
     uint256 public maximumSlippageBasisPoints;
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
@@ -66,6 +69,8 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
         invertOraclePrice = _invertOraclePrice;
         swapIncentiveAmount = _swapIncentiveAmount;
+
+        emit UpdateSwapIncentiveAmount(_swapIncentiveAmount);
 
         // start timer
         _initTimed();
@@ -133,6 +138,12 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     /// @notice sets invertOraclePrice : use (1 / oraclePrice) if true
     function setInvertOraclePrice(bool _invertOraclePrice) external onlyGovernor {
         invertOraclePrice = _invertOraclePrice;
+    }
+
+    /// @notice set the swap incentive amout
+    function setSwapIncentiveAmount(uint256 _swapIncentiveAmount) external onlyGovernor {
+        swapIncentiveAmount = _swapIncentiveAmount;
+        emit UpdateSwapIncentiveAmount(_swapIncentiveAmount);
     }
 
     // =======================================================================
