@@ -247,11 +247,13 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
       uint256 n;
       bool direction;
       if (decimalsTokenSpent >= decimalsTokenReceived) {
+        require(decimalsTokenSpent - decimalsTokenReceived <= 77, "PCVSwapperUniswap: Decimal overflow.");
         direction = true;
-        n = uint256(10)**(decimalsTokenSpent - decimalsTokenReceived);
+        n = uint256(10)**uint256(decimalsTokenSpent - decimalsTokenReceived);
       } else {
+        require(decimalsTokenReceived - decimalsTokenSpent <= 77, "PCVSwapperUniswap: Decimal overflow.");
         direction = false;
-        n = uint256(10)**(decimalsTokenReceived - decimalsTokenSpent);
+        n = uint256(10)**uint256(decimalsTokenReceived - decimalsTokenSpent);
       }
       return (n, direction);
     }
