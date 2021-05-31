@@ -25,7 +25,11 @@ describe('ChainlinkOracleWrapper', function () {
   it('paused() is false on deploy', async function() {
     expect(await this.oracle.paused()).to.be.equal(false);
   });
-  it('isOutdated() never true', async function() {
+  it('isOutdated() true', async function() {
+    await this.mockChainlinkOracle.set('42', '500', '12345', '1245', '41');
+    expect(await this.oracle.isOutdated()).to.be.equal(true);
+  });
+  it('isOutdated() false', async function() {
     expect(await this.oracle.isOutdated()).to.be.equal(false);
   });
   it('update() does nothing, returns false', async function() {

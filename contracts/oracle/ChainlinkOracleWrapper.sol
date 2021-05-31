@@ -47,7 +47,8 @@ contract ChainlinkOracleWrapper is IOracle, CoreRef {
     /// @notice determine if read value is stale
     /// @return true if read value is stale
     function isOutdated() external view override returns (bool) {
-        return false;
+        (uint80 roundId,,,, uint80 answeredInRound) = chainlinkOracle.latestRoundData();
+        return answeredInRound != roundId;
     }
 
     /// @notice read the oracle price
