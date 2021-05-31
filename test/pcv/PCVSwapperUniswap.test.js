@@ -186,9 +186,15 @@ const {
           'PCVSwapperUniswap: Exceeds bp granularity.'
         );
       });
-      it('setMaximumSlippage()', async function() {
+      it('setMaximumSlippage() emit UpdateMaximumSlippage', async function() {
         expect(await this.swapper.maximumSlippageBasisPoints()).to.be.bignumber.equal('300');
-        await this.swapper.setMaximumSlippage('500', { from: governorAddress });
+        await expectEvent(
+          await this.swapper.setMaximumSlippage('500', { from: governorAddress }),
+          'UpdateMaximumSlippage',
+          {
+            maximumSlippage: '500'
+          }
+        );
         expect(await this.swapper.maximumSlippageBasisPoints()).to.be.bignumber.equal('500');
       });
       it('setMaxSpentPerSwap() revert if not governor', async function() {
@@ -203,9 +209,15 @@ const {
           'PCVSwapperUniswap: Cannot swap 0.'
         );
       });
-      it('setMaxSpentPerSwap()', async function() {
+      it('setMaxSpentPerSwap() emit UpdateMaxSpentPerSwap', async function() {
         expect(await this.swapper.maxSpentPerSwap()).to.be.bignumber.equal('100'+e18);
-        await this.swapper.setMaxSpentPerSwap('50'+e18, { from: governorAddress });
+        await expectEvent(
+          await this.swapper.setMaxSpentPerSwap('50'+e18, { from: governorAddress }),
+          'UpdateMaxSpentPerSwap',
+          {
+            maxSpentPerSwap: '50'+e18
+          }
+        );
         expect(await this.swapper.maxSpentPerSwap()).to.be.bignumber.equal('50'+e18);
       });
       it('setSwapFrequency() revert if not governor', async function() {
@@ -214,9 +226,15 @@ const {
           'CoreRef: Caller is not a governor.'
         );
       });
-      it('setSwapFrequency()', async function() {
+      it('setSwapFrequency() emit UpdateSwapFrequency', async function() {
         expect(await this.swapper.duration()).to.be.bignumber.equal('1000');
-        await this.swapper.setSwapFrequency('2000', { from: governorAddress });
+        await expectEvent(
+          await this.swapper.setSwapFrequency('2000', { from: governorAddress }),
+          'UpdateSwapFrequency',
+          {
+            swapFrequency: '2000'
+          }
+        );
         expect(await this.swapper.duration()).to.be.bignumber.equal('2000');
       });
       it('setInvertOraclePrice() revert if not governor', async function() {
@@ -225,9 +243,15 @@ const {
           'CoreRef: Caller is not a governor.'
         );
       });
-      it('setInvertOraclePrice()', async function() {
+      it('setInvertOraclePrice() emit UpdateInvertOraclePrice', async function() {
         expect(await this.swapper.invertOraclePrice()).to.be.equal(false);
-        await this.swapper.setInvertOraclePrice(true, {from: governorAddress})
+        await expectEvent(
+          await this.swapper.setInvertOraclePrice(true, {from: governorAddress}),
+          'UpdateInvertOraclePrice',
+          {
+            invertOraclePrice: true
+          }
+        );
         expect(await this.swapper.invertOraclePrice()).to.be.equal(true);
       });
       it('setSwapIncentiveAmount() revert if not governor', async function() {

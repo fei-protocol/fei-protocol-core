@@ -21,6 +21,10 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     using SafeMath for uint256;
 
     // ----------- Events -----------
+    event UpdateMaximumSlippage(uint256 maximumSlippage);
+    event UpdateMaxSpentPerSwap(uint256 maxSpentPerSwap);
+    event UpdateSwapFrequency(uint256 swapFrequency);
+    event UpdateInvertOraclePrice(bool invertOraclePrice);
     event UpdateSwapIncentiveAmount(uint256 swapIncentiveAmount);
 
     /// @notice the token to spend on swap (outbound)
@@ -70,6 +74,11 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
         invertOraclePrice = _invertOraclePrice;
         swapIncentiveAmount = _swapIncentiveAmount;
 
+        emit UpdateReceivingAddress(_tokenReceivingAddress);
+        emit UpdateMaximumSlippage(_maximumSlippageBasisPoints);
+        emit UpdateMaxSpentPerSwap(_maxSpentPerSwap);
+        emit UpdateSwapFrequency(_swapFrequency);
+        emit UpdateInvertOraclePrice(_invertOraclePrice);
         emit UpdateSwapIncentiveAmount(_swapIncentiveAmount);
 
         // start timer
@@ -121,6 +130,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     function setMaximumSlippage(uint256 _maximumSlippageBasisPoints) external onlyGovernor {
         require(_maximumSlippageBasisPoints <= BASIS_POINTS_GRANULARITY, "PCVSwapperUniswap: Exceeds bp granularity.");
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
+        emit UpdateMaximumSlippage(_maximumSlippageBasisPoints);
     }
 
     /// @notice Sets the maximum tokens spent on each swap
@@ -128,16 +138,19 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     function setMaxSpentPerSwap(uint256 _maxSpentPerSwap) external onlyGovernor {
         require(_maxSpentPerSwap != 0, "PCVSwapperUniswap: Cannot swap 0.");
         maxSpentPerSwap = _maxSpentPerSwap;
+        emit UpdateMaxSpentPerSwap(_maxSpentPerSwap);
     }
 
     /// @notice sets the minimum time between swaps
     function setSwapFrequency(uint256 _duration) external onlyGovernor {
-       _setDuration(_duration);
+        _setDuration(_duration);
+        emit UpdateSwapFrequency(_duration);
     }
 
     /// @notice sets invertOraclePrice : use (1 / oraclePrice) if true
     function setInvertOraclePrice(bool _invertOraclePrice) external onlyGovernor {
         invertOraclePrice = _invertOraclePrice;
+        emit UpdateInvertOraclePrice(_invertOraclePrice);
     }
 
     /// @notice set the swap incentive amout
