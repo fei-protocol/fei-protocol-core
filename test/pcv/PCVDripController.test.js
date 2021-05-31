@@ -13,20 +13,21 @@ const {
     beneficiaryAddress1
   } = require('../helpers');
   
-const EthPCVDripper = contract.fromArtifact('EthPCVDripper');
+const PCVDripController = contract.fromArtifact('PCVDripController');
 const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
 
-  describe('EthPCVDripper', function () {
+  describe('PCVDripController', function () {
   
     beforeEach(async function () {
       this.core = await getCore(true);
       
+      this.sourcePCVDeposit = await MockPCVDeposit.new(beneficiaryAddress1);
       this.pcvDeposit = await MockPCVDeposit.new(beneficiaryAddress1);
       this.dripAmount = new BN('500000000000000000');
 
-      this.pcvDripper = await EthPCVDripper.new(this.core.address, this.pcvDeposit.address, '1000', this.dripAmount);
+      this.pcvDripper = await PCVDripController.new(this.core.address, this.sourcePCVDeposit.address, this.pcvDeposit.address, '1000', this.dripAmount);
 
-      await web3.eth.sendTransaction({from: userAddress, to: this.pcvDripper.address, value: "1000000000000000000"});
+      await web3.eth.sendTransaction({from: userAddress, to: this.sourcePCVDeposit.address, value: "1000000000000000000"});
     });
   
     describe('Drip', function() {
@@ -50,13 +51,13 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
           });
           describe('Target balance low enough', function() {
             it('succeeds', async function() {
-                let dripperBalanceBefore = await this.pcvDripper.balance();
+                let sourceBalanceBefore = await this.sourcePCVDeposit.balance();
                 let beneficiaryBalanceBefore = await balance.current(this.pcvDeposit.address);
                 await this.pcvDripper.drip();
-                let dripperBalanceAfter = await this.pcvDripper.balance();
+                let sourceBalanceAfter = await this.sourcePCVDeposit.balance();
                 let beneficiaryBalanceAfter = await balance.current(this.pcvDeposit.address);
     
-                expect(dripperBalanceBefore.sub(dripperBalanceAfter)).to.be.bignumber.equal(this.dripAmount);
+                expect(sourceBalanceBefore.sub(sourceBalanceAfter)).to.be.bignumber.equal(this.dripAmount);
                 expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore)).to.be.bignumber.equal(this.dripAmount);
     
                 // timer reset
@@ -70,7 +71,7 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
             });
 
             it('reverts', async function() {        
-                await expectRevert(this.pcvDripper.drip(), "EthPCVDripper: target balance too high");
+                await expectRevert(this.pcvDripper.drip(), "PCVDripController: not eligible");
             });
         });
       });
@@ -94,13 +95,13 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
                     await time.increase('1000');
                 });
                 it('succeeds', async function() {
-                    let dripperBalanceBefore = await this.pcvDripper.balance();
+                    let sourceBalanceBefore = await this.sourcePCVDeposit.balance();
                     let beneficiaryBalanceBefore = await balance.current(this.pcvDeposit.address);
                     await this.pcvDripper.drip();
-                    let dripperBalanceAfter = await this.pcvDripper.balance();
+                    let sourceBalanceAfter = await this.sourcePCVDeposit.balance();
                     let beneficiaryBalanceAfter = await balance.current(this.pcvDeposit.address);
         
-                    expect(dripperBalanceBefore.sub(dripperBalanceAfter)).to.be.bignumber.equal(this.dripAmount);
+                    expect(sourceBalanceBefore.sub(sourceBalanceAfter)).to.be.bignumber.equal(this.dripAmount);
                     expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore)).to.be.bignumber.equal(this.dripAmount);
         
                     // timer reset
@@ -115,31 +116,39 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
                 });
 
                 it('reverts', async function() {        
-                    await expectRevert(this.pcvDripper.drip(), "EthPCVDripper: target balance too high");
+                    await expectRevert(this.pcvDripper.drip(), "PCVDripController: not eligible");
                 });
             });
         });
     });
-  
-    describe('Withdraw', function() {
-      it('enough eth succeeds', async function() {
-        let dripperBalanceBefore = await this.pcvDripper.balance();
-        let beneficiaryBalanceBefore = await balance.current(beneficiaryAddress1);
-
-        await this.pcvDripper.withdraw(beneficiaryAddress1, '10000', {from: pcvControllerAddress});
-        let dripperBalanceAfter = await this.pcvDripper.balance();
-        let beneficiaryBalanceAfter = await balance.current(beneficiaryAddress1);
-
-        expect(dripperBalanceBefore.sub(dripperBalanceAfter)).to.be.bignumber.equal(new BN('10000'));
-        expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore)).to.be.bignumber.equal(new BN('10000'));
+    describe('Set dripAmount', function() {
+      it('governor succeeds', async function() {
+        await this.pcvDripper.setDripAmount('10000', {from: governorAddress});
+        expect(await this.pcvDripper.dripAmount()).to.be.bignumber.equal(new BN('10000'));
       });
 
-      it('not enough eth reverts', async function() {
-        await expectRevert(this.pcvDripper.withdraw(beneficiaryAddress1, '10000000000000000000', {from: pcvControllerAddress}), "revert");
+      it('non-governor reverts', async function() {
+        await expectRevert(this.pcvDripper.setDripAmount('10000', {from: userAddress}), "CoreRef: Caller is not a governor");
+      });
+    });
+    describe('Set Source', function() {
+      it('governor succeeds', async function() {
+        await this.pcvDripper.setSource(userAddress, {from: governorAddress});
+        expect(await this.pcvDripper.source()).to.be.equal(userAddress);
       });
 
-      it('non pcvController', async function() {
-        await expectRevert(this.pcvDripper.withdraw(beneficiaryAddress1, '10000', {from: beneficiaryAddress1}), "CoreRef: Caller is not a PCV controller");
+      it('non-governor reverts', async function() {
+        await expectRevert(this.pcvDripper.setSource(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
+      });
+    });
+    describe('Set USD per FEI', function() {
+      it('governor succeeds', async function() {
+        await this.pcvDripper.setTarget(userAddress, {from: governorAddress});
+        expect(await this.pcvDripper.target()).to.be.equal(userAddress);
+      });
+
+      it('non-governor reverts', async function() {
+        await expectRevert(this.pcvDripper.setTarget(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
       });
     });
   });
