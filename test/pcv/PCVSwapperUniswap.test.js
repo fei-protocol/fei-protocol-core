@@ -53,11 +53,10 @@ const {
     });
 
     describe('Payable', function() {
-      it('should mint WETH on ETH reception', async function() {
+      it('should accept ETH transfers', async function() {
         // send 23 ETH
         await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '23'+e18});
-        const wethBalance = await this.weth.balanceOf(this.swapper.address);
-        expect(wethBalance).to.be.bignumber.equal('23'+e18);
+        expect(await web3.eth.getBalance(this.swapper.address)).to.be.bignumber.equal('23'+e18);
       });
     });
 
@@ -106,20 +105,6 @@ const {
               }
             );
           });
-          it('withdrawETH() unwraps WETH', async function() {
-            // swapper starts with 0 WETH
-            expect(await this.weth.balanceOf(this.swapper.address)).to.be.bignumber.equal('0');
-            // swapper gets 10 WETH
-            await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '10'+e18});
-            expect(await this.weth.balanceOf(this.swapper.address)).to.be.bignumber.equal('10'+e18);
-            // call withdrawETH
-            await this.swapper.withdrawETH(secondUserAddress, '10'+e18, {from: pcvControllerAddress})
-            // no more WETH on the swapper
-            expect(await this.weth.balanceOf(this.swapper.address)).to.be.bignumber.equal('0'+e18);
-            // withdraw target address doesn't have WETH, but unwrapped ETH
-            expect(await this.weth.balanceOf(secondUserAddress)).to.be.bignumber.equal('0'+e18);
-            expect(await web3.eth.getBalance(secondUserAddress)).to.be.bignumber.equal('1000010'+e18);
-          });
           it('withdrawERC20() emit WithdrawERC20', async function() {
             expect(await this.fei.balanceOf(this.swapper.address)).to.be.bignumber.equal('0');
             expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal('0');
@@ -158,6 +143,7 @@ const {
         it('swap() emit Swap', async function() {
           await time.increase('1000');
           await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '100'+e18});
+          await this.swapper.wrapETH({ from: pcvControllerAddress });
           await expectEvent(
             await this.swapper.swap({from: userAddress}),
             'Swap',
@@ -273,6 +259,40 @@ const {
       });
     });
 
+    describe('ETH wrap/unwrap', function() {
+      it('wrapETH() revert if not PCVController', async function() {
+        await expectRevert(
+          this.swapper.wrapETH(),
+          'CoreRef: Caller is not a PCV controller.'
+        );
+      });
+      it('wrapETH()', async function() {
+        expect(await this.weth.balanceOf(this.swapper.address)).to.be.bignumber.equal('0'+e18);
+        await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '100'+e18});
+        expect(await web3.eth.getBalance(this.swapper.address)).to.be.bignumber.equal('100'+e18);
+        await this.swapper.wrapETH({ from: pcvControllerAddress });
+        expect(await this.weth.balanceOf(this.swapper.address)).to.be.bignumber.equal('100'+e18);
+        expect(await web3.eth.getBalance(this.swapper.address)).to.be.bignumber.equal('0'+e18);
+      });
+      it('unwrapETH() revert if not PCVController', async function() {
+        await expectRevert(
+          this.swapper.unwrapETH(),
+          'CoreRef: Caller is not a PCV controller.'
+        );
+      });
+      it('unwrapETH()', async function() {
+        expect(await this.weth.balanceOf(this.swapper.address)).to.be.bignumber.equal('0'+e18);
+        await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '100'+e18});
+        expect(await web3.eth.getBalance(this.swapper.address)).to.be.bignumber.equal('100'+e18);
+        await this.swapper.wrapETH({ from: pcvControllerAddress });
+        expect(await this.weth.balanceOf(this.swapper.address)).to.be.bignumber.equal('100'+e18);
+        expect(await web3.eth.getBalance(this.swapper.address)).to.be.bignumber.equal('0'+e18);
+        await this.swapper.unwrapETH({ from: pcvControllerAddress });
+        expect(await this.weth.balanceOf(this.swapper.address)).to.be.bignumber.equal('0'+e18);
+        expect(await web3.eth.getBalance(this.swapper.address)).to.be.bignumber.equal('100'+e18);
+      });
+    });
+
     describe('Swap', function() {
       it('revert if paused by guardian', async function() {
         await time.increase('1000');
@@ -291,29 +311,34 @@ const {
         await this.oracle.setValid(false);
         await time.increase('1000');
         await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '100'+e18});
+        await this.swapper.wrapETH({ from: pcvControllerAddress });
         await expectRevert(this.swapper.swap(), 'OracleRef: oracle invalid.');
       });
       it('revert if slippage is too high', async function() {
         await time.increase('1000');
         await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '1000'+e18});
+        await this.swapper.wrapETH({ from: pcvControllerAddress });
         await this.swapper.setMaxSpentPerSwap('1000'+e18, {from: governorAddress});
         await expectRevert(this.swapper.swap(), 'PCVSwapperUniswap: slippage too high.');
       });
       it('send tokens to tokenReceivingAddress', async function() {
         await time.increase('1000');
         await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '100'+e18});
+        await this.swapper.wrapETH({ from: pcvControllerAddress });
         await this.swapper.swap({from: userAddress});
         expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal('248259939361825041733566');
       });
       it('swap remaining tokens if balance < maxSpentPerSwap', async function() {
         await time.increase('1000');
         await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '50'+e18});
+        await this.swapper.wrapETH({ from: pcvControllerAddress });
         await this.swapper.swap({from: userAddress});
         expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal('124376992277398866659880');
       });
       it('no FEI incentive to caller if swapper is not a Minter', async function() {
         await time.increase('1000');
         await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '50'+e18});
+        await this.swapper.wrapETH({ from: pcvControllerAddress });
         expect((await this.fei.balanceOf(secondUserAddress)) / 1e18).to.be.equal(0);
         await this.swapper.swap({from: secondUserAddress});
         expect((await this.fei.balanceOf(secondUserAddress)) / 1e18).to.be.equal(0);
@@ -321,6 +346,7 @@ const {
       it('send FEI incentive to caller if swapper is Minter', async function() {
         await time.increase('1000');
         await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '50'+e18});
+        await this.swapper.wrapETH({ from: pcvControllerAddress });
         await this.core.grantMinter(this.swapper.address, {from: governorAddress});
         expect((await this.fei.balanceOf(secondUserAddress)) / 1e18).to.be.equal(0);
         await this.swapper.swap({from: secondUserAddress});

@@ -47,13 +47,13 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     IUniswapV2Pair public immutable pair;
 
     // solhint-disable-next-line var-name-mixedcase
-    IWETH public immutable WETH;
+    address public immutable WETH;
 
     constructor(
         address _core,
         IUniswapV2Pair _pair,
         // solhint-disable-next-line var-name-mixedcase
-        IWETH _WETH,
+        address _WETH,
         address _oracle,
         uint256 _swapFrequency,
         address _tokenSpent,
@@ -85,11 +85,22 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
         _initTimed();
     }
 
-    /// @notice All received ETH is wrapped to WETH
-    receive() external payable {
-      if (msg.sender != address(WETH)) {
-        WETH.deposit{value: msg.value}();
-      }
+    /// @notice Empty callback on ETH reception
+    receive() external payable {}
+
+    // =======================================================================
+    // WETH management
+    // =======================================================================
+
+    /// @notice Wraps all ETH held by the contract to WETH
+    function wrapETH() external onlyPCVController {
+        IWETH(WETH).deposit{value: address(this).balance}();
+    }
+
+    /// @notice Unwraps all WETH held by the contract back to ETH
+    function unwrapETH() external onlyPCVController {
+        uint256 amount = ERC20(WETH).balanceOf(address(this));
+        IWETH(WETH).withdraw(amount);
     }
 
     // =======================================================================
@@ -100,7 +111,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     /// @param to address to send ETH
     /// @param amountOut amount of ETH to send
     function withdrawETH(address payable to, uint256 amountOut) external override onlyPCVController {
-        WETH.withdraw(amountOut);
         Address.sendValue(to, amountOut);
         emit WithdrawETH(msg.sender, to, amountOut);
     }
