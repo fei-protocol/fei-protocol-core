@@ -152,7 +152,14 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
 
     /// @notice Swap tokenSpent for tokenReceived
     function swap() external override afterTime whenNotPaused {
-      updateOracle();
+      // Reset timer
+      _initTimed();
+
+      // Update oracle, if necessary
+      if (oracle.isOutdated()) {
+        bool updated = updateOracle();
+        require(updated, "PCVSwapperUniswap: cannot update outdated oracle.");
+      }
 
       uint256 amountIn = _getExpectedAmountIn();
       uint256 amountOut = _getExpectedAmountOut(amountIn);
@@ -161,9 +168,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
       // Check spot price vs oracle price discounted by max slippage
       // E.g. for a max slippage of 3%, spot price must be >= 97% oraclePrice
       require(minimumAcceptableAmountOut <= amountOut, "PCVSwapperUniswap: slippage too high.");
-
-      // Reset timer
-      _initTimed();
 
       // Perform swap
       ERC20(tokenSpent).safeTransfer(address(pair), amountIn);
