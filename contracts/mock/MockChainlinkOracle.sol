@@ -9,9 +9,19 @@ contract MockChainlinkOracle is AggregatorV3Interface {
     int256 public _value;
     uint8 public _decimals;
 
+    // mocked data
+    uint80 _roundId;
+    uint256 _startedAt;
+    uint256 _updatedAt;
+    uint80 _answeredInRound;
+
     constructor(int256 value, uint8 decimals) public {
         _value = value;
         _decimals = decimals;
+        _roundId = 42;
+        _startedAt = 1620651856;
+        _updatedAt = 1620651856;
+        _answeredInRound = 42;
     }
 
     function decimals() external override view returns (uint8) {
@@ -22,14 +32,14 @@ contract MockChainlinkOracle is AggregatorV3Interface {
       return "MockChainlinkOracle";
     }
 
-    function getRoundData(uint80 _roundId) external override view returns (
+    function getRoundData(uint80 _getRoundId) external override view returns (
         uint80 roundId,
         int256 answer,
         uint256 startedAt,
         uint256 updatedAt,
         uint80 answeredInRound
     ) {
-      return (_roundId, _value, 1620651856, 1620651856, _roundId);
+      return (_getRoundId, _value, 1620651856, 1620651856, _getRoundId);
     }
 
     function latestRoundData() external override view returns (
@@ -39,7 +49,21 @@ contract MockChainlinkOracle is AggregatorV3Interface {
         uint256 updatedAt,
         uint80 answeredInRound
     ) {
-      return (42, _value, 1620651856, 1620651856, 42);
+      return (_roundId, _value, _startedAt, _updatedAt, _answeredInRound);
+    }
+
+    function set(
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
+        uint80 answeredInRound
+    ) external {
+      _roundId = roundId;
+      _value = answer;
+      _startedAt = startedAt;
+      _updatedAt = updatedAt;
+      _answeredInRound = answeredInRound;
     }
 
     function version() external override view returns (uint256) {

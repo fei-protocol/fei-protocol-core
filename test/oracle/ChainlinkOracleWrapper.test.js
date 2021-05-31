@@ -1,5 +1,6 @@
 const {
   expect,
+  expectRevert,
   contract,
   getCore
 } = require('../helpers');
@@ -24,10 +25,10 @@ describe('ChainlinkOracleWrapper', function () {
   it('paused() is false on deploy', async function() {
     expect(await this.oracle.paused()).to.be.equal(false);
   });
-  it('isOutdated() never false', async function() {
+  it('isOutdated() never true', async function() {
     expect(await this.oracle.isOutdated()).to.be.equal(false);
   });
-  it('update() does nothing', async function() {
+  it('update() does nothing, returns false', async function() {
     expect(await this.oracle.isOutdated()).to.be.equal(false);
     await this.oracle.update();
     expect(await this.oracle.isOutdated()).to.be.equal(false);
@@ -40,5 +41,9 @@ describe('ChainlinkOracleWrapper', function () {
     expect((await this.oracle.read())[0] / 1e18).to.be.equal(500);
     expect((await this.oracle2.read())[0] / 1e18).to.be.equal(600);
     expect((await this.oracle3.read())[0] / 1e18).to.be.equal(700);
+  });
+  it('read() reverts if data is from a previous round', async function() {
+    await this.mockChainlinkOracle.set('42', '500', '12345', '1245', '41');
+    await expectRevert(this.oracle.read(), "ChainlinkOracleWrapper: answeredInRound != roundId.");
   });
 });

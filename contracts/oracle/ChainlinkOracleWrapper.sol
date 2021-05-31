@@ -30,6 +30,9 @@ contract ChainlinkOracleWrapper is IOracle, CoreRef {
         _init();
     }
 
+    // @dev: decimals of the oracle are expected to never change, if Chainlink
+    // updates that behavior in the future, we might consider reading the
+    // oracle decimals() on every read() call.
     function _init() internal {
         uint8 oracleDecimals = chainlinkOracle.decimals();
         oracleDecimalsNormalizer = 10 ** uint256(oracleDecimals);
@@ -51,7 +54,8 @@ contract ChainlinkOracleWrapper is IOracle, CoreRef {
     /// @return oracle price
     /// @return true if price is valid
     function read() external view override returns (Decimal.D256 memory, bool) {
-        (,int256 price,,,) = chainlinkOracle.latestRoundData();
+        (uint80 roundId, int256 price,,, uint80 answeredInRound) = chainlinkOracle.latestRoundData();
+        require(answeredInRound == roundId, "ChainlinkOracleWrapper: answeredInRound != roundId.");
         bool valid = !paused() && price > 0;
 
         Decimal.D256 memory value = Decimal.from(uint256(price)).div(oracleDecimalsNormalizer);
