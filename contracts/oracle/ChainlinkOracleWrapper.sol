@@ -56,8 +56,7 @@ contract ChainlinkOracleWrapper is IOracle, CoreRef {
     /// @return true if price is valid
     function read() external view override returns (Decimal.D256 memory, bool) {
         (uint80 roundId, int256 price,,, uint80 answeredInRound) = chainlinkOracle.latestRoundData();
-        require(answeredInRound == roundId, "ChainlinkOracleWrapper: answeredInRound != roundId.");
-        bool valid = !paused() && price > 0;
+        bool valid = !paused() && price > 0 && answeredInRound == roundId;
 
         Decimal.D256 memory value = Decimal.from(uint256(price)).div(oracleDecimalsNormalizer);
         return (value, valid);

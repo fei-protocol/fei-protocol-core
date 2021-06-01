@@ -37,17 +37,19 @@ describe('ChainlinkOracleWrapper', function () {
     await this.oracle.update();
     expect(await this.oracle.isOutdated()).to.be.equal(false);
   });
-  it('read() is always valid', async function() {
+  it('read() is valid', async function() {
     const read = await this.oracle.read();
-    expect(read[1]).to.be.equal(true); // always valid
+    expect(read[1]).to.be.equal(true); // valid
   });
   it('read() is always a Decimal (with 18 decimals)', async function() {
     expect((await this.oracle.read())[0] / 1e18).to.be.equal(500);
     expect((await this.oracle2.read())[0] / 1e18).to.be.equal(600);
     expect((await this.oracle3.read())[0] / 1e18).to.be.equal(700);
   });
-  it('read() reverts if data is from a previous round', async function() {
+  it('read() is invalid if data is from a previous round', async function() {
     await this.mockChainlinkOracle.set('42', '500', '12345', '1245', '41');
-    await expectRevert(this.oracle.read(), "ChainlinkOracleWrapper: answeredInRound != roundId.");
+    const read = await this.oracle.read();
+    expect(read[0] / 1e10).to.be.equal(500);
+    expect(read[1]).to.be.equal(false); // invalid
   });
 });
