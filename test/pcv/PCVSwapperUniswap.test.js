@@ -15,10 +15,12 @@ const {
   } = require('../helpers');
 
   const PCVSwapperUniswap = contract.fromArtifact('PCVSwapperUniswap');
+  const ChainlinkOracleWrapper = contract.fromArtifact('ChainlinkOracleWrapper');
   const Fei = contract.fromArtifact('Fei');
   const MockOracle = contract.fromArtifact('MockOracle');
   const MockWeth = contract.fromArtifact('MockWeth');
   const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
+  const MockChainlinkOracle = contract.fromArtifact('MockChainlinkOracle');
 
   const e18 = '000000000000000000';
 
@@ -33,6 +35,8 @@ const {
       //await web3.eth.sendTransaction({from: userAddress, to: this.pair.address, value: '25000'+e18});
       await this.fei.mint(this.pair.address, '62500000'+e18, {from: minterAddress});
       this.oracle = await MockOracle.new(2500); // 2500:1 oracle price
+      this.mockChainlinkOracle = await MockChainlinkOracle.new('500', 0); // 0 decimals, val = 500
+      this.chainlinkOracleWrapper = await ChainlinkOracleWrapper.new(this.core.address, this.mockChainlinkOracle.address);
 
       this.swapper = await PCVSwapperUniswap.new(
         this.core.address, // core
@@ -306,6 +310,14 @@ const {
         await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '100'+e18});
         await this.swapper.wrapETH({ from: pcvControllerAddress });
         await expectRevert(this.swapper.swap(), 'OracleRef: oracle invalid.');
+      });
+      it('revert if oracle is outdated and cannot be updated', async function() {
+        await this.swapper.setOracle(this.chainlinkOracleWrapper.address, { from: governorAddress });
+        await this.mockChainlinkOracle.set('42', '500', '12345', '1245', '41'); // will be outdated
+        await time.increase('1000');
+        await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '100'+e18});
+        await this.swapper.wrapETH();
+        await expectRevert(this.swapper.swap(), 'PCVSwapperUniswap: cannot update outdated oracle.');
       });
       it('revert if slippage is too high', async function() {
         await time.increase('1000');
