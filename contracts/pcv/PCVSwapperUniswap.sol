@@ -93,7 +93,8 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     // =======================================================================
 
     /// @notice Wraps all ETH held by the contract to WETH
-    function wrapETH() external onlyPCVController {
+    /// Anyone can call it
+    function wrapETH() external {
         IWETH(WETH).deposit{value: address(this).balance}();
     }
 

@@ -260,17 +260,11 @@ const {
     });
 
     describe('ETH wrap/unwrap', function() {
-      it('wrapETH() revert if not PCVController', async function() {
-        await expectRevert(
-          this.swapper.wrapETH(),
-          'CoreRef: Caller is not a PCV controller.'
-        );
-      });
       it('wrapETH()', async function() {
         expect(await this.weth.balanceOf(this.swapper.address)).to.be.bignumber.equal('0'+e18);
         await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '100'+e18});
         expect(await web3.eth.getBalance(this.swapper.address)).to.be.bignumber.equal('100'+e18);
-        await this.swapper.wrapETH({ from: pcvControllerAddress });
+        await this.swapper.wrapETH();
         expect(await this.weth.balanceOf(this.swapper.address)).to.be.bignumber.equal('100'+e18);
         expect(await web3.eth.getBalance(this.swapper.address)).to.be.bignumber.equal('0'+e18);
       });
