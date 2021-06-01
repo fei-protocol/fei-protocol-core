@@ -98,12 +98,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
         IWETH(WETH).deposit{value: address(this).balance}();
     }
 
-    /// @notice Unwraps all WETH held by the contract back to ETH
-    function unwrapETH() external onlyPCVController {
-        uint256 amount = ERC20(WETH).balanceOf(address(this));
-        IWETH(WETH).withdraw(amount);
-    }
-
     // =======================================================================
     // IPCVSwapper interface override
     // =======================================================================
@@ -112,6 +106,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     /// @param to address to send ETH
     /// @param amountOut amount of ETH to send
     function withdrawETH(address payable to, uint256 amountOut) external override onlyPCVController {
+        IWETH(WETH).withdraw(amountOut);
         Address.sendValue(to, amountOut);
         emit WithdrawETH(msg.sender, to, amountOut);
     }
