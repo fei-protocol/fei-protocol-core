@@ -26,7 +26,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
     ) OracleRef(_core, _oracle) {
         require(_usdPerFeiBasisPoints <= BASIS_POINTS_GRANULARITY, "ReserveStabilizer: Exceeds bp granularity");
         usdPerFeiBasisPoints = _usdPerFeiBasisPoints;
-        emit UsdPerFeiRateUpdate(_usdPerFeiBasisPoints);
+        emit UsdPerFeiRateUpdate(0, _usdPerFeiBasisPoints);
 
         token = _token;
     }
@@ -69,11 +69,12 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
     }
 
     /// @notice sets the USD per FEI exchange rate rate
-    /// @param _usdPerFeiBasisPoints the USD per FEI exchange rate denominated in basis points (1/10000)
-    function setUsdPerFeiRate(uint256 _usdPerFeiBasisPoints) external override onlyGovernor {
-        require(_usdPerFeiBasisPoints <= BASIS_POINTS_GRANULARITY, "ReserveStabilizer: Exceeds bp granularity");
-        usdPerFeiBasisPoints = _usdPerFeiBasisPoints;
-        emit UsdPerFeiRateUpdate(_usdPerFeiBasisPoints);
+    /// @param newUsdPerFeiBasisPoints the USD per FEI exchange rate denominated in basis points (1/10000)
+    function setUsdPerFeiRate(uint256 newUsdPerFeiBasisPoints) external override onlyGovernor {
+        require(newUsdPerFeiBasisPoints <= BASIS_POINTS_GRANULARITY, "ReserveStabilizer: Exceeds bp granularity");
+        uint256 oldUsdPerFeiBasisPoints = newUsdPerFeiBasisPoints;
+        usdPerFeiBasisPoints = newUsdPerFeiBasisPoints;
+        emit UsdPerFeiRateUpdate(oldUsdPerFeiBasisPoints, newUsdPerFeiBasisPoints);
     }
 
     function _transfer(address to, uint256 amount) internal virtual {
