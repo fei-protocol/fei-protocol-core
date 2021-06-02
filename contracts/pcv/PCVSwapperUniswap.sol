@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import "./IPCVDeposit.sol";
 import "./IPCVSwapper.sol";
 import "../refs/OracleRef.sol";
 import "../utils/Timed.sol";
@@ -13,7 +14,7 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 
 /// @title implementation for PCV Swapper that swaps ERC20 tokens on Uniswap
 /// @author eswak
-contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
+contract PCVSwapperUniswap is IPCVSwapper, IPCVDeposit, OracleRef, Timed {
     using SafeERC20 for ERC20;
     using Decimal for Decimal.D256;
 
@@ -83,8 +84,32 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
 
     /// @notice Wraps all ETH held by the contract to WETH	
     /// Anyone can call it	
-    function wrapETH() external {	
+    function wrapETH() public {	
         IWETH(WETH).deposit{value: address(this).balance}();	
+    }
+
+    // =======================================================================
+    // IPCVDeposit interface override
+    // =======================================================================
+
+    /// @notice deposit tokenSpent
+    function deposit() external override {
+      // wrap any ETH
+      if (address(this).balance != 0) {
+        wrapETH();
+      }
+    }
+
+    /// @notice withdraw tokenReceived from the contract
+    /// @param to address destination of the ERC20
+    /// @param amount quantity of tokenReceived to send
+    function withdraw(address to, uint256 amount) external override onlyPCVController {
+        withdrawERC20(to, tokenReceived, amount);
+    }
+
+    /// @notice Reads the balance of tokenReceived held in the contract
+    function balance() external view override returns(uint256) {
+      return ERC20(tokenReceived).balanceOf(address(this));
     }
 
     // =======================================================================
@@ -104,7 +129,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed {
     /// @param to address destination of the ERC20
     /// @param token address of the ERC20 to send
     /// @param amount quantity of ERC20 to send
-    function withdrawERC20(address to, address token, uint256 amount) external override onlyPCVController {
+    function withdrawERC20(address to, address token, uint256 amount) public override onlyPCVController {
         ERC20(token).safeTransfer(to, amount);
         emit WithdrawERC20(msg.sender, to, token, amount);
     }

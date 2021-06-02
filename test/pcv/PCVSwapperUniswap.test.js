@@ -64,6 +64,52 @@ describe('PCVSwapperUniswap', function () {
     });
   });
 
+  describe('IPCVDeposit interface override', function() {
+    describe('Getters', function() {
+      it('balance()', async function() {
+        await this.fei.mint(this.swapper.address, '1000', {from: minterAddress});
+        expect(await this.swapper.balance()).to.be.bignumber.equal('1000');
+      });
+    });
+    describe('Withdraw', function() {
+      describe('As PCVController', function() {
+        it('withdraw() emit WithdrawERC20', async function() {
+          expect(await this.fei.balanceOf(this.swapper.address)).to.be.bignumber.equal('0');
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal('0');
+          await this.fei.mint(this.swapper.address, '1'+e18, {from: minterAddress});
+          expect(await this.fei.balanceOf(this.swapper.address)).to.be.bignumber.equal('1'+e18);
+          await expectEvent(
+            await this.swapper.withdraw(userAddress, '1'+e18, {from: pcvControllerAddress}),
+            'WithdrawERC20',
+            {
+              _caller: pcvControllerAddress,
+              _to: userAddress,
+              _token: this.fei.address,
+              _amount: '1'+e18
+            }
+          );
+          expect(await this.fei.balanceOf(this.swapper.address)).to.be.bignumber.equal('0');
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal('1'+e18);
+        });
+      });
+      describe('As Anyone', function() {
+        it('revert withdraw() onlyPCVController', async function() {
+          await expectRevert(
+            this.swapper.withdraw(userAddress, 1),
+            'CoreRef: Caller is not a PCV controller.'
+          );
+        });
+      });
+    });
+    describe('Deposit', function() {
+      it('Wraps ETH', async function() {
+        await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '100'+e18});
+        await this.swapper.deposit();
+        expect(await web3.eth.getBalance(this.swapper.address)).to.be.equal('0');
+        expect(await this.weth.balanceOf(this.swapper.address)).to.be.bignumber.equal('100'+e18);
+      });
+    });
+  });
   describe('IPCVSwapper interface override', function() {
     describe('Getters', function() {
       it('tokenSpent()', async function() {
