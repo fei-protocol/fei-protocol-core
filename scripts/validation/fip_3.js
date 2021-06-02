@@ -14,11 +14,13 @@ module.exports = async function(callback) {
 
   var oldControllerAddress, newControllerAddress, coreAddress, depositAddress;
   if(process.env.TESTNET_MODE) {
+    console.log("Testnet Mode");
     oldControllerAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_CONTROLLER_01;
     newControllerAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_CONTROLLER;
     coreAddress = process.env.RINKEBY_CORE;
     depositAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_DEPOSIT;
   } else {
+    console.log("Mainnet Mode");
     oldControllerAddress = process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER_01;
     newControllerAddress = process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER;
     coreAddress = process.env.MAINNET_CORE;
@@ -29,67 +31,57 @@ module.exports = async function(callback) {
   let oldController = await EthUniswapPCVController.at(oldControllerAddress);
   let core = await Core.at(coreAddress);
 
+  await checkAccessControl(oldController, newController, core);
+
+  await checkParameters(newController, depositAddress);
+
+  await integrationTestReweight(newController);
+
+  callback();
+}
+
+async function checkAccessControl(oldController, newController, core) {
   console.log("Access Control");
   
   let revokedOld = !(await core.isMinter(oldController.address));
-  console.log((revokedOld ? "PASS" : "FAIL") + ": Revoke old controller Minter");
+  check(revokedOld, "Revoke old controller Minter");
 
   let revokedOldController = !(await core.isPCVController(oldController.address));
-  console.log((revokedOldController ? "PASS" : "FAIL") + ": Revoke old controller PCVController");
+  check(revokedOldController, "Revoke old controller PCVController");
 
   let minterNew = await core.isMinter(newController.address);
-  console.log((minterNew ? "PASS" : "FAIL") + ": Grant new deposit Minter");
+  check(minterNew, "Grant new deposit Minter");
 
   let controllerNew = await core.isPCVController(newController.address);
-  console.log((controllerNew ? "PASS" : "FAIL") + ": Grant new controller PCVController");
+  check(controllerNew, "Grant new controller PCVController");
+}
 
+async function checkParameters(newController, depositAddress) {
   console.log("\nParameters");
 
   let linkedDeposit = await newController.pcvDeposit();
 
   let updatedDeposit = linkedDeposit == depositAddress;
-  console.log((updatedDeposit ? "PASS" : "FAIL") + ": New PCV Deposit updates");
+  check(updatedDeposit, "New PCV Deposit updates");
+}
 
-  console.log("\nIntegration Testing");
-  console.log("Moving Pair below 3%");
-  await syncPool(new BN('10300'), newController);
+async function integrationTestReweight(newController) {
+  console.log("\nIntegration Testing Reweight");
 
-  console.log("Advancing Time");
-  await time.increase(await newController.remainingTime());
-
-  let eligible = await newController.reweightEligible();
-  console.log((eligible ? "PASS" : "FAIL") + ": Reweight eligible");
-
-  var timeReset, successReweight;
-  if (eligible) {
-    await newController.reweight();
-    successReweight = await successfulReweight(newController);
-    console.log((successReweight ? "PASS" : "FAIL") + ": First reweight success");
-
-    timeReset = !(await newController.isTimeEnded());
-    console.log((timeReset ? "PASS" : "FAIL") + ": Time reset");
-  }
-
-  console.log("Second Attempt");
   console.log("Fast forward");
   await time.increase(await newController.remainingTime());
   let timeComplete = await newController.isTimeEnded();
-  console.log((timeComplete ? "PASS" : "FAIL") + ": Time complete");
-
-  eligible = await newController.reweightEligible();
-  console.log((!eligible ? "PASS" : "FAIL") + ": Reweight not eligible before sync");
+  check(timeComplete, "Time complete");
 
   console.log("Moving Pair below 3%");
   await syncPool(new BN('10300'), newController);
 
-  eligible = await newController.reweightEligible();
-  console.log((eligible ? "PASS" : "FAIL") + ": Reweight eligible");
+  let eligible = await newController.reweightEligible();
+  check(eligible, "Reweight eligible");
 
   await newController.reweight();
-  successReweight = await successfulReweight(newController);
-  console.log((successReweight ? "PASS" : "FAIL") + ": second reweight success");
-
-  callback();
+  let successReweight = await successfulReweight(newController);
+  check(successReweight, "second reweight success");
 }
 
 async function successfulReweight(controller) {
@@ -124,4 +116,12 @@ async function syncPool(bpsMul, controller) {
     await fei.burnFrom(ethPair.address, currentFei);
     await fei.mint(ethPair.address, targetFei);
     await ethPair.sync();
+}
+
+function check(flag, message) {
+  if (flag) {
+    console.log("PASS: " + message) 
+  } else {
+    throw "FAIL: " + message;
+  }
 }
