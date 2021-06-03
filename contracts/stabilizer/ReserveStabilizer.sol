@@ -16,8 +16,14 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
     /// @notice the denominator for basis granularity (10,000)
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
+    /// @notice the ERC20 token exchanged on this stablizer
+    /// @dev left as 0x0 address for ETH and TRIBE stabilizers
     IERC20 public token;
 
+    /// @notice ERC20 Reserve Stabilizer constructor
+    /// @param _core Fei Core to reference
+    /// @param _oracle the ETH price oracle to reference
+    /// @param _usdPerFeiBasisPoints the USD price per FEI to sell tokens at
     constructor(
         address _core,
         address _oracle,
@@ -33,7 +39,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
 
     /// @notice exchange FEI for tokens from the reserves
     /// @param feiAmount of FEI to sell
-    function exchangeFei(uint256 feiAmount) external override whenNotPaused returns (uint256 amountOut) {
+    function exchangeFei(uint256 feiAmount) public virtual override whenNotPaused returns (uint256 amountOut) {
         updateOracle();
 
         fei().burnFrom(msg.sender, feiAmount);
@@ -72,7 +78,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
     /// @param newUsdPerFeiBasisPoints the USD per FEI exchange rate denominated in basis points (1/10000)
     function setUsdPerFeiRate(uint256 newUsdPerFeiBasisPoints) external override onlyGovernor {
         require(newUsdPerFeiBasisPoints <= BASIS_POINTS_GRANULARITY, "ReserveStabilizer: Exceeds bp granularity");
-        uint256 oldUsdPerFeiBasisPoints = newUsdPerFeiBasisPoints;
+        uint256 oldUsdPerFeiBasisPoints = usdPerFeiBasisPoints;
         usdPerFeiBasisPoints = newUsdPerFeiBasisPoints;
         emit UsdPerFeiRateUpdate(oldUsdPerFeiBasisPoints, newUsdPerFeiBasisPoints);
     }

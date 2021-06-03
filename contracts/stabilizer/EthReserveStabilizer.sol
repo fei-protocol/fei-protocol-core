@@ -11,6 +11,10 @@ contract EthReserveStabilizer is ReserveStabilizer {
     /// @notice wrapped ETH address
     address public immutable WETH;
 
+    /// @notice ETH Reserve Stabilizer constructor
+    /// @param _core Fei Core to reference
+    /// @param _oracle the ETH price oracle to reference
+    /// @param _usdPerFeiBasisPoints the USD price per FEI to sell ETH at
     constructor(
         address _core,
         address _oracle,
