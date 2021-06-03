@@ -95,40 +95,44 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     }
 
     /// @notice sets the bonding curve Scale target
-    function setScale(uint256 _scale) external override onlyGovernor {
-        _setScale(_scale);
+    function setScale(uint256 newScale) external override onlyGovernor {
+        _setScale(newScale);
     }
 
     /// @notice resets the totalPurchased
     function reset() external override onlyGovernor {
+        uint256 oldTotalPurchased = totalPurchased;
         totalPurchased = 0;
-        emit Reset();
+        emit Reset(oldTotalPurchased);
     }
 
     /// @notice sets the bonding curve price buffer
-    function setBuffer(uint256 _buffer) external override onlyGovernor {
+    function setBuffer(uint256 newBuffer) external override onlyGovernor {
         require(
-            _buffer < BASIS_POINTS_GRANULARITY,
+            newBuffer < BASIS_POINTS_GRANULARITY,
             "BondingCurve: Buffer exceeds or matches granularity"
         );
-        buffer = _buffer;
-        emit BufferUpdate(_buffer);
+        uint256 oldBuffer = buffer;
+        buffer = newBuffer;
+        emit BufferUpdate(oldBuffer, newBuffer);
     }
 
     /// @notice sets the bonding curve price discount
-    function setDiscount(uint256 _discount) external override onlyGovernor {
+    function setDiscount(uint256 newDiscount) external override onlyGovernor {
         require(
-            _discount < BASIS_POINTS_GRANULARITY,
+            newDiscount < BASIS_POINTS_GRANULARITY,
             "BondingCurve: Buffer exceeds or matches granularity"
         );
-        discount = _discount;
-        emit DiscountUpdate(_discount);
+        uint256 oldDiscount = discount;
+        discount = newDiscount;
+        emit DiscountUpdate(oldDiscount, newDiscount);
     }
 
     /// @notice sets the allocate incentive amount
-    function setIncentiveAmount(uint256 _incentiveAmount) external override onlyGovernor {
-        incentiveAmount = _incentiveAmount;
-        emit IncentiveAmountUpdate(_incentiveAmount);
+    function setIncentiveAmount(uint256 newIncentiveAmount) external override onlyGovernor {
+        uint256 oldIncentiveAmount = incentiveAmount;
+        incentiveAmount = newIncentiveAmount;
+        emit IncentiveAmountUpdate(oldIncentiveAmount, newIncentiveAmount);
     }
 
     /// @notice sets the allocate incentive frequency
@@ -230,9 +234,10 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         totalPurchased = totalPurchased + amount;
     }
 
-    function _setScale(uint256 _scale) internal {
-        scale = _scale;
-        emit ScaleUpdate(_scale);
+    function _setScale(uint256 newScale) internal {
+        uint256 oldScale = scale;
+        scale = newScale;
+        emit ScaleUpdate(oldScale, newScale);
     }
 
     /// @notice if window has passed, reward caller and reset window

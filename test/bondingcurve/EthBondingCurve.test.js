@@ -108,9 +108,9 @@ describe('EthBondingCurve', function () {
             await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount}),
             'Purchase',
             {
-              _to: userAddress,
-              _amountIn: this.purchaseAmount,
-              _amountOut: this.expectedFei1
+              to: userAddress,
+              amountIn: this.purchaseAmount,
+              amountOut: this.expectedFei1
             }
           );
         });
@@ -144,9 +144,9 @@ describe('EthBondingCurve', function () {
               await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount}),
               'Purchase',
               {
-                _to: userAddress,
-                _amountIn: this.purchaseAmount,
-                _amountOut: this.expectedFei2
+                to: userAddress,
+                amountIn: this.purchaseAmount,
+                amountOut: this.expectedFei2
               }
             );
           });
@@ -181,9 +181,9 @@ describe('EthBondingCurve', function () {
               await this.bondingCurve.purchase(secondUserAddress, this.purchaseAmount, {value: this.purchaseAmount}),
               'Purchase',
               {
-                _to: secondUserAddress,
-                _amountIn: this.purchaseAmount,
-                _amountOut: this.expectedFei2
+                to: secondUserAddress,
+                amountIn: this.purchaseAmount,
+                amountOut: this.expectedFei2
               }
             );
           });
@@ -221,9 +221,9 @@ describe('EthBondingCurve', function () {
               await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount}),
               'Purchase',
               {
-                _to: userAddress,
-                _amountIn: this.purchaseAmount,
-                _amountOut: this.expectedFei2
+                to: userAddress,
+                amountIn: this.purchaseAmount,
+                amountOut: this.expectedFei2
               }
             );
           });
@@ -259,9 +259,9 @@ describe('EthBondingCurve', function () {
             await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount}),
             'Purchase',
             {
-              _to: userAddress,
-              _amountIn: this.purchaseAmount,
-              _amountOut: this.expectedFei1
+              to: userAddress,
+              amountIn: this.purchaseAmount,
+              amountOut: this.expectedFei1
             }
           );
         });
@@ -295,9 +295,9 @@ describe('EthBondingCurve', function () {
               await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount}),
               'Purchase',
               {
-                _to: userAddress,
-                _amountIn: this.purchaseAmount,
-                _amountOut: this.expectedFei2
+                to: userAddress,
+                amountIn: this.purchaseAmount,
+                amountOut: this.expectedFei2
               }
             );
           });
@@ -324,10 +324,13 @@ describe('EthBondingCurve', function () {
 
           describe('reset', function() {
             beforeEach(async function() {
+              let total = await this.bondingCurve.totalPurchased();
               expectEvent(
                 await this.bondingCurve.reset({from: governorAddress}),
                 'Reset',
-                {}
+                {
+                  oldTotalPurchased: total
+                }
               );
             });
 
@@ -352,9 +355,9 @@ describe('EthBondingCurve', function () {
               await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount}),
               'Purchase',
               {
-                _to: userAddress,
-                _amountIn: this.purchaseAmount,
-                _amountOut: this.expectedFei2
+                to: userAddress,
+                amountIn: this.purchaseAmount,
+                amountOut: this.expectedFei2
               }
             );
           });
@@ -391,9 +394,9 @@ describe('EthBondingCurve', function () {
               await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount}),
               'Purchase',
               {
-                _to: userAddress,
-                _amountIn: this.purchaseAmount,
-                _amountOut: this.expectedFei2
+                to: userAddress,
+                amountIn: this.purchaseAmount,
+                amountOut: this.expectedFei2
               }
             );
           });
@@ -451,8 +454,8 @@ describe('EthBondingCurve', function () {
         expectEvent(await this.bondingCurve.allocate({from: keeperAddress}),
           'Allocate',
           {
-            _caller: keeperAddress,
-            _amount: this.purchaseAmount
+            caller: keeperAddress,
+            amount: this.purchaseAmount
           }
         ); 
       });
@@ -484,8 +487,8 @@ describe('EthBondingCurve', function () {
             expectEvent(await this.bondingCurve.allocate({from: keeperAddress}),
               'Allocate',
               {
-                _caller: keeperAddress,
-                _amount: this.purchaseAmount
+                caller: keeperAddress,
+                amount: this.purchaseAmount
               }
             ); 
           });
@@ -512,8 +515,8 @@ describe('EthBondingCurve', function () {
             expectEvent(await this.bondingCurve.allocate({from: keeperAddress}),
               'Allocate',
               {
-                _caller: keeperAddress,
-                _amount: this.purchaseAmount
+                caller: keeperAddress,
+                amount: this.purchaseAmount
               }
             ); 
           });
@@ -542,8 +545,8 @@ describe('EthBondingCurve', function () {
             expectEvent(await this.bondingCurve.allocate({from: keeperAddress}),
               'Allocate',
               {
-                _caller: keeperAddress,
-                _amount: this.purchaseAmount
+                caller: keeperAddress,
+                amount: this.purchaseAmount
               }
             ); 
           });
@@ -578,7 +581,10 @@ describe('EthBondingCurve', function () {
       expectEvent(
         await this.bondingCurve.setAllocation([this.pcvDeposit1.address], [10000], {from: governorAddress}), 
         'AllocationUpdate', 
-        { _pcvDeposits : [this.pcvDeposit1.address] }
+        { 
+          oldPCVDeposits: [this.pcvDeposit1.address, this.pcvDeposit2.address],
+          newPCVDeposits : [this.pcvDeposit1.address] 
+        }
       );
 
       var result = await this.bondingCurve.getAllocation();
@@ -613,7 +619,10 @@ describe('EthBondingCurve', function () {
       expectEvent(
         await this.bondingCurve.setScale(100, {from: governorAddress}),
         'ScaleUpdate',
-        {_scale: new BN(100)}
+        { 
+          oldScale: this.scale,
+          newScale: new BN(100)
+        }
       );
       expect(await this.bondingCurve.scale()).to.be.bignumber.equal(new BN(100));
     });
@@ -628,7 +637,10 @@ describe('EthBondingCurve', function () {
       expectEvent(
         await this.bondingCurve.setBuffer(1000, {from: governorAddress}),
         'BufferUpdate',
-        {_buffer: new BN(1000)}
+        {
+          oldBuffer: this.buffer,
+          newBuffer: new BN(1000)
+        }
       );
       expect(await this.bondingCurve.buffer()).to.be.bignumber.equal(new BN(1000));
     });
@@ -647,7 +659,10 @@ describe('EthBondingCurve', function () {
       expectEvent(
         await this.bondingCurve.setDiscount(1000, {from: governorAddress}),
         'DiscountUpdate',
-        {_discount: new BN(1000)}
+        {
+          oldDiscount: '100',
+          newDiscount: new BN(1000)
+        }
       );
       expect(await this.bondingCurve.discount()).to.be.bignumber.equal(new BN(1000));
     });
@@ -683,7 +698,10 @@ describe('EthBondingCurve', function () {
       expectEvent(
         await this.bondingCurve.setIncentiveAmount(this.incentiveAmount, {from: governorAddress}), 
         'IncentiveAmountUpdate', 
-        { _incentiveAmount : this.incentiveAmount }
+        { 
+          oldIncentiveAmount : new BN('100'),
+          newIncentiveAmount : this.incentiveAmount 
+        }
       );
 
       expect(await this.bondingCurve.incentiveAmount()).to.be.bignumber.equal(this.incentiveAmount);
@@ -700,7 +718,10 @@ describe('EthBondingCurve', function () {
       expectEvent(
         await this.bondingCurve.setIncentiveFrequency(this.incentiveFrequency, {from: governorAddress}), 
         'DurationUpdate', 
-        { _duration : this.incentiveFrequency }
+        { 
+          oldDuration: this.incentiveDuration,
+          newDuration: this.incentiveFrequency 
+        }
       );
 
       expect(await this.bondingCurve.duration()).to.be.bignumber.equal(this.incentiveFrequency);
