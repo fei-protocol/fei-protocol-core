@@ -35,7 +35,7 @@ describe('EthBondingCurve', function () {
     this.buffer = new BN('100');
     this.incentiveAmount = new BN('100');
     this.incentiveDuration = new BN('10');
-    this.bondingCurve = await EthBondingCurve.new(this.scale, this.core.address, [this.pcvDeposit1.address, this.pcvDeposit2.address], [9000, 1000], this.oracle.address, this.incentiveDuration, this.incentiveAmount);
+    this.bondingCurve = await EthBondingCurve.new(this.core.address, this.oracle.address, {scale: '100000000000', buffer: '100', discount: '100', duration: this.incentiveDuration.toString(), incentive: this.incentiveAmount.toString(), pcvDeposits: [this.pcvDeposit1.address, this.pcvDeposit2.address], ratios: [9000, 1000]});
     await this.core.grantMinter(this.bondingCurve.address, {from: governorAddress});
   });
 

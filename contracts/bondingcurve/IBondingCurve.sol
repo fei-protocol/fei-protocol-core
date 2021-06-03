@@ -8,8 +8,6 @@ interface IBondingCurve {
     // ----------- Events -----------
 
     event ScaleUpdate(uint256 _scale);
-        
-    event TokenUpdate(address indexed _token);
 
     event BufferUpdate(uint256 _buffer);
 
@@ -39,8 +37,6 @@ interface IBondingCurve {
     function setBuffer(uint256 _buffer) external;
 
     function setDiscount(uint256 _discount) external;
-
-    function setToken(address _token) external;
 
     function setScale(uint256 _scale) external;
 

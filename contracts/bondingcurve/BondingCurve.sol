@@ -21,16 +21,16 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     uint256 public override scale;
 
     /// @notice the ERC20 token for this bonding curve
-    IERC20 public override token;
+    IERC20 public immutable override token;
 
-    /// @notice the total amount of FEI purchased on bonding curve. FEI_b from the whitepaper
-    uint256 public override totalPurchased; // FEI_b for this curve
+    /// @notice the total amount of FEI purchased on bonding curve
+    uint256 public override totalPurchased;
 
     /// @notice the buffer applied on top of the peg purchase price once at Scale
-    uint256 public override buffer = 100;
+    uint256 public override buffer;
     
     /// @notice the discount applied on top of peg before at Scale
-    uint256 public override discount = 100;
+    uint256 public override discount;
 
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
@@ -45,14 +45,20 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     /// @param _oracle the UniswapOracle to reference
     /// @param _duration the duration between incentivizing allocations
     /// @param _incentive the amount rewarded to the caller of an allocation
+    /// @param _token the ERC20 token associated with this curve, null if ETH
+    /// @param _discount the discount applied to FEI purchases before reaching scale in basis points (1/10000)
+    /// @param _buffer the buffer applied to FEI purchases after reaching scale in basis points (1/10000)
     constructor(
-        uint256 _scale,
         address _core,
+        address _oracle,
+        uint256 _scale,
         address[] memory _pcvDeposits,
         uint256[] memory _ratios,
-        address _oracle,
         uint256 _duration,
-        uint256 _incentive
+        uint256 _incentive,
+        IERC20 _token,
+        uint256 _discount,
+        uint256 _buffer
     )
         OracleRef(_core, _oracle)
         PCVSplitter(_pcvDeposits, _ratios)
@@ -60,6 +66,9 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     {
         _setScale(_scale);
         incentiveAmount = _incentive;
+        token = _token;
+        discount = _discount;
+        buffer = _buffer;
 
         _initTimed();
     }
@@ -94,12 +103,6 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     function reset() external override onlyGovernor {
         totalPurchased = 0;
         emit Reset();
-    }
-
-    /// @notice sets the ERC20 token for the contract
-    function setToken(address _token) external override onlyGovernor {
-        token = IERC20(_token);
-        emit TokenUpdate(_token);
     }
 
     /// @notice sets the bonding curve price buffer

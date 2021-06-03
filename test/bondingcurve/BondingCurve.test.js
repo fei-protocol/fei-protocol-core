@@ -38,8 +38,7 @@ const {
       this.buffer = new BN('100');
       this.incentiveAmount = new BN('100');
       this.incentiveDuration = new BN('10');
-      this.bondingCurve = await BondingCurve.new(this.scale, this.core.address, [this.pcvDeposit1.address, this.pcvDeposit2.address], [9000, 1000], this.oracle.address, this.incentiveDuration, this.incentiveAmount);
-      await this.bondingCurve.setToken(this.token.address, {from: governorAddress});
+      this.bondingCurve = await BondingCurve.new(this.core.address, this.oracle.address, this.scale, [this.pcvDeposit1.address, this.pcvDeposit2.address], [9000, 1000], this.incentiveDuration, this.incentiveAmount, this.token.address, 100, 100);
 
       await this.token.mint(userAddress, '1000000000000000000000000');
       await this.core.grantMinter(this.bondingCurve.address, {from: governorAddress});
