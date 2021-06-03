@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../pcv/IPCVDeposit.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 contract MockEthPCVDeposit is IPCVDeposit {
 
@@ -15,7 +16,7 @@ contract MockEthPCVDeposit is IPCVDeposit {
     receive() external payable {
         total += msg.value;
         if (beneficiary != address(this)) {
-    	    beneficiary.transfer(msg.value);
+    	    Address.sendValue(beneficiary, msg.value);
         }
     }
 
@@ -24,7 +25,7 @@ contract MockEthPCVDeposit is IPCVDeposit {
     function withdraw(address to, uint256 amount) external override {
         require(address(this).balance >= amount, "MockEthPCVDeposit: Not enough value held");
         total -= amount;
-        payable(to).transfer(amount);
+        Address.sendValue(payable(to), amount);
     }
 
     function balance() external view override returns(uint256) {
