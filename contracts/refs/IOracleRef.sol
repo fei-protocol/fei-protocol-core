@@ -8,9 +8,9 @@ import "../oracle/IOracle.sol";
 interface IOracleRef {
     // ----------- Events -----------
 
-    event OracleUpdate(address indexed _oracle);
+    event OracleUpdate(address indexed oldOracle, address indexed newOracle);
 
-    event BackupOracleUpdate(address indexed _backupOracle);
+    event BackupOracleUpdate(address indexed oldBackupOracle, address indexed newBackupOracle);
 
 
     // ----------- State changing API -----------
@@ -19,9 +19,9 @@ interface IOracleRef {
 
     // ----------- Governor only state changing API -----------
 
-    function setOracle(address _oracle) external;
+    function setOracle(address newOracle) external;
 
-    function setBackupOracle(address _oracle) external;
+    function setBackupOracle(address newBackupOracle) external;
 
     // ----------- Getters -----------
 

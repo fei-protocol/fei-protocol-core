@@ -8,7 +8,7 @@ import "../core/ICore.sol";
 interface ICoreRef {
     // ----------- Events -----------
 
-    event CoreUpdate(address indexed _core);
+    event CoreUpdate(address indexed oldCore, address indexed newCore);
 
     // ----------- Governor only state changing api -----------
 

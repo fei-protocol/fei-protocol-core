@@ -13,7 +13,7 @@ const {
   const ReserveStabilizer = contract.fromArtifact('ReserveStabilizer');
   const MockOracle = contract.fromArtifact('MockOracle');
   
-  describe('BondingCurve', function () {
+  describe('OracleRef', function () {
   
     beforeEach(async function () {
       this.core = await getCore(true);
@@ -38,10 +38,14 @@ const {
     describe('Access', function() {
         describe('Set Backup Oracle', function() {
           it('Governor set succeeds', async function() {
+            expect(await this.oracleRef.backupOracle()).to.be.equal(this.backupOracle.address);
             expectEvent(
                 await this.oracleRef.setBackupOracle(userAddress, {from: governorAddress}),
                 'BackupOracleUpdate',
-                { _backupOracle: userAddress }
+                { 
+                  oldBackupOracle: this.backupOracle.address,
+                  newBackupOracle: userAddress 
+                }
               );
             expect(await this.oracleRef.backupOracle()).to.be.equal(userAddress);
           });
