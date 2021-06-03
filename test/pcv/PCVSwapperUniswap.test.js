@@ -7,6 +7,7 @@ const {
   governorAddress,
   pcvControllerAddress,
   web3,
+  BN,
   expectRevert,
   expectEvent,
   contract,
@@ -102,7 +103,7 @@ describe('PCVSwapperUniswap', function () {
         it('withdrawETH() emit WithdrawETH', async function() {
           await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '10'+e18});
           await this.swapper.wrapETH();
-          expect(await web3.eth.getBalance(secondUserAddress)).to.be.bignumber.equal('1000000'+e18);
+          let balanceBefore = new BN(await web3.eth.getBalance(secondUserAddress));
           await expectEvent(
             await this.swapper.withdrawETH(secondUserAddress, '10'+e18, {from: pcvControllerAddress}),
             'WithdrawETH',
@@ -112,7 +113,7 @@ describe('PCVSwapperUniswap', function () {
               _amount: '10'+e18
             }
           );
-          expect(await web3.eth.getBalance(secondUserAddress)).to.be.bignumber.equal('1000010'+e18);
+          expect(await web3.eth.getBalance(secondUserAddress)).to.be.bignumber.equal(new BN('10'+e18).add(balanceBefore));
         });
         it('withdrawETH() revert if not enough WETH to unwrap', async function() {
           await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: '10'+e18});
