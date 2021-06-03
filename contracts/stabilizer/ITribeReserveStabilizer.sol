@@ -9,9 +9,9 @@ interface ITribeReserveStabilizer {
 
     // ----------- Events -----------
 
-    event FeiOracleUpdate(address indexed feiOracle);
+    event FeiOracleUpdate(address indexed oldFeiOracle, address indexed newFeiOracle);
 
-    event FeiPriceThresholdUpdate(uint256 _feiPriceThresholdBasisPoints);
+    event FeiPriceThresholdUpdate(uint256 oldFeiPriceThresholdBasisPoints, uint256 newFeiPriceThresholdBasisPoints);
 
     // ----------- Governor only state changing api -----------
 
@@ -19,9 +19,9 @@ interface ITribeReserveStabilizer {
 
     function mint(address to, uint256 amount) external;
 
-    function setFeiOracle(IOracle _feiOracle) external;
+    function setFeiOracle(IOracle newFeiOracle) external;
 
-    function setFeiPriceThreshold(uint256 _feiPriceThresholdBasisPoints) external;
+    function setFeiPriceThreshold(uint256 newFeiPriceThresholdBasisPoints) external;
 
     // ----------- Getters -----------
 

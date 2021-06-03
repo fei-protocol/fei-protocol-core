@@ -34,6 +34,7 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
     ) ReserveStabilizer(_core, _tribeOracle, IERC20(address(0)), _usdPerFeiBasisPoints) {
         feiOracle = _feiOracle;
         _feiPriceThreshold = Decimal.ratio(_feiPriceThresholdBasisPoints, BASIS_POINTS_GRANULARITY);
+        emit FeiPriceThresholdUpdate(0, _feiPriceThresholdBasisPoints);
     }
 
     /// @notice exchange FEI for minted TRIBE
@@ -62,15 +63,17 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
     }
 
     /// @notice set the FEI oracle
-    function setFeiOracle(IOracle _feiOracle) external override onlyGovernor {
-        feiOracle = _feiOracle;
-        emit FeiOracleUpdate(address(_feiOracle));
+    function setFeiOracle(IOracle newFeiOracle) external override onlyGovernor {
+        address oldFeiOracle = address(feiOracle);
+        feiOracle = newFeiOracle;
+        emit FeiOracleUpdate(oldFeiOracle, address(newFeiOracle));
     }
     
     /// @notice set the FEI price threshold below which exchanging becomes active
-    function setFeiPriceThreshold(uint256 _feiPriceThresholdBasisPoints) external override onlyGovernor {
-        _feiPriceThreshold = Decimal.ratio(_feiPriceThresholdBasisPoints, BASIS_POINTS_GRANULARITY);
-        emit FeiPriceThresholdUpdate(_feiPriceThresholdBasisPoints);
+    function setFeiPriceThreshold(uint256 newFeiPriceThresholdBasisPoints) external override onlyGovernor {
+        uint256 oldFeiPriceThresholdBasisPoints = _feiPriceThreshold.mul(BASIS_POINTS_GRANULARITY).asUint256();
+        _feiPriceThreshold = Decimal.ratio(newFeiPriceThresholdBasisPoints, BASIS_POINTS_GRANULARITY);
+        emit FeiPriceThresholdUpdate(oldFeiPriceThresholdBasisPoints, newFeiPriceThresholdBasisPoints);
     }
 
     /// @notice the FEI price threshold below which exchanging becomes active
