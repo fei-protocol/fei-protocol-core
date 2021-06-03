@@ -25,6 +25,7 @@ contract PCVDripController is IPCVDripController, CoreRef, Timed, Incentivized {
     /// @param _target the PCV deposit to drip to
     /// @param _frequency frequency of dripping
     /// @param _dripAmount amount to drip on each drip
+    /// @param _incentiveAmount the FEI incentive for calling drip
     constructor(
         address _core,
         IPCVDeposit _source,
@@ -34,11 +35,15 @@ contract PCVDripController is IPCVDripController, CoreRef, Timed, Incentivized {
         uint256 _incentiveAmount
     ) CoreRef(_core) Timed(_frequency) Incentivized(_incentiveAmount) {
         target = _target;
+        emit TargetUpdate(address(0), address(_target));
+
         source = _source;
+        emit SourceUpdate(address(0), address(_source));
 
         dripAmount = _dripAmount;
+        emit DripAmountUpdate(0, _incentiveAmount);
 
-         // start timer
+        // start timer
         _initTimed();
     }
 
@@ -64,33 +69,36 @@ contract PCVDripController is IPCVDripController, CoreRef, Timed, Incentivized {
     }
 
     /// @notice set the new PCV Deposit source
-    function setSource(IPCVDeposit _source)
+    function setSource(IPCVDeposit newSource)
         external
         override
         onlyGovernor
     {
-        source = _source;
-        emit SourceUpdate(address(source));
+        address oldSource = address(source);
+        source = newSource;
+        emit SourceUpdate(oldSource, address(newSource));
     }
 
     /// @notice set the new PCV Deposit target
-    function setTarget(IPCVDeposit _target)
+    function setTarget(IPCVDeposit newTarget)
         external
         override
         onlyGovernor
     {
-        target = _target;
-        emit TargetUpdate(address(target));
+        address oldTarget = address(target);
+        target = newTarget;
+        emit TargetUpdate(oldTarget, address(newTarget));
     }
 
     /// @notice set the new drip amount
-    function setDripAmount(uint256 _dripAmount)
+    function setDripAmount(uint256 newDripAmount)
         external
         override
         onlyGovernor
     {
-        dripAmount = _dripAmount;
-        emit DripAmountUpdate(dripAmount);
+        uint256 oldDripAmount = dripAmount;
+        dripAmount = newDripAmount;
+        emit DripAmountUpdate(oldDripAmount, newDripAmount);
     }
 
     /// @notice checks whether the target balance is less than the drip amount

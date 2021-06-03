@@ -8,18 +8,18 @@ import "./IPCVDeposit.sol";
 interface IPCVDripController {
     // ----------- Events -----------
 
-    event SourceUpdate (address indexed source);
-    event TargetUpdate (address indexed target);
-    event DripAmountUpdate (uint256 dripAmount);
+    event SourceUpdate (address indexed oldSource, address indexed newSource);
+    event TargetUpdate (address indexed oldTarget, address indexed newTarget);
+    event DripAmountUpdate (uint256 oldDripAmount, uint256 newDripAmount);
     event Dripped (address indexed source, address indexed target, uint256 amount);
 
     // ----------- Governor only state changing api -----------
 
-    function setSource(IPCVDeposit _source) external;
+    function setSource(IPCVDeposit newSource) external;
 
-    function setTarget(IPCVDeposit _target) external;
+    function setTarget(IPCVDeposit newTarget) external;
 
-    function setDripAmount(uint256 _dripAmount) external;
+    function setDripAmount(uint256 newDripAmount) external;
 
     // ----------- Public state changing api -----------
 
