@@ -42,12 +42,16 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         uint256 _reweightFrequency
     ) UniRef(_core, _pair, _oracle) Timed(_reweightFrequency) {
         pcvDeposit = IPCVDeposit(_pcvDeposit);
+        emit PCVDepositUpdate(address(0), _pcvDeposit);
 
         reweightIncentiveAmount = _incentiveAmount;
+        emit ReweightIncentiveUpdate(0, _incentiveAmount);
+
         _minDistanceForReweight = Decimal.ratio(
             _minDistanceForReweightBPs,
             BASIS_POINTS_GRANULARITY
         );
+        emit ReweightMinDistanceUpdate(0, _minDistanceForReweightBPs);
 
         // start timer
         _initTimed();
@@ -73,31 +77,34 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
 
     /// @notice sets the target PCV Deposit address
     function setPCVDeposit(address _pcvDeposit) external override onlyGovernor {
+        address oldPCVDeposit = address(pcvDeposit);
         pcvDeposit = IPCVDeposit(_pcvDeposit);
-        emit PCVDepositUpdate(_pcvDeposit);
+        emit PCVDepositUpdate(oldPCVDeposit, _pcvDeposit);
     }
 
     /// @notice sets the reweight incentive amount
-    function setReweightIncentive(uint256 amount)
+    function setReweightIncentive(uint256 newReweightIncentiveAmount)
         external
         override
         onlyGovernor
     {
-        reweightIncentiveAmount = amount;
-        emit ReweightIncentiveUpdate(amount);
+        uint256 oldReweightIncentiveAmount = reweightIncentiveAmount;
+        reweightIncentiveAmount = newReweightIncentiveAmount;
+        emit ReweightIncentiveUpdate(oldReweightIncentiveAmount, newReweightIncentiveAmount);
     }
 
     /// @notice sets the reweight min distance in basis points
-    function setReweightMinDistance(uint256 basisPoints)
+    function setReweightMinDistance(uint256 newReweightMinDistanceBPs)
         external
         override
         onlyGovernor
     {
+        uint256 oldReweigtMinDistanceBPs = _minDistanceForReweight.mul(BASIS_POINTS_GRANULARITY).asUint256();
         _minDistanceForReweight = Decimal.ratio(
-            basisPoints,
+            newReweightMinDistanceBPs,
             BASIS_POINTS_GRANULARITY
         );
-        emit ReweightMinDistanceUpdate(basisPoints);
+        emit ReweightMinDistanceUpdate(oldReweigtMinDistanceBPs, newReweightMinDistanceBPs);
     }
 
     /// @notice sets the reweight duration
@@ -126,12 +133,15 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     {
         (Decimal.D256 memory price, , ) = _getUniswapPrice();
         Decimal.D256 memory peg = readOracle();
+
+        // Get the absolute value raw distance from peg
         Decimal.D256 memory delta;
         if (price.lessThanOrEqualTo(peg)) {
             delta = peg.sub(price);
         } else {
             delta = price.sub(peg);
         }
+        // return percentage by dividing distance by peg
         return delta.div(peg);
     }
 
@@ -145,6 +155,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         return _minDistanceForReweight;
     }
 
+    // incentivize the caller only if this contract is appointed as a minter
     function _incentivize() internal ifMinterSelf {
         fei().mint(msg.sender, reweightIncentiveAmount);
     }
@@ -159,6 +170,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
 
         Decimal.D256 memory _peg = readOracle();
 
+        // Determine reweight algorithm based on side of peg
         if (_isBelowPeg(_peg)) {
             _rebase(_peg, feiReserves, tokenReserves);
         } else {
@@ -168,6 +180,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         emit Reweight(msg.sender);
     }
 
+    // Rebases the pool back up to the peg by directly burning FEI
     function _rebase(
         Decimal.D256 memory _peg,
         uint256 feiReserves, 
@@ -184,6 +197,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         pair.sync();
     }
 
+    // Restores peg from above by minting and selling FEI
     function _reverseReweight(        
         Decimal.D256 memory _peg,
         uint256 feiReserves, 
@@ -192,6 +206,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         // calculate amount FEI needed to return to peg then swap
         uint256 amountIn = _getAmountToPegFei(feiReserves, tokenReserves, _peg);
 
+        // mint FEI directly to the pair before swapping
         IFei _fei = fei();
         _fei.mint(address(pair), amountIn);
 
@@ -218,10 +233,11 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     }
 
     function _deposit() internal {
-        // resupply PCV at peg ratio
+        // resupply all held PCV
         IERC20 erc20 = IERC20(token);
         uint256 balance = erc20.balanceOf(address(this));
 
+        // transfer to PCV deposit and trigger deposit logic
         SafeERC20.safeTransfer(erc20, address(pcvDeposit), balance);
         pcvDeposit.deposit();
     }

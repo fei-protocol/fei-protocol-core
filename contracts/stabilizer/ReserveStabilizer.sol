@@ -67,7 +67,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
 
     /// @notice new PCV deposited to the stabilizer
     /// @dev no-op because the token transfer already happened
-    function deposit() external override {}
+    function deposit() external override virtual {}
 
     /// @notice returns the amount of the held ERC-20
     function balance() public view override virtual returns(uint256) {
@@ -75,12 +75,12 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
     }
 
     /// @notice sets the USD per FEI exchange rate rate
-    /// @param newUSDPerFeiRateBasisPoints the USD per FEI exchange rate denominated in basis points (1/10000)
-    function setUsdPerFeiRate(uint256 newUSDPerFeiRateBasisPoints) external override onlyGovernor {
-        uint256 oldUSDPerFeiRateBasisPoints = usdPerFeiBasisPoints;
-        require(newUSDPerFeiRateBasisPoints <= BASIS_POINTS_GRANULARITY, "ReserveStabilizer: Exceeds bp granularity");
-        usdPerFeiBasisPoints = newUSDPerFeiRateBasisPoints;
-        emit UsdPerFeiRateUpdate(oldUSDPerFeiRateBasisPoints, newUSDPerFeiRateBasisPoints);
+    /// @param newUsdPerFeiBasisPoints the USD per FEI exchange rate denominated in basis points (1/10000)
+    function setUsdPerFeiRate(uint256 newUsdPerFeiBasisPoints) external override onlyGovernor {
+        require(newUsdPerFeiBasisPoints <= BASIS_POINTS_GRANULARITY, "ReserveStabilizer: Exceeds bp granularity");
+        uint256 oldUsdPerFeiBasisPoints = usdPerFeiBasisPoints;
+        usdPerFeiBasisPoints = newUsdPerFeiBasisPoints;
+        emit UsdPerFeiRateUpdate(oldUsdPerFeiBasisPoints, newUsdPerFeiBasisPoints);
     }
 
     function _transfer(address to, uint256 amount) internal virtual {

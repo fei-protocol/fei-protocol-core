@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  build_and_test:
+  build:
     working_directory: ~/repo
     docker:
       - image: circleci/node:12
@@ -11,11 +11,33 @@ jobs:
           name: 'Update NPM'
           command: sudo npm install -g npm@6.13.4
       - run:
+          name: 'Set caching variables'
+          command: |
+            LAST_SUCCESSFUL_BUILD_URL="https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/tree/master?filter=successful&limit=1"
+            LAST_SUCCESSFUL_COMMIT=`curl -Ss -u "$CIRCLE_TOKEN:" $LAST_SUCCESSFUL_BUILD_URL | jq -r '.[0]["vcs_revision"]'`
+            echo $LAST_SUCCESSFUL_COMMIT > /tmp/last-successful-commit
+            echo $CIRCLE_SHA1 > /tmp/current-commit
+      - restore_cache:
+          keys:
+            - build-cache-{{ .Branch }}-{{ checksum "/tmp/last-successful-commit" }}
+      - run:
           name: Install dependencies
           command: npm install
       - run:
           name: Compile contracts
           command: npm run compile
+      - save_cache:
+          key: repo-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/repo
+  test:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:12
+    steps:
+      - restore_cache:
+          keys:
+            - repo-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Run tests
           command: npm run test
@@ -23,4 +45,7 @@ jobs:
 workflows:
   main:
     jobs:
-      - build_and_test
+      - build
+      - test:
+          requires:
+            - build

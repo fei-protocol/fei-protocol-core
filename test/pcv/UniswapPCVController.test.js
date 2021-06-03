@@ -276,7 +276,10 @@ describe('UniswapPCVController', function () {
         expectEvent(
           await this.pcvController.setReweightIncentive(10000, {from: governorAddress}),
           'ReweightIncentiveUpdate',
-          { _amount: '10000' }
+          { 
+            _oldIncentive: '100000000000000000000',
+            _newIncentive: '10000' 
+          }
         );
         expect(await this.pcvController.reweightIncentiveAmount()).to.be.bignumber.equal('10000');
       });
@@ -291,7 +294,10 @@ describe('UniswapPCVController', function () {
         expectEvent(
           await this.pcvController.setReweightMinDistance(50, {from: governorAddress}),
           'ReweightMinDistanceUpdate',
-          { _basisPoints: '50' }
+          { 
+            _oldMinDistanceBasisPoints: '100',
+            _newMinDistanceBasisPoints: '50' 
+          }
         );
         expect((await this.pcvController.minDistanceForReweight())[0]).to.be.bignumber.equal('5000000000000000');
       });
@@ -329,7 +335,10 @@ describe('UniswapPCVController', function () {
         expectEvent(
           await this.pcvController.setPCVDeposit(userAddress, {from: governorAddress}),
           'PCVDepositUpdate',
-          { _pcvDeposit: userAddress }
+          { 
+            _oldPCVDeposit: this.pcvDeposit.address, 
+            _newPCVDeposit: userAddress
+          }
         );
         expect(await this.pcvController.pcvDeposit()).to.be.equal(userAddress);
       });

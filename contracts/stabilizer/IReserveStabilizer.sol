@@ -8,7 +8,7 @@ interface IReserveStabilizer {
     // ----------- Events -----------
     event FeiExchange(address indexed to, uint256 feiAmountIn, uint256 amountOut);
 
-    event UsdPerFeiRateUpdate(uint256 oldUSDPerFeiRateBasisPoints, uint256 newUSDPerFeiRateBasisPoints);
+    event UsdPerFeiRateUpdate(uint256 oldUsdPerFeiBasisPoints, uint256 newUsdPerFeiBasisPoints);
 
     // ----------- State changing api -----------
 
