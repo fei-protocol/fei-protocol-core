@@ -61,7 +61,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
 
     /// @notice new PCV deposited to the stabilizer
     /// @dev no-op because the token transfer already happened
-    function deposit() external override {}
+    function deposit() external override virtual {}
 
     /// @notice returns the amount of the held ERC-20
     function balance() public view override virtual returns(uint256) {
