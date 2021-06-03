@@ -2,12 +2,13 @@
 pragma solidity ^0.8.0;
 
 import "./IPCVDripController.sol"; 
+import "./Incentivized.sol"; 
 import "../refs/CoreRef.sol";
 import "../utils/Timed.sol";
 
 /// @title a PCV dripping controller
 /// @author Fei Protocol
-contract PCVDripController is IPCVDripController, CoreRef, Timed {
+contract PCVDripController is IPCVDripController, CoreRef, Timed, Incentivized {
  
     /// @notice source PCV deposit to withdraw from
     IPCVDeposit public override source;
@@ -29,8 +30,9 @@ contract PCVDripController is IPCVDripController, CoreRef, Timed {
         IPCVDeposit _source,
         IPCVDeposit _target,
         uint256 _frequency,
-        uint256 _dripAmount
-    ) CoreRef(_core) Timed(_frequency) {
+        uint256 _dripAmount,
+        uint256 _incentiveAmount
+    ) CoreRef(_core) Timed(_frequency) Incentivized(_incentiveAmount) {
         target = _target;
         source = _source;
 
@@ -52,6 +54,9 @@ contract PCVDripController is IPCVDripController, CoreRef, Timed {
         // reset timer
         _initTimed();
 
+        // incentivize caller
+        _incentivize();
+        
         // drip
         source.withdraw(address(target), dripAmount);
         target.deposit(); // trigger any deposit logic on the target

@@ -15,17 +15,21 @@ const {
   
 const PCVDripController = contract.fromArtifact('PCVDripController');
 const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
+const Fei = contract.fromArtifact('Fei');
 
   describe('PCVDripController', function () {
   
     beforeEach(async function () {
       this.core = await getCore(true);
+      this.fei = await Fei.at(await this.core.fei());
       
       this.sourcePCVDeposit = await MockPCVDeposit.new(beneficiaryAddress1);
       this.pcvDeposit = await MockPCVDeposit.new(beneficiaryAddress1);
       this.dripAmount = new BN('500000000000000000');
+      this.incentiveAmount = new BN('100000000000000000');
 
-      this.pcvDripper = await PCVDripController.new(this.core.address, this.sourcePCVDeposit.address, this.pcvDeposit.address, '1000', this.dripAmount);
+      this.pcvDripper = await PCVDripController.new(this.core.address, this.sourcePCVDeposit.address, this.pcvDeposit.address, '1000', this.dripAmount, this.incentiveAmount);
+      await this.core.grantMinter(this.pcvDripper.address, {from: governorAddress});
 
       await web3.eth.sendTransaction({from: userAddress, to: this.sourcePCVDeposit.address, value: "1000000000000000000"});
     });
@@ -97,7 +101,7 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
                 it('succeeds', async function() {
                     let sourceBalanceBefore = await this.sourcePCVDeposit.balance();
                     let beneficiaryBalanceBefore = await balance.current(this.pcvDeposit.address);
-                    await this.pcvDripper.drip();
+                    await this.pcvDripper.drip({from: userAddress});
                     let sourceBalanceAfter = await this.sourcePCVDeposit.balance();
                     let beneficiaryBalanceAfter = await balance.current(this.pcvDeposit.address);
         
@@ -106,6 +110,7 @@ const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
         
                     // timer reset
                     expect(await this.pcvDripper.isTimeEnded()).to.be.equal(false);
+                    expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.incentiveAmount);
                 });
             });
     
