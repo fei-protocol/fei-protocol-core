@@ -433,7 +433,7 @@ describe('EthBondingCurve', function () {
 
     describe('No Purchase', function() {
       it('reverts', async function() {
-        await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: No PCV held"); 
+        await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: Not enough PCV held"); 
       });
     });
 
@@ -469,7 +469,7 @@ describe('EthBondingCurve', function () {
       describe('Second Allocate', async function() {
         describe('No Purchase', function() {
           it('reverts', async function() {
-            await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: No PCV held"); 
+            await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: Not enough PCV held"); 
           });
         });
 

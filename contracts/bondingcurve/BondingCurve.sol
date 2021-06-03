@@ -147,7 +147,12 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     /// @notice batch allocate held PCV
     function allocate() external override whenNotPaused {
         uint256 amount = balance();
-        require(amount != 0, "BondingCurve: No PCV held");
+        uint256 usdValueHeld = readOracle().mul(amount).asUint256();
+        // the premium is the USD value held multiplied by the buffer that a user would pay to get FEI assuming FEI is $1
+        uint256 premium = usdValueHeld * buffer / BASIS_POINTS_GRANULARITY;
+
+        // this requirement mitigates gaming the allocate function and ensures it is only called when sufficient demand has been met
+        require(premium >= incentiveAmount, "BondingCurve: Not enough PCV held");
 
         _allocate(amount);
         _incentivize();

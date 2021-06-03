@@ -441,7 +441,16 @@ const {
   
       describe('No Purchase', function() {
         it('reverts', async function() {
-          await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: No PCV held"); 
+          await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: Not enough PCV held"); 
+        });
+      });
+            
+      describe('Purchase too low', function() {
+        it('reverts', async function() {
+          this.purchaseAmount = new BN("1")
+          await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
+          await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress});
+          await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: Not enough PCV held"); 
         });
       });
   
@@ -478,7 +487,7 @@ const {
         describe('Second Allocate', async function() {
           describe('No Purchase', function() {
             it('reverts', async function() {
-              await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: No PCV held"); 
+              await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: Not enough PCV held"); 
             });
           });
   
