@@ -11,9 +11,9 @@ abstract contract Timed {
     /// @notice the duration of the timed period
     uint256 public duration;
 
-    event DurationUpdate(uint256 _duration);
+    event DurationUpdate(uint256 oldDuration, uint256 newDuration);
 
-    event TimerReset(uint256 _startTime);
+    event TimerReset(uint256 startTime);
 
     constructor(uint256 _duration) {
         _setDuration(_duration);
@@ -63,8 +63,9 @@ abstract contract Timed {
         emit TimerReset(block.timestamp);
     }
 
-    function _setDuration(uint256 _duration) internal {
-        duration = _duration;
-        emit DurationUpdate(_duration);
+    function _setDuration(uint256 newDuration) internal {
+        uint256 oldDuration = duration;
+        duration = newDuration;
+        emit DurationUpdate(oldDuration, newDuration);
     }
 }

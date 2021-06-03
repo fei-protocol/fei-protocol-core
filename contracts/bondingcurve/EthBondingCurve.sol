@@ -7,23 +7,32 @@ import "./BondingCurve.sol";
 /// @author Fei Protocol
 contract EthBondingCurve is BondingCurve {
 
+    struct BondingCurveParams {
+        uint256 scale;
+        uint256 buffer;
+        uint256 discount;
+        uint256 duration;
+        uint256 incentive;
+        address[] pcvDeposits;
+        uint256[] ratios;
+    }
+
     constructor(
-        uint256 scale,
         address core,
-        address[] memory pcvDeposits,
-        uint256[] memory ratios,
         address oracle,
-        uint256 duration,
-        uint256 incentive
+        BondingCurveParams memory params
     )
         BondingCurve(
-            scale,
             core,
-            pcvDeposits,
-            ratios,
             oracle,
-            duration,
-            incentive
+            params.scale,
+            params.pcvDeposits,
+            params.ratios,
+            params.duration,
+            params.incentive,
+            IERC20(address(0)),
+            params.discount,
+            params.buffer
         )
     {}
 
