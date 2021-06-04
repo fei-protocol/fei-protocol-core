@@ -29,9 +29,9 @@ abstract contract UniRef is IUniRef, OracleRef {
     }
 
     /// @notice set the new pair contract
-    /// @param _pair the new pair
-    function setPair(address _pair) external override virtual onlyGovernor {
-        _setupPair(_pair);
+    /// @param newPair the new pair
+    function setPair(address newPair) external override virtual onlyGovernor {
+        _setupPair(newPair);
     }
 
     /// @notice pair reserves with fei listed first
@@ -49,9 +49,10 @@ abstract contract UniRef is IUniRef, OracleRef {
         return (feiReserves, tokenReserves);
     }
 
-    function _setupPair(address _pair) internal {
-        pair = IUniswapV2Pair(_pair);
-        emit PairUpdate(_pair);
+    function _setupPair(address newPair) internal {
+        address oldPair = address(pair);
+        pair = IUniswapV2Pair(newPair);
+        emit PairUpdate(oldPair, newPair);
 
         token = _token();
     }

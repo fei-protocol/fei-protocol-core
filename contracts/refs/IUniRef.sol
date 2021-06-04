@@ -8,11 +8,11 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 interface IUniRef {
     // ----------- Events -----------
 
-    event PairUpdate(address indexed _pair);
+    event PairUpdate(address indexed oldPair, address indexed newPair);
 
     // ----------- Governor only state changing api -----------
 
-    function setPair(address _pair) external;
+    function setPair(address newPair) external;
 
     // ----------- Getters -----------
 

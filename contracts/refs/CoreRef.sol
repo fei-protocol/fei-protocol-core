@@ -66,8 +66,9 @@ abstract contract CoreRef is ICoreRef, Pausable {
     /// @notice set new Core reference address
     /// @param newCore the new core address
     function setCore(address newCore) external override onlyGovernor {
+        address oldCore = address(_core);
         _core = ICore(newCore);
-        emit CoreUpdate(newCore);
+        emit CoreUpdate(oldCore, newCore);
     }
 
     /// @notice set pausable methods to paused

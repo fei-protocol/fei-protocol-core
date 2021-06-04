@@ -604,7 +604,10 @@ describe('EthBondingCurve', function () {
       expectEvent(
         await this.bondingCurve.setOracle(userAddress, {from: governorAddress}),
         'OracleUpdate',
-        {_oracle: userAddress}
+        {
+          oldOracle: this.oracle.address,
+          newOracle: userAddress
+        }
       );
       expect(await this.bondingCurve.oracle()).to.be.equal(userAddress);
     });
@@ -681,7 +684,10 @@ describe('EthBondingCurve', function () {
       expectEvent(
         await this.bondingCurve.setCore(userAddress, {from: governorAddress}), 
         'CoreUpdate', 
-        { _core : userAddress }
+        {
+          oldCore: this.core.address,
+          newCore: userAddress
+        }
       );
 
       expect(await this.bondingCurve.core()).to.be.equal(userAddress);
