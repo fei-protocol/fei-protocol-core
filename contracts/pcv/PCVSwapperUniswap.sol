@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./IPCVDeposit.sol";
 import "./IPCVSwapper.sol";
-import "./Incentivized.sol";
+import "../utils/Incentivized.sol";
 import "../refs/OracleRef.sol";
 import "../utils/Timed.sol";
 import "../external/UniswapV2Library.sol";

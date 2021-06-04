@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./IPCVDripController.sol"; 
-import "./Incentivized.sol"; 
+import "../utils/Incentivized.sol"; 
 import "../refs/CoreRef.sol";
 import "../utils/Timed.sol";
 

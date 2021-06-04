@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 import "./IBondingCurve.sol";
 import "../refs/OracleRef.sol";
 import "../pcv/PCVSplitter.sol";
-import "../pcv/Incentivized.sol";
+import "../utils/Incentivized.sol";
 import "../pcv/IPCVDeposit.sol";
 import "../utils/Timed.sol";
 

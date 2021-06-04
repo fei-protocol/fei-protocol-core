@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "./IUniswapPCVController.sol";
-import "./Incentivized.sol";
+import "../utils/Incentivized.sol";
 import "../refs/UniRef.sol";
 import "../external/UniswapV2Library.sol";
 import "../utils/Timed.sol";

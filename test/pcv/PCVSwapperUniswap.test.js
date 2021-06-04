@@ -285,7 +285,8 @@ describe('PCVSwapperUniswap', function () {
         await this.swapper.setSwapFrequency('2000', { from: governorAddress }),
         'DurationUpdate',
         {
-          _duration: '2000'
+          oldDuration: '1000',
+          newDuration: '2000'
         }
       );
       expect(await this.swapper.duration()).to.be.bignumber.equal('2000');

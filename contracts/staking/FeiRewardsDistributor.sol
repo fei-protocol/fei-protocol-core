@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../refs/CoreRef.sol";
-import "../pcv/Incentivized.sol";
+import "../utils/Incentivized.sol";
 import "../utils/Timed.sol";
 import "./IRewardsDistributor.sol";
 import "../external/Decimal.sol";
