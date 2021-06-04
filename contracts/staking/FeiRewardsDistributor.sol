@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../refs/CoreRef.sol";
+import "../utils/Incentivized.sol";
 import "../utils/Timed.sol";
 import "./IRewardsDistributor.sol";
 import "../external/Decimal.sol";
@@ -10,7 +11,7 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 /// @title Distributor for TRIBE rewards to the staking contract
 /// @author Fei Protocol
 /// @notice distributes TRIBE over time at a linearly decreasing rate
-contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
+contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed, Incentivized {
     using Decimal for Decimal.D256;
 
     uint256 public override distributedRewards;
@@ -21,8 +22,6 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
 
     uint256 public override dripFrequency;
 
-    uint256 public override incentiveAmount;
-
     constructor(
         address _core,
         address _stakingContract,
@@ -32,11 +31,11 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
     ) 
         CoreRef(_core) 
         Timed(_duration)
+        Incentivized(_incentiveAmount)
     {
         require(_duration >= _frequency, "FeiRewardsDistributor: frequency exceeds duration");
         stakingContract = IStakingRewards(_stakingContract);
         dripFrequency = _frequency;
-        incentiveAmount = _incentiveAmount;
 
         lastDistributionTime = block.timestamp;
 
@@ -79,12 +78,6 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
     function setDripFrequency(uint256 _frequency) external override onlyGovernor {
         dripFrequency = _frequency;
         emit FrequencyUpdate(_frequency);
-    }
-
-    /// @notice sets the incentive amount for calling drip
-    function setIncentiveAmount(uint256 _incentiveAmount) external override onlyGovernor {
-        incentiveAmount = _incentiveAmount;
-        emit IncentiveUpdate(_incentiveAmount);
     }
 
     /// @notice sets the staking contract to send TRIBE rewards to
@@ -155,9 +148,5 @@ contract FeiRewardsDistributor is IRewardsDistributor, CoreRef, Timed {
             );
 
         return end.add(_totalReward).sub(start).asUint256();
-    }
-
-    function _incentivize() internal ifMinterSelf {
-        fei().mint(msg.sender, incentiveAmount);
     }
 }

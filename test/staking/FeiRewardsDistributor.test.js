@@ -173,7 +173,8 @@ const MockStakingRewards = contract.fromArtifact('MockStakingRewards');
                     await this.distributor.setIncentiveAmount(this.incentiveAmount.div(new BN('2')), {from: governorAddress}),
                     'IncentiveUpdate',
                     {
-                        _incentiveAmount: this.incentiveAmount.div(new BN('2'))
+                        oldIncentiveAmount: this.incentiveAmount,
+                        newIncentiveAmount: this.incentiveAmount.div(new BN('2'))
                     }
                 );
             });

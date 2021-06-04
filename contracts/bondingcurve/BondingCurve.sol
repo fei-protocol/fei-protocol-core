@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 import "./IBondingCurve.sol";
 import "../refs/OracleRef.sol";
 import "../pcv/PCVSplitter.sol";
+import "../utils/Incentivized.sol";
 import "../pcv/IPCVDeposit.sol";
 import "../utils/Timed.sol";
 
@@ -14,7 +15,7 @@ import "../utils/Timed.sol";
  * @author Fei Protocol
  * 
  */ 
-contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
+contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivized {
     using Decimal for Decimal.D256;
 
     /// @notice the Scale target at which bonding curve price fixes
@@ -33,9 +34,6 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
     uint256 public override discount;
 
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
-
-    /// @notice amount of FEI paid for allocation when incentivized
-    uint256 public override incentiveAmount;
 
     /// @notice constructor
     /// @param _scale the Scale target where peg fixes
@@ -63,9 +61,9 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         OracleRef(_core, _oracle)
         PCVSplitter(_pcvDeposits, _ratios)
         Timed(_duration)
+        Incentivized(_incentive)
     {
         _setScale(_scale);
-        incentiveAmount = _incentive;
         token = _token;
         discount = _discount;
         buffer = _buffer;
@@ -128,13 +126,6 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         emit DiscountUpdate(oldDiscount, newDiscount);
     }
 
-    /// @notice sets the allocate incentive amount
-    function setIncentiveAmount(uint256 newIncentiveAmount) external override onlyGovernor {
-        uint256 oldIncentiveAmount = incentiveAmount;
-        incentiveAmount = newIncentiveAmount;
-        emit IncentiveAmountUpdate(oldIncentiveAmount, newIncentiveAmount);
-    }
-
     /// @notice sets the allocate incentive frequency
     function setIncentiveFrequency(uint256 _frequency) external override onlyGovernor {
         _setDuration(_frequency);
@@ -159,7 +150,12 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         require(premium >= incentiveAmount, "BondingCurve: Not enough PCV held");
 
         _allocate(amount);
-        _incentivize();
+
+        // if window has passed, reward caller and reset window
+        if (isTimeEnded()) {
+            _initTimed(); // reset window
+            _incentivize();
+        }
 
         emit Allocate(msg.sender, amount);
     }
@@ -238,14 +234,6 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed {
         uint256 oldScale = scale;
         scale = newScale;
         emit ScaleUpdate(oldScale, newScale);
-    }
-
-    /// @notice if window has passed, reward caller and reset window
-    function _incentivize() internal virtual {
-        if (isTimeEnded()) {
-            _initTimed(); // reset window
-            fei().mint(msg.sender, incentiveAmount);
-        }
     }
 
     /// @notice the bonding curve price multiplier at the current totalPurchased relative to Scale

@@ -697,7 +697,7 @@ describe('EthBondingCurve', function () {
       this.incentiveAmount = new BN('10');
       expectEvent(
         await this.bondingCurve.setIncentiveAmount(this.incentiveAmount, {from: governorAddress}), 
-        'IncentiveAmountUpdate', 
+        'IncentiveUpdate', 
         { 
           oldIncentiveAmount : new BN('100'),
           newIncentiveAmount : this.incentiveAmount 
