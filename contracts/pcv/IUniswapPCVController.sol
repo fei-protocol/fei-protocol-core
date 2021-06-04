@@ -35,15 +35,11 @@ interface IUniswapPCVController {
 
     function setDuration(uint256 _duration) external;
 
-    function setReweightIncentive(uint256 amount) external;
-
     function setReweightMinDistance(uint256 basisPoints) external;
 
     // ----------- Getters -----------
 
     function pcvDeposit() external view returns (IPCVDeposit);
-
-    function reweightIncentiveAmount() external view returns (uint256);
 
     function reweightEligible() external view returns (bool);
 

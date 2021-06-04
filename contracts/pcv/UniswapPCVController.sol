@@ -5,13 +5,14 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "./IUniswapPCVController.sol";
+import "./Incentivized.sol";
 import "../refs/UniRef.sol";
 import "../external/UniswapV2Library.sol";
 import "../utils/Timed.sol";
 
 /// @title a PCV controller for reweighting the Uniswap pair price to a peg
 /// @author Fei Protocol
-contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
+contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivized {
     using Decimal for Decimal.D256;
     using Babylonian for uint256;
 
@@ -20,8 +21,6 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
     /// @notice returns the linked pcv deposit contract
     IPCVDeposit public override pcvDeposit;
 
-    /// @notice gets the FEI reward incentive for reweighting
-    uint256 public override reweightIncentiveAmount;
     Decimal.D256 internal _minDistanceForReweight;
 
     /// @notice UniswapPCVController constructor
@@ -40,12 +39,9 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         uint256 _minDistanceForReweightBPs,
         address _pair,
         uint256 _reweightFrequency
-    ) UniRef(_core, _pair, _oracle) Timed(_reweightFrequency) {
+    ) UniRef(_core, _pair, _oracle) Timed(_reweightFrequency) Incentivized(_incentiveAmount) {
         pcvDeposit = IPCVDeposit(_pcvDeposit);
         emit PCVDepositUpdate(address(0), _pcvDeposit);
-
-        reweightIncentiveAmount = _incentiveAmount;
-        emit ReweightIncentiveUpdate(0, _incentiveAmount);
 
         _minDistanceForReweight = Decimal.ratio(
             _minDistanceForReweightBPs,
@@ -80,17 +76,6 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         address oldPCVDeposit = address(pcvDeposit);
         pcvDeposit = IPCVDeposit(_pcvDeposit);
         emit PCVDepositUpdate(oldPCVDeposit, _pcvDeposit);
-    }
-
-    /// @notice sets the reweight incentive amount
-    function setReweightIncentive(uint256 newReweightIncentiveAmount)
-        external
-        override
-        onlyGovernor
-    {
-        uint256 oldReweightIncentiveAmount = reweightIncentiveAmount;
-        reweightIncentiveAmount = newReweightIncentiveAmount;
-        emit ReweightIncentiveUpdate(oldReweightIncentiveAmount, newReweightIncentiveAmount);
     }
 
     /// @notice sets the reweight min distance in basis points
@@ -153,11 +138,6 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed {
         returns (Decimal.D256 memory)
     {
         return _minDistanceForReweight;
-    }
-
-    // incentivize the caller only if this contract is appointed as a minter
-    function _incentivize() internal ifMinterSelf {
-        fei().mint(msg.sender, reweightIncentiveAmount);
     }
 
     function _reweight() internal {

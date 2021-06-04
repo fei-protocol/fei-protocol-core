@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./IPCVDeposit.sol";
 import "./IPCVSwapper.sol";
+import "./Incentivized.sol";
 import "../refs/OracleRef.sol";
 import "../utils/Timed.sol";
 import "../external/UniswapV2Library.sol";
@@ -14,7 +15,7 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 
 /// @title implementation for PCV Swapper that swaps ERC20 tokens on Uniswap
 /// @author eswak
-contract PCVSwapperUniswap is IPCVSwapper, IPCVDeposit, OracleRef, Timed {
+contract PCVSwapperUniswap is IPCVSwapper, IPCVDeposit, OracleRef, Timed, Incentivized {
     using SafeERC20 for ERC20;
     using Decimal for Decimal.D256;
 
@@ -34,8 +35,6 @@ contract PCVSwapperUniswap is IPCVSwapper, IPCVDeposit, OracleRef, Timed {
     uint256 public maxSpentPerSwap;
     /// @notice should we use (1 / oraclePrice) instead of oraclePrice ?
     bool public invertOraclePrice;
-    /// @notice the incentive for calling swap() function, in FEI
-    uint256 public swapIncentiveAmount;
     /// @notice the maximum amount of slippage vs oracle price
     uint256 public maximumSlippageBasisPoints;
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
@@ -60,7 +59,7 @@ contract PCVSwapperUniswap is IPCVSwapper, IPCVDeposit, OracleRef, Timed {
         uint256 _maximumSlippageBasisPoints,
         bool _invertOraclePrice,
         uint256 _swapIncentiveAmount
-    ) OracleRef(_core, _oracle) Timed(_swapFrequency) {
+    ) OracleRef(_core, _oracle) Timed(_swapFrequency) Incentivized(_swapIncentiveAmount) {
         pair = _pair;
         WETH = _WETH;
         tokenSpent = _tokenSpent;
@@ -69,7 +68,6 @@ contract PCVSwapperUniswap is IPCVSwapper, IPCVDeposit, OracleRef, Timed {
         maxSpentPerSwap = _maxSpentPerSwap;
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
         invertOraclePrice = _invertOraclePrice;
-        swapIncentiveAmount = _swapIncentiveAmount;
 
         // start timer
         _initTimed();
@@ -170,12 +168,6 @@ contract PCVSwapperUniswap is IPCVSwapper, IPCVDeposit, OracleRef, Timed {
     function setInvertOraclePrice(bool _invertOraclePrice) external onlyGovernor {
         invertOraclePrice = _invertOraclePrice;
 	        emit UpdateInvertOraclePrice(_invertOraclePrice);	
-    }	
-
-    /// @notice set the swap incentive amout	
-    function setSwapIncentiveAmount(uint256 _swapIncentiveAmount) external onlyGovernor {	
-        swapIncentiveAmount = _swapIncentiveAmount;	
-        emit UpdateSwapIncentiveAmount(_swapIncentiveAmount);
     }
 
     // =======================================================================
@@ -224,11 +216,6 @@ contract PCVSwapperUniswap is IPCVSwapper, IPCVDeposit, OracleRef, Timed {
     // =======================================================================
     // Internal functions
     // =======================================================================
-
-    /// @notice incentivize a call with {swapIncentiveAmount} FEI rewards
-    function _incentivize() internal ifMinterSelf {
-        fei().mint(msg.sender, swapIncentiveAmount);
-    }
 
     /// @notice see external function getNextAmountSpent()
     function _getExpectedAmountIn() internal view returns (uint256) {

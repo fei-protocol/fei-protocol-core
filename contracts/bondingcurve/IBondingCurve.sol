@@ -13,8 +13,6 @@ interface IBondingCurve {
 
     event DiscountUpdate(uint256 oldDiscount, uint256 newDiscount);
 
-    event IncentiveAmountUpdate(uint256 oldIncentiveAmount, uint256 newIncentiveAmount);
-
     event Purchase(address indexed to, uint256 amountIn, uint256 amountOut);
 
     event Allocate(address indexed caller, uint256 amount);
@@ -45,8 +43,6 @@ interface IBondingCurve {
         uint256[] calldata ratios
     ) external;
 
-    function setIncentiveAmount(uint256 newIncentiveAmount) external;
-
     function setIncentiveFrequency(uint256 newFrequency) external;
 
     // ----------- Getters -----------
@@ -72,5 +68,4 @@ interface IBondingCurve {
 
     function token() external view returns (IERC20);
 
-    function incentiveAmount() external view returns (uint256);
 }

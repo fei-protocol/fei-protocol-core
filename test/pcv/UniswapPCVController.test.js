@@ -271,24 +271,6 @@ describe('UniswapPCVController', function () {
       });
     });
 
-    describe('Reweight Incentive', function() {
-      it('Governor set succeeds', async function() {
-        expectEvent(
-          await this.pcvController.setReweightIncentive(10000, {from: governorAddress}),
-          'ReweightIncentiveUpdate',
-          { 
-            _oldIncentive: '100000000000000000000',
-            _newIncentive: '10000' 
-          }
-        );
-        expect(await this.pcvController.reweightIncentiveAmount()).to.be.bignumber.equal('10000');
-      });
-
-      it('Non-governor set reverts', async function() {
-        await expectRevert(this.pcvController.setReweightIncentive(10000, {from: userAddress}), "CoreRef: Caller is not a governor");
-      });
-    });
-
     describe('Reweight Min Distance', function() {
       it('Governor set succeeds', async function() {
         expectEvent(
