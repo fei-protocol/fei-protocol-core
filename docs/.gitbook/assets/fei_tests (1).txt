@@ -1,0 +1,1129 @@
+  EthBondingCurve
+    Init
+      ✓ average price (84ms)
+      ✓ current price (41ms)
+      ✓ getAmountOut (82ms)
+      ✓ scale (42ms)
+      ✓ getTotalPCVHeld
+      ✓ totalPurchased
+      ✓ buffer (58ms)
+      ✓ incentive amount
+    Purchase
+      Paused
+        ✓ reverts (149ms)
+      Incorrect ETH sent
+        ✓ Too little ETH (60ms)
+        ✓ Too much ETH (77ms)
+      Correct ETH sent
+        Invalid Oracle
+          ✓ reverts (132ms)
+        Pre Scale
+          ✓ correct FEI sent (114ms)
+          ✓ totalPurchased (126ms)
+          ✓ not at Scale (132ms)
+          ✓ current price (248ms)
+          ✓ total PCV held (121ms)
+          Second Purchase
+            ✓ correct FEI sent (88ms)
+            ✓ totalPurchased (66ms)
+            ✓ not at Scale (102ms)
+            ✓ current price (52ms)
+            ✓ total PCV held (77ms)
+          Purchase To
+            ✓ correct FEI sent (154ms)
+            ✓ totalPurchased (94ms)
+            ✓ not at Scale (60ms)
+            ✓ current price (132ms)
+            ✓ total PCV held (106ms)
+          Oracle Price Change
+            ✓ correct FEI sent (131ms)
+            ✓ totalPurchased (127ms)
+            ✓ not at Scale (134ms)
+            ✓ current price (145ms)
+            ✓ total PCV held (112ms)
+        Crossing Scale Beyond Buffer
+          ✓ registers scale cross (204ms)
+          ✓ Correct current price (129ms)
+        Crossing Scale
+          ✓ correct FEI sent (106ms)
+          ✓ totalPurchased (138ms)
+          ✓ At Scale (108ms)
+          ✓ current price (94ms)
+          ✓ total PCV held (96ms)
+          Post Scale
+            ✓ correct FEI sent (78ms)
+            ✓ totalPurchased (69ms)
+            ✓ at Scale (115ms)
+            ✓ current price (108ms)
+            ✓ total PCV held (103ms)
+          Buffer Change
+            ✓ correct FEI sent (153ms)
+            ✓ totalPurchased (110ms)
+            ✓ at Scale (84ms)
+            ✓ current price (96ms)
+            ✓ total PCV held (84ms)
+          Oracle Price Change
+            ✓ correct FEI sent (82ms)
+            ✓ totalPurchased (77ms)
+            ✓ at Scale (46ms)
+            ✓ current price (78ms)
+            ✓ total PCV held (90ms)
+    Allocate
+      Paused
+        ✓ reverts (154ms)
+      From Contract
+        ✓ reverts (127ms)
+        ✓ genesis group succeeds (411ms)
+      Pre Launch
+        ✓ reverts (91ms)
+      No Purchase
+        ✓ reverts (213ms)
+      With Purchase
+        ✓ splits funds (103ms)
+        ✓ incentivizes (135ms)
+        Second Allocate
+          No Purchase
+            ✓ reverts (202ms)
+          With Purchase Before Window
+            ✓ splits funds (66ms)
+            ✓ no incentives (65ms)
+          With Purchase After Window
+            ✓ splits funds (69ms)
+            ✓ incentivizes (101ms)
+          Updated Allocation
+            ✓ splits funds (54ms)
+            ✓ incentivizes (56ms)
+    PCV Allocation
+      ✓ Mismatched lengths revert (78ms)
+      ✓ Incomplete allocation rule reverts (52ms)
+      ✓ Correct allocation rule succeeds (83ms)
+      ✓ Governor set succeeds (220ms)
+      ✓ Non-governor set reverts (152ms)
+    Oracle
+      ✓ Governor set succeeds (260ms)
+      ✓ Non-governor set reverts (153ms)
+    Scale
+      ✓ Governor set succeeds (245ms)
+      ✓ Non-governor set reverts (121ms)
+    Buffer
+      ✓ Governor set succeeds (216ms)
+      ✓ Governor set outside range reverts (127ms)
+      ✓ Non-governor set reverts (113ms)
+    Core
+      ✓ Governor set succeeds (193ms)
+      ✓ Non-governor set reverts (121ms)
+    Incentive Amount
+      ✓ Governor set succeeds (202ms)
+      ✓ Non-governor set reverts (132ms)
+    Incentive Frequency
+      ✓ Governor set succeeds (132ms)
+      ✓ Non-governor set reverts (81ms)
+    Pausable
+      ✓ init (96ms)
+      Pause
+        ✓ Governor succeeds (142ms)
+        ✓ Non-governor reverts (132ms)
+      Unpause
+        ✓ Governor succeeds (180ms)
+        ✓ Non-governor reverts (119ms)
+
+  Core
+    Allocate Tribe
+      ✓ updates (176ms)
+      ✓ not enough reverts (144ms)
+      ✓ non governor reverts (87ms)
+    Fei Update
+      ✓ updates (183ms)
+      ✓ non governor reverts (56ms)
+    Tribe Update
+      ✓ updates (122ms)
+      ✓ non governor reverts (73ms)
+    Genesis
+      Genesis Group
+        ✓ governor set succeeds (133ms)
+        ✓ non-governor set reverts (58ms)
+      Modifiers
+        Pre Genesis Completion
+          ✓ postGenesis reverts (68ms)
+          ✓ non genesis group complete fails (73ms)
+        Post Genesis Completion
+          ✓ postGenesis succeeds (41ms)
+          ✓ second complete reverts (76ms)
+    Minter
+      Role
+        Has access
+          ✓ is registered in core (43ms)
+        Access revoked
+          ✓ is not registered in core (97ms)
+        Access renounced
+          ✓ is not registered in core (73ms)
+        Member Count
+          ✓ is one
+          ✓ updates to two (115ms)
+        Admin
+          ✓ is governor (49ms)
+      Access
+        ✓ onlyMinter succeeds
+        ✓ onlyBurner reverts (54ms)
+        ✓ onlyGovernor reverts (66ms)
+        ✓ onlyPCVController reverts (43ms)
+    Burner
+      Role
+        Has access
+          ✓ is registered in core (77ms)
+        Access revoked
+          ✓ is not registered in core (55ms)
+        Access renounced
+          ✓ is not registered in core (57ms)
+        Member Count
+          ✓ is one (66ms)
+          ✓ updates to two (120ms)
+        Admin
+          ✓ is governor (41ms)
+      Access
+        ✓ onlyMinter reverts
+        ✓ onlyBurner succeeds (60ms)
+        ✓ onlyGovernor reverts (54ms)
+        ✓ onlyPCVController reverts
+    PCV Controller
+      Role
+        Has access
+          ✓ is registered in core (42ms)
+        Access revoked
+          ✓ is not registered in core (59ms)
+        Access renounced
+          ✓ is not registered in core (56ms)
+        Member Count
+          ✓ is one
+          ✓ updates to two (108ms)
+        Admin
+          ✓ is governor (57ms)
+      Access
+        ✓ onlyMinter reverts (58ms)
+        ✓ onlyBurner reverts (42ms)
+        ✓ onlyGovernor reverts (53ms)
+        ✓ onlyPCVController succeeds
+    Governor
+      Role
+        Has access
+          ✓ is registered in core (46ms)
+        Access revoked
+          ✓ is not registered in core (56ms)
+        Access renounced
+          ✓ is not registered in core (50ms)
+        Member Count
+          ✓ is one (42ms)
+          ✓ updates to two (140ms)
+        Admin
+          ✓ is governor (58ms)
+      Access
+        ✓ onlyMinter reverts
+        ✓ onlyBurner reverts (38ms)
+        ✓ onlyGovernor succeeds (68ms)
+        ✓ onlyPCVController reverts (49ms)
+      Access Control
+        Minter
+          ✓ can grant (127ms)
+          ✓ can revoke (203ms)
+        Burner
+          ✓ can grant (168ms)
+          ✓ can revoke (163ms)
+        PCV Controller
+          ✓ can grant (149ms)
+          ✓ can revoke (116ms)
+        Governor
+          ✓ can grant (121ms)
+          ✓ can revoke (192ms)
+    Guardian
+      Role
+        Has access
+          ✓ is registered in core
+        Access revoked
+          ✓ is not registered in core (44ms)
+        Access renounced
+          ✓ is not registered in core (41ms)
+        Member Count
+          ✓ is one
+          ✓ updates to two (108ms)
+        Admin
+          ✓ is governor
+      Access
+        ✓ onlyMinter reverts (44ms)
+        ✓ onlyBurner reverts (63ms)
+        ✓ onlyGovernor reverts (38ms)
+        ✓ onlyPCVController reverts
+      Access Control
+        Non-Guardian
+          ✓ cannot revoke (65ms)
+        Guardian
+          ✓ can revoke minter (177ms)
+          ✓ can revoke burner (121ms)
+          ✓ can revoke pcv controller (125ms)
+          ✓ cannot revoke governor (101ms)
+    Create Role
+      ✓ governor succeeds (105ms)
+      ✓ non-governor fails (58ms)
+
+  TimelockedDelegator
+    Init
+      ✓ tribe (91ms)
+      ✓ totalDelegated (38ms)
+      ✓ totalToken (61ms)
+    Release
+      Immediate
+        ✓ reverts (128ms)
+      Zero
+        ✓ reverts (61ms)
+      One Quarter
+        ✓ releases tokens (120ms)
+        ✓ updates released amounts (103ms)
+        Another Quarter
+          ✓ releases tokens (118ms)
+          ✓ updates released amounts (78ms)
+        Excess Release
+          ✓ reverts (195ms)
+      Total Window
+        Total Release
+          ✓ releases tokens (97ms)
+          ✓ updates released amounts (123ms)
+        Release To
+          ✓ releases tokens (157ms)
+          ✓ updates released amounts (103ms)
+        Partial Release
+          ✓ releases tokens (126ms)
+          ✓ updates released amounts (159ms)
+    Delegation
+      Not enough Tribe
+        ✓ reverts (106ms)
+      Enough Tribe
+        Single Delegation
+          ✓ updates balances (177ms)
+          ✓ updates delegated amount (99ms)
+          ✓ maintains total token (47ms)
+        Double Delegation
+          ✓ updates balances (256ms)
+          ✓ updates delegated amount (92ms)
+          ✓ maintains total token (110ms)
+          ✓ original delegatee is deleted (42ms)
+        Undelegation
+          ✓ updates balances (242ms)
+          ✓ updates delegated amount (92ms)
+          ✓ maintains total token (103ms)
+          ✓ delegatee is deleted
+          Double Undelegation
+            ✓ reverts (98ms)
+    Token Drop
+      ✓ updates total token (94ms)
+    Access
+      Delegate
+        ✓ Non-beneficiary set reverts (139ms)
+      Undelegate
+        ✓ Non-beneficiary set reverts (55ms)
+      Set Pending Beneficiary
+        ✓ Beneficiary set succeeds (122ms)
+        ✓ Non-beneficiary set reverts (108ms)
+      Accept Beneficiary
+        ✓ Pending Beneficiary succeeds (462ms)
+        ✓ Non pending beneficiary reverts (94ms)
+      Release
+        ✓ Non-beneficiary set reverts (92ms)
+
+  GenesisGroup
+    Init
+      ✓ totalCommittedFGEN (68ms)
+      ✓ isTimeEnded (99ms)
+      ✓ isTimeStarted (83ms)
+      getAmountOut
+        Inclusive
+          ✓ reverts (84ms)
+        Exclusive
+          ✓ succeeds (69ms)
+      getAmountsToRedeem
+        ✓ reverts (102ms)
+    Before Genesis Period
+      Purchase
+        ✓ reverts (139ms)
+      Commit
+        ✓ reverts (106ms)
+    Purchase
+      During Genesis Period
+        No value
+          ✓ reverts (132ms)
+        Wrong value
+          ✓ reverts (145ms)
+        With value
+          ✓ updates user balances (116ms)
+          ✓ updates totals
+          Second Purchase
+            ✓ updates user balances (75ms)
+            ✓ updates totals (103ms)
+          Purchase To
+            ✓ updates user balances (134ms)
+            ✓ updates totals (75ms)
+          getAmountOut
+            Inclusive
+              ✓ succeeds (94ms)
+            Exclusive
+              ✓ succeeds (71ms)
+      Post Genesis Period
+        ✓ reverts (68ms)
+    Flash Launch
+      ✓ reverts (160ms)
+    Launch
+      During Genesis Period
+        ✓ reverts (86ms)
+      Post Genesis Period
+        Without Pre-Commits
+          ✓ purchases on bondingCurve (85ms)
+          ✓ allocates bonding curve (145ms)
+          ✓ deploys IDO (85ms)
+          ✓ no swaps (154ms)
+          ✓ inits Bonding Curve Oracle (98ms)
+          Second Launch
+            ✓ reverts (198ms)
+        With Pre-Commits
+          ✓ purchases on bondingCurve (69ms)
+          ✓ allocates bonding curve (168ms)
+          ✓ deploys IDO (98ms)
+          ✓ swaps (124ms)
+          ✓ inits Bonding Curve Oracle (96ms)
+    Redeem
+      During Genesis Period
+        ✓ reverts (124ms)
+      Post Genesis Period
+        Without Commit
+          External Redeem
+            Approved
+              ✓ updates user balances (343ms)
+              ✓ updates totals (323ms)
+            Not Approved
+              ✓ reverts (257ms)
+          Single Redeem
+            ✓ updates user balances (288ms)
+            ✓ updates totals (448ms)
+            ✓ nothing left to redeem (154ms)
+            Second redeem
+              ✓ reverts (205ms)
+            Other redeem
+              ✓ updates user balances (289ms)
+              ✓ updates totals (248ms)
+        With Commit
+          Single Redeem
+            ✓ updates user balances (585ms)
+            ✓ updates totals (303ms)
+            ✓ nothing left to redeem (223ms)
+            Second redeem
+              ✓ reverts (211ms)
+            Other redeem
+              ✓ updates user balances (336ms)
+              ✓ updates totals (425ms)
+              ✓ nothing left to redeem (134ms)
+    Pre-Commit
+      Single Commit
+        Self commit
+          ✓ updates user balances (67ms)
+          ✓ updates totals (44ms)
+          ✓ updates getAmountOut (55ms)
+          Second commit
+            Enough
+              ✓ updates user balances (103ms)
+              ✓ updates totals (91ms)
+              ✓ updates getAmountOut (69ms)
+            Not enough
+              ✓ reverts (133ms)
+        Commit to
+          ✓ updates user balances (233ms)
+          ✓ updates totals (85ms)
+        Approved commit
+          ✓ updates user balances (190ms)
+          ✓ updates totals (61ms)
+        Unapproved commit
+          ✓ reverts (91ms)
+      Double Commit
+        ✓ updates user balances (209ms)
+        ✓ updates totals (57ms)
+        Redeem
+          ✓ updates user balances (316ms)
+          ✓ updates totals (143ms)
+      Post Genesis Period
+        ✓ reverts (79ms)
+    Exit
+      During Genesis Period
+        ✓ reverts (198ms)
+      Post Genesis Period
+        Before window
+          ✓ reverts (40ms)
+        After window
+          With Launch
+            ✓ no ETH in contract reverts (190ms)
+            ✓ forced ETH in contract reverts (375ms)
+          Self exit
+            ✓ updates user balances (127ms)
+            ✓ updates genesis balances (107ms)
+            Second exit
+              ✓ reverts (130ms)
+          Exit to
+            ✓ updates user balances (90ms)
+            ✓ updates genesis balances (120ms)
+          Approved exit
+            ✓ updates user balances (223ms)
+            ✓ updates genesis balances (138ms)
+            Second exit
+              ✓ reverts (210ms)
+          Unapproved exit
+            ✓ reverts (87ms)
+
+  IDO
+    Init
+      ✓ pair (89ms)
+      ✓ router (93ms)
+      ✓ duration (86ms)
+      ✓ locked token (128ms)
+      ✓ beneficiary (122ms)
+      ✓ initial balance (97ms)
+      Bad Duration
+        ✓ reverts (128ms)
+      Bad Beneficiary
+        ✓ reverts (190ms)
+    Swap
+      Not Genesis Group
+        ✓ reverts (111ms)
+      From Genesis Group
+        Not approved
+          ✓ reverts (164ms)
+        Approved
+          ✓ genesis group balances (85ms)
+          ✓ updates pair balances (78ms)
+    Deploy
+      Not Genesis Group
+        ✓ reverts (164ms)
+      From Genesis Group
+        ✓ updates ido balances (252ms)
+        ✓ updates pair balances (137ms)
+        ✓ updates total token (166ms)
+        After window
+          ✓ already released all (175ms)
+          ✓ nothing available for release (105ms)
+          ✓ updates user balances (74ms)
+    Beneficiary
+      ✓ change succeeds (328ms)
+      ✓ unauthorized set fails (129ms)
+      ✓ unauthorized accept fails (458ms)
+
+  BondingCurveOracle
+    Init
+      ✓ Timed (135ms)
+      ✓ uniswapOracle (54ms)
+      ✓ bondingCurve (39ms)
+      ✓ paused (65ms)
+      ✓ initialUSDPrice (111ms)
+    Update
+      ✓ updates uniswap oracle (195ms)
+    isOutdated
+      ✓ reads uniswapOracle (263ms)
+    Read
+      Uninitialized
+        ✓ returns invalid
+      Initialized
+        ✓ initialUSDPrice (103ms)
+        Paused
+          ✓ returns invalid (69ms)
+        Beginning of Thawing Period
+          Pre Scale
+            ✓ returns bonding curve oracle info (117ms)
+          At Scale
+            ✓ returns uniswap oracle info (100ms)
+        Halfway through Thawing Period
+          Pre Scale
+            ✓ returns bonding curve oracle info (77ms)
+          At Scale
+            ✓ returns uniswap oracle info (40ms)
+        End of Thawing Period
+          Pre Scale
+            ✓ returns bonding curve oracle info (72ms)
+          At Scale
+            ✓ returns uniswap oracle info (67ms)
+      Initialized Above One
+        ✓ initialUSDPrice (150ms)
+        Beginning of Thawing Period
+          At Scale
+            ✓ returns uniswap oracle info (66ms)
+        Halfway through Thawing Period
+          At Scale
+            ✓ returns uniswap oracle info (103ms)
+        End of Thawing Period
+          At Scale
+            ✓ returns uniswap oracle info (63ms)
+
+  UniswapOracle
+    Init
+      ✓ priors (169ms)
+      ✓ pair (78ms)
+      ✓ duration (61ms)
+      ✓ paused
+    Read
+      Uninitialized
+        ✓ returns invalid (57ms)
+      Initialized
+        Paused
+          ✓ returns invalid (88ms)
+        Unpaused
+          ✓ returns valid (85ms)
+    Update
+      Paused
+        ✓ reverts (145ms)
+      Within duration
+        ✓ no change (108ms)
+        ✓ not outdated (116ms)
+      Exceeds duration
+        ✓ outdated (90ms)
+        ✓ updates (354ms)
+      Price Moves
+        Upward
+          ✓ updates (138ms)
+        Downward
+          ✓ updates (141ms)
+    Access
+      Duration
+        ✓ Governor set succeeds (202ms)
+        ✓ Non-governor set reverts (128ms)
+
+  EthUniswapPCVController
+    Sole LP
+      ✓ pcvDeposit gets all ETH (151ms)
+      ✓ controller has no FEI (129ms)
+    With Other LP
+      At peg
+        ✓ reverts (184ms)
+      Above peg
+        ✓ reverts (170ms)
+      Below peg
+        Enough to reweight
+          ✓ pair gets some ETH in swap (202ms)
+          ✓ pcvDeposit gets remaining ETH (274ms)
+          ✓ controller has no FEI (147ms)
+        Not enough to reweight
+          ✓ pair gets all withdrawn ETH in swap (150ms)
+          ✓ pcvDeposit only keeps non-withdrawn ETH (191ms)
+          ✓ controller has no FEI (202ms)
+    External Reweight
+      Paused
+        ✓ reverts (203ms)
+      From Contract
+        ✓ reverts (324ms)
+      Not at incentive parity
+        ✓ reverts (355ms)
+      Not at min distance
+        ✓ reverts (807ms)
+      No incentive for caller if controller not minter
+        ✓ pair gets some ETH in swap (196ms)
+        ✓ pcvDeposit gets remaining ETH (188ms)
+        ✓ user FEI balance is 0 (223ms)
+      Incentive for caller if controller is a minter
+        ✓ pair gets some ETH in swap (172ms)
+        ✓ pcvDeposit gets remaining ETH (228ms)
+        ✓ user FEI balance updates (215ms)
+    Access
+      Force Reweight
+        ✓ Non-governor call fails (77ms)
+      Reweight Incentive
+        ✓ Governor set succeeds (173ms)
+        ✓ Non-governor set reverts (111ms)
+      Reweight Withdraw Basis Points
+        ✓ Governor set succeeds (214ms)
+        ✓ Non-governor set reverts (155ms)
+        ✓ Too large reverts (99ms)
+      Reweight Min Distance
+        ✓ Governor set succeeds (213ms)
+        ✓ Non-governor set reverts (146ms)
+      Pair
+        ✓ Governor set succeeds (482ms)
+        ✓ Non-governor set reverts (119ms)
+      Incentive Contract
+        ✓ updates automatically (210ms)
+      PCV Deposit
+        ✓ Governor set succeeds (143ms)
+        ✓ Non-governor set reverts (89ms)
+      Oracle
+        ✓ Governor set succeeds (134ms)
+        ✓ Non-governor set reverts (97ms)
+
+  EthUniswapPCVDeposit
+    Deposit
+      Paused
+        ✓ reverts (240ms)
+      Pre deposit values
+        ✓ liquidityOwned (85ms)
+        ✓ pair reserves (134ms)
+        ✓ totalValue (100ms)
+      Post deposit values
+        No existing liquidity
+          ✓ liquidityOwned (136ms)
+          ✓ pair reserves (307ms)
+          ✓ totalValue (233ms)
+          ✓ no fei held (108ms)
+        With existing liquidity
+          ✓ liquidityOwned (148ms)
+          ✓ pair reserves (182ms)
+          ✓ totalValue (155ms)
+          ✓ no fei held (161ms)
+        Transfers held ETH and burns FEI
+          ✓ liquidityOwned (133ms)
+          ✓ pair reserves (233ms)
+          ✓ totalValue (310ms)
+          ✓ no fei held (195ms)
+        After oracle price move
+          ✓ liquidityOwned (90ms)
+          ✓ pair reserves (294ms)
+          ✓ totalValue (120ms)
+          ✓ no fei held (187ms)
+        Incorrect ETH amount
+          ✓ reverts (214ms)
+    Withdraw
+      Paused
+        ✓ reverts (198ms)
+      Reverts
+        ✓ not pcv controller (91ms)
+        ✓ no balance (234ms)
+      With Balance
+        Partial
+          ✓ user balance updates (47ms)
+          ✓ no fei held (172ms)
+          ✓ pair balances update (347ms)
+          ✓ liquidityOwned (156ms)
+        Total
+          ✓ user balance updates (43ms)
+          ✓ no fei held (125ms)
+          ✓ liquidityOwned (110ms)
+          ✓ pair balances update (194ms)
+    Access
+      Pair
+        ✓ Governor set succeeds (299ms)
+        ✓ Non-governor set reverts (117ms)
+
+  FeiRouter
+    Buy
+      Mint
+        Not enough mint
+          ✓ reverts (348ms)
+        Exempt with enough mint
+          ✓ reverts (256ms)
+        Sufficient mint
+          ✓ succeeds (843ms)
+      Deadline
+        Too late
+          ✓ reverts (240ms)
+        On time
+          ✓ succeeds (667ms)
+      Slippage
+        Too high
+          ✓ reverts (277ms)
+        Acceptable
+          ✓ succeeds (792ms)
+    Sell
+      Burn
+        Too much burn
+          ✓ reverts (280ms)
+        Sufficient burn
+          ✓ succeeds (479ms)
+        Exempt with too much burn
+          ✓ succeeds (381ms)
+      Deadline
+        Too late
+          ✓ reverts (125ms)
+        On time
+          ✓ succeeds (394ms)
+      Slippage
+        Too high
+          ✓ reverts (203ms)
+        Acceptable
+          ✓ succeeds (685ms)
+
+  FeiRewardsDistributor
+    Init
+      ✓ paused (47ms)
+      ✓ stakingContract (118ms)
+      ✓ distributedRewards (132ms)
+      ✓ dripFrequency (95ms)
+      ✓ duration (61ms)
+      ✓ incentiveAmount (59ms)
+      ✓ releasedReward (68ms)
+      ✓ totalReward (78ms)
+      ✓ rewardBalance (92ms)
+      ✓ unreleasedReward (84ms)
+    governorWithdrawTribe
+      Non-governor
+        ✓ reverts (178ms)
+      Governor
+        ✓ updates balances (99ms)
+    governorRecover
+      Non-governor
+        ✓ reverts (159ms)
+      Governor
+        ✓ updates balances (188ms)
+    setDripFrequency
+      Non-governor
+        ✓ reverts (128ms)
+      Governor
+        ✓ updates frequency (93ms)
+    setIncentiveAmount
+      Non-governor
+        ✓ reverts (149ms)
+      Governor
+        ✓ updates incentive amount (73ms)
+    setStakingContract
+      Non-governor
+        ✓ reverts (110ms)
+      Governor
+        ✓ updates incentive amount (64ms)
+    drip
+      Paused
+        ✓ reverts (209ms)
+      From Contract
+        ✓ reverts (192ms)
+      immediate
+        before frequency
+          ✓ reverts (104ms)
+        after frequency
+          ✓ updates balances (654ms)
+          ✓ incentivizes (88ms)
+          second
+            ✓ updates balances (555ms)
+            ✓ incentivizes (76ms)
+      10%
+        after frequency
+          ✓ updates balances (450ms)
+          ✓ incentivizes (93ms)
+          second
+            ✓ updates balances (576ms)
+            ✓ incentivizes (62ms)
+      25%
+        after frequency
+          ✓ updates balances (429ms)
+          ✓ incentivizes (101ms)
+          second
+            ✓ updates balances (457ms)
+            ✓ incentivizes (97ms)
+      50%
+        after frequency
+          ✓ updates balances (602ms)
+          ✓ incentivizes (85ms)
+          second
+            ✓ updates balances (500ms)
+            ✓ incentivizes (99ms)
+      100%
+        after frequency
+          ✓ updates balances (384ms)
+          ✓ incentivizes (105ms)
+          second
+            ✓ reverts (230ms)
+
+  FeiStakingRewards
+    Init
+      ✓ rewardsToken (65ms)
+      ✓ current price (76ms)
+      ✓ periodFinish (84ms)
+      ✓ rewardRate (55ms)
+      ✓ rewardsDuration (130ms)
+      ✓ lastUpdateTime (87ms)
+      ✓ rewardPerTokenStored (64ms)
+      ✓ totalSupply (51ms)
+      ✓ getRewardForDuration (143ms)
+    notifyRewardAmount
+      non-owner
+        ✓ reverts (92ms)
+      too much notified
+        ✓ reverts (105ms)
+      full amount
+        ✓ rewardPerToken (105ms)
+        ✓ rewardRate (48ms)
+      half
+        ✓ rewardPerToken (117ms)
+        ✓ rewardRate (191ms)
+        second half
+          ✓ rewardPerToken (72ms)
+          ✓ rewardRate (96ms)
+    recoverERC20
+      non-owner
+        ✓ reverts (132ms)
+      invalid token
+        ✓ rewards reverts (118ms)
+        ✓ staking reverts (74ms)
+      full amount
+        ✓ succeeds (44ms)
+    stake
+      alone from start
+        ✓ earns rewards (87ms)
+        ✓ updated balances (184ms)
+        ✓ updates rates (95ms)
+      alone from halfway
+        ✓ earns rewards (75ms)
+        ✓ updated balances (219ms)
+        ✓ updates rates (53ms)
+      second from start 50/50
+        ✓ earns rewards (98ms)
+        ✓ updated balances (143ms)
+        ✓ updates rates (106ms)
+      second from halfway 50/50
+        ✓ earns rewards (116ms)
+        ✓ updated balances (143ms)
+        ✓ updates rates (102ms)
+    withdraw
+      alone from start
+        ✓ earns rewards (190ms)
+        ✓ updated balances (244ms)
+        ✓ updates rates (96ms)
+      alone from halfway
+        ✓ earns rewards (135ms)
+        ✓ updated balances (172ms)
+        ✓ updates rates (120ms)
+      second from start 50/50
+        ✓ earns rewards (131ms)
+        ✓ updated balances (259ms)
+        ✓ updates rates (111ms)
+      second from halfway 50/50
+        ✓ earns rewards (96ms)
+        ✓ updated balances (210ms)
+        ✓ updates rates (129ms)
+    exit
+      alone from start
+        ✓ earns rewards (243ms)
+        ✓ updated balances (220ms)
+        ✓ updates rates (182ms)
+      alone from halfway
+        ✓ earns rewards (225ms)
+        ✓ updated balances (313ms)
+        ✓ updates rates (138ms)
+      second from start 50/50
+        ✓ earns rewards (254ms)
+        ✓ updated balances (224ms)
+        ✓ updates rates (140ms)
+      second from halfway 50/50
+        ✓ earns rewards (201ms)
+        ✓ updated balances (215ms)
+        ✓ updates rates (164ms)
+
+  Fei
+    mint
+      Paused
+        ✓ reverts (283ms)
+      not from minter
+        ✓ reverts (76ms)
+      from minter
+        ✓ mints new Fei tokens (45ms)
+    burn
+      Paused
+        ✓ reverts (128ms)
+      not from burner
+        ✓ reverts (58ms)
+      from burner to user with sufficient balance
+        ✓ burn Fei tokens (119ms)
+      from burner to user without sufficient balance
+        ✓ burn Fei tokens (63ms)
+    incentive contracts
+      ✓ incentive contract registered (128ms)
+      via transfer
+        on sender
+          ✓ balances update (101ms)
+          ✓ incentive applied (53ms)
+        on receiver
+          ✓ balances update (100ms)
+          ✓ incentive applied (76ms)
+        on all
+          ✓ balances update (70ms)
+          ✓ incentive applied (72ms)
+        on sender and receiver
+          ✓ balances update with incentives (112ms)
+        on receiver and all
+          ✓ balances update (88ms)
+          ✓ incentive applied (92ms)
+      via transferFrom
+        on operator
+          ✓ balances update (76ms)
+          ✓ incentive applied (85ms)
+          ✓ operator approval decrements (65ms)
+        on sender and operator
+          ✓ balances update (131ms)
+          ✓ incentive applied (97ms)
+        on operator and all
+          ✓ balances update (97ms)
+          ✓ incentive applied (101ms)
+          ✓ operator approval decrements (91ms)
+
+  UniswapIncentive
+    Incentive Parity
+      Above Peg
+        Inactive Time Weight
+          ✓ returns false (52ms)
+        Active Time Weight
+          ✓ returns false (92ms)
+      At Peg
+        Inactive Time Weight
+          ✓ returns false
+        Active Time Weight
+          ✓ returns false (102ms)
+      Below Peg
+        Inactive Time Weight
+          ✓ returns false (42ms)
+        Active Time Weight
+          Below Parity
+            ✓ returns false (78ms)
+          At Parity
+            ✓ returns true (81ms)
+          Exceeds Parity
+            ✓ returns true (153ms)
+    Time Weight
+      ✓ granularity (76ms)
+      calculation
+        ✓ inactive (280ms)
+        ✓ default same block (194ms)
+        ✓ default future block (304ms)
+        ✓ custom growth rate same block (129ms)
+        ✓ custom growth rate future block (213ms)
+    Self sell
+      ✓ reverts (118ms)
+    At peg
+      Buy
+        ✓ user balance updates (211ms)
+        ✓ pair balance updates (239ms)
+        ✓ no incentive (208ms)
+        ✓ time weight stays inactive (394ms)
+      Sell
+        enough in wallet
+          ✓ user balance updates (135ms)
+          ✓ pair balance updates (121ms)
+          ✓ burn incentive (108ms)
+          ✓ activates time weight (351ms)
+        exceeds transfer size
+          ✓ reverts (229ms)
+    Above peg
+      Buy
+        ✓ user balance updates (232ms)
+        ✓ pair balance updates (66ms)
+        ✓ no incentive (262ms)
+      Sell
+        short of peg
+          ✓ user balance updates (162ms)
+          ✓ pair balance updates (110ms)
+          ✓ no incentive (158ms)
+          ✓ time weight stays inactive (175ms)
+        to peg
+          ✓ user balance updates (84ms)
+          ✓ pair balance updates (126ms)
+          ✓ no incentive (104ms)
+          ✓ time weight stays inactive (289ms)
+        past the peg
+          enough in wallet
+            ✓ user balance updates (79ms)
+            ✓ pair balance updates (197ms)
+            ✓ burn incentive (132ms)
+            ✓ activates time weight (399ms)
+          beyond trade size
+            ✓ user balance updates (199ms)
+            ✓ pair balance updates (212ms)
+            ✓ burn incentive (303ms)
+            ✓ activates time weight (233ms)
+    Way below peg
+      Buy
+        mint exceeds amount
+          ✓ user balance updates (122ms)
+          ✓ pair balance updates (116ms)
+          ✓ mint incentive (148ms)
+          ✓ updates time weight (216ms)
+    Below peg
+      Buy
+        not a minter
+          ✓ user balance updates (93ms)
+          ✓ pair balance updates (196ms)
+          ✓ no incentive (270ms)
+          ✓ time weight stays active (160ms)
+        exempt user
+          ✓ user balance updates (173ms)
+          ✓ pair balance updates (59ms)
+          ✓ no incentive (148ms)
+          ✓ time weight stays active (126ms)
+        to peg
+          ✓ user balance updates (101ms)
+          ✓ pair balance updates (111ms)
+          ✓ mint incentive (204ms)
+          ✓ resets time weight (295ms)
+        past peg
+          ✓ user balance updates (114ms)
+          ✓ pair balance updates (196ms)
+          ✓ mint incentive (223ms)
+          ✓ resets time weight (202ms)
+        short of peg
+          ✓ user balance updates (150ms)
+          ✓ pair balance updates (174ms)
+          ✓ mint incentive (177ms)
+          ✓ partially updates time weight (253ms)
+        double time weight
+          ✓ user balance updates (97ms)
+          ✓ pair balance updates (134ms)
+          ✓ mint incentive (215ms)
+          ✓ resets time weight (284ms)
+        double time weight short of peg
+          ✓ user balance updates (101ms)
+          ✓ pair balance updates (129ms)
+          ✓ mint incentive (163ms)
+          ✓ partially updates time weight (206ms)
+        time weight exceeds burn
+          ✓ user balance updates (110ms)
+          ✓ pair balance updates (93ms)
+          ✓ mint incentive (161ms)
+          ✓ resets time weight (368ms)
+      Sell
+        not a burner
+          ✓ user balance updates (224ms)
+          ✓ pair balance updates (105ms)
+          ✓ burn incentive (125ms)
+          ✓ time weight stays active (585ms)
+        exempt user
+          ✓ user balance updates (123ms)
+          ✓ pair balance updates (89ms)
+          ✓ burn incentive (99ms)
+          ✓ time weight stays active (228ms)
+        enough in wallet
+          ✓ user balance updates (144ms)
+          ✓ pair balance updates (252ms)
+          ✓ burn incentive (246ms)
+          ✓ time weight updates (197ms)
+        time weight too high
+          ✓ user balance updates (122ms)
+          ✓ pair balance updates (129ms)
+          ✓ burn incentive (283ms)
+          ✓ time weight update capped (255ms)
+        burn exceeds trade
+          ✓ reverts (215ms)
+    Access
+      Incentivize
+        ✓ Non-Fei call reverts (135ms)
+      Growth Rate
+        ✓ Governor set succeeds (130ms)
+        ✓ Non-governor set reverts (96ms)
+      Oracle
+        ✓ Governor set succeeds (144ms)
+        ✓ Non-governor set reverts (87ms)
+      Exempt Addresses
+        ✓ Governor set succeeds (109ms)
+        ✓ Non-governor set reverts (107ms)
+
+  Roots
+    Cube Root
+      Below 8
+        ✓ 0
+        ✓ 1 (49ms)
+        ✓ 7 (58ms)
+      Above 8
+        ✓ 8
+        ✓ 26 (95ms)
+        ✓ 27
+        ✓ 511
+        ✓ 512 (47ms)
+        ✓ 10000 (54ms)
+        ✓ 999999999 (49ms)
+        ✓ 1000000000
+        ✓ 100000000000000000000 (90ms)
+
+
+  665 passing (27m)

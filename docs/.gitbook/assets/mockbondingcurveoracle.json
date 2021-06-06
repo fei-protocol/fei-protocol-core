@@ -1,0 +1,1 @@
+[{"inputs":[],"name":"initPrice","outputs":[{"internalType":"uint256","name":"value","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"components":[{"internalType":"uint256","name":"value","type":"uint256"}],"internalType":"struct Decimal.D256","name":"price","type":"tuple"}],"name":"init","outputs":[],"stateMutability":"nonpayable","type":"function"}]
