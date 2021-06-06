@@ -1,5 +1,6 @@
 const {
 	BN,
+  ZERO_ADDRESS,
 	expectEvent,
 	expectRevert,
 	time,
@@ -18,7 +19,12 @@ describe('Fei', function () {
 	let governorAddress;
 
   beforeEach(async function () {
-    ({ userAddress, governorAddress } = await getAddresses());
+    ({
+      minterAddress,
+      burnerAddress,
+      governorAddress,
+      userAddress
+  } = await getAddresses());
     this.core = await getCore(true);
     this.fei = await Fei.at(await this.core.fei());
   });

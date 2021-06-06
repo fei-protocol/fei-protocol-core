@@ -12,7 +12,10 @@
     "prefer-arrow-callback": 0,
     "comma-dangle": 0,
     "func-names": 0,
-    "space-before-function-paren": 0
+    "space-before-function-paren": 0,
+    "indent": ["error", 2],
+    "max-len": 150,
+    "no-tabs": 0
   },
   "globals": {
     "artifacts": "readonly",
