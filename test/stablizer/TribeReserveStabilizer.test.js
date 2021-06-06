@@ -18,7 +18,6 @@ describe('TribeReserveStabilizer', function () {
   let minterAddress;
   let pcvControllerAddress;
 
-
   beforeEach(async function () {
     ({
       userAddress,
@@ -27,13 +26,14 @@ describe('TribeReserveStabilizer', function () {
       pcvControllerAddress,
     } = await getAddresses());
     this.core = await getCore(true);
-
+  
     this.fei = await Fei.at(await this.core.fei());
     this.tribe = await Tribe.at(await this.core.tribe());
     this.oracle = await MockOracle.new(400); // 400:1 oracle price
+    this.feiOracle = await MockOracle.new(1);
     this.pcvDeposit = await MockPCVDeposit.new(userAddress);
 
-    this.reserveStabilizer = await TribeReserveStabilizer.new(this.core.address, this.oracle.address, '9000');
+    this.reserveStabilizer = await TribeReserveStabilizer.new(this.core.address, this.oracle.address, '9000', this.feiOracle.address, '10000');
 
     await this.core.grantBurner(this.reserveStabilizer.address, {from: governorAddress});
 
@@ -71,19 +71,46 @@ describe('TribeReserveStabilizer', function () {
       });
     });
 
-    describe('Higher usd per fei', function() {
-      it('exchanges for appropriate amount of token', async function() {
-        await this.reserveStabilizer.setUsdPerFeiRate('9500', {from: governorAddress});
-
-        let userBalanceBefore = await this.tribe.balanceOf(userAddress);
-        await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-        let userBalanceAfter = await this.tribe.balanceOf(userAddress);
-
-        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(new BN('95000'));
-
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
-        expect(await this.reserveStabilizer.balance()).to.be.bignumber.equal(new BN('0'));
+      describe('FEI above threshold', function() {
+        it('reverts', async function() {
+          await this.reserveStabilizer.setFeiPriceThreshold('9900', {from: governorAddress});
+          await expectRevert(this.reserveStabilizer.exchangeFei(40000000, {from: userAddress}), "TribeReserveStabilizer: FEI price too high");
+        });
       });
+
+      describe('Paused', function() {
+        it('reverts', async function() {
+          await this.reserveStabilizer.pause({from: governorAddress});
+          await expectRevert(this.reserveStabilizer.exchangeFei(new BN('400000'), {from: userAddress}), "Pausable: paused");
+        });
+      });
+    });
+  
+    describe('isFeiBelowThreshold', function() {
+      it('above', async function() {
+        await this.reserveStabilizer.setFeiPriceThreshold('9900', {from: governorAddress});
+        expect(await this.reserveStabilizer.isFeiBelowThreshold()).to.be.equal(false);
+      });
+
+      it('at', async function() {
+        expect(await this.reserveStabilizer.isFeiBelowThreshold()).to.be.equal(true);
+      });
+
+      it('below', async function() {
+        await this.reserveStabilizer.setFeiPriceThreshold('11000', {from: governorAddress});
+        expect(await this.reserveStabilizer.isFeiBelowThreshold()).to.be.equal(true);
+      });
+
+      it('invalid oracle', async function() {
+        await this.feiOracle.setValid(false);
+        expect(await this.reserveStabilizer.isFeiBelowThreshold()).to.be.equal(false);
+      });
+    });
+
+    describe('Withdraw', function() {
+        it('reverts', async function() {
+            await expectRevert(this.reserveStabilizer.withdraw(userAddress, '1000000000', {from: pcvControllerAddress}), "TribeReserveStabilizer: nothing to withdraw");
+        });
     });
 
     describe('Not Enough FEI', function() {
@@ -98,7 +125,6 @@ describe('TribeReserveStabilizer', function () {
         await expectRevert(this.reserveStabilizer.exchangeFei(new BN('400000'), {from: userAddress}), "Pausable: paused");
       });
     });
-  });
 
   describe('Withdraw', function() {
       it('reverts', async function() {

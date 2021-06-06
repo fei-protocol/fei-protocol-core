@@ -13,6 +13,9 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     /// @notice the oracle reference by the contract
     IOracle public override oracle;
 
+    /// @notice the backup oracle reference by the contract
+    IOracle public override backupOracle;
+
     /// @notice OracleRef constructor
     /// @param _core Fei Core to reference
     /// @param _oracle oracle to reference
@@ -21,9 +24,15 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     }
 
     /// @notice sets the referenced oracle
-    /// @param _oracle the new oracle to reference
-    function setOracle(address _oracle) external override onlyGovernor {
-        _setOracle(_oracle);
+    /// @param newOracle the new oracle to reference
+    function setOracle(address newOracle) external override onlyGovernor {
+        _setOracle(newOracle);
+    }
+
+    /// @notice sets the referenced backup oracle
+    /// @param newBackupOracle the new backup oracle to reference
+    function setBackupOracle(address newBackupOracle) external override onlyGovernor {
+        _setBackupOracle(newBackupOracle);
     }
 
     /// @notice invert a peg price
@@ -50,12 +59,22 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     /// @dev the peg is defined as FEI per X with X being ETH, dollars, etc
     function readOracle() public view override returns (Decimal.D256 memory) {
         (Decimal.D256 memory _peg, bool valid) = oracle.read();
+        if (!valid && address(backupOracle) != address(0)) {
+            (_peg, valid) = backupOracle.read();
+        }
         require(valid, "OracleRef: oracle invalid");
         return _peg;
     }
 
-    function _setOracle(address _oracle) internal {
-        oracle = IOracle(_oracle);
-        emit OracleUpdate(_oracle);
+    function _setOracle(address newOracle) internal {
+        address oldOracle = address(oracle);
+        oracle = IOracle(newOracle);
+        emit OracleUpdate(oldOracle, newOracle);
+    }
+
+    function _setBackupOracle(address newBackupOracle) internal {
+        address oldBackupOracle = address(backupOracle);
+        backupOracle = IOracle(newBackupOracle);
+        emit BackupOracleUpdate(oldBackupOracle, newBackupOracle);
     }
 }

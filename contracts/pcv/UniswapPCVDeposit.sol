@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
     using Decimal for Decimal.D256;
 
+    /// @notice a slippage protection parameter, deposits revert when spot price is > this % from oracle
     uint256 public override maxBasisPointsFromPegLP;
 
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
@@ -36,7 +37,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         _approveToken(address(fei()));
         _approveToken(token);
         _approveToken(_pair);
-    
+
         maxBasisPointsFromPegLP = _maxBasisPointsFromPegLP;
         emit MaxBasisPointsFromPegLPUpdate(0, _maxBasisPointsFromPegLP);
     }
@@ -49,19 +50,21 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
     function deposit() external override whenNotPaused {
         updateOracle();
 
-        uint256 heldBalance = IERC20(token).balanceOf(address(this));
-        uint256 feiAmount = _getAmountFeiToDeposit(heldBalance);
+        // Calculate amounts to provide liquidity
+        uint256 tokenAmount = IERC20(token).balanceOf(address(this));
+        uint256 feiAmount = readOracle().mul(tokenAmount).asUint256();
 
-        _addLiquidity(heldBalance, feiAmount);
+        _addLiquidity(tokenAmount, feiAmount);
 
         _burnFeiHeld(); // burn any FEI dust from LP
 
-        emit Deposit(msg.sender, heldBalance);
+        emit Deposit(msg.sender, tokenAmount);
     }
 
     /// @notice withdraw tokens from the PCV allocation
     /// @param amountUnderlying of tokens withdrawn
     /// @param to the address to send PCV to
+    /// @dev has rounding errors on amount to withdraw, can differ from the input "amountUnderlying"
     function withdraw(address to, uint256 amountUnderlying)
         external
         override
@@ -79,16 +82,16 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         // ratio of LP tokens needed to get out the desired amount
         Decimal.D256 memory ratioToWithdraw =
             Decimal.ratio(amountUnderlying, totalUnderlying);
-        
-        // amount of LP tokens factoring in ratio
+
+        // amount of LP tokens to withdraw factoring in ratio
         uint256 liquidityToWithdraw =
             ratioToWithdraw.mul(totalLiquidity).asUint256();
 
+        // Withdraw liquidity from the pair and send to target
         uint256 amountWithdrawn = _removeLiquidity(liquidityToWithdraw);
-
         SafeERC20.safeTransfer(IERC20(token), to, amountWithdrawn);
 
-        _burnFeiHeld();
+        _burnFeiHeld(); // burn remaining FEI
 
         emit Withdrawal(msg.sender, to, amountWithdrawn);
     }
@@ -97,21 +100,35 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
     /// @param token address of the ERC20 to send
     /// @param to address destination of the ERC20
     /// @param amount quantity of ERC20 to send
-    function withdrawERC20(IERC20 token, address to, uint256 amount) external override onlyPCVController {
+    function withdrawERC20(
+        IERC20 token,
+        address to,
+        uint256 amount
+    ) external override onlyPCVController {
         SafeERC20.safeTransfer(token, to, amount);
         emit WithdrawERC20(msg.sender, address(token), to, amount);
     }
-    
+
     /// @notice sets the new slippage parameter for depositing liquidity
-    /// @param _maxBasisPointsFromPegLP the new distance in basis points (1/10000) from peg beyond which a liquidity provision will fail 
-    function setMaxBasisPointsFromPegLP(uint256 _maxBasisPointsFromPegLP) public override onlyGovernor {
-        require(_maxBasisPointsFromPegLP <= BASIS_POINTS_GRANULARITY, "UniswapPCVDeposit: basis points from peg too high");
+    /// @param _maxBasisPointsFromPegLP the new distance in basis points (1/10000) from peg beyond which a liquidity provision will fail
+    function setMaxBasisPointsFromPegLP(uint256 _maxBasisPointsFromPegLP)
+        public
+        override
+        onlyGovernor
+    {
+        require(
+            _maxBasisPointsFromPegLP <= BASIS_POINTS_GRANULARITY,
+            "UniswapPCVDeposit: basis points from peg too high"
+        );
 
         uint256 oldMaxBasisPointsFromPegLP = maxBasisPointsFromPegLP;
         maxBasisPointsFromPegLP = _maxBasisPointsFromPegLP;
 
-        emit MaxBasisPointsFromPegLPUpdate(oldMaxBasisPointsFromPegLP, _maxBasisPointsFromPegLP);
-    } 
+        emit MaxBasisPointsFromPegLPUpdate(
+            oldMaxBasisPointsFromPegLP,
+            _maxBasisPointsFromPegLP
+        );
+    }
 
     /// @notice set the new pair contract
     /// @param _pair the new pair
@@ -135,19 +152,9 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         return pair.balanceOf(address(this));
     }
 
-    function _getAmountFeiToDeposit(uint256 amountToken)
-        internal
-        view
-        returns (uint256 amountFei)
-    {
-        return readOracle().mul(amountToken).asUint256();
-    }
-
-    function _removeLiquidity(uint256 liquidity)
-        internal
-        returns (uint256)
-    {
+    function _removeLiquidity(uint256 liquidity) internal returns (uint256) {
         uint256 endOfTime = type(uint256).max;
+        // No restrictions on withdrawal price
         (, uint256 amountWithdrawn) =
             router.removeLiquidity(
                 address(fei()),
@@ -165,6 +172,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         _mintFei(feiAmount);
 
         uint256 endOfTime = type(uint256).max;
+        // Deposit price gated by slippage parameter
         router.addLiquidity(
             address(fei()),
             token,
@@ -179,7 +187,9 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
 
     /// @notice used as slippage protection when adding liquidity to the pool
     function _getMinLiquidity(uint256 amount) internal view returns (uint256) {
-        return amount * (BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP) / BASIS_POINTS_GRANULARITY;
+        return
+            (amount * (BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP)) /
+            BASIS_POINTS_GRANULARITY;
     }
 
     /// @notice ratio of all pair liquidity owned by this contract
@@ -195,6 +205,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         IERC20(_token).approve(address(router), maxTokens);
     }
 
+    // Wrap all held ETH
     function _wrap() internal {
         uint256 amount = address(this).balance;
         IWETH(router.WETH()).deposit{value: amount}();

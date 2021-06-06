@@ -390,7 +390,10 @@ describe('EthUniswapPCVDeposit', function () {
         expectEvent(
           await this.pcvDeposit.setPair(pair2.address, {from: governorAddress}), 
           'PairUpdate', 
-          { _pair : pair2.address }
+          {
+            oldPair: this.pair.address,
+            newPair: pair2.address
+          }
         );
         expect(await this.pcvDeposit.pair()).to.be.equal(pair2.address);
       });

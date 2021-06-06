@@ -13,7 +13,7 @@ abstract contract PCVSplitter {
     uint256[] private ratios;
     address[] private pcvDeposits;
 
-    event AllocationUpdate(address[] _pcvDeposits, uint256[] _ratios);
+    event AllocationUpdate(address[] oldPCVDeposits, uint256[] oldRatios, address[] newPCVDeposits, uint256[] newRatios);
 
     /// @notice PCVSplitter constructor
     /// @param _pcvDeposits list of PCV Deposits to split to
@@ -71,12 +71,15 @@ abstract contract PCVSplitter {
         address[] memory _pcvDeposits,
         uint256[] memory _ratios
     ) internal {
+        address[] memory _oldPCVDeposits = pcvDeposits;
+        uint256[] memory _oldRatios = ratios;
+
         checkAllocation(_pcvDeposits, _ratios);
 
         pcvDeposits = _pcvDeposits;
         ratios = _ratios;
 
-        emit AllocationUpdate(_pcvDeposits, _ratios);
+        emit AllocationUpdate(_oldPCVDeposits, _oldRatios, _pcvDeposits, _ratios);
     }
 
     /// @notice distribute funds to all pcv deposits at specified allocation ratios

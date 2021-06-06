@@ -10,6 +10,7 @@ const {
   
 const EthReserveStabilizer = artifacts.require('EthReserveStabilizer');
 const Fei = artifacts.require('Fei');
+const MockWeth = artifacts.require('MockWeth');
 const MockOracle = artifacts.require('MockOracle');
 const MockPCVDeposit = artifacts.require('MockEthUniswapPCVDeposit');
 
@@ -26,6 +27,15 @@ describe('EthReserveStabilizer', function () {
       minterAddress,
       pcvControllerAddress,
     } = await getAddresses());
+    
+    this.core = await getCore(true);
+
+    this.fei = await Fei.at(await this.core.fei());
+    this.weth = await MockWeth.new();
+    this.oracle = await MockOracle.new(400); // 400:1 oracle price
+    this.pcvDeposit = await MockPCVDeposit.new(userAddress);
+
+    this.reserveStabilizer = await EthReserveStabilizer.new(this.core.address, this.oracle.address, '9000', this.weth.address);
 
     this.core = await getCore(true);
 
@@ -111,10 +121,22 @@ describe('EthReserveStabilizer', function () {
     });
   });
   
-  describe('Withdraw', function() {
-    it('enough eth succeeds', async function() {
-      let reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
-      let userBalanceBefore = await balance.current(userAddress);
+    describe('Deposit', function() {
+      it('unwraps WETH', async function() {
+        await this.weth.deposit({value: '10000'});
+        await this.weth.mint(this.reserveStabilizer.address, '10000');
+        let reserveBalanceBefore = new BN(await balance.current(this.reserveStabilizer.address));
+        await this.reserveStabilizer.deposit();
+
+        expect(await web3.eth.getBalance(this.reserveStabilizer.address)).to.be.equal(reserveBalanceBefore.add(new BN('10000')).toString());
+        expect(await this.weth.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal('0');
+      });
+    });
+
+    describe('Withdraw', function() {
+      it('enough eth succeeds', async function() {
+        let reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
+        let userBalanceBefore = await balance.current(userAddress);
 
       await this.reserveStabilizer.withdraw(userAddress, '10000', {from: pcvControllerAddress});
       let reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);

@@ -216,12 +216,29 @@ describe('FeiRewardsDistributor', function () {
           });
       });
 
-      describe('From Contract', function() {
-          it('reverts', async function() {
-            let bot = await MockBot.new();
-            await expectRevert(bot.distributorDrip(this.distributor.address), "CoreRef: Caller is a contract");
-          });
-      });
+    describe('setIncentiveAmount', function() {
+        describe('Non-governor', function() {
+            it('reverts', async function() {
+                await expectRevert(this.distributor.setIncentiveAmount(this.incentiveAmount, {from: userAddress}), "CoreRef: Caller is not a governor");
+            });
+        });
+
+        describe('Governor', function() {
+            beforeEach(async function() {
+                expectEvent(
+                    await this.distributor.setIncentiveAmount(this.incentiveAmount.div(new BN('2')), {from: governorAddress}),
+                    'IncentiveUpdate',
+                    {
+                        oldIncentiveAmount: this.incentiveAmount,
+                        newIncentiveAmount: this.incentiveAmount.div(new BN('2'))
+                    }
+                );
+            });
+            it('updates incentive amount', async function() {
+               expect(await this.distributor.incentiveAmount()).to.be.bignumber.equal(this.incentiveAmount.div(new BN('2')));
+            });
+        });
+    });
 
       describe('immediate', function() {
           describe('before frequency', function() {

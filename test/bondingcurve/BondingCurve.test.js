@@ -45,20 +45,16 @@ const {
       this.buffer = new BN('100');
       this.incentiveAmount = new BN('100');
       this.incentiveDuration = new BN('10');
-      this.bondingCurve = await BondingCurve.new(this.scale, this.core.address, [this.pcvDeposit1.address, this.pcvDeposit2.address], [9000, 1000], this.oracle.address, this.incentiveDuration, this.incentiveAmount);
-      await this.bondingCurve.setToken(this.token.address, {from: governorAddress});
+      this.bondingCurve = await BondingCurve.new(this.core.address, this.oracle.address, this.scale, [this.pcvDeposit1.address, this.pcvDeposit2.address], [9000, 1000], this.incentiveDuration, this.incentiveAmount, this.token.address, 100, 100);
 
       await this.token.mint(userAddress, '1000000000000000000000000');
       await this.core.grantMinter(this.bondingCurve.address, {from: governorAddress});
     });
   
     describe('Init', function() {
-      it('average price', async function() {
-        expect((await this.bondingCurve.getAverageUSDPrice('50000000'))[0]).to.be.equal('990000000020592000'); // $.99
-      });
   
       it('current price', async function() {
-        expect((await this.bondingCurve.getCurrentPrice())[0]).to.be.equal('505050505050505050505'); // $.99
+        expect((await this.bondingCurve.getCurrentPrice())[0]).to.be.equal('1010101010101010101'); // ~1.01 FEI/$
       });
   
       it('getAmountOut', async function() {
@@ -120,9 +116,9 @@ const {
               await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}),
               'Purchase',
               {
-                _to: userAddress,
-                _amountIn: this.purchaseAmount,
-                _amountOut: this.expectedFei1
+                to: userAddress,
+                amountIn: this.purchaseAmount,
+                amountOut: this.expectedFei1
               }
             );
           });
@@ -140,7 +136,7 @@ const {
           });
           
           it('current price', async function() {
-            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("505050505050505050505");
+            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("1010101010101010101");
           });
   
           it('total PCV held', async function() {
@@ -157,9 +153,9 @@ const {
                 await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}),
                 'Purchase',
                 {
-                  _to: userAddress,
-                  _amountIn: this.purchaseAmount,
-                  _amountOut: this.expectedFei2
+                  to: userAddress,
+                  amountIn: this.purchaseAmount,
+                  amountOut: this.expectedFei2
                 }
               );
             });
@@ -177,7 +173,7 @@ const {
             });
             
             it('current price', async function() {
-              expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("505050505050505050505");
+              expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("1010101010101010101");
             });
     
             it('total PCV held', async function() {
@@ -195,9 +191,9 @@ const {
                 await this.bondingCurve.purchase(secondUserAddress, this.purchaseAmount, {from: userAddress}),
                 'Purchase',
                 {
-                  _to: secondUserAddress,
-                  _amountIn: this.purchaseAmount,
-                  _amountOut: this.expectedFei2
+                  to: secondUserAddress,
+                  amountIn: this.purchaseAmount,
+                  amountOut: this.expectedFei2
                 }
               );
             });
@@ -216,7 +212,7 @@ const {
             });
             
             it('current price', async function() {
-              expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("505050505050505050505");
+              expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("1010101010101010101");
             });
     
             it('total PCV held', async function() {
@@ -236,9 +232,9 @@ const {
                 await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}),
                 'Purchase',
                 {
-                  _to: userAddress,
-                  _amountIn: this.purchaseAmount,
-                  _amountOut: this.expectedFei2
+                  to: userAddress,
+                  amountIn: this.purchaseAmount,
+                  amountOut: this.expectedFei2
                 }
               );
             });
@@ -256,7 +252,7 @@ const {
             });
             
             it('current price', async function() {
-              expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("404040404040404040404");
+              expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("1010101010101010101");
             });
     
             it('total PCV held', async function() {
@@ -267,17 +263,17 @@ const {
         
         describe('Crossing Scale', function() {
           beforeEach(async function() {
-            this.purchaseAmount =  new BN("200000000");
-            this.expectedFei1 = new BN('101010101010');
+            this.purchaseAmount = new BN("400000000");
+            this.expectedFei1 = new BN('200020002000');
             expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei1);
             await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
             expectEvent(
               await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}),
               'Purchase',
               {
-                _to: userAddress,
-                _amountIn: this.purchaseAmount,
-                _amountOut: this.expectedFei1
+                to: userAddress,
+                amountIn: this.purchaseAmount,
+                amountOut: this.expectedFei1
               }
             );
           });
@@ -295,7 +291,7 @@ const {
           });
           
           it('current price', async function() {
-            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("495000000000000000000");
+            expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("990099009900990099");
           });
   
           it('total PCV held', async function() {
@@ -304,7 +300,7 @@ const {
   
           describe('Post Scale', function() {
             beforeEach(async function() {
-              this.expectedFei2 = this.purchaseAmount.mul(new BN('495'));
+              this.expectedFei2 = new BN('198019801980');
               this.totalExpected = this.expectedFei1.add(this.expectedFei2);
               expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
               await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
@@ -312,9 +308,9 @@ const {
                 await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}),
                 'Purchase',
                 {
-                  _to: userAddress,
-                  _amountIn: this.purchaseAmount,
-                  _amountOut: this.expectedFei2
+                  to: userAddress,
+                  amountIn: this.purchaseAmount,
+                  amountOut: this.expectedFei2
                 }
               );
             });
@@ -332,7 +328,7 @@ const {
             });
             
             it('current price', async function() {
-              expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("495000000000000000000");
+              expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("990099009900990099");
             });
     
             it('total PCV held', async function() {
@@ -362,7 +358,7 @@ const {
             beforeEach(async function() {
               // 5% buffer
               await this.bondingCurve.setBuffer(500, {from: governorAddress});
-              this.expectedFei2 = this.purchaseAmount.mul(new BN('475'));
+              this.expectedFei2 = new BN('190476190476');
               this.totalExpected = this.expectedFei1.add(this.expectedFei2);
               expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
               await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
@@ -370,9 +366,9 @@ const {
                 await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}),
                 'Purchase',
                 {
-                  _to: userAddress,
-                  _amountIn: this.purchaseAmount,
-                  _amountOut: this.expectedFei2
+                  to: userAddress,
+                  amountIn: this.purchaseAmount,
+                  amountOut: this.expectedFei2
                 }
               );
             });
@@ -390,7 +386,7 @@ const {
             });
             
             it('current price', async function() {
-              expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("475000000000000000000");
+              expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("952380952380952380");
             });
     
             it('total PCV held', async function() {
@@ -402,7 +398,7 @@ const {
             beforeEach(async function() {
               // 20% decrease
               await this.oracle.setExchangeRate(600);
-              this.expectedFei2 = this.purchaseAmount.mul(new BN('594'));
+              this.expectedFei2 = new BN('237623762376');
               this.totalExpected = this.expectedFei1.add(this.expectedFei2);
               expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
               await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
@@ -410,9 +406,9 @@ const {
                 await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}),
                 'Purchase',
                 {
-                  _to: userAddress,
-                  _amountIn: this.purchaseAmount,
-                  _amountOut: this.expectedFei2
+                  to: userAddress,
+                  amountIn: this.purchaseAmount,
+                  amountOut: this.expectedFei2
                 }
               );
             });
@@ -430,7 +426,7 @@ const {
             });
             
             it('current price', async function() {
-              expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("594000000000000000000");
+              expect((await this.bondingCurve.getCurrentPrice()).value).to.be.equal("990099009900990099");
             });
     
             it('total PCV held', async function() {
@@ -452,7 +448,16 @@ const {
   
       describe('No Purchase', function() {
         it('reverts', async function() {
-          await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: No PCV held"); 
+          await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: Not enough PCV held"); 
+        });
+      });
+            
+      describe('Purchase too low', function() {
+        it('reverts', async function() {
+          this.purchaseAmount = new BN("1")
+          await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
+          await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress});
+          await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: Not enough PCV held"); 
         });
       });
   
@@ -471,8 +476,8 @@ const {
           expectEvent(await this.bondingCurve.allocate({from: keeperAddress}),
             'Allocate',
             {
-              _caller: keeperAddress,
-              _amount: this.purchaseAmount
+              caller: keeperAddress,
+              amount: this.purchaseAmount
             }
           ); 
         });
@@ -489,7 +494,7 @@ const {
         describe('Second Allocate', async function() {
           describe('No Purchase', function() {
             it('reverts', async function() {
-              await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: No PCV held"); 
+              await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), "BondingCurve: Not enough PCV held"); 
             });
           });
   
@@ -504,8 +509,8 @@ const {
               expectEvent(await this.bondingCurve.allocate({from: keeperAddress}),
                 'Allocate',
                 {
-                  _caller: keeperAddress,
-                  _amount: this.purchaseAmount
+                  caller: keeperAddress,
+                  amount: this.purchaseAmount
                 }
               ); 
             });
@@ -533,8 +538,8 @@ const {
               expectEvent(await this.bondingCurve.allocate({from: keeperAddress}),
                 'Allocate',
                 {
-                  _caller: keeperAddress,
-                  _amount: this.purchaseAmount
+                  caller: keeperAddress,
+                  amount: this.purchaseAmount
                 }
               ); 
             });
@@ -565,8 +570,8 @@ const {
               expectEvent(await this.bondingCurve.allocate({from: keeperAddress}),
                 'Allocate',
                 {
-                  _caller: keeperAddress,
-                  _amount: this.purchaseAmount
+                  caller: keeperAddress,
+                  amount: this.purchaseAmount
                 }
               ); 
             });
@@ -601,7 +606,10 @@ const {
         expectEvent(
           await this.bondingCurve.setAllocation([this.pcvDeposit1.address], [10000], {from: governorAddress}), 
           'AllocationUpdate', 
-          { _pcvDeposits : [this.pcvDeposit1.address] }
+          { 
+            oldPCVDeposits: [this.pcvDeposit1.address, this.pcvDeposit2.address],
+            newPCVDeposits : [this.pcvDeposit1.address] 
+          }
         );
   
         var result = await this.bondingCurve.getAllocation();
@@ -621,7 +629,10 @@ const {
         expectEvent(
           await this.bondingCurve.setOracle(userAddress, {from: governorAddress}),
           'OracleUpdate',
-          {_oracle: userAddress}
+          {
+            oldOracle: this.oracle.address,
+            newOracle: userAddress
+          }
         );
         expect(await this.bondingCurve.oracle()).to.be.equal(userAddress);
       });
@@ -636,7 +647,10 @@ const {
         expectEvent(
           await this.bondingCurve.setScale(100, {from: governorAddress}),
           'ScaleUpdate',
-          {_scale: new BN(100)}
+          { 
+            oldScale: this.scale,
+            newScale: new BN(100)
+          }
         );
         expect(await this.bondingCurve.scale()).to.be.bignumber.equal(new BN(100));
       });
@@ -651,7 +665,10 @@ const {
         expectEvent(
           await this.bondingCurve.setBuffer(1000, {from: governorAddress}),
           'BufferUpdate',
-          {_buffer: new BN(1000)}
+          {
+            oldBuffer: this.buffer,
+            newBuffer: new BN(1000)
+          }
         );
         expect(await this.bondingCurve.buffer()).to.be.bignumber.equal(new BN(1000));
       });
@@ -670,7 +687,10 @@ const {
         expectEvent(
           await this.bondingCurve.setDiscount(1000, {from: governorAddress}),
           'DiscountUpdate',
-          {_discount: new BN(1000)}
+          {
+            oldDiscount: '100',
+            newDiscount: new BN(1000)
+          }
         );
         expect(await this.bondingCurve.discount()).to.be.bignumber.equal(new BN(1000));
       });
@@ -689,7 +709,10 @@ const {
         expectEvent(
           await this.bondingCurve.setCore(userAddress, {from: governorAddress}), 
           'CoreUpdate', 
-          { _core : userAddress }
+          {
+            oldCore: this.core.address,
+            newCore: userAddress
+          }
         );
   
         expect(await this.bondingCurve.core()).to.be.equal(userAddress);
@@ -705,8 +728,11 @@ const {
         this.incentiveAmount = new BN('10');
         expectEvent(
           await this.bondingCurve.setIncentiveAmount(this.incentiveAmount, {from: governorAddress}), 
-          'IncentiveAmountUpdate', 
-          { _incentiveAmount : this.incentiveAmount }
+          'IncentiveUpdate', 
+          { 
+            oldIncentiveAmount : new BN('100'),
+            newIncentiveAmount : this.incentiveAmount 
+          }
         );
   
         expect(await this.bondingCurve.incentiveAmount()).to.be.bignumber.equal(this.incentiveAmount);
@@ -723,7 +749,10 @@ const {
         expectEvent(
           await this.bondingCurve.setIncentiveFrequency(this.incentiveFrequency, {from: governorAddress}), 
           'DurationUpdate', 
-          { _duration : this.incentiveFrequency }
+          { 
+            oldDuration: this.incentiveDuration,
+            newDuration: this.incentiveFrequency 
+          }
         );
   
         expect(await this.bondingCurve.duration()).to.be.bignumber.equal(this.incentiveFrequency);
