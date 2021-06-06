@@ -5,6 +5,8 @@ const {
 
 const { web3 } = require('hardhat');
 
+const { increaseTime, getCurrentTime } = require('./time')
+
 const {
 	BN,
 	expectEvent,
@@ -82,6 +84,7 @@ async function getCore(complete) {
 	return core;
 }
 
+
 async function forceEth(to, amount) {
 	const forceEth = await ForceEth.new({ value: amount });
 	await forceEth.forceEth(to);
@@ -106,6 +109,8 @@ module.exports = {
 	contract,
 	// functions
 	getCore,
+  getCurrentTime,
+  increaseTime,
 	getAddresses,
 	forceEth,
 	expectApprox,

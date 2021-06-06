@@ -16,7 +16,6 @@ const Fei = artifacts.require('Fei');
 describe('PCVDripController', function () {
   let userAddress;
   let governorAddress;
-  let pcvControllerAddress;
   let beneficiaryAddress1;
   
   beforeEach(async function () {
@@ -24,7 +23,6 @@ describe('PCVDripController', function () {
       beneficiaryAddress1,
       userAddress,
       governorAddress,
-      pcvControllerAddress,
     } = await getAddresses());
 
     this.core = await getCore(true);
@@ -121,18 +119,17 @@ describe('PCVDripController', function () {
                     await time.increase('1000');
                 });
                 it('succeeds', async function() {
-                    let sourceBalanceBefore = await this.sourcePCVDeposit.balance();
-                    let beneficiaryBalanceBefore = await balance.current(this.pcvDeposit.address);
-                    await this.pcvDripper.drip({from: userAddress});
-                    let sourceBalanceAfter = await this.sourcePCVDeposit.balance();
-                    let beneficiaryBalanceAfter = await balance.current(this.pcvDeposit.address);
-        
-                    expect(sourceBalanceBefore.sub(sourceBalanceAfter)).to.be.bignumber.equal(this.dripAmount);
-                    expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore)).to.be.bignumber.equal(this.dripAmount);
-        
-                    // timer reset
-                    expect(await this.pcvDripper.isTimeEnded()).to.be.equal(false);
-                    expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.incentiveAmount);
+                  let sourceBalanceBefore = await this.sourcePCVDeposit.balance();
+                  let beneficiaryBalanceBefore = await balance.current(this.pcvDeposit.address);
+                  await this.pcvDripper.drip();
+                  let sourceBalanceAfter = await this.sourcePCVDeposit.balance();
+                  let beneficiaryBalanceAfter = await balance.current(this.pcvDeposit.address);
+      
+                  expect(sourceBalanceBefore.sub(sourceBalanceAfter)).to.be.bignumber.equal(this.dripAmount);
+                  expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore)).to.be.bignumber.equal(this.dripAmount);
+      
+                  // timer reset
+                  expect(await this.pcvDripper.isTimeEnded()).to.be.equal(false);
                 });
             });
     
