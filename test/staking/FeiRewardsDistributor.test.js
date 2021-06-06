@@ -17,7 +17,7 @@ const FeiRewardsDistributor = artifacts.require('FeiRewardsDistributor');
 const MockERC20 = artifacts.require('MockERC20');
 const MockStakingRewards = artifacts.require('MockStakingRewards');
 
-describe.only('FeiRewardsDistributor', function () {
+describe('FeiRewardsDistributor', function () {
   let userAddress;
 	let governorAddress;
 

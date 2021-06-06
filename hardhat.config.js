@@ -2,6 +2,7 @@ require('@nomiclabs/hardhat-waffle');
 require('@nomiclabs/hardhat-truffle5');
 require('hardhat-gas-reporter');
 require('hardhat-contract-sizer');
+require("@nomiclabs/hardhat-web3");
 require('solidity-coverage');
 
 require('dotenv').config();
@@ -36,4 +37,5 @@ module.exports = {
       },
     },
   },
+  mocha: {}
 };

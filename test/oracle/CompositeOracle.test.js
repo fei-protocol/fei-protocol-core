@@ -1,12 +1,7 @@
 const {
-    userAddress,
-    governorAddress,
-    BN,
-    expectEvent,
     expectRevert,
-    time,
     expect,
-    contract,
+    getAddresses,
     getCore
   } = require('../helpers');
   
@@ -14,8 +9,10 @@ const {
   const MockOracle = artifacts.require('MockOracle');
   
   describe('CompositeOracle', function () {
-  
+    let governorAddress;
+
     beforeEach(async function () {
+      ({ userAddress, governorAddress } = await getAddresses())
       this.core = await getCore(true);
       
       this.oracleA = await MockOracle.new(400);

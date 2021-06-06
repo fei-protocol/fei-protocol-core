@@ -62,10 +62,10 @@ describe('PCVDripController', function () {
         });
         describe('Target balance low enough', function() {
           it('succeeds', async function() {
-              let dripperBalanceBefore = await this.pcvDripper.balance();
+              let dripperBalanceBefore = await this.sourcePCVDeposit.balance();
               let beneficiaryBalanceBefore = await balance.current(this.pcvDeposit.address);
               await this.pcvDripper.drip();
-              let dripperBalanceAfter = await this.pcvDripper.balance();
+              let dripperBalanceAfter = await this.sourcePCVDeposit.balance();
               let beneficiaryBalanceAfter = await balance.current(this.pcvDeposit.address);
   
               expect(dripperBalanceBefore.sub(dripperBalanceAfter)).to.be.bignumber.equal(this.dripAmount);
