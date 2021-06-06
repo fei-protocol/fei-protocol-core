@@ -1,18 +1,11 @@
-
-
 const {
-  userAddress, 
-  governorAddress, 
-  minterAddress, 
-  beneficiaryAddress1,
-  pcvControllerAddress,
   web3,
   BN,
   expectEvent,
   expectRevert,
   expect,
-  contract,
-  getCore
+  getAddresses,
+  getCore,
 } = require('../helpers');
 
 const UniswapPCVDeposit = artifacts.require('UniswapPCVDeposit');
@@ -24,8 +17,20 @@ const MockRouter = artifacts.require('MockRouter');
 
 describe('EthUniswapPCVDeposit', function () {
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit
+  let userAddress;
+  let governorAddress;
+  let minterAddress;
+  let beneficiaryAddress1;
+  let pcvControllerAddress;
 
   beforeEach(async function () {
+    ({
+      userAddress,
+      governorAddress,
+      minterAddress,
+      beneficiaryAddress1,
+      pcvControllerAddress,
+    } = await getAddresses());
     this.core = await getCore(true);
 
     this.fei = await Fei.at(await this.core.fei());

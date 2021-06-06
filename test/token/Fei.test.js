@@ -1,15 +1,12 @@
 const {
-	minterAddress,
-	burnerAddress,
-	userAddress,
-	ZERO_ADDRESS,
-	BN, 
+	BN,
 	expectEvent,
 	expectRevert,
-  expect,
-  contract,
+	time,
+	expect,
+	getAddresses,
 	getCore,
-	governorAddress
+	expectApprox,
 } = require('../helpers');
 
 const Fei = artifacts.require('Fei');
@@ -17,8 +14,11 @@ const MockIncentive = artifacts.require('MockUniswapIncentive');
 const MockIncentivized = artifacts.require('MockIncentivized');
 
 describe('Fei', function () {
+  let userAddress;
+	let governorAddress;
 
   beforeEach(async function () {
+    ({ userAddress, governorAddress } = await getAddresses());
     this.core = await getCore(true);
     this.fei = await Fei.at(await this.core.fei());
   });

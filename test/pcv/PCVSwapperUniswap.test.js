@@ -17,7 +17,7 @@ const MockPair = artifacts.require('MockUniswapV2PairLiquidity');
 
 const e18 = '000000000000000000';
 
-describe.only('PCVSwapperUniswap', function () {
+describe('PCVSwapperUniswap', function () {
   let userAddress;
   let secondUserAddress;
   let minterAddress;

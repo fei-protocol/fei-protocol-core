@@ -1,16 +1,12 @@
 const {
-    userAddress,
-    secondUserAddress,
-    minterAddress,
-    governorAddress,
-    BN,
-    expectEvent,
-    expectRevert,
-    time,
-    expect,
-    contract,
-    getCore
-  } = require('../helpers');
+  BN,
+  expectEvent,
+  expectRevert,
+  time,
+  expect,
+  getAddresses,
+  getCore,
+} = require('../helpers');
 
 const Fei = artifacts.require('Fei');
 const Tribe = artifacts.require('Tribe');
@@ -18,9 +14,18 @@ const FeiStakingRewards = artifacts.require('FeiStakingRewards');
 const MockERC20 = artifacts.require('MockERC20');
 
   describe('FeiStakingRewards', function () {
+    let userAddress;
+    let secondUserAddress;
+    let minterAddress;
+    let governorAddress;
 
     beforeEach(async function () {
-      
+      ({
+        userAddress,
+        secondUserAddress,
+        minterAddress,
+        governorAddress,
+      } = await getAddresses());
       this.core = await getCore(true);
   
       this.fei = await Fei.at(await this.core.fei());
