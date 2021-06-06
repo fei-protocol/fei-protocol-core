@@ -6,17 +6,18 @@ const {
   expectRevert,
   time,
   expect,
-  Fei,
-  Tribe,
-  MockStakingRewards,
-  FeiRewardsDistributor,
-  MockERC20,
-  MockBot,
+  getAddresses,
   getCore,
   expectApprox
 } = require('../helpers');
 
-describe('FeiRewardsDistributor', function () {
+const Fei = artifacts.require('Fei');
+const Tribe = artifacts.require('Tribe');
+const FeiRewardsDistributor = artifacts.require('FeiRewardsDistributor');
+const MockERC20 = artifacts.require('MockERC20');
+const MockStakingRewards = artifacts.require('MockStakingRewards');
+
+describe.only('FeiRewardsDistributor', function () {
   let userAddress;
 	let governorAddress;
 
