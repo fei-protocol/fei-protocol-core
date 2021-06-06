@@ -12,10 +12,10 @@ const {
     getCore
   } = require('../helpers');
 
-const Fei = contract.fromArtifact('Fei');
-const Tribe = contract.fromArtifact('Tribe');
-const FeiStakingRewards = contract.fromArtifact('FeiStakingRewards');
-const MockERC20 = contract.fromArtifact('MockERC20');
+const Fei = artifacts.require('Fei');
+const Tribe = artifacts.require('Tribe');
+const FeiStakingRewards = artifacts.require('FeiStakingRewards');
+const MockERC20 = artifacts.require('MockERC20');
 
   describe('FeiStakingRewards', function () {
 

@@ -1,29 +1,36 @@
 const {
-    userAddress,
-    secondUserAddress,
-    beneficiaryAddress1,
-    beneficiaryAddress2,
-    governorAddress,
-    keeperAddress,
-    BN,
-    expectEvent,
-    expectRevert,
-    balance,
-    time,
-    contract,
-    expect,
-    getCore
-  } = require('../helpers');
+	BN,
+	expectEvent,
+	expectRevert,
+	time,
+	expect,
+	getCore,
+	getAddresses,
+} = require('../helpers');
   
-  const BondingCurve = contract.fromArtifact('BondingCurve');
-  const Fei = contract.fromArtifact('Fei');
-  const MockERC20PCVDeposit = contract.fromArtifact('MockERC20PCVDeposit');
-  const MockERC20 = contract.fromArtifact('MockERC20');
-  const MockOracle = contract.fromArtifact('MockOracle');
+  const BondingCurve = artifacts.require('BondingCurve');
+  const Fei = artifacts.require('Fei');
+  const MockERC20PCVDeposit = artifacts.require('MockERC20PCVDeposit');
+  const MockERC20 = artifacts.require('MockERC20');
+  const MockOracle = artifacts.require('MockOracle');
   
   describe('BondingCurve', function () {
+    let userAddress;
+	let secondUserAddress;
+	let governorAddress;
+	let beneficiaryAddress1;
+	let beneficiaryAddress2;
+	let keeperAddress;
   
     beforeEach(async function () {
+      ({
+			userAddress,
+			governorAddress,
+			secondUserAddress,
+			keeperAddress,
+			beneficiaryAddress1,
+			beneficiaryAddress2,
+	  } = await getAddresses());
       this.core = await getCore(true);
   
       this.fei = await Fei.at(await this.core.fei());

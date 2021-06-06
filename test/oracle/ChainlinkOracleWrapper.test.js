@@ -1,11 +1,7 @@
-const {
-  expect,
-  contract,
-  getCore
-} = require('../helpers');
+const { expect, getCore } = require('../helpers');
 
-const ChainlinkOracleWrapper = contract.fromArtifact('ChainlinkOracleWrapper');
-const MockChainlinkOracle = contract.fromArtifact('MockChainlinkOracle');
+const ChainlinkOracleWrapper = artifacts.require('ChainlinkOracleWrapper');
+const MockChainlinkOracle = artifacts.require('MockChainlinkOracle');
 
 const e8 = '00000000';
 const e18 = '000000000000000000';

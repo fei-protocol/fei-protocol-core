@@ -11,11 +11,11 @@ const {
     expectApprox
   } = require('../helpers');
 
-const Fei = contract.fromArtifact('Fei');
-const Tribe = contract.fromArtifact('Tribe');
-const FeiRewardsDistributor = contract.fromArtifact('FeiRewardsDistributor');
-const MockERC20 = contract.fromArtifact('MockERC20');
-const MockStakingRewards = contract.fromArtifact('MockStakingRewards');
+const Fei = artifacts.require('Fei');
+const Tribe = artifacts.require('Tribe');
+const FeiRewardsDistributor = artifacts.require('FeiRewardsDistributor');
+const MockERC20 = artifacts.require('MockERC20');
+const MockStakingRewards = artifacts.require('MockStakingRewards');
 
   describe('FeiRewardsDistributor', function () {
 

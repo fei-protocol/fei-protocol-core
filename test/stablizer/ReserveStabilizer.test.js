@@ -12,11 +12,11 @@ const {
     getCore
   } = require('../helpers');
   
-const ReserveStabilizer = contract.fromArtifact('ReserveStabilizer');
-const Fei = contract.fromArtifact('Fei');
-const MockOracle = contract.fromArtifact('MockOracle');
-const MockERC20 = contract.fromArtifact('MockERC20');
-const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
+const ReserveStabilizer = artifacts.require('ReserveStabilizer');
+const Fei = artifacts.require('Fei');
+const MockOracle = artifacts.require('MockOracle');
+const MockERC20 = artifacts.require('MockERC20');
+const MockPCVDeposit = artifacts.require('MockEthUniswapPCVDeposit');
 
   describe('ReserveStabilizer', function () {
   

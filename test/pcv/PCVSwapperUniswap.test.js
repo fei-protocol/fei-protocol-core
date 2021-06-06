@@ -1,31 +1,39 @@
 const { BN } = require('@openzeppelin/test-helpers/src/setup');
 const {
-    time,
-    userAddress,
-    secondUserAddress,
-    minterAddress,
-    guardianAddress,
-    governorAddress,
-    pcvControllerAddress,
-    web3,
-    expectRevert,
-    expectEvent,
-    contract,
-    expect,
-    getCore
-  } = require('../helpers');
+  time,
+  web3,
+  expectRevert,
+  expectEvent,
+  expect,
+  getAddresses,
+  getCore,
+} = require('../helpers');
 
-  const PCVSwapperUniswap = contract.fromArtifact('PCVSwapperUniswap');
-  const Fei = contract.fromArtifact('Fei');
-  const MockOracle = contract.fromArtifact('MockOracle');
-  const MockWeth = contract.fromArtifact('MockWeth');
-  const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
+const PCVSwapperUniswap = artifacts.require('PCVSwapperUniswap');
+const Fei = artifacts.require('Fei');
+const MockOracle = artifacts.require('MockOracle');
+const MockWeth = artifacts.require('MockWeth');
+const MockPair = artifacts.require('MockUniswapV2PairLiquidity');
 
-  const e18 = '000000000000000000';
+const e18 = '000000000000000000';
 
-  describe('PCVSwapperUniswap', function () {
+describe.only('PCVSwapperUniswap', function () {
+  let userAddress;
+  let secondUserAddress;
+  let minterAddress;
+  let guardianAddress;
+  let governorAddress;
+  let pcvControllerAddress;
 
-    beforeEach(async function () {
+  beforeEach(async function () {
+      ({
+            userAddress,
+            secondUserAddress,
+            minterAddress,
+            guardianAddress,
+            governorAddress,
+            pcvControllerAddress,
+      } = await getAddresses());
       this.core = await getCore(true);
       this.weth = await MockWeth.new();
       this.fei = await Fei.at(await this.core.fei());

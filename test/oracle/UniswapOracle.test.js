@@ -1,21 +1,24 @@
+  
 const {
-  userAddress,
-  governorAddress,
-  BN,
-  expectEvent,
-  expectRevert,
-  time,
-  expect,
-  contract,
-  getCore
-} = require('../helpers');
+    BN,
+    expectEvent,
+    expectRevert,
+    time,
+    expect,
+    getAddresses,
+    getCore,
+  } = require('../helpers');
 
-const UniswapOracle = contract.fromArtifact('UniswapOracle');
-const MockPairTrade = contract.fromArtifact('MockUniswapV2PairTrade');
+const UniswapOracle = artifacts.require('UniswapOracle');
+const MockPairTrade = artifacts.require('MockUniswapV2PairTrade');
 
 describe('UniswapOracle', function () {
+  let userAddress;
+  let governorAddress;
 
   beforeEach(async function () {
+    ({ userAddress, governorAddress } = await getAddresses());
+
     this.core = await getCore(true);
     
     this.startTime = await time.latest();

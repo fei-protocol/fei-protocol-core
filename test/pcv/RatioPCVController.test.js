@@ -13,8 +13,8 @@ const {
     web3
   } = require('../helpers');
 
-const RatioPCVController = contract.fromArtifact('RatioPCVController');
-const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
+const RatioPCVController = artifacts.require('RatioPCVController');
+const MockPCVDeposit = artifacts.require('MockEthUniswapPCVDeposit');
 
   describe('RatioPCVController', function () {
   

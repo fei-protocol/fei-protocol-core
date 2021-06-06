@@ -12,9 +12,9 @@ const {
 	governorAddress
 } = require('../helpers');
 
-const Fei = contract.fromArtifact('Fei');
-const MockIncentive = contract.fromArtifact('MockUniswapIncentive');
-const MockIncentivized = contract.fromArtifact('MockIncentivized');
+const Fei = artifacts.require('Fei');
+const MockIncentive = artifacts.require('MockUniswapIncentive');
+const MockIncentivized = artifacts.require('MockIncentivized');
 
 describe('Fei', function () {
 
