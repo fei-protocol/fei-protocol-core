@@ -18,7 +18,8 @@
  *
  */
 
-const HDWalletProvider = require("@truffle/hdwallet-provider");
+const HDWalletProvider = require('@truffle/hdwallet-provider');
+
 const etherscanApiKey = process.env.ETHERSCAN_API_KEY;
 const privateKey = process.env.ETH_PRIVATE_KEY;
 const testnetPrivateKey = process.env.TESTNET_PRIVATE_KEY;
@@ -45,19 +46,19 @@ module.exports = {
     // options below to some value.
     
     development: {
-     host: "127.0.0.1",     // Localhost (default: none)
-     port: 7545,            // Standard Ethereum port (default: none)
-     gas: 8e6,
-     gasPrice: 20,
-     network_id: "5777",       // Any network (default: none)
+      host: '127.0.0.1',     // Localhost (default: none)
+      port: 7545,            // Standard Ethereum port (default: none)
+      gas: 8e6,
+      gasPrice: 20,
+      network_id: '5777',       // Any network (default: none)
     },
 
     ganache: {
-     host: "127.0.0.1",     // Localhost (default: none)
-     port: 7545,            // Standard Ethereum port (default: none)
-     gas: 8e6,
-     gasPrice: 20,
-     network_id: "5777",       // Any network (default: none)
+      host: '127.0.0.1',     // Localhost (default: none)
+      port: 7545,            // Standard Ethereum port (default: none)
+      gas: 8e6,
+      gasPrice: 20,
+      network_id: '5777',       // Any network (default: none)
     },
 
     ropsten: {
@@ -111,7 +112,7 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.8.4",    // Fetch exact version from solc-bin (default: truffle's version)
+      version: '0.8.4',    // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
       settings: {          // See the solidity docs for advice about optimization and evmVersion
         optimizer: {
@@ -129,7 +130,7 @@ module.exports = {
   },
 
   plugins: [
-    "solidity-coverage",
-    "truffle-plugin-verify"
+    'solidity-coverage',
+    'truffle-plugin-verify'
   ]
-}
+};

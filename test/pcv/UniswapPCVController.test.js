@@ -75,7 +75,7 @@ describe('UniswapPCVController', function () {
       });
 
       it('reverts', async function() {
-        await expectRevert(this.pcvController.forceReweight({from: governorAddress}), "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT");
+        await expectRevert(this.pcvController.forceReweight({from: governorAddress}), 'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT');
       });
     });
 
@@ -155,7 +155,7 @@ describe('UniswapPCVController', function () {
     describe('Paused', function() {
       it('reverts', async function() {
         await this.pcvController.pause({from: governorAddress});
-        await expectRevert(this.pcvController.reweight(), "Pausable: paused");
+        await expectRevert(this.pcvController.reweight(), 'Pausable: paused');
       });
     });
 
@@ -168,8 +168,8 @@ describe('UniswapPCVController', function () {
       it('reverts', async function() {
         expect(await this.pcvController.isTimeEnded()).to.be.equal(false);
         expect(await this.pcvController.reweightEligible()).to.be.equal(false);
-        await expectRevert(this.pcvController.reweight(), "UniswapPCVController: Not passed reweight time or not at min distance");
-      })
+        await expectRevert(this.pcvController.reweight(), 'UniswapPCVController: Not passed reweight time or not at min distance');
+      });
 
       describe('After time period passes', function() {
         beforeEach(async function() {
@@ -201,8 +201,8 @@ describe('UniswapPCVController', function () {
         await time.increase(new BN('14400'));
 
         expect(await this.pcvController.reweightEligible()).to.be.equal(false);
-        await expectRevert(this.pcvController.reweight(), "UniswapPCVController: Not passed reweight time or not at min distance");
-      })
+        await expectRevert(this.pcvController.reweight(), 'UniswapPCVController: Not passed reweight time or not at min distance');
+      });
     });
 
     describe('Above peg', function() {
@@ -228,54 +228,54 @@ describe('UniswapPCVController', function () {
     });
 
     describe('No incentive for caller if controller not minter', function() {
-        beforeEach(async function() {
-          await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
-          await this.token.mint(this.pcvDeposit.address, 100000);
-          await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/token with 10k liquidity
-          await time.increase(new BN('14400'));
-          await this.core.revokeMinter(this.pcvController.address, {from: governorAddress});     
-          expect(await this.pcvController.reweightEligible()).to.be.equal(true);
-          await this.pcvController.reweight({from: userAddress});
-        });
+      beforeEach(async function() {
+        await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
+        await this.token.mint(this.pcvDeposit.address, 100000);
+        await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/token with 10k liquidity
+        await time.increase(new BN('14400'));
+        await this.core.revokeMinter(this.pcvController.address, {from: governorAddress});     
+        expect(await this.pcvController.reweightEligible()).to.be.equal(true);
+        await this.pcvController.reweight({from: userAddress});
+      });
 
-        it('pair gets no tokens in swap', async function() {
-          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
-        });
-        it('pcvDeposit tokens value remains constant', async function() {
-          expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
-        });
-        it('pair FEI balance rebases', async function() {
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(50000000));
-        });
+      it('pair gets no tokens in swap', async function() {
+        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
+      });
+      it('pcvDeposit tokens value remains constant', async function() {
+        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
+      });
+      it('pair FEI balance rebases', async function() {
+        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(50000000));
+      });
     });
 
     describe('Incentive for caller if controller is a minter', function() {
-        beforeEach(async function() {
-          await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
-          await this.token.mint(this.pcvDeposit.address, 100000);
-          await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
-          await time.increase(new BN('14400'));
-          await this.core.grantMinter(this.pcvController.address, {from: governorAddress});     
-          expect(await this.pcvController.reweightEligible()).to.be.equal(true);
-          await this.pcvController.reweight({from: userAddress});
-        });
+      beforeEach(async function() {
+        await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
+        await this.token.mint(this.pcvDeposit.address, 100000);
+        await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
+        await time.increase(new BN('14400'));
+        await this.core.grantMinter(this.pcvController.address, {from: governorAddress});     
+        expect(await this.pcvController.reweightEligible()).to.be.equal(true);
+        await this.pcvController.reweight({from: userAddress});
+      });
 
-        it('pair gets no tokens in swap', async function() {
-          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
-        });
-        it('pcvDeposit token value remains constant', async function() {
-          expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
-        });
-        it('pair FEI balance rebases', async function() {
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(50000000));
-        });
+      it('pair gets no tokens in swap', async function() {
+        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
+      });
+      it('pcvDeposit token value remains constant', async function() {
+        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
+      });
+      it('pair FEI balance rebases', async function() {
+        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(50000000));
+      });
     });
   });
 
   describe('Access', function() {
     describe('Force Reweight', function() {
       it('Non-governor call fails', async function() {
-        await expectRevert(this.pcvController.forceReweight({from: userAddress}), "CoreRef: Caller is not a guardian or governor");
+        await expectRevert(this.pcvController.forceReweight({from: userAddress}), 'CoreRef: Caller is not a guardian or governor');
       });
     });
 
@@ -293,7 +293,7 @@ describe('UniswapPCVController', function () {
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.pcvController.setReweightMinDistance(50, {from: userAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.pcvController.setReweightMinDistance(50, {from: userAddress}), 'CoreRef: Caller is not a governor');
       });
     });
 
@@ -304,7 +304,7 @@ describe('UniswapPCVController', function () {
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.pcvController.setDuration('10', {from: userAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.pcvController.setDuration('10', {from: userAddress}), 'CoreRef: Caller is not a governor');
       });
     });
 
@@ -316,7 +316,7 @@ describe('UniswapPCVController', function () {
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.pcvController.setPair(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.pcvController.setPair(userAddress, {from: userAddress}), 'CoreRef: Caller is not a governor');
       });
     });
 
@@ -334,7 +334,7 @@ describe('UniswapPCVController', function () {
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.pcvController.setPCVDeposit(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.pcvController.setPCVDeposit(userAddress, {from: userAddress}), 'CoreRef: Caller is not a governor');
       });
     });
     describe('Oracle', function() {
@@ -344,7 +344,7 @@ describe('UniswapPCVController', function () {
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.pcvController.setOracle(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.pcvController.setOracle(userAddress, {from: userAddress}), 'CoreRef: Caller is not a governor');
       });
     });
   });

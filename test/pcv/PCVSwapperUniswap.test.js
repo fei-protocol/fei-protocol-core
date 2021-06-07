@@ -28,14 +28,14 @@ describe('PCVSwapperUniswap', function () {
   let pcvControllerAddress;
 
   beforeEach(async function () {
-      ({
-          userAddress,
-          secondUserAddress,
-          minterAddress,
-          guardianAddress,
-          governorAddress,
-          pcvControllerAddress
-      } = await getAddresses());
+    ({
+      userAddress,
+      secondUserAddress,
+      minterAddress,
+      guardianAddress,
+      governorAddress,
+      pcvControllerAddress
+    } = await getAddresses());
 
     this.core = await getCore(true);
     this.weth = await MockWeth.new();

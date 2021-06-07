@@ -1,11 +1,11 @@
 const {
-    BN,
-    expectEvent,
-    expectRevert,
-    expect,
-    getCore,
-    getAddresses,
-  } = require('../helpers');
+  BN,
+  expectEvent,
+  expectRevert,
+  expect,
+  getCore,
+  getAddresses,
+} = require('../helpers');
 
 const Tribe = artifacts.require('Tribe');
 const MockCoreRef = artifacts.require('MockCoreRef');
@@ -21,13 +21,13 @@ describe('Core', function () {
 
   beforeEach(async function () {
     ({
-        userAddress,
-        minterAddress,
-        burnerAddress,
-        pcvControllerAddress,
-        governorAddress,
-        genesisGroup,
-        guardianAddress,
+      userAddress,
+      minterAddress,
+      burnerAddress,
+      pcvControllerAddress,
+      governorAddress,
+      genesisGroup,
+      guardianAddress,
     } = await getAddresses());
     this.core = await getCore(false);
     
@@ -56,12 +56,12 @@ describe('Core', function () {
 
     it('not enough reverts', async function() {
       const amount = await this.tribe.balanceOf(this.core.address);
-      await expectRevert(this.core.allocateTribe(userAddress, amount.add(new BN('1')), {from: governorAddress}), "Core: Not enough Tribe");
-	});
+      await expectRevert(this.core.allocateTribe(userAddress, amount.add(new BN('1')), {from: governorAddress}), 'Core: Not enough Tribe');
+    });
 	
-	it('non governor reverts', async function() {
-		await expectRevert(this.core.allocateTribe(userAddress, '1000', {from: userAddress}), "Permissions: Caller is not a governor");
-	});
+    it('non governor reverts', async function() {
+      await expectRevert(this.core.allocateTribe(userAddress, '1000', {from: userAddress}), 'Permissions: Caller is not a governor');
+    });
   });
 
   describe('Fei Update', function() {
@@ -74,11 +74,11 @@ describe('Core', function () {
         }
       );
       expect(await this.core.fei()).to.be.equal(userAddress);
-	});
+    });
 	
-	it('non governor reverts', async function() {
-		await expectRevert(this.core.setFei(userAddress, {from: userAddress}), "Permissions: Caller is not a governor");
-	});
+    it('non governor reverts', async function() {
+      await expectRevert(this.core.setFei(userAddress, {from: userAddress}), 'Permissions: Caller is not a governor');
+    });
   });
 
   describe('Tribe Update', function() {
@@ -91,28 +91,28 @@ describe('Core', function () {
         }
       );
       expect(await this.core.tribe()).to.be.equal(userAddress);
-	});
+    });
 	
-	it('non governor reverts', async function() {
-		await expectRevert(this.core.setTribe(userAddress, {from: userAddress}), "Permissions: Caller is not a governor");
-	});
+    it('non governor reverts', async function() {
+      await expectRevert(this.core.setTribe(userAddress, {from: userAddress}), 'Permissions: Caller is not a governor');
+    });
   });
 
   describe('Genesis', function() {
     describe('Genesis Group', function() {
       it('governor set succeeds', async function() {
-		expectEvent(
-			await this.core.setGenesisGroup(genesisGroup, {from: governorAddress}),
-			'GenesisGroupUpdate',
-			{
+        expectEvent(
+          await this.core.setGenesisGroup(genesisGroup, {from: governorAddress}),
+          'GenesisGroupUpdate',
+          {
 			  _genesisGroup: genesisGroup
-			}
-		);
+          }
+        );
         expect(await this.core.genesisGroup()).to.be.equal(genesisGroup);
       });
 
       it('non-governor set reverts', async function() {
-        await expectRevert(this.core.setGenesisGroup(genesisGroup, {from: userAddress}), "Permissions: Caller is not a governor");
+        await expectRevert(this.core.setGenesisGroup(genesisGroup, {from: userAddress}), 'Permissions: Caller is not a governor');
       });
     });
   });
@@ -138,9 +138,9 @@ describe('Core', function () {
   				await this.core.renounceRole(this.minterRole, minterAddress, {from: minterAddress});
   			});
 
-			it('is not registered in core', async function() {
-				expect(await this.core.isMinter(minterAddress)).to.be.equal(false);
-			});
+        it('is not registered in core', async function() {
+          expect(await this.core.isMinter(minterAddress)).to.be.equal(false);
+        });
   		});
   		describe('Member Count', function() {
   			it('is one', async function() {
@@ -163,15 +163,15 @@ describe('Core', function () {
   		});
 
   		it('onlyBurner reverts', async function() {
-  			await expectRevert(this.coreRef.testBurner({from: minterAddress}), "CoreRef: Caller is not a burner");
+  			await expectRevert(this.coreRef.testBurner({from: minterAddress}), 'CoreRef: Caller is not a burner');
   		});
 
   		it('onlyGovernor reverts', async function() {
-  			await expectRevert(this.coreRef.testGovernor({from: minterAddress}), "CoreRef: Caller is not a governor");
+  			await expectRevert(this.coreRef.testGovernor({from: minterAddress}), 'CoreRef: Caller is not a governor');
   		});
 
   		it('onlyPCVController reverts', async function() {
-  			await expectRevert(this.coreRef.testPCVController({from: minterAddress}), "CoreRef: Caller is not a PCV controller");
+  			await expectRevert(this.coreRef.testPCVController({from: minterAddress}), 'CoreRef: Caller is not a PCV controller');
   		});
   	});
   });
@@ -218,7 +218,7 @@ describe('Core', function () {
   	});
   	describe('Access', function () {
   		it('onlyMinter reverts', async function() {
-  			await expectRevert(this.coreRef.testMinter({from: burnerAddress}), "CoreRef: Caller is not a minter");
+  			await expectRevert(this.coreRef.testMinter({from: burnerAddress}), 'CoreRef: Caller is not a minter');
   		});
 
   		it('onlyBurner succeeds', async function() {
@@ -226,11 +226,11 @@ describe('Core', function () {
   		});
 
   		it('onlyGovernor reverts', async function() {
-  			await expectRevert(this.coreRef.testGovernor({from: burnerAddress}), "CoreRef: Caller is not a governor");
+  			await expectRevert(this.coreRef.testGovernor({from: burnerAddress}), 'CoreRef: Caller is not a governor');
   		});
 
   		it('onlyPCVController reverts', async function() {
-  			await expectRevert(this.coreRef.testPCVController({from: burnerAddress}), "CoreRef: Caller is not a PCV controller");
+  			await expectRevert(this.coreRef.testPCVController({from: burnerAddress}), 'CoreRef: Caller is not a PCV controller');
   		});
   	});
   });
@@ -277,15 +277,15 @@ describe('Core', function () {
   	});
   	describe('Access', function () {
   		it('onlyMinter reverts', async function() {
-  			await expectRevert(this.coreRef.testMinter({from: pcvControllerAddress}), "CoreRef: Caller is not a minter");
+  			await expectRevert(this.coreRef.testMinter({from: pcvControllerAddress}), 'CoreRef: Caller is not a minter');
   		});
 
   		it('onlyBurner reverts', async function() {
-  			await expectRevert(this.coreRef.testBurner({from: pcvControllerAddress}), "CoreRef: Caller is not a burner");
+  			await expectRevert(this.coreRef.testBurner({from: pcvControllerAddress}), 'CoreRef: Caller is not a burner');
   		});
 
   		it('onlyGovernor reverts', async function() {
-  			await expectRevert(this.coreRef.testGovernor({from: pcvControllerAddress}), "CoreRef: Caller is not a governor");
+  			await expectRevert(this.coreRef.testGovernor({from: pcvControllerAddress}), 'CoreRef: Caller is not a governor');
   		});
 
   		it('onlyPCVController succeeds', async function() {
@@ -336,11 +336,11 @@ describe('Core', function () {
   	});
   	describe('Access', function () {
   		it('onlyMinter reverts', async function() {
-  			await expectRevert(this.coreRef.testMinter({from: governorAddress}), "CoreRef: Caller is not a minter");
+  			await expectRevert(this.coreRef.testMinter({from: governorAddress}), 'CoreRef: Caller is not a minter');
   		});
 
   		it('onlyBurner reverts', async function() {
-  			await expectRevert(this.coreRef.testBurner({from: governorAddress}), "CoreRef: Caller is not a burner");
+  			await expectRevert(this.coreRef.testBurner({from: governorAddress}), 'CoreRef: Caller is not a burner');
   		});
 
   		it('onlyGovernor succeeds', async function() {
@@ -348,7 +348,7 @@ describe('Core', function () {
   		});
 
   		it('onlyPCVController reverts', async function() {
-  			await expectRevert(this.coreRef.testPCVController({from: governorAddress}), "CoreRef: Caller is not a PCV controller");
+  			await expectRevert(this.coreRef.testPCVController({from: governorAddress}), 'CoreRef: Caller is not a PCV controller');
   		});
   	});
 
@@ -438,26 +438,26 @@ describe('Core', function () {
     });
     describe('Access', function () {
       it('onlyMinter reverts', async function() {
-        await expectRevert(this.coreRef.testMinter({from: guardianAddress}), "CoreRef: Caller is not a minter");
+        await expectRevert(this.coreRef.testMinter({from: guardianAddress}), 'CoreRef: Caller is not a minter');
       });
 
       it('onlyBurner reverts', async function() {
-        await expectRevert(this.coreRef.testBurner({from: guardianAddress}), "CoreRef: Caller is not a burner");
+        await expectRevert(this.coreRef.testBurner({from: guardianAddress}), 'CoreRef: Caller is not a burner');
       });
 
       it('onlyGovernor reverts', async function() {
-        await expectRevert(this.coreRef.testGovernor({from: guardianAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.coreRef.testGovernor({from: guardianAddress}), 'CoreRef: Caller is not a governor');
       });
 
       it('onlyPCVController reverts', async function() {
-        await expectRevert(this.coreRef.testPCVController({from: guardianAddress}), "CoreRef: Caller is not a PCV controller");
+        await expectRevert(this.coreRef.testPCVController({from: guardianAddress}), 'CoreRef: Caller is not a PCV controller');
       });
     });
 
     describe('Access Control', function () {
       describe('Non-Guardian', function() {
         it('cannot revoke', async function() {
-          await expectRevert(this.core.revokeOverride(this.minterRole, minterAddress, {from: userAddress}), "Permissions: Caller is not a guardian");
+          await expectRevert(this.core.revokeOverride(this.minterRole, minterAddress, {from: userAddress}), 'Permissions: Caller is not a guardian');
         });
       });
 
@@ -478,7 +478,7 @@ describe('Core', function () {
         });
 
         it('cannot revoke governor', async function() {
-          await expectRevert(this.core.revokeOverride(this.governorRole, governorAddress, {from: guardianAddress}), "Permissions: Guardian cannot revoke governor");
+          await expectRevert(this.core.revokeOverride(this.governorRole, governorAddress, {from: guardianAddress}), 'Permissions: Guardian cannot revoke governor');
           expect(await this.core.isGovernor(governorAddress)).to.be.equal(true);
         });
       });
@@ -487,8 +487,8 @@ describe('Core', function () {
 
   describe('Create Role', function() {
     beforeEach(async function() {
-      this.role = "0x0000000000000000000000000000000000000000000000000000000000000001";
-      this.adminRole = "0x0000000000000000000000000000000000000000000000000000000000000002";
+      this.role = '0x0000000000000000000000000000000000000000000000000000000000000001';
+      this.adminRole = '0x0000000000000000000000000000000000000000000000000000000000000002';
     });
 
     it('governor succeeds', async function() {
@@ -497,7 +497,7 @@ describe('Core', function () {
     });
 
     it('non-governor fails', async function() {
-      await expectRevert(this.core.createRole(this.role, this.adminRole), "Permissions: Caller is not a governor");
+      await expectRevert(this.core.createRole(this.role, this.adminRole), 'Permissions: Caller is not a governor');
     });
   });
 });

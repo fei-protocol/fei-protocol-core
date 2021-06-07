@@ -1,11 +1,11 @@
 const {
-	BN,
-    ZERO_ADDRESS,
-	expectEvent,
-	expectRevert,
-	expect,
-	getAddresses,
-	getCore,
+  BN,
+  ZERO_ADDRESS,
+  expectEvent,
+  expectRevert,
+  expect,
+  getAddresses,
+  getCore,
 } = require('../helpers');
 
 const Fei = artifacts.require('Fei');
@@ -24,7 +24,7 @@ describe('Fei', function () {
       burnerAddress,
       governorAddress,
       userAddress
-  } = await getAddresses());
+    } = await getAddresses());
     this.core = await getCore(true);
     this.fei = await Fei.at(await this.core.fei());
   });
@@ -33,12 +33,12 @@ describe('Fei', function () {
     describe('Paused', function() {
       it('reverts', async function() {
         await this.fei.pause({from: governorAddress});
-        await expectRevert(this.fei.mint(userAddress, 100, { from: minterAddress }), "Pausable: paused");
+        await expectRevert(this.fei.mint(userAddress, 100, { from: minterAddress }), 'Pausable: paused');
       });
     });
     describe('not from minter', function () {
       it('reverts', async function () {
-        await expectRevert(this.fei.mint(userAddress, 100), "CoreRef: Caller is not a minter");
+        await expectRevert(this.fei.mint(userAddress, 100), 'CoreRef: Caller is not a minter');
       });
     });
 
@@ -65,12 +65,12 @@ describe('Fei', function () {
     describe('Paused', function() {
       it('reverts', async function() {
         await this.fei.pause({from: governorAddress});
-        await expectRevert(this.fei.burnFrom(userAddress, 100, { from: burnerAddress }), "Pausable: paused");
+        await expectRevert(this.fei.burnFrom(userAddress, 100, { from: burnerAddress }), 'Pausable: paused');
       });
     });
     describe('not from burner', function () {
       it('reverts', async function () {
-        await expectRevert(this.fei.burnFrom(userAddress, 100), "CoreRef: Caller is not a burner");
+        await expectRevert(this.fei.burnFrom(userAddress, 100), 'CoreRef: Caller is not a burner');
       });
     });
 
@@ -94,7 +94,7 @@ describe('Fei', function () {
     });
     describe('from burner to user without sufficient balance', function () {
       it('burn Fei tokens', async function () {
-        await expectRevert(this.fei.burnFrom(userAddress, 100, { from: burnerAddress }), "ERC20: burn amount exceeds balance");
+        await expectRevert(this.fei.burnFrom(userAddress, 100, { from: burnerAddress }), 'ERC20: burn amount exceeds balance');
       });
     });
   });
@@ -171,7 +171,6 @@ describe('Fei', function () {
         });
       });
       describe('on sender and receiver', function () {
-
         beforeEach(async function () {
           await this.fei.mint(this.incentivizedAddress, 200, { from: minterAddress });
           const { logs } = await this.incentivizedContract.sendFei(this.incentivizedAddress, 200);

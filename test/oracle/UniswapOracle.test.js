@@ -1,12 +1,12 @@
 const {
-    BN,
-    expectEvent,
-    expectRevert,
-    time,
-    expect,
-    getAddresses,
-    getCore,
-  } = require('../helpers');
+  BN,
+  expectEvent,
+  expectRevert,
+  time,
+  expect,
+  getAddresses,
+  getCore,
+} = require('../helpers');
 
 const UniswapOracle = artifacts.require('UniswapOracle');
 const MockPairTrade = artifacts.require('MockUniswapV2PairTrade');
@@ -100,7 +100,7 @@ describe.skip('UniswapOracle', function () {
     describe('Paused', function() {
       it('reverts', async function() {
         await this.oracle.pause({from: governorAddress});
-        await expectRevert(this.oracle.update(), "Pausable: paused");
+        await expectRevert(this.oracle.update(), 'Pausable: paused');
       });
     });
     
@@ -122,7 +122,7 @@ describe.skip('UniswapOracle', function () {
 
     describe('Exceeds duration', function() {
       beforeEach(async function() {
-        this.expectedTime = this.cursor.add(new BN(1000))
+        this.expectedTime = this.cursor.add(new BN(1000));
         this.expectedCumulative = this.cumulative.add(this.hundredTwelve.mul(this.delta).mul(new BN(500)).div(new BN(1e12))); 
         await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
         await this.pair.setReserves(100000, 50000000);
@@ -148,7 +148,7 @@ describe.skip('UniswapOracle', function () {
     describe('Price Moves', function() {
       describe('Upward', function() {
         beforeEach(async function() {
-          this.expectedTime = this.cursor.add(new BN(1000))
+          this.expectedTime = this.cursor.add(new BN(1000));
           this.expectedCumulative = this.cumulative.add(this.hundredTwelve.mul(this.delta).mul(new BN(490)).div(new BN(1e12))); 
           await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
           await this.pair.setReserves(100000, 49000000);
@@ -165,7 +165,7 @@ describe.skip('UniswapOracle', function () {
 
       describe('Downward', function() {
         beforeEach(async function() {
-          this.expectedTime = this.cursor.add(new BN(1000))
+          this.expectedTime = this.cursor.add(new BN(1000));
           this.expectedCumulative = this.cumulative.add(this.hundredTwelve.mul(this.delta).mul(new BN(510)).div(new BN(1e12))); 
           await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
           await this.pair.setReserves(100000, 51000000);
@@ -186,15 +186,15 @@ describe.skip('UniswapOracle', function () {
     describe('Duration', function() {
       it('Governor set succeeds', async function() {
         expectEvent(
-            await this.oracle.setDuration(1000, {from: governorAddress}),
-            'DurationUpdate',
-            { _duration: '1000' }
-          );
+          await this.oracle.setDuration(1000, {from: governorAddress}),
+          'DurationUpdate',
+          { _duration: '1000' }
+        );
         expect(await this.oracle.duration()).to.be.bignumber.equal(new BN(1000));
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.oracle.setDuration(1000, {from: userAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.oracle.setDuration(1000, {from: userAddress}), 'CoreRef: Caller is not a governor');
       });
     });
   });
