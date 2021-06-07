@@ -1,25 +1,34 @@
 const {
-	userAddress,
-	minterAddress,
-	burnerAddress,
-	pcvControllerAddress,
-	governorAddress,
-	genesisGroup,
-	guardianAddress,
-	BN,
-	expectEvent,
-	expectRevert,
-	expect,
-	contract,
-	getCore
+    BN,
+    expectEvent,
+    expectRevert,
+    expect,
+    getCore,
+    getAddresses,
   } = require('../helpers');
 
-const Tribe = contract.fromArtifact('Tribe');
-const MockCoreRef = contract.fromArtifact('MockCoreRef');
+const Tribe = artifacts.require('Tribe');
+const MockCoreRef = artifacts.require('MockCoreRef');
 
 describe('Core', function () {
+  let userAddress;
+  let minterAddress;
+  let burnerAddress;
+  let pcvControllerAddress;
+  let governorAddress;
+  let genesisGroup;
+  let guardianAddress;
 
   beforeEach(async function () {
+    ({
+        userAddress,
+        minterAddress,
+        burnerAddress,
+        pcvControllerAddress,
+        governorAddress,
+        genesisGroup,
+        guardianAddress,
+    } = await getAddresses());
     this.core = await getCore(false);
     
     this.tribe = await Tribe.at(await this.core.tribe());

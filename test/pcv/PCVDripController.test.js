@@ -1,57 +1,76 @@
 const {
-    userAddress,
-    governorAddress, 
-    pcvControllerAddress,
     web3,
     BN,
     expectRevert,
     time,
     balance,
     expect,
-    contract,
+    getAddresses,
     getCore,
-    beneficiaryAddress1
   } = require('../helpers');
   
-const PCVDripController = contract.fromArtifact('PCVDripController');
-const MockPCVDeposit = contract.fromArtifact('MockEthUniswapPCVDeposit');
-const Fei = contract.fromArtifact('Fei');
+const PCVDripController = artifacts.require('PCVDripController');
+const MockPCVDeposit = artifacts.require('MockEthUniswapPCVDeposit');
+const Fei = artifacts.require('Fei');
 
-  describe('PCVDripController', function () {
+describe('PCVDripController', function () {
+  let userAddress;
+  let governorAddress;
+  let beneficiaryAddress1;
   
-    beforeEach(async function () {
-      this.core = await getCore(true);
-      this.fei = await Fei.at(await this.core.fei());
-      
-      this.sourcePCVDeposit = await MockPCVDeposit.new(beneficiaryAddress1);
-      this.pcvDeposit = await MockPCVDeposit.new(beneficiaryAddress1);
-      this.dripAmount = new BN('500000000000000000');
-      this.incentiveAmount = new BN('100000000000000000');
+  beforeEach(async function () {
+    ({
+      beneficiaryAddress1,
+      userAddress,
+      governorAddress,
+    } = await getAddresses());
 
-      this.pcvDripper = await PCVDripController.new(this.core.address, this.sourcePCVDeposit.address, this.pcvDeposit.address, '1000', this.dripAmount, this.incentiveAmount);
-      await this.core.grantMinter(this.pcvDripper.address, {from: governorAddress});
+    this.core = await getCore(true);
+    this.fei = await Fei.at(await this.core.fei());
+    
+    this.sourcePCVDeposit = await MockPCVDeposit.new(beneficiaryAddress1);
+    this.pcvDeposit = await MockPCVDeposit.new(beneficiaryAddress1);
+    this.dripAmount = new BN('500000000000000000');
+    this.incentiveAmount = new BN('100000000000000000');
 
-      await web3.eth.sendTransaction({from: userAddress, to: this.sourcePCVDeposit.address, value: "1000000000000000000"});
+    this.pcvDripper = await PCVDripController.new(this.core.address, this.sourcePCVDeposit.address, this.pcvDeposit.address, '1000', this.dripAmount, this.incentiveAmount);
+    await this.core.grantMinter(this.pcvDripper.address, {from: governorAddress});
+
+    await web3.eth.sendTransaction({from: userAddress, to: this.sourcePCVDeposit.address, value: "1000000000000000000"});
     });
   
-    describe('Drip', function() {
-      describe('Paused', function() {
-        it('reverts', async function() {
-            await time.increase('1000');
-            await this.pcvDripper.pause({from: governorAddress});
-            await expectRevert(this.pcvDripper.drip(), "Pausable: paused");
-        });
+  describe('Drip', function() {
+    describe('Paused', function() {
+      it('reverts', async function() {
+          await time.increase('1000');
+          await this.pcvDripper.pause({from: governorAddress});
+          await expectRevert(this.pcvDripper.drip(), "Pausable: paused");
       });
+    });
 
-      describe('Before time', function() {
-        it('reverts', async function() {
-            await expectRevert(this.pcvDripper.drip(), "Timed: time not ended");
-        });
+    describe('Before time', function() {
+      it('reverts', async function() {
+          await expectRevert(this.pcvDripper.drip(), "Timed: time not ended");
       });
+    });
+
+    describe('After time', function() {
+        beforeEach(async function() {
+          await time.increase('1000');
+        });
+        describe('Target balance low enough', function() {
+          it('succeeds', async function() {
+              let dripperBalanceBefore = await this.sourcePCVDeposit.balance();
+              let beneficiaryBalanceBefore = await balance.current(this.pcvDeposit.address);
+              await this.pcvDripper.drip();
+              let dripperBalanceAfter = await this.sourcePCVDeposit.balance();
+              let beneficiaryBalanceAfter = await balance.current(this.pcvDeposit.address);
   
-      describe('After time', function() {
-          beforeEach(async function() {
-            await time.increase('1000');
+              expect(dripperBalanceBefore.sub(dripperBalanceAfter)).to.be.bignumber.equal(this.dripAmount);
+              expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore)).to.be.bignumber.equal(this.dripAmount);
+  
+              // timer reset
+              expect(await this.pcvDripper.isTimeEnded()).to.be.equal(false);
           });
           describe('Target balance low enough', function() {
             it('succeeds', async function() {
@@ -69,28 +88,29 @@ const Fei = contract.fromArtifact('Fei');
             });
         });
 
-        describe('Target balance too high', function() {
-            beforeEach(async function() {
-                await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: this.dripAmount});
-            });
+      describe('Target balance too high', function() {
+          beforeEach(async function() {
+              await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: this.dripAmount});
+          });
 
             it('reverts', async function() {        
                 await expectRevert(this.pcvDripper.drip(), "PCVDripController: not eligible");
             });
         });
       });
+    });
 
-      describe('Second attempt', function() {
-        beforeEach(async function() {
-            await time.increase('1000');
-            await this.pcvDripper.drip();
-        });
+    describe('Second attempt', function() {
+      beforeEach(async function() {
+          await time.increase('1000');
+          await this.pcvDripper.drip();
+      });
 
-        describe('Before time', function() {
-            it('reverts', async function() {
-                await expectRevert(this.pcvDripper.drip(), "Timed: time not ended");
-            });
-        });
+      describe('Before time', function() {
+          it('reverts', async function() {
+              await expectRevert(this.pcvDripper.drip(), "Timed: time not ended");
+          });
+      });
 
         describe('After time', function() {
             describe('Target balance low enough', function() {
@@ -99,18 +119,17 @@ const Fei = contract.fromArtifact('Fei');
                     await time.increase('1000');
                 });
                 it('succeeds', async function() {
-                    let sourceBalanceBefore = await this.sourcePCVDeposit.balance();
-                    let beneficiaryBalanceBefore = await balance.current(this.pcvDeposit.address);
-                    await this.pcvDripper.drip({from: userAddress});
-                    let sourceBalanceAfter = await this.sourcePCVDeposit.balance();
-                    let beneficiaryBalanceAfter = await balance.current(this.pcvDeposit.address);
-        
-                    expect(sourceBalanceBefore.sub(sourceBalanceAfter)).to.be.bignumber.equal(this.dripAmount);
-                    expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore)).to.be.bignumber.equal(this.dripAmount);
-        
-                    // timer reset
-                    expect(await this.pcvDripper.isTimeEnded()).to.be.equal(false);
-                    expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.incentiveAmount);
+                  let sourceBalanceBefore = await this.sourcePCVDeposit.balance();
+                  let beneficiaryBalanceBefore = await balance.current(this.pcvDeposit.address);
+                  await this.pcvDripper.drip();
+                  let sourceBalanceAfter = await this.sourcePCVDeposit.balance();
+                  let beneficiaryBalanceAfter = await balance.current(this.pcvDeposit.address);
+      
+                  expect(sourceBalanceBefore.sub(sourceBalanceAfter)).to.be.bignumber.equal(this.dripAmount);
+                  expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore)).to.be.bignumber.equal(this.dripAmount);
+      
+                  // timer reset
+                  expect(await this.pcvDripper.isTimeEnded()).to.be.equal(false);
                 });
             });
     

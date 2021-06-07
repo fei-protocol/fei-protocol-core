@@ -1,22 +1,28 @@
 const {
-  userAddress,
-  secondUserAddress,
-  beneficiaryAddress1,
-  web3,
-  BN,
-  expectEvent,
-  expectRevert,
-  time,
-  expect,
-  contract
-} = require('../helpers');
+    web3,
+    BN,
+    expectEvent,
+    expectRevert,
+    getAddresses,
+    time,
+    expect,
+  } = require('../helpers');
+  
 
-const TimelockedDelegator = contract.fromArtifact('TimelockedDelegator');
-const MockTribe = contract.fromArtifact('MockTribe');
+const TimelockedDelegator = artifacts.require('TimelockedDelegator');
+const MockTribe = artifacts.require('MockTribe');
 
 describe('TimelockedDelegator', function () {
+  let userAddress;
+  let secondUserAddress;
+  let beneficiaryAddress1;
 
   beforeEach(async function () {
+    ({
+        userAddress,
+        secondUserAddress,
+        beneficiaryAddress1,
+    } = await getAddresses());
     this.tribe = await MockTribe.new({from: beneficiaryAddress1});
     this.window = new BN(4 * 365 * 24 * 60 * 60);
     this.delegator = await TimelockedDelegator.new(this.tribe.address, beneficiaryAddress1, this.window, {gas: 8000000, from: beneficiaryAddress1});

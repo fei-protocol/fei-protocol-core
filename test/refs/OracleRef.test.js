@@ -1,28 +1,28 @@
 const {
-    userAddress,
-    governorAddress,
-    BN,
     expectEvent,
     expectRevert,
-    time,
-    contract,
     expect,
+    getAddresses,
     getCore
   } = require('../helpers');
   
-  const ReserveStabilizer = contract.fromArtifact('ReserveStabilizer');
-  const MockOracle = contract.fromArtifact('MockOracle');
+  const ReserveStabilizer = artifacts.require('ReserveStabilizer');
+  const MockOracle = artifacts.require('MockOracle');
   
-  describe('OracleRef', function () {
-  
-    beforeEach(async function () {
-      this.core = await getCore(true);
-      
-      this.oracle = await MockOracle.new(500); // 500 USD per ETH exchange rate 
-      this.backupOracle = await MockOracle.new(505); // 505 USD per ETH exchange rate 
+describe('OracleRef', function () {
+  let userAddress;
+  let governorAddress;
 
-      this.oracleRef = await ReserveStabilizer.new(this.core.address, this.oracle.address, userAddress, 10000);
-      await this.oracleRef.setBackupOracle(this.backupOracle.address, {from: governorAddress});
+  beforeEach(async function () {
+    ({ userAddress, governorAddress } = await getAddresses())
+    
+    this.core = await getCore(true);
+      
+    this.oracle = await MockOracle.new(500); // 500 USD per ETH exchange rate 
+    this.backupOracle = await MockOracle.new(505); // 505 USD per ETH exchange rate 
+
+    this.oracleRef = await ReserveStabilizer.new(this.core.address, this.oracle.address, userAddress, 10000);
+    await this.oracleRef.setBackupOracle(this.backupOracle.address, {from: governorAddress});
     });
   
     describe('Init', function() {
@@ -71,15 +71,15 @@ const {
     describe('Read', function() {
         describe('Invalid Oracle', function() {
             it('falls back to backup', async function() {
-                this.oracle.setValid(false);
+                await this.oracle.setValid(false);
                 expect((await this.oracleRef.readOracle({from: userAddress}))[0]).to.be.equal('505000000000000000000');     
             });
         });
 
         describe('Invalid Oracle and Backup', function() {
             it('reverts', async function() {
-              this.oracle.setValid(false);
-              this.backupOracle.setValid(false);
+              await this.oracle.setValid(false);
+              await this.backupOracle.setValid(false);
               await expectRevert(this.oracleRef.readOracle({from: userAddress}), "OracleRef: oracle invalid");     
             });
         });

@@ -1,28 +1,37 @@
 const {
-  userAddress,
-  secondUserAddress,
-  beneficiaryAddress1,
-  beneficiaryAddress2,
-  governorAddress,
-  keeperAddress,
-  BN,
-  expectEvent,
-  expectRevert,
-  balance,
-  time,
-  contract,
-  expect,
-  getCore
-} = require('../helpers');
+    BN,
+    expectEvent,
+    expectRevert,
+    balance,
+    time,
+    expect,
+    getAddresses,
+    getCore,
+  } = require('../helpers');
 
-const EthBondingCurve = contract.fromArtifact('EthBondingCurve');
-const Fei = contract.fromArtifact('Fei');
-const MockEthPCVDeposit = contract.fromArtifact('MockEthPCVDeposit');
-const MockOracle = contract.fromArtifact('MockOracle');
+const EthBondingCurve = artifacts.require('EthBondingCurve');
+const Fei = artifacts.require('Fei');
+const MockEthPCVDeposit = artifacts.require('MockEthPCVDeposit');
+const MockOracle = artifacts.require('MockOracle');
 
 describe('EthBondingCurve', function () {
+  let userAddress;
+  let keeperAddress;
+  let secondUserAddress;
+  let governorAddress;
+  let beneficiaryAddress1;
+  let beneficiaryAddress2;
 
   beforeEach(async function () {
+    ({
+        userAddress,
+        keeperAddress,
+        governorAddress,
+        secondUserAddress,
+        beneficiaryAddress1,
+        beneficiaryAddress2,
+    } = await getAddresses());
+
     this.core = await getCore(true);
 
     this.fei = await Fei.at(await this.core.fei());

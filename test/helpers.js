@@ -1,75 +1,118 @@
-const { ZERO_ADDRESS, MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
+const {
+	ZERO_ADDRESS,
+	MAX_UINT256,
+} = require('@openzeppelin/test-helpers/src/constants');
 
-const { accounts, contract, web3 } = require('@openzeppelin/test-environment');
+const { web3 } = require('hardhat');
 
-const { BN, expectEvent, expectRevert, ether, balance, time } = require('@openzeppelin/test-helpers');
+const { increaseTime, getCurrentTime } = require('./time')
 
-var chai = require('chai');
+const {
+	BN,
+	expectEvent,
+	expectRevert,
+	ether,
+	balance,
+	contract,
+	time,
+} = require('@openzeppelin/test-helpers');
 
-//use default BigNumber
+const chai = require('chai');
+
+// use default BigNumber
 chai.use(require('chai-bn')(BN));
 
 const { expect } = chai;
 
-const ForceEth = contract.fromArtifact('ForceEth');
-const Core = contract.fromArtifact('Core');
+const ForceEth = artifacts.require('ForceEth');
+const Core = artifacts.require('Core');
 
-const [ userAddress, secondUserAddress, beneficiaryAddress1, beneficiaryAddress2, governorAddress, genesisGroup, keeperAddress, pcvControllerAddress, minterAddress, burnerAddress, guardianAddress ] = accounts;
+async function getAddresses() {
+	const [
+		userAddress,
+		secondUserAddress,
+		beneficiaryAddress1,
+		beneficiaryAddress2,
+		governorAddress,
+		genesisGroup,
+		keeperAddress,
+		pcvControllerAddress,
+		minterAddress,
+		burnerAddress,
+		guardianAddress,
+	] = await web3.eth.getAccounts();
 
-async function getCore(complete) {
-    let core = await Core.new({from: governorAddress});
-    await core.init({from: governorAddress});
-
-    await core.setGenesisGroup(genesisGroup, {from: governorAddress});
-    if (complete) {
-        await core.completeGenesisGroup({from: genesisGroup});
-    }
-
-    await core.grantMinter(minterAddress, {from: governorAddress});
-    await core.grantBurner(burnerAddress, {from: governorAddress});
-    await core.grantPCVController(pcvControllerAddress, {from: governorAddress});
-    await core.grantGuardian(guardianAddress, {from: governorAddress});
-
-    return core;
+	return {
+		userAddress,
+		secondUserAddress,
+		beneficiaryAddress1,
+		beneficiaryAddress2,
+		governorAddress,
+		genesisGroup,
+		keeperAddress,
+		pcvControllerAddress,
+		minterAddress,
+		burnerAddress,
+		guardianAddress,
+	};
 }
 
+async function getCore(complete) {
+	const {
+		governorAddress,
+		genesisGroup,
+		pcvControllerAddress,
+		minterAddress,
+		burnerAddress,
+		guardianAddress,
+	} = await getAddresses();
+	const core = await Core.new({ from: governorAddress });
+	await core.init({ from: governorAddress });
+
+	await core.setGenesisGroup(genesisGroup, { from: governorAddress });
+	if (complete) {
+		await core.completeGenesisGroup({ from: genesisGroup });
+	}
+
+	await core.grantMinter(minterAddress, { from: governorAddress });
+	await core.grantBurner(burnerAddress, { from: governorAddress });
+	await core.grantPCVController(pcvControllerAddress, {
+		from: governorAddress,
+	});
+	await core.grantGuardian(guardianAddress, { from: governorAddress });
+
+	return core;
+}
+
+
 async function forceEth(to, amount) {
-    let forceEth = await ForceEth.new({value: amount});
-    await forceEth.forceEth(to);
+	const forceEth = await ForceEth.new({ value: amount });
+	await forceEth.forceEth(to);
 }
 
 async function expectApprox(actual, expected) {
-    let delta = expected.div(new BN('1000'));
-    expect(actual).to.be.bignumber.closeTo(expected, delta);
+	const delta = expected.div(new BN('1000'));
+	expect(actual).to.be.bignumber.closeTo(expected, delta);
 }
 
 module.exports = {
-    // utils
-    ZERO_ADDRESS,
-    MAX_UINT256,
-    web3,
-    BN,
-    expectEvent,
-    expectRevert,
-    balance,
-    time,
-    expect,
-    contract,
-    // addresses
-    userAddress,
-    secondUserAddress,
-    beneficiaryAddress1,
-    beneficiaryAddress2,
-    governorAddress,
-    genesisGroup,
-    keeperAddress,
-    pcvControllerAddress,
-    minterAddress,
-    burnerAddress,
-    guardianAddress,
-    // functions
-    getCore,
-    forceEth,
-    expectApprox,
-    ether
-}
+	// utils
+	ZERO_ADDRESS,
+	MAX_UINT256,
+	web3,
+	BN,
+	expectEvent,
+	expectRevert,
+	balance,
+	time,
+	expect,
+	contract,
+	// functions
+	getCore,
+  getCurrentTime,
+  increaseTime,
+	getAddresses,
+	forceEth,
+	expectApprox,
+	ether,
+};

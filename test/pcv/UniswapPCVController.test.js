@@ -1,30 +1,38 @@
 const {
-  userAddress, 
-  governorAddress, 
-  minterAddress, 
-  guardianAddress, 
   BN,
   expectEvent,
-  expectRevert,
+  expectRevert, 
   balance,
-  time,
+  time, 
   expect,
-  contract,
-  getCore,
-  burnerAddress
+  getAddresses,
+  getCore
 } = require('../helpers');
 
-const UniswapPCVController = contract.fromArtifact('UniswapPCVController');
-const Fei = contract.fromArtifact('Fei');
-const MockOracle = contract.fromArtifact('MockOracle');
-const MockPair = contract.fromArtifact('MockUniswapV2PairLiquidity');
-const MockPCVDeposit = contract.fromArtifact('MockERC20UniswapPCVDeposit');
-const MockERC20 = contract.fromArtifact('MockERC20');
+const UniswapPCVController = artifacts.require('UniswapPCVController');
+const Fei = artifacts.require('Fei');
+const MockOracle = artifacts.require('MockOracle');
+const MockPair = artifacts.require('MockUniswapV2PairLiquidity');
+const MockPCVDeposit = artifacts.require('MockERC20UniswapPCVDeposit');
+const MockERC20 = artifacts.require('MockERC20');
 
 describe('UniswapPCVController', function () {
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit
+  let userAddress;
+  let governorAddress;
+  let minterAddress;
+  let burnerAddress;
+  let guardianAddress;
 
   beforeEach(async function () {
+    ({
+      userAddress,
+      governorAddress, 
+      burnerAddress,
+      minterAddress, 
+      guardianAddress
+    } = await getAddresses());
+
     this.core = await getCore(true);
 
     this.fei = await Fei.at(await this.core.fei());
