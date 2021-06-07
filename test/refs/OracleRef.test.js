@@ -70,19 +70,16 @@ describe('OracleRef', function () {
 
     describe('Read', function() {
         describe('Invalid Oracle', function() {
-            // TODO: user has incorrect balance. Not sure if suitable for expectApprox
-            it.skip('falls back to backup', async function() {
-                this.oracle.setValid(false);
+            it('falls back to backup', async function() {
+                await this.oracle.setValid(false);
                 expect((await this.oracleRef.readOracle({from: userAddress}))[0]).to.be.equal('505000000000000000000');     
             });
         });
 
         describe('Invalid Oracle and Backup', function() {
-            // TODO: highly flaky test. On original branch, rarely fails and mostly passes. 
-            // Never throws an exception here
-            it.skip('reverts', async function() {
-              this.oracle.setValid(false);
-              this.backupOracle.setValid(false);
+            it('reverts', async function() {
+              await this.oracle.setValid(false);
+              await this.backupOracle.setValid(false);
               await expectRevert(this.oracleRef.readOracle({from: userAddress}), "OracleRef: oracle invalid");     
             });
         });
