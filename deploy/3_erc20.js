@@ -1,4 +1,5 @@
 const { BN, ether } = require('@openzeppelin/test-helpers');
+const { web3 } = require('hardhat');
 
 const UniswapPCVDeposit = artifacts.require("UniswapPCVDeposit");
 const UniswapPCVController = artifacts.require("UniswapPCVController");
@@ -18,8 +19,21 @@ async function main() {
       throw new Error('An environment variable contract address is not set')
     }
 
+    
+    const deployAddress = (await web3.eth.getAccounts())[0]
+
     const uniswapPCVDeposit = new web3.eth.Contract(UniswapPCVDeposit.abi); // factory contract
-    await uniswapPCVDeposit.deploy({data: UniswapPCVDeposit.bytecode, arguments: [MAINNET_CORE, MAINNET_FEI_ETH_PAIR, MAINNET_UNISWAP_ROUTER, MAINNET_UNISWAP_ORACLE, '100']}) // contract bytecode and constructor args
+    await uniswapPCVDeposit.deploy({
+      data: UniswapPCVDeposit.bytecode,
+      arguments: [
+        MAINNET_CORE,
+        MAINNET_FEI_ETH_PAIR,
+        MAINNET_UNISWAP_ROUTER, 
+        MAINNET_UNISWAP_ORACLE,
+        '100'
+      ]
+    }).send({ from: deployAddress }) // contract bytecode and constructor arguments
+    console.log('UniswapPCVDeposit deployed to: ', uniswapPCVDeposit.address)
 
     const tenPow18 = ether('1');
     const uniswapPCVController = new web3.eth.Contract(UniswapPCVController.abi); // factory contract
@@ -34,7 +48,8 @@ async function main() {
         MAINNET_FEI_ETH_PAIR,
         14400
       ]
-    })
+    }).send({ from: deployAddress })
+    console.log('Uniswap PCV controller deployed to: ', uniswapPCVController.address)
     
     const bondingCurve = new web3.eth.Contract(BondingCurve.abi); // factory contract
     await bondingCurve.deploy({
@@ -51,11 +66,13 @@ async function main() {
         tenPow18.mul(new BN('500')),
         '100'
       ]
-    })
-    console.log('finished')
+    }).send({ from: deployAddress })
+    console.log('Bonding curve deployed to: ', bondingCurve.address)
 }
 
-main().catch(err => {
+main()
+.then(() => process.exit(0))
+.catch(err => {
   console.log(err);
   process.exit(1);
 });

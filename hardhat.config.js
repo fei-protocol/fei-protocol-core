@@ -19,10 +19,11 @@ module.exports = {
   networks: {
     hardhat: {
       gas: 12e6,
-      allowUnlimitedContractSize: true,
       chainId: 5777, // Any network (default: none)
     },
-    localhost: {},
+    localhost: {
+      url: "http://127.0.0.1:8545"
+    },
     rinkeby: {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${rinkebyAlchemyApiKey}`,
       //   accounts: [testnetPrivateKey],

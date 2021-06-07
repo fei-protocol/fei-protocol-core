@@ -15,7 +15,7 @@
     "test": "npx hardhat test",
     "test:gas": "REPORT_GAS=true npx hardhat test",
     "size-contracts": "npx hardhat size-contracts",
-    "deploy:localhost": "npx hardhat run --network localhost scripts/deploy/migrations.js",
+    "deploy:localhost": "npx hardhat run --network localhost deploy/3_erc20.js",
     "deploy:ropsten": "npx hardhat run --network ropsten scripts/deploy/migrations.js",
     "deploy:rinkeby": "npx hardhat run --network rinkeby scripts/deploy/migrations.js",
     "abis": "node scripts/abis.js"
