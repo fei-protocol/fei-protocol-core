@@ -25,7 +25,6 @@
   "dependencies": {
     "@chainlink/contracts": "^0.1.7",
     "@nomiclabs/hardhat-truffle5": "^2.0.0",
-    "@openzeppelin/cli": "^2.8.2",
     "@openzeppelin/contracts": "^4.1.0",
     "@truffle/hdwallet-provider": "^1.2.2",
     "@uniswap/lib": "^1.1.2",
