@@ -13,9 +13,18 @@
     "comma-dangle": 0,
     "func-names": 0,
     "space-before-function-paren": 0,
-    "indent": ["error", 2],
-    "max-len": 150,
-    "no-tabs": 0
+    "max-len": 1,
+    "no-multi-spaces": 0,
+    "no-trailing-spaces": 0,
+    "object-curly-spacing": 0,
+    "quotes": 0,
+    "padded-blocks": 0,
+    "semi": 0,
+    "import/newline-after-import": 0,
+    "no-mixed-spaces-and-tabs": 0,
+    "no-tabs": 0,
+    "indent": 0,
+    "eol-last": 0
   },
   "globals": {
     "artifacts": "readonly",
