@@ -44,7 +44,8 @@ describe('FeiRewardsDistributor', function () {
           this.frequency,
           this.incentiveAmount
       );
-      
+      expect(await this.distributor.releasedReward()).to.be.bignumber.equal(new BN('0'));
+
       await this.core.grantMinter(this.distributor.address, {from: governorAddress});
       await this.core.allocateTribe(this.distributor.address, this.rewardAmount, {from: governorAddress});
   });
@@ -74,9 +75,8 @@ describe('FeiRewardsDistributor', function () {
       expect(await this.distributor.incentiveAmount()).to.be.bignumber.equal(this.incentiveAmount);
     });
 
-    it.skip('releasedReward', async function() {
-      // TODO: This is a significantly higher number than 0 - 40000000000. Feels off
-      await expectApprox(await this.distributor.releasedReward(), new BN('0'));
+    it('releasedReward', async function() {
+      expect(await this.distributor.releasedReward()).to.be.bignumber.equal(new BN('40000000000'));
     });
 
     it('totalReward', async function() {

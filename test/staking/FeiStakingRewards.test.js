@@ -270,6 +270,9 @@ describe('FeiStakingRewards', function () {
           beforeEach(async function() {
               await this.staking.stake(this.stakedAmount, {from: secondUserAddress});
 
+              expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('0'));
+              expect(await this.staking.userRewardPerTokenPaid(userAddress)).to.be.bignumber.equal(new BN('0'));
+
               expectEvent(
                   await this.staking.stake(this.stakedAmount, {from: userAddress}),
                   'Staked',
@@ -278,6 +281,9 @@ describe('FeiStakingRewards', function () {
                       amount: this.stakedAmount
                   }
               );
+              
+              
+            
               await time.increase(this.window);
           });
 
@@ -291,10 +297,9 @@ describe('FeiStakingRewards', function () {
               expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
           });
 
-          // TODO: significantly higher than 0 - 100000000000000000000. Feels off given it should be 0
-          it.skip('updates rates', async function() {
-            await expectApprox(await this.staking.rewardPerTokenStored(), new BN('0'));
-            await expectApprox(await this.staking.userRewardPerTokenPaid(userAddress), new BN('0'));
+          it('updates rates', async function() {
+            expect(await this.staking.rewardPerTokenStored()).to.be.bignumber.equal(new BN('100000000000000000000'));
+            expect(await this.staking.userRewardPerTokenPaid(userAddress)).to.be.bignumber.equal(new BN('100000000000000000000'));
           });
       });
 

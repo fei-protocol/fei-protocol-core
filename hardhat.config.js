@@ -1,13 +1,12 @@
 require('@nomiclabs/hardhat-waffle');
 require('@nomiclabs/hardhat-truffle5');
+require('@nomiclabs/hardhat-web3')
 require('hardhat-gas-reporter');
 require('hardhat-contract-sizer');
-require("@nomiclabs/hardhat-web3");
 require('solidity-coverage');
 
 require('dotenv').config();
 
-const testnetPrivateKey = process.env.TESTNET_PRIVATE_KEY;
 const rinkebyAlchemyApiKey = process.env.RINKEBY_ALCHEMY_API_KEY;
 /**
  * @type import('hardhat/config').HardhatUserConfig
