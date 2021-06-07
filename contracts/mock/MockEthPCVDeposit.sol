@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "../pcv/IPCVDeposit.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract MockEthPCVDeposit is IPCVDeposit {
 
@@ -26,6 +27,15 @@ contract MockEthPCVDeposit is IPCVDeposit {
         require(address(this).balance >= amount, "MockEthPCVDeposit: Not enough value held");
         total -= amount;
         Address.sendValue(payable(to), amount);
+    }
+
+    function withdrawERC20(
+      address token, 
+      address to, 
+      uint256 amount
+    ) public override {
+        SafeERC20.safeTransfer(IERC20(token), to, amount);
+        emit WithdrawERC20(msg.sender, to, token, amount);
     }
 
     function balance() external view override returns(uint256) {

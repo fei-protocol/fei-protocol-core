@@ -187,7 +187,7 @@ describe('PCVSwapperUniswap', function () {
           await this.fei.mint(this.swapper.address, '1'+e18, {from: minterAddress});
           expect(await this.fei.balanceOf(this.swapper.address)).to.be.bignumber.equal('1'+e18);
           await expectEvent(
-            await this.swapper.withdrawERC20(userAddress, this.fei.address, '1'+e18, {from: pcvControllerAddress}),
+            await this.swapper.withdrawERC20(this.fei.address, userAddress, '1'+e18, {from: pcvControllerAddress}),
             'WithdrawERC20',
             {
               _caller: pcvControllerAddress,

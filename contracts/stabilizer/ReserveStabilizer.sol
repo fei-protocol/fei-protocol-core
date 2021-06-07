@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "./IReserveStabilizer.sol";
 import "../pcv/IPCVDeposit.sol";
 import "../refs/OracleRef.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title implementation for an ERC20 Reserve Stabilizer
 /// @author Fei Protocol
@@ -63,6 +64,19 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
     function withdraw(address to, uint256 amountOut) external virtual override onlyPCVController {
         _transfer(to, amountOut);
         emit Withdrawal(msg.sender, to, amountOut);
+    }
+
+    /// @notice withdraw ERC20 from the contract
+    /// @param token address of the ERC20 to send
+    /// @param to address destination of the ERC20
+    /// @param amount quantity of ERC20 to send
+    function withdrawERC20(
+        address token,
+        address to,
+        uint256 amount
+    ) external override onlyPCVController {
+        SafeERC20.safeTransfer(IERC20(token), to, amount);
+        emit WithdrawERC20(msg.sender, address(token), to, amount);
     }
 
     /// @notice new PCV deposited to the stabilizer

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "./IPCVDeposit.sol";
 import "./IPCVSwapper.sol";
 import "../utils/Incentivized.sol";
 import "../refs/OracleRef.sol";
@@ -15,7 +14,7 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 
 /// @title implementation for PCV Swapper that swaps ERC20 tokens on Uniswap
 /// @author eswak
-contract PCVSwapperUniswap is IPCVSwapper, IPCVDeposit, OracleRef, Timed, Incentivized {
+contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     using SafeERC20 for ERC20;
     using Decimal for Decimal.D256;
 
@@ -102,7 +101,7 @@ contract PCVSwapperUniswap is IPCVSwapper, IPCVDeposit, OracleRef, Timed, Incent
     /// @param to address destination of the ERC20
     /// @param amount quantity of tokenReceived to send
     function withdraw(address to, uint256 amount) external override onlyPCVController {
-        withdrawERC20(to, tokenReceived, amount);
+        withdrawERC20(tokenReceived, to, amount);
     }
 
     /// @notice Reads the balance of tokenReceived held in the contract
@@ -124,12 +123,16 @@ contract PCVSwapperUniswap is IPCVSwapper, IPCVDeposit, OracleRef, Timed, Incent
     }
 
     /// @notice withdraw ERC20 from the contract
-    /// @param to address destination of the ERC20
     /// @param token address of the ERC20 to send
+    /// @param to address destination of the ERC20
     /// @param amount quantity of ERC20 to send
-    function withdrawERC20(address to, address token, uint256 amount) public override onlyPCVController {
+    function withdrawERC20(
+      address token, 
+      address to, 
+      uint256 amount
+    ) public override onlyPCVController {
         ERC20(token).safeTransfer(to, amount);
-        emit WithdrawERC20(msg.sender, to, token, amount);
+        emit WithdrawERC20(msg.sender, token, to, amount);
     }
 
     /// @notice Sets the address receiving swap's inbound tokens
