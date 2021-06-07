@@ -12,20 +12,9 @@ interface IUniswapPCVDeposit is IPCVDeposit {
 
     event MaxBasisPointsFromPegLPUpdate(uint256 oldMaxBasisPointsFromPegLP, uint256 newMaxBasisPointsFromPegLP);
 
-    event WithdrawERC20(
-        address indexed _caller,
-        address indexed _token,
-        address indexed _to,
-        uint256 _amount
-    );
-
     // ----------- Governor only state changing api -----------
 
     function setMaxBasisPointsFromPegLP(uint256 amount) external;
-
-    // ----------- PCV Controller only state changing api -----------
-
-    function withdrawERC20(IERC20 token, address to, uint256 amount) external;
 
     // ----------- Getters -----------
 

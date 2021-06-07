@@ -101,11 +101,11 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
     /// @param to address destination of the ERC20
     /// @param amount quantity of ERC20 to send
     function withdrawERC20(
-        IERC20 token,
+        address token,
         address to,
         uint256 amount
     ) external override onlyPCVController {
-        SafeERC20.safeTransfer(token, to, amount);
+        SafeERC20.safeTransfer(IERC20(token), to, amount);
         emit WithdrawERC20(msg.sender, address(token), to, amount);
     }
 

@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import "./IPCVDeposit.sol";
+
 /// @title a PCV Swapper interface
 /// @author eswak
-interface IPCVSwapper {
+interface IPCVSwapper is IPCVDeposit {
 
     // ----------- Events -----------
     event UpdateReceivingAddress(address _tokenReceivingAddress);
@@ -22,13 +24,6 @@ interface IPCVSwapper {
         uint256 _amount
     );
 
-    event WithdrawERC20(
-        address indexed _caller,
-        address indexed _to,
-        address indexed _token,
-        uint256 _amount
-    );
-
     // ----------- State changing api -----------
 
     function swap() external;
@@ -36,7 +31,6 @@ interface IPCVSwapper {
     // ----------- PCV Controller only state changing api -----------
 
     function withdrawETH(address payable to, uint256 amount) external;
-    function withdrawERC20(address to, address token, uint256 amount) external;
 
     // ----------- Governor only state changing api -----------
 
