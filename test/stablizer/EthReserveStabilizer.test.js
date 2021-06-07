@@ -48,9 +48,9 @@ describe('EthReserveStabilizer', function () {
   describe('Exchange', function() {
     describe('Enough FEI', function() {
       it('exchanges for appropriate amount of ETH', async function() {
-        let reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
+        const reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
         await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-        let reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
+        const reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
 
         this.expectedOut = new BN('90000');
         expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
@@ -64,9 +64,9 @@ describe('EthReserveStabilizer', function () {
       it('exchanges for appropriate amount of ETH', async function() {
         await this.oracle.setExchangeRate('800');
 
-        let reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
+        const reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
         await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-        let reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
+        const reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
 
         this.expectedOut = new BN('45000');
         expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
@@ -80,9 +80,9 @@ describe('EthReserveStabilizer', function () {
       it('exchanges for appropriate amount of ETH', async function() {
         await this.reserveStabilizer.setUsdPerFeiRate('9500', {from: governorAddress});
 
-        let reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
+        const reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
         await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-        let reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
+        const reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
 
         this.expectedOut = new BN('95000');
         expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
@@ -117,7 +117,7 @@ describe('EthReserveStabilizer', function () {
       it('unwraps WETH', async function() {
         await this.weth.deposit({value: '10000'});
         await this.weth.mint(this.reserveStabilizer.address, '10000');
-        let reserveBalanceBefore = new BN(await balance.current(this.reserveStabilizer.address));
+        const reserveBalanceBefore = new BN(await balance.current(this.reserveStabilizer.address));
         await this.reserveStabilizer.deposit();
 
         expect(await web3.eth.getBalance(this.reserveStabilizer.address)).to.be.equal(reserveBalanceBefore.add(new BN('10000')).toString());
@@ -127,12 +127,12 @@ describe('EthReserveStabilizer', function () {
 
     describe('Withdraw', function() {
       it('enough eth succeeds', async function() {
-        let reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
-        let userBalanceBefore = await balance.current(userAddress);
+        const reserveBalanceBefore = await balance.current(this.reserveStabilizer.address);
+        const userBalanceBefore = await balance.current(userAddress);
 
       await this.reserveStabilizer.withdraw(userAddress, '10000', {from: pcvControllerAddress});
-      let reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
-      let userBalanceAfter = await balance.current(userAddress);
+      const reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
+      const userBalanceAfter = await balance.current(userAddress);
 
       expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(new BN('10000'));
       expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(new BN('10000'));

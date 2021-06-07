@@ -478,8 +478,7 @@ const {
             {
               caller: keeperAddress,
               amount: this.purchaseAmount
-            }
-          ); 
+            }); 
         });
   
         it('splits funds', async function() {
@@ -511,8 +510,7 @@ const {
                 {
                   caller: keeperAddress,
                   amount: this.purchaseAmount
-                }
-              ); 
+                }); 
             });
       
             it('splits funds', async function() {
@@ -540,10 +538,8 @@ const {
                 {
                   caller: keeperAddress,
                   amount: this.purchaseAmount
-                }
-              ); 
+                }); 
             });
-      
       
             it('splits funds', async function() {
               expect(await this.token.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(this.beneficiaryBalance1.add(new BN("9000000")));
@@ -572,8 +568,7 @@ const {
                 {
                   caller: keeperAddress,
                   amount: this.purchaseAmount
-                }
-              ); 
+                }); 
             });
     
             it('splits funds', async function() {
@@ -608,11 +603,11 @@ const {
           'AllocationUpdate', 
           { 
             oldPCVDeposits: [this.pcvDeposit1.address, this.pcvDeposit2.address],
-            newPCVDeposits : [this.pcvDeposit1.address] 
+            newPCVDeposits: [this.pcvDeposit1.address] 
           }
         );
   
-        var result = await this.bondingCurve.getAllocation();
+        const result = await this.bondingCurve.getAllocation();
         expect(result[0].length).to.be.equal(1);
         expect(result[0][0]).to.be.equal(this.pcvDeposit1.address);
         expect(result[1].length).to.be.equal(1);
@@ -730,8 +725,8 @@ const {
           await this.bondingCurve.setIncentiveAmount(this.incentiveAmount, {from: governorAddress}), 
           'IncentiveUpdate', 
           { 
-            oldIncentiveAmount : new BN('100'),
-            newIncentiveAmount : this.incentiveAmount 
+            oldIncentiveAmount: new BN('100'),
+            newIncentiveAmount: this.incentiveAmount 
           }
         );
   

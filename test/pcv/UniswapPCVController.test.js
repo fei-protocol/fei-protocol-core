@@ -310,7 +310,7 @@ describe('UniswapPCVController', function () {
 
     describe('Pair', function() {
       it('Governor set succeeds', async function() {
-        let pair2 = await MockPair.new(this.token.address, this.fei.address);
+        const pair2 = await MockPair.new(this.token.address, this.fei.address);
         await this.pcvController.setPair(pair2.address, {from: governorAddress});
         expect(await this.pcvController.pair()).to.be.equal(pair2.address);
       });

@@ -45,9 +45,9 @@ describe('TribeReserveStabilizer', function () {
   describe('Exchange', function() {
     describe('Enough FEI', function() {
       it('exchanges for appropriate amount of token', async function() {
-        let userBalanceBefore = await this.tribe.balanceOf(userAddress);
+        const userBalanceBefore = await this.tribe.balanceOf(userAddress);
         await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-        let userBalanceAfter = await this.tribe.balanceOf(userAddress);
+        const userBalanceAfter = await this.tribe.balanceOf(userAddress);
 
         expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(new BN('90000'));
 
@@ -60,9 +60,9 @@ describe('TribeReserveStabilizer', function () {
       it('exchanges for appropriate amount of token', async function() {
         await this.oracle.setExchangeRate('800');
 
-        let userBalanceBefore = await this.tribe.balanceOf(userAddress);
+        const userBalanceBefore = await this.tribe.balanceOf(userAddress);
         await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-        let userBalanceAfter = await this.tribe.balanceOf(userAddress);
+        const userBalanceAfter = await this.tribe.balanceOf(userAddress);
 
         expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(new BN('45000'));
 

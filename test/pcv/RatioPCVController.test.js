@@ -37,21 +37,21 @@ describe('RatioPCVController', function () {
   describe('Withdraw', function() {
     describe('from pcvController', function() {
       it('100%', async function() {
-          let userBalanceBefore = await balance.current(userAddress);
+          const userBalanceBefore = await balance.current(userAddress);
           await this.pcvController.withdrawRatio(this.pcvDeposit.address, userAddress, '10000', {from: pcvControllerAddress});
-          let userBalanceAfter = await balance.current(userAddress);
-          let reserveBalanceAfter = await balance.current(this.pcvDeposit.address);
+          const userBalanceAfter = await balance.current(userAddress);
+          const reserveBalanceAfter = await balance.current(this.pcvDeposit.address);
 
           expect(reserveBalanceAfter).to.be.bignumber.equal(new BN('0'));
           expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(this.pcvAmount);
       });
 
       it('50%', async function() {
-          let userBalanceBefore = await balance.current(userAddress);
-          let reserveBalanceBefore = await balance.current(this.pcvDeposit.address);
+          const userBalanceBefore = await balance.current(userAddress);
+          const reserveBalanceBefore = await balance.current(this.pcvDeposit.address);
           await this.pcvController.withdrawRatio(this.pcvDeposit.address, userAddress, '5000', {from: pcvControllerAddress});
-          let userBalanceAfter = await balance.current(userAddress);
-          let reserveBalanceAfter = await balance.current(this.pcvDeposit.address);
+          const userBalanceAfter = await balance.current(userAddress);
+          const reserveBalanceAfter = await balance.current(this.pcvDeposit.address);
 
           expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.pcvAmount.div(new BN('2')));
           expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(this.pcvAmount.div(new BN('2')));
@@ -88,21 +88,21 @@ describe('RatioPCVController', function () {
     });
     describe('from pcvController', function() {
       it('100%', async function() {
-          let userBalanceBefore = await this.token.balanceOf(userAddress);
+          const userBalanceBefore = await this.token.balanceOf(userAddress);
           await this.pcvController.withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '10000', {from: pcvControllerAddress});
-          let userBalanceAfter = await this.token.balanceOf(userAddress);
-          let reserveBalanceAfter = await this.token.balanceOf(this.pcvDeposit.address);
+          const userBalanceAfter = await this.token.balanceOf(userAddress);
+          const reserveBalanceAfter = await this.token.balanceOf(this.pcvDeposit.address);
 
           expect(reserveBalanceAfter).to.be.bignumber.equal(new BN('0'));
           expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(this.pcvAmount);
       });
 
       it('50%', async function() {
-          let userBalanceBefore = await this.token.balanceOf(userAddress);
-          let reserveBalanceBefore = await this.token.balanceOf(this.pcvDeposit.address);
+          const userBalanceBefore = await this.token.balanceOf(userAddress);
+          const reserveBalanceBefore = await this.token.balanceOf(this.pcvDeposit.address);
           await this.pcvController.withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '5000', {from: pcvControllerAddress});
-          let userBalanceAfter = await this.token.balanceOf(userAddress);
-          let reserveBalanceAfter = await this.token.balanceOf(this.pcvDeposit.address);
+          const userBalanceAfter = await this.token.balanceOf(userAddress);
+          const reserveBalanceAfter = await this.token.balanceOf(this.pcvDeposit.address);
 
           expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.pcvAmount.div(new BN('2')));
           expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(this.pcvAmount.div(new BN('2')));

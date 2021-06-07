@@ -1,4 +1,3 @@
-  
 const {
     BN,
     expectEvent,
@@ -57,7 +56,7 @@ describe.skip('UniswapOracle', function () {
   describe('Read', function() {
     describe('Uninitialized', function() {
       it('returns invalid', async function() {
-        let result = await this.oracle.read();
+        const result = await this.oracle.read();
         expect(result[0].value).to.be.equal('0');
         expect(result[1]).to.be.equal(false);
       });
@@ -77,7 +76,7 @@ describe.skip('UniswapOracle', function () {
         });
 
         it('returns invalid', async function() {
-          let result = await this.oracle.read();
+          const result = await this.oracle.read();
           expect(result[0].value).to.be.equal('499999999999999999999');
           expect(result[1]).to.be.equal(false);
         });
@@ -85,7 +84,7 @@ describe.skip('UniswapOracle', function () {
 
       describe('Unpaused', function() {
         it('returns valid', async function() {
-          let result = await this.oracle.read();
+          const result = await this.oracle.read();
           expect(result[0].value).to.be.equal('499999999999999999999');
           expect(result[1]).to.be.equal(true);
         });

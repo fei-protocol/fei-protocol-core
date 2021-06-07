@@ -18,7 +18,6 @@ async function main() {
     if (!MAINNET_CORE || !MAINNET_FEI_ETH_PAIR || !MAINNET_WETH || !MAINNET_UNISWAP_ROUTER || !MAINNET_UNISWAP_ORACLE) {
       throw new Error('An environment variable contract address is not set')
     }
-
     
     const deployAddress = (await web3.eth.getAccounts())[0]
 
@@ -72,7 +71,7 @@ async function main() {
 
 main()
 .then(() => process.exit(0))
-.catch(err => {
+.catch((err) => {
   console.log(err);
   process.exit(1);
 });

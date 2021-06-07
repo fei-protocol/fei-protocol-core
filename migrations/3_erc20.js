@@ -13,7 +13,7 @@ module.exports = function(deployer) {
     const router = process.env.MAINNET_UNISWAP_ROUTER;
     const oracle = process.env.MAINNET_UNISWAP_ORACLE;
 
-    var pcvDeposit;
+    const pcvDeposit;
 
     let tenPow18 = ether('1');
 

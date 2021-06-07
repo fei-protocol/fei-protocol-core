@@ -7,7 +7,6 @@ const {
     time,
     expect,
   } = require('../helpers');
-  
 
 const TimelockedDelegator = artifacts.require('TimelockedDelegator');
 const MockTribe = artifacts.require('MockTribe');
@@ -225,7 +224,7 @@ describe('TimelockedDelegator', function () {
       describe('Single Delegation', function() {
         it('updates balances', async function() {
             expect(await this.tribe.balanceOf(this.delegator.address)).to.be.bignumber.equal(new BN(9900));
-            let delegatee = await this.delegator.delegateContract(userAddress);
+            const delegatee = await this.delegator.delegateContract(userAddress);
             expect(await this.tribe.balanceOf(delegatee)).to.be.bignumber.equal(new BN(100));
         });
 
@@ -245,7 +244,7 @@ describe('TimelockedDelegator', function () {
         });
         it('updates balances', async function() {
             expect(await this.tribe.balanceOf(this.delegator.address)).to.be.bignumber.equal(new BN(9800));
-            let delegatee = await this.delegator.delegateContract(userAddress);
+            const delegatee = await this.delegator.delegateContract(userAddress);
             expect(await this.tribe.balanceOf(delegatee)).to.be.bignumber.equal(new BN(200));
         });
 

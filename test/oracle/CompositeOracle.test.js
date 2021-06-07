@@ -38,7 +38,7 @@ const {
     describe('Is Outdated', function() {
         describe('Both up to date', function() {
             it('returns false', async function() {
-              let result = await this.oracle.isOutdated();
+              const result = await this.oracle.isOutdated();
               expect(result).to.be.equal(false);
             });
         });
@@ -50,7 +50,7 @@ const {
             });
     
             it('returns true', async function() {
-                let result = await this.oracle.isOutdated();
+                const result = await this.oracle.isOutdated();
                 expect(result).to.be.equal(true);
             });
           });
@@ -61,7 +61,7 @@ const {
             });
     
             it('returns true', async function() {
-                let result = await this.oracle.isOutdated();
+                const result = await this.oracle.isOutdated();
                 expect(result).to.be.equal(true);
             });
           });
@@ -75,7 +75,7 @@ const {
           });
   
           it('returns invalid', async function() {
-            let result = await this.oracle.read();
+            const result = await this.oracle.read();
             expect(result[0].value).to.be.equal('800000000000000000000');
             expect(result[1]).to.be.equal(false);
           });
@@ -83,7 +83,7 @@ const {
   
         describe('Unpaused', function() {
           it('returns valid', async function() {
-            let result = await this.oracle.read();
+            const result = await this.oracle.read();
             expect(result[0].value).to.be.equal('800000000000000000000');
             expect(result[1]).to.be.equal(true);
           });
@@ -97,7 +97,7 @@ const {
           });
   
           it('returns invalid', async function() {
-            let result = await this.oracle.read();
+            const result = await this.oracle.read();
             expect(result[0].value).to.be.equal('800000000000000000000');
             expect(result[1]).to.be.equal(false);
           });
@@ -109,7 +109,7 @@ const {
             });
     
             it('returns invalid', async function() {
-              let result = await this.oracle.read();
+              const result = await this.oracle.read();
               expect(result[0].value).to.be.equal('800000000000000000000');
               expect(result[1]).to.be.equal(false);
             });

@@ -196,7 +196,6 @@ describe('FeiStakingRewards', function () {
       });
   });
 
-
   describe('stake', function() {
       beforeEach(async function() {
           await this.staking.notifyRewardAmount(this.rewardAmount, {from: governorAddress});
@@ -281,8 +280,6 @@ describe('FeiStakingRewards', function () {
                       amount: this.stakedAmount
                   }
               );
-              
-              
             
               await time.increase(this.window);
           });
@@ -668,4 +665,3 @@ describe('FeiStakingRewards', function () {
       });
   });
 });
-  

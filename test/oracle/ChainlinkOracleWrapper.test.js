@@ -9,8 +9,8 @@ const e18 = '000000000000000000';
 describe('ChainlinkOracleWrapper', function () {
   beforeEach(async function () {
     this.core = await getCore(true);
-    this.mockChainlinkOracle = await MockChainlinkOracle.new('500'+e8, 8); // 8 decimals, val = 500
-    this.mockChainlinkOracle2 = await MockChainlinkOracle.new('600'+e18, 18); // 18 decimals, val = 600
+    this.mockChainlinkOracle = await MockChainlinkOracle.new(`500${e8}`, 8); // 8 decimals, val = 500
+    this.mockChainlinkOracle2 = await MockChainlinkOracle.new(`600${e18}`, 18); // 18 decimals, val = 600
     this.mockChainlinkOracle3 = await MockChainlinkOracle.new('700', 0); // 0 decimals, val = 700
     this.oracle = await ChainlinkOracleWrapper.new(this.core.address, this.mockChainlinkOracle.address);
     this.oracle2 = await ChainlinkOracleWrapper.new(this.core.address, this.mockChainlinkOracle2.address);

@@ -5,8 +5,6 @@ const {
 
 const { web3 } = require('hardhat');
 
-const { increaseTime, getCurrentTime } = require('./time')
-
 const {
 	BN,
 	expectEvent,
@@ -18,6 +16,7 @@ const {
 } = require('@openzeppelin/test-helpers');
 
 const chai = require('chai');
+const { increaseTime, getCurrentTime } = require('./time')
 
 // use default BigNumber
 chai.use(require('chai-bn')(BN));
@@ -83,7 +82,6 @@ async function getCore(complete) {
 
 	return core;
 }
-
 
 async function forceEth(to, amount) {
 	const forceEth = await ForceEth.new({ value: amount });

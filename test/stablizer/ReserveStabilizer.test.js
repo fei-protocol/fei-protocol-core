@@ -46,9 +46,9 @@ describe('ReserveStabilizer', function () {
   describe('Exchange', function() {
     describe('Enough FEI', function() {
       it('exchanges for appropriate amount of token', async function() {
-        let reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
+        const reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
         await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-        let reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
+        const reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
 
         this.expectedOut = new BN('90000');
         expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
@@ -62,9 +62,9 @@ describe('ReserveStabilizer', function () {
       it('exchanges for appropriate amount of token', async function() {
         await this.oracle.setExchangeRate('800');
 
-        let reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
+        const reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
         await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-        let reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
+        const reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
 
         this.expectedOut = new BN('45000');
         expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
@@ -78,9 +78,9 @@ describe('ReserveStabilizer', function () {
       it('exchanges for appropriate amount of token', async function() {
         await this.reserveStabilizer.setUsdPerFeiRate('9500', {from: governorAddress});
 
-        let reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
+        const reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
         await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-        let reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
+        const reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
 
         this.expectedOut = new BN('95000');
         expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
@@ -113,12 +113,12 @@ describe('ReserveStabilizer', function () {
 
   describe('Withdraw', function() {
     it('enough token succeeds', async function() {
-      let reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
-      let userBalanceBefore = await this.token.balanceOf(userAddress);
+      const reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
+      const userBalanceBefore = await this.token.balanceOf(userAddress);
 
       await this.reserveStabilizer.withdraw(userAddress, '10000', {from: pcvControllerAddress});
-      let reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
-      let userBalanceAfter = await this.token.balanceOf(userAddress);
+      const reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
+      const userBalanceAfter = await this.token.balanceOf(userAddress);
 
       expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(new BN('10000'));
       expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(new BN('10000'));

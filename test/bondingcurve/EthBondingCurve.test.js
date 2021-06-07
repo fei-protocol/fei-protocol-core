@@ -44,7 +44,9 @@ describe('EthBondingCurve', function () {
     this.buffer = new BN('100');
     this.incentiveAmount = new BN('100');
     this.incentiveDuration = new BN('10');
-    this.bondingCurve = await EthBondingCurve.new(this.core.address, this.oracle.address, {scale: '100000000000', buffer: '100', discount: '100', duration: this.incentiveDuration.toString(), incentive: this.incentiveAmount.toString(), pcvDeposits: [this.pcvDeposit1.address, this.pcvDeposit2.address], ratios: [9000, 1000]});
+    this.bondingCurve = await EthBondingCurve.new(this.core.address, this.oracle.address, {
+scale: '100000000000', buffer: '100', discount: '100', duration: this.incentiveDuration.toString(), incentive: this.incentiveAmount.toString(), pcvDeposits: [this.pcvDeposit1.address, this.pcvDeposit2.address], ratios: [9000, 1000]
+});
     await this.core.grantMinter(this.bondingCurve.address, {from: governorAddress});
   });
 
@@ -333,7 +335,7 @@ describe('EthBondingCurve', function () {
 
           describe('reset', function() {
             beforeEach(async function() {
-              let total = await this.bondingCurve.totalPurchased();
+              const total = await this.bondingCurve.totalPurchased();
               expectEvent(
                 await this.bondingCurve.reset({from: governorAddress}),
                 'Reset',
@@ -465,8 +467,7 @@ describe('EthBondingCurve', function () {
           {
             caller: keeperAddress,
             amount: this.purchaseAmount
-          }
-        ); 
+          }); 
       });
 
       it('splits funds', async function() {
@@ -498,8 +499,7 @@ describe('EthBondingCurve', function () {
               {
                 caller: keeperAddress,
                 amount: this.purchaseAmount
-              }
-            ); 
+              }); 
           });
     
           it('splits funds', async function() {
@@ -526,10 +526,8 @@ describe('EthBondingCurve', function () {
               {
                 caller: keeperAddress,
                 amount: this.purchaseAmount
-              }
-            ); 
+              }); 
           });
-    
     
           it('splits funds', async function() {
             expect(await balance.current(beneficiaryAddress1)).to.be.bignumber.equal(this.beneficiaryBalance1.add(new BN("9000000")));
@@ -556,8 +554,7 @@ describe('EthBondingCurve', function () {
               {
                 caller: keeperAddress,
                 amount: this.purchaseAmount
-              }
-            ); 
+              }); 
           });
   
           it('splits funds', async function() {
@@ -592,11 +589,11 @@ describe('EthBondingCurve', function () {
         'AllocationUpdate', 
         { 
           oldPCVDeposits: [this.pcvDeposit1.address, this.pcvDeposit2.address],
-          newPCVDeposits : [this.pcvDeposit1.address] 
+          newPCVDeposits: [this.pcvDeposit1.address] 
         }
       );
 
-      var result = await this.bondingCurve.getAllocation();
+      const result = await this.bondingCurve.getAllocation();
       expect(result[0].length).to.be.equal(1);
       expect(result[0][0]).to.be.equal(this.pcvDeposit1.address);
       expect(result[1].length).to.be.equal(1);
@@ -714,8 +711,8 @@ describe('EthBondingCurve', function () {
         await this.bondingCurve.setIncentiveAmount(this.incentiveAmount, {from: governorAddress}), 
         'IncentiveUpdate', 
         { 
-          oldIncentiveAmount : new BN('100'),
-          newIncentiveAmount : this.incentiveAmount 
+          oldIncentiveAmount: new BN('100'),
+          newIncentiveAmount: this.incentiveAmount 
         }
       );
 

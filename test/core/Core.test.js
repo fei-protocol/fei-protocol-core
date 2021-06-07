@@ -47,15 +47,15 @@ describe('Core', function () {
         await this.core.allocateTribe(userAddress, 1000, {from: governorAddress}),
         'TribeAllocation',
         {
-          _to : userAddress,
-          _amount : '1000'
+          _to: userAddress,
+          _amount: '1000'
         }
       );
       expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal('1000');
     });
 
     it('not enough reverts', async function() {
-      let amount = await this.tribe.balanceOf(this.core.address);
+      const amount = await this.tribe.balanceOf(this.core.address);
       await expectRevert(this.core.allocateTribe(userAddress, amount.add(new BN('1')), {from: governorAddress}), "Core: Not enough Tribe");
 	});
 	
@@ -70,7 +70,7 @@ describe('Core', function () {
         await this.core.setFei(userAddress, {from: governorAddress}),
         'FeiUpdate',
         {
-          _fei : userAddress
+          _fei: userAddress
         }
       );
       expect(await this.core.fei()).to.be.equal(userAddress);
@@ -87,7 +87,7 @@ describe('Core', function () {
         await this.core.setTribe(userAddress, {from: governorAddress}),
         'TribeUpdate',
         {
-          _tribe : userAddress
+          _tribe: userAddress
         }
       );
       expect(await this.core.tribe()).to.be.equal(userAddress);
@@ -105,7 +105,7 @@ describe('Core', function () {
 			await this.core.setGenesisGroup(genesisGroup, {from: governorAddress}),
 			'GenesisGroupUpdate',
 			{
-			  _genesisGroup : genesisGroup
+			  _genesisGroup: genesisGroup
 			}
 		);
         expect(await this.core.genesisGroup()).to.be.equal(genesisGroup);

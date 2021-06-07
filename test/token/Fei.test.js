@@ -1,13 +1,11 @@
 const {
 	BN,
-  ZERO_ADDRESS,
+    ZERO_ADDRESS,
 	expectEvent,
 	expectRevert,
-	time,
 	expect,
 	getAddresses,
 	getCore,
-	expectApprox,
 } = require('../helpers');
 
 const Fei = artifacts.require('Fei');
@@ -16,7 +14,9 @@ const MockIncentivized = artifacts.require('MockIncentivized');
 
 describe('Fei', function () {
   let userAddress;
-	let governorAddress;
+  let governorAddress;
+  let minterAddress;
+  let burnerAddress;
 
   beforeEach(async function () {
     ({
