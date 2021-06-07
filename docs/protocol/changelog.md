@@ -4,6 +4,19 @@ description: Protocol changes since the white paper release
 
 # Changelog
 
+## FIP-3: Regular Reweights - May 23, 2021
+
+FIP-3 reinstates reweights on the FEI-ETH Uniswap pair with a fixed cadence. This removes the "incentive parity" trigger condition for reweights on the EthUniswapPCVController.
+
+Included parameter changes:
+
+* Set reweight frequency to 4 hours
+* Lower the min distance below peg for a reweight from 1% to 0.5%
+* Lower reweight keeper reward to 200 FEI
+
+  
+The code for these changes can be found here: [https://github.com/fei-protocol/fei-protocol-core/pull/96](https://github.com/fei-protocol/fei-protocol-core/pull/96)
+
 ## FIP-5: Bonding Curve Allocation Update - May 18, 2021
 
 FIP-5 updates the bonding curve allocation to send funds to the [EthReserveStabilizer](protocol-controlled-value/ethreservestabilizer.md) via the [EthPCVDripper](protocol-controlled-value/ethpcvdripper.md) instead of to the [EthUniswapPCVDeposit](protocol-controlled-value/ethuniswappcvdeposit.md) as before.

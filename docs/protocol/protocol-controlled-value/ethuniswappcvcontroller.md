@@ -29,14 +29,14 @@ Only 99% is withdrawn because if there are no other LPs there could be rounding 
 
 The reweight is open to a keeper when both of the following conditions are met:
 
-* the distance from the peg is at least the minimum \(initially 1%\)
-* the [UniswapIncentive](../fei-stablecoin/uniswapincentive.md) contract is at incentive parity
+* the distance from the peg is at least the minimum \(currently 0.5%\)
+* The frequency window has passed \(currently 4h\)
 
 Governor⚖️and Guardian🛡contracts can force a reweight at any time, or update the minimum distance requirement.
 
 ### Reweight incentives
 
-Reweight executions are incentivized with 500 FEI if the controller is appointed as a Minter💰. Governance can adjust this incentive amount.
+Reweight executions are incentivized with 200 FEI if the controller is appointed as a Minter💰. Governance can adjust this incentive amount.
 
 ## [Access Control](../access-control/) 
 
