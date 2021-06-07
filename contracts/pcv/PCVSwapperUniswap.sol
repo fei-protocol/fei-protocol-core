@@ -101,7 +101,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     /// @param to address destination of the ERC20
     /// @param amount quantity of tokenReceived to send
     function withdraw(address to, uint256 amount) external override onlyPCVController {
-        withdrawERC20(to, tokenReceived, amount);
+        withdrawERC20(tokenReceived, to, amount);
     }
 
     /// @notice Reads the balance of tokenReceived held in the contract
@@ -132,7 +132,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
       uint256 amount
     ) public override onlyPCVController {
         ERC20(token).safeTransfer(to, amount);
-        emit WithdrawERC20(msg.sender, to, token, amount);
+        emit WithdrawERC20(msg.sender, token, to, amount);
     }
 
     /// @notice Sets the address receiving swap's inbound tokens
