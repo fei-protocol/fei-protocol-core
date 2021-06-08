@@ -37,7 +37,7 @@ describe('ReserveStabilizer', function () {
 
     await this.core.grantBurner(this.reserveStabilizer.address, {from: governorAddress});
 
-    this.initialBalance = new BN('1000000000000000000')
+    this.initialBalance = new BN('1000000000000000000');
     await this.token.mint(this.reserveStabilizer.address, this.initialBalance);
 
     await this.fei.mint(userAddress, 40000000, {from: minterAddress});  
@@ -46,9 +46,9 @@ describe('ReserveStabilizer', function () {
   describe('Exchange', function() {
     describe('Enough FEI', function() {
       it('exchanges for appropriate amount of token', async function() {
-        let reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
+        const reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
         await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-        let reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
+        const reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
 
         this.expectedOut = new BN('90000');
         expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
@@ -62,9 +62,9 @@ describe('ReserveStabilizer', function () {
       it('exchanges for appropriate amount of token', async function() {
         await this.oracle.setExchangeRate('800');
 
-        let reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
+        const reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
         await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-        let reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
+        const reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
 
         this.expectedOut = new BN('45000');
         expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
@@ -78,9 +78,9 @@ describe('ReserveStabilizer', function () {
       it('exchanges for appropriate amount of token', async function() {
         await this.reserveStabilizer.setUsdPerFeiRate('9500', {from: governorAddress});
 
-        let reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
+        const reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
         await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
-        let reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
+        const reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
 
         this.expectedOut = new BN('95000');
         expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
@@ -92,44 +92,44 @@ describe('ReserveStabilizer', function () {
 
     describe('Not Enough FEI', function() {
       it('reverts', async function() {
-        await expectRevert(this.reserveStabilizer.exchangeFei(50000000, {from: userAddress}), "ERC20: burn amount exceeds balance");
+        await expectRevert(this.reserveStabilizer.exchangeFei(50000000, {from: userAddress}), 'ERC20: burn amount exceeds balance');
       });
     });
 
     describe('Not Enough token', function() {
       it('reverts', async function() {
         await this.fei.mint(userAddress, new BN('4000000000000000000000000000'), {from: minterAddress});  
-        await expectRevert(this.reserveStabilizer.exchangeFei(new BN('4000000000000000000000000000'), {from: userAddress}), "revert");
+        await expectRevert(this.reserveStabilizer.exchangeFei(new BN('4000000000000000000000000000'), {from: userAddress}), 'revert');
       });
     });
 
     describe('Paused', function() {
       it('reverts', async function() {
         await this.reserveStabilizer.pause({from: governorAddress});
-        await expectRevert(this.reserveStabilizer.exchangeFei(new BN('400000'), {from: userAddress}), "Pausable: paused");
+        await expectRevert(this.reserveStabilizer.exchangeFei(new BN('400000'), {from: userAddress}), 'Pausable: paused');
       });
     });
   });
 
   describe('Withdraw', function() {
     it('enough token succeeds', async function() {
-      let reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
-      let userBalanceBefore = await this.token.balanceOf(userAddress);
+      const reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
+      const userBalanceBefore = await this.token.balanceOf(userAddress);
 
       await this.reserveStabilizer.withdraw(userAddress, '10000', {from: pcvControllerAddress});
-      let reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
-      let userBalanceAfter = await this.token.balanceOf(userAddress);
+      const reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
+      const userBalanceAfter = await this.token.balanceOf(userAddress);
 
       expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(new BN('10000'));
       expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(new BN('10000'));
     });
 
     it('not enough token reverts', async function() {
-      await expectRevert(this.reserveStabilizer.withdraw(userAddress, '10000000000000000000', {from: pcvControllerAddress}), "revert");
+      await expectRevert(this.reserveStabilizer.withdraw(userAddress, '10000000000000000000', {from: pcvControllerAddress}), 'revert');
     });
 
     it('non pcvController', async function() {
-      await expectRevert(this.reserveStabilizer.withdraw(userAddress, '10000', {from: userAddress}), "CoreRef: Caller is not a PCV controller");
+      await expectRevert(this.reserveStabilizer.withdraw(userAddress, '10000', {from: userAddress}), 'CoreRef: Caller is not a PCV controller');
     });
   });
 
@@ -140,11 +140,11 @@ describe('ReserveStabilizer', function () {
     });
 
     it('non-governor reverts', async function() {
-      await expectRevert(this.reserveStabilizer.setUsdPerFeiRate('10000', {from: userAddress}), "CoreRef: Caller is not a governor");
+      await expectRevert(this.reserveStabilizer.setUsdPerFeiRate('10000', {from: userAddress}), 'CoreRef: Caller is not a governor');
     });
 
     it('too high usd per fei reverts', async function() {
-      await expectRevert(this.reserveStabilizer.setUsdPerFeiRate('10001', {from: governorAddress}), "ReserveStabilizer: Exceeds bp granularity");
+      await expectRevert(this.reserveStabilizer.setUsdPerFeiRate('10001', {from: governorAddress}), 'ReserveStabilizer: Exceeds bp granularity');
     });
   });
 });

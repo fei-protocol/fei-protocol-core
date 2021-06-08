@@ -1,6 +1,6 @@
 require('@nomiclabs/hardhat-waffle');
 require('@nomiclabs/hardhat-truffle5');
-require('@nomiclabs/hardhat-web3')
+require('@nomiclabs/hardhat-web3');
 require('hardhat-gas-reporter');
 require('hardhat-contract-sizer');
 require('solidity-coverage');
@@ -21,7 +21,7 @@ module.exports = {
       chainId: 5777, // Any network (default: none)
     },
     localhost: {
-      url: "http://127.0.0.1:8545"
+      url: 'http://127.0.0.1:8545'
     },
     rinkeby: {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${rinkebyAlchemyApiKey}`,
