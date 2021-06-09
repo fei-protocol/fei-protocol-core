@@ -1,20 +1,21 @@
-const EthUniswapPCVDeposit = artifacts.require("EthUniswapPCVDeposit");
-const EthPCVDepositAdapter = artifacts.require("EthPCVDepositAdapter");
-const EthBondingCurve = artifacts.require("EthBondingCurve");
-const RatioPCVController = artifacts.require("RatioPCVController");
-const Core = artifacts.require("Core");
+const EthUniswapPCVDeposit = artifacts.require('EthUniswapPCVDeposit');
+const EthPCVDepositAdapter = artifacts.require('EthPCVDepositAdapter');
+const EthBondingCurve = artifacts.require('EthBondingCurve');
+const RatioPCVController = artifacts.require('RatioPCVController');
+const Core = artifacts.require('Core');
 
 // The DAO steps for FIP-5, these must be done with Governor access control privileges
 module.exports = async function(callback) {
+  // eslint-disable-next-line global-require
   require('dotenv').config();
 
-  let newDeposit = await EthUniswapPCVDeposit.at(process.env.MAINNET_ETH_UNISWAP_PCV_DEPOSIT);
-  let oldDeposit = await EthUniswapPCVDeposit.at(process.env.MAINNET_ETH_UNISWAP_PCV_DEPOSIT_01);
-  let ratioController = await RatioPCVController.at(process.env.MAINNET_RATIO_PCV_CONTROLLER);
-  let adapter = await EthPCVDepositAdapter.at(process.env.MAINNET_ETH_PCV_ADAPTER);
-  let adapterToDeposit = await EthPCVDepositAdapter.at(process.env.MAINNET_ETH_PCV_ADAPTER_TO_DEPOSIT);
-  let bc = await EthBondingCurve.at(process.env.MAINNET_ETH_BONDING_CURVE);
-  let core = await Core.at(process.env.MAINNET_CORE);
+  const newDeposit = await EthUniswapPCVDeposit.at(process.env.MAINNET_ETH_UNISWAP_PCV_DEPOSIT);
+  const oldDeposit = await EthUniswapPCVDeposit.at(process.env.MAINNET_ETH_UNISWAP_PCV_DEPOSIT_01);
+  const ratioController = await RatioPCVController.at(process.env.MAINNET_RATIO_PCV_CONTROLLER);
+  const adapter = await EthPCVDepositAdapter.at(process.env.MAINNET_ETH_PCV_ADAPTER);
+  const adapterToDeposit = await EthPCVDepositAdapter.at(process.env.MAINNET_ETH_PCV_ADAPTER_TO_DEPOSIT);
+  const bc = await EthBondingCurve.at(process.env.MAINNET_ETH_BONDING_CURVE);
+  const core = await Core.at(process.env.MAINNET_CORE);
 
   console.log('Granting PCV Controller to RatioPCVController');
   await core.grantPCVController(ratioController.address);
@@ -38,4 +39,4 @@ module.exports = async function(callback) {
   await bc.setAllocation([adapter.address], [10000]);
 
   callback();
-}
+};

@@ -1,18 +1,19 @@
-
 const { time } = require('@openzeppelin/test-helpers');
 require('@openzeppelin/test-helpers/configure')({
-    provider: 'http://localhost:7545',
+  provider: 'http://localhost:7545',
 });
 
-const GovernorAlpha = artifacts.require("GovernorAlpha");
+const GovernorAlpha = artifacts.require('GovernorAlpha');
 
 // The calldata for the DAO transaction to execute. When this is not empty, the address at MAINNET_PROPOSER will submit this tx to the GovernorAlpha
-const data = "";
+const data = '';
 
 module.exports = async function(callback) {
   require('dotenv').config();
 
-  var proposer, voter, governorAddress;
+  let proposer; 
+  let voter; 
+  let governorAddress;
   if (process.env.TESTNET_MODE) {
     console.log('Testnet mode');
     proposer = process.env.RINKEBY_PROPOSER;
@@ -26,27 +27,29 @@ module.exports = async function(callback) {
   } 
 
   if (data) {
-    console.log("Submitting Proposal");
-    await web3.eth.sendTransaction({from: proposer, to: governorAddress, data: data, gas: 3000000});
+    console.log('Submitting Proposal');
+    await web3.eth.sendTransaction({
+      from: proposer, to: governorAddress, data, gas: 3000000
+    });
   }
 
-  let governor = await GovernorAlpha.at(governorAddress);
+  const governor = await GovernorAlpha.at(governorAddress);
 
-  let proposalNo = await governor.latestProposalIds(proposer);
+  const proposalNo = await governor.latestProposalIds(proposer);
 
   console.log(`Proposal Number: ${proposalNo}`);
 
   let proposal = await governor.proposals(proposalNo);
-  let startBlock = proposal['startBlock'];
+  const {startBlock} = proposal;
 
   console.log(`Advancing To: ${startBlock}`);
   await time.advanceBlockTo(startBlock);
 
-  console.log("Casting vote");
+  console.log('Casting vote');
   await governor.castVote(proposalNo, true, {from: voter});
 
   proposal = await governor.proposals(proposalNo);
-  let endBlock = proposal['endBlock'];
+  const {endBlock} = proposal;
 
   console.log(`Advancing To: ${endBlock}`);
   await time.advanceBlockTo(endBlock);
@@ -62,4 +65,4 @@ module.exports = async function(callback) {
   console.log('Success');
 
   callback();
-}
+};

@@ -1,13 +1,13 @@
-const EthUniswapPCVController = artifacts.require("EthUniswapPCVController");
-const Core = artifacts.require("Core");
+const EthUniswapPCVController = artifacts.require('EthUniswapPCVController');
+const Core = artifacts.require('Core');
 
 // The DAO steps for FIP-3, these must be done with Governor access control privileges
 module.exports = async function(callback) {
   require('dotenv').config();
 
-  let newController = await EthUniswapPCVController.at(process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER);
-  let oldController = await EthUniswapPCVController.at(process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER_01);
-  let core = await Core.at(process.env.MAINNET_CORE);
+  const newController = await EthUniswapPCVController.at(process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER);
+  const oldController = await EthUniswapPCVController.at(process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER_01);
+  const core = await Core.at(process.env.MAINNET_CORE);
 
   console.log('Granting PCV Controller to new EthUniswapPCVController');
   await core.grantPCVController(newController.address);
@@ -25,4 +25,4 @@ module.exports = async function(callback) {
   await newController.setPCVDeposit(process.env.MAINNET_ETH_UNISWAP_PCV_DEPOSIT);
 
   callback();
-}
+};

@@ -1,16 +1,17 @@
-const UniswapPCVDeposit = artifacts.require("UniswapPCVDeposit");
-const UniswapPCVController = artifacts.require("UniswapPCVController");
-const BondingCurve = artifacts.require("BondingCurve");
-const Core = artifacts.require("Core");
+const UniswapPCVDeposit = artifacts.require('UniswapPCVDeposit');
+const UniswapPCVController = artifacts.require('UniswapPCVController');
+const BondingCurve = artifacts.require('BondingCurve');
+const Core = artifacts.require('Core');
 
 // The DAO steps for upgrading to ERC20 compatible versions, these must be done with Governor access control privileges
 module.exports = async function(callback) {
+  // eslint-disable-next-line global-require
   require('dotenv').config();
 
-  let deposit = await UniswapPCVDeposit.deployed();
-  let controller = await UniswapPCVController.deployed();
-  let bc = await BondingCurve.deployed();
-  let core = await Core.at(process.env.MAINNET_CORE);
+  const deposit = await UniswapPCVDeposit.deployed();
+  const controller = await UniswapPCVController.deployed();
+  const bc = await BondingCurve.deployed();
+  const core = await Core.at(process.env.MAINNET_CORE);
 
   console.log('Granting Burner to new UniswapPCVController');
   await core.grantBurner(controller.address);
@@ -25,4 +26,4 @@ module.exports = async function(callback) {
   await core.grantMinter(deposit.address);
 
   callback();
-}
+};
