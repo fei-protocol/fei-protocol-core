@@ -93,7 +93,7 @@ async function main() {
   const dripperBalanceAfter = new BN(await web3.eth.getBalance(ethPCVDripper.address));
   const allocateToDripper = dripperBalanceAfter.sub(dripperBalanceBefore).eq(new BN('10000000000'));
   console.log(`${allocateToDripper ? 'PASS' : 'FAIL'}: Bonding Curve allocation sends to dripper`);
-};
+}
 
 main()
   .then(() => process.exit(0))
