@@ -4,7 +4,7 @@ const BondingCurve = artifacts.require('BondingCurve');
 const Core = artifacts.require('Core');
 
 // The DAO steps for upgrading to ERC20 compatible versions, these must be done with Governor access control privileges
-module.exports = async function(callback) {
+async function main() {
   // eslint-disable-next-line global-require
   require('dotenv').config();
 
@@ -24,6 +24,11 @@ module.exports = async function(callback) {
 
   console.log('Granting Minter to new UniswapPCVDeposit');
   await core.grantMinter(deposit.address);
+}
 
-  callback();
-};
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

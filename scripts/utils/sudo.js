@@ -4,7 +4,11 @@ const ForceEth = artifacts.require('ForceEth');
 const Core = artifacts.require('Core');
 const Fei = artifacts.require('Fei');
 
-module.exports = async function(callback) {
+const hre = require('hardhat');
+
+const { web3 } = hre;
+
+async function main() {
   // eslint-disable-next-line global-require
   require('dotenv').config();
   let coreAddress; let feiAddress; let 
@@ -18,6 +22,11 @@ module.exports = async function(callback) {
     feiAddress = process.env.MAINNET_FEI;
     timelockAddress = process.env.MAINNET_TIMELOCK;
   }
+
+  await hre.network.provider.request({
+    method: 'hardhat_impersonateAccount',
+    params: [timelockAddress]
+  });
 
   const accounts = await web3.eth.getAccounts();
 
@@ -41,6 +50,11 @@ module.exports = async function(callback) {
     await fei.unpause({from: accounts[0]});
   }
   await fei.mint(accounts[0], new BN('10000000000000000000000000000000000'));
+}
 
-  callback();
-};
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

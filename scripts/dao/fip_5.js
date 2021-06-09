@@ -5,7 +5,7 @@ const RatioPCVController = artifacts.require('RatioPCVController');
 const Core = artifacts.require('Core');
 
 // The DAO steps for FIP-5, these must be done with Governor access control privileges
-module.exports = async function(callback) {
+async function main() {
   // eslint-disable-next-line global-require
   require('dotenv').config();
 
@@ -37,6 +37,11 @@ module.exports = async function(callback) {
 
   console.log('Setting allocation on bonding curve');
   await bc.setAllocation([adapter.address], [10000]);
+}
 
-  callback();
-};
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

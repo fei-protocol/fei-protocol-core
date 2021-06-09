@@ -1,8 +1,8 @@
 const { BN, ether, time } = require('@openzeppelin/test-helpers');
 
-require('@openzeppelin/test-helpers/configure')({
-  provider: 'http://localhost:7545',
-});
+const hre = require('hardhat');
+
+const { web3 } = hre;
 
 const UniswapPCVDeposit = artifacts.require('UniswapPCVDeposit');
 const UniswapPCVController = artifacts.require('UniswapPCVController');
@@ -46,7 +46,7 @@ async function syncPool(bpsMul, controller) {
 }
 
 // The DAO steps for upgrading to ERC20 compatible versions, these must be done with Governor access control privileges
-module.exports = async function(callback) {
+async function main() {
   // eslint-disable-next-line global-require
   require('dotenv').config();
   const accounts = await web3.eth.getAccounts();
@@ -119,6 +119,11 @@ module.exports = async function(callback) {
     successReweight = await successfulReweight(controller);
     console.log(`${successReweight ? 'PASS' : 'FAIL'}: Force Reverse Reweight Success`);
   }
-
-  callback();
 };
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

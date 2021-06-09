@@ -1,14 +1,16 @@
 const { time } = require('@openzeppelin/test-helpers');
-require('@openzeppelin/test-helpers/configure')({
-  provider: 'http://localhost:7545',
-});
 
 const GovernorAlpha = artifacts.require('GovernorAlpha');
 
 // The calldata for the DAO transaction to execute. When this is not empty, the address at MAINNET_PROPOSER will submit this tx to the GovernorAlpha
 const data = '';
 
-module.exports = async function(callback) {
+const hre = require('hardhat');
+
+const { web3 } = hre;
+
+async function main() {
+  // eslint-disable-next-line global-require
   require('dotenv').config();
 
   let proposer; 
@@ -25,6 +27,16 @@ module.exports = async function(callback) {
     voter = process.env.MAINNET_VOTER;
     governorAddress = process.env.MAINNET_GOVERNOR_ALPHA;
   } 
+
+  await hre.network.provider.request({
+    method: 'hardhat_impersonateAccount',
+    params: [proposer]
+  });
+
+  await hre.network.provider.request({
+    method: 'hardhat_impersonateAccount',
+    params: [voter]
+  });
 
   if (data) {
     console.log('Submitting Proposal');
@@ -63,6 +75,11 @@ module.exports = async function(callback) {
   console.log('Executing');
   await governor.execute(proposalNo);
   console.log('Success');
+}
 
-  callback();
-};
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

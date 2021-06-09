@@ -1,5 +1,9 @@
 const { BN } = require('@openzeppelin/test-helpers');
 
+const hre = require('hardhat');
+
+const { web3 } = hre;
+
 const EthUniswapPCVDeposit = artifacts.require('UniswapPCVDeposit');
 const EthPCVDripper = artifacts.require('EthPCVDripper');
 const EthPCVDepositAdapter = artifacts.require('EthPCVDepositAdapter');
@@ -8,7 +12,7 @@ const RatioPCVController = artifacts.require('RatioPCVController');
 const Core = artifacts.require('Core');
 
 // A validation script to make sure after the DAO steps are run that the necessary state updates are made
-module.exports = async function(callback) {
+async function main() {
   // eslint-disable-next-line global-require
   require('dotenv').config();
 
@@ -21,7 +25,7 @@ module.exports = async function(callback) {
   let adapterAddress; 
   let bondingCurveAddress; 
   let dripperAddress;
-  
+
   if (process.env.TESTNET_MODE) {
     oldDepositAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_DEPOSIT_01;
     newDepositAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_DEPOSIT;
@@ -89,6 +93,11 @@ module.exports = async function(callback) {
   const dripperBalanceAfter = new BN(await web3.eth.getBalance(ethPCVDripper.address));
   const allocateToDripper = dripperBalanceAfter.sub(dripperBalanceBefore).eq(new BN('10000000000'));
   console.log(`${allocateToDripper ? 'PASS' : 'FAIL'}: Bonding Curve allocation sends to dripper`);
-
-  callback();
 };
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

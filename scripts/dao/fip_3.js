@@ -2,7 +2,8 @@ const EthUniswapPCVController = artifacts.require('EthUniswapPCVController');
 const Core = artifacts.require('Core');
 
 // The DAO steps for FIP-3, these must be done with Governor access control privileges
-module.exports = async function(callback) {
+async function main() {
+  // eslint-disable-next-line global-require
   require('dotenv').config();
 
   const newController = await EthUniswapPCVController.at(process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER);
@@ -23,6 +24,11 @@ module.exports = async function(callback) {
 
   console.log('Updating EthUniswapPCVDeposit on the new EthUniswapPCVController');
   await newController.setPCVDeposit(process.env.MAINNET_ETH_UNISWAP_PCV_DEPOSIT);
+}
 
-  callback();
-};
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

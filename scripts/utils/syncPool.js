@@ -4,11 +4,17 @@ const Fei = artifacts.require('Fei');
 const IUniswapV2Pair = artifacts.require('IUniswapV2Pair');
 const UniswapPCVDeposit = artifacts.require('UniswapPCVDeposit');
 
-module.exports = async function(callback) {
+const hre = require('hardhat');
+
+const { web3 } = hre;
+
+async function syncPool(targetBPs) {
+  // eslint-disable-next-line global-require
   require('dotenv').config();
 
-  let feiAddress; let udAddress; let 
-    ethPairAddress;
+  let feiAddress; 
+  let udAddress; 
+  let ethPairAddress;
   if (process.env.TESTNET_MODE) {
     feiAddress = process.env.RINKEBY_FEI;
     udAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_DEPOSIT;
@@ -27,12 +33,13 @@ module.exports = async function(callback) {
   console.log('Current');
 
   const reserves = await ui.getReserves();
-  const peg = await ui.peg();
+  const pegCall = await web3.eth.call({from: accounts[0], to: ui.address, data: web3.eth.abi.encodeFunctionSignature('peg()')});
+  const peg = await web3.eth.abi.decodeParameter({Decimal: {value: 'uint256'}}, pegCall);
+
   const pegBN = new BN(peg.value);
   const currentPrice = reserves[0].div(reserves[1]);
 
-  const bpsMul = new BN('9950');
-  const target = pegBN.mul(bpsMul).div(new BN('10000'));
+  const target = pegBN.mul(new BN(targetBPs)).div(new BN('10000'));
   console.log(`Pegging ${currentPrice} to ${target}. Peg: ${pegBN}`);
 
   console.log('Sync');
@@ -42,6 +49,8 @@ module.exports = async function(callback) {
   await fei.burnFrom(ethPair.address, currentFei, {from: accounts[0]});
   await fei.mint(ethPair.address, targetFei, {from: accounts[0]});
   await ethPair.sync();
+}
 
-  callback();
+module.exports = {
+  syncPool
 };
