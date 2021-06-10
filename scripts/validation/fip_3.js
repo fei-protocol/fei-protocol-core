@@ -44,7 +44,7 @@ async function checkParameters(newController, depositAddress) {
 
   const linkedDeposit = await newController.pcvDeposit();
 
-  const updatedDeposit = linkedDeposit == depositAddress;
+  const updatedDeposit = linkedDeposit === depositAddress;
   check(updatedDeposit, 'New PCV Deposit updates');
 }
 
