@@ -1,41 +1,18 @@
+require('dotenv').config();
 const { BN, time } = require('@openzeppelin/test-helpers');
+const { syncPool } = require('../utils/syncPool');
 
-const EthUniswapPCVController = artifacts.require('UniswapPCVController');
-const Fei = artifacts.require('Fei');
-const IUniswapV2Pair = artifacts.require('IUniswapV2Pair');
+const UniswapPCVController = artifacts.require('UniswapPCVController');
 const Core = artifacts.require('Core');
 
 async function successfulReweight(controller) {
   const reserves = await controller.getReserves();
-  const peg = await controller.peg();
+  const peg = await controller.readOracle();
   const pegBN = new BN(peg.value).div(new BN('1000000000000000000'));
   const currentPrice = reserves[0].div(reserves[1]);
   console.log(`peg:${peg}, price:${currentPrice}, r0: ${reserves[0]}, r1: ${reserves[1]}`);
 
   return pegBN.eq(currentPrice);
-}
-
-async function syncPool(bpsMul, controller) {
-  const fei = await Fei.at(await controller.fei());
-  const ethPair = await IUniswapV2Pair.at(await controller.pair());
-  
-  console.log('Current');
-  
-  const reserves = await controller.getReserves();
-  const peg = await controller.peg();
-  const pegBN = new BN(peg.value).div(new BN('1000000000000000000'));
-  const currentPrice = reserves[0].div(reserves[1]);
-  
-  const target = pegBN.mul(bpsMul).div(new BN('10000'));
-  console.log(`Pegging ${currentPrice} to ${target}. Peg: ${pegBN}`);
-  
-  console.log('Sync');
-  const targetFei = reserves[1].mul(target);
-  const currentFei = await fei.balanceOf(ethPair.address);
-  
-  await fei.burnFrom(ethPair.address, currentFei);
-  await fei.mint(ethPair.address, targetFei);
-  await ethPair.sync();
 }
 
 function check(flag, message) {
@@ -80,7 +57,7 @@ async function integrationTestReweight(newController) {
   check(timeComplete, 'Time complete');
 
   console.log('Moving Pair below 3%');
-  await syncPool(new BN('10300'), newController);
+  await syncPool(new BN('10300'));
 
   const eligible = await newController.reweightEligible();
   check(eligible, 'Reweight eligible');
@@ -91,27 +68,24 @@ async function integrationTestReweight(newController) {
 }
 
 async function main() {
-  // eslint-disable-next-line global-require
-  require('dotenv').config();
-
   let oldControllerAddress; let newControllerAddress; let coreAddress; let 
     depositAddress;
   if (process.env.TESTNET_MODE) {
     console.log('Testnet Mode');
-    oldControllerAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_CONTROLLER_01;
+    oldControllerAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_CONTROLLER_OLD;
     newControllerAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_CONTROLLER;
     coreAddress = process.env.RINKEBY_CORE;
     depositAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_DEPOSIT;
   } else {
     console.log('Mainnet Mode');
-    oldControllerAddress = process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER_01;
+    oldControllerAddress = process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER_OLD;
     newControllerAddress = process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER;
     coreAddress = process.env.MAINNET_CORE;
     depositAddress = process.env.MAINNET_ETH_UNISWAP_PCV_DEPOSIT;
   }
 
-  const newController = await EthUniswapPCVController.at(newControllerAddress);
-  const oldController = await EthUniswapPCVController.at(oldControllerAddress);
+  const newController = await UniswapPCVController.at(newControllerAddress);
+  const oldController = await UniswapPCVController.at(oldControllerAddress);
   const core = await Core.at(coreAddress);
 
   await checkAccessControl(oldController, newController, core);

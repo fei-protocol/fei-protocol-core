@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const { BN } = require('@openzeppelin/test-helpers');
 
 const Fei = artifacts.require('Fei');
@@ -8,37 +10,39 @@ const hre = require('hardhat');
 
 const { web3 } = hre;
 
+// Syncs the uniswap FEI-ETH pair to a price relative to oracle price
+// targetBPs would be multiplied by the peg and divided by 10000 and the pair would sync to that price
 async function syncPool(targetBPs) {
-  // eslint-disable-next-line global-require
-  require('dotenv').config();
-
   let feiAddress; 
-  let udAddress; 
+  let uniswapPcvDepositAddress; 
   let ethPairAddress;
   if (process.env.TESTNET_MODE) {
     feiAddress = process.env.RINKEBY_FEI;
-    udAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_DEPOSIT;
+    uniswapPcvDepositAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_DEPOSIT;
     ethPairAddress = process.env.RINKEBY_FEI_ETH_PAIR;
   } else {
     feiAddress = process.env.MAINNET_FEI;
-    udAddress = process.env.MAINNET_ETH_UNISWAP_PCV_DEPOSIT;
+    uniswapPcvDepositAddress = process.env.MAINNET_ETH_UNISWAP_PCV_DEPOSIT;
     ethPairAddress = process.env.MAINNET_FEI_ETH_PAIR;
   }
 
   const accounts = await web3.eth.getAccounts();
   const fei = await Fei.at(feiAddress);
-  const ui = await UniswapPCVDeposit.at(udAddress);
+  const uniswapPcvDeposit = await UniswapPCVDeposit.at(uniswapPcvDepositAddress);
   const ethPair = await IUniswapV2Pair.at(ethPairAddress);
 
   console.log('Current');
 
-  const reserves = await ui.getReserves();
-  const pegCall = await web3.eth.call({from: accounts[0], to: ui.address, data: web3.eth.abi.encodeFunctionSignature('peg()')});
+  // Gets current reserves
+  const reserves = await uniswapPcvDeposit.getReserves();
+  // The on-chain abi is peg() but the new abi will be readOracle() so we have to manually call this one
+  const pegCall = await web3.eth.call({from: accounts[0], to: uniswapPcvDeposit.address, data: web3.eth.abi.encodeFunctionSignature('readOracle()')});
   const peg = await web3.eth.abi.decodeParameter({Decimal: {value: 'uint256'}}, pegCall);
 
   const pegBN = new BN(peg.value);
   const currentPrice = reserves[0].div(reserves[1]);
 
+  // figure out target amount of FEI in pair
   const target = pegBN.mul(new BN(targetBPs)).div(new BN('10000'));
   console.log(`Pegging ${currentPrice} to ${target}. Peg: ${pegBN}`);
 
@@ -46,6 +50,7 @@ async function syncPool(targetBPs) {
   const targetFei = reserves[1].mul(target).div(new BN('1000000000000000000'));
   const currentFei = await fei.balanceOf(ethPair.address);
 
+  // Burn current FEI and mint in the target, then sync the pair
   await fei.burnFrom(ethPair.address, currentFei, {from: accounts[0]});
   await fei.mint(ethPair.address, targetFei, {from: accounts[0]});
   await ethPair.sync();

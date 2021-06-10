@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { time } = require('@openzeppelin/test-helpers');
 
 const GovernorAlpha = artifacts.require('GovernorAlpha');
@@ -9,10 +10,8 @@ const hre = require('hardhat');
 
 const { web3 } = hre;
 
+// This script fully executes an on-chain DAO proposal with pre-supplied calldata
 async function main() {
-  // eslint-disable-next-line global-require
-  require('dotenv').config();
-
   let proposer; 
   let voter; 
   let governorAddress;
@@ -28,6 +27,7 @@ async function main() {
     governorAddress = process.env.MAINNET_GOVERNOR_ALPHA;
   } 
 
+  // Impersonate the proposer and voter with sufficeint TRIBE for execution
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
     params: [proposer]
@@ -38,6 +38,7 @@ async function main() {
     params: [voter]
   });
 
+  // Submit proposal to the DAO
   if (data) {
     console.log('Submitting Proposal');
     await web3.eth.sendTransaction({
@@ -54,6 +55,7 @@ async function main() {
   let proposal = await governor.proposals(proposalNo);
   const {startBlock} = proposal;
 
+  // Advance to vote start
   console.log(`Advancing To: ${startBlock}`);
   await time.advanceBlockTo(startBlock);
 
@@ -63,14 +65,16 @@ async function main() {
   proposal = await governor.proposals(proposalNo);
   const {endBlock} = proposal;
 
+  // Advance to after vote completes and queue the transaction
   console.log(`Advancing To: ${endBlock}`);
   await time.advanceBlockTo(endBlock);
 
   console.log('Queuing');
   await governor.queue(proposalNo);
 
+  // Increase beyond the timelock delay
   console.log('Increasing Time');
-  await time.increase(140000);
+  await time.increase(86400); // 1 day in seconds
 
   console.log('Executing');
   await governor.execute(proposalNo);
