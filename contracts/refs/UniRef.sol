@@ -20,11 +20,13 @@ abstract contract UniRef is IUniRef, OracleRef {
     /// @param _core Fei Core to reference
     /// @param _pair Uniswap pair to reference
     /// @param _oracle oracle to reference
+    /// @param _backupOracle backup oracle to reference
     constructor(
         address _core,
         address _pair,
-        address _oracle
-    ) OracleRef(_core, _oracle) {
+        address _oracle,
+        address _backupOracle
+    ) OracleRef(_core, _oracle, _backupOracle) {
         _setupPair(_pair);
     }
 

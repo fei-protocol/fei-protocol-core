@@ -58,7 +58,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
         uint256 _maximumSlippageBasisPoints,
         bool _invertOraclePrice,
         uint256 _swapIncentiveAmount
-    ) OracleRef(_core, _oracle) Timed(_swapFrequency) Incentivized(_swapIncentiveAmount) {
+    ) OracleRef(_core, _oracle, address(0)) Timed(_swapFrequency) Incentivized(_swapIncentiveAmount) {
         pair = _pair;
         WETH = _WETH;
         tokenSpent = _tokenSpent;

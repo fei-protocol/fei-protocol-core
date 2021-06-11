@@ -20,11 +20,13 @@ contract EthBondingCurve is BondingCurve {
     constructor(
         address core,
         address oracle,
+        address backupOracle,
         BondingCurveParams memory params
     )
         BondingCurve(
             core,
             oracle,
+            backupOracle,
             params.scale,
             params.pcvDeposits,
             params.ratios,

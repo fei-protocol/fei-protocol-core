@@ -33,7 +33,7 @@ describe('TribeReserveStabilizer', function () {
     this.feiOracle = await MockOracle.new(1);
     this.pcvDeposit = await MockPCVDeposit.new(userAddress);
 
-    this.reserveStabilizer = await TribeReserveStabilizer.new(this.core.address, this.oracle.address, '9000', this.feiOracle.address, '10000');
+    this.reserveStabilizer = await TribeReserveStabilizer.new(this.core.address, this.oracle.address, this.oracle.address, '9000', this.feiOracle.address, '10000');
 
     await this.core.grantBurner(this.reserveStabilizer.address, {from: governorAddress});
 
