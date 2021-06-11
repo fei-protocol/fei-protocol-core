@@ -1,7 +1,7 @@
 const { BN } = require('@openzeppelin/test-helpers');
 const CErc20Delegator = artifacts.require('CErc20Delegator');
 const Fei = artifacts.require('Fei');
-const fipEight = require("../dao/fip_8");
+const fipEight = require('../dao/fip_8');
 
 const tetranodePoolAddress = '0xd8553552f8868C1Ef160eEdf031cF0BCf9686945';
 const feiTimelockAddress = '0x639572471f2f318464dc01066a56867130e45E25';
@@ -42,24 +42,24 @@ async function validateState(newState, oldState) {
 
     check(currentPoolAdmin === feiTimelockAddress, 'Rari pool transfered to Timelock');
 
-    check(poolFeiAllowance.toString() === "0", "Allowance given to Rari pool has been used");
+    check(poolFeiAllowance.toString() === '0', 'Allowance given to Rari pool has been used');
 
     // TODO: figure out if we can get the exact number every time instead of just checking > 0
-    check(timelockCTokenBalance.gt(0), "Timelock is holding the cTokens");
+    check(timelockCTokenBalance.gt(0), 'Timelock is holding the cTokens');
 
-    check(totalFeiSupply.sub(oldState.totalFeiSupply).eq(new BN("10000000000000000000000000")), "FEI supply increased by 10M");
+    check(totalFeiSupply.sub(oldState.totalFeiSupply).eq(new BN('10000000000000000000000000')), 'FEI supply increased by 10M');
 }
 
 async function main() {
     const stateBeforeFipEight = await getState();
-    console.log("State before FIP-8:", JSON.stringify(stateBeforeFipEight, null, 2));
+    console.log('State before FIP-8:', JSON.stringify(stateBeforeFipEight, null, 2));
 
-    console.log("Running FIP-8 execution script...");
+    console.log('Running FIP-8 execution script...');
     await fipEight.main();
-    console.log("Finished running FIP-8 execution script.");
+    console.log('Finished running FIP-8 execution script.');
 
     const stateAfterFipEight = await getState();
-    console.log("State after FIP-8:", JSON.stringify(stateAfterFipEight, null, 2));
+    console.log('State after FIP-8:', JSON.stringify(stateAfterFipEight, null, 2));
 
     await validateState(stateAfterFipEight, stateBeforeFipEight);
 }
