@@ -20,6 +20,7 @@ async function getState() {
     const fei = await Fei.at(feiAddress);    
 
     const totalFeiSupply = await fei.totalSupply();
+    const feiInRariPool = await fei.balanceOf(tetranodePoolAddress);
     const currentPoolAdmin = await rariPoolEight.admin();
     const poolFeiAllowance = await fei.allowance(feiTimelockAddress, tetranodePoolAddress);
     const timelockCTokenBalance = await rariPoolEight.balanceOf(feiTimelockAddress);
@@ -29,6 +30,7 @@ async function getState() {
         poolFeiAllowance,
         timelockCTokenBalance,
         totalFeiSupply,
+        feiInRariPool,
     }
 }
 
@@ -38,16 +40,19 @@ async function validateState(newState, oldState) {
         poolFeiAllowance,
         timelockCTokenBalance,
         totalFeiSupply,
+        feiInRariPool,
     } = newState;
 
     check(currentPoolAdmin === feiTimelockAddress, 'Rari pool transfered to Timelock');
 
     check(poolFeiAllowance.toString() === '0', 'Allowance given to Rari pool has been used');
 
-    // TODO: figure out if we can get the exact number every time instead of just checking > 0
     check(timelockCTokenBalance.gt(0), 'Timelock is holding the cTokens');
 
-    check(totalFeiSupply.sub(oldState.totalFeiSupply).eq(new BN('10000000000000000000000000')), 'FEI supply increased by 10M');
+    check(totalFeiSupply.sub(oldState.totalFeiSupply).eq(new BN('10000000000000000000000000')), 'Global FEI supply increased by 10M');
+
+    check(feiInRariPool.sub(oldState.feiInRariPool).eq(new BN('10000000000000000000000000')),  'FEI in Rari pool increased by 10M');
+    
 }
 
 async function main() {
