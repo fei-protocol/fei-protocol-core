@@ -1,7 +1,7 @@
 const { BN } = require('@openzeppelin/test-helpers');
 const CErc20Delegator = artifacts.require('CErc20Delegator');
 const Fei = artifacts.require('Fei');
-const fipEight = require('../dao/fip_7');
+const fipSeven = require('../dao/fip_7');
 
 const tetranodePoolAddress = '0xd8553552f8868C1Ef160eEdf031cF0BCf9686945';
 const feiTimelockAddress = '0x639572471f2f318464dc01066a56867130e45E25';
@@ -49,35 +49,52 @@ async function validateState(newState, oldState) {
 
     check(timelockCTokenBalance.gt(0), 'Timelock is holding the cTokens');
 
-    check(
-      totalFeiSupply.sub(oldState.totalFeiSupply).eq(new BN('10000000000000000000000000')), 
-      'Global FEI supply increased by 10M'
-    );
-
-    check(
-      feiInRariPool.sub(oldState.feiInRariPool).eq(new BN('10000000000000000000000000')), 
-      'FEI in Rari pool increased by 10M'
-    );
-    
+    if (oldState) {
+      check(
+        totalFeiSupply.sub(oldState.totalFeiSupply).eq(new BN('10000000000000000000000000')), 
+        'Global FEI supply increased by 10M'
+      );
+  
+      check(
+        feiInRariPool.sub(oldState.feiInRariPool).eq(new BN('10000000000000000000000000')), 
+        'FEI in Rari pool increased by 10M'
+      );
+    }    
 }
 
-async function main() {
-    const stateBeforeFipEight = await getState();
-    console.log('State before FIP-7:', JSON.stringify(stateBeforeFipEight, null, 2));
+// Runs the fip-7 script with before+after validation
+async function fullLocalValidation() {
+    const stateBeforeFipSeven = await getState();
+    console.log('State before FIP-7:', JSON.stringify(stateBeforeFipSeven, null, 2));
 
     console.log('Running FIP-7 execution script...');
-    await fipEight.main();
+    await fipSeven.main();
     console.log('Finished running FIP-7 execution script.');
 
-    const stateAfterFipEight = await getState();
-    console.log('State after FIP-7:', JSON.stringify(stateAfterFipEight, null, 2), '\n');
+    const stateAfterFipSeven = await getState();
+    console.log('State after FIP-7:', JSON.stringify(stateAfterFipSeven, null, 2), '\n');
 
-    await validateState(stateAfterFipEight, stateBeforeFipEight);
+    await validateState(stateAfterFipSeven, stateBeforeFipSeven);
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+// Runs validation assuming fip-7 has already been executed
+async function postFipValidation() {
+  const stateAfterFipSeven = await getState();
+  console.log('State after FIP-7:', JSON.stringify(stateAfterFipSeven, null, 2), '\n');
+
+  await validateState(stateAfterFipSeven);
+}
+
+// fullLocalValidation()
+//   .then(() => process.exit(0))
+//   .catch((error) => {
+//     console.error(error);
+//     process.exit(1);
+//   });
+
+// postFipValidation()
+// .then(() => process.exit(0))
+// .catch((error) => {
+//   console.error(error);
+//   process.exit(1);
+// });
