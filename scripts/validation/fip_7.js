@@ -1,7 +1,7 @@
 const { BN } = require('@openzeppelin/test-helpers');
 const CErc20Delegator = artifacts.require('CErc20Delegator');
 const Fei = artifacts.require('Fei');
-const fipEight = require('../dao/fip_8');
+const fipEight = require('../dao/fip_7');
 
 const tetranodePoolAddress = '0xd8553552f8868C1Ef160eEdf031cF0BCf9686945';
 const feiTimelockAddress = '0x639572471f2f318464dc01066a56867130e45E25';
@@ -57,14 +57,14 @@ async function validateState(newState, oldState) {
 
 async function main() {
     const stateBeforeFipEight = await getState();
-    console.log('State before FIP-8:', JSON.stringify(stateBeforeFipEight, null, 2));
+    console.log('State before FIP-7:', JSON.stringify(stateBeforeFipEight, null, 2));
 
-    console.log('Running FIP-8 execution script...');
+    console.log('Running FIP-7 execution script...');
     await fipEight.main();
-    console.log('Finished running FIP-8 execution script.');
+    console.log('Finished running FIP-7 execution script.');
 
     const stateAfterFipEight = await getState();
-    console.log('State after FIP-8:', JSON.stringify(stateAfterFipEight, null, 2));
+    console.log('State after FIP-7:', JSON.stringify(stateAfterFipEight, null, 2));
 
     await validateState(stateAfterFipEight, stateBeforeFipEight);
 }

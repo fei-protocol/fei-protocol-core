@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 abstract contract CErc20Delegator {
     address public admin;
     address public pendingAdmin;
-    // TODO: I added "virtual" to these signatures. Will it cause issues later on?
     function _setPendingAdmin(address payable newPendingAdmin) external virtual returns (uint);
     function _acceptAdmin() external virtual returns (uint);
     function mint(uint mintAmount) external virtual returns (uint);
