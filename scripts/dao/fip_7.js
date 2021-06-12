@@ -6,11 +6,9 @@ const Fei = artifacts.require('Fei');
 /*
  DAO Proposal Steps
     1. Accept admin transfer from Tetranode
-    2. Change params on Rari pool
-    3. Mint 10M FEI into Timelock
-    4. Approve 10M FEI transfer
-    5. Adjust/remove supply cap on Rari pool
-    6. Mint cTokens by depositing FEI into Rari pool
+    2. Mint 10M FEI into Timelock
+    3. Approve 10M FEI transfer
+    4. Mint cTokens by depositing FEI into Rari pool
 */
 
 const tetranodePoolAddress = '0xd8553552f8868C1Ef160eEdf031cF0BCf9686945';
@@ -47,22 +45,18 @@ async function main() {
         from: feiTimelockAddress,
     });
 
-    // TODO: add step for changing pool params if we are going to do that
-
-    // 3. Mint FEI into timelock
+    // 2. Mint FEI into timelock
     const tenMillion = '10000000000000000000000000';
     await fei.mint(feiTimelockAddress, tenMillion, {
         from: feiTimelockAddress,
     });
 
-    // 4. Approve transfer into rari pool
+    // 3. Approve transfer into rari pool
     await fei.approve(tetranodePoolAddress, tenMillion, {
         from: feiTimelockAddress,
     });
 
-    // TODO: add step increase supply cap on the pool. Seems like it works fine without that tho
-
-    // Supply FEI to rari pool
+    // 4. Supply FEI to rari pool
     await rariPoolEight.mint(tenMillion, {
         from: feiTimelockAddress,
     });

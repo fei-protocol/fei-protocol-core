@@ -49,9 +49,15 @@ async function validateState(newState, oldState) {
 
     check(timelockCTokenBalance.gt(0), 'Timelock is holding the cTokens');
 
-    check(totalFeiSupply.sub(oldState.totalFeiSupply).eq(new BN('10000000000000000000000000')), 'Global FEI supply increased by 10M');
+    check(
+      totalFeiSupply.sub(oldState.totalFeiSupply).eq(new BN('10000000000000000000000000')), 
+      'Global FEI supply increased by 10M'
+    );
 
-    check(feiInRariPool.sub(oldState.feiInRariPool).eq(new BN('10000000000000000000000000')),  'FEI in Rari pool increased by 10M');
+    check(
+      feiInRariPool.sub(oldState.feiInRariPool).eq(new BN('10000000000000000000000000')), 
+      'FEI in Rari pool increased by 10M'
+    );
     
 }
 
@@ -64,7 +70,7 @@ async function main() {
     console.log('Finished running FIP-7 execution script.');
 
     const stateAfterFipEight = await getState();
-    console.log('State after FIP-7:', JSON.stringify(stateAfterFipEight, null, 2));
+    console.log('State after FIP-7:', JSON.stringify(stateAfterFipEight, null, 2), '\n');
 
     await validateState(stateAfterFipEight, stateBeforeFipEight);
 }
