@@ -14,6 +14,8 @@
     "clean": "rm -rf build",
     "test": "npx hardhat test",
     "test:gas": "REPORT_GAS=true npx hardhat test",
+    "test:e2e:mainnet": "FORK_MAINNET=true npm run fork:mainnet npx hardhat test e2s.spec.js",
+    "test:e2e:local": "npx hardhat test e2s.spec.js",
     "lint:js": "eslint --config ./.eslintrc.json --ignore-path ./.eslintignore --ext .js .",
     "size-contracts": "npx hardhat size-contracts",
     "deploy:localhost": "npx hardhat run --network localhost deploy/3_erc20.js",

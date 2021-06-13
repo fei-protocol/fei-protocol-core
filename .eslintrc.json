@@ -20,7 +20,10 @@
     "no-tabs": 0,
     "no-unused-expressions": 0,
     "no-sequences": 0,
-    "no-mixed-spaces-and-tabs": 0
+    "no-mixed-spaces-and-tabs": 0,
+    "no-await-in-loop": 0,
+    "guard-for-in": 0,
+    "no-restricted-syntax": 0
   },
   "globals": {
     "artifacts": "readonly",
