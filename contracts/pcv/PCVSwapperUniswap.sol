@@ -44,12 +44,17 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     // solhint-disable-next-line var-name-mixedcase
     address public immutable WETH;
 
+    struct OracleAddresses {
+        address _oracle;
+        address _backupOracle;
+    }
+
     constructor(
         address _core,
         IUniswapV2Pair _pair,
         // solhint-disable-next-line var-name-mixedcase
         address _WETH,
-        address _oracle,
+        OracleAddresses memory oracleAddresses,
         uint256 _swapFrequency,
         address _tokenSpent,
         address _tokenReceived,
@@ -60,8 +65,8 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
         uint256 _swapIncentiveAmount
     ) OracleRef(
       _core, 
-      _oracle, 
-      address(0) // no backup oracle due to stack overflow in constructor. Can be set through governance
+      oracleAddresses._oracle, 
+      oracleAddresses._backupOracle
     ) Timed(_swapFrequency) Incentivized(_swapIncentiveAmount) {
         pair = _pair;
         WETH = _WETH;
