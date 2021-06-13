@@ -27,7 +27,7 @@ async function main() {
     governorAddress = process.env.MAINNET_GOVERNOR_ALPHA;
   } 
 
-  // Impersonate the proposer and voter with sufficeint TRIBE for execution
+  // Impersonate the proposer and voter with sufficient TRIBE for execution
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
     params: [proposer]
