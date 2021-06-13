@@ -22,6 +22,9 @@ const {
   MAINNET_UNISWAP_ORACLE
 } = process.env;
 
+const chainlinkEthUsdOracle = '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419';
+const chainlinkFeiEthOracle = '0x7F0D2c2838c6AC24443d13e23d99490017bDe370';
+
 async function main() {
   if (!MAINNET_CORE || !MAINNET_FEI_ETH_PAIR || !MAINNET_WETH || !MAINNET_UNISWAP_ROUTER || !MAINNET_UNISWAP_ORACLE) {
     throw new Error('An environment variable contract address is not set');
@@ -70,14 +73,14 @@ async function main() {
 
   const chainlinkEthUsdOracleWrapper = await ChainlinkOracleWrapper.new(
     MAINNET_CORE, 
-    '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419' // Chainlink ETH-USD oracle
+    chainlinkEthUsdOracle
   );
   
   console.log('Chainlink ETH-USD oracle: ', chainlinkEthUsdOracleWrapper.address);
   
   const chainlinkFeiEthOracleWrapper = await ChainlinkOracleWrapper.new(
     MAINNET_CORE, 
-    '0x7F0D2c2838c6AC24443d13e23d99490017bDe370' // Chainlink FEI-ETH oracle
+    chainlinkFeiEthOracle
   );
   
   console.log('Chainlink FEI-ETH oracle: ', chainlinkFeiEthOracleWrapper.address);
