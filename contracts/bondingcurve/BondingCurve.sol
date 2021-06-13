@@ -60,7 +60,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         uint256 _discount,
         uint256 _buffer
     )
-        OracleRef(_core, _oracle, address(0))
+        OracleRef(_core, _oracle, _backupOracle)
         PCVSplitter(_pcvDeposits, _ratios)
         Timed(_duration)
         Incentivized(_incentive)
