@@ -52,7 +52,10 @@ describe('PCVSwapperUniswap', function () {
       this.core.address, // core
       this.pair.address, // pair
       this.weth.address, // weth
-      this.oracle.address, // oracle
+      {
+        _oracle: this.oracle.address, // oracle
+        _backupOracle: this.oracle.address // backup oracle
+      }, 
       '1000', // default minimum interval between swaps
       this.weth.address, // tokenSpent
       this.fei.address, // tokenReceived
