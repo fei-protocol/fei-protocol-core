@@ -3,9 +3,7 @@ const CErc20Delegator = artifacts.require('CErc20Delegator');
 const Fei = artifacts.require('Fei');
 const fipSeven = require('../dao/fip_7');
 
-const tetranodePoolAddress = '0xd8553552f8868C1Ef160eEdf031cF0BCf9686945';
-const feiTimelockAddress = '0x639572471f2f318464dc01066a56867130e45E25';
-const feiAddress = '0x956F47F50A910163D8BF957Cf5846D573E7f87CA';
+const feiTimelockAddress = process.env.MAINNET_TIMELOCK;
 
 function check(flag, message) {
     if (flag) {
@@ -16,13 +14,13 @@ function check(flag, message) {
   }
 
 async function getState() {
-    const rariPoolEight = await CErc20Delegator.at(tetranodePoolAddress)
-    const fei = await Fei.at(feiAddress);    
+    const rariPoolEight = await CErc20Delegator.at(process.env.MAINNET_RARI_POOL_8);
+    const fei = await Fei.at(process.env.MAINNET_FEI);    
 
     const totalFeiSupply = await fei.totalSupply();
-    const feiInRariPool = await fei.balanceOf(tetranodePoolAddress);
+    const feiInRariPool = await fei.balanceOf(rariPoolEight.address);
     const currentPoolAdmin = await rariPoolEight.admin();
-    const poolFeiAllowance = await fei.allowance(feiTimelockAddress, tetranodePoolAddress);
+    const poolFeiAllowance = await fei.allowance(feiTimelockAddress, rariPoolEight.address);
     const timelockCTokenBalance = await rariPoolEight.balanceOf(feiTimelockAddress);
 
     return {
@@ -85,12 +83,12 @@ async function postFipValidation() {
   await validateState(stateAfterFipSeven);
 }
 
-fullLocalValidation()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+// fullLocalValidation()
+//   .then(() => process.exit(0))
+//   .catch((error) => {
+//     console.error(error);
+//     process.exit(1);
+//   });
 
 // postFipValidation()
 // .then(() => process.exit(0))
