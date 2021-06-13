@@ -20,7 +20,8 @@
     "no-tabs": 0,
     "no-unused-expressions": 0,
     "no-sequences": 0,
-    "no-mixed-spaces-and-tabs": 0
+    "no-mixed-spaces-and-tabs": 0,
+    "no-underscore-dangle": 0
   },
   "globals": {
     "artifacts": "readonly",
