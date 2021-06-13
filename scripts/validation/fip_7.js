@@ -2,16 +2,9 @@ const { BN } = require('@openzeppelin/test-helpers');
 const CErc20Delegator = artifacts.require('CErc20Delegator');
 const Fei = artifacts.require('Fei');
 const fipSeven = require('../dao/fip_7');
+const { check } = require('./helpers');
 
 const feiTimelockAddress = process.env.MAINNET_TIMELOCK;
-
-function check(flag, message) {
-    if (flag) {
-      console.log(`PASS: ${message}`); 
-    } else {
-      throw Error(`FAIL: ${message}`);
-    }
-  }
 
 async function getState() {
     const rariPoolEight = await CErc20Delegator.at(process.env.MAINNET_RARI_POOL_8);

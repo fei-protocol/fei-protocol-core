@@ -1,6 +1,7 @@
 require('dotenv').config();
 const { BN, time } = require('@openzeppelin/test-helpers');
 const { syncPool } = require('../utils/syncPool');
+const { check } = require('./helpers');
 
 const UniswapPCVController = artifacts.require('UniswapPCVController');
 const Core = artifacts.require('Core');
@@ -13,14 +14,6 @@ async function successfulReweight(controller) {
   console.log(`peg:${peg}, price:${currentPrice}, r0: ${reserves[0]}, r1: ${reserves[1]}`);
 
   return pegBN.eq(currentPrice);
-}
-
-function check(flag, message) {
-  if (flag) {
-    console.log(`PASS: ${message}`); 
-  } else {
-    throw Error(`FAIL: ${message}`);
-  }
 }
 
 async function checkAccessControl(oldController, newController, core) {
