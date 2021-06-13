@@ -55,7 +55,7 @@ async function validateState(newState, oldState) {
 }
 
 // Runs the fip-7 script with before+after validation
-async function fullLocalValidation() {
+async function fullLocalValidation() { // eslint-disable-line
   const stateBeforeFipSeven = await getState();
   console.log('State before FIP-7:', JSON.stringify(stateBeforeFipSeven, null, 2));
 
@@ -70,7 +70,7 @@ async function fullLocalValidation() {
 }
 
 // Runs validation assuming fip-7 has already been executed
-async function postFipValidation() {
+async function postFipValidation() { // eslint-disable-line
   const stateAfterFipSeven = await getState();
   console.log('State after FIP-7:', JSON.stringify(stateAfterFipSeven, null, 2), '\n');
 
