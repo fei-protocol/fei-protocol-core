@@ -52,30 +52,30 @@ describe('EthUniswapPCVDeposit', function () {
     describe('Paused', function() {
       it('reverts', async function() {
         await this.pcvDeposit.pause({from: governorAddress});
-        await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
-        await expectRevert(this.pcvDeposit.deposit({from: userAddress}), "Pausable: paused");
+        await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
+        await expectRevert(this.pcvDeposit.deposit({from: userAddress}), 'Pausable: paused');
       });
     });
 
     describe('Pre deposit values', function() {
-      it('liquidityOwned', async function(){
+      it('liquidityOwned', async function() {
         expect(await this.pcvDeposit.liquidityOwned()).to.be.bignumber.equal(new BN(0));
       });
 
       it('pair reserves', async function() {
         expect(await this.weth.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(100000));
         expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(50000000));
-        let result = await this.pcvDeposit.getReserves();
+        const result = await this.pcvDeposit.getReserves();
         expect(result[0]).to.be.bignumber.equal(new BN(50000000));
         expect(result[1]).to.be.bignumber.equal(new BN(100000));
       });
-      it('balance', async function(){
+      it('balance', async function() {
         expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(0));
       });
     });
     describe('Post deposit values', function() {
       beforeEach(async function() {
-        await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
+        await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
         await this.pcvDeposit.deposit({from: userAddress});
       });
 
@@ -87,7 +87,7 @@ describe('EthUniswapPCVDeposit', function () {
         it('pair reserves', async function() {
           expect(await this.weth.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(200000));
           expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(90000000)); // deposits at oracle price
-          let result = await this.pcvDeposit.getReserves();
+          const result = await this.pcvDeposit.getReserves();
           expect(result[0]).to.be.bignumber.equal(new BN(90000000));
           expect(result[1]).to.be.bignumber.equal(new BN(200000));
         });
@@ -102,7 +102,7 @@ describe('EthUniswapPCVDeposit', function () {
       });      
       describe('With existing liquidity', function() {
         beforeEach(async function() {
-          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
+          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
           await this.pcvDeposit.deposit({from: userAddress});
         });
 
@@ -113,7 +113,7 @@ describe('EthUniswapPCVDeposit', function () {
         it('pair reserves', async function() {
           expect(await this.weth.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(300000));
           expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(130000000)); // deposits at oracle price
-          let result = await this.pcvDeposit.getReserves();
+          const result = await this.pcvDeposit.getReserves();
           expect(result[0]).to.be.bignumber.equal(new BN(130000000));
           expect(result[1]).to.be.bignumber.equal(new BN(300000));
         });
@@ -130,15 +130,15 @@ describe('EthUniswapPCVDeposit', function () {
       describe('Pool price changes under threshold', function() {
         it('reverts', async function() {
           await this.router.setAmountMin(39000000);
-          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
-          await expectRevert(this.pcvDeposit.deposit({from: userAddress}), "amount liquidity revert");
+          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
+          await expectRevert(this.pcvDeposit.deposit({from: userAddress}), 'amount liquidity revert');
         });
 
         describe('after threshold update', function() {
           beforeEach(async function() {
             await this.router.setAmountMin(39000000);
             await this.pcvDeposit.setMaxBasisPointsFromPegLP(300, {from: governorAddress});
-            await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
+            await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
             await this.pcvDeposit.deposit({from: userAddress});
           });
   
@@ -149,7 +149,7 @@ describe('EthUniswapPCVDeposit', function () {
           it('pair reserves', async function() {
             expect(await this.weth.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(300000));
             expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(130000000)); // deposits at oracle price
-            let result = await this.pcvDeposit.getReserves();
+            const result = await this.pcvDeposit.getReserves();
             expect(result[0]).to.be.bignumber.equal(new BN(130000000));
             expect(result[1]).to.be.bignumber.equal(new BN(300000));
           });
@@ -167,7 +167,7 @@ describe('EthUniswapPCVDeposit', function () {
       describe('Pool price changes over threshold', function() {
         beforeEach(async function() {
           await this.router.setAmountMin(41000000);
-          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
+          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
           await this.pcvDeposit.deposit({from: userAddress});
         });
 
@@ -178,7 +178,7 @@ describe('EthUniswapPCVDeposit', function () {
         it('pair reserves', async function() {
           expect(await this.weth.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(300000));
           expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(130000000)); // deposits at oracle price
-          let result = await this.pcvDeposit.getReserves();
+          const result = await this.pcvDeposit.getReserves();
           expect(result[0]).to.be.bignumber.equal(new BN(130000000));
           expect(result[1]).to.be.bignumber.equal(new BN(300000));
         });
@@ -194,9 +194,9 @@ describe('EthUniswapPCVDeposit', function () {
 
       describe('Transfers held ETH and burns FEI', function() {
         beforeEach(async function() {
-          await this.weth.mint(this.pcvDeposit.address, "100000");
-          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
-          await this.fei.mint(this.pcvDeposit.address, "1000", {from: minterAddress});
+          await this.weth.mint(this.pcvDeposit.address, '100000');
+          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
+          await this.fei.mint(this.pcvDeposit.address, '1000', {from: minterAddress});
           await this.pcvDeposit.deposit({from: userAddress});
         });
 
@@ -207,7 +207,7 @@ describe('EthUniswapPCVDeposit', function () {
         it('pair reserves', async function() {
           expect(await this.weth.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(400000));
           expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(170000000)); // deposits at oracle price
-          let result = await this.pcvDeposit.getReserves();
+          const result = await this.pcvDeposit.getReserves();
           expect(result[0]).to.be.bignumber.equal(new BN(170000000));
           expect(result[1]).to.be.bignumber.equal(new BN(400000));
         });
@@ -225,7 +225,7 @@ describe('EthUniswapPCVDeposit', function () {
         beforeEach(async function() {
           await this.oracle.setExchangeRate(600); // 600:1 oracle price
           // Then deposit
-          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
+          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
           await this.pcvDeposit.deposit({from: userAddress});
         });
 
@@ -236,7 +236,7 @@ describe('EthUniswapPCVDeposit', function () {
         it('pair reserves', async function() {
           expect(await this.weth.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(300000));
           expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(150000000));
-          let result = await this.pcvDeposit.getReserves();
+          const result = await this.pcvDeposit.getReserves();
           expect(result[0]).to.be.bignumber.equal(new BN(150000000));
           expect(result[1]).to.be.bignumber.equal(new BN(300000));
         });
@@ -253,27 +253,26 @@ describe('EthUniswapPCVDeposit', function () {
   });
 
   describe('Withdraw', function() {
-
     describe('Paused', function() {
       it('reverts', async function() {
         await this.pcvDeposit.pause({from: governorAddress});
-        await expectRevert(this.pcvDeposit.withdraw(beneficiaryAddress1, "100000", {from: pcvControllerAddress}), "Pausable: paused");
+        await expectRevert(this.pcvDeposit.withdraw(beneficiaryAddress1, '100000', {from: pcvControllerAddress}), 'Pausable: paused');
       });
     });
 
     describe('Reverts', function() {
       it('not pcv controller', async function() {
-        await expectRevert(this.pcvDeposit.withdraw(beneficiaryAddress1, "100000", {from: userAddress}), "CoreRef: Caller is not a PCV controller");
+        await expectRevert(this.pcvDeposit.withdraw(beneficiaryAddress1, '100000', {from: userAddress}), 'CoreRef: Caller is not a PCV controller');
       });
 
       it('no balance', async function() {
         await this.core.grantPCVController(userAddress, {from: governorAddress});
-        await expectRevert(this.pcvDeposit.withdraw(beneficiaryAddress1, "100000", {from: userAddress}), "UniswapPCVDeposit: Insufficient underlying");
+        await expectRevert(this.pcvDeposit.withdraw(beneficiaryAddress1, '100000', {from: userAddress}), 'UniswapPCVDeposit: Insufficient underlying');
       });
     });
     describe('With Balance', function() {
       beforeEach(async function() {
-        await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: "100000"});
+        await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
         await this.pcvDeposit.deposit({from: userAddress});
         this.beneficiaryBalance = await this.weth.balanceOf(beneficiaryAddress1);
       });
@@ -281,12 +280,12 @@ describe('EthUniswapPCVDeposit', function () {
       describe('Partial', function() {
         beforeEach(async function() {
           expectEvent(
-            await this.pcvDeposit.withdraw(beneficiaryAddress1, "50000", {from: pcvControllerAddress}),
+            await this.pcvDeposit.withdraw(beneficiaryAddress1, '50000', {from: pcvControllerAddress}),
             'Withdrawal',
             {
               _caller: pcvControllerAddress,
               _to: beneficiaryAddress1,
-              _amount: "50000"
+              _amount: '50000'
             }
           );
         });
@@ -302,7 +301,7 @@ describe('EthUniswapPCVDeposit', function () {
         it('pair balances update', async function() {
           expect(await this.weth.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(150000));
           expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(67500000));
-          let result = await this.pcvDeposit.getReserves();
+          const result = await this.pcvDeposit.getReserves();
           expect(result[0]).to.be.bignumber.equal(new BN(67500000));
           expect(result[1]).to.be.bignumber.equal(new BN(150000));
         });
@@ -314,7 +313,7 @@ describe('EthUniswapPCVDeposit', function () {
 
       describe('Total', function() {
         beforeEach(async function() {
-          await this.pcvDeposit.withdraw(beneficiaryAddress1, "100000", {from: pcvControllerAddress});
+          await this.pcvDeposit.withdraw(beneficiaryAddress1, '100000', {from: pcvControllerAddress});
         });
 
         it('user balance updates', async function() {
@@ -332,7 +331,7 @@ describe('EthUniswapPCVDeposit', function () {
         it('pair balances update', async function() {
           expect(await this.weth.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(100000));
           expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(45000000));
-          let result = await this.pcvDeposit.getReserves();
+          const result = await this.pcvDeposit.getReserves();
           expect(result[0]).to.be.bignumber.equal(new BN(45000000));
           expect(result[1]).to.be.bignumber.equal(new BN(100000));
         });
@@ -347,19 +346,19 @@ describe('EthUniswapPCVDeposit', function () {
           await this.pcvDeposit.setMaxBasisPointsFromPegLP(300, {from: governorAddress}), 
           'MaxBasisPointsFromPegLPUpdate', 
           { 
-            oldMaxBasisPointsFromPegLP : '100',
-            newMaxBasisPointsFromPegLP : '300'
+            oldMaxBasisPointsFromPegLP: '100',
+            newMaxBasisPointsFromPegLP: '300'
           }
         );
         expect(await this.pcvDeposit.maxBasisPointsFromPegLP()).to.be.bignumber.equal('300');
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.pcvDeposit.setMaxBasisPointsFromPegLP(300, {from: userAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.pcvDeposit.setMaxBasisPointsFromPegLP(300, {from: userAddress}), 'CoreRef: Caller is not a governor');
       });
 
       it('over 100%', async function() {
-        await expectRevert(this.pcvDeposit.setMaxBasisPointsFromPegLP(10001, {from: governorAddress}), "UniswapPCVDeposit: basis points from peg too high");
+        await expectRevert(this.pcvDeposit.setMaxBasisPointsFromPegLP(10001, {from: governorAddress}), 'UniswapPCVDeposit: basis points from peg too high');
       });
     });
 
@@ -370,8 +369,8 @@ describe('EthUniswapPCVDeposit', function () {
           await this.pcvDeposit.withdrawERC20(this.weth.address, userAddress, new BN('1000'), {from: pcvControllerAddress}), 
           'WithdrawERC20', 
           { 
-            _caller : pcvControllerAddress,
-            _token : this.weth.address,
+            _caller: pcvControllerAddress,
+            _token: this.weth.address,
             _to: userAddress,
             _amount: '1000'
           }
@@ -380,13 +379,13 @@ describe('EthUniswapPCVDeposit', function () {
       });
 
       it('Non-PCVController fails', async function() {
-        await expectRevert(this.pcvDeposit.withdrawERC20(this.weth.address, userAddress, new BN('1000'), {from: userAddress}), "CoreRef: Caller is not a PCV controller");
+        await expectRevert(this.pcvDeposit.withdrawERC20(this.weth.address, userAddress, new BN('1000'), {from: userAddress}), 'CoreRef: Caller is not a PCV controller');
       });
     });
 
     describe('Pair', function() {
       it('Governor set succeeds', async function() {
-        let pair2 = await MockPair.new(this.weth.address, this.fei.address);
+        const pair2 = await MockPair.new(this.weth.address, this.fei.address);
         expectEvent(
           await this.pcvDeposit.setPair(pair2.address, {from: governorAddress}), 
           'PairUpdate', 
@@ -399,7 +398,7 @@ describe('EthUniswapPCVDeposit', function () {
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.pcvDeposit.setPair(userAddress, {from: userAddress}), "CoreRef: Caller is not a governor");
+        await expectRevert(this.pcvDeposit.setPair(userAddress, {from: userAddress}), 'CoreRef: Caller is not a governor');
       });
     });
   });

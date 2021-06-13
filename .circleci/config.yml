@@ -30,6 +30,17 @@ jobs:
           key: repo-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - ~/repo
+  lint:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:12
+    steps:
+      - restore_cache:
+          keys:
+            - repo-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Run linter
+          command: npm run lint:js
   test:
     working_directory: ~/repo
     docker:
@@ -46,6 +57,9 @@ workflows:
   main:
     jobs:
       - build
+      - lint: 
+          requires:
+            - build
       - test:
           requires:
             - build
