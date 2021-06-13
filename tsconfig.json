@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "lib": ["dom", "esnext", "es2017.object"],  
+    "allowJs": true,
+    "noImplicitAny": true,
+    "noImplicitThis": false,
+    "target": "es2018",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "outDir": "dist"
+  },
+  "include": ["./src", "./test"],
+  "files": ["hardhat.config.ts"]
+}

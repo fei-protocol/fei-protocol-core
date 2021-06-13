@@ -1,9 +1,10 @@
-require('@nomiclabs/hardhat-waffle');
-require('@nomiclabs/hardhat-truffle5');
-require('@nomiclabs/hardhat-web3');
-require('hardhat-gas-reporter');
-require('hardhat-contract-sizer');
-require('solidity-coverage');
+import '@nomiclabs/hardhat-waffle';
+import '@nomiclabs/hardhat-truffle5';
+import '@nomiclabs/hardhat-web3';
+import 'hardhat-gas-reporter';
+import 'hardhat-contract-sizer';
+import 'solidity-coverage';
+import { HardhatUserConfig } from "hardhat/config";
 
 require('dotenv').config();
 
@@ -12,10 +13,14 @@ const testnetPrivateKey = process.env.TESTNET_PRIVATE_KEY;
 const privateKey = process.env.ETH_PRIVATE_KEY;
 const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
 
+if (!rinkebyAlchemyApiKey || !testnetPrivateKey || !privateKey || mainnetAlchemyApiKey) {
+  throw new Error('Please set your Ethereum keys in a .env')
+}
+
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
-module.exports = {
+const config: HardhatUserConfig = {
   gasReporter: {
     enabled: !!process.env.REPORT_GAS,
   },
@@ -25,7 +30,6 @@ module.exports = {
       chainId: 5777, // Any network (default: none)
       forking: {
         url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-        block: 12585055
       }
     },
     localhost: {
@@ -51,3 +55,5 @@ module.exports = {
   },
   mocha: {}
 };
+
+export default config
