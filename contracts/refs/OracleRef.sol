@@ -22,7 +22,7 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     /// @param _backupOracle backup oracle to reference
     constructor(address _core, address _oracle, address _backupOracle) CoreRef(_core) {
         _setOracle(_oracle);
-        if (_backupOracle != address(0)) {
+        if (_backupOracle != address(0) && _backupOracle != _oracle) {
             _setBackupOracle(_backupOracle);
         }
     }
