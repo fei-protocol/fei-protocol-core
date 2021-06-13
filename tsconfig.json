@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "moduleResolution": "node",
-    "lib": ["dom", "esnext", "es2017.object"],  
     "allowJs": true,
     "noImplicitAny": true,
     "noImplicitThis": false,

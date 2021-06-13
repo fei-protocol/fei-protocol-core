@@ -46,6 +46,7 @@
     "truffle": "^5.1.25"
   },
   "devDependencies": {
+    "@typechain/hardhat": "^2.0.2",
     "@types/chai": "^4.2.18",
     "@types/mocha": "^8.2.2",
     "@types/node": "^15.12.2",
