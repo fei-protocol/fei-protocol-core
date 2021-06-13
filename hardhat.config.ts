@@ -28,6 +28,7 @@ const config: HardhatUserConfig = {
       chainId: 5777, // Any network (default: none)
       forking: {
         url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
+        blockNumber: 12585055
       }
     },
     localhost: {
