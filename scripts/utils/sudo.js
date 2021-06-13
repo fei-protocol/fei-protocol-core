@@ -1,5 +1,4 @@
 const { BN } = require('@openzeppelin/test-helpers/src/setup');
-require('dotenv').config();
 
 const ForceEth = artifacts.require('ForceEth');
 const Core = artifacts.require('Core');
@@ -9,21 +8,12 @@ const hre = require('hardhat');
 
 const { web3 } = hre;
 
+const { getAddresses } = require('./helpers');
+
 // Grants Governor, Minter, Burner, and PCVController access to accounts[0]
 // Also mints a large amount of FEI to accounts[0]
 async function main() {
-  let coreAddress; 
-  let feiAddress; 
-  let timelockAddress;
-  if (process.env.TESTNET_MODE) {
-    coreAddress = process.env.RINKEBY_CORE;
-    feiAddress = process.env.RINKEBY_FEI;
-    timelockAddress = process.env.RINKEBY_TIMELOCK;
-  } else {
-    coreAddress = process.env.MAINNET_CORE;
-    feiAddress = process.env.MAINNET_FEI;
-    timelockAddress = process.env.MAINNET_TIMELOCK;
-  }
+  const { coreAddress, feiAddress, timelockAddress } = getAddresses(); 
 
   // Impersonate the Timelock which has Governor access on-chain
   await hre.network.provider.request({

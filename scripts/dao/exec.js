@@ -10,45 +10,34 @@ const hre = require('hardhat');
 
 const { web3 } = hre;
 
+const { getAddresses } = require('../utils/helpers');
+
 // This script fully executes an on-chain DAO proposal with pre-supplied calldata
 async function main() {
-  let proposer; 
-  let voter; 
-  let governorAddress;
-  if (process.env.TESTNET_MODE) {
-    console.log('Testnet mode');
-    proposer = process.env.RINKEBY_PROPOSER;
-    voter = process.env.RINKEBY_VOTER;
-    governorAddress = process.env.RINKEBY_GOVERNOR_ALPHA;
-  } else {
-    console.log('Mainnet mode');
-    proposer = process.env.MAINNET_PROPOSER;
-    voter = process.env.MAINNET_VOTER;
-    governorAddress = process.env.MAINNET_GOVERNOR_ALPHA;
-  } 
+  const { proposerAddress, voterAddress, governorAlphaAddress } = getAddresses();
 
   // Impersonate the proposer and voter with sufficient TRIBE for execution
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
-    params: [proposer]
+    params: [proposerAddress]
   });
 
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
-    params: [voter]
+    params: [voterAddress]
   });
 
   // Submit proposal to the DAO
   if (data) {
     console.log('Submitting Proposal');
     await web3.eth.sendTransaction({
-      from: proposer, to: governorAddress, data, gas: 3000000
+      from: proposerAddress, to: governorAlphaAddress, data, gas: 3000000
     });
   }
 
-  const governor = await GovernorAlpha.at(governorAddress);
+  const governor = await GovernorAlpha.at(governorAlphaAddress);
 
-  const proposalNo = await governor.latestProposalIds(proposer);
+  const proposalNo = await governor.latestProposalIds(proposerAddress);
 
   console.log(`Proposal Number: ${proposalNo}`);
 
@@ -60,7 +49,7 @@ async function main() {
   await time.advanceBlockTo(startBlock);
 
   console.log('Casting vote');
-  await governor.castVote(proposalNo, true, {from: voter});
+  await governor.castVote(proposalNo, true, {from: voterAddress});
 
   proposal = await governor.proposals(proposalNo);
   const {endBlock} = proposal;

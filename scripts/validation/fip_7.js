@@ -3,19 +3,19 @@ const { BN } = require('@openzeppelin/test-helpers');
 const CErc20Delegator = artifacts.require('CErc20Delegator');
 const Fei = artifacts.require('Fei');
 const fipSeven = require('../dao/fip_7');
-const { check } = require('./helpers');
+const { check, getAddresses } = require('../utils/helpers');
 
-const feiTimelockAddress = process.env.MAINNET_TIMELOCK;
+const {timelockAddress, rariPoolEightAddress, feiAddress} = getAddresses();
 
 async function getState() {
-  const rariPoolEight = await CErc20Delegator.at(process.env.MAINNET_RARI_POOL_8);
-  const fei = await Fei.at(process.env.MAINNET_FEI);    
+  const rariPoolEight = await CErc20Delegator.at(rariPoolEightAddress);
+  const fei = await Fei.at(feiAddress);    
 
   const totalFeiSupply = await fei.totalSupply();
   const feiInRariPool = await fei.balanceOf(rariPoolEight.address);
   const currentPoolAdmin = await rariPoolEight.admin();
-  const poolFeiAllowance = await fei.allowance(feiTimelockAddress, rariPoolEight.address);
-  const timelockCTokenBalance = await rariPoolEight.balanceOf(feiTimelockAddress);
+  const poolFeiAllowance = await fei.allowance(timelockAddress, rariPoolEight.address);
+  const timelockCTokenBalance = await rariPoolEight.balanceOf(timelockAddress);
 
   return {
     currentPoolAdmin,
@@ -35,7 +35,7 @@ async function validateState(newState, oldState) {
     feiInRariPool,
   } = newState;
 
-  check(currentPoolAdmin === feiTimelockAddress, 'Rari pool transfered to Timelock');
+  check(currentPoolAdmin === timelockAddress, 'Rari pool transfered to Timelock');
 
   check(poolFeiAllowance.toString() === '0', 'Allowance given to Rari pool has been used');
 

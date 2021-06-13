@@ -1,12 +1,12 @@
-require('dotenv').config();
 const { web3 } = require('@openzeppelin/test-helpers/src/setup');
 const hre = require('hardhat');
 
 const CErc20Delegator = artifacts.require('CErc20Delegator');
 const Fei = artifacts.require('Fei');
 
-const timelockAddress = process.env.MAINNET_TIMELOCK;
+const { getAddresses } = require('../utils/helpers');
 
+const { timelockAddress, rariPoolEightAddress } = getAddresses();
 /*
  DAO Proposal Steps
     1. Accept admin transfer from Tetranode
@@ -18,7 +18,7 @@ const timelockAddress = process.env.MAINNET_TIMELOCK;
 // The steps that don't form part of the proposal but need to be mocked up
 async function setup() {
   const accounts = await web3.eth.getAccounts();
-  const rariPoolEight = await CErc20Delegator.at(process.env.MAINNET_RARI_POOL_8);
+  const rariPoolEight = await CErc20Delegator.at(rariPoolEightAddress);
 
   // Impersonate the current admin address + add ETH
   const currentPoolAdmin = await rariPoolEight.admin();
@@ -43,7 +43,7 @@ async function setup() {
 
 // The actual steps in the proposal
 async function runProposalSteps() {
-  const rariPoolEight = await CErc20Delegator.at(process.env.MAINNET_RARI_POOL_8);
+  const rariPoolEight = await CErc20Delegator.at(rariPoolEightAddress);
   const fei = await Fei.at(process.env.MAINNET_FEI);    
 
   // 1. Accept admin role from our timelock

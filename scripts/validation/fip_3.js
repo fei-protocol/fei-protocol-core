@@ -1,7 +1,6 @@
-require('dotenv').config();
 const { BN, time } = require('@openzeppelin/test-helpers');
 const { syncPool } = require('../utils/syncPool');
-const { check } = require('./helpers');
+const { check, getAddresses } = require('../utils/helpers');
 
 const UniswapPCVController = artifacts.require('UniswapPCVController');
 const Core = artifacts.require('Core');
@@ -32,12 +31,12 @@ async function checkAccessControl(oldController, newController, core) {
   check(controllerNew, 'Grant new controller PCVController');
 }
 
-async function checkParameters(newController, depositAddress) {
+async function checkParameters(newController, ethUniswapPCVDepositAddress) {
   console.log('\nParameters');
 
   const linkedDeposit = await newController.pcvDeposit();
 
-  const updatedDeposit = linkedDeposit === depositAddress;
+  const updatedDeposit = linkedDeposit === ethUniswapPCVDepositAddress;
   check(updatedDeposit, 'New PCV Deposit updates');
 }
 
@@ -61,29 +60,20 @@ async function integrationTestReweight(newController) {
 }
 
 async function main() {
-  let oldControllerAddress; let newControllerAddress; let coreAddress; let 
-    depositAddress;
-  if (process.env.TESTNET_MODE) {
-    console.log('Testnet Mode');
-    oldControllerAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_CONTROLLER_OLD;
-    newControllerAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_CONTROLLER;
-    coreAddress = process.env.RINKEBY_CORE;
-    depositAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_DEPOSIT;
-  } else {
-    console.log('Mainnet Mode');
-    oldControllerAddress = process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER_OLD;
-    newControllerAddress = process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER;
-    coreAddress = process.env.MAINNET_CORE;
-    depositAddress = process.env.MAINNET_ETH_UNISWAP_PCV_DEPOSIT;
-  }
+  const {
+    oldEthUniswapPCVControllerAddress, 
+    ethUniswapPCVControllerAddress, 
+    coreAddress, 
+    ethUniswapPCVDepositAddress
+  } = getAddresses();
 
-  const newController = await UniswapPCVController.at(newControllerAddress);
-  const oldController = await UniswapPCVController.at(oldControllerAddress);
+  const newController = await UniswapPCVController.at(ethUniswapPCVControllerAddress);
+  const oldController = await UniswapPCVController.at(oldEthUniswapPCVControllerAddress);
   const core = await Core.at(coreAddress);
 
   await checkAccessControl(oldController, newController, core);
 
-  await checkParameters(newController, depositAddress);
+  await checkParameters(newController, ethUniswapPCVDepositAddress);
 
   await integrationTestReweight(newController);
 }

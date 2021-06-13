@@ -1,13 +1,18 @@
-const EthUniswapPCVController = artifacts.require('EthUniswapPCVController');
+const UniswapPCVController = artifacts.require('UniswapPCVController');
 const Core = artifacts.require('Core');
+
+const { getAddresses } = require('../utils/helpers');
 
 // The DAO steps for FIP-3, these must be done with Governor access control privileges
 async function main() {
-  // eslint-disable-next-line global-require
-  require('dotenv').config();
+  const { 
+    ethUniswapPCVControllerAddress, 
+    oldEthUniswapPCVControllerAddress,
+    ethUniswapPCVDepositAddress
+  } = getAddresses();
 
-  const newController = await EthUniswapPCVController.at(process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER);
-  const oldController = await EthUniswapPCVController.at(process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER_01);
+  const newController = await UniswapPCVController.at(ethUniswapPCVControllerAddress);
+  const oldController = await UniswapPCVController.at(oldEthUniswapPCVControllerAddress);
   const core = await Core.at(process.env.MAINNET_CORE);
 
   console.log('Granting PCV Controller to new EthUniswapPCVController');
@@ -23,7 +28,7 @@ async function main() {
   await core.revokeMinter(oldController.address);
 
   console.log('Updating EthUniswapPCVDeposit on the new EthUniswapPCVController');
-  await newController.setPCVDeposit(process.env.MAINNET_ETH_UNISWAP_PCV_DEPOSIT);
+  await newController.setPCVDeposit(ethUniswapPCVDepositAddress);
 }
 
 main()

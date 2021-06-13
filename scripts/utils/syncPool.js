@@ -10,25 +10,16 @@ const hre = require('hardhat');
 
 const { web3 } = hre;
 
+const { getAddresses } = require('./helpers');
+
 // Syncs the uniswap FEI-ETH pair to a price relative to oracle price
 // targetBPs would be multiplied by the peg and divided by 10000 and the pair would sync to that price
 async function syncPool(targetBPs) {
-  let feiAddress; 
-  let uniswapPcvDepositAddress; 
-  let ethPairAddress;
-  if (process.env.TESTNET_MODE) {
-    feiAddress = process.env.RINKEBY_FEI;
-    uniswapPcvDepositAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_DEPOSIT;
-    ethPairAddress = process.env.RINKEBY_FEI_ETH_PAIR;
-  } else {
-    feiAddress = process.env.MAINNET_FEI;
-    uniswapPcvDepositAddress = process.env.MAINNET_ETH_UNISWAP_PCV_DEPOSIT;
-    ethPairAddress = process.env.MAINNET_FEI_ETH_PAIR;
-  }
+  const { feiAddress, ethUniswapPCVDepositAddress, ethPairAddress } = getAddresses();
 
   const accounts = await web3.eth.getAccounts();
   const fei = await Fei.at(feiAddress);
-  const uniswapPcvDeposit = await UniswapPCVDeposit.at(uniswapPcvDepositAddress);
+  const uniswapPcvDeposit = await UniswapPCVDeposit.at(ethUniswapPCVDepositAddress);
   const ethPair = await IUniswapV2Pair.at(ethPairAddress);
 
   console.log('Current');
