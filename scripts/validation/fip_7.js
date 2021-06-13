@@ -85,12 +85,12 @@ async function postFipValidation() {
   await validateState(stateAfterFipSeven);
 }
 
-// fullLocalValidation()
-//   .then(() => process.exit(0))
-//   .catch((error) => {
-//     console.error(error);
-//     process.exit(1);
-//   });
+fullLocalValidation()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
 
 // postFipValidation()
 // .then(() => process.exit(0))

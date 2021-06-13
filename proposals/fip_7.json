@@ -6,14 +6,14 @@
             "address": "0xd8553552f8868C1Ef160eEdf031cF0BCf9686945",
             "values": "0",
             "method": "_acceptAdmin()",
-            "call_data": [],
+            "arguments": [],
             "description": "Accept admin role on Rari Fuse 8 Pool"
         },
         {
             "address": "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
             "values": "0",
             "method": "mint(address,uint256)",
-            "call_data": [
+            "arguments": [
                 "0x639572471f2f318464dc01066a56867130e45E25", 
                 "10000000000000000000000000"
             ],
@@ -23,7 +23,7 @@
             "address": "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
             "values": "0",
             "method": "approve(address,uint256)",
-            "call_data": [
+            "arguments": [
                 "0xd8553552f8868C1Ef160eEdf031cF0BCf9686945",
                 "10000000000000000000000000"
             ],
@@ -33,7 +33,7 @@
             "address": "0xd8553552f8868C1Ef160eEdf031cF0BCf9686945",
             "values": "0",
             "method": "mint(uint256)",
-            "call_data": [
+            "arguments": [
                 "10000000000000000000000000"
             ],
             "description": "Supply 10M FEI to the Rari Fuse 8 pool"
