@@ -17,7 +17,10 @@ function getAddresses() {
   let ethPairAddress;
   let coreAddress; 
   let timelockAddress;
-  let rariPoolEightAddress;
+  let rariPoolEightFeiAddress;
+  let rariPoolEightTribeAddress;
+  let rariPoolEightEthAddress;
+  let rariPoolEightDaiAddress;
   let proposerAddress;
   let voterAddress;
   let governorAlphaAddress;
@@ -37,7 +40,11 @@ function getAddresses() {
     timelockAddress = process.env.RINKEBY_TIMELOCK;
     oldEthUniswapPCVControllerAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_CONTROLLER_OLD;
     ethUniswapPCVControllerAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_CONTROLLER;
-    rariPoolEightAddress = process.env.RINKEBY_RARI_POOL_8;
+    rariPoolEightComptrollerAddress = process.env.RINKEBY_RARI_POOL_8_COMPTROLLER;
+    rariPoolEightFeiAddress = process.env.RINKEBY_RARI_POOL_8_FEI;
+    rariPoolEightTribeAddress = process.env.RINKEBY_RARI_POOL_8_TRIBE;
+    rariPoolEightEthAddress = process.env.RINKEBY_RARI_POOL_8_ETH;
+    rariPoolEightDaiAddress = process.env.RINKEBY_RARI_POOL_8_DAI;
     ethBondingCurveAddress = process.env.RINKEBY_ETH_BONDING_CURVE_ADDRESS;
     proposerAddress = process.env.RINKEBY_PROPOSER;
     voterAddress = process.env.RINKEBY_VOTER;
@@ -58,7 +65,11 @@ function getAddresses() {
     timelockAddress = process.env.MAINNET_TIMELOCK;
     oldEthUniswapPCVControllerAddress = process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER_OLD;
     ethUniswapPCVControllerAddress = process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER;
-    rariPoolEightAddress = process.env.MAINNET_RARI_POOL_8;
+    rariPoolEightComptrollerAddress = process.env.MAINNET_RARI_POOL_8_COMPTROLLER;
+    rariPoolEightFeiAddress = process.env.MAINNET_RARI_POOL_8_FEI;
+    rariPoolEightTribeAddress = process.env.MAINNET_RARI_POOL_8_TRIBE;
+    rariPoolEightEthAddress = process.env.MAINNET_RARI_POOL_8_ETH;
+    rariPoolEightDaiAddress = process.env.MAINNET_RARI_POOL_8_DAI;
     ethBondingCurveAddress = process.env.MAINNET_ETH_BONDING_CURVE;
     proposerAddress = process.env.MAINNET_PROPOSER;
     voterAddress = process.env.MAINNET_VOTER;
@@ -81,7 +92,11 @@ function getAddresses() {
     timelockAddress,
     oldEthUniswapPCVControllerAddress,
     ethUniswapPCVControllerAddress,
-    rariPoolEightAddress,
+    rariPoolEightComptrollerAddress,
+    rariPoolEightFeiAddress,
+    rariPoolEightTribeAddress,
+    rariPoolEightEthAddress,
+    rariPoolEightDaiAddress,
     ethBondingCurveAddress,
     proposerAddress,
     voterAddress,
