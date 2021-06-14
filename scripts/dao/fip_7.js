@@ -102,7 +102,6 @@ async function runProposalSteps() {
   const rariPoolEightDai = await CErc20Delegator.at(rariPoolEightDaiAddress);
   const fei = await Fei.at(process.env.MAINNET_FEI);    
 
-
   // 1. Accept admin transfer from Tetranode for Comptroller
   await rariPoolEightComptroller._acceptAdmin({
     from: timelockAddress,
@@ -136,7 +135,6 @@ async function runProposalSteps() {
   await rariPoolEightFei.mint(tenMillion, {
     from: timelockAddress,
   });
-
 }
 
 async function main() {

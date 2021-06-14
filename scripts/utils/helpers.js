@@ -17,6 +17,7 @@ function getAddresses() {
   let ethPairAddress;
   let coreAddress; 
   let timelockAddress;
+  let rariPoolEightComptrollerAddress;
   let rariPoolEightFeiAddress;
   let rariPoolEightTribeAddress;
   let rariPoolEightEthAddress;
