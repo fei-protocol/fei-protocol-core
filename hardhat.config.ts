@@ -10,9 +10,9 @@ import { HardhatUserConfig } from "hardhat/config";
 require('dotenv').config();
 
 const rinkebyAlchemyApiKey = process.env.RINKEBY_ALCHEMY_API_KEY;
+const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
 const testnetPrivateKey = process.env.TESTNET_PRIVATE_KEY;
 const privateKey = process.env.ETH_PRIVATE_KEY;
-const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
 const runE2ETests = process.env.RUN_E2E_TESTS;
 
 if (!rinkebyAlchemyApiKey || !testnetPrivateKey || !privateKey || !mainnetAlchemyApiKey) {
@@ -37,11 +37,9 @@ const config: HardhatUserConfig = {
     },
     rinkeby: {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${rinkebyAlchemyApiKey}`,
-      accounts: [testnetPrivateKey]
     },
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-      accounts: [privateKey]
     },
   },
   solidity: {
