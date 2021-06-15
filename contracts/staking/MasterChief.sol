@@ -14,10 +14,8 @@ interface IMigratorChef {
     function migrate(IERC20 token) external returns (IERC20);
 }
 
-/// @notice The (older) MasterChef contract gives out a constant number of SUSHI tokens per block.
-/// It is the only address with minting rights for SUSHI.
-/// The idea for this MasterChef V2 (MCV2) contract is therefore to be the owner of a dummy token
-/// that is deposited into the MasterChef V1 (MCV1) contract.
+/// @notice The idea for this MasterChief V2 (MCV2) contract is therefore to be the owner of tribe token
+/// that is deposited into this contract.
 /// The allocation point for this pool on MCV1 is the total allocation point for all pools that receive double incentives.
 contract MasterChief is CoreRef, BoringBatchable {
     using SafeERC20 for IERC20;
@@ -71,7 +69,7 @@ contract MasterChief is CoreRef, BoringBatchable {
     event LogUpdatePool(uint256 indexed pid, uint64 lastRewardBlock, uint256 lpSupply, uint256 accSushiPerShare);
     event LogInit();
     /// @notice tribe withdraw event
-    event TribeWithdraw(uint256 _amount);
+    event TribeWithdraw(uint256 amount);
 
     /// @param _iCORE The Core contract address.
     /// @param _sushi The SUSHI token contract address.
@@ -89,17 +87,6 @@ contract MasterChief is CoreRef, BoringBatchable {
     function governorWithdrawTribe(uint256 amount) external onlyGovernor {
         SUSHI.safeTransfer(address(Core), amount);
         emit TribeWithdraw(amount);
-    }
-
-    /// @notice Deposits a dummy token to `MASTER_CHEF` MCV1. This is required because MCV1 holds the minting rights for SUSHI.
-    /// Any balance of transaction sender in `dummyToken` is transferred.
-    /// The allocation point for the pool on MCV1 is the total allocation point for all pools that receive double incentives.
-    /// @param dummyToken The address of the ERC-20 token to deposit into MCV1.
-    function init(IERC20 dummyToken) external {
-        uint256 balance = dummyToken.balanceOf(msg.sender);
-        require(balance != 0, "MasterChefV2: Balance must exceed 0");
-        dummyToken.safeTransferFrom(msg.sender, address(this), balance);
-        emit LogInit();
     }
 
     /// @notice Returns the number of MCV2 pools.
