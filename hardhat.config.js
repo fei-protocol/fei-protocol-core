@@ -8,9 +8,9 @@ require('solidity-coverage');
 require('dotenv').config();
 
 const rinkebyAlchemyApiKey = process.env.RINKEBY_ALCHEMY_API_KEY;
+const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
 const testnetPrivateKey = process.env.TESTNET_PRIVATE_KEY;
 const privateKey = process.env.ETH_PRIVATE_KEY;
-const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -33,11 +33,9 @@ module.exports = {
     },
     rinkeby: {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${rinkebyAlchemyApiKey}`,
-      accounts: [testnetPrivateKey]
     },
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-      accounts: [privateKey]
     },
   },
   solidity: {
