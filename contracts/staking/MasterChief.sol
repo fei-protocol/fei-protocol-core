@@ -132,7 +132,7 @@ contract MasterChief is CoreRef, BoringBatchable {
         emit LogSetPool(_pid, _allocPoint, overwrite ? _rewarder : rewarder[_pid], overwrite);
     }
 
-    /// @notice Set the `migrator` contract. Can only be called by the owner.
+    /// @notice Set the `migrator` contract. Can only be called by the governor.
     /// @param _migrator The contract address to set.
     function setMigrator(IMigratorChef _migrator) public onlyGovernor {
         migrator = _migrator;
