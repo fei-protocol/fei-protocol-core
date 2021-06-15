@@ -3,6 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "./../refs/CoreRef.sol";
+import "./IRewardsDistributor.sol";
 import "./BoringBatchable.sol";
 import "./IRewarder.sol";
 import "./IMasterChief.sol";
@@ -69,6 +70,8 @@ contract MasterChief is CoreRef, BoringBatchable {
     event LogSetPool(uint256 indexed pid, uint256 allocPoint, IRewarder indexed rewarder, bool overwrite);
     event LogUpdatePool(uint256 indexed pid, uint64 lastRewardBlock, uint256 lpSupply, uint256 accSushiPerShare);
     event LogInit();
+    /// @notice tribe withdraw event
+    event TribeWithdraw(uint256 _amount);
 
     /// @param _iCORE The Core contract address.
     /// @param _sushi The SUSHI token contract address.
@@ -79,6 +82,13 @@ contract MasterChief is CoreRef, BoringBatchable {
 
     function updateBlockReward(uint256 newBlockReward) external onlyGovernor {
         MASTERCHEF_SUSHI_PER_BLOCK = newBlockReward;
+    }
+
+    /// @notice sends tokens back to governance treasury. Only callable by governance
+    /// @param amount the amount of tokens to send back to treasury
+    function governorWithdrawTribe(uint256 amount) external onlyGovernor {
+        SUSHI.safeTransfer(address(Core), amount);
+        emit TribeWithdraw(amount);
     }
 
     /// @notice Deposits a dummy token to `MASTER_CHEF` MCV1. This is required because MCV1 holds the minting rights for SUSHI.
