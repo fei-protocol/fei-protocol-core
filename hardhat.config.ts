@@ -37,9 +37,11 @@ const config: HardhatUserConfig = {
     },
     rinkeby: {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${rinkebyAlchemyApiKey}`,
+      accounts: [testnetPrivateKey]
     },
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
+      accounts: [privateKey]
     },
   },
   solidity: {
