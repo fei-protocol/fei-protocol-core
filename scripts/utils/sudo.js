@@ -12,7 +12,7 @@ const { getAddresses } = require('./helpers');
 
 // Grants Governor, Minter, Burner, and PCVController access to accounts[0]
 // Also mints a large amount of FEI to accounts[0]
-async function main() {
+async function sudo() {
   const { coreAddress, feiAddress, timelockAddress } = getAddresses(); 
 
   // Impersonate the Timelock which has Governor access on-chain
@@ -28,7 +28,7 @@ async function main() {
 
   // Force ETH to the Timelock to send txs on its behalf
   console.log('Deploying ForceEth');
-  const forceEth = await ForceEth.new({value: '1000000000000000000000'});
+  const forceEth = await ForceEth.new({value: '1000000000000000000'});
 
   console.log('Forcing ETH to timelock');
   await forceEth.forceEth(timelockAddress);
@@ -44,9 +44,11 @@ async function main() {
   await fei.mint(accounts[0], new BN('10000000000000000000000000000000000'));
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+// sudo()
+//   .then(() => process.exit(0))
+//   .catch((error) => {
+//     console.error(error);
+//     process.exit(1);
+//   });
+
+module.exports = { sudo };

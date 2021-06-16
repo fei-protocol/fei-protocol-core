@@ -8,6 +8,13 @@ function check(flag, message) {
   }
 }
 
+// The current version of the contracts in the repo uses readOracle as the api
+// The old api was peg(), so the currently deployed contracts need manual calling until the upgrade
+async function readOracle(oracleRef, web3) {
+  const data = await web3.eth.call({to: oracleRef.address, data: web3.eth.abi.encodeFunctionSignature('peg()')});
+  return (web3.eth.abi.decodeParameter({ Decimal: {value: 'uint256' }}, data))[0];
+}
+
 function getAddresses() {
   let feiAddress; 
   let ethUniswapPCVDepositAddress; 
@@ -29,6 +36,8 @@ function getAddresses() {
   let wethAddress;
   let uniswapRouterAddress;
   let uniswapOracleAddress;
+  let chainlinkEthUsdOracleWrapperAddress;
+
   if (process.env.TESTNET_MODE) {
     feiAddress = process.env.RINKEBY_FEI;
     ethUniswapPCVDepositAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_DEPOSIT;
@@ -50,6 +59,7 @@ function getAddresses() {
     wethAddress = process.env.RINKEBY_WETH;
     uniswapOracleAddress = process.env.RINKEBY_UNISWAP_ORACLE;
     uniswapRouterAddress = process.env.RINKEBY_UNISWAP_ROUTER;
+    chainlinkEthUsdOracleWrapperAddress = process.env.RINKEBY_ETH_USD_CHAINLINK_WRAPPER;
   } else {
     feiAddress = process.env.MAINNET_FEI;
     ethUniswapPCVDepositAddress = process.env.MAINNET_ETH_UNISWAP_PCV_DEPOSIT;
@@ -71,6 +81,7 @@ function getAddresses() {
     wethAddress = process.env.MAINNET_WETH;
     uniswapOracleAddress = process.env.MAINNET_UNISWAP_ORACLE;
     uniswapRouterAddress = process.env.MAINNET_UNISWAP_ROUTER;
+    chainlinkEthUsdOracleWrapperAddress = process.env.MAINNET_ETH_USD_CHAINLINK_WRAPPER;
   }
 
   return {
@@ -93,11 +104,13 @@ function getAddresses() {
     pcvDripControllerAddress,
     wethAddress,
     uniswapRouterAddress,
-    uniswapOracleAddress
+    uniswapOracleAddress,
+    chainlinkEthUsdOracleWrapperAddress
   };
 }
 
 module.exports = {
   check,
-  getAddresses
+  getAddresses,
+  readOracle
 };
