@@ -16,7 +16,10 @@ interface IMigratorChef {
 
 /// @notice The idea for this MasterChief V2 (MCV2) contract is therefore to be the owner of tribe token
 /// that is deposited into this contract.
-/// The allocation point for this pool on MCV1 is the total allocation point for all pools that receive double incentives.
+/// @notice This contract was forked from sushiswap and has been modified to distribute staking rewards in tribe.
+/// All legacy code that relied on MasterChef V1 has been removed so that this contract will pay out staking rewards in tribe.
+/// The assumption this code makes is that this MasterChief contract will be funded before going live and offering staking rewards.
+/// This contract will not have the ability to mint tribe.
 contract MasterChief is CoreRef, BoringBatchable {
     using SafeERC20 for IERC20;
 
@@ -56,7 +59,7 @@ contract MasterChief is CoreRef, BoringBatchable {
     /// @dev Total allocation points. Must be the sum of all allocation points in all pools.
     uint256 public totalAllocPoint;
 
-    uint256 private MASTERCHEF_SUSHI_PER_BLOCK = 1e20;
+    uint256 private masterChefSushiPerBlock = 1e20;
     // variable has been made immutable to cut down on gas costs
     uint256 private immutable ACC_SUSHI_PRECISION = 1e12;
 
@@ -74,18 +77,18 @@ contract MasterChief is CoreRef, BoringBatchable {
     /// @param _iCORE The Core contract address.
     /// @param _sushi The SUSHI token contract address.
     constructor(ICore _iCORE, IERC20 _sushi) CoreRef(address(_iCORE)) {
-        Core = _iCORE;
+        Core = core();
         SUSHI = _sushi;
     }
 
     function updateBlockReward(uint256 newBlockReward) external onlyGovernor {
-        MASTERCHEF_SUSHI_PER_BLOCK = newBlockReward;
+        masterChefSushiPerBlock = newBlockReward;
     }
 
     /// @notice sends tokens back to governance treasury. Only callable by governance
     /// @param amount the amount of tokens to send back to treasury
     function governorWithdrawTribe(uint256 amount) external onlyGovernor {
-        SUSHI.safeTransfer(address(Core), amount);
+        SUSHI.safeTransfer(address(core()), amount);
         emit TribeWithdraw(amount);
     }
 
@@ -97,7 +100,7 @@ contract MasterChief is CoreRef, BoringBatchable {
     /// @notice borrowed from boring math, translated up to solidity V8
     function to64(uint256 a) internal pure returns (uint64 c) {
         // 18446744073709551615 equals 1111111111111111111111111111111111111111111111111111111111111111 which is uint64 max
-        require(a <= 18446744073709551615, "BoringMath: uint64 Overflow");
+        require(a <= type(uint64).max, "BoringMath: uint64 Overflow");
         c = uint64(a);
     }
 
@@ -181,7 +184,7 @@ contract MasterChief is CoreRef, BoringBatchable {
 
     /// @notice Calculates and returns the `amount` of SUSHI per block.
     function sushiPerBlock() public view returns (uint256 amount) {
-        amount = uint256(MASTERCHEF_SUSHI_PER_BLOCK);
+        amount = uint256(masterChefSushiPerBlock);
     }
 
     /// @notice Update reward variables of the given pool.
