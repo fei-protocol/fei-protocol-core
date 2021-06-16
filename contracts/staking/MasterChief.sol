@@ -99,7 +99,6 @@ contract MasterChief is CoreRef, BoringBatchable {
 
     /// @notice borrowed from boring math, translated up to solidity V8
     function to64(uint256 a) internal pure returns (uint64 c) {
-        // 18446744073709551615 equals 1111111111111111111111111111111111111111111111111111111111111111 which is uint64 max
         require(a <= type(uint64).max, "BoringMath: uint64 Overflow");
         c = uint64(a);
     }
