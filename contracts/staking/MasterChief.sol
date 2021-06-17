@@ -159,17 +159,16 @@ contract MasterChief is CoreRef, BoringBatchable {
     function pendingSushi(uint256 _pid, address _user) external view returns (uint256 pending) {
         PoolInfo memory pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
+
         uint256 accSushiPerShare = pool.accSushiPerShare;
         uint256 lpSupply = lpToken[_pid].balanceOf(address(this));
+
         if (block.number > pool.lastRewardBlock && lpSupply != 0) {
             uint256 blocks = block.number - pool.lastRewardBlock;
             uint256 sushiReward = (blocks * sushiPerBlock() * pool.allocPoint) / totalAllocPoint;
             accSushiPerShare = accSushiPerShare + ((sushiReward * ACC_SUSHI_PRECISION) / lpSupply);
         }
-        pending = uint256(
-            int256((user.amount * accSushiPerShare) / ACC_SUSHI_PRECISION)
-             - (user.rewardDebt)
-        );
+        pending = uint256( int256( ( user.amount * accSushiPerShare ) / ACC_SUSHI_PRECISION ) - user.rewardDebt );
     }
 
     /// @notice Update reward variables for all pools. Be careful of gas spending!
@@ -256,6 +255,7 @@ contract MasterChief is CoreRef, BoringBatchable {
     function harvest(uint256 pid, address to) public {
         PoolInfo memory pool = updatePool(pid);
         UserInfo storage user = userInfo[pid][msg.sender];
+
         int256 accumulatedSushi = int256((user.amount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION);
         uint256 _pendingSushi = uint256(accumulatedSushi - user.rewardDebt);
 
