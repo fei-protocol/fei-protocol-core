@@ -182,6 +182,35 @@ describe('MasterChief', function () {
         expect(Number(await this.tribe.balanceOf(secondUserAddress))).to.be.equal( (perBlockReward / 2)  * (advanceBlockAmount - 2));
     });
 
+    it('should be able to step down rewards by halving rewards per block after 200 blocks, then go another 200 blocks', async function() {
+        await this.LPToken.approve(this.masterChief.address, totalStaked, { from: userAddress });
+        await this.masterChief.deposit(pid, totalStaked, userAddress, { from: userAddress });
+
+        const advanceBlockAmount = 200;
+        for (let i = 0; i < advanceBlockAmount; i++) {
+            await time.advanceBlock();
+        }
+        expect(Number(await this.masterChief.pendingSushi(pid, userAddress))).to.be.equal(perBlockReward * advanceBlockAmount);
+
+        await this.masterChief.harvest(pid, userAddress, { from: userAddress });
+
+        // add on one to the advance block amount as we have advanced one more block when calling the harvest function
+        expect(Number(await this.tribe.balanceOf(userAddress))).to.be.equal(perBlockReward * (advanceBlockAmount + 1));
+
+        await this.masterChief.updateBlockReward('50000000000000000000', { from: governorAddress });
+        // burn tribe tokens to make life easier when calculating rewards after this step up
+        await this.tribe.transfer(ONE_ADDRESS, (await this.tribe.balanceOf(userAddress)).toString());
+
+        // we did 5 tx's before starting and then do 1 tx to harvest so start with i at 3.
+        for (let i = 3; i < advanceBlockAmount; i++) {
+            await time.advanceBlock();
+        }
+
+        await this.masterChief.harvest(pid, userAddress, { from: userAddress });
+        // add on one to the advance block amount as we have advanced one more block when calling the harvest function
+        expect(Number(await this.tribe.balanceOf(userAddress))).to.be.equal( (perBlockReward / 2)  * (advanceBlockAmount));
+    });
+
     it('should be able to step down rewards by creating a new PID with equal allocation points after 200 blocks, then go another 200 blocks', async function() {
         await this.LPToken.approve(this.masterChief.address, totalStaked, { from: userAddress });
         await this.masterChief.deposit(pid, totalStaked, userAddress, { from: userAddress });
