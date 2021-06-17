@@ -51,7 +51,11 @@ describe('MasterChief', function () {
     this.masterChief = await MasterChief.new(this.core.address, this.tribe.address);
     const mintAmount = '1000000000000000000000000000000000000000000000';
 
-    // mint LP tokens
+    // create and mint LP tokens
+    this.curveLPToken = await MockERC20.new();
+    await this.curveLPToken.mint(userAddress, mintAmount);
+    await this.curveLPToken.mint(secondUserAddress, mintAmount);
+    
     this.LPToken = await MockERC20.new();
     await this.LPToken.mint(userAddress, mintAmount);
     await this.LPToken.mint(secondUserAddress, mintAmount);
@@ -136,6 +140,48 @@ describe('MasterChief', function () {
         expect(Number(await this.masterChief.pendingSushi(pid, userAddress))).to.be.equal(perBlockReward);
     });
 
+    it('should be able to step down rewards by creating a new PID for curve with equal allocation points after 200 blocks, then go another 200 blocks', async function() {
+        await this.LPToken.approve(this.masterChief.address, totalStaked, { from: userAddress });
+        await this.masterChief.deposit(pid, totalStaked, userAddress, { from: userAddress });
+
+        const advanceBlockAmount = 200;
+        for (let i = 0; i < advanceBlockAmount; i++) {
+            await time.advanceBlock();
+        }
+        expect(Number(await this.masterChief.pendingSushi(pid, userAddress))).to.be.equal(perBlockReward * advanceBlockAmount);
+
+        await this.masterChief.harvest(pid, userAddress, { from: userAddress });
+
+        // add on one to the advance block amount as we have advanced one more block when calling the harvest function
+        expect(Number(await this.tribe.balanceOf(userAddress))).to.be.equal(perBlockReward * (advanceBlockAmount + 1));
+
+        // adding another PID for curve will cut user rewards in half for users staked in the first pool
+        const pid2 = Number(
+            (await this.masterChief.add(allocationPoints, this.curveLPToken.address, ZERO_ADDRESS, { from: governorAddress }))
+            .logs[0].args.pid
+        );
+
+        await this.curveLPToken.approve(this.masterChief.address, totalStaked, { from: secondUserAddress });
+        await this.masterChief.deposit(pid2, totalStaked, secondUserAddress, { from: secondUserAddress });
+
+        // burn tribe tokens to make life easier when calculating rewards after this step up
+        await this.tribe.transfer(ONE_ADDRESS, (await this.tribe.balanceOf(userAddress)).toString());
+
+        // we did 5 tx's before starting and then do 1 tx to harvest so start with i at 3.
+        for (let i = 5; i < advanceBlockAmount; i++) {
+            await time.advanceBlock();
+        }
+
+        await this.masterChief.harvest(pid, userAddress, { from: userAddress });
+        // add on one to the advance block amount as we have advanced one more block when calling the harvest function
+        expect(Number(await this.tribe.balanceOf(userAddress))).to.be.equal( (perBlockReward / 2)  * (advanceBlockAmount));
+
+        await this.masterChief.harvest(pid2, secondUserAddress, { from: secondUserAddress });
+
+        // subtract 2 from the advance block amount as we have advanced two less blocks when calling the harvest function
+        expect(Number(await this.tribe.balanceOf(secondUserAddress))).to.be.equal( (perBlockReward / 2)  * (advanceBlockAmount - 2));
+    });
+
     it('should be able to step down rewards by creating a new PID with equal allocation points after 200 blocks, then go another 200 blocks', async function() {
         await this.LPToken.approve(this.masterChief.address, totalStaked, { from: userAddress });
         await this.masterChief.deposit(pid, totalStaked, userAddress, { from: userAddress });
@@ -153,7 +199,7 @@ describe('MasterChief', function () {
         expect(Number(await this.tribe.balanceOf(userAddress))).to.be.equal(perBlockReward * (advanceBlockAmount + 1));
 
         // adding another PID will cut user rewards in half for users staked in the first pool
-        const tx = await this.masterChief.add(allocationPoints, this.LPToken.address, ZERO_ADDRESS, { from: governorAddress });
+        await this.masterChief.add(allocationPoints, this.LPToken.address, ZERO_ADDRESS, { from: governorAddress });
 
         // burn tribe tokens to make life easier when calculating rewards after this step up
         await this.tribe.transfer(ONE_ADDRESS, (await this.tribe.balanceOf(userAddress)).toString());
