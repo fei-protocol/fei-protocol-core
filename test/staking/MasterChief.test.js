@@ -14,6 +14,7 @@ const MockCoreRef = artifacts.require('MockCoreRef');
 const MasterChief = artifacts.require('MasterChief');
 const MockERC20 = artifacts.require('MockERC20');
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const ONE_ADDRESS = '0x0000000000000000000000000000000000000001';
 
 describe('MasterChief', function () {
   let pid;
@@ -39,8 +40,8 @@ describe('MasterChief', function () {
       guardianAddress,
     } = await getAddresses());
     accounts = await getWeb3Addresses();
-    secondUserAddress = accounts[0];
-    thirdUserAddress = accounts[1];
+    secondUserAddress = accounts[2];
+    thirdUserAddress = accounts[3];
 
     this.core = await getCore(false);
 
@@ -48,13 +49,16 @@ describe('MasterChief', function () {
     this.coreRef = await MockCoreRef.new(this.core.address);
 
     this.masterChief = await MasterChief.new(this.core.address, this.tribe.address);
+    const mintAmount = '1000000000000000000000000000000000000000000000';
 
     // mint LP tokens
     this.LPToken = await MockERC20.new();
-         await this.LPToken.mint(userAddress, '1000000000000000000000000000000000000000000000');
-   await this.LPToken.mint(secondUserAddress, '1000000000000000000000000000000000000000000000');
-    await this.LPToken.mint(thirdUserAddress, '1000000000000000000000000000000000000000000000');
-    await this.tribe.mint(this.masterChief.address, '1000000000000000000000000000000000000000000000', { from: minterAddress });
+    await this.LPToken.mint(userAddress, mintAmount);
+    await this.LPToken.mint(secondUserAddress, mintAmount);
+    await this.LPToken.mint(thirdUserAddress, mintAmount);
+
+    // mint tribe tokens to the masterchief contract to distribute as rewards
+    await this.tribe.mint(this.masterChief.address, mintAmount, { from: minterAddress });
 
     // create new reward stream
     const tx = await this.masterChief.add(allocationPoints, this.LPToken.address, ZERO_ADDRESS, { from: governorAddress });
@@ -132,8 +136,8 @@ describe('MasterChief', function () {
         expect(Number(await this.masterChief.pendingSushi(pid, userAddress))).to.be.equal(perBlockReward);
     });
 
-    it('should be able to get pending sushi 200 blocks', async function() {
-        await this.LPToken.approve(this.masterChief.address, totalStaked);
+    it('should be able to step down rewards by creating a new PID with equal allocation points after 200 blocks, then go another 200 blocks', async function() {
+        await this.LPToken.approve(this.masterChief.address, totalStaked, { from: userAddress });
         await this.masterChief.deposit(pid, totalStaked, userAddress, { from: userAddress });
 
         const advanceBlockAmount = 200;
@@ -141,25 +145,78 @@ describe('MasterChief', function () {
             await time.advanceBlock();
         }
 
-        console.log("pending sushi after 200 blocks for one user staking: ", Number(await this.masterChief.pendingSushi(pid, userAddress)));
         expect(Number(await this.masterChief.pendingSushi(pid, userAddress))).to.be.equal(perBlockReward * advanceBlockAmount);
 
-        console.log('tribe balance befor harvest: ', Number(await this.tribe.balanceOf(secondUserAddress)));
-        await this.masterChief.harvest(pid, secondUserAddress, { from: secondUserAddress });
-        console.log('tribe balance after harvest: ', Number(await this.tribe.balanceOf(secondUserAddress)));
+        await this.masterChief.harvest(pid, userAddress, { from: userAddress });
+
+        // add on one to the advance block amount as we have advanced one more block when calling the harvest function
+        expect(Number(await this.tribe.balanceOf(userAddress))).to.be.equal(perBlockReward * (advanceBlockAmount + 1));
+
+        // adding another PID will cut user rewards in half for users staked in the first pool
+        const tx = await this.masterChief.add(allocationPoints, this.LPToken.address, ZERO_ADDRESS, { from: governorAddress });
+
+        // burn tribe tokens to make life easier when calculating rewards after this step up
+        await this.tribe.transfer(ONE_ADDRESS, (await this.tribe.balanceOf(userAddress)).toString());
+
+        // we did 2 tx's before starting and then do 1 tx to harvest so start with i at 3.
+        for (let i = 3; i < advanceBlockAmount; i++) {
+            await time.advanceBlock();
+        }
+
+        await this.masterChief.harvest(pid, userAddress, { from: userAddress });
+        // add on one to the advance block amount as we have advanced one more block when calling the harvest function
+        expect(Number(await this.tribe.balanceOf(userAddress))).to.be.equal( (perBlockReward / 2)  * (advanceBlockAmount));
     });
 
-    it('should be able to distribute sushi after 200 blocks with 3 users staking', async function() {
-        // user one actions
+    it('should be able to get pending sushi 200 blocks', async function() {
         await this.LPToken.approve(this.masterChief.address, totalStaked, { from: userAddress });
         await this.masterChief.deposit(pid, totalStaked, userAddress, { from: userAddress });
 
-        // user two actions
+        const advanceBlockAmount = 200;
+        for (let i = 0; i < advanceBlockAmount; i++) {
+            await time.advanceBlock();
+        }
+
+        expect(Number(await this.masterChief.pendingSushi(pid, userAddress))).to.be.equal(perBlockReward * advanceBlockAmount);
+        
+        await this.masterChief.harvest(pid, userAddress, { from: userAddress });
+        // add on one to the advance block amount as we have advanced one more block when calling the harvest function
+        expect(Number(await this.tribe.balanceOf(userAddress))).to.be.equal(perBlockReward * (advanceBlockAmount + 1));
+    });
+
+    it('should be able to get pending sushi 200 blocks with 2 users staking', async function() {
+        await this.LPToken.approve(this.masterChief.address, totalStaked, { from: userAddress });
         await this.LPToken.approve(this.masterChief.address, totalStaked, { from: secondUserAddress });
+
+        await this.masterChief.deposit(pid, totalStaked, userAddress, { from: userAddress });
         await this.masterChief.deposit(pid, totalStaked, secondUserAddress, { from: secondUserAddress });
 
-        // user three actions
+        const advanceBlockAmount = 200;
+        for (let i = 0; i < advanceBlockAmount; i++) {
+            await time.advanceBlock();
+        }
+
+        expect(Number(await this.masterChief.pendingSushi(pid, userAddress))).to.be.equal( ( ( perBlockReward * advanceBlockAmount ) / 2 ) + perBlockReward );
+        
+        await this.masterChief.harvest(pid, secondUserAddress, { from: secondUserAddress });
+        // add on one to the advance block amount as we have advanced one more block when calling the harvest function
+        expect(Number(await this.tribe.balanceOf(secondUserAddress))).to.be.equal( ( ( perBlockReward * advanceBlockAmount ) / 2 ) + perBlockReward / 2 );
+        
+        await this.masterChief.harvest(pid, userAddress, { from: userAddress });
+        // add on one to the advance block amount as we have advanced one more block when calling the harvest function
+        expect(Number(await this.tribe.balanceOf(userAddress))).to.be.equal( ( ( perBlockReward * advanceBlockAmount ) / 2 ) + perBlockReward * 2 );
+    });
+
+    it('should be able to distribute sushi after 200 blocks with 3 users staking', async function() {
+        // approve actions
+        await this.LPToken.approve(this.masterChief.address, totalStaked, { from: userAddress });
+        
+        await this.LPToken.approve(this.masterChief.address, totalStaked, { from: secondUserAddress });
         await this.LPToken.approve(this.masterChief.address, totalStaked, { from: thirdUserAddress });
+        
+        // deposit actions
+        await this.masterChief.deposit(pid, totalStaked, userAddress, { from: userAddress });
+        await this.masterChief.deposit(pid, totalStaked, secondUserAddress, { from: secondUserAddress });
         await this.masterChief.deposit(pid, totalStaked, thirdUserAddress, { from: thirdUserAddress });
 
         const advanceBlockAmount = 200;
@@ -173,9 +230,7 @@ describe('MasterChief', function () {
         // console.log(`sushi provided user3: ${Number((await this.masterChief.userInfo(pid, thirdUserAddress)).amount)} reward debt ${Number((await this.masterChief.userInfo(pid, thirdUserAddress)).rewardDebt)}`);
 
         await this.masterChief.harvest(pid, userAddress, { from: userAddress });
-
         await this.masterChief.harvest(pid, secondUserAddress, { from: secondUserAddress });
-
         await this.masterChief.harvest(pid, thirdUserAddress, { from: thirdUserAddress });
     });
 
