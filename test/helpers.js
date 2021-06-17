@@ -25,6 +25,11 @@ const { expect } = chai;
 const ForceEth = artifacts.require('ForceEth');
 const Core = artifacts.require('Core');
 
+async function getWeb3Addresses() {
+  const addressses = await web3.eth.getAccounts();
+  return addressses;
+}
+
 async function getAddresses() {
   const [
     userAddress,
@@ -110,4 +115,5 @@ module.exports = {
   forceEth,
   expectApprox,
   ether,
+  getWeb3Addresses,
 };
