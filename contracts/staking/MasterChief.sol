@@ -12,6 +12,7 @@ interface IMigratorChef {
     // Take the current LP token address and return the new LP token address.
     // Migrator should have full access to the caller's LP token.
     function migrate(IERC20 token) external returns (IERC20);
+    function depositedFunds(address token, address user) external view returns (uint256);
 }
 
 /// @notice The idea for this MasterChief V2 (MCV2) contract is therefore to be the owner of tribe token
@@ -148,7 +149,7 @@ contract MasterChief is CoreRef, BoringBatchable {
         uint256 bal = _lpToken.balanceOf(address(this));
         _lpToken.approve(address(migrator), bal);
         IERC20 newLpToken = migrator.migrate(_lpToken);
-        require(bal == newLpToken.balanceOf(address(this)), "MasterChefV2: migrated balance must match");
+        require(bal == migrator.depositedFunds(address(newLpToken), address(this)), "MasterChefV2: migrated balance must match");
         lpToken[_pid] = newLpToken;
     }
 

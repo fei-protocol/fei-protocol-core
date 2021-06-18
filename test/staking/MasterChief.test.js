@@ -256,8 +256,7 @@ describe('MasterChief', function () {
         await this.curveLPToken.approve(this.masterChief.address, totalStaked, { from: secondUserAddress });
         await this.masterChief.deposit(pid2, totalStaked, secondUserAddress, { from: secondUserAddress });
 
-        // burn tribe tokens to make life easier when calculating rewards after this step up
-        await this.tribe.transfer(ONE_ADDRESS, (await this.tribe.balanceOf(userAddress)).toString());
+        const startingTribeBalance = await this.tribe.balanceOf(userAddress);
 
         // we did 5 tx's before starting and then do 1 tx to harvest so start with i at 3.
         for (let i = 5; i < advanceBlockAmount; i++) {
@@ -265,12 +264,29 @@ describe('MasterChief', function () {
         }
 
         await this.masterChief.harvest(pid, userAddress, { from: userAddress });
-        expect(Number(await this.tribe.balanceOf(userAddress))).to.be.equal( (perBlockReward / 2)  * (advanceBlockAmount));
+
+        const endingTribeBalance = await this.tribe.balanceOf(userAddress);
+        const rewardAmount = endingTribeBalance.sub(startingTribeBalance);
+
+        /**
+         * 
+         *
+            startingTribeBalance:  1100000000000000000000 = 1.1e21
+            endingTribeBalance:  1550000000000000000000 = 1.55e21
+            rewardAmount:  450000000000000000000 = 4.5e20
+
+            built value:  950000000000000000000 = (100000000000000000000 / 2)  * 10 + 4.5E20 = 9.5e20
+            actual value:  1550000000000000000000 = 1.55e21
+         *
+         *
+         */
+        // for 7 blocks, we received half of the rewards of one pool. For one block after the 10 blocks, we received 100% of all block rewards
+        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal( new BN((((perBlockReward / 2)  * (advanceBlockAmount - 3)) + (perBlockReward)).toString()).add(startingTribeBalance) );
 
         await this.masterChief.harvest(pid2, secondUserAddress, { from: secondUserAddress });
 
         // subtract 2 from the advance block amount as we have advanced two less blocks when calling the harvest function
-        expect(Number(await this.tribe.balanceOf(secondUserAddress))).to.be.equal( (perBlockReward / 2)  * (advanceBlockAmount - 2));
+        expect(Number(await this.tribe.balanceOf(secondUserAddress))).to.be.equal( (perBlockReward / 2)  * (advanceBlockAmount - 3));
     });
 
     it('should be able to step down rewards by halving rewards per block after 10 blocks, then go another 10 blocks', async function() {
@@ -289,16 +305,17 @@ describe('MasterChief', function () {
         expect(Number(await this.tribe.balanceOf(userAddress))).to.be.equal(perBlockReward * (advanceBlockAmount + 1));
 
         await this.masterChief.updateBlockReward('50000000000000000000', { from: governorAddress });
-        // burn tribe tokens to make life easier when calculating rewards after this step up
-        await this.tribe.transfer(ONE_ADDRESS, (await this.tribe.balanceOf(userAddress)).toString());
+
+        const startingTribeBalance = await this.tribe.balanceOf(userAddress);
 
         // we did 3 tx's before starting so start with i at 3.
         for (let i = 3; i < advanceBlockAmount; i++) {
             await time.advanceBlock();
         }
 
+        const expectedAmount = startingTribeBalance.add( new BN(((perBlockReward / 2)  * (advanceBlockAmount - 1)).toString() ) );
         await this.masterChief.harvest(pid, userAddress, { from: userAddress });
-        expect(Number(await this.tribe.balanceOf(userAddress))).to.be.equal( (perBlockReward / 2)  * (advanceBlockAmount));
+        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(expectedAmount);
     });
 
     it('should be able to step down rewards by creating a new PID with equal allocation points after 10 blocks, then go another 5 blocks', async function() {
