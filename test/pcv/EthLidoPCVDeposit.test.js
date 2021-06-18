@@ -1,7 +1,5 @@
 const ether = require('@openzeppelin/test-helpers/src/ether');
 const {
-  BN,
-  time,
   web3,
   expectRevert,
   expectEvent,
@@ -11,7 +9,7 @@ const {
   forceEth
 } = require('../helpers');
 
-const EthLidoPCVDeposit = artifacts.require('EthLidoPCVDeposit')
+const EthLidoPCVDeposit = artifacts.require('EthLidoPCVDeposit');
 const Fei = artifacts.require('Fei');
 const MockWeth = artifacts.require('MockWeth');
 const MockStEthStableSwap = artifacts.require('MockStEthStableSwap');
@@ -22,8 +20,6 @@ const e18 = '000000000000000000';
 describe('EthLidoPCVDeposit', function () {
   let userAddress;
   let secondUserAddress;
-  let minterAddress;
-  let guardianAddress;
   let governorAddress;
   let pcvControllerAddress;
 
@@ -31,8 +27,6 @@ describe('EthLidoPCVDeposit', function () {
     ({
       userAddress,
       secondUserAddress,
-      minterAddress,
-      guardianAddress,
       governorAddress,
       pcvControllerAddress
     } = await getAddresses());
@@ -141,7 +135,7 @@ describe('EthLidoPCVDeposit', function () {
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal('0');
         await this.stableswap.setSlippage(1000, true); // 10% negative slippage (bonus) for ETH -> stETH
         await this.pcvDeposit.deposit();
-        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal(`1100000000000000000`); // got 1.1 stETH
+        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal('1100000000000000000'); // got 1.1 stETH
       });
       it('should directly stake if slippage is positive', async function() {
         await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: `1${e18}`});
