@@ -90,6 +90,32 @@ describe('MasterChief', function () {
     pid = Number(tx.logs[0].args.pid);
   });
 
+
+  async function testMultipleUsersPooling(masterChief, lpToken, userAddresses, incrementAmount, blocksToAdvance) {
+    for (let i = 0; i < userAddresses.length; i++) {
+        await lpToken.approve(masterChief.address, totalStaked, { from: userAddresses[i] });
+        await masterChief.deposit(pid, totalStaked, userAddresses[i], { from: userAddresses[i] });
+    }
+
+    const pendingBalances = [];
+    for (let i = 0; i < userAddresses.length; i++) {
+        const balance = new BN(await masterChief.pendingSushi(pid, userAddresses[i]));
+        pendingBalances.push(balance);
+    }
+
+    for (let i = 0; i < blocksToAdvance; i++) {
+        for (let j = 0; j < pendingBalances.length; j++) {
+            pendingBalances[j] = new BN(await masterChief.pendingSushi(pid, userAddresses[j]));
+        }
+
+        await time.advanceBlock();
+
+        for (let j = 0; j < userAddresses.length; j++) {
+            expect(pendingBalances[j].add(incrementAmount)).to.be.bignumber.equal(new BN(await masterChief.pendingSushi(pid, userAddresses[j])));
+        }
+    }
+  }
+
   describe('Test Security', function() {
     it('should not be able to add rewards stream as non governor', async function() {
         await expectRevert(
@@ -389,31 +415,6 @@ describe('MasterChief', function () {
         await this.masterChief.harvest(pid, thirdUserAddress, { from: thirdUserAddress });
     });
 
-    async function testMultipleUsersPooling(masterChief, lpToken, userAddresses, incrementAmount, blocksToAdvance) {
-        for (let i = 0; i < userAddresses.length; i++) {
-            await lpToken.approve(masterChief.address, totalStaked, { from: userAddresses[i] });
-            await masterChief.deposit(pid, totalStaked, userAddresses[i], { from: userAddresses[i] });
-        }
-
-        const pendingBalances = [];
-        for (let i = 0; i < userAddresses.length; i++) {
-            const balance = new BN(await masterChief.pendingSushi(pid, userAddresses[i]));
-            pendingBalances.push(balance);
-        }
-
-        for (let i = 0; i < blocksToAdvance; i++) {
-            for (let j = 0; j < pendingBalances.length; j++) {
-                pendingBalances[j] = new BN(await masterChief.pendingSushi(pid, userAddresses[j]));
-            }
-
-            await time.advanceBlock();
-
-            for (let j = 0; j < userAddresses.length; j++) {
-                expect(pendingBalances[j].add(incrementAmount)).to.be.bignumber.equal(new BN(await masterChief.pendingSushi(pid, userAddresses[j])));
-            }
-        }
-    }
-
     it('should be able to distribute sushi after 10 blocks with 5 users staking using helper function', async function() {
         const userAddresses = [ userAddress, secondUserAddress, thirdUserAddress, fourthUserAddress, fifthUserAddress ];
         
@@ -471,6 +472,186 @@ describe('MasterChief', function () {
 
     it('should be able to assert poolLength', async function() {
         expect(Number(await this.masterChief.poolLength())).to.be.equal(1);
+    });
+  });
+
+  describe('Test Withdraw and Migrate Staking', function() {
+    it('should be able to distribute sushi after 10 blocks with 10 users staking using helper function and 2 staking PIDs', async function() {
+        const userAddresses = [
+            userAddress,
+            secondUserAddress,
+            thirdUserAddress,
+            fourthUserAddress,
+            fifthUserAddress,
+            sixthUserAddress,
+            seventhUserAddress,
+            eigthUserAddress,
+            ninthUserAddress,
+            tenthUserAddress
+         ];
+
+        await this.masterChief.add(allocationPoints, this.LPToken.address, this.tribe.address, { from: governorAddress });
+        expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
+         
+        await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('5000000000000000000'), 10);
+        for (let i = 0; i < userAddresses.length; i++) {
+            expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+            expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+            const pendingTribe = await this.masterChief.pendingSushi(pid, userAddresses[i]);
+            await this.masterChief.withdrawAndHarvest(pid, totalStaked, userAddresses[i], { from: userAddresses[i] });
+            expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN(totalStaked));
+            expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.gte(pendingTribe);
+        }
+    });
+
+    it('should be able to distribute sushi after 10 blocks with 5 users staking using helper function and 2 staking PIDs', async function() {
+        const userAddresses = [
+            userAddress,
+            secondUserAddress,
+            thirdUserAddress,
+            fourthUserAddress,
+            fifthUserAddress,
+         ];
+
+        await this.masterChief.add(allocationPoints, this.LPToken.address, this.tribe.address, { from: governorAddress });
+        expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
+         
+        await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('10000000000000000000'), 10);
+        for (let i = 0; i < userAddresses.length; i++) {
+            expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+            expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+            const pendingTribe = await this.masterChief.pendingSushi(pid, userAddresses[i]);
+            await this.masterChief.withdrawAndHarvest(pid, totalStaked, userAddresses[i], { from: userAddresses[i] });
+            expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN(totalStaked));
+            expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.gte(pendingTribe);
+        }
+    });
+
+    it('should be able to distribute sushi after 10 blocks with 5 users staking using helper function and 1 staking PIDs', async function() {
+        const userAddresses = [
+            userAddress,
+            secondUserAddress,
+            thirdUserAddress,
+            fourthUserAddress,
+            fifthUserAddress,
+        ];
+
+        await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('20000000000000000000'), 10);
+
+        for (let i = 0; i < userAddresses.length; i++) {
+            expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+            expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+            const pendingTribe = await this.masterChief.pendingSushi(pid, userAddresses[i]);
+            await this.masterChief.withdrawAndHarvest(pid, totalStaked, userAddresses[i], { from: userAddresses[i] });
+            expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN(totalStaked));
+            expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.gte(pendingTribe);
+        }
+    });
+
+    it('should be able to distribute sushi after 10 blocks with 2 users staking using helper function and 5 staking PIDs', async function() {
+        const userAddresses = [
+            userAddress,
+            secondUserAddress,
+        ];
+
+        for (let i = 1; i < 5; i++) {
+            await this.masterChief.add(allocationPoints, this.LPToken.address, this.tribe.address, { from: governorAddress });
+            expect(Number(await this.masterChief.poolLength())).to.be.equal(1 + i);
+        }
+
+        await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('10000000000000000000'), 10);
+
+        for (let i = 0; i < userAddresses.length; i++) {
+            expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+            expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+            const pendingTribe = await this.masterChief.pendingSushi(pid, userAddresses[i]);
+            await this.masterChief.withdrawAndHarvest(pid, totalStaked, userAddresses[i], { from: userAddresses[i] });
+            expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN(totalStaked));
+            expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.gte(pendingTribe);
+        }
+    });
+
+    it('should be able to distribute sushi after 10 blocks with 4 users staking using helper function and 1 staking PIDs', async function() {
+        const userAddresses = [
+            userAddress,
+            secondUserAddress,
+            thirdUserAddress,
+            fourthUserAddress,
+        ];
+
+        await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('25000000000000000000'), 10);
+
+        for (let i = 0; i < userAddresses.length; i++) {
+            expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+            expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+            const pendingTribe = await this.masterChief.pendingSushi(pid, userAddresses[i]);
+            await this.masterChief.withdrawAndHarvest(pid, totalStaked, userAddresses[i], { from: userAddresses[i] });
+            expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN(totalStaked));
+            expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.gte(pendingTribe);
+        }
+    });
+
+    it('should be able to distribute sushi after 10 blocks with 5 users staking using helper function and 2 staking PIDs', async function() {
+        const userAddresses = [
+            userAddress,
+            secondUserAddress,
+            thirdUserAddress,
+            fourthUserAddress,
+            fifthUserAddress,
+        ];
+
+        await this.masterChief.add(allocationPoints, this.LPToken.address, this.tribe.address, { from: governorAddress });
+        expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
+
+        await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('10000000000000000000'), 10);
+
+        for (let i = 0; i < userAddresses.length; i++) {
+            expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+            expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+            const pendingTribe = await this.masterChief.pendingSushi(pid, userAddresses[i]);
+            await this.masterChief.withdrawAndHarvest(pid, totalStaked, userAddresses[i], { from: userAddresses[i] });
+            expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN(totalStaked));
+            expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.gte(pendingTribe);
+        }
+    });
+  });
+
+  describe('Test Withdraw and Harvest Scenarios', function() {
+    it('should be able to distribute sushi after 10 blocks with 10 users staking by withdrawing and then harvest', async function() {
+        const userAddresses = [
+            userAddress,
+            secondUserAddress,
+            thirdUserAddress,
+            fourthUserAddress,
+            fifthUserAddress,
+            sixthUserAddress,
+            seventhUserAddress,
+            eigthUserAddress,
+            ninthUserAddress,
+            tenthUserAddress
+         ];
+
+        await this.masterChief.add(allocationPoints, this.LPToken.address, this.tribe.address, { from: governorAddress });
+        expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
+         
+        await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('5000000000000000000'), 10);
+        for (let i = 0; i < userAddresses.length; i++) {
+            expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+            expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+            const pendingTribeBeforeHarvest = await this.masterChief.pendingSushi(pid, userAddresses[i]);
+
+            await this.masterChief.withdraw(pid, totalStaked, userAddresses[i], { from: userAddresses[i] });
+            expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN(totalStaked));
+            expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+
+            const pendingTribe = await this.masterChief.pendingSushi(pid, userAddresses[i]);
+            // console.log(`pending tribe before harvest: ${pendingTribeBeforeHarvest} pendingTribe: ${pendingTribe}`);
+            expect(pendingTribe).to.be.bignumber.gte(pendingTribeBeforeHarvest);
+            
+            await this.masterChief.harvest(pid, userAddresses[i], { from:  userAddresses[i] });
+            const tribeBalance = await this.tribe.balanceOf(userAddresses[i]);
+            expect(tribeBalance).to.be.bignumber.gte(pendingTribe);
+        }
     });
   });
 });
