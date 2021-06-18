@@ -17,11 +17,18 @@ const ONE_ADDRESS = '0x0000000000000000000000000000000000000001';
 
 describe('MasterChief', function () {
   let pid;
-  let userAddress;
   let minterAddress;
   let governorAddress;
+  let userAddress;
   let secondUserAddress;
   let thirdUserAddress;
+  let fourthUserAddress;
+  let fifthUserAddress;
+  let sixthUserAddress;
+  let seventhUserAddress;
+  let eigthUserAddress;
+  let ninthUserAddress;
+  let tenthUserAddress;
 
   const allocationPoints = 100;
   const totalStaked = '100000000000000000000';
@@ -33,6 +40,7 @@ describe('MasterChief', function () {
       userAddress,
       secondUserAddress,
       beneficiaryAddress1,
+      beneficiaryAddress2,
       minterAddress,
       burnerAddress,
       pcvControllerAddress,
@@ -41,6 +49,13 @@ describe('MasterChief', function () {
       guardianAddress,
     } = await getAddresses());
     thirdUserAddress = beneficiaryAddress1;
+    fourthUserAddress = minterAddress;
+    fifthUserAddress = burnerAddress;
+    sixthUserAddress  = pcvControllerAddress;
+    seventhUserAddress = governorAddress;
+    eigthUserAddress = genesisGroup;
+    ninthUserAddress = guardianAddress;
+    tenthUserAddress = beneficiaryAddress2;
 
     this.core = await getCore(false);
 
@@ -58,6 +73,13 @@ describe('MasterChief', function () {
     await this.LPToken.mint(userAddress, totalStaked);
     await this.LPToken.mint(secondUserAddress, totalStaked);
     await this.LPToken.mint(thirdUserAddress, totalStaked);
+    await this.LPToken.mint(fourthUserAddress, totalStaked);
+    await this.LPToken.mint(fifthUserAddress, totalStaked);
+    await this.LPToken.mint(sixthUserAddress, totalStaked);
+    await this.LPToken.mint(seventhUserAddress, totalStaked);
+    await this.LPToken.mint(eigthUserAddress, totalStaked);
+    await this.LPToken.mint(ninthUserAddress, totalStaked);
+    await this.LPToken.mint(tenthUserAddress, totalStaked);
 
     // mint tribe tokens to the masterchief contract to distribute as rewards
     await this.tribe.mint(this.masterChief.address, mintAmount, { from: minterAddress });
@@ -66,12 +88,6 @@ describe('MasterChief', function () {
     const tx = await this.masterChief.add(allocationPoints, this.LPToken.address, ZERO_ADDRESS, { from: governorAddress });
     // grab PID from the logs
     pid = Number(tx.logs[0].args.pid);
-
-    this.minterRole = await this.core.MINTER_ROLE();
-    this.burnerRole = await this.core.BURNER_ROLE();
-    this.governorRole = await this.core.GOVERN_ROLE();
-    this.pcvControllerRole = await this.core.PCV_CONTROLLER_ROLE();
-    this.guardianRole = await this.core.GUARDIAN_ROLE();
   });
 
   describe('Test Security', function() {
@@ -82,11 +98,24 @@ describe('MasterChief', function () {
         );
     });
 
+    it('governor should be able to add rewards stream', async function() {
+        expect(Number(await this.masterChief.poolLength())).to.be.equal(1);
+        await this.masterChief.add(allocationPoints, this.LPToken.address, this.tribe.address, { from: governorAddress });
+        expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
+        expect((await this.masterChief.poolInfo(1)).allocPoint).to.be.bignumber.equal(new BN(allocationPoints));
+    });
+
     it('should not be able to set rewards stream as non governor', async function() {
         await expectRevert(
             this.masterChief.set(0, allocationPoints, this.LPToken.address, true, { from: userAddress }),
             "CoreRef: Caller is not a governor",
         );
+    });
+
+    it('governor should be able to set rewards stream with new amount of allocation points', async function() {
+        const newAllocationPoints = 10;
+        await this.masterChief.set(0, newAllocationPoints, this.LPToken.address, true, { from: governorAddress });
+        expect((await this.masterChief.poolInfo(pid)).allocPoint).to.be.bignumber.equal(new BN(newAllocationPoints));
     });
 
     it('should not be able to setMigrator as non governor', async function() {
@@ -358,6 +387,86 @@ describe('MasterChief', function () {
         await this.masterChief.harvest(pid, userAddress, { from: userAddress });
         await this.masterChief.harvest(pid, secondUserAddress, { from: secondUserAddress });
         await this.masterChief.harvest(pid, thirdUserAddress, { from: thirdUserAddress });
+    });
+
+    async function testMultipleUsersPooling(masterChief, lpToken, userAddresses, incrementAmount, blocksToAdvance) {
+        for (let i = 0; i < userAddresses.length; i++) {
+            await lpToken.approve(masterChief.address, totalStaked, { from: userAddresses[i] });
+            await masterChief.deposit(pid, totalStaked, userAddresses[i], { from: userAddresses[i] });
+        }
+
+        const pendingBalances = [];
+        for (let i = 0; i < userAddresses.length; i++) {
+            const balance = new BN(await masterChief.pendingSushi(pid, userAddresses[i]));
+            pendingBalances.push(balance);
+        }
+
+        for (let i = 0; i < blocksToAdvance; i++) {
+            for (let j = 0; j < pendingBalances.length; j++) {
+                pendingBalances[j] = new BN(await masterChief.pendingSushi(pid, userAddresses[j]));
+            }
+
+            await time.advanceBlock();
+
+            for (let j = 0; j < userAddresses.length; j++) {
+                expect(pendingBalances[j].add(incrementAmount)).to.be.bignumber.equal(new BN(await masterChief.pendingSushi(pid, userAddresses[j])));
+            }
+        }
+    }
+
+    it('should be able to distribute sushi after 10 blocks with 5 users staking using helper function', async function() {
+        const userAddresses = [ userAddress, secondUserAddress, thirdUserAddress, fourthUserAddress, fifthUserAddress ];
+        
+        await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('20000000000000000000'), 10);
+    });
+
+    it('should be able to distribute sushi after 10 blocks with 4 users staking using helper function', async function() {
+        const userAddresses = [ userAddress, secondUserAddress, thirdUserAddress, fourthUserAddress ];
+        
+        await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('25000000000000000000'), 10);
+    });
+
+    it('should be able to distribute sushi after 10 blocks with 2 users staking using helper function', async function() {
+        const userAddresses = [ userAddress, secondUserAddress ];
+        
+        await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('50000000000000000000'), 10);
+    });
+
+    it('should be able to distribute sushi after 10 blocks with 10 users staking using helper function', async function() {
+        const userAddresses = [
+            userAddress,
+            secondUserAddress,
+            thirdUserAddress,
+            fourthUserAddress,
+            fifthUserAddress,
+            sixthUserAddress,
+            seventhUserAddress,
+            eigthUserAddress,
+            ninthUserAddress,
+            tenthUserAddress
+         ];
+        
+        await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('10000000000000000000'), 10);
+    });
+
+    it('should be able to distribute sushi after 10 blocks with 10 users staking using helper function and 2 staking PIDs', async function() {
+        const userAddresses = [
+            userAddress,
+            secondUserAddress,
+            thirdUserAddress,
+            fourthUserAddress,
+            fifthUserAddress,
+            sixthUserAddress,
+            seventhUserAddress,
+            eigthUserAddress,
+            ninthUserAddress,
+            tenthUserAddress
+         ];
+
+        await this.masterChief.add(allocationPoints, this.LPToken.address, this.tribe.address, { from: governorAddress });
+        expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
+         
+        await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('5000000000000000000'), 10);
     });
 
     it('should be able to assert poolLength', async function() {

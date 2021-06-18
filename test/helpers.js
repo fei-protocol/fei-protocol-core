@@ -110,5 +110,4 @@ module.exports = {
   forceEth,
   expectApprox,
   ether,
-  getWeb3Addresses,
 };
