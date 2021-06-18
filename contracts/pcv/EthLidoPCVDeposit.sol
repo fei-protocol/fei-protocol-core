@@ -144,8 +144,13 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
             _tokenOne == steth ? int128(0) : int128(1),
             _tokenOne == steth ? int128(1) : int128(0),
             amountIn,
-            minimumAcceptedAmountOut
+            0 // minimum accepted amount out
         );
+
+        // Check that we received enough stETH as an output of the trade
+        // This is enforced in this contract, after knowing the output of the trade,
+        // instead of the StableSwap pool's min_dy check.
+        require(actualAmountOut >= minimumAcceptedAmountOut, "EthLidoPCVDeposit: slippage too high.");
 
         // Wrap ouput ETH to WETH and transfer it to destination.
         IWETH(weth).deposit{value: actualAmountOut}();
