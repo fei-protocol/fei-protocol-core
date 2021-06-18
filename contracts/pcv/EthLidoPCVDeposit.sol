@@ -89,6 +89,7 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
     function deposit() external override whenNotPaused {
         // Unwrap WETH
         uint256 amountIn = IERC20(weth).balanceOf(address(this));
+        require(amountIn > 0, "EthLidoPCVDeposit: cannot deposit 0.");
         IWETH(weth).withdraw(amountIn);
 
         // Get the expected amount of stETH out of a Curve trade
