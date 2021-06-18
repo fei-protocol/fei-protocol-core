@@ -105,13 +105,13 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
         // get the stETH by doing a Curve swap.
         uint256 actualAmountOut;
         if (expectedAmountOut > amountIn) {
-          uint256 minimumAmountOut = amountIn;
-          actualAmountOut = IStableSwapSTETH(stableswap).exchange{value: amountIn}(
-              _tokenOne == steth ? int128(1) : int128(0),
-              _tokenOne == steth ? int128(0) : int128(1),
-              amountIn,
-              minimumAmountOut
-          );
+            uint256 minimumAmountOut = amountIn;
+            actualAmountOut = IStableSwapSTETH(stableswap).exchange{value: amountIn}(
+                _tokenOne == steth ? int128(1) : int128(0),
+                _tokenOne == steth ? int128(0) : int128(1),
+                amountIn,
+                minimumAmountOut
+            );
         }
         // Otherwise, stake ETH for stETH directly on the Lido contract
         // to get a 1:1 trade.
@@ -141,8 +141,8 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
         // Swap stETH for ETH on the Curve pool
         address _tokenOne = IStableSwapSTETH(stableswap).coins(0);
         uint256 actualAmountOut = IStableSwapSTETH(stableswap).exchange(
-            _tokenOne == steth ? int128(1) : int128(0),
             _tokenOne == steth ? int128(0) : int128(1),
+            _tokenOne == steth ? int128(1) : int128(0),
             amountIn,
             minimumAcceptedAmountOut
         );
