@@ -57,12 +57,9 @@ workflows:
   main:
     jobs:
       - build
-<<<<<<< HEAD
       - lint: 
           requires:
             - build
-=======
->>>>>>> master
       - test:
           requires:
             - build

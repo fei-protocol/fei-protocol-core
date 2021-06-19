@@ -11,8 +11,8 @@ export interface TestCoordinator {
 export type ContractAddresses = {
   Core: string,
   Tribe: string,
-  FeiDAO: string,
-  FeiDAOTimelock: string,
+  GovernorAlpha: string,
+  Timelock: string,
   Fei: string,
   UniswapIncentive: string,
   EthBondingCurve: string,

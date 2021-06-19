@@ -9,13 +9,6 @@ import { ContractAddresses, TestCoordinator, TestEnv } from './types'
 export class EndtoEndCoordinator implements TestCoordinator { 
   private network: string;
   private supportedNetworks = ['mainnet', 'local']
-  private contractNames = [
-    'Core', 'Tribe', 'FeiDAO', 'FeiDAOTimelock', 'Fei', 'UniswapIncentive', 
-    'EthBondingCurve', 'EthUniswapPCVDeposit', 'EthUniswapPCVController',
-    'UniswapOracle', 'BondingCurveOracle', 'FeiRewardsDistributor', 'FeiStakingRewards',
-    'GenesisGroup', 'FeiRouter', 'EthReserveStabiliser', 'EthPCVDripper', 
-    'RatioPCVController', 'EthPCVDepositAdapter', 'FEIETHUniV2Pair', 'FEITRIBEUniV2Pair'
-  ]
 
   constructor(network: string, private version: number) {
     if (this.supportedNetworks.includes(network)) {
@@ -43,7 +36,7 @@ export class EndtoEndCoordinator implements TestCoordinator {
    * contract instances
    */
   async loadMainnetContracts(addresses: ContractAddresses): Promise<any> {
-    return getContracts(this.contractNames, addresses)
+    return getContracts(addresses)
   }
 
   /**
@@ -66,20 +59,29 @@ export class EndtoEndCoordinator implements TestCoordinator {
 
   /**
    * Setup end to end tests for a local environment. Specifically:
-   * 1) Deploy all contracts
-   * 2) Get accounts ready to execute tests from
+   * 1) Deploy contracts that are only local and not yet on Mainnet
+   * 3) Apply the various permissions to these contracts
+   * 4) Apply appropriate permissions
+   * 
+   * Note: This is running on a forked mainnet state to account for 
+   * the various dependencies in Uniswap, Chainlink etc.
    */
   public async initialiseLocalEnv() {
-    return await Promise.all[0]
-    // TODO
-    // const contracts = await this.deployContracts() 
-    // return contracts
+    const contracts = await this.deployNewProtocolContracts() 
+    return contracts
+  }
+
+  /**
+   * Deploy the contracts that exist in the protocol locally and 
+   * which are not yet on Mainnet
+   */
+  private async deployNewProtocolContracts() {
+    
   }
 
   /**
    * Deploy all contracts to a local node
    */
-  // TODO
   // async deployContracts(): Promise<typeof Contract> {
   //   const contractsToDeploy = [];
 
