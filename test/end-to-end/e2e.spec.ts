@@ -1,14 +1,21 @@
-const { TestEnvCoordinator } = require('./setup');
+import { expect, web3 } from 'hardhat'
+import { EndtoEndCoordinator } from './setup';
+const { Contract } = web3.eth;
 
 describe('e2e', function () {
+  let contracts: typeof Contract[];
+  let addresses: string[]
+
   before(async function () {
     // Setup test environment and get contracts
-    const testEnvCoordinator = new TestEnvCoordinator()
+    const version = 1
+    const e2eCoord = new EndtoEndCoordinator('mainnet', version);
+    ({contracts, addresses } = await e2eCoord.initialiseMainnetEnv())
   })
 
-  it('should allow purchase of Fei through bonding curve', async function () {
-    
-
+  it.only('should allow purchase of Fei through bonding curve', async function () {
+    console.log('hello world')
+    expect(true).to.equal(true)
   })
 
   it('should transfer allocation from bonding curve to the reserve stabiliser', async function () {
