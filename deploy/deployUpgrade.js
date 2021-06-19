@@ -5,7 +5,7 @@ const { upgrade } = require('./upgrade');
 // Key changes include: Adding ERC20 support, updated reweight algorithm, Chainlink support, and a TRIBE backstop
 async function main() {
   const deployAddress = (await web3.eth.getAccounts())[0];
-  await upgrade(deployAddress);
+  await upgrade(deployAddress, true);
 }
 
 main()
