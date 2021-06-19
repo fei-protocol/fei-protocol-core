@@ -1,5 +1,4 @@
 const { BN, ether } = require('@openzeppelin/test-helpers');
-const { web3 } = require('hardhat');
 
 const UniswapPCVDeposit = artifacts.require('UniswapPCVDeposit');
 const UniswapPCVController = artifacts.require('UniswapPCVController');
@@ -22,17 +21,13 @@ const {
   uniswapOracleAddress
 } = getAddresses();
 
-const chainlinkEthUsdOracle = '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419';
-const chainlinkFeiEthOracle = '0x7F0D2c2838c6AC24443d13e23d99490017bDe370';
-
-// Upgrade the Fei system to v1.1, as according to the OpenZeppelin audit done in June 2021
-// Key changes include: Adding ERC20 support, updated reweight algorithm, Chainlink support, and a TRIBE backstop
-async function main() {
+async function upgrade(deployAddress, logging = false) {
   if (!coreAddress || !feiEthPairAddress || !wethAddress || !uniswapRouterAddress || !uniswapOracleAddress) {
     throw new Error('An environment variable contract address is not set');
   }
-    
-  const deployAddress = (await web3.eth.getAccounts())[0];
+
+  const chainlinkEthUsdOracle = '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419';
+  const chainlinkFeiEthOracle = '0x7F0D2c2838c6AC24443d13e23d99490017bDe370';
 
   const uniswapPCVDeposit = await UniswapPCVDeposit.new(
     coreAddress,
@@ -42,8 +37,8 @@ async function main() {
     '100',
     { from: deployAddress }
   );
-  console.log('UniswapPCVDeposit deployed to: ', uniswapPCVDeposit.address);
-
+  logging ? console.log('UniswapPCVDeposit deployed to: ', uniswapPCVDeposit.address) : undefined;
+  
   const tenPow18 = ether('1');
   const uniswapPCVController = await UniswapPCVController.new(
     coreAddress,
@@ -55,7 +50,7 @@ async function main() {
     14400,
     { from: deployAddress }
   );
-  console.log('Uniswap PCV controller deployed to: ', uniswapPCVController.address);
+  logging ? console.log('Uniswap PCV controller deployed to: ', uniswapPCVController.address) : undefined;
     
   const bondingCurve = await EthBondingCurve.new(      
     coreAddress,
@@ -71,29 +66,29 @@ async function main() {
     },
     { from: deployAddress }
   );
-  console.log('Bonding curve deployed to: ', bondingCurve.address);
-
+  logging ? console.log('Bonding curve deployed to: ', bondingCurve.address) : undefined;
+  
   const chainlinkEthUsdOracleWrapper = await ChainlinkOracleWrapper.new(
     coreAddress, 
     chainlinkEthUsdOracle
   );
   
-  console.log('Chainlink ETH-USD oracle: ', chainlinkEthUsdOracleWrapper.address);
+  logging ? console.log('Chainlink ETH-USD oracle: ', chainlinkEthUsdOracleWrapper.address) : undefined;
   
   const chainlinkFeiEthOracleWrapper = await ChainlinkOracleWrapper.new(
     coreAddress, 
     chainlinkFeiEthOracle
   );
   
-  console.log('Chainlink FEI-ETH oracle: ', chainlinkFeiEthOracleWrapper.address);
-
+  logging ? console.log('Chainlink FEI-ETH oracle: ', chainlinkFeiEthOracleWrapper.address) : undefined;
+  
   const compositeOracle = await CompositeOracle.new(
     coreAddress, 
     chainlinkEthUsdOracleWrapper.address, 
     chainlinkFeiEthOracleWrapper.address
   );
-  console.log('Composite FEI-USD oracle: ', compositeOracle.address);
-
+  logging ? console.log('Composite FEI-USD oracle: ', compositeOracle.address) : undefined;
+  
   const tribeReserveStabilizer = await TribeReserveStabilizer.new(
     coreAddress, 
     uniswapOracleAddress,
@@ -101,18 +96,18 @@ async function main() {
     compositeOracle.address,
     9700 // $.97 FEI threshold
   );
-
-  console.log('TRIBE Reserve Stabilizer: ', tribeReserveStabilizer.address);
-
+  
+  logging ? console.log('TRIBE Reserve Stabilizer: ', tribeReserveStabilizer.address) : undefined;
+  
   const ethReserveStabilizer = await EthReserveStabilizer.new(
     coreAddress,
     uniswapOracleAddress,
     9900, // $.99 redemption - 1% fee
     wethAddress
   );
-
-  console.log('ETH Reserve Stabilizer: ', ethReserveStabilizer.address);
-
+  
+  logging ? console.log('ETH Reserve Stabilizer: ', ethReserveStabilizer.address) : undefined;
+  
   const pcvDripController = await PCVDripController.new(
     coreAddress,
     uniswapPCVDeposit.address,
@@ -121,19 +116,14 @@ async function main() {
     tenPow18.mul(new BN('5000')), // 5000 ETH drip
     tenPow18.mul(new BN('100')) // 100 FEI incentive
   );
-
-  console.log('PCV Drip controller', pcvDripController.address);
-
+  
+  logging ? console.log('PCV Drip controller', pcvDripController.address) : undefined;
+  
   const ratioPCVController = await RatioPCVController.new(
     coreAddress
   );
-
-  console.log('Ratio PCV controller', ratioPCVController.address);
+  
+  logging ? console.log('Ratio PCV controller', ratioPCVController.address) : undefined;
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((err) => {
-    console.log(err);
-    process.exit(1);
-  });
+module.exports = { upgrade };
