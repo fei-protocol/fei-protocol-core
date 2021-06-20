@@ -10,6 +10,13 @@ export interface TestCoordinator {
   initialiseMainnetEnv(): Promise<TestEnv>;
 }
 
+export type Config = {
+  network: string;
+  version: number;
+  deployAddress: string;
+  logging: boolean;
+}
+
 export type TestEnvContracts = {
   core: typeof Contract,
   tribe: typeof Contract,

@@ -1,6 +1,6 @@
 import mainnetAddressesV1 from '../../contract-addresses/mainnetAddresses.json'
 import { getContracts, getContract } from './loadContracts'
-import { ContractAddresses, TestCoordinator, TestEnv, TestEnvContracts } from './types'
+import { Config, ContractAddresses, TestCoordinator, TestEnv, TestEnvContracts } from './types'
 import { sudo } from '../../scripts/utils/sudo'
 import { upgrade as upgradeProtocol } from '../../deploy/upgrade'
 import { upgrade as applyPermissions } from '../../scripts/dao/upgrade'
@@ -15,13 +15,10 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   private addresses: ContractAddresses;
 
   constructor(
-    private network: string,
-    private deployAddress: string,
-    private logging: boolean,
-    private version: number
+    private config: Config,
   ) {
-    if (this.supportedNetworks.includes(this.network)) {
-      this.addresses = this.getContractAddressesForNetwork(network)
+    if (this.supportedNetworks.includes(this.config.network)) {
+      this.addresses = this.getContractAddressesForNetwork(config.network)
     } else {
       throw new Error('Unsupported network')
     }
@@ -63,7 +60,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       feiAddress: this.addresses['fei'],
       timelockAddress: this.addresses['timelock']
     }
-    await sudo(requiredSudoAddresses, this.logging)
+    await sudo(requiredSudoAddresses, this.config.logging)
     
     // if contract not upgraded, use mainnet version. this.addresses['core']
     // if contract is upgraded, take in override and deploy new contract +
@@ -81,7 +78,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       tribeReserveStabilizerAddress: contracts.tribeReserveStabilizer.address
     };
 
-    await applyPermissions(requiredApplyPermissionsAddresses, this.logging)
+    await applyPermissions(requiredApplyPermissionsAddresses, this.config.logging)
     return { contracts }
   }
   
@@ -120,7 +117,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       uniswapRouterAddress: this.addresses['uniswapRouter'],
       uniswapOracleAddress: this.addresses['uniswapOracle']
     }
-    const upgradeContracts = await upgradeProtocol(this.deployAddress, configAddresses, this.logging)
+    const upgradeContracts = await upgradeProtocol(this.config.deployAddress, configAddresses, this.config.logging)
     return { core, fei, tribe, ethReserveStabilizer, ...upgradeContracts}
   }
 }
