@@ -1,4 +1,4 @@
-import { artifacts } from 'hardhat'
+import { artifacts, web3 } from 'hardhat'
 import { ContractAddresses, TestEnvContracts } from './types';
 
 const coreArtifact = artifacts.require('Core')
@@ -6,46 +6,37 @@ const tribeArtifact = artifacts.require('Tribe')
 const governorAlpha = artifacts.require('GovernorAlpha')
 const timelockArtifact = artifacts.require('Timelock')
 const feiArtifact = artifacts.require('Fei')
-const uniswapIncentiveArtifact = artifacts.require('UniswapIncentive')
 const ethBondingCurveArtifact = artifacts.require('EthBondingCurve')
-const ethUniswapPCVDepositArtifact = artifacts.require('EthUniswapPCVDeposit')
-const ethUniswapPCVController = artifacts.require('EthUniswapPCVController')
+const uniswapPCVDepositArtifact = artifacts.require('UniswapPCVDeposit')
+const uniswapPCVController = artifacts.require('UniswapPCVController')
 const uniswapOracleArtifact = artifacts.require('UniswapOracle')
-const bondingCurveOracleArtifact = artifacts.require('BondingCurveOracle')
 const feiRewardsDistributorArtifact = artifacts.require('FeiRewardsDistributor')
 const feiStakingRewardsArtifact = artifacts.require('FeiStakingRewards')
-const genesisGroupArtifact = artifacts.require('GenesisGroup')
-const feiRouterArtifact = artifacts.require('FeiRouter')
-const ethReserveStabiliserArtifact = artifacts.require('EthReserveStabiliser')
-const ethPCVDripperArtifact = artifacts.require('EthPCVDripper')
+const ethReserveStabilizerArtifact = artifacts.require('EthReserveStabilizer')
 const ratioPCVControllerArtifact = artifacts.require('RatioPCVController')
-const ethPCVDepositAdapterArtifact = artifacts.require('EthPCVDepositAdapter')
-const feiEthUniV2PairArtifact = artifacts.require('FEIETHUniV2Pair')
-const feiTribeUniV2PairArtifact = artifacts.require('FEITRIBEUniV2Pair')
+const pCVDepositAdapterArtifact = artifacts.require('PCVDripController')
+
+export function deployContract(contractName: string) {
+  return web3.eth.Contract
+
+}
 
 export function getContractArtifacts() {
   return {
-    coreArtifact,
-    tribeArtifact,
-    governorAlpha,
-    timelockArtifact,
-    feiArtifact,
-    uniswapIncentiveArtifact,
-    ethBondingCurveArtifact,
-    ethUniswapPCVDepositArtifact,
-    ethUniswapPCVController,
-    uniswapOracleArtifact,
-    bondingCurveOracleArtifact,
-    feiRewardsDistributorArtifact,
-    feiStakingRewardsArtifact,
-    genesisGroupArtifact,
-    feiRouterArtifact,
-    ethReserveStabiliserArtifact,
-    ethPCVDripperArtifact,
-    ratioPCVControllerArtifact,
-    ethPCVDepositAdapterArtifact,
-    feiEthUniV2PairArtifact,
-    feiTribeUniV2PairArtifact,
+    'core': coreArtifact,
+    'tribe': tribeArtifact,
+    'governorAlpha': governorAlpha,
+    'timelock': timelockArtifact,
+    'fei': feiArtifact,
+    'bondingCurve': ethBondingCurveArtifact,
+    'uniswapPCVDeposit': uniswapPCVDepositArtifact,
+    'uniswapPCVController': uniswapPCVController,
+    'uniswapOracle': uniswapOracleArtifact,
+    'feiRewardsDistributor': feiRewardsDistributorArtifact,
+    'feiStakingRewards': feiStakingRewardsArtifact,
+    'ethReserveStabilizer': ethReserveStabilizerArtifact,
+    'ratioPCVController': ratioPCVControllerArtifact,
+    'pcvDepositAdapter': pCVDepositAdapterArtifact,
   }
 }
 
