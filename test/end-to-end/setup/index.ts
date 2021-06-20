@@ -1,49 +1,74 @@
-import mainnetAddressesV1 from './mainnetAddresses.json'
-import { getContracts } from './loadContracts'
-import { ContractAddresses, TestCoordinator, TestEnv } from './types'
+import mainnetAddressesV1 from '../../../contract-addresses/mainnetAddresses.json'
+import { getContracts, getContract } from './loadContracts'
+import { ContractAddresses, TestCoordinator, TestEnv, TestEnvContracts } from './types'
+import { sudo } from '../../../scripts/utils/sudo'
+import { upgrade as upgradeProtocol } from '../../../deploy/upgrade'
+import { upgrade as applyPermissions } from '../../../scripts/dao/upgrade'
 
 /**
  * Coordinate initialising an end-to-end testing environment
- * Able to run in a local or forked mainnet environment
+ * Able to run with additional local contracts deployed or
+ * in a purely 100% mainnet forked mode
 */
 export class EndtoEndCoordinator implements TestCoordinator { 
-  private network: string;
-  private supportedNetworks = ['mainnet', 'local']
+  private supportedNetworks = ['mainnet']
+  private addresses: ContractAddresses;
 
   constructor(network: string, private version: number) {
     if (this.supportedNetworks.includes(network)) {
-      this.network = network
+      this.addresses = this.getContractAddressesForNetwork(network)
     } else {
       throw new Error('Unsupported network')
     }
   }
 
-
   /**
-   * Setup end-to-end tests for a forked mainnet environment. Specifically:
+   * Setup end-to-end tests for a 100% forked mainnet environment.
+   * No additional contracts deployed locally. This test is used to e2e the real system.
+   * Specifically:
    * 1) Load all mainnet contracts from their addresses
    * 2) Get accounts ready to execute tests from
    */
   async initialiseMainnetEnv(): Promise<TestEnv> {
-    const mainnetAddresses = this.getContractAddressesForNetwork()
-    const contracts = await this.loadMainnetContracts(mainnetAddresses)
+    const contracts = await this.loadMainnetContracts(this.addresses)
     const testAddresses = this.getTestAddresses()
     return { contracts, addresses: testAddresses }
   }
+
+  /**
+   * Setup end to end tests for a local environment. This involves e2e testing
+   * contracts not yet deployed.
+   * Specifically:
+   * 1) Deploy contracts that are only in the codebase and not yet on Mainnet
+   * 2) Grant governor access
+   * 3) Apply appropriate permissions to the contracts
+   * 
+   * Note: This is running on a forked mainnet state to account for 
+   * the various dependencies in Uniswap, Chainlink etc.
+   */
+   public async initialiseLocalEnv(): Promise<TestEnv> {
+    const contracts = await this.getProtocolContracts()
+
+    // do these act on the same contract instances as I want?
+    await sudo()
+    await applyPermissions()
+
+    const addresses = this.getTestAddresses()
+    return { contracts, addresses}
+  }
   
   /**
-   * Load all mainnet contract addresses and instantiate local
-   * contract instances
+   * Get all Mainnet contracts, instantiated as web3 instances
    */
-  async loadMainnetContracts(addresses: ContractAddresses): Promise<any> {
+  async loadMainnetContracts(addresses: ContractAddresses): Promise<TestEnvContracts> {
     return getContracts(addresses)
   }
 
   /**
    * Load all contract addresses from a .json, according to the network configured
    */
-  private getContractAddressesForNetwork(): ContractAddresses {
-    if (this.network == 'mainnet') {
+  private getContractAddressesForNetwork(network: string): ContractAddresses {
+    if (this.supportedNetworks.includes(network)) {
       return mainnetAddressesV1
     } else {
       throw new Error('No addresses for this network')
@@ -54,45 +79,20 @@ export class EndtoEndCoordinator implements TestCoordinator {
    * Get Ethereum addresses that are needed during the e2e tests
    */
   private getTestAddresses(): string[] {
+    // TODO
     return ['']
-  }
-
-  /**
-   * Setup end to end tests for a local environment. Specifically:
-   * 1) Deploy contracts that are only local and not yet on Mainnet
-   * 3) Apply the various permissions to these contracts
-   * 4) Apply appropriate permissions
-   * 
-   * Note: This is running on a forked mainnet state to account for 
-   * the various dependencies in Uniswap, Chainlink etc.
-   */
-  public async initialiseLocalEnv() {
-    const contracts = await this.deployNewProtocolContracts() 
-    return contracts
   }
 
   /**
    * Deploy the contracts that exist in the protocol locally and 
    * which are not yet on Mainnet
    */
-  private async deployNewProtocolContracts() {
-    
+  private async getProtocolContracts(): Promise<TestEnvContracts> {
+    const core = await getContract('Core', this.addresses['Core'])
+    const fei = await getContract('Fei', this.addresses['Fei'])
+    const tribe = await getContract('Tribe', this.addresses['Tribe'])
+    const ethReserveStabiliser = await getContract('EthReserveStabiliser', this.addresses['EthReserveStabiliser'])
+    const upgradeContracts = await upgradeProtocol()
+    return { core, fei, tribe, ethReserveStabiliser, ...upgradeContracts}
   }
-
-  /**
-   * Deploy all contracts to a local node
-   */
-  // async deployContracts(): Promise<typeof Contract> {
-  //   const contractsToDeploy = [];
-
-  //   for (const contract in contractsToDeploy) {
-  //     await this.deployContract(contract);
-  //   }
-  //   return {}
-  // }
-
-  // async deployContract() {
-  // TODO
-  // async manipulateChainlinkOracleLocally() {
-  // }
 }

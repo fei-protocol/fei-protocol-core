@@ -67,11 +67,12 @@ export async function getContracts(contractAddresses: ContractAddresses): Promis
     return {...accumulator}
   })
 
-  return deployedContractObjects
+  // TODO: add natural typing rather than force
+  return deployedContractObjects as unknown as TestEnvContracts
 }
 
 /**
- * Get the web3 instantiation of a contract
+ * Factory function to get the web3 instantiation of a contract
  */
 export async function getContract(contractName: string, contractAddress: string) {
   const contractArtifacts = getContractArtifacts()

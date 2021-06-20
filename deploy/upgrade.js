@@ -124,6 +124,19 @@ async function upgrade(deployAddress, logging = false) {
   );
   
   logging ? console.log('Ratio PCV controller', ratioPCVController.address) : undefined;
+
+  return {
+    uniswapPCVDeposit,
+    uniswapPCVController,
+    bondingCurve,
+    chainlinkEthUsdOracleWrapper,
+    chainlinkFeiEthOracleWrapper,
+    compositeOracle,
+    ethReserveStabilizer,
+    pcvDripController,
+    ratioPCVController,
+    tribeReserveStabilizer
+  };
 }
 
 module.exports = { upgrade };

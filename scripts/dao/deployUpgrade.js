@@ -1,4 +1,3 @@
-
 const { upgrade } = require('./upgrade');
 
 // The DAO steps for upgrading to ERC20 compatible versions, these must be done with Governor access control privileges
