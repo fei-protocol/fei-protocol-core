@@ -1,5 +1,5 @@
 import { artifacts } from 'hardhat'
-import { ContractAddresses } from './types';
+import { ContractAddresses, TestEnvContracts } from './types';
 
 const coreArtifact = artifacts.require('Core')
 const tribeArtifact = artifacts.require('Tribe')
@@ -53,13 +53,11 @@ export function getContractArtifacts() {
  * Gets all contract instances for a set of contract names and their
  * addresses
  */
-export async function getContracts(contractAddresses: ContractAddresses) {
-  // Fetch all contract artifacts
-  const contractArtifacts = getContractArtifacts() 
-
+export async function getContracts(contractAddresses: ContractAddresses): Promise<TestEnvContracts> {
   // Array of all deployed contracts
   const deployedContracts = await Promise.all(Object.keys(contractAddresses).map(async contractName => {
-    return [contractName, contractArtifacts[contractName].at(contractAddresses[contractName])]
+    const web3Contract = await getContract(contractName, contractAddresses[contractName])
+    return [contractName, web3Contract]
   }))
   
   // Object with mapping between contract name and contract instance
@@ -70,4 +68,12 @@ export async function getContracts(contractAddresses: ContractAddresses) {
   })
 
   return deployedContractObjects
+}
+
+/**
+ * Get the web3 instantiation of a contract
+ */
+export async function getContract(contractName: string, contractAddress: string) {
+  const contractArtifacts = getContractArtifacts()
+  return contractArtifacts[contractName].at(contractAddress)
 }
