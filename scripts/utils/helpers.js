@@ -121,7 +121,7 @@ function getAddresses() {
     wethAddress,
     uniswapRouterAddress,
     uniswapOracleAddress,
-    chainlinkEthUsdOracleWrapperAddress
+    chainlinkEthUsdOracleWrapperAddress,
   };
 }
 

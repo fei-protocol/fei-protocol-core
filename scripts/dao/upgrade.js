@@ -1,7 +1,6 @@
 const {
   ZERO_ADDRESS
 } = require('@openzeppelin/test-helpers/src/constants');
-const { getAddresses } = require('../utils/helpers');
 
 const UniswapPCVDeposit = artifacts.require('UniswapPCVDeposit');
 const UniswapPCVController = artifacts.require('UniswapPCVController');
@@ -14,20 +13,20 @@ const Core = artifacts.require('Core');
 const Tribe = artifacts.require('Tribe');
 const Fei = artifacts.require('Fei');
 
-const {
-  coreAddress,
-  ethUniswapPCVDepositAddress,
-  ethUniswapPCVControllerAddress,
-  ethBondingCurveAddress,
-  ethReserveStabilizerAddress,
-  tribeReserveStabilizerAddress,
-  ratioPCVControllerAddress,
-  pcvDripControllerAddress,
-  ethPairAddress,
-  timelockAddress  // this is the minter -> in a local setup, this will be msg.sender
-} = getAddresses();
+async function upgrade(addresses, logging = false) {
+  const {
+    coreAddress,
+    ethUniswapPCVDepositAddress,
+    ethUniswapPCVControllerAddress,
+    ethBondingCurveAddress,
+    ethReserveStabilizerAddress,
+    tribeReserveStabilizerAddress,
+    ratioPCVControllerAddress,
+    pcvDripControllerAddress,
+    ethPairAddress,
+    timelockAddress
+  } = addresses;
 
-async function upgrade(logging = false) {
   const deposit = await UniswapPCVDeposit.at(ethUniswapPCVDepositAddress);
   const controller = await UniswapPCVController.at(ethUniswapPCVControllerAddress);
   const bondingCurve = await BondingCurve.at(ethBondingCurveAddress);

@@ -11,17 +11,15 @@ const CompositeOracle = artifacts.require('CompositeOracle');
 const PCVDripController = artifacts.require('PCVDripController');
 const RatioPCVController = artifacts.require('RatioPCVController');
 
-const { getAddresses } = require('../scripts/utils/helpers');
+async function upgrade(deployAddress, addresses, logging = false) {
+  const {
+    coreAddress,
+    feiEthPairAddress,
+    wethAddress,
+    uniswapRouterAddress,
+    uniswapOracleAddress 
+  } = addresses;
 
-const {
-  coreAddress,
-  feiEthPairAddress,
-  wethAddress,
-  uniswapRouterAddress,
-  uniswapOracleAddress
-} = getAddresses();
-
-async function upgrade(deployAddress, logging = false) {
   if (!coreAddress || !feiEthPairAddress || !wethAddress || !uniswapRouterAddress || !uniswapOracleAddress) {
     throw new Error('An environment variable contract address is not set');
   }

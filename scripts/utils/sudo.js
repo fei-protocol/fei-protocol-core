@@ -8,13 +8,10 @@ const hre = require('hardhat');
 
 const { web3 } = hre;
 
-const { getAddresses } = require('./helpers');
-
 // Grants Governor, Minter, Burner, and PCVController access to accounts[0]
 // Also mints a large amount of FEI to accounts[0]
-async function sudo(logging = false) {
-  const { coreAddress, feiAddress, timelockAddress } = getAddresses(); 
-
+async function sudo(addresses, logging = false) {
+  const { coreAddress, feiAddress, timelockAddress } = addresses;
   // Impersonate the Timelock which has Governor access on-chain
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',

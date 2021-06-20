@@ -1,7 +1,17 @@
 const { sudo } = require('./sudo');
 
+const { getAddresses } = require('./helpers');
+
+const { coreAddress, feiAddress, timelockAddress } = getAddresses(); 
+
 async function main() {
-  await sudo(true);
+  const addresses = {
+    coreAddress,
+    feiAddress,
+    timelockAddress
+  };
+
+  await sudo(addresses, true);
 }
 
 main()
