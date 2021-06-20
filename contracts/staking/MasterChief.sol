@@ -8,12 +8,7 @@ import "./BoringBatchable.sol";
 import "./IRewarder.sol";
 import "./IMasterChief.sol";
 
-interface IMigratorChef {
-    // Take the current LP token address and return the new LP token address.
-    // Migrator should have full access to the caller's LP token.
-    function migrate(IERC20 token) external returns (IERC20);
-    function depositedFunds(address token, address user) external view returns (uint256);
-}
+/// @notice migration functionality has been removed as this is only going to be used to distribute staking rewards
 
 /// @notice The idea for this MasterChief V2 (MCV2) contract is therefore to be the owner of tribe token
 /// that is deposited into this contract.
@@ -41,12 +36,8 @@ contract MasterChief is CoreRef, BoringBatchable {
         uint64 allocPoint;
     }
 
-    /// @notice Address of the Core contract
-    ICore public immutable Core;
     /// @notice Address of SUSHI contract.
     IERC20 public immutable SUSHI;
-    // @notice The migrator contract. It has a lot of power. Can only be set through governance (owner).
-    IMigratorChef public migrator;
 
     /// @notice Info of each MCV2 pool.
     PoolInfo[] public poolInfo;
@@ -75,10 +66,9 @@ contract MasterChief is CoreRef, BoringBatchable {
     /// @notice tribe withdraw event
     event TribeWithdraw(uint256 amount);
 
-    /// @param _iCORE The Core contract address.
+    /// @param _core The Core contract address.
     /// @param _sushi The SUSHI token contract address.
-    constructor(ICore _iCORE, IERC20 _sushi) CoreRef(address(_iCORE)) {
-        Core = core();
+    constructor(address _core, IERC20 _sushi) CoreRef(_core) {
         SUSHI = _sushi;
     }
 
@@ -133,24 +123,6 @@ contract MasterChief is CoreRef, BoringBatchable {
         poolInfo[_pid].allocPoint = to64(_allocPoint);
         if (overwrite) { rewarder[_pid] = _rewarder; }
         emit LogSetPool(_pid, _allocPoint, overwrite ? _rewarder : rewarder[_pid], overwrite);
-    }
-
-    /// @notice Set the `migrator` contract. Can only be called by the governor.
-    /// @param _migrator The contract address to set.
-    function setMigrator(IMigratorChef _migrator) public onlyGovernor {
-        migrator = _migrator;
-    }
-
-    /// @notice Migrate LP token to another LP contract through the `migrator` contract.
-    /// @param _pid The index of the pool. See `poolInfo`.
-    function migrate(uint256 _pid) public {
-        require(address(migrator) != address(0), "MasterChefV2: no migrator set");
-        IERC20 _lpToken = lpToken[_pid];
-        uint256 bal = _lpToken.balanceOf(address(this));
-        _lpToken.approve(address(migrator), bal);
-        IERC20 newLpToken = migrator.migrate(_lpToken);
-        require(bal == migrator.depositedFunds(address(newLpToken), address(this)), "MasterChefV2: migrated balance must match");
-        lpToken[_pid] = newLpToken;
     }
 
     /// @notice View function to see pending SUSHI on frontend.

@@ -144,19 +144,6 @@ describe('MasterChief', function () {
         expect((await this.masterChief.poolInfo(pid)).allocPoint).to.be.bignumber.equal(new BN(newAllocationPoints));
     });
 
-    it('should not be able to setMigrator as non governor', async function() {
-        await expectRevert(
-            this.masterChief.setMigrator(this.LPToken.address, { from: userAddress }),
-            "CoreRef: Caller is not a governor",
-        );
-    });
-
-    it('governor should be able to setMigrator', async function() {
-        expect(await this.masterChief.migrator()).to.be.equal(ZERO_ADDRESS);
-        await this.masterChief.setMigrator(ONE_ADDRESS, { from: governorAddress });
-        expect(await this.masterChief.migrator()).to.be.equal(ONE_ADDRESS);
-    });
-
     it('should not be able to governorWithdrawTribe as non governor', async function() {
         await expectRevert(
             this.masterChief.governorWithdrawTribe('100000000', { from: userAddress }),
@@ -268,18 +255,6 @@ describe('MasterChief', function () {
         const endingTribeBalance = await this.tribe.balanceOf(userAddress);
         const rewardAmount = endingTribeBalance.sub(startingTribeBalance);
 
-        /**
-         * 
-         *
-            startingTribeBalance:  1100000000000000000000 = 1.1e21
-            endingTribeBalance:  1550000000000000000000 = 1.55e21
-            rewardAmount:  450000000000000000000 = 4.5e20
-
-            built value:  950000000000000000000 = (100000000000000000000 / 2)  * 10 + 4.5E20 = 9.5e20
-            actual value:  1550000000000000000000 = 1.55e21
-         *
-         *
-         */
         // for 7 blocks, we received half of the rewards of one pool. For one block after the 10 blocks, we received 100% of all block rewards
         expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal( new BN((((perBlockReward / 2)  * (advanceBlockAmount - 3)) + (perBlockReward)).toString()).add(startingTribeBalance) );
 
@@ -379,7 +354,9 @@ describe('MasterChief', function () {
             await time.advanceBlock();
         }
 
+        // validate that the balance of the user is correct before harvesting rewards
         expect(Number(await this.masterChief.pendingSushi(pid, userAddress))).to.be.equal( ( ( perBlockReward * advanceBlockAmount ) / 2 ) + perBlockReward );
+        expect(Number(await this.masterChief.pendingSushi(pid, secondUserAddress))).to.be.equal( ( ( perBlockReward * advanceBlockAmount ) / 2 ) );
         
         await this.masterChief.harvest(pid, secondUserAddress, { from: secondUserAddress });
         // add on one to the advance block amount as we have advanced one more block when calling the harvest function
@@ -411,6 +388,7 @@ describe('MasterChief', function () {
         let userTwoPendingBalance = await this.masterChief.pendingSushi(pid, secondUserAddress);
         let userThreePendingBalance = await this.masterChief.pendingSushi(pid, thirdUserAddress);
 
+        // remove this logic
         const thirdIncrementAmount = new BN('33333333333400000000');
         const expectedIncrementAmount = new BN('33333333333300000000');
         const advanceBlockAmount = 10;
@@ -423,6 +401,7 @@ describe('MasterChief', function () {
             await time.advanceBlock();
 
             let incrementAmount = (i % 3) === 0 ? thirdIncrementAmount : expectedIncrementAmount;
+            // use the expectApprox function to assert balances
             expect(new BN(await this.masterChief.pendingSushi(pid, userAddress))).to.be.bignumber.equal(userOnePendingBalance.add(incrementAmount))
             expect(new BN(await this.masterChief.pendingSushi(pid, secondUserAddress))).to.be.bignumber.equal(userTwoPendingBalance.add(incrementAmount))
             expect(new BN(await this.masterChief.pendingSushi(pid, thirdUserAddress))).to.be.bignumber.equal(userThreePendingBalance.add(incrementAmount))
@@ -493,7 +472,7 @@ describe('MasterChief', function () {
     });
   });
 
-  describe('Test Withdraw and Migrate Staking', function() {
+  describe('Test Withdraw and Staking', function() {
     it('should be able to distribute sushi after 10 blocks with 10 users staking using helper function and 2 staking PIDs', async function() {
         const userAddresses = [
             userAddress,
