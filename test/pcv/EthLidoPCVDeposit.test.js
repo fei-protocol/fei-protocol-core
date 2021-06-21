@@ -1,5 +1,6 @@
 const ether = require('@openzeppelin/test-helpers/src/ether');
 const {
+  BN,
   web3,
   expectRevert,
   expectEvent,
@@ -136,7 +137,7 @@ describe('EthLidoPCVDeposit', function () {
     describe('withdraw()', function() {
       it('should emit Withdrawal', async function() {
         await this.steth.mintAt(this.pcvDeposit.address);
-        expect(await web3.eth.getBalance(secondUserAddress)).to.be.bignumber.equal(`10000${e18}`);
+        const balanceBeforeWithdraw = new BN(await web3.eth.getBalance(secondUserAddress));
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal(`100000${e18}`);
         await expectEvent(
           await this.pcvDeposit.withdraw(secondUserAddress, `1${e18}`, {from: pcvControllerAddress}),
@@ -147,7 +148,8 @@ describe('EthLidoPCVDeposit', function () {
             _amount: `1${e18}`
           }
         );
-        expect(await web3.eth.getBalance(secondUserAddress)).to.be.bignumber.equal(`10001${e18}`);
+        const balanceAfterWithdraw = new BN(await web3.eth.getBalance(secondUserAddress));
+        expect(balanceAfterWithdraw.sub(balanceBeforeWithdraw)).to.be.bignumber.equal(`1${e18}`);
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal(`99999${e18}`);
       });
       it('should revert if slippage is too high', async function() {
