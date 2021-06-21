@@ -70,16 +70,6 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
     receive() external payable {}
 
     // =======================================================================
-    // WETH management
-    // =======================================================================
-
-    /// @notice Wraps all ETH held by the contract to WETH
-    /// Anyone can call it
-    function wrapETH() public {
-        IWETH(weth).deposit{value: address(this).balance}();
-    }
-
-    // =======================================================================
     // IPCVDeposit interface override
     // =======================================================================
     /// @notice deposit WETH held by the contract to get stETH.
@@ -88,9 +78,8 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
     /// changed to stETH anyway.
     function deposit() external override whenNotPaused {
         // Unwrap WETH
-        uint256 amountIn = IERC20(weth).balanceOf(address(this));
+        uint256 amountIn = address(this).balance;
         require(amountIn > 0, "EthLidoPCVDeposit: cannot deposit 0.");
-        IWETH(weth).withdraw(amountIn);
 
         // Get the expected amount of stETH out of a Curve trade
         // (single trade with all the held ETH)
@@ -153,8 +142,7 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
         require(actualAmountOut >= minimumAcceptedAmountOut, "EthLidoPCVDeposit: slippage too high.");
 
         // Wrap ouput ETH to WETH and transfer it to destination.
-        IWETH(weth).deposit{value: actualAmountOut}();
-        ERC20(weth).safeTransfer(to, actualAmountOut);
+        Address.sendValue(payable(to), actualAmountOut);
 
         emit Withdrawal(msg.sender, to, actualAmountOut);
     }
