@@ -87,8 +87,8 @@ async function forceEth(to, amount) {
   await forceEthContract.forceEth(to);
 }
 
-async function expectApprox(actual, expected) {
-  const delta = expected.div(new BN('1000'));
+async function expectApprox(actual, expected, magnitude = '1000') {
+  const delta = expected.div(new BN(magnitude));
   expect(actual).to.be.bignumber.closeTo(expected, delta);
 }
 

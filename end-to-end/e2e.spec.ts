@@ -4,8 +4,9 @@ import { TestEndtoEndCoordinator } from './setup';
 import { syncPool } from '../scripts/utils/syncPool'
 import { TestEnvContractAddresses, TestEnvContracts } from './setup/types';
 import { getPeg, getPrice } from './setup/utils'
-const { toBN } = web3.utils;
+import { expectApprox } from '../test/helpers'
 
+const { toBN } = web3.utils;
 
 describe('e2e', function () {
   let contracts: TestEnvContracts;
@@ -56,48 +57,37 @@ describe('e2e', function () {
     expect(feiBalanceAfter).to.be.bignumber.equal(expectedFinalBalance);
   })
 
-  // WIP
-  it.skip('should transfer allocation from bonding curve to the reserve stabiliser', async function () {
+  it('should transfer allocation from bonding curve to the reserve stabiliser', async function () {
     const bondingCurve = contracts.bondingCurve;
+    const uniswapPCVDeposit = contracts.uniswapPCVDeposit
 
-    // 1. Make sure there is ETH in bonding curve
+    const pcvDepositBefore = await uniswapPCVDeposit.balance()
+
     const curveEthBalanceBefore = toBN(await web3.eth.getBalance(bondingCurve.address));
     expect(curveEthBalanceBefore).to.be.bignumber.greaterThan(toBN(0))
 
     const fei = contracts.fei;
     const callerFeiBalanceBefore = await fei.balanceOf(deployAddress)
-
     const pcvAllocations = await bondingCurve.getAllocation()
-    const pcvDepositAddresses = pcvAllocations[0][0] // (address, ratio)
+    expect(pcvAllocations[0].length).to.be.equal(1)
 
-    // add assert to confirm expected values returned
+    const durationWindow = await bondingCurve.duration()
 
-    // 2. Get the Eth balances of the pcvDeposit allocation (class PCVSplitter)
-    // Check duration window to see if passed (potentially fast-forward to ensure passed)
-    // const pcvDepositAddressBalances = await Promise.all(pcvDepositAddresses.map(async address => await web3.eth.getBalance(address)))
-    // const durationWindow = await bondingCurve.duration()
+    // pass the duration window, so Fei incentive will be sent
+    await time.increase(durationWindow);
 
-    // use time to fast forward past window, and then this will trigger incentive later on when calling allocate
-    // TODO: Get current time, check if duration window passed. If not fast forward
-
-    // 3. trigger allocate
-    console.log('before allocate')
+    const allocatedEth = await bondingCurve.balance()
     await bondingCurve.allocate()
-    console.log('after allocate')
-    // 4. Make sure ETH leaves bonding curve and goes to allocation 
-    // When checking balances use the .balance()
-    // (possible amount received != sent if allocation includes EthUniswapPCVDeposit)
-    
-    const allocatedEth = toBN(5) // TODO calculate
+  
     const curveEthBalanceAfter = toBN(await web3.eth.getBalance(bondingCurve.address));
     expect(curveEthBalanceAfter).to.be.bignumber.equal(curveEthBalanceBefore.sub(allocatedEth))
+    
+    const pcvDepositAfter = await uniswapPCVDeposit.balance()
+    await expectApprox(pcvDepositAfter, pcvDepositBefore.add(allocatedEth), '100')
 
-    // 5. Make sure caller receives FEI incentive if duration had passed
-    const expectedFeiIncentive = toBN(5) // TODO: calculate
+    const feiIncentive = await bondingCurve.incentiveAmount();
     const callerFeiBalanceAfter = await fei.balanceOf(deployAddress);
-    expect(callerFeiBalanceAfter).to.be.bignumber.equal(callerFeiBalanceBefore.add(expectedFeiIncentive))
-
-    // allocation needs balance checking - reserve stabiliser before and after balance confirmed. Increase by amount allocated
+    expect(callerFeiBalanceAfter).to.be.bignumber.equal(callerFeiBalanceBefore.add(feiIncentive))
   })
 
   // WIP
