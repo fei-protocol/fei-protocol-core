@@ -71,7 +71,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       ...deployedUpgradedContracts
     }
     this.setLocalTestContracts(contracts)
-    this.setLocalTestContractAddresses(contracts)
+    this.setLocalTestContractAddresses(contracts, this.mainnetAddresses['feiEthPair'])
     
     const requiredSudoAddresses = {
       coreAddress: this.mainnetAddresses['core'],
@@ -99,9 +99,6 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       tribeReserveStabilizerAddress: deployedUpgradedContracts.tribeReserveStabilizer.address
     };
 
-    // Grant minter, burner, pcvController permissions etc to the relevant contracts
-    await applyPermissions(requiredApplyPermissionsAddresses, this.config.logging)
-
     const oldContractAddresses = {
       oldUniswapPCVDepositAddress: this.mainnetAddresses['uniswapPCVDeposit'],
       oldUniswapPCVControllerAddress: this.mainnetAddresses['uniswapPCVController'],
@@ -112,7 +109,11 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       deployAddress: this.config.deployAddress,
       oldBondingCurveAddress: this.mainnetAddresses['bondingCurve']
     }
+    
     await revokeOldContractPerms(this.localTestContracts.core, oldContractAddresses)
+
+    // Grant minter, burner, pcvController permissions etc to the relevant contracts
+    await applyPermissions(requiredApplyPermissionsAddresses, this.config.logging)
     return { contracts: this.localTestContracts, contractAddresses: this.localTestContractAddresses }
   }
 
@@ -126,7 +127,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   /**
    * Set the addresses of the contracts used in the test environment
    */
-  setLocalTestContractAddresses(contracts: TestEnvContracts) {
+  setLocalTestContractAddresses(contracts: TestEnvContracts, feiEthPairAddress: string) {
     this.localTestContractAddresses = {
       core: contracts.core.address,
       tribe: contracts.tribe.address,
@@ -143,6 +144,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       tribeReserveStabilizer: contracts.tribeReserveStabilizer.address,
       feiRewardsDistributor: contracts.feiRewardsDistributor.address,
       timelock: contracts.timelock.address,
+      feiEthPair: feiEthPairAddress,
     }
   }
 
@@ -153,6 +155,15 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     return this.mainnetAddresses
   }
 
+  /**
+   * Revoke permissions granted to deploy address
+   */
+  async revokeDeployAddressPermission() {
+    await this.localTestContracts.core.revokeMinter(this.config.deployAddress);
+    await this.localTestContracts.core.revokeBurner(this.config.deployAddress);
+    await this.localTestContracts.core.revokePCVController(this.config.deployAddress);
+    await this.localTestContracts.core.revokeGovernor(this.config.deployAddress);
+  }
 
   /**
    * Get the access control mapping for the contracts. The access control is managed by the 

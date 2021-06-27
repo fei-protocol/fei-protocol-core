@@ -87,7 +87,6 @@ async function revokeOldContractPerms(core, oldContractAddresses) {
     oldTribeReserveStabilizerAddress,
     oldEthReserveStabilizerAddress,
     oldRatioControllerAddress,
-    deployAddress,
     oldBondingCurveAddress,
   } = oldContractAddresses;
 
@@ -95,18 +94,13 @@ async function revokeOldContractPerms(core, oldContractAddresses) {
   await core.revokeMinter(oldUniswapPCVControllerAddress);
   await core.revokeMinter(oldUniswapPCVDepositAddress);
   await core.revokeMinter(oldBondingCurveAddress);
-  await core.revokeMinter(deployAddress);
 
   await core.revokeBurner(oldUniswapPCVControllerAddress);
   await core.revokeBurner(oldTribeReserveStabilizerAddress);
-  await core.revokeBurner(oldEthReserveStabilizerAddress);
-  await core.revokeBurner(deployAddress);
+  await core.revokeBurner(oldEthReserveStabilizerAddress);  
 
   await core.revokePCVController(oldRatioControllerAddress);
   await core.revokePCVController(oldUniswapPCVControllerAddress);
-  await core.revokePCVController(deployAddress);
-
-  await core.revokeGovernor(deployAddress);
 }
 
 module.exports = { upgrade, revokeOldContractPerms };

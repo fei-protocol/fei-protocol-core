@@ -57,7 +57,7 @@ describe('e2e', function () {
   })
 
   // WIP
-  it('should transfer allocation from bonding curve to the reserve stabiliser', async function () {
+  it.skip('should transfer allocation from bonding curve to the reserve stabiliser', async function () {
     const bondingCurve = contracts.bondingCurve;
 
     // 1. Make sure there is ETH in bonding curve
@@ -101,7 +101,7 @@ describe('e2e', function () {
   })
 
   // WIP
-  it('should be able to redeem Fei from stabiliser', async function () {
+  it.skip('should be able to redeem Fei from stabiliser', async function () {
     const reserveStabiliser = contracts.ethReserveStabilizer;
     const fei = contracts.fei;
 
@@ -128,139 +128,147 @@ describe('e2e', function () {
     expect(userFeiBalanceAfter).to.be.bignumber.equal(userFeiBalanceBefore.sub(feiTokensRedeem))
   })
 
-  // it('should perform reweight above peg correctly',  async function () {
-  //   // Sync pool to 3% above peg
-  //   await syncPool(
-  //     toBN('9700'),
-  //     {
-  //       feiAddress: contractAddresses.fei,
-  //       ethUniswapPCVDepositAddress: contractAddresses.uniswapPCVDeposit,
-  //       ethPairAddress: contractAddresses.feiEthPair, // this is fei eth pair
-  //     },
-  //     deployAddress,
-  //     true
-  //   );
 
-  //   const controller = contracts.pcvDripController
-  //   await time.increase(await controller.remainingTime());
-
-  //   const eligible = await controller.reweightEligible();
-  //   expect(eligible).to.be.equal(true)
-
-  //   await controller.reweight();
-
-  //   // Check that the reweight was successful
-  //   // asset pool ratio = oracle ratio
-  //   const peg = await getPeg(controller)
-  //   const currentPrice = await getPrice(controller);
-  //   expect(peg).to.be.bignumber.equal(currentPrice)
-
-  //   // ensure timer reset
-  //   const timeReset = !(await controller.isTimeEnded());
-  //   expect(timeReset).to.equal(true)
-  // })
-
-  // it('should perform reweight below peg correctly',  async function () {
-  //   // Sync pool to 3% below peg
-  //   await syncPool(
-  //     toBN('10300'),
-  //     {
-  //       feiAddress: contractAddresses.fei,
-  //       ethUniswapPCVDepositAddress: contractAddresses.uniswapPCVDeposit,
-  //       ethPairAddress: contractAddresses.feiEthPair, // this is fei eth pair
-  //     },
-  //     deployAddress,
-  //     true
-  //   );
-
-  //   const controller = contracts.pcvDripController
-  //   await time.increase(await controller.remainingTime());
-
-  //   const eligible = await controller.reweightEligible();
-  //   expect(eligible).to.be.equal(true)
-
-  //   await controller.reweight();
-
-  //   // Check that the reweight was successful
-  //   // asset pool ratio = oracle ratio
-  //   const peg = await getPeg(controller)
-  //   const currentPrice = await getPrice(controller);
-  //   expect(peg).to.be.bignumber.equal(currentPrice)
-
-  //   // ensure timer reset
-  //   const timeReset = !(await controller.isTimeEnded());
-  //   expect(timeReset).to.equal(true)
-  // })
-
-  it('drip controller can withdraw from PCV deposit to stabiliser', async function () {
+  it.skip('drip controller can withdraw from PCV deposit to stabiliser', async function () {
     // 1. drain stabilizer
     // 2. Trigger drip
     // 3. check PCV deposit loses dripAmount ETH and stabilizer gets dripAmount ETH
     // 4. check caller receives FEI mint
   })
 
-  it('should have granted correct number of access rights', async function () {
-    const core = contracts.core
-    const accessRights = e2eCoord.getAccessControlMapping()
-
-    const minterId = await core.MINTER_ROLE()
-    
-    const numMinterRoles = await core.getRoleMemberCount(minterId)
-    expect(numMinterRoles).to.be.equal(accessRights.minter.length)
-
-    const burnerId = await core.BURNER_ROLE()
-    const numBurnerRoles = await core.getRoleMemberCount(burnerId)
-    expect(numBurnerRoles).to.be.equal(accessRights.burner.length)
-
-    const pcvControllerId = await core.PCV_CONTROLLER_ROLE()
-    const numPCVControllerRoles = await core.getRoleMemberCount(pcvControllerId)
-    expect(numPCVControllerRoles).to.be.equal(accessRights.pcvController.length)
-
-    const governorId = await core.GOVERN_ROLE()
-    const numGovernorRoles = await core.getRoleMemberCount(governorId)
-    expect(numGovernorRoles).to.be.equal(accessRights.governor.length)
-    
-    const guardianId = await core.GUARDIAN_ROLE()
-    const numGuaridanRoles = await core.getRoleMemberCount(guardianId)
-    expect(numGuaridanRoles).to.be.equal(accessRights.guardian.length)
+  describe('Reweights', async () => {
+    it('should perform reweight above peg correctly',  async function () {
+      // Sync pool to 3% above peg
+      await syncPool(
+        toBN('9700'),
+        {
+          feiAddress: contractAddresses.fei,
+          ethUniswapPCVDepositAddress: contractAddresses.uniswapPCVDeposit,
+          ethPairAddress: contractAddresses.feiEthPair, // this is fei eth pair
+        },
+        deployAddress,
+      );
+  
+      const controller = contracts.uniswapPCVController
+      await time.increase(await controller.remainingTime());
+  
+      const eligible = await controller.reweightEligible();
+      expect(eligible).to.be.equal(true)
+  
+      await controller.reweight();
+  
+      // Check that the reweight was successful
+      // asset pool ratio = oracle ratio
+      const peg = await getPeg(controller)
+      const currentPrice = await getPrice(controller);
+      expect(peg).to.be.bignumber.equal(currentPrice)
+  
+      // ensure timer reset
+      const timeReset = !(await controller.isTimeEnded());
+      expect(timeReset).to.equal(true)
+    })
+  
+    it('should perform reweight below peg correctly',  async function () {
+      // Sync pool to 3% below peg
+      await syncPool(
+        toBN('10300'),
+        {
+          feiAddress: contractAddresses.fei,
+          ethUniswapPCVDepositAddress: contractAddresses.uniswapPCVDeposit,
+          ethPairAddress: contractAddresses.feiEthPair, // this is fei eth pair
+        },
+        deployAddress,
+      );
+  
+      const controller = contracts.uniswapPCVController
+      await time.increase(await controller.remainingTime());
+  
+      const eligible = await controller.reweightEligible();
+      expect(eligible).to.be.equal(true)
+  
+      await controller.reweight();
+  
+      // Check that the reweight was successful
+      // asset pool ratio = oracle ratio
+      const peg = await getPeg(controller)
+      const currentPrice = await getPrice(controller);
+      expect(peg).to.be.bignumber.equal(currentPrice)
+  
+      // ensure timer reset
+      const timeReset = !(await controller.isTimeEnded());
+      expect(timeReset).to.equal(true)
+    })
   })
 
-  it('should have granted contracts correct access', async function () {
-    const core = contracts.core;
-    const accessControl = e2eCoord.getAccessControlMapping()
+  describe('Access control', async () => {
+    before(async () => {
+      // Revoke deploy address permissions, so that does not erroneously
+      // contribute to num governor roles etc
+      await e2eCoord.revokeDeployAddressPermission()
+    })
 
-    for (let i = 0; i < accessControl.minter.length; i += 1) {
-      const contractAddress = accessControl.minter[i]
-      const isMinter = await core.isMinter(contractAddress)
-      expect(isMinter).to.be.equal(true)
-    }
+    it('should have granted correct role cardinality', async function () {
+      const core = contracts.core
+      const accessRights = e2eCoord.getAccessControlMapping()
 
-    for (let i = 0; i < accessControl.burner.length; i += 1) {
-      const contractAddress = accessControl.burner[i]
-      const isBurner = await core.isBurner(contractAddress)
-      expect(isBurner).to.be.equal(true)
-    }
+      const minterId = await core.MINTER_ROLE()
+      const numMinterRoles = await core.getRoleMemberCount(minterId)
+      expect(numMinterRoles.toNumber()).to.be.equal(accessRights.minter.length)
 
-    for (let i = 0; i < accessControl.pcvController.length; i += 1) {
-      const contractAddress = accessControl.pcvController[i]
-      const isPCVController = await core.isPCVController(contractAddress)
-      expect(isPCVController).to.be.equal(true)
-    }
+      const burnerId = await core.BURNER_ROLE()
+      const numBurnerRoles = await core.getRoleMemberCount(burnerId)
+      expect(numBurnerRoles.toNumber()).to.be.equal(accessRights.burner.length)
 
-    for (let i = 0; i < accessControl.guardian.length; i += 1) {
-    const contractAddress = accessControl.guardian[i]
-      const isGuardian = await core.isGuardian(contractAddress)
-      expect(isGuardian).to.be.equal(true)
-    }
+      const pcvControllerId = await core.PCV_CONTROLLER_ROLE()
+      const numPCVControllerRoles = await core.getRoleMemberCount(pcvControllerId)
+      expect(numPCVControllerRoles.toNumber()).to.be.equal(accessRights.pcvController.length)
 
-    for (let i = 0; i < accessControl.governor.length; i += 1) {
-      const contractAddress = accessControl.governor[i]
-      const isGovernor = await core.isGovernor(contractAddress)
-      expect(isGovernor).to.be.equal(true)
-    }
+      const governorId = await core.GOVERN_ROLE()
+      const numGovernorRoles = await core.getRoleMemberCount(governorId)
+      expect(numGovernorRoles.toNumber()).to.be.equal(accessRights.governor.length)
+      
+      const guardianId = await core.GUARDIAN_ROLE()
+      const numGuaridanRoles = await core.getRoleMemberCount(guardianId)
+      expect(numGuaridanRoles.toNumber()).to.be.equal(accessRights.guardian.length)
+    })
 
-    const tribe = contracts.tribe
-    const tribeMinter = await tribe.minter()
-    expect(tribeMinter).to.equal(contractAddresses.tribeReserveStabilizer)
+    it('should have granted contracts correct roles', async function () {
+      const core = contracts.core;
+      const accessControl = e2eCoord.getAccessControlMapping()
+
+      for (let i = 0; i < accessControl.minter.length; i += 1) {
+        const contractAddress = accessControl.minter[i]
+        const isMinter = await core.isMinter(contractAddress)
+        expect(isMinter).to.be.equal(true)
+      }
+
+      for (let i = 0; i < accessControl.burner.length; i += 1) {
+        const contractAddress = accessControl.burner[i]
+        const isBurner = await core.isBurner(contractAddress)
+        expect(isBurner).to.be.equal(true)
+      }
+
+      for (let i = 0; i < accessControl.pcvController.length; i += 1) {
+        const contractAddress = accessControl.pcvController[i]
+        const isPCVController = await core.isPCVController(contractAddress)
+        expect(isPCVController).to.be.equal(true)
+      }
+
+      for (let i = 0; i < accessControl.guardian.length; i += 1) {
+      const contractAddress = accessControl.guardian[i]
+        const isGuardian = await core.isGuardian(contractAddress)
+        expect(isGuardian).to.be.equal(true)
+      }
+
+      for (let i = 0; i < accessControl.governor.length; i += 1) {
+        const contractAddress = accessControl.governor[i]
+        const isGovernor = await core.isGovernor(contractAddress)
+        expect(isGovernor).to.be.equal(true)
+      }
+
+      const tribe = contracts.tribe
+      const tribeMinter = await tribe.minter()
+      expect(tribeMinter).to.equal(contractAddresses.tribeReserveStabilizer)
+    })
   })
 });

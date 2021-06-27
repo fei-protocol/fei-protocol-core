@@ -60,6 +60,7 @@ export type TestEnvContractAddresses = {
   tribeReserveStabilizer: string,
   feiRewardsDistributor: string,
   timelock: string,
+  feiEthPair: string,
 }
 
 export type MainnetContractAddresses = {
@@ -82,26 +83,6 @@ export type MainnetContractAddresses = {
   uniswapOracle: string,
   feiRewardsDistributor: string,
   timelock: string
-}
-
-export type LocalContractAddresses = {
-  core: string,
-  tribe: string,
-  fei: string,
-  uniswapPCVDeposit: string,
-  uniswapPCVController: string,
-  bondingCurve: string,
-  chainlinkEthUsdOracleWrapper: string,
-  chainlinkFeiEthOracleWrapper: string,
-  compositeOracle: string
-  ethReserveStabilizer: string,
-  pcvDripController: string,
-  ratioPCVController: string,
-  tribeReserveStabilizer: string,
-  weth: string,
-  uniswapRouter: string,
-  feiEthPair: string,
-  uniswapOracle: string,
 }
 
 export type ContractAccessRights = 
