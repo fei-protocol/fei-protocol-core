@@ -12,7 +12,6 @@ const {
 
 const EthLidoPCVDeposit = artifacts.require('EthLidoPCVDeposit');
 const Fei = artifacts.require('Fei');
-const MockWeth = artifacts.require('MockWeth');
 const MockStEthStableSwap = artifacts.require('MockStEthStableSwap');
 const MockStEthToken = artifacts.require('MockStEthToken');
 
@@ -38,14 +37,12 @@ describe('EthLidoPCVDeposit', function () {
     this.steth = await MockStEthToken.new();
     this.stableswap = await MockStEthStableSwap.new(this.steth.address);
     await this.steth.mintAt(this.stableswap.address);
-    this.weth = await MockWeth.new();
 
     await forceEth(this.stableswap.address, ether('100'));
 
     this.pcvDeposit = await EthLidoPCVDeposit.new(
       this.core.address,
       this.steth.address,
-      this.weth.address,
       this.stableswap.address,
       '100' // maximum 1% slippage tolerated
     );
@@ -195,7 +192,7 @@ describe('EthLidoPCVDeposit', function () {
       });
       it('should revert if not PCVController', async function() {
         await expectRevert(
-          this.pcvDeposit.withdrawERC20(this.weth.address, userAddress, 1),
+          this.pcvDeposit.withdrawERC20(this.fei.address, userAddress, 1),
           'VM Exception while processing transaction: revert CoreRef: Caller is not a PCV controller'
         );
       });

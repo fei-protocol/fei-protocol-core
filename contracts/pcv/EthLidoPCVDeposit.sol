@@ -8,7 +8,6 @@ import "../external/Decimal.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 
 // stETH Token contract specific functions
 interface ILido {
@@ -43,7 +42,6 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
     // ----------- Properties -----------
     // References to external contracts
     address public immutable steth;
-    address public immutable weth;
     address public immutable stableswap;
 
     // Maximum tolerated slippage
@@ -53,12 +51,10 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
     constructor(
         address _core,
         address _steth,
-        address _weth,
         address _stableswap,
         uint256 _maximumSlippageBasisPoints
     ) CoreRef(_core) {
         steth = _steth;
-        weth = _weth;
         stableswap = _stableswap;
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
 
@@ -72,12 +68,11 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
     // =======================================================================
     // IPCVDeposit interface override
     // =======================================================================
-    /// @notice deposit WETH held by the contract to get stETH.
+    /// @notice deposit ETH held by the contract to get stETH.
     /// @dev everyone can call deposit(), it is not protected by PCVController
-    /// rights, because all ETH and WETH held by the contract is destined to be
+    /// rights, because all ETH held by the contract is destined to be
     /// changed to stETH anyway.
     function deposit() external override whenNotPaused {
-        // Unwrap WETH
         uint256 amountIn = address(this).balance;
         require(amountIn > 0, "EthLidoPCVDeposit: cannot deposit 0.");
 
@@ -112,12 +107,12 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
         emit Deposit(msg.sender, actualAmountOut);
     }
 
-    /// @notice withdraw stETH held by the contract to get WETH.
-    /// This function with swap stETH held by the contract to ETH, then wrap
-    /// it to WETH, and transfer it to the target address. Note: the withdraw could
+    /// @notice withdraw stETH held by the contract to get ETH.
+    /// This function with swap stETH held by the contract to ETH, and transfer
+    /// it to the target address. Note: the withdraw could
     /// revert if the Curve pool is imbalanced with too many stETH and the amount
-    /// of WETH out of the trade is less than the tolerated slippage.
-    /// @param to the destination of the withdrawn WETH tokens
+    /// of ETH out of the trade is less than the tolerated slippage.
+    /// @param to the destination of the withdrawn ETH
     /// @param amountIn the number of stETH to withdraw.
     function withdraw(address to, uint256 amountIn) external override onlyPCVController whenNotPaused {
         require(balance() >= amountIn, "EthLidoPCVDeposit: not enough stETH.");
@@ -141,7 +136,7 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
         // instead of the StableSwap pool's min_dy check.
         require(actualAmountOut >= minimumAcceptedAmountOut, "EthLidoPCVDeposit: slippage too high.");
 
-        // Wrap ouput ETH to WETH and transfer it to destination.
+        // Transfer ETH to destination.
         Address.sendValue(payable(to), actualAmountOut);
 
         emit Withdrawal(msg.sender, to, actualAmountOut);
