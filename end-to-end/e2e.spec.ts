@@ -95,7 +95,7 @@ describe('e2e', function () {
   })
 
   // WIP
-  it.skip('should be able to redeem Fei from stabiliser', async function () {
+  it('should be able to redeem Fei from stabiliser', async function () {
     const reserveStabiliser = contracts.ethReserveStabilizer;
     const fei = contracts.fei;
 
@@ -122,12 +122,69 @@ describe('e2e', function () {
     expect(userFeiBalanceAfter).to.be.bignumber.equal(userFeiBalanceBefore.sub(feiTokensRedeem))
   })
 
-  it('should perform reweight above peg correctly',  async function () {
-    // /scripts/validation/upgrade.js
+  it.only('should perform reweight above peg correctly',  async function () {
+    // Sync pool to 3% above peg
+    await syncPool(
+      toBN('9700'),
+      {
+        feiAddress: contractAddresses.fei,
+        ethUniswapPCVDepositAddress: contractAddresses.uniswapPCVDeposit,
+        ethPairAddress: contractAddresses.feiEthPair, // this is fei eth pair
+      },
+      deployAddress,
+      true
+    );
+
+    const controller = contracts.pcvDripController
+    await time.increase(await controller.remainingTime());
+
+    const eligible = await controller.reweightEligible();
+    expect(eligible).to.be.equal(true)
+
+    await controller.reweight();
+
+    // Check that the reweight was successful
+    // asset pool ratio = oracle ratio
+    const peg = await getPeg(controller)
+    const currentPrice = await getPrice(controller);
+    expect(peg).to.be.bignumber.equal(currentPrice)
+
+    // ensure timer reset
+    const timeReset = !(await controller.isTimeEnded());
+    expect(timeReset).to.equal(true)
+
   })
 
   it('should perform reweight below peg correctly',  async function () {
-    // /scripts/validation/upgrade.js
+    // Sync pool to 3% below peg
+    await syncPool(
+      toBN('10300'),
+      {
+        feiAddress: contractAddresses.fei,
+        ethUniswapPCVDepositAddress: contractAddresses.uniswapPCVDeposit,
+        ethPairAddress: contractAddresses.feiEthPair, // this is fei eth pair
+      },
+      deployAddress,
+      true
+    );
+
+    const controller = contracts.pcvDripController
+    await time.increase(await controller.remainingTime());
+
+    const eligible = await controller.reweightEligible();
+    expect(eligible).to.be.equal(true)
+
+    await controller.reweight();
+
+    // Check that the reweight was successful
+    // asset pool ratio = oracle ratio
+    const peg = await getPeg(controller)
+    const currentPrice = await getPrice(controller);
+    expect(peg).to.be.bignumber.equal(currentPrice)
+
+    // ensure timer reset
+    const timeReset = !(await controller.isTimeEnded());
+    expect(timeReset).to.equal(true)
   })
 
   it('drip controller can withdraw from PCV deposit to stabiliser', async function () {

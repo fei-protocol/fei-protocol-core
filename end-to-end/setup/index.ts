@@ -98,12 +98,13 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * permissions contract
    */
   getAccessControlMapping(): ContractAccessRights {
+    // TODO: add access control mapping for other contracts
     const accessControlMapping = [
       {
-        contractName: 'core',
+        contractName: 'uniswapPCVController',
         accessRights: {
-          isGovernor: true,
-          isPCVController: true,
+          isGovernor: false,
+          isPCVController: false,
           isMinter: true,
           isBurner: true,
           isGuardian: false,
