@@ -2,7 +2,8 @@ const { web3 } = require('hardhat');
 const { Contract } = web3.eth
 
 export type TestEnv = {
-  contracts: TestEnvContracts
+  contracts: TestEnvContracts,
+  contractAddresses: ContractAddresses
 }
 
 export interface TestCoordinator {
@@ -52,3 +53,15 @@ export type ContractAddresses = {
   feiEthPair: string,
   uniswapOracle: string,
 }
+
+export type ContractAccessRights = 
+  {
+    contractName: string,
+    accessRights: {
+      isGovernor: boolean,
+      isMinter: boolean,
+      isBurner: boolean,
+      isPCVController: boolean,
+      isGuardian: boolean,
+    }
+  }[]

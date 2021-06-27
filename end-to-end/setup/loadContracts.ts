@@ -16,11 +16,6 @@ const ethReserveStabilizerArtifact = artifacts.require('EthReserveStabilizer')
 const ratioPCVControllerArtifact = artifacts.require('RatioPCVController')
 const pCVDepositAdapterArtifact = artifacts.require('PCVDripController')
 
-export function deployContract(contractName: string) {
-  return web3.eth.Contract
-
-}
-
 export function getContractArtifacts() {
   return {
     'core': coreArtifact,

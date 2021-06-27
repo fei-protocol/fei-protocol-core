@@ -1,6 +1,6 @@
 import mainnetAddressesV1 from '../../contract-addresses/mainnetAddresses.json'
 import { getContracts, getContract } from './loadContracts'
-import { Config, ContractAddresses, TestCoordinator, TestEnv, TestEnvContracts } from './types'
+import { Config, ContractAccessRights, ContractAddresses, TestCoordinator, TestEnv, TestEnvContracts } from './types'
 import { sudo } from '../../scripts/utils/sudo'
 import { upgrade as upgradeProtocol } from '../../deploy/upgrade'
 import { upgrade as applyPermissions } from '../../scripts/dao/upgrade'
@@ -33,7 +33,8 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    */
   async initialiseMainnetEnv(): Promise<TestEnv> {
     const contracts = await this.loadMainnetContracts(this.addresses)
-    return { contracts }
+    const contractAddresses = this.getAddresses()
+    return { contracts, contractAddresses }
   }
 
   /**
@@ -79,7 +80,38 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     };
 
     await applyPermissions(requiredApplyPermissionsAddresses, this.config.logging)
-    return { contracts }
+    const contractAddresses = this.getAddresses()
+
+    return { contracts, contractAddresses }
+  }
+
+  /**
+   * Get all contract addresses used in the test environment
+   */
+  getAddresses(): ContractAddresses {
+    return this.addresses
+  }
+
+
+  /**
+   * Get the access control mapping for the contracts. The access control is managed by the 
+   * permissions contract
+   */
+  getAccessControlMapping(): ContractAccessRights {
+    const accessControlMapping = [
+      {
+        contractName: 'core',
+        accessRights: {
+          isGovernor: true,
+          isPCVController: true,
+          isMinter: true,
+          isBurner: true,
+          isGuardian: false,
+        }
+      }
+    ]
+
+    return accessControlMapping
   }
   
   /**

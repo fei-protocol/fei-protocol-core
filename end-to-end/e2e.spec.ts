@@ -1,12 +1,17 @@
 import { expect, web3 } from 'hardhat'
+import { time } from '@openzeppelin/test-helpers';
 import { TestEndtoEndCoordinator } from './setup';
-import { TestEnvContracts } from './setup/types';
-const { Contract } = web3.eth;
+import { syncPool } from '../scripts/utils/syncPool'
+import { ContractAddresses, TestEnvContracts } from './setup/types';
+import { getPeg, getPrice } from './setup/utils'
 const { toBN } = web3.utils;
+
 
 describe('e2e', function () {
   let contracts: TestEnvContracts;
+  let contractAddresses: ContractAddresses;
   let deployAddress: string;
+  let e2eCoord: TestEndtoEndCoordinator;
 
   const tenPow18 = toBN('1000000000000000000');
 
@@ -21,8 +26,8 @@ describe('e2e', function () {
       version: version,
       network: 'local'
     }
-    const e2eCoord = new TestEndtoEndCoordinator(config);
-    ({ contracts } = await e2eCoord.initialiseLocalEnv())
+    e2eCoord = new TestEndtoEndCoordinator(config);
+    ({ contracts, contractAddresses } = await e2eCoord.initialiseLocalEnv())
   })
 
   this.beforeEach(async function () {
@@ -132,9 +137,62 @@ describe('e2e', function () {
     // 4. check caller receives FEI mint
   })
 
-  it('assert all access control', async function () {
-    // make sure all roles that have access do
-    // make sure no extra roles have access (perhaps just check cardinality of each role  `core.getRoleMemberCount(role bytes)`)
-    // core.BURNER_ROLE() - returns bytes32 role id
+  it('should have granted correct number of access rights', async function () {
+    const expectedMinterRoles = 5
+    const expectedBurnerRoles = 5
+    const expectedPCVControllerRoles = 5
+    const expectedGovernorRoles = 5
+    const expectedGuardianRoles = 5
+
+    const core = contracts.core
+    const minterId = await core.MINTER_ROLE()
+    const numMinterRoles = await core.getRoleMemberCount(minterId)
+    expect(numMinterRoles).to.be.equal(expectedMinterRoles)
+
+    const burnerId = await core.BURNER_ROLE()
+    const numBurnerRoles = await core.getRoleMemberCount(burnerId)
+    expect(numBurnerRoles).to.be.equal(expectedBurnerRoles)
+
+    const pcvControllerId = await core.PCV_CONTROLLER_ROLE()
+    const numPCVControllerRoles = await core.getRoleMemberCount(pcvControllerId)
+    expect(numPCVControllerRoles).to.be.equal(expectedPCVControllerRoles)
+
+    const governorId = await core.PCV_CONTROLLER_ROLE()
+    const numGovernorRoles = await core.getRoleMemberCount(governorId)
+    expect(numGovernorRoles).to.be.equal(expectedGovernorRoles)
+    
+    const guardianId = await core.PCV_CONTROLLER_ROLE()
+    const numGuaridanRoles = await core.getRoleMemberCount(guardianId)
+    expect(numGuaridanRoles).to.be.equal(expectedGuardianRoles)
+  })
+
+  it('should have granted key contracts the correct access', async function () {
+    const core = contracts.core;
+    const accessControl = e2eCoord.getAccessControlMapping()
+
+    // 1) Get the access control record for the particular contract 
+    // 2) Get the contract address
+    // 3) Query core and ensure the permissions set on core match up 
+    // to those expected
+    for (let i = 0; i <= accessControl.length; i += 1) {
+      const contractAccessRights = accessControl[i]
+      const contractName = contractAccessRights.contractName
+      const contractAddress = contractAddresses[contractName]
+
+      const isMinter = await core.isMinter(contractAddress)
+      expect(isMinter).to.equal(contractAccessRights.accessRights.isMinter)
+
+      const isBurner = await core.isBurner(contractAddress)
+      expect(isBurner).to.equal(contractAccessRights.accessRights.isBurner)
+
+      const isPCVController = await core.isPCVController(contractAddress)
+      expect(isPCVController).to.equal(contractAccessRights.accessRights.isPCVController)
+
+      const isGovernor = await core.isGovernor(contractAddress)
+      expect(isGovernor).to.equal(contractAccessRights.accessRights.isGovernor)
+
+      const isGuardian = await core.isGuardian(contractAddress)
+      expect(isGuardian).to.equal(contractAccessRights.accessRights.isGuardian)
+    }
   })
 });
