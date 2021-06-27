@@ -1,8 +1,17 @@
 import mainnetAddressesV1 from '../../contract-addresses/mainnetAddresses.json'
 import { getContracts, getContract } from './loadContracts'
-import { Config, ContractAccessRights, ContractAddresses, TestCoordinator, TestEnv, TestEnvContracts } from './types'
+import {
+  Config,
+  ContractAccessRights,
+  MainnetContractAddresses,
+  ExistingProtocolContracts,
+  TestCoordinator,
+  TestEnv,
+  TestEnvContracts,
+  TestEnvContractAddresses
+} from './types'
 import { sudo } from '../../scripts/utils/sudo'
-import { upgrade as upgradeProtocol } from '../../deploy/upgrade'
+import { upgrade as deployUpgradeContracts } from '../../deploy/upgrade'
 import { upgrade as applyPermissions } from '../../scripts/dao/upgrade'
 
 /**
@@ -11,17 +20,14 @@ import { upgrade as applyPermissions } from '../../scripts/dao/upgrade'
  * in a purely 100% mainnet forked mode
 */
 export class TestEndtoEndCoordinator implements TestCoordinator { 
-  private supportedNetworks = ['mainnet', 'local']
-  private addresses: ContractAddresses;
+  private mainnetAddresses: MainnetContractAddresses;
+  private localTestContracts: TestEnvContracts;
+  private localTestContractAddresses: TestEnvContractAddresses;
 
   constructor(
     private config: Config,
   ) {
-    if (this.supportedNetworks.includes(this.config.network)) {
-      this.addresses = this.getContractAddressesForNetwork(config.network)
-    } else {
-      throw new Error('Unsupported network')
-    }
+      this.mainnetAddresses = this.getMainnetContractAddresses()
   }
 
   /**
@@ -32,64 +38,103 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * 2) Get accounts ready to execute tests from
    */
   async initialiseMainnetEnv(): Promise<TestEnv> {
-    const contracts = await this.loadMainnetContracts(this.addresses)
-    const contractAddresses = this.getAddresses()
-    return { contracts, contractAddresses }
+    const contracts = await this.loadMainnetContracts(this.mainnetAddresses)
+    return { contracts, contractAddresses: this.mainnetAddresses }
   }
 
   /**
    * Setup end to end tests for a local environment. This involves e2e testing
    * contracts not yet deployed.
+   * 
    * Specifically:
-   * 1) Deploy contracts that are only in the codebase and not yet on Mainnet
-   * 2) Grant governor access
-   * 3) Apply appropriate permissions to the contracts
-   * 
-   * Note: This is running on a forked mainnet state to account for 
-   * the various dependencies in Uniswap, Chainlink etc.
-   * 
-   * TODO: add in an override where you can choose which contracts to deploy
-   * and upgrade
+   * 1) Get all contracts not being upgraded that are already deployed to Mainnet
+   * 2) Deploy new contracts being upgraded
+   * 3) Apply appropriate permissions to the contracts e.g. minter, burner priviledges
+   *
    */
    public async initialiseLocalEnv(): Promise<TestEnv> {
-    //  upgradedContracts = {'core': '0x124'}
-    // applies overrride 
-    const contracts = await this.getProtocolContracts()
+    const existingContracts = await this.getExistingProtocolContracts()
 
-    const requiredSudoAddresses = {
-      coreAddress: this.addresses['core'],
-      feiAddress: this.addresses['fei'],
-      timelockAddress: this.addresses['timelock']
+    // Extract mainnet addresses to supply when deploying upgrade contracts
+    const configAddresses = {
+      coreAddress: this.mainnetAddresses['core'],
+      feiEthPairAddress: this.mainnetAddresses['feiEthPair'],
+      wethAddress: this.mainnetAddresses['weth'],
+      uniswapRouterAddress: this.mainnetAddresses['uniswapRouter'],
+      uniswapOracleAddress: this.mainnetAddresses['uniswapOracle']
     }
+    const deployedUpgradedContracts = await deployUpgradeContracts(this.config.deployAddress, configAddresses, this.config.logging)
+
+    const contracts: TestEnvContracts = {
+      ...existingContracts,
+      ...deployedUpgradedContracts
+    }
+    this.setLocalTestContracts(contracts)
+    this.setLocalTestContractAddresses(contracts)
+    
+    const requiredSudoAddresses = {
+      coreAddress: this.mainnetAddresses['core'],
+      feiAddress: this.mainnetAddresses['fei'],
+      timelockAddress: this.mainnetAddresses['timelock']
+    }
+    
+    // Grant priviledges to deploy address
     await sudo(requiredSudoAddresses, this.config.logging)
     
-    // if contract not upgraded, use mainnet version. this.addresses['core']
-    // if contract is upgraded, take in override and deploy new contract +
-    // get address contracts.core.address
+    // If contract not upgraded, use mainnet address - e.g. this.addresses['core']
+    // If contract has been upgraded and a new one deployed"
+    //  - use local deploy address e.g. contracts.core.address
     const requiredApplyPermissionsAddresses = {
-      coreAddress: this.addresses['core'],
-      ethUniswapPCVDepositAddress: contracts.uniswapPCVController.address,
-      ethUniswapPCVControllerAddress: contracts.uniswapPCVController.address,
-      ethBondingCurveAddress: contracts.bondingCurve.address,
-      ethReserveStabilizerAddress: contracts.ethReserveStabilizer.address,
-      ratioPCVControllerAddress: contracts.ratioPCVController.address,
-      pcvDripControllerAddress: contracts.pcvDripController.address,
-      ethPairAddress: this.addresses['feiEthPair'],
-      timelockAddress: this.addresses['timelock'],
-      tribeReserveStabilizerAddress: contracts.tribeReserveStabilizer.address
+      coreAddress: this.mainnetAddresses['core'],
+      ethUniswapPCVDepositAddress: deployedUpgradedContracts.uniswapPCVController.address,
+      ethUniswapPCVControllerAddress: deployedUpgradedContracts.uniswapPCVController.address,
+      ethBondingCurveAddress: deployedUpgradedContracts.bondingCurve.address,
+      ethReserveStabilizerAddress: deployedUpgradedContracts.ethReserveStabilizer.address,
+      ratioPCVControllerAddress: deployedUpgradedContracts.ratioPCVController.address,
+      pcvDripControllerAddress: deployedUpgradedContracts.pcvDripController.address,
+      ethPairAddress: this.mainnetAddresses['feiEthPair'],
+      timelockAddress: this.mainnetAddresses['timelock'],
+      tribeReserveStabilizerAddress: deployedUpgradedContracts.tribeReserveStabilizer.address
     };
 
+    // Grant minter, burner, pcvController permissions etc to the relevant contracts
     await applyPermissions(requiredApplyPermissionsAddresses, this.config.logging)
-    const contractAddresses = this.getAddresses()
+    return { contracts: this.localTestContracts, contractAddresses: this.localTestContractAddresses }
+  }
 
-    return { contracts, contractAddresses }
+  /**
+   * Set the web3 contracts used in the test environment
+   */
+  setLocalTestContracts(contracts: TestEnvContracts) {
+    this.localTestContracts = contracts;
+  }
+
+  /**
+   * Set the addresses of the contracts used in the test environment
+   */
+  setLocalTestContractAddresses(contracts: TestEnvContracts) {
+    this.localTestContractAddresses = {
+      core: contracts.core.address,
+      tribe: contracts.tribe.address,
+      fei: contracts.fei.address,
+      uniswapPCVDeposit: contracts.uniswapPCVDeposit.address,
+      uniswapPCVController: contracts.uniswapPCVController.address,
+      bondingCurve: contracts.bondingCurve.address,
+      chainlinkEthUsdOracleWrapper: contracts.chainlinkEthUsdOracleWrapper.address,
+      chainlinkFeiEthOracleWrapper: contracts.chainlinkFeiEthOracleWrapper.address,
+      compositeOracle: contracts.compositeOracle.address,
+      ethReserveStabilizer: contracts.ethReserveStabilizer.address,
+      pcvDripController: contracts.pcvDripController.address,
+      ratioPCVController: contracts.ratioPCVController.address,
+      tribeReserveStabilizer: contracts.tribeReserveStabilizer.address,
+    }
   }
 
   /**
    * Get all contract addresses used in the test environment
    */
-  getAddresses(): ContractAddresses {
-    return this.addresses
+  getLocalProtocolAddresses(): MainnetContractAddresses {
+    return this.mainnetAddresses
   }
 
 
@@ -98,59 +143,47 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * permissions contract
    */
   getAccessControlMapping(): ContractAccessRights {
+    // contracts = getProtocolContracts();
     // TODO: add access control mapping for other contracts
-    const accessControlMapping = [
-      {
-        contractName: 'uniswapPCVController',
-        accessRights: {
-          isGovernor: false,
-          isPCVController: false,
-          isMinter: true,
-          isBurner: true,
-          isGuardian: false,
-        }
-      }
-    ]
+    // how to get all the contract addresses that I need?
 
-    return accessControlMapping
+    const accessControlRoles = {
+      minter: [],
+      burner: [],
+      governor: [],
+      pcvController: [],
+      guardian: [],
+    }
+        // minter: [pcvDeposit, pcvController, ...], // 5
+
+        // check core.getCount(minter) = minter.length
+        // for i in minter:
+        // assert isMinter(i)
+    return accessControlRoles
   }
   
   /**
    * Get all Mainnet contracts, instantiated as web3 instances
    */
-  async loadMainnetContracts(addresses: ContractAddresses): Promise<TestEnvContracts> {
+  async loadMainnetContracts(addresses: MainnetContractAddresses): Promise<TestEnvContracts> {
     return getContracts(addresses)
   }
 
   /**
    * Load all contract addresses from a .json, according to the network configured
    */
-  private getContractAddressesForNetwork(network: string): ContractAddresses {
-    if (this.supportedNetworks.includes(network)) {
+  private getMainnetContractAddresses(): MainnetContractAddresses {
       return mainnetAddressesV1
-    } else {
-      throw new Error('No addresses for this network')
-    } 
   }
 
   /**
-   * Deploy the contracts that exist in the protocol locally and 
-   * which are not yet on Mainnet
+   * Get the protocol contracts that are already deployed on Mainnet
    */
-  private async getProtocolContracts(): Promise<TestEnvContracts> {
-    const core = await getContract('core', this.addresses['core'])
-    const fei = await getContract('fei', this.addresses['fei'])
-    const tribe = await getContract('tribe', this.addresses['tribe'])
-    const ethReserveStabilizer = await getContract('ethReserveStabilizer', this.addresses['ethReserveStabilizer'])
-
-    const configAddresses = {
-      coreAddress: this.addresses['core'],
-      feiEthPairAddress: this.addresses['feiEthPair'],
-      wethAddress: this.addresses['weth'],
-      uniswapRouterAddress: this.addresses['uniswapRouter'],
-      uniswapOracleAddress: this.addresses['uniswapOracle']
-    }
-    const upgradeContracts = await upgradeProtocol(this.config.deployAddress, configAddresses, this.config.logging)
-    return { core, fei, tribe, ethReserveStabilizer, ...upgradeContracts}
+  private async getExistingProtocolContracts(): Promise<ExistingProtocolContracts> {
+    const core = await getContract('core', this.mainnetAddresses['core'])
+    const fei = await getContract('fei', this.mainnetAddresses['fei'])
+    const tribe = await getContract('tribe', this.mainnetAddresses['tribe'])
+    const ethReserveStabilizer = await getContract('ethReserveStabilizer', this.mainnetAddresses['ethReserveStabilizer'])
+    return { core, fei, tribe, ethReserveStabilizer }
   }
 }

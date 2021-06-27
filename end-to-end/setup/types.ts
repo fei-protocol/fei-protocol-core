@@ -3,7 +3,7 @@ const { Contract } = web3.eth
 
 export type TestEnv = {
   contracts: TestEnvContracts,
-  contractAddresses: ContractAddresses
+  contractAddresses: TestEnvContractAddresses
 }
 
 export interface TestCoordinator {
@@ -12,10 +12,16 @@ export interface TestCoordinator {
 }
 
 export type Config = {
-  network: string;
   version: number;
   deployAddress: string;
   logging: boolean;
+}
+
+export type ExistingProtocolContracts = {
+  core: typeof Contract,
+  tribe: typeof Contract,
+  fei: typeof Contract,
+  ethReserveStabilizer: typeof Contract,
 }
 
 export type TestEnvContracts = {
@@ -34,7 +40,43 @@ export type TestEnvContracts = {
   tribeReserveStabilizer: typeof Contract,
 }
 
-export type ContractAddresses = {
+export type TestEnvContractAddresses = {
+  core: string,
+  tribe: string,
+  fei: string,
+  uniswapPCVDeposit: string,
+  uniswapPCVController: string,
+  bondingCurve: string,
+  chainlinkEthUsdOracleWrapper: string,
+  chainlinkFeiEthOracleWrapper: string,
+  compositeOracle: string,
+  ethReserveStabilizer: string,
+  pcvDripController: string,
+  ratioPCVController: string,
+  tribeReserveStabilizer: string,
+}
+
+export type MainnetContractAddresses = {
+  core: string,
+  tribe: string,
+  fei: string,
+  uniswapPCVDeposit: string,
+  uniswapPCVController: string,
+  bondingCurve: string,
+  chainlinkEthUsdOracleWrapper: string,
+  chainlinkFeiEthOracleWrapper: string,
+  compositeOracle: string
+  ethReserveStabilizer: string,
+  pcvDripController: string,
+  ratioPCVController: string,
+  tribeReserveStabilizer: string,
+  weth: string,
+  uniswapRouter: string,
+  feiEthPair: string,
+  uniswapOracle: string,
+}
+
+export type LocalContractAddresses = {
   core: string,
   tribe: string,
   fei: string,
@@ -56,12 +98,9 @@ export type ContractAddresses = {
 
 export type ContractAccessRights = 
   {
-    contractName: string,
-    accessRights: {
-      isGovernor: boolean,
-      isMinter: boolean,
-      isBurner: boolean,
-      isPCVController: boolean,
-      isGuardian: boolean,
-    }
-  }[]
+    minter: string[],
+    burner: string[],
+    governor: string[],
+    pcvController: string[],
+    guardian: string[],
+  }
