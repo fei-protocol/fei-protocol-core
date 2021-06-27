@@ -7,8 +7,8 @@ export type TestEnv = {
 }
 
 export interface TestCoordinator {
-  initialiseLocalEnv(): Promise<TestEnv>;
-  initialiseMainnetEnv(): Promise<TestEnv>;
+  applyUpgrade(): Promise<TestEnv>;
+  beforeUpgrade(): Promise<TestEnv>;
 }
 
 export type Config = {
@@ -22,6 +22,8 @@ export type ExistingProtocolContracts = {
   tribe: typeof Contract,
   fei: typeof Contract,
   ethReserveStabilizer: typeof Contract,
+  feiRewardsDistributor: typeof Contract,
+  timelock: typeof Contract,
 }
 
 export type TestEnvContracts = {
@@ -38,6 +40,8 @@ export type TestEnvContracts = {
   pcvDripController: typeof Contract,
   ratioPCVController: typeof Contract,
   tribeReserveStabilizer: typeof Contract,
+  feiRewardsDistributor: typeof Contract,
+  timelock: typeof Contract,
 }
 
 export type TestEnvContractAddresses = {
@@ -54,6 +58,8 @@ export type TestEnvContractAddresses = {
   pcvDripController: string,
   ratioPCVController: string,
   tribeReserveStabilizer: string,
+  feiRewardsDistributor: string,
+  timelock: string,
 }
 
 export type MainnetContractAddresses = {
@@ -74,6 +80,8 @@ export type MainnetContractAddresses = {
   uniswapRouter: string,
   feiEthPair: string,
   uniswapOracle: string,
+  feiRewardsDistributor: string,
+  timelock: string
 }
 
 export type LocalContractAddresses = {

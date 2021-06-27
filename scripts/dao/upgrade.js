@@ -16,6 +16,7 @@ const Fei = artifacts.require('Fei');
 async function upgrade(addresses, logging = false) {
   const {
     coreAddress,
+    oldUniswapPCVDepositAddress,
     ethUniswapPCVDepositAddress,
     ethUniswapPCVControllerAddress,
     ethBondingCurveAddress,
@@ -39,6 +40,7 @@ async function upgrade(addresses, logging = false) {
   const tribe = await Tribe.at(await core.tribe());
   const fei = await Fei.at(await core.fei());
 
+  // 1 instead of burner
   logging ? console.log('Granting Burner to new UniswapPCVController') : undefined;
   await core.grantBurner(controller.address);
 
@@ -54,22 +56,57 @@ async function upgrade(addresses, logging = false) {
   logging ? console.log('Granting Burner to new TribeReserveStabilizer') : undefined;
   await core.grantBurner(tribeReserveStabilizer.address);
 
+  // special role
+  // check via tribe contract
   logging ? console.log('Transferring TRIBE Minter role to TribeReserveStabilizer') : undefined;
   await tribe.setMinter(tribeReserveStabilizer.address, {from: timelockAddress});
 
   logging ? console.log('Granting Burner to new EthReserveStabilizer') : undefined;
   await core.grantBurner(ethReserveStabilizer.address);
 
+  // 2
   logging ? console.log('Granting PCVController to new RatioPCVController') : undefined;
   await core.grantPCVController(ratioController.address);
 
+  // 3
   logging ? console.log('Granting PCVController to new PCVDripController') : undefined;
   await core.grantPCVController(pcvDripController.address);
 
   logging ? console.log('Removing UniswapIncentive contract') : undefined;
   await fei.setIncentiveContract(ethPairAddress, ZERO_ADDRESS);
 
-  // await ratioController.withdraw(oldDeposit, newDeposit, '10000'); // move 100% of PCV from old -> new
+  // TODO: this reverts with no reason
+  // await ratioController.withdrawRatio(oldUniswapPCVDepositAddress, ethUniswapPCVDepositAddress, '10000'); // move 100% of PCV from old -> new
 }
 
-module.exports = { upgrade };
+////  --------------------- NOT RUN ON CHAIN ----------------------
+async function revokeOldContractPerms(core, oldContractAddresses) {
+  const {
+    oldUniswapPCVDepositAddress,
+    oldUniswapPCVControllerAddress,
+    oldTribeReserveStabilizerAddress,
+    oldEthReserveStabilizerAddress,
+    oldRatioControllerAddress,
+    deployAddress,
+    oldBondingCurveAddress,
+  } = oldContractAddresses;
+
+  // Revoke controller permissions
+  await core.revokeMinter(oldUniswapPCVControllerAddress);
+  await core.revokeMinter(oldUniswapPCVDepositAddress);
+  await core.revokeMinter(oldBondingCurveAddress);
+  await core.revokeMinter(deployAddress);
+
+  await core.revokeBurner(oldUniswapPCVControllerAddress);
+  await core.revokeBurner(oldTribeReserveStabilizerAddress);
+  await core.revokeBurner(oldEthReserveStabilizerAddress);
+  await core.revokeBurner(deployAddress);
+
+  await core.revokePCVController(oldRatioControllerAddress);
+  await core.revokePCVController(oldUniswapPCVControllerAddress);
+  await core.revokePCVController(deployAddress);
+
+  await core.revokeGovernor(deployAddress);
+}
+
+module.exports = { upgrade, revokeOldContractPerms };
