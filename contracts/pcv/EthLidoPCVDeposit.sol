@@ -170,4 +170,12 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
         emit UpdateMaximumSlippage(_maximumSlippageBasisPoints);
     }
+
+    /// @notice withdraw ETH from the contract
+    /// @param to address to send ETH
+    /// @param amountOut amount of ETH to send
+    function withdrawETH(address payable to, uint256 amountOut) external onlyPCVController {
+        Address.sendValue(to, amountOut);
+        emit Withdrawal(msg.sender, to, amountOut);
+    }
 }

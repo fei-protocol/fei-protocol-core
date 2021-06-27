@@ -198,4 +198,34 @@ describe('EthLidoPCVDeposit', function () {
       });
     });
   });
+
+  describe('withdrawETH()', function() {
+    it('should emit Withdrawal', async function() {
+      const balanceBeforeWithdraw = new BN(await web3.eth.getBalance(secondUserAddress));
+      await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: `1${e18}`});
+      await expectEvent(
+        await this.pcvDeposit.withdrawETH(secondUserAddress, `1${e18}`, {from: pcvControllerAddress}),
+        'Withdrawal',
+        {
+          _caller: pcvControllerAddress,
+          _to: secondUserAddress,
+          _amount: `1${e18}`
+        }
+      );
+      const balanceAfterWithdraw = new BN(await web3.eth.getBalance(secondUserAddress));
+      expect(balanceAfterWithdraw.sub(balanceBeforeWithdraw)).to.be.bignumber.equal(`1${e18}`);
+    });
+    it('should revert if trying to withdraw more than balance', async function() {
+      await expectRevert(
+        this.pcvDeposit.withdrawETH(userAddress, `100001${e18}`, {from: pcvControllerAddress}),
+        'VM Exception while processing transaction: revert Address: insufficient balance'
+      );
+    });
+    it('should revert if not PCVController', async function() {
+      await expectRevert(
+        this.pcvDeposit.withdraw(userAddress, 1),
+        'VM Exception while processing transaction: revert CoreRef: Caller is not a PCV controller'
+      );
+    });
+  });
 });
