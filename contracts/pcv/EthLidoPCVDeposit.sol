@@ -85,6 +85,7 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
         // If we get more stETH out than ETH in by swapping on Curve,
         // get the stETH by doing a Curve swap.
         uint256 actualAmountOut;
+        uint256 balanceBefore = IERC20(steth).balanceOf(address(this));
         if (expectedAmountOut > amountIn) {
             uint256 minimumAmountOut = amountIn;
 
@@ -109,6 +110,16 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
             actualAmountOut = amountIn;
         }
 
+        // Check the received amount
+        uint256 balanceAfter = IERC20(steth).balanceOf(address(this));
+        uint256 amountReceived = balanceAfter - balanceBefore;
+        // @dev: check is not made on "actualAmountOut" directly, because sometimes
+        // there are float rounding error, and we get a few wei less. Additionally,
+        // the stableswap could return the uint256 amountOut but never transfer tokens.
+        Decimal.D256 memory maxSlippage = Decimal.ratio(BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, BASIS_POINTS_GRANULARITY);
+        uint256 minimumAcceptedAmountOut = maxSlippage.mul(amountIn).asUint256();
+        require(amountReceived >= minimumAcceptedAmountOut, "EthLidoPCVDeposit: not enough stETH received.");
+
         emit Deposit(msg.sender, actualAmountOut);
     }
 
@@ -128,6 +139,7 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
         uint256 minimumAcceptedAmountOut = maxSlippage.mul(amountIn).asUint256();
 
         // Swap stETH for ETH on the Curve pool
+        uint256 balanceBefore = address(this).balance;
         address _tokenOne = IStableSwapSTETH(stableswap).coins(0);
         IERC20(steth).approve(stableswap, amountIn);
         uint256 actualAmountOut = IStableSwapSTETH(stableswap).exchange(
@@ -142,6 +154,11 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
         // This is enforced in this contract, after knowing the output of the trade,
         // instead of the StableSwap pool's min_dy check.
         require(actualAmountOut >= minimumAcceptedAmountOut, "EthLidoPCVDeposit: slippage too high.");
+
+        // Check the received amount
+        uint256 balanceAfter = address(this).balance;
+        uint256 amountReceived = balanceAfter - balanceBefore;
+        require(amountReceived >= minimumAcceptedAmountOut, "EthLidoPCVDeposit: not enough ETH received.");
 
         // Transfer ETH to destination.
         Address.sendValue(payable(to), actualAmountOut);
