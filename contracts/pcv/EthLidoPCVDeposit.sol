@@ -57,9 +57,6 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
         steth = _steth;
         stableswap = _stableswap;
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
-
-        // Infinite allowance to trade stETH on the Curve pool
-        IERC20(_steth).approve(_stableswap, type(uint256).max);
     }
 
     // Empty callback on ETH reception
@@ -90,12 +87,20 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
         uint256 actualAmountOut;
         if (expectedAmountOut > amountIn) {
             uint256 minimumAmountOut = amountIn;
+
+            // Allowance to trade stETH on the Curve pool
+            IERC20(steth).approve(stableswap, amountIn);
+
+            // Perform swap
             actualAmountOut = IStableSwapSTETH(stableswap).exchange{value: amountIn}(
                 _tokenOne == steth ? int128(1) : int128(0),
                 _tokenOne == steth ? int128(0) : int128(1),
                 amountIn,
                 minimumAmountOut
             );
+
+            // Reset allowance of the Curve pool
+            IERC20(steth).approve(stableswap, 0);
         }
         // Otherwise, stake ETH for stETH directly on the Lido contract
         // to get a 1:1 trade.
@@ -124,12 +129,14 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
 
         // Swap stETH for ETH on the Curve pool
         address _tokenOne = IStableSwapSTETH(stableswap).coins(0);
+        IERC20(steth).approve(stableswap, amountIn);
         uint256 actualAmountOut = IStableSwapSTETH(stableswap).exchange(
             _tokenOne == steth ? int128(0) : int128(1),
             _tokenOne == steth ? int128(1) : int128(0),
             amountIn,
             0 // minimum accepted amount out
         );
+        IERC20(steth).approve(stableswap, 0);
 
         // Check that we received enough stETH as an output of the trade
         // This is enforced in this contract, after knowing the output of the trade,
