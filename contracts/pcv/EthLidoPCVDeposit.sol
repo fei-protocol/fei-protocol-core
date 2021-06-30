@@ -99,9 +99,6 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
                 amountIn,
                 minimumAmountOut
             );
-
-            // Reset allowance of the Curve pool
-            IERC20(steth).approve(stableswap, 0);
         }
         // Otherwise, stake ETH for stETH directly on the Lido contract
         // to get a 1:1 trade.
@@ -148,7 +145,6 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
             amountIn,
             0 // minimum accepted amount out
         );
-        IERC20(steth).approve(stableswap, 0);
 
         // Check that we received enough stETH as an output of the trade
         // This is enforced in this contract, after knowing the output of the trade,
