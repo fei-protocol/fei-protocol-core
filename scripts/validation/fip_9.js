@@ -30,13 +30,10 @@ async function main() {
 
   // Initial state
   const dripperStartEthBalance = await web3.eth.getBalance(dripper.address);
-  const pcvDepositStartEthBalance = await web3.eth.getBalance(deposit.address);
-  const pcvDepositStartStEthBalance = await steth.balanceOf(deposit.address);
 
   // Move 10,000 ETH from EthPCVDripper to EthLidoPCVDeposit
   await dripper.withdrawETH(deposit.address, `10000${e18}`, {from: accounts[0]});
   const dripperEndEthBalance = await web3.eth.getBalance(dripper.address);
-  const pcvDepositEndEthBalance = await web3.eth.getBalance(deposit.address);
   const ethMoved = new BN(dripperStartEthBalance).sub(new BN(dripperEndEthBalance));
   check(ethMoved.toString() === `10000${e18}`, 'Moved 10,000 ETH from EthPCVDripper to EthLidoPCVDeposit');
 
