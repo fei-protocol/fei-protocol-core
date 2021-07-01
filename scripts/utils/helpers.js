@@ -20,6 +20,7 @@ function getAddresses() {
   let tribeAddress;
   let ethUniswapPCVDepositAddress;
   let oldUniswapPCVDepositAddress;
+  let tribeAddress;
   let ethUniswapPCVControllerAddress;
   let oldEthUniswapPCVControllerAddress;
   let ethBondingCurveAddress;

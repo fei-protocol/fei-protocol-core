@@ -18,7 +18,7 @@ interface IMasterChief {
     function poolInfo(uint256 pid) external view returns (IMasterChief.PoolInfo memory);
     function totalAllocPoint() external view returns (uint256);
     function pendingSushi(uint256 _pid, address _user) external view returns (uint256 pending);
-    function deposit(uint256 _pid, uint256 _amount) external;
+    function deposit(uint256 _pid, uint256 _amount, address _to) external;
     function userInfo(uint256 pid, address user) external view returns (UserInfo memory);
     function harvest(uint256 pid, address to) external;
     function withdrawAndHarvest(uint256 pid, uint256 amount, address to) external;
