@@ -18,6 +18,7 @@ async function readOracle(oracleRef, web3) {
 function getAddresses() {
   let feiAddress; 
   let ethUniswapPCVDepositAddress; 
+  let zeroAddress = '0x0000000000000000000000000000000000000000';
   let ethUniswapPCVControllerAddress;
   let oldEthUniswapPCVControllerAddress;
   let ethBondingCurveAddress;
@@ -97,6 +98,7 @@ function getAddresses() {
   }
 
   return {
+    zeroAddress,
     feiAddress,
     ethUniswapPCVDepositAddress,
     ethPairAddress,
