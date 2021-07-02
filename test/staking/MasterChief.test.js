@@ -32,6 +32,12 @@ describe('MasterChief', function () {
   let tenthUserAddress;
   let perBlockReward;
 
+  // we will have a 10 block lockup period to start
+  const lockupPeriod = 10;
+  const forcedLock = false;
+  const unlocked = false;
+  // rewards multiplier
+  const multiplier = 1.1e18;
   // allocation points we will use to initialize a pool with
   const allocationPoints = 100;
   // this is the amount of LP tokens that we will mint to users
@@ -91,7 +97,16 @@ describe('MasterChief', function () {
     await this.tribe.mint(this.masterChief.address, mintAmount, { from: minterAddress });
 
     // create new reward stream
-    const tx = await this.masterChief.add(allocationPoints, this.LPToken.address, ZERO_ADDRESS, { from: governorAddress });
+    const tx = await this.masterChief.add(
+        allocationPoints,
+        this.LPToken.address,
+        ZERO_ADDRESS,
+        lockupPeriod,
+        forcedLock,
+        unlocked,
+
+        { from: governorAddress }
+    );
     // grab PID from the logs
     pid = Number(tx.logs[0].args.pid);
     // grab the per block reward by calling the masterchief contract
@@ -130,6 +145,13 @@ describe('MasterChief', function () {
     it('should not be able to add rewards stream as non governor', async function() {
         await expectRevert(
             this.masterChief.add(allocationPoints, this.LPToken.address, this.tribe.address, { from: userAddress }),
+            "CoreRef: Caller is not a governor",
+        );
+    });
+
+    it('should not be able to change rewards multiplier as non governor', async function() {
+        await expectRevert(
+            this.masterChief.governorChangeMultiplier(allocationPoints, this.LPToken.address, this.tribe.address, { from: userAddress }),
             "CoreRef: Caller is not a governor",
         );
     });
