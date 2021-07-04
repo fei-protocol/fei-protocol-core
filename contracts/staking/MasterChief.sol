@@ -193,8 +193,6 @@ contract MasterChief is CoreRef, BoringBatchable {
         bool unlocked,
         RewardData[] calldata rewardData
     ) external onlyGovernor {
-        require(rewardData.length > 0, "invalid reward data");
-
         uint256 lastRewardBlock = block.number;
         totalAllocPoint += allocPoint;
         lpToken.push(_lpToken);
@@ -257,16 +255,10 @@ contract MasterChief is CoreRef, BoringBatchable {
         if (block.number > pool.lastRewardBlock && pool.virtualPoolTotalSupply != 0) {
             uint256 blocks = block.number - pool.lastRewardBlock;
             uint256 sushiReward = (blocks * sushiPerBlock() * pool.allocPoint) / totalAllocPoint;
-            // console.log("sushiReward: ", sushiReward);
             accSushiPerShare = accSushiPerShare + ((sushiReward * ACC_SUSHI_PRECISION) / pool.virtualPoolTotalSupply);
         }
         // use the virtual amount to calculate the users share of the pool and their pending rewards
-        // console.log("accSushiPerShare: ", accSushiPerShare);
-        // console.log("virtualPoolTotalSupply: ", pool.virtualPoolTotalSupply);
         pending = uint256( uint128( ( user.virtualAmount * accSushiPerShare ) / ACC_SUSHI_PRECISION ) - user.rewardDebt );
-        // console.log("user.rewardDebt: ", user.rewardDebt);
-        // console.log("user.virtualAmount: ", user.virtualAmount);
-        // console.log("\n\n\n");
     }
 
     /// @notice Update reward variables for all pools. Be careful of gas spending!
@@ -291,13 +283,9 @@ contract MasterChief is CoreRef, BoringBatchable {
         if (block.number > pool.lastRewardBlock) {
             uint256 virtualSupply = pool.virtualPoolTotalSupply;
             if (virtualSupply > 0) {
-                // console.log("virtual supply greater than 0");
                 uint256 blocks = block.number - pool.lastRewardBlock;
                 uint256 sushiReward = (blocks * sushiPerBlock() * pool.allocPoint) / totalAllocPoint;
-                // console.log("before pool.accSushiPerShare: ", pool.accSushiPerShare);
                 pool.accSushiPerShare = uint128(pool.accSushiPerShare + ((sushiReward * ACC_SUSHI_PRECISION) / virtualSupply));
-                // console.log("after pool.accSushiPerShare: ", pool.accSushiPerShare);
-                // console.log("virtualSupply: ", virtualSupply);
             }
             pool.lastRewardBlock = to64(block.number);
             poolInfo[pid] = pool;
@@ -344,11 +332,6 @@ contract MasterChief is CoreRef, BoringBatchable {
 
         // update reward debt after virtual amount is set
         user.rewardDebt = user.rewardDebt + uint128((user.virtualAmount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION);
-
-        // console.log("deposit started");
-        // console.log("user.rewardDebt: ", user.rewardDebt);
-        // console.log("user.virtualAmount: ", user.virtualAmount);
-        // console.log("pool.accSushiPerShare: ", pool.accSushiPerShare);
 
         userInfo[pid][msg.sender].push(user);
         uint256 depositID = userInfo[pid][msg.sender].length - 1;
@@ -419,6 +402,10 @@ contract MasterChief is CoreRef, BoringBatchable {
 
         // Effects
         user.amount -= amount;
+        console.log("user.rewardDebt: ", user.rewardDebt);
+        console.log("user.virtualAmount: ", user.virtualAmount);
+        console.log("pool.accSushiPerShare: ", pool.accSushiPerShare);
+        console.log("(uint128((user.virtualAmount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION)): ", (uint128((user.virtualAmount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION)));
         user.rewardDebt = user.rewardDebt - (uint128((user.virtualAmount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION));
 
         // Interactions
