@@ -33,8 +33,8 @@ export type TestEnvContracts = {
   uniswapPCVDeposit: typeof Contract,
   uniswapPCVController: typeof Contract,
   bondingCurve: typeof Contract,
-  chainlinkEthUsdOracleWrapper: typeof Contract,
-  chainlinkFeiEthOracleWrapper: typeof Contract,
+  chainlinkEthUsdOracle: typeof Contract,
+  chainlinkFeiEthOracle: typeof Contract,
   compositeOracle: typeof Contract,
   ethReserveStabilizer: typeof Contract,
   pcvDripController: typeof Contract,
@@ -51,8 +51,8 @@ export type TestEnvContractAddresses = {
   uniswapPCVDeposit: string,
   uniswapPCVController: string,
   bondingCurve: string,
-  chainlinkEthUsdOracleWrapper: string,
-  chainlinkFeiEthOracleWrapper: string,
+  chainlinkEthUsdOracle: string,
+  chainlinkFeiEthOracle: string,
   compositeOracle: string,
   ethReserveStabilizer: string,
   pcvDripController: string,
@@ -61,6 +61,7 @@ export type TestEnvContractAddresses = {
   feiRewardsDistributor: string,
   timelock: string,
   feiEthPair: string,
+  multisig: string
 }
 
 export type MainnetContractAddresses = {
@@ -70,8 +71,8 @@ export type MainnetContractAddresses = {
   uniswapPCVDeposit: string,
   uniswapPCVController: string,
   bondingCurve: string,
-  chainlinkEthUsdOracleWrapper: string,
-  chainlinkFeiEthOracleWrapper: string,
+  chainlinkEthUsdOracle: string,
+  chainlinkFeiEthOracle: string,
   compositeOracle: string
   ethReserveStabilizer: string,
   pcvDripController: string,
@@ -82,7 +83,8 @@ export type MainnetContractAddresses = {
   feiEthPair: string,
   uniswapOracle: string,
   feiRewardsDistributor: string,
-  timelock: string
+  timelock: string,
+  multisig: string,
 }
 
 export type ContractAccessRights = 

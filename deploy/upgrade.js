@@ -17,15 +17,16 @@ async function upgrade(deployAddress, addresses, logging = false) {
     feiEthPairAddress,
     wethAddress,
     uniswapRouterAddress,
-    uniswapOracleAddress 
+    uniswapOracleAddress,
+    chainlinkEthUsdOracleAddress,
+    chainlinkFeiEthOracleAddress
   } = addresses;
 
-  if (!coreAddress || !feiEthPairAddress || !wethAddress || !uniswapRouterAddress || !uniswapOracleAddress) {
+  if (
+    !coreAddress || !feiEthPairAddress || !wethAddress || !uniswapRouterAddress || !uniswapOracleAddress || !chainlinkEthUsdOracleAddress || !chainlinkFeiEthOracleAddress
+  ) {
     throw new Error('An environment variable contract address is not set');
   }
-
-  const chainlinkEthUsdOracle = '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419';
-  const chainlinkFeiEthOracle = '0x7F0D2c2838c6AC24443d13e23d99490017bDe370';
 
   const uniswapPCVDeposit = await UniswapPCVDeposit.new(
     coreAddress,
@@ -66,24 +67,24 @@ async function upgrade(deployAddress, addresses, logging = false) {
   );
   logging ? console.log('Bonding curve deployed to: ', bondingCurve.address) : undefined;
   
-  const chainlinkEthUsdOracleWrapper = await ChainlinkOracleWrapper.new(
+  const chainlinkEthUsdOracle = await ChainlinkOracleWrapper.new(
     coreAddress, 
-    chainlinkEthUsdOracle
+    chainlinkEthUsdOracleAddress
   );
   
-  logging ? console.log('Chainlink ETH-USD oracle: ', chainlinkEthUsdOracleWrapper.address) : undefined;
+  logging ? console.log('Chainlink ETH-USD oracle: ', chainlinkEthUsdOracle.address) : undefined;
   
-  const chainlinkFeiEthOracleWrapper = await ChainlinkOracleWrapper.new(
+  const chainlinkFeiEthOracle = await ChainlinkOracleWrapper.new(
     coreAddress, 
-    chainlinkFeiEthOracle
+    chainlinkFeiEthOracleAddress
   );
   
-  logging ? console.log('Chainlink FEI-ETH oracle: ', chainlinkFeiEthOracleWrapper.address) : undefined;
+  logging ? console.log('Chainlink FEI-ETH oracle: ', chainlinkFeiEthOracle.address) : undefined;
   
   const compositeOracle = await CompositeOracle.new(
     coreAddress, 
-    chainlinkEthUsdOracleWrapper.address, 
-    chainlinkFeiEthOracleWrapper.address
+    chainlinkEthUsdOracleAddress, 
+    chainlinkFeiEthOracle.address
   );
   logging ? console.log('Composite FEI-USD oracle: ', compositeOracle.address) : undefined;
   
@@ -127,8 +128,8 @@ async function upgrade(deployAddress, addresses, logging = false) {
     uniswapPCVDeposit,
     uniswapPCVController,
     bondingCurve,
-    chainlinkEthUsdOracleWrapper,
-    chainlinkFeiEthOracleWrapper,
+    chainlinkEthUsdOracle,
+    chainlinkFeiEthOracle,
     compositeOracle,
     ethReserveStabilizer,
     pcvDripController,

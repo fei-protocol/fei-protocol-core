@@ -50,7 +50,7 @@ export async function getContracts(contractAddresses: MainnetContractAddresses):
   const deployedContractObjects = deployedContracts.reduce((accumulator, currentDeployedContracts) => {
     const [contractName, contractInstance] = currentDeployedContracts;
     accumulator[contractName] = contractInstance;
-    return {...accumulator}
+    return accumulator
   })
 
   // TODO: add natural typing rather than force

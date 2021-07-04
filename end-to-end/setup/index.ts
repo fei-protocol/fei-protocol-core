@@ -31,7 +31,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   }
 
   /**
-   * Setup end-to-end tests after an upgrade has been applied
+   * Setup end-to-end tests for the state of the protocol on Mainnet, before any upgrade.
    * No additional contracts deployed locally. This test is used to e2e the real system.
    * Specifically:
    * 1) Load all mainnet contracts from their addresses
@@ -61,7 +61,9 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       feiEthPairAddress: this.mainnetAddresses['feiEthPair'],
       wethAddress: this.mainnetAddresses['weth'],
       uniswapRouterAddress: this.mainnetAddresses['uniswapRouter'],
-      uniswapOracleAddress: this.mainnetAddresses['uniswapOracle']
+      uniswapOracleAddress: this.mainnetAddresses['uniswapOracle'],
+      chainlinkEthUsdOracleAddress: this.mainnetAddresses['chainlinkEthUsdOracle'],
+      chainlinkFeiEthOracleAddress: this.mainnetAddresses['chainlinkFeiEthOracle'],
     }
 
     const deployedUpgradedContracts = await deployUpgradeContracts(this.config.deployAddress, configAddresses, this.config.logging)
@@ -71,7 +73,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       ...deployedUpgradedContracts
     }
     this.setLocalTestContracts(contracts)
-    this.setLocalTestContractAddresses(contracts, this.mainnetAddresses['feiEthPair'])
+    this.setLocalTestContractAddresses(contracts, this.mainnetAddresses['feiEthPair'], this.mainnetAddresses['multisig'])
     
     const requiredSudoAddresses = {
       coreAddress: this.mainnetAddresses['core'],
@@ -127,7 +129,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   /**
    * Set the addresses of the contracts used in the test environment
    */
-  setLocalTestContractAddresses(contracts: TestEnvContracts, feiEthPairAddress: string) {
+  setLocalTestContractAddresses(contracts: TestEnvContracts, feiEthPairAddress: string, multisigAddress: string) {
     this.localTestContractAddresses = {
       core: contracts.core.address,
       tribe: contracts.tribe.address,
@@ -135,8 +137,8 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       uniswapPCVDeposit: contracts.uniswapPCVDeposit.address,
       uniswapPCVController: contracts.uniswapPCVController.address,
       bondingCurve: contracts.bondingCurve.address,
-      chainlinkEthUsdOracleWrapper: contracts.chainlinkEthUsdOracleWrapper.address,
-      chainlinkFeiEthOracleWrapper: contracts.chainlinkFeiEthOracleWrapper.address,
+      chainlinkEthUsdOracle: contracts.chainlinkEthUsdOracle.address,
+      chainlinkFeiEthOracle: contracts.chainlinkFeiEthOracle.address,
       compositeOracle: contracts.compositeOracle.address,
       ethReserveStabilizer: contracts.ethReserveStabilizer.address,
       pcvDripController: contracts.pcvDripController.address,
@@ -145,6 +147,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       feiRewardsDistributor: contracts.feiRewardsDistributor.address,
       timelock: contracts.timelock.address,
       feiEthPair: feiEthPairAddress,
+      multisig: multisigAddress
     }
   }
 
@@ -193,8 +196,8 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
         this.localTestContractAddresses.pcvDripController
       ],
       guardian: [
-        '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775'
-      ], // TODO this is the Fei Labs Multisig
+        this.localTestContractAddresses.multisig
+      ],
     }
     return accessControlRoles
   }
