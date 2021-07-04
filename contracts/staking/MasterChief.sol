@@ -8,6 +8,8 @@ import "./BoringBatchable.sol";
 import "./IRewarder.sol";
 import "./IMasterChief.sol";
 
+import "hardhat/console.sol";
+
 /// @notice migration functionality has been removed as this is only going to be used to distribute staking rewards
 
 /// @notice The idea for this MasterChief V2 (MCV2) contract is therefore to be the owner of tribe token
@@ -26,8 +28,10 @@ contract MasterChief is CoreRef, BoringBatchable {
     /// on any user deposits or reward debts
     struct UserInfo {
         uint128 amount;
+        uint128 virtualAmount;
         uint128 rewardDebt;
         uint64 unlockBlock;
+        uint256 multiplier;
     }
 
     /// @notice Info of each MCV2 pool.
@@ -35,12 +39,21 @@ contract MasterChief is CoreRef, BoringBatchable {
     /// Also known as the amount of SUSHI to distribute per block.
     struct PoolInfo {
         uint128 accSushiPerShare;
+        uint128 virtualPoolTotalSupply;
         uint64 lastRewardBlock;
         uint64 allocPoint;
         uint64 lockupPeriod;
         bool forcedLock; // this boolean forces users to lock if they use this pool
-        bool unlocked; // this will allow an admin to unlock the 
-        uint128 rewardMultiplier;
+        bool unlocked; // this will allow an admin to unlock the pool if need be
+    }
+
+    /// @notice Info of each MCV2 pool rewards multipliers available.
+    /// map a pool id to a block lock time to a rewards multiplier
+    mapping (uint256 => mapping (uint64 => uint256)) public rewardMultipliers;
+
+    struct RewardData {
+        uint64 lockLength;
+        uint256 rewardMultiplier;
     }
 
     /// @notice Address of SUSHI contract.
@@ -54,7 +67,7 @@ contract MasterChief is CoreRef, BoringBatchable {
     IRewarder[] public rewarder;
 
     /// @notice Info of each user that stakes LP tokens.
-    mapping (uint256 => mapping (address => UserInfo)) public userInfo;
+    mapping (uint256 => mapping (address => UserInfo[])) public userInfo;
     /// @dev Total allocation points. Must be the sum of all allocation points in all pools.
     uint128 public totalAllocPoint;
 
@@ -63,12 +76,13 @@ contract MasterChief is CoreRef, BoringBatchable {
     uint256 private immutable ACC_SUSHI_PRECISION = 1e12;
     uint256 public immutable scaleFactor = 1e18;
 
-    event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
+    event Deposit(address indexed user, uint256 indexed pid, uint256 amount, uint256 indexed depositID);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount, address indexed to);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount, address indexed to);
     event Harvest(address indexed user, uint256 indexed pid, uint256 amount);
     event LogPoolAddition(uint256 indexed pid, uint256 allocPoint, IERC20 indexed lpToken, IRewarder indexed rewarder);
     event LogSetPool(uint256 indexed pid, uint256 allocPoint, IRewarder indexed rewarder, bool overwrite);
+    event LogPoolMultiplier(uint256 indexed pid, uint64 indexed lockLength, uint256 indexed multiplier);
     event LogUpdatePool(uint256 indexed pid, uint64 lastRewardBlock, uint256 lpSupply, uint256 accSushiPerShare);
     event LogInit();
     /// @notice tribe withdraw event
@@ -103,19 +117,39 @@ contract MasterChief is CoreRef, BoringBatchable {
     /// @notice changes the pool multiplier
     /// have been locked for the entire lockup period
     /// @param _pid pool ID
+    /// @param lockLength lock length to change
     /// @param newRewardsMultiplier updated rewards multiplier
-    function governorChangeMultiplier(
+    function governorChangePoolMultiplier(
         uint256 _pid,
-        uint128 newRewardsMultiplier
+        uint64 lockLength, 
+        uint256 newRewardsMultiplier
     ) external onlyGovernor {
         PoolInfo storage pool = poolInfo[_pid];
-        uint128 currentMultiplier = pool.rewardMultiplier;
+        require(rewardMultipliers[_pid][lockLength] > 0, "pool does not exist");
+        uint256 currentMultiplier = rewardMultipliers[_pid][lockLength];
         // if the new multplier is less than the current multiplier,
         // then, you need to unlock the pool to allow users to withdraw
         if (newRewardsMultiplier < currentMultiplier) {
             pool.unlocked = true;
         }
-        pool.rewardMultiplier = newRewardsMultiplier;
+        rewardMultipliers[_pid][lockLength] = newRewardsMultiplier;
+
+        emit LogPoolMultiplier(_pid, lockLength, newRewardsMultiplier);
+    }
+
+    /// @notice adds a new pool multiplier
+    /// @param _pid pool ID
+    /// @param newRewardsMultiplier updated rewards multiplier
+    function governorAddPoolMultiplier(
+        uint256 _pid,
+        uint64 lockLength, 
+        uint256 newRewardsMultiplier
+    ) external onlyGovernor {
+        require(rewardMultipliers[_pid][lockLength] == 0, "pool already exists");
+        // create the new multiplier and lockup period
+        rewardMultipliers[_pid][lockLength] = newRewardsMultiplier;
+
+        emit LogPoolMultiplier(_pid, lockLength, newRewardsMultiplier);
     }
 
     /// @notice sends tokens back to governance treasury. Only callable by governance
@@ -128,6 +162,11 @@ contract MasterChief is CoreRef, BoringBatchable {
     /// @notice Returns the number of MCV2 pools.
     function poolLength() public view returns (uint256 pools) {
         pools = poolInfo.length;
+    }
+
+    /// @notice Returns the number of user deposits in a single pool.
+    function userDepositAmount(uint256 pid, address user) public view returns (uint256) {
+        return userInfo[pid][user].length;
     }
 
     /// @notice borrowed from boring math, translated up to solidity V8
@@ -144,7 +183,7 @@ contract MasterChief is CoreRef, BoringBatchable {
     /// @param lockupPeriod Block number that users must lock up for
     /// @param forcedLock Whether or not this pool forces users to lock up their funds
     /// @param unlocked Whether or not users can get out of their obligation to lock up for a certain amount of time
-    /// @param rewardMultiplier Reward Multiplier 
+    /// @param rewardData Reward Multiplier data 
     function add(
         uint128 allocPoint,
         IERC20 _lpToken,
@@ -152,21 +191,38 @@ contract MasterChief is CoreRef, BoringBatchable {
         uint64 lockupPeriod,
         bool forcedLock,
         bool unlocked,
-        uint128 rewardMultiplier
+        RewardData[] calldata rewardData
     ) external onlyGovernor {
+        require(rewardData.length > 0, "invalid reward data");
+
         uint256 lastRewardBlock = block.number;
         totalAllocPoint += allocPoint;
         lpToken.push(_lpToken);
         rewarder.push(_rewarder);
 
+        uint256 pid = poolInfo.length;
+
+        // loop over all of the arrays of lock data and add them to the rewardMultipliers mapping
+        for (uint256 i = 0; i < rewardData.length; i++) {
+            require(rewardData[i].lockLength > 0, "invalid lock length");
+            require(rewardData[i].rewardMultiplier >= scaleFactor, "invalid multiplier");
+
+            rewardMultipliers[pid][rewardData[i].lockLength] = rewardData[i].rewardMultiplier;
+            emit LogPoolMultiplier(
+                pid,
+                rewardData[i].lockLength,
+                rewardData[i].rewardMultiplier
+            );
+        }
+
         poolInfo.push(PoolInfo({
             allocPoint: to64(allocPoint),
+            virtualPoolTotalSupply: 0, // virtual total supply starts at 0 as there is 0 initial supply
             lastRewardBlock: to64(lastRewardBlock),
-            accSushiPerShare: 0,
+            accSushiPerShare: 1,
             lockupPeriod: lockupPeriod,
             forcedLock: forcedLock,
-            unlocked: unlocked,
-            rewardMultiplier: rewardMultiplier
+            unlocked: unlocked
         }));
         emit LogPoolAddition(lpToken.length - 1, allocPoint, _lpToken, _rewarder);
     }
@@ -190,24 +246,27 @@ contract MasterChief is CoreRef, BoringBatchable {
     /// @notice View function to see pending SUSHI on frontend.
     /// @param _pid The index of the pool. See `poolInfo`.
     /// @param _user Address of user.
+    /// @param index array index of the deposit to harvest
     /// @return pending SUSHI reward for a given user.
-    function pendingSushi(uint256 _pid, address _user) external view returns (uint256 pending) {
+    function pendingSushi(uint256 _pid, address _user, uint256 index) external view returns (uint256 pending) {
         PoolInfo memory pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][_user];
+        UserInfo storage user = userInfo[_pid][_user][index];
 
         uint256 accSushiPerShare = pool.accSushiPerShare;
-        uint256 lpSupply = lpToken[_pid].balanceOf(address(this));
 
-        if (block.number > pool.lastRewardBlock && lpSupply != 0) {
+        if (block.number > pool.lastRewardBlock && pool.virtualPoolTotalSupply != 0) {
             uint256 blocks = block.number - pool.lastRewardBlock;
             uint256 sushiReward = (blocks * sushiPerBlock() * pool.allocPoint) / totalAllocPoint;
-            accSushiPerShare = accSushiPerShare + ((sushiReward * ACC_SUSHI_PRECISION) / lpSupply);
+            // console.log("sushiReward: ", sushiReward);
+            accSushiPerShare = accSushiPerShare + ((sushiReward * ACC_SUSHI_PRECISION) / pool.virtualPoolTotalSupply);
         }
-        pending = uint256( uint128( ( user.amount * accSushiPerShare ) / ACC_SUSHI_PRECISION ) - user.rewardDebt );
-        // if the user has opted to lock their tokens, then apply a multiplier to their pending balance
-        if (user.unlockBlock != 0) {
-            pending = (pending * pool.rewardMultiplier) / scaleFactor;
-        }
+        // use the virtual amount to calculate the users share of the pool and their pending rewards
+        // console.log("accSushiPerShare: ", accSushiPerShare);
+        // console.log("virtualPoolTotalSupply: ", pool.virtualPoolTotalSupply);
+        pending = uint256( uint128( ( user.virtualAmount * accSushiPerShare ) / ACC_SUSHI_PRECISION ) - user.rewardDebt );
+        // console.log("user.rewardDebt: ", user.rewardDebt);
+        // console.log("user.virtualAmount: ", user.virtualAmount);
+        // console.log("\n\n\n");
     }
 
     /// @notice Update reward variables for all pools. Be careful of gas spending!
@@ -230,38 +289,69 @@ contract MasterChief is CoreRef, BoringBatchable {
     function updatePool(uint256 pid) public returns (PoolInfo memory pool) {
         pool = poolInfo[pid];
         if (block.number > pool.lastRewardBlock) {
-            uint256 lpSupply = lpToken[pid].balanceOf(address(this));
-            if (lpSupply > 0) {
+            uint256 virtualSupply = pool.virtualPoolTotalSupply;
+            if (virtualSupply > 0) {
+                // console.log("virtual supply greater than 0");
                 uint256 blocks = block.number - pool.lastRewardBlock;
                 uint256 sushiReward = (blocks * sushiPerBlock() * pool.allocPoint) / totalAllocPoint;
-                pool.accSushiPerShare = uint128(pool.accSushiPerShare + ((sushiReward * ACC_SUSHI_PRECISION) / lpSupply));
+                // console.log("before pool.accSushiPerShare: ", pool.accSushiPerShare);
+                pool.accSushiPerShare = uint128(pool.accSushiPerShare + ((sushiReward * ACC_SUSHI_PRECISION) / virtualSupply));
+                // console.log("after pool.accSushiPerShare: ", pool.accSushiPerShare);
+                // console.log("virtualSupply: ", virtualSupply);
             }
             pool.lastRewardBlock = to64(block.number);
             poolInfo[pid] = pool;
-            emit LogUpdatePool(pid, pool.lastRewardBlock, lpSupply, pool.accSushiPerShare);
+            emit LogUpdatePool(pid, pool.lastRewardBlock, virtualSupply, pool.accSushiPerShare);
         }
     }
 
     /// @notice Deposit LP tokens to MCV2 for SUSHI allocation.
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param amount LP token amount to deposit.
-    /// @param lockTokens Whether or not you want to lock your tokens. Overriden by forcedLock on pools
-    function deposit(uint256 pid, uint128 amount, bool lockTokens) public {
+    /// @param lockLength The length of time you would like to lock tokens
+    /// if locking is not enforced, this value can be 0. If locking is enforced,
+    /// a user must pass a valid 
+    /// @dev you can only deposit on a single deposit id once.
+    function deposit(uint256 pid, uint128 amount, uint64 lockLength) public {
         PoolInfo memory pool = updatePool(pid);
-        // grab the user by msg.sender
-        UserInfo storage user = userInfo[pid][msg.sender];
+        PoolInfo storage poolPointer = poolInfo[pid];
+        UserInfo memory user;
 
         // Effects
         user.amount += amount;
-        user.rewardDebt = user.rewardDebt + uint128((amount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION);
-        if (user.unlockBlock != 0) {
+
+        uint256 multiplier;
+        // if the user opted to lock their tokens up
+        // or the pool forces users to lock their funds
+        if (lockLength != 0 || pool.forcedLock) {
             // if a user has already locked tokens, then they will just have their unlock block updated
-            user.unlockBlock = uint64(uint256(pool.lockupPeriod) + block.number);
-        } else if (pool.forcedLock || lockTokens) {
-            // if locks are enforced, then set the locked till block, else, locked till block is 0
-            // or, if user self elects to lock tokens, then lock them
-            user.unlockBlock = uint64(uint256(pool.lockupPeriod) + block.number);
+            // if locking is forced, then we will validate that the locklength is correct
+            user.unlockBlock = lockLength == 0 ? uint64(uint256(pool.lockupPeriod) + block.number) : uint64(lockLength + block.number);
+            multiplier = rewardMultipliers[pid][lockLength];
+            require(multiplier > 0, "invalid multiplier");
+            // set the multiplier here so that on withdraw we can easily reset the multiplier
+            user.multiplier = multiplier;
+            // virtual amount is calculated by taking the users total deposited balance and multiplying
+            // it by the multiplier
+            user.virtualAmount = uint128((user.amount * multiplier) / scaleFactor);
+        } else {
+            // add on to the virtual amount if the user has not locked their tokens
+            user.virtualAmount += amount;
         }
+
+        // pool virtual total supply needs to increase here
+        poolPointer.virtualPoolTotalSupply += user.virtualAmount;
+
+        // update reward debt after virtual amount is set
+        user.rewardDebt = user.rewardDebt + uint128((user.virtualAmount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION);
+
+        // console.log("deposit started");
+        // console.log("user.rewardDebt: ", user.rewardDebt);
+        // console.log("user.virtualAmount: ", user.virtualAmount);
+        // console.log("pool.accSushiPerShare: ", pool.accSushiPerShare);
+
+        userInfo[pid][msg.sender].push(user);
+        uint256 depositID = userInfo[pid][msg.sender].length - 1;
 
         // Interactions
         IRewarder _rewarder = rewarder[pid];
@@ -271,24 +361,65 @@ contract MasterChief is CoreRef, BoringBatchable {
 
         lpToken[pid].safeTransferFrom(msg.sender, address(this), amount);
 
-        emit Deposit(msg.sender, pid, amount);
+        emit Deposit(msg.sender, pid, amount, depositID);
     }
 
     /// @notice Withdraw LP tokens from MCV2.
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param amount LP token amount to withdraw.
     /// @param to Receiver of the LP tokens.
-    function withdraw(uint256 pid, uint128 amount, address to) public {
+    function withdrawAll(uint256 pid, uint128 amount, address to) public {
         PoolInfo memory pool = updatePool(pid);
-        UserInfo storage user = userInfo[pid][msg.sender];
+        PoolInfo storage poolPointer = poolInfo[pid];
+        // iterate over all deposits this user has.
+        for (uint256 i = 0; i < userInfo[pid][msg.sender].length; i++) {
+            UserInfo storage user = userInfo[pid][msg.sender][i];
+            // if the user has locked the tokens for at least the 
+            // lockup period or the pool has been unlocked, allow 
+            // user to withdraw their principle
+            require(user.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
+
+            // Effects
+            user.amount -= amount;
+            user.rewardDebt = user.rewardDebt - (uint128((user.virtualAmount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION));
+            poolPointer.virtualPoolTotalSupply -= user.virtualAmount;
+
+            user.virtualAmount = uint128((user.amount * user.multiplier) / scaleFactor);
+            poolPointer.virtualPoolTotalSupply += user.virtualAmount;
+
+            // Interactions
+            IRewarder _rewarder = rewarder[pid];
+            if (address(_rewarder) != address(0)) {
+                _rewarder.onSushiReward(pid, msg.sender, to, 0, user.amount);
+            }
+
+            lpToken[pid].safeTransfer(to, amount);
+
+            emit Withdraw(msg.sender, pid, amount, to);
+        }
+    }
+
+    /// @notice Withdraw LP tokens from MCV2.
+    /// @param pid The index of the pool. See `poolInfo`.
+    /// @param amount LP token amount to withdraw.
+    /// @param to Receiver of the LP tokens.
+    function withdrawFromDeposit(
+        uint256 pid,
+        uint128 amount,
+        address to,
+        uint256 index
+    ) public {
+        require(userInfo[pid][msg.sender].length > index, "invalid index");
+        PoolInfo memory pool = updatePool(pid);
+        UserInfo storage user = userInfo[pid][msg.sender][index];
         // if the user has locked the tokens for at least the 
         // lockup period or the pool has been unlocked, allow 
         // user to withdraw their principle
         require(user.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
 
         // Effects
-        user.rewardDebt = user.rewardDebt - (uint128((amount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION));
         user.amount -= amount;
+        user.rewardDebt = user.rewardDebt - (uint128((user.virtualAmount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION));
 
         // Interactions
         IRewarder _rewarder = rewarder[pid];
@@ -304,19 +435,46 @@ contract MasterChief is CoreRef, BoringBatchable {
     /// @notice Harvest proceeds for transaction sender to `to`.
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param to Receiver of SUSHI rewards.
-    function harvest(uint256 pid, address to) public {
+    function harvestAll(uint256 pid, address to) public {
         PoolInfo memory pool = updatePool(pid);
-        UserInfo storage user = userInfo[pid][msg.sender];
+
+        for (uint256 i = 0; i < userInfo[pid][msg.sender].length; i++) {
+            UserInfo storage user = userInfo[pid][msg.sender][i];
+            // assumption here is that we will never go over 2^128 -1
+            uint128 accumulatedSushi = uint128((user.virtualAmount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION);
+            uint256 _pendingSushi = uint256(accumulatedSushi - user.rewardDebt);
+
+            // Effects
+            user.rewardDebt = accumulatedSushi;
+
+            // Interactions
+            if (_pendingSushi != 0) {
+                SUSHI.safeTransfer(to, _pendingSushi);
+            }
+            
+            IRewarder _rewarder = rewarder[pid];
+            if (address(_rewarder) != address(0)) {
+                _rewarder.onSushiReward( pid, msg.sender, to, _pendingSushi, user.amount);
+            }
+
+            emit Harvest(msg.sender, pid, _pendingSushi);
+        }
+    }
+    
+
+    /// @notice Harvest proceeds for transaction sender to `to`.
+    /// @param pid The index of the pool. See `poolInfo`.
+    /// @param to Receiver of SUSHI rewards.
+    /// @param index array index of the deposit to harvest
+    function harvest(uint256 pid, address to, uint256 index) public {
+        require(userInfo[pid][msg.sender].length > index, "invalid index");
+
+        PoolInfo memory pool = updatePool(pid);
+        UserInfo storage user = userInfo[pid][msg.sender][index];
 
         // assumption here is that we will never go over 2^128 -1
-        uint128 accumulatedSushi = uint128((user.amount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION);
+        uint128 accumulatedSushi = uint128((user.virtualAmount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION);
         uint256 _pendingSushi = uint256(accumulatedSushi - user.rewardDebt);
-
-        // if the user locked their tokens up, they will receive the multiplier
-        // if the pool reward multiplier is 0, then do not apply it to the pending sushi var
-        if (user.unlockBlock != 0 && pool.rewardMultiplier != 0) {
-            _pendingSushi = (_pendingSushi * pool.rewardMultiplier) / scaleFactor;
-        }
 
         // Effects
         user.rewardDebt = accumulatedSushi;
@@ -338,25 +496,30 @@ contract MasterChief is CoreRef, BoringBatchable {
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param amount LP token amount to withdraw.
     /// @param to Receiver of the LP tokens and SUSHI rewards.
-    function withdrawAndHarvest(uint256 pid, uint128 amount, address to) public {
+    /// @param index array index of the deposit to withdraw
+    function withdrawAndHarvest(
+        uint256 pid,
+        uint128 amount,
+        address to,
+        uint256 index
+    ) public {
+        require(userInfo[pid][msg.sender].length > index, "invalid index");
+
         PoolInfo memory pool = updatePool(pid);
-        UserInfo storage user = userInfo[pid][msg.sender];
+        UserInfo storage user = userInfo[pid][msg.sender][index];
         // if the user has locked the tokens for at least the 
         // lockup period or the pool has been unlocked, allow 
         // user to withdraw their principle
         require(user.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
 
-        uint256 accumulatedSushi = (user.amount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION;
+        uint256 accumulatedSushi = (user.virtualAmount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION;
         uint256 _pendingSushi = uint256((accumulatedSushi - uint256(user.rewardDebt)));
-        // if the user locked their tokens up, they will receive the multiplier
-        // if the pool reward multiplier is 0, then do not apply it to the pending sushi var
-        if (user.unlockBlock != 0 && pool.rewardMultiplier != 0) {
-            _pendingSushi = (_pendingSushi * pool.rewardMultiplier) / scaleFactor;
-        }
 
         // Effects
-        user.rewardDebt = uint128(accumulatedSushi - (uint256(amount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION));
+        user.rewardDebt = uint128(accumulatedSushi - (uint256(user.virtualAmount * pool.accSushiPerShare) / ACC_SUSHI_PRECISION));
         user.amount -= amount;
+        // virtual amount will now change as the user's principle has gone down
+        user.virtualAmount = uint128(user.multiplier * user.amount);
         
         // Interactions
         SUSHI.safeTransfer(to, _pendingSushi);
@@ -375,17 +538,24 @@ contract MasterChief is CoreRef, BoringBatchable {
     /// @notice Withdraw without caring about rewards. EMERGENCY ONLY.
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param to Receiver of the LP tokens.
-    function emergencyWithdraw(uint256 pid, address to) public {
+    /// @param index array index of the deposit to withdraw
+    function emergencyWithdraw(uint256 pid, address to, uint256 index) public {
+        require(userInfo[pid][msg.sender].length > index, "invalid index");
+
         PoolInfo memory pool = updatePool(pid);
-        UserInfo storage user = userInfo[pid][msg.sender];
+        UserInfo storage user = userInfo[pid][msg.sender][index];
         // if the user has locked the tokens for at least the 
         // lockup period or the pool has been unlocked, allow 
         // user to withdraw their principle
         require(user.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
 
         uint256 amount = user.amount;
+        // on emergency withdraw, zero all fields
         user.amount = 0;
+        user.virtualAmount = 0;
         user.rewardDebt = 0;
+        user.multiplier = 0;
+        user.unlockBlock = 0;
 
         IRewarder _rewarder = rewarder[pid];
         if (address(_rewarder) != address(0)) {
