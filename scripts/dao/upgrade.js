@@ -8,7 +8,8 @@ const BondingCurve = artifacts.require('BondingCurve');
 const TribeReserveStabilizer = artifacts.require('TribeReserveStabilizer');
 const EthReserveStabilizer = artifacts.require('EthReserveStabilizer');
 const PCVDripController = artifacts.require('PCVDripController');
-const RatioPCVController = artifacts.require('RatioPCVController');
+// const RatioPCVController = artifacts.require('RatioPCVController');
+const RatioPCVController = artifacts.require('TestOldRatioPCVController');
 const Core = artifacts.require('Core');
 const Tribe = artifacts.require('Tribe');
 const Fei = artifacts.require('Fei');
@@ -32,7 +33,10 @@ async function upgrade(addresses, logging = false) {
   const controller = await UniswapPCVController.at(ethUniswapPCVControllerAddress);
   const bondingCurve = await BondingCurve.at(ethBondingCurveAddress);
   const tribeReserveStabilizer = await TribeReserveStabilizer.at(tribeReserveStabilizerAddress);
-  const ratioController = await RatioPCVController.at(ratioPCVControllerAddress);
+  
+  // Using the TestOldRatioPCVController here due to abi clashes in the old and new 
+  // pcvDeposit contract
+  const ratioPCVController = await RatioPCVController.at(ratioPCVControllerAddress);
   const pcvDripController = await PCVDripController.at(pcvDripControllerAddress);
   const ethReserveStabilizer = await EthReserveStabilizer.at(ethReserveStabilizerAddress);
 
@@ -66,7 +70,7 @@ async function upgrade(addresses, logging = false) {
 
   // 2
   logging ? console.log('Granting PCVController to new RatioPCVController') : undefined;
-  await core.grantPCVController(ratioController.address);
+  await core.grantPCVController(ratioPCVController.address);
 
   // 3
   logging ? console.log('Granting PCVController to new PCVDripController') : undefined;
@@ -75,16 +79,14 @@ async function upgrade(addresses, logging = false) {
   logging ? console.log('Removing UniswapIncentive contract') : undefined;
   await fei.setIncentiveContract(ethPairAddress, ZERO_ADDRESS);
 
-  // TODO: this reverts with no reason
-  // await ratioController.withdrawRatio(oldUniswapPCVDepositAddress, ethUniswapPCVDepositAddress, '10000'); // move 100% of PCV from old -> new
+  await ratioPCVController.withdrawRatio(oldUniswapPCVDepositAddress, ethUniswapPCVDepositAddress, '10000'); // move 100% of PCV from old -> new
 }
 
-////  --------------------- NOT RUN ON CHAIN ----------------------
+/// /  --------------------- NOT RUN ON CHAIN ----------------------
 async function revokeOldContractPerms(core, oldContractAddresses) {
   const {
     oldUniswapPCVDepositAddress,
     oldUniswapPCVControllerAddress,
-    oldTribeReserveStabilizerAddress,
     oldEthReserveStabilizerAddress,
     oldRatioControllerAddress,
     oldBondingCurveAddress,
@@ -96,7 +98,6 @@ async function revokeOldContractPerms(core, oldContractAddresses) {
   await core.revokeMinter(oldBondingCurveAddress);
 
   await core.revokeBurner(oldUniswapPCVControllerAddress);
-  await core.revokeBurner(oldTribeReserveStabilizerAddress);
   await core.revokeBurner(oldEthReserveStabilizerAddress);  
 
   await core.revokePCVController(oldRatioControllerAddress);

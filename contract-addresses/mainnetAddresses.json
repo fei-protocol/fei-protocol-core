@@ -10,13 +10,13 @@
   "chainlinkFeiEthOracle": "0x7F0D2c2838c6AC24443d13e23d99490017bDe370",
   "compositeOracle": "0x8721f9EAba0B9081069970bCBce38763D3D4f28E", 
   "ethReserveStabilizer": "0xa08A721dFB595753FFf335636674D76C455B275C",
-  "pcvDripController": "0xDa079A280FC3e33Eb11A78708B369D5Ca2da54fE",
   "ratioPCVController": "0xfC1aD6eb84351597cD3b9B65179633697d65B920",
-  "tribeReserveStabilizer": "0xc0F115A19107322cFBf1cDBC7ea011C19EbDB4F8",
   "weth": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
   "uniswapRouter": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
   "uniswapOracle": "0x087F35bd241e41Fc28E43f0E8C58d283DD55bD65",
   "feiEthPair": "0x94B0A3d511b6EcDb17eBF877278Ab030acb0A878",
   "feiRewardsDistributor": "0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5",
-  "multisig": "0xB8f482539F2d3Ae2C9ea6076894df36D1f632775"
+  "multisig": "0xB8f482539F2d3Ae2C9ea6076894df36D1f632775",
+  "tribeReserveStabilizer": "0x",
+  "pcvDripController": "0x"
 }

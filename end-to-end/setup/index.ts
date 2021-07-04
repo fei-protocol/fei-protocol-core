@@ -104,10 +104,8 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     const oldContractAddresses = {
       oldUniswapPCVDepositAddress: this.mainnetAddresses['uniswapPCVDeposit'],
       oldUniswapPCVControllerAddress: this.mainnetAddresses['uniswapPCVController'],
-      oldTribeReserveStabilizerAddress: this.mainnetAddresses['tribeReserveStabilizer'],
       oldEthReserveStabilizerAddress: this.mainnetAddresses['ethReserveStabilizer'],
       oldRatioControllerAddress: this.mainnetAddresses['ratioPCVController'],
-      oldPCVDripControllerAddress: this.mainnetAddresses['pcvDripController'],
       deployAddress: this.config.deployAddress,
       oldBondingCurveAddress: this.mainnetAddresses['bondingCurve']
     }
