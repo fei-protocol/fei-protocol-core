@@ -33,7 +33,7 @@ describe('e2e', function () {
   this.beforeEach(async function () {
     // Seed bonding curve with eth and update oracle
     const bondingCurve = contracts.bondingCurve
-    const ethSeedAmount = tenPow18.mul(toBN(200))
+    const ethSeedAmount = tenPow18.mul(toBN(1000))
     await bondingCurve.purchase(deployAddress, ethSeedAmount, {value: ethSeedAmount})
     await bondingCurve.updateOracle();
   })
@@ -90,32 +90,24 @@ describe('e2e', function () {
     expect(callerFeiBalanceAfter).to.be.bignumber.equal(callerFeiBalanceBefore.add(feiIncentive))
   })
 
-  // WIP
-  it.skip('should be able to redeem Fei from stabiliser', async function () {
-    const reserveStabiliser = contracts.ethReserveStabilizer;
+  it('should be able to redeem Fei from stabiliser', async function () {
     const fei = contracts.fei;
+    const reserveStabilizer = contracts.ethReserveStabilizer;
+    await web3.eth.sendTransaction({from: deployAddress, to: reserveStabilizer.address, value: tenPow18.mul(toBN(200))});
 
-    const userEthBalanceBefore = toBN(await web3.eth.getBalance(deployAddress))
+    const contractEthBalanceBefore = toBN(await web3.eth.getBalance(reserveStabilizer.address))
     const userFeiBalanceBefore = toBN(await fei.balanceOf(deployAddress))
 
-    const feiTokensRedeem = toBN(5).mul(tenPow18)
-    await reserveStabiliser.exchangeFei(feiTokensRedeem)
+    const feiTokensExchange = toBN(40000000000000)
+    await reserveStabilizer.updateOracle();
+    const expectedAmountOut = await reserveStabilizer.getAmountOut(feiTokensExchange)
+    await reserveStabilizer.exchangeFei(feiTokensExchange)
 
-    async function calcAmountOut() {
-      const usdPerFeiBasisPoints = 9900
-      const basisPointsGranularity = 10000
-      const adjustedAmountIn = feiTokensRedeem.mul((toBN(usdPerFeiBasisPoints).div(toBN(basisPointsGranularity))))
-      const price = toBN((await reserveStabiliser.readOracle())[0])
-      const invertedPrice = toBN(1).div(price)
-      return invertedPrice.mul(adjustedAmountIn);
-    }
-
-    const expectedAmountOut = await calcAmountOut()    
-    const userEthBalanceAfter = toBN(await web3.eth.getBalance(deployAddress))
+    const contractEthBalanceAfter = toBN(await web3.eth.getBalance(reserveStabilizer.address))
     const userFeiBalanceAfter = toBN(await fei.balanceOf(deployAddress))
-    
-    expect(userEthBalanceAfter).to.be.bignumber.equal(userEthBalanceBefore.add(expectedAmountOut))
-    expect(userFeiBalanceAfter).to.be.bignumber.equal(userFeiBalanceBefore.sub(feiTokensRedeem))
+  
+    expect(contractEthBalanceBefore.sub(toBN(expectedAmountOut))).to.be.bignumber.equal(contractEthBalanceAfter)
+    expect(userFeiBalanceAfter).to.be.bignumber.equal(userFeiBalanceBefore.sub(feiTokensExchange))
   })
 
 
