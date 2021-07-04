@@ -6,7 +6,7 @@ const {
   expect,
   getCore,
   getAddresses,
-  expectApprox,
+  testMultipleUsersPooling
 } = require('../helpers');
 
 const Tribe = artifacts.require('MockTribe');
@@ -121,7 +121,7 @@ describe('MasterChief', () => {
     // grab the per block reward by calling the masterchief contract
     perBlockReward = Number(await this.masterChief.sushiPerBlock());
   });
-
+/*
   // this is a helper function to simplify the process of testing and asserting that users are receiving
   // the correct amount of rewards when they stake their LP tokens in the MasterChief contract.
   async function testMultipleUsersPooling(
@@ -176,15 +176,10 @@ describe('MasterChief', () => {
           pendingBalances[j].add(userIncrementAmount),
           new BN(await masterChief.pendingSushi(pid, userAddresses[j], 0)),
         );
-
-        // console.log("amount: ", (await masterChief.userInfo(pid, userAddresses[j], 0)).amount.toString());
-        // console.log("virtualAmount: ", (await masterChief.userInfo(pid, userAddresses[j], 0)).virtualAmount.toString());
-        // console.log("pending sushi: ", (await masterChief.pendingSushi(pid, userAddresses[j], 0)).toString());
-        // console.log("virtualPoolTotalSupply: ", (await masterChief.poolInfo(pid)).virtualPoolTotalSupply.toString());
-        // console.log("accSushiPerShare: ", (await masterChief.poolInfo(pid)).accSushiPerShare.toString());
       }
     }
   }
+*/
 
   describe('Governor Rewards Changes', () => {
     it('governor should be able to step down the pool multiplier, which unlocks users funds', async function () {
@@ -214,7 +209,16 @@ describe('MasterChief', () => {
         await this.masterChief.rewardMultipliers(pid, 100),
       ).to.be.bignumber.equal(multiplier20);
       // now have a user test and ensure this new reward is given
-      await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('100000000000000000000'), 3, 100);
+      await testMultipleUsersPooling(
+          this.masterChief, 
+          this.LPToken, 
+          userAddresses,
+          new BN('100000000000000000000'),
+          3,
+          100,
+          totalStaked,
+          pid
+      );
     });
 
     it('governor should be able to step up the pool multiplier and rewards should be given for 90 blocks after unlock', async function () {
@@ -228,7 +232,16 @@ describe('MasterChief', () => {
         await this.masterChief.rewardMultipliers(pid, 100),
       ).to.be.bignumber.equal(multiplier20);
       // now have a user test and ensure this new reward is given
-      await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('100000000000000000000'), 3, 100);
+      await testMultipleUsersPooling(
+          this.masterChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          3,
+          100,
+          totalStaked,
+          pid
+      );
     });
   });
 
@@ -270,7 +283,16 @@ describe('MasterChief', () => {
     it('should be able to get pending sushi and receive multiplier for depositing on force lock pool', async function () {
       const userAddresses = [userAddress];
       expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
-      await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('100000000000000000000'), 10, 100);
+      await testMultipleUsersPooling(
+          this.masterChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          10,
+          100,
+          totalStaked,
+          pid
+      );
     });
 
     it('should be able to get pending sushi and receive different multipliers for depositing on force lock pool', async function () {
@@ -283,6 +305,8 @@ describe('MasterChief', () => {
         [new BN('25000000000000000000'), new BN('75000000000000000000')],
         10,
         [100, 300],
+        totalStaked,
+        pid
       );
     });
 
@@ -296,6 +320,8 @@ describe('MasterChief', () => {
         [new BN('50000000000000000000'), new BN('50000000000000000000')],
         10,
         [100, 100],
+        totalStaked,
+        pid
       );
     });
 
@@ -310,6 +336,8 @@ describe('MasterChief', () => {
         new BN('100000000000000000000'),
         5,
         100,
+        totalStaked,
+        pid
       );
 
       await expectRevert(
@@ -322,7 +350,17 @@ describe('MasterChief', () => {
       const userAddresses = [userAddress];
 
       expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
-      await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('100000000000000000000'), 5, 100);
+      await testMultipleUsersPooling(
+          this.masterChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          5,
+          100,
+          totalStaked,
+          pid
+      );
+
       await expectRevert(
         this.masterChief.emergencyWithdraw(pid, userAddress, 0, { from: userAddress }),
         'tokens locked',
@@ -341,14 +379,33 @@ describe('MasterChief', () => {
       const userAddresses = [userAddress];
 
       expect(Number(await this.masterChief.poolLength())).to.be.equal(1);
-      await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('100000000000000000000'), 10, this.lockLength);
+      await testMultipleUsersPooling(
+          this.masterChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          10,
+          this.lockLength,
+          totalStaked,
+          pid
+      );
     });
 
     it('should not be able to withdraw before locking period is over', async function () {
       const userAddresses = [userAddress];
 
       expect(Number(await this.masterChief.poolLength())).to.be.equal(1);
-      await testMultipleUsersPooling(this.masterChief, this.LPToken, userAddresses, new BN('100000000000000000000'), 3, this.lockLength);
+      await testMultipleUsersPooling(
+          this.masterChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          3,
+          this.lockLength,
+          totalStaked,
+          pid
+      );
+
       await expectRevert(
         this.masterChief.withdrawFromDeposit(pid, totalStaked, userAddress, 0, { from: userAddress }),
         'tokens locked',
@@ -367,6 +424,8 @@ describe('MasterChief', () => {
         new BN('100000000000000000000'),
         3,
         this.lockLength,
+        totalStaked,
+        pid
       );
 
       await expectRevert(
@@ -387,6 +446,8 @@ describe('MasterChief', () => {
         new BN('100000000000000000000'),
         3,
         this.lockLength,
+        totalStaked,
+        pid
       );
 
       await expectRevert(
