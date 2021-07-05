@@ -1,0 +1,17 @@
+{
+    "proposal_title": "FIP-12: Incentivize Saddle D4",
+    "proposal_description_link": "",
+    "proposal_commands": [
+        {
+            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "values": "0",
+            "method": "allocateTribe(address,uint256)",
+            "arguments": [
+                "0x0",
+                "2000000000000000000000000"
+            ],
+            "description": "Send 2M TRIBE to communal farm"
+        }
+    ],
+    "proposal_calldata": ""
+}
