@@ -6,10 +6,6 @@ const Fei = artifacts.require('Fei');
 const IUniswapV2Pair = artifacts.require('IUniswapV2Pair');
 const UniswapPCVDeposit = artifacts.require('UniswapPCVDeposit');
 
-const hre = require('hardhat');
-
-const { web3 } = hre;
-
 // Syncs the uniswap FEI-ETH pair to a price relative to oracle price
 // targetBPs would be multiplied by the peg and divided by 10000 and 
 // the pair would sync to that price
@@ -23,12 +19,7 @@ async function syncPool(targetBPs, addresses, sendingAddress, logging = false) {
 
   // Gets current reserves
   const reserves = await uniswapPcvDeposit.getReserves();
-
-  // TODO: Once new deploy has happened, replace this with a direct call to readOracle()
-  // The on-chain abi is peg() but the new abi will be readOracle() so we 
-  // have to manually call this one
-  const pegCall = await web3.eth.call({from: sendingAddress, to: uniswapPcvDeposit.address, data: web3.eth.abi.encodeFunctionSignature('readOracle()')});
-  const peg = await web3.eth.abi.decodeParameter({Decimal: {value: 'uint256'}}, pegCall);
+  const peg = await uniswapPcvDeposit.readOracle();
 
   const pegBN = new BN(peg.value);
   const currentPrice = reserves[0].div(reserves[1]);

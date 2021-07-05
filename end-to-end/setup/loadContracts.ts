@@ -15,6 +15,7 @@ const feiStakingRewardsArtifact = artifacts.require('FeiStakingRewards')
 const ethReserveStabilizerArtifact = artifacts.require('EthReserveStabilizer')
 const ratioPCVControllerArtifact = artifacts.require('RatioPCVController')
 const pCVDepositAdapterArtifact = artifacts.require('PCVDripController')
+const uniswapV2PairArtifact = artifacts.require('IUniswapV2Pair')
 
 export function getContractArtifacts() {
   return {
@@ -27,6 +28,7 @@ export function getContractArtifacts() {
     'uniswapPCVDeposit': uniswapPCVDepositArtifact,
     'uniswapPCVController': uniswapPCVController,
     'uniswapOracle': uniswapOracleArtifact,
+    'uniswapV2Pair': uniswapV2PairArtifact,
     'feiRewardsDistributor': feiRewardsDistributorArtifact,
     'feiStakingRewards': feiStakingRewardsArtifact,
     'ethReserveStabilizer': ethReserveStabilizerArtifact,

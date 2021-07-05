@@ -3,7 +3,6 @@ pragma experimental ABIEncoderV2;
 
 import "../refs/CoreRef.sol";
 import "./TestOldIPCVDeposit.sol";
-import "hardhat/console.sol";
 
 /// @title Old PCV controller used for testing purposes.
 /// Specifically used to avoid abi clashes in pcvDeposit contract
@@ -29,7 +28,6 @@ contract TestOldRatioPCVController is CoreRef {
         address to,
         uint256 basisPoints
     ) public onlyPCVController whenNotPaused {
-        console.log("at start");
         require(
             basisPoints <= BASIS_POINTS_GRANULARITY,
             "RatioPCVController: basisPoints too high"

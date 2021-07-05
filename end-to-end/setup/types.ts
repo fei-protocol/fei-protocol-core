@@ -24,6 +24,7 @@ export type ExistingProtocolContracts = {
   ethReserveStabilizer: typeof Contract,
   feiRewardsDistributor: typeof Contract,
   timelock: typeof Contract,
+  feiEthPair: typeof Contract,
 }
 
 export type TestEnvContracts = {
@@ -42,6 +43,7 @@ export type TestEnvContracts = {
   tribeReserveStabilizer: typeof Contract,
   feiRewardsDistributor: typeof Contract,
   timelock: typeof Contract,
+  feiEthPair: typeof Contract,
 }
 
 export type TestEnvContractAddresses = {

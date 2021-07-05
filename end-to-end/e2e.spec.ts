@@ -61,11 +61,8 @@ describe('e2e', function () {
     const bondingCurve = contracts.bondingCurve;
     const uniswapPCVDeposit = contracts.uniswapPCVDeposit
 
-    // FEEDBACK: figure out why this transferred amount isn't available on .balance() 
-    // and have to manually add it in. This is the balance transferred during setup in:
-    // await ratioPCVController.withdrawRatio(oldUniswapPCVDepositAddress, ethUniswapPCVDepositAddress, '10000');
-    const transferredAmount = toBN('90177412795170845183397')
-    const pcvDepositBefore = (await uniswapPCVDeposit.balance()).add(transferredAmount)
+    await uniswapPCVDeposit.deposit()
+    const pcvDepositBefore = await uniswapPCVDeposit.balance()
 
     const curveEthBalanceBefore = toBN(await web3.eth.getBalance(bondingCurve.address));
     expect(curveEthBalanceBefore).to.be.bignumber.greaterThan(toBN(0))

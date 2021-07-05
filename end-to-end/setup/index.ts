@@ -16,8 +16,8 @@ import { upgrade as applyPermissions, revokeOldContractPerms } from '../../scrip
 
 /**
  * Coordinate initialising an end-to-end testing environment
- * Able to run with additional local contracts deployed or
- * in a purely 100% mainnet forked mode
+ * Able to run against the protocol deployed on Mainnet or 
+ * with additional contracts deployed in an upgrade locally
 */
 export class TestEndtoEndCoordinator implements TestCoordinator { 
   private mainnetAddresses: MainnetContractAddresses;
@@ -31,11 +31,8 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   }
 
   /**
-   * Setup end-to-end tests for the state of the protocol on Mainnet, before any upgrade.
-   * No additional contracts deployed locally. This test is used to e2e the real system.
-   * Specifically:
-   * 1) Load all mainnet contracts from their addresses
-   * 2) Get accounts ready to execute tests from
+   * Setup end-to-end tests against the state of the protocol on Mainnet, before any upgrade.
+   * No additional contracts deployed locally.
    */
   async beforeUpgrade(): Promise<TestEnv> {
     const contracts = await this.loadMainnetContracts(this.mainnetAddresses)
@@ -73,7 +70,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       ...deployedUpgradedContracts
     }
     this.setLocalTestContracts(contracts)
-    this.setLocalTestContractAddresses(contracts, this.mainnetAddresses['feiEthPair'], this.mainnetAddresses['multisig'])
+    this.setLocalTestContractAddresses(contracts, this.mainnetAddresses['multisig'])
     
     const requiredSudoAddresses = {
       coreAddress: this.mainnetAddresses['core'],
@@ -127,7 +124,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   /**
    * Set the addresses of the contracts used in the test environment
    */
-  setLocalTestContractAddresses(contracts: TestEnvContracts, feiEthPairAddress: string, multisigAddress: string) {
+  setLocalTestContractAddresses(contracts: TestEnvContracts, multisigAddress: string) {
     this.localTestContractAddresses = {
       core: contracts.core.address,
       tribe: contracts.tribe.address,
@@ -144,7 +141,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       tribeReserveStabilizer: contracts.tribeReserveStabilizer.address,
       feiRewardsDistributor: contracts.feiRewardsDistributor.address,
       timelock: contracts.timelock.address,
-      feiEthPair: feiEthPairAddress,
+      feiEthPair: contracts.feiEthPair.address,
       multisig: multisigAddress
     }
   }
@@ -225,6 +222,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     const ethReserveStabilizer = await getContract('ethReserveStabilizer', this.mainnetAddresses['ethReserveStabilizer'])
     const feiRewardsDistributor = await getContract('feiRewardsDistributor', this.mainnetAddresses['feiRewardsDistributor'])
     const timelock = await getContract('timelock', this.mainnetAddresses['timelock'])
-    return { core, fei, tribe, ethReserveStabilizer, feiRewardsDistributor, timelock }
+    const feiEthPair = await getContract('uniswapV2Pair', this.mainnetAddresses['feiEthPair'])
+    return { core, fei, tribe, ethReserveStabilizer, feiRewardsDistributor, timelock, feiEthPair }
   }
 }
