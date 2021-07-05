@@ -65,34 +65,27 @@ async function main() {
   console.log(`PCV Deposit value: ${(await deposit.balance()).toString()}`);
 
   console.log('\nController');
-  // Setup by syncing pool -3% to peg
   console.log('Moving Pair below 3%');
   
   await syncPool(new BN('10300'), { feiAddress, ethUniswapPCVDepositAddress, ethPairAddress }, accounts[0]);
 
-  // Advance beyond reweight window
   console.log('Advancing Time');
   await time.increase(await controller.remainingTime());
 
-  // ensure reweight is eligible
   const eligible = await controller.reweightEligible();
   check(eligible, 'Reweight eligible');
 
   let timeReset; 
   let successReweight;
   if (eligible) {
-    // do the reweight
     await controller.reweight();
-    // asset pool ratio = oracle ratio
     successReweight = await successfulReweight(controller);
     check(successReweight, 'Rebase Success');
 
-    // ensure timer reset
     timeReset = !(await controller.isTimeEnded());
     check(timeReset, 'Time reset');
   }
 
-  // repeat logic for above peg
   console.log('Moving Pair above 3%');
   await syncPool(new BN('9700'), { feiAddress, ethUniswapPCVDepositAddress, ethPairAddress }, accounts[0]);
 

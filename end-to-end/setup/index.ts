@@ -13,6 +13,9 @@ import {
 import { sudo } from '../../scripts/utils/sudo'
 import { upgrade as deployUpgradeContracts } from '../../deploy/upgrade'
 import { upgrade as applyPermissions, revokeOldContractPerms } from '../../scripts/dao/upgrade'
+import { artifacts } from 'hardhat'
+
+const RatioPCVController = artifacts.require('TestOldRatioPCVController');
 
 /**
  * Coordinate initialising an end-to-end testing environment
@@ -64,6 +67,10 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     }
 
     const deployedUpgradedContracts = await deployUpgradeContracts(this.config.deployAddress, configAddresses, this.config.logging)
+
+    // Override RatioPCVController with old contract, due to pcvDeposit abi clashes
+    const ratioPCVController = await RatioPCVController.new(this.mainnetAddresses['core'])
+    deployedUpgradedContracts.ratioPCVController = ratioPCVController
 
     const contracts: TestEnvContracts = {
       ...existingContracts,

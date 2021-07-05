@@ -28,6 +28,8 @@ describe('e2e', function () {
     }
     e2eCoord = new TestEndtoEndCoordinator(config);
     ({ contracts, contractAddresses } = await e2eCoord.applyUpgrade())
+
+    await contracts.uniswapPCVDeposit.deposit()
   })
 
   this.beforeEach(async function () {
@@ -61,7 +63,6 @@ describe('e2e', function () {
     const bondingCurve = contracts.bondingCurve;
     const uniswapPCVDeposit = contracts.uniswapPCVDeposit
 
-    await uniswapPCVDeposit.deposit()
     const pcvDepositBefore = await uniswapPCVDeposit.balance()
 
     const curveEthBalanceBefore = toBN(await web3.eth.getBalance(bondingCurve.address));

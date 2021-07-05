@@ -2,7 +2,7 @@ require('dotenv').config();
 
 function check(flag, message) {
   if (flag) {
-    console.log(`PASS: ${message}`); 
+    console.log(`PASS: ${message}`);
   } else {
     throw Error(`FAIL: ${message}`);
   }
@@ -16,13 +16,14 @@ async function readOracle(oracleRef, web3) {
 }
 
 function getAddresses() {
-  let feiAddress; 
-  let ethUniswapPCVDepositAddress; 
+  const zeroAddress = '0x0000000000000000000000000000000000000000';
+  let feiAddress;
+  let ethUniswapPCVDepositAddress;
   let ethUniswapPCVControllerAddress;
   let oldEthUniswapPCVControllerAddress;
   let ethBondingCurveAddress;
   let ethPairAddress;
-  let coreAddress; 
+  let coreAddress;
   let timelockAddress;
   let rariPoolEightComptrollerAddress;
   let rariPoolEightFeiAddress;
@@ -97,6 +98,7 @@ function getAddresses() {
   }
 
   return {
+    zeroAddress,
     feiAddress,
     ethUniswapPCVDepositAddress,
     ethPairAddress,

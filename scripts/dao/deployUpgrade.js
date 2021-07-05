@@ -11,7 +11,7 @@ const {
   ratioPCVControllerAddress,
   pcvDripControllerAddress,
   ethPairAddress,
-  timelockAddress  // this is the minter -> in a local setup, this will be msg.sender
+  timelockAddress
 } = getAddresses();
 
 // The DAO steps for upgrading to ERC20 compatible versions, these must be done with Governor access control privileges

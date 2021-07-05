@@ -1,18 +1,12 @@
-const {
-  ZERO_ADDRESS
-} = require('@openzeppelin/test-helpers/src/constants');
-
 const UniswapPCVDeposit = artifacts.require('UniswapPCVDeposit');
 const UniswapPCVController = artifacts.require('UniswapPCVController');
 const BondingCurve = artifacts.require('BondingCurve');
 const TribeReserveStabilizer = artifacts.require('TribeReserveStabilizer');
 const EthReserveStabilizer = artifacts.require('EthReserveStabilizer');
 const PCVDripController = artifacts.require('PCVDripController');
-// const RatioPCVController = artifacts.require('RatioPCVController');
-const RatioPCVController = artifacts.require('TestOldRatioPCVController');
+const RatioPCVController = artifacts.require('RatioPCVController');
 const Core = artifacts.require('Core');
 const Tribe = artifacts.require('Tribe');
-const Fei = artifacts.require('Fei');
 
 async function upgrade(addresses, logging = false) {
   const {
@@ -25,7 +19,6 @@ async function upgrade(addresses, logging = false) {
     tribeReserveStabilizerAddress,
     ratioPCVControllerAddress,
     pcvDripControllerAddress,
-    ethPairAddress,
     timelockAddress
   } = addresses;
 
@@ -34,8 +27,6 @@ async function upgrade(addresses, logging = false) {
   const bondingCurve = await BondingCurve.at(ethBondingCurveAddress);
   const tribeReserveStabilizer = await TribeReserveStabilizer.at(tribeReserveStabilizerAddress);
   
-  // Using the TestOldRatioPCVController here due to abi clashes in the old and new 
-  // pcvDeposit contract
   const ratioPCVController = await RatioPCVController.at(ratioPCVControllerAddress);
   const pcvDripController = await PCVDripController.at(pcvDripControllerAddress);
   const ethReserveStabilizer = await EthReserveStabilizer.at(ethReserveStabilizerAddress);

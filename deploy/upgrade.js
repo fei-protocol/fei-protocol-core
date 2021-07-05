@@ -9,8 +9,7 @@ const EthReserveStabilizer = artifacts.require('EthReserveStabilizer');
 const ChainlinkOracleWrapper = artifacts.require('ChainlinkOracleWrapper');
 const CompositeOracle = artifacts.require('CompositeOracle');
 const PCVDripController = artifacts.require('PCVDripController');
-// const RatioPCVController = artifacts.require('RatioPCVController');
-const RatioPCVController = artifacts.require('TestOldRatioPCVController');
+const RatioPCVController = artifacts.require('RatioPCVController');
 
 async function upgrade(deployAddress, addresses, logging = false) {
   const {
