@@ -178,6 +178,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
         this.localTestContractAddresses.uniswapPCVController,
         this.localTestContractAddresses.feiRewardsDistributor,
         this.localTestContractAddresses.timelock,
+        this.localTestContractAddresses.uniswapPCVController,
       ],
       burner: [
         this.localTestContractAddresses.ethReserveStabilizer,

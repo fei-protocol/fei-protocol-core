@@ -61,7 +61,9 @@ describe('e2e', function () {
     const bondingCurve = contracts.bondingCurve;
     const uniswapPCVDeposit = contracts.uniswapPCVDeposit
 
-    // TODO: figure out why not shown on .balance()
+    // FEEDBACK: figure out why this transferred amount isn't available on .balance() 
+    // and have to manually add it in. This is the balance transferred during setup in:
+    // await ratioPCVController.withdrawRatio(oldUniswapPCVDepositAddress, ethUniswapPCVDepositAddress, '10000');
     const transferredAmount = toBN('90177412795170845183397')
     const pcvDepositBefore = (await uniswapPCVDeposit.balance()).add(transferredAmount)
 
@@ -113,41 +115,33 @@ describe('e2e', function () {
   })
 
 
+  // FEEDBACK: confirm this test tests everything it should
   it('drip controller can withdraw from PCV deposit to stabiliser', async function () {
     const ethReserveStabilizer = contracts.ethReserveStabilizer
     const uniswapPCVDeposit = contracts.uniswapPCVDeposit
     const pcvDripper = contracts.pcvDripController
     const fei = contracts.fei
 
-    const userFeiBalanceBefore = toBN(await fei.balanceOf(deployAddress))
-    const transferredAmount = toBN('90177412795170845183397')
-
-    const pcvDepositBefore = (await uniswapPCVDeposit.balance()).add(transferredAmount)
+    const userFeiBalanceBefore = await fei.balanceOf(deployAddress)
+    const pcvDepositBefore = await uniswapPCVDeposit.balance()
     const stabilizerBalanceBefore = await ethReserveStabilizer.balance()
 
-    // 2. Trigger drip
+    // Trigger drip
     await time.increase(await pcvDripper.remainingTime());
+    await pcvDripper.drip({from: deployAddress});
 
-    // TODO: getting 'UniswapPCVDeposit: Insufficient underlying'
-    // UniswapPCVDeposit has no funds despite the PCV having been transferred
-    // in setup
-    await pcvDripper.drip();
-
-    // 3. check PCV deposit loses dripAmount ETH and stabilizer gets dripAmount ETH
-    // get drip amount from constructor
+    // Check PCV deposit loses dripAmount ETH and stabilizer gets dripAmount ETH
     const dripAmount = toBN(await pcvDripper.dripAmount())
     const pcvDepositAfter = toBN(await uniswapPCVDeposit.balance())
-    expect(pcvDepositAfter).to.bignumber.equal(pcvDepositBefore.sub(dripAmount))
+    await expectApprox(pcvDepositAfter, pcvDepositBefore.sub(dripAmount), '100')
 
     const stabilizerBalanceAfter = toBN(await ethReserveStabilizer.balance())
-    expect(stabilizerBalanceAfter).to.bignumber.equal(stabilizerBalanceBefore.add(dripAmount))
+    await expectApprox(stabilizerBalanceAfter, stabilizerBalanceBefore.add(dripAmount), '100')
 
+    const feiIncentive = await pcvDripper.incentiveAmount()
 
-    // 4. check caller receives FEI mint
-    const feiIncentive = toBN(await pcvDripper.incentiveAmount())
-    const userFeiBalanceAfter = toBN(await fei.balanceOf(deployAddress))
+    const userFeiBalanceAfter = await fei.balanceOf(deployAddress)
     expect(userFeiBalanceAfter).to.bignumber.equal(userFeiBalanceBefore.add(feiIncentive))
-    
   })
 
   describe('Reweights', async () => {

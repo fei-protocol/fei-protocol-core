@@ -53,7 +53,6 @@ export async function getContracts(contractAddresses: MainnetContractAddresses):
     return accumulator
   })
 
-  // TODO: add natural typing rather than force
   return deployedContractObjects as unknown as TestEnvContracts
 }
 

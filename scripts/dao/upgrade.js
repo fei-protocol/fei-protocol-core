@@ -76,6 +76,12 @@ async function upgrade(addresses, logging = false) {
   logging ? console.log('Granting PCVController to new PCVDripController') : undefined;
   await core.grantPCVController(pcvDripController.address);
 
+  // FEEDBACK: Confirm if this should have minting priviledges. 
+  // Minting priviledges are needed to mint and test the fei incentive on calling
+  // pcvDripper.drip()
+  logging ? console.log('Granting Minter to new PCVDripController') : undefined;
+  await core.grantMinter(pcvDripController.address);
+
   logging ? console.log('Removing UniswapIncentive contract') : undefined;
   await fei.setIncentiveContract(ethPairAddress, ZERO_ADDRESS);
 
