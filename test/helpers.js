@@ -105,6 +105,14 @@ async function testMultipleUsersPooling(
   // if lock length isn't defined, it defaults to 0
   lockLength = lockLength === undefined ? 0 : lockLength;
 
+  // approval loop
+  for (let i = 0; i < userAddresses.length; i++) {
+    if ( (await lpToken.allowance(userAddresses[i], masterChief.address)).lt(new BN(totalStaked)) ) {
+      await lpToken.approve(masterChief.address, totalStaked, { from: userAddresses[i] });
+    }
+  }
+
+  // deposit loop
   for (let i = 0; i < userAddresses.length; i++) {
     let lockBlockAmount = lockLength;
     if (Array.isArray(lockLength)) {
@@ -114,7 +122,6 @@ async function testMultipleUsersPooling(
       }
     }
 
-    await lpToken.approve(masterChief.address, totalStaked, { from: userAddresses[i] });
     await masterChief.deposit(
       pid,
       totalStaked,
@@ -125,13 +132,13 @@ async function testMultipleUsersPooling(
 
   const pendingBalances = [];
   for (let i = 0; i < userAddresses.length; i++) {
-    const balance = new BN(await masterChief.pendingSushi(pid, userAddresses[i], 0));
+    const balance = new BN(await masterChief.pendingRewards(pid, userAddresses[i], 0));
     pendingBalances.push(balance);
   }
 
   for (let i = 0; i < blocksToAdvance; i++) {
     for (let j = 0; j < pendingBalances.length; j++) {
-      pendingBalances[j] = new BN(await masterChief.pendingSushi(pid, userAddresses[j], 0));
+      pendingBalances[j] = new BN(await masterChief.pendingRewards(pid, userAddresses[j], 0));
     }
 
     await time.advanceBlock();
@@ -147,7 +154,7 @@ async function testMultipleUsersPooling(
 
       expectApprox(
         pendingBalances[j].add(userIncrementAmount),
-        new BN(await masterChief.pendingSushi(pid, userAddresses[j], 0)),
+        new BN(await masterChief.pendingRewards(pid, userAddresses[j], 0)),
       );
     }
   }
