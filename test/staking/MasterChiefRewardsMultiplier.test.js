@@ -15,7 +15,7 @@ const MasterChief = artifacts.require('MasterChief');
 const MockERC20 = artifacts.require('MockERC20');
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
-describe('MasterChief', () => {
+describe('MasterChief Rewards Multiplier', () => {
   // this is the process ID of the staking rewards that we will use
   let pid;
   let minterAddress;
@@ -119,67 +119,8 @@ describe('MasterChief', () => {
       // grab PID from the logs
     pid = Number(tx.logs[0].args.pid);
     // grab the per block reward by calling the masterchief contract
-    perBlockReward = Number(await this.masterChief.sushiPerBlock());
+    perBlockReward = Number(await this.masterChief.tribePerBlock());
   });
-/*
-  // this is a helper function to simplify the process of testing and asserting that users are receiving
-  // the correct amount of rewards when they stake their LP tokens in the MasterChief contract.
-  async function testMultipleUsersPooling(
-    masterChief,
-    lpToken,
-    userAddresses,
-    incrementAmount,
-    blocksToAdvance,
-    lockLength,
-  ) {
-    for (let i = 0; i < userAddresses.length; i++) {
-      let lockBlockAmount = lockLength;
-      if (Array.isArray(lockLength)) {
-        lockBlockAmount = lockLength[i];
-        if (lockLength.length !== userAddresses.length) {
-          throw new Error('invalid lock length');
-        }
-      }
-
-      await lpToken.approve(masterChief.address, totalStaked, { from: userAddresses[i] });
-      await masterChief.deposit(
-        pid,
-        totalStaked,
-        lockBlockAmount,
-        { from: userAddresses[i] },
-      );
-    }
-
-    const pendingBalances = [];
-    for (let i = 0; i < userAddresses.length; i++) {
-      const balance = new BN(await masterChief.pendingSushi(pid, userAddresses[i], 0));
-      pendingBalances.push(balance);
-    }
-
-    for (let i = 0; i < blocksToAdvance; i++) {
-      for (let j = 0; j < pendingBalances.length; j++) {
-        pendingBalances[j] = new BN(await masterChief.pendingSushi(pid, userAddresses[j], 0));
-      }
-
-      await time.advanceBlock();
-
-      for (let j = 0; j < userAddresses.length; j++) {
-        let userIncrementAmount = incrementAmount;
-        if (Array.isArray(incrementAmount)) {
-          userIncrementAmount = incrementAmount[j];
-          if (incrementAmount.length !== userAddresses.length) {
-            throw new Error('invalid increment amount length');
-          }
-        }
-
-        expectApprox(
-          pendingBalances[j].add(userIncrementAmount),
-          new BN(await masterChief.pendingSushi(pid, userAddresses[j], 0)),
-        );
-      }
-    }
-  }
-*/
 
   describe('Governor Rewards Changes', () => {
     it('governor should be able to step down the pool multiplier, which unlocks users funds', async function () {
