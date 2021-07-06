@@ -1,5 +1,5 @@
-import { artifacts, web3 } from 'hardhat'
-import { MainnetContractAddresses, TestEnvContracts } from './types';
+import { artifacts } from 'hardhat'
+import { MainnetContractAddresses, ContractsAfterUpgrade } from './types';
 
 const coreArtifact = artifacts.require('Core')
 const tribeArtifact = artifacts.require('Tribe')
@@ -41,7 +41,7 @@ export function getContractArtifacts() {
  * Gets all contract instances for a set of contract names and their
  * addresses
  */
-export async function getContracts(contractAddresses: MainnetContractAddresses): Promise<TestEnvContracts> {
+export async function getContracts(contractAddresses: MainnetContractAddresses): Promise<ContractsAfterUpgrade> {
   // Array of all deployed contracts
   const deployedContracts = await Promise.all(Object.keys(contractAddresses).map(async contractName => {
     const web3Contract = await getContract(contractName, contractAddresses[contractName])
@@ -55,7 +55,7 @@ export async function getContracts(contractAddresses: MainnetContractAddresses):
     return accumulator
   })
 
-  return deployedContractObjects as unknown as TestEnvContracts
+  return deployedContractObjects as unknown as ContractsAfterUpgrade
 }
 
 /**

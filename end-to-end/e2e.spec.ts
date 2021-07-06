@@ -2,15 +2,15 @@ import { expect, web3 } from 'hardhat'
 import { time } from '@openzeppelin/test-helpers';
 import { TestEndtoEndCoordinator } from './setup';
 import { syncPool } from '../scripts/utils/syncPool'
-import { TestEnvContractAddresses, TestEnvContracts } from './setup/types';
+import { AddressesAfterUpgrade, ContractsAfterUpgrade } from './setup/types';
 import { getPeg, getPrice } from './setup/utils'
 import { expectApprox } from '../test/helpers'
 
 const { toBN } = web3.utils;
 
 describe('e2e', function () {
-  let contracts: TestEnvContracts;
-  let contractAddresses: TestEnvContractAddresses;
+  let contracts: ContractsAfterUpgrade;
+  let contractAddresses: AddressesAfterUpgrade;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
 

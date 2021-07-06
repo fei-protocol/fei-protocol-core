@@ -1,14 +1,19 @@
 const { web3 } = require('hardhat');
 const { Contract } = web3.eth
 
-export type TestEnv = {
-  contracts: TestEnvContracts,
-  contractAddresses: TestEnvContractAddresses
+export type EnvAfterUpgrade = {
+  contracts: ContractsAfterUpgrade,
+  contractAddresses: AddressesAfterUpgrade,
+}
+
+export type EnvBeforeUpgrade = {
+  contracts: ContractsBeforeUpgrade,
+  contractAddresses: AddressesBeforeUpgrade,
 }
 
 export interface TestCoordinator {
-  applyUpgrade(): Promise<TestEnv>;
-  beforeUpgrade(): Promise<TestEnv>;
+  applyUpgrade(): Promise<EnvAfterUpgrade>;
+  beforeUpgrade(): Promise<EnvBeforeUpgrade>;
 }
 
 export type Config = {
@@ -27,7 +32,7 @@ export type ExistingProtocolContracts = {
   feiEthPair: typeof Contract,
 }
 
-export type TestEnvContracts = {
+export type ContractsBeforeUpgrade = {
   core: typeof Contract,
   tribe: typeof Contract,
   fei: typeof Contract,
@@ -38,15 +43,50 @@ export type TestEnvContracts = {
   chainlinkFeiEthOracle: typeof Contract,
   compositeOracle: typeof Contract,
   ethReserveStabilizer: typeof Contract,
-  pcvDripController: typeof Contract,
   ratioPCVController: typeof Contract,
-  tribeReserveStabilizer: typeof Contract,
   feiRewardsDistributor: typeof Contract,
   timelock: typeof Contract,
   feiEthPair: typeof Contract,
 }
 
-export type TestEnvContractAddresses = {
+export type ContractsAfterUpgrade = {
+  core: typeof Contract,
+  tribe: typeof Contract,
+  fei: typeof Contract,
+  uniswapPCVDeposit: typeof Contract,
+  uniswapPCVController: typeof Contract,
+  bondingCurve: typeof Contract,
+  chainlinkEthUsdOracle: typeof Contract,
+  chainlinkFeiEthOracle: typeof Contract,
+  compositeOracle: typeof Contract,
+  ethReserveStabilizer: typeof Contract,
+  ratioPCVController: typeof Contract,
+  tribeReserveStabilizer: typeof Contract,
+  pcvDripController: typeof Contract,
+  feiRewardsDistributor: typeof Contract,
+  timelock: typeof Contract,
+  feiEthPair: typeof Contract,
+}
+
+export type AddressesBeforeUpgrade = {
+  core: string,
+  tribe: string,
+  fei: string,
+  uniswapPCVDeposit: string,
+  uniswapPCVController: string,
+  bondingCurve: string,
+  chainlinkEthUsdOracle: string,
+  chainlinkFeiEthOracle: string,
+  compositeOracle: string,
+  ethReserveStabilizer: string,
+  ratioPCVController: string,
+  feiRewardsDistributor: string,
+  timelock: string,
+  feiEthPair: string,
+  multisig: string
+}
+
+export type AddressesAfterUpgrade = {
   core: string,
   tribe: string,
   fei: string,
@@ -83,8 +123,6 @@ export type MainnetContractAddresses = {
   feiEthPair: string,
   uniswapOracle: string,
   feiRewardsDistributor: string,
-  tribeReserveStabilizer: string,
-  pcvDripController: string,
   timelock: string,
   multisig: string,
 }

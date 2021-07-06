@@ -6,9 +6,11 @@ import {
   MainnetContractAddresses,
   ExistingProtocolContracts,
   TestCoordinator,
-  TestEnv,
-  TestEnvContracts,
-  TestEnvContractAddresses
+  EnvBeforeUpgrade,
+  EnvAfterUpgrade,
+  ContractsAfterUpgrade,
+  ContractsBeforeUpgrade,
+  AddressesAfterUpgrade
 } from './types'
 import { sudo } from '../../scripts/utils/sudo'
 import { upgrade as deployUpgradeContracts } from '../../deploy/upgrade'
@@ -24,8 +26,8 @@ const RatioPCVController = artifacts.require('TestOldRatioPCVController');
 */
 export class TestEndtoEndCoordinator implements TestCoordinator { 
   private mainnetAddresses: MainnetContractAddresses;
-  private localTestContracts: TestEnvContracts;
-  private localTestContractAddresses: TestEnvContractAddresses;
+  private afterUpgradeContracts: ContractsAfterUpgrade;
+  private afterUpgradeAddresses: AddressesAfterUpgrade;
 
   constructor(
     private config: Config,
@@ -37,7 +39,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * Setup end-to-end tests against the state of the protocol on Mainnet, before any upgrade.
    * No additional contracts deployed locally.
    */
-  async beforeUpgrade(): Promise<TestEnv> {
+  async beforeUpgrade(): Promise<EnvBeforeUpgrade> {
     const contracts = await this.loadMainnetContracts(this.mainnetAddresses)
     return { contracts, contractAddresses: this.mainnetAddresses }
   }
@@ -52,7 +54,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * 3) Apply appropriate permissions to the contracts e.g. minter, burner priviledges
    *
    */
-   public async applyUpgrade(): Promise<TestEnv> {
+   public async applyUpgrade(): Promise<EnvAfterUpgrade> {
     const existingContracts = await this.getExistingProtocolContracts()
 
     // Extract mainnet addresses to supply when deploying upgrade contracts
@@ -72,7 +74,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     const ratioPCVController = await RatioPCVController.new(this.mainnetAddresses['core'])
     deployedUpgradedContracts.ratioPCVController = ratioPCVController
 
-    const contracts: TestEnvContracts = {
+    const contracts: ContractsAfterUpgrade = {
       ...existingContracts,
       ...deployedUpgradedContracts
     }
@@ -114,25 +116,25 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       oldBondingCurveAddress: this.mainnetAddresses['bondingCurve']
     }
     
-    await revokeOldContractPerms(this.localTestContracts.core, oldContractAddresses)
+    await revokeOldContractPerms(this.afterUpgradeContracts.core, oldContractAddresses)
 
     // Grant minter, burner, pcvController permissions etc to the relevant contracts
     await applyPermissions(requiredApplyPermissionsAddresses, this.config.logging)
-    return { contracts: this.localTestContracts, contractAddresses: this.localTestContractAddresses }
+    return { contracts: this.afterUpgradeContracts, contractAddresses: this.afterUpgradeAddresses }
   }
 
   /**
    * Set the web3 contracts used in the test environment
    */
-  setLocalTestContracts(contracts: TestEnvContracts) {
-    this.localTestContracts = contracts;
+  setLocalTestContracts(contracts: ContractsAfterUpgrade) {
+    this.afterUpgradeContracts = contracts;
   }
 
   /**
    * Set the addresses of the contracts used in the test environment
    */
-  setLocalTestContractAddresses(contracts: TestEnvContracts, multisigAddress: string) {
-    this.localTestContractAddresses = {
+  setLocalTestContractAddresses(contracts: ContractsAfterUpgrade, multisigAddress: string) {
+    this.afterUpgradeAddresses = {
       core: contracts.core.address,
       tribe: contracts.tribe.address,
       fei: contracts.fei.address,
@@ -164,10 +166,10 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * Revoke permissions granted to deploy address
    */
   async revokeDeployAddressPermission() {
-    await this.localTestContracts.core.revokeMinter(this.config.deployAddress);
-    await this.localTestContracts.core.revokeBurner(this.config.deployAddress);
-    await this.localTestContracts.core.revokePCVController(this.config.deployAddress);
-    await this.localTestContracts.core.revokeGovernor(this.config.deployAddress);
+    await this.afterUpgradeContracts.core.revokeMinter(this.config.deployAddress);
+    await this.afterUpgradeContracts.core.revokeBurner(this.config.deployAddress);
+    await this.afterUpgradeContracts.core.revokePCVController(this.config.deployAddress);
+    await this.afterUpgradeContracts.core.revokeGovernor(this.config.deployAddress);
   }
 
   /**
@@ -177,29 +179,29 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   getAccessControlMapping(): ContractAccessRights {
     const accessControlRoles = {
       minter: [
-        this.localTestContractAddresses.bondingCurve,
-        this.localTestContractAddresses.uniswapPCVDeposit,
-        this.localTestContractAddresses.uniswapPCVController,
-        this.localTestContractAddresses.feiRewardsDistributor,
-        this.localTestContractAddresses.timelock,
-        this.localTestContractAddresses.uniswapPCVController,
+        this.afterUpgradeAddresses.bondingCurve,
+        this.afterUpgradeAddresses.uniswapPCVDeposit,
+        this.afterUpgradeAddresses.uniswapPCVController,
+        this.afterUpgradeAddresses.feiRewardsDistributor,
+        this.afterUpgradeAddresses.timelock,
+        this.afterUpgradeAddresses.uniswapPCVController,
       ],
       burner: [
-        this.localTestContractAddresses.ethReserveStabilizer,
-        this.localTestContractAddresses.uniswapPCVController,
-        this.localTestContractAddresses.tribeReserveStabilizer
+        this.afterUpgradeAddresses.ethReserveStabilizer,
+        this.afterUpgradeAddresses.uniswapPCVController,
+        this.afterUpgradeAddresses.tribeReserveStabilizer
       ],
       governor: [
-        this.localTestContractAddresses.core,
-        this.localTestContractAddresses.timelock
+        this.afterUpgradeAddresses.core,
+        this.afterUpgradeAddresses.timelock
       ],
       pcvController: [
-        this.localTestContractAddresses.timelock,
-        this.localTestContractAddresses.ratioPCVController,
-        this.localTestContractAddresses.pcvDripController
+        this.afterUpgradeAddresses.timelock,
+        this.afterUpgradeAddresses.ratioPCVController,
+        this.afterUpgradeAddresses.pcvDripController
       ],
       guardian: [
-        this.localTestContractAddresses.multisig
+        this.afterUpgradeAddresses.multisig
       ],
     }
     return accessControlRoles
@@ -208,7 +210,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   /**
    * Get all Mainnet contracts, instantiated as web3 instances
    */
-  async loadMainnetContracts(addresses: MainnetContractAddresses): Promise<TestEnvContracts> {
+  async loadMainnetContracts(addresses: MainnetContractAddresses): Promise<ContractsBeforeUpgrade> {
     return getContracts(addresses)
   }
 
