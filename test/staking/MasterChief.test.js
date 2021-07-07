@@ -936,12 +936,68 @@ describe('MasterChief', function () {
         // users pending rewards for both deposits should be less than their sum
         expect(await this.masterChief.pendingRewards(pid, userAddress, 0)).to.be.bignumber.lt(await this.masterChief.allPendingRewards(pid, userAddress));
         expect(await this.masterChief.pendingRewards(pid, userAddress, 1)).to.be.bignumber.lt(await this.masterChief.allPendingRewards(pid, userAddress));
+
+        const expectedPendingRewards = (await this.masterChief.pendingRewards(pid, userAddress, 0))
+            .add(await this.masterChief.pendingRewards(pid, userAddress, 1));
+        expectApprox(
+            await this.masterChief.allPendingRewards(pid, userAddress),
+            expectedPendingRewards
+        );
+    });
+
+    it('harvestAll should be able to claim all rewards from multiple deposits in a single pool', async function() {
+        const userAddresses = [
+            userAddress,
+            userAddress,
+            secondUserAddress
+        ];
+
+        await this.LPToken.mint(userAddress, totalStaked); // approve double total staked
+        await this.LPToken.approve(this.masterChief.address, '200000000000000000000');
+
+        const incrementAmount = new BN('33333333333300000000');
+        await testMultipleUsersPooling(
+            this.masterChief,
+            this.LPToken,
+            userAddresses,
+            incrementAmount,
+            1,
+            0,
+            totalStaked,
+            pid
+        );
+        // users pending rewards for both deposits should be less than their sum
+        expect(await this.masterChief.pendingRewards(pid, userAddress, 0)).to.be.bignumber.lt(await this.masterChief.allPendingRewards(pid, userAddress));
+        expect(await this.masterChief.pendingRewards(pid, userAddress, 1)).to.be.bignumber.lt(await this.masterChief.allPendingRewards(pid, userAddress));
         // users pending rewards for both deposits should be 2x increment amount
         // user got 2 blocks of full rewards so subtract block reward x 2 from their balance
-        expectApprox(
-            (await this.masterChief.allPendingRewards(pid, userAddress)).sub(new BN('200000000000000000000')),
-            incrementAmount.mul(new BN('2'))
-        );
+
+        // grab all deposits and withdraw them without harvesting rewards
+        const depositAmounts = Number(await this.masterChief.openUserDeposits(pid, userAddress));
+        for (let i = 0; i < depositAmounts; i++) {
+            const startingLP = await this.LPToken.balanceOf(userAddress);
+            await this.masterChief.withdrawFromDeposit(pid, totalStaked, userAddress, i, { from: userAddress });
+            const endingLP = await this.LPToken.balanceOf(userAddress);
+
+            // ensure the users LPToken balance increased
+            expect(startingLP.add(new BN(totalStaked))).to.be.bignumber.equal(endingLP);
+        }
+        
+        const startingTribe = await this.tribe.balanceOf(userAddress);
+        expect(startingTribe).to.be.bignumber.equal(new BN('0'));
+
+        // get all of the pending rewards for this user
+        const allPendingTribe = await this.masterChief.allPendingRewards(pid, userAddress);
+        // harvest all rewards
+        await this.masterChief.harvestAll(pid, userAddress, { from: userAddress });
+        const endingTribe = await this.tribe.balanceOf(userAddress);
+        expect(endingTribe).to.be.bignumber.equal(allPendingTribe);
+
+        // ensure user does not have any pending rewards remaining
+        for (let i = 0; i < depositAmounts; i++) {
+            const pendingTribe = await this.masterChief.pendingRewards(pid, userAddress, i);
+            expect(pendingTribe).to.be.bignumber.equal(new BN('0'));
+        }
     });
   });
 });
