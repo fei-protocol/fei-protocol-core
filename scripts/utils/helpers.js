@@ -19,6 +19,7 @@ function getAddresses() {
   const zeroAddress = '0x0000000000000000000000000000000000000000';
   let feiAddress;
   let ethUniswapPCVDepositAddress;
+  let oldUniswapPCVDepositAddress;
   let ethUniswapPCVControllerAddress;
   let oldEthUniswapPCVControllerAddress;
   let ethBondingCurveAddress;
@@ -46,6 +47,7 @@ function getAddresses() {
   if (process.env.TESTNET_MODE) {
     feiAddress = process.env.RINKEBY_FEI;
     ethUniswapPCVDepositAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_DEPOSIT;
+    oldUniswapPCVDepositAddress = process.env.RINKEBY_UNISWAP_PCV_OLD;
     ethPairAddress = process.env.RINKEBY_FEI_ETH_PAIR;
     coreAddress = process.env.RINKEBY_CORE;
     timelockAddress = process.env.RINKEBY_TIMELOCK;
@@ -76,6 +78,7 @@ function getAddresses() {
     coreAddress = process.env.MAINNET_CORE;
     timelockAddress = process.env.MAINNET_TIMELOCK;
     oldEthUniswapPCVControllerAddress = process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER_OLD;
+    oldUniswapPCVDepositAddress = process.env.MAINNET_UNISWAP_PCV_DEPOSIT;
     ethUniswapPCVControllerAddress = process.env.MAINNET_ETH_UNISWAP_PCV_CONTROLLER;
     rariPoolEightComptrollerAddress = process.env.MAINNET_RARI_POOL_8_COMPTROLLER;
     rariPoolEightFeiAddress = process.env.MAINNET_RARI_POOL_8_FEI;
@@ -101,6 +104,7 @@ function getAddresses() {
     zeroAddress,
     feiAddress,
     ethUniswapPCVDepositAddress,
+    oldUniswapPCVDepositAddress,
     ethPairAddress,
     coreAddress,
     timelockAddress,
