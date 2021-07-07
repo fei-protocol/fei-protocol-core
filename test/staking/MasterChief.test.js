@@ -133,7 +133,7 @@ describe('MasterChief', function () {
 
     it('should not be able to change rewards multiplier as non governor', async function() {
         await expectRevert(
-            this.masterChief.governorChangePoolMultiplier(pid, 0, 0, { from: userAddress }),
+            this.masterChief.governorAddPoolMultiplier(pid, 0, 0, { from: userAddress }),
             "CoreRef: Caller is not a governor",
         );
     });
@@ -221,7 +221,7 @@ describe('MasterChief', function () {
         // grab the index by getting the amount of deposit they have and subtracting 1
         const index = (await this.masterChief.openUserDeposits(pid, userAddress)).sub(new BN('1')).toString();
         // assert user has received their balance in the masterchief contract registered under their account
-        expect((await this.masterChief.userInfo(pid, userAddress, index)).amount).to.be.bignumber.equal(new BN(totalStaked));
+        expect((await this.masterChief.depositInfo(pid, userAddress, index)).amount).to.be.bignumber.equal(new BN(totalStaked));
     });
 
     it('should be able to get pending sushi', async function() {
@@ -858,7 +858,7 @@ describe('MasterChief', function () {
             expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(new BN('0'));
 
             // assert that reward debt went negative after we withdrew all of our principle without harvesting
-            expect((await this.masterChief.userInfo(pid, address, index)).rewardDebt).to.be.bignumber.lt(new BN('-1'))
+            expect((await this.masterChief.depositInfo(pid, address, index)).rewardDebt).to.be.bignumber.lt(new BN('-1'))
 
             const pendingTribe = await this.masterChief.pendingRewards(pid, address, index);
             expect(pendingTribe).to.be.bignumber.gt(pendingTribeBeforeHarvest);

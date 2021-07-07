@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import "./../refs/CoreRef.sol";
 import "./IRewardsDistributor.sol";
 import "./IRewarder.sol";
-import "./IMasterChief.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @notice migration functionality has been removed as this is only going to be used to distribute staking rewards
 
@@ -64,7 +64,7 @@ contract MasterChief is CoreRef {
     IRewarder[] public rewarder;
 
     /// @notice Info of each user that stakes LP tokens.
-    mapping (uint256 => mapping (address => DepositInfo[])) public userInfo;
+    mapping (uint256 => mapping (address => DepositInfo[])) public depositInfo;
     /// @dev Total allocation points. Must be the sum of all allocation points in all pools.
     uint128 public totalAllocPoint;
 
@@ -116,34 +116,18 @@ contract MasterChief is CoreRef {
     /// @param _pid pool ID
     /// @param lockLength lock length to change
     /// @param newRewardsMultiplier updated rewards multiplier
-    function governorChangePoolMultiplier(
+    function governorAddPoolMultiplier(
         uint256 _pid,
         uint64 lockLength, 
         uint256 newRewardsMultiplier
     ) external onlyGovernor {
         PoolInfo storage pool = poolInfo[_pid];
-        require(rewardMultipliers[_pid][lockLength] > 0, "pool does not exist");
         uint256 currentMultiplier = rewardMultipliers[_pid][lockLength];
         // if the new multplier is less than the current multiplier,
         // then, you need to unlock the pool to allow users to withdraw
         if (newRewardsMultiplier < currentMultiplier) {
             pool.unlocked = true;
         }
-        rewardMultipliers[_pid][lockLength] = newRewardsMultiplier;
-
-        emit LogPoolMultiplier(_pid, lockLength, newRewardsMultiplier);
-    }
-
-    /// @notice adds a new pool multiplier
-    /// @param _pid pool ID
-    /// @param newRewardsMultiplier updated rewards multiplier
-    function governorAddPoolMultiplier(
-        uint256 _pid,
-        uint64 lockLength, 
-        uint256 newRewardsMultiplier
-    ) external onlyGovernor {
-        require(rewardMultipliers[_pid][lockLength] == 0, "pool already exists");
-        // create the new multiplier and lockup period
         rewardMultipliers[_pid][lockLength] = newRewardsMultiplier;
 
         emit LogPoolMultiplier(_pid, lockLength, newRewardsMultiplier);
@@ -163,7 +147,7 @@ contract MasterChief is CoreRef {
 
     /// @notice Returns the number of user deposits in a single pool.
     function openUserDeposits(uint256 pid, address user) public view returns (uint256) {
-        return userInfo[pid][user].length;
+        return depositInfo[pid][user].length;
     }
 
     /// @notice borrowed from boring math, translated up to solidity V8
@@ -261,7 +245,7 @@ contract MasterChief is CoreRef {
     /// @return pending TRIBE reward for a given user.
     function pendingRewards(uint256 _pid, address _user, uint256 index) public view returns (uint256 pending) {
         PoolInfo memory pool = poolInfo[_pid];
-        DepositInfo storage user = userInfo[_pid][_user][index];
+        DepositInfo storage user = depositInfo[_pid][_user][index];
 
         uint256 accTribePerShare = pool.accTribePerShare;
 
@@ -280,7 +264,7 @@ contract MasterChief is CoreRef {
     /// @return pending TRIBE reward for a given user.
     function allPendingRewards(uint256 _pid, address _user) external view returns (uint256 pending) {
         // loop over all deposits and get the pending rewards for each
-        for (uint256 i = 0; i < userInfo[_pid][_user].length; i++) {
+        for (uint256 i = 0; i < depositInfo[_pid][_user].length; i++) {
             pending += pendingRewards(_pid, _user, i);
         }
     }
@@ -356,8 +340,8 @@ contract MasterChief is CoreRef {
         // update reward debt after virtual amount is set
         user.rewardDebt = user.rewardDebt + int128( int128(user.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION));
 
-        userInfo[pid][msg.sender].push(user);
-        uint256 depositID = userInfo[pid][msg.sender].length - 1;
+        depositInfo[pid][msg.sender].push(user);
+        uint256 depositID = depositInfo[pid][msg.sender].length - 1;
 
         // Interactions
         IRewarder _rewarder = rewarder[pid];
@@ -378,8 +362,8 @@ contract MasterChief is CoreRef {
         PoolInfo memory pool = updatePool(pid);
         PoolInfo storage poolPointer = poolInfo[pid];
         // iterate over all deposits this user has.
-        for (uint256 i = 0; i < userInfo[pid][msg.sender].length; i++) {
-            DepositInfo storage user = userInfo[pid][msg.sender][i];
+        for (uint256 i = 0; i < depositInfo[pid][msg.sender].length; i++) {
+            DepositInfo storage user = depositInfo[pid][msg.sender][i];
             // if the user has locked the tokens for at least the 
             // lockup period or the pool has been unlocked, allow 
             // user to withdraw their principle, otherwise skip this action
@@ -417,9 +401,9 @@ contract MasterChief is CoreRef {
         address to,
         uint256 index
     ) public {
-        require(userInfo[pid][msg.sender].length > index, "invalid index");
+        require(depositInfo[pid][msg.sender].length > index, "invalid index");
         PoolInfo memory pool = updatePool(pid);
-        DepositInfo storage user = userInfo[pid][msg.sender][index];
+        DepositInfo storage user = depositInfo[pid][msg.sender][index];
         // if the user has locked the tokens for at least the 
         // lockup period or the pool has been unlocked, allow 
         // user to withdraw their principle
@@ -448,8 +432,8 @@ contract MasterChief is CoreRef {
     function harvestAll(uint256 pid, address to) public {
         PoolInfo memory pool = updatePool(pid);
 
-        for (uint256 i = 0; i < userInfo[pid][msg.sender].length; i++) {
-            DepositInfo storage user = userInfo[pid][msg.sender][i];
+        for (uint256 i = 0; i < depositInfo[pid][msg.sender].length; i++) {
+            DepositInfo storage user = depositInfo[pid][msg.sender][i];
             // assumption here is that we will never go over 2^128 -1
             int256 accumulatedTribe = int256( uint256(user.virtualAmount) * uint256(pool.accTribePerShare) ) / int256(ACC_TRIBE_PRECISION);
             uint256 pendingTribe = uint256(accumulatedTribe - user.rewardDebt);
@@ -477,10 +461,10 @@ contract MasterChief is CoreRef {
     /// @param to Receiver of TRIBE rewards.
     /// @param index array index of the deposit to harvest
     function harvest(uint256 pid, address to, uint256 index) public {
-        require(userInfo[pid][msg.sender].length > index, "invalid index");
+        require(depositInfo[pid][msg.sender].length > index, "invalid index");
 
         PoolInfo memory pool = updatePool(pid);
-        DepositInfo storage user = userInfo[pid][msg.sender][index];
+        DepositInfo storage user = depositInfo[pid][msg.sender][index];
 
         // assumption here is that we will never go over 2^128 -1
         int256 accumulatedTribe = int256( uint256(user.virtualAmount) * uint256(pool.accTribePerShare) ) / int256(ACC_TRIBE_PRECISION);
@@ -519,10 +503,10 @@ contract MasterChief is CoreRef {
         address to,
         uint256 index
     ) public {
-        require(userInfo[pid][msg.sender].length > index, "invalid index");
+        require(depositInfo[pid][msg.sender].length > index, "invalid index");
 
         PoolInfo memory pool = updatePool(pid);
-        DepositInfo storage user = userInfo[pid][msg.sender][index];
+        DepositInfo storage user = depositInfo[pid][msg.sender][index];
         // if the user has locked the tokens for at least the 
         // lockup period or the pool has been unlocked, allow 
         // user to withdraw their principle
@@ -558,10 +542,10 @@ contract MasterChief is CoreRef {
     /// @param to Receiver of the LP tokens.
     /// @param index array index of the deposit to withdraw
     function emergencyWithdraw(uint256 pid, address to, uint256 index) public {
-        require(userInfo[pid][msg.sender].length > index, "invalid index");
+        require(depositInfo[pid][msg.sender].length > index, "invalid index");
 
         PoolInfo memory pool = updatePool(pid);
-        DepositInfo storage user = userInfo[pid][msg.sender][index];
+        DepositInfo storage user = depositInfo[pid][msg.sender][index];
         // if the user has locked the tokens for at least the 
         // lockup period or the pool has been unlocked, allow 
         // user to withdraw their principle

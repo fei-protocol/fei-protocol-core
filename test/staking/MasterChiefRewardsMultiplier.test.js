@@ -129,7 +129,7 @@ describe('MasterChief Rewards Multiplier', () => {
       expect(
         (await this.masterChief.poolInfo(pid)).unlocked,
       ).to.be.false;
-      await this.masterChief.governorChangePoolMultiplier(pid, 100, zeroMultiplier, { from: governorAddress });
+      await this.masterChief.governorAddPoolMultiplier(pid, 100, zeroMultiplier, { from: governorAddress });
       // assert that this pool is now unlocked
       expect(
         (await this.masterChief.poolInfo(pid)).unlocked,
@@ -141,7 +141,7 @@ describe('MasterChief Rewards Multiplier', () => {
 
     it('governor should be able to step up the pool multiplier', async function () {
       const userAddresses = [userAddress];
-      await this.masterChief.governorChangePoolMultiplier(pid, 100, multiplier20, { from: governorAddress });
+      await this.masterChief.governorAddPoolMultiplier(pid, 100, multiplier20, { from: governorAddress });
       // assert that the pool did not unlock
       expect(
         (await this.masterChief.poolInfo(pid)).unlocked,
@@ -164,7 +164,7 @@ describe('MasterChief Rewards Multiplier', () => {
 
     it('governor should be able to step up the pool multiplier and rewards should be given for 90 blocks after unlock', async function () {
       const userAddresses = [userAddress];
-      await this.masterChief.governorChangePoolMultiplier(pid, 100, multiplier20, { from: governorAddress });
+      await this.masterChief.governorAddPoolMultiplier(pid, 100, multiplier20, { from: governorAddress });
       // assert that the pool did not unlock
       expect(
         (await this.masterChief.poolInfo(pid)).unlocked,
