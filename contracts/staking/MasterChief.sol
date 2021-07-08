@@ -7,6 +7,8 @@ import "./IRewardsDistributor.sol";
 import "./IRewarder.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import "hardhat/console.sol";
+
 /// @notice migration functionality has been removed as this is only going to be used to distribute staking rewards
 
 /// @notice The idea for this MasterChief V2 (MCV2) contract is therefore to be the owner of tribe token
@@ -18,6 +20,13 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 contract MasterChief is CoreRef {
     using SafeERC20 for IERC20;
 
+    /// @notice Info of each users's reward debt and virtual amount
+    /// stored in a single pool
+    struct UserInfo {
+        int128 rewardDebt;
+        uint128 virtualAmount;
+    }
+
     /// @notice Info of each MCV2 user.
     /// `amount` LP token amount the user has provided.
     /// `rewardDebt` The amount of Tribe entitled to the user.
@@ -25,8 +34,6 @@ contract MasterChief is CoreRef {
     /// on any user deposits or reward debts
     struct DepositInfo {
         uint128 amount;
-        uint128 virtualAmount;
-        int128 rewardDebt;
         uint64 unlockBlock;
         uint256 multiplier;
     }
@@ -39,9 +46,8 @@ contract MasterChief is CoreRef {
         uint128 virtualPoolTotalSupply;
         uint64 lastRewardBlock;
         uint64 allocPoint;
-        uint64 lockupPeriod;
-        bool forcedLock; // this boolean forces users to lock if they use this pool
-        bool unlocked; // this will allow an admin to unlock the pool if need be
+        bool unlocked; // this will allow an admin to unlock the pool if need be.
+        // Defaults to false so that users have to respect the lockup period
     }
 
     /// @notice Info of each MCV2 pool rewards multipliers available.
@@ -62,7 +68,8 @@ contract MasterChief is CoreRef {
     IERC20[] public lpToken;
     /// @notice Address of each `IRewarder` contract in MCV2.
     IRewarder[] public rewarder;
-
+    
+    mapping (uint256 => mapping(address => UserInfo)) public aggregatedUserDeposits;
     /// @notice Info of each user that stakes LP tokens.
     mapping (uint256 => mapping (address => DepositInfo[])) public depositInfo;
     /// @dev Total allocation points. Must be the sum of all allocation points in all pools.
@@ -71,7 +78,7 @@ contract MasterChief is CoreRef {
     uint256 private masterChefTribePerBlock = 1e20;
     // variable has been made immutable to cut down on gas costs
     uint256 private immutable ACC_TRIBE_PRECISION = 1e12;
-    uint256 public immutable scaleFactor = 1e18;
+    uint256 public immutable SCALE_FACTOR = 1e18;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount, uint256 indexed depositID);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount, address indexed to);
@@ -172,22 +179,20 @@ contract MasterChief is CoreRef {
         c = uint256(b);
     }
 
+    function unsigned128ToUint256(uint128 a) internal pure returns (uint256 c) {
+        c = uint256(a);
+    }
+
     /// @notice Add a new LP to the pool. Can only be called by the owner.
     /// DO NOT add the same LP token more than once. Rewards will be messed up if you do.
     /// @param allocPoint AP of the new pool.
     /// @param _lpToken Address of the LP ERC-20 token.
     /// @param _rewarder Address of the rewarder delegate.
-    /// @param lockupPeriod Block number that users must lock up for
-    /// @param forcedLock Whether or not this pool forces users to lock up their funds
-    /// @param unlocked Whether or not users can get out of their obligation to lock up for a certain amount of time
     /// @param rewardData Reward Multiplier data 
     function add(
         uint128 allocPoint,
         IERC20 _lpToken,
         IRewarder _rewarder,
-        uint64 lockupPeriod,
-        bool forcedLock,
-        bool unlocked,
         RewardData[] calldata rewardData
     ) external onlyGovernor {
         uint256 lastRewardBlock = block.number;
@@ -197,10 +202,16 @@ contract MasterChief is CoreRef {
 
         uint256 pid = poolInfo.length;
 
+        require(rewardData.length > 0, "must specify rewards");
         // loop over all of the arrays of lock data and add them to the rewardMultipliers mapping
         for (uint256 i = 0; i < rewardData.length; i++) {
-            require(rewardData[i].lockLength > 0, "invalid lock length");
-            require(rewardData[i].rewardMultiplier >= scaleFactor, "invalid multiplier");
+            // if locklength is 0 and multiplier is not equal to scale factor, revert
+            require(
+                (rewardData[i].lockLength == 0) ? rewardData[i].rewardMultiplier == SCALE_FACTOR : true,
+                "invalid lock length"
+            );
+
+            require(rewardData[i].rewardMultiplier >= SCALE_FACTOR, "invalid multiplier");
 
             rewardMultipliers[pid][rewardData[i].lockLength] = rewardData[i].rewardMultiplier;
             emit LogPoolMultiplier(
@@ -215,9 +226,7 @@ contract MasterChief is CoreRef {
             virtualPoolTotalSupply: 0, // virtual total supply starts at 0 as there is 0 initial supply
             lastRewardBlock: to64(lastRewardBlock),
             accTribePerShare: 1,
-            lockupPeriod: lockupPeriod,
-            forcedLock: forcedLock,
-            unlocked: unlocked
+            unlocked: false
         }));
         emit LogPoolAddition(pid, allocPoint, _lpToken, _rewarder);
     }
@@ -238,14 +247,9 @@ contract MasterChief is CoreRef {
         emit LogSetPool(_pid, _allocPoint, overwrite ? _rewarder : rewarder[_pid], overwrite);
     }
 
-    /// @notice View function to see pending TRIBE on frontend.
-    /// @param _pid The index of the pool. See `poolInfo`.
-    /// @param _user Address of user.
-    /// @param index array index of the deposit to harvest
-    /// @return pending TRIBE reward for a given user.
-    function pendingRewards(uint256 _pid, address _user, uint256 index) public view returns (uint256 pending) {
+    function _getPendingRewards(uint256 _pid, address _user) private view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
-        DepositInfo storage user = depositInfo[_pid][_user][index];
+        UserInfo storage aggregatedDeposits = aggregatedUserDeposits[_pid][_user];
 
         uint256 accTribePerShare = pool.accTribePerShare;
 
@@ -255,18 +259,23 @@ contract MasterChief is CoreRef {
             accTribePerShare = accTribePerShare + ((tribeReward * ACC_TRIBE_PRECISION) / pool.virtualPoolTotalSupply);
         }
         // use the virtual amount to calculate the users share of the pool and their pending rewards
-        pending = signed128ToUint256( ( toSigned128( user.virtualAmount * accTribePerShare ) / toSigned128(ACC_TRIBE_PRECISION) ) - int128(user.rewardDebt) );
+        return signed128ToUint256(
+            (
+                toSigned128(
+                    (aggregatedDeposits.virtualAmount) * accTribePerShare 
+                            ) 
+                /
+                toSigned128(ACC_TRIBE_PRECISION)
+            ) - int128(aggregatedDeposits.rewardDebt)
+        );
     }
 
     /// @notice View function to see all pending TRIBE on frontend.
     /// @param _pid The index of the pool. See `poolInfo`.
     /// @param _user Address of user.
     /// @return pending TRIBE reward for a given user.
-    function allPendingRewards(uint256 _pid, address _user) external view returns (uint256 pending) {
-        // loop over all deposits and get the pending rewards for each
-        for (uint256 i = 0; i < depositInfo[_pid][_user].length; i++) {
-            pending += pendingRewards(_pid, _user, i);
-        }
+    function allPendingRewards(uint256 _pid, address _user) external view returns (uint256) {
+        return _getPendingRewards(_pid, _user);
     }
 
     /// @notice Update reward variables for all pools. Be careful of gas spending!
@@ -311,35 +320,35 @@ contract MasterChief is CoreRef {
     function deposit(uint256 pid, uint128 amount, uint64 lockLength) public {
         PoolInfo memory pool = updatePool(pid);
         PoolInfo storage poolPointer = poolInfo[pid];
+        UserInfo storage aggregatedDeposits = aggregatedUserDeposits[pid][msg.sender];
         DepositInfo memory user;
 
         // Effects
-        user.amount += amount;
+        user.amount = amount;
 
         uint256 multiplier;
-        // if the user opted to lock their tokens up
-        // or the pool forces users to lock their funds
-        if (lockLength != 0 || pool.forcedLock) {
-            // if locking is forced, then we will validate that the locklength is correct
-            user.unlockBlock = lockLength == 0 ? uint64(uint256(pool.lockupPeriod) + block.number) : uint64(lockLength + block.number);
-            multiplier = rewardMultipliers[pid][lockLength];
-            require(multiplier > 0, "invalid multiplier");
-            // set the multiplier here so that on withdraw we can easily reset the multiplier
-            user.multiplier = multiplier;
-            // virtual amount is calculated by taking the users total deposited balance and multiplying
-            // it by the multiplier
-            user.virtualAmount = uint128((user.amount * multiplier) / scaleFactor);
-        } else {
-            // set the virtual amount to amount if there is no multiplier
-            user.virtualAmount = amount;
+        // if locking is forced, then we will validate that the locklength is correct
+        if (lockLength != 0) {
+            user.unlockBlock = uint64(lockLength + block.number);
         }
 
+        multiplier = rewardMultipliers[pid][lockLength];
+        require(multiplier > 0, "invalid multiplier");
+
+        // set the multiplier here so that on withdraw we can easily reset the multiplier
+        user.multiplier = multiplier;
+
+        // virtual amount is calculated by taking the users total deposited balance and multiplying
+        // it by the multiplier then adding it to the aggregated virtual amount
+        aggregatedDeposits.virtualAmount += uint128((user.amount * multiplier) / SCALE_FACTOR);
+
         // pool virtual total supply needs to increase here
-        poolPointer.virtualPoolTotalSupply += user.virtualAmount;
+        poolPointer.virtualPoolTotalSupply += aggregatedDeposits.virtualAmount;
 
         // update reward debt after virtual amount is set
-        user.rewardDebt = user.rewardDebt + int128( int128(user.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION));
+        aggregatedDeposits.rewardDebt += int128( int128(aggregatedDeposits.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION));
 
+        // console.log("aggregatedDeposits.rewardDebt in deposit function: ", signed128ToUint256(aggregatedDeposits.rewardDebt));
         depositInfo[pid][msg.sender].push(user);
         uint256 depositID = depositInfo[pid][msg.sender].length - 1;
 
@@ -356,11 +365,15 @@ contract MasterChief is CoreRef {
 
     /// @notice Withdraw LP tokens from MCV2.
     /// @param pid The index of the pool. See `poolInfo`.
-    /// @param amount LP token amount to withdraw.
     /// @param to Receiver of the LP tokens.
-    function withdrawAll(uint256 pid, uint128 amount, address to) public {
+    function withdrawAllAndHarvest(uint256 pid, address to) external {
         PoolInfo memory pool = updatePool(pid);
         PoolInfo storage poolPointer = poolInfo[pid];
+        UserInfo storage aggregatedDeposits = aggregatedUserDeposits[pid][msg.sender];
+
+        uint128 lockedTotalAmount = 0;
+        uint256 rewardTotalAmount = _getPendingRewards(pid, msg.sender);
+
         // iterate over all deposits this user has.
         for (uint256 i = 0; i < depositInfo[pid][msg.sender].length; i++) {
             DepositInfo storage user = depositInfo[pid][msg.sender][i];
@@ -371,24 +384,31 @@ contract MasterChief is CoreRef {
                 continue;
             }
 
+            uint128 virtualAmountDelta = uint128( (user.amount * user.multiplier) / SCALE_FACTOR );
+            lockedTotalAmount += user.amount;
+
             // Effects
-            user.amount -= amount;
-            user.rewardDebt = user.rewardDebt - int128(uint128((user.virtualAmount * pool.accTribePerShare) / to128(ACC_TRIBE_PRECISION)));
-            poolPointer.virtualPoolTotalSupply -= user.virtualAmount;
+            aggregatedDeposits.rewardDebt = aggregatedDeposits.rewardDebt - int128(uint128((aggregatedDeposits.virtualAmount * pool.accTribePerShare) / to128(ACC_TRIBE_PRECISION)));
+            aggregatedDeposits.virtualAmount -= uint128((user.amount * user.multiplier) / SCALE_FACTOR);
+            poolPointer.virtualPoolTotalSupply -= virtualAmountDelta;
 
-            user.virtualAmount = uint128((user.amount * user.multiplier) / scaleFactor);
-            poolPointer.virtualPoolTotalSupply += user.virtualAmount;
-
-            // Interactions
-            IRewarder _rewarder = rewarder[pid];
-            if (address(_rewarder) != address(0)) {
-                _rewarder.onSushiReward(pid, msg.sender, to, 0, user.amount);
-            }
-
-            lpToken[pid].safeTransfer(to, amount);
-
-            emit Withdraw(msg.sender, pid, amount, to);
+            // zero out the user object as their amount will be withdrawn and all pending tribe will be paid out
+            user.unlockBlock = 0;
+            user.multiplier = 0;
+            user.amount = 0;
         }
+
+        // Interactions
+        IRewarder _rewarder = rewarder[pid];
+        if (address(_rewarder) != address(0)) {
+            _rewarder.onSushiReward(pid, msg.sender, to, 0, lockedTotalAmount);
+        }
+
+        lpToken[pid].safeTransfer(to, lockedTotalAmount);
+        TRIBE.safeTransfer(to, rewardTotalAmount);
+
+        emit Harvest(msg.sender, pid, rewardTotalAmount);
+        emit Withdraw(msg.sender, pid, lockedTotalAmount, to);
     }
 
     /// @notice Withdraw LP tokens from MCV2.
@@ -403,16 +423,21 @@ contract MasterChief is CoreRef {
     ) public {
         require(depositInfo[pid][msg.sender].length > index, "invalid index");
         PoolInfo memory pool = updatePool(pid);
+        PoolInfo storage poolPointer = poolInfo[pid];
         DepositInfo storage user = depositInfo[pid][msg.sender][index];
+        UserInfo storage aggregatedDeposits = aggregatedUserDeposits[pid][msg.sender];
+
         // if the user has locked the tokens for at least the 
         // lockup period or the pool has been unlocked, allow 
         // user to withdraw their principle
         require(user.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
 
+        uint128 virtualAmountDelta = uint128( (user.amount * user.multiplier) / SCALE_FACTOR );
+
         // Effects
         user.amount -= amount;
-        user.rewardDebt = user.rewardDebt - toSigned128(user.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
-        user.virtualAmount = uint128(user.amount * user.multiplier);
+        aggregatedDeposits.rewardDebt = aggregatedDeposits.rewardDebt - toSigned128(aggregatedDeposits.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
+        aggregatedDeposits.virtualAmount -= uint128(user.amount * user.multiplier);
         // set the reward debt to the reward debt - (virtual amount * current acc tribe per share)
 
         // Interactions
@@ -429,52 +454,16 @@ contract MasterChief is CoreRef {
     /// @notice Harvest proceeds for transaction sender to `to`.
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param to Receiver of TRIBE rewards.
-    function harvestAll(uint256 pid, address to) public {
+    function harvest(uint256 pid, address to) public {
         PoolInfo memory pool = updatePool(pid);
-
-        for (uint256 i = 0; i < depositInfo[pid][msg.sender].length; i++) {
-            DepositInfo storage user = depositInfo[pid][msg.sender][i];
-            // assumption here is that we will never go over 2^128 -1
-            int256 accumulatedTribe = int256( uint256(user.virtualAmount) * uint256(pool.accTribePerShare) ) / int256(ACC_TRIBE_PRECISION);
-            uint256 pendingTribe = uint256(accumulatedTribe - user.rewardDebt);
-
-            // Effects
-            user.rewardDebt = int128(accumulatedTribe);
-
-            // Interactions
-            if (pendingTribe != 0) {
-                TRIBE.safeTransfer(to, pendingTribe);
-            }
-            
-            IRewarder _rewarder = rewarder[pid];
-            if (address(_rewarder) != address(0)) {
-                _rewarder.onSushiReward( pid, msg.sender, to, pendingTribe, user.amount);
-            }
-
-            emit Harvest(msg.sender, pid, pendingTribe);
-        }
-    }
-    
-
-    /// @notice Harvest proceeds for transaction sender to `to`.
-    /// @param pid The index of the pool. See `poolInfo`.
-    /// @param to Receiver of TRIBE rewards.
-    /// @param index array index of the deposit to harvest
-    function harvest(uint256 pid, address to, uint256 index) public {
-        require(depositInfo[pid][msg.sender].length > index, "invalid index");
-
-        PoolInfo memory pool = updatePool(pid);
-        DepositInfo storage user = depositInfo[pid][msg.sender][index];
+        UserInfo storage user = aggregatedUserDeposits[pid][msg.sender];
 
         // assumption here is that we will never go over 2^128 -1
         int256 accumulatedTribe = int256( uint256(user.virtualAmount) * uint256(pool.accTribePerShare) ) / int256(ACC_TRIBE_PRECISION);
-        if (accumulatedTribe < 0) {
-            return ;
-        }
-        uint256 pendingTribe = uint256(accumulatedTribe - user.rewardDebt);
-
         // this should never happen
         require(accumulatedTribe >= 0 || (accumulatedTribe - user.rewardDebt) < 0, "negative accumulated tribe");
+
+        uint256 pendingTribe = uint256(accumulatedTribe - user.rewardDebt);
 
         // Effects
         user.rewardDebt = int128(accumulatedTribe);
@@ -486,12 +475,15 @@ contract MasterChief is CoreRef {
 
         IRewarder _rewarder = rewarder[pid];
         if (address(_rewarder) != address(0)) {
-            _rewarder.onSushiReward( pid, msg.sender, to, pendingTribe, user.amount);
+
+            /// question mark here on whether we want to use the amount or the virtual amount
+
+            _rewarder.onSushiReward( pid, msg.sender, to, pendingTribe, user.virtualAmount);
         }
 
         emit Harvest(msg.sender, pid, pendingTribe);
     }
-    
+
     /// @notice Withdraw LP tokens from MCV2 and harvest proceeds for transaction sender to `to`.
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param amount LP token amount to withdraw.
@@ -507,19 +499,21 @@ contract MasterChief is CoreRef {
 
         PoolInfo memory pool = updatePool(pid);
         DepositInfo storage user = depositInfo[pid][msg.sender][index];
+        UserInfo storage aggregatedDeposit = aggregatedUserDeposits[pid][msg.sender];
+
         // if the user has locked the tokens for at least the 
         // lockup period or the pool has been unlocked, allow 
         // user to withdraw their principle
         require(user.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
 
-        uint256 accumulatedTribe = (user.virtualAmount * pool.accTribePerShare) / ACC_TRIBE_PRECISION;
-        int128 pendingTribe = ((int128(to128(accumulatedTribe)) - (user.rewardDebt)));
+        uint256 accumulatedTribe = (aggregatedDeposit.virtualAmount * pool.accTribePerShare) / ACC_TRIBE_PRECISION;
+        int128 pendingTribe = int128(to128(accumulatedTribe)) - (aggregatedDeposit.rewardDebt);
 
         // Effects
-        user.rewardDebt = int128(to128(accumulatedTribe - (uint256(user.virtualAmount * pool.accTribePerShare) / ACC_TRIBE_PRECISION)));
+        aggregatedDeposit.rewardDebt = int128(to128(accumulatedTribe - (uint256(aggregatedDeposit.virtualAmount * pool.accTribePerShare) / ACC_TRIBE_PRECISION)));
         user.amount -= amount;
         // virtual amount will now change as the user's principle has gone down
-        user.virtualAmount = uint128(user.multiplier * user.amount);
+        aggregatedDeposit.virtualAmount = uint128(user.multiplier * user.amount);
 
         uint256 pendingTribeAmt = signed128ToUint256(pendingTribe);
 
@@ -546,16 +540,26 @@ contract MasterChief is CoreRef {
 
         PoolInfo memory pool = updatePool(pid);
         DepositInfo storage user = depositInfo[pid][msg.sender][index];
+        UserInfo storage aggregatedDeposit = aggregatedUserDeposits[pid][msg.sender];
+
         // if the user has locked the tokens for at least the 
         // lockup period or the pool has been unlocked, allow 
         // user to withdraw their principle
         require(user.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
 
         uint256 amount = user.amount;
-        // on emergency withdraw, zero all fields
+
+        // on emergency withdraw, zero all fields for the deposit info.
+        // remove virtual liquidity as well from the deposit info
+        // do not change reward debt
+        if (
+            (amount * user.multiplier > 0) && // ensure that this is above 0 before we do the next check
+            (amount * user.multiplier) / SCALE_FACTOR <= aggregatedDeposit.virtualAmount)
+        {
+            aggregatedDeposit.virtualAmount -= uint128((amount * user.multiplier) / SCALE_FACTOR);
+        }
+
         user.amount = 0;
-        user.virtualAmount = 0;
-        user.rewardDebt = 0;
         user.multiplier = 0;
         user.unlockBlock = 0;
 

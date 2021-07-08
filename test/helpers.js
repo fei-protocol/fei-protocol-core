@@ -132,13 +132,14 @@ async function testMultipleUsersPooling(
 
   const pendingBalances = [];
   for (let i = 0; i < userAddresses.length; i++) {
-    const balance = new BN(await masterChief.pendingRewards(pid, userAddresses[i], 0));
+    const balance = new BN(await masterChief.allPendingRewards(pid, userAddresses[i]));
     pendingBalances.push(balance);
   }
 
   for (let i = 0; i < blocksToAdvance; i++) {
     for (let j = 0; j < pendingBalances.length; j++) {
-      pendingBalances[j] = new BN(await masterChief.pendingRewards(pid, userAddresses[j], 0));
+      pendingBalances[j] = new BN(await masterChief.allPendingRewards(pid, userAddresses[j]));
+      // console.log(`user: ${userAddresses[i]} pendingBalances:  ${pendingBalances[j].toString()} rewardDebt: ${(await masterChief.aggregatedUserDeposits(pid, userAddresses[i])).rewardDebt.toString()} virtualAmount: ${(await masterChief.aggregatedUserDeposits(pid, userAddresses[i])).virtualAmount.toString()}`);
     }
 
     await time.advanceBlock();
@@ -152,9 +153,13 @@ async function testMultipleUsersPooling(
         }
       }
 
+      // console.log("incrementAmount: ", incrementAmount.toString());
+      // console.log("pending rewards: ", (await masterChief.allPendingRewards(pid, userAddresses[j])).toString());
+      // console.log(`user: ${userAddresses[i]} pendingBalances:  ${pendingBalances[j].toString()} rewardDebt: ${(await masterChief.aggregatedUserDeposits(pid, userAddresses[i])).rewardDebt.toString()}`);
+
       expectApprox(
         pendingBalances[j].add(userIncrementAmount),
-        new BN(await masterChief.pendingRewards(pid, userAddresses[j], 0)),
+        new BN(await masterChief.allPendingRewards(pid, userAddresses[j])),
       );
     }
   }
