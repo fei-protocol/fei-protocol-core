@@ -225,7 +225,7 @@ contract MasterChief is CoreRef {
             allocPoint: to64(allocPoint),
             virtualPoolTotalSupply: 0, // virtual total supply starts at 0 as there is 0 initial supply
             lastRewardBlock: to64(lastRewardBlock),
-            accTribePerShare: 1,
+            accTribePerShare: 0,
             unlocked: false
         }));
         emit LogPoolAddition(pid, allocPoint, _lpToken, _rewarder);
@@ -258,15 +258,10 @@ contract MasterChief is CoreRef {
             uint256 tribeReward = (blocks * tribePerBlock() * pool.allocPoint) / totalAllocPoint;
             accTribePerShare = accTribePerShare + ((tribeReward * ACC_TRIBE_PRECISION) / pool.virtualPoolTotalSupply);
         }
+
         // use the virtual amount to calculate the users share of the pool and their pending rewards
         return signed128ToUint256(
-            (
-                toSigned128(
-                    (aggregatedDeposits.virtualAmount) * accTribePerShare 
-                            ) 
-                /
-                toSigned128(ACC_TRIBE_PRECISION)
-            ) - int128(aggregatedDeposits.rewardDebt)
+            (toSigned128((aggregatedDeposits.virtualAmount) * accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION)) - int128(aggregatedDeposits.rewardDebt)
         );
     }
 
@@ -327,28 +322,34 @@ contract MasterChief is CoreRef {
         user.amount = amount;
 
         uint256 multiplier;
-        // if locking is forced, then we will validate that the locklength is correct
+        // if lock length is not 0, then we will validate that the locklength is correct
         if (lockLength != 0) {
             user.unlockBlock = uint64(lockLength + block.number);
         }
 
         multiplier = rewardMultipliers[pid][lockLength];
-        require(multiplier > 0, "invalid multiplier");
+        require(multiplier >= SCALE_FACTOR, "invalid multiplier");
 
-        // set the multiplier here so that on withdraw we can easily reset the multiplier
+        // set the multiplier here so that on withdraw we can easily reset the
+        // multiplier and remove the appropriate amount of virtual liquidity
         user.multiplier = multiplier;
 
         // virtual amount is calculated by taking the users total deposited balance and multiplying
         // it by the multiplier then adding it to the aggregated virtual amount
-        aggregatedDeposits.virtualAmount += uint128((user.amount * multiplier) / SCALE_FACTOR);
+        uint128 virtualAmountDelta = uint128((amount * multiplier) / SCALE_FACTOR);
+        aggregatedDeposits.virtualAmount += virtualAmountDelta;
 
         // pool virtual total supply needs to increase here
-        poolPointer.virtualPoolTotalSupply += aggregatedDeposits.virtualAmount;
+        poolPointer.virtualPoolTotalSupply += virtualAmountDelta;
 
         // update reward debt after virtual amount is set
-        aggregatedDeposits.rewardDebt += int128( int128(aggregatedDeposits.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION));
+        aggregatedDeposits.rewardDebt += int128(aggregatedDeposits.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
 
+        // console.log("virtualAmountDelta: ", virtualAmountDelta);
+        // console.log("aggregatedDeposits.virtualAmount in deposit function: ", uint256(aggregatedDeposits.virtualAmount));
         // console.log("aggregatedDeposits.rewardDebt in deposit function: ", signed128ToUint256(aggregatedDeposits.rewardDebt));
+        // console.log("pool.virtualPoolTotalSupply: ", poolPointer.virtualPoolTotalSupply);
+
         depositInfo[pid][msg.sender].push(user);
         uint256 depositID = depositInfo[pid][msg.sender].length - 1;
 
@@ -373,6 +374,7 @@ contract MasterChief is CoreRef {
 
         uint128 lockedTotalAmount = 0;
         uint256 rewardTotalAmount = _getPendingRewards(pid, msg.sender);
+        uint128 virtualLiquidityDelta = 0;
 
         // iterate over all deposits this user has.
         for (uint256 i = 0; i < depositInfo[pid][msg.sender].length; i++) {
@@ -384,19 +386,24 @@ contract MasterChief is CoreRef {
                 continue;
             }
 
-            uint128 virtualAmountDelta = uint128( (user.amount * user.multiplier) / SCALE_FACTOR );
+            // gather the virtual amount delta
+            uint128 delta = uint128( (user.amount * user.multiplier) / SCALE_FACTOR );
             lockedTotalAmount += user.amount;
+            virtualLiquidityDelta += delta;
 
-            // Effects
-            aggregatedDeposits.rewardDebt = aggregatedDeposits.rewardDebt - int128(uint128((aggregatedDeposits.virtualAmount * pool.accTribePerShare) / to128(ACC_TRIBE_PRECISION)));
-            aggregatedDeposits.virtualAmount -= uint128((user.amount * user.multiplier) / SCALE_FACTOR);
-            poolPointer.virtualPoolTotalSupply -= virtualAmountDelta;
 
             // zero out the user object as their amount will be withdrawn and all pending tribe will be paid out
             user.unlockBlock = 0;
             user.multiplier = 0;
             user.amount = 0;
         }
+
+        // Effects
+        // batched changes are done at the end of the function so that we don't
+        // write to these storage slots multiple times
+        aggregatedDeposits.virtualAmount -= virtualLiquidityDelta;
+        aggregatedDeposits.rewardDebt = aggregatedDeposits.rewardDebt - int128(uint128((aggregatedDeposits.virtualAmount * pool.accTribePerShare) / to128(ACC_TRIBE_PRECISION)));
+        poolPointer.virtualPoolTotalSupply -= virtualLiquidityDelta;
 
         // Interactions
         IRewarder _rewarder = rewarder[pid];
@@ -432,13 +439,20 @@ contract MasterChief is CoreRef {
         // user to withdraw their principle
         require(user.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
 
-        uint128 virtualAmountDelta = uint128( (user.amount * user.multiplier) / SCALE_FACTOR );
+        uint128 virtualAmountDelta = user.amount == amount ? 
+           uint128( ( amount * user.multiplier ) / SCALE_FACTOR )
+         : uint128( ( (user.amount - amount) * user.multiplier) / SCALE_FACTOR );
 
+        // console.log("virtualAmountDelta: ", uint256(virtualAmountDelta));
+
+        // console.log("aggregatedDeposits.rewardDebt in withdrawFromDeposit function before updating: ", signed128ToUint256(aggregatedDeposits.rewardDebt));
         // Effects
         user.amount -= amount;
         aggregatedDeposits.rewardDebt = aggregatedDeposits.rewardDebt - toSigned128(aggregatedDeposits.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
-        aggregatedDeposits.virtualAmount -= uint128(user.amount * user.multiplier);
-        // set the reward debt to the reward debt - (virtual amount * current acc tribe per share)
+        aggregatedDeposits.virtualAmount -= virtualAmountDelta;
+        poolPointer.virtualPoolTotalSupply -= virtualAmountDelta;
+
+        // console.log("aggregatedDeposits.rewardDebt in withdrawFromDeposit function after updating: ", signed128ToUint256(aggregatedDeposits.rewardDebt));
 
         // Interactions
         IRewarder _rewarder = rewarder[pid];

@@ -104,10 +104,7 @@ describe('MasterChief Rewards Multiplier', () => {
     const tx = await this.masterChief.add(
       allocationPoints,
       this.LPToken.address,
-      ZERO_ADDRESS, // IRewarder is 0 address because we do not have a rewarder
-      lockupPeriod,
-      forcedLock,
-      unlocked,
+      ZERO_ADDRESS, // IRewarder is address 0 because we do not have a rewarder
       [
         {
           lockLength: 100,
@@ -196,9 +193,6 @@ describe('MasterChief Rewards Multiplier', () => {
         allocationPoints,
         this.LPToken.address,
         ZERO_ADDRESS,
-        lockupPeriod,
-        forcedLock, // force users to lock their funds
-        unlocked,
         [
           {
             lockLength: 100,

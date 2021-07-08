@@ -6,7 +6,6 @@ const {
   getCore,
   getAddresses,
   expectApprox,
-  testMultipleUsersPooling,
 } = require('../helpers');
 const { time } = require('@openzeppelin/test-helpers');
 
@@ -15,6 +14,74 @@ const MockCoreRef = artifacts.require('MockCoreRef');
 const MasterChief = artifacts.require('MasterChief');
 const MockERC20 = artifacts.require('MockERC20');
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+
+async function testMultipleUsersPooling(
+  masterChief,
+  lpToken,
+  userAddresses,
+  incrementAmount,
+  blocksToAdvance,
+  lockLength,
+  totalStaked,
+  pid
+) {
+  // if lock length isn't defined, it defaults to 0
+  lockLength = lockLength === undefined ? 0 : lockLength;
+
+  // approval loop
+  for (let i = 0; i < userAddresses.length; i++) {
+    if ( (await lpToken.allowance(userAddresses[i], masterChief.address)).lt(new BN(totalStaked)) ) {
+      await lpToken.approve(masterChief.address, totalStaked, { from: userAddresses[i] });
+    }
+  }
+
+  // deposit loop
+  for (let i = 0; i < userAddresses.length; i++) {
+    let lockBlockAmount = lockLength;
+    if (Array.isArray(lockLength)) {
+      lockBlockAmount = lockLength[i];
+      if (lockLength.length !== userAddresses.length) {
+        throw new Error('invalid lock length');
+      }
+    }
+
+    await masterChief.deposit(
+      pid,
+      totalStaked,
+      lockBlockAmount,
+      { from: userAddresses[i] },
+    );
+  }
+
+  const pendingBalances = [];
+  for (let i = 0; i < userAddresses.length; i++) {
+    const balance = new BN(await masterChief.allPendingRewards(pid, userAddresses[i]));
+    pendingBalances.push(balance);
+  }
+
+  for (let i = 0; i < blocksToAdvance; i++) {
+    for (let j = 0; j < pendingBalances.length; j++) {
+      pendingBalances[j] = new BN(await masterChief.allPendingRewards(pid, userAddresses[j]));
+    }
+
+    await time.advanceBlock();
+
+    for (let j = 0; j < userAddresses.length; j++) {
+      let userIncrementAmount = incrementAmount;
+      if (Array.isArray(incrementAmount)) {
+        userIncrementAmount = incrementAmount[j];
+        if (incrementAmount.length !== userAddresses.length) {
+          throw new Error('invalid increment amount length');
+        }
+      }
+
+      expectApprox(
+        pendingBalances[j].add(userIncrementAmount),
+        new BN(await masterChief.allPendingRewards(pid, userAddresses[j])),
+      );
+    }
+  }
+}
 
 describe('MasterChief', function () {
   // this is the process ID of the staking rewards that we will use
@@ -32,12 +99,14 @@ describe('MasterChief', function () {
   let ninthUserAddress;
   let tenthUserAddress;
   let perBlockReward;
-
-  const zeroMultiplier = new BN('1000000000000000000');
+  
+  // rewards multiplier by 20%
+  const multiplier20 = new BN('1200000000000000000');
+  const zeroMultiplier = '1000000000000000000';
   const defaultRewardsObject = [
     {
         lockLength: 0,
-        rewardMultiplier: zeroMultiplier.toString()
+        rewardMultiplier: zeroMultiplier
     }
   ];
 
@@ -110,7 +179,13 @@ describe('MasterChief', function () {
         allocationPoints,
         this.LPToken.address,
         ZERO_ADDRESS,
-        defaultRewardsObject,
+        defaultRewardsObject.concat(
+        [
+            {
+                lockLength: 100,
+                rewardMultiplier: '1100000000000000000',
+            }
+        ]),
         { from: governorAddress }
     );
     // grab PID from the logs
@@ -830,7 +905,7 @@ describe('MasterChief', function () {
 
             
             const index = (await this.masterChief.openUserDeposits(pid, userAddress)).sub(new BN('1')).toString();
-            // console.log("pendingTribeBeforeHarvest: ", pendingTribeBeforeHarvest.toString());
+            // console.log("user reward debt: ", pendingTribeBeforeHarvest.toString());
             // console.log("index: ", index.toString());
             await this.masterChief.withdrawFromDeposit(pid, totalStaked, address, index, { from: address });
 
@@ -839,6 +914,8 @@ describe('MasterChief', function () {
 
             // assert that reward debt went negative after we withdrew all of our principle without harvesting
             expect((await this.masterChief.aggregatedUserDeposits(pid, address)).rewardDebt).to.be.bignumber.lt(new BN('-1'))
+
+            // console.log("aggregatedUserDeposits rewardDebt: ", (await this.masterChief.aggregatedUserDeposits(pid, address)).rewardDebt.toString());
 
             const pendingTribe = await this.masterChief.allPendingRewards(pid, address);
             expect(pendingTribe).to.be.bignumber.gt(pendingTribeBeforeHarvest);
@@ -905,7 +982,7 @@ describe('MasterChief', function () {
         const incrementAmount = new BN(totalStaked);
 
         let expectedallPendingRewards = await this.masterChief.allPendingRewards(pid, userAddress);
-        console.log("expectedallPendingRewards: ", expectedallPendingRewards.toString());
+        // console.log("expectedallPendingRewards: ", expectedallPendingRewards.toString());
 
         await testMultipleUsersPooling(
             this.masterChief,
@@ -917,16 +994,12 @@ describe('MasterChief', function () {
             totalStaked,
             pid
         );
-
-        expectedallPendingRewards = await this.masterChief.allPendingRewards(pid, userAddress);
-        console.log("expectedallPendingRewards: ", expectedallPendingRewards.toString());
-        expectApprox(
-            await this.masterChief.allPendingRewards(pid, userAddress),
-            expectedallPendingRewards
-        );
-        console.log("userbalance b4 harvest: ", (await this.tribe.balanceOf(userAddress)).toString() );
+        
+        // console.log("userbalance b4 harvest: ", (await this.tribe.balanceOf(userAddress)).toString() );
+        // console.log("user reward debt b4 harvest: ", (await this.masterChief.aggregatedUserDeposits(pid, userAddress)).rewardDebt.toString());
         await this.masterChief.harvest(pid, userAddress);
-        console.log("userbalance after harvest: ", (await this.tribe.balanceOf(userAddress)).toString() );
+        // console.log("user reward debt after harvest: ", (await this.masterChief.aggregatedUserDeposits(pid, userAddress)).rewardDebt.toString());
+        // console.log("userbalance after harvest: ", (await this.tribe.balanceOf(userAddress)).toString() );
     });
 
     it('harvest should be able to claim all rewards from multiple deposits in a single pool', async function() {
@@ -939,7 +1012,12 @@ describe('MasterChief', function () {
         await this.LPToken.mint(userAddress, totalStaked); // approve double total staked
         await this.LPToken.approve(this.masterChief.address, '200000000000000000000');
 
-        const incrementAmount = new BN('33333333333300000000');
+        const incrementAmount = [
+            new BN('66666666666600000000'), // user one should receive 2/3 of block rewards
+            new BN('66666666666600000000'),
+            new BN('33333333333300000000')  // user two should receive 1/3 of block rewards
+        ];
+
         await testMultipleUsersPooling(
             this.masterChief,
             this.LPToken,
@@ -977,6 +1055,293 @@ describe('MasterChief', function () {
         // ensure user does not have any pending rewards remaining
         const pendingTribe = await this.masterChief.allPendingRewards(pid, userAddress);
         expect(pendingTribe).to.be.bignumber.equal(new BN('0'));
+    });
+  });
+
+
+  describe('Governor Rewards Changes', () => {
+    it('governor should be able to step down the pool multiplier, which unlocks users funds', async function () {
+      const userAddresses = [userAddress];
+      // assert that this pool is locked
+      expect(
+        (await this.masterChief.poolInfo(pid)).unlocked,
+      ).to.be.false;
+      await this.masterChief.governorAddPoolMultiplier(pid, 100, zeroMultiplier, { from: governorAddress });
+      // assert that this pool is now unlocked
+      expect(
+        (await this.masterChief.poolInfo(pid)).unlocked,
+      ).to.be.true;
+      expect(
+        (await this.masterChief.rewardMultipliers(pid, 100)).toString(),
+      ).to.be.bignumber.equal(zeroMultiplier);
+    });
+
+    it('governor should be able to step up the pool multiplier', async function () {
+      const userAddresses = [userAddress];
+      await this.masterChief.governorAddPoolMultiplier(pid, 100, multiplier20, { from: governorAddress });
+      // assert that the pool did not unlock
+      expect(
+        (await this.masterChief.poolInfo(pid)).unlocked,
+      ).to.be.false;
+      expect(
+        await this.masterChief.rewardMultipliers(pid, 100),
+      ).to.be.bignumber.equal(multiplier20);
+      // now have a user test and ensure this new reward is given
+      await testMultipleUsersPooling(
+          this.masterChief, 
+          this.LPToken, 
+          userAddresses,
+          new BN('100000000000000000000'),
+          3,
+          100,
+          totalStaked,
+          pid
+      );
+    });
+
+    it('governor should be able to step up the pool multiplier and rewards should be given for 90 blocks after unlock', async function () {
+      const userAddresses = [userAddress];
+      await this.masterChief.governorAddPoolMultiplier(pid, 100, multiplier20, { from: governorAddress });
+      // assert that the pool did not unlock
+      expect(
+        (await this.masterChief.poolInfo(pid)).unlocked,
+      ).to.be.false;
+      expect(
+        await this.masterChief.rewardMultipliers(pid, 100),
+      ).to.be.bignumber.equal(multiplier20);
+      // now have a user test and ensure this new reward is given
+      await testMultipleUsersPooling(
+          this.masterChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          3,
+          100,
+          totalStaked,
+          pid
+      );
+    });
+  });
+
+  describe('Test Pool with Force Lockup', () => {
+    beforeEach(async function () {
+      this.multiplier = multiplier20;
+
+      // create new reward stream
+      const tx = await this.masterChief.add(
+        allocationPoints,
+        this.LPToken.address,
+        ZERO_ADDRESS,
+        [
+          {
+            lockLength: 100,
+            rewardMultiplier: zeroMultiplier,
+          },
+          {
+            lockLength: 300,
+            rewardMultiplier: (new BN(zeroMultiplier)).mul(new BN('3')).toString(),
+          },
+        ],
+        { from: governorAddress },
+      );
+      // grab PID from the logs
+      pid = Number(tx.logs[0].args.pid);
+
+      // set allocation points of earlier pool to 0 so that full block rewards are given out to this pool
+      await this.masterChief.set(0, 0, ZERO_ADDRESS, false, { from: governorAddress });
+    });
+
+    it('should be able to get pending sushi and receive multiplier for depositing on force lock pool', async function () {
+      const userAddresses = [userAddress];
+      expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
+      await testMultipleUsersPooling(
+          this.masterChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          10,
+          300,
+          totalStaked,
+          pid
+      );
+    });
+
+    it('should be able to get pending sushi and receive different multipliers for depositing on force lock pool', async function () {
+      const userAddresses = [userAddress, secondUserAddress];
+      expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
+      await testMultipleUsersPooling(
+        this.masterChief,
+        this.LPToken,
+        userAddresses,
+        [new BN('25000000000000000000'), new BN('75000000000000000000')],
+        10,
+        [100, 300],
+        totalStaked,
+        pid
+      );
+    });
+
+    it('should be able to get pending sushi and receive the same multipliers for depositing on force lock pool', async function () {
+      const userAddresses = [userAddress, secondUserAddress];
+      expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
+      await testMultipleUsersPooling(
+        this.masterChief,
+        this.LPToken,
+        userAddresses,
+        [new BN('50000000000000000000'), new BN('50000000000000000000')],
+        10,
+        [100, 100],
+        totalStaked,
+        pid
+      );
+    });
+
+    it('should not be able to withdraw from a forced lock pool', async function () {
+      const userAddresses = [userAddress];
+
+      expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
+      await testMultipleUsersPooling(
+        this.masterChief,
+        this.LPToken,
+        userAddresses,
+        new BN('100000000000000000000'),
+        5,
+        100,
+        totalStaked,
+        pid
+      );
+
+      await expectRevert(
+        this.masterChief.withdrawFromDeposit(pid, totalStaked, userAddress, 0, { from: userAddress }),
+        'tokens locked',
+      );
+    });
+
+    it('should not be able to emergency withdraw from a forced lock pool', async function () {
+      const userAddresses = [userAddress];
+
+      expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
+      await testMultipleUsersPooling(
+          this.masterChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          5,
+          100,
+          totalStaked,
+          pid
+      );
+
+      await expectRevert(
+        this.masterChief.emergencyWithdraw(pid, userAddress, 0, { from: userAddress }),
+        'tokens locked',
+      );
+    });
+  });
+
+  describe('Test Rewards Multiplier', () => {
+    beforeEach(async function () {
+      this.multiplier = multiplier20;
+      this.lockLength = 100;
+      // create new reward stream
+      const tx = await this.masterChief.add(
+        allocationPoints,
+        this.LPToken.address,
+        ZERO_ADDRESS,
+        [
+          {
+            lockLength: 100,
+            rewardMultiplier: zeroMultiplier,
+          },
+          {
+            lockLength: 300,
+            rewardMultiplier: (new BN(zeroMultiplier)).mul(new BN('3')).toString(),
+          },
+        ],
+        { from: governorAddress },
+      );
+      // grab PID from the logs
+      pid = Number(tx.logs[0].args.pid);
+
+      // set allocation points of earlier pool to 0 so that full block rewards are given out to this pool
+      await this.masterChief.set(0, 0, ZERO_ADDRESS, false, { from: governorAddress });
+    });
+
+    it('should be able to get pending sushi and receive multiplier for locking', async function () {
+      const userAddresses = [userAddress];
+
+      await testMultipleUsersPooling(
+          this.masterChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          10,
+          this.lockLength,
+          totalStaked,
+          pid
+      );
+    });
+
+    it('should not be able to withdraw before locking period is over', async function () {
+      const userAddresses = [userAddress];
+
+      await testMultipleUsersPooling(
+          this.masterChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          3,
+          this.lockLength,
+          totalStaked,
+          pid
+      );
+
+      await expectRevert(
+        this.masterChief.withdrawFromDeposit(pid, totalStaked, userAddress, 0, { from: userAddress }),
+        'tokens locked',
+      );
+    });
+
+    it('should not be able to emergency withdraw before locking period is over', async function () {
+      const userAddresses = [userAddress];
+
+      // we should only be receiving 1e20 tribe per block
+      await testMultipleUsersPooling(
+        this.masterChief,
+        this.LPToken,
+        userAddresses,
+        new BN('100000000000000000000'),
+        3,
+        this.lockLength,
+        totalStaked,
+        pid
+      );
+
+      await expectRevert(
+        this.masterChief.emergencyWithdraw(pid, userAddress, 0, { from: userAddress }),
+        'tokens locked',
+      );
+    });
+
+    it('should not be able to withdraw and harvest before locking period is over', async function () {
+      const userAddresses = [userAddress];
+
+      // we should only be receiving 1e20 tribe per block
+      await testMultipleUsersPooling(
+        this.masterChief,
+        this.LPToken,
+        userAddresses,
+        new BN('100000000000000000000'),
+        3,
+        this.lockLength,
+        totalStaked,
+        pid
+      );
+
+      await expectRevert(
+        this.masterChief.withdrawAndHarvest(pid, totalStaked, userAddress, 0, { from: userAddress }),
+        'tokens locked',
+      );
     });
   });
 });
