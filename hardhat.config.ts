@@ -13,6 +13,7 @@ const rinkebyAlchemyApiKey = process.env.RINKEBY_ALCHEMY_API_KEY;
 const testnetPrivateKey = process.env.TESTNET_PRIVATE_KEY;
 const privateKey = process.env.ETH_PRIVATE_KEY;
 const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
+const runE2ETests = process.env.RUN_E2E_TESTS;
 
 if (!rinkebyAlchemyApiKey || !testnetPrivateKey || !privateKey || !mainnetAlchemyApiKey) {
   throw new Error('Please set your Ethereum keys in a .env')
@@ -51,6 +52,9 @@ const config: HardhatUserConfig = {
         runs: 200,
       },
     },
+  },
+  paths: {
+    tests: runE2ETests ? './end-to-end' : './test',
   },
   mocha: {},
   typechain: {
