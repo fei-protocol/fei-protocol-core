@@ -4,7 +4,7 @@ const { sudo } = require('../utils/sudo');
 const Tribe = artifacts.require('Tribe');
 
 const e18 = '000000000000000000';
-const communalFarmAddress = '0x0';
+const communalFarmAddress = '0x0639076265e9f88542C91DCdEda65127974A5CA5';
 
 async function main() {
   await sudo();

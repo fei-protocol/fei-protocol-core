@@ -4,7 +4,7 @@ const { sudo } = require('../utils/sudo');
 const Core = artifacts.require('Core');
 
 const e18 = '000000000000000000';
-const communalFarmAddress = '0x0';
+const communalFarmAddress = '0x0639076265e9f88542C91DCdEda65127974A5CA5';
 
 // The DAO steps for FIP-9, these must be done with Governor access control privileges
 async function main() {
