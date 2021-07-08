@@ -60,6 +60,7 @@ abstract contract CompoundPCVDeposit is IPCVDeposit, CoreRef {
     }
 
     /// @notice returns total balance of PCV in the Deposit excluding the FEI
+    /// @dev returns stale values from Compound if the market hasn't been updated
     function balance() public view override returns (uint256) {
         uint256 exchangeRate = cToken.exchangeRateStored();
         return cToken.balanceOf(address(this)) * exchangeRate / EXCHANGE_RATE_SCALE;
