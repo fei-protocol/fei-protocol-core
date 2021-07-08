@@ -25,7 +25,9 @@ abstract contract CompoundPCVDeposit is IPCVDeposit, CoreRef {
     constructor(
         address _core,
         address _cToken
-    ) CoreRef(_core) {}
+    ) CoreRef(_core) {
+        cToken = CToken(_cToken);
+    }
 
     /// @notice withdraw tokens from the PCV allocation
     /// @param amountUnderlying of tokens withdrawn
