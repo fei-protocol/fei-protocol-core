@@ -22,9 +22,11 @@ async function successfulReweight(controller) {
 async function main() {
   const { 
     coreAddress, 
+    feiAddress,
     ethUniswapPCVDepositAddress, 
     ethUniswapPCVControllerAddress, 
-    ethBondingCurveAddress 
+    ethBondingCurveAddress,
+    ethPairAddress
   } = getAddresses();
 
   const accounts = await web3.eth.getAccounts();
@@ -64,7 +66,8 @@ async function main() {
 
   console.log('\nController');
   console.log('Moving Pair below 3%');
-  await syncPool(new BN('10300'));
+  
+  await syncPool(new BN('10300'), { feiAddress, ethUniswapPCVDepositAddress, ethPairAddress }, accounts[0]);
 
   console.log('Advancing Time');
   await time.increase(await controller.remainingTime());
@@ -84,7 +87,7 @@ async function main() {
   }
 
   console.log('Moving Pair above 3%');
-  await syncPool(new BN('9700'));
+  await syncPool(new BN('9700'), { feiAddress, ethUniswapPCVDepositAddress, ethPairAddress }, accounts[0]);
 
   if (eligible) {
     await controller.forceReweight();

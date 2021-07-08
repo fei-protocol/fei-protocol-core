@@ -1,6 +1,9 @@
+const hre = require('hardhat');
 const { BN, time } = require('@openzeppelin/test-helpers');
 const { syncPool } = require('../utils/syncPool');
 const { check, getAddresses } = require('../utils/helpers');
+
+const { web3 } = hre;
 
 const UniswapPCVController = artifacts.require('UniswapPCVController');
 const Core = artifacts.require('Core');
@@ -49,7 +52,9 @@ async function integrationTestReweight(newController) {
   check(timeComplete, 'Time complete');
 
   console.log('Moving Pair below 3%');
-  await syncPool(new BN('10300'));
+  const { feiAddress, ethUniswapPCVDepositAddress, ethPairAddress } = getAddresses();
+  const accounts = await web3.eth.getAccounts();
+  await syncPool(new BN('10300'), { feiAddress, ethUniswapPCVDepositAddress, ethPairAddress}, accounts[0]);
 
   const eligible = await newController.reweightEligible();
   check(eligible, 'Reweight eligible');
