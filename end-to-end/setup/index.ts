@@ -1,4 +1,5 @@
 import mainnetAddressesV1 from '../../contract-addresses/mainnetAddresses.json'
+import permissions from '../../contract-addresses/permissions.json'
 import { getContracts, getContract } from './loadContracts'
 import {
   Config,
@@ -178,33 +179,23 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    */
   getAccessControlMapping(): ContractAccessRights {
     const accessControlRoles = {
-      minter: [
-        this.afterUpgradeAddresses.bondingCurve,
-        this.afterUpgradeAddresses.uniswapPCVDeposit,
-        this.afterUpgradeAddresses.uniswapPCVController,
-        this.afterUpgradeAddresses.feiRewardsDistributor,
-        this.afterUpgradeAddresses.timelock,
-        this.afterUpgradeAddresses.uniswapPCVController,
-      ],
-      burner: [
-        this.afterUpgradeAddresses.ethReserveStabilizer,
-        this.afterUpgradeAddresses.uniswapPCVController,
-        this.afterUpgradeAddresses.tribeReserveStabilizer
-      ],
-      governor: [
-        this.afterUpgradeAddresses.core,
-        this.afterUpgradeAddresses.timelock
-      ],
-      pcvController: [
-        this.afterUpgradeAddresses.timelock,
-        this.afterUpgradeAddresses.ratioPCVController,
-        this.afterUpgradeAddresses.pcvDripController
-      ],
-      guardian: [
-        this.afterUpgradeAddresses.multisig
-      ],
+      "minter" : [],
+      "burner" : [],
+      "pcvController" : [],
+      "governor" : [],
+      "guardian" : []
     }
-    return accessControlRoles
+
+    // Array of all deployed contracts
+   Object.keys(permissions).map(role => {
+      const contracts = permissions[role];
+      const addresses = contracts.map(contract => {
+        return this.afterUpgradeAddresses[contract];
+      });
+      accessControlRoles[role] = addresses;
+    });
+    
+    return accessControlRoles;
   }
   
   /**
