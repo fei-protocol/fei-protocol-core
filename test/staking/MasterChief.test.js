@@ -648,9 +648,7 @@ describe('MasterChief', function () {
             expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
             
             const pendingTribe = await this.masterChief.allPendingRewards(pid, userAddresses[i]);
-
-            const index = (await this.masterChief.openUserDeposits(pid, userAddresses[i])).sub(new BN('1')).toString();
-            await this.masterChief.withdrawAndHarvest(pid, totalStaked, userAddresses[i], index, { from: userAddresses[i] });
+            await this.masterChief.withdrawAllAndHarvest(pid, userAddresses[i], { from: userAddresses[i] });
 
             expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN(totalStaked));
             expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.gt(pendingTribe);
@@ -691,9 +689,7 @@ describe('MasterChief', function () {
             expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
 
             const pendingTribe = await this.masterChief.allPendingRewards(pid, userAddresses[i]);
-            
-            const index = (await this.masterChief.openUserDeposits(pid, userAddress)).sub(new BN('1')).toString();
-            await this.masterChief.withdrawAndHarvest(pid, totalStaked, userAddresses[i], index, { from: userAddresses[i] });
+            await this.masterChief.withdrawAllAndHarvest(pid, userAddresses[i], { from: userAddresses[i] });
 
             expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN(totalStaked));
             expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.gt(pendingTribe);
@@ -725,9 +721,7 @@ describe('MasterChief', function () {
             expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
 
             const pendingTribe = await this.masterChief.allPendingRewards(pid, userAddresses[i]);
-
-            const index = (await this.masterChief.openUserDeposits(pid, userAddress)).sub(new BN('1')).toString();
-            await this.masterChief.withdrawAndHarvest(pid, totalStaked, userAddresses[i], index, { from: userAddresses[i] });
+            await this.masterChief.withdrawAllAndHarvest(pid, userAddresses[i], { from: userAddresses[i] });
 
             expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN(totalStaked));
             expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.gt(pendingTribe);
@@ -773,9 +767,7 @@ describe('MasterChief', function () {
             expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
 
             const pendingTribe = await this.masterChief.allPendingRewards(pid, userAddresses[i]);
-            
-            const index = (await this.masterChief.openUserDeposits(pid, userAddress)).sub(new BN('1')).toString();
-            await this.masterChief.withdrawAndHarvest(pid, totalStaked, userAddresses[i], index, { from: userAddresses[i] });
+            await this.masterChief.withdrawAllAndHarvest(pid, userAddresses[i], { from: userAddresses[i] });            
 
             expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN(totalStaked));
             expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.gt(pendingTribe);
@@ -806,9 +798,7 @@ describe('MasterChief', function () {
             expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
             
             const pendingTribe = await this.masterChief.allPendingRewards(pid, userAddresses[i]);
-
-            const index = (await this.masterChief.openUserDeposits(pid, userAddress)).sub(new BN('1')).toString();
-            await this.masterChief.withdrawAndHarvest(pid, totalStaked, userAddresses[i], index, { from: userAddresses[i] });
+            await this.masterChief.withdrawAllAndHarvest(pid, userAddresses[i], { from: userAddresses[i] });
 
             expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN(totalStaked));
             expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.gt(pendingTribe);
@@ -849,9 +839,7 @@ describe('MasterChief', function () {
             expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
 
             const pendingTribe = await this.masterChief.allPendingRewards(pid, userAddresses[i]);
-
-            const index = (await this.masterChief.openUserDeposits(pid, userAddress)).sub(new BN('1')).toString();
-            await this.masterChief.withdrawAndHarvest(pid, totalStaked, userAddresses[i], index, { from: userAddresses[i] });
+            await this.masterChief.withdrawAllAndHarvest(pid, userAddresses[i], { from: userAddresses[i] });
 
             expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN(totalStaked));
             expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.gt(pendingTribe);
@@ -1268,7 +1256,7 @@ describe('MasterChief', function () {
     });
 
     it('should be able to get pending sushi and receive multiplier for locking', async function () {
-      const userAddresses = [userAddress];
+      const userAddresses = [ userAddress ];
 
       await testMultipleUsersPooling(
           this.masterChief,
@@ -1283,7 +1271,7 @@ describe('MasterChief', function () {
     });
 
     it('should not be able to withdraw before locking period is over', async function () {
-      const userAddresses = [userAddress];
+      const userAddresses = [ userAddress ];
 
       await testMultipleUsersPooling(
           this.masterChief,
@@ -1303,7 +1291,7 @@ describe('MasterChief', function () {
     });
 
     it('should not be able to emergency withdraw before locking period is over', async function () {
-      const userAddresses = [userAddress];
+      const userAddresses = [ userAddress ];
 
       // we should only be receiving 1e20 tribe per block
       await testMultipleUsersPooling(
@@ -1323,8 +1311,8 @@ describe('MasterChief', function () {
       );
     });
 
-    it('should not be able to withdraw and harvest before locking period is over', async function () {
-      const userAddresses = [userAddress];
+    it('should not be able to withdraw principle before locking period is over by calling withdrawAllAndHarvest', async function () {
+      const userAddresses = [ userAddress ];
 
       // we should only be receiving 1e20 tribe per block
       await testMultipleUsersPooling(
@@ -1338,10 +1326,37 @@ describe('MasterChief', function () {
         pid
       );
 
-      await expectRevert(
-        this.masterChief.withdrawAndHarvest(pid, totalStaked, userAddress, 0, { from: userAddress }),
-        'tokens locked',
+
+      const pendingTribe = await this.masterChief.allPendingRewards(pid, userAddress);
+      await this.masterChief.withdrawAllAndHarvest(pid, userAddress, { from: userAddress });
+      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+      expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
+    });
+
+    it('should be able to withdraw principle after locking period is over by calling withdrawAllAndHarvest', async function () {
+      const userAddresses = [ userAddress ];
+
+      // we should only be receiving 1e20 tribe per block
+      await testMultipleUsersPooling(
+        this.masterChief,
+        this.LPToken,
+        userAddresses,
+        new BN('100000000000000000000'),
+        this.lockLength,
+        this.lockLength,
+        totalStaked,
+        pid
       );
+
+      const pendingTribe = await this.masterChief.allPendingRewards(pid, userAddress);
+      await this.masterChief.withdrawAllAndHarvest(pid, userAddress, { from: userAddress });
+      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN(totalStaked));
+      expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
+      // assert that virtual amount and reward debt updated correctly
+      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).virtualAmount).to.be.bignumber.equal(new BN('0'));
+      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).rewardDebt).to.be.bignumber.equal(new BN('0'));
+      // asser that the virtual total supply is 0
+      expect((await this.masterChief.poolInfo(pid)).virtualPoolTotalSupply).to.be.bignumber.equal(new BN('0'));
     });
   });
 });
