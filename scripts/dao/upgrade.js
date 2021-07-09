@@ -8,7 +8,9 @@ const RatioPCVController = artifacts.require('RatioPCVController');
 const Core = artifacts.require('Core');
 const Tribe = artifacts.require('Tribe');
 
-async function upgrade(addresses, oldContractAddresses, logging = false) {
+async function setup(addresses, oldContractAddresses, logging) {}
+
+async function run(addresses, oldContractAddresses, logging = false) {
   const {
     coreAddress,
     uniswapPCVDepositAddress,
@@ -27,6 +29,7 @@ async function upgrade(addresses, oldContractAddresses, logging = false) {
   const tribeReserveStabilizer = await TribeReserveStabilizer.at(tribeReserveStabilizerAddress);
   
   const ratioPCVController = await RatioPCVController.at(ratioPCVControllerAddress);
+  const oldRatioPCVController = await RatioPCVController.at(oldContractAddresses.ratioPCVControllerAddress);
   const pcvDripController = await PCVDripController.at(pcvDripControllerAddress);
   const ethReserveStabilizer = await EthReserveStabilizer.at(ethReserveStabilizerAddress);
 
@@ -65,11 +68,13 @@ async function upgrade(addresses, oldContractAddresses, logging = false) {
   logging ? console.log('Granting Minter to new PCVDripController') : undefined;
   await core.grantMinter(pcvDripController.address);
 
-  await ratioPCVController.withdrawRatio(oldContractAddresses.uniswapPCVDepositAddress, uniswapPCVDepositAddress, '10000'); // move 100% of PCV from old -> new
+  await oldRatioPCVController.withdrawRatio(oldContractAddresses.uniswapPCVDepositAddress, uniswapPCVDepositAddress, '10000'); // move 100% of PCV from old -> new
 }
 
 /// /  --------------------- NOT RUN ON CHAIN ----------------------
-async function revokeOldContractPerms(core, oldContractAddresses) {
+async function teardown(addresses, oldContractAddresses) {
+  const core = await Core.at(addresses.coreAddress);
+
   const {
     uniswapPCVDepositAddress,
     uniswapPCVControllerAddress,
@@ -90,4 +95,4 @@ async function revokeOldContractPerms(core, oldContractAddresses) {
   await core.revokePCVController(uniswapPCVControllerAddress);
 }
 
-module.exports = { upgrade, revokeOldContractPerms };
+module.exports = { setup, run, teardown };

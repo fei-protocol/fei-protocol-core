@@ -1,0 +1,6 @@
+{
+    "proposerAddress" : "",
+    "voterAddress" : "",
+    "proposalNames" : ["upgrade"],
+    "exec" : false
+}

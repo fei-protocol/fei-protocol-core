@@ -1,5 +1,7 @@
 import mainnetAddressesV1 from '../../contract-addresses/mainnetAddresses.json'
 import permissions from '../../contract-addresses/permissions.json'
+import proposals from '../../proposals/config.json'
+
 import { getContracts, getContractAddresses } from './loadContracts'
 import {
   Config,
@@ -10,8 +12,6 @@ import {
   Env
 } from './types'
 import { sudo } from '../../scripts/utils/sudo'
-import { upgrade as deployUpgradeContracts } from '../../deploy/upgrade'
-import { upgrade as applyPermissions, revokeOldContractPerms } from '../../scripts/dao/upgrade'
 import { artifacts } from 'hardhat'
 
 const RatioPCVController = artifacts.require('TestOldRatioPCVController');
@@ -34,15 +34,6 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   }
 
   /**
-   * Setup end-to-end tests against the state of the protocol on Mainnet, before any upgrade.
-   * No additional contracts deployed locally.
-   */
-  async beforeUpgrade(): Promise<Env> {
-    const contracts = await this.loadMainnetContracts(this.mainnetAddresses)
-    return { contracts, contractAddresses: this.mainnetAddresses }
-  }
-
-  /**
    * Setup end to end tests for a local environment. This involves e2e testing
    * contracts not yet deployed.
    * 
@@ -52,14 +43,24 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * 3) Apply appropriate permissions to the contracts e.g. minter, burner priviledges
    *
    */
-   public async applyUpgrade(): Promise<Env> {
-    const existingContracts = await this.loadMainnetContracts(this.mainnetAddresses)
+   public async loadEnvironment(): Promise<Env> {
+    // @ts-ignore
+    let existingContracts = await getContracts(mainnetAddressesV1.contracts)
 
-    const deployedUpgradedContracts = await deployUpgradeContracts(this.config.deployAddress, this.mainnetAddresses, this.config.logging)
+    // Grant priviledges to deploy address
+    await sudo(this.mainnetAddresses, this.config.logging)
 
-    // Override RatioPCVController with old contract, due to pcvDeposit abi clashes
-    const ratioPCVController = await RatioPCVController.new(this.mainnetAddresses['coreAddress'])
-    deployedUpgradedContracts.ratioPCVController = ratioPCVController
+    for (let i = 0; i < proposals.proposalNames.length; i++) {
+      existingContracts = await this.applyUpgrade(existingContracts, proposals.proposalNames[i]);
+    }
+
+    return { contracts: this.afterUpgradeContracts, contractAddresses: this.afterUpgradeAddresses }
+  }
+
+  async applyUpgrade(existingContracts: MainnetContracts, proposalName: string) {
+    const { deploy } = await import('../../deploy/' + proposalName);
+
+    const deployedUpgradedContracts = await deploy(this.config.deployAddress, this.mainnetAddresses, this.config.logging)
 
     const contracts: MainnetContracts = {
       ...existingContracts,
@@ -68,20 +69,21 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     this.setLocalTestContracts(contracts)
     this.setLocalTestContractAddresses(contracts)
     
-    // Grant priviledges to deploy address
-    await sudo(this.mainnetAddresses, this.config.logging)
+    const contractAddresses = getContractAddresses(contracts);
     
-    // If contract not upgraded, use mainnet address - e.g. this.addresses['core']
-    // If contract has been upgraded and a new one deployed"
-    //  - use local deploy address e.g. contracts.core.address
-    const requiredApplyPermissionsAddresses = getContractAddresses(contracts);
-    
-    await revokeOldContractPerms(this.afterUpgradeContracts.core, this.mainnetAddresses)
+    const { setup, run, teardown } = await import('../../scripts/dao/' + proposalName);
 
-    // Grant minter, burner, pcvController permissions etc to the relevant contracts
-    console.log(this.mainnetAddresses);
-    await applyPermissions(requiredApplyPermissionsAddresses, this.mainnetAddresses, this.config.logging)
-    return { contracts: this.afterUpgradeContracts, contractAddresses: this.afterUpgradeAddresses }
+    // setup the DAO proposal
+    await setup(contractAddresses, this.mainnetAddresses, this.config.logging);
+
+    // run the DAO proposal
+    // TODO: if exec flag is on, run calldata through exec and not through mock proposal
+    await run(contractAddresses, this.mainnetAddresses, this.config.logging)
+
+    // teardown the DAO proposal
+    await teardown(contractAddresses, this.mainnetAddresses)
+
+    return contracts;
   }
 
   /**
@@ -134,14 +136,6 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
 
     // @ts-ignore
     return accessControlRoles;
-  }
-  
-  /**
-   * Get all Mainnet contracts, instantiated as web3 instances
-   */
-  async loadMainnetContracts(addresses: MainnetContractAddresses): Promise<MainnetContracts> {
-    // @ts-ignore
-    return getContracts(mainnetAddressesV1.contracts)
   }
 
   /**

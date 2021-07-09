@@ -7,8 +7,7 @@ export type Env = {
 }
 
 export interface TestCoordinator {
-  applyUpgrade(): Promise<Env>;
-  beforeUpgrade(): Promise<Env>;
+  loadEnvironment(): Promise<Env>;
 }
 
 export type Config = {

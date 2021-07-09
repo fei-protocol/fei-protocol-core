@@ -1,4 +1,4 @@
-const { upgrade } = require('./upgrade');
+const { deploy } = require('./upgrade');
 const { getAddresses } = require('../utils/helpers');
 
 const {
@@ -29,7 +29,7 @@ async function main() {
     timelockAddress
   };
 
-  await upgrade(addresses, true);
+  await deploy(addresses, true);
 }
 
 main()

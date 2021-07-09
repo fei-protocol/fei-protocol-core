@@ -27,7 +27,7 @@ describe('e2e', function () {
       version: version,
     }
     e2eCoord = new TestEndtoEndCoordinator(config);
-    ({ contracts, contractAddresses } = await e2eCoord.applyUpgrade())
+    ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment())
 
     await contracts.uniswapPCVDeposit.deposit()
   })
