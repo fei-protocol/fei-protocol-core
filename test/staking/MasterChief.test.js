@@ -1482,6 +1482,13 @@ describe('MasterChief', () => {
       ).to.be.bignumber.equal(
         (await this.masterChief.poolInfo(1)).lastRewardBlock,
       );
+
+      // ensure that the last reward block isn't 0 for both pools
+      expect(
+        (await this.masterChief.poolInfo(0)).lastRewardBlock,
+      ).to.be.bignumber.gt(
+        new BN('0'),
+      );
     });
 
     it('should be able to get pending sushi and receive multiplier for locking', async function () {
