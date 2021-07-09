@@ -1,27 +1,27 @@
 { 
   "minter": [
-    "bondingCurve",
-    "uniswapPCVDeposit",
-    "uniswapPCVController",
-    "feiRewardsDistributor",
-    "timelock",
-    "pcvDripController"
+    "bondingCurveAddress",
+    "uniswapPCVDepositAddress",
+    "uniswapPCVControllerAddress",
+    "feiRewardsDistributorAddress",
+    "timelockAddress",
+    "pcvDripControllerAddress"
   ],
   "burner": [
-    "ethReserveStabilizer",
-    "uniswapPCVController",
-    "tribeReserveStabilizer"
+    "ethReserveStabilizerAddress",
+    "uniswapPCVControllerAddress",
+    "tribeReserveStabilizerAddress"
   ],
   "governor": [
-    "core",
-    "timelock"
+    "coreAddress",
+    "timelockAddress"
   ],
   "pcvController": [
-    "timelock",
-    "ratioPCVController",
-    "pcvDripController"
+    "timelockAddress",
+    "ratioPCVControllerAddress",
+    "pcvDripControllerAddress"
   ],
   "guardian": [
-    "multisig"
+    "multisigAddress"
   ]
 }
