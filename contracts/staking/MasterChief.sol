@@ -413,7 +413,7 @@ contract MasterChief is CoreRef {
         // batched changes are done at the end of the function so that we don't
         // write to these storage slots multiple times
         aggregatedDeposits.virtualAmount -= virtualLiquidityDelta;
-        aggregatedDeposits.rewardDebt = aggregatedDeposits.rewardDebt - int128(uint128((aggregatedDeposits.virtualAmount * pool.accTribePerShare) / toUint128(ACC_TRIBE_PRECISION)));
+        aggregatedDeposits.rewardDebt = int128(aggregatedDeposits.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
         poolPointer.virtualPoolTotalSupply -= virtualLiquidityDelta;
 
         // Interactions
