@@ -1402,7 +1402,7 @@ describe('MasterChief', () => {
       );
     });
 
-    it('should not be able to emergency withdraw from a forced lock pool', async function () {
+    it('should not be able to emergency withdraw from a forced lock pool when a users tokens are locked', async function () {
       const userAddresses = [userAddress];
 
       expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
@@ -1421,6 +1421,27 @@ describe('MasterChief', () => {
         this.masterChief.emergencyWithdraw(pid, userAddress, 0, { from: userAddress }),
         'tokens locked',
       );
+    });
+
+    it('should be able to emergency withdraw from a forced lock pool when a users tokens are past the unlock block', async function () {
+      const userAddresses = [userAddress];
+
+      expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
+      await testMultipleUsersPooling(
+        this.masterChief,
+        this.LPToken,
+        userAddresses,
+        new BN('100000000000000000000'),
+        100,
+        100,
+        totalStaked,
+        pid,
+      );
+
+      await this.masterChief.emergencyWithdraw(pid, userAddress, 0, { from: userAddress });
+      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).rewardDebt).to.be.bignumber.equal(new BN('0'));
+      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).virtualAmount).to.be.bignumber.equal(new BN('0'));
+      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).rewardDebt).to.be.bignumber.equal(new BN('0'));
     });
   });
 
@@ -1451,6 +1472,16 @@ describe('MasterChief', () => {
       // set allocation points of earlier pool to 0 so that
       // full block rewards are given out to this pool
       await this.masterChief.set(0, 0, ZERO_ADDRESS, false, { from: governorAddress });
+    });
+
+    it('should be able to mass update pools', async function () {
+      await this.masterChief.massUpdatePools([0, 1]);
+      // assert that both pools got updated last block
+      expect(
+        (await this.masterChief.poolInfo(0)).lastRewardBlock,
+      ).to.be.bignumber.equal(
+        (await this.masterChief.poolInfo(1)).lastRewardBlock,
+      );
     });
 
     it('should be able to get pending sushi and receive multiplier for locking', async function () {
@@ -1503,6 +1534,32 @@ describe('MasterChief', () => {
         ),
         'tokens locked',
       );
+    });
+
+    it('should be able to withdraw before locking period is over when governor force unlocks pool', async function () {
+      const userAddresses = [userAddress];
+
+      await testMultipleUsersPooling(
+        this.masterChief,
+        this.LPToken,
+        userAddresses,
+        new BN('100000000000000000000'),
+        3,
+        this.lockLength,
+        totalStaked,
+        pid,
+      );
+
+      await this.masterChief.unlockPool(pid, { from: governorAddress });
+      expect((await this.masterChief.poolInfo(pid)).unlocked).to.be.true;
+
+      await this.masterChief.withdrawFromDeposit(
+        pid, totalStaked, userAddress, 0, { from: userAddress },
+      );
+
+      // ensure lp tokens were refunded and reward debt went negative
+      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN(totalStaked));
+      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).rewardDebt).to.be.bignumber.lt(new BN('-1'));
     });
 
     it('should not be able to emergency withdraw before locking period is over', async function () {

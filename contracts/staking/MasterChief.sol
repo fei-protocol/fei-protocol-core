@@ -389,6 +389,7 @@ contract MasterChief is CoreRef {
         uint128 virtualLiquidityDelta = 0;
 
         // iterate over all deposits this user has.
+        // aggregate the deltas
         for (uint256 i = 0; i < depositInfo[pid][msg.sender].length; i++) {
             DepositInfo storage user = depositInfo[pid][msg.sender][i];
             // if the user has locked the tokens for at least the 
@@ -446,8 +447,8 @@ contract MasterChief is CoreRef {
         UserInfo storage aggregatedDeposits = aggregatedUserDeposits[pid][msg.sender];
 
         // if the user has locked the tokens for at least the 
-        // lockup period or the pool has been unlocked, allow 
-        // user to withdraw their principle
+        // lockup period or the pool has been unlocked by the governor,
+        // allow user to withdraw their principle
         require(user.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
 
         uint128 virtualAmountDelta = uint128( ( amount * user.multiplier ) / SCALE_FACTOR );
@@ -510,6 +511,7 @@ contract MasterChief is CoreRef {
         require(depositInfo[pid][msg.sender].length > index, "invalid index");
 
         PoolInfo memory pool = updatePool(pid);
+        PoolInfo storage poolPointer = poolInfo[pid];
         DepositInfo storage user = depositInfo[pid][msg.sender][index];
         UserInfo storage aggregatedDeposit = aggregatedUserDeposits[pid][msg.sender];
 
@@ -520,7 +522,16 @@ contract MasterChief is CoreRef {
 
         uint256 amount = user.amount;
 
-        aggregatedDeposit.virtualAmount -= uint128((amount * user.multiplier) / SCALE_FACTOR);
+        // update the aggregated deposit virtual amount
+        // update the virtualPoolTotalSupply
+        uint128 virtualLiquidityDelta = uint128((amount * user.multiplier) / SCALE_FACTOR);
+        aggregatedDeposit.virtualAmount -= virtualLiquidityDelta;
+        poolPointer.virtualPoolTotalSupply -= virtualLiquidityDelta;
+
+        //////////////////////////////////////////////////////////////////////////////
+        // ----> if you call emergency withdraw, you are forfeiting your rewards <----
+        //////////////////////////////////////////////////////////////////////////////
+        aggregatedDeposit.rewardDebt = 0; // zero reward debt to avoid weirdness down the line
 
         user.amount = 0;
         user.multiplier = 0;
