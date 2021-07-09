@@ -1,7 +1,7 @@
 const UniswapPCVController = artifacts.require('UniswapPCVController');
 const Core = artifacts.require('Core');
 
-const { getAddresses } = require('../utils/helpers');
+const { getAddresses } = require('../../scripts/utils/helpers');
 
 // The DAO steps for FIP-3, these must be done with Governor access control privileges
 async function main() {

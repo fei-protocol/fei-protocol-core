@@ -1,6 +1,14 @@
 {
-    "proposerAddress" : "",
-    "voterAddress" : "",
-    "proposalNames" : ["upgrade"],
-    "exec" : false
+    "fip_9" : {
+        "deploy" : false,
+        "exec" : false,
+        "proposerAddress" : "",
+        "voterAddress" : ""
+    },
+    "upgrade" : {
+        "deploy" : true,
+        "exec" : false,
+        "proposerAddress" : "",
+        "voterAddress" : ""
+    }
 }

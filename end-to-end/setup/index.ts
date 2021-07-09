@@ -50,17 +50,22 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     // Grant priviledges to deploy address
     await sudo(this.mainnetAddresses, this.config.logging)
 
-    for (let i = 0; i < proposals.proposalNames.length; i++) {
-      existingContracts = await this.applyUpgrade(existingContracts, proposals.proposalNames[i]);
+    const proposalNames = Object.keys(proposals);
+    for (let i = 0; i < proposalNames.length; i++) {
+      existingContracts = await this.applyUpgrade(existingContracts, proposalNames[i], proposals[proposalNames[i]]);
     }
 
     return { contracts: this.afterUpgradeContracts, contractAddresses: this.afterUpgradeAddresses }
   }
 
-  async applyUpgrade(existingContracts: MainnetContracts, proposalName: string) {
-    const { deploy } = await import('../../deploy/' + proposalName);
+  async applyUpgrade(existingContracts: MainnetContracts, proposalName: string, config: object) {
 
-    const deployedUpgradedContracts = await deploy(this.config.deployAddress, this.mainnetAddresses, this.config.logging)
+    let deployedUpgradedContracts = {}
+
+    if (config["deploy"]) {
+      const { deploy } = await import('../../deploy/' + proposalName);
+      deployedUpgradedContracts = await deploy(this.config.deployAddress, this.mainnetAddresses, this.config.logging)
+    }
 
     const contracts: MainnetContracts = {
       ...existingContracts,
@@ -69,10 +74,15 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     this.setLocalTestContracts(contracts)
     this.setLocalTestContractAddresses(contracts)
     
-    const contractAddresses = getContractAddresses(contracts);
+    const contractAddresses = {
+      ...getContractAddresses(contracts),
+      // @ts-ignore
+      ...mainnetAddressesV1.external
+    }
     
-    const { setup, run, teardown } = await import('../../scripts/dao/' + proposalName);
+    const { setup, run, teardown } = await import('../../proposals/dao/' + proposalName);
 
+    // TODO add in contracts as a param to skip the contractAddress adding in DAO mocks
     // setup the DAO proposal
     await setup(contractAddresses, this.mainnetAddresses, this.config.logging);
 

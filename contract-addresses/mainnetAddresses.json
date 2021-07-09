@@ -19,6 +19,7 @@
     "wethAddress": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
     "uniswapRouterAddress": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
     "chainlinkEthUsdOracleAddress": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
-    "chainlinkFeiEthOracleAddress": "0x7F0D2c2838c6AC24443d13e23d99490017bDe370"
+    "chainlinkFeiEthOracleAddress": "0x7F0D2c2838c6AC24443d13e23d99490017bDe370",
+    "zeroAddress": "0x0000000000000000000000000000000000000000"
   }
 }
