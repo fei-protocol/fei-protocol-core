@@ -342,10 +342,7 @@ contract MasterChief is CoreRef {
         user.amount = amount;
 
         uint256 multiplier;
-        // if lock length is not 0, then we will validate that the locklength is correct
-        if (lockLength != 0) {
-            user.unlockBlock = uint64(lockLength + block.number);
-        }
+        user.unlockBlock = uint64(lockLength + block.number);
 
         multiplier = rewardMultipliers[pid][lockLength];
         require(multiplier >= SCALE_FACTOR, "invalid multiplier");
