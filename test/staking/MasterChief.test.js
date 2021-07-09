@@ -1439,9 +1439,10 @@ describe('MasterChief', () => {
       );
 
       await this.masterChief.emergencyWithdraw(pid, userAddress, 0, { from: userAddress });
+      // ensure that the reward debt got zero'd out
+      // virtual amount should go to 0
       expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).rewardDebt).to.be.bignumber.equal(new BN('0'));
       expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).virtualAmount).to.be.bignumber.equal(new BN('0'));
-      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).rewardDebt).to.be.bignumber.equal(new BN('0'));
     });
   });
 

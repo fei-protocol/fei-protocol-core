@@ -368,7 +368,7 @@ contract MasterChief is CoreRef {
         // Interactions
         IRewarder _rewarder = rewarder[pid];
         if (address(_rewarder) != address(0)) {
-            _rewarder.onSushiReward(pid, msg.sender, msg.sender, 0, user.amount);
+            _rewarder.onSushiReward(pid, msg.sender, msg.sender, 0, aggregatedDeposits.virtualAmount);
         }
 
         lpToken[pid].safeTransferFrom(msg.sender, address(this), amount);
@@ -420,7 +420,7 @@ contract MasterChief is CoreRef {
         // Interactions
         IRewarder _rewarder = rewarder[pid];
         if (address(_rewarder) != address(0)) {
-            _rewarder.onSushiReward(pid, msg.sender, to, 0, lockedTotalAmount);
+            _rewarder.onSushiReward(pid, msg.sender, to, 0, aggregatedDeposits.virtualAmount);
         }
 
         lpToken[pid].safeTransfer(to, lockedTotalAmount);
@@ -462,7 +462,7 @@ contract MasterChief is CoreRef {
         // Interactions
         IRewarder _rewarder = rewarder[pid];
         if (address(_rewarder) != address(0)) {
-            _rewarder.onSushiReward(pid, msg.sender, to, 0, user.amount);
+            _rewarder.onSushiReward(pid, msg.sender, to, 0, aggregatedDeposits.virtualAmount);
         }
         
         lpToken[pid].safeTransfer(to, amount);
@@ -494,9 +494,6 @@ contract MasterChief is CoreRef {
 
         IRewarder _rewarder = rewarder[pid];
         if (address(_rewarder) != address(0)) {
-
-            /// question mark here on whether we want to use the amount or the virtual amount
-
             _rewarder.onSushiReward( pid, msg.sender, to, pendingTribe, user.virtualAmount);
         }
 
