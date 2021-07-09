@@ -10,12 +10,16 @@ interface IOracleRef {
 
     event OracleUpdate(address indexed oldOracle, address indexed newOracle);
 
+    event InvertUpdate(bool oldDoInvert, bool newDoInvert);
+
+    event DecimalsNormalizerUpdate(int256 oldDecimalsNormalizer, int256 newDecimalsNormalizer);
+
     event BackupOracleUpdate(address indexed oldBackupOracle, address indexed newBackupOracle);
 
 
     // ----------- State changing API -----------
 
-    function updateOracle() external returns (bool);
+    function updateOracle() external;
 
     // ----------- Governor only state changing API -----------
 
@@ -23,11 +27,19 @@ interface IOracleRef {
 
     function setBackupOracle(address newBackupOracle) external;
 
+    function setDecimalsNormalizer(int256 newDecimalsNormalizer) external;
+
+    function setDoInvert(bool newDoInvert) external;
+
     // ----------- Getters -----------
 
     function oracle() external view returns (IOracle);
 
     function backupOracle() external view returns (IOracle);
+
+    function doInvert() external view returns (bool);
+
+    function decimalsNormalizer() external view returns (int256);
 
     function readOracle() external view returns (Decimal.D256 memory);
 

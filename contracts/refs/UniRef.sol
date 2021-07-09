@@ -26,8 +26,9 @@ abstract contract UniRef is IUniRef, OracleRef {
         address _pair,
         address _oracle,
         address _backupOracle
-    ) OracleRef(_core, _oracle, _backupOracle) {
+    ) OracleRef(_core, _oracle, _backupOracle, 0, false) {
         _setupPair(_pair);
+        _setDecimalsNormalizerFromToken(_token());
     }
 
     /// @notice set the new pair contract

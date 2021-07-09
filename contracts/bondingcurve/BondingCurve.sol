@@ -60,7 +60,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         uint256 _discount,
         uint256 _buffer
     )
-        OracleRef(_core, _oracle, _backupOracle)
+        OracleRef(_core, _oracle, _backupOracle, 0, false)
         PCVSplitter(_pcvDeposits, _ratios)
         Timed(_duration)
         Incentivized(_incentive)
@@ -71,6 +71,10 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         buffer = _buffer;
 
         _initTimed();
+
+        if (address(_token) != address(0)) {
+            _setDecimalsNormalizerFromToken(address(_token));
+        }
     }
 
     /// @notice purchase FEI for underlying tokens

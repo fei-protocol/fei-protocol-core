@@ -7,7 +7,7 @@ import "../refs/OracleRef.sol";
 import "../utils/Timed.sol";
 import "../external/UniswapV2Library.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
@@ -15,7 +15,7 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 /// @title implementation for PCV Swapper that swaps ERC20 tokens on Uniswap
 /// @author eswak
 contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
-    using SafeERC20 for ERC20;
+    using SafeERC20 for IERC20;
     using Decimal for Decimal.D256;
 
     // ----------- Events -----------	
@@ -66,7 +66,9 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     ) OracleRef(
       _core, 
       oracleAddresses._oracle, 
-      oracleAddresses._backupOracle
+      oracleAddresses._backupOracle,
+      int256(uint256(IERC20Metadata(_tokenSpent).decimals())) - int256(uint256(IERC20Metadata(_tokenReceived).decimals())),
+      _invertOraclePrice
     ) Timed(_swapFrequency) Incentivized(_swapIncentiveAmount) {
         pair = _pair;
         WETH = _WETH;
@@ -115,7 +117,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
 
     /// @notice Reads the balance of tokenReceived held in the contract
     function balance() external view override returns(uint256) {
-      return ERC20(tokenReceived).balanceOf(address(this));
+      return IERC20(tokenReceived).balanceOf(address(this));
     }
 
     // =======================================================================
@@ -140,7 +142,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
       address to, 
       uint256 amount
     ) public override onlyPCVController {
-        ERC20(token).safeTransfer(to, amount);
+        IERC20(token).safeTransfer(to, amount);
         emit WithdrawERC20(msg.sender, token, to, amount);
     }
 
@@ -190,11 +192,8 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     function swap() external override afterTime whenNotPaused {
 	    // Reset timer	
       _initTimed();	
-      // Update oracle, if necessary	
-      if (oracle.isOutdated()) {	
-        bool updated = updateOracle();	
-        require(updated, "PCVSwapperUniswap: cannot update outdated oracle.");	
-      }
+      
+      updateOracle();
 
       uint256 amountIn = _getExpectedAmountIn();
       uint256 amountOut = _getExpectedAmountOut(amountIn);
@@ -205,7 +204,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
       require(minimumAcceptableAmountOut <= amountOut, "PCVSwapperUniswap: slippage too high.");
 
       // Perform swap
-      ERC20(tokenSpent).safeTransfer(address(pair), amountIn);
+      IERC20(tokenSpent).safeTransfer(address(pair), amountIn);
       (uint256 amount0Out, uint256 amount1Out) =
           pair.token0() == address(tokenSpent)
               ? (uint256(0), amountOut)
@@ -231,7 +230,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
 
     /// @notice see external function getNextAmountSpent()
     function _getExpectedAmountIn() internal view returns (uint256) {
-      uint256 balance = ERC20(tokenSpent).balanceOf(address(this));
+      uint256 balance = IERC20(tokenSpent).balanceOf(address(this));
       require(balance != 0, "PCVSwapperUniswap: no tokenSpent left.");
       return Math.min(maxSpentPerSwap, balance);
     }
@@ -258,35 +257,9 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     /// @notice see external function getNextAmountReceivedThreshold()
     function _getMinimumAcceptableAmountOut(uint256 amountIn) internal view returns (uint256) {
       Decimal.D256 memory twap = readOracle();
-      if (invertOraclePrice) {
-        twap = invert(twap);
-      }
       Decimal.D256 memory oracleAmountOut = twap.mul(amountIn);
       Decimal.D256 memory maxSlippage = Decimal.ratio(BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, BASIS_POINTS_GRANULARITY);
-      (uint256 decimalNormalizer, bool normalizerDirection) = _getDecimalNormalizer();
-      Decimal.D256 memory oraclePriceMinusSlippage;
-      if (normalizerDirection) {
-        oraclePriceMinusSlippage = maxSlippage.mul(oracleAmountOut).div(decimalNormalizer);
-      } else {
-        oraclePriceMinusSlippage = maxSlippage.mul(oracleAmountOut).mul(decimalNormalizer);
-      }
+      Decimal.D256 memory oraclePriceMinusSlippage = maxSlippage.mul(oracleAmountOut);
       return oraclePriceMinusSlippage.asUint256();
-    }
-
-    /// @notice see external function getDecimalNormalizer()
-    function _getDecimalNormalizer() internal view returns (uint256, bool) {
-      uint8 decimalsTokenSpent = ERC20(tokenSpent).decimals();
-      uint8 decimalsTokenReceived = ERC20(tokenReceived).decimals();
-
-      uint256 n;
-      bool direction;
-      if (decimalsTokenSpent >= decimalsTokenReceived) {
-        direction = true;
-        n = uint256(10) ** uint256(decimalsTokenSpent - decimalsTokenReceived);
-      } else {
-        direction = false;
-        n = uint256(10) ** uint256(decimalsTokenReceived - decimalsTokenSpent);
-      }
-      return (n, direction);
     }
 }

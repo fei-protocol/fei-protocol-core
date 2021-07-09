@@ -17,9 +17,8 @@ contract MockOracle is IOracle {
         _usdPerEth = usdPerEth;
     }
 
-    function update() public override returns (bool) {
+    function update() public override {
         updated = true;
-        return true;
     }
 
     function read() public view override returns (Decimal.D256 memory, bool) {

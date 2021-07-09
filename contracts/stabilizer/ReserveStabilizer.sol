@@ -32,12 +32,22 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
         address _backupOracle,
         IERC20 _token,
         uint256 _usdPerFeiBasisPoints
-    ) OracleRef(_core, _oracle, _backupOracle) {
+    ) OracleRef(
+        _core,
+        _oracle,
+        _backupOracle,
+        0, // default to zero for ETH and TRIBE which both have 18 decimals
+        true // invert the price oracle, as the operation performed here needs to convert FEI into underlying
+    ) {
         require(_usdPerFeiBasisPoints <= BASIS_POINTS_GRANULARITY, "ReserveStabilizer: Exceeds bp granularity");
         usdPerFeiBasisPoints = _usdPerFeiBasisPoints;
         emit UsdPerFeiRateUpdate(0, _usdPerFeiBasisPoints);
 
         token = _token;
+
+        if (address(_token) != address(0)) {
+            _setDecimalsNormalizerFromToken(address(_token));
+        }
     }
 
     /// @notice exchange FEI for tokens from the reserves
@@ -57,7 +67,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
     /// @param amountFeiIn the amount of FEI in
     function getAmountOut(uint256 amountFeiIn) public view override returns(uint256) {
         uint256 adjustedAmountIn = amountFeiIn * usdPerFeiBasisPoints / BASIS_POINTS_GRANULARITY;
-        return invert(readOracle()).mul(adjustedAmountIn).asUint256();
+        return readOracle().mul(adjustedAmountIn).asUint256();
     }
 
     /// @notice withdraw tokens from the reserves

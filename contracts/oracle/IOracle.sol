@@ -12,7 +12,7 @@ interface IOracle {
 
     // ----------- State changing API -----------
 
-    function update() external returns (bool);
+    function update() external;
 
     // ----------- Getters -----------
 

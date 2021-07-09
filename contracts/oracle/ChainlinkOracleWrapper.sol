@@ -36,10 +36,8 @@ contract ChainlinkOracleWrapper is IOracle, CoreRef {
     }
 
     /// @notice updates the oracle price
-    /// @return true if oracle is updated and false if unchanged
-    function update() external view override whenNotPaused returns (bool) {
-        return false;
-    }
+    /// @dev no-op, Chainlink is updated automatically
+    function update() external view override whenNotPaused {}
 
     /// @notice determine if read value is stale
     /// @return true if read value is stale

@@ -28,9 +28,9 @@ contract CompositeOracle is IOracle, CoreRef {
     }
 
     /// @notice updates the oracle price
-    /// @return true if oracle is updated and false if unchanged
-    function update() external override whenNotPaused returns (bool) {
-        return oracleA.update() && oracleB.update();
+    function update() external override whenNotPaused {
+        oracleA.update();
+        oracleB.update();
     }
 
     /// @notice determine if read value is stale
