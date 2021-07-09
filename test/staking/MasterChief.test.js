@@ -1109,6 +1109,51 @@ describe('MasterChief', function () {
           pid
       );
     });
+
+    it('masterchief should revert when adding a new rewards pool without any multplier data', async function () {
+      await expectRevert(
+        this.masterChief.add(
+            allocationPoints,
+            this.LPToken.address,
+            ZERO_ADDRESS,
+            [],
+            { from: governorAddress }
+        ),
+        "must specify rewards"
+      );
+    });
+
+    it('masterchief should revert when adding a new rewards pool with an invalid 0 lock length multiplier', async function () {
+      await expectRevert(
+        this.masterChief.add(
+            allocationPoints,
+            this.LPToken.address,
+            ZERO_ADDRESS,
+            [{
+                lockLength: 0,
+                rewardMultiplier: 0
+            }],
+            { from: governorAddress }
+        ),
+        "invalid multiplier for 0 lock length"
+      );
+    });
+
+    it('masterchief should revert when adding a new rewards pool with a multiplier below scale factor', async function () {
+      await expectRevert(
+        this.masterChief.add(
+            allocationPoints,
+            this.LPToken.address,
+            ZERO_ADDRESS,
+            [{
+                lockLength: 10,
+                rewardMultiplier: 0
+            }],
+            { from: governorAddress }
+        ),
+        "invalid multiplier, must be above scale factor"
+      );
+    });
   });
 
   describe('Test Pool with Force Lockup', () => {
@@ -1184,27 +1229,6 @@ describe('MasterChief', function () {
       );
     });
 
-    it('should not be able to withdraw from a forced lock pool', async function () {
-      const userAddresses = [userAddress];
-
-      expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
-      await testMultipleUsersPooling(
-        this.masterChief,
-        this.LPToken,
-        userAddresses,
-        new BN('100000000000000000000'),
-        5,
-        100,
-        totalStaked,
-        pid
-      );
-
-      await expectRevert(
-        this.masterChief.withdrawFromDeposit(pid, totalStaked, userAddress, 0, { from: userAddress }),
-        'tokens locked',
-      );
-    });
-
     it('should not be able to emergency withdraw from a forced lock pool', async function () {
       const userAddresses = [userAddress];
 
@@ -1267,6 +1291,21 @@ describe('MasterChief', function () {
           this.lockLength,
           totalStaked,
           pid
+      );
+    });
+
+    it('should not be able to deposit with an unsupported locklength', async function () {
+      await this.LPToken.approve(this.masterChief.address, totalStaked, { from: userAddress });
+      await expectRevert(
+        this.masterChief.deposit(pid, totalStaked, 100000, { from: userAddress }),
+        "invalid multiplier"
+      );
+    });
+
+    it('should not be able to deposit without LPToken approval', async function () {
+      await expectRevert(
+        this.masterChief.deposit(pid, totalStaked, 100, { from: userAddress }),
+        "transfer amount exceeds allowance"
       );
     });
 
@@ -1355,7 +1394,35 @@ describe('MasterChief', function () {
       // assert that virtual amount and reward debt updated correctly
       expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).virtualAmount).to.be.bignumber.equal(new BN('0'));
       expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).rewardDebt).to.be.bignumber.equal(new BN('0'));
-      // asser that the virtual total supply is 0
+      // assert that the virtual total supply is 0
+      expect((await this.masterChief.poolInfo(pid)).virtualPoolTotalSupply).to.be.bignumber.equal(new BN('0'));
+    });
+
+    it('should be able to withdraw principle after locking period is over by calling withdraw and then harvest', async function () {
+      const userAddresses = [ userAddress ];
+
+      // we should only be receiving 1e20 tribe per block
+      await testMultipleUsersPooling(
+        this.masterChief,
+        this.LPToken,
+        userAddresses,
+        new BN('100000000000000000000'),
+        this.lockLength,
+        this.lockLength,
+        totalStaked,
+        pid
+      );
+
+      const pendingTribe = await this.masterChief.allPendingRewards(pid, userAddress);
+      await this.masterChief.withdrawFromDeposit(pid, totalStaked, userAddress, 0, { from: userAddress });
+      await this.masterChief.harvest(pid, userAddress, { from: userAddress });
+
+      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN(totalStaked));
+      expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
+      // assert that virtual amount and reward debt updated correctly on the withdrawFromDeposit call
+      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).virtualAmount).to.be.bignumber.equal(new BN('0'));
+      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).rewardDebt).to.be.bignumber.equal(new BN('0'));
+      // assert that the virtual total supply is 0
       expect((await this.masterChief.poolInfo(pid)).virtualPoolTotalSupply).to.be.bignumber.equal(new BN('0'));
     });
   });

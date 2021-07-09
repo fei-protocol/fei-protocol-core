@@ -155,30 +155,54 @@ contract MasterChief is CoreRef {
         return depositInfo[pid][user].length;
     }
 
-    /// @notice borrowed from boring math, translated up to solidity V8
-    function to64(uint256 a) internal pure returns (uint64 c) {
-        require(a <= type(uint64).max, "BoringMath: uint64 Overflow");
-        c = uint64(a);
+    /**
+     * @dev Returns the downcasted uint64 from uint256, reverting on
+     * overflow (when the input is greater than largest uint64).
+     *
+     * Counterpart to Solidity's `uint64` operator.
+     *
+     * Requirements:
+     *
+     * - input must fit into 64 bits
+     */
+    function toUint64(uint256 value) internal pure returns (uint64) {
+        require(value <= type(uint64).max, "SafeCast: value doesn't fit in 64 bits");
+        return uint64(value);
     }
 
-    function to128(uint256 a) internal pure returns (uint128 c) {
-        require(a <= type(uint128).max, "BoringMath: uint128 Overflow");
-        c = uint128(a);
+    /**
+     * @dev Returns the downcasted uint128 from uint256, reverting on
+     * overflow (when the input is greater than largest uint128).
+     *
+     * Counterpart to Solidity's `uint128` operator.
+     *
+     * Requirements:
+     *
+     * - input must fit into 128 bits
+     */
+    function toUint128(uint256 value) internal pure returns (uint128) {
+        require(value <= type(uint128).max, "SafeCast: value doesn't fit in 128 bits");
+        return uint128(value);
     }
 
-    function toSigned128(uint256 a) internal pure returns (int128 c) {
-        require(int256(a) <= type(int128).max, "BoringMath: int128 Overflow");
-        uint128 b = uint128(a);
-        c = int128(b);
+    /**
+     * @dev Returns the downcasted int128 from uint256, reverting on
+     * overflow (when the input is greater than largest int128).
+     *
+     * Counterpart to Solidity's `int128` operator.
+     *
+     * Requirements:
+     *
+     * - input must fit into 128 bits
+     */
+    function toSigned128(uint256 a) internal pure returns (int128) {
+        require(int256(a) <= type(int128).max, "SafeCast: value doesn't fit in 128 bits");
+        return int128(uint128(a));
     }
 
     function signed128ToUint256(int128 a) internal pure returns (uint256 c) {
         int256 b = int256(a);
         c = uint256(b);
-    }
-
-    function unsigned128ToUint256(uint128 a) internal pure returns (uint256 c) {
-        c = uint256(a);
     }
 
     /// @notice Add a new LP to the pool. Can only be called by the owner.
@@ -204,12 +228,10 @@ contract MasterChief is CoreRef {
         // loop over all of the arrays of lock data and add them to the rewardMultipliers mapping
         for (uint256 i = 0; i < rewardData.length; i++) {
             // if locklength is 0 and multiplier is not equal to scale factor, revert
-            require(
-                (rewardData[i].lockLength == 0) ? rewardData[i].rewardMultiplier == SCALE_FACTOR : true,
-                "invalid lock length"
-            );
-
-            require(rewardData[i].rewardMultiplier >= SCALE_FACTOR, "invalid multiplier");
+            if (rewardData[i].lockLength == 0) {
+                require(rewardData[i].rewardMultiplier == SCALE_FACTOR, "invalid multiplier for 0 lock length");
+            }
+            require(rewardData[i].rewardMultiplier >= SCALE_FACTOR, "invalid multiplier, must be above scale factor");
 
             rewardMultipliers[pid][rewardData[i].lockLength] = rewardData[i].rewardMultiplier;
             emit LogPoolMultiplier(
@@ -220,9 +242,9 @@ contract MasterChief is CoreRef {
         }
 
         poolInfo.push(PoolInfo({
-            allocPoint: to64(allocPoint),
+            allocPoint: toUint64(allocPoint),
             virtualPoolTotalSupply: 0, // virtual total supply starts at 0 as there is 0 initial supply
-            lastRewardBlock: to64(lastRewardBlock),
+            lastRewardBlock: toUint64(lastRewardBlock),
             accTribePerShare: 0,
             unlocked: false
         }));
@@ -236,7 +258,7 @@ contract MasterChief is CoreRef {
     /// @param overwrite True if _rewarder should be `set`. Otherwise `_rewarder` is ignored.
     function set(uint256 _pid, uint128 _allocPoint, IRewarder _rewarder, bool overwrite) public onlyGovernor {
         totalAllocPoint = (totalAllocPoint - poolInfo[_pid].allocPoint) + _allocPoint;
-        poolInfo[_pid].allocPoint = to64(_allocPoint);
+        poolInfo[_pid].allocPoint = toUint64(_allocPoint);
 
         if (overwrite) {
             rewarder[_pid] = _rewarder;
@@ -297,7 +319,7 @@ contract MasterChief is CoreRef {
                 uint256 tribeReward = (blocks * tribePerBlock() * pool.allocPoint) / totalAllocPoint;
                 pool.accTribePerShare = uint128(pool.accTribePerShare + ((tribeReward * ACC_TRIBE_PRECISION) / virtualSupply));
             }
-            pool.lastRewardBlock = to64(block.number);
+            pool.lastRewardBlock = toUint64(block.number);
             poolInfo[pid] = pool;
             emit LogUpdatePool(pid, pool.lastRewardBlock, virtualSupply, pool.accTribePerShare);
         }
@@ -394,7 +416,7 @@ contract MasterChief is CoreRef {
         // batched changes are done at the end of the function so that we don't
         // write to these storage slots multiple times
         aggregatedDeposits.virtualAmount -= virtualLiquidityDelta;
-        aggregatedDeposits.rewardDebt = aggregatedDeposits.rewardDebt - int128(uint128((aggregatedDeposits.virtualAmount * pool.accTribePerShare) / to128(ACC_TRIBE_PRECISION)));
+        aggregatedDeposits.rewardDebt = aggregatedDeposits.rewardDebt - int128(uint128((aggregatedDeposits.virtualAmount * pool.accTribePerShare) / toUint128(ACC_TRIBE_PRECISION)));
         poolPointer.virtualPoolTotalSupply -= virtualLiquidityDelta;
 
         // Interactions
