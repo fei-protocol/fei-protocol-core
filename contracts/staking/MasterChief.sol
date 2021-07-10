@@ -230,8 +230,10 @@ contract MasterChief is CoreRef, ReentrancyGuard {
             // if locklength is 0 and multiplier is not equal to scale factor, revert
             if (rewardData[i].lockLength == 0) {
                 require(rewardData[i].rewardMultiplier == SCALE_FACTOR, "invalid multiplier for 0 lock length");
+            } else {
+                // else, assert that multplier is greater than or equal to scale factor
+                require(rewardData[i].rewardMultiplier >= SCALE_FACTOR, "invalid multiplier, must be above scale factor");
             }
-            require(rewardData[i].rewardMultiplier >= SCALE_FACTOR, "invalid multiplier, must be above scale factor");
 
             rewardMultipliers[pid][rewardData[i].lockLength] = rewardData[i].rewardMultiplier;
             emit LogPoolMultiplier(
