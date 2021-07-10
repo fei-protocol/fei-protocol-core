@@ -6,6 +6,7 @@ import "./../refs/CoreRef.sol";
 import "./IRewardsDistributor.sol";
 import "./IRewarder.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /// @notice migration functionality has been removed as this is only going to be used to distribute staking rewards
 
@@ -15,7 +16,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 /// All legacy code that relied on MasterChef V1 has been removed so that this contract will pay out staking rewards in tribe.
 /// The assumption this code makes is that this MasterChief contract will be funded before going live and offering staking rewards.
 /// This contract will not have the ability to mint tribe.
-contract MasterChief is CoreRef {
+contract MasterChief is CoreRef, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     /// @notice Info of each users's reward debt and virtual amount
@@ -67,7 +68,7 @@ contract MasterChief is CoreRef {
     /// @notice Address of each `IRewarder` contract in MCV2.
     IRewarder[] public rewarder;
     
-    mapping (uint256 => mapping(address => UserInfo)) public aggregatedUserDeposits;
+    mapping (uint256 => mapping(address => UserInfo)) public userInfo;
     /// @notice Info of each user that stakes LP tokens.
     mapping (uint256 => mapping (address => DepositInfo[])) public depositInfo;
     /// @dev Total allocation points. Must be the sum of all allocation points in all pools.
@@ -269,7 +270,7 @@ contract MasterChief is CoreRef {
 
     function _getPendingRewards(uint256 _pid, address _user) private view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
-        UserInfo storage aggregatedDeposits = aggregatedUserDeposits[_pid][_user];
+        UserInfo storage user = userInfo[_pid][_user];
 
         uint256 accTribePerShare = pool.accTribePerShare;
 
@@ -281,7 +282,7 @@ contract MasterChief is CoreRef {
 
         // use the virtual amount to calculate the users share of the pool and their pending rewards
         return signed128ToUint256(
-            (toSigned128((aggregatedDeposits.virtualAmount) * accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION)) - int128(aggregatedDeposits.rewardDebt)
+            (toSigned128((user.virtualAmount) * accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION)) - int128(user.rewardDebt)
         );
     }
 
@@ -309,9 +310,8 @@ contract MasterChief is CoreRef {
 
     /// @notice Update reward variables of the given pool.
     /// @param pid The index of the pool. See `poolInfo`.
-    /// @return pool Returns the pool that was updated.
-    function updatePool(uint256 pid) public returns (PoolInfo memory pool) {
-        pool = poolInfo[pid];
+    function updatePool(uint256 pid) public {
+        PoolInfo storage pool = poolInfo[pid];
         if (block.number > pool.lastRewardBlock) {
             uint256 virtualSupply = pool.virtualPoolTotalSupply;
             if (virtualSupply > 0) {
@@ -320,7 +320,6 @@ contract MasterChief is CoreRef {
                 pool.accTribePerShare = uint128(pool.accTribePerShare + ((tribeReward * ACC_TRIBE_PRECISION) / virtualSupply));
             }
             pool.lastRewardBlock = toUint64(block.number);
-            poolInfo[pid] = pool;
             emit LogUpdatePool(pid, pool.lastRewardBlock, virtualSupply, pool.accTribePerShare);
         }
     }
@@ -333,9 +332,9 @@ contract MasterChief is CoreRef {
     /// a user must pass a valid 
     /// @dev you can only deposit on a single deposit id once.
     function deposit(uint256 pid, uint128 amount, uint64 lockLength) public {
-        PoolInfo memory pool = updatePool(pid);
+        updatePool(pid);
         PoolInfo storage poolPointer = poolInfo[pid];
-        UserInfo storage aggregatedDeposits = aggregatedUserDeposits[pid][msg.sender];
+        UserInfo storage userPoolData = userInfo[pid][msg.sender];
         DepositInfo memory user;
 
         // Effects
@@ -354,24 +353,24 @@ contract MasterChief is CoreRef {
         // virtual amount is calculated by taking the users total deposited balance and multiplying
         // it by the multiplier then adding it to the aggregated virtual amount
         uint128 virtualAmountDelta = uint128((amount * multiplier) / SCALE_FACTOR);
-        aggregatedDeposits.virtualAmount += virtualAmountDelta;
+        userPoolData.virtualAmount += virtualAmountDelta;
 
         // pool virtual total supply needs to increase here
         poolPointer.virtualPoolTotalSupply += virtualAmountDelta;
 
         // update reward debt after virtual amount is set
-        aggregatedDeposits.rewardDebt += int128(aggregatedDeposits.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
+        userPoolData.rewardDebt += int128(userPoolData.virtualAmount * poolPointer.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
 
         depositInfo[pid][msg.sender].push(user);
         uint256 depositID = depositInfo[pid][msg.sender].length - 1;
 
+        lpToken[pid].safeTransferFrom(msg.sender, address(this), amount);
+
         // Interactions
         IRewarder _rewarder = rewarder[pid];
         if (address(_rewarder) != address(0)) {
-            _rewarder.onSushiReward(pid, msg.sender, msg.sender, 0, aggregatedDeposits.virtualAmount);
+            _rewarder.onSushiReward(pid, msg.sender, msg.sender, 0, userPoolData.virtualAmount);
         }
-
-        lpToken[pid].safeTransferFrom(msg.sender, address(this), amount);
 
         emit Deposit(msg.sender, pid, amount, depositID);
     }
@@ -379,55 +378,72 @@ contract MasterChief is CoreRef {
     /// @notice Withdraw LP tokens from MCV2.
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param to Receiver of the LP tokens.
-    function withdrawAllAndHarvest(uint256 pid, address to) external {
-        PoolInfo memory pool = updatePool(pid);
-        PoolInfo storage poolPointer = poolInfo[pid];
-        UserInfo storage aggregatedDeposits = aggregatedUserDeposits[pid][msg.sender];
+    function withdrawAllAndHarvest(uint256 pid, address to) external nonReentrant {
+        updatePool(pid);
+        PoolInfo storage pool = poolInfo[pid];
+        UserInfo storage user = userInfo[pid][msg.sender];
 
-        uint128 lockedTotalAmount = 0;
-        uint256 rewardTotalAmount = _getPendingRewards(pid, msg.sender);
+        // gather and pay out users rewards
+        harvest(pid, msg.sender);
+        uint128 unlockedTotalAmount = 0;
         uint128 virtualLiquidityDelta = 0;
 
         // iterate over all deposits this user has.
         // aggregate the deltas
+        uint64 processedDeposits = 0;
         for (uint256 i = 0; i < depositInfo[pid][msg.sender].length; i++) {
-            DepositInfo storage user = depositInfo[pid][msg.sender][i];
+            // TODO change variable name
+            DepositInfo storage poolDeposit = depositInfo[pid][msg.sender][i];
             // if the user has locked the tokens for at least the 
             // lockup period or the pool has been unlocked, allow 
             // user to withdraw their principle, otherwise skip this action
-            if (user.unlockBlock > block.number && pool.unlocked == false) {
+            if (poolDeposit.unlockBlock > block.number && pool.unlocked == false) {
                 continue;
             }
+            // if we get past continue, it means that we are going to process this deposit
+            processedDeposits++;
 
-            // gather the virtual amount delta
-            uint128 delta = uint128( (user.amount * user.multiplier) / SCALE_FACTOR );
-            lockedTotalAmount += user.amount;
-            virtualLiquidityDelta += delta;
+            // gather the virtual and regular amount delta
+            unlockedTotalAmount += poolDeposit.amount;
+            virtualLiquidityDelta += uint128( (poolDeposit.amount * poolDeposit.multiplier) / SCALE_FACTOR );
 
             // zero out the user object as their amount will be withdrawn and all pending tribe will be paid out
-            user.unlockBlock = 0;
-            user.multiplier = 0;
-            user.amount = 0;
+            poolDeposit.unlockBlock = 0;
+            poolDeposit.multiplier = 0;
+            poolDeposit.amount = 0;
         }
 
         // Effects
-        // batched changes are done at the end of the function so that we don't
-        // write to these storage slots multiple times
-        aggregatedDeposits.virtualAmount -= virtualLiquidityDelta;
-        aggregatedDeposits.rewardDebt = int128(aggregatedDeposits.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
-        poolPointer.virtualPoolTotalSupply -= virtualLiquidityDelta;
+        if (processedDeposits == depositInfo[pid][msg.sender].length) {
+            // remove the array of deposits and userInfo struct if we were able to withdraw from all deposits
+            // if we removed all liquidity, then we can just delete all the data we stored on this user
+            // in both depositinfo and userinfo, which means that their reward debt, and virtual liquidity
+            // are all zero'd.
+            delete depositInfo[pid][msg.sender];
+            delete userInfo[pid][msg.sender];
+        } else {
+            // if we didn't end up being able to withdraw all of the liquidity from all of our deposits
+            // then we will just update for the amounts that we did remove
+            // batched changes are done at the end of the function so that we don't
+            // write to these storage slots multiple times
+            user.virtualAmount -= virtualLiquidityDelta;
+            // set the reward debt to the new virtual amount
+            user.rewardDebt = int128(user.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
+        }
+
+        // regardless of whether or not we removed all of this users liquidity from the pool, we will need to
+        // subtract the virtual liquidity delta from the pool virtual total supply
+        pool.virtualPoolTotalSupply -= virtualLiquidityDelta;
 
         // Interactions
         IRewarder _rewarder = rewarder[pid];
         if (address(_rewarder) != address(0)) {
-            _rewarder.onSushiReward(pid, msg.sender, to, 0, aggregatedDeposits.virtualAmount);
+            _rewarder.onSushiReward(pid, msg.sender, to, 0, user.virtualAmount);
         }
 
-        lpToken[pid].safeTransfer(to, lockedTotalAmount);
-        TRIBE.safeTransfer(to, rewardTotalAmount);
+        lpToken[pid].safeTransfer(to, unlockedTotalAmount);
 
-        emit Harvest(msg.sender, pid, rewardTotalAmount);
-        emit Withdraw(msg.sender, pid, lockedTotalAmount, to);
+        emit Withdraw(msg.sender, pid, unlockedTotalAmount, to);
     }
 
     /// @notice Withdraw LP tokens from MCV2.
@@ -441,30 +457,30 @@ contract MasterChief is CoreRef {
         uint256 index
     ) public {
         require(depositInfo[pid][msg.sender].length > index, "invalid index");
-        PoolInfo memory pool = updatePool(pid);
-        PoolInfo storage poolPointer = poolInfo[pid];
-        DepositInfo storage user = depositInfo[pid][msg.sender][index];
-        UserInfo storage aggregatedDeposits = aggregatedUserDeposits[pid][msg.sender];
+        updatePool(pid);
+        PoolInfo storage pool = poolInfo[pid];
+        DepositInfo storage poolDeposit = depositInfo[pid][msg.sender][index];
+        UserInfo storage user = userInfo[pid][msg.sender];
 
         // if the user has locked the tokens for at least the 
         // lockup period or the pool has been unlocked by the governor,
         // allow user to withdraw their principle
-        require(user.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
+        require(poolDeposit.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
 
-        uint128 virtualAmountDelta = uint128( ( amount * user.multiplier ) / SCALE_FACTOR );
+        uint128 virtualAmountDelta = uint128( ( amount * poolDeposit.multiplier ) / SCALE_FACTOR );
 
         // Effects
-        user.amount -= amount;
-        aggregatedDeposits.rewardDebt = aggregatedDeposits.rewardDebt - toSigned128(aggregatedDeposits.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
-        aggregatedDeposits.virtualAmount -= virtualAmountDelta;
-        poolPointer.virtualPoolTotalSupply -= virtualAmountDelta;
+        poolDeposit.amount -= amount;
+        user.rewardDebt = user.rewardDebt - toSigned128(user.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
+        user.virtualAmount -= virtualAmountDelta;
+        pool.virtualPoolTotalSupply -= virtualAmountDelta;
 
         // Interactions
         IRewarder _rewarder = rewarder[pid];
         if (address(_rewarder) != address(0)) {
-            _rewarder.onSushiReward(pid, msg.sender, to, 0, aggregatedDeposits.virtualAmount);
+            _rewarder.onSushiReward(pid, msg.sender, to, 0, user.virtualAmount);
         }
-        
+
         lpToken[pid].safeTransfer(to, amount);
 
         emit Withdraw(msg.sender, pid, amount, to);
@@ -474,8 +490,9 @@ contract MasterChief is CoreRef {
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param to Receiver of TRIBE rewards.
     function harvest(uint256 pid, address to) public {
-        PoolInfo memory pool = updatePool(pid);
-        UserInfo storage user = aggregatedUserDeposits[pid][msg.sender];
+        updatePool(pid);
+        PoolInfo storage pool = poolInfo[pid];
+        UserInfo storage user = userInfo[pid][msg.sender];
 
         // assumption here is that we will never go over 2^128 -1
         int256 accumulatedTribe = int256( uint256(user.virtualAmount) * uint256(pool.accTribePerShare) ) / int256(ACC_TRIBE_PRECISION);
@@ -504,35 +521,40 @@ contract MasterChief is CoreRef {
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param to Receiver of the LP tokens.
     /// @param index array index of the deposit to withdraw
-    function emergencyWithdraw(uint256 pid, address to, uint256 index) public {
-        require(depositInfo[pid][msg.sender].length > index, "invalid index");
 
-        PoolInfo memory pool = updatePool(pid);
-        PoolInfo storage poolPointer = poolInfo[pid];
-        DepositInfo storage user = depositInfo[pid][msg.sender][index];
-        UserInfo storage aggregatedDeposit = aggregatedUserDeposits[pid][msg.sender];
+    /// make this more like withdrawall where it withdraws all user deposits
+    function emergencyWithdraw(uint256 pid, address to) public {
+        updatePool(pid);
+        PoolInfo memory pool = poolInfo[pid];
 
-        // if the user has locked the tokens for at least the 
-        // lockup period or the pool has been unlocked, allow 
-        // user to withdraw their principle
-        require(user.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
+        uint128 totalUnlocked = 0;
+        uint128 virtualLiquidityDelta = 0;
+        /// TODO loop over the deposits and withdraw all of them
+        for (uint256 i = 0; i < depositInfo[pid][msg.sender].length; i++) {
+            DepositInfo storage poolDeposit = depositInfo[pid][msg.sender][i];
 
-        uint256 amount = user.amount;
+            // if the user has locked the tokens for at least the 
+            // lockup period or the pool has been unlocked, allow 
+            // user to withdraw their principle
+            require(poolDeposit.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
 
-        // update the aggregated deposit virtual amount
-        // update the virtualPoolTotalSupply
-        uint128 virtualLiquidityDelta = uint128((amount * user.multiplier) / SCALE_FACTOR);
-        aggregatedDeposit.virtualAmount -= virtualLiquidityDelta;
-        poolPointer.virtualPoolTotalSupply -= virtualLiquidityDelta;
+            totalUnlocked += poolDeposit.amount;
+
+            // update the aggregated deposit virtual amount
+            // update the virtualPoolTotalSupply
+            virtualLiquidityDelta += uint128((poolDeposit.amount * poolDeposit.multiplier) / SCALE_FACTOR);
+        }
+
+        // subtract virtualLiquidity Delta from the virtual total supply of this pool
+        pool.virtualPoolTotalSupply -= virtualLiquidityDelta;
 
         //////////////////////////////////////////////////////////////////////////////
         // ----> if you call emergency withdraw, you are forfeiting your rewards <----
         //////////////////////////////////////////////////////////////////////////////
-        aggregatedDeposit.rewardDebt = 0; // zero reward debt to avoid weirdness down the line
 
-        user.amount = 0;
-        user.multiplier = 0;
-        user.unlockBlock = 0;
+        // remove the array of deposits and userInfo struct
+        delete depositInfo[pid][msg.sender];
+        delete userInfo[pid][msg.sender];
 
         IRewarder _rewarder = rewarder[pid];
         if (address(_rewarder) != address(0)) {
@@ -540,7 +562,7 @@ contract MasterChief is CoreRef {
         }
 
         // Note: transfer can fail or succeed if `amount` is zero.
-        lpToken[pid].safeTransfer(to, amount);
-        emit EmergencyWithdraw(msg.sender, pid, amount, to);
+        lpToken[pid].safeTransfer(to, totalUnlocked);
+        emit EmergencyWithdraw(msg.sender, pid, totalUnlocked, to);
     }
 }

@@ -1052,7 +1052,7 @@ describe('MasterChief', () => {
 
         // assert that reward debt went negative after we withdrew
         // all of our principle without harvesting
-        expect((await this.masterChief.aggregatedUserDeposits(pid, address)).rewardDebt).to.be.bignumber.lt(new BN('-1'));
+        expect((await this.masterChief.userInfo(pid, address)).rewardDebt).to.be.bignumber.lt(new BN('-1'));
 
         const pendingTribe = await this.masterChief.allPendingRewards(pid, address);
         expect(pendingTribe).to.be.bignumber.gt(pendingTribeBeforeHarvest);
@@ -1418,7 +1418,7 @@ describe('MasterChief', () => {
       );
 
       await expectRevert(
-        this.masterChief.emergencyWithdraw(pid, userAddress, 0, { from: userAddress }),
+        this.masterChief.emergencyWithdraw(pid, userAddress, { from: userAddress }),
         'tokens locked',
       );
     });
@@ -1438,11 +1438,14 @@ describe('MasterChief', () => {
         pid,
       );
 
-      await this.masterChief.emergencyWithdraw(pid, userAddress, 0, { from: userAddress });
+      expect(await this.masterChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('1'));
+      await this.masterChief.emergencyWithdraw(pid, userAddress, { from: userAddress });
       // ensure that the reward debt got zero'd out
       // virtual amount should go to 0
-      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).rewardDebt).to.be.bignumber.equal(new BN('0'));
-      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).virtualAmount).to.be.bignumber.equal(new BN('0'));
+      expect((await this.masterChief.userInfo(pid, userAddress)).rewardDebt).to.be.bignumber.equal(new BN('0'));
+      expect((await this.masterChief.userInfo(pid, userAddress)).virtualAmount).to.be.bignumber.equal(new BN('0'));
+      // ensure that the open user deposits got zero'd out and array is 0 length
+      expect(await this.masterChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('0'));
     });
   });
 
@@ -1567,7 +1570,7 @@ describe('MasterChief', () => {
 
       // ensure lp tokens were refunded and reward debt went negative
       expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN(totalStaked));
-      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).rewardDebt).to.be.bignumber.lt(new BN('-1'));
+      expect((await this.masterChief.userInfo(pid, userAddress)).rewardDebt).to.be.bignumber.lt(new BN('-1'));
     });
 
     it('should not be able to emergency withdraw before locking period is over', async function () {
@@ -1586,7 +1589,7 @@ describe('MasterChief', () => {
       );
 
       await expectRevert(
-        this.masterChief.emergencyWithdraw(pid, userAddress, 0, { from: userAddress }),
+        this.masterChief.emergencyWithdraw(pid, userAddress, { from: userAddress }),
         'tokens locked',
       );
     });
@@ -1632,8 +1635,8 @@ describe('MasterChief', () => {
       expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN(totalStaked));
       expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
       // assert that virtual amount and reward debt updated correctly
-      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).virtualAmount).to.be.bignumber.equal(new BN('0'));
-      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).rewardDebt).to.be.bignumber.equal(new BN('0'));
+      expect((await this.masterChief.userInfo(pid, userAddress)).virtualAmount).to.be.bignumber.equal(new BN('0'));
+      expect((await this.masterChief.userInfo(pid, userAddress)).rewardDebt).to.be.bignumber.equal(new BN('0'));
       // assert that the virtual total supply is 0
       expect((await this.masterChief.poolInfo(pid)).virtualPoolTotalSupply).to.be.bignumber.equal(new BN('0'));
     });
@@ -1660,14 +1663,14 @@ describe('MasterChief', () => {
       expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN(totalStaked));
 
       // expect that reward debt goes negative when we withdraw and don't harvest
-      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).rewardDebt).to.be.bignumber.lt(new BN('-1'));
+      expect((await this.masterChief.userInfo(pid, userAddress)).rewardDebt).to.be.bignumber.lt(new BN('-1'));
 
       await this.masterChief.withdrawAllAndHarvest(pid, userAddress, { from: userAddress });
       expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
 
       // assert that virtual amount and reward debt updated correctly
-      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).virtualAmount).to.be.bignumber.equal(new BN('0'));
-      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).rewardDebt).to.be.bignumber.equal(new BN('0'));
+      expect((await this.masterChief.userInfo(pid, userAddress)).virtualAmount).to.be.bignumber.equal(new BN('0'));
+      expect((await this.masterChief.userInfo(pid, userAddress)).rewardDebt).to.be.bignumber.equal(new BN('0'));
       // assert that the virtual total supply is 0
       expect((await this.masterChief.poolInfo(pid)).virtualPoolTotalSupply).to.be.bignumber.equal(new BN('0'));
     });
@@ -1697,8 +1700,8 @@ describe('MasterChief', () => {
       expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
       // assert that virtual amount and reward debt updated
       // correctly on the withdrawFromDeposit call
-      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).virtualAmount).to.be.bignumber.equal(new BN('0'));
-      expect((await this.masterChief.aggregatedUserDeposits(pid, userAddress)).rewardDebt).to.be.bignumber.equal(new BN('0'));
+      expect((await this.masterChief.userInfo(pid, userAddress)).virtualAmount).to.be.bignumber.equal(new BN('0'));
+      expect((await this.masterChief.userInfo(pid, userAddress)).rewardDebt).to.be.bignumber.equal(new BN('0'));
       // assert that the virtual total supply is 0
       expect((await this.masterChief.poolInfo(pid)).virtualPoolTotalSupply).to.be.bignumber.equal(new BN('0'));
     });
