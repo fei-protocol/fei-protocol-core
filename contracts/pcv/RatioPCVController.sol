@@ -10,19 +10,6 @@ contract RatioPCVController is CoreRef {
     
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
-    event Withdraw(
-        address indexed pcvDeposit, 
-        address indexed to, 
-        uint256 amount
-    );
-
-    event WithdrawERC20(
-        address indexed pcvDeposit, 
-        address indexed token, 
-        address indexed to, 
-        uint256 amount
-    );
-
     /// @notice PCV controller constructor
     /// @param _core Fei Core for reference
     constructor(
@@ -41,7 +28,6 @@ contract RatioPCVController is CoreRef {
         require(amount != 0, "RatioPCVController: no value to withdraw");
 
         pcvDeposit.withdraw(to, amount);
-        emit Withdraw(address(pcvDeposit), to, amount);
     }
 
     /// @notice withdraw a specific ERC20 token from the input PCV deposit in basis points terms
@@ -56,6 +42,5 @@ contract RatioPCVController is CoreRef {
         require(amount != 0, "RatioPCVController: no value to withdraw");
 
         pcvDeposit.withdrawERC20(token, to, amount);
-        emit WithdrawERC20(address(pcvDeposit), token, to, amount);
     }
 }

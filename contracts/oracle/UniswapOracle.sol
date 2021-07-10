@@ -116,7 +116,7 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
     /// @notice set a new duration for the TWAP window
     function setDuration(uint256 _duration) external override onlyGovernor {
         duration = _duration;
-        emit DurationUpdate(_duration);
+        emit TWAPDurationUpdate(_duration);
     }
 
     function _init() internal {

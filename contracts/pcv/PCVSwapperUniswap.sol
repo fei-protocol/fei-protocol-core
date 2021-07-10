@@ -19,8 +19,8 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     using Decimal for Decimal.D256;
 
     // ----------- Events -----------	
-    event UpdateMaximumSlippage(uint256 maximumSlippage);	
-    event UpdateMaxSpentPerSwap(uint256 maxSpentPerSwap);	
+    event UpdateMaximumSlippage(uint256 oldMaxSlippage, uint256 newMaximumSlippage);	
+    event UpdateMaxSpentPerSwap(uint256 oldMaxSpentPerSwap, uint256 newMaxSpentPerSwap);	
     event UpdateInvertOraclePrice(bool invertOraclePrice);	
     event UpdateSwapIncentiveAmount(uint256 swapIncentiveAmount);
 
@@ -63,9 +63,16 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
         WETH = _WETH;
         tokenSpent = _tokenSpent;
         tokenReceived = _tokenReceived;
+
         tokenReceivingAddress = _tokenReceivingAddress;
+        emit UpdateReceivingAddress(address(0), _tokenReceivingAddress);
+
         maxSpentPerSwap = _maxSpentPerSwap;
+        emit UpdateMaxSpentPerSwap(0, _maxSpentPerSwap);
+
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
+        emit UpdateMaximumSlippage(0, _maximumSlippageBasisPoints);
+
         invertOraclePrice = _invertOraclePrice;
 
         // start timer
@@ -136,10 +143,11 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     }
 
     /// @notice Sets the address receiving swap's inbound tokens
-    /// @param _tokenReceivingAddress the address that will receive tokens
-    function setReceivingAddress(address _tokenReceivingAddress) external override onlyGovernor {
-      tokenReceivingAddress = _tokenReceivingAddress;
-      emit UpdateReceivingAddress(_tokenReceivingAddress);
+    /// @param newTokenReceivingAddress the address that will receive tokens
+    function setReceivingAddress(address newTokenReceivingAddress) external override onlyGovernor {
+      address oldTokenReceivingAddress = tokenReceivingAddress;
+      tokenReceivingAddress = newTokenReceivingAddress;
+      emit UpdateReceivingAddress(oldTokenReceivingAddress, newTokenReceivingAddress);
     }
 
     // =======================================================================
@@ -147,19 +155,21 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     // =======================================================================
 
     /// @notice Sets the maximum slippage vs Oracle price accepted during swaps
-    /// @param _maximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
-    function setMaximumSlippage(uint256 _maximumSlippageBasisPoints) external onlyGovernor {
-        require(_maximumSlippageBasisPoints <= BASIS_POINTS_GRANULARITY, "PCVSwapperUniswap: Exceeds bp granularity.");
-        maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
-        emit UpdateMaximumSlippage(_maximumSlippageBasisPoints);
+    /// @param newMaximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
+    function setMaximumSlippage(uint256 newMaximumSlippageBasisPoints) external onlyGovernor {
+        uint256 oldMaxSlippage = maximumSlippageBasisPoints;
+        require(newMaximumSlippageBasisPoints <= BASIS_POINTS_GRANULARITY, "PCVSwapperUniswap: Exceeds bp granularity.");
+        maximumSlippageBasisPoints = newMaximumSlippageBasisPoints;
+        emit UpdateMaximumSlippage(oldMaxSlippage, newMaximumSlippageBasisPoints);
     }
 
     /// @notice Sets the maximum tokens spent on each swap
-    /// @param _maxSpentPerSwap the maximum number of tokens to be swapped on each call
-    function setMaxSpentPerSwap(uint256 _maxSpentPerSwap) external onlyGovernor {
-        require(_maxSpentPerSwap != 0, "PCVSwapperUniswap: Cannot swap 0.");
-        maxSpentPerSwap = _maxSpentPerSwap;
-        emit UpdateMaxSpentPerSwap(_maxSpentPerSwap);	
+    /// @param newMaxSpentPerSwap the maximum number of tokens to be swapped on each call
+    function setMaxSpentPerSwap(uint256 newMaxSpentPerSwap) external onlyGovernor {
+        uint256 oldMaxSpentPerSwap = maxSpentPerSwap;
+        require(newMaxSpentPerSwap != 0, "PCVSwapperUniswap: Cannot swap 0.");
+        maxSpentPerSwap = newMaxSpentPerSwap;
+        emit UpdateMaxSpentPerSwap(oldMaxSpentPerSwap, newMaxSpentPerSwap);	
     }
 
     /// @notice sets the minimum time between swaps

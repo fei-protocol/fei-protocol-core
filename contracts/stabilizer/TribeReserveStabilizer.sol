@@ -33,6 +33,8 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
         uint256 _feiPriceThresholdBasisPoints
     ) ReserveStabilizer(_core, _tribeOracle, IERC20(address(0)), _usdPerFeiBasisPoints) {
         feiOracle = _feiOracle;
+        emit FeiOracleUpdate(address(0), address(_feiOracle));
+    
         _feiPriceThreshold = Decimal.ratio(_feiPriceThresholdBasisPoints, BASIS_POINTS_GRANULARITY);
         emit FeiPriceThresholdUpdate(0, _feiPriceThresholdBasisPoints);
     }

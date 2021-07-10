@@ -19,7 +19,7 @@ const MockChainlinkOracle = artifacts.require('MockChainlinkOracle');
 
 const e18 = '000000000000000000';
 
-describe('PCVSwapperUniswap', function () {
+describe.only('PCVSwapperUniswap', function () {
   let userAddress;
   let secondUserAddress;
   let minterAddress;
@@ -139,7 +139,7 @@ describe('PCVSwapperUniswap', function () {
           await expectEvent(
             await this.swapper.setReceivingAddress(secondUserAddress, {from: governorAddress}),
             'UpdateReceivingAddress',
-            { _tokenReceivingAddress: secondUserAddress }
+            { newTokenReceivingAddress: secondUserAddress }
           );
           expect(await this.swapper.tokenReceivingAddress()).to.equal(secondUserAddress);
         });
@@ -254,7 +254,7 @@ describe('PCVSwapperUniswap', function () {
         await this.swapper.setMaximumSlippage('500', { from: governorAddress }),
         'UpdateMaximumSlippage',
         {
-          maximumSlippage: '500'
+          newMaximumSlippage: '500'
         }
       );
       expect(await this.swapper.maximumSlippageBasisPoints()).to.be.bignumber.equal('500');
@@ -277,7 +277,7 @@ describe('PCVSwapperUniswap', function () {
         await this.swapper.setMaxSpentPerSwap(`50${e18}`, { from: governorAddress }),
         'UpdateMaxSpentPerSwap',
         {
-          maxSpentPerSwap: `50${e18}`
+          newMaxSpentPerSwap: `50${e18}`
         }
       );
       expect(await this.swapper.maxSpentPerSwap()).to.be.bignumber.equal(`50${e18}`);
