@@ -8,7 +8,8 @@ import {
   MainnetContractAddresses,
   MainnetContracts,
   TestCoordinator,
-  Env
+  Env,
+  ProposalConfig
 } from './types'
 import { sudo } from '../../scripts/utils/sudo'
 import { exec } from '../../proposals/dao/exec'
@@ -60,7 +61,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   /**
    * Apply an upgrade to the locally instantiated protocol
    */
-  async applyUpgrade(existingContracts: MainnetContracts, proposalName: string, config: object) {
+  async applyUpgrade(existingContracts: MainnetContracts, proposalName: string, config: ProposalConfig) {
     let deployedUpgradedContracts = {}
 
     if (config["deploy"]) {
@@ -90,16 +91,13 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
 
     // Run the DAO proposal
     // If the `exec` flag is activated, then run the upgrade directly from tx calldata
-    const upgradeConfiguration = await import('../../proposals/config.json')
-    const proposalConfig = upgradeConfiguration[proposalName]
-
-    if (proposalConfig.exec) {
+    if (config.exec) {
       const addresses = { 
-        proposerAddress: proposalConfig.proposerAddress,
-        voterAddress: proposalConfig.voterAddress,
+        proposerAddress: config.proposerAddress,
+        voterAddress: config.voterAddress,
         governorAlphaAddress: mainnetAddressesV1['governorAlphaAddress']
       }
-      await exec(proposalConfig.proposal_calldata, addresses);
+      await exec(config.proposal_calldata, addresses);
     } else {
       await run(contractAddresses, this.mainnetAddresses, this.config.logging)
     }

@@ -59,6 +59,14 @@ export type MainnetContractAddresses = {
   governorAlpha: string,
 }
 
+export type ProposalConfig = {
+  deploy: boolean,
+  exec: boolean,
+  proposerAddress: string,
+  voterAddress: string,
+  proposal_calldata: string,
+}
+
 export type ContractAccessRights = 
   {
     minter: string[],

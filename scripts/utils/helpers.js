@@ -16,7 +16,6 @@ async function readOracle(oracleRef, web3) {
 }
 
 function getAddresses() {
-  const zeroAddress = '0x0000000000000000000000000000000000000000';
   let feiAddress;
   let tribeAddress;
   let ethUniswapPCVDepositAddress;
@@ -104,7 +103,6 @@ function getAddresses() {
   }
 
   return {
-    zeroAddress,
     feiAddress,
     tribeAddress,
     ethUniswapPCVDepositAddress,

@@ -1,5 +1,7 @@
 const hre = require('hardhat');
 
+const { constants: { ZERO_ADDRESS } } = require('@openzeppelin/test-helpers');
+
 const IPCVSwapper = artifacts.require('IPCVSwapper');
 const EthLidoPCVDeposit = artifacts.require('EthLidoPCVDeposit');
 const ERC20 = artifacts.require('ERC20');
@@ -41,8 +43,7 @@ async function run(addresses, oldContractAddresses, logging = false) {
 
   logging ? console.log('[FIP-4] Remove FEI incentives') : undefined;
   logging ? console.log(' > fei.incentiveContract(ethPairAddress) before :', await fei.incentiveContract(feiEthPairAddress)) : undefined;
-  const zeroAddress = '0x0000000000000000000000000000000000000000';
-  await fei.setIncentiveContract(feiEthPairAddress, zeroAddress, {from: accounts[0]});
+  await fei.setIncentiveContract(feiEthPairAddress, ZERO_ADDRESS, {from: accounts[0]});
   logging ? console.log(' > fei.incentiveContract(ethPairAddress) after :', await fei.incentiveContract(feiEthPairAddress)) : undefined;
 }
 
