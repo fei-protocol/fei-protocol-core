@@ -524,7 +524,7 @@ contract MasterChief is CoreRef, ReentrancyGuard {
     /// @param to Receiver of the LP tokens.
     function emergencyWithdraw(uint256 pid, address to) public {
         updatePool(pid);
-        PoolInfo memory pool = poolInfo[pid];
+        PoolInfo storage pool = poolInfo[pid];
 
         uint128 totalUnlocked = 0;
         uint128 virtualLiquidityDelta = 0;

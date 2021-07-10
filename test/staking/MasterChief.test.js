@@ -1481,6 +1481,7 @@ describe('MasterChief', () => {
       expect((await this.masterChief.userInfo(pid, userAddress)).virtualAmount).to.be.bignumber.equal(new BN('0'));
       // ensure that the open user deposits got zero'd out and array is 0 length
       expect(await this.masterChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('0'));
+      expect((await this.masterChief.poolInfo(pid)).virtualPoolTotalSupply).to.be.bignumber.equal(new BN('0'));
     });
   });
 

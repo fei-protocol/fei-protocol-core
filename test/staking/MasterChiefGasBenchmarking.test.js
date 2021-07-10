@@ -88,6 +88,12 @@ async function testMultipleUsersPooling(
   }
 }
 
+const emergencyWithdrawReport = [];
+const withdrawAllAndHarvestReport = [];
+const withdrawFromDepositReport = [];
+const harvestReport = [];
+const depositReport = [];
+
 describe('MasterChief', () => {
   // this is the process ID of the staking rewards that we will use
   let pid;
@@ -198,7 +204,11 @@ describe('MasterChief', () => {
       expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN(totalStaked));
       await this.LPToken.approve(this.masterChief.address, totalStaked);
       const tx = await this.masterChief.deposit(pid, totalStaked, 0, { from: userAddress });
-      console.log('deposit tx gasUsed: ', tx.receipt.gasUsed);
+      const obj = {
+        gas: tx.receipt.gasUsed,
+        msg: 'gas used for the first deposit',
+      };
+      depositReport.push(obj);
     });
   });
 
@@ -236,7 +246,12 @@ describe('MasterChief', () => {
         const tx = await this.masterChief.withdrawFromDeposit(
           pid, totalStaked, address, index, { from: address },
         );
-        console.log('withdrawFromDeposit tx: ', tx.receipt.gasUsed);
+        const obj = {
+          gas: tx.receipt.gasUsed,
+          msg: `user ${i} withdraws from deposit`,
+        };
+        withdrawFromDepositReport.push(obj);
+        // console.log('withdrawFromDeposit tx: ', tx.receipt.gasUsed);
 
         expect(await this.LPToken.balanceOf(address)).to.be.bignumber.equal(new BN(totalStaked));
         expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(new BN('0'));
@@ -245,8 +260,11 @@ describe('MasterChief', () => {
         expect(pendingTribe).to.be.bignumber.gt(pendingTribeBeforeHarvest);
 
         const harvestTx = await this.masterChief.harvest(pid, address, { from: address });
-        console.log('harvest tx gasUsed: ', harvestTx.receipt.gasUsed);
-
+        // console.log('harvest tx gasUsed: ', harvestTx.receipt.gasUsed);
+        harvestReport.push({
+          gas: harvestTx.receipt.gasUsed,
+          msg: `user ${i} harvests`,
+        });
         const tribeBalance = await this.tribe.balanceOf(address);
         expect(tribeBalance).to.be.bignumber.gte(pendingTribe);
       }
@@ -278,8 +296,13 @@ describe('MasterChief', () => {
       const tx = await this.masterChief.withdrawAllAndHarvest(
         pid, userAddress, { from: userAddress },
       );
+      const obj = {
+        gas: tx.receipt.gasUsed,
+        msg: 'gas used withdrawing all and harvesting with 2 deposits',
+      };
+      withdrawAllAndHarvestReport.push(obj);
 
-      console.log('withdrawAllAndHarvest tx: ', tx.receipt.gasUsed);
+    //   console.log('withdrawAllAndHarvest tx: ', tx.receipt.gasUsed);
     });
 
     it('harvest should be able to claim all rewards from multiple deposits in a single pool', async function () {
@@ -315,7 +338,13 @@ describe('MasterChief', () => {
       const tx = await this.masterChief.withdrawAllAndHarvest(
         pid, userAddress, { from: userAddress },
       );
-      console.log('withdrawAllAndHarvest tx gasUsed for 2 deposit withdraw and harvest: ', tx.receipt.gasUsed);
+      const obj = {
+        gas: tx.receipt.gasUsed,
+        msg: 'gas used withdrawing all and harvesting with 2 deposits',
+      };
+      withdrawAllAndHarvestReport.push(obj);
+
+      //   console.log('withdrawAllAndHarvest tx gasUsed for 2 deposit withdraw and harvest: ', tx.receipt.gasUsed);
       expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN('200000000000000000000'));
     });
 
@@ -354,7 +383,13 @@ describe('MasterChief', () => {
       const tx = await this.masterChief.withdrawAllAndHarvest(
         pid, userAddress, { from: userAddress },
       );
-      console.log('withdrawAllAndHarvest tx gasUsed for 10 deposit withdraw and harvest: ', tx.receipt.gasUsed);
+      const obj = {
+        gas: tx.receipt.gasUsed,
+        msg: 'gas used withdrawing all and harvesting with 10 deposits',
+      };
+      withdrawAllAndHarvestReport.push(obj);
+
+      //   console.log('withdrawAllAndHarvest tx gasUsed for 10 deposit withdraw and harvest: ', tx.receipt.gasUsed);
       expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN('1100000000000000000000'));
     });
 
@@ -403,8 +438,13 @@ describe('MasterChief', () => {
       const tx = await this.masterChief.withdrawAllAndHarvest(
         pid, userAddress, { from: userAddress },
       );
+      const obj = {
+        gas: tx.receipt.gasUsed,
+        msg: 'gas used withdrawing all and harvesting with 20 deposits',
+      };
+      withdrawAllAndHarvestReport.push(obj);
 
-      console.log('withdrawAllAndHarvest tx gasUsed for 20 deposit withdraw and harvest: ', tx.receipt.gasUsed);
+      //   console.log('withdrawAllAndHarvest tx gasUsed for 20 deposit withdraw and harvest: ', tx.receipt.gasUsed);
       expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN('2100000000000000000000'));
     });
   });
@@ -422,6 +462,10 @@ describe('MasterChief', () => {
         [
           {
             lockLength: 100,
+            rewardMultiplier: zeroMultiplier,
+          },
+          {
+            lockLength: 0,
             rewardMultiplier: zeroMultiplier,
           },
           {
@@ -449,25 +493,9 @@ describe('MasterChief', () => {
       ).to.be.bignumber.equal(new BN(allocationPoints.toString()));
     });
 
-    it('should be able to get pending sushi and receive the same multipliers for depositing on force lock pool', async function () {
-      const userAddresses = [userAddress, secondUserAddress];
-      expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
-      await testMultipleUsersPooling(
-        this.masterChief,
-        this.LPToken,
-        userAddresses,
-        [new BN('50000000000000000000'), new BN('50000000000000000000')],
-        10,
-        [100, 100],
-        totalStaked,
-        pid,
-      );
-    });
-
     it('should be able to emergency withdraw from a forced lock pool when a users tokens are past the unlock block', async function () {
       const userAddresses = [userAddress];
 
-      expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
       await testMultipleUsersPooling(
         this.masterChief,
         this.LPToken,
@@ -480,7 +508,11 @@ describe('MasterChief', () => {
       );
 
       const tx = await this.masterChief.emergencyWithdraw(pid, userAddress, { from: userAddress });
-      console.log('emergency withdraw tx gasUsed: ', tx.receipt.gasUsed);
+      const obj = {
+        gas: tx.receipt.gasUsed,
+        msg: 'gas used doing an emergency withdraw with 1 deposit',
+      };
+      emergencyWithdrawReport.push(obj);
 
       expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN(totalStaked));
 
@@ -490,6 +522,53 @@ describe('MasterChief', () => {
       expect((await this.masterChief.userInfo(pid, userAddress)).virtualAmount).to.be.bignumber.equal(new BN('0'));
       // ensure that the open user deposits got zero'd out and array is 0 length
       expect(await this.masterChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('0'));
+    });
+
+    it('should be able to emergency withdraw from a forced lock pool when a users tokens are past the unlock block with 2 deposits', async function () {
+      const userAddresses = [userAddress];
+
+      await this.LPToken.approve(this.masterChief.address, '100000000000000000000000000000000000');
+      for (let i = 1; i < 20; i++) {
+        await testMultipleUsersPooling(
+          this.masterChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          0,
+          0,
+          totalStaked,
+          pid,
+        );
+
+        const tx = await this.masterChief.emergencyWithdraw(
+          pid, userAddress, { from: userAddress },
+        );
+        const obj = {
+          gas: tx.receipt.gasUsed,
+          msg: `gas used doing an emergency withdraw with ${i} deposits`,
+        };
+        emergencyWithdrawReport.push(obj);
+        userAddresses.push(userAddress);
+
+        expect(
+          await this.LPToken.balanceOf(userAddress),
+        ).to.be.bignumber.equal((new BN(totalStaked)).mul(new BN(i.toString())));
+
+        // ensure that the reward debt got zero'd out
+        // virtual amount should go to 0
+        const { rewardDebt, virtualAmount } = await this.masterChief.userInfo(pid, userAddress);
+        expect(rewardDebt).to.be.bignumber.equal(new BN('0'));
+        expect(virtualAmount).to.be.bignumber.equal(new BN('0'));
+        // ensure that the open user deposits got zero'd out and array is 0 length
+        expect(await this.masterChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('0'));
+        // ensure that the virtual total supply got zero'd as well
+        expect((await this.masterChief.poolInfo(pid)).virtualPoolTotalSupply).to.be.bignumber.equal(new BN('0'));
+
+        await this.LPToken.mint(
+          userAddress,
+          totalStaked,
+        );
+      }
     });
   });
 
@@ -541,10 +620,27 @@ describe('MasterChief', () => {
       const tx = await this.masterChief.withdrawAllAndHarvest(
         pid, userAddress, { from: userAddress },
       );
+      const obj = {
+        gas: tx.receipt.gasUsed,
+        msg: 'gas used withdrawing all and harvesting when tokens are locked and only harvesting with 1 deposit',
+      };
+      withdrawAllAndHarvestReport.push(obj);
+
       expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
-      console.log('tx calling withdrawAllAndHarvest and only harvesting gasUsed: ', tx.receipt.gasUsed);
       expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
       expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
+    });
+
+    it('', async () => {
+      function printData(data, message) {
+        console.log(message);
+        data.forEach((e) => { console.log(`${e.msg} ${e.gas}`); });
+      }
+      printData(emergencyWithdrawReport, '\n\n\n~~~~~~~~~~~~ Emergency Withdraw Report ~~~~~~~~~~~~\n');
+      printData(withdrawAllAndHarvestReport, '\n\n\n~~~~~~~~~~~~ Withdaw All And Harvest Report ~~~~~~~~~~~~\n');
+      printData(withdrawFromDepositReport, '\n\n\n~~~~~~~~~~~~ Withdaw From Deposit Report ~~~~~~~~~~~~\n');
+      printData(harvestReport, '\n\n\n~~~~~~~~~~~~ Harvest Report ~~~~~~~~~~~~\n');
+      printData(depositReport, '\n\n\n~~~~~~~~~~~~ Deposit Report ~~~~~~~~~~~~\n');
     });
   });
 });
