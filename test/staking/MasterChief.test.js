@@ -1918,15 +1918,20 @@ describe('MasterChief', () => {
     });
 
     it('benchmarking depositing LP Tokens', async function () {
-      for (let i = 1; i < 5; i++) {
-        await this.LPToken.mint(userAddress, totalStaked);
-        await this.LPToken.approve(this.masterChief.address, totalStaked);
-        const tx = await this.masterChief.deposit(pid, totalStaked, 0, { from: userAddress });
-        const obj = {
-          gas: tx.receipt.gasUsed,
-          msg: `gas used for deposit ${i}`,
-        };
-        depositReport.push(obj);
+      const userAddresses = [userAddress, secondUserAddress];
+
+      for (let j = 0; j < userAddresses.length; j++) {
+        const address = userAddresses[j];
+        for (let i = 1; i < 5; i++) {
+          await this.LPToken.mint(address, totalStaked);
+          await this.LPToken.approve(this.masterChief.address, totalStaked, { from: address });
+          const tx = await this.masterChief.deposit(pid, totalStaked, 0, { from: address });
+          const obj = {
+            gas: tx.receipt.gasUsed,
+            msg: `user ${j} gas used for deposit ${i}`,
+          };
+          depositReport.push(obj);
+        }
       }
     });
 
