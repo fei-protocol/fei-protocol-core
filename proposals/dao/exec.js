@@ -4,6 +4,7 @@ const { time } = require('@openzeppelin/test-helpers');
 const GovernorAlpha = artifacts.require('GovernorAlpha');
 
 // The calldata for the DAO transaction to execute. When this is not empty, the address at MAINNET_PROPOSER will submit this tx to the GovernorAlpha
+// TODO: This should be passed as a param
 const data = '';
 
 const hre = require('hardhat');
@@ -14,6 +15,8 @@ const { getAddresses } = require('../utils/helpers');
 
 // This script fully executes an on-chain DAO proposal with pre-supplied calldata
 async function main() {
+  // TODO governorAlpha should be passed through mainnet-addresses.json
+  // And proposer and voter should be imported from /proposals/config.json
   const { proposerAddress, voterAddress, governorAlphaAddress } = getAddresses();
 
   // Impersonate the proposer and voter with sufficient TRIBE for execution

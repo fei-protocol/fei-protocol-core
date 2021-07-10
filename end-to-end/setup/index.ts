@@ -29,8 +29,10 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
 
   constructor(
     private config: Config,
+    private proposals,
   ) {
       this.mainnetAddresses = this.getMainnetContractAddresses()
+      this.proposals = proposals
   }
 
   /**
@@ -50,6 +52,8 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     // Grant priviledges to deploy address
     await sudo(this.mainnetAddresses, this.config.logging)
 
+    // proposals = configuration
+    // inject, 
     const proposalNames = Object.keys(proposals);
     for (let i = 0; i < proposalNames.length; i++) {
       existingContracts = await this.applyUpgrade(existingContracts, proposalNames[i], proposals[proposalNames[i]]);
@@ -88,7 +92,12 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
 
     // run the DAO proposal
     // TODO: if exec flag is on, run calldata through exec and not through mock proposal
-    await run(contractAddresses, this.mainnetAddresses, this.config.logging)
+    if (config.exec) {
+      await exec(config.calldata, config.proposer, config.voter);
+    } else {
+      await run(contractAddresses, this.mainnetAddresses, this.config.logging)
+
+    }
 
     // teardown the DAO proposal
     await teardown(contractAddresses, this.mainnetAddresses)
