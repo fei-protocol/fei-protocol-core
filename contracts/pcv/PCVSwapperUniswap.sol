@@ -105,6 +105,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     }
 
     /// @notice Reads the balance of tokenReceived held in the contract
+		/// @return held balance of token of tokenReceived
     function balance() external view override returns(uint256) {
       return ERC20(tokenReceived).balanceOf(address(this));
     }
@@ -163,6 +164,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     }
 
     /// @notice sets the minimum time between swaps
+		/// @param _duration minimum time between swaps in seconds
     function setSwapFrequency(uint256 _duration) external onlyGovernor {
        _setDuration(_duration);
     }
@@ -220,14 +222,12 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     // Internal functions
     // =======================================================================
 
-    /// @notice see external function getNextAmountSpent()
     function _getExpectedAmountIn() internal view returns (uint256) {
       uint256 balance = ERC20(tokenSpent).balanceOf(address(this));
       require(balance != 0, "PCVSwapperUniswap: no tokenSpent left.");
       return Math.min(maxSpentPerSwap, balance);
     }
 
-    /// @notice see external function getNextAmountReceived()
     function _getExpectedAmountOut(uint256 amountIn) internal view returns (uint256) {
       // Get pair reserves
       (uint256 _token0, uint256 _token1, ) = pair.getReserves();
@@ -246,7 +246,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
       return amountOut;
     }
 
-    /// @notice see external function getNextAmountReceivedThreshold()
     function _getMinimumAcceptableAmountOut(uint256 amountIn) internal view returns (uint256) {
       Decimal.D256 memory twap = readOracle();
       if (invertOraclePrice) {
