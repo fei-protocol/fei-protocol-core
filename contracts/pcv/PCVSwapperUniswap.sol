@@ -170,7 +170,7 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     /// @notice sets invertOraclePrice : use (1 / oraclePrice) if true
     function setInvertOraclePrice(bool _invertOraclePrice) external onlyGovernor {
         invertOraclePrice = _invertOraclePrice;
-	        emit UpdateInvertOraclePrice(_invertOraclePrice);	
+	      emit UpdateInvertOraclePrice(_invertOraclePrice);	
     }
 
     // =======================================================================

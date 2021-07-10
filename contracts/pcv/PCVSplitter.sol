@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
 /// @title abstract contract for splitting PCV into different deposits
 /// @author Fei Protocol
 abstract contract PCVSplitter {
