@@ -5,6 +5,7 @@ import { syncPool } from '../scripts/utils/syncPool'
 import { MainnetContractAddresses, MainnetContracts } from './setup/types';
 import { getPeg, getPrice } from './setup/utils'
 import { expectApprox } from '../test/helpers'
+import proposals from '../proposals/config.json'
 
 const { toBN } = web3.utils;
 
@@ -26,7 +27,7 @@ describe('e2e', function () {
       deployAddress: deployAddress,
       version: version,
     }
-    e2eCoord = new TestEndtoEndCoordinator(config);
+    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment())
 
     await contracts.uniswapPCVDeposit.deposit()

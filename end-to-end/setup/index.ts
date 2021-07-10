@@ -1,6 +1,5 @@
 import mainnetAddressesV1 from '../../contract-addresses/mainnetAddresses.json'
 import permissions from '../../contract-addresses/permissions.json'
-import proposals from '../../proposals/config.json'
 
 import { getContracts, getContractAddresses } from './loadContracts'
 import {
@@ -12,9 +11,6 @@ import {
   Env
 } from './types'
 import { sudo } from '../../scripts/utils/sudo'
-import { artifacts } from 'hardhat'
-
-const RatioPCVController = artifacts.require('TestOldRatioPCVController');
 
 /**
  * Coordinate initialising an end-to-end testing environment
@@ -29,7 +25,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
 
   constructor(
     private config: Config,
-    private proposals,
+    private proposals: any,
   ) {
       this.mainnetAddresses = this.getMainnetContractAddresses()
       this.proposals = proposals
@@ -52,18 +48,18 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     // Grant priviledges to deploy address
     await sudo(this.mainnetAddresses, this.config.logging)
 
-    // proposals = configuration
-    // inject, 
-    const proposalNames = Object.keys(proposals);
+    const proposalNames = Object.keys(this.proposals);
     for (let i = 0; i < proposalNames.length; i++) {
-      existingContracts = await this.applyUpgrade(existingContracts, proposalNames[i], proposals[proposalNames[i]]);
+      existingContracts = await this.applyUpgrade(existingContracts, proposalNames[i], this.proposals[proposalNames[i]]);
     }
 
     return { contracts: this.afterUpgradeContracts, contractAddresses: this.afterUpgradeAddresses }
   }
 
+  /**
+   * Apply an upgrade to the locally instantiated protocol
+   */
   async applyUpgrade(existingContracts: MainnetContracts, proposalName: string, config: object) {
-
     let deployedUpgradedContracts = {}
 
     if (config["deploy"]) {
@@ -84,6 +80,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       ...mainnetAddressesV1.external
     }
     
+    // Get the upgrade setup, run and teardown scripts
     const { setup, run, teardown } = await import('../../proposals/dao/' + proposalName);
 
     // TODO add in contracts as a param to skip the contractAddress adding in DAO mocks
@@ -92,6 +89,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
 
     // run the DAO proposal
     // TODO: if exec flag is on, run calldata through exec and not through mock proposal
+    const { } = await import('../../proposals/config.json')
     if (config.exec) {
       await exec(config.calldata, config.proposer, config.voter);
     } else {
