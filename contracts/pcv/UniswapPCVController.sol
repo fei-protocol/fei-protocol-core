@@ -103,10 +103,10 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
 
     /// @notice signal whether the reweight is available. Must have passed reweight frequency and minimum distance from peg
     function reweightEligible() public view override returns (bool) {
-        bool magnitude =
+        bool meetsMagnitudeRequirement =
             getDistanceToPeg().greaterThan(_minDistanceForReweight);
-        bool time = isTimeEnded();
-        return magnitude && time;
+        bool meetsTimeRequirement = isTimeEnded();
+        return meetsMagnitudeRequirement && meetsTimeRequirement;
     }
 
     /// @notice return current percent distance from peg
