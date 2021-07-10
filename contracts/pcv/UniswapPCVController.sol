@@ -222,10 +222,25 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
         pcvDeposit.deposit();
     }
 
-    /// @notice utility for calculating absolute distance from peg based on reserves
-    /// @param reserveTarget pair reserves of the asset desired to trade with
-    /// @param reserveOther pair reserves of the non-traded asset
-    /// @param peg the target peg reported as Target per Other
+    /**
+    * @notice utility for calculating absolute distance from peg based on reserves
+    * @param reserveTarget pair reserves of the asset desired to trade with
+    * @param reserveOther pair reserves of the non-traded asset
+    * @param peg the target peg reported as Target per Other
+    * 
+    * Derivation:
+    * Recall Uniswap's price and invariant formula, P = x/y and k = x*y
+    * The objective is to return some delta |d| such that 
+    *    x' = x + d
+    *    y' = k / x'
+    *    x'/y' = P' for target peg P'
+    * 
+    * Plugging in x' and y' to the new price formula gives:
+    *    P' = (x + d)^2 / k
+    *    sqrt(P' * k) = x + d
+    *    sqrt(P' * x * y) - x = d
+    * The resulting function returns |d| adjusted for uniswap fees
+    */
     function _getAmountToPeg(
         uint256 reserveTarget,
         uint256 reserveOther,
