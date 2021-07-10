@@ -98,6 +98,6 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
     }
 
     function _transfer(address to, uint256 amount) internal virtual {
-        token.transfer(to, amount);
+        SafeERC20.safeTransfer(IERC20(token), to, amount);
     }
 }
