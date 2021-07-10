@@ -116,7 +116,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
         override
         returns (Decimal.D256 memory distance)
     {
-        (Decimal.D256 memory price, , ) = _getUniswapPrice();
+        Decimal.D256 memory price = _getUniswapPrice();
         Decimal.D256 memory peg = readOracle();
 
         // Get the absolute value raw distance from peg
@@ -248,31 +248,16 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
         return _getAmountToPeg(feiReserves, tokenReserves, peg);
     }
 
-    /// @notice get uniswap price and reserves
+    /// @notice get uniswap price
     /// @return price reported as Fei per X
-    /// @return reserveFei fei reserves
-    /// @return reserveOther non-fei reserves
-    function _getUniswapPrice()
-        internal
-        view
-        returns (
-            Decimal.D256 memory,
-            uint256 reserveFei,
-            uint256 reserveOther
-        )
-    {
-        (reserveFei, reserveOther) = getReserves();
-        return (
-            Decimal.ratio(reserveFei, reserveOther),
-            reserveFei,
-            reserveOther
-        );
+    function _getUniswapPrice() internal view returns (Decimal.D256 memory) {
+        (uint256 reserveFei, uint256 reserveOther) = getReserves();
+        return Decimal.ratio(reserveFei, reserveOther);
     }
 
     /// @notice returns true if price is below the peg
     /// @dev counterintuitively checks if peg < price because price is reported as FEI per X
     function _isBelowPeg(Decimal.D256 memory peg) internal view returns (bool) {
-        (Decimal.D256 memory price, , ) = _getUniswapPrice();
-        return peg.lessThan(price);
+        return peg.lessThan(_getUniswapPrice());
     }
 }
