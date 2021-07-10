@@ -56,6 +56,7 @@ export type MainnetContractAddresses = {
   pcvDripControllerAddress: string,
   timelockAddress: string,
   multisigAddress: string,
+  governorAlpha: string,
 }
 
 export type ContractAccessRights = 

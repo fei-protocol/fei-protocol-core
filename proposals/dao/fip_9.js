@@ -14,11 +14,9 @@ async function setup(addresses, oldContractAddresses, logging) {}
 async function run(addresses, oldContractAddresses, logging = false) {
   const accounts = await web3.eth.getAccounts();
   const {
-    zeroAddress,
     feiAddress,
     feiEthPairAddress
   } = addresses;
-  console.log(addresses);
   // The old EthPCVDripper contract does not exist anymore, but the
   // IPCVSwapper interface also has a withdrawETH(to, amount) function
   const dripper = await IPCVSwapper.at('0xDa079A280FC3e33Eb11A78708B369D5Ca2da54fE');
@@ -43,6 +41,7 @@ async function run(addresses, oldContractAddresses, logging = false) {
 
   logging ? console.log('[FIP-4] Remove FEI incentives') : undefined;
   logging ? console.log(' > fei.incentiveContract(ethPairAddress) before :', await fei.incentiveContract(feiEthPairAddress)) : undefined;
+  const zeroAddress = '0x0000000000000000000000000000000000000000';
   await fei.setIncentiveContract(feiEthPairAddress, zeroAddress, {from: accounts[0]});
   logging ? console.log(' > fei.incentiveContract(ethPairAddress) after :', await fei.incentiveContract(feiEthPairAddress)) : undefined;
 }

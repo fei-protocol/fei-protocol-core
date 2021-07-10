@@ -12,14 +12,14 @@
     "ratioPCVControllerAddress": "0xfC1aD6eb84351597cD3b9B65179633697d65B920",
     "uniswapOracleAddress": "0x087F35bd241e41Fc28E43f0E8C58d283DD55bD65",
     "feiEthPairAddress": "0x94B0A3d511b6EcDb17eBF877278Ab030acb0A878",
-    "feiRewardsDistributorAddress": "0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5"
+    "feiRewardsDistributorAddress": "0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5",
+    "governorAlphaAddress": "0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B"
   },
   "external" : {
     "multisigAddress": "0xB8f482539F2d3Ae2C9ea6076894df36D1f632775",
     "wethAddress": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
     "uniswapRouterAddress": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
     "chainlinkEthUsdOracleAddress": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
-    "chainlinkFeiEthOracleAddress": "0x7F0D2c2838c6AC24443d13e23d99490017bDe370",
-    "zeroAddress": "0x0000000000000000000000000000000000000000"
+    "chainlinkFeiEthOracleAddress": "0x7F0D2c2838c6AC24443d13e23d99490017bDe370"
   }
 }

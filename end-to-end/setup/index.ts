@@ -11,6 +11,7 @@ import {
   Env
 } from './types'
 import { sudo } from '../../scripts/utils/sudo'
+import { exec } from '../../proposals/dao/exec'
 
 /**
  * Coordinate initialising an end-to-end testing environment
@@ -87,14 +88,20 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     // setup the DAO proposal
     await setup(contractAddresses, this.mainnetAddresses, this.config.logging);
 
-    // run the DAO proposal
-    // TODO: if exec flag is on, run calldata through exec and not through mock proposal
-    const { } = await import('../../proposals/config.json')
-    if (config.exec) {
-      await exec(config.calldata, config.proposer, config.voter);
+    // Run the DAO proposal
+    // If the `exec` flag is activated, then run the upgrade directly from tx calldata
+    const upgradeConfiguration = await import('../../proposals/config.json')
+    const proposalConfig = upgradeConfiguration[proposalName]
+
+    if (proposalConfig.exec) {
+      const addresses = { 
+        proposerAddress: proposalConfig.proposerAddress,
+        voterAddress: proposalConfig.voterAddress,
+        governorAlphaAddress: mainnetAddressesV1['governorAlphaAddress']
+      }
+      await exec(proposalConfig.proposal_calldata, addresses);
     } else {
       await run(contractAddresses, this.mainnetAddresses, this.config.logging)
-
     }
 
     // teardown the DAO proposal

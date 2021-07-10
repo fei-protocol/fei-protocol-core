@@ -10,8 +10,6 @@ const { web3 } = hre;
 // txData = The calldata for the DAO transaction to execute. 
 // The address at MAINNET_PROPOSER will submit this tx to the GovernorAlpha
 async function exec(txData, addresses) {
-  // TODO governorAlpha should be passed through mainnet-addresses.json
-  // And proposer and voter should be imported from /proposals/config.json
   const { proposerAddress, voterAddress, governorAlphaAddress } = addresses;
 
   // Impersonate the proposer and voter with sufficient TRIBE for execution
