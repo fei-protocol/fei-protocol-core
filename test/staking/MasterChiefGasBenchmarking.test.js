@@ -251,7 +251,6 @@ describe('MasterChief', () => {
           msg: `user ${i} withdraws from deposit`,
         };
         withdrawFromDepositReport.push(obj);
-        // console.log('withdrawFromDeposit tx: ', tx.receipt.gasUsed);
 
         expect(await this.LPToken.balanceOf(address)).to.be.bignumber.equal(new BN(totalStaked));
         expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(new BN('0'));
@@ -260,7 +259,6 @@ describe('MasterChief', () => {
         expect(pendingTribe).to.be.bignumber.gt(pendingTribeBeforeHarvest);
 
         const harvestTx = await this.masterChief.harvest(pid, address, { from: address });
-        // console.log('harvest tx gasUsed: ', harvestTx.receipt.gasUsed);
         harvestReport.push({
           gas: harvestTx.receipt.gasUsed,
           msg: `user ${i} harvests`,
@@ -301,8 +299,6 @@ describe('MasterChief', () => {
         msg: 'gas used withdrawing all and harvesting with 2 deposits',
       };
       withdrawAllAndHarvestReport.push(obj);
-
-    //   console.log('withdrawAllAndHarvest tx: ', tx.receipt.gasUsed);
     });
 
     it('harvest should be able to claim all rewards from multiple deposits in a single pool', async function () {
@@ -344,7 +340,6 @@ describe('MasterChief', () => {
       };
       withdrawAllAndHarvestReport.push(obj);
 
-      //   console.log('withdrawAllAndHarvest tx gasUsed for 2 deposit withdraw and harvest: ', tx.receipt.gasUsed);
       expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN('200000000000000000000'));
     });
 
@@ -389,7 +384,6 @@ describe('MasterChief', () => {
       };
       withdrawAllAndHarvestReport.push(obj);
 
-      //   console.log('withdrawAllAndHarvest tx gasUsed for 10 deposit withdraw and harvest: ', tx.receipt.gasUsed);
       expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN('1100000000000000000000'));
     });
 
@@ -444,7 +438,6 @@ describe('MasterChief', () => {
       };
       withdrawAllAndHarvestReport.push(obj);
 
-      //   console.log('withdrawAllAndHarvest tx gasUsed for 20 deposit withdraw and harvest: ', tx.receipt.gasUsed);
       expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN('2100000000000000000000'));
     });
   });
@@ -520,6 +513,7 @@ describe('MasterChief', () => {
       // virtual amount should go to 0
       expect((await this.masterChief.userInfo(pid, userAddress)).rewardDebt).to.be.bignumber.equal(new BN('0'));
       expect((await this.masterChief.userInfo(pid, userAddress)).virtualAmount).to.be.bignumber.equal(new BN('0'));
+
       // ensure that the open user deposits got zero'd out and array is 0 length
       expect(await this.masterChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('0'));
     });
@@ -636,6 +630,7 @@ describe('MasterChief', () => {
         console.log(message);
         data.forEach((e) => { console.log(`${e.msg} ${e.gas}`); });
       }
+
       printData(emergencyWithdrawReport, '\n\n\n~~~~~~~~~~~~ Emergency Withdraw Report ~~~~~~~~~~~~\n');
       printData(withdrawAllAndHarvestReport, '\n\n\n~~~~~~~~~~~~ Withdaw All And Harvest Report ~~~~~~~~~~~~\n');
       printData(withdrawFromDepositReport, '\n\n\n~~~~~~~~~~~~ Withdaw From Deposit Report ~~~~~~~~~~~~\n');
