@@ -1356,6 +1356,10 @@ describe('MasterChief', () => {
             lockLength: 300,
             rewardMultiplier: (new BN(zeroMultiplier)).mul(new BN('3')).toString(),
           },
+          {
+            lockLength: 0,
+            rewardMultiplier: zeroMultiplier,
+          },
         ],
         { from: governorAddress },
       );
@@ -1440,6 +1444,58 @@ describe('MasterChief', () => {
         [100, 100],
         totalStaked,
         pid,
+      );
+    });
+
+    it('should not be able to emergency withdraw from a forced lock pool when a users tokens are locked', async function () {
+      const userAddresses = [userAddress];
+
+      expect(Number(await this.masterChief.poolLength())).to.be.equal(2);
+      await testMultipleUsersPooling(
+        this.masterChief,
+        this.LPToken,
+        userAddresses,
+        new BN('100000000000000000000'),
+        5,
+        100,
+        totalStaked,
+        pid,
+      );
+
+      await expectRevert(
+        this.masterChief.emergencyWithdraw(pid, userAddress, { from: userAddress }),
+        'tokens locked',
+      );
+    });
+
+    it('should not be able to emergency withdraw from a forced lock pool when the first deposit is unlocked and the other is locked', async function () {
+      const userAddresses = [userAddress];
+
+      await testMultipleUsersPooling(
+        this.masterChief,
+        this.LPToken,
+        userAddresses,
+        new BN('100000000000000000000'),
+        1,
+        0,
+        '50000000000000000000',
+        pid,
+      );
+
+      await testMultipleUsersPooling(
+        this.masterChief,
+        this.LPToken,
+        userAddresses,
+        new BN('100000000000000000000'),
+        1,
+        100,
+        '50000000000000000000',
+        pid,
+      );
+
+      await expectRevert(
+        this.masterChief.emergencyWithdraw(pid, userAddress, { from: userAddress }),
+        'tokens locked',
       );
     });
 
