@@ -1,23 +1,18 @@
 require('dotenv').config();
 const { time } = require('@openzeppelin/test-helpers');
+const hre = require('hardhat');
 
 const GovernorAlpha = artifacts.require('GovernorAlpha');
 
-// The calldata for the DAO transaction to execute. When this is not empty, the address at MAINNET_PROPOSER will submit this tx to the GovernorAlpha
-// TODO: This should be passed as a param
-const data = '';
-
-const hre = require('hardhat');
-
 const { web3 } = hre;
-
-const { getAddresses } = require('../utils/helpers');
-
 // This script fully executes an on-chain DAO proposal with pre-supplied calldata
-async function main() {
+
+// txData = The calldata for the DAO transaction to execute. 
+// The address at MAINNET_PROPOSER will submit this tx to the GovernorAlpha
+async function exec(txData, addresses) {
   // TODO governorAlpha should be passed through mainnet-addresses.json
   // And proposer and voter should be imported from /proposals/config.json
-  const { proposerAddress, voterAddress, governorAlphaAddress } = getAddresses();
+  const { proposerAddress, voterAddress, governorAlphaAddress } = addresses;
 
   // Impersonate the proposer and voter with sufficient TRIBE for execution
   await hre.network.provider.request({
@@ -31,10 +26,10 @@ async function main() {
   });
 
   // Submit proposal to the DAO
-  if (data) {
+  if (txData) {
     console.log('Submitting Proposal');
     await web3.eth.sendTransaction({
-      from: proposerAddress, to: governorAlphaAddress, data, gas: 3000000
+      from: proposerAddress, to: governorAlphaAddress, data: txData, gas: 3000000
     });
   }
 
@@ -73,9 +68,4 @@ async function main() {
   console.log('Success');
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+module.exports = { exec };
