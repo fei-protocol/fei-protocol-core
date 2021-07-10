@@ -42,7 +42,7 @@ contract MasterChief is CoreRef, ReentrancyGuard {
     /// Also known as the amount of Tribe to distribute per block.
     struct PoolInfo {
         uint128 accTribePerShare;
-        uint128 virtualPoolTotalSupply;
+        uint128 virtualTotalSupply;
         uint64 lastRewardBlock;
         uint64 allocPoint;
         bool unlocked; // this will allow an admin to unlock the pool if need be.
@@ -243,7 +243,7 @@ contract MasterChief is CoreRef, ReentrancyGuard {
 
         poolInfo.push(PoolInfo({
             allocPoint: toUint64(allocPoint),
-            virtualPoolTotalSupply: 0, // virtual total supply starts at 0 as there is 0 initial supply
+            virtualTotalSupply: 0, // virtual total supply starts at 0 as there is 0 initial supply
             lastRewardBlock: toUint64(lastRewardBlock),
             accTribePerShare: 0,
             unlocked: false
@@ -273,10 +273,10 @@ contract MasterChief is CoreRef, ReentrancyGuard {
 
         uint256 accTribePerShare = pool.accTribePerShare;
 
-        if (block.number > pool.lastRewardBlock && pool.virtualPoolTotalSupply != 0) {
+        if (block.number > pool.lastRewardBlock && pool.virtualTotalSupply != 0) {
             uint256 blocks = block.number - pool.lastRewardBlock;
             uint256 tribeReward = (blocks * tribePerBlock() * pool.allocPoint) / totalAllocPoint;
-            accTribePerShare = accTribePerShare + ((tribeReward * ACC_TRIBE_PRECISION) / pool.virtualPoolTotalSupply);
+            accTribePerShare = accTribePerShare + ((tribeReward * ACC_TRIBE_PRECISION) / pool.virtualTotalSupply);
         }
 
         // use the virtual amount to calculate the users share of the pool and their pending rewards
@@ -312,7 +312,7 @@ contract MasterChief is CoreRef, ReentrancyGuard {
     function updatePool(uint256 pid) public {
         PoolInfo storage pool = poolInfo[pid];
         if (block.number > pool.lastRewardBlock) {
-            uint256 virtualSupply = pool.virtualPoolTotalSupply;
+            uint256 virtualSupply = pool.virtualTotalSupply;
             if (virtualSupply > 0) {
                 uint256 blocks = block.number - pool.lastRewardBlock;
                 uint256 tribeReward = (blocks * tribePerBlock() * pool.allocPoint) / totalAllocPoint;
@@ -354,7 +354,7 @@ contract MasterChief is CoreRef, ReentrancyGuard {
         userPoolData.rewardDebt += int128(virtualAmountDelta * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
 
         // pool virtual total supply needs to increase here
-        pool.virtualPoolTotalSupply += virtualAmountDelta;
+        pool.virtualTotalSupply += virtualAmountDelta;
 
         // add the new user struct into storage
         depositInfo[pid][msg.sender].push(user);
@@ -427,7 +427,7 @@ contract MasterChief is CoreRef, ReentrancyGuard {
 
         // regardless of whether or not we removed all of this users liquidity from the pool, we will need to
         // subtract the virtual liquidity delta from the pool virtual total supply
-        pool.virtualPoolTotalSupply -= virtualLiquidityDelta;
+        pool.virtualTotalSupply -= virtualLiquidityDelta;
 
         // Interactions
         IRewarder _rewarder = rewarder[pid];
@@ -467,7 +467,7 @@ contract MasterChief is CoreRef, ReentrancyGuard {
         poolDeposit.amount -= amount;
         user.rewardDebt = user.rewardDebt - toSigned128(user.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
         user.virtualAmount -= virtualAmountDelta;
-        pool.virtualPoolTotalSupply -= virtualAmountDelta;
+        pool.virtualTotalSupply -= virtualAmountDelta;
 
         // Interactions
         IRewarder _rewarder = rewarder[pid];
@@ -539,12 +539,12 @@ contract MasterChief is CoreRef, ReentrancyGuard {
             totalUnlocked += poolDeposit.amount;
 
             // update the aggregated deposit virtual amount
-            // update the virtualPoolTotalSupply
+            // update the virtualTotalSupply
             virtualLiquidityDelta += uint128((poolDeposit.amount * poolDeposit.multiplier) / SCALE_FACTOR);
         }
 
         // subtract virtualLiquidity Delta from the virtual total supply of this pool
-        pool.virtualPoolTotalSupply -= virtualLiquidityDelta;
+        pool.virtualTotalSupply -= virtualLiquidityDelta;
 
         // remove the array of deposits and userInfo struct
         delete depositInfo[pid][msg.sender];

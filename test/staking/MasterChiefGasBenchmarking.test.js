@@ -556,7 +556,7 @@ describe('MasterChief', () => {
         // ensure that the open user deposits got zero'd out and array is 0 length
         expect(await this.masterChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('0'));
         // ensure that the virtual total supply got zero'd as well
-        expect((await this.masterChief.poolInfo(pid)).virtualPoolTotalSupply).to.be.bignumber.equal(new BN('0'));
+        expect((await this.masterChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(new BN('0'));
 
         await this.LPToken.mint(
           userAddress,
