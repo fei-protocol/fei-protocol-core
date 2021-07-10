@@ -21,8 +21,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     // ----------- Events -----------	
     event UpdateMaximumSlippage(uint256 maximumSlippage);	
     event UpdateMaxSpentPerSwap(uint256 maxSpentPerSwap);	
-    event UpdateInvertOraclePrice(bool invertOraclePrice);	
-    event UpdateSwapIncentiveAmount(uint256 swapIncentiveAmount);
 
     /// @notice the token to spend on swap (outbound)
     address public immutable override tokenSpent;
@@ -32,8 +30,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     address public override tokenReceivingAddress;
     /// @notice the maximum amount of tokens to spend on every swap
     uint256 public maxSpentPerSwap;
-    /// @notice should we use (1 / oraclePrice) instead of oraclePrice ?
-    bool public invertOraclePrice;
     /// @notice the maximum amount of slippage vs oracle price
     uint256 public maximumSlippageBasisPoints;
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
@@ -77,7 +73,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
         tokenReceivingAddress = _tokenReceivingAddress;
         maxSpentPerSwap = _maxSpentPerSwap;
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
-        invertOraclePrice = _invertOraclePrice;
 
         // start timer
         _initTimed();
@@ -176,12 +171,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     /// @notice sets the minimum time between swaps
     function setSwapFrequency(uint256 _duration) external onlyGovernor {
        _setDuration(_duration);
-    }
-
-    /// @notice sets invertOraclePrice : use (1 / oraclePrice) if true
-    function setInvertOraclePrice(bool _invertOraclePrice) external onlyGovernor {
-        invertOraclePrice = _invertOraclePrice;
-	        emit UpdateInvertOraclePrice(_invertOraclePrice);	
     }
 
     // =======================================================================

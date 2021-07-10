@@ -11,7 +11,7 @@ const ReserveStabilizer = artifacts.require('ReserveStabilizer');
 const MockOracle = artifacts.require('MockOracle');
 const MockERC20 = artifacts.require('MockERC20');
 
-describe.only('OracleRef', function () {
+describe('OracleRef', function () {
   let userAddress;
   let governorAddress;
 

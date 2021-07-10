@@ -19,7 +19,7 @@ const MockChainlinkOracle = artifacts.require('MockChainlinkOracle');
 
 const e18 = '000000000000000000';
 
-describe('PCVSwapperUniswap', function () {
+describe.only('PCVSwapperUniswap', function () {
   let userAddress;
   let secondUserAddress;
   let minterAddress;
@@ -302,23 +302,6 @@ describe('PCVSwapperUniswap', function () {
         }
       );
       expect(await this.swapper.duration()).to.be.bignumber.equal('2000');
-    });
-    it('setInvertOraclePrice() revert if not governor', async function() {
-      await expectRevert(
-        this.swapper.setInvertOraclePrice(true),
-        'VM Exception while processing transaction: revert CoreRef: Caller is not a governor'
-      );
-    });
-    it('setInvertOraclePrice() emit UpdateInvertOraclePrice', async function() {
-      expect(await this.swapper.invertOraclePrice()).to.be.equal(false);
-      await expectEvent(
-        await this.swapper.setInvertOraclePrice(true, {from: governorAddress}),
-        'UpdateInvertOraclePrice',
-        {
-          invertOraclePrice: true
-        }
-      );
-      expect(await this.swapper.invertOraclePrice()).to.be.equal(true);
     });
   });
 
