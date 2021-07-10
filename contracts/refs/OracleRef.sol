@@ -67,11 +67,14 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     }
 
     function _setOracle(address newOracle) internal {
+        require(newOracle != address(0), "OracleRef: zero address");
+
         address oldOracle = address(oracle);
         oracle = IOracle(newOracle);
         emit OracleUpdate(oldOracle, newOracle);
     }
 
+    // Supports zero address if no backup
     function _setBackupOracle(address newBackupOracle) internal {
         address oldBackupOracle = address(backupOracle);
         backupOracle = IOracle(newBackupOracle);

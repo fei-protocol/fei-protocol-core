@@ -59,6 +59,9 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
         bool _invertOraclePrice,
         uint256 _swapIncentiveAmount
     ) OracleRef(_core, _oracle) Timed(_swapFrequency) Incentivized(_swapIncentiveAmount) {
+        require(_pair.token0() == _tokenSpent || _pair.token1() == _tokenSpent, "PCVSwapperUniswap: token spent not in pair");
+        require(_pair.token0() == _tokenReceived || _pair.token1() == _tokenReceived, "PCVSwapperUniswap: token received not in pair");
+
         pair = _pair;
         WETH = _WETH;
         tokenSpent = _tokenSpent;
@@ -138,6 +141,8 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     /// @notice Sets the address receiving swap's inbound tokens
     /// @param _tokenReceivingAddress the address that will receive tokens
     function setReceivingAddress(address _tokenReceivingAddress) external override onlyGovernor {
+      require(_tokenReceivingAddress != address(0), "PCVSwapperUniswap: zero address");
+
       tokenReceivingAddress = _tokenReceivingAddress;
       emit UpdateReceivingAddress(_tokenReceivingAddress);
     }

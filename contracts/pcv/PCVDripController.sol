@@ -74,6 +74,8 @@ contract PCVDripController is IPCVDripController, CoreRef, Timed, Incentivized {
         override
         onlyGovernor
     {
+        require(address(newSource) != address(0), "PCVDripController: zero address");
+
         address oldSource = address(source);
         source = newSource;
         emit SourceUpdate(oldSource, address(newSource));
@@ -85,6 +87,8 @@ contract PCVDripController is IPCVDripController, CoreRef, Timed, Incentivized {
         override
         onlyGovernor
     {
+        require(address(newTarget) != address(0), "PCVDripController: zero address");
+
         address oldTarget = address(target);
         target = newTarget;
         emit TargetUpdate(oldTarget, address(newTarget));
@@ -96,6 +100,8 @@ contract PCVDripController is IPCVDripController, CoreRef, Timed, Incentivized {
         override
         onlyGovernor
     {
+        require(newDripAmount != 0, "PCVDripController: zero drip amount");
+
         uint256 oldDripAmount = dripAmount;
         dripAmount = newDripAmount;
         emit DripAmountUpdate(oldDripAmount, newDripAmount);

@@ -50,6 +50,8 @@ abstract contract UniRef is IUniRef, OracleRef {
     }
 
     function _setupPair(address newPair) internal {
+        require(newPair != address(0), "UniRef: zero address");
+
         address oldPair = address(pair);
         pair = IUniswapV2Pair(newPair);
         emit PairUpdate(oldPair, newPair);
