@@ -30,7 +30,9 @@ contract RatioPCVController is CoreRef {
     ) CoreRef(_core) {}
 
     /// @notice withdraw tokens from the input PCV deposit in basis points terms
+    /// @param pcvDeposit PCV deposit to withdraw from
     /// @param to the address to send PCV to
+    /// @param basisPoints ratio of PCV to withdraw in basis points terms (1/10000)
     function withdrawRatio(IPCVDeposit pcvDeposit, address to, uint256 basisPoints)
         public
         onlyPCVController
@@ -45,7 +47,10 @@ contract RatioPCVController is CoreRef {
     }
 
     /// @notice withdraw a specific ERC20 token from the input PCV deposit in basis points terms
+    /// @param pcvDeposit PCV deposit to withdraw from
+    /// @param token the ERC20 token to withdraw
     /// @param to the address to send tokens to
+    /// @param basisPoints ratio of PCV to withdraw in basis points terms (1/10000)
     function withdrawRatioERC20(IPCVDeposit pcvDeposit, address token, address to, uint256 basisPoints)
         public
         onlyPCVController

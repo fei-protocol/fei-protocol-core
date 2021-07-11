@@ -35,12 +35,12 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice constructor
-    /// @param _scale the Scale target where peg fixes
     /// @param _core Fei Core to reference
+    /// @param _oracle the price oracle to reference
+    /// @param _backupOracle the backup oracle to reference
+    /// @param _scale the Scale target where peg fixes
     /// @param _pcvDeposits the PCV Deposits for the PCVSplitter
     /// @param _ratios the ratios for the PCVSplitter
-    /// @param _oracle the oracle to reference
-    /// @param _backupOracle the backup oracle to reference
     /// @param _duration the duration between incentivizing allocations
     /// @param _incentive the amount rewarded to the caller of an allocation
     /// @param _token the ERC20 token associated with this curve, null if ETH
@@ -93,7 +93,8 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         return _purchase(amountIn, to);
     }
 
-    /// @notice the amount of PCV held in contract and ready to be allocated
+    /// @notice balance of the bonding curve
+    /// @return the amount of PCV held in contract and ready to be allocated
     function balance() public view virtual override returns (uint256) {
         return token.balanceOf(address(this));
     }
@@ -242,7 +243,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         emit ScaleUpdate(oldScale, newScale);
     }
 
-    /// @notice the bonding curve price multiplier at the current totalPurchased relative to Scale
+    /// @notice the bonding curve price multiplier used before Scale
     function _getBondingCurvePriceMultiplier()
         internal
         view

@@ -25,6 +25,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
     /// @param _core Fei Core to reference
     /// @param _oracle the price oracle to reference
     /// @param _backupOracle the backup oracle to reference
+    /// @param _token the ERC20 token for this stabilizer, 0x0 if TRIBE or ETH
     /// @param _usdPerFeiBasisPoints the USD price per FEI to sell tokens at
     constructor(
         address _core,
