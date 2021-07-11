@@ -1,5 +1,5 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
 import "./IOracleRef.sol";
 import "./CoreRef.sol";
@@ -13,17 +13,26 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     /// @notice the oracle reference by the contract
     IOracle public override oracle;
 
+    /// @notice the backup oracle reference by the contract
+    IOracle public override backupOracle;
+
     /// @notice OracleRef constructor
     /// @param _core Fei Core to reference
     /// @param _oracle oracle to reference
-    constructor(address _core, address _oracle) public CoreRef(_core) {
+    constructor(address _core, address _oracle) CoreRef(_core) {
         _setOracle(_oracle);
     }
 
     /// @notice sets the referenced oracle
-    /// @param _oracle the new oracle to reference
-    function setOracle(address _oracle) external override onlyGovernor {
-        _setOracle(_oracle);
+    /// @param newOracle the new oracle to reference
+    function setOracle(address newOracle) external override onlyGovernor {
+        _setOracle(newOracle);
+    }
+
+    /// @notice sets the referenced backup oracle
+    /// @param newBackupOracle the new backup oracle to reference
+    function setBackupOracle(address newBackupOracle) external override onlyGovernor {
+        _setBackupOracle(newBackupOracle);
     }
 
     /// @notice invert a peg price
@@ -48,14 +57,24 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     /// @notice the peg price of the referenced oracle
     /// @return the peg as a Decimal
     /// @dev the peg is defined as FEI per X with X being ETH, dollars, etc
-    function peg() public view override returns (Decimal.D256 memory) {
+    function readOracle() public view override returns (Decimal.D256 memory) {
         (Decimal.D256 memory _peg, bool valid) = oracle.read();
+        if (!valid && address(backupOracle) != address(0)) {
+            (_peg, valid) = backupOracle.read();
+        }
         require(valid, "OracleRef: oracle invalid");
         return _peg;
     }
 
-    function _setOracle(address _oracle) internal {
-        oracle = IOracle(_oracle);
-        emit OracleUpdate(_oracle);
+    function _setOracle(address newOracle) internal {
+        address oldOracle = address(oracle);
+        oracle = IOracle(newOracle);
+        emit OracleUpdate(oldOracle, newOracle);
+    }
+
+    function _setBackupOracle(address newBackupOracle) internal {
+        address oldBackupOracle = address(backupOracle);
+        backupOracle = IOracle(newBackupOracle);
+        emit BackupOracleUpdate(oldBackupOracle, newBackupOracle);
     }
 }

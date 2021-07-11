@@ -1,25 +1,20 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
-import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../external/Decimal.sol";
 
 /// @title UniRef interface
 /// @author Fei Protocol
 interface IUniRef {
     // ----------- Events -----------
 
-    event PairUpdate(address indexed _pair);
+    event PairUpdate(address indexed oldPair, address indexed newPair);
 
     // ----------- Governor only state changing api -----------
 
-    function setPair(address _pair) external;
+    function setPair(address newPair) external;
 
     // ----------- Getters -----------
-
-    function router() external view returns (IUniswapV2Router02);
 
     function pair() external view returns (IUniswapV2Pair);
 
@@ -30,10 +25,4 @@ interface IUniRef {
         view
         returns (uint256 feiReserves, uint256 tokenReserves);
 
-    function deviationBelowPeg(
-        Decimal.D256 calldata price,
-        Decimal.D256 calldata peg
-    ) external pure returns (Decimal.D256 memory);
-
-    function liquidityOwned() external view returns (uint256);
 }

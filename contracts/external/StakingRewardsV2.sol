@@ -1,10 +1,10 @@
-pragma solidity ^0.6.6;
+pragma solidity ^0.8.0;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { Math } from  "@openzeppelin/contracts/math/Math.sol";
-import { SafeMath } from "@openzeppelin/contracts/math/SafeMath.sol";
-import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import { Math } from  "@openzeppelin/contracts/utils/math/Math.sol";
+import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 // Inheritance
 import { RewardsDistributionRecipient } from  "./RewardsDistributionRecipient.sol";
@@ -38,7 +38,7 @@ contract StakingRewardsV2 is RewardsDistributionRecipient, ReentrancyGuard {
         address _rewardsToken,
         address _stakingToken,
         uint256 _rewardsDuration
-    ) public {
+    ) {
         rewardsToken = IERC20(_rewardsToken);
         stakingToken = IERC20(_stakingToken);
         rewardsDistribution = _rewardsDistribution;

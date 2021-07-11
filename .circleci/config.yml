@@ -30,6 +30,17 @@ jobs:
           key: repo-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - ~/repo
+  lint:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:12
+    steps:
+      - restore_cache:
+          keys:
+            - repo-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Run linter
+          command: npm run lint
   test:
     working_directory: ~/repo
     docker:
@@ -42,10 +53,33 @@ jobs:
           name: Run tests
           command: npm run test
 
+  e2e-test:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:12
+    steps:
+      - restore_cache:
+          keys:
+            - repo-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Run end-to-end tests
+          command: npm run test:e2e
+
 workflows:
   main:
     jobs:
       - build
+      - lint: 
+          requires:
+            - build
       - test:
           requires:
             - build
+      - e2e-test:
+          requires:
+            - build
+            - lint
+            - test
+          filters:
+            branches:
+              only: master

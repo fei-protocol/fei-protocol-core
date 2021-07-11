@@ -1,5 +1,5 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
 import "../external/Decimal.sol";
 
@@ -9,7 +9,7 @@ contract MockBondingCurve {
 	bool public allocated;
 	Decimal.D256 public getCurrentPrice;
 
-	constructor(bool _atScale, uint256 price) public {
+	constructor(bool _atScale, uint256 price) {
 		setScale(_atScale);
 		setCurrentPrice(price);
 	}

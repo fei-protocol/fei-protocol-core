@@ -1,5 +1,5 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
 import "./IStakingRewards.sol";
 
@@ -21,10 +21,6 @@ interface IRewardsDistributor {
         uint256 _frequency
     );
 
-    event IncentiveUpdate(
-        uint256 _incentiveAmount
-    );
-
     event StakingContractUpdate(
         address _stakingContract
     );
@@ -40,8 +36,6 @@ interface IRewardsDistributor {
     function governorRecover(address tokenAddress, address to, uint256 amount) external;
 
     function setDripFrequency(uint256 _frequency) external;
-
-    function setIncentiveAmount(uint256 _incentiveAmount) external;
 
     function setStakingContract(address _stakingRewards) external;
 
@@ -66,6 +60,4 @@ interface IRewardsDistributor {
     function nextDripAvailable() external view returns (uint256);
 
     function dripFrequency() external view returns (uint256);
-
-    function incentiveAmount() external view returns (uint256);
 }

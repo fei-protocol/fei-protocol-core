@@ -1,19 +1,19 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "./IPermissions.sol";
 
 /// @title Access control module for Core
 /// @author Fei Protocol
-contract Permissions is IPermissions, AccessControl {
+contract Permissions is IPermissions, AccessControlEnumerable {
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PCV_CONTROLLER_ROLE = keccak256("PCV_CONTROLLER_ROLE");
     bytes32 public constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
     bytes32 public constant GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
 
-    constructor() public {
+    constructor() {
         // Appointed as a governor so guardian can have indirect access to revoke ability
         _setupGovernor(address(this));
 
