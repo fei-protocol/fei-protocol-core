@@ -3,7 +3,6 @@ pragma solidity ^0.8.4;
 
 import "./ICoreRef.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
 
 /// @title A Reference to Core
 /// @author Fei Protocol

@@ -19,7 +19,7 @@ contract PCVDripController is IPCVDripController, CoreRef, Timed, Incentivized {
     /// @notice amount to drip after each window
     uint256 public override dripAmount;
 
-    /// @notice ETH PCV Dripper constructor
+    /// @notice PCV Drip Controller constructor
     /// @param _core Fei Core for reference
     /// @param _source the PCV deposit to drip from
     /// @param _target the PCV deposit to drip to
@@ -47,7 +47,7 @@ contract PCVDripController is IPCVDripController, CoreRef, Timed, Incentivized {
         _initTimed();
     }
 
-    /// @notice drip ETH to target by withdrawing from source
+    /// @notice drip PCV to target by withdrawing from source
     function drip()
         external
         override

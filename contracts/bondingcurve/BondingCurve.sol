@@ -2,7 +2,6 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
 import "./IBondingCurve.sol";
 import "../refs/OracleRef.sol";
 import "../pcv/PCVSplitter.sol";
@@ -168,7 +167,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
 
     /// @notice return current instantaneous bonding curve price
     /// @return price reported as FEI per USD
-    /// @dev Can be innacurate if outdated, need to call `oracle().isOutdated()` to check
+    /// @dev Can be inaccurate if outdated, need to call `oracle().isOutdated()` to check
     function getCurrentPrice()
         public
         view
@@ -192,7 +191,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         returns (uint256 amountOut)
     {
         // the FEI value of the input amount
-        uint256 adjustedAmount = readOracle().mul(amountIn).asUint256();
+        uint256 feiValueOfAmountIn = readOracle().mul(amountIn).asUint256();
 
         Decimal.D256 memory price = getCurrentPrice();
 
@@ -200,14 +199,14 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
             uint256 preScaleAmount = scale - totalPurchased;
 
             // crossing scale
-            if (adjustedAmount > preScaleAmount) {
-                uint256 postScaleAmount = adjustedAmount - preScaleAmount;
+            if (feiValueOfAmountIn > preScaleAmount) {
+                uint256 postScaleAmount = feiValueOfAmountIn - preScaleAmount;
                 // combined pricing of pre-scale price times the amount to reach scale and post-scale price times remainder
                 return price.mul(preScaleAmount).add(_getBufferMultiplier().mul(postScaleAmount)).asUint256();
             }
         }
 
-        amountOut = price.mul(adjustedAmount).asUint256();
+        amountOut = price.mul(feiValueOfAmountIn).asUint256();
     }
 
     /// @notice mint FEI and send to buyer destination
@@ -242,11 +241,12 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         internal
         view
         virtual
-        returns (Decimal.D256 memory) {
-            uint256 granularity = BASIS_POINTS_GRANULARITY;
-            // uses 1/1-b because the oracle price is inverted
-            return Decimal.ratio(granularity, granularity - discount);
-        }
+        returns (Decimal.D256 memory)
+    {
+        uint256 granularity = BASIS_POINTS_GRANULARITY;
+        // uses 1/1-b because the oracle price is inverted
+        return Decimal.ratio(granularity, granularity - discount);
+    }
 
     /// @notice returns the buffer on the post-scale bonding curve price
     function _getBufferMultiplier() internal view returns (Decimal.D256 memory) {

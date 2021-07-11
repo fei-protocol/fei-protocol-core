@@ -3,7 +3,6 @@ pragma solidity ^0.8.4;
 
 import "./IPCVDeposit.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /// @title a PCV Deposit interface
 /// @author Fei Protocol

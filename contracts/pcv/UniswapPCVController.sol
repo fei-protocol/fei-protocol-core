@@ -2,7 +2,6 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "./IUniswapPCVController.sol";
 import "../utils/Incentivized.sol";
@@ -16,7 +15,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
     using Decimal for Decimal.D256;
     using Babylonian for uint256;
 
-    uint256 internal constant BASIS_POINTS_GRANULARITY = 10000;
+    uint256 internal constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice returns the linked pcv deposit contract
     IPCVDeposit public override pcvDeposit;
@@ -86,12 +85,12 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
         override
         onlyGovernor
     {
-        uint256 oldReweigtMinDistanceBPs = _minDistanceForReweight.mul(BASIS_POINTS_GRANULARITY).asUint256();
+        uint256 oldReweightMinDistanceBPs = _minDistanceForReweight.mul(BASIS_POINTS_GRANULARITY).asUint256();
         _minDistanceForReweight = Decimal.ratio(
             newReweightMinDistanceBPs,
             BASIS_POINTS_GRANULARITY
         );
-        emit ReweightMinDistanceUpdate(oldReweigtMinDistanceBPs, newReweightMinDistanceBPs);
+        emit ReweightMinDistanceUpdate(oldReweightMinDistanceBPs, newReweightMinDistanceBPs);
     }
 
     /// @notice sets the reweight duration
@@ -105,10 +104,10 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
 
     /// @notice signal whether the reweight is available. Must have passed reweight frequency and minimum distance from peg
     function reweightEligible() public view override returns (bool) {
-        bool magnitude =
+        bool meetsMagnitudeRequirement =
             getDistanceToPeg().greaterThan(_minDistanceForReweight);
-        bool time = isTimeEnded();
-        return magnitude && time;
+        bool meetsTimeRequirement = isTimeEnded();
+        return meetsMagnitudeRequirement && meetsTimeRequirement;
     }
 
     /// @notice return current percent distance from peg
