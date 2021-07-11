@@ -55,6 +55,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
 
     /// @notice reweights the linked PCV Deposit to the peg price. Needs to be reweight eligible
     function reweight() external override whenNotPaused {
+        updateOracle();
         require(
             reweightEligible(),
             "UniswapPCVController: Not passed reweight time or not at min distance"
@@ -68,6 +69,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
 
     /// @notice reweights regardless of eligibility
     function forceReweight() external override onlyGuardianOrGovernor {
+        updateOracle();
         _reweight();
     }
 
@@ -145,8 +147,6 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
         if (feiReserves == 0 || tokenReserves == 0) {
             return;
         }
-
-        updateOracle();
 
         Decimal.D256 memory _peg = readOracle();
 
