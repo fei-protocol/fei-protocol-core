@@ -1,4 +1,4 @@
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 /// @title A test PCV Deposit interface
 /// @author Fei Protocol
