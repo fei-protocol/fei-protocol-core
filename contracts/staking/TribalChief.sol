@@ -3,12 +3,11 @@
 pragma solidity ^0.8.0;
 
 import "./../refs/CoreRef.sol";
-import "./IRewardsDistributor.sol";
 import "./IRewarder.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /// @notice migration functionality has been removed as this is only going to be used to distribute staking rewards
 
