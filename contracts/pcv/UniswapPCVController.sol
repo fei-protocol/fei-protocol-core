@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "./IUniswapPCVController.sol";
 import "../utils/Incentivized.sol";
@@ -16,7 +15,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
     using Decimal for Decimal.D256;
     using Babylonian for uint256;
 
-    uint256 internal constant BASIS_POINTS_GRANULARITY = 10000;
+    uint256 internal constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice returns the linked pcv deposit contract
     IPCVDeposit public override pcvDeposit;
@@ -57,6 +56,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
 
     /// @notice reweights the linked PCV Deposit to the peg price. Needs to be reweight eligible
     function reweight() external override whenNotPaused {
+        updateOracle();
         require(
             reweightEligible(),
             "UniswapPCVController: Not passed reweight time or not at min distance"
@@ -70,6 +70,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
 
     /// @notice reweights regardless of eligibility
     function forceReweight() external override onlyGuardianOrGovernor {
+        updateOracle();
         _reweight();
     }
 
@@ -86,12 +87,12 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
         override
         onlyGovernor
     {
-        uint256 oldReweigtMinDistanceBPs = _minDistanceForReweight.mul(BASIS_POINTS_GRANULARITY).asUint256();
+        uint256 oldReweightMinDistanceBPs = _minDistanceForReweight.mul(BASIS_POINTS_GRANULARITY).asUint256();
         _minDistanceForReweight = Decimal.ratio(
             newReweightMinDistanceBPs,
             BASIS_POINTS_GRANULARITY
         );
-        emit ReweightMinDistanceUpdate(oldReweigtMinDistanceBPs, newReweightMinDistanceBPs);
+        emit ReweightMinDistanceUpdate(oldReweightMinDistanceBPs, newReweightMinDistanceBPs);
     }
 
     /// @notice sets the reweight duration
@@ -105,10 +106,10 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
 
     /// @notice signal whether the reweight is available. Must have passed reweight frequency and minimum distance from peg
     function reweightEligible() public view override returns (bool) {
-        bool magnitude =
+        bool meetsMagnitudeRequirement =
             getDistanceToPeg().greaterThan(_minDistanceForReweight);
-        bool time = isTimeEnded();
-        return magnitude && time;
+        bool meetsTimeRequirement = isTimeEnded();
+        return meetsMagnitudeRequirement && meetsTimeRequirement;
     }
 
     /// @notice return current percent distance from peg
@@ -118,7 +119,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
         override
         returns (Decimal.D256 memory distance)
     {
-        (Decimal.D256 memory price, , ) = _getUniswapPrice();
+        Decimal.D256 memory price = _getUniswapPrice();
         Decimal.D256 memory peg = readOracle();
 
         // Get the absolute value raw distance from peg
@@ -147,8 +148,6 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
         if (feiReserves == 0 || tokenReserves == 0) {
             return;
         }
-
-        updateOracle();
 
         Decimal.D256 memory _peg = readOracle();
 
@@ -224,10 +223,25 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
         pcvDeposit.deposit();
     }
 
-    /// @notice utility for calculating absolute distance from peg based on reserves
-    /// @param reserveTarget pair reserves of the asset desired to trade with
-    /// @param reserveOther pair reserves of the non-traded asset
-    /// @param peg the target peg reported as Target per Other
+    /**
+    * @notice utility for calculating absolute distance from peg based on reserves
+    * @param reserveTarget pair reserves of the asset desired to trade with
+    * @param reserveOther pair reserves of the non-traded asset
+    * @param peg the target peg reported as Target per Other
+    * 
+    * Derivation:
+    * Recall Uniswap's price and invariant formula, P = x/y and k = x*y
+    * The objective is to return some delta |d| such that 
+    *    x' = x + d
+    *    y' = k / x'
+    *    x'/y' = P' for target peg P'
+    * 
+    * Plugging in x' and y' to the new price formula gives:
+    *    P' = (x + d)^2 / k
+    *    sqrt(P' * k) = x + d
+    *    sqrt(P' * x * y) - x = d
+    * The resulting function returns |d| adjusted for uniswap fees
+    */
     function _getAmountToPeg(
         uint256 reserveTarget,
         uint256 reserveOther,
@@ -250,31 +264,16 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
         return _getAmountToPeg(feiReserves, tokenReserves, peg);
     }
 
-    /// @notice get uniswap price and reserves
+    /// @notice get uniswap price
     /// @return price reported as Fei per X
-    /// @return reserveFei fei reserves
-    /// @return reserveOther non-fei reserves
-    function _getUniswapPrice()
-        internal
-        view
-        returns (
-            Decimal.D256 memory,
-            uint256 reserveFei,
-            uint256 reserveOther
-        )
-    {
-        (reserveFei, reserveOther) = getReserves();
-        return (
-            Decimal.ratio(reserveFei, reserveOther),
-            reserveFei,
-            reserveOther
-        );
+    function _getUniswapPrice() internal view returns (Decimal.D256 memory) {
+        (uint256 reserveFei, uint256 reserveOther) = getReserves();
+        return Decimal.ratio(reserveFei, reserveOther);
     }
 
     /// @notice returns true if price is below the peg
     /// @dev counterintuitively checks if peg < price because price is reported as FEI per X
     function _isBelowPeg(Decimal.D256 memory peg) internal view returns (bool) {
-        (Decimal.D256 memory price, , ) = _getUniswapPrice();
-        return peg.lessThan(price);
+        return peg.lessThan(_getUniswapPrice());
     }
 }
