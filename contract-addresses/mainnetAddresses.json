@@ -12,7 +12,6 @@
     "ratioPCVControllerAddress": "0xfC1aD6eb84351597cD3b9B65179633697d65B920",
     "uniswapOracleAddress": "0x087F35bd241e41Fc28E43f0E8C58d283DD55bD65",
     "feiEthPairAddress": "0x94B0A3d511b6EcDb17eBF877278Ab030acb0A878",
-    "feiRewardsDistributorAddress": "0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5",
     "governorAlphaAddress": "0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B"
   },
   "external" : {
@@ -20,6 +19,11 @@
     "wethAddress": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
     "uniswapRouterAddress": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
     "chainlinkEthUsdOracleAddress": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
-    "chainlinkFeiEthOracleAddress": "0x7F0D2c2838c6AC24443d13e23d99490017bDe370"
+    "chainlinkFeiEthOracleAddress": "0x7F0D2c2838c6AC24443d13e23d99490017bDe370",
+    "rariPool8ComptrollerAddress": "0xc54172e34046c1653d1920d40333dd358c7a1af4",
+    "rariPool8FeiAddress": "0xd8553552f8868C1Ef160eEdf031cF0BCf9686945",
+    "rariPool8TribeAddress": "0xFd3300A9a74b3250F1b2AbC12B47611171910b07",
+    "rariPool8EthAddress": "0xbB025D470162CC5eA24daF7d4566064EE7f5F111",
+    "rariPool8DaiAddress": "0x7e9cE3CAa9910cc048590801e64174957Ed41d43"
   }
 }

@@ -11,5 +11,11 @@
         "exec" : false,
         "proposerAddress" : "",
         "voterAddress" : ""
+    },
+    "compoundPCVDeposit" : {
+        "deploy" : true,
+        "exec" : false,
+        "proposerAddress" : "",
+        "voterAddress" : ""
     }
 }
