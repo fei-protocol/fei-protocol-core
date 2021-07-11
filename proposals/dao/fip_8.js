@@ -3,8 +3,8 @@ const EthBondingCurve = artifacts.require('EthBondingCurve');
 const UniswapPCVController = artifacts.require('UniswapPCVController');
 const UniswapPCVDeposit = artifacts.require('UniswapPCVDeposit');
 
-const { getAddresses } = require('../utils/helpers');
-const { sudo } = require('../utils/sudo');
+const { getAddresses } = require('../../scripts/utils/helpers');
+const { sudo } = require('../../scripts/utils/sudo');
 
 const { 
   chainlinkEthUsdOracleWrapper, 

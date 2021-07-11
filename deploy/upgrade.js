@@ -11,7 +11,7 @@ const CompositeOracle = artifacts.require('CompositeOracle');
 const PCVDripController = artifacts.require('PCVDripController');
 const RatioPCVController = artifacts.require('RatioPCVController');
 
-async function upgrade(deployAddress, addresses, logging = false) {
+async function deploy(deployAddress, addresses, logging = false) {
   const {
     coreAddress,
     feiEthPairAddress,
@@ -138,4 +138,4 @@ async function upgrade(deployAddress, addresses, logging = false) {
   };
 }
 
-module.exports = { upgrade };
+module.exports = { deploy };

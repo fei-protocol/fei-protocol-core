@@ -2,15 +2,16 @@ import { expect, web3 } from 'hardhat'
 import { time } from '@openzeppelin/test-helpers';
 import { TestEndtoEndCoordinator } from './setup';
 import { syncPool } from '../scripts/utils/syncPool'
-import { AddressesAfterUpgrade, ContractsAfterUpgrade } from './setup/types';
+import { MainnetContractAddresses, MainnetContracts } from './setup/types';
 import { getPeg, getPrice } from './setup/utils'
 import { expectApprox } from '../test/helpers'
+import proposals from '../proposals/config.json'
 
 const { toBN } = web3.utils;
 
 describe('e2e', function () {
-  let contracts: ContractsAfterUpgrade;
-  let contractAddresses: AddressesAfterUpgrade;
+  let contracts: MainnetContracts;
+  let contractAddresses: MainnetContractAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
 
@@ -26,8 +27,8 @@ describe('e2e', function () {
       deployAddress: deployAddress,
       version: version,
     }
-    e2eCoord = new TestEndtoEndCoordinator(config);
-    ({ contracts, contractAddresses } = await e2eCoord.applyUpgrade())
+    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment())
 
     await contracts.uniswapPCVDeposit.deposit()
   })
@@ -148,9 +149,9 @@ describe('e2e', function () {
       await syncPool(
         toBN('9700'),
         {
-          feiAddress: contractAddresses.fei,
-          ethUniswapPCVDepositAddress: contractAddresses.uniswapPCVDeposit,
-          ethPairAddress: contractAddresses.feiEthPair, // this is fei eth pair
+          feiAddress: contractAddresses.feiAddress,
+          ethUniswapPCVDepositAddress: contractAddresses.uniswapPCVDepositAddress,
+          ethPairAddress: contractAddresses.feiEthPairAddress, // this is fei eth pair
         },
         deployAddress,
       );
@@ -179,9 +180,9 @@ describe('e2e', function () {
       await syncPool(
         toBN('10300'),
         {
-          feiAddress: contractAddresses.fei,
-          ethUniswapPCVDepositAddress: contractAddresses.uniswapPCVDeposit,
-          ethPairAddress: contractAddresses.feiEthPair, // this is fei eth pair
+          feiAddress: contractAddresses.feiAddress,
+          ethUniswapPCVDepositAddress: contractAddresses.uniswapPCVDepositAddress,
+          ethPairAddress: contractAddresses.feiEthPairAddress, // this is fei eth pair
         },
         deployAddress,
       );
@@ -274,7 +275,7 @@ describe('e2e', function () {
 
       const tribe = contracts.tribe
       const tribeMinter = await tribe.minter()
-      expect(tribeMinter).to.equal(contractAddresses.tribeReserveStabilizer)
+      expect(tribeMinter).to.equal(contractAddresses.tribeReserveStabilizerAddress)
     })
   })
 });

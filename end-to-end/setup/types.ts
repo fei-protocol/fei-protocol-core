@@ -1,19 +1,13 @@
 const { web3 } = require('hardhat');
 const { Contract } = web3.eth
 
-export type EnvAfterUpgrade = {
-  contracts: ContractsAfterUpgrade,
-  contractAddresses: AddressesAfterUpgrade,
-}
-
-export type EnvBeforeUpgrade = {
-  contracts: ContractsBeforeUpgrade,
-  contractAddresses: AddressesBeforeUpgrade,
+export type Env = {
+  contracts: MainnetContracts,
+  contractAddresses: MainnetContractAddresses,
 }
 
 export interface TestCoordinator {
-  applyUpgrade(): Promise<EnvAfterUpgrade>;
-  beforeUpgrade(): Promise<EnvBeforeUpgrade>;
+  loadEnvironment(): Promise<Env>;
 }
 
 export type Config = {
@@ -22,34 +16,7 @@ export type Config = {
   logging: boolean;
 }
 
-export type ExistingProtocolContracts = {
-  core: typeof Contract,
-  tribe: typeof Contract,
-  fei: typeof Contract,
-  ethReserveStabilizer: typeof Contract,
-  feiRewardsDistributor: typeof Contract,
-  timelock: typeof Contract,
-  feiEthPair: typeof Contract,
-}
-
-export type ContractsBeforeUpgrade = {
-  core: typeof Contract,
-  tribe: typeof Contract,
-  fei: typeof Contract,
-  uniswapPCVDeposit: typeof Contract,
-  uniswapPCVController: typeof Contract,
-  bondingCurve: typeof Contract,
-  chainlinkEthUsdOracle: typeof Contract,
-  chainlinkFeiEthOracle: typeof Contract,
-  compositeOracle: typeof Contract,
-  ethReserveStabilizer: typeof Contract,
-  ratioPCVController: typeof Contract,
-  feiRewardsDistributor: typeof Contract,
-  timelock: typeof Contract,
-  feiEthPair: typeof Contract,
-}
-
-export type ContractsAfterUpgrade = {
+export type MainnetContracts = {
   core: typeof Contract,
   tribe: typeof Contract,
   fei: typeof Contract,
@@ -62,69 +29,42 @@ export type ContractsAfterUpgrade = {
   ethReserveStabilizer: typeof Contract,
   ratioPCVController: typeof Contract,
   tribeReserveStabilizer: typeof Contract,
-  pcvDripController: typeof Contract,
   feiRewardsDistributor: typeof Contract,
   timelock: typeof Contract,
   feiEthPair: typeof Contract,
-}
-
-export type AddressesBeforeUpgrade = {
-  core: string,
-  tribe: string,
-  fei: string,
-  uniswapPCVDeposit: string,
-  uniswapPCVController: string,
-  bondingCurve: string,
-  chainlinkEthUsdOracle: string,
-  chainlinkFeiEthOracle: string,
-  compositeOracle: string,
-  ethReserveStabilizer: string,
-  ratioPCVController: string,
-  feiRewardsDistributor: string,
-  timelock: string,
-  feiEthPair: string,
-  multisig: string
-}
-
-export type AddressesAfterUpgrade = {
-  core: string,
-  tribe: string,
-  fei: string,
-  uniswapPCVDeposit: string,
-  uniswapPCVController: string,
-  bondingCurve: string,
-  chainlinkEthUsdOracle: string,
-  chainlinkFeiEthOracle: string,
-  compositeOracle: string,
-  ethReserveStabilizer: string,
-  ratioPCVController: string,
-  feiRewardsDistributor: string,
-  tribeReserveStabilizer: string,
-  pcvDripController: string,
-  timelock: string,
-  feiEthPair: string,
-  multisig: string
+  pcvDripController: typeof Contract,
 }
 
 export type MainnetContractAddresses = {
-  core: string,
-  tribe: string,
-  fei: string,
-  uniswapPCVDeposit: string,
-  uniswapPCVController: string,
-  bondingCurve: string,
-  chainlinkEthUsdOracle: string,
-  chainlinkFeiEthOracle: string,
-  compositeOracle: string
-  ethReserveStabilizer: string,
-  ratioPCVController: string,
-  weth: string,
-  uniswapRouter: string,
-  feiEthPair: string,
-  uniswapOracle: string,
-  feiRewardsDistributor: string,
-  timelock: string,
-  multisig: string,
+  coreAddress: string,
+  tribeAddress: string,
+  feiAddress: string,
+  uniswapPCVDepositAddress: string,
+  uniswapPCVControllerAddress: string,
+  bondingCurveAddress: string,
+  chainlinkEthUsdOracleAddress: string,
+  chainlinkFeiEthOracleAddress: string,
+  compositeOracleAddress: string
+  ethReserveStabilizerAddress: string,
+  ratioPCVControllerAddress: string,
+  wethAddress: string,
+  uniswapRouterAddress: string,
+  feiEthPairAddress: string,
+  uniswapOracleAddress: string,
+  feiRewardsDistributorAddress: string,
+  tribeReserveStabilizerAddress: string,
+  pcvDripControllerAddress: string,
+  timelockAddress: string,
+  multisigAddress: string,
+  governorAlpha: string,
+}
+
+export type ProposalConfig = {
+  deploy: boolean,
+  exec: boolean,
+  proposerAddress: string,
+  voterAddress: string,
+  proposal_calldata: string,
 }
 
 export type ContractAccessRights = 
