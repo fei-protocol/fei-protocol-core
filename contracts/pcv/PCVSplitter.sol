@@ -25,11 +25,10 @@ abstract contract PCVSplitter {
     /// @notice make sure an allocation has matching lengths and totals the ALLOCATION_GRANULARITY
     /// @param _pcvDeposits new list of pcv deposits to send to
     /// @param _ratios new ratios corresponding to the PCV deposits
-    /// @return true if it is a valid allocation
     function checkAllocation(
         address[] memory _pcvDeposits,
         uint256[] memory _ratios
-    ) public pure returns (bool) {
+    ) public pure {
         require(
             _pcvDeposits.length == _ratios.length,
             "PCVSplitter: PCV Deposits and ratios are different lengths"
@@ -44,8 +43,6 @@ abstract contract PCVSplitter {
             total == ALLOCATION_GRANULARITY,
             "PCVSplitter: ratios do not total 100%"
         );
-
-        return true;
     }
 
     /// @notice gets the pcvDeposits and ratios of the splitter
