@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "./IPCVDeposit.sol";
-import "../external/Decimal.sol";
+import "../IPCVDeposit.sol";
+import "../../external/Decimal.sol";
 
 /// @title a Uniswap PCV Controller interface
 /// @author Fei Protocol

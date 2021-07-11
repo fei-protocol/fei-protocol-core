@@ -4,10 +4,10 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "./IUniswapPCVController.sol";
-import "../utils/Incentivized.sol";
-import "../refs/UniRef.sol";
-import "../external/UniswapV2Library.sol";
-import "../utils/Timed.sol";
+import "../../utils/Incentivized.sol";
+import "../../refs/UniRef.sol";
+import "../../external/UniswapV2Library.sol";
+import "../../utils/Timed.sol";
 
 /// @title a PCV controller for reweighting the Uniswap pair price to a peg
 /// @author Fei Protocol

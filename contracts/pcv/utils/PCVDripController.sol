@@ -2,9 +2,9 @@
 pragma solidity ^0.8.4;
 
 import "./IPCVDripController.sol"; 
-import "../utils/Incentivized.sol"; 
-import "../refs/CoreRef.sol";
-import "../utils/Timed.sol";
+import "../../utils/Incentivized.sol"; 
+import "../../refs/CoreRef.sol";
+import "../../utils/Timed.sol";
 
 /// @title a PCV dripping controller
 /// @author Fei Protocol
