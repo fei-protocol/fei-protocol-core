@@ -44,6 +44,7 @@ describe('UniswapPCVController', function () {
     this.pcvController = await UniswapPCVController.new(
       this.core.address, 
       this.pcvDeposit.address, 
+      this.oracle.address,
       this.oracle.address, 
       '100000000000000000000',
       '100',
