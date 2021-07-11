@@ -2,13 +2,14 @@
 pragma solidity ^0.8.4;
 
 import "./IUniswapPCVDeposit.sol";
+import "./PCVDeposit.sol";
 import "../refs/UniRef.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title implementation for Uniswap LP PCV Deposit
 /// @author Fei Protocol
-contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
+contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     using Decimal for Decimal.D256;
 
     /// @notice a slippage protection parameter, deposits revert when spot price is > this % from oracle
@@ -96,19 +97,6 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, UniRef {
         _burnFeiHeld(); // burn remaining FEI
 
         emit Withdrawal(msg.sender, to, amountWithdrawn);
-    }
-
-    /// @notice withdraw ERC20 from the contract
-    /// @param token address of the ERC20 to send
-    /// @param to address destination of the ERC20
-    /// @param amount quantity of ERC20 to send
-    function withdrawERC20(
-        address token,
-        address to,
-        uint256 amount
-    ) external override onlyPCVController {
-        SafeERC20.safeTransfer(IERC20(token), to, amount);
-        emit WithdrawERC20(msg.sender, address(token), to, amount);
     }
 
     /// @notice sets the new slippage parameter for depositing liquidity

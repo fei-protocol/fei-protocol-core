@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 pragma experimental ABIEncoderV2;
 
-import "./IPCVDeposit.sol";
+import "./PCVDeposit.sol";
 import "../refs/CoreRef.sol";
 import "../external/Decimal.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -32,7 +32,7 @@ interface IStableSwapSTETH {
 /// @title implementation for PCV Deposit that can take ETH and get stETH either
 /// by staking on Lido or swapping on Curve, and sell back stETH for ETH on Curve.
 /// @author eswak, realisation
-contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
+contract EthLidoPCVDeposit is PCVDeposit {
     using SafeERC20 for ERC20;
     using Decimal for Decimal.D256;
 
@@ -160,19 +160,6 @@ contract EthLidoPCVDeposit is IPCVDeposit, CoreRef {
         Address.sendValue(payable(to), actualAmountOut);
 
         emit Withdrawal(msg.sender, to, actualAmountOut);
-    }
-
-    /// @notice withdraw ERC20 from the contract
-    /// @param token address of the ERC20 to send
-    /// @param to address destination of the ERC20
-    /// @param amount quantity of ERC20 to send
-    function withdrawERC20(
-      address token,
-      address to,
-      uint256 amount
-    ) public override onlyPCVController {
-        ERC20(token).safeTransfer(to, amount);
-        emit WithdrawERC20(msg.sender, token, to, amount);
     }
 
     /// @notice Returns the current balance of stETH held by the contract

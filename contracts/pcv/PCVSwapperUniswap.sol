@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "./IPCVSwapper.sol";
+import "./PCVDeposit.sol";
 import "../utils/Incentivized.sol";
 import "../refs/OracleRef.sol";
 import "../utils/Timed.sol";
@@ -14,7 +15,7 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 
 /// @title implementation for PCV Swapper that swaps ERC20 tokens on Uniswap
 /// @author eswak
-contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
+contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incentivized {
     using SafeERC20 for IERC20;
     using Decimal for Decimal.D256;
 
@@ -135,19 +136,6 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
         emit WithdrawETH(msg.sender, to, amountOut);
     }
 
-    /// @notice withdraw ERC20 from the contract
-    /// @param token address of the ERC20 to send
-    /// @param to address destination of the ERC20
-    /// @param amount quantity of ERC20 to send
-    function withdrawERC20(
-      address token, 
-      address to, 
-      uint256 amount
-    ) public override onlyPCVController {
-        IERC20(token).safeTransfer(to, amount);
-        emit WithdrawERC20(msg.sender, token, to, amount);
-    }
-
     /// @notice Sets the address receiving swap's inbound tokens
     /// @param newTokenReceivingAddress the address that will receive tokens
     function setReceivingAddress(address newTokenReceivingAddress) external override onlyGovernor {
@@ -229,9 +217,9 @@ contract PCVSwapperUniswap is IPCVSwapper, OracleRef, Timed, Incentivized {
     // =======================================================================
 
     function _getExpectedAmountIn() internal view returns (uint256) {
-      uint256 balance = IERC20(tokenSpent).balanceOf(address(this));
-      require(balance != 0, "PCVSwapperUniswap: no tokenSpent left.");
-      return Math.min(maxSpentPerSwap, balance);
+      uint256 amount = IERC20(tokenSpent).balanceOf(address(this));
+      require(amount != 0, "PCVSwapperUniswap: no tokenSpent left.");
+      return Math.min(maxSpentPerSwap, amount);
     }
 
     function _getExpectedAmountOut(uint256 amountIn) internal view returns (uint256) {
