@@ -6,6 +6,8 @@ import "./../refs/CoreRef.sol";
 import "./IRewardsDistributor.sol";
 import "./IRewarder.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /// @notice migration functionality has been removed as this is only going to be used to distribute staking rewards
@@ -18,6 +20,9 @@ import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuar
 /// This contract will not have the ability to mint tribe.
 contract TribalChief is CoreRef, ReentrancyGuard {
     using SafeERC20 for IERC20;
+    using SafeCast for uint256;
+    using SafeCast for uint128;
+    using SafeCast for int256;
 
     /// @notice Info of each users's reward debt and virtual amount
     /// stored in a single pool
@@ -27,14 +32,14 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     }
 
     /// @notice Info for a deposit
-    /// `amount` LP token amount the user has provided.
+    /// `amount` amount of tokens the user has provided.
     /// `virtualAmount` The virtual amount deposited. Calculated like so (multiplier * amount) / scale_factor
     /// assumption here is that we will never go over 2^128 -1
     /// on any user deposits
     struct DepositInfo {
         uint128 amount;
         uint64 unlockBlock;
-        uint256 multiplier;
+        uint64 multiplier;
     }
 
     /// @notice Info of each pool.
@@ -51,13 +56,13 @@ contract TribalChief is CoreRef, ReentrancyGuard {
 
     /// @notice Info of each pool rewards multipliers available.
     /// map a pool id to a block lock time to a rewards multiplier
-    mapping (uint256 => mapping (uint64 => uint256)) public rewardMultipliers;
+    mapping (uint256 => mapping (uint64 => uint64)) public rewardMultipliers;
 
     /// @notice Data needed for governor to create a new lockup period
     /// and associated reward multiplier
     struct RewardData {
         uint64 lockLength;
-        uint256 rewardMultiplier;
+        uint64 rewardMultiplier;
     }
 
     /// @notice Address of Tribe contract.
@@ -73,7 +78,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @notice Info of each users reward debt and virtual amount.
     /// One object is instantiated per user per pool
     mapping (uint256 => mapping(address => UserInfo)) public userInfo;
-    /// @notice Info of each user that stakes LP tokens.
+    /// @notice Info of each user that stakes tokens.
     mapping (uint256 => mapping (address => DepositInfo[])) public depositInfo;
     /// @dev Total allocation points. Must be the sum of all allocation points in all pools.
     uint128 public totalAllocPoint;
@@ -139,7 +144,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     function governorAddPoolMultiplier(
         uint256 _pid,
         uint64 lockLength, 
-        uint256 newRewardsMultiplier
+        uint64 newRewardsMultiplier
     ) external onlyGovernor {
         PoolInfo storage pool = poolInfo[_pid];
         uint256 currentMultiplier = rewardMultipliers[_pid][lockLength];
@@ -171,36 +176,6 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     }
 
     /**
-     * @dev Returns the downcasted uint64 from uint256, reverting on
-     * overflow (when the input is greater than largest uint64).
-     *
-     * Counterpart to Solidity's `uint64` operator.
-     *
-     * Requirements:
-     *
-     * - input must fit into 64 bits
-     */
-    function toUint64(uint256 value) internal pure returns (uint64) {
-        require(value <= type(uint64).max, "SafeCast: value doesn't fit in 64 bits");
-        return uint64(value);
-    }
-
-    /**
-     * @dev Returns the downcasted uint128 from uint256, reverting on
-     * overflow (when the input is greater than largest uint128).
-     *
-     * Counterpart to Solidity's `uint128` operator.
-     *
-     * Requirements:
-     *
-     * - input must fit into 128 bits
-     */
-    function toUint128(uint256 value) internal pure returns (uint128) {
-        require(value <= type(uint128).max, "SafeCast: value doesn't fit in 128 bits");
-        return uint128(value);
-    }
-
-    /**
      * @dev Returns the downcasted int128 from uint256, reverting on
      * overflow (when the input is greater than largest int128).
      *
@@ -211,8 +186,11 @@ contract TribalChief is CoreRef, ReentrancyGuard {
      * - input must fit into 128 bits
      */
     function toSigned128(uint256 a) internal pure returns (int128) {
-        require(int256(a) <= type(int128).max, "SafeCast: value doesn't fit in 128 bits");
-        return int128(uint128(a));
+        // cast uint256 to int256
+        int256 b = a.toInt256();
+        // cast down from int256 to int128
+        int128 c = b.toInt128();
+        return c;
     }
 
     function signed128ToUint256(int128 a) internal pure returns (uint256 c) {
@@ -220,23 +198,10 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         c = uint256(b);
     }
 
-    /**
-     * @dev Converts an unsigned uint256 into a signed int256.
-     *
-     * Requirements:
-     *
-     * - input must be less than or equal to maxInt256.
-     */
-    function toInt256(uint256 value) internal pure returns (int256) {
-        // Note: Unsafe cast below is okay because `type(int256).max` is guaranteed to be positive
-        require(value <= uint256(type(int256).max), "SafeCast: value doesn't fit in an int256");
-        return int256(value);
-    }
-
-    /// @notice Add a new LP to the pool. Can only be called by the owner.
-    /// DO NOT add the same LP token more than once. Rewards will be messed up if you do.
+    /// @notice Add a new token to the pool. Can only be called by the owner.
+    /// DO NOT add the same token more than once. Rewards will be messed up if you do.
     /// @param allocPoint AP of the new pool.
-    /// @param _stakedToken Address of the LP ERC-20 token.
+    /// @param _stakedToken Address of the ERC-20 token to stake.
     /// @param _rewarder Address of the rewarder delegate.
     /// @param rewardData Reward Multiplier data 
     function add(
@@ -272,9 +237,9 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         }
 
         poolInfo.push(PoolInfo({
-            allocPoint: toUint64(allocPoint),
+            allocPoint: allocPoint.toUint64(),
             virtualTotalSupply: 0, // virtual total supply starts at 0 as there is 0 initial supply
-            lastRewardBlock: toUint64(lastRewardBlock),
+            lastRewardBlock: lastRewardBlock.toUint64(),
             accTribePerShare: 0,
             unlocked: false
         }));
@@ -288,7 +253,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @param overwrite True if _rewarder should be `set`. Otherwise `_rewarder` is ignored.
     function set(uint256 _pid, uint128 _allocPoint, IRewarder _rewarder, bool overwrite) public onlyGovernor {
         totalAllocPoint = (totalAllocPoint - poolInfo[_pid].allocPoint) + _allocPoint;
-        poolInfo[_pid].allocPoint = toUint64(_allocPoint);
+        poolInfo[_pid].allocPoint = _allocPoint.toUint64();
 
         if (overwrite) {
             rewarder[_pid] = _rewarder;
@@ -348,7 +313,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
                 uint256 tribeReward = (blocks * tribePerBlock() * pool.allocPoint) / totalAllocPoint;
                 pool.accTribePerShare = uint128(pool.accTribePerShare + ((tribeReward * ACC_TRIBE_PRECISION) / virtualSupply));
             }
-            pool.lastRewardBlock = toUint64(block.number);
+            pool.lastRewardBlock = block.number.toUint64();
             emit LogUpdatePool(pid, pool.lastRewardBlock, virtualSupply, pool.accTribePerShare);
         }
     }
@@ -357,13 +322,13 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param amount The token amount to deposit.
     /// @param lockLength The length of time you would like to lock tokens
-    function deposit(uint256 pid, uint128 amount, uint64 lockLength) public nonReentrant {
+    function deposit(uint256 pid, uint128 amount, uint64 lockLength) public nonReentrant whenNotPaused {
         updatePool(pid);
         PoolInfo storage pool = poolInfo[pid];
         UserInfo storage userPoolData = userInfo[pid][msg.sender];
         DepositInfo memory poolDeposit;
 
-        uint256 multiplier = rewardMultipliers[pid][lockLength];
+        uint64 multiplier = rewardMultipliers[pid][lockLength];
         require(multiplier >= SCALE_FACTOR, "invalid lock length");
 
         // Effects
@@ -406,7 +371,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         UserInfo storage user = userInfo[pid][msg.sender];
 
         // gather and pay out users rewards
-        harvest(pid, msg.sender);
+        _harvest(pid, msg.sender);
         uint128 unlockedTotalAmount = 0;
         uint128 virtualLiquidityDelta = 0;
 
@@ -502,10 +467,10 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         emit Withdraw(msg.sender, pid, amount, to);
     }
 
-    /// @notice Harvest proceeds for transaction sender to `to`.
+    /// @notice Helper function to harvest users tribe rewards
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param to Receiver of TRIBE rewards.
-    function harvest(uint256 pid, address to) public {
+    function _harvest(uint256 pid, address to) private {
         updatePool(pid);
         PoolInfo storage pool = poolInfo[pid];
         UserInfo storage user = userInfo[pid][msg.sender];
@@ -519,7 +484,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         uint256 pendingTribe = uint256(accumulatedTribe - user.rewardDebt);
 
         // if pending tribe is ever negative, revert as this can cause an underflow when we turn this number to a uint
-        require(toInt256(pendingTribe) >= 0, "pendingTribe is less than 0");
+        require(pendingTribe.toInt256() >= 0, "pendingTribe is less than 0");
 
         // Effects
         user.rewardDebt = int128(accumulatedTribe);
@@ -537,13 +502,20 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         emit Harvest(msg.sender, pid, pendingTribe);
     }
 
+    /// @notice Harvest proceeds for transaction sender to `to`.
+    /// @param pid The index of the pool. See `poolInfo`.
+    /// @param to Receiver of TRIBE rewards.
+    function harvest(uint256 pid, address to) public nonReentrant {
+        _harvest(pid, to);
+    }
+
     //////////////////////////////////////////////////////////////////////////////
     // ----> if you call emergency withdraw, you are forfeiting your rewards <----
     //////////////////////////////////////////////////////////////////////////////
 
     /// @notice Withdraw without caring about rewards. EMERGENCY ONLY.
     /// @param pid The index of the pool. See `poolInfo`.
-    /// @param to Receiver of the LP tokens.
+    /// @param to Receiver of the deposited tokens.
     function emergencyWithdraw(uint256 pid, address to) public nonReentrant {
         updatePool(pid);
         PoolInfo storage pool = poolInfo[pid];
