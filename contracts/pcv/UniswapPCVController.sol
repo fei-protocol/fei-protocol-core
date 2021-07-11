@@ -26,6 +26,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
     /// @param _core Fei Core for reference
     /// @param _pcvDeposit PCV Deposit to reweight
     /// @param _oracle oracle for reference
+    /// @param _backupOracle the backup oracle to reference
     /// @param _incentiveAmount amount of FEI for triggering a reweight
     /// @param _minDistanceForReweightBPs minimum distance from peg to reweight in basis points
     /// @param _pair Uniswap pair contract to reweight
@@ -34,11 +35,12 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
         address _core,
         address _pcvDeposit,
         address _oracle,
+        address _backupOracle,
         uint256 _incentiveAmount,
         uint256 _minDistanceForReweightBPs,
         address _pair,
         uint256 _reweightFrequency
-    ) UniRef(_core, _pair, _oracle) Timed(_reweightFrequency) Incentivized(_incentiveAmount) {
+    ) UniRef(_core, _pair, _oracle, _backupOracle) Timed(_reweightFrequency) Incentivized(_incentiveAmount) {
         pcvDeposit = IPCVDeposit(_pcvDeposit);
         emit PCVDepositUpdate(address(0), _pcvDeposit);
 

@@ -39,7 +39,8 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     /// @param _core Fei Core to reference
     /// @param _pcvDeposits the PCV Deposits for the PCVSplitter
     /// @param _ratios the ratios for the PCVSplitter
-    /// @param _oracle the UniswapOracle to reference
+    /// @param _oracle the oracle to reference
+    /// @param _backupOracle the backup oracle to reference
     /// @param _duration the duration between incentivizing allocations
     /// @param _incentive the amount rewarded to the caller of an allocation
     /// @param _token the ERC20 token associated with this curve, null if ETH
@@ -48,6 +49,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     constructor(
         address _core,
         address _oracle,
+        address _backupOracle,
         uint256 _scale,
         address[] memory _pcvDeposits,
         uint256[] memory _ratios,
@@ -57,7 +59,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         uint256 _discount,
         uint256 _buffer
     )
-        OracleRef(_core, _oracle)
+        OracleRef(_core, _oracle, _backupOracle, 0, false)
         PCVSplitter(_pcvDeposits, _ratios)
         Timed(_duration)
         Incentivized(_incentive)
@@ -68,6 +70,10 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         buffer = _buffer;
 
         _initTimed();
+
+        if (address(_token) != address(0)) {
+            _setDecimalsNormalizerFromToken(address(_token));
+        }
     }
 
     /// @notice purchase FEI for underlying tokens

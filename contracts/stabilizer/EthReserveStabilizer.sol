@@ -14,13 +14,15 @@ contract EthReserveStabilizer is ReserveStabilizer {
     /// @notice ETH Reserve Stabilizer constructor
     /// @param _core Fei Core to reference
     /// @param _oracle the ETH price oracle to reference
+    /// @param _backupOracle the backup oracle to reference
     /// @param _usdPerFeiBasisPoints the USD price per FEI to sell ETH at
     constructor(
         address _core,
         address _oracle,
+        address _backupOracle,
         uint256 _usdPerFeiBasisPoints,
         address _WETH
-    ) ReserveStabilizer(_core, _oracle, IERC20(address(0)), _usdPerFeiBasisPoints) {
+    ) ReserveStabilizer(_core, _oracle, _backupOracle, IERC20(address(0)), _usdPerFeiBasisPoints) {
         WETH = _WETH;
     }
 
