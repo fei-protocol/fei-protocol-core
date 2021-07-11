@@ -21,8 +21,12 @@ describe('OracleRef', function () {
     this.oracle = await MockOracle.new(500); // 500 USD per ETH exchange rate 
     this.backupOracle = await MockOracle.new(505); // 505 USD per ETH exchange rate 
 
-    this.oracleRef = await ReserveStabilizer.new(this.core.address, this.oracle.address, userAddress, 10000);
-    await this.oracleRef.setBackupOracle(this.backupOracle.address, {from: governorAddress});
+    this.oracleRef = await ReserveStabilizer.new(
+      this.core.address, 
+      this.oracle.address, 
+      this.backupOracle.address, 
+      userAddress, 10000
+    );
   });
   
   describe('Init', function() {
