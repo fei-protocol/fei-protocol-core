@@ -1,3 +1,4 @@
+
 {
   "contracts" : {
     "coreAddress": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
@@ -12,7 +13,6 @@
     "ratioPCVControllerAddress": "0xfC1aD6eb84351597cD3b9B65179633697d65B920",
     "uniswapOracleAddress": "0x087F35bd241e41Fc28E43f0E8C58d283DD55bD65",
     "feiEthPairAddress": "0x94B0A3d511b6EcDb17eBF877278Ab030acb0A878",
-    "feiRewardsDistributorAddress": "0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5",
     "governorAlphaAddress": "0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B"
   },
   "external" : {
