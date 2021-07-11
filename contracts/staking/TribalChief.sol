@@ -10,13 +10,13 @@ import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuar
 
 /// @notice migration functionality has been removed as this is only going to be used to distribute staking rewards
 
-/// @notice The idea for this MasterChief V2 (MCV2) contract is therefore to be the owner of tribe token
+/// @notice The idea for this TribalChief contract is to be the owner of tribe token
 /// that is deposited into this contract.
 /// @notice This contract was forked from sushiswap and has been modified to distribute staking rewards in tribe.
 /// All legacy code that relied on MasterChef V1 has been removed so that this contract will pay out staking rewards in tribe.
 /// The assumption this code makes is that this MasterChief contract will be funded before going live and offering staking rewards.
 /// This contract will not have the ability to mint tribe.
-contract MasterChief is CoreRef, ReentrancyGuard {
+contract TribalChief is CoreRef, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     /// @notice Info of each users's reward debt and virtual amount
@@ -26,18 +26,18 @@ contract MasterChief is CoreRef, ReentrancyGuard {
         uint128 virtualAmount;
     }
 
-    /// @notice Info of each MCV2 user.
+    /// @notice Info for a deposit
     /// `amount` LP token amount the user has provided.
-    /// `rewardDebt` The amount of Tribe entitled to the user.
+    /// `virtualAmount` The virtual amount deposited. Calculated like so (multiplier * amount) / scale_factor
     /// assumption here is that we will never go over 2^128 -1
-    /// on any user deposits or reward debts
+    /// on any user deposits
     struct DepositInfo {
         uint128 amount;
         uint64 unlockBlock;
         uint256 multiplier;
     }
 
-    /// @notice Info of each MCV2 pool.
+    /// @notice Info of each pool.
     /// `allocPoint` The amount of allocation points assigned to the pool.
     /// Also known as the amount of Tribe to distribute per block.
     struct PoolInfo {
@@ -49,10 +49,12 @@ contract MasterChief is CoreRef, ReentrancyGuard {
         // Defaults to false so that users have to respect the lockup period
     }
 
-    /// @notice Info of each MCV2 pool rewards multipliers available.
+    /// @notice Info of each pool rewards multipliers available.
     /// map a pool id to a block lock time to a rewards multiplier
     mapping (uint256 => mapping (uint64 => uint256)) public rewardMultipliers;
 
+    /// @notice Data needed for governor to create a new lockup period
+    /// and associated reward multiplier
     struct RewardData {
         uint64 lockLength;
         uint256 rewardMultiplier;
@@ -61,34 +63,40 @@ contract MasterChief is CoreRef, ReentrancyGuard {
     /// @notice Address of Tribe contract.
     IERC20 public immutable TRIBE;
 
-    /// @notice Info of each MCV2 pool.
+    /// @notice Info of each pool.
     PoolInfo[] public poolInfo;
-    /// @notice Address of the LP token for each MCV2 pool.
-    IERC20[] public lpToken;
-    /// @notice Address of each `IRewarder` contract in MCV2.
+    /// @notice Address of the token for each pool.
+    IERC20[] public stakedToken;
+    /// @notice Address of each `IRewarder` contract.
     IRewarder[] public rewarder;
     
+    /// @notice Info of each users reward debt and virtual amount.
+    /// One object is instantiated per user per pool
     mapping (uint256 => mapping(address => UserInfo)) public userInfo;
     /// @notice Info of each user that stakes LP tokens.
     mapping (uint256 => mapping (address => DepositInfo[])) public depositInfo;
     /// @dev Total allocation points. Must be the sum of all allocation points in all pools.
     uint128 public totalAllocPoint;
 
-    uint256 private masterChefTribePerBlock = 1e20;
-    // variable has been made immutable to cut down on gas costs
+    /// the amount of tribe distributed per block
+    uint256 private tribalChiefTribePerBlock = 1e20;
+    /// variable has been made immutable to cut down on gas costs
     uint256 private immutable ACC_TRIBE_PRECISION = 1e12;
+    /// mantissa for rewards multiplier
     uint256 public immutable SCALE_FACTOR = 1e18;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount, uint256 indexed depositID);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount, address indexed to);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount, address indexed to);
     event Harvest(address indexed user, uint256 indexed pid, uint256 amount);
-    event LogPoolAddition(uint256 indexed pid, uint256 allocPoint, IERC20 indexed lpToken, IRewarder indexed rewarder);
+    event LogPoolAddition(uint256 indexed pid, uint256 allocPoint, IERC20 indexed stakedToken, IRewarder indexed rewarder);
     event LogSetPool(uint256 indexed pid, uint256 allocPoint, IRewarder indexed rewarder, bool overwrite);
     event LogPoolMultiplier(uint256 indexed pid, uint64 indexed lockLength, uint256 indexed multiplier);
     event LogUpdatePool(uint256 indexed pid, uint64 lastRewardBlock, uint256 lpSupply, uint256 accTribePerShare);
     /// @notice tribe withdraw event
     event TribeWithdraw(uint256 amount);
+    event NewTribePerBlock(uint256 indexed amount);
+    event PoolLocked(bool indexed locked);
 
     /// @param _core The Core contract address.
     /// @param _tribe The TRIBE token contract address.
@@ -96,8 +104,11 @@ contract MasterChief is CoreRef, ReentrancyGuard {
         TRIBE = _tribe;
     }
 
+    /// @notice Allows governor to change the amount of tribe per block
+    /// @param newBlockReward The new amount of tribe per block to distribute
     function updateBlockReward(uint256 newBlockReward) external onlyGovernor {
-        masterChefTribePerBlock = newBlockReward;
+        tribalChiefTribePerBlock = newBlockReward;
+        emit NewTribePerBlock(newBlockReward);
     }
 
     /// @notice locks the pool so the users cannot withdraw until they have 
@@ -106,6 +117,8 @@ contract MasterChief is CoreRef, ReentrancyGuard {
     function lockPool(uint256 _pid) external onlyGovernor {
         PoolInfo storage pool = poolInfo[_pid];
         pool.unlocked = false;
+
+        emit PoolLocked(true);
     }
 
     /// @notice unlocks the pool so that users can withdraw before their tokens
@@ -114,6 +127,8 @@ contract MasterChief is CoreRef, ReentrancyGuard {
     function unlockPool(uint256 _pid) external onlyGovernor {
         PoolInfo storage pool = poolInfo[_pid];
         pool.unlocked = true;
+
+        emit PoolLocked(false);
     }
 
     /// @notice changes the pool multiplier
@@ -145,8 +160,8 @@ contract MasterChief is CoreRef, ReentrancyGuard {
         emit TribeWithdraw(amount);
     }
 
-    /// @notice Returns the number of MCV2 pools.
-    function poolLength() public view returns (uint256 pools) {
+    /// @notice Returns the number of pools.
+    function numPools() public view returns (uint256 pools) {
         pools = poolInfo.length;
     }
 
@@ -205,21 +220,34 @@ contract MasterChief is CoreRef, ReentrancyGuard {
         c = uint256(b);
     }
 
+    /**
+     * @dev Converts an unsigned uint256 into a signed int256.
+     *
+     * Requirements:
+     *
+     * - input must be less than or equal to maxInt256.
+     */
+    function toInt256(uint256 value) internal pure returns (int256) {
+        // Note: Unsafe cast below is okay because `type(int256).max` is guaranteed to be positive
+        require(value <= uint256(type(int256).max), "SafeCast: value doesn't fit in an int256");
+        return int256(value);
+    }
+
     /// @notice Add a new LP to the pool. Can only be called by the owner.
     /// DO NOT add the same LP token more than once. Rewards will be messed up if you do.
     /// @param allocPoint AP of the new pool.
-    /// @param _lpToken Address of the LP ERC-20 token.
+    /// @param _stakedToken Address of the LP ERC-20 token.
     /// @param _rewarder Address of the rewarder delegate.
     /// @param rewardData Reward Multiplier data 
     function add(
         uint128 allocPoint,
-        IERC20 _lpToken,
+        IERC20 _stakedToken,
         IRewarder _rewarder,
         RewardData[] calldata rewardData
     ) external onlyGovernor {
         uint256 lastRewardBlock = block.number;
         totalAllocPoint += allocPoint;
-        lpToken.push(_lpToken);
+        stakedToken.push(_stakedToken);
         rewarder.push(_rewarder);
 
         uint256 pid = poolInfo.length;
@@ -250,7 +278,7 @@ contract MasterChief is CoreRef, ReentrancyGuard {
             accTribePerShare: 0,
             unlocked: false
         }));
-        emit LogPoolAddition(pid, allocPoint, _lpToken, _rewarder);
+        emit LogPoolAddition(pid, allocPoint, _stakedToken, _rewarder);
     }
 
     /// @notice Update the given pool's TRIBE allocation point and `IRewarder` contract. Can only be called by the owner.
@@ -283,7 +311,7 @@ contract MasterChief is CoreRef, ReentrancyGuard {
 
         // use the virtual amount to calculate the users share of the pool and their pending rewards
         return signed128ToUint256(
-            (toSigned128((user.virtualAmount) * accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION)) - int128(user.rewardDebt)
+            (toSigned128(user.virtualAmount * accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION)) - int128(user.rewardDebt)
         );
     }
 
@@ -306,7 +334,7 @@ contract MasterChief is CoreRef, ReentrancyGuard {
 
     /// @notice Calculates and returns the `amount` of TRIBE per block.
     function tribePerBlock() public view returns (uint256) {
-        return masterChefTribePerBlock;
+        return tribalChiefTribePerBlock;
     }
 
     /// @notice Update reward variables of the given pool.
@@ -325,28 +353,25 @@ contract MasterChief is CoreRef, ReentrancyGuard {
         }
     }
 
-    /// @notice Deposit LP tokens to MCV2 for TRIBE allocation.
+    /// @notice Deposit tokens to earn TRIBE allocation.
     /// @param pid The index of the pool. See `poolInfo`.
-    /// @param amount LP token amount to deposit.
+    /// @param amount The token amount to deposit.
     /// @param lockLength The length of time you would like to lock tokens
-    /// if locking is not enforced, this value can be 0. If locking is enforced,
-    /// a user must pass a valid lock length
-    /// @dev you can only deposit on a single deposit id once.
-    function deposit(uint256 pid, uint128 amount, uint64 lockLength) public {
+    function deposit(uint256 pid, uint128 amount, uint64 lockLength) public nonReentrant {
         updatePool(pid);
         PoolInfo storage pool = poolInfo[pid];
         UserInfo storage userPoolData = userInfo[pid][msg.sender];
-        DepositInfo memory user;
+        DepositInfo memory poolDeposit;
 
         uint256 multiplier = rewardMultipliers[pid][lockLength];
-        require(multiplier >= SCALE_FACTOR, "invalid multiplier");
+        require(multiplier >= SCALE_FACTOR, "invalid lock length");
 
         // Effects
-        user.amount = amount;
-        user.unlockBlock = uint64(lockLength + block.number);
+        poolDeposit.amount = amount;
+        poolDeposit.unlockBlock = uint64(lockLength + block.number);
         // set the multiplier here so that on withdraw we can easily reset the
         // multiplier and remove the appropriate amount of virtual liquidity
-        user.multiplier = multiplier;
+        poolDeposit.multiplier = multiplier;
 
         // virtual amount is calculated by taking the users total deposited balance and multiplying
         // it by the multiplier then adding it to the aggregated virtual amount
@@ -359,7 +384,7 @@ contract MasterChief is CoreRef, ReentrancyGuard {
         pool.virtualTotalSupply += virtualAmountDelta;
 
         // add the new user struct into storage
-        depositInfo[pid][msg.sender].push(user);
+        depositInfo[pid][msg.sender].push(poolDeposit);
 
         // Interactions
         IRewarder _rewarder = rewarder[pid];
@@ -367,14 +392,14 @@ contract MasterChief is CoreRef, ReentrancyGuard {
             _rewarder.onSushiReward(pid, msg.sender, msg.sender, 0, userPoolData.virtualAmount);
         }
 
-        lpToken[pid].safeTransferFrom(msg.sender, address(this), amount);
+        stakedToken[pid].safeTransferFrom(msg.sender, address(this), amount);
 
         emit Deposit(msg.sender, pid, amount, depositInfo[pid][msg.sender].length - 1);
     }
 
-    /// @notice Withdraw LP tokens from MCV2.
+    /// @notice Withdraw staked tokens from pool.
     /// @param pid The index of the pool. See `poolInfo`.
-    /// @param to Receiver of the LP tokens.
+    /// @param to Receiver of the tokens.
     function withdrawAllAndHarvest(uint256 pid, address to) external nonReentrant {
         updatePool(pid);
         PoolInfo storage pool = poolInfo[pid];
@@ -437,21 +462,21 @@ contract MasterChief is CoreRef, ReentrancyGuard {
             _rewarder.onSushiReward(pid, msg.sender, to, 0, user.virtualAmount);
         }
 
-        lpToken[pid].safeTransfer(to, unlockedTotalAmount);
+        stakedToken[pid].safeTransfer(to, unlockedTotalAmount);
 
         emit Withdraw(msg.sender, pid, unlockedTotalAmount, to);
     }
 
-    /// @notice Withdraw LP tokens from MCV2.
+    /// @notice Withdraw tokens from pool.
     /// @param pid The index of the pool. See `poolInfo`.
-    /// @param amount LP token amount to withdraw.
-    /// @param to Receiver of the LP tokens.
+    /// @param amount Token amount to withdraw.
+    /// @param to Receiver of the tokens.
     function withdrawFromDeposit(
         uint256 pid,
         uint128 amount,
         address to,
         uint256 index
-    ) public {
+    ) public nonReentrant {
         require(depositInfo[pid][msg.sender].length > index, "invalid index");
         updatePool(pid);
         PoolInfo storage pool = poolInfo[pid];
@@ -472,12 +497,7 @@ contract MasterChief is CoreRef, ReentrancyGuard {
         pool.virtualTotalSupply -= virtualAmountDelta;
 
         // Interactions
-        IRewarder _rewarder = rewarder[pid];
-        if (address(_rewarder) != address(0)) {
-            _rewarder.onSushiReward(pid, msg.sender, to, 0, user.virtualAmount);
-        }
-
-        lpToken[pid].safeTransfer(to, amount);
+        stakedToken[pid].safeTransfer(to, amount);
 
         emit Withdraw(msg.sender, pid, amount, to);
     }
@@ -498,8 +518,8 @@ contract MasterChief is CoreRef, ReentrancyGuard {
 
         uint256 pendingTribe = uint256(accumulatedTribe - user.rewardDebt);
 
-        // if pending tribe is ever negative, revert as this can cause an underflow as we turned this number to a uint
-        require(int256(pendingTribe) >= 0, "pendingTribe is less than 0");
+        // if pending tribe is ever negative, revert as this can cause an underflow when we turn this number to a uint
+        require(toInt256(pendingTribe) >= 0, "pendingTribe is less than 0");
 
         // Effects
         user.rewardDebt = int128(accumulatedTribe);
@@ -524,7 +544,7 @@ contract MasterChief is CoreRef, ReentrancyGuard {
     /// @notice Withdraw without caring about rewards. EMERGENCY ONLY.
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param to Receiver of the LP tokens.
-    function emergencyWithdraw(uint256 pid, address to) public {
+    function emergencyWithdraw(uint256 pid, address to) public nonReentrant {
         updatePool(pid);
         PoolInfo storage pool = poolInfo[pid];
 
@@ -558,7 +578,7 @@ contract MasterChief is CoreRef, ReentrancyGuard {
         }
 
         // Note: transfer can fail or succeed if `amount` is zero.
-        lpToken[pid].safeTransfer(to, totalUnlocked);
+        stakedToken[pid].safeTransfer(to, totalUnlocked);
         emit EmergencyWithdraw(msg.sender, pid, totalUnlocked, to);
     }
 }
