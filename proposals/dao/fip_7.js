@@ -4,7 +4,7 @@ const hre = require('hardhat');
 const CErc20Delegator = artifacts.require('CErc20Delegator');
 const Fei = artifacts.require('Fei');
 
-const { getAddresses } = require('../utils/helpers');
+const { getAddresses } = require('../../scripts/utils/helpers');
 
 const { 
   timelockAddress,
