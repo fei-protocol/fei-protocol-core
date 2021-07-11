@@ -2,8 +2,8 @@
 pragma solidity ^0.8.4;
 
 import "./IUniswapPCVDeposit.sol";
-import "./PCVDeposit.sol";
-import "../refs/UniRef.sol";
+import "../PCVDeposit.sol";
+import "../../refs/UniRef.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 

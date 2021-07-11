@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "./IPCVDeposit.sol";
-import "../refs/CoreRef.sol";
+import "../IPCVDeposit.sol";
+import "../../refs/CoreRef.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 interface CToken {
@@ -11,9 +11,9 @@ interface CToken {
     function balanceOf(address account) external view returns (uint);
 }
 
-/// @title abstract implementation for a Compound PCV Deposit
+/// @title base class for a Compound PCV Deposit
 /// @author Fei Protocol
-abstract contract CompoundPCVDeposit is IPCVDeposit, CoreRef {
+abstract contract CompoundPCVDepositBase is IPCVDeposit, CoreRef {
 
     CToken public cToken;
 
