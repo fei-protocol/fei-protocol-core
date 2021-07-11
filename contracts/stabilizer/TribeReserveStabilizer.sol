@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "./ReserveStabilizer.sol";
 import "./ITribeReserveStabilizer.sol";
@@ -22,16 +22,18 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
     /// @notice Tribe Reserve Stabilizer constructor
     /// @param _core Fei Core to reference
     /// @param _tribeOracle the TRIBE price oracle to reference
+    /// @param _backupOracle the backup oracle to reference
     /// @param _usdPerFeiBasisPoints the USD price per FEI to sell TRIBE at
     /// @param _feiOracle the FEI price oracle to reference
     /// @param _feiPriceThresholdBasisPoints the FEI price below which the stabilizer becomes active. Reported in basis points (1/10000)
     constructor(
         address _core,
         address _tribeOracle,
+        address _backupOracle,
         uint256 _usdPerFeiBasisPoints,
         IOracle _feiOracle,
         uint256 _feiPriceThresholdBasisPoints
-    ) ReserveStabilizer(_core, _tribeOracle, IERC20(address(0)), _usdPerFeiBasisPoints) {
+    ) ReserveStabilizer(_core, _tribeOracle, _backupOracle, IERC20(address(0)), _usdPerFeiBasisPoints) {
         feiOracle = _feiOracle;
         _feiPriceThreshold = Decimal.ratio(_feiPriceThresholdBasisPoints, BASIS_POINTS_GRANULARITY);
         emit FeiPriceThresholdUpdate(0, _feiPriceThresholdBasisPoints);

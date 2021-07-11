@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 // Referencing Uniswap Example Simple Oracle
 // https://github.com/Uniswap/uniswap-v2-periphery/blob/master/contracts/examples/ExampleOracleSimple.sol
@@ -53,8 +53,7 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
     }
 
     /// @notice updates the oracle price
-    /// @return true if oracle is updated and false if unchanged
-    function update() external override whenNotPaused returns (bool) {
+    function update() external override whenNotPaused {
         (
             uint256 price0Cumulative,
             uint256 price1Cumulative,
@@ -67,7 +66,7 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
         }
 
         if (deltaTimestamp < duration) {
-            return false;
+            return;
         }
 
         uint256 currentCumulative = _getCumulative(price0Cumulative, price1Cumulative);
@@ -90,8 +89,6 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
         priorCumulative = currentCumulative;
 
         emit Update(_twap.asUint256());
-
-        return true;
     }
 
     /// @notice determine if read value is stale

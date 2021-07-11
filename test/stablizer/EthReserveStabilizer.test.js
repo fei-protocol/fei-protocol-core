@@ -35,7 +35,7 @@ describe('EthReserveStabilizer', function () {
     this.oracle = await MockOracle.new(400); // 400:1 oracle price
     this.pcvDeposit = await MockPCVDeposit.new(userAddress);
 
-    this.reserveStabilizer = await EthReserveStabilizer.new(this.core.address, this.oracle.address, '9000', this.weth.address);
+    this.reserveStabilizer = await EthReserveStabilizer.new(this.core.address, this.oracle.address, this.oracle.address, '9000', this.weth.address);
 
     await this.core.grantBurner(this.reserveStabilizer.address, {from: governorAddress});
 

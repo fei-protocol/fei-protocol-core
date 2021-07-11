@@ -2,13 +2,15 @@ const {
   expectEvent,
   expectRevert,
   expect,
+  BN,
   getAddresses,
   getCore
 } = require('../helpers');
   
 const ReserveStabilizer = artifacts.require('ReserveStabilizer');
 const MockOracle = artifacts.require('MockOracle');
-  
+const MockERC20 = artifacts.require('MockERC20');
+
 describe('OracleRef', function () {
   let userAddress;
   let governorAddress;
@@ -17,12 +19,18 @@ describe('OracleRef', function () {
     ({ userAddress, governorAddress } = await getAddresses());
     
     this.core = await getCore(true);
+
+    this.token = await MockERC20.new();
       
     this.oracle = await MockOracle.new(500); // 500 USD per ETH exchange rate 
     this.backupOracle = await MockOracle.new(505); // 505 USD per ETH exchange rate 
 
-    this.oracleRef = await ReserveStabilizer.new(this.core.address, this.oracle.address, userAddress, 10000);
-    await this.oracleRef.setBackupOracle(this.backupOracle.address, {from: governorAddress});
+    this.oracleRef = await ReserveStabilizer.new(
+      this.core.address, 
+      this.oracle.address, 
+      this.backupOracle.address, 
+      this.token.address, 10000
+    );
   });
   
   describe('Init', function() {
@@ -32,6 +40,14 @@ describe('OracleRef', function () {
   
     it('backup oracle', async function() {
       expect(await this.oracleRef.backupOracle()).to.be.equal(this.backupOracle.address);
+    });
+
+    it('do invert', async function() {
+      expect(await this.oracleRef.doInvert()).to.be.equal(true);
+    });
+
+    it('decimals normalizer', async function() {
+      expect(await this.oracleRef.decimalsNormalizer()).to.be.bignumber.equal(new BN('0'));
     });
   });
   describe('Access', function() {
@@ -53,6 +69,44 @@ describe('OracleRef', function () {
         await expectRevert(this.oracleRef.setBackupOracle(userAddress, {from: userAddress}), 'CoreRef: Caller is not a governor');
       });
     });
+
+    describe('Set Do Invert', function() {
+      it('Governor set succeeds', async function() {
+        expect(await this.oracleRef.doInvert()).to.be.equal(true);
+        expectEvent(
+          await this.oracleRef.setDoInvert(false, {from: governorAddress}),
+          'InvertUpdate',
+          { 
+            oldDoInvert: true,
+            newDoInvert: false 
+          }
+        );
+        expect(await this.oracleRef.doInvert()).to.be.equal(false);
+      });
+    
+      it('Non-governor set reverts', async function() {
+        await expectRevert(this.oracleRef.setDoInvert(false, {from: userAddress}), 'CoreRef: Caller is not a governor');
+      });
+    });
+
+    describe('Set Decimals Normalizer', function() {
+      it('Governor set succeeds', async function() {
+        expect(await this.oracleRef.decimalsNormalizer()).to.be.bignumber.equal(new BN('0'));
+        expectEvent(
+          await this.oracleRef.setDecimalsNormalizer(4, {from: governorAddress}),
+          'DecimalsNormalizerUpdate',
+          { 
+            oldDecimalsNormalizer: '0',
+            newDecimalsNormalizer: '4' 
+          }
+        );
+        expect(await this.oracleRef.decimalsNormalizer()).to.be.bignumber.equal(new BN('4'));
+      });
+    
+      it('Non-governor set reverts', async function() {
+        await expectRevert(this.oracleRef.setDecimalsNormalizer(4, {from: userAddress}), 'CoreRef: Caller is not a governor');
+      });
+    });
   });
   describe('Update', function() {
     it('succeeds', async function() {
@@ -71,7 +125,7 @@ describe('OracleRef', function () {
     describe('Invalid Oracle', function() {
       it('falls back to backup', async function() {
         await this.oracle.setValid(false);
-        expect((await this.oracleRef.readOracle({from: userAddress}))[0]).to.be.equal('505000000000000000000');     
+        expect((await this.oracleRef.readOracle({from: userAddress}))[0]).to.be.equal('1980198019801980');     
       });
     });
 
@@ -85,7 +139,17 @@ describe('OracleRef', function () {
 
     describe('Valid Oracle', function() {
       it('succeeds', async function() {
-        expect((await this.oracleRef.readOracle({from: userAddress}))[0]).to.be.equal('500000000000000000000');     
+        expect((await this.oracleRef.readOracle({from: userAddress}))[0]).to.be.equal('2000000000000000');     
+      });
+
+      it('positive decimal normalizer scales down', async function() {
+        await this.oracleRef.setDecimalsNormalizer(4, {from: governorAddress}),
+        expect((await this.oracleRef.readOracle({from: userAddress}))[0]).to.be.equal('200000000000');     
+      });
+
+      it('negative decimal normalizer scales up', async function() {
+        await this.oracleRef.setDecimalsNormalizer(-4, {from: governorAddress}),
+        expect((await this.oracleRef.readOracle({from: userAddress}))[0]).to.be.equal('20000000000000000000');     
       });
     });
   });

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "../refs/CoreRef.sol";
 import "./IOracle.sol";
@@ -28,9 +28,9 @@ contract CompositeOracle is IOracle, CoreRef {
     }
 
     /// @notice updates the oracle price
-    /// @return true if oracle is updated and false if unchanged
-    function update() external override whenNotPaused returns (bool) {
-        return oracleA.update() && oracleB.update();
+    function update() external override whenNotPaused {
+        oracleA.update();
+        oracleB.update();
     }
 
     /// @notice determine if read value is stale
