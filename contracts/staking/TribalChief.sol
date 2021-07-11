@@ -87,7 +87,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     uint256 private tribalChiefTribePerBlock = 1e20;
     /// variable has been made immutable to cut down on gas costs
     uint256 private immutable ACC_TRIBE_PRECISION = 1e12;
-    /// mantissa for rewards multiplier
+    /// exponent for rewards multiplier
     uint256 public immutable SCALE_FACTOR = 1e18;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount, uint256 indexed depositID);
