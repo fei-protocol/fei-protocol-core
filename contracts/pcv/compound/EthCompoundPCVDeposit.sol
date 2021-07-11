@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "./CompoundPCVDeposit.sol";
+import "./CompoundPCVDepositBase.sol";
 
 interface CEth {
     function mint() external payable;
@@ -9,7 +9,7 @@ interface CEth {
 
 /// @title ETH implementation for a Compound PCV Deposit
 /// @author Fei Protocol
-contract EthCompoundPCVDeposit is CompoundPCVDeposit {
+contract EthCompoundPCVDeposit is CompoundPCVDepositBase {
 
     /// @notice Compound ETH PCV Deposit constructor
     /// @param _core Fei Core for reference
@@ -17,7 +17,7 @@ contract EthCompoundPCVDeposit is CompoundPCVDeposit {
     constructor(
         address _core,
         address _cToken
-    ) CompoundPCVDeposit(_core, _cToken) {}
+    ) CompoundPCVDepositBase(_core, _cToken) {}
 
     receive() external payable {}
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "../IPCVDeposit.sol";
+import "../PCVDeposit.sol";
 import "../../refs/CoreRef.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -13,7 +13,7 @@ interface CToken {
 
 /// @title base class for a Compound PCV Deposit
 /// @author Fei Protocol
-abstract contract CompoundPCVDepositBase is IPCVDeposit, CoreRef {
+abstract contract CompoundPCVDepositBase is PCVDeposit {
 
     CToken public cToken;
 
@@ -44,19 +44,6 @@ abstract contract CompoundPCVDepositBase is IPCVDeposit, CoreRef {
         );
         _transferUnderlying(to, amountUnderlying);
         emit Withdrawal(msg.sender, to, amountUnderlying);
-    }
-
-    /// @notice withdraw ERC20 from the contract
-    /// @param token address of the ERC20 to send
-    /// @param to address destination of the ERC20
-    /// @param amount quantity of ERC20 to send
-    function withdrawERC20(
-        address token,
-        address to,
-        uint256 amount
-    ) external override onlyPCVController {
-        SafeERC20.safeTransfer(IERC20(token), to, amount);
-        emit WithdrawERC20(msg.sender, address(token), to, amount);
     }
 
     /// @notice returns total balance of PCV in the Deposit excluding the FEI

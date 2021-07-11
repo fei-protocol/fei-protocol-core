@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "./CompoundPCVDeposit.sol";
+import "./CompoundPCVDepositBase.sol";
 
 interface CErc20 {
     function mint(uint256 amount) external returns (uint256);
@@ -9,7 +9,7 @@ interface CErc20 {
 
 /// @title ERC-20 implementation for a Compound PCV Deposit
 /// @author Fei Protocol
-contract ERC20CompoundPCVDeposit is CompoundPCVDeposit {
+contract ERC20CompoundPCVDeposit is CompoundPCVDepositBase {
 
     /// @notice the token underlying the cToken
     IERC20 public token;
@@ -22,7 +22,7 @@ contract ERC20CompoundPCVDeposit is CompoundPCVDeposit {
         address _core,
         address _cToken,
         IERC20 _token
-    ) CompoundPCVDeposit(_core, _cToken) {
+    ) CompoundPCVDepositBase(_core, _cToken) {
         token = _token;
     }
 
