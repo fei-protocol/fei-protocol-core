@@ -66,8 +66,12 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     {
         _setScale(_scale);
         token = _token;
+
         discount = _discount;
+        emit DiscountUpdate(0, _discount);
+
         buffer = _buffer;
+        emit BufferUpdate(0, _buffer);
 
         _initTimed();
 

@@ -8,7 +8,7 @@ import "./IPCVDeposit.sol";
 interface IPCVSwapper is IPCVDeposit {
 
     // ----------- Events -----------
-    event UpdateReceivingAddress(address _tokenReceivingAddress);
+    event UpdateReceivingAddress(address oldTokenReceivingAddress, address newTokenReceivingAddress);
 
     event Swap(
         address indexed _caller,

@@ -41,7 +41,7 @@ contract PCVDripController is IPCVDripController, CoreRef, Timed, Incentivized {
         emit SourceUpdate(address(0), address(_source));
 
         dripAmount = _dripAmount;
-        emit DripAmountUpdate(0, _incentiveAmount);
+        emit DripAmountUpdate(0, _dripAmount);
 
         // start timer
         _initTimed();

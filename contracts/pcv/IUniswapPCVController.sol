@@ -16,8 +16,6 @@ interface IUniswapPCVController {
         address indexed _newPCVDeposit
     );
 
-    event ReweightIncentiveUpdate(uint256 _oldIncentive, uint256 _newIncentive);
-
     event ReweightMinDistanceUpdate(
         uint256 _oldMinDistanceBasisPoints,
         uint256 _newMinDistanceBasisPoints

@@ -8,7 +8,7 @@ import "./IOracle.sol";
 /// @author Fei Protocol
 interface IUniswapOracle is IOracle {
     // ----------- Events -----------
-    event DurationUpdate(uint256 _duration);
+    event TWAPDurationUpdate(uint256 _duration);
 
     // ----------- Governor only state changing API -----------
 
