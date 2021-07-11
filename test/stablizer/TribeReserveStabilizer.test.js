@@ -96,7 +96,7 @@ describe('TribeReserveStabilizer', function () {
       expect(await this.reserveStabilizer.isFeiBelowThreshold()).to.be.equal(true);
     });
 
-    it.only('below', async function() {
+    it('below', async function() {
       await this.reserveStabilizer.setFeiPriceThreshold('10000', {from: governorAddress});
       expect(await this.reserveStabilizer.isFeiBelowThreshold()).to.be.equal(true);
     });
