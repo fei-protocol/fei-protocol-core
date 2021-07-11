@@ -260,6 +260,20 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         emit LogSetPool(_pid, _allocPoint, overwrite ? _rewarder : rewarder[_pid], overwrite);
     }
 
+    /// @notice Reset the given pool's TRIBE allocation to 0 and unlock the pool. Can only be called by the governor or guardian.
+    /// @param _pid The index of the pool. See `poolInfo`.    
+    function resetRewards(uint256 _pid) public onlyGuardianOrGovernor {
+        // set the pool's allocation points to zero
+        totalAllocPoint = (totalAllocPoint - poolInfo[_pid].allocPoint);
+        poolInfo[_pid].allocPoint = 0;
+        
+        // unlock all staked tokens in the pool
+        poolInfo[_pid].unlocked = true;
+
+        // erase any IRewarder mapping
+        rewarder[_pid] = IRewarder(address(0));
+    }
+
     function _getPendingRewards(uint256 _pid, address _user) private view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
