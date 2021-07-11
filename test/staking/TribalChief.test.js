@@ -1730,6 +1730,27 @@ describe('TribalChief', () => {
       );
     });
 
+    it('should not be able to withdraw more tokens than deposited', async function () {
+      const userAddresses = [userAddress];
+
+      await testMultipleUsersPooling(
+        this.tribalChief,
+        this.LPToken,
+        userAddresses,
+        new BN('100000000000000000000'),
+        100,
+        this.lockLength,
+        totalStaked,
+        pid,
+      );
+
+      await expectRevert.unspecified(
+        this.tribalChief.withdrawFromDeposit(
+          pid, '100000000000000000001', userAddress, 0, { from: userAddress },
+        ),
+      );
+    });
+
     it('should be able to withdraw before locking period is over when governor force unlocks pool', async function () {
       const userAddresses = [userAddress];
 
