@@ -199,7 +199,6 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     }
 
     /// @notice Add a new token to the pool. Can only be called by the owner.
-    /// DO NOT add the same token more than once. Rewards will be messed up if you do.
     /// @param allocPoint AP of the new pool.
     /// @param _stakedToken Address of the ERC-20 token to stake.
     /// @param _rewarder Address of the rewarder delegate.
