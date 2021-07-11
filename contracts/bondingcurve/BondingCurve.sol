@@ -83,6 +83,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         whenNotPaused
         returns (uint256 amountOut)
     {
+        require(msg.value == 0, "BondingCurve: unexpected ETH input");
         SafeERC20.safeTransferFrom(token, msg.sender, address(this), amountIn);
         return _purchase(amountIn, to);
     }
