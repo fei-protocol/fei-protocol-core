@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "./IPCVDeposit.sol";
 import "../external/Decimal.sol";
@@ -15,8 +15,6 @@ interface IUniswapPCVController {
         address indexed _oldPCVDeposit,
         address indexed _newPCVDeposit
     );
-
-    event ReweightIncentiveUpdate(uint256 _oldIncentive, uint256 _newIncentive);
 
     event ReweightMinDistanceUpdate(
         uint256 _oldMinDistanceBasisPoints,

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "./BondingCurve.sol";
 
@@ -20,11 +20,13 @@ contract EthBondingCurve is BondingCurve {
     constructor(
         address core,
         address oracle,
+        address backupOracle,
         BondingCurveParams memory params
     )
         BondingCurve(
             core,
             oracle,
+            backupOracle,
             params.scale,
             params.pcvDeposits,
             params.ratios,

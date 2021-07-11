@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "../external/Decimal.sol";
 
@@ -12,7 +12,7 @@ interface IOracle {
 
     // ----------- State changing API -----------
 
-    function update() external returns (bool);
+    function update() external;
 
     // ----------- Getters -----------
 

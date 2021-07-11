@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "./IOracle.sol";
 import "../refs/CoreRef.sol";
@@ -36,10 +36,8 @@ contract ChainlinkOracleWrapper is IOracle, CoreRef {
     }
 
     /// @notice updates the oracle price
-    /// @return true if oracle is updated and false if unchanged
-    function update() external view override whenNotPaused returns (bool) {
-        return false;
-    }
+    /// @dev no-op, Chainlink is updated automatically
+    function update() external view override whenNotPaused {}
 
     /// @notice determine if read value is stale
     /// @return true if read value is stale

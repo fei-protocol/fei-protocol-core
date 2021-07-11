@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "./OracleRef.sol";
 import "./IUniRef.sol";
@@ -20,12 +20,15 @@ abstract contract UniRef is IUniRef, OracleRef {
     /// @param _core Fei Core to reference
     /// @param _pair Uniswap pair to reference
     /// @param _oracle oracle to reference
+    /// @param _backupOracle backup oracle to reference
     constructor(
         address _core,
         address _pair,
-        address _oracle
-    ) OracleRef(_core, _oracle) {
+        address _oracle,
+        address _backupOracle
+    ) OracleRef(_core, _oracle, _backupOracle, 0, false) {
         _setupPair(_pair);
+        _setDecimalsNormalizerFromToken(_token());
     }
 
     /// @notice set the new pair contract

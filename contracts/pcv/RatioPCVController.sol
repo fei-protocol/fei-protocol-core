@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "../refs/CoreRef.sol";
 import "./IPCVDeposit.sol";
@@ -10,19 +10,6 @@ contract RatioPCVController is CoreRef {
     
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
-    event Withdraw(
-        address indexed pcvDeposit, 
-        address indexed to, 
-        uint256 amount
-    );
-
-    event WithdrawERC20(
-        address indexed pcvDeposit, 
-        address indexed token, 
-        address indexed to, 
-        uint256 amount
-    );
-
     /// @notice PCV controller constructor
     /// @param _core Fei Core for reference
     constructor(
@@ -30,7 +17,9 @@ contract RatioPCVController is CoreRef {
     ) CoreRef(_core) {}
 
     /// @notice withdraw tokens from the input PCV deposit in basis points terms
+    /// @param pcvDeposit PCV deposit to withdraw from
     /// @param to the address to send PCV to
+    /// @param basisPoints ratio of PCV to withdraw in basis points terms (1/10000)
     function withdrawRatio(IPCVDeposit pcvDeposit, address to, uint256 basisPoints)
         public
         onlyPCVController
@@ -41,11 +30,13 @@ contract RatioPCVController is CoreRef {
         require(amount != 0, "RatioPCVController: no value to withdraw");
 
         pcvDeposit.withdraw(to, amount);
-        emit Withdraw(address(pcvDeposit), to, amount);
     }
 
     /// @notice withdraw a specific ERC20 token from the input PCV deposit in basis points terms
+    /// @param pcvDeposit PCV deposit to withdraw from
+    /// @param token the ERC20 token to withdraw
     /// @param to the address to send tokens to
+    /// @param basisPoints ratio of PCV to withdraw in basis points terms (1/10000)
     function withdrawRatioERC20(IPCVDeposit pcvDeposit, address token, address to, uint256 basisPoints)
         public
         onlyPCVController
@@ -56,6 +47,5 @@ contract RatioPCVController is CoreRef {
         require(amount != 0, "RatioPCVController: no value to withdraw");
 
         pcvDeposit.withdrawERC20(token, to, amount);
-        emit WithdrawERC20(address(pcvDeposit), token, to, amount);
     }
 }
