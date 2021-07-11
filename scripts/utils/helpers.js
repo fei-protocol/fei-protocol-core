@@ -18,6 +18,7 @@ async function readOracle(oracleRef, web3) {
 function getAddresses() {
   const zeroAddress = '0x0000000000000000000000000000000000000000';
   let feiAddress;
+  let tribeAddress;
   let ethUniswapPCVDepositAddress;
   let oldUniswapPCVDepositAddress;
   let ethUniswapPCVControllerAddress;
@@ -46,6 +47,7 @@ function getAddresses() {
 
   if (process.env.TESTNET_MODE) {
     feiAddress = process.env.RINKEBY_FEI;
+    tribeAddress = process.env.RINKEBY_TRIBE;
     ethUniswapPCVDepositAddress = process.env.RINKEBY_ETH_UNISWAP_PCV_DEPOSIT;
     oldUniswapPCVDepositAddress = process.env.RINKEBY_UNISWAP_PCV_OLD;
     ethPairAddress = process.env.RINKEBY_FEI_ETH_PAIR;
@@ -73,6 +75,7 @@ function getAddresses() {
     chainlinkEthUsdOracleWrapperAddress = process.env.RINKEBY_ETH_USD_CHAINLINK_WRAPPER;
   } else {
     feiAddress = process.env.MAINNET_FEI;
+    tribeAddress = process.env.MAINNET_TRIBE;
     ethUniswapPCVDepositAddress = process.env.MAINNET_ETH_UNISWAP_PCV_DEPOSIT;
     ethPairAddress = process.env.MAINNET_FEI_ETH_PAIR;
     coreAddress = process.env.MAINNET_CORE;
@@ -103,6 +106,7 @@ function getAddresses() {
   return {
     zeroAddress,
     feiAddress,
+    tribeAddress,
     ethUniswapPCVDepositAddress,
     oldUniswapPCVDepositAddress,
     ethPairAddress,

@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
 import "./IBondingCurve.sol";
 import "../refs/OracleRef.sol";
 import "../pcv/PCVSplitter.sol";
@@ -36,11 +35,12 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice constructor
-    /// @param _scale the Scale target where peg fixes
     /// @param _core Fei Core to reference
+    /// @param _oracle the price oracle to reference
+    /// @param _backupOracle the backup oracle to reference
+    /// @param _scale the Scale target where peg fixes
     /// @param _pcvDeposits the PCV Deposits for the PCVSplitter
     /// @param _ratios the ratios for the PCVSplitter
-    /// @param _oracle the UniswapOracle to reference
     /// @param _duration the duration between incentivizing allocations
     /// @param _incentive the amount rewarded to the caller of an allocation
     /// @param _token the ERC20 token associated with this curve, null if ETH
@@ -49,6 +49,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     constructor(
         address _core,
         address _oracle,
+        address _backupOracle,
         uint256 _scale,
         address[] memory _pcvDeposits,
         uint256[] memory _ratios,
@@ -58,17 +59,25 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         uint256 _discount,
         uint256 _buffer
     )
-        OracleRef(_core, _oracle)
+        OracleRef(_core, _oracle, _backupOracle, 0, false)
         PCVSplitter(_pcvDeposits, _ratios)
         Timed(_duration)
         Incentivized(_incentive)
     {
         _setScale(_scale);
         token = _token;
+
         discount = _discount;
+        emit DiscountUpdate(0, _discount);
+
         buffer = _buffer;
+        emit BufferUpdate(0, _buffer);
 
         _initTimed();
+
+        if (address(_token) != address(0)) {
+            _setDecimalsNormalizerFromToken(address(_token));
+        }
     }
 
     /// @notice purchase FEI for underlying tokens
@@ -83,11 +92,13 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         whenNotPaused
         returns (uint256 amountOut)
     {
+        require(msg.value == 0, "BondingCurve: unexpected ETH input");
         SafeERC20.safeTransferFrom(token, msg.sender, address(this), amountIn);
         return _purchase(amountIn, to);
     }
 
-    /// @notice the amount of PCV held in contract and ready to be allocated
+    /// @notice balance of the bonding curve
+    /// @return the amount of PCV held in contract and ready to be allocated
     function balance() public view virtual override returns (uint256) {
         return token.balanceOf(address(this));
     }
@@ -167,7 +178,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
 
     /// @notice return current instantaneous bonding curve price
     /// @return price reported as FEI per USD
-    /// @dev Can be innacurate if outdated, need to call `oracle().isOutdated()` to check
+    /// @dev Can be inaccurate if outdated, need to call `oracle().isOutdated()` to check
     function getCurrentPrice()
         public
         view
@@ -191,7 +202,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         returns (uint256 amountOut)
     {
         // the FEI value of the input amount
-        uint256 adjustedAmount = readOracle().mul(amountIn).asUint256();
+        uint256 feiValueOfAmountIn = readOracle().mul(amountIn).asUint256();
 
         Decimal.D256 memory price = getCurrentPrice();
 
@@ -199,14 +210,14 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
             uint256 preScaleAmount = scale - totalPurchased;
 
             // crossing scale
-            if (adjustedAmount > preScaleAmount) {
-                uint256 postScaleAmount = adjustedAmount - preScaleAmount;
+            if (feiValueOfAmountIn > preScaleAmount) {
+                uint256 postScaleAmount = feiValueOfAmountIn - preScaleAmount;
                 // combined pricing of pre-scale price times the amount to reach scale and post-scale price times remainder
                 return price.mul(preScaleAmount).add(_getBufferMultiplier().mul(postScaleAmount)).asUint256();
             }
         }
 
-        amountOut = price.mul(adjustedAmount).asUint256();
+        amountOut = price.mul(feiValueOfAmountIn).asUint256();
     }
 
     /// @notice mint FEI and send to buyer destination
@@ -236,16 +247,17 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         emit ScaleUpdate(oldScale, newScale);
     }
 
-    /// @notice the bonding curve price multiplier at the current totalPurchased relative to Scale
+    /// @notice the bonding curve price multiplier used before Scale
     function _getBondingCurvePriceMultiplier()
         internal
         view
         virtual
-        returns (Decimal.D256 memory) {
-            uint256 granularity = BASIS_POINTS_GRANULARITY;
-            // uses 1/1-b because the oracle price is inverted
-            return Decimal.ratio(granularity, granularity - discount);
-        }
+        returns (Decimal.D256 memory)
+    {
+        uint256 granularity = BASIS_POINTS_GRANULARITY;
+        // uses 1/1-b because the oracle price is inverted
+        return Decimal.ratio(granularity, granularity - discount);
+    }
 
     /// @notice returns the buffer on the post-scale bonding curve price
     function _getBufferMultiplier() internal view returns (Decimal.D256 memory) {

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 import "./IOracle.sol";
@@ -8,7 +8,7 @@ import "./IOracle.sol";
 /// @author Fei Protocol
 interface IUniswapOracle is IOracle {
     // ----------- Events -----------
-    event DurationUpdate(uint256 _duration);
+    event TWAPDurationUpdate(uint256 _duration);
 
     // ----------- Governor only state changing API -----------
 

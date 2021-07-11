@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "./IPCVDripController.sol"; 
 import "../utils/Incentivized.sol"; 
@@ -19,7 +19,7 @@ contract PCVDripController is IPCVDripController, CoreRef, Timed, Incentivized {
     /// @notice amount to drip after each window
     uint256 public override dripAmount;
 
-    /// @notice ETH PCV Dripper constructor
+    /// @notice PCV Drip Controller constructor
     /// @param _core Fei Core for reference
     /// @param _source the PCV deposit to drip from
     /// @param _target the PCV deposit to drip to
@@ -41,13 +41,13 @@ contract PCVDripController is IPCVDripController, CoreRef, Timed, Incentivized {
         emit SourceUpdate(address(0), address(_source));
 
         dripAmount = _dripAmount;
-        emit DripAmountUpdate(0, _incentiveAmount);
+        emit DripAmountUpdate(0, _dripAmount);
 
         // start timer
         _initTimed();
     }
 
-    /// @notice drip ETH to target by withdrawing from source
+    /// @notice drip PCV to target by withdrawing from source
     function drip()
         external
         override

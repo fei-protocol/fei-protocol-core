@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "./IPCVSwapper.sol";
 import "./PCVDeposit.sol";
@@ -8,7 +8,7 @@ import "../refs/OracleRef.sol";
 import "../utils/Timed.sol";
 import "../external/UniswapV2Library.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
@@ -16,14 +16,12 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 /// @title implementation for PCV Swapper that swaps ERC20 tokens on Uniswap
 /// @author eswak
 contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incentivized {
-    using SafeERC20 for ERC20;
+    using SafeERC20 for IERC20;
     using Decimal for Decimal.D256;
 
     // ----------- Events -----------	
-    event UpdateMaximumSlippage(uint256 maximumSlippage);	
-    event UpdateMaxSpentPerSwap(uint256 maxSpentPerSwap);	
-    event UpdateInvertOraclePrice(bool invertOraclePrice);	
-    event UpdateSwapIncentiveAmount(uint256 swapIncentiveAmount);
+    event UpdateMaximumSlippage(uint256 oldMaxSlippage, uint256 newMaximumSlippage);	
+    event UpdateMaxSpentPerSwap(uint256 oldMaxSpentPerSwap, uint256 newMaxSpentPerSwap);	
 
     /// @notice the token to spend on swap (outbound)
     address public immutable override tokenSpent;
@@ -33,8 +31,6 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
     address public override tokenReceivingAddress;
     /// @notice the maximum amount of tokens to spend on every swap
     uint256 public maxSpentPerSwap;
-    /// @notice should we use (1 / oraclePrice) instead of oraclePrice ?
-    bool public invertOraclePrice;
     /// @notice the maximum amount of slippage vs oracle price
     uint256 public maximumSlippageBasisPoints;
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
@@ -45,12 +41,17 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
     // solhint-disable-next-line var-name-mixedcase
     address public immutable WETH;
 
+    struct OracleAddresses {
+        address _oracle;
+        address _backupOracle;
+    }
+
     constructor(
         address _core,
         IUniswapV2Pair _pair,
         // solhint-disable-next-line var-name-mixedcase
         address _WETH,
-        address _oracle,
+        OracleAddresses memory oracleAddresses,
         uint256 _swapFrequency,
         address _tokenSpent,
         address _tokenReceived,
@@ -59,15 +60,26 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
         uint256 _maximumSlippageBasisPoints,
         bool _invertOraclePrice,
         uint256 _swapIncentiveAmount
-    ) OracleRef(_core, _oracle) Timed(_swapFrequency) Incentivized(_swapIncentiveAmount) {
+    ) OracleRef(
+      _core, 
+      oracleAddresses._oracle, 
+      oracleAddresses._backupOracle,
+      int256(uint256(IERC20Metadata(_tokenSpent).decimals())) - int256(uint256(IERC20Metadata(_tokenReceived).decimals())),
+      _invertOraclePrice
+    ) Timed(_swapFrequency) Incentivized(_swapIncentiveAmount) {
         pair = _pair;
         WETH = _WETH;
         tokenSpent = _tokenSpent;
         tokenReceived = _tokenReceived;
+
         tokenReceivingAddress = _tokenReceivingAddress;
+        emit UpdateReceivingAddress(address(0), _tokenReceivingAddress);
+
         maxSpentPerSwap = _maxSpentPerSwap;
+        emit UpdateMaxSpentPerSwap(0, _maxSpentPerSwap);
+
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
-        invertOraclePrice = _invertOraclePrice;
+        emit UpdateMaximumSlippage(0, _maximumSlippageBasisPoints);
 
         // start timer
         _initTimed();
@@ -106,8 +118,9 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
     }
 
     /// @notice Reads the balance of tokenReceived held in the contract
+		/// @return held balance of token of tokenReceived
     function balance() external view override returns(uint256) {
-      return ERC20(tokenReceived).balanceOf(address(this));
+      return IERC20(tokenReceived).balanceOf(address(this));
     }
 
     // =======================================================================
@@ -124,10 +137,11 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
     }
 
     /// @notice Sets the address receiving swap's inbound tokens
-    /// @param _tokenReceivingAddress the address that will receive tokens
-    function setReceivingAddress(address _tokenReceivingAddress) external override onlyGovernor {
-      tokenReceivingAddress = _tokenReceivingAddress;
-      emit UpdateReceivingAddress(_tokenReceivingAddress);
+    /// @param newTokenReceivingAddress the address that will receive tokens
+    function setReceivingAddress(address newTokenReceivingAddress) external override onlyGovernor {
+      address oldTokenReceivingAddress = tokenReceivingAddress;
+      tokenReceivingAddress = newTokenReceivingAddress;
+      emit UpdateReceivingAddress(oldTokenReceivingAddress, newTokenReceivingAddress);
     }
 
     // =======================================================================
@@ -135,30 +149,27 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
     // =======================================================================
 
     /// @notice Sets the maximum slippage vs Oracle price accepted during swaps
-    /// @param _maximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
-    function setMaximumSlippage(uint256 _maximumSlippageBasisPoints) external onlyGovernor {
-        require(_maximumSlippageBasisPoints <= BASIS_POINTS_GRANULARITY, "PCVSwapperUniswap: Exceeds bp granularity.");
-        maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
-        emit UpdateMaximumSlippage(_maximumSlippageBasisPoints);
+    /// @param newMaximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
+    function setMaximumSlippage(uint256 newMaximumSlippageBasisPoints) external onlyGovernor {
+        uint256 oldMaxSlippage = maximumSlippageBasisPoints;
+        require(newMaximumSlippageBasisPoints <= BASIS_POINTS_GRANULARITY, "PCVSwapperUniswap: Exceeds bp granularity.");
+        maximumSlippageBasisPoints = newMaximumSlippageBasisPoints;
+        emit UpdateMaximumSlippage(oldMaxSlippage, newMaximumSlippageBasisPoints);
     }
 
     /// @notice Sets the maximum tokens spent on each swap
-    /// @param _maxSpentPerSwap the maximum number of tokens to be swapped on each call
-    function setMaxSpentPerSwap(uint256 _maxSpentPerSwap) external onlyGovernor {
-        require(_maxSpentPerSwap != 0, "PCVSwapperUniswap: Cannot swap 0.");
-        maxSpentPerSwap = _maxSpentPerSwap;
-        emit UpdateMaxSpentPerSwap(_maxSpentPerSwap);	
+    /// @param newMaxSpentPerSwap the maximum number of tokens to be swapped on each call
+    function setMaxSpentPerSwap(uint256 newMaxSpentPerSwap) external onlyGovernor {
+        uint256 oldMaxSpentPerSwap = maxSpentPerSwap;
+        require(newMaxSpentPerSwap != 0, "PCVSwapperUniswap: Cannot swap 0.");
+        maxSpentPerSwap = newMaxSpentPerSwap;
+        emit UpdateMaxSpentPerSwap(oldMaxSpentPerSwap, newMaxSpentPerSwap);	
     }
 
     /// @notice sets the minimum time between swaps
+		/// @param _duration minimum time between swaps in seconds
     function setSwapFrequency(uint256 _duration) external onlyGovernor {
        _setDuration(_duration);
-    }
-
-    /// @notice sets invertOraclePrice : use (1 / oraclePrice) if true
-    function setInvertOraclePrice(bool _invertOraclePrice) external onlyGovernor {
-        invertOraclePrice = _invertOraclePrice;
-	        emit UpdateInvertOraclePrice(_invertOraclePrice);	
     }
 
     // =======================================================================
@@ -169,11 +180,8 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
     function swap() external override afterTime whenNotPaused {
 	    // Reset timer	
       _initTimed();	
-      // Update oracle, if necessary	
-      if (oracle.isOutdated()) {	
-        bool updated = updateOracle();	
-        require(updated, "PCVSwapperUniswap: cannot update outdated oracle.");	
-      }
+      
+      updateOracle();
 
       uint256 amountIn = _getExpectedAmountIn();
       uint256 amountOut = _getExpectedAmountOut(amountIn);
@@ -184,7 +192,7 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
       require(minimumAcceptableAmountOut <= amountOut, "PCVSwapperUniswap: slippage too high.");
 
       // Perform swap
-      ERC20(tokenSpent).safeTransfer(address(pair), amountIn);
+      IERC20(tokenSpent).safeTransfer(address(pair), amountIn);
       (uint256 amount0Out, uint256 amount1Out) =
           pair.token0() == address(tokenSpent)
               ? (uint256(0), amountOut)
@@ -208,14 +216,12 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
     // Internal functions
     // =======================================================================
 
-    /// @notice see external function getNextAmountSpent()
     function _getExpectedAmountIn() internal view returns (uint256) {
-      uint256 amount = ERC20(tokenSpent).balanceOf(address(this));
+      uint256 amount = IERC20(tokenSpent).balanceOf(address(this));
       require(amount != 0, "PCVSwapperUniswap: no tokenSpent left.");
       return Math.min(maxSpentPerSwap, amount);
     }
 
-    /// @notice see external function getNextAmountReceived()
     function _getExpectedAmountOut(uint256 amountIn) internal view returns (uint256) {
       // Get pair reserves
       (uint256 _token0, uint256 _token1, ) = pair.getReserves();
@@ -234,38 +240,11 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
       return amountOut;
     }
 
-    /// @notice see external function getNextAmountReceivedThreshold()
     function _getMinimumAcceptableAmountOut(uint256 amountIn) internal view returns (uint256) {
       Decimal.D256 memory twap = readOracle();
-      if (invertOraclePrice) {
-        twap = invert(twap);
-      }
       Decimal.D256 memory oracleAmountOut = twap.mul(amountIn);
       Decimal.D256 memory maxSlippage = Decimal.ratio(BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, BASIS_POINTS_GRANULARITY);
-      (uint256 decimalNormalizer, bool normalizerDirection) = _getDecimalNormalizer();
-      Decimal.D256 memory oraclePriceMinusSlippage;
-      if (normalizerDirection) {
-        oraclePriceMinusSlippage = maxSlippage.mul(oracleAmountOut).div(decimalNormalizer);
-      } else {
-        oraclePriceMinusSlippage = maxSlippage.mul(oracleAmountOut).mul(decimalNormalizer);
-      }
+      Decimal.D256 memory oraclePriceMinusSlippage = maxSlippage.mul(oracleAmountOut);
       return oraclePriceMinusSlippage.asUint256();
-    }
-
-    /// @notice see external function getDecimalNormalizer()
-    function _getDecimalNormalizer() internal view returns (uint256, bool) {
-      uint8 decimalsTokenSpent = ERC20(tokenSpent).decimals();
-      uint8 decimalsTokenReceived = ERC20(tokenReceived).decimals();
-
-      uint256 n;
-      bool direction;
-      if (decimalsTokenSpent >= decimalsTokenReceived) {
-        direction = true;
-        n = uint256(10) ** uint256(decimalsTokenSpent - decimalsTokenReceived);
-      } else {
-        direction = false;
-        n = uint256(10) ** uint256(decimalsTokenReceived - decimalsTokenSpent);
-      }
-      return (n, direction);
     }
 }

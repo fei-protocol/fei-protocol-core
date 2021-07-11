@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "./IUniswapPCVDeposit.sol";
 import "./PCVDeposit.sol";
@@ -25,14 +25,16 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     /// @param _pair Uniswap Pair to deposit to
     /// @param _router Uniswap Router
     /// @param _oracle oracle for reference
+    /// @param _backupOracle the backup oracle to reference
     /// @param _maxBasisPointsFromPegLP the max basis points of slippage from peg allowed on LP deposit
     constructor(
         address _core,
         address _pair,
         address _router,
         address _oracle,
+        address _backupOracle,
         uint256 _maxBasisPointsFromPegLP
-    ) UniRef(_core, _pair, _oracle) {
+    ) UniRef(_core, _pair, _oracle, _backupOracle) {
         router = IUniswapV2Router02(_router);
 
         _approveToken(address(fei()));
