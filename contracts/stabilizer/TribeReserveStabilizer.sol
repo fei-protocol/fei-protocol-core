@@ -68,6 +68,7 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
 
     /// @notice set the FEI oracle
     function setFeiOracle(IOracle newFeiOracle) external override onlyGovernor {
+        require(address(newFeiOracle) != address(0), "TribeReserveStabilizer: zero address");
         address oldFeiOracle = address(feiOracle);
         feiOracle = newFeiOracle;
         emit FeiOracleUpdate(oldFeiOracle, address(newFeiOracle));
@@ -75,6 +76,8 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
     
     /// @notice set the FEI price threshold below which exchanging becomes active
     function setFeiPriceThreshold(uint256 newFeiPriceThresholdBasisPoints) external override onlyGovernor {
+        require(newFeiPriceThresholdBasisPoints <= BASIS_POINTS_GRANULARITY, "TribeReserveStabilizer: fei price threshold too high");
+        
         uint256 oldFeiPriceThresholdBasisPoints = _feiPriceThreshold.mul(BASIS_POINTS_GRANULARITY).asUint256();
         _feiPriceThreshold = Decimal.ratio(newFeiPriceThresholdBasisPoints, BASIS_POINTS_GRANULARITY);
         emit FeiPriceThresholdUpdate(oldFeiPriceThresholdBasisPoints, newFeiPriceThresholdBasisPoints);
@@ -95,6 +98,7 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
     /// @notice changes the TRIBE minter address
     /// @param newMinter the new minter address
     function setMinter(address newMinter) external override onlyGovernor {
+        require(newMinter != address(0), "TribeReserveStabilizer: zero address");
         ITribe _tribe = ITribe(address(tribe()));
         _tribe.setMinter(newMinter);
     }

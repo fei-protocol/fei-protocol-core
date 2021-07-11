@@ -242,6 +242,8 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     }
 
     function _setScale(uint256 newScale) internal {
+        require(newScale != 0, "BondingCurve: zero scale");
+
         uint256 oldScale = scale;
         scale = newScale;
         emit ScaleUpdate(oldScale, newScale);

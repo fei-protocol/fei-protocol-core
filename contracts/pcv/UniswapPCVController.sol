@@ -75,10 +75,12 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
     }
 
     /// @notice sets the target PCV Deposit address
-    function setPCVDeposit(address _pcvDeposit) external override onlyGovernor {
+    function setPCVDeposit(address newPCVDeposit) external override onlyGovernor {
+        require(newPCVDeposit != address(0), "UniswapPCVController: zero address");
+
         address oldPCVDeposit = address(pcvDeposit);
-        pcvDeposit = IPCVDeposit(_pcvDeposit);
-        emit PCVDepositUpdate(oldPCVDeposit, _pcvDeposit);
+        pcvDeposit = IPCVDeposit(newPCVDeposit);
+        emit PCVDepositUpdate(oldPCVDeposit, newPCVDeposit);
     }
 
     /// @notice sets the reweight min distance in basis points
@@ -87,6 +89,8 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
         override
         onlyGovernor
     {
+        require(newReweightMinDistanceBPs <= BASIS_POINTS_GRANULARITY, "UniswapPCVController: reweight min distance too high");
+        
         uint256 oldReweightMinDistanceBPs = _minDistanceForReweight.mul(BASIS_POINTS_GRANULARITY).asUint256();
         _minDistanceForReweight = Decimal.ratio(
             newReweightMinDistanceBPs,

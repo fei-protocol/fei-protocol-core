@@ -65,6 +65,7 @@ abstract contract CoreRef is ICoreRef, Pausable {
     /// @notice set new Core reference address
     /// @param newCore the new core address
     function setCore(address newCore) external override onlyGovernor {
+        require(newCore != address(0), "CoreRef: zero address");
         address oldCore = address(_core);
         _core = ICore(newCore);
         emit CoreUpdate(oldCore, newCore);

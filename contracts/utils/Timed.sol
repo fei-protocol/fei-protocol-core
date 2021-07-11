@@ -64,6 +64,8 @@ abstract contract Timed {
     }
 
     function _setDuration(uint256 newDuration) internal {
+        require(newDuration != 0, "Timed: zero duration");
+
         uint256 oldDuration = duration;
         duration = newDuration;
         emit DurationUpdate(oldDuration, newDuration);
