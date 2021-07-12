@@ -19,7 +19,8 @@ const pcvDripControllerArtifact = artifacts.require('PCVDripController')
 const uniswapV2PairArtifact = artifacts.require('IUniswapV2Pair')
 const ethLidoPCVDepositArtifact = artifacts.require('EthLidoPCVDeposit')
 const pcvSwapperArtifact = artifacts.require('IPCVSwapper')
-
+const ethCompoundPCVDepositArtifact = artifacts.require('EthCompoundPCVDeposit');
+const erc20CompoundPCVDepositArtifact = artifacts.require('ERC20CompoundPCVDeposit');
 
 export function getContractArtifacts() {
   return {
@@ -44,6 +45,8 @@ export function getContractArtifacts() {
     'pcvDripControllerAddress': pcvDripControllerArtifact,
     'ethLidoPCVDepositAddress' : ethLidoPCVDepositArtifact,
     'tribeReserveStabilizerAddress' : tribeReserveStabilizerArtifact,
+    'rariPool8FeiPCVDepositAddress' : erc20CompoundPCVDepositArtifact,
+    'rariPool8EthPCVDepositAddress' : ethCompoundPCVDepositArtifact
   }
 }
 

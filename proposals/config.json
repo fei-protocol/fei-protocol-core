@@ -12,11 +12,10 @@
         "proposerAddress" : "",
         "voterAddress" : ""
     },
-    "fip_12" : {
-        "deploy" : false,
+    "compoundPCVDeposit" : {
+        "deploy" : true,
         "exec" : false,
         "proposerAddress" : "",
-        "voterAddress" : "",
-        "proposal_calldata": ""
+        "voterAddress" : ""
     }
 }
