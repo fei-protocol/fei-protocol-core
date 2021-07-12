@@ -10,11 +10,15 @@ const ethBondingCurveArtifact = artifacts.require('EthBondingCurve')
 const uniswapPCVDepositArtifact = artifacts.require('UniswapPCVDeposit')
 const uniswapPCVController = artifacts.require('UniswapPCVController')
 const compositeOracleArtifact = artifacts.require('CompositeOracle')
+const chainlinkOracleWrapperArtifact = artifacts.require('ChainlinkOracleWrapper')
 const uniswapOracleArtifact = artifacts.require('UniswapOracle')
 const ethReserveStabilizerArtifact = artifacts.require('EthReserveStabilizer')
+const tribeReserveStabilizerArtifact = artifacts.require('TribeReserveStabilizer')
 const ratioPCVControllerArtifact = artifacts.require('RatioPCVController')
 const pcvDripControllerArtifact = artifacts.require('PCVDripController')
 const uniswapV2PairArtifact = artifacts.require('IUniswapV2Pair')
+const ethLidoPCVDepositArtifact = artifacts.require('EthLidoPCVDeposit')
+const pcvSwapperArtifact = artifacts.require('IPCVSwapper')
 const ethCompoundPCVDepositArtifact = artifacts.require('EthCompoundPCVDeposit');
 const erc20CompoundPCVDepositArtifact = artifacts.require('ERC20CompoundPCVDeposit');
 
@@ -31,10 +35,16 @@ export function getContractArtifacts() {
     'uniswapOracleAddress': uniswapOracleArtifact,
     'uniswapV2PairAddress': uniswapV2PairArtifact,
     'feiEthPairAddress' : uniswapV2PairArtifact,
+    'feiTribePairAddress' : uniswapV2PairArtifact,
     'compositeOracleAddress' : compositeOracleArtifact,
+    'chainlinkEthUsdOracleWrapperAddress' : chainlinkOracleWrapperArtifact,
+    'chainlinkFeiEthOracleWrapperAddress' : chainlinkOracleWrapperArtifact, 
     'ethReserveStabilizerAddress': ethReserveStabilizerArtifact,
+    'ethPCVDripperAddress' : pcvSwapperArtifact, // uses PCV swapper because old ethPCVDripper abi no longer in codebase
     'ratioPCVControllerAddress': ratioPCVControllerArtifact,
     'pcvDripControllerAddress': pcvDripControllerArtifact,
+    'ethLidoPCVDepositAddress' : ethLidoPCVDepositArtifact,
+    'tribeReserveStabilizerAddress' : tribeReserveStabilizerArtifact,
     'rariPool8FeiPCVDepositAddress' : erc20CompoundPCVDepositArtifact,
     'rariPool8EthPCVDepositAddress' : ethCompoundPCVDepositArtifact
   }

@@ -1,4 +1,5 @@
 const { BN, ether } = require('@openzeppelin/test-helpers');
+const { constants: { ZERO_ADDRESS } } = require('@openzeppelin/test-helpers');
 
 const UniswapPCVDeposit = artifacts.require('UniswapPCVDeposit');
 const UniswapPCVController = artifacts.require('UniswapPCVController');
@@ -6,8 +7,6 @@ const EthBondingCurve = artifacts.require('EthBondingCurve');
 
 const TribeReserveStabilizer = artifacts.require('TribeReserveStabilizer');
 const EthReserveStabilizer = artifacts.require('EthReserveStabilizer');
-const ChainlinkOracleWrapper = artifacts.require('ChainlinkOracleWrapper');
-const CompositeOracle = artifacts.require('CompositeOracle');
 const PCVDripController = artifacts.require('PCVDripController');
 const RatioPCVController = artifacts.require('RatioPCVController');
 
@@ -17,13 +16,12 @@ async function deploy(deployAddress, addresses, logging = false) {
     feiEthPairAddress,
     wethAddress,
     uniswapRouterAddress,
-    uniswapOracleAddress,
-    chainlinkEthUsdOracleAddress,
-    chainlinkFeiEthOracleAddress
+    chainlinkEthUsdOracleWrapperAddress,
+    compositeOracleAddress
   } = addresses;
 
   if (
-    !coreAddress || !feiEthPairAddress || !wethAddress || !uniswapRouterAddress || !uniswapOracleAddress || !chainlinkEthUsdOracleAddress || !chainlinkFeiEthOracleAddress
+    !coreAddress || !feiEthPairAddress || !wethAddress || !uniswapRouterAddress || !chainlinkEthUsdOracleWrapperAddress || !compositeOracleAddress
   ) {
     throw new Error('An environment variable contract address is not set');
   }
@@ -32,7 +30,8 @@ async function deploy(deployAddress, addresses, logging = false) {
     coreAddress,
     feiEthPairAddress,
     uniswapRouterAddress, 
-    uniswapOracleAddress,
+    chainlinkEthUsdOracleWrapperAddress,
+    ZERO_ADDRESS,
     '100',
     { from: deployAddress }
   );
@@ -42,7 +41,8 @@ async function deploy(deployAddress, addresses, logging = false) {
   const uniswapPCVController = await UniswapPCVController.new(
     coreAddress,
     uniswapPCVDeposit.address,
-    uniswapOracleAddress,
+    chainlinkEthUsdOracleWrapperAddress,
+    ZERO_ADDRESS,
     tenPow18.mul(new BN('500')),
     new BN('100'),
     feiEthPairAddress,
@@ -53,7 +53,8 @@ async function deploy(deployAddress, addresses, logging = false) {
     
   const bondingCurve = await EthBondingCurve.new(      
     coreAddress,
-    uniswapOracleAddress,
+    chainlinkEthUsdOracleWrapperAddress,
+    ZERO_ADDRESS,
     {
       scale: tenPow18.mul(new BN('10000000')).toString(), 
       buffer: '100', 
@@ -67,32 +68,12 @@ async function deploy(deployAddress, addresses, logging = false) {
   );
   logging ? console.log('Bonding curve deployed to: ', bondingCurve.address) : undefined;
   
-  const chainlinkEthUsdOracle = await ChainlinkOracleWrapper.new(
-    coreAddress, 
-    chainlinkEthUsdOracleAddress
-  );
-  
-  logging ? console.log('Chainlink ETH-USD oracle: ', chainlinkEthUsdOracle.address) : undefined;
-  
-  const chainlinkFeiEthOracle = await ChainlinkOracleWrapper.new(
-    coreAddress, 
-    chainlinkFeiEthOracleAddress
-  );
-  
-  logging ? console.log('Chainlink FEI-ETH oracle: ', chainlinkFeiEthOracle.address) : undefined;
-  
-  const compositeOracle = await CompositeOracle.new(
-    coreAddress, 
-    chainlinkEthUsdOracleAddress, 
-    chainlinkFeiEthOracle.address
-  );
-  logging ? console.log('Composite FEI-USD oracle: ', compositeOracle.address) : undefined;
-  
   const tribeReserveStabilizer = await TribeReserveStabilizer.new(
     coreAddress, 
-    uniswapOracleAddress,
+    chainlinkEthUsdOracleWrapperAddress,
+    ZERO_ADDRESS,
     9900, // $.99 redemption - 1% fee
-    compositeOracle.address,
+    compositeOracleAddress,
     9700 // $.97 FEI threshold
   );
   
@@ -100,7 +81,8 @@ async function deploy(deployAddress, addresses, logging = false) {
   
   const ethReserveStabilizer = await EthReserveStabilizer.new(
     coreAddress,
-    uniswapOracleAddress,
+    chainlinkEthUsdOracleWrapperAddress,
+    ZERO_ADDRESS,
     9900, // $.99 redemption - 1% fee
     wethAddress
   );
@@ -128,9 +110,6 @@ async function deploy(deployAddress, addresses, logging = false) {
     uniswapPCVDeposit,
     uniswapPCVController,
     bondingCurve,
-    chainlinkEthUsdOracle,
-    chainlinkFeiEthOracle,
-    compositeOracle,
     ethReserveStabilizer,
     pcvDripController,
     ratioPCVController,

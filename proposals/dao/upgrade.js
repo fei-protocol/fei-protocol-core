@@ -1,52 +1,35 @@
-const UniswapPCVDeposit = artifacts.require('UniswapPCVDeposit');
-const UniswapPCVController = artifacts.require('UniswapPCVController');
-const BondingCurve = artifacts.require('BondingCurve');
-const TribeReserveStabilizer = artifacts.require('TribeReserveStabilizer');
-const EthReserveStabilizer = artifacts.require('EthReserveStabilizer');
-const PCVDripController = artifacts.require('PCVDripController');
-const RatioPCVController = artifacts.require('RatioPCVController');
-const Core = artifacts.require('Core');
-const Tribe = artifacts.require('Tribe');
+async function setup(addresses, oldContracts, contracts, logging) {}
 
-async function setup(addresses, oldContractAddresses, logging) {}
-
-async function run(addresses, oldContractAddresses, logging = false) {
+async function run(addresses, oldContracts, contracts, logging = false) {
   const {
-    coreAddress,
-    uniswapPCVDepositAddress,
-    uniswapPCVControllerAddress,
-    bondingCurveAddress,
-    ethReserveStabilizerAddress,
-    tribeReserveStabilizerAddress,
-    ratioPCVControllerAddress,
-    pcvDripControllerAddress,
     timelockAddress
   } = addresses;
 
-  const deposit = await UniswapPCVDeposit.at(uniswapPCVDepositAddress);
-  const controller = await UniswapPCVController.at(uniswapPCVControllerAddress);
-  const bondingCurve = await BondingCurve.at(bondingCurveAddress);
-  const tribeReserveStabilizer = await TribeReserveStabilizer.at(tribeReserveStabilizerAddress);
-  
-  const ratioPCVController = await RatioPCVController.at(ratioPCVControllerAddress);
-  const oldRatioPCVController = await RatioPCVController.at(oldContractAddresses.ratioPCVControllerAddress);
-  const pcvDripController = await PCVDripController.at(pcvDripControllerAddress);
-  const ethReserveStabilizer = await EthReserveStabilizer.at(ethReserveStabilizerAddress);
+  const { 
+    uniswapPCVDeposit,
+    uniswapPCVController,
+    bondingCurve,
+    tribeReserveStabilizer,
+    ratioPCVController,
+    pcvDripController,
+    ethReserveStabilizer,
+    core,
+    tribe
+  } = contracts;
 
-  const core = await Core.at(coreAddress);
-  const tribe = await Tribe.at(await core.tribe());
+  const oldRatioPCVController = oldContracts.ratioPCVController;
 
   logging ? console.log('Granting Burner to new UniswapPCVController') : undefined;
-  await core.grantBurner(controller.address);
+  await core.grantBurner(uniswapPCVController.address);
 
   logging ? console.log('Granting Minter to new UniswapPCVController') : undefined;
-  await core.grantMinter(controller.address);
+  await core.grantMinter(uniswapPCVController.address);
 
   logging ? console.log('Granting Minter to new BondingCurve') : undefined;
   await core.grantMinter(bondingCurve.address);
 
   logging ? console.log('Granting Minter to new UniswapPCVDeposit') : undefined;
-  await core.grantMinter(deposit.address);
+  await core.grantMinter(uniswapPCVDeposit.address);
 
   logging ? console.log('Granting Burner to new TribeReserveStabilizer') : undefined;
   await core.grantBurner(tribeReserveStabilizer.address);
@@ -68,31 +51,31 @@ async function run(addresses, oldContractAddresses, logging = false) {
   logging ? console.log('Granting Minter to new PCVDripController') : undefined;
   await core.grantMinter(pcvDripController.address);
 
-  await oldRatioPCVController.withdrawRatio(oldContractAddresses.uniswapPCVDepositAddress, uniswapPCVDepositAddress, '10000'); // move 100% of PCV from old -> new
+  await oldRatioPCVController.withdrawRatio(oldContracts.uniswapPCVDeposit.address, uniswapPCVDeposit.address, '10000'); // move 100% of PCV from old -> new
 }
 
 /// /  --------------------- NOT RUN ON CHAIN ----------------------
-async function teardown(addresses, oldContractAddresses) {
-  const core = await Core.at(addresses.coreAddress);
+async function teardown(addresses, oldContracts, contracts) {
+  const core = await contracts.core;
 
   const {
-    uniswapPCVDepositAddress,
-    uniswapPCVControllerAddress,
-    ethReserveStabilizerAddress,
-    ratioPCVControllerAddress,
-    bondingCurveAddress,
-  } = oldContractAddresses;
+    uniswapPCVDeposit,
+    uniswapPCVController,
+    ethReserveStabilizer,
+    ratioPCVController,
+    bondingCurve,
+  } = oldContracts;
 
   // Revoke controller permissions
-  await core.revokeMinter(uniswapPCVControllerAddress);
-  await core.revokeMinter(uniswapPCVDepositAddress);
-  await core.revokeMinter(bondingCurveAddress);
+  await core.revokeMinter(uniswapPCVController.address);
+  await core.revokeMinter(uniswapPCVDeposit.address);
+  await core.revokeMinter(bondingCurve.address);
 
-  await core.revokeBurner(uniswapPCVControllerAddress);
-  await core.revokeBurner(ethReserveStabilizerAddress);  
+  await core.revokeBurner(uniswapPCVController.address);
+  await core.revokeBurner(ethReserveStabilizer.address);  
 
-  await core.revokePCVController(ratioPCVControllerAddress);
-  await core.revokePCVController(uniswapPCVControllerAddress);
+  await core.revokePCVController(ratioPCVController.address);
+  await core.revokePCVController(uniswapPCVController.address);
 }
 
 module.exports = { setup, run, teardown };
