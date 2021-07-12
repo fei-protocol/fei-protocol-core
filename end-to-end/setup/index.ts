@@ -85,9 +85,8 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     // Get the upgrade setup, run and teardown scripts
     const { setup, run, teardown } = await import('../../proposals/dao/' + proposalName);
 
-    // TODO add in contracts as a param to skip the contractAddress adding in DAO mocks
     // setup the DAO proposal
-    await setup(contractAddresses, this.mainnetAddresses, this.config.logging);
+    await setup(contractAddresses, existingContracts, contracts, this.config.logging);
 
     // Run the DAO proposal
     // If the `exec` flag is activated, then run the upgrade directly from tx calldata
@@ -99,11 +98,11 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       }
       await exec(config.proposal_calldata, addresses);
     } else {
-      await run(contractAddresses, this.mainnetAddresses, this.config.logging)
+      await run(contractAddresses, existingContracts, contracts, this.config.logging)
     }
 
     // teardown the DAO proposal
-    await teardown(contractAddresses, this.mainnetAddresses)
+    await teardown(contractAddresses, existingContracts, contracts)
 
     return contracts;
   }
