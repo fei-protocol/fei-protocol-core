@@ -82,7 +82,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     }
     
     // Get the upgrade setup, run and teardown scripts
-    const { setup, run, teardown } = await import('../../proposals/dao/' + proposalName);
+    const { setup, run, teardown, validate } = await import('../../proposals/dao/' + proposalName);
 
     // setup the DAO proposal
     await setup(contractAddresses, existingContracts, contracts, this.config.logging);
@@ -101,7 +101,11 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     }
 
     // teardown the DAO proposal
-    await teardown(contractAddresses, existingContracts, contracts)
+    await teardown(contractAddresses, existingContracts, contracts);
+
+    if (validate) {
+      await validate(contractAddresses, existingContracts, contracts);
+    }
 
     return contracts;
   }
