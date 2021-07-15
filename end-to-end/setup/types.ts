@@ -33,6 +33,8 @@ export type MainnetContracts = {
   timelock: typeof Contract,
   feiEthPair: typeof Contract,
   pcvDripController: typeof Contract,
+  rariPool8FeiPCVDeposit: typeof Contract,
+  rariPool8EthPCVDeposit: typeof Contract,
 }
 
 export type MainnetContractAddresses = {

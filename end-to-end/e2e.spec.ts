@@ -33,65 +33,67 @@ describe('e2e', function () {
     await contracts.uniswapPCVDeposit.deposit()
   })
 
-  this.beforeEach(async function () {
-    // Seed bonding curve with eth and update oracle
-    const bondingCurve = contracts.bondingCurve
-    const ethSeedAmount = tenPow18.mul(toBN(1000))
-    await bondingCurve.purchase(deployAddress, ethSeedAmount, {value: ethSeedAmount})
-    await bondingCurve.updateOracle();
-  })
+  describe('BondingCurve', async () => {
+    beforeEach(async function () {
+      // Seed bonding curve with eth and update oracle
+      const bondingCurve = contracts.bondingCurve
+      const ethSeedAmount = tenPow18.mul(toBN(1000))
+      await bondingCurve.purchase(deployAddress, ethSeedAmount, {value: ethSeedAmount})
+      await bondingCurve.updateOracle();
+    })
 
-  it('should allow purchase of Fei through bonding curve', async function () {
-    const bondingCurve = contracts.bondingCurve;
-    const fei = contracts.fei;
-    const feiBalanceBefore = await fei.balanceOf(deployAddress);
+    it('should allow purchase of Fei through bonding curve', async function () {
+      const bondingCurve = contracts.bondingCurve;
+      const fei = contracts.fei;
+      const feiBalanceBefore = await fei.balanceOf(deployAddress);
 
-    const ethAmount = tenPow18; // 1 ETH
-    const oraclePrice = toBN((await bondingCurve.readOracle())[0]);
-    const currentPrice = toBN((await bondingCurve.getCurrentPrice())[0]);
+      const ethAmount = tenPow18; // 1 ETH
+      const oraclePrice = toBN((await bondingCurve.readOracle())[0]);
+      const currentPrice = toBN((await bondingCurve.getCurrentPrice())[0]);
 
-    // expected = amountIn * oracle * price (Note: there is an edge case when crossing scale where this is not true)
-    const expected = ethAmount.mul(oraclePrice).mul(currentPrice).div(tenPow18).div(tenPow18);
+      // expected = amountIn * oracle * price (Note: there is an edge case when crossing scale where this is not true)
+      const expected = ethAmount.mul(oraclePrice).mul(currentPrice).div(tenPow18).div(tenPow18);
 
-    await bondingCurve.purchase(deployAddress, ethAmount, {value: ethAmount});
+      await bondingCurve.purchase(deployAddress, ethAmount, {value: ethAmount});
+      
+      const feiBalanceAfter = await fei.balanceOf(deployAddress);
+      const expectedFinalBalance = feiBalanceBefore.add(expected)
+      expect(feiBalanceAfter).to.be.bignumber.equal(expectedFinalBalance);
+    })
+
+    it('should transfer allocation from bonding curve to the reserve stabiliser', async function () {
+      const bondingCurve = contracts.bondingCurve;
+      const uniswapPCVDeposit = contracts.uniswapPCVDeposit
+
+      const pcvDepositBefore = await uniswapPCVDeposit.balance()
+
+      const curveEthBalanceBefore = toBN(await web3.eth.getBalance(bondingCurve.address));
+      expect(curveEthBalanceBefore).to.be.bignumber.greaterThan(toBN(0))
+
+      const fei = contracts.fei;
+      const callerFeiBalanceBefore = await fei.balanceOf(deployAddress)
+      const pcvAllocations = await bondingCurve.getAllocation()
+      expect(pcvAllocations[0].length).to.be.equal(1)
+
+      const durationWindow = await bondingCurve.duration()
+
+      // pass the duration window, so Fei incentive will be sent
+      await time.increase(durationWindow);
+
+      const allocatedEth = await bondingCurve.balance()
+      await bondingCurve.allocate()
     
-    const feiBalanceAfter = await fei.balanceOf(deployAddress);
-    const expectedFinalBalance = feiBalanceBefore.add(expected)
-    expect(feiBalanceAfter).to.be.bignumber.equal(expectedFinalBalance);
-  })
+      const curveEthBalanceAfter = toBN(await web3.eth.getBalance(bondingCurve.address));
+      expect(curveEthBalanceAfter).to.be.bignumber.equal(curveEthBalanceBefore.sub(allocatedEth))
+      
+      const pcvDepositAfter = await uniswapPCVDeposit.balance()
+      await expectApprox(pcvDepositAfter, pcvDepositBefore.add(allocatedEth), '100')
 
-  it('should transfer allocation from bonding curve to the reserve stabiliser', async function () {
-    const bondingCurve = contracts.bondingCurve;
-    const uniswapPCVDeposit = contracts.uniswapPCVDeposit
-
-    const pcvDepositBefore = await uniswapPCVDeposit.balance()
-
-    const curveEthBalanceBefore = toBN(await web3.eth.getBalance(bondingCurve.address));
-    expect(curveEthBalanceBefore).to.be.bignumber.greaterThan(toBN(0))
-
-    const fei = contracts.fei;
-    const callerFeiBalanceBefore = await fei.balanceOf(deployAddress)
-    const pcvAllocations = await bondingCurve.getAllocation()
-    expect(pcvAllocations[0].length).to.be.equal(1)
-
-    const durationWindow = await bondingCurve.duration()
-
-    // pass the duration window, so Fei incentive will be sent
-    await time.increase(durationWindow);
-
-    const allocatedEth = await bondingCurve.balance()
-    await bondingCurve.allocate()
-  
-    const curveEthBalanceAfter = toBN(await web3.eth.getBalance(bondingCurve.address));
-    expect(curveEthBalanceAfter).to.be.bignumber.equal(curveEthBalanceBefore.sub(allocatedEth))
-    
-    const pcvDepositAfter = await uniswapPCVDeposit.balance()
-    await expectApprox(pcvDepositAfter, pcvDepositBefore.add(allocatedEth), '100')
-
-    const feiIncentive = await bondingCurve.incentiveAmount();
-    const callerFeiBalanceAfter = await fei.balanceOf(deployAddress);
-    expect(callerFeiBalanceAfter).to.be.bignumber.equal(callerFeiBalanceBefore.add(feiIncentive))
-  })
+      const feiIncentive = await bondingCurve.incentiveAmount();
+      const callerFeiBalanceAfter = await fei.balanceOf(deployAddress);
+      expect(callerFeiBalanceAfter).to.be.bignumber.equal(callerFeiBalanceBefore.add(feiIncentive))
+    })
+  });
 
   it('should be able to redeem Fei from stabiliser', async function () {
     const fei = contracts.fei;
@@ -113,8 +115,6 @@ describe('e2e', function () {
     expect(userFeiBalanceAfter).to.be.bignumber.equal(userFeiBalanceBefore.sub(feiTokensExchange))
   })
 
-
-  // FEEDBACK: confirm this test tests everything it should
   it('drip controller can withdraw from PCV deposit to stabiliser', async function () {
     const ethReserveStabilizer = contracts.ethReserveStabilizer
     const uniswapPCVDeposit = contracts.uniswapPCVDeposit
@@ -207,6 +207,36 @@ describe('e2e', function () {
     })
   })
 
+  describe('Compound', async () => {
+    it('should be able to deposit and withdraw ERC20 tokens',  async function () {
+      const erc20CompoundPCVDeposit = contracts.rariPool8FeiPCVDeposit;
+      const fei = contracts.fei;
+      const amount = '100000000000000000000000000'
+      await fei.mint(erc20CompoundPCVDeposit.address, amount);
+
+      const balanceBefore = await erc20CompoundPCVDeposit.balance();
+
+      await erc20CompoundPCVDeposit.deposit();
+      expect((await erc20CompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.greaterThan(amount);
+
+      await erc20CompoundPCVDeposit.withdraw(deployAddress, amount);
+      expect((await erc20CompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.lessThan(amount);
+    })
+  
+    it('should be able to deposit and withdraw ETH',  async function () {
+      const ethCompoundPCVDeposit = contracts.rariPool8EthPCVDeposit;
+      const amount = tenPow18.mul(toBN(200));
+      await web3.eth.sendTransaction({from: deployAddress, to: ethCompoundPCVDeposit.address, value: amount });
+
+      const balanceBefore = await ethCompoundPCVDeposit.balance();
+
+      await ethCompoundPCVDeposit.deposit();
+      expect((await ethCompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.greaterThan(amount);
+
+      await ethCompoundPCVDeposit.withdraw(deployAddress, amount);
+      expect((await ethCompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.lessThan(amount);
+    })
+  })
   describe('Access control', async () => {
     before(async () => {
       // Revoke deploy address permissions, so that does not erroneously

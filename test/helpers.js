@@ -92,6 +92,75 @@ async function expectApprox(actual, expected, magnitude = '1000') {
   expect(actual).to.be.bignumber.closeTo(expected, delta);
 }
 
+async function testMultipleUsersPooling(
+  masterChief,
+  lpToken,
+  userAddresses,
+  incrementAmount,
+  blocksToAdvance,
+  lockLength,
+  totalStaked,
+  pid
+) {
+  // if lock length isn't defined, it defaults to 0
+  lockLength = lockLength === undefined ? 0 : lockLength;
+
+  // approval loop
+  for (let i = 0; i < userAddresses.length; i++) {
+    if ( (await lpToken.allowance(userAddresses[i], masterChief.address)).lt(new BN(totalStaked)) ) {
+      await lpToken.approve(masterChief.address, totalStaked, { from: userAddresses[i] });
+    }
+  }
+
+  // deposit loop
+  for (let i = 0; i < userAddresses.length; i++) {
+    let lockBlockAmount = lockLength;
+    if (Array.isArray(lockLength)) {
+      lockBlockAmount = lockLength[i];
+      if (lockLength.length !== userAddresses.length) {
+        throw new Error('invalid lock length');
+      }
+    }
+
+    await masterChief.deposit(
+      pid,
+      totalStaked,
+      lockBlockAmount,
+      { from: userAddresses[i] },
+    );
+  }
+
+  const pendingBalances = [];
+  for (let i = 0; i < userAddresses.length; i++) {
+    const balance = new BN(await masterChief.pendingRewards(pid, userAddresses[i], 0));
+    pendingBalances.push(balance);
+  }
+
+  for (let i = 0; i < blocksToAdvance; i++) {
+    for (let j = 0; j < pendingBalances.length; j++) {
+      pendingBalances[j] = new BN(await masterChief.pendingRewards(pid, userAddresses[j], 0));
+    }
+
+    await time.advanceBlock();
+
+    for (let j = 0; j < userAddresses.length; j++) {
+      let userIncrementAmount = incrementAmount;
+      if (Array.isArray(incrementAmount)) {
+        userIncrementAmount = incrementAmount[j];
+        if (incrementAmount.length !== userAddresses.length) {
+          throw new Error('invalid increment amount length');
+        }
+      }
+
+      expectApprox(
+        pendingBalances[j].add(userIncrementAmount),
+        new BN(await masterChief.pendingRewards(pid, userAddresses[j], 0)),
+      );
+    }
+  }
+}
+
+
 module.exports = {
   // utils
   ZERO_ADDRESS,
@@ -110,4 +179,5 @@ module.exports = {
   forceEth,
   expectApprox,
   ether,
+  testMultipleUsersPooling,
 };

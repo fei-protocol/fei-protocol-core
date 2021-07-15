@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "../refs/CoreRef.sol";
-import "./IPCVDeposit.sol";
+import "../../refs/CoreRef.sol";
+import "../IPCVDeposit.sol";
 
 /// @title a PCV controller for moving a ratio of the total value in the PCV deposit
 /// @author Fei Protocol

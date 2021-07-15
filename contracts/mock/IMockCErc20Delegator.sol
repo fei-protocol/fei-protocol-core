@@ -8,4 +8,5 @@ abstract contract CErc20Delegator {
     function _acceptAdmin() external virtual returns (uint);
     function mint(uint mintAmount) external virtual returns (uint);
     function balanceOf(address account) public view virtual returns (uint256);
+    function balanceOfUnderlying(address owner) external view virtual returns (uint);
 }
