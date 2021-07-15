@@ -45,7 +45,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    */
    public async loadEnvironment(): Promise<Env> {
     // @ts-ignore
-    let existingContracts = await getContracts(mainnetAddressesV1.contracts)
+    let existingContracts = await getContracts(this.mainnetAddresses)
 
     // Grant priviledges to deploy address
     await sudo(this.mainnetAddresses, this.config.logging)
@@ -77,9 +77,8 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     this.setLocalTestContractAddresses(contracts)
     
     const contractAddresses = {
+      ...this.mainnetAddresses,
       ...getContractAddresses(contracts),
-      // @ts-ignore
-      ...mainnetAddressesV1.external
     }
     
     // Get the upgrade setup, run and teardown scripts
@@ -94,7 +93,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       const addresses = { 
         proposerAddress: config.proposerAddress,
         voterAddress: config.voterAddress,
-        governorAlphaAddress: mainnetAddressesV1['governorAlphaAddress']
+        governorAlphaAddress: this.mainnetAddresses.governorAlphaAddress,
       }
       await exec(config.proposal_calldata, addresses);
     } else {
@@ -119,7 +118,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    */
   async setLocalTestContractAddresses(contracts: MainnetContracts) {
     // @ts-ignore
-    this.afterUpgradeAddresses =  { ...getContractAddresses(contracts), ...mainnetAddressesV1.external };
+    this.afterUpgradeAddresses =  { ...this.mainnetAddresses, ...getContractAddresses(contracts), };
   }
 
   /**
@@ -163,7 +162,11 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * Load all contract addresses from a .json, according to the network configured
    */
   private getMainnetContractAddresses() {
+    const addresses = {}
+    Object.keys(mainnetAddressesV1).map(function(key) {
+      addresses[key] = mainnetAddressesV1[key].address;
+    });
     // @ts-ignore
-    return { ...mainnetAddressesV1.contracts, ...mainnetAddressesV1.external }
+    return addresses;
   }
 }
