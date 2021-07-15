@@ -603,7 +603,7 @@ describe('BondingCurve', function () {
     });
   
     it('Correct allocation rule succeeds', async function() {
-      expect(await this.bondingCurve.checkAllocation([this.pcvDeposit1.address, this.pcvDeposit2.address], [5000, 5000])).to.be.equal(true);
+      await this.bondingCurve.checkAllocation([this.pcvDeposit1.address, this.pcvDeposit2.address], [5000, 5000]);
     });
   
     it('Governor set succeeds', async function() {
