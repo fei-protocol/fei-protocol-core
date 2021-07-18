@@ -456,7 +456,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
 
         // Effects
         poolDeposit.amount -= amount;
-        user.rewardDebt = user.rewardDebt - toSigned128(user.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
+        user.rewardDebt = user.rewardDebt - toSigned128(virtualAmountDelta * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
         user.virtualAmount -= virtualAmountDelta;
         pool.virtualTotalSupply -= virtualAmountDelta;
 
