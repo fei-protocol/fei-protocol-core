@@ -2,6 +2,30 @@ const { web3 } = require('hardhat');
 
 const e18 = '000000000000000000';
 
+async function validate(addresses, oldContracts, contracts, logging) {
+  const accounts = await web3.eth.getAccounts();
+
+  const {
+    rariPool8FeiPCVDeposit,
+    kashiFeiTribe,
+    kashiFeiEth,
+    creamFeiPCVDeposit,
+    poolPartyFeiPCVDeposit,
+    indexCoopFusePoolFeiPCVDeposit
+  } = contracts;
+  
+  const balances = {
+    kashiFeiEth: (await kashiFeiEth.balanceOf(accounts[0])).toString(),
+    kashiFeiTribe: (await kashiFeiTribe.balanceOf(accounts[0])).toString(),
+    rariPool8FeiPCVDeposit: (await rariPool8FeiPCVDeposit.balance()).toString(),
+    creamFeiPCVDeposit: (await creamFeiPCVDeposit.balance()).toString(),
+    poolPartyFeiPCVDeposit: (await poolPartyFeiPCVDeposit.balance()).toString(),
+    indexCoopFusePoolFeiPCVDeposit: (await indexCoopFusePoolFeiPCVDeposit.balance()).toString()
+  };
+  
+  console.log(balances);
+}
+
 async function setup(addresses, oldContracts, contracts, logging) {}
 
 /*
@@ -45,7 +69,7 @@ async function run(addresses, oldContracts, contracts, logging = false) {
 
   const sender = accounts[0].slice(2);
 
-  const datas =     [
+  const datas = [
     '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 
     `0x000000000000000000000000956f47f50a910163d8bf957cf5846d573e7f87ca000000000000000000000000${sender}00000000000000000000000000000000000000000002116545850052128000000000000000000000000000000000000000000000000000000000000000000000`,
     `0x0000000000000000000000000000000000000000000211654585005212800000000000000000000000000000${sender}0000000000000000000000000000000000000000000000000000000000000000`
@@ -68,11 +92,9 @@ async function teardown(addresses, oldContracts, contracts, logging) {
   creamFeiPCVDeposit.deposit();
   poolPartyFeiPCVDeposit.deposit();
   indexCoopFusePoolFeiPCVDeposit.deposit();
+  await validate(addresses, oldContracts, contracts, logging);
 }
 
-async function validate(addresses, oldContracts, contracts, logging) {
-
-}
 module.exports = {
   setup, run, teardown, validate
 };
