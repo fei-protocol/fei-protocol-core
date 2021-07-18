@@ -9,6 +9,8 @@ interface CToken {
     function redeemUnderlying(uint redeemAmount) external returns (uint);
     function exchangeRateStored() external view returns (uint);
     function balanceOf(address account) external view returns (uint);
+    function isCToken() external view returns(bool);
+    function isCEther() external view returns(bool);
 }
 
 /// @title base class for a Compound PCV Deposit
@@ -27,6 +29,7 @@ abstract contract CompoundPCVDepositBase is PCVDeposit {
         address _cToken
     ) CoreRef(_core) {
         cToken = CToken(_cToken);
+        require(cToken.isCToken(), "CompoundPCVDeposit: Not a cToken");
     }
 
     /// @notice withdraw tokens from the PCV allocation

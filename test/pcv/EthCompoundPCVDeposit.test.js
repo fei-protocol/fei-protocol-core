@@ -25,7 +25,7 @@ describe('EthCompoundPCVDeposit', function () {
   
     this.core = await getCore(true);
 
-    this.cToken = await MockCToken.new(userAddress);
+    this.cToken = await MockCToken.new(userAddress, true);
       
     this.compoundPCVDeposit = await EthCompoundPCVDeposit.new(this.core.address, this.cToken.address);
 

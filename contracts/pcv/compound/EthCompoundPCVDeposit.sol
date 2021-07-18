@@ -17,7 +17,9 @@ contract EthCompoundPCVDeposit is CompoundPCVDepositBase {
     constructor(
         address _core,
         address _cToken
-    ) CompoundPCVDepositBase(_core, _cToken) {}
+    ) CompoundPCVDepositBase(_core, _cToken) {
+        require(cToken.isCEther(), "EthCompoundPCVDeposit: Not a CEther");
+    }
 
     receive() external payable {}
 
