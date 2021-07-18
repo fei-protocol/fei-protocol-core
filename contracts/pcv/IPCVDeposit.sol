@@ -20,6 +20,12 @@ interface IPCVDeposit {
         uint256 _amount
     );
 
+    event WithdrawETH(
+        address indexed _caller,
+        address indexed _to,
+        uint256 _amount
+    );
+
     // ----------- State changing api -----------
 
     function deposit() external;
@@ -30,6 +36,8 @@ interface IPCVDeposit {
 
     function withdrawERC20(address token, address to, uint256 amount) external;
 
+    function withdrawETH(address payable to, uint256 amount) external;
+    
     // ----------- Getters -----------
 
     function balance() external view returns (uint256);
