@@ -6,11 +6,12 @@ async function deploy(deployAddress, addresses, logging = false) {
     feiAddress,
     rariPool8FeiAddress,
     creamFeiAddress,
-    poolPartyFeiAddress
+    poolPartyFeiAddress,
+    indexCoopFusePoolFeiAddress,
   } = addresses;
 
   if (
-    !coreAddress || !feiAddress || !rariPool8FeiAddress || !creamFeiAddress || !poolPartyFeiAddress
+    !coreAddress || !feiAddress || !rariPool8FeiAddress || !creamFeiAddress || !poolPartyFeiAddress || !indexCoopFusePoolFeiAddress
   ) {
     throw new Error('An environment variable contract address is not set');
   }
@@ -39,10 +40,19 @@ async function deploy(deployAddress, addresses, logging = false) {
   );
   logging ? console.log('Pool Party FEI ERC20CompoundPCVDeposit deployed to: ', poolPartyFeiPCVDeposit.address) : undefined;
 
+  const indexCoopFusePoolFeiPCVDeposit = await ERC20CompoundPCVDeposit.new(
+    coreAddress,
+    indexCoopFusePoolFeiAddress,
+    feiAddress,
+    { from: deployAddress }
+  );
+  logging ? console.log('Index Coop Fuse FEI ERC20CompoundPCVDeposit deployed to: ', indexCoopFusePoolFeiPCVDeposit.address) : undefined;
+
   return {
     rariPool8FeiPCVDeposit,
     creamFeiPCVDeposit,
-    poolPartyFeiPCVDeposit
+    poolPartyFeiPCVDeposit,
+    indexCoopFusePoolFeiPCVDeposit
   };
 }
 

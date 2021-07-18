@@ -29,8 +29,15 @@
     "chainlinkEthUsdOracleAddress": { "address":  "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"},
     "chainlinkFeiEthOracleAddress": { "address":  "0x7F0D2c2838c6AC24443d13e23d99490017bDe370"},
     "rariPool8ComptrollerAddress": { "address":  "0xc54172e34046c1653d1920d40333dd358c7a1af4"},
-    "rariPool8FeiAddress": { "address":  "0xd8553552f8868C1Ef160eEdf031cF0BCf9686945"},
-    "rariPool8TribeAddress": { "address":  "0xFd3300A9a74b3250F1b2AbC12B47611171910b07"},
+    "rariPool8FeiAddress": { "artifact" : "CErc20Delegator", "address": "0xd8553552f8868C1Ef160eEdf031cF0BCf9686945"},
+    "rariPool8TribeAddress": { "artifact" : "CErc20Delegator", "address":  "0xFd3300A9a74b3250F1b2AbC12B47611171910b07"},
     "rariPool8EthAddress": { "address":  "0xbB025D470162CC5eA24daF7d4566064EE7f5F111"},
-    "rariPool8DaiAddress": { "address":  "0x7e9cE3CAa9910cc048590801e64174957Ed41d43" }
+    "rariPool8DaiAddress": { "artifact" : "CErc20Delegator", "address":  "0x7e9cE3CAa9910cc048590801e64174957Ed41d43" },
+    "creamFeiAddress" : { "artifact" : "CErc20Delegator", "address": "0x8C3B7a4320ba70f8239F83770c4015B5bc4e6F91" },
+    "poolPartyFeiAddress" : { "artifact" : "CErc20Delegator", "address": "0x8C3B7a4320ba70f8239F83770c4015B5bc4e6F91" },
+    "indexCoopFusePoolFeiAddress" : { "artifact" : "CErc20Delegator", "address" : "0x04281F6715Dea6A8EbBCE143D86ea506FF326531" },
+    "bentoBoxAddress" : { "artifact" : "IMasterContractManager", "address" : "0xF5BCE5077908a1b7370B9ae04AdC565EBd643966" },
+    "masterKashiAddress" : { "address" : "0x2cba6ab6574646badc84f0544d05059e57a5dc42" },
+    "kashiFeiTribeAddress" : { "artifact" : "IKashiPair", "address": "0x18c9584d9ce56a0f62f73f630f180d5278c873b7" },
+    "kashiFeiEthAddress" : { "artifact" : "IKashiPair", "address": "0x329efec40f58054fc2f2cd4fd65809f2be3e11c8" }
 }
