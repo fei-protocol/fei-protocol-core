@@ -199,7 +199,7 @@ describe('EthLidoPCVDeposit', function () {
     });
   });
 
-  describe.only('withdrawETH()', function() {
+  describe('withdrawETH()', function() {
     it('should emit WithdrawETH', async function() {
       const balanceBeforeWithdraw = new BN(await web3.eth.getBalance(secondUserAddress));
       await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: `1${e18}`});
