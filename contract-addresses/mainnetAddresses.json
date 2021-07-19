@@ -27,5 +27,10 @@
     "communalFarmAddress" : { "address":  "0x0639076265e9f88542C91DCdEda65127974A5CA5"},
     "uniswapRouterAddress": { "address":  "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"},
     "chainlinkEthUsdOracleAddress": { "address":  "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"},
-    "chainlinkFeiEthOracleAddress": { "address":  "0x7F0D2c2838c6AC24443d13e23d99490017bDe370"}
+    "chainlinkFeiEthOracleAddress": { "address":  "0x7F0D2c2838c6AC24443d13e23d99490017bDe370"},
+    "rariPool8ComptrollerAddress": { "address":  "0xc54172e34046c1653d1920d40333dd358c7a1af4"},
+    "rariPool8FeiAddress": { "address":  "0xd8553552f8868C1Ef160eEdf031cF0BCf9686945"},
+    "rariPool8TribeAddress": { "address":  "0xFd3300A9a74b3250F1b2AbC12B47611171910b07"},
+    "rariPool8EthAddress": { "address":  "0xbB025D470162CC5eA24daF7d4566064EE7f5F111"},
+    "rariPool8DaiAddress": { "address":  "0x7e9cE3CAa9910cc048590801e64174957Ed41d43" }
 }

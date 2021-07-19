@@ -207,6 +207,36 @@ describe('e2e', function () {
     })
   })
 
+  describe('Compound', async () => {
+    it('should be able to deposit and withdraw ERC20 tokens',  async function () {
+      const erc20CompoundPCVDeposit = contracts.rariPool8FeiPCVDeposit;
+      const fei = contracts.fei;
+      const amount = '100000000000000000000000000'
+      await fei.mint(erc20CompoundPCVDeposit.address, amount);
+
+      const balanceBefore = await erc20CompoundPCVDeposit.balance();
+
+      await erc20CompoundPCVDeposit.deposit();
+      expect((await erc20CompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.greaterThan(amount);
+
+      await erc20CompoundPCVDeposit.withdraw(deployAddress, amount);
+      expect((await erc20CompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.lessThan(amount);
+    })
+  
+    it('should be able to deposit and withdraw ETH',  async function () {
+      const ethCompoundPCVDeposit = contracts.rariPool8EthPCVDeposit;
+      const amount = tenPow18.mul(toBN(200));
+      await web3.eth.sendTransaction({from: deployAddress, to: ethCompoundPCVDeposit.address, value: amount });
+
+      const balanceBefore = await ethCompoundPCVDeposit.balance();
+
+      await ethCompoundPCVDeposit.deposit();
+      expect((await ethCompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.greaterThan(amount);
+
+      await ethCompoundPCVDeposit.withdraw(deployAddress, amount);
+      expect((await ethCompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.lessThan(amount);
+    })
+  })
   describe('Access control', async () => {
     before(async () => {
       // Revoke deploy address permissions, so that does not erroneously
