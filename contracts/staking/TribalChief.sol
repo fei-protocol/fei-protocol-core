@@ -6,7 +6,6 @@ import "./../refs/CoreRef.sol";
 import "./IRewardsDistributor.sol";
 import "./IRewarder.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
@@ -85,10 +84,10 @@ contract TribalChief is CoreRef, ReentrancyGuard {
 
     /// the amount of tribe distributed per block
     uint256 private tribalChiefTribePerBlock = 1e20;
-    /// variable has been made immutable to cut down on gas costs
-    uint256 private immutable ACC_TRIBE_PRECISION = 1e12;
+    /// variable has been made constant to cut down on gas costs
+    uint256 private constant ACC_TRIBE_PRECISION = 1e12;
     /// exponent for rewards multiplier
-    uint256 public immutable SCALE_FACTOR = 1e18;
+    uint256 public constant SCALE_FACTOR = 1e18;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount, uint256 indexed depositID);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount, address indexed to);
@@ -101,7 +100,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @notice tribe withdraw event
     event TribeWithdraw(uint256 amount);
     event NewTribePerBlock(uint256 indexed amount);
-    event PoolLocked(bool indexed locked);
+    event PoolLocked(bool indexed locked, uint256 indexed pid);
 
     /// @param _core The Core contract address.
     /// @param _tribe The TRIBE token contract address.
@@ -110,6 +109,8 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     }
 
     /// @notice Allows governor to change the amount of tribe per block
+    /// make sure to call the update pool function before hitting this function
+    /// this will ensure that all of the rewards a user earned previously get paid out
     /// @param newBlockReward The new amount of tribe per block to distribute
     function updateBlockReward(uint256 newBlockReward) external onlyGovernor {
         tribalChiefTribePerBlock = newBlockReward;
@@ -123,7 +124,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         PoolInfo storage pool = poolInfo[_pid];
         pool.unlocked = false;
 
-        emit PoolLocked(true);
+        emit PoolLocked(true, _pid);
     }
 
     /// @notice unlocks the pool so that users can withdraw before their tokens
@@ -133,7 +134,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         PoolInfo storage pool = poolInfo[_pid];
         pool.unlocked = true;
 
-        emit PoolLocked(false);
+        emit PoolLocked(false, _pid);
     }
 
     /// @notice changes the pool multiplier
@@ -152,6 +153,8 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         // then, you need to unlock the pool to allow users to withdraw
         if (newRewardsMultiplier < currentMultiplier) {
             pool.unlocked = true;
+            // emit this event if we end up unlocking this pool
+            emit PoolLocked(false, _pid);
         }
         rewardMultipliers[_pid][lockLength] = newRewardsMultiplier;
 
@@ -209,6 +212,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         IRewarder _rewarder,
         RewardData[] calldata rewardData
     ) external onlyGovernor {
+        require(allocPoint > 0, "pool must have allocation points to be created");
         uint256 lastRewardBlock = block.number;
         totalAllocPoint += allocPoint;
         stakedToken.push(_stakedToken);
@@ -252,6 +256,14 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @param overwrite True if _rewarder should be `set`. Otherwise `_rewarder` is ignored.
     function set(uint256 _pid, uint128 _allocPoint, IRewarder _rewarder, bool overwrite) public onlyGovernor {
         totalAllocPoint = (totalAllocPoint - poolInfo[_pid].allocPoint) + _allocPoint;
+        require(_allocPoint > 0, "0 allocation points for pool not allowed");
+        // if we are making this pool have less allocation points,
+        // then we are going to unlock the pool
+        if (poolInfo[_pid].allocPoint > _allocPoint) {
+            poolInfo[_pid].unlocked = true;
+            // emit this event if we end up unlocking this pool
+            emit PoolLocked(false, _pid);
+        }
         poolInfo[_pid].allocPoint = _allocPoint.toUint64();
 
         if (overwrite) {
@@ -470,7 +482,6 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param to Receiver of TRIBE rewards.
     function _harvest(uint256 pid, address to) private {
-        updatePool(pid);
         PoolInfo storage pool = poolInfo[pid];
         UserInfo storage user = userInfo[pid][msg.sender];
 
@@ -505,6 +516,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param to Receiver of TRIBE rewards.
     function harvest(uint256 pid, address to) public nonReentrant {
+        updatePool(pid);
         _harvest(pid, to);
     }
 
