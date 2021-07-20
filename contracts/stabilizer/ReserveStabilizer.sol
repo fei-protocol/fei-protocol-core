@@ -23,14 +23,16 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, IPCVDeposit {
 
     /// @notice ERC20 Reserve Stabilizer constructor
     /// @param _core Fei Core to reference
-    /// @param _oracle the ETH price oracle to reference
+    /// @param _oracle the price oracle to reference
+    /// @param _backupOracle the backup oracle to reference
     /// @param _usdPerFeiBasisPoints the USD price per FEI to sell tokens at
     constructor(
         address _core,
         address _oracle,
+        address _backupOracle,
         IERC20 _token,
         uint256 _usdPerFeiBasisPoints
-    ) OracleRef(_core, _oracle) {
+    ) OracleRef(_core, _oracle, _backupOracle) {
         require(_usdPerFeiBasisPoints <= BASIS_POINTS_GRANULARITY, "ReserveStabilizer: Exceeds bp granularity");
         usdPerFeiBasisPoints = _usdPerFeiBasisPoints;
         emit UsdPerFeiRateUpdate(0, _usdPerFeiBasisPoints);

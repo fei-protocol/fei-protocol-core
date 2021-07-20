@@ -5,20 +5,40 @@ const Fei = artifacts.require('Fei');
 const fipSeven = require('../dao/fip_7');
 const { check, getAddresses } = require('../utils/helpers');
 
-const {timelockAddress, rariPoolEightAddress, feiAddress} = getAddresses();
+const {
+  timelockAddress,
+  rariPoolEightComptrollerAddress,
+  rariPoolEightFeiAddress,
+  rariPoolEightTribeAddress,
+  rariPoolEightEthAddress,
+  rariPoolEightDaiAddress,
+  feiAddress
+} = getAddresses();
 
 async function getState() {
-  const rariPoolEight = await CErc20Delegator.at(rariPoolEightAddress);
+  const rariPoolEightComptroller = await CErc20Delegator.at(rariPoolEightComptrollerAddress);
+  const rariPoolEightFei = await CErc20Delegator.at(rariPoolEightFeiAddress);
+  const rariPoolEightTribe = await CErc20Delegator.at(rariPoolEightTribeAddress);
+  const rariPoolEightEth = await CErc20Delegator.at(rariPoolEightEthAddress);
+  const rariPoolEightDai = await CErc20Delegator.at(rariPoolEightDaiAddress);
   const fei = await Fei.at(feiAddress);    
 
   const totalFeiSupply = await fei.totalSupply();
-  const feiInRariPool = await fei.balanceOf(rariPoolEight.address);
-  const currentPoolAdmin = await rariPoolEight.admin();
-  const poolFeiAllowance = await fei.allowance(timelockAddress, rariPoolEight.address);
-  const timelockCTokenBalance = await rariPoolEight.balanceOf(timelockAddress);
+  const feiInRariPool = await fei.balanceOf(rariPoolEightFei.address);
+  const currentPoolComptrollerAdmin = await rariPoolEightComptroller.admin();
+  const currentPoolFeiAdmin = await rariPoolEightFei.admin();
+  const currentPoolTribeAdmin = await rariPoolEightTribe.admin();
+  const currentPoolEthAdmin = await rariPoolEightEth.admin();
+  const currentPoolDaiAdmin = await rariPoolEightDai.admin();
+  const poolFeiAllowance = await fei.allowance(timelockAddress, rariPoolEightFei.address);
+  const timelockCTokenBalance = await rariPoolEightFei.balanceOf(timelockAddress);
 
   return {
-    currentPoolAdmin,
+    currentPoolComptrollerAdmin,
+    currentPoolFeiAdmin,
+    currentPoolTribeAdmin,
+    currentPoolEthAdmin,
+    currentPoolDaiAdmin,
     poolFeiAllowance,
     timelockCTokenBalance,
     totalFeiSupply,
@@ -28,14 +48,22 @@ async function getState() {
 
 async function validateState(newState, oldState) {
   const {
-    currentPoolAdmin,
+    currentPoolComptrollerAdmin,
+    currentPoolFeiAdmin,
+    currentPoolTribeAdmin,
+    currentPoolEthAdmin,
+    currentPoolDaiAdmin,
     poolFeiAllowance,
     timelockCTokenBalance,
     totalFeiSupply,
     feiInRariPool,
   } = newState;
 
-  check(currentPoolAdmin === timelockAddress, 'Rari pool transfered to Timelock');
+  check(currentPoolComptrollerAdmin === timelockAddress, 'Rari pool comptroller transfered to Timelock');
+  check(currentPoolFeiAdmin === timelockAddress, 'Rari pool FEI transfered to Timelock');
+  check(currentPoolTribeAdmin === timelockAddress, 'Rari pool TRIBE transfered to Timelock');
+  check(currentPoolEthAdmin === timelockAddress, 'Rari pool ETH transfered to Timelock');
+  check(currentPoolDaiAdmin === timelockAddress, 'Rari pool DAI transfered to Timelock');
 
   check(poolFeiAllowance.toString() === '0', 'Allowance given to Rari pool has been used');
 

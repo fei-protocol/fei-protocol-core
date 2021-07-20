@@ -19,8 +19,12 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     /// @notice OracleRef constructor
     /// @param _core Fei Core to reference
     /// @param _oracle oracle to reference
-    constructor(address _core, address _oracle) CoreRef(_core) {
+    /// @param _backupOracle backup oracle to reference
+    constructor(address _core, address _oracle, address _backupOracle) CoreRef(_core) {
         _setOracle(_oracle);
+        if (_backupOracle != address(0) && _backupOracle != _oracle) {
+            _setBackupOracle(_backupOracle);
+        }
     }
 
     /// @notice sets the referenced oracle
@@ -67,6 +71,7 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     }
 
     function _setOracle(address newOracle) internal {
+        require(newOracle != address(0), "OracleRef: no oracle provided");
         address oldOracle = address(oracle);
         oracle = IOracle(newOracle);
         emit OracleUpdate(oldOracle, newOracle);
