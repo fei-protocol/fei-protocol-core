@@ -21,7 +21,7 @@ contract MockCore is Permissions {
     IFei public fei;
     
     /// @notice the address of the TRIBE contract
-    IERC20 public tribe;
+    IFei public tribe;
 
     /// @notice the address of the GenesisGroup contract
     address public genesisGroup;
@@ -40,7 +40,7 @@ contract MockCore is Permissions {
         Fei _fei = new Fei(address(this));
         _setFei(address(_fei));
 
-        Tribe _tribe = new Tribe(address(this), msg.sender);
+        Tribe _tribe = new Tribe(msg.sender, msg.sender);
         _setTribe(address(_tribe));
     }
 
@@ -57,10 +57,17 @@ contract MockCore is Permissions {
     }
 
     /// @notice Mints fei to the specified address
-    /// @param to new tribe address
-    /// @param amount new tribe address
+    /// @param to address
+    /// @param amount of tokens to send
     function mintFEI(address to, uint256 amount) external onlyGovernor {
         fei.mint(to, amount);
+    }
+
+    /// @notice Mints tribe to the specified address
+    /// @param to new tribe address
+    /// @param amount new tribe address
+    function mintTribe(address to, uint256 amount) external onlyGovernor {
+        tribe.mint(to, amount);
     }
 
     /// @notice sets Genesis Group address
@@ -97,7 +104,7 @@ contract MockCore is Permissions {
     }
 
     function _setTribe(address token) internal {
-        tribe = IERC20(token);
+        tribe = IFei(token);
         emit TribeUpdate(token);
     }
 }
