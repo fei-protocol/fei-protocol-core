@@ -310,7 +310,7 @@ describe('TribalChief', () => {
         );
       });
 
-      it('should not be able to set rewards stream to 0 allocation points', async function () {
+      it('should not be able to set total allocation points to 0', async function () {
         await expectRevert(
           this.tribalChief.set(
             0,
@@ -319,7 +319,7 @@ describe('TribalChief', () => {
             true,
             { from: governorAddress },
           ),
-          '0 allocation points for pool not allowed',
+          'total allocation points cannot be 0',
         );
       });
 
@@ -1310,13 +1310,13 @@ describe('TribalChief', () => {
     });
 
     describe('Governor Rewards Changes', () => {
-      it('governor should be able to step down the pool multiplier, which unlocks users funds', async function () {
+      it('governor should be able to step up the pool multiplier, which unlocks users funds', async function () {
       // assert that this pool is locked
         expect(
           (await this.tribalChief.poolInfo(pid)).unlocked,
         ).to.be.false;
         await this.tribalChief.governorAddPoolMultiplier(
-          pid, 100, zeroMultiplier, { from: governorAddress },
+          pid, 100, multiplier20.toString(), { from: governorAddress },
         );
         // assert that this pool is now unlocked
         expect(
@@ -1324,13 +1324,12 @@ describe('TribalChief', () => {
         ).to.be.true;
         expect(
           (await this.tribalChief.rewardMultipliers(pid, 100)).toString(),
-        ).to.be.bignumber.equal(zeroMultiplier);
+        ).to.be.bignumber.equal(multiplier20);
       });
 
-      it('governor should be able to step up the pool multiplier', async function () {
-        const userAddresses = [userAddress];
+      it('governor should be able to step down the pool multiplier and not unlock the pool', async function () {
         await this.tribalChief.governorAddPoolMultiplier(
-          pid, 100, multiplier20, { from: governorAddress },
+          pid, 100, zeroMultiplier, { from: governorAddress },
         );
         // assert that the pool did not unlock
         expect(
@@ -1338,8 +1337,10 @@ describe('TribalChief', () => {
         ).to.be.false;
         expect(
           await this.tribalChief.rewardMultipliers(pid, 100),
-        ).to.be.bignumber.equal(multiplier20);
+        ).to.be.bignumber.equal(zeroMultiplier);
+
         // now have a user test and ensure this new reward is given
+        const userAddresses = [userAddress];
         await testMultipleUsersPooling(
           this.tribalChief,
           this.LPToken,
@@ -1352,19 +1353,21 @@ describe('TribalChief', () => {
         );
       });
 
-      it('governor should be able to step up the pool multiplier and rewards should be given for 90 blocks after unlock', async function () {
-        const userAddresses = [userAddress];
+      it('governor should be able to step up the pool multiplier, pool unlocks and rewards should be given for 90 blocks', async function () {
         await this.tribalChief.governorAddPoolMultiplier(
           pid, 100, multiplier20, { from: governorAddress },
         );
-        // assert that the pool did not unlock
+
+        // assert that the pool did unlock
         expect(
           (await this.tribalChief.poolInfo(pid)).unlocked,
-        ).to.be.false;
+        ).to.be.true;
         expect(
           await this.tribalChief.rewardMultipliers(pid, 100),
         ).to.be.bignumber.equal(multiplier20);
         // now have a user test and ensure this new reward is given
+
+        const userAddresses = [userAddress];
         await testMultipleUsersPooling(
           this.tribalChief,
           this.LPToken,
