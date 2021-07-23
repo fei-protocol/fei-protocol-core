@@ -3,10 +3,8 @@ const Fei = artifacts.require('Fei');
 const TribalChief = artifacts.require('TribalChief');
 const MockCore = artifacts.require('MockCore');
 const MockConfigurableERC20 = artifacts.require('MockConfigurableERC20');
-const { getAddresses } = require('../scripts/utils/helpers');
 
-const { governorAlphaAddress } = getAddresses();
-const mintAmount = '10000000000000000000000';
+const mintAmount = '10000000000000000000000000000';
 const allocationPoints = 100;
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
@@ -46,8 +44,16 @@ const longRewardSchedule = [
 
 // Create a mock deployment of the tribalchief, tribe and LP tokens
 async function main() {
+  const governorAlphaAddress = process.env.RINKEBY_GOVERNOR_ALPHA;
   const receiver = process.env.FEI_RECEIVER;
   if (!receiver || receiver === undefined || receiver.length !== 42) {
+    throw new Error('must specify receiver address');
+  }
+  if (
+    !governorAlphaAddress
+    || governorAlphaAddress === undefined
+    || governorAlphaAddress.length !== 42
+  ) {
     throw new Error('must specify receiver address');
   }
 
