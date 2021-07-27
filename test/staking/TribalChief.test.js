@@ -121,8 +121,8 @@ describe('TribalChief', () => {
   let perBlockReward;
 
   // rewards multiplier by 20%
-  const multiplier20 = new BN('1200000000000000000');
-  const zeroMultiplier = '1000000000000000000';
+  const multiplier20 = new BN('120000');
+  const zeroMultiplier = '100000';
   const defaultRewardsObject = [
     {
       lockLength: 0,
@@ -134,7 +134,7 @@ describe('TribalChief', () => {
   const allocationPoints = 100;
   // this is the amount of LP tokens that we will mint to users
   // This is also the amount of LP tokens that will be staked into the tribalChief contract
-  const totalStaked = '100000000000000000000';
+  const totalStaked = '1000000000000000000000000000000';
   // this is the amount of tribe we will mint to the tribalChief contract
   const mintAmount = new BN('1000000000000000000000000000000000000000000000');
 
@@ -200,7 +200,7 @@ describe('TribalChief', () => {
           [
             {
               lockLength: 100,
-              rewardMultiplier: '1100000000000000000',
+              rewardMultiplier: '110000',
             },
           ],
         ),
@@ -1315,9 +1315,11 @@ describe('TribalChief', () => {
         expect(
           (await this.tribalChief.poolInfo(pid)).unlocked,
         ).to.be.false;
+
         await this.tribalChief.governorAddPoolMultiplier(
           pid, 100, multiplier20.toString(), { from: governorAddress },
         );
+
         // assert that this pool is now unlocked
         expect(
           (await this.tribalChief.poolInfo(pid)).unlocked,

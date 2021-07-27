@@ -86,7 +86,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// variable has been made constant to cut down on gas costs
     uint256 private constant ACC_TRIBE_PRECISION = 1e12;
     /// exponent for rewards multiplier
-    uint256 public constant SCALE_FACTOR = 1e18;
+    uint256 public constant SCALE_FACTOR = 1e5;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount, uint256 indexed depositID);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount, address indexed to);
@@ -335,7 +335,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         PoolInfo storage pool = poolInfo[pid];
         if (block.number > pool.lastRewardBlock) {
             uint256 virtualSupply = pool.virtualTotalSupply;
-            if (virtualSupply > 0) {
+            if (virtualSupply > 0 && totalAllocPoint != 0) {
                 uint256 blocks = block.number - pool.lastRewardBlock;
                 uint256 tribeReward = (blocks * tribePerBlock() * pool.allocPoint) / totalAllocPoint;
                 pool.accTribePerShare = (pool.accTribePerShare + ((tribeReward * ACC_TRIBE_PRECISION) / virtualSupply)).toUint128();
