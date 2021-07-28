@@ -39,5 +39,6 @@
     "bentoBoxAddress" : { "artifact" : "IMasterContractManager", "address" : "0xF5BCE5077908a1b7370B9ae04AdC565EBd643966" },
     "masterKashiAddress" : { "address" : "0x2cba6ab6574646badc84f0544d05059e57a5dc42" },
     "kashiFeiTribeAddress" : { "artifact" : "IKashiPair", "address": "0x18c9584d9ce56a0f62f73f630f180d5278c873b7" },
-    "kashiFeiEthAddress" : { "artifact" : "IKashiPair", "address": "0x329efec40f58054fc2f2cd4fd65809f2be3e11c8" }
+    "kashiFeiEthAddress" : { "artifact" : "IKashiPair", "address": "0x329efec40f58054fc2f2cd4fd65809f2be3e11c8" },
+    "multisendAddress" : { "artifact" : "IERC20Airdropper", "address": "0x0B36b0F351ea8383506F596743a2DA7DCa204cc3" }
 }

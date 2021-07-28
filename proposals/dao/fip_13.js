@@ -30,17 +30,23 @@ async function setup(addresses, oldContracts, contracts, logging) {}
 
 /*
  1. Mint 12.333m FEI
- 2. Transfer 5M FEI to CREAM deposit
- 3. Transfer 1.333M FEI to Pool party deposit
- 4. Transfer 1M FEI to Index Coop Fuse deposit
+ 2. Approve multisend FEI
+ 3a. Transfer 5M FEI to CREAM deposit
+ 3b. Transfer 1.333M FEI to Pool party deposit
+ 3c. Transfer 1M FEI to Index Coop Fuse deposit
+ 4. Transfer fFEI to deposit
  5. Approve Bentobox 5M FEI 
  6. Approve masterKashi contract for bentoBox
  7. Transfer 2.5M Kashi fei
  8. Transfer 2.5M Kashi fei
- 9. Transfer fFEI to deposit
 */
 async function run(addresses, oldContracts, contracts, logging = false) {
-  const { timelockAddress, bentoBoxAddress, masterKashiAddress } = addresses;
+  const { 
+    ethPCVDripperAddress, 
+    timelockAddress, 
+    bentoBoxAddress, 
+    masterKashiAddress 
+  } = addresses;
   const {
     bentoBox,
     rariPool8Fei,
@@ -50,16 +56,40 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     kashiFeiEth,
     creamFeiPCVDeposit,
     poolPartyFeiPCVDeposit,
-    indexCoopFusePoolFeiPCVDeposit
+    indexCoopFusePoolFeiPCVDeposit,
+    multisend
   } = contracts;
 
   // 1. Mint 12.333M FEI, enough to do all of the transfers
-  await fei.mint(timelockAddress, `12333333${e18}`);
+  const totalFei = `12333333${e18}`;
+  await fei.mint(timelockAddress, totalFei);
 
-  // 2-4. Transfer to Fuse Deposits
-  await fei.transfer(creamFeiPCVDeposit.address, `5000000${e18}`);
-  await fei.transfer(poolPartyFeiPCVDeposit.address, `1333333${e18}`);
-  await fei.transfer(indexCoopFusePoolFeiPCVDeposit.address, `1000000${e18}`);
+  // 2. Approve Multisend
+  await fei.approve(multisend.address, totalFei);
+
+  // 3. Transfer to Fuse Deposits
+  const multisendFee = await multisend.pricePerTx();
+  const multisendAddresses = [
+    creamFeiPCVDeposit.address,
+    poolPartyFeiPCVDeposit.address,
+    indexCoopFusePoolFeiPCVDeposit.address,
+  ];
+  const multisendAmounts = [
+    `5000000${e18}`,
+    `1333333${e18}`,
+    `1000000${e18}`
+  ];
+  await multisend.transfer(
+    fei.address, 
+    ethPCVDripperAddress, 
+    multisendAddresses,
+    multisendAmounts,
+    {value: multisendFee}
+  );
+
+  // 4. Transfer fFEI from FeiRari to a custom deposit
+  const pool8Fei = await rariPool8Fei.balanceOf(timelockAddress);
+  await contracts.rariPool8Fei.transfer(rariPool8FeiPCVDeposit.address, pool8Fei, {from: timelockAddress});  
 
   // Kashi deployments
   const accounts = await web3.eth.getAccounts();
@@ -82,10 +112,6 @@ async function run(addresses, oldContracts, contracts, logging = false) {
 
   // 8. Cook FEI-ETH Kashi deposit
   await kashiFeiTribe.cook([11, 20, 1], [0, 0, 0], datas);
-
-  // 9. Transfer fFEI from FeiRari to a custom deposit
-  const pool8Fei = await rariPool8Fei.balanceOf(timelockAddress);
-  await contracts.rariPool8Fei.transfer(rariPool8FeiPCVDeposit.address, pool8Fei, {from: timelockAddress});  
 }
 
 // Deposit FEI CREAM
