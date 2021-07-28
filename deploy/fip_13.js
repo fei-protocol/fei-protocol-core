@@ -4,7 +4,10 @@ async function deploy(deployAddress, addresses, logging = false) {
   const {
     coreAddress,
     feiAddress,
+    rariPool6FeiAddress,
+    rariPool7FeiAddress,
     rariPool8FeiAddress,
+    rariPool24FeiAddress,
     creamFeiAddress,
     poolPartyFeiAddress,
     indexCoopFusePoolFeiAddress,
@@ -16,9 +19,27 @@ async function deploy(deployAddress, addresses, logging = false) {
     throw new Error('An environment variable contract address is not set');
   }
 
+  const rariPool6FeiPCVDeposit = await ERC20CompoundPCVDeposit.new(
+    coreAddress,
+    rariPool6FeiAddress,
+    feiAddress,
+    { from: deployAddress }
+  );
+  const rariPool7FeiPCVDeposit = await ERC20CompoundPCVDeposit.new(
+    coreAddress,
+    rariPool7FeiAddress,
+    feiAddress,
+    { from: deployAddress }
+  );
   const rariPool8FeiPCVDeposit = await ERC20CompoundPCVDeposit.new(
     coreAddress,
     rariPool8FeiAddress,
+    feiAddress,
+    { from: deployAddress }
+  );
+  const rariPool24FeiPCVDeposit = await ERC20CompoundPCVDeposit.new(
+    coreAddress,
+    rariPool24FeiAddress,
     feiAddress,
     { from: deployAddress }
   );
@@ -49,7 +70,10 @@ async function deploy(deployAddress, addresses, logging = false) {
   logging ? console.log('Index Coop Fuse FEI ERC20CompoundPCVDeposit deployed to: ', indexCoopFusePoolFeiPCVDeposit.address) : undefined;
 
   return {
+    rariPool6FeiPCVDeposit,
+    rariPool7FeiPCVDeposit,
     rariPool8FeiPCVDeposit,
+    rariPool24FeiPCVDeposit,
     creamFeiPCVDeposit,
     poolPartyFeiPCVDeposit,
     indexCoopFusePoolFeiPCVDeposit

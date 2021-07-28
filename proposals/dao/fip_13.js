@@ -7,6 +7,9 @@ async function validate(addresses, oldContracts, contracts, logging) {
 
   const {
     rariPool8FeiPCVDeposit,
+    rariPool6FeiPCVDeposit,
+    rariPool7FeiPCVDeposit,
+    rariPool24FeiPCVDeposit,
     kashiFeiTribe,
     kashiFeiEth,
     creamFeiPCVDeposit,
@@ -20,7 +23,10 @@ async function validate(addresses, oldContracts, contracts, logging) {
     rariPool8FeiPCVDeposit: (await rariPool8FeiPCVDeposit.balance()).toString() > `10000000${e18}`,
     creamFeiPCVDeposit: (await creamFeiPCVDeposit.balance()).toString() === `5000000${e18}`,
     poolPartyFeiPCVDeposit: (await poolPartyFeiPCVDeposit.balance()).toString() === `1333333${e18}`,
-    indexCoopFusePoolFeiPCVDeposit: (await indexCoopFusePoolFeiPCVDeposit.balance()).toString() === `1000000${e18}`
+    indexCoopFusePoolFeiPCVDeposit: (await indexCoopFusePoolFeiPCVDeposit.balance()).toString() === `1000000${e18}`,
+    rariPool6FeiPCVDeposit: (await rariPool6FeiPCVDeposit.balance()).toString() === `1000000${e18}`,
+    rariPool7FeiPCVDeposit: (await rariPool7FeiPCVDeposit.balance()).toString() === `1000000${e18}`,
+    rariPool24FeiPCVDeposit: (await rariPool24FeiPCVDeposit.balance()).toString() === `1000000${e18}`
   };
   
   console.log(balances);
@@ -29,7 +35,7 @@ async function validate(addresses, oldContracts, contracts, logging) {
 async function setup(addresses, oldContracts, contracts, logging) {}
 
 /*
- 1. Mint 12.333m FEI
+ 1. Mint 15.333m FEI
  2. Approve multisend FEI
  3a. Transfer 5M FEI to CREAM deposit
  3b. Transfer 1.333M FEI to Pool party deposit
@@ -50,7 +56,10 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   const {
     bentoBox,
     rariPool8Fei,
+    rariPool6FeiPCVDeposit,
+    rariPool7FeiPCVDeposit,
     rariPool8FeiPCVDeposit,
+    rariPool24FeiPCVDeposit,
     fei,
     kashiFeiTribe,
     kashiFeiEth,
@@ -60,8 +69,8 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     multisend
   } = contracts;
 
-  // 1. Mint 12.333M FEI, enough to do all of the transfers
-  const totalFei = `12333333${e18}`;
+  // 1. Mint 15.333M FEI, enough to do all of the transfers
+  const totalFei = `15333333${e18}`;
   await fei.mint(timelockAddress, totalFei);
 
   // 2. Approve Multisend
@@ -73,10 +82,16 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     creamFeiPCVDeposit.address,
     poolPartyFeiPCVDeposit.address,
     indexCoopFusePoolFeiPCVDeposit.address,
+    rariPool6FeiPCVDeposit.address,
+    rariPool7FeiPCVDeposit.address,
+    rariPool24FeiPCVDeposit.address,
   ];
   const multisendAmounts = [
     `5000000${e18}`,
     `1333333${e18}`,
+    `1000000${e18}`,
+    `1000000${e18}`,
+    `1000000${e18}`,
     `1000000${e18}`
   ];
   await multisend.transfer(
@@ -89,7 +104,7 @@ async function run(addresses, oldContracts, contracts, logging = false) {
 
   // 4. Transfer fFEI from FeiRari to a custom deposit
   const pool8Fei = await rariPool8Fei.balanceOf(timelockAddress);
-  await contracts.rariPool8Fei.transfer(rariPool8FeiPCVDeposit.address, pool8Fei, {from: timelockAddress});  
+  await rariPool8Fei.transfer(rariPool8FeiPCVDeposit.address, pool8Fei, {from: timelockAddress});  
 
   // Kashi deployments
   const accounts = await web3.eth.getAccounts();
@@ -121,9 +136,15 @@ async function teardown(addresses, oldContracts, contracts, logging) {
   const {
     indexCoopFusePoolFeiPCVDeposit,
     creamFeiPCVDeposit,
-    poolPartyFeiPCVDeposit
+    poolPartyFeiPCVDeposit,
+    rariPool6FeiPCVDeposit,
+    rariPool7FeiPCVDeposit,
+    rariPool24FeiPCVDeposit,
   } = contracts;
 
+  rariPool6FeiPCVDeposit.deposit();
+  rariPool7FeiPCVDeposit.deposit();
+  rariPool24FeiPCVDeposit.deposit();
   creamFeiPCVDeposit.deposit();
   poolPartyFeiPCVDeposit.deposit();
   indexCoopFusePoolFeiPCVDeposit.deposit();
