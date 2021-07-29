@@ -25,8 +25,8 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @notice Info of each users's reward debt and virtual amount
     /// stored in a single pool
     struct UserInfo {
-        int128 rewardDebt;
-        uint128 virtualAmount;
+        int256 rewardDebt;
+        uint256 virtualAmount;
     }
 
     /// @notice Info for a deposit
@@ -35,7 +35,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// assumption here is that we will never go over 2^128 -1
     /// on any user deposits
     struct DepositInfo {
-        uint128 amount;
+        uint256 amount;
         uint64 unlockBlock;
         uint64 multiplier;
     }
@@ -44,8 +44,8 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// `allocPoint` The amount of allocation points assigned to the pool.
     /// Also known as the amount of Tribe to distribute per block.
     struct PoolInfo {
-        uint128 accTribePerShare;
-        uint128 virtualTotalSupply;
+        uint256 virtualTotalSupply;
+        uint256 accTribePerShare;
         uint64 lastRewardBlock;
         uint64 allocPoint;
         bool unlocked; // this will allow an admin to unlock the pool if need be.
@@ -84,9 +84,9 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// the amount of tribe distributed per block
     uint256 private tribalChiefTribePerBlock = 1e20;
     /// variable has been made constant to cut down on gas costs
-    uint256 private constant ACC_TRIBE_PRECISION = 1e12;
-    /// exponent for rewards multiplier
-    uint256 public constant SCALE_FACTOR = 1e5;
+    uint256 private constant ACC_TRIBE_PRECISION = 1e18;
+    /// decimals for rewards multiplier
+    uint256 public constant SCALE_FACTOR = 1e4;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount, uint256 indexed depositID);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount, address indexed to);
@@ -143,7 +143,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @param newRewardsMultiplier updated rewards multiplier
     function governorAddPoolMultiplier(
         uint256 _pid,
-        uint64 lockLength, 
+        uint64 lockLength,
         uint64 newRewardsMultiplier
     ) external onlyGovernor {
         PoolInfo storage pool = poolInfo[_pid];
@@ -302,9 +302,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         }
 
         // use the virtual amount to calculate the users share of the pool and their pending rewards
-        return signed128ToUint256(
-            (toSigned128(user.virtualAmount * accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION)) - user.rewardDebt
-        );
+        return (((user.virtualAmount * accTribePerShare) / (ACC_TRIBE_PRECISION)).toInt256() - user.rewardDebt).toUint256();
     }
 
     /// @notice View function to see all pending TRIBE on frontend.
@@ -338,7 +336,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
             if (virtualSupply > 0 && totalAllocPoint != 0) {
                 uint256 blocks = block.number - pool.lastRewardBlock;
                 uint256 tribeReward = (blocks * tribePerBlock() * pool.allocPoint) / totalAllocPoint;
-                pool.accTribePerShare = (pool.accTribePerShare + ((tribeReward * ACC_TRIBE_PRECISION) / virtualSupply)).toUint128();
+                pool.accTribePerShare = pool.accTribePerShare + ((tribeReward * ACC_TRIBE_PRECISION) / virtualSupply);
             }
             pool.lastRewardBlock = block.number.toUint64();
             emit LogUpdatePool(pid, pool.lastRewardBlock, virtualSupply, pool.accTribePerShare);
@@ -349,7 +347,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param amount The token amount to deposit.
     /// @param lockLength The length of time you would like to lock tokens
-    function deposit(uint256 pid, uint128 amount, uint64 lockLength) public nonReentrant whenNotPaused {
+    function deposit(uint256 pid, uint256 amount, uint64 lockLength) public nonReentrant whenNotPaused {
         updatePool(pid);
         PoolInfo storage pool = poolInfo[pid];
         UserInfo storage userPoolData = userInfo[pid][msg.sender];
@@ -367,10 +365,10 @@ contract TribalChief is CoreRef, ReentrancyGuard {
 
         // virtual amount is calculated by taking the users total deposited balance and multiplying
         // it by the multiplier then adding it to the aggregated virtual amount
-        uint128 virtualAmountDelta = ((amount * multiplier) / SCALE_FACTOR).toUint128();
+        uint256 virtualAmountDelta = (amount * multiplier) / SCALE_FACTOR;
         userPoolData.virtualAmount += virtualAmountDelta;
         // update reward debt after virtual amount is set by multiplying virtual amount delta by tribe per share
-        userPoolData.rewardDebt += toSigned128(virtualAmountDelta * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
+        userPoolData.rewardDebt += ((virtualAmountDelta * pool.accTribePerShare) / ACC_TRIBE_PRECISION).toInt256();
 
         // pool virtual total supply needs to increase here
         pool.virtualTotalSupply += virtualAmountDelta;
@@ -399,8 +397,8 @@ contract TribalChief is CoreRef, ReentrancyGuard {
 
         // gather and pay out users rewards
         _harvest(pid, msg.sender);
-        uint128 unlockedTotalAmount = 0;
-        uint128 virtualLiquidityDelta = 0;
+        uint256 unlockedTotalAmount = 0;
+        uint256 virtualLiquidityDelta = 0;
 
         // iterate over all deposits this user has.
         // aggregate the deltas
@@ -418,7 +416,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
 
             // gather the virtual and regular amount delta
             unlockedTotalAmount += poolDeposit.amount;
-            virtualLiquidityDelta += ( (poolDeposit.amount * poolDeposit.multiplier) / SCALE_FACTOR ).toUint128();
+            virtualLiquidityDelta += (poolDeposit.amount * poolDeposit.multiplier) / SCALE_FACTOR;
 
             // zero out the user object as their amount will be withdrawn and all pending tribe will be paid out
             poolDeposit.unlockBlock = 0;
@@ -441,7 +439,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
             // write to these storage slots multiple times
             user.virtualAmount -= virtualLiquidityDelta;
             // set the reward debt to the new virtual amount
-            user.rewardDebt = toSigned128(user.virtualAmount * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
+            user.rewardDebt = (user.virtualAmount * pool.accTribePerShare / ACC_TRIBE_PRECISION).toInt256();
         }
 
         // regardless of whether or not we removed all of this users liquidity from the pool, we will need to
@@ -465,7 +463,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @param to Receiver of the tokens.
     function withdrawFromDeposit(
         uint256 pid,
-        uint128 amount,
+        uint256 amount,
         address to,
         uint256 index
     ) public nonReentrant {
@@ -480,11 +478,11 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         // allow user to withdraw their principle
         require(poolDeposit.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
 
-        uint128 virtualAmountDelta = ( ( amount * poolDeposit.multiplier ) / SCALE_FACTOR ).toUint128();
+        uint256 virtualAmountDelta =  ( amount * poolDeposit.multiplier ) / SCALE_FACTOR;
 
         // Effects
         poolDeposit.amount -= amount;
-        user.rewardDebt = user.rewardDebt - toSigned128(virtualAmountDelta * pool.accTribePerShare) / toSigned128(ACC_TRIBE_PRECISION);
+        user.rewardDebt = user.rewardDebt - ((virtualAmountDelta * pool.accTribePerShare) / ACC_TRIBE_PRECISION).toInt256();
         user.virtualAmount -= virtualAmountDelta;
         pool.virtualTotalSupply -= virtualAmountDelta;
 
@@ -501,7 +499,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         PoolInfo storage pool = poolInfo[pid];
         UserInfo storage user = userInfo[pid][msg.sender];
 
-        // assumption here is that we will never go over 2^128 -1
+        // assumption here is that we will never go over 2^256 -1
         int256 accumulatedTribe = ( (user.virtualAmount * pool.accTribePerShare ) / ACC_TRIBE_PRECISION ).toInt256();
 
         // this should never happen
@@ -513,7 +511,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         require(pendingTribe.toInt256() >= 0, "pendingTribe is less than 0");
 
         // Effects
-        user.rewardDebt = accumulatedTribe.toInt128();
+        user.rewardDebt = accumulatedTribe;
 
         // Interactions
         if (pendingTribe != 0) {
@@ -547,8 +545,8 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         updatePool(pid);
         PoolInfo storage pool = poolInfo[pid];
 
-        uint128 totalUnlocked = 0;
-        uint128 virtualLiquidityDelta = 0;
+        uint256 totalUnlocked = 0;
+        uint256 virtualLiquidityDelta = 0;
         for (uint256 i = 0; i < depositInfo[pid][msg.sender].length; i++) {
             DepositInfo storage poolDeposit = depositInfo[pid][msg.sender][i];
 
@@ -561,7 +559,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
 
             // update the aggregated deposit virtual amount
             // update the virtualTotalSupply
-            virtualLiquidityDelta += ( (poolDeposit.amount * poolDeposit.multiplier) / SCALE_FACTOR ).toUint128();
+            virtualLiquidityDelta += (poolDeposit.amount * poolDeposit.multiplier) / SCALE_FACTOR;
         }
 
         // subtract virtualLiquidity Delta from the virtual total supply of this pool

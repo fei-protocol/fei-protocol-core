@@ -33,11 +33,12 @@ async function testMultipleUsersPooling(
   // if lock length isn't defined, it defaults to 0
   lockLength = lockLength === undefined ? 0 : lockLength;
 
+  const uintMax = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
   // approval loop
   for (let i = 0; i < userAddresses.length; i++) {
-    if ((await lpToken.allowance(userAddresses[i], tribalChief.address)).lt(new BN(totalStaked))) {
-      await lpToken.approve(tribalChief.address, totalStaked, { from: userAddresses[i] });
-    }
+    await lpToken.approve(tribalChief.address, uintMax, { from: userAddresses[i] });
+    // if ((await lpToken.allowance(userAddresses[i], tribalChief.address)).lt(new BN(totalStaked))) {
+    // }
   }
 
   // deposit loop
@@ -89,7 +90,7 @@ async function testMultipleUsersPooling(
         }
       }
 
-      expectApprox(
+      await expectApprox(
         pendingBalances[j].add(userIncrementAmount),
         new BN(await tribalChief.allPendingRewards(pid, userAddresses[j])),
       );
@@ -121,8 +122,8 @@ describe('TribalChief', () => {
   let perBlockReward;
 
   // rewards multiplier by 20%
-  const multiplier20 = new BN('120000');
-  const zeroMultiplier = '100000';
+  const multiplier20 = new BN('12000');
+  const zeroMultiplier = '10000';
   const defaultRewardsObject = [
     {
       lockLength: 0,
@@ -132,9 +133,12 @@ describe('TribalChief', () => {
 
   // allocation points we will use to initialize a pool with
   const allocationPoints = 100;
+
   // this is the amount of LP tokens that we will mint to users
+  // 1e28 is the maximum amount that we can have as the total amount any one user stakes,
+  // above that, the reward calculations don't work properly.
   // This is also the amount of LP tokens that will be staked into the tribalChief contract
-  const totalStaked = '1000000000000000000000000000000';
+  const totalStaked = '10000000000000000000000000000000000';
   // this is the amount of tribe we will mint to the tribalChief contract
   const mintAmount = new BN('1000000000000000000000000000000000000000000000');
 
@@ -200,7 +204,7 @@ describe('TribalChief', () => {
           [
             {
               lockLength: 100,
-              rewardMultiplier: '110000',
+              rewardMultiplier: '11000',
             },
           ],
         ),
@@ -1208,9 +1212,9 @@ describe('TribalChief', () => {
         ];
 
         await this.LPToken.mint(userAddress, totalStaked); // approve double total staked
-        await this.LPToken.approve(this.tribalChief.address, '200000000000000000000');
+        await this.LPToken.approve(this.tribalChief.address, new BN(totalStaked).mul(new BN('2')));
 
-        const incrementAmount = new BN(totalStaked);
+        const incrementAmount = new BN('100000000000000000000');
 
         await testMultipleUsersPooling(
           this.tribalChief,
@@ -1234,7 +1238,7 @@ describe('TribalChief', () => {
       it('allPendingRewards should be able to get all rewards data across a single deposit in a pool', async function () {
         const userAddresses = [userAddress];
 
-        const incrementAmount = new BN(totalStaked);
+        const incrementAmount = new BN('100000000000000000000');
 
         await testMultipleUsersPooling(
           this.tribalChief,
@@ -1259,7 +1263,7 @@ describe('TribalChief', () => {
         ];
 
         await this.LPToken.mint(userAddress, totalStaked); // approve double total staked
-        await this.LPToken.approve(this.tribalChief.address, '200000000000000000000');
+        await this.LPToken.approve(this.tribalChief.address, new BN(totalStaked).mul(new BN('2')));
 
         const incrementAmount = [
           new BN('66666666666600000000'), // user one should receive 2/3 of block rewards
@@ -1509,7 +1513,6 @@ describe('TribalChief', () => {
       it('benchmarking withdrawAllAndHarvest with multiple deposits', async function () {
         const userAddresses = [userAddress];
 
-        await this.LPToken.approve(this.tribalChief.address, '100000000000000000000000000000000000');
         for (let i = 1; i < 20; i++) {
           await testMultipleUsersPooling(
             this.tribalChief,
@@ -1556,7 +1559,6 @@ describe('TribalChief', () => {
       it('benchmarking emergency withdraw with multiple deposits', async function () {
         const userAddresses = [userAddress];
 
-        await this.LPToken.approve(this.tribalChief.address, '100000000000000000000000000000000000');
         for (let i = 1; i < 20; i++) {
           await testMultipleUsersPooling(
             this.tribalChief,
@@ -2065,7 +2067,7 @@ describe('TribalChief', () => {
 
       await expectRevert.unspecified(
         this.tribalChief.withdrawFromDeposit(
-          pid, '100000000000000000001', userAddress, 0, { from: userAddress },
+          pid, new BN(totalStaked).mul(new BN('20')), userAddress, 0, { from: userAddress },
         ),
       );
     });
