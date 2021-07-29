@@ -133,6 +133,8 @@ describe('TribalChief', () => {
   // allocation points we will use to initialize a pool with
   const allocationPoints = 100;
   // this is the amount of LP tokens that we will mint to users
+  // 1e28 is the maximum amount that we can have as the total amount any one user stakes,
+  // above that, the reward calculations don't work properly.
   // This is also the amount of LP tokens that will be staked into the tribalChief contract
   const totalStaked = '10000000000000000000000000000';
   // this is the amount of tribe we will mint to the tribalChief contract
