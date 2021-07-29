@@ -19,6 +19,7 @@ const MockCoreRef = artifacts.require('MockCoreRef');
 const TribalChief = artifacts.require('TribalChief');
 const MockERC20 = artifacts.require('MockERC20');
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const uintMax = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
 async function testMultipleUsersPooling(
   tribalChief,
@@ -33,12 +34,9 @@ async function testMultipleUsersPooling(
   // if lock length isn't defined, it defaults to 0
   lockLength = lockLength === undefined ? 0 : lockLength;
 
-  const uintMax = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
   // approval loop
   for (let i = 0; i < userAddresses.length; i++) {
     await lpToken.approve(tribalChief.address, uintMax, { from: userAddresses[i] });
-    // if ((await lpToken.allowance(userAddresses[i], tribalChief.address)).lt(new BN(totalStaked))) {
-    // }
   }
 
   // deposit loop
