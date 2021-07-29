@@ -89,7 +89,7 @@ async function testMultipleUsersPooling(
         }
       }
 
-      expectApprox(
+      await expectApprox(
         pendingBalances[j].add(userIncrementAmount),
         new BN(await tribalChief.allPendingRewards(pid, userAddresses[j])),
       );
@@ -134,7 +134,7 @@ describe('TribalChief', () => {
   const allocationPoints = 100;
   // this is the amount of LP tokens that we will mint to users
   // This is also the amount of LP tokens that will be staked into the tribalChief contract
-  const totalStaked = '1000000000000000000000000000000';
+  const totalStaked = '10000000000000000000000000000';
   // this is the amount of tribe we will mint to the tribalChief contract
   const mintAmount = new BN('1000000000000000000000000000000000000000000000');
 
@@ -1208,9 +1208,9 @@ describe('TribalChief', () => {
         ];
 
         await this.LPToken.mint(userAddress, totalStaked); // approve double total staked
-        await this.LPToken.approve(this.tribalChief.address, '200000000000000000000');
+        await this.LPToken.approve(this.tribalChief.address, new BN(totalStaked).mul(new BN('2')));
 
-        const incrementAmount = new BN(totalStaked);
+        const incrementAmount = new BN('100000000000000000000');
 
         await testMultipleUsersPooling(
           this.tribalChief,
@@ -1234,7 +1234,7 @@ describe('TribalChief', () => {
       it('allPendingRewards should be able to get all rewards data across a single deposit in a pool', async function () {
         const userAddresses = [userAddress];
 
-        const incrementAmount = new BN(totalStaked);
+        const incrementAmount = new BN('100000000000000000000');
 
         await testMultipleUsersPooling(
           this.tribalChief,
@@ -1259,7 +1259,7 @@ describe('TribalChief', () => {
         ];
 
         await this.LPToken.mint(userAddress, totalStaked); // approve double total staked
-        await this.LPToken.approve(this.tribalChief.address, '200000000000000000000');
+        await this.LPToken.approve(this.tribalChief.address, (new BN(totalStaked)).mul(new BN('2')));
 
         const incrementAmount = [
           new BN('66666666666600000000'), // user one should receive 2/3 of block rewards
@@ -2065,7 +2065,7 @@ describe('TribalChief', () => {
 
       await expectRevert.unspecified(
         this.tribalChief.withdrawFromDeposit(
-          pid, '100000000000000000001', userAddress, 0, { from: userAddress },
+          pid, ((new BN(totalStaked)).mul(new BN('10'))).toString(), userAddress, 0, { from: userAddress },
         ),
       );
     });
