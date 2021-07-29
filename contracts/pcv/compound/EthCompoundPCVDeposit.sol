@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./CompoundPCVDepositBase.sol";
 
-interface CEth {
+interface CEther {
     function mint() external payable;
 }
 
@@ -17,7 +17,9 @@ contract EthCompoundPCVDeposit is CompoundPCVDepositBase {
     constructor(
         address _core,
         address _cToken
-    ) CompoundPCVDepositBase(_core, _cToken) {}
+    ) CompoundPCVDepositBase(_core, _cToken) {
+        require(cToken.isCEther(), "EthCompoundPCVDeposit: Not a CEther");
+    }
 
     receive() external payable {}
 
@@ -30,7 +32,7 @@ contract EthCompoundPCVDeposit is CompoundPCVDepositBase {
         uint256 amount = address(this).balance;
 
         // CEth deposits revert on failure
-        CEth(address(cToken)).mint{value: amount}();
+        CEther(address(cToken)).mint{value: amount}();
         emit Deposit(msg.sender, amount);
     }
 

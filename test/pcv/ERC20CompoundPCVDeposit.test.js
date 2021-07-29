@@ -25,7 +25,7 @@ describe('ERC20CompoundPCVDeposit', function () {
     this.core = await getCore(true);
   
     this.token = await MockERC20.new();
-    this.cToken = await MockCToken.new(this.token.address);
+    this.cToken = await MockCToken.new(this.token.address, false);
         
     this.compoundPCVDeposit = await ERC20CompoundPCVDeposit.new(this.core.address, this.cToken.address, this.token.address);
     this.depositAmount = new BN('1000000000000000000');
