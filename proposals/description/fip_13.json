@@ -8,27 +8,37 @@
             "method": "mint(address,uint256)",
             "arguments": [
                 "0x639572471f2f318464dc01066a56867130e45E25",
-                "12333333000000000000000000"
+                "15333333000000000000000000"
             ],
-            "description": "Mint 12.333m FEI"
+            "description": "Mint 15.333m FEI"
         },
         {
             "address": "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
             "values": "0",
-            "method": "transfer(address,uint256)",
+            "method": "approve(address,uint256)",
             "arguments": [
                 "TBD",
-                "5000000000000000000000000"
+                "15333333000000000000000000"
             ],
-            "description": "Transfer 5M FEI to CREAM deposit"
+            "description": "Approve Multisend 15.333m FEI"
         },
         {
-            "address": "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
-            "values": "0",
-            "method": "transfer(address,uint256)",
+            "address": "0x0B36b0F351ea8383506F596743a2DA7DCa204cc3",
+            "values": "35000000000000000",
+            "method": "transfer(address,address,address[],uint256[])",
             "arguments": [
-                "TBD",
-                "1333333000000000000000000"
+                "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
+                "0xDa079A280FC3e33Eb11A78708B369D5Ca2da54fE",
+                ["TBDx6"],
+                [
+                    "5000000000000000000000000",
+                    "1333333000000000000000000",
+                    "1000000000000000000000000",
+                    "1000000000000000000000000",
+                    "1000000000000000000000000",
+                    "1000000000000000000000000"
+                ]
+                
             ],
             "description": "Transfer 1.333M FEI to Pool party deposit"
         },

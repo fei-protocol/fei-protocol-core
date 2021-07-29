@@ -40,6 +40,9 @@ async function setup(addresses, oldContracts, contracts, logging) {}
  3a. Transfer 5M FEI to CREAM deposit
  3b. Transfer 1.333M FEI to Pool party deposit
  3c. Transfer 1M FEI to Index Coop Fuse deposit
+ 3d. Transfer 1M FEI to Fuse Pool 6 deposit
+ 3e. Transfer 1M FEI to Fuse Pool 7 deposit
+ 3f. Transfer 1M FEI to Fuse Pool 24 deposit
  4. Transfer fFEI to deposit
  5. Approve Bentobox 5M FEI 
  6. Approve masterKashi contract for bentoBox
