@@ -5,6 +5,12 @@
         "proposerAddress" : "",
         "voterAddress" : ""
     },
+    "compoundPCVDeposit" : {
+        "deploy" : true,
+        "exec" : false,
+        "proposerAddress" : "",
+        "voterAddress" : ""
+    },
     "fip_13" : {
         "deploy" : true,
         "exec" : false,

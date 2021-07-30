@@ -16,7 +16,7 @@
     "feiEthPairAddress": { "artifact": "IUniswapV2Pair", "address":  "0x94B0A3d511b6EcDb17eBF877278Ab030acb0A878"},
     "feiTribePairAddress": { "artifact": "IUniswapV2Pair", "address":  "0x9928e4046d7c6513326cCeA028cD3e7a91c7590A"},
     "governorAlphaAddress": { "artifact": "GovernorAlpha", "address":  "0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B"},
-    "ethPCVDripperAddress" : { "artifact": "IPCVSwapper", "address":  "0xDa079A280FC3e33Eb11A78708B369D5Ca2da54fE"},
+    "ethPCVDripperAddress" : { "artifact": "IPCVDeposit", "address":  "0xDa079A280FC3e33Eb11A78708B369D5Ca2da54fE"},
     "ethLidoPCVDepositAddress" : { "artifact": "EthLidoPCVDeposit", "address":  "0xac38ee05c0204a1e119c625d0a560d6731478880"},
     "pcvDripControllerAddress" : { "artifact": "PCVDripController", "address":  "0xa08A721dFB595753FFf335636674D76C455B275C"},
     "tribeReserveStabilizerAddress" : { "artifact": "TribeReserveStabilizer", "address":  "0xa08A721dFB595753FFf335636674D76C455B275C"},
@@ -37,11 +37,13 @@
     "rariPool8EthAddress": { "address":  "0xbB025D470162CC5eA24daF7d4566064EE7f5F111"},
     "rariPool8DaiAddress": { "artifact" : "CErc20Delegator", "address":  "0x7e9cE3CAa9910cc048590801e64174957Ed41d43" },
     "creamFeiAddress" : { "artifact" : "CErc20Delegator", "address": "0x8C3B7a4320ba70f8239F83770c4015B5bc4e6F91" },
-    "poolPartyFeiAddress" : { "artifact" : "CErc20Delegator", "address": "0x8C3B7a4320ba70f8239F83770c4015B5bc4e6F91" },
+    "poolPartyFeiAddress" : { "artifact" : "CErc20Delegator", "address": "0x17b1A2E012cC4C31f83B90FF11d3942857664efc" },
     "indexCoopFusePoolFeiAddress" : { "artifact" : "CErc20Delegator", "address" : "0x04281F6715Dea6A8EbBCE143D86ea506FF326531" },
     "bentoBoxAddress" : { "artifact" : "IMasterContractManager", "address" : "0xF5BCE5077908a1b7370B9ae04AdC565EBd643966" },
     "masterKashiAddress" : { "address" : "0x2cba6ab6574646badc84f0544d05059e57a5dc42" },
     "kashiFeiTribeAddress" : { "artifact" : "IKashiPair", "address": "0x18c9584d9ce56a0f62f73f630f180d5278c873b7" },
     "kashiFeiEthAddress" : { "artifact" : "IKashiPair", "address": "0x329efec40f58054fc2f2cd4fd65809f2be3e11c8" },
+    "kashiFeiXSushiAddress" : { "artifact" : "IKashiPair", "address": "0xf2028069cd88f75fcbcfe215c70fe6d77cb80b10" },
+    "kashiFeiDPIAddress" : { "artifact" : "IKashiPair", "address": "0xf352773f1d4d69deb4de8d0578e43b993ee76e5d" },
     "multisendAddress" : { "artifact" : "IERC20Airdropper", "address": "0x0B36b0F351ea8383506F596743a2DA7DCa204cc3" }
 }
