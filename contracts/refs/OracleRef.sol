@@ -136,6 +136,11 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     function _setDecimalsNormalizerFromToken(address token) internal {
         int256 feiDecimals = 18;
         int256 _decimalsNormalizer = feiDecimals - int256(uint256(IERC20Metadata(token).decimals()));
+        
+        if (doInvert) {
+            _decimalsNormalizer = -1 * _decimalsNormalizer;
+        }
+        
         _setDecimalsNormalizer(_decimalsNormalizer);
     }
 }
