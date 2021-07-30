@@ -34,6 +34,10 @@ async function validate(addresses, oldContracts, contracts, logging) {
   };
   
   console.log(balances);
+
+  await kashiFeiTribe.removeAsset(accounts[0], `2500000${e18}`);
+  const kashiBalanceAfter = (await kashiFeiTribe.balanceOf(accounts[0])).toString();
+  console.log(await kashiBalanceAfter === '0' ? 'Able to withdraw' : 'Not able to withdraw');
 }
 
 async function setup(addresses, oldContracts, contracts, logging) {}

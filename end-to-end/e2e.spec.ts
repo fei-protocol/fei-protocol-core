@@ -4,7 +4,7 @@ import { TestEndtoEndCoordinator } from './setup';
 import { syncPool } from '../scripts/utils/syncPool'
 import { MainnetContractAddresses, MainnetContracts } from './setup/types';
 import { getPeg, getPrice } from './setup/utils'
-import { expectApprox } from '../test/helpers'
+import { BN, expectApprox } from '../test/helpers'
 import proposals from '../proposals/config.json'
 
 const { toBN } = web3.utils;
