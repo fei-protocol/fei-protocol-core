@@ -25,25 +25,34 @@ async function deploy(deployAddress, addresses, logging = false) {
     feiAddress,
     { from: deployAddress }
   );
+
+  logging ? console.log('FEI Fuse Pool 6 ERC20CompoundPCVDeposit deployed to: ', rariPool6FeiPCVDeposit.address) : undefined;
+
   const rariPool7FeiPCVDeposit = await ERC20CompoundPCVDeposit.new(
     coreAddress,
     rariPool7FeiAddress,
     feiAddress,
     { from: deployAddress }
   );
+
+  logging ? console.log('FEI Fuse Pool 7 ERC20CompoundPCVDeposit deployed to: ', rariPool7FeiPCVDeposit.address) : undefined;
+
   const rariPool8FeiPCVDeposit = await ERC20CompoundPCVDeposit.new(
     coreAddress,
     rariPool8FeiAddress,
     feiAddress,
     { from: deployAddress }
   );
+
+  logging ? console.log('FEI Rari ERC20CompoundPCVDeposit deployed to: ', rariPool8FeiPCVDeposit.address) : undefined;
+
   const rariPool24FeiPCVDeposit = await ERC20CompoundPCVDeposit.new(
     coreAddress,
     rariPool24FeiAddress,
     feiAddress,
     { from: deployAddress }
   );
-  logging ? console.log('FEI Rari ERC20CompoundPCVDeposit deployed to: ', rariPool8FeiPCVDeposit.address) : undefined;
+  logging ? console.log('FEI Fuse Pool 24 ERC20CompoundPCVDeposit deployed to: ', rariPool24FeiPCVDeposit.address) : undefined;
   
   const creamFeiPCVDeposit = await ERC20CompoundPCVDeposit.new(
     coreAddress,

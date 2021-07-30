@@ -12,7 +12,7 @@
         "voterAddress" : ""
     },
     "fip_13" : {
-        "deploy" : true,
+        "deploy" : false,
         "exec" : false,
         "proposerAddress" : "",
         "voterAddress" : ""
