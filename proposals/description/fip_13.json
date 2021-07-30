@@ -17,7 +17,7 @@
             "values": "0",
             "method": "approve(address,uint256)",
             "arguments": [
-                "TBD",
+                "0x0B36b0F351ea8383506F596743a2DA7DCa204cc3",
                 "18833333000000000000000000"
             ],
             "description": "Approve Multisend 18.833m FEI"
@@ -29,7 +29,14 @@
             "arguments": [
                 "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
                 "0xDa079A280FC3e33Eb11A78708B369D5Ca2da54fE",
-                ["TBDx6"],
+                [
+                    "0x243C601CC5DaA3Ac250B14509804188347bd2aFB",
+                    "0x5A8CB4556e5D5935Af06beab8292905f48131479",
+                    "0xB51f09B6F103D697dc5d64DC904Ad6a2Dad39987",
+                    "0x74B235Fef146cDB5BE0D3786a9f3774674b3615E",
+                    "0x1434F99EDB2bD03DECCCFe21288767b8324B7403",
+                    "0xD6960adba53212bBE96E54a7AFeDA2066437D000"
+                ],
                 [
                     "5000000000000000000000000",
                     "1333333000000000000000000",
@@ -131,7 +138,7 @@
             "values": "0",
             "method": "transfer(address,uint256)",
             "arguments": [
-                "TBD",
+                "0x37349d9cc523D28e6aBFC03fc5F44879bC8BfFD9",
                 "9369221429985085985825335"
             ],
             "description": "Transfer fFEI to deposit"
