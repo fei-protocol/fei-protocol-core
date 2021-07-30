@@ -244,8 +244,8 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
     }
 
     function _getMinimumAcceptableAmountOut(uint256 amountIn) internal view returns (uint256) {
-      Decimal.D256 memory twap = readOracle();
-      Decimal.D256 memory oracleAmountOut = twap.mul(amountIn);
+      Decimal.D256 memory oraclePrice = readOracle();
+      Decimal.D256 memory oracleAmountOut = oraclePrice.mul(amountIn);
       Decimal.D256 memory maxSlippage = Decimal.ratio(BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, BASIS_POINTS_GRANULARITY);
       Decimal.D256 memory oraclePriceMinusSlippage = maxSlippage.mul(oracleAmountOut);
       return oraclePriceMinusSlippage.asUint256();
