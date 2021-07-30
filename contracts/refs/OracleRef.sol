@@ -124,6 +124,11 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     function _setDoInvert(bool newDoInvert) internal {
         bool oldDoInvert = doInvert;
         doInvert = newDoInvert;
+        
+        if (oldDoInvert != newDoInvert) {
+            _setDecimalsNormalizer( -1 * decimalsNormalizer);
+        }
+
         emit InvertUpdate(oldDoInvert, newDoInvert);
     }
 
