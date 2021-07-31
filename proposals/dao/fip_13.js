@@ -5,6 +5,10 @@ const e18 = '000000000000000000';
 async function validate(addresses, oldContracts, contracts, logging) {
   const accounts = await web3.eth.getAccounts();
 
+  const { 
+    timelockAddress
+  } = addresses;
+
   const {
     rariPool8FeiPCVDeposit,
     rariPool6FeiPCVDeposit,
@@ -20,10 +24,10 @@ async function validate(addresses, oldContracts, contracts, logging) {
   } = contracts;
   
   const balances = {
-    kashiFeiEth: (await kashiFeiEth.balanceOf(accounts[0])).toString() === `2500000${e18}`,
-    kashiFeiTribe: (await kashiFeiTribe.balanceOf(accounts[0])).toString() === `2500000${e18}`,
-    kashiFeiXSushi: (await kashiFeiXSushi.balanceOf(accounts[0])).toString() === `2500000${e18}`,
-    kashiFeiDPI: (await kashiFeiDPI.balanceOf(accounts[0])).toString() === `1000000${e18}`,
+    kashiFeiEth: (await kashiFeiEth.balanceOf(timelockAddress)).toString() === `2500000${e18}`,
+    kashiFeiTribe: (await kashiFeiTribe.balanceOf(timelockAddress)).toString() === `2500000${e18}`,
+    kashiFeiXSushi: (await kashiFeiXSushi.balanceOf(timelockAddress)).toString() === `2500000${e18}`,
+    kashiFeiDPI: (await kashiFeiDPI.balanceOf(timelockAddress)).toString() === `1000000${e18}`,
     rariPool8FeiPCVDeposit: (await rariPool8FeiPCVDeposit.balance()).toString() > `10000000${e18}`,
     creamFeiPCVDeposit: (await creamFeiPCVDeposit.balance()).toString() === `5000000${e18}`,
     poolPartyFeiPCVDeposit: (await poolPartyFeiPCVDeposit.balance()).toString() === `1333333${e18}`,
@@ -157,9 +161,7 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   await kashiFeiDPI.cook([11, 20, 1], [0, 0, 0], datas);
 }
 
-// Deposit FEI CREAM
-// Deposit FEI pool party
-// Deposit FEI Index Coop Fuse
+// Trigger deposit logic on the various FEI PCV deposits
 async function teardown(addresses, oldContracts, contracts, logging) {
   const {
     indexCoopFusePoolFeiPCVDeposit,

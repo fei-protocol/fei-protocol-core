@@ -27,7 +27,7 @@ async function exec(txData, addresses) {
   if (txData) {
     console.log('Submitting Proposal');
     await web3.eth.sendTransaction({
-      from: proposerAddress, to: governorAlphaAddress, data: txData, gas: 3000000
+      from: proposerAddress, to: governorAlphaAddress, data: txData, gas: 6000000
     });
   }
 

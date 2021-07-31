@@ -93,7 +93,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       const addresses = { 
         proposerAddress: config.proposerAddress,
         voterAddress: config.voterAddress,
-        governorAlphaAddress: this.mainnetAddresses.governorAlphaAddress,
+        governorAlphaAddress: contracts.governorAlpha.address,
       }
       await exec(config.proposal_calldata, addresses);
     } else {
