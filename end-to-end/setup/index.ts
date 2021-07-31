@@ -95,7 +95,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
         voterAddress: config.voterAddress,
         governorAlphaAddress: contracts.governorAlpha.address,
       }
-      await exec(config.proposal_calldata, addresses);
+      await exec(config.proposal_calldata, config.totalValue, addresses);
     } else {
       await run(contractAddresses, existingContracts, contracts, this.config.logging)
     }

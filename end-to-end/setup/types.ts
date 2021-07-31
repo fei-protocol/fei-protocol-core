@@ -72,6 +72,7 @@ export type ProposalConfig = {
   proposerAddress: string,
   voterAddress: string,
   proposal_calldata: string,
+  totalValue: number,
 }
 
 export type ContractAccessRights = 
