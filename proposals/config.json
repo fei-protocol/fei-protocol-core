@@ -14,6 +14,7 @@
     "fip_13" : {
         "deploy" : false,
         "exec" : true,
+        "validate" : true,
         "proposal_calldata" : "",
         "totalValue" : 60000000000000000,
         "proposerAddress" : "0xe0ac4559739bD36f0913FB0A3f5bFC19BCBaCD52",

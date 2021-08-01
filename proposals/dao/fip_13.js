@@ -2,48 +2,6 @@ const { web3 } = require('hardhat');
 
 const e18 = '000000000000000000';
 
-async function validate(addresses, oldContracts, contracts, logging) {
-  const accounts = await web3.eth.getAccounts();
-
-  const { 
-    timelockAddress
-  } = addresses;
-
-  const {
-    rariPool8FeiPCVDeposit,
-    rariPool6FeiPCVDeposit,
-    rariPool7FeiPCVDeposit,
-    rariPool24FeiPCVDeposit,
-    kashiFeiTribe,
-    kashiFeiEth,
-    kashiFeiXSushi,
-    kashiFeiDPI,
-    creamFeiPCVDeposit,
-    poolPartyFeiPCVDeposit,
-    indexCoopFusePoolFeiPCVDeposit
-  } = contracts;
-  
-  const balances = {
-    kashiFeiEth: (await kashiFeiEth.balanceOf(timelockAddress)).toString() === `2500000${e18}`,
-    kashiFeiTribe: (await kashiFeiTribe.balanceOf(timelockAddress)).toString() === `2500000${e18}`,
-    kashiFeiXSushi: (await kashiFeiXSushi.balanceOf(timelockAddress)).toString() === `2500000${e18}`,
-    kashiFeiDPI: (await kashiFeiDPI.balanceOf(timelockAddress)).toString() === `1000000${e18}`,
-    rariPool8FeiPCVDeposit: (await rariPool8FeiPCVDeposit.balance()).toString() > `10000000${e18}`,
-    creamFeiPCVDeposit: (await creamFeiPCVDeposit.balance()).toString() === `5000000${e18}`,
-    poolPartyFeiPCVDeposit: (await poolPartyFeiPCVDeposit.balance()).toString() === `1333333${e18}`,
-    indexCoopFusePoolFeiPCVDeposit: (await indexCoopFusePoolFeiPCVDeposit.balance()).toString() === `1000000${e18}`,
-    rariPool6FeiPCVDeposit: (await rariPool6FeiPCVDeposit.balance()).toString() === `1000000${e18}`,
-    rariPool7FeiPCVDeposit: (await rariPool7FeiPCVDeposit.balance()).toString() === `1000000${e18}`,
-    rariPool24FeiPCVDeposit: (await rariPool24FeiPCVDeposit.balance()).toString() === `1000000${e18}`
-  };
-  
-  console.log(balances);
-
-  await kashiFeiTribe.removeAsset(accounts[0], `2500000${e18}`);
-  const kashiBalanceAfter = (await kashiFeiTribe.balanceOf(accounts[0])).toString();
-  console.log(await kashiBalanceAfter === '0' ? 'Able to withdraw' : 'Not able to withdraw');
-}
-
 async function setup(addresses, oldContracts, contracts, logging) {}
 
 /*
@@ -178,7 +136,42 @@ async function teardown(addresses, oldContracts, contracts, logging) {
   creamFeiPCVDeposit.deposit();
   poolPartyFeiPCVDeposit.deposit();
   indexCoopFusePoolFeiPCVDeposit.deposit();
-  await validate(addresses, oldContracts, contracts, logging);
+}
+
+async function validate(addresses, oldContracts, contracts) {
+  const { 
+    timelockAddress
+  } = addresses;
+
+  const {
+    rariPool8FeiPCVDeposit,
+    rariPool6FeiPCVDeposit,
+    rariPool7FeiPCVDeposit,
+    rariPool24FeiPCVDeposit,
+    kashiFeiTribe,
+    kashiFeiEth,
+    kashiFeiXSushi,
+    kashiFeiDPI,
+    creamFeiPCVDeposit,
+    poolPartyFeiPCVDeposit,
+    indexCoopFusePoolFeiPCVDeposit
+  } = contracts;
+  
+  const balances = {
+    kashiFeiEth: (await kashiFeiEth.balanceOf(timelockAddress)).toString() === `2500000${e18}`,
+    kashiFeiTribe: (await kashiFeiTribe.balanceOf(timelockAddress)).toString() === `2500000${e18}`,
+    kashiFeiXSushi: (await kashiFeiXSushi.balanceOf(timelockAddress)).toString() === `2500000${e18}`,
+    kashiFeiDPI: (await kashiFeiDPI.balanceOf(timelockAddress)).toString() === `1000000${e18}`,
+    rariPool8FeiPCVDeposit: (await rariPool8FeiPCVDeposit.balance()).toString() > `10000000${e18}`,
+    creamFeiPCVDeposit: (await creamFeiPCVDeposit.balance()).toString() === `5000000${e18}`,
+    poolPartyFeiPCVDeposit: (await poolPartyFeiPCVDeposit.balance()).toString() === `1333333${e18}`,
+    indexCoopFusePoolFeiPCVDeposit: (await indexCoopFusePoolFeiPCVDeposit.balance()).toString() === `1000000${e18}`,
+    rariPool6FeiPCVDeposit: (await rariPool6FeiPCVDeposit.balance()).toString() === `1000000${e18}`,
+    rariPool7FeiPCVDeposit: (await rariPool7FeiPCVDeposit.balance()).toString() === `1000000${e18}`,
+    rariPool24FeiPCVDeposit: (await rariPool24FeiPCVDeposit.balance()).toString() === `1000000${e18}`
+  };
+  
+  console.log(balances);
 }
 
 module.exports = {
