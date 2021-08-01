@@ -2,7 +2,7 @@ require('dotenv').config();
 const fs = require('fs');
 
 const abisDir = process.env.ABI_DIR;
-const buildDir = './build/contracts/';
+const buildDir = './artifacts/';
 if (!fs.existsSync(abisDir)) {
   throw new Error('ABI directory not exists');
 }

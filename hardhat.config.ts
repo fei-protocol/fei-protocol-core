@@ -29,7 +29,7 @@ const config: HardhatUserConfig = {
       chainId: 5777, // Any network (default: none)
       forking: {
         url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-        blockNumber: 12736788
+        blockNumber: 12934900
       }
     },
     localhost: {
@@ -56,7 +56,9 @@ const config: HardhatUserConfig = {
   paths: {
     tests: runE2ETests ? './end-to-end' : './test',
   },
-  mocha: {},
+  mocha: {
+    timeout: 100000,
+  },
   typechain: {
     outDir: 'types',
     target: 'web3-v1',

@@ -4,7 +4,7 @@ import { TestEndtoEndCoordinator } from './setup';
 import { syncPool } from '../scripts/utils/syncPool'
 import { MainnetContractAddresses, MainnetContracts } from './setup/types';
 import { getPeg, getPrice } from './setup/utils'
-import { expectApprox } from '../test/helpers'
+import { BN, expectApprox } from '../test/helpers'
 import proposals from '../proposals/config.json'
 
 const { toBN } = web3.utils;
@@ -217,7 +217,7 @@ describe('e2e', function () {
       const balanceBefore = await erc20CompoundPCVDeposit.balance();
 
       await erc20CompoundPCVDeposit.deposit();
-      expect((await erc20CompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.greaterThan(amount);
+      expectApprox((await erc20CompoundPCVDeposit.balance()).sub(balanceBefore), amount, '100');
 
       await erc20CompoundPCVDeposit.withdraw(deployAddress, amount);
       expect((await erc20CompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.lessThan(amount);
@@ -231,7 +231,7 @@ describe('e2e', function () {
       const balanceBefore = await ethCompoundPCVDeposit.balance();
 
       await ethCompoundPCVDeposit.deposit();
-      expect((await ethCompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.greaterThan(amount);
+      expectApprox((await ethCompoundPCVDeposit.balance()).sub(balanceBefore), amount, '100');
 
       await ethCompoundPCVDeposit.withdraw(deployAddress, amount);
       expect((await ethCompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.lessThan(amount);

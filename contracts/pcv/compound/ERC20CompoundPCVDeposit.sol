@@ -24,7 +24,6 @@ contract ERC20CompoundPCVDeposit is CompoundPCVDepositBase {
         IERC20 _token
     ) CompoundPCVDepositBase(_core, _cToken) {
         token = _token;
-        require(!cToken.isCEther(), "ERC20CompoundPCVDeposit: Not a CErc20");
     }
 
     /// @notice deposit ERC-20 tokens to Compound
