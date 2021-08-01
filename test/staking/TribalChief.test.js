@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable max-len */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-expressions */
@@ -33,12 +35,10 @@ async function testMultipleUsersPooling(
   // if lock length isn't defined, it defaults to 0
   lockLength = lockLength === undefined ? 0 : lockLength;
 
-  const uintMax = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
   // approval loop
+  const MAX_UINT256 = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
   for (let i = 0; i < userAddresses.length; i++) {
-    await lpToken.approve(tribalChief.address, uintMax, { from: userAddresses[i] });
-    // if ((await lpToken.allowance(userAddresses[i], tribalChief.address)).lt(new BN(totalStaked))) {
-    // }
+    await lpToken.approve(tribalChief.address, MAX_UINT256, { from: userAddresses[i] });
   }
 
   // deposit loop
@@ -121,13 +121,54 @@ describe('TribalChief', () => {
   let tenthUserAddress;
   let perBlockReward;
 
-  // rewards multiplier by 20%
-  const multiplier20 = new BN('12000');
+  const multiplier10x = '100000';
+  const multiplier5x = '50000';
+  const multiplier4x = '40000';
+  const multiplier3x = '30000';
+  // rewards multiplier by 2.5x
+  const multiplier2point5x = '25000';
+  const multiplier2x = '20000';
+
+  const multiplier10 = '11000';
+  const multiplier20 = '12000';
+  const multiplier25 = '12500';
+  const multiplier40 = '14000';
   const zeroMultiplier = '10000';
   const defaultRewardsObject = [
     {
       lockLength: 0,
       rewardMultiplier: zeroMultiplier,
+    },
+    {
+      lockLength: 1000,
+      rewardMultiplier: multiplier10x,
+    },
+  ];
+
+  const linearRewardObject = [
+    {
+      lockLength: 100,
+      rewardMultiplier: zeroMultiplier,
+    },
+    {
+      lockLength: 200,
+      rewardMultiplier: multiplier2x,
+    },
+    {
+      lockLength: 250,
+      rewardMultiplier: multiplier2point5x,
+    },
+    {
+      lockLength: 300,
+      rewardMultiplier: multiplier3x,
+    },
+    {
+      lockLength: 400,
+      rewardMultiplier: multiplier40,
+    },
+    {
+      lockLength: 500,
+      rewardMultiplier: multiplier5x,
     },
   ];
 
@@ -138,7 +179,7 @@ describe('TribalChief', () => {
   // 1e28 is the maximum amount that we can have as the total amount any one user stakes,
   // above that, the reward calculations don't work properly.
   // This is also the amount of LP tokens that will be staked into the tribalChief contract
-  const totalStaked = '10000000000000000000000000000000000';
+  const totalStaked = '100000000000000000000000000000000000';
   // this is the amount of tribe we will mint to the tribalChief contract
   const mintAmount = new BN('1000000000000000000000000000000000000000000000');
 
@@ -779,6 +820,65 @@ describe('TribalChief', () => {
           totalStaked,
           pid,
         );
+      });
+
+      it('should be able to distribute sushi after 10 blocks with 3 pools, 3 users staking in each pool', async function () {
+        await expect(await this.tribalChief.numPools()).to.be.bignumber.equal(new BN('1'));
+        await expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(new BN('100'));
+
+        let tx = await this.tribalChief.add(
+          allocationPoints,
+          this.LPToken.address,
+          ZERO_ADDRESS,
+          linearRewardObject,
+          { from: governorAddress },
+        );
+        const secondPid = Number(tx.logs[0].args.pid);
+        await expect(await this.tribalChief.numPools()).to.be.bignumber.equal(new BN('2'));
+        await expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(new BN('200'));
+
+        tx = await this.tribalChief.add(
+          allocationPoints,
+          this.LPToken.address,
+          ZERO_ADDRESS,
+          linearRewardObject,
+          { from: governorAddress },
+        );
+        // grab PID from the logs
+        const thirdPid = Number(tx.logs[0].args.pid);
+        await expect(await this.tribalChief.numPools()).to.be.bignumber.equal(new BN('3'));
+        await expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(new BN('300'));
+
+        const userAddressesFirstList = [userAddress, secondUserAddress, thirdUserAddress];
+        const userAdddressesSecondList = [fourthUserAddress, fifthUserAddress, sixthUserAddress];
+        const userAdddressesThirdList = [seventhUserAddress, eigthUserAddress, ninthUserAddress];
+
+        // pool 1, all users deposit with a locklength of 100
+        await testMultipleUsersPooling(this.tribalChief, this.LPToken, userAddressesFirstList, new BN('11111111110000000000'), 1, 100, totalStaked, pid);
+
+        // pool 2, 3 user deposits with different locklengths
+        const lockLengths = [100, 200, 300];
+        const rewardArrayPoolTwo = [new BN('5555555550000000000'), new BN('11111111110000000000'), new BN('16666666660000000000')];
+        await testMultipleUsersPooling(this.tribalChief, this.LPToken, userAdddressesSecondList, rewardArrayPoolTwo, 3, lockLengths, totalStaked, secondPid);
+
+        // pool 3, 1 user deposits with different locklengths
+        const lockLengthsPoolThree = [250, 250, 500];
+        const rewardArrayPoolThree = [new BN('8333333330000000000'), new BN('8333333330000000000'), new BN('16666666660000000000')];
+        await testMultipleUsersPooling(this.tribalChief, this.LPToken, userAdddressesThirdList, rewardArrayPoolThree, 3, lockLengthsPoolThree, totalStaked, thirdPid);
+
+        async function testFailureWithdraw(poolPid, users, tribalChief) {
+          for (const user of users) {
+            await expectRevert(
+              tribalChief.withdrawFromDeposit(poolPid, totalStaked, user, 0, { from: user }),
+              'tokens locked',
+            );
+          }
+        }
+
+        // assert that all tokens are still locked as 100 blocks has not passed
+        await testFailureWithdraw(pid, userAddressesFirstList, this.tribalChief);
+        await testFailureWithdraw(secondPid, userAdddressesSecondList, this.tribalChief);
+        await testFailureWithdraw(thirdPid, userAdddressesThirdList, this.tribalChief);
       });
 
       it('should be able to distribute sushi after 10 blocks with 10 users staking using helper function and 2 staking PIDs', async function () {
@@ -1936,6 +2036,10 @@ describe('TribalChief', () => {
             lockLength: 300,
             rewardMultiplier: (new BN(zeroMultiplier)).mul(new BN('3')).toString(),
           },
+          {
+            lockLength: 1000,
+            rewardMultiplier: multiplier10x,
+          },
         ],
         { from: governorAddress },
       );
@@ -2009,6 +2113,35 @@ describe('TribalChief', () => {
         new BN('100000000000000000000'),
         10,
         this.lockLength,
+        totalStaked,
+        pid,
+      );
+    });
+
+    it('should be able to get pending sushi and receive 10x multiplier for locking', async function () {
+      // add 99 pools with the same alloc points, then test rewards
+      for (let i = 0; i < 99; i++) {
+        await this.tribalChief.add(
+          allocationPoints,
+          this.LPToken.address,
+          ZERO_ADDRESS,
+          linearRewardObject,
+          { from: governorAddress },
+        );
+      }
+
+      // ensure we now have 100 pools that will each receive 1 tribe per block
+      expect(Number(await this.tribalChief.numPools())).to.be.equal(100);
+
+      const userAddresses = [userAddress];
+
+      await testMultipleUsersPooling(
+        this.tribalChief,
+        this.LPToken,
+        userAddresses,
+        new BN('1000000000000000000'),
+        10,
+        1000,
         totalStaked,
         pid,
       );

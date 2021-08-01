@@ -19,7 +19,6 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 contract TribalChief is CoreRef, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using SafeCast for uint256;
-    using SafeCast for uint128;
     using SafeCast for int256;
 
     /// @notice Info of each users's reward debt and virtual amount
@@ -32,7 +31,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @notice Info for a deposit
     /// `amount` amount of tokens the user has provided.
     /// `virtualAmount` The virtual amount deposited. Calculated like so (multiplier * amount) / scale_factor
-    /// assumption here is that we will never go over 2^128 -1
+    /// assumption here is that we will never go over 2^256 -1
     /// on any user deposits
     struct DepositInfo {
         uint256 amount;
@@ -79,12 +78,12 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @notice Info of each user that stakes tokens.
     mapping (uint256 => mapping (address => DepositInfo[])) public depositInfo;
     /// @dev Total allocation points. Must be the sum of all allocation points in all pools.
-    uint128 public totalAllocPoint;
+    uint256 public totalAllocPoint;
 
     /// the amount of tribe distributed per block
     uint256 private tribalChiefTribePerBlock = 1e20;
     /// variable has been made constant to cut down on gas costs
-    uint256 private constant ACC_TRIBE_PRECISION = 1e18;
+    uint256 private constant ACC_TRIBE_PRECISION = 1e23;
     /// decimals for rewards multiplier
     uint256 public constant SCALE_FACTOR = 1e4;
 
@@ -178,28 +177,6 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         return depositInfo[pid][user].length;
     }
 
-    /**
-     * @dev Returns the downcasted int128 from uint256, reverting on
-     * overflow (when the input is greater than largest int128).
-     *
-     * Counterpart to Solidity's `int128` operator.
-     *
-     * Requirements:
-     *
-     * - input must fit into 128 bits
-     */
-    function toSigned128(uint256 a) internal pure returns (int128) {
-        // cast uint256 to int256
-        int256 b = a.toInt256();
-        // cast down from int256 to int128
-        int128 c = b.toInt128();
-        return c;
-    }
-
-    function signed128ToUint256(int128 a) internal pure returns (uint256 c) {
-        int256 b = int256(a);
-        c = uint256(b);
-    }
 
     /// @notice Add a new token to the pool. Can only be called by the owner.
     /// @param allocPoint AP of the new pool.
@@ -207,7 +184,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @param _rewarder Address of the rewarder delegate.
     /// @param rewardData Reward Multiplier data 
     function add(
-        uint128 allocPoint,
+        uint256 allocPoint,
         IERC20 _stakedToken,
         IRewarder _rewarder,
         RewardData[] calldata rewardData
@@ -254,7 +231,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @param _allocPoint New AP of the pool.
     /// @param _rewarder Address of the rewarder delegate.
     /// @param overwrite True if _rewarder should be `set`. Otherwise `_rewarder` is ignored.
-    function set(uint256 _pid, uint128 _allocPoint, IRewarder _rewarder, bool overwrite) public onlyGovernor {
+    function set(uint256 _pid, uint256 _allocPoint, IRewarder _rewarder, bool overwrite) public onlyGovernor {
         totalAllocPoint = (totalAllocPoint - poolInfo[_pid].allocPoint) + _allocPoint;
         require(totalAllocPoint > 0, "total allocation points cannot be 0");
         // if we are making this pool have more allocation points,
