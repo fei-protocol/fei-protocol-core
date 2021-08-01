@@ -18,7 +18,7 @@ async function main() {
     const proposalName = proposalNames[i];
     const config = proposals[proposalNames[i]];
     if (config.deploy) {
-      const { deploy } = await import('./' + proposalName);
+      const { deploy } = await import(`./${proposalName}`);
       await deploy(deployAddress, mainnetAddresses, true);
     }
   }

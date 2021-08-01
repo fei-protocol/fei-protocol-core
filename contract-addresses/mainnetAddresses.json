@@ -52,5 +52,9 @@
     "kashiFeiEthAddress" : { "artifact" : "IKashiPair", "address": "0x329efec40f58054fc2f2cd4fd65809f2be3e11c8" },
     "kashiFeiXSushiAddress" : { "artifact" : "IKashiPair", "address": "0xf2028069cd88f75fcbcfe215c70fe6d77cb80b10" },
     "kashiFeiDPIAddress" : { "artifact" : "IKashiPair", "address": "0xf352773f1d4d69deb4de8d0578e43b993ee76e5d" },
-    "multisendAddress" : { "artifact" : "IERC20Airdropper", "address": "0x0B36b0F351ea8383506F596743a2DA7DCa204cc3" }
+    "multisendAddress" : { "artifact" : "IERC20Airdropper", "address": "0x0B36b0F351ea8383506F596743a2DA7DCa204cc3" },
+    "rariPool8FeiIrmAddress": {"address": "0x8f47be5692180079931e2f983db6996647aba0a5" },
+    "rariPool8TribeIrmAddress": {"address": "0x075538650a9c69ac8019507a7dd1bd879b12c1d7" },
+    "rariPool8EthIrmAddress": {"address": "0xbab47e4b692195bf064923178a90ef999a15f819" },
+    "rariPool8DaiIrmAddress": {"address": "0xede47399e2aa8f076d40dc52896331cba8bd40f7"
 }
