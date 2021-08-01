@@ -91,8 +91,8 @@ async function testMultipleUsersPooling(
       }
 
       await expectApprox(
-        pendingBalances[j].add(userIncrementAmount),
         new BN(await tribalChief.allPendingRewards(pid, userAddresses[j])),
+        pendingBalances[j].add(userIncrementAmount),
       );
     }
   }
