@@ -21,6 +21,7 @@ const MockCoreRef = artifacts.require('MockCoreRef');
 const TribalChief = artifacts.require('TribalChief');
 const MockERC20 = artifacts.require('MockERC20');
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const uintMax = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
 async function testMultipleUsersPooling(
   tribalChief,
@@ -36,9 +37,8 @@ async function testMultipleUsersPooling(
   lockLength = lockLength === undefined ? 0 : lockLength;
 
   // approval loop
-  const MAX_UINT256 = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
   for (let i = 0; i < userAddresses.length; i++) {
-    await lpToken.approve(tribalChief.address, MAX_UINT256, { from: userAddresses[i] });
+    await lpToken.approve(tribalChief.address, uintMax, { from: userAddresses[i] });
   }
 
   // deposit loop
@@ -123,15 +123,12 @@ describe('TribalChief', () => {
 
   const multiplier10x = '100000';
   const multiplier5x = '50000';
-  const multiplier4x = '40000';
   const multiplier3x = '30000';
   // rewards multiplier by 2.5x
   const multiplier2point5x = '25000';
   const multiplier2x = '20000';
 
-  const multiplier10 = '11000';
   const multiplier20 = '12000';
-  const multiplier25 = '12500';
   const multiplier40 = '14000';
   const zeroMultiplier = '10000';
   const defaultRewardsObject = [
