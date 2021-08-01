@@ -10,10 +10,14 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 abstract contract CoreRef is ICoreRef, Pausable {
     ICore private _core;
 
+    /// @notice a role used with a subset of governor permissions for this contract only
+    bytes32 public override CONTRACT_ADMIN_ROLE;
+
     /// @notice CoreRef constructor
     /// @param coreAddress Fei Core to reference
     constructor(address coreAddress) {
         _core = ICore(coreAddress);
+        _setContractAdminRole(_core.GOVERN_ROLE());
     }
 
     modifier ifMinterSelf() {
@@ -40,6 +44,15 @@ abstract contract CoreRef is ICoreRef, Pausable {
         _;
     }
 
+    modifier onlyGovernorOrAdmin() {
+        require(
+            _core.isGovernor(msg.sender) ||
+            isContractAdmin(msg.sender),
+            "CoreRef: Caller is not a governor or contract admin"
+        );
+        _;
+    }
+
     modifier onlyGovernor() {
         require(
             _core.isGovernor(msg.sender),
@@ -50,7 +63,7 @@ abstract contract CoreRef is ICoreRef, Pausable {
 
     modifier onlyGuardianOrGovernor() {
         require(
-            _core.isGovernor(msg.sender) ||
+            _core.isGovernor(msg.sender) || 
             _core.isGuardian(msg.sender),
             "CoreRef: Caller is not a guardian or governor"
         );
@@ -69,6 +82,16 @@ abstract contract CoreRef is ICoreRef, Pausable {
         address oldCore = address(_core);
         _core = ICore(newCore);
         emit CoreUpdate(oldCore, newCore);
+    }
+
+    /// @notice sets a new admin role for this contract
+    function setContractAdminRole(bytes32 newContractAdminRole) external override onlyGovernor {
+        _setContractAdminRole(newContractAdminRole);
+    }
+
+    /// @notice returns whether a given address has the admin role for this contract
+    function isContractAdmin(address _admin) public view override returns (bool) {
+        return _core.hasRole(CONTRACT_ADMIN_ROLE, _admin);
     }
 
     /// @notice set pausable methods to paused
@@ -117,5 +140,11 @@ abstract contract CoreRef is ICoreRef, Pausable {
 
     function _mintFei(uint256 amount) internal {
         fei().mint(address(this), amount);
+    }
+
+    function _setContractAdminRole(bytes32 newContractAdminRole) internal {
+        bytes32 oldContractAdminRole = CONTRACT_ADMIN_ROLE;
+        CONTRACT_ADMIN_ROLE = newContractAdminRole;
+        emit ContractAdminRoleUpdate(oldContractAdminRole, newContractAdminRole);
     }
 }
