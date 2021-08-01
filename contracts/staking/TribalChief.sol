@@ -279,7 +279,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         }
 
         // use the virtual amount to calculate the users share of the pool and their pending rewards
-        return (((user.virtualAmount * accTribePerShare) / (ACC_TRIBE_PRECISION)).toInt256() - user.rewardDebt).toUint256();
+        return (((user.virtualAmount * accTribePerShare) / ACC_TRIBE_PRECISION).toInt256() - user.rewardDebt).toUint256();
     }
 
     /// @notice View function to see all pending TRIBE on frontend.
