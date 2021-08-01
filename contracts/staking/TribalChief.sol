@@ -35,8 +35,8 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// on any user deposits
     struct DepositInfo {
         uint256 amount;
-        uint64 unlockBlock;
-        uint64 multiplier;
+        uint128 unlockBlock;
+        uint128 multiplier;
     }
 
     /// @notice Info of each pool.
@@ -45,8 +45,8 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     struct PoolInfo {
         uint256 virtualTotalSupply;
         uint256 accTribePerShare;
-        uint64 lastRewardBlock;
-        uint64 allocPoint;
+        uint128 lastRewardBlock;
+        uint120 allocPoint;
         bool unlocked; // this will allow an admin to unlock the pool if need be.
         // Defaults to false so that users have to respect the lockup period
     }
@@ -94,7 +94,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     event LogPoolAddition(uint256 indexed pid, uint256 allocPoint, IERC20 indexed stakedToken, IRewarder indexed rewarder);
     event LogSetPool(uint256 indexed pid, uint256 allocPoint, IRewarder indexed rewarder, bool overwrite);
     event LogPoolMultiplier(uint256 indexed pid, uint64 indexed lockLength, uint256 indexed multiplier);
-    event LogUpdatePool(uint256 indexed pid, uint64 lastRewardBlock, uint256 lpSupply, uint256 accTribePerShare);
+    event LogUpdatePool(uint256 indexed pid, uint128 indexed lastRewardBlock, uint256 lpSupply, uint256 accTribePerShare);
     /// @notice tribe withdraw event
     event TribeWithdraw(uint256 amount);
     event NewTribePerBlock(uint256 indexed amount);
