@@ -5,7 +5,9 @@
     "uniswapPCVControllerAddress",
     "feiRewardsDistributorAddress",
     "timelockAddress",
-    "pcvDripControllerAddress"
+    "pcvDripControllerAddress",
+    "dpiBondingCurveAddress",
+    "dpiUniswapPCVDepositAddress"
   ],
   "burner": [
     "ethReserveStabilizerAddress",
