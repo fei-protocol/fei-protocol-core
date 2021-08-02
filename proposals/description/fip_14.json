@@ -1,0 +1,25 @@
+{
+    "proposal_title": "FIP-14: Add DPI Bonding Curve",
+    "proposal_description_link": "",
+    "proposal_commands": [
+        {
+            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "values": "0",
+            "method": "grantMinter(address)",
+            "arguments": [
+                "TBD"
+            ],
+            "description": "Grant Minter to DPI Bonding Curve"
+        },
+        {
+            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "values": "0",
+            "method": "grantMinter(address)",
+            "arguments": [
+                "TBD"
+            ],
+            "description": "Grant Minter to DPI Uniswap PCV Deposit"
+        }
+    ],
+    "proposal_calldata": ""
+}
