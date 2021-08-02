@@ -476,6 +476,16 @@ describe('Core', function () {
           await expectRevert(this.core.revokeOverride(this.governorRole, governorAddress, {from: guardianAddress}), 'Permissions: Guardian cannot revoke governor');
           expect(await this.core.isGovernor(governorAddress)).to.be.equal(true);
         });
+
+        it('can revoke contract admin', async function() {
+          this.role = await this.coreRef.CONTRACT_ADMIN_ROLE();
+          await this.core.createRole(this.role, await this.core.GOVERN_ROLE(), {from: governorAddress});
+          await this.core.grantRole(this.role, guardianAddress, {from: governorAddress});
+          expect(await this.core.hasRole(this.role, guardianAddress)).to.be.equal(true);
+
+          await this.core.revokeOverride(this.role, guardianAddress, {from: guardianAddress});
+          expect(await this.core.hasRole(this.role, guardianAddress)).to.be.equal(false);
+        });
       });
     });
   });
@@ -531,9 +541,9 @@ describe('Core', function () {
         await expectRevert(this.coreRef.testGovernor({from: guardianAddress}), 'CoreRef: Caller is not a governor');
       });
 
-	  it('onlyGovernorOrAdmin succeeds', async function() {
+      it('onlyGovernorOrAdmin succeeds', async function() {
         await this.coreRef.testOnlyGovernorOrAdmin({from: guardianAddress});
-	  });
+      });
 
       it('onlyPCVController reverts', async function() {
         await expectRevert(this.coreRef.testPCVController({from: guardianAddress}), 'CoreRef: Caller is not a PCV controller');
