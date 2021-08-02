@@ -35,8 +35,8 @@ abstract contract OracleRef is IOracleRef, CoreRef {
         if (_backupOracle != address(0) && _backupOracle != _oracle) {
             _setBackupOracle(_backupOracle);
         }
-        _setDecimalsNormalizer(_decimalsNormalizer);
         _setDoInvert(_doInvert);
+        _setDecimalsNormalizer(_decimalsNormalizer);
     }
 
     /// @notice sets the referenced oracle
