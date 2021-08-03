@@ -48,6 +48,8 @@ describe('EthBondingCurve', function () {
       scale: '100000000000', buffer: '100', discount: '100', duration: this.incentiveDuration.toString(), incentive: this.incentiveAmount.toString(), pcvDeposits: [this.pcvDeposit1.address, this.pcvDeposit2.address], ratios: [9000, 1000]
     });
     await this.core.grantMinter(this.bondingCurve.address, {from: governorAddress});
+
+    await this.bondingCurve.setMintCap(this.scale.mul(new BN('10')), {from: governorAddress});
   });
 
   describe('Init', function() {
@@ -260,6 +262,15 @@ describe('EthBondingCurve', function () {
         });
       });
       
+      describe('Exceeding cap', function() {
+        it('reverts', async function() {
+          this.purchaseAmount = new BN('4000000000');
+          await expectRevert(
+            this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress, value: this.purchaseAmount}),
+            'BondingCurve: exceeds mint cap'
+          );
+        });
+      });
       describe('Crossing Scale', function() {
         beforeEach(async function() {
           this.purchaseAmount =  new BN('200000000');

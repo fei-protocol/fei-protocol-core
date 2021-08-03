@@ -9,6 +9,8 @@ interface IBondingCurve {
 
     event ScaleUpdate(uint256 oldScale, uint256 newScale);
 
+    event MintCapUpdate(uint256 oldMint, uint256 newMint);
+
     event BufferUpdate(uint256 oldBuffer, uint256 newBuffer);
 
     event DiscountUpdate(uint256 oldDiscount, uint256 newDiscount);
@@ -45,6 +47,8 @@ interface IBondingCurve {
 
     function setIncentiveFrequency(uint256 newFrequency) external;
 
+    function setMintCap(uint256 newMintCap) external;
+
     // ----------- Getters -----------
 
     function getCurrentPrice() external view returns (Decimal.D256 memory);
@@ -68,4 +72,7 @@ interface IBondingCurve {
 
     function token() external view returns (IERC20);
 
+    function mintCap() external view returns (uint256);
+
+    function availableToMint() external view returns (uint256);
 }

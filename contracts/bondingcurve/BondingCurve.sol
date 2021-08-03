@@ -32,6 +32,9 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     /// @notice the discount applied on top of peg before at Scale
     uint256 public override discount;
 
+    /// @notice the cap on how much FEI can be minted by the bonding curve
+    uint256 public override mintCap;
+
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice constructor
@@ -64,6 +67,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         Timed(_duration)
         Incentivized(_incentive)
     {
+        _setMintCap(_scale); // default mint cap is scale
         _setScale(_scale);
         token = _token;
 
@@ -142,6 +146,11 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         _setDuration(_frequency);
     }
 
+    /// @notice sets the mint cap for the bonding curve
+    function setMintCap(uint256 _mintCap) external override onlyGovernor {
+        _setMintCap(_mintCap);
+    }
+
     /// @notice sets the allocation of incoming PCV
     function setAllocation(
         address[] calldata allocations,
@@ -174,6 +183,11 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     /// @notice a boolean signalling whether Scale has been reached
     function atScale() public view override returns (bool) {
         return totalPurchased >= scale;
+    }
+
+    /// @notice returns how close to the minting cap we are
+    function availableToMint() public view override returns (uint256) {
+        return mintCap - totalPurchased;
     }
 
     /// @notice return current instantaneous bonding curve price
@@ -229,6 +243,8 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
 
         amountOut = getAmountOut(amountIn);
 
+        require(availableToMint() >= amountOut, "BondingCurve: exceeds mint cap");
+
         _incrementTotalPurchased(amountOut);
         fei().mint(to, amountOut);
 
@@ -247,6 +263,15 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         uint256 oldScale = scale;
         scale = newScale;
         emit ScaleUpdate(oldScale, newScale);
+    }
+
+    function _setMintCap(uint256 newMintCap) internal {
+        require(newMintCap != 0, "BondingCurve: zero mint cap");
+
+        uint256 oldMintCap = mintCap;
+        mintCap = newMintCap;
+
+        emit MintCapUpdate(oldMintCap, newMintCap);
     }
 
     /// @notice the bonding curve price multiplier used before Scale

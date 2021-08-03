@@ -61,6 +61,8 @@ describe('BondingCurve', function () {
 
     await this.token.mint(userAddress, '1000000000000000000000000');
     await this.core.grantMinter(this.bondingCurve.address, {from: governorAddress});
+
+    await this.bondingCurve.setMintCap(this.scale.mul(new BN('10')), {from: governorAddress});
   });
   
   describe('Init', function() {
@@ -270,7 +272,16 @@ describe('BondingCurve', function () {
           });
         });
       });
-        
+      describe('Exceeding cap', function() {
+        it('reverts', async function() {
+          this.purchaseAmount = new BN('4000000000');
+          await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
+          await expectRevert(
+            this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}),
+            'BondingCurve: exceeds mint cap'
+          );
+        });
+      });
       describe('Crossing Scale', function() {
         beforeEach(async function() {
           this.purchaseAmount = new BN('400000000');
