@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./IBondingCurve.sol";
 import "../refs/OracleRef.sol";
-import "../pcv/PCVSplitter.sol";
+import "../pcv/utils/PCVSplitter.sol";
 import "../utils/Incentivized.sol";
 import "../pcv/IPCVDeposit.sol";
 import "../utils/Timed.sol";

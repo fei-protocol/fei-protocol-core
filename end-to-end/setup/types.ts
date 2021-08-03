@@ -33,6 +33,11 @@ export type MainnetContracts = {
   timelock: typeof Contract,
   feiEthPair: typeof Contract,
   pcvDripController: typeof Contract,
+  rariPool8FeiPCVDeposit: typeof Contract,
+  rariPool8EthPCVDeposit: typeof Contract,
+  kashiFeiTribe: typeof Contract,
+  bentoBox: typeof Contract,
+  governorAlpha: typeof Contract,
 }
 
 export type MainnetContractAddresses = {
@@ -56,7 +61,9 @@ export type MainnetContractAddresses = {
   pcvDripControllerAddress: string,
   timelockAddress: string,
   multisigAddress: string,
-  governorAlpha: string,
+  governorAlphaAddress: string,
+  bentoBoxAddress: string,
+  masterKashiAddress: string,
 }
 
 export type ProposalConfig = {
@@ -65,6 +72,7 @@ export type ProposalConfig = {
   proposerAddress: string,
   voterAddress: string,
   proposal_calldata: string,
+  totalValue: number,
 }
 
 export type ContractAccessRights = 

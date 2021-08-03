@@ -38,6 +38,11 @@ contract MockEthPCVDeposit is IPCVDeposit {
         emit WithdrawERC20(msg.sender, to, token, amount);
     }
 
+    function withdrawETH(address payable to, uint256 amountOut) external virtual override {
+        Address.sendValue(to, amountOut);
+        emit WithdrawETH(msg.sender, to, amountOut);
+    }
+
     function balance() external view override returns(uint256) {
     	return total;
     }
