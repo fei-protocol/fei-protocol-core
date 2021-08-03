@@ -234,15 +234,8 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     function set(uint256 _pid, uint256 _allocPoint, IRewarder _rewarder, bool overwrite) public onlyGovernor {
         totalAllocPoint = (totalAllocPoint - poolInfo[_pid].allocPoint) + _allocPoint;
         require(totalAllocPoint > 0, "total allocation points cannot be 0");
-        // if we are making this pool have more allocation points,
-        // then we are going to unlock the pool so that users can redeposit and get the higher rewards
-        if (poolInfo[_pid].allocPoint < _allocPoint) {
-            poolInfo[_pid].unlocked = true;
-            // emit this event if we end up unlocking this pool
-            emit PoolLocked(false, _pid);
-        }
-        poolInfo[_pid].allocPoint = _allocPoint.toUint64();
 
+        poolInfo[_pid].allocPoint = _allocPoint.toUint64();
         if (overwrite) {
             rewarder[_pid] = _rewarder;
         }
