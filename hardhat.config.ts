@@ -12,8 +12,8 @@ require('dotenv').config();
 const rinkebyAlchemyApiKey = process.env.RINKEBY_ALCHEMY_API_KEY;
 const testnetPrivateKey = process.env.TESTNET_PRIVATE_KEY;
 const privateKey = process.env.ETH_PRIVATE_KEY;
-const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
 const runE2ETests = process.env.RUN_E2E_TESTS;
+const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
 
 if (!rinkebyAlchemyApiKey || !testnetPrivateKey || !privateKey || !mainnetAlchemyApiKey) {
   throw new Error('Please set your Ethereum keys in a .env')
@@ -29,7 +29,7 @@ const config: HardhatUserConfig = {
       chainId: 5777, // Any network (default: none)
       forking: {
         url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-        blockNumber: 12736788
+        blockNumber: 12934900
       }
     },
     localhost: {
@@ -56,7 +56,9 @@ const config: HardhatUserConfig = {
   paths: {
     tests: runE2ETests ? './end-to-end' : './test',
   },
-  mocha: {},
+  mocha: {
+    timeout: 100000,
+  },
   typechain: {
     outDir: 'types',
     target: 'web3-v1',

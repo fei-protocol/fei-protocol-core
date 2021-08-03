@@ -60,13 +60,13 @@ describe('EthLidoPCVDeposit', function () {
     it('should revert if not governor', async function() {
       await expectRevert(
         this.pcvDeposit.setMaximumSlippage('500'),
-        'VM Exception while processing transaction: revert CoreRef: Caller is not a governor'
+        'CoreRef: Caller is not a governor'
       );
     });
     it('should revert on invalid value', async function() {
       await expectRevert(
         this.pcvDeposit.setMaximumSlippage('10001', { from: governorAddress }),
-        'VM Exception while processing transaction: revert EthLidoPCVDeposit: Exceeds bp granularity.'
+        'EthLidoPCVDeposit: Exceeds bp granularity.'
       );
     });
     it('should emit UpdateMaximumSlippage', async function() {
@@ -98,7 +98,7 @@ describe('EthLidoPCVDeposit', function () {
         expect(await web3.eth.getBalance(this.pcvDeposit.address)).to.be.bignumber.equal('0');
         await expectRevert(
           this.pcvDeposit.deposit(),
-          'VM Exception while processing transaction: revert EthLidoPCVDeposit: cannot deposit 0.'
+          'EthLidoPCVDeposit: cannot deposit 0.'
         );
       });
       it('should emit Deposit', async function() {
@@ -154,20 +154,20 @@ describe('EthLidoPCVDeposit', function () {
         await this.stableswap.setSlippage(1000, false); // 10% positive slippage (disavantage) for stETH -> ETH
         await expectRevert(
           this.pcvDeposit.withdraw(userAddress, `1${e18}`, {from: pcvControllerAddress}),
-          'VM Exception while processing transaction: revert EthLidoPCVDeposit: slippage too high.'
+          'EthLidoPCVDeposit: slippage too high.'
         );
       });
       it('should revert if trying to withdraw more than balance', async function() {
         await this.steth.mintAt(this.pcvDeposit.address);
         await expectRevert(
           this.pcvDeposit.withdraw(userAddress, `100001${e18}`, {from: pcvControllerAddress}),
-          'VM Exception while processing transaction: revert EthLidoPCVDeposit: not enough stETH.'
+          'EthLidoPCVDeposit: not enough stETH.'
         );
       });
       it('should revert if not PCVController', async function() {
         await expectRevert(
           this.pcvDeposit.withdraw(userAddress, 1),
-          'VM Exception while processing transaction: revert CoreRef: Caller is not a PCV controller'
+          'CoreRef: Caller is not a PCV controller'
         );
       });
     });
@@ -193,19 +193,19 @@ describe('EthLidoPCVDeposit', function () {
       it('should revert if not PCVController', async function() {
         await expectRevert(
           this.pcvDeposit.withdrawERC20(this.fei.address, userAddress, 1),
-          'VM Exception while processing transaction: revert CoreRef: Caller is not a PCV controller'
+          'CoreRef: Caller is not a PCV controller'
         );
       });
     });
   });
 
   describe('withdrawETH()', function() {
-    it('should emit Withdrawal', async function() {
+    it('should emit WithdrawETH', async function() {
       const balanceBeforeWithdraw = new BN(await web3.eth.getBalance(secondUserAddress));
       await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: `1${e18}`});
       await expectEvent(
         await this.pcvDeposit.withdrawETH(secondUserAddress, `1${e18}`, {from: pcvControllerAddress}),
-        'Withdrawal',
+        'WithdrawETH',
         {
           _caller: pcvControllerAddress,
           _to: secondUserAddress,
@@ -218,13 +218,13 @@ describe('EthLidoPCVDeposit', function () {
     it('should revert if trying to withdraw more than balance', async function() {
       await expectRevert(
         this.pcvDeposit.withdrawETH(userAddress, `100001${e18}`, {from: pcvControllerAddress}),
-        'VM Exception while processing transaction: revert Address: insufficient balance'
+        'Address: insufficient balance'
       );
     });
     it('should revert if not PCVController', async function() {
       await expectRevert(
         this.pcvDeposit.withdraw(userAddress, 1),
-        'VM Exception while processing transaction: revert CoreRef: Caller is not a PCV controller'
+        'CoreRef: Caller is not a PCV controller'
       );
     });
   });

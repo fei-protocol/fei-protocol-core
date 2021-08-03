@@ -45,7 +45,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    */
    public async loadEnvironment(): Promise<Env> {
     // @ts-ignore
-    let existingContracts = await getContracts(mainnetAddressesV1.contracts)
+    let existingContracts = await getContracts(this.mainnetAddresses)
 
     // Grant priviledges to deploy address
     await sudo(this.mainnetAddresses, this.config.logging)
@@ -77,17 +77,15 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     this.setLocalTestContractAddresses(contracts)
     
     const contractAddresses = {
+      ...this.mainnetAddresses,
       ...getContractAddresses(contracts),
-      // @ts-ignore
-      ...mainnetAddressesV1.external
     }
     
     // Get the upgrade setup, run and teardown scripts
-    const { setup, run, teardown } = await import('../../proposals/dao/' + proposalName);
+    const { setup, run, teardown, validate } = await import('../../proposals/dao/' + proposalName);
 
-    // TODO add in contracts as a param to skip the contractAddress adding in DAO mocks
     // setup the DAO proposal
-    await setup(contractAddresses, this.mainnetAddresses, this.config.logging);
+    await setup(contractAddresses, existingContracts, contracts, this.config.logging);
 
     // Run the DAO proposal
     // If the `exec` flag is activated, then run the upgrade directly from tx calldata
@@ -95,15 +93,19 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       const addresses = { 
         proposerAddress: config.proposerAddress,
         voterAddress: config.voterAddress,
-        governorAlphaAddress: mainnetAddressesV1['governorAlphaAddress']
+        governorAlphaAddress: contracts.governorAlpha.address,
       }
-      await exec(config.proposal_calldata, addresses);
+      await exec(config.proposal_calldata, config.totalValue, addresses);
     } else {
-      await run(contractAddresses, this.mainnetAddresses, this.config.logging)
+      await run(contractAddresses, existingContracts, contracts, this.config.logging)
     }
 
     // teardown the DAO proposal
-    await teardown(contractAddresses, this.mainnetAddresses)
+    await teardown(contractAddresses, existingContracts, contracts);
+
+    if (validate) {
+      await validate(contractAddresses, existingContracts, contracts);
+    }
 
     return contracts;
   }
@@ -120,7 +122,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    */
   async setLocalTestContractAddresses(contracts: MainnetContracts) {
     // @ts-ignore
-    this.afterUpgradeAddresses =  { ...getContractAddresses(contracts), ...mainnetAddressesV1.external };
+    this.afterUpgradeAddresses =  { ...this.mainnetAddresses, ...getContractAddresses(contracts), };
   }
 
   /**
@@ -164,7 +166,11 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * Load all contract addresses from a .json, according to the network configured
    */
   private getMainnetContractAddresses() {
+    const addresses = {}
+    Object.keys(mainnetAddressesV1).map(function(key) {
+      addresses[key] = mainnetAddressesV1[key].address;
+    });
     // @ts-ignore
-    return { ...mainnetAddressesV1.contracts, ...mainnetAddressesV1.external }
+    return addresses;
   }
 }

@@ -18,9 +18,10 @@
     "lint": "eslint --config ./.eslintrc.json --ignore-path ./.eslintignore --ext .js .",
     "lint:fix": "npm run lint --fix",
     "size-contracts": "npx hardhat size-contracts",
-    "deploy:localhost": "npx hardhat run --network localhost deploy/3_erc20.js",
-    "deploy:ropsten": "npx hardhat run --network ropsten scripts/deploy/migrations.js",
-    "deploy:rinkeby": "npx hardhat run --network rinkeby scripts/deploy/migrations.js",
+    "deploy:localhost": "npx hardhat run --network localhost deploy/migrations.js",
+    "deploy:main": "npx hardhat run --network mainnet deploy/migrations.js",
+    "deploy:ropsten": "npx hardhat run --network ropsten deploy/migrations.js",
+    "deploy:rinkeby": "npx hardhat run --network rinkeby deploy/migrations.js",
     "abis": "node scripts/abis.js"
   },
   "author": "joeysantoro",

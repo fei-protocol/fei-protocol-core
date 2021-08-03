@@ -109,7 +109,7 @@ describe('PCVSwapperUniswap', function () {
         it('revert withdraw() onlyPCVController', async function() {
           await expectRevert(
             this.swapper.withdraw(userAddress, 1),
-            'VM Exception while processing transaction: revert CoreRef: Caller is not a PCV controller'
+            'CoreRef: Caller is not a PCV controller'
           );
         });
       });
@@ -151,7 +151,7 @@ describe('PCVSwapperUniswap', function () {
         it('revert setReceivingAddress() onlyGovernor', async function() {
           await expectRevert(
             this.swapper.setReceivingAddress(userAddress),
-            'VM Exception while processing transaction: revert CoreRef: Caller is not a governor'
+            'CoreRef: Caller is not a governor'
           );
         });
       });
@@ -181,7 +181,7 @@ describe('PCVSwapperUniswap', function () {
           // to solve this situation, swapper.wrapETH() should be called before withdraw.
           await expectRevert(
             this.swapper.withdrawETH(userAddress, `15${e18}`, {from: pcvControllerAddress}),
-            'VM Exception while processing transaction: revert ERC20: burn amount exceeds balance'
+            'ERC20: burn amount exceeds balance'
           );
         });
         it('withdrawERC20() emit WithdrawERC20', async function() {
@@ -207,13 +207,13 @@ describe('PCVSwapperUniswap', function () {
         it('revert withdrawETH() onlyPCVController', async function() {
           await expectRevert(
             this.swapper.withdrawETH(userAddress, 1),
-            'VM Exception while processing transaction: revert CoreRef: Caller is not a PCV controller'
+            'CoreRef: Caller is not a PCV controller'
           );
         });
         it('revert withdrawERC20() onlyPCVController', async function() {
           await expectRevert(
             this.swapper.withdrawERC20(userAddress, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 1),
-            'VM Exception while processing transaction: revert CoreRef: Caller is not a PCV controller'
+            'CoreRef: Caller is not a PCV controller'
           );
         });
       });
@@ -242,7 +242,7 @@ describe('PCVSwapperUniswap', function () {
     it('setMaximumSlippage() revert if not governor', async function() {
       await expectRevert(
         this.swapper.setMaximumSlippage('500'),
-        'VM Exception while processing transaction: revert CoreRef: Caller is not a governor'
+        'CoreRef: Caller is not a governor'
       );
     });
     it('setMaximumSlippage() revert on invalid value', async function() {
@@ -265,7 +265,7 @@ describe('PCVSwapperUniswap', function () {
     it('setMaxSpentPerSwap() revert if not governor', async function() {
       await expectRevert(
         this.swapper.setMaxSpentPerSwap('0'),
-        'VM Exception while processing transaction: revert CoreRef: Caller is not a governor'
+        'CoreRef: Caller is not a governor'
       );
     });
     it('setMaxSpentPerSwap() revert on invalid value', async function() {
@@ -288,7 +288,7 @@ describe('PCVSwapperUniswap', function () {
     it('setSwapFrequency() revert if not governor', async function() {
       await expectRevert(
         this.swapper.setSwapFrequency('2000'),
-        'VM Exception while processing transaction: revert CoreRef: Caller is not a governor'
+        'CoreRef: Caller is not a governor'
       );
     });
     it('setSwapFrequency() emit UpdateSwapFrequency', async function() {
@@ -328,14 +328,14 @@ describe('PCVSwapperUniswap', function () {
       await expectRevert(this.swapper.swap(), 'Pausable: paused');
     });
     it('revert if time is not elapsed', async function() {
-      await expectRevert(this.swapper.swap(), 'VM Exception while processing transaction: revert Timed: time not ended');
+      await expectRevert(this.swapper.swap(), 'Timed: time not ended');
     });
     it('revert if oracle is invalid', async function() {
       await this.oracle.setValid(false);
       await time.increase('1000');
       await web3.eth.sendTransaction({from: userAddress, to: this.swapper.address, value: `100${e18}`});
       await this.swapper.wrapETH({ from: pcvControllerAddress });
-      await expectRevert(this.swapper.swap(), 'VM Exception while processing transaction: revert OracleRef: oracle invalid');
+      await expectRevert(this.swapper.swap(), 'OracleRef: oracle invalid');
     });
     it('revert if slippage is too high', async function() {
       await time.increase('1000');

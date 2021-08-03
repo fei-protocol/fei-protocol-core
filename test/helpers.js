@@ -88,8 +88,8 @@ async function forceEth(to, amount) {
 }
 
 async function expectApprox(actual, expected, magnitude = '1000') {
-  const delta = expected.div(new BN(magnitude));
-  expect(actual).to.be.bignumber.closeTo(expected, delta);
+  const delta = new BN(expected).div(new BN(magnitude));
+  expect(new BN(actual)).to.be.bignumber.closeTo(new BN(expected), delta);
 }
 
 module.exports = {
@@ -109,5 +109,5 @@ module.exports = {
   getAddresses,
   forceEth,
   expectApprox,
-  ether,
+  ether
 };
