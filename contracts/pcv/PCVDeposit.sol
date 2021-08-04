@@ -22,4 +22,12 @@ abstract contract PCVDeposit is IPCVDeposit, CoreRef {
         IERC20(token).safeTransfer(to, amount);
         emit WithdrawERC20(msg.sender, token, to, amount);
     }
+
+    /// @notice withdraw ETH from the contract
+    /// @param to address to send ETH
+    /// @param amountOut amount of ETH to send
+    function withdrawETH(address payable to, uint256 amountOut) external virtual override onlyPCVController {
+        Address.sendValue(to, amountOut);
+        emit WithdrawETH(msg.sender, to, amountOut);
+    }
 }

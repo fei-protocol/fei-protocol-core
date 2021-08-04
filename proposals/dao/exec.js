@@ -9,7 +9,7 @@ const { web3 } = hre;
 
 // txData = The calldata for the DAO transaction to execute. 
 // The address at MAINNET_PROPOSER will submit this tx to the GovernorAlpha
-async function exec(txData, addresses) {
+async function exec(txData, totalValue, addresses) {
   const { proposerAddress, voterAddress, governorAlphaAddress } = addresses;
 
   // Impersonate the proposer and voter with sufficient TRIBE for execution
@@ -27,7 +27,7 @@ async function exec(txData, addresses) {
   if (txData) {
     console.log('Submitting Proposal');
     await web3.eth.sendTransaction({
-      from: proposerAddress, to: governorAlphaAddress, data: txData, gas: 3000000
+      from: proposerAddress, to: governorAlphaAddress, data: txData, gas: 6000000
     });
   }
 
@@ -41,28 +41,40 @@ async function exec(txData, addresses) {
   const {startBlock} = proposal;
 
   // Advance to vote start
-  console.log(`Advancing To: ${startBlock}`);
-  await time.advanceBlockTo(startBlock);
+  if (await time.latestBlock() < startBlock) {
+    console.log(`Advancing To: ${startBlock}`);
+    await time.advanceBlockTo(startBlock);
+  } else {
+    console.log('Vote already began');
+  }
 
-  console.log('Casting vote');
-  await governor.castVote(proposalNo, true, {from: voterAddress});
+  try {
+    await governor.castVote(proposalNo, true, {from: voterAddress});
+    console.log('Casted vote');
+  } catch {
+    console.log('Already voted');
+  }
 
   proposal = await governor.proposals(proposalNo);
   const {endBlock} = proposal;
 
   // Advance to after vote completes and queue the transaction
-  console.log(`Advancing To: ${endBlock}`);
-  await time.advanceBlockTo(endBlock);
+  if (await time.latestBlock() < endBlock) {
+    console.log(`Advancing To: ${endBlock}`);
+    await time.advanceBlockTo(endBlock);
 
-  console.log('Queuing');
-  await governor.queue(proposalNo);
+    console.log('Queuing');
+    await governor.queue(proposalNo);
+  } else {
+    console.log('Already queued');
+  }
 
   // Increase beyond the timelock delay
   console.log('Increasing Time');
   await time.increase(86400); // 1 day in seconds
 
   console.log('Executing');
-  await governor.execute(proposalNo);
+  await governor.execute(proposalNo, {value: totalValue});
   console.log('Success');
 }
 

@@ -41,9 +41,13 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
     // solhint-disable-next-line var-name-mixedcase
     address public immutable WETH;
 
-    struct OracleAddresses {
+    struct OracleData {
         address _oracle;
         address _backupOracle;
+        // invert should be false if the oracle is reported in tokenSpent terms otherwise true
+        bool _invertOraclePrice;
+        // The decimalsNormalizer should be calculated as tokenSpent.decimals() - tokenReceived.decimals() if invert is false, otherwise reverse order
+        int256 _decimalsNormalizer;
     }
 
     constructor(
@@ -51,21 +55,20 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
         IUniswapV2Pair _pair,
         // solhint-disable-next-line var-name-mixedcase
         address _WETH,
-        OracleAddresses memory oracleAddresses,
+        OracleData memory oracleData,
         uint256 _swapFrequency,
         address _tokenSpent,
         address _tokenReceived,
         address _tokenReceivingAddress,
         uint256 _maxSpentPerSwap,
         uint256 _maximumSlippageBasisPoints,
-        bool _invertOraclePrice,
         uint256 _swapIncentiveAmount
     ) OracleRef(
       _core, 
-      oracleAddresses._oracle, 
-      oracleAddresses._backupOracle,
-      int256(uint256(IERC20Metadata(_tokenSpent).decimals())) - int256(uint256(IERC20Metadata(_tokenReceived).decimals())),
-      _invertOraclePrice
+      oracleData._oracle, 
+      oracleData._backupOracle,
+      oracleData._decimalsNormalizer,
+      oracleData._invertOraclePrice
     ) Timed(_swapFrequency) Incentivized(_swapIncentiveAmount) {
         require(_pair.token0() == _tokenSpent || _pair.token1() == _tokenSpent, "PCVSwapperUniswap: token spent not in pair");
         require(_pair.token0() == _tokenReceived || _pair.token1() == _tokenReceived, "PCVSwapperUniswap: token received not in pair");
@@ -244,8 +247,8 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
     }
 
     function _getMinimumAcceptableAmountOut(uint256 amountIn) internal view returns (uint256) {
-      Decimal.D256 memory twap = readOracle();
-      Decimal.D256 memory oracleAmountOut = twap.mul(amountIn);
+      Decimal.D256 memory oraclePrice = readOracle();
+      Decimal.D256 memory oracleAmountOut = oraclePrice.mul(amountIn);
       Decimal.D256 memory maxSlippage = Decimal.ratio(BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, BASIS_POINTS_GRANULARITY);
       Decimal.D256 memory oraclePriceMinusSlippage = maxSlippage.mul(oracleAmountOut);
       return oraclePriceMinusSlippage.asUint256();

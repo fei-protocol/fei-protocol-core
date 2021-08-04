@@ -15,16 +15,22 @@ contract MockCToken is MockERC20 {
 
     IERC20 public token;
     bool public error;
+    bool public isCEther;
 
     uint256 private constant EXCHANGE_RATE_SCALE = 1e18;
     uint256 public effectiveExchangeRate = 2;
 
-    constructor(IERC20 _token) {
+    constructor(IERC20 _token, bool _isCEther) {
         token = _token;
+        isCEther = _isCEther;
     }
 
     function setError(bool _error) external {
         error = _error;
+    }
+
+    function isCToken() external pure returns(bool) {
+        return true;
     }
 
     function mint() external payable {

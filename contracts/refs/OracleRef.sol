@@ -35,8 +35,8 @@ abstract contract OracleRef is IOracleRef, CoreRef {
         if (_backupOracle != address(0) && _backupOracle != _oracle) {
             _setBackupOracle(_backupOracle);
         }
-        _setDecimalsNormalizer(_decimalsNormalizer);
         _setDoInvert(_doInvert);
+        _setDecimalsNormalizer(_decimalsNormalizer);
     }
 
     /// @notice sets the referenced oracle
@@ -124,6 +124,11 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     function _setDoInvert(bool newDoInvert) internal {
         bool oldDoInvert = doInvert;
         doInvert = newDoInvert;
+        
+        if (oldDoInvert != newDoInvert) {
+            _setDecimalsNormalizer( -1 * decimalsNormalizer);
+        }
+
         emit InvertUpdate(oldDoInvert, newDoInvert);
     }
 
@@ -136,6 +141,11 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     function _setDecimalsNormalizerFromToken(address token) internal {
         int256 feiDecimals = 18;
         int256 _decimalsNormalizer = feiDecimals - int256(uint256(IERC20Metadata(token).decimals()));
+        
+        if (doInvert) {
+            _decimalsNormalizer = -1 * _decimalsNormalizer;
+        }
+        
         _setDecimalsNormalizer(_decimalsNormalizer);
     }
 }
