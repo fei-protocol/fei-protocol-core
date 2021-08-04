@@ -51,7 +51,6 @@ async function main() {
   }
   if (
     !governorAlphaAddress
-    || governorAlphaAddress === undefined
     || governorAlphaAddress.length !== 42
   ) {
     throw new Error('must specify receiver address');

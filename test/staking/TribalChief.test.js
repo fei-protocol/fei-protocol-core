@@ -324,6 +324,38 @@ describe('TribalChief', () => {
         );
       });
 
+      it('should not be able to resetRewards as non governor', async function () {
+        await expectRevert(
+          this.tribalChief.resetRewards(pid, { from: userAddress }),
+          'CoreRef: Caller is not a guardian or governor',
+        );
+      });
+
+      it('should be able to resetRewards as governor', async function () {
+        expect(
+          (await this.tribalChief.poolInfo(pid)).allocPoint,
+        ).to.be.bignumber.equal(new BN(allocationPoints));
+        expect((await this.tribalChief.poolInfo(pid)).unlocked).to.be.false;
+
+        expectEvent(
+          await this.tribalChief.resetRewards(pid, { from: governorAddress }),
+          'PoolLocked',
+          {
+            locked: false,
+            pid: new BN(pid),
+          },
+        );
+
+        // assert that pool is unlocked, total and pool allocation points are now 0
+        expect((await this.tribalChief.poolInfo(pid)).unlocked).to.be.true;
+        expect(
+          (await this.tribalChief.poolInfo(pid)).allocPoint,
+        ).to.be.bignumber.equal(new BN('0'));
+        expect(
+          await this.tribalChief.totalAllocPoint(),
+        ).to.be.bignumber.equal(new BN('0'));
+      });
+
       it('governor should be able to add rewards stream', async function () {
         expect(Number(await this.tribalChief.numPools())).to.be.equal(1);
         await this.tribalChief.add(
