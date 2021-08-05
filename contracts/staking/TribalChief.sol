@@ -476,7 +476,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         int256 accumulatedTribe = ( (user.virtualAmount * pool.accTribePerShare ) / ACC_TRIBE_PRECISION ).toInt256();
 
         // this should never happen
-        require(accumulatedTribe >= 0 || (accumulatedTribe - user.rewardDebt) < 0, "negative accumulated tribe");
+        require(accumulatedTribe >= 0 && accumulatedTribe - user.rewardDebt > 0, "negative accumulated tribe");
 
         uint256 pendingTribe = (accumulatedTribe - user.rewardDebt).toUint256();
 
