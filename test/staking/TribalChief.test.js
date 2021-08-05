@@ -1405,6 +1405,46 @@ describe('TribalChief', () => {
         );
       });
 
+      it('allPendingRewards should be able to get all rewards data across 10 deposits in a single pool', async function () {
+        const userAddresses = [
+          userAddress,
+          userAddress,
+          userAddress,
+          userAddress,
+          userAddress,
+          userAddress,
+          userAddress,
+          userAddress,
+          userAddress,
+          userAddress,
+        ];
+
+        await this.LPToken.mint(userAddress, new BN(totalStaked).mul(new BN('10'))); // approve double total staked
+        await this.LPToken.approve(this.tribalChief.address, new BN(totalStaked).mul(new BN('10')));
+
+        await testMultipleUsersPooling(
+          this.tribalChief,
+          this.LPToken,
+          userAddresses,
+          new BN(blockReward),
+          1,
+          0,
+          totalStaked,
+          pid,
+        );
+
+        await this.tribalChief.harvest(pid, userAddress);
+        // should get per block reward 11x.
+        // 9 blocks to do 2nd, through 10th deposit,
+        // 1 block to advance,
+        // 1 block for the harvest
+        // we lose about 0.0000000017% on this harvest, so we need to use expect approx
+        await expectApprox(
+          await this.tribe.balanceOf(userAddress),
+          ((new BN(blockReward)).mul(new BN('11'))),
+        );
+      });
+
       it('allPendingRewards should be able to get all rewards data across a single deposit in a pool', async function () {
         const userAddresses = [userAddress];
 
