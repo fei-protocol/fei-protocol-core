@@ -409,6 +409,9 @@ contract TribalChief is CoreRef, ReentrancyGuard {
             // write to these storage slots multiple times
             user.virtualAmount -= virtualLiquidityDelta;
             // set the reward debt to the new virtual amount
+            // we don't have to worry about decrementing the reward debt here as the harvest function
+            // has already paid out all pending tribe the users deserves
+            // here, we just have to make the reward debt equal to the current tribe per share so that it is accurate
             user.rewardDebt = (user.virtualAmount * pool.accTribePerShare / ACC_TRIBE_PRECISION).toInt256();
         }
 
