@@ -448,7 +448,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         // allow user to withdraw their principle
         require(poolDeposit.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
 
-        uint256 virtualAmountDelta =  ( amount * poolDeposit.multiplier ) / SCALE_FACTOR;
+        uint256 virtualAmountDelta = ( amount * poolDeposit.multiplier ) / SCALE_FACTOR;
 
         // Effects
         poolDeposit.amount -= amount;
