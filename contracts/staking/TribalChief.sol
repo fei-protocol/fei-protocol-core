@@ -247,6 +247,9 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @param _rewarder Address of the rewarder delegate.
     /// @param overwrite True if _rewarder should be `set`. Otherwise `_rewarder` is ignored.
     function set(uint256 _pid, uint120 _allocPoint, IRewarder _rewarder, bool overwrite) public onlyGovernor {
+        // we must update the pool before applying set so that all previously accrued rewards
+        // are paid out before alloc points change
+        updatePool(_pid);
         totalAllocPoint = (totalAllocPoint - poolInfo[_pid].allocPoint) + _allocPoint;
         require(totalAllocPoint > 0, "total allocation points cannot be 0");
 
@@ -262,6 +265,9 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// Can only be called by the governor or guardian.
     /// @param _pid The index of the pool. See `poolInfo`.    
     function resetRewards(uint256 _pid) public onlyGuardianOrGovernor {
+        // we must update the pool before resetting rewards so that all previously accrued rewards
+        // are paid out before alloc points go to 0 in this pool
+        updatePool(_pid);
         // set the pool's allocation points to zero
         totalAllocPoint = (totalAllocPoint - poolInfo[_pid].allocPoint);
         poolInfo[_pid].allocPoint = 0;
@@ -337,6 +343,8 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @param amount The token amount to deposit.
     /// @param lockLength The length of time you would like to lock tokens
     function deposit(uint256 pid, uint256 amount, uint64 lockLength) public nonReentrant whenNotPaused {
+        // we have to update the pool before we allow a user to deposit so that we can correctly calculate their reward debt
+        // if we didn't do this, it would allow users to steal from us by calling deposits and gaining rewards they aren't entitled to
         updatePool(pid);
         PoolInfo storage pool = poolInfo[pid];
         UserInfo storage userPoolData = userInfo[pid][msg.sender];
@@ -357,6 +365,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         uint256 virtualAmountDelta = (amount * multiplier) / SCALE_FACTOR;
         userPoolData.virtualAmount += virtualAmountDelta;
         // update reward debt after virtual amount is set by multiplying virtual amount delta by tribe per share
+        // this tells us when the user deposited and allows us to calculate their rewards later
         userPoolData.rewardDebt += ((virtualAmountDelta * pool.accTribePerShare) / ACC_TRIBE_PRECISION).toInt256();
 
         // pool virtual total supply needs to increase here
@@ -380,27 +389,28 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param to Receiver of the tokens.
     function withdrawAllAndHarvest(uint256 pid, address to) external nonReentrant {
+        // update the pool, so that accTribePerShare is accurate, then harvest
         updatePool(pid);
+        _harvest(pid, to);
+
         PoolInfo storage pool = poolInfo[pid];
         UserInfo storage user = userInfo[pid][msg.sender];
-
-        // gather and pay out users rewards
-        _harvest(pid, msg.sender);
         uint256 unlockedTotalAmount = 0;
         uint256 virtualLiquidityDelta = 0;
 
-        // iterate over all deposits this user has.
-        // aggregate the deltas
+        // iterate over all deposits this user has and aggregate the deltas
         uint64 processedDeposits = 0;
         for (uint256 i = 0; i < depositInfo[pid][msg.sender].length; i++) {
             DepositInfo storage poolDeposit = depositInfo[pid][msg.sender][i];
             // if the user has locked the tokens for at least the 
             // lockup period or the pool has been unlocked, allow 
-            // user to withdraw their principle, otherwise skip this action
+            // user to withdraw their principle from this deposit, otherwise skip this action
             if (poolDeposit.unlockBlock > block.number && pool.unlocked == false) {
                 continue;
             }
+
             // if we get past continue, it means that we are going to process this deposit
+            // and send these tokens back to the user
             processedDeposits++;
 
             // gather the virtual and regular amount delta
@@ -415,22 +425,24 @@ contract TribalChief is CoreRef, ReentrancyGuard {
 
         // Effects
         if (processedDeposits == depositInfo[pid][msg.sender].length) {
-            // remove the array of deposits and userInfo struct if we were able to withdraw from all deposits
-            // if we removed all liquidity, then we can just delete all the data we stored on this user
+            // Remove the array of deposits and userInfo struct if we were able to withdraw from all deposits.
+            // If we removed all liquidity, then we can just delete all the data we stored on this user
             // in both depositinfo and userinfo, which means that their reward debt, and virtual liquidity
             // are all zero'd.
             delete depositInfo[pid][msg.sender];
             delete userInfo[pid][msg.sender];
         } else {
-            // if we didn't end up being able to withdraw all of the liquidity from all of our deposits
-            // then we will just update for the amounts that we did remove
-            // batched changes are done at the end of the function so that we don't
+            // If we didn't end up being able to withdraw all of the liquidity from all of our deposits
+            // then we will just update the userInfo object for the amounts that we did remove.
+            // Batched changes are done at the end of the function so that we don't
             // write to these storage slots multiple times
             user.virtualAmount -= virtualLiquidityDelta;
-            // set the reward debt to the new virtual amount
-            // we don't have to worry about decrementing the reward debt here as the harvest function
-            // has already paid out all pending tribe the users deserves
-            // here, we just have to make the reward debt equal to the current tribe per share so that it is accurate
+            // Set the reward debt to the new virtual amount
+            // we don't have to worry about increasing the reward debt here as the harvest function
+            // has already paid out all pending tribe the users deserves.
+            // Here, we just have to make the reward debt equal to:
+            // (current tribe per share * the virtual liquidity) / ACC_TRIBE_PRECISION
+            // of that user so that it is accurate.
             user.rewardDebt = (user.virtualAmount * pool.accTribePerShare / ACC_TRIBE_PRECISION).toInt256();
         }
 

@@ -507,6 +507,171 @@ describe('TribalChief', () => {
       });
     });
 
+    describe('Test accTribePerShare', () => {
+      it('should be able to get correct accTribePerShare after 100 blocks', async function () {
+        const userAddresses = [userAddress];
+
+        expect(
+          (await this.tribalChief.poolInfo(pid)).accTribePerShare,
+        ).to.be.bignumber.equal(new BN(0));
+
+        await testMultipleUsersPooling(
+          this.tribalChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          1,
+          0,
+          totalStaked,
+          pid,
+        );
+
+        for (let i = 0; i < 98; i++) {
+          await time.advanceBlock();
+        }
+
+        await this.tribalChief.updatePool(pid);
+
+        const expectedAccTribePerShare = (new BN(100).mul(new BN(blockReward).mul(new BN(ACC_TRIBE_PRECISION))))
+          .div(new BN(totalStaked));
+
+        expect(
+          (await this.tribalChief.poolInfo(pid)).accTribePerShare,
+        ).to.be.bignumber.equal(expectedAccTribePerShare);
+      });
+
+      it('should be able to get correct accTribePerShare after 10 blocks', async function () {
+        const userAddresses = [userAddress];
+
+        expect(
+          (await this.tribalChief.poolInfo(pid)).accTribePerShare,
+        ).to.be.bignumber.equal(new BN(0));
+
+        await testMultipleUsersPooling(
+          this.tribalChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          1,
+          0,
+          totalStaked,
+          pid,
+        );
+
+        for (let i = 0; i < 8; i++) {
+          await time.advanceBlock();
+        }
+
+        await this.tribalChief.updatePool(pid);
+
+        const expectedAccTribePerShare = (new BN(10).mul(new BN(blockReward).mul(new BN(ACC_TRIBE_PRECISION))))
+          .div(new BN(totalStaked));
+
+        expect(
+          (await this.tribalChief.poolInfo(pid)).accTribePerShare,
+        ).to.be.bignumber.equal(expectedAccTribePerShare);
+      });
+
+      it('should be able to get correct accTribePerShare after resetting rewards', async function () {
+        const userAddresses = [userAddress];
+
+        expect(
+          (await this.tribalChief.poolInfo(pid)).accTribePerShare,
+        ).to.be.bignumber.equal(new BN(0));
+
+        await testMultipleUsersPooling(
+          this.tribalChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          1,
+          0,
+          totalStaked,
+          pid,
+        );
+
+        for (let i = 0; i < 8; i++) {
+          await time.advanceBlock();
+        }
+
+        await this.tribalChief.resetRewards(pid, { from: governorAddress });
+
+        const expectedAccTribePerShare = (new BN(10).mul(new BN(blockReward).mul(new BN(ACC_TRIBE_PRECISION))))
+          .div(new BN(totalStaked));
+
+        expect(
+          (await this.tribalChief.poolInfo(pid)).accTribePerShare,
+        ).to.be.bignumber.equal(expectedAccTribePerShare);
+
+        const { allocPoint } = await this.tribalChief.poolInfo(pid);
+        // alloc points are now 0
+        expect(new BN(0)).to.be.bignumber.equal(allocPoint);
+        const rewards = await this.tribalChief.allPendingRewards(pid, userAddress);
+        const expectedRewards = expectedAccTribePerShare.mul(new BN(totalStaked)).div(new BN(ACC_TRIBE_PRECISION));
+        expect(rewards).to.be.bignumber.equal(expectedRewards);
+      });
+
+      it('should be able to get correct accTribePerShare after setting allocation points to 0', async function () {
+        const userAddresses = [userAddress];
+
+        expect(
+          (await this.tribalChief.poolInfo(pid)).accTribePerShare,
+        ).to.be.bignumber.equal(new BN(0));
+
+        await testMultipleUsersPooling(
+          this.tribalChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          1,
+          0,
+          totalStaked,
+          pid,
+        );
+
+        for (let i = 0; i < 6; i++) {
+          await time.advanceBlock();
+        }
+
+        // update pool before we add a new one to preserve rewards
+        await this.tribalChief.updatePool(pid);
+        await this.tribalChief.add(
+          allocationPoints,
+          this.curveLPToken.address,
+          ZERO_ADDRESS,
+          defaultRewardsObject,
+          { from: governorAddress },
+        );
+
+        expect(Number(await this.tribalChief.numPools())).to.be.equal(2);
+
+        await this.tribalChief.set(pid, 0, ZERO_ADDRESS, false, { from: governorAddress });
+
+        // tribe per share from first 8 blocks, full reward
+        const expectedAccTribePerShareFirst8Blocks = (new BN(8).mul(new BN(blockReward).mul(new BN(ACC_TRIBE_PRECISION))))
+          .div(new BN(totalStaked));
+
+        // tribe per share from last 2 blocks, which was cut in half
+        const expectedAccTribePerShareLast2Blocks = (new BN(2).mul(new BN(blockReward).div(new BN(2)).mul(new BN(ACC_TRIBE_PRECISION))))
+          .div(new BN(totalStaked));
+
+        const totalAccTribePerShare = expectedAccTribePerShareLast2Blocks.add(expectedAccTribePerShareFirst8Blocks);
+
+        // ensure that tribePerShare incremented correctly
+        expect(
+          (await this.tribalChief.poolInfo(pid)).accTribePerShare,
+        ).to.be.bignumber.equal(totalAccTribePerShare);
+
+        const { allocPoint } = await this.tribalChief.poolInfo(pid);
+
+        // alloc points are now 0 for this pool
+        expect(new BN(0)).to.be.bignumber.equal(allocPoint);
+        const rewards = await this.tribalChief.allPendingRewards(pid, userAddress);
+        const expectedRewards = totalAccTribePerShare.mul(new BN(totalStaked)).div(new BN(ACC_TRIBE_PRECISION));
+        expect(rewards).to.be.bignumber.equal(expectedRewards);
+      });
+    });
+
     describe('Test Staking', () => {
       it('should be able to stake LP Tokens', async function () {
         expect(
@@ -2529,6 +2694,33 @@ describe('TribalChief', () => {
       await this.tribalChief.withdrawAllAndHarvest(pid, userAddress, { from: userAddress });
       expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
       expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
+    });
+
+    it('should be able to `to` address when calling withdrawAllAndHarvest, all tribe rewards and principle are paid out to the specified user', async function () {
+      const userAddresses = [userAddress];
+
+      // we should only be receiving 1e20 tribe per block
+      await testMultipleUsersPooling(
+        this.tribalChief,
+        this.LPToken,
+        userAddresses,
+        new BN('100000000000000000000'),
+        this.lockLength, // we should advance lock length blocks so that once the function is complete we can withdraw
+        this.lockLength,
+        totalStaked,
+        pid,
+      );
+
+      const pendingTribe = await this.tribalChief.allPendingRewards(pid, userAddress);
+      const secondUserStartingLPTokenBalance = await this.LPToken.balanceOf(secondUserAddress);
+      // assert that this user has 0 tribe to begin with before receiving proceeds from the harvest
+      expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN('0'));
+
+      await this.tribalChief.withdrawAllAndHarvest(pid, secondUserAddress, { from: userAddress });
+
+      // ensure that the rewards and LPToken got paid out to the second user address that we specified
+      expect(await this.LPToken.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(totalStaked).add(secondUserStartingLPTokenBalance));
+      expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.gte(pendingTribe);
     });
 
     it('should be able to withdraw principle after locking period is over by calling withdrawAllAndHarvest', async function () {
