@@ -421,6 +421,10 @@ describe('TribalChief', () => {
       });
 
       it('should be able to governorWithdrawTribe as governor', async function () {
+        // assert that core's tribe balance before doing the governor withdraw is 0
+        let coreBalance = await this.tribe.balanceOf(this.core.address);
+        expect(coreBalance).to.be.bignumber.equal(new BN('0'));
+
         const withdrawAmount = await this.tribe.balanceOf(this.tribalChief.address);
         expect(withdrawAmount).to.be.bignumber.equal(mintAmount);
         expectEvent(
@@ -431,7 +435,7 @@ describe('TribalChief', () => {
           },
         );
 
-        const coreBalance = await this.tribe.balanceOf(this.core.address);
+        coreBalance = await this.tribe.balanceOf(this.core.address);
         expect(coreBalance).to.be.bignumber.equal(mintAmount);
 
         const afterTribalChiefBalance = await this.tribe.balanceOf(this.tribalChief.address);
