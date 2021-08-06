@@ -58,7 +58,6 @@ async function getAddresses() {
 async function getCore(complete) {
   const {
     governorAddress,
-    genesisGroup,
     pcvControllerAddress,
     minterAddress,
     burnerAddress,
@@ -66,11 +65,6 @@ async function getCore(complete) {
   } = await getAddresses();
   const core = await Core.new({ from: governorAddress });
   await core.init({ from: governorAddress });
-
-  await core.setGenesisGroup(genesisGroup, { from: governorAddress });
-  if (complete) {
-    await core.completeGenesisGroup({ from: genesisGroup });
-  }
 
   await core.grantMinter(minterAddress, { from: governorAddress });
   await core.grantBurner(burnerAddress, { from: governorAddress });

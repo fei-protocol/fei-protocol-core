@@ -118,13 +118,18 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @param _tribe The TRIBE token contract address.
     constructor(address _core, IERC20 _tribe) CoreRef(_core) {
         TRIBE = _tribe;
+        _setContractAdminRole(keccak256("TRIBAL_CHIEF_ADMIN_ROLE"));
     }
 
     /// @notice Allows governor to change the amount of tribe per block
     /// make sure to call the update pool function before hitting this function
     /// this will ensure that all of the rewards a user earned previously get paid out
     /// @param newBlockReward The new amount of tribe per block to distribute
-    function updateBlockReward(uint256 newBlockReward) external onlyGovernor {
+    function updateBlockReward(uint256 newBlockReward) external onlyGovernorOrAdmin {
+        if (isContractAdmin(msg.sender)) {
+            require(newBlockReward < tribalChiefTribePerBlock, "TribalChief: admin can only lower reward rate");
+        }
+
         tribalChiefTribePerBlock = newBlockReward;
         emit NewTribePerBlock(newBlockReward);
     }
@@ -132,7 +137,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @notice Allows governor to lock the pool so the users cannot withdraw
     /// until their lockup period is over
     /// @param _pid pool ID
-    function lockPool(uint256 _pid) external onlyGovernor {
+    function lockPool(uint256 _pid) external onlyGovernorOrAdmin {
         PoolInfo storage pool = poolInfo[_pid];
         pool.unlocked = false;
 
@@ -142,7 +147,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @notice Allows governor to unlock the pool so that users can withdraw 
     /// before their tokens have been locked for the entire lockup period
     /// @param _pid pool ID
-    function unlockPool(uint256 _pid) external onlyGovernor {
+    function unlockPool(uint256 _pid) external onlyGovernorOrAdmin {
         PoolInfo storage pool = poolInfo[_pid];
         pool.unlocked = true;
 
@@ -158,7 +163,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         uint256 _pid,
         uint64 lockLength,
         uint64 newRewardsMultiplier
-    ) external onlyGovernor {
+    ) external onlyGovernorOrAdmin {
         PoolInfo storage pool = poolInfo[_pid];
         uint256 currentMultiplier = rewardMultipliers[_pid][lockLength];
         // if the new multplier is greater than the current multiplier,
@@ -202,7 +207,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         IERC20 _stakedToken,
         IRewarder _rewarder,
         RewardData[] calldata rewardData
-    ) external onlyGovernor {
+    ) external onlyGovernorOrAdmin {
         require(allocPoint > 0, "pool must have allocation points to be created");
         uint128 lastRewardBlock = block.number.toUint128();
         totalAllocPoint += allocPoint;
@@ -246,7 +251,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @param _allocPoint New AP of the pool.
     /// @param _rewarder Address of the rewarder delegate.
     /// @param overwrite True if _rewarder should be `set`. Otherwise `_rewarder` is ignored.
-    function set(uint256 _pid, uint120 _allocPoint, IRewarder _rewarder, bool overwrite) public onlyGovernor {
+    function set(uint256 _pid, uint120 _allocPoint, IRewarder _rewarder, bool overwrite) public onlyGovernorOrAdmin {
         // we must update the pool before applying set so that all previously accrued rewards
         // are paid out before alloc points change
         updatePool(_pid);

@@ -54,7 +54,9 @@ describe('PCVSwapperUniswap', function () {
       this.weth.address, // weth
       {
         _oracle: this.oracle.address, // oracle
-        _backupOracle: this.oracle.address // backup oracle
+        _backupOracle: this.oracle.address, // backup oracle
+        _invertOraclePrice: false,
+        _decimalsNormalizer: 0,
       }, 
       '1000', // default minimum interval between swaps
       this.weth.address, // tokenSpent
@@ -62,7 +64,6 @@ describe('PCVSwapperUniswap', function () {
       userAddress, // tokenReceivingAddress
       `100${e18}`, // maxSpentPerSwap
       '300', // maximumSlippageBasisPoints
-      false, // invertOraclePrice
       `200${e18}` // swap incentive = 200 FEI
     );
 

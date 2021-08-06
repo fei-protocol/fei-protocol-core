@@ -7,11 +7,11 @@ import "./IPermissions.sol";
 /// @title Access control module for Core
 /// @author Fei Protocol
 contract Permissions is IPermissions, AccessControlEnumerable {
-    bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    bytes32 public constant PCV_CONTROLLER_ROLE = keccak256("PCV_CONTROLLER_ROLE");
-    bytes32 public constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
-    bytes32 public constant GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
+    bytes32 public constant override BURNER_ROLE = keccak256("BURNER_ROLE");
+    bytes32 public constant override MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant override PCV_CONTROLLER_ROLE = keccak256("PCV_CONTROLLER_ROLE");
+    bytes32 public constant override GOVERN_ROLE = keccak256("GOVERN_ROLE");
+    bytes32 public constant override GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
 
     constructor() {
         // Appointed as a governor so guardian can have indirect access to revoke ability
