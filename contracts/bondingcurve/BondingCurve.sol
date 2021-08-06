@@ -108,19 +108,19 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     }
 
     /// @notice sets the bonding curve Scale target
-    function setScale(uint256 newScale) external override onlyGovernor {
+    function setScale(uint256 newScale) external override onlyGovernorOrAdmin {
         _setScale(newScale);
     }
 
     /// @notice resets the totalPurchased
-    function reset() external override onlyGovernor {
+    function reset() external override onlyGovernorOrAdmin {
         uint256 oldTotalPurchased = totalPurchased;
         totalPurchased = 0;
         emit Reset(oldTotalPurchased);
     }
 
     /// @notice sets the bonding curve price buffer
-    function setBuffer(uint256 newBuffer) external override onlyGovernor {
+    function setBuffer(uint256 newBuffer) external override onlyGovernorOrAdmin {
         require(
             newBuffer < BASIS_POINTS_GRANULARITY,
             "BondingCurve: Buffer exceeds or matches granularity"
@@ -131,7 +131,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     }
 
     /// @notice sets the bonding curve price discount
-    function setDiscount(uint256 newDiscount) external override onlyGovernor {
+    function setDiscount(uint256 newDiscount) external override onlyGovernorOrAdmin {
         require(
             newDiscount < BASIS_POINTS_GRANULARITY,
             "BondingCurve: Buffer exceeds or matches granularity"
@@ -142,12 +142,12 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     }
 
     /// @notice sets the allocate incentive frequency
-    function setIncentiveFrequency(uint256 _frequency) external override onlyGovernor {
+    function setIncentiveFrequency(uint256 _frequency) external override onlyGovernorOrAdmin {
         _setDuration(_frequency);
     }
 
     /// @notice sets the mint cap for the bonding curve
-    function setMintCap(uint256 _mintCap) external override onlyGovernor {
+    function setMintCap(uint256 _mintCap) external override onlyGovernorOrAdmin {
         _setMintCap(_mintCap);
     }
 
