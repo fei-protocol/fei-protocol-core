@@ -273,21 +273,27 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         // we must update the pool before resetting rewards so that all previously accrued rewards
         // are paid out before alloc points go to 0 in this pool
         updatePool(_pid);
+        PoolInfo storage pool = poolInfo[_pid];
         // set the pool's allocation points to zero
-        totalAllocPoint = (totalAllocPoint - poolInfo[_pid].allocPoint);
-        poolInfo[_pid].allocPoint = 0;
+        totalAllocPoint = (totalAllocPoint - pool.allocPoint);
+        pool.allocPoint = 0;
         
         // unlock all staked tokens in the pool
-        poolInfo[_pid].unlocked = true;
+        pool.unlocked = true;
 
         // erase any IRewarder mapping
         rewarder[_pid] = IRewarder(address(0));
 
         emit PoolLocked(false, _pid);
+        emit LogSetPool(_pid, 0, IRewarder(address(0)), false);
     }
 
-    function _getPendingRewards(uint256 _pid, address _user) private view returns (uint256) {
-        PoolInfo memory pool = poolInfo[_pid];
+    /// @notice View function to see all pending TRIBE on frontend.
+    /// @param _pid The index of the pool. See `poolInfo`.
+    /// @param _user Address of user.
+    /// @return pending TRIBE reward for a given user.
+    function pendingRewards(uint256 _pid, address _user) external view returns (uint256) {
+        PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
 
         uint256 accTribePerShare = pool.accTribePerShare;
@@ -303,14 +309,6 @@ contract TribalChief is CoreRef, ReentrancyGuard {
 
         // use the virtual amount to calculate the users share of the pool and their pending rewards
         return (((user.virtualAmount * accTribePerShare) / ACC_TRIBE_PRECISION).toInt256() - user.rewardDebt).toUint256();
-    }
-
-    /// @notice View function to see all pending TRIBE on frontend.
-    /// @param _pid The index of the pool. See `poolInfo`.
-    /// @param _user Address of user.
-    /// @return pending TRIBE reward for a given user.
-    function allPendingRewards(uint256 _pid, address _user) external view returns (uint256) {
-        return _getPendingRewards(_pid, _user);
     }
 
     /// @notice Update reward variables for all pools. Be careful of gas spending!
@@ -338,7 +336,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
                 uint256 tribeReward = (blocks * tribePerBlock() * pool.allocPoint) / totalAllocPoint;
                 pool.accTribePerShare = pool.accTribePerShare + ((tribeReward * ACC_TRIBE_PRECISION) / virtualSupply);
             }
-            pool.lastRewardBlock = block.number.toUint64();
+            pool.lastRewardBlock = block.number.toUint128();
             emit LogUpdatePool(pid, pool.lastRewardBlock, virtualSupply, pool.accTribePerShare);
         }
     }
@@ -404,7 +402,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         uint256 virtualLiquidityDelta = 0;
 
         // iterate over all deposits this user has and aggregate the deltas
-        uint64 processedDeposits = 0;
+        uint256 processedDeposits = 0;
         for (uint256 i = 0; i < depositInfo[pid][msg.sender].length; i++) {
             DepositInfo storage poolDeposit = depositInfo[pid][msg.sender][i];
             // if the user has locked the tokens for at least the 
@@ -512,12 +510,12 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         int256 accumulatedTribe = ( (user.virtualAmount * pool.accTribePerShare ) / ACC_TRIBE_PRECISION ).toInt256();
 
         // this should never happen
-        require(accumulatedTribe >= 0 && accumulatedTribe - user.rewardDebt > 0, "negative accumulated tribe");
+        assert(accumulatedTribe >= 0 && accumulatedTribe - user.rewardDebt > 0);
 
         uint256 pendingTribe = (accumulatedTribe - user.rewardDebt).toUint256();
 
         // if pending tribe is ever negative, revert as this can cause an underflow when we turn this number to a uint
-        require(pendingTribe.toInt256() >= 0, "pendingTribe is less than 0");
+        assert(pendingTribe.toInt256() >= 0);
 
         // Effects
         user.rewardDebt = accumulatedTribe;
