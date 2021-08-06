@@ -40,7 +40,7 @@
     "@uniswap/v2-core": "^1.0.1",
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "dotenv": "^8.2.0",
-    "hardhat": "^2.3.0",
+    "hardhat": "^2.6.0",
     "hardhat-contract-sizer": "^2.0.3",
     "hardhat-gas-reporter": "^1.0.4",
     "hardhat-typechain": "^0.3.5",

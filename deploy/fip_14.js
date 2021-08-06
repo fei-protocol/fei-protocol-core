@@ -16,7 +16,7 @@ async function deploy(deployAddress, addresses, logging = false) {
   } = addresses;
 
   if (
-    !coreAddress
+    !coreAddress || !chainlinkDpiUsdOracleAddress || !dpiAddress || !sushiswapDpiFeiAddress || !indexCoopFusePoolDpiAddress || !sushiswapRouterAddress
   ) {
     throw new Error('An environment variable contract address is not set');
   }
@@ -63,6 +63,8 @@ async function deploy(deployAddress, addresses, logging = false) {
     100, // pre-scale discount 1%
     200 // post-scale buffer 2%
   );
+  logging ? console.log('DPI Bonding Curve deployed to: ', dpiBondingCurve.address) : undefined;
+
   return {
     chainlinkDpiUsdOracleWrapper,
     indexCoopFusePoolDpiPCVDeposit,
