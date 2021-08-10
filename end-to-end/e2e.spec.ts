@@ -1,9 +1,9 @@
-import { expect, web3 } from 'hardhat'
+import hre, { expect, web3 } from 'hardhat'
 import { time } from '@openzeppelin/test-helpers';
 import { TestEndtoEndCoordinator } from './setup';
 import { syncPool } from '../scripts/utils/syncPool'
 import { MainnetContractAddresses, MainnetContracts } from './setup/types';
-import { getPeg, getPrice } from './setup/utils'
+import { getPeg, getPrice, forceEth } from './setup/utils'
 import { BN, expectApprox } from '../test/helpers'
 import proposals from '../proposals/config.json'
 
@@ -34,65 +34,126 @@ describe('e2e', function () {
   })
 
   describe('BondingCurve', async () => {
-    beforeEach(async function () {
-      // Seed bonding curve with eth and update oracle
-      const bondingCurve = contracts.bondingCurve
-      const ethSeedAmount = tenPow18.mul(toBN(1000))
-      await bondingCurve.purchase(deployAddress, ethSeedAmount, {value: ethSeedAmount})
-      await bondingCurve.updateOracle();
-    })
-
-    it('should allow purchase of Fei through bonding curve', async function () {
-      const bondingCurve = contracts.bondingCurve;
-      const fei = contracts.fei;
-      const feiBalanceBefore = await fei.balanceOf(deployAddress);
-
-      const ethAmount = tenPow18; // 1 ETH
-      const oraclePrice = toBN((await bondingCurve.readOracle())[0]);
-      const currentPrice = toBN((await bondingCurve.getCurrentPrice())[0]);
-
-      // expected = amountIn * oracle * price (Note: there is an edge case when crossing scale where this is not true)
-      const expected = ethAmount.mul(oraclePrice).mul(currentPrice).div(tenPow18).div(tenPow18);
-
-      await bondingCurve.purchase(deployAddress, ethAmount, {value: ethAmount});
+    describe('ETH', async function () {
+      beforeEach(async function () {
+        // Seed bonding curve with eth and update oracle
+        const bondingCurve = contracts.bondingCurve
+        const ethSeedAmount = tenPow18.mul(toBN(1000))
+        await bondingCurve.purchase(deployAddress, ethSeedAmount, {value: ethSeedAmount})
+        await bondingCurve.updateOracle();
+      })
+  
+      it('should allow purchase of Fei through bonding curve', async function () {
+        const bondingCurve = contracts.bondingCurve;
+        const fei = contracts.fei;
+        const feiBalanceBefore = await fei.balanceOf(deployAddress);
+  
+        const ethAmount = tenPow18; // 1 ETH
+        const oraclePrice = toBN((await bondingCurve.readOracle())[0]);
+        const currentPrice = toBN((await bondingCurve.getCurrentPrice())[0]);
+  
+        // expected = amountIn * oracle * price (Note: there is an edge case when crossing scale where this is not true)
+        const expected = ethAmount.mul(oraclePrice).mul(currentPrice).div(tenPow18).div(tenPow18);
+  
+        await bondingCurve.purchase(deployAddress, ethAmount, {value: ethAmount});
+        
+        const feiBalanceAfter = await fei.balanceOf(deployAddress);
+        const expectedFinalBalance = feiBalanceBefore.add(expected)
+        expect(feiBalanceAfter).to.be.bignumber.equal(expectedFinalBalance);
+      })
+  
+      it('should transfer allocation from bonding curve to the reserve stabiliser', async function () {
+        const bondingCurve = contracts.bondingCurve;
+        const uniswapPCVDeposit = contracts.uniswapPCVDeposit
+  
+        const pcvDepositBefore = await uniswapPCVDeposit.balance()
+  
+        const curveEthBalanceBefore = toBN(await web3.eth.getBalance(bondingCurve.address));
+        expect(curveEthBalanceBefore).to.be.bignumber.greaterThan(toBN(0))
+  
+        const fei = contracts.fei;
+        const callerFeiBalanceBefore = await fei.balanceOf(deployAddress)
+        const pcvAllocations = await bondingCurve.getAllocation()
+        expect(pcvAllocations[0].length).to.be.equal(1)
+  
+        const durationWindow = await bondingCurve.duration()
+  
+        // pass the duration window, so Fei incentive will be sent
+        await time.increase(durationWindow);
+  
+        const allocatedEth = await bondingCurve.balance()
+        await bondingCurve.allocate()
       
-      const feiBalanceAfter = await fei.balanceOf(deployAddress);
-      const expectedFinalBalance = feiBalanceBefore.add(expected)
-      expect(feiBalanceAfter).to.be.bignumber.equal(expectedFinalBalance);
-    })
+        const curveEthBalanceAfter = toBN(await web3.eth.getBalance(bondingCurve.address));
+        expect(curveEthBalanceAfter).to.be.bignumber.equal(curveEthBalanceBefore.sub(allocatedEth))
+        
+        const pcvDepositAfter = await uniswapPCVDeposit.balance()
+        await expectApprox(pcvDepositAfter, pcvDepositBefore.add(allocatedEth), '100')
+  
+        const feiIncentive = await bondingCurve.incentiveAmount();
+        const callerFeiBalanceAfter = await fei.balanceOf(deployAddress);
+        expect(callerFeiBalanceAfter).to.be.bignumber.equal(callerFeiBalanceBefore.add(feiIncentive))
+      })
+    });
 
-    it('should transfer allocation from bonding curve to the reserve stabiliser', async function () {
-      const bondingCurve = contracts.bondingCurve;
-      const uniswapPCVDeposit = contracts.uniswapPCVDeposit
+    describe('DPI', async function () {
+      beforeEach(async function () {
+        // Acquire DPI
+        await hre.network.provider.request({
+          method: 'hardhat_impersonateAccount',
+          params: [contractAddresses.indexCoopFusePoolDpiAddress]
+        });
+        const dpiSeedAmount = tenPow18.mul(toBN(10))
 
-      const pcvDepositBefore = await uniswapPCVDeposit.balance()
+        await forceEth(contractAddresses.indexCoopFusePoolDpiAddress);
+        await contracts.dpi.transfer(deployAddress, dpiSeedAmount.mul(toBN(2)), {from: contractAddresses.indexCoopFusePoolDpiAddress});
+        
+        // Seed bonding curve with dpi
+        const bondingCurve = contracts.dpiBondingCurve
+        
+        await contracts.dpi.approve(bondingCurve.address, dpiSeedAmount.mul(toBN(2)));
+        await bondingCurve.purchase(deployAddress, dpiSeedAmount)
+      })
+  
+      it('should allow purchase of Fei through bonding curve', async function () {
+        const bondingCurve = contracts.dpiBondingCurve;
+        const fei = contracts.fei;
+        const feiBalanceBefore = await fei.balanceOf(deployAddress);
+  
+        const dpiAmount = tenPow18; // 1 DPI
+        const oraclePrice = toBN((await bondingCurve.readOracle())[0]);
+        const currentPrice = toBN((await bondingCurve.getCurrentPrice())[0]);
+  
+        // expected = amountIn * oracle * price (Note: there is an edge case when crossing scale where this is not true)
+        const expected = dpiAmount.mul(oraclePrice).mul(currentPrice).div(tenPow18).div(tenPow18);
+  
+        await bondingCurve.purchase(deployAddress, dpiAmount);
+        
+        const feiBalanceAfter = await fei.balanceOf(deployAddress);
+        const expectedFinalBalance = feiBalanceBefore.add(expected)
+        expect(feiBalanceAfter).to.be.bignumber.equal(expectedFinalBalance);
+      })
+  
+      it('should transfer allocation from bonding curve to the uniswap deposit and Fuse', async function () {
+        const bondingCurve = contracts.dpiBondingCurve;
+        const uniswapPCVDeposit = contracts.dpiUniswapPCVDeposit;
+        const fusePCVDeposit = contracts.indexCoopFusePoolDpiPCVDeposit;
 
-      const curveEthBalanceBefore = toBN(await web3.eth.getBalance(bondingCurve.address));
-      expect(curveEthBalanceBefore).to.be.bignumber.greaterThan(toBN(0))
-
-      const fei = contracts.fei;
-      const callerFeiBalanceBefore = await fei.balanceOf(deployAddress)
-      const pcvAllocations = await bondingCurve.getAllocation()
-      expect(pcvAllocations[0].length).to.be.equal(1)
-
-      const durationWindow = await bondingCurve.duration()
-
-      // pass the duration window, so Fei incentive will be sent
-      await time.increase(durationWindow);
-
-      const allocatedEth = await bondingCurve.balance()
-      await bondingCurve.allocate()
+        const pcvAllocations = await bondingCurve.getAllocation()
+        expect(pcvAllocations[0].length).to.be.equal(2)
     
-      const curveEthBalanceAfter = toBN(await web3.eth.getBalance(bondingCurve.address));
-      expect(curveEthBalanceAfter).to.be.bignumber.equal(curveEthBalanceBefore.sub(allocatedEth))
+        const allocatedDpi = await bondingCurve.balance()
+        await bondingCurve.allocate()
       
-      const pcvDepositAfter = await uniswapPCVDeposit.balance()
-      await expectApprox(pcvDepositAfter, pcvDepositBefore.add(allocatedEth), '100')
+        const curveBalanceAfter = await bondingCurve.balance();
+        expect(curveBalanceAfter).to.be.bignumber.equal(toBN(0))
+        
+        const pcvDepositAfter = await uniswapPCVDeposit.balance()
+        await expectApprox(pcvDepositAfter, allocatedDpi.mul(toBN(9)).div(toBN(10)), '100')
 
-      const feiIncentive = await bondingCurve.incentiveAmount();
-      const callerFeiBalanceAfter = await fei.balanceOf(deployAddress);
-      expect(callerFeiBalanceAfter).to.be.bignumber.equal(callerFeiBalanceBefore.add(feiIncentive))
-    })
+        await expectApprox(await fusePCVDeposit.balance(), allocatedDpi.div(toBN(10)), '100')
+      })
+    });
   });
 
   it('should be able to redeem Fei from stabiliser', async function () {
