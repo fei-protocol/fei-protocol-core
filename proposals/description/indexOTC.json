@@ -1,0 +1,75 @@
+{
+    "proposal_title": "100k INDEX OTC",
+    "proposal_description_link": "",
+    "proposal_commands": [
+        {
+            "address": "0xDa079A280FC3e33Eb11A78708B369D5Ca2da54fE",
+            "values": "0",
+            "method": "withdrawETH(address,uint256)",
+            "arguments": [
+                "0x639572471f2f318464dc01066a56867130e45E25",
+                "633150000000000000000"
+            ],
+            "description": "Withdraw 633.15 ETH to Timelock"
+        },
+        {
+            "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+            "values": "633150000000000000000",
+            "method": "deposit()",
+            "arguments": [],
+            "description": "Wrap 633.15 ETH"
+        },
+        {
+            "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+            "values": "0",
+            "method": "transfer(address,uint256)",
+            "arguments": [
+                "TBD",
+                "633150000000000000000"
+            ],
+            "description": "Transfer WETH to OtcEscrow"
+        },
+        {
+            "address": "TBD",
+            "values": "0",
+            "method": "swap()",
+            "arguments": [],
+            "description": "Swap Weth OTC"
+        },
+        {
+            "address": "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
+            "values": "0",
+            "method": "mint(address,uint256)",
+            "arguments": [
+                "TBD",
+                "991512900000000000000000"
+            ],
+            "description": "Mint 991512.900 FEI to OTC contract"
+        },
+        {
+            "address": "TBD",
+            "values": "0",
+            "method": "swap()",
+            "arguments": [],
+            "description": "Swap FEI OTC"
+        },
+        {
+            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "values": "0",
+            "method": "allocateTribe(address,uint256)",
+            "arguments": [
+                "TBD",
+                "1235325922000000000000000"
+            ],
+            "description": "Send 1235325.922 TRIBE from Treasury to OTC contract"
+        },
+        {
+            "address": "TBD",
+            "values": "0",
+            "method": "swap()",
+            "arguments": [],
+            "description": "Swap TRIBE OTC"
+        }
+    ],
+    "proposal_calldata": ""
+}
