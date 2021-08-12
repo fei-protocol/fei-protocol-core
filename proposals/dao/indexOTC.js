@@ -38,6 +38,7 @@ Simulate the DAO flow of acquiring and swapping ETH, FEI, and TRIBE OTC for INDE
  6. Swap FEI OTC
  7. Send 1235325.922 TRIBE from Treasury to OTC contract
  8. Swap TRIBE OTC
+ 9. Transfer 100k INDEX to delegator
 */
 async function run(addresses, oldContracts, contracts, logging = false) {
   const { timelockAddress } = addresses;
@@ -45,10 +46,12 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     fei,
     weth,
     core,
+    index,
     ethOTCEscrow,
     feiOTCEscrow,
     tribeOTCEscrow,
-    ethPCVDripper
+    ethPCVDripper,
+    indexDelegator
   } = contracts;
 
   await hre.network.provider.request({
@@ -64,22 +67,29 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   await feiOTCEscrow.swap({from: timelockAddress});
   await core.allocateTribe(tribeOTCEscrow.address, `1235325922${e15}`);
   await tribeOTCEscrow.swap({from: timelockAddress});
+  await index.transfer(indexDelegator.address, `100000${e18}`, { from: timelockAddress });
 }
 
 // Check all of the balances are transferred as expected
 async function validate(addresses, oldContracts, contracts) {
   const {
-    index, wethERC20, tribe, fei 
+    index, wethERC20, tribe, fei, indexDelegator, snapshotDelegateRegistry
   } = contracts;
   const {
     defiPulseOTCAddress,
-    timelockAddress,
   } = addresses;
 
-  expect((await index.balanceOf(timelockAddress)).toString()).to.be.equal(`100000${e18}`);
   expect((await fei.balanceOf(defiPulseOTCAddress)).toString()).to.be.equal(`991512900${e15}`);
   expect((await tribe.balanceOf(defiPulseOTCAddress)).toString()).to.be.equal(`1235325922${e15}`);
   expect((await wethERC20.balanceOf(defiPulseOTCAddress)).toString()).to.be.equal(`633150${e15}`);
+
+  expect((await index.balanceOf(indexDelegator.address)).toString()).to.be.equal(`100000${e18}`);
+
+  const expectedDelegate = await indexDelegator.delegate();
+  const id = await indexDelegator.spaceId();
+  console.log(id);
+  const delegate = await snapshotDelegateRegistry.delegation(indexDelegator.address, id);
+  expect(delegate).to.be.equal(expectedDelegate);
 }
 
 async function teardown(addresses, oldContracts, contracts, logging) {}

@@ -29,6 +29,7 @@
     "wethERC20Address": { "artifact": "IERC20", "address":  "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"},
     "stethAddress" : { "artifact": "IERC20", "address":  "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"},
     "indexAddress" : { "artifact": "IERC20", "address" : "0x0954906da0Bf32d5479e25f46056d22f08464cab" },
+    "snapshotDelegateRegistry" : { "artifact": "DelegateRegistry", "address" : "0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446" },
     "defiPulseOTCAddress" : { "address" : "0x5c29aa6761803bcfda7f683eaa0ff9bddda3649d" },
     "communalFarmAddress" : { "address":  "0x0639076265e9f88542C91DCdEda65127974A5CA5"},
     "uniswapRouterAddress": { "address":  "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"},
