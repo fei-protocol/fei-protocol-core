@@ -51,7 +51,6 @@ contract SnapshotDelegatorPCVDeposit is PCVDeposit {
         external
         override
         onlyPCVController
-        whenNotPaused
     {
         _withdrawERC20(address(token), to, amountUnderlying);
     }
