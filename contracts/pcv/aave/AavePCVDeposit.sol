@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "../PCVDeposit.sol";
+import "../utils/WethPCVDeposit.sol";
 
 interface LendingPool {
     function deposit(address asset, uint256 amount, address onBehalfOf, uint16 referralCode) external;
@@ -17,7 +17,7 @@ interface IncentivesController {
 
 /// @title Aave PCV Deposit
 /// @author Fei Protocol
-contract AavePCVDepositBase is PCVDeposit {
+contract AavePCVDeposit is WethPCVDeposit {
 
     IERC20 public aToken;
     LendingPool public lendingPool;
