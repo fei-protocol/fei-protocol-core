@@ -6,7 +6,7 @@ const SnapshotDelegatorPCVDeposit = artifacts.require('SnapshotDelegatorPCVDepos
 const e18 = '000000000000000000';
 const e15 =    '000000000000000';
 const indexSpaceId = formatBytes32String('index-coop.eth');
-const indexDelegate = '0xe0ac4559739bD36f0913FB0A3f5bFC19BCBaCD52';
+const indexDelegate = '0xb647055A9915bF9c8021a684E175A353525b9890'; // Matthew Graham delegation
 
 async function deploy(deployAddress, addresses, logging = false) {
   const {
