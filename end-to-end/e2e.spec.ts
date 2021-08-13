@@ -110,7 +110,9 @@ describe('e2e', function () {
         
         // Seed bonding curve with dpi
         const bondingCurve = contracts.dpiBondingCurve
-        
+        // increase mint cap
+        await bondingCurve.setMintCap(tenPow18.mul(tenPow18));
+
         await contracts.dpi.approve(bondingCurve.address, dpiSeedAmount.mul(toBN(2)));
         await bondingCurve.purchase(deployAddress, dpiSeedAmount)
       })
@@ -142,16 +144,20 @@ describe('e2e', function () {
         const pcvAllocations = await bondingCurve.getAllocation()
         expect(pcvAllocations[0].length).to.be.equal(2)
     
+        const pcvDepositBefore = await uniswapPCVDeposit.balance();
+        const fuseBalanceBefore = await fusePCVDeposit.balance();
+
         const allocatedDpi = await bondingCurve.balance()
         await bondingCurve.allocate()
       
         const curveBalanceAfter = await bondingCurve.balance();
-        expect(curveBalanceAfter).to.be.bignumber.equal(toBN(0))
+        await expectApprox(curveBalanceAfter, toBN(0), '100')
         
         const pcvDepositAfter = await uniswapPCVDeposit.balance()
-        await expectApprox(pcvDepositAfter, allocatedDpi.mul(toBN(9)).div(toBN(10)), '100')
+        await expectApprox(pcvDepositAfter.sub(pcvDepositBefore), allocatedDpi.mul(toBN(9)).div(toBN(10)), '10')
 
-        await expectApprox(await fusePCVDeposit.balance(), allocatedDpi.div(toBN(10)), '100')
+        const fuseBalanceAfter = await fusePCVDeposit.balance();
+        await expectApprox(fuseBalanceAfter.sub(fuseBalanceBefore), allocatedDpi.div(toBN(10)), '100')
       })
     });
   });
