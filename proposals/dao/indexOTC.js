@@ -51,7 +51,8 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     feiOTCEscrow,
     tribeOTCEscrow,
     ethPCVDripper,
-    indexDelegator
+    indexDelegator,
+    compoundEthPCVDeposit,
   } = contracts;
 
   await hre.network.provider.request({
@@ -59,9 +60,9 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     params: [timelockAddress]
   }); 
 
-  await ethPCVDripper.withdrawETH(timelockAddress, `633150${e15}`);
-  await weth.deposit({from: timelockAddress, value: `633150${e15}`});
-  await weth.transfer(ethOTCEscrow.address, `633150${e15}`, {from: timelockAddress });
+  await ethPCVDripper.withdrawETH(compoundEthPCVDeposit.address, `633150${e15}`);
+  await compoundEthPCVDeposit.withdrawETH(weth.address, `633150${e15}`);
+  await compoundEthPCVDeposit.withdrawERC20(weth.address, ethOTCEscrow.address, `633150${e15}`);
   await ethOTCEscrow.swap({from: timelockAddress});
   await fei.mint(feiOTCEscrow.address, `991512900${e15}`);
   await feiOTCEscrow.swap({from: timelockAddress});
@@ -87,7 +88,6 @@ async function validate(addresses, oldContracts, contracts) {
 
   const expectedDelegate = await indexDelegator.delegate();
   const id = await indexDelegator.spaceId();
-  console.log(id);
   const delegate = await snapshotDelegateRegistry.delegation(indexDelegator.address, id);
   expect(delegate).to.be.equal(expectedDelegate);
 }

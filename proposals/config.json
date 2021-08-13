@@ -5,14 +5,8 @@
         "proposerAddress" : "",
         "voterAddress" : ""
     },
-    "compoundPCVDeposit" : {
-        "deploy" : true,
-        "exec" : false,
-        "proposerAddress" : "",
-        "voterAddress" : ""
-    },
     "indexOTC" : {
-        "deploy" : true,
+        "deploy" : false,
         "validate" : true,
         "exec" : false,
         "proposerAddress" : "",

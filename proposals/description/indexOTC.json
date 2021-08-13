@@ -7,30 +7,34 @@
             "values": "0",
             "method": "withdrawETH(address,uint256)",
             "arguments": [
-                "0x639572471f2f318464dc01066a56867130e45E25",
+                "0x4fCB1435fD42CE7ce7Af3cB2e98289F79d2962b3",
                 "633150000000000000000"
             ],
-            "description": "Withdraw 633.15 ETH to Timelock"
+            "description": "Withdraw 633.15 ETH to FeiRari"
         },
         {
-            "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-            "values": "633150000000000000000",
-            "method": "deposit()",
-            "arguments": [],
-            "description": "Wrap 633.15 ETH"
-        },
-        {
-            "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+            "address": "0x4fCB1435fD42CE7ce7Af3cB2e98289F79d2962b3",
             "values": "0",
-            "method": "transfer(address,uint256)",
+            "method": "withdrawETH(address,uint256)",
             "arguments": [
-                "TBD",
+                "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                "633150000000000000000"
+            ],
+            "description": "Wrap 633.15 ETH to WETH"
+        },
+        {
+            "address": "0x4fCB1435fD42CE7ce7Af3cB2e98289F79d2962b3",
+            "values": "0",
+            "method": "withdrawERC20(address,address,uint256)",
+            "arguments": [
+                "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                "0x6Cfed416f0729d5754f13fDDf297789079208E2e",
                 "633150000000000000000"
             ],
             "description": "Transfer WETH to OtcEscrow"
         },
         {
-            "address": "TBD",
+            "address": "0x6Cfed416f0729d5754f13fDDf297789079208E2e",
             "values": "0",
             "method": "swap()",
             "arguments": [],
@@ -41,13 +45,13 @@
             "values": "0",
             "method": "mint(address,uint256)",
             "arguments": [
-                "TBD",
+                "0x9B9fE1b732839a53948B02E5164c0A50fdf11e06",
                 "991512900000000000000000"
             ],
             "description": "Mint 991512.900 FEI to OTC contract"
         },
         {
-            "address": "TBD",
+            "address": "0x9B9fE1b732839a53948B02E5164c0A50fdf11e06",
             "values": "0",
             "method": "swap()",
             "arguments": [],
@@ -58,13 +62,13 @@
             "values": "0",
             "method": "allocateTribe(address,uint256)",
             "arguments": [
-                "TBD",
+                "0xe2fE8041429e4bd51c40F92C6cDb699527171298",
                 "1235325922000000000000000"
             ],
             "description": "Send 1235325.922 TRIBE from Treasury to OTC contract"
         },
         {
-            "address": "TBD",
+            "address": "0xe2fE8041429e4bd51c40F92C6cDb699527171298",
             "values": "0",
             "method": "swap()",
             "arguments": [],
@@ -75,7 +79,7 @@
             "values": "0",
             "method": "transfer(address,uint256)",
             "arguments": [
-                "TBD",
+                "0x0ee81df08B20e4f9E0F534e50da437D24491c4ee",
                 "100000000000000000000000"
             ],
             "description": "Transfer 100k INDEX to snapshot delegator"
