@@ -61,7 +61,6 @@ contract AavePCVDeposit is WethPCVDeposit {
         external
         override
         onlyPCVController
-        whenNotPaused
     {
         lendingPool.withdraw(address(token), amountUnderlying, to);
         emit Withdrawal(msg.sender, to, amountUnderlying);

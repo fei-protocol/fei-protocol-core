@@ -67,37 +67,28 @@ describe('AavePCVDeposit', function () {
   });
   
   describe('Withdraw', function() {
-    describe('Paused', function() {
-      it('reverts', async function() {
-        await this.aavePCVDeposit.pause({from: governorAddress});
-        await expectRevert(this.aavePCVDeposit.withdraw(userAddress, this.depositAmount, {from: pcvControllerAddress}), 'Pausable: paused');
-      });
+    beforeEach(async function() {
+      await this.token.mint(this.aavePCVDeposit.address, this.depositAmount);
+      await this.aavePCVDeposit.deposit();
     });
-  
+
     describe('Not PCVController', function() {
       it('reverts', async function() {
         await expectRevert(this.aavePCVDeposit.withdraw(userAddress, this.depositAmount, {from: userAddress}), 'CoreRef: Caller is not a PCV controller');
       });
     });
   
-    describe('Not Paused', function() {
-      beforeEach(async function() {
-        await this.token.mint(this.aavePCVDeposit.address, this.depositAmount);
-        await this.aavePCVDeposit.deposit();
-      });
-  
-      it('succeeds', async function() {
-        const userBalanceBefore = await this.token.balanceOf(userAddress);
+    it('succeeds', async function() {
+      const userBalanceBefore = await this.token.balanceOf(userAddress);
         
-        // withdrawing should take balance back to 0
-        expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(this.depositAmount);
-        await this.aavePCVDeposit.withdraw(userAddress, this.depositAmount, {from: pcvControllerAddress});
-        expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(new BN('0'));
+      // withdrawing should take balance back to 0
+      expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(this.depositAmount);
+      await this.aavePCVDeposit.withdraw(userAddress, this.depositAmount, {from: pcvControllerAddress});
+      expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(new BN('0'));
         
-        const userBalanceAfter = await this.token.balanceOf(userAddress);
+      const userBalanceAfter = await this.token.balanceOf(userAddress);
   
-        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(this.depositAmount);
-      });
+      expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(this.depositAmount);
     });
   });
   
