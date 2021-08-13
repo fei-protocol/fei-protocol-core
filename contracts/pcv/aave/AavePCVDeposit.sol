@@ -48,7 +48,7 @@ contract AavePCVDeposit is WethPCVDeposit {
     }
 
     /// @notice deposit buffered aTokens
-    function deposit() external override {
+    function deposit() external override whenNotPaused {
         uint256 pendingBalance = token.balanceOf(address(this));
         lendingPool.deposit(address(token), pendingBalance, address(this), 0);
         emit Deposit(msg.sender, pendingBalance);

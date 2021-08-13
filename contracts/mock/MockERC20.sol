@@ -11,4 +11,8 @@ contract MockERC20 is ERC20, ERC20Burnable {
         _mint(account, amount);
         return true;
     }
+
+    function approveOverride(address owner, address spender, uint256 amount) public {
+        _approve(owner, spender, amount);
+    }
 }
