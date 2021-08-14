@@ -19,13 +19,24 @@ interface IncentivesController {
 /// @author Fei Protocol
 contract AavePCVDeposit is WethPCVDeposit {
 
+    /// @notice the associated Aave aToken for the deposit
     IERC20 public aToken;
+
+    /// @notice the Aave v2 lending pool
     LendingPool public lendingPool;
+
+    /// @notice the underlying token of the PCV deposit
     IERC20 public token;
+
+    /// @notice the Aave incentives controller for the aToken
     IncentivesController public incentivesController;
 
     /// @notice Aave PCV Deposit constructor
     /// @param _core Fei Core for reference
+    /// @param _lendingPool the Aave v2 lending pool
+    /// @param _token the underlying token of the PCV deposit
+    /// @param _aToken the associated Aave aToken for the deposit
+    /// @param _incentivesController the Aave incentives controller for the aToken
     constructor(
         address _core,
         LendingPool _lendingPool,
@@ -39,20 +50,27 @@ contract AavePCVDeposit is WethPCVDeposit {
         incentivesController = _incentivesController;
     }
 
+    /// @notice claims Aave rewards from the deposit and transfers to this address
     function claimRewards() external {
         address[] memory assets = new address[](1);
         assets[0] = address(aToken);
+        // First grab the available balance
         uint256 amount = incentivesController.getRewardsBalance(assets, address(this));
 
+        // claim all available rewards
         incentivesController.claimRewards(assets, amount, address(this));
     }
 
     /// @notice deposit buffered aTokens
     function deposit() external override whenNotPaused {
+        // wrap any held ETH if present
         wrapETH();
+
+        // Approve and deposit buffered tokens
         uint256 pendingBalance = token.balanceOf(address(this));
         token.approve(address(lendingPool), pendingBalance);
         lendingPool.deposit(address(token), pendingBalance, address(this), 0);
+        
         emit Deposit(msg.sender, pendingBalance);
     }
 
