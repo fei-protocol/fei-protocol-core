@@ -87,6 +87,7 @@ contract AavePCVDeposit is WethPCVDeposit {
     }
 
     /// @notice returns total balance of PCV in the Deposit
+    /// @dev aTokens are rebasing, so represent 1:1 on underlying value
     function balance() public view override returns (uint256) {
         return aToken.balanceOf(address(this));
     }
