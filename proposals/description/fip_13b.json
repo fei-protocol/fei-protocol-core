@@ -1,0 +1,85 @@
+{
+    "proposal_title": "FIP-13b: Lending FEI Deployments",
+    "proposal_description_link": "",
+    "proposal_commands": [
+        {
+            "address": "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
+            "values": "0",
+            "method": "mint(address,uint256)",
+            "arguments": [
+                "0x639572471f2f318464dc01066a56867130e45E25",
+                "4000000000000000000000000"
+            ],
+            "description": "Mint 4m FEI"
+        },
+        {
+            "address": "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
+            "values": "0",
+            "method": "transfer(address,uint256)",
+            "arguments": [
+                "TBD",
+                "1000000000000000000000000"
+            ],
+            "description": "Transfer 1M FEI to Fuse Pool 9 PCV Deposit"
+        },
+        {
+            "address": "TBD",
+            "values": "0",
+            "method": "deposit()",
+            "arguments": [],
+            "description": "Trigger Deposit Fuse Pool 9"
+        },
+        {
+            "address": "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
+            "values": "0",
+            "method": "transfer(address,uint256)",
+            "arguments": [
+                "TBD",
+                "1000000000000000000000000"
+            ],
+            "description": "Transfer 1M FEI to Fuse Pool 25 PCV Deposit"
+        },
+        {
+            "address": "TBD",
+            "values": "0",
+            "method": "deposit()",
+            "arguments": [],
+            "description": "Trigger Deposit Fuse Pool 25"
+        },
+        {
+            "address": "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
+            "values": "0",
+            "method": "transfer(address,uint256)",
+            "arguments": [
+                "TBD",
+                "1000000000000000000000000"
+            ],
+            "description": "Transfer 1M FEI to Fuse Pool 26 PCV Deposit"
+        },
+        {
+            "address": "TBD",
+            "values": "0",
+            "method": "deposit()",
+            "arguments": [],
+            "description": "Trigger Deposit Fuse Pool 26"
+        },
+        {
+            "address": "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
+            "values": "0",
+            "method": "transfer(address,uint256)",
+            "arguments": [
+                "TBD",
+                "1000000000000000000000000"
+            ],
+            "description": "Transfer 1M FEI to Fuse Pool 27 PCV Deposit"
+        },
+        {
+            "address": "TBD",
+            "values": "0",
+            "method": "deposit()",
+            "arguments": [],
+            "description": "Trigger Deposit Fuse Pool 27"
+        }
+    ],
+    "proposal_calldata": ""
+}

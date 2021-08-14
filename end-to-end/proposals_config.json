@@ -9,6 +9,12 @@
         "deploy" : true,
         "exec" : false
     },
+    "fip_13b" : {
+        "deploy" : true,
+        "exec" : false,
+        "proposerAddress" : "",
+        "voterAddress" : ""
+    },
     "fip_10a" : {
         "deploy" : false,
         "exec" : true,
