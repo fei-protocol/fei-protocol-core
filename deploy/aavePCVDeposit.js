@@ -5,12 +5,12 @@ async function deploy(deployAddress, addresses, logging = false) {
     coreAddress,
     wethAddress,
     aaveLendingPool,
-    aETHAddress,
+    aWETHAddress,
     aaveIncentivesController
   } = addresses;
 
   if (
-    !coreAddress || !wethAddress || !aaveLendingPool || !aETHAddress || !aaveIncentivesController
+    !coreAddress || !wethAddress || !aaveLendingPool || !aWETHAddress || !aaveIncentivesController
   ) {
     throw new Error('An environment variable contract address is not set');
   }
@@ -19,7 +19,7 @@ async function deploy(deployAddress, addresses, logging = false) {
     coreAddress,
     aaveLendingPool,
     wethAddress,
-    aETHAddress,
+    aWETHAddress,
     aaveIncentivesController,
     { from: deployAddress }
   );
