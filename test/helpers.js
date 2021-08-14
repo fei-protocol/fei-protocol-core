@@ -83,7 +83,11 @@ async function forceEth(to, amount) {
 
 async function expectApprox(actual, expected, magnitude = '1000') {
   const delta = new BN(expected).div(new BN(magnitude));
-  expect(new BN(actual)).to.be.bignumber.closeTo(new BN(expected), delta);
+  if (delta.toString() === '0') {
+    expect(new BN(actual)).to.be.bignumber.closeTo(new BN(expected), new BN(magnitude));
+  } else {
+    expect(new BN(actual)).to.be.bignumber.closeTo(new BN(expected), delta);
+  }
 }
 
 module.exports = {
