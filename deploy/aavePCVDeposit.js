@@ -23,7 +23,7 @@ async function deploy(deployAddress, addresses, logging = false) {
     aaveIncentivesController,
     { from: deployAddress }
   );
-  logging ? console.log('Aave ETH PCV Deposit deployed to: ', aaveEthPCVDeposit.address) : undefined;
+  logging && console.log('Aave ETH PCV Deposit deployed to: ', aaveEthPCVDeposit.address);
   
   return {
     aaveEthPCVDeposit
