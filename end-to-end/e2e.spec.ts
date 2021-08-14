@@ -291,7 +291,7 @@ describe('e2e', function () {
     })
   
     it('should be able to deposit and withdraw ETH',  async function () {
-      const ethCompoundPCVDeposit = contracts.rariPool8EthPCVDeposit;
+      const ethCompoundPCVDeposit = contracts.compoundEthPCVDeposit;
       const amount = tenPow18.mul(toBN(200));
       await web3.eth.sendTransaction({from: deployAddress, to: ethCompoundPCVDeposit.address, value: amount });
 

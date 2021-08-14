@@ -13,7 +13,7 @@ async function run(addresses, oldContracts, contracts, logging = false) {
 
   const {
     rariPool8FeiPCVDeposit,
-    rariPool8EthPCVDeposit,
+    compoundEthPCVDeposit,
     ethPCVDripper
   } = contracts;
   const rariPool8Fei = await IERC20.at(rariPool8FeiAddress);
@@ -21,9 +21,9 @@ async function run(addresses, oldContracts, contracts, logging = false) {
 
   await rariPool8Fei.transfer(rariPool8FeiPCVDeposit.address, balanceOfRariFei, {from: timelockAddress});
 
-  await ethPCVDripper.withdrawETH(rariPool8EthPCVDeposit.address, `1000${e18}`);
+  await ethPCVDripper.withdrawETH(compoundEthPCVDeposit.address, `1000${e18}`);
   
-  await rariPool8EthPCVDeposit.deposit();
+  await compoundEthPCVDeposit.deposit();
 }
 
 async function teardown(addresses, oldContractAddresses, logging) {}

@@ -6,11 +6,11 @@ async function deploy(deployAddress, addresses, logging = false) {
     coreAddress,
     feiAddress,
     rariPool8FeiAddress,
-    rariPool8EthAddress
+    compoundEthAddress,
   } = addresses;
 
   if (
-    !coreAddress || !feiAddress || !rariPool8FeiAddress || !rariPool8EthAddress
+    !coreAddress || !feiAddress || !rariPool8FeiAddress || !compoundEthAddress
   ) {
     throw new Error('An environment variable contract address is not set');
   }
@@ -23,16 +23,16 @@ async function deploy(deployAddress, addresses, logging = false) {
   );
   logging ? console.log('FEI Rari ERC20CompoundPCVDeposit deployed to: ', rariPool8FeiPCVDeposit.address) : undefined;
   
-  const rariPool8EthPCVDeposit = await EthCompoundPCVDeposit.new(
+  const compoundEthPCVDeposit = await EthCompoundPCVDeposit.new(
     coreAddress,
-    rariPool8EthAddress,
+    compoundEthAddress,
     { from: deployAddress }
   );
-  logging ? console.log('FEI Rari EthCompoundPCVDeposit deployed to: ', rariPool8EthAddress.address) : undefined;
+  logging ? console.log('EthCompoundPCVDeposit deployed to: ', compoundEthPCVDeposit.address) : undefined;
   
   return {
     rariPool8FeiPCVDeposit,
-    rariPool8EthPCVDeposit
+    compoundEthPCVDeposit
   };
 }
 
