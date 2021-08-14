@@ -18,15 +18,15 @@ abstract contract WethPCVDeposit is PCVDeposit {
     /// @notice Wraps all ETH held by the contract to WETH	
     /// Anyone can call it	
     function wrapETH() public {	
-        IWETH(WETH).deposit{value: address(this).balance}();	
+      uint256 ethBalance = address(this).balance;
+      if (ethBalance != 0) {
+        IWETH(WETH).deposit{value: ethBalance}();	
+      }
     }
 
     /// @notice deposit
-    function deposit() external override virtual {
-      // wrap any ETH
-      if (address(this).balance != 0) {
+    function deposit() external override virtual {      
         wrapETH();
-      }
     }
 
     /// @notice withdraw ETH from the contract
