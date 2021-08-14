@@ -304,6 +304,38 @@ describe('e2e', function () {
       expect((await ethCompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.lessThan(amount);
     })
   })
+
+  describe('Aave', async () => {  
+    it('should be able to deposit and withdraw ETH',  async function () {
+      const aaveEthPCVDeposit = contracts.aaveEthPCVDeposit;
+      const amount = tenPow18.mul(toBN(200));
+      await web3.eth.sendTransaction({from: deployAddress, to: aaveEthPCVDeposit.address, value: amount });
+
+      const balanceBefore = await aaveEthPCVDeposit.balance();
+
+      await aaveEthPCVDeposit.deposit();
+      expectApprox((await aaveEthPCVDeposit.balance()).sub(balanceBefore), amount, '100');
+
+      await aaveEthPCVDeposit.withdraw(deployAddress, amount);
+
+      expect((await aaveEthPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.lessThan(amount);
+    })
+
+    it('should be able to earn and claim stAAVE', async () => {
+      const aaveEthPCVDeposit = contracts.aaveEthPCVDeposit;
+      const amount = tenPow18.mul(toBN(200));
+      await web3.eth.sendTransaction({from: deployAddress, to: aaveEthPCVDeposit.address, value: amount });
+
+      const aaveBalanceBefore = await contracts.stAAVE.balanceOf(aaveEthPCVDeposit.address);
+      await aaveEthPCVDeposit.deposit();
+
+      await aaveEthPCVDeposit.claimRewards();
+      const aaveBalanceAfter = await contracts.stAAVE.balanceOf(aaveEthPCVDeposit.address);
+
+      expect(aaveBalanceAfter.sub(aaveBalanceBefore)).to.be.bignumber.greaterThan(toBN(0));
+    });
+  })
+
   describe('Access control', async () => {
     before(async () => {
       // Revoke deploy address permissions, so that does not erroneously

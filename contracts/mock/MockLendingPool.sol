@@ -14,8 +14,6 @@ contract MockLendingPool {
     }   
 
     function deposit(address asset, uint256 amount, address onBehalfOf, uint16 referralCode) external {
-        MockERC20(asset).approveOverride(msg.sender, address(this), amount);
-
         IERC20(asset).transferFrom(msg.sender, address(this), amount);
         aToken.mint(onBehalfOf, amount);
     }

@@ -41,7 +41,7 @@ contract AavePCVDeposit is WethPCVDeposit {
 
     function claimRewards() external {
         address[] memory assets = new address[](1);
-        assets[0] = address(token);
+        assets[0] = address(aToken);
         uint256 amount = incentivesController.getRewardsBalance(assets, address(this));
 
         incentivesController.claimRewards(assets, amount, address(this));
@@ -49,7 +49,9 @@ contract AavePCVDeposit is WethPCVDeposit {
 
     /// @notice deposit buffered aTokens
     function deposit() external override whenNotPaused {
+        wrapETH();
         uint256 pendingBalance = token.balanceOf(address(this));
+        token.approve(address(lendingPool), pendingBalance);
         lendingPool.deposit(address(token), pendingBalance, address(this), 0);
         emit Deposit(msg.sender, pendingBalance);
     }
