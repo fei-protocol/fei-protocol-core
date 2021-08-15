@@ -19,6 +19,8 @@ interface IncentivesController {
 /// @author Fei Protocol
 contract AavePCVDeposit is WethPCVDeposit {
 
+    event ClaimRewards(address indexed caller, uint256 amount);
+
     /// @notice the associated Aave aToken for the deposit
     IERC20 public aToken;
 
@@ -59,6 +61,8 @@ contract AavePCVDeposit is WethPCVDeposit {
 
         // claim all available rewards
         incentivesController.claimRewards(assets, amount, address(this));
+
+        emit ClaimRewards(msg.sender, amount);
     }
 
     /// @notice deposit buffered aTokens
