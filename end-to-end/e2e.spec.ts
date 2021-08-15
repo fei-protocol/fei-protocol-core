@@ -300,15 +300,20 @@ describe('e2e', function () {
     const fei = contracts.fei
 
     const userFeiBalanceBefore = await fei.balanceOf(deployAddress)
-    const pcvDepositBefore = await uniswapPCVDeposit.balance()
-    const stabilizerBalanceBefore = await ethReserveStabilizer.balance()
+    let stabilizerBalanceBefore = await ethReserveStabilizer.balance()
 
+    const dripAmount = await pcvDripper.dripAmount();
+    if (stabilizerBalanceBefore.gt(dripAmount)) {
+      await ethReserveStabilizer.withdraw(deployAddress, stabilizerBalanceBefore);
+      stabilizerBalanceBefore = await ethReserveStabilizer.balance()
+    }
+
+    const pcvDepositBefore = await uniswapPCVDeposit.balance()
     // Trigger drip
     await time.increase(await pcvDripper.remainingTime());
     await pcvDripper.drip({from: deployAddress});
 
     // Check PCV deposit loses dripAmount ETH and stabilizer gets dripAmount ETH
-    const dripAmount = toBN(await pcvDripper.dripAmount())
     const pcvDepositAfter = toBN(await uniswapPCVDeposit.balance())
     await expectApprox(pcvDepositAfter, pcvDepositBefore.sub(dripAmount), '100')
 
@@ -404,6 +409,8 @@ describe('e2e', function () {
     it('should be able to deposit and withdraw ETH',  async function () {
       const ethCompoundPCVDeposit = contracts.compoundEthPCVDeposit;
       const amount = tenPow18.mul(toBN(200));
+      await ethCompoundPCVDeposit.deposit();
+
       await web3.eth.sendTransaction({from: deployAddress, to: ethCompoundPCVDeposit.address, value: amount });
 
       const balanceBefore = await ethCompoundPCVDeposit.balance();
@@ -420,6 +427,8 @@ describe('e2e', function () {
     it('should be able to deposit and withdraw ETH',  async function () {
       const aaveEthPCVDeposit = contracts.aaveEthPCVDeposit;
       const amount = tenPow18.mul(toBN(200));
+      await aaveEthPCVDeposit.deposit();
+
       await web3.eth.sendTransaction({from: deployAddress, to: aaveEthPCVDeposit.address, value: amount });
 
       const balanceBefore = await aaveEthPCVDeposit.balance();

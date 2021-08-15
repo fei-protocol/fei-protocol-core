@@ -23,7 +23,9 @@
   "pcvController": [
     "timelockAddress",
     "ratioPCVControllerAddress",
-    "pcvDripControllerAddress"
+    "pcvDripControllerAddress",
+    "aaveEthPCVDripControllerAddress",
+    "compoundEthPCVDripControllerAddress"
   ],
   "guardian": [
     "multisigAddress"
