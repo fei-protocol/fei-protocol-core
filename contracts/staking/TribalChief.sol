@@ -196,6 +196,17 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         return depositInfo[pid][user].length;
     }
 
+    /// @notice Returns the amount a user deposited in a single pool.
+    function getTotalStakedInPool(uint256 pid, address user) public view returns (uint256) {
+        uint256 amount = 0;
+        for (uint256 i = 0; i < depositInfo[pid][user].length; i++) {
+            DepositInfo storage poolDeposit = depositInfo[pid][user][i];
+            amount += poolDeposit.amount;
+        }
+
+        return amount;
+    }
+
 
     /// @notice Add a new pool. Can only be called by the governor.
     /// @param allocPoint AP of the new pool.
@@ -459,7 +470,9 @@ contract TribalChief is CoreRef, ReentrancyGuard {
             _rewarder.onSushiReward(pid, msg.sender, to, 0, user.virtualAmount);
         }
 
-        stakedToken[pid].safeTransfer(to, unlockedTotalAmount);
+        if (unlockedTotalAmount > 0) {
+            stakedToken[pid].safeTransfer(to, unlockedTotalAmount);
+        }
 
         emit Withdraw(msg.sender, pid, unlockedTotalAmount, to);
     }

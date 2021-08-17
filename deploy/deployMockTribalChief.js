@@ -5,42 +5,53 @@ const MockCore = artifacts.require('MockCore');
 const MockConfigurableERC20 = artifacts.require('MockConfigurableERC20');
 
 const mintAmount = '10000000000000000000000000000';
-const allocationPoints = 100;
+const allocationPoints = 1000;
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 const shortRewardSchedule = [
   {
+    lockLength: 0,
+    rewardMultiplier: `${1e4}`,
+  },
+  {
     lockLength: 23,
-    rewardMultiplier: `${15e17}`,
+    rewardMultiplier: `${15e3}`,
   },
   {
     lockLength: 46,
-    rewardMultiplier: `${2e18}`,
+    rewardMultiplier: `${2e4}`,
   },
 ];
 
 const longRewardSchedule = [
   {
+    lockLength: 0,
+    rewardMultiplier: `${1e4}`,
+  },
+  {
     lockLength: 1080000,
-    rewardMultiplier: `${15e17}`,
+    rewardMultiplier: `${15e3}`,
   },
   {
     lockLength: 1620000,
-    rewardMultiplier: `${17e17}`,
+    rewardMultiplier: `${17e3}`,
   },
   {
     lockLength: 2160000,
-    rewardMultiplier: `${2e18}`,
+    rewardMultiplier: `${2e4}`,
   },
   {
     lockLength: 3240000,
-    rewardMultiplier: `${3e18}`,
+    rewardMultiplier: `${3e4}`,
   },
   {
     lockLength: 4320000,
-    rewardMultiplier: `${4e18}`,
+    rewardMultiplier: `${4e4}`,
   },
 ];
+
+const LPTokenA = '0xbf8aF59B104F58c91C72e8b0676CBB1F279e5561';
+const LPTokenB = '0xB76bB26510BCfE8bC337a54ec217eD04458B9De9';
 
 // Create a mock deployment of the tribalchief, tribe and LP tokens
 async function main() {
@@ -49,15 +60,16 @@ async function main() {
   if (!receiver || receiver === undefined || receiver.length !== 42) {
     throw new Error('must specify receiver address');
   }
-  if (
-    !governorAlphaAddress
-    || governorAlphaAddress.length !== 42
-  ) {
-    throw new Error('must specify receiver address');
+  if (!governorAlphaAddress || governorAlphaAddress.length !== 42) {
+    throw new Error('must specify governor alpha address');
   }
+  const accounts = await web3.eth.getAccounts();
 
-  const core = await MockCore.new({ from: governorAlphaAddress });
-  await core.grantMinter(core.address, { from: governorAlphaAddress });
+  const core = await MockCore.new({ from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 });
+  await core.init({ from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 });
+  await core.grantMinter(
+    core.address, { from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 },
+  );
 
   const fei = await Fei.at(await core.fei());
   const tribe = await Fei.at(await core.tribe());
@@ -66,18 +78,23 @@ async function main() {
   console.log(`Fei address: ${fei.address}`);
   console.log(`Tribe address: ${tribe.address}`);
 
-  const LPTokenA = await MockConfigurableERC20.new('LP Token A', 'LP_A');
-  const LPTokenB = await MockConfigurableERC20.new('LP Token B', 'LP_B');
-  console.log(`LP Token A: ${LPTokenA.address}`);
-  console.log(`LP Token B: ${LPTokenB.address}`);
+  // const LPTokenA = await MockConfigurableERC20.new('LP Token A', 'LP_A');
+  // const LPTokenB = await MockConfigurableERC20.new('LP Token B', 'LP_B');
+  // console.log(`LP Token A: ${LPTokenA.address}`);
+  // console.log(`LP Token B: ${LPTokenB.address}`);
 
-  await core.mintFEI(receiver, mintAmount, { from: governorAlphaAddress });
-  await LPTokenA.mint(receiver, mintAmount);
-  await LPTokenB.mint(receiver, mintAmount);
+  // await LPTokenA.mint(receiver, mintAmount);
+  // await LPTokenB.mint(receiver, mintAmount);
 
-  const tribalChief = await TribalChief.new(core.address, tribe.address);
+  const tribalChief = await TribalChief.new(
+    core.address, tribe.address, { from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 },
+  );
   console.log(`TribalChief: ${tribalChief.address}`);
-  await tribe.mint(tribalChief.address, mintAmount, { from: governorAlphaAddress });
+
+  await tribe.transfer(
+    tribalChief.address, (await tribe.balanceOf(accounts[0])),
+    { from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 },
+  );
 
   // LP Token A has a short lockup period
   await tribalChief.add(
@@ -85,7 +102,7 @@ async function main() {
     LPTokenA.address,
     ZERO_ADDRESS,
     shortRewardSchedule,
-    { from: governorAlphaAddress },
+    { from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 },
   );
 
   // LP Token B has the long lockup period
@@ -94,7 +111,7 @@ async function main() {
     LPTokenB.address,
     ZERO_ADDRESS,
     longRewardSchedule,
-    { from: governorAlphaAddress },
+    { from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 },
   );
 }
 

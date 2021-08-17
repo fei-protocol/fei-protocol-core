@@ -16,6 +16,7 @@ const {
   expectApprox,
 } = require('../helpers');
 
+const MockCore = artifacts.require('MockCore');
 const Tribe = artifacts.require('MockTribe');
 const MockCoreRef = artifacts.require('MockCoreRef');
 const TribalChief = artifacts.require('TribalChief');
@@ -670,6 +671,45 @@ describe('TribalChief', () => {
         const expectedRewards = totalAccTribePerShare.mul(new BN(totalStaked)).div(new BN(ACC_TRIBE_PRECISION));
         expect(rewards).to.be.bignumber.equal(expectedRewards);
       });
+
+      it('should be able to deposit multiple times and withdrawAllAndHarvest', async function () {
+        await this.LPToken.approve(this.tribalChief.address, totalStaked);
+        expectEvent(
+          await this.tribalChief.deposit(pid, totalStaked, 100, { from: userAddress }),
+          'Deposit', {
+            user: userAddress,
+            pid: new BN(pid.toString()),
+            amount: new BN(totalStaked),
+            depositID: new BN('0'),
+          },
+        );
+
+        for (let i = 0; i < 5; i++) {
+          await time.advanceBlock();
+        }
+
+        const startingLPBalance = await this.LPToken.balanceOf(userAddress);
+        const rewards = await this.tribalChief.pendingRewards(pid, userAddress);
+        await this.tribalChief.withdrawAllAndHarvest(pid, userAddress, { from: userAddress });
+
+        // tribe per share from first 5 blocks, full reward
+        const expectedAccTribeFirst5Blocks = new BN(5).mul(new BN(blockReward));
+        await expectApprox(rewards, expectedAccTribeFirst5Blocks);
+        // assert that no LP tokens were withdrawn when calling withdrawAllAndHarvest
+        expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(startingLPBalance);
+
+        await this.LPToken.mint(userAddress, totalStaked);
+        await this.LPToken.approve(this.tribalChief.address, totalStaked);
+        expectEvent(
+          await this.tribalChief.deposit(pid, totalStaked, 100, { from: userAddress }),
+          'Deposit', {
+            user: userAddress,
+            pid: new BN(pid.toString()),
+            amount: new BN(totalStaked),
+            depositID: new BN('1'),
+          },
+        );
+      });
     });
 
     describe('Test Staking', () => {
@@ -966,6 +1006,31 @@ describe('TribalChief', () => {
         );
       });
 
+      it('should be able to getTotalStakedInPool with one user depositing multiple times', async function () {
+        const userAddresses = [userAddress];
+        await this.LPToken.mint(userAddress, new BN(10).mul(new BN(totalStaked)));
+        for (let i = 0; i < 10; i++) {
+          const amountOfDeposits = i + 1;
+
+          await testMultipleUsersPooling(
+            this.tribalChief,
+            this.LPToken,
+            userAddresses,
+            new BN('100000000000000000000'),
+            1,
+            0,
+            totalStaked,
+            pid,
+          );
+
+          // expected amount staked is totalstaked * amountOfDeposits
+          const expectedTotalStaked = new BN(totalStaked).mul(new BN(amountOfDeposits));
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddress);
+
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+        }
+      });
+
       it('should be able to distribute sushi after 10 blocks with 4 users staking using helper function', async function () {
         const userAddresses = [userAddress, secondUserAddress, thirdUserAddress, fourthUserAddress];
 
@@ -979,6 +1044,13 @@ describe('TribalChief', () => {
           totalStaked,
           pid,
         );
+
+        for (let i = 0; i < userAddresses.length; i++) {
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+        }
       });
 
       it('should be able to distribute sushi after 10 blocks with 2 users staking using helper function', async function () {
@@ -994,6 +1066,13 @@ describe('TribalChief', () => {
           totalStaked,
           pid,
         );
+
+        for (let i = 0; i < userAddresses.length; i++) {
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+        }
       });
 
       it('should be able to distribute sushi after 10 blocks with 10 users staking using helper function', async function () {
@@ -1020,6 +1099,13 @@ describe('TribalChief', () => {
           totalStaked,
           pid,
         );
+
+        for (let i = 0; i < userAddresses.length; i++) {
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+        }
       });
 
       it('should be able to distribute sushi after 10 blocks with 3 pools, 3 users staking in each pool', async function () {
@@ -1114,6 +1200,13 @@ describe('TribalChief', () => {
           totalStaked,
           pid,
         );
+
+        for (let i = 0; i < userAddresses.length; i++) {
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+        }
       });
 
       it('should be able to assert numPools', async function () {
@@ -1160,6 +1253,12 @@ describe('TribalChief', () => {
           expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddresses[i]);
+
+          // assert that getTotalStakedInPool returns proper amount
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+
           await this.tribalChief.withdrawAllAndHarvest(
             pid, userAddresses[i], { from: userAddresses[i] },
           );
@@ -1207,6 +1306,11 @@ describe('TribalChief', () => {
           expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddresses[i]);
+          // assert that getTotalStakedInPool returns proper amount
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+
           await this.tribalChief.withdrawAllAndHarvest(
             pid, userAddresses[i], { from: userAddresses[i] },
           );
@@ -1302,6 +1406,11 @@ describe('TribalChief', () => {
           expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddresses[i]);
+          // assert that getTotalStakedInPool returns proper amount
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+
           await this.tribalChief.withdrawAllAndHarvest(
             pid, userAddresses[i], { from: userAddresses[i] },
           );
@@ -1339,6 +1448,12 @@ describe('TribalChief', () => {
           expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddresses[i]);
+
+          // assert that getTotalStakedInPool returns proper amount
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+
           await this.tribalChief.withdrawAllAndHarvest(
             pid, userAddresses[i], { from: userAddresses[i] },
           );
@@ -1386,6 +1501,12 @@ describe('TribalChief', () => {
           expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddresses[i]);
+
+          // assert that getTotalStakedInPool returns proper amount
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+
           await this.tribalChief.withdrawAllAndHarvest(
             pid, userAddresses[i], { from: userAddresses[i] },
           );
@@ -1443,6 +1564,11 @@ describe('TribalChief', () => {
           expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(new BN('0'));
 
           const pendingTribeBeforeHarvest = await this.tribalChief.pendingRewards(pid, address);
+
+          // assert that getTotalStakedInPool returns proper amount
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
 
           const index = (await this.tribalChief.openUserDeposits(pid, userAddress)).sub(new BN('1')).toString();
           await this.tribalChief.withdrawFromDeposit(
@@ -1561,6 +1687,11 @@ describe('TribalChief', () => {
           totalStaked,
           pid,
         );
+
+        // assert that getTotalStakedInPool returns proper amount
+        const expectedTotalStaked = new BN(totalStaked).mul(new BN(5));
+        const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddress);
+        expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
 
         await this.tribalChief.harvest(pid, userAddress);
         // should get per block reward 6x.
