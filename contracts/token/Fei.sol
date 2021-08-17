@@ -1,10 +1,8 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "./IIncentive.sol";
-import "./IFei.sol";
 import "../refs/CoreRef.sol";
 
 /// @title FEI stablecoin
@@ -23,7 +21,7 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
 
     /// @notice Fei token constructor
     /// @param core Fei Core address to reference
-    constructor(address core) public ERC20("Fei USD", "FEI") CoreRef(core) {
+    constructor(address core) ERC20("Fei USD", "FEI") CoreRef(core) {
         uint256 chainId;
         // solhint-disable-next-line no-inline-assembly
         assembly {
@@ -163,7 +161,6 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         bytes32 r,
         bytes32 s
     ) external override {
-        // solhint-disable-next-line not-rely-on-time
         require(deadline >= block.timestamp, "Fei: EXPIRED");
         bytes32 digest =
             keccak256(

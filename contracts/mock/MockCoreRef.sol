@@ -1,12 +1,12 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.4;
 
 import "../refs/CoreRef.sol";
 
 contract MockCoreRef is CoreRef {
-	constructor(address core) 
-		CoreRef(core)
-	public {}
+	constructor(address core) CoreRef(core) {
+		_setContractAdminRole(keccak256("MOCK_CORE_REF_ADMIN"));
+	}
 
 	function testMinter() public view onlyMinter {}
 
@@ -16,6 +16,6 @@ contract MockCoreRef is CoreRef {
 
 	function testGovernor() public view onlyGovernor {}
 
-	function testPostGenesis() public view postGenesis {}
+	function testOnlyGovernorOrAdmin() public view onlyGovernorOrAdmin {}
 }
 

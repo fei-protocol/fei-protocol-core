@@ -1,14 +1,13 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.4;
 
 // Inspired by OpenZeppelin TokenTimelock contract
 // Reference: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/TokenTimelock.sol
 
 import "./Timed.sol";
 import "./ILinearTokenTimelock.sol";
-import "../external/SafeMathCopy.sol";
 
 contract LinearTokenTimelock is ILinearTokenTimelock, Timed {
-    using SafeMathCopy for uint256;
 
     /// @notice ERC20 basic token contract being held in timelock
     IERC20 public override lockedToken;
@@ -28,7 +27,7 @@ contract LinearTokenTimelock is ILinearTokenTimelock, Timed {
         address _beneficiary,
         uint256 _duration,
         address _lockedToken
-    ) public Timed(_duration) {
+    ) Timed(_duration) {
         require(_duration != 0, "LinearTokenTimelock: duration is 0");
         require(
             _beneficiary != address(0),
@@ -44,8 +43,8 @@ contract LinearTokenTimelock is ILinearTokenTimelock, Timed {
     // Prevents incoming LP tokens from messing up calculations
     modifier balanceCheck() {
         if (totalToken() > lastBalance) {
-            uint256 delta = totalToken().sub(lastBalance);
-            initialBalance = initialBalance.add(delta);
+            uint256 delta = totalToken() - lastBalance;
+            initialBalance = initialBalance + delta;
         }
         _;
         lastBalance = totalToken();
@@ -81,7 +80,7 @@ contract LinearTokenTimelock is ILinearTokenTimelock, Timed {
 
     /// @notice amount of tokens released to beneficiary
     function alreadyReleasedAmount() public view override returns (uint256) {
-        return initialBalance.sub(totalToken());
+        return initialBalance - totalToken();
     }
 
     /// @notice amount of held tokens unlocked and available for release
@@ -89,8 +88,8 @@ contract LinearTokenTimelock is ILinearTokenTimelock, Timed {
         uint256 elapsed = timeSinceStart();
         uint256 _duration = duration;
 
-        uint256 totalAvailable = initialBalance.mul(elapsed) / _duration;
-        uint256 netAvailable = totalAvailable.sub(alreadyReleasedAmount());
+        uint256 totalAvailable = initialBalance * elapsed / _duration;
+        uint256 netAvailable = totalAvailable - alreadyReleasedAmount();
         return netAvailable;
     }
 

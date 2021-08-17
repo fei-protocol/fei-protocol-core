@@ -1,4 +1,5 @@
-pragma solidity ^0.6.2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -13,7 +14,7 @@ interface ILinearTokenTimelock {
 
     // ----------- State changing api -----------
 
-    function release(address to, uint amount) external;
+    function release(address to, uint256 amount) external;
 
     function releaseMax(address to) external;
 

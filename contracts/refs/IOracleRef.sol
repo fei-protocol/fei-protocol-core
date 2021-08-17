@@ -1,5 +1,5 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.4;
 
 import "../oracle/IOracle.sol";
 
@@ -8,21 +8,40 @@ import "../oracle/IOracle.sol";
 interface IOracleRef {
     // ----------- Events -----------
 
-    event OracleUpdate(address indexed _oracle);
+    event OracleUpdate(address indexed oldOracle, address indexed newOracle);
+
+    event InvertUpdate(bool oldDoInvert, bool newDoInvert);
+
+    event DecimalsNormalizerUpdate(int256 oldDecimalsNormalizer, int256 newDecimalsNormalizer);
+
+    event BackupOracleUpdate(address indexed oldBackupOracle, address indexed newBackupOracle);
+
 
     // ----------- State changing API -----------
 
-    function updateOracle() external returns (bool);
+    function updateOracle() external;
 
     // ----------- Governor only state changing API -----------
 
-    function setOracle(address _oracle) external;
+    function setOracle(address newOracle) external;
+
+    function setBackupOracle(address newBackupOracle) external;
+
+    function setDecimalsNormalizer(int256 newDecimalsNormalizer) external;
+
+    function setDoInvert(bool newDoInvert) external;
 
     // ----------- Getters -----------
 
     function oracle() external view returns (IOracle);
 
-    function peg() external view returns (Decimal.D256 memory);
+    function backupOracle() external view returns (IOracle);
+
+    function doInvert() external view returns (bool);
+
+    function decimalsNormalizer() external view returns (int256);
+
+    function readOracle() external view returns (Decimal.D256 memory);
 
     function invert(Decimal.D256 calldata price)
         external

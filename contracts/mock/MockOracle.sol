@@ -1,5 +1,5 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.4;
 
 import "../external/Decimal.sol";
 import "../oracle/IOracle.sol";
@@ -13,13 +13,12 @@ contract MockOracle is IOracle {
     bool public outdated;
     bool public valid = true;
 
-    constructor(uint256 usdPerEth) public {
+    constructor(uint256 usdPerEth) {
         _usdPerEth = usdPerEth;
     }
 
-    function update() public override returns (bool) {
+    function update() public override {
         updated = true;
-        return true;
     }
 
     function read() public view override returns (Decimal.D256 memory, bool) {

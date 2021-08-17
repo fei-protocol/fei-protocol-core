@@ -1,0 +1,85 @@
+version: 2.1
+
+jobs:
+  build:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:12
+    steps:
+      - checkout
+      - run:
+          name: 'Update NPM'
+          command: sudo npm install -g npm@6.13.4
+      - run:
+          name: 'Set caching variables'
+          command: |
+            LAST_SUCCESSFUL_BUILD_URL="https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/tree/master?filter=successful&limit=1"
+            LAST_SUCCESSFUL_COMMIT=`curl -Ss -u "$CIRCLE_TOKEN:" $LAST_SUCCESSFUL_BUILD_URL | jq -r '.[0]["vcs_revision"]'`
+            echo $LAST_SUCCESSFUL_COMMIT > /tmp/last-successful-commit
+            echo $CIRCLE_SHA1 > /tmp/current-commit
+      - restore_cache:
+          keys:
+            - build-cache-{{ .Branch }}-{{ checksum "/tmp/last-successful-commit" }}
+      - run:
+          name: Install dependencies
+          command: npm install
+      - run:
+          name: Compile contracts
+          command: npm run compile
+      - save_cache:
+          key: repo-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/repo
+  lint:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:12
+    steps:
+      - restore_cache:
+          keys:
+            - repo-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Run linter
+          command: npm run lint
+  test:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:12
+    steps:
+      - restore_cache:
+          keys:
+            - repo-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Run tests
+          command: npm run test
+
+  e2e-test:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:12
+    steps:
+      - restore_cache:
+          keys:
+            - repo-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Run end-to-end tests
+          command: npm run test:e2e
+
+workflows:
+  main:
+    jobs:
+      - build
+      - lint: 
+          requires:
+            - build
+      - test:
+          requires:
+            - build
+      - e2e-test:
+          requires:
+            - build
+            - lint
+            - test
+          filters:
+            branches:
+              only: master

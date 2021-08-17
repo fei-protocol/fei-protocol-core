@@ -1,5 +1,6 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+pragma solidity ^0.8.4;
 
 // Forked from Compound
 // See https://github.com/compound-finance/compound-protocol/blob/master/contracts/Governance/GovernorAlpha.sol
@@ -130,7 +131,7 @@ contract GovernorAlpha {
     /// @notice An event emitted when a proposal has been executed in the Timelock
     event ProposalExecuted(uint id);
 
-    constructor(address timelock_, address tribe_, address guardian_) public {
+    constructor(address timelock_, address tribe_, address guardian_) {
         timelock = TimelockInterface(timelock_);
         tribe = TribeInterface(tribe_);
         guardian = guardian_;
@@ -153,23 +154,18 @@ contract GovernorAlpha {
         uint endBlock = add256(startBlock, votingPeriod());
 
         proposalCount++;
-        Proposal memory newProposal = Proposal({
-            id: proposalCount,
-            proposer: msg.sender,
-            eta: 0,
-            targets: targets,
-            values: values,
-            signatures: signatures,
-            calldatas: calldatas,
-            startBlock: startBlock,
-            endBlock: endBlock,
-            forVotes: 0,
-            againstVotes: 0,
-            canceled: false,
-            executed: false
-        });
 
-        proposals[newProposal.id] = newProposal;
+        Proposal storage newProposal = proposals[proposalCount];
+        
+        newProposal.id = proposalCount;
+        newProposal.proposer = msg.sender;
+        newProposal.targets = targets;
+        newProposal.values = values;
+        newProposal.signatures = signatures;
+        newProposal.calldatas = calldatas;
+        newProposal.startBlock = startBlock;
+        newProposal.endBlock = endBlock;
+
         latestProposalIds[newProposal.proposer] = newProposal.id;
 
         emit ProposalCreated(newProposal.id, msg.sender, targets, values, signatures, calldatas, startBlock, endBlock, description);
@@ -179,7 +175,6 @@ contract GovernorAlpha {
     function queue(uint proposalId) public {
         require(state(proposalId) == ProposalState.Succeeded, "GovernorAlpha: proposal can only be queued if it is succeeded");
         Proposal storage proposal = proposals[proposalId];
-        // solhint-disable-next-line not-rely-on-time
         uint eta = add256(block.timestamp, timelock.delay());
         for (uint i = 0; i < proposal.targets.length; i++) {
             _queueOrRevert(proposal.targets[i], proposal.values[i], proposal.signatures[i], proposal.calldatas[i], eta);
@@ -242,7 +237,6 @@ contract GovernorAlpha {
             return ProposalState.Succeeded;
         } else if (proposal.executed) {
             return ProposalState.Executed;
-        // solhint-disable-next-line not-rely-on-time
         } else if (block.timestamp >= add256(proposal.eta, timelock.GRACE_PERIOD())) {
             return ProposalState.Expired;
         } else {
@@ -319,7 +313,7 @@ contract GovernorAlpha {
         return a - b;
     }
 
-    function getChainId() internal pure returns (uint) {
+    function getChainId() internal view returns (uint) {
         uint chainId;
         // solhint-disable-next-line no-inline-assembly
         assembly { chainId := chainid() }

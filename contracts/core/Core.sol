@@ -1,7 +1,7 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/proxy/Initializable.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "./Permissions.sol";
 import "./ICore.sol";
 import "../token/Fei.sol";
@@ -17,11 +17,6 @@ contract Core is ICore, Permissions, Initializable {
     
     /// @notice the address of the TRIBE contract
     IERC20 public override tribe;
-
-    /// @notice the address of the GenesisGroup contract
-    address public override genesisGroup;
-    /// @notice determines whether in genesis period or not
-    bool public override hasGenesisGroupCompleted;
 
     function init() external override initializer {
         _setupGovernor(msg.sender);
@@ -45,17 +40,6 @@ contract Core is ICore, Permissions, Initializable {
         _setTribe(token);
     }
 
-    /// @notice sets Genesis Group address
-    /// @param _genesisGroup new genesis group address
-    function setGenesisGroup(address _genesisGroup)
-        external
-        override
-        onlyGovernor
-    {
-        genesisGroup = _genesisGroup;
-        emit GenesisGroupUpdate(_genesisGroup);
-    }
-
     /// @notice sends TRIBE tokens from treasury to an address
     /// @param to the address to send TRIBE to
     /// @param amount the amount of TRIBE to send
@@ -73,24 +57,6 @@ contract Core is ICore, Permissions, Initializable {
         _tribe.transfer(to, amount);
 
         emit TribeAllocation(to, amount);
-    }
-
-    /// @notice marks the end of the genesis period
-    /// @dev can only be called once
-    function completeGenesisGroup() external override {
-        require(
-            !hasGenesisGroupCompleted,
-            "Core: Genesis Group already complete"
-        );
-        require(
-            msg.sender == genesisGroup,
-            "Core: Caller is not Genesis Group"
-        );
-
-        hasGenesisGroupCompleted = true;
-
-        // solhint-disable-next-line not-rely-on-time
-        emit GenesisPeriodComplete(block.timestamp);
     }
 
     function _setFei(address token) internal {

@@ -1,1 +1,0 @@
-[{"inputs":[],"stateMutability":"payable","type":"constructor"},{"stateMutability":"payable","type":"receive"},{"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"forceEth","outputs":[],"stateMutability":"nonpayable","type":"function"}]

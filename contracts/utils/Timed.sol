@@ -1,12 +1,9 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
-
-import "@openzeppelin/contracts/utils/SafeCast.sol";
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.4;
 
 /// @title an abstract contract for timed events
 /// @author Fei Protocol
 abstract contract Timed {
-    using SafeCast for uint256;
 
     /// @notice the start timestamp of the timed period
     uint256 public startTime;
@@ -14,11 +11,11 @@ abstract contract Timed {
     /// @notice the duration of the timed period
     uint256 public duration;
 
-    event DurationUpdate(uint256 _duration);
+    event DurationUpdate(uint256 oldDuration, uint256 newDuration);
 
-    event TimerReset(uint256 _startTime);
+    event TimerReset(uint256 startTime);
 
-    constructor(uint256 _duration) public {
+    constructor(uint256 _duration) {
         _setDuration(_duration);
     }
 
@@ -52,7 +49,6 @@ abstract contract Timed {
             return 0; // uninitialized
         }
         uint256 _duration = duration;
-        // solhint-disable-next-line not-rely-on-time
         uint256 timePassed = block.timestamp - startTime; // block timestamp always >= startTime
         return timePassed > _duration ? _duration : timePassed;
     }
@@ -62,15 +58,16 @@ abstract contract Timed {
     }
 
     function _initTimed() internal {
-        // solhint-disable-next-line not-rely-on-time
         startTime = block.timestamp;
         
-        // solhint-disable-next-line not-rely-on-time
         emit TimerReset(block.timestamp);
     }
 
-    function _setDuration(uint _duration) internal {
-        duration = _duration;
-        emit DurationUpdate(_duration);
+    function _setDuration(uint256 newDuration) internal {
+        require(newDuration != 0, "Timed: zero duration");
+
+        uint256 oldDuration = duration;
+        duration = newDuration;
+        emit DurationUpdate(oldDuration, newDuration);
     }
 }

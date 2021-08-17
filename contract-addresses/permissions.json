@@ -1,0 +1,30 @@
+{ 
+  "minter": [
+    "bondingCurveAddress",
+    "uniswapPCVDepositAddress",
+    "uniswapPCVControllerAddress",
+    "feiRewardsDistributorAddress",
+    "timelockAddress",
+    "pcvDripControllerAddress",
+    "dpiBondingCurveAddress",
+    "daiBondingCurveAddress",
+    "dpiUniswapPCVDepositAddress"
+  ],
+  "burner": [
+    "ethReserveStabilizerAddress",
+    "uniswapPCVControllerAddress",
+    "tribeReserveStabilizerAddress"
+  ],
+  "governor": [
+    "coreAddress",
+    "timelockAddress"
+  ],
+  "pcvController": [
+    "timelockAddress",
+    "ratioPCVControllerAddress",
+    "pcvDripControllerAddress"
+  ],
+  "guardian": [
+    "multisigAddress"
+  ]
+}

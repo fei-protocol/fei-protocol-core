@@ -1,5 +1,5 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.4;
 
 // Forked from Uniswap's UNI
 // Reference: https://etherscan.io/address/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984#code
@@ -77,7 +77,7 @@ contract Tribe {
      * @param account The initial account to grant all the tokens
      * @param minter_ The account with minting ability
      */
-    constructor(address account, address minter_) public {
+    constructor(address account, address minter_) {
         balances[account] = uint96(totalSupply);
         emit Transfer(address(0), account, totalSupply);
         minter = minter_;
@@ -136,8 +136,8 @@ contract Tribe {
      */
     function approve(address spender, uint rawAmount) external returns (bool) {
         uint96 amount;
-        if (rawAmount == uint(-1)) {
-            amount = uint96(-1);
+        if (rawAmount == type(uint).max) {
+            amount = type(uint96).max;
         } else {
             amount = safe96(rawAmount, "Tribe: amount exceeds 96 bits");
         }
@@ -160,8 +160,8 @@ contract Tribe {
      */
     function permit(address owner, address spender, uint rawAmount, uint deadline, uint8 v, bytes32 r, bytes32 s) external {
         uint96 amount;
-        if (rawAmount == uint(-1)) {
-            amount = uint96(-1);
+        if (rawAmount == type(uint).max) {
+            amount = type(uint96).max;
         } else {
             amount = safe96(rawAmount, "Tribe: amount exceeds 96 bits");
         }
@@ -172,7 +172,6 @@ contract Tribe {
         address signatory = ecrecover(digest, v, r, s);
         require(signatory != address(0), "Tribe: invalid signature");
         require(signatory == owner, "Tribe: unauthorized");
-        // solhint-disable-next-line not-rely-on-time
         require(block.timestamp <= deadline, "Tribe: signature expired");
 
         allowances[owner][spender] = amount;
@@ -213,7 +212,7 @@ contract Tribe {
         uint96 spenderAllowance = allowances[src][spender];
         uint96 amount = safe96(rawAmount, "Tribe: amount exceeds 96 bits");
 
-        if (spender != src && spenderAllowance != uint96(-1)) {
+        if (spender != src && spenderAllowance != type(uint96).max) {
             uint96 newAllowance = sub96(spenderAllowance, amount, "Tribe: transfer amount exceeds spender allowance");
             allowances[src][spender] = newAllowance;
 
@@ -248,7 +247,6 @@ contract Tribe {
         address signatory = ecrecover(digest, v, r, s);
         require(signatory != address(0), "Tribe: invalid signature");
         require(nonce == nonces[signatory]++, "Tribe: invalid nonce");
-        // solhint-disable-next-line not-rely-on-time
         require(block.timestamp <= expiry, "Tribe: signature expired");
         return _delegate(signatory, delegatee);
     }
@@ -377,7 +375,7 @@ contract Tribe {
         return a - b;
     }
 
-    function getChainId() internal pure returns (uint) {
+    function getChainId() internal view returns (uint) {
         uint256 chainId;
         // solhint-disable-next-line no-inline-assembly
         assembly { chainId := chainid() }

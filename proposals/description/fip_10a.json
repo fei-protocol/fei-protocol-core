@@ -1,0 +1,16 @@
+{
+    "proposal_title": "FIP-10a: Add DAI Bonding Curve",
+    "proposal_description_link": "",
+    "proposal_commands": [
+        {
+            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "values": "0",
+            "method": "grantMinter(address)",
+            "arguments": [
+                "TBD"
+            ],
+            "description": "Grant Minter to DAI Bonding Curve"
+        }
+    ],
+    "proposal_calldata": ""
+}

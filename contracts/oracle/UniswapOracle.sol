@@ -1,12 +1,11 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.4;
 
 // Referencing Uniswap Example Simple Oracle
 // https://github.com/Uniswap/uniswap-v2-periphery/blob/master/contracts/examples/ExampleOracleSimple.sol
 
 import "./IUniswapOracle.sol";
 import "../refs/CoreRef.sol";
-import "../external/SafeMathCopy.sol";
 import "../external/UniswapV2OracleLibrary.sol";
 
 /// @title Uniswap Oracle for ETH/USDC
@@ -14,7 +13,6 @@ import "../external/UniswapV2OracleLibrary.sol";
 /// @notice maintains the TWAP of a uniswap pair contract over a specified duration
 contract UniswapOracle is IUniswapOracle, CoreRef {
     using Decimal for Decimal.D256;
-    using SafeMathCopy for uint256;
 
     /// @notice the referenced uniswap pair contract
     IUniswapV2Pair public override pair;
@@ -44,7 +42,7 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
         address _pair,
         uint256 _duration,
         bool _isPrice0
-    ) public CoreRef(_core) {
+    ) CoreRef(_core) {
         pair = IUniswapV2Pair(_pair);
         // Relative to USD per ETH price
         isPrice0 = _isPrice0;
@@ -55,22 +53,29 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
     }
 
     /// @notice updates the oracle price
-    /// @return true if oracle is updated and false if unchanged
-    function update() external override whenNotPaused returns (bool) {
+    function update() external override whenNotPaused {
         (
             uint256 price0Cumulative,
             uint256 price1Cumulative,
             uint32 currentTimestamp
         ) = UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
 
-        uint32 deltaTimestamp = currentTimestamp - priorTimestamp; // allowing underflow per Uniswap Oracle spec
+        uint32 deltaTimestamp;
+        unchecked {
+            deltaTimestamp = currentTimestamp - priorTimestamp; // allowing underflow per Uniswap Oracle spec
+        }
+
         if (deltaTimestamp < duration) {
-            return false;
+            return;
         }
 
         uint256 currentCumulative = _getCumulative(price0Cumulative, price1Cumulative);
-        uint256 deltaCumulative =
-            (currentCumulative - priorCumulative).mul(USDC_DECIMALS_MULTIPLIER); // allowing underflow per Uniswap Oracle spec
+        
+        uint256 deltaCumulative;
+        unchecked {
+            deltaCumulative = (currentCumulative - priorCumulative); // allowing underflow per Uniswap Oracle spec
+        }
+        deltaCumulative = deltaCumulative * USDC_DECIMALS_MULTIPLIER; 
 
         // Uniswap stores cumulative price variables as a fixed point 112x112 so we need to divide out the granularity
         Decimal.D256 memory _twap =
@@ -84,8 +89,6 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
         priorCumulative = currentCumulative;
 
         emit Update(_twap.asUint256());
-
-        return true;
     }
 
     /// @notice determine if read value is stale
@@ -109,8 +112,10 @@ contract UniswapOracle is IUniswapOracle, CoreRef {
 
     /// @notice set a new duration for the TWAP window
     function setDuration(uint256 _duration) external override onlyGovernor {
+        require(_duration != 0, "UniswapOracle: zero duration");
+
         duration = _duration;
-        emit DurationUpdate(_duration);
+        emit TWAPDurationUpdate(_duration);
     }
 
     function _init() internal {
