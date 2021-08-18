@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "./IPCVSwapper.sol";
-import "../PCVDeposit.sol";
+import "../utils/WethPCVDeposit.sol";
 import "../../utils/Incentivized.sol";
 import "../../refs/OracleRef.sol";
 import "../../utils/Timed.sol";
@@ -10,12 +10,11 @@ import "../../external/UniswapV2Library.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 
 /// @title implementation for PCV Swapper that swaps ERC20 tokens on Uniswap
 /// @author eswak
-contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incentivized {
+contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Incentivized {
     using SafeERC20 for IERC20;
     using Decimal for Decimal.D256;
 
@@ -38,9 +37,6 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
     /// @notice Uniswap pair to swap on
     IUniswapV2Pair public immutable pair;
 
-    // solhint-disable-next-line var-name-mixedcase
-    address public immutable WETH;
-
     struct OracleData {
         address _oracle;
         address _backupOracle;
@@ -54,7 +50,6 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
         address _core,
         IUniswapV2Pair _pair,
         // solhint-disable-next-line var-name-mixedcase
-        address _WETH,
         OracleData memory oracleData,
         uint256 _swapFrequency,
         address _tokenSpent,
@@ -73,7 +68,6 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
         require(_pair.token0() == _tokenSpent || _pair.token1() == _tokenSpent, "PCVSwapperUniswap: token spent not in pair");
         require(_pair.token0() == _tokenReceived || _pair.token1() == _tokenReceived, "PCVSwapperUniswap: token received not in pair");
         pair = _pair;
-        WETH = _WETH;
         tokenSpent = _tokenSpent;
         tokenReceived = _tokenReceived;
 
@@ -90,30 +84,9 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
         _initTimed();
     }
 
-	  /// @notice Empty callback on ETH reception	
-    receive() external payable {}	
-
-    // =======================================================================	
-    // WETH management	
-    // =======================================================================	
-
-    /// @notice Wraps all ETH held by the contract to WETH	
-    /// Anyone can call it	
-    function wrapETH() public {	
-        IWETH(WETH).deposit{value: address(this).balance}();	
-    }
-
     // =======================================================================
     // IPCVDeposit interface override
     // =======================================================================
-
-    /// @notice deposit tokenSpent
-    function deposit() external override {
-      // wrap any ETH
-      if (address(this).balance != 0) {
-        wrapETH();
-      }
-    }
 
     /// @notice withdraw tokenReceived from the contract
     /// @param to address destination of the ERC20
@@ -131,15 +104,6 @@ contract PCVSwapperUniswap is IPCVSwapper, PCVDeposit, OracleRef, Timed, Incenti
     // =======================================================================
     // IPCVSwapper interface override
     // =======================================================================
-
-    /// @notice withdraw ETH from the contract
-    /// @param to address to send ETH
-    /// @param amountOut amount of ETH to send
-    function withdrawETH(address payable to, uint256 amountOut) external override onlyPCVController {
-        IWETH(WETH).withdraw(amountOut);
-        Address.sendValue(to, amountOut);
-        emit WithdrawETH(msg.sender, to, amountOut);
-    }
 
     /// @notice Sets the address receiving swap's inbound tokens
     /// @param newTokenReceivingAddress the address that will receive tokens

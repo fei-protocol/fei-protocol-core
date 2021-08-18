@@ -38,7 +38,7 @@ describe('PCVSwapperUniswap', function () {
     } = await getAddresses());
 
     this.core = await getCore(true);
-    this.weth = await MockWeth.new();
+    this.weth = await MockWeth.at('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2');
     this.fei = await Fei.at(await this.core.fei());
     this.pair = await MockPair.new(this.fei.address, this.weth.address);
     await this.pair.setReserves(`62500000${e18}`, `25000${e18}`);
@@ -51,7 +51,6 @@ describe('PCVSwapperUniswap', function () {
     this.swapper = await PCVSwapperUniswap.new(
       this.core.address, // core
       this.pair.address, // pair
-      this.weth.address, // weth
       {
         _oracle: this.oracle.address, // oracle
         _backupOracle: this.oracle.address, // backup oracle
@@ -182,7 +181,7 @@ describe('PCVSwapperUniswap', function () {
           // to solve this situation, swapper.wrapETH() should be called before withdraw.
           await expectRevert(
             this.swapper.withdrawETH(userAddress, `15${e18}`, {from: pcvControllerAddress}),
-            'ERC20: burn amount exceeds balance'
+            'revert'
           );
         });
         it('withdrawERC20() emit WithdrawERC20', async function() {
