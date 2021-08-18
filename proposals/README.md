@@ -52,6 +52,7 @@ in settings -> advanced -> show hex data. Upon Tx submission you will read this 
 To get the calldata, submit a proposal on https://www.withtally.com/governance/fei/proposal/new with the intended proposal commands, title and description. Click "Submit proposal" but **do not** confirm the Metamask transaction. Instead simply copy the calldata into the config entry for `fip_x` in `end-to-end/proposals_config.json` for integration testing:
 * proposal_calldata - fill in the copied calldata
 * proposer - fill in proposer address
+* voter - 0xB8f482539F2d3Ae2C9ea6076894df36D1f632775
 
 Then run `npm run test:e2e`
 
