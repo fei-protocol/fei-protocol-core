@@ -160,6 +160,58 @@ describe('e2e', function () {
         await expectApprox(fuseBalanceAfter.sub(fuseBalanceBefore), allocatedDpi.div(toBN(10)), '100')
       })
     });
+
+    describe('DAI', async function () {
+      beforeEach(async function () {
+        // Acquire DAI
+        await hre.network.provider.request({
+          method: 'hardhat_impersonateAccount',
+          params: [contractAddresses.compoundDaiAddress]
+        });
+        const daiSeedAmount = tenPow18.mul(toBN(1000000)); // 1M DAI
+        await forceEth(contractAddresses.compoundDaiAddress);
+        await contracts.dai.transfer(deployAddress, daiSeedAmount, {from: contractAddresses.compoundDaiAddress});
+      })
+
+      it('should allow purchase of Fei through bonding curve', async function () {
+        const bondingCurve = contracts.daiBondingCurve;
+        const fei = contracts.fei;
+        const feiBalanceBefore = await fei.balanceOf(deployAddress);
+
+        const daiAmount = tenPow18.mul(toBN(1000000));; // 1M DAI
+        const oraclePrice = toBN((await bondingCurve.readOracle())[0]);
+        const currentPrice = toBN((await bondingCurve.getCurrentPrice())[0]);
+
+        // expected = amountIn * oracle * price (Note: there is an edge case when crossing scale where this is not true)
+        const expected = daiAmount.mul(oraclePrice).mul(currentPrice).div(tenPow18).div(tenPow18);
+
+        await contracts.dai.approve(bondingCurve.address, daiAmount);
+        await bondingCurve.purchase(deployAddress, daiAmount);
+
+        const feiBalanceAfter = await fei.balanceOf(deployAddress);
+        const expectedFinalBalance = feiBalanceBefore.add(expected);
+        expect(feiBalanceAfter).to.be.bignumber.equal(expectedFinalBalance);
+      })
+
+      it('should transfer allocation from bonding curve to the compound deposit', async function () {
+        const bondingCurve = contracts.daiBondingCurve;
+        const compoundPCVDeposit = contracts.compoundDaiPCVDeposit;
+
+        const pcvAllocations = await bondingCurve.getAllocation();
+        expect(pcvAllocations[0].length).to.be.equal(1);
+
+        const pcvDepositBefore = await compoundPCVDeposit.balance();
+
+        const allocatedDai = await bondingCurve.balance();
+        await bondingCurve.allocate();
+
+        const curveBalanceAfter = await bondingCurve.balance();
+        await expectApprox(curveBalanceAfter, toBN(0), '100')
+
+        const pcvDepositAfter = await compoundPCVDeposit.balance();
+        await expectApprox(pcvDepositAfter.sub(pcvDepositBefore), allocatedDai, '100');
+      })
+    });
   });
 
   it('should be able to redeem Fei from stabiliser', async function () {
