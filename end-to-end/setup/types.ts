@@ -36,6 +36,8 @@ export type MainnetContracts = {
   rariPool8FeiPCVDeposit: typeof Contract,
   rariPool8EthPCVDeposit: typeof Contract,
   compoundEthPCVDeposit: typeof Contract,
+  aaveEthPCVDeposit: typeof Contract,
+  stAAVE: typeof Contract,
   dpiBondingCurve: typeof Contract,
   dpi: typeof Contract,
   chainlinkDpiUsdOracleWrapper: typeof Contract,
