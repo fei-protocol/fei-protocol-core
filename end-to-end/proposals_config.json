@@ -5,7 +5,7 @@
         "proposerAddress" : "",
         "voterAddress" : ""
     },
-    "aavePcvDeposit" : {
+    "aavePCVDeposit" : {
         "deploy" : true,
         "exec" : false
     },
