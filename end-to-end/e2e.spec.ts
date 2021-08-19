@@ -5,7 +5,7 @@ import { syncPool } from '../scripts/utils/syncPool'
 import { MainnetContractAddresses, MainnetContracts } from './setup/types';
 import { getPeg, getPrice, forceEth } from './setup/utils'
 import { BN, expectApprox } from '../test/helpers'
-import proposals from '../proposals/config.json'
+import proposals from './proposals_config.json'
 
 const { toBN } = web3.utils;
 
