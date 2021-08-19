@@ -23,6 +23,8 @@ Follow `/proposals/description/fip_x.json`
 
 Make sure this description is up to date and approved by the Fei Core smart contracts team before continuing development.
 
+The exect text should be provided in a link to a google doc or commented on the PR. The proposal title should mirror the title used in the on-chain proposal.
+
 ## Step 4: Proposal Mocking and Integration Test
 Write a script following the template of `proposals/dao/fip_x.js` they import the contract addresses and trigger the appropriate governor functions with the intended inputs.
 
