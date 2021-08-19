@@ -10,7 +10,7 @@
         "exec" : false
     },
     "fip_13b" : {
-        "deploy" : true,
+        "deploy" : false,
         "exec" : false,
         "proposerAddress" : "",
         "voterAddress" : ""

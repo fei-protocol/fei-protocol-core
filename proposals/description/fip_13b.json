@@ -1,6 +1,6 @@
 {
     "proposal_title": "FIP-13b: Lending FEI Deployments",
-    "proposal_description_link": "",
+    "proposal_description_link": "https://docs.google.com/document/d/1VveMQcBjYM42ErTPhf9BfSnzQRX_qtbKAtcifePD2ck/edit",
     "proposal_commands": [
         {
             "address": "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
@@ -17,13 +17,13 @@
             "values": "0",
             "method": "transfer(address,uint256)",
             "arguments": [
-                "TBD",
+                "0xF2D8beE45f29A779cFB9F04ac233E703974a2C53",
                 "1000000000000000000000000"
             ],
             "description": "Transfer 1M FEI to Fuse Pool 9 PCV Deposit"
         },
         {
-            "address": "TBD",
+            "address": "0xF2D8beE45f29A779cFB9F04ac233E703974a2C53",
             "values": "0",
             "method": "deposit()",
             "arguments": [],
@@ -34,13 +34,13 @@
             "values": "0",
             "method": "transfer(address,uint256)",
             "arguments": [
-                "TBD",
+                "0xe1662531aA5de1DAD8ab5B5756b8F6c8F3C759Ca",
                 "1000000000000000000000000"
             ],
             "description": "Transfer 1M FEI to Fuse Pool 25 PCV Deposit"
         },
         {
-            "address": "TBD",
+            "address": "0xe1662531aA5de1DAD8ab5B5756b8F6c8F3C759Ca",
             "values": "0",
             "method": "deposit()",
             "arguments": [],
@@ -51,13 +51,13 @@
             "values": "0",
             "method": "transfer(address,uint256)",
             "arguments": [
-                "TBD",
+                "0xFdCc96967C86250f333cE52Ba706Ec2961c3302f",
                 "1000000000000000000000000"
             ],
             "description": "Transfer 1M FEI to Fuse Pool 26 PCV Deposit"
         },
         {
-            "address": "TBD",
+            "address": "0xFdCc96967C86250f333cE52Ba706Ec2961c3302f",
             "values": "0",
             "method": "deposit()",
             "arguments": [],
@@ -68,13 +68,13 @@
             "values": "0",
             "method": "transfer(address,uint256)",
             "arguments": [
-                "TBD",
+                "0x91f50E3183a8CC30D2A981C3aFA85A2Bf6691c67",
                 "1000000000000000000000000"
             ],
             "description": "Transfer 1M FEI to Fuse Pool 27 PCV Deposit"
         },
         {
-            "address": "TBD",
+            "address": "0x91f50E3183a8CC30D2A981C3aFA85A2Bf6691c67",
             "values": "0",
             "method": "deposit()",
             "arguments": [],
