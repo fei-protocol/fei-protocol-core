@@ -128,7 +128,7 @@ describe('StableSwapOperatorV1', function () {
       await this.mock3pool.set_slippage('1000'); // 10% slippage
       await this.dai.mint(this.deposit.address, `50000000${e18}`);
       await this.fei.mint(this.deposit.address, `51000000${e18}`, {from: minterAddress});
-      await expectRevert(this.deposit.deposit({from: pcvControllerAddress}), 'StableSwwapOperatorV1: 3pool deposit slippage too high');
+      await expectRevert(this.deposit.deposit({from: pcvControllerAddress}), 'StableSwapOperatorV1: 3pool deposit slippage too high');
     });
   });
 
@@ -183,7 +183,7 @@ describe('StableSwapOperatorV1', function () {
       await this.mock3pool.set_slippage('1000'); // 10% slippage
       await expectRevert(
         this.deposit.withdraw(userAddress, `1000${e18}`, {from: pcvControllerAddress}),
-        'StableSwwapOperatorV1: 3pool withdraw slippage too high'
+        'StableSwapOperatorV1: 3pool withdraw slippage too high'
       );
     });
     it('should tolerate a small slippage', async function() {

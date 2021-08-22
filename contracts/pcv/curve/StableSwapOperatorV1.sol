@@ -108,7 +108,7 @@ contract StableSwapOperatorV1 is PCVDeposit {
         uint256 _3crvBalanceAfter = IERC20(_3crv).balanceOf(address(this));
         uint256 _3crvBalanceFromDeposit = _3crvBalanceAfter - _3crvBalanceBefore;
         uint256 _min3crvOut = (_daiBalance + _usdcBalance + _usdtBalance) * 1e18 / _3crvVirtualPrice * (BASIS_POINTS_GRANULARITY - depositMaxSlippageBasisPoints) / BASIS_POINTS_GRANULARITY;
-        require(_3crvBalanceFromDeposit >= _min3crvOut, "StableSwwapOperatorV1: 3pool deposit slippage too high");
+        require(_3crvBalanceFromDeposit >= _min3crvOut, "StableSwapOperatorV1: 3pool deposit slippage too high");
 
         // get the amount of tokens in the pool
         (uint256 _3crvAmount, uint256 _feiAmount) = (
@@ -208,7 +208,7 @@ contract StableSwapOperatorV1 is PCVDeposit {
         uint256 _daiBalanceAfter = IERC20(_dai).balanceOf(address(this));
         uint256 _minDaiOut = amountUnderlying * (BASIS_POINTS_GRANULARITY - depositMaxSlippageBasisPoints) / BASIS_POINTS_GRANULARITY;
         uint256 _daiBalanceWithdrawn = _daiBalanceAfter - _daiBalanceBefore;
-        require(_daiBalanceWithdrawn >= _minDaiOut, "StableSwwapOperatorV1: 3pool withdraw slippage too high");
+        require(_daiBalanceWithdrawn >= _minDaiOut, "StableSwapOperatorV1: 3pool withdraw slippage too high");
 
         // compute amount to withdraw
         uint256 _amount = amountUnderlying;
