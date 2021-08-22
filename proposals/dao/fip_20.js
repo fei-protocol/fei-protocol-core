@@ -14,10 +14,12 @@ async function setup(addresses, oldContracts, contracts, logging) {}
  6. Withdraw 75k ETH from dripper to Compound
  7. Withdraw 75k ETH from dripper to Aave
  8. Withdraw 14,611 ETH from dripper to stETH deposit
+ 9. Update ETH Bonding Curve allocation
 */
 async function run(addresses, oldContracts, contracts, logging = false) {
   const {
     core,
+    bondingCurve,
     ethReserveStabilizer,
     oldEthReserveStabilizer,
     aaveEthPCVDeposit,
@@ -50,7 +52,10 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   await ethPCVDripper.withdrawETH(compoundEthPCVDeposit.address, `75000${e18}`);
 
   // 8.
-  await ethPCVDripper.withdrawETH(ethLidoPCVDeposit.address, `14611${e18}`);
+  await ethPCVDripper.withdrawETH(ethLidoPCVDeposit.address, `14135${e18}`);
+
+  // 9.
+  await bondingCurve.setAllocation([aaveEthPCVDeposit.address, compoundEthPCVDeposit.address], [5000, 5000]);
 }
 
 async function teardown(addresses, oldContracts, contracts, logging) {}
