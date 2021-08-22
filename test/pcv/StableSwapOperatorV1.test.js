@@ -112,11 +112,11 @@ describe('StableSwapOperatorV1', function () {
       expect(await this.mock3pool.balanceOf(this.mockMetapool.address)).to.be.bignumber.equal(`905000${e18}`);
       expect(await this.fei.balanceOf(this.mockMetapool.address)).to.be.bignumber.equal(`905000${e18}`);
     });
-    it('should burn excess FEI', async function() {
+    it('should keep excess FEI', async function() {
       await this.dai.mint(this.deposit.address, `50000000${e18}`);
       await this.fei.mint(this.deposit.address, `51000000${e18}`, {from: minterAddress});
       await this.deposit.deposit({from: pcvControllerAddress});
-      expect(await this.fei.balanceOf(this.deposit.address)).to.be.bignumber.equal('0');
+      expect(await this.fei.balanceOf(this.deposit.address)).to.be.bignumber.equal(`1000000${e18}`);
       expect(await this.fei.balanceOf(this.mockMetapool.address)).to.be.bignumber.equal(`50900000${e18}`);
     });
     it('should revert if not enough FEI for tokens held', async function() {
@@ -156,6 +156,13 @@ describe('StableSwapOperatorV1', function () {
       expect(await this.dai.balanceOf(this.deposit.address)).to.be.bignumber.equal('0');
       await this.deposit.withdraw(this.deposit.address, `3000${e18}`, {from: pcvControllerAddress});
       expect(await this.dai.balanceOf(this.deposit.address)).to.be.bignumber.equal(`3000${e18}`);
+    });
+    it('should keep excess FEI', async function() {
+      expect(await this.dai.balanceOf(this.deposit.address)).to.be.bignumber.equal('0');
+      expect(await this.fei.balanceOf(this.deposit.address)).to.be.bignumber.equal('0');
+      await this.deposit.withdraw(this.deposit.address, `3000${e18}`, {from: pcvControllerAddress});
+      expect(await this.dai.balanceOf(this.deposit.address)).to.be.bignumber.equal(`3000${e18}`);
+      expect(await this.fei.balanceOf(this.deposit.address)).to.be.bignumber.equal(`3000${e18}`);
     });
     it('should revert if trying to withdraw amount > balance', async function() {
       expect(await this.dai.balanceOf(userAddress)).to.be.bignumber.equal('0');

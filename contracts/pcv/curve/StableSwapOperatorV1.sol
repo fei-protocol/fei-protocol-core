@@ -158,10 +158,6 @@ contract StableSwapOperatorV1 is PCVDeposit {
             // emit event
             emit Deposit(msg.sender, _daiOut);
         }
-
-        // burn remaining FEI
-        uint256 _feiBalance = _fei.balanceOf(address(this));
-        _fei.burn(_feiBalance);
     }
 
     /// @notice withdraw DAI from the deposit. This will remove liquidity in the
@@ -221,11 +217,6 @@ contract StableSwapOperatorV1 is PCVDeposit {
 
         // emit event
         emit Withdrawal(msg.sender, to, _amount);
-
-        // burn FEI remaining
-        IFei _fei = fei();
-        uint256 _feiBalance = _fei.balanceOf(address(this));
-        _fei.burn(_feiBalance);
     }
 
     /// @notice returns the DAI balance of PCV in the Deposit, if it were to
