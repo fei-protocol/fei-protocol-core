@@ -94,8 +94,8 @@ contract StableSwapOperatorV1 is PCVDeposit {
             _add3poolLiquidityAmounts[0] = _daiBalance;
             _add3poolLiquidityAmounts[1] = _usdcBalance;
             _add3poolLiquidityAmounts[2] = _usdtBalance;
-            IERC20(_dai).approve(_3pool, _daiBalance);
-            IERC20(_usdc).approve(_3pool, _usdcBalance);
+            SafeERC20.safeApprove(IERC20(_dai), _3pool, _daiBalance);
+            SafeERC20.safeApprove(IERC20(_usdc), _3pool, _usdcBalance);
             SafeERC20.safeApprove(IERC20(_usdt), _3pool, _usdtBalance);
             I3Pool(_3pool).add_liquidity(
               _add3poolLiquidityAmounts,
