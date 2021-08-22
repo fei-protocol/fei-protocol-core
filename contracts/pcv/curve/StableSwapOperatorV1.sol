@@ -146,13 +146,16 @@ contract StableSwapOperatorV1 is PCVDeposit {
             IStableSwap(pool).add_liquidity(_addLiquidityAmounts, 0);
             uint256 _balanceAfter = IERC20(pool).balanceOf(address(this));
 
-            // emit event
+            // compute DAI out if we wanted to withdraw liquidity using our
+            // new LP tokens, and withdraw fully in DAI.
             uint256 _lpTotalSupply = IERC20(pool).totalSupply();
             uint256 _3crvOut = (_3crvAmountAfter * (_balanceAfter - _balanceBefore)) / _lpTotalSupply;
             uint256 _daiOut = IStableSwap(_3pool).calc_withdraw_one_coin(
               _3crvOut, // LP tokens just deposited
               0 // 3pool coin 0 = DAI
             );
+
+            // emit event
             emit Deposit(msg.sender, _daiOut);
         }
 
