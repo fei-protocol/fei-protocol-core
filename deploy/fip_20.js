@@ -17,13 +17,13 @@ async function deploy(deployAddress, addresses, logging = false) {
   } = addresses;
 
   if (
-    !coreAddress || 
-    !wethAddress || 
-    !aaveLendingPool || 
-    !aWETHAddress || 
-    !aaveIncentivesController ||
-    !chainlinkEthUsdOracleWrapperAddress ||
-    !compoundEthPCVDepositAddress
+    !coreAddress 
+    || !wethAddress 
+    || !aaveLendingPool 
+    || !aWETHAddress 
+    || !aaveIncentivesController
+    || !chainlinkEthUsdOracleWrapperAddress
+    || !compoundEthPCVDepositAddress
   ) {
     throw new Error('An environment variable contract address is not set');
   }
