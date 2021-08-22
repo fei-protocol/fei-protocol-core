@@ -41,13 +41,13 @@ contract StableSwapOperatorV1 is PCVDeposit {
     // ------------------ Private properties -----------------------------------
 
     /// some fixed variables to interact with the pool
-    uint8 private _feiIndex; // index of FEI in the pool (0 or 1)
-    uint8 private _3crvIndex; // index of 3crv in the pool (0 or 1)
-    address private _3crv; // address of the 3crv token
-    address private _3pool; // address of the 3pool
-    address private _dai; // address of the DAI token
-    address private _usdc; // address of the USDC token
-    address private _usdt; // address of the USDT token
+    uint8 private immutable _feiIndex; // index of FEI in the pool (0 or 1)
+    uint8 private immutable _3crvIndex; // index of 3crv in the pool (0 or 1)
+    address private immutable _3crv; // address of the 3crv token
+    address private immutable _3pool; // address of the 3pool
+    address private immutable _dai; // address of the DAI token
+    address private immutable _usdc; // address of the USDC token
+    address private immutable _usdt; // address of the USDT token
 
     // ------------------ Constructor ------------------------------------------
 
@@ -67,13 +67,14 @@ contract StableSwapOperatorV1 is PCVDeposit {
         depositMaxSlippageBasisPoints = _depositMaxSlippageBasisPoints;
 
         // cached private variables
-        _3crvIndex = IStableSwap(pool).coins(0) == address(fei()) ? 1 : 0;
-        _feiIndex = _3crvIndex == 0 ? 1 : 0;
-        _3crv = IStableSwap(pool).coins(_3crvIndex);
+        uint8 _3crvIndexTmp = IStableSwap(pool).coins(0) == address(fei()) ? 1 : 0;
+        _3crvIndex = _3crvIndexTmp;
+        _feiIndex = _3crvIndexTmp == 0 ? 1 : 0;
+        _3crv = IStableSwap(pool).coins(_3crvIndexTmp);
         _3pool = _curve3pool;
-        _dai = IStableSwap(_3pool).coins(0);
-        _usdc = IStableSwap(_3pool).coins(1);
-        _usdt = IStableSwap(_3pool).coins(2);
+        _dai = IStableSwap(_curve3pool).coins(0);
+        _usdc = IStableSwap(_curve3pool).coins(1);
+        _usdt = IStableSwap(_curve3pool).coins(2);
     }
 
     /// @notice deposit DAI, USDC, USDT, 3crv, and FEI into the pool.
