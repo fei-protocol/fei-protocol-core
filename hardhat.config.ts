@@ -57,7 +57,7 @@ const config: HardhatUserConfig = {
     tests: runE2ETests ? './end-to-end' : './test',
   },
   mocha: {
-    timeout: 100000,
+    timeout: 1000000,
   },
   typechain: {
     outDir: 'types',

@@ -56,5 +56,6 @@
     "rariPool8FeiIrmAddress": {"address": "0x8f47be5692180079931e2f983db6996647aba0a5" },
     "rariPool8TribeIrmAddress": {"address": "0x075538650a9c69ac8019507a7dd1bd879b12c1d7" },
     "rariPool8EthIrmAddress": {"address": "0xbab47e4b692195bf064923178a90ef999a15f819" },
-    "rariPool8DaiIrmAddress": {"address": "0xede47399e2aa8f076d40dc52896331cba8bd40f7" }
+    "rariPool8DaiIrmAddress": {"address": "0xede47399e2aa8f076d40dc52896331cba8bd40f7" },
+    "curve3Metapool": {"address": "0x06cb22615BA53E60D67Bf6C341a0fD5E718E1655" }
 }
