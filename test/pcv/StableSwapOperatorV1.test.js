@@ -149,15 +149,12 @@ describe('StableSwapOperatorV1', function () {
     it('should revert if not PCVController', async function() {
       await expectRevert(this.deposit.withdraw(userAddress, `1000${e18}`, {from: userAddress}), 'CoreRef: Caller is not a PCV controller');
     });
-    it('should withdraw all if amount=0', async function() {
-      expect(await this.dai.balanceOf(userAddress)).to.be.bignumber.equal('0');
-      await this.deposit.withdraw(userAddress, '0', {from: pcvControllerAddress});
-      expect(await this.dai.balanceOf(userAddress)).to.be.bignumber.equal(`3000${e18}`);
-      expect(await this.mockMetapool.balanceOf(this.deposit.address)).to.be.bignumber.equal('0');
+    it('should revert if amount=0', async function() {
+      await expectRevert(this.deposit.withdraw(userAddress, `0${e18}`, {from: pcvControllerAddress}), 'StableSwapOperatorV1: Cannot withdraw 0');
     });
     it('should not transfer tokens if target=self', async function() {
       expect(await this.dai.balanceOf(this.deposit.address)).to.be.bignumber.equal('0');
-      await this.deposit.withdraw(this.deposit.address, '0', {from: pcvControllerAddress});
+      await this.deposit.withdraw(this.deposit.address, `3000${e18}`, {from: pcvControllerAddress});
       expect(await this.dai.balanceOf(this.deposit.address)).to.be.bignumber.equal(`3000${e18}`);
     });
     it('should revert if trying to withdraw amount > balance', async function() {

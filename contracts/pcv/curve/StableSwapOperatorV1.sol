@@ -169,7 +169,7 @@ contract StableSwapOperatorV1 is PCVDeposit {
     /// to withdraw liquidity of the 3pool in DAI.
     /// note: because of slippage & fees on withdraw, the amount of DAI out is
     ///        not exactly the expected amountUnderlying provided as input.
-    /// @param amountUnderlying of tokens withdrawn (0 = all)
+    /// @param amountUnderlying of tokens withdrawn
     /// @param to the address to send PCV to (self = no transfer)
     function withdraw(address to, uint256 amountUnderlying)
         public
@@ -177,25 +177,17 @@ contract StableSwapOperatorV1 is PCVDeposit {
         onlyPCVController
         whenNotPaused
     {
+        require(amountUnderlying != 0, "StableSwapOperatorV1: Cannot withdraw 0");
 
+        // remove liquidity from the metapool
         uint256 _3crvVirtualPrice = IStableSwap(_3pool).get_virtual_price();
-        // withdraw all
-        if (amountUnderlying == 0) {
-            uint256 _lpToWithdraw = IERC20(pool).balanceOf(address(this));
-            uint256[2] memory _minAmounts; // [0, 0]
-            IERC20(pool).approve(pool, _lpToWithdraw);
-            IStableSwap(pool).remove_liquidity(_lpToWithdraw, _minAmounts);
-        }
-        // partial withdraw
-        else {
-            uint256 _amount3crvToWithdraw = amountUnderlying * 1e18 / _3crvVirtualPrice;
-            uint256 _lpTotalSupply = IERC20(pool).totalSupply();
-            uint256 _lpToWithdraw = _lpTotalSupply * _amount3crvToWithdraw / IStableSwap(pool).balances(_3crvIndex);
+        uint256 _amount3crvToWithdraw = amountUnderlying * 1e18 / _3crvVirtualPrice;
+        uint256 _lpTotalSupply = IERC20(pool).totalSupply();
+        uint256 _lpToWithdraw = _lpTotalSupply * _amount3crvToWithdraw / IStableSwap(pool).balances(_3crvIndex);
 
-            uint256[2] memory _minAmounts; // [0, 0]
-            IERC20(pool).approve(pool, _lpToWithdraw);
-            IStableSwap(pool).remove_liquidity(_lpToWithdraw, _minAmounts);
-        }
+        uint256[2] memory _minAmounts; // [0, 0]
+        IERC20(pool).approve(pool, _lpToWithdraw);
+        IStableSwap(pool).remove_liquidity(_lpToWithdraw, _minAmounts);
 
         // remove 3pool liquidity in DAI (3crv -> DAI)
         uint256 _3crvBalance = IERC20(_3crv).balanceOf(address(this));
