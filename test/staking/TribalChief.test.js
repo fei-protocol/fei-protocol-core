@@ -739,7 +739,7 @@ describe('TribalChief', () => {
         ).to.be.bignumber.equal(new BN(totalStaked));
       });
 
-      it('should be able to get pending sushi', async function () {
+      it('should be able to get pending tribe', async function () {
         const userAddresses = [userAddress];
 
         expect(Number(await this.tribalChief.numPools())).to.be.equal(1);
@@ -754,6 +754,28 @@ describe('TribalChief', () => {
           totalStaked,
           pid,
         );
+
+        await this.tribalChief.withdrawAllAndHarvest(pid, userAddress);
+      });
+
+      it('should be able to get pending tribe', async function () {
+        const userAddresses = [userAddress];
+
+        expect(Number(await this.tribalChief.numPools())).to.be.equal(1);
+
+        await testMultipleUsersPooling(
+          this.tribalChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          10,
+          0,
+          totalStaked,
+          pid,
+        );
+
+        await this.tribalChief.harvest(pid, userAddress);
+        await this.tribalChief.withdrawAllAndHarvest(pid, userAddress);
       });
 
       it('should be able to get pending sushi', async function () {

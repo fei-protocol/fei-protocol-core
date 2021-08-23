@@ -7,7 +7,6 @@ const { BN } = require('../../test/helpers');
 
 const {
   coreAddress,
-  rariPool8TribeAddress,
   tribeAddress,
   feiRewardsDistributorAddress,
   curve3Metapool,
@@ -105,8 +104,8 @@ async function validate(addresses, oldContracts, contracts, logging) {
 
   const invariants = {
     feiRewardsDistributorBalance: (await tribe.balanceOf(feiRewardsDistributorAddress.address)).toString() === '0',
-    tribalChiefAllocPoints: (await tribalChief.totalAllocPoint()).toString() === (allocPoints * 4).toString(),
-    tribalChiefNumPools: (await tribalChief.numPools()).toString() === (4).toString(),
+    tribalChiefAllocPoints: (await tribalChief.totalAllocPoint()).toString() === (allocPoints * 3).toString(),
+    tribalChiefNumPools: (await tribalChief.numPools()).toString() === (3).toString(),
     tribalChiefStakingTokenWrapperPool: await tribalChief.stakedToken(0) === stakingTokenWrapper.address,
     tribalChiefFEITRIBEUniswapPool: await tribalChief.stakedToken(1) === feiTribePairAddress.address,
     tribalChiefCurve3FEIMetaPool: await tribalChief.stakedToken(2) === curve3Metapool.address,

@@ -19,6 +19,14 @@ abstract contract PCVDeposit is IPCVDeposit, CoreRef {
       address to, 
       uint256 amount
     ) public override onlyPCVController {
+        _withdrawERC20(token, to, amount);
+    }
+
+    function _withdrawERC20(
+      address token, 
+      address to, 
+      uint256 amount
+    ) internal {
         IERC20(token).safeTransfer(to, amount);
         emit WithdrawERC20(msg.sender, token, to, amount);
     }

@@ -35,9 +35,22 @@ export type MainnetContracts = {
   pcvDripController: typeof Contract,
   rariPool8FeiPCVDeposit: typeof Contract,
   rariPool8EthPCVDeposit: typeof Contract,
+  compoundEthPCVDeposit: typeof Contract,
+  compoundDaiPCVDeposit: typeof Contract,
+  aaveEthPCVDeposit: typeof Contract,
+  stAAVE: typeof Contract,
+  dpiBondingCurve: typeof Contract,
+  daiBondingCurve: typeof Contract,
+  dpi: typeof Contract,
+  dai: typeof Contract,
+  chainlinkDpiUsdOracleWrapper: typeof Contract,
+  dpiUniswapPCVDeposit: typeof Contract,
+  indexCoopFusePoolDpiPCVDeposit: typeof Contract,
   kashiFeiTribe: typeof Contract,
   bentoBox: typeof Contract,
   governorAlpha: typeof Contract,
+  tribalChief: typeof Contract,
+  stakingTokenWrapper: typeof Contract,
 }
 
 export type MainnetContractAddresses = {
@@ -50,6 +63,7 @@ export type MainnetContractAddresses = {
   chainlinkEthUsdOracleAddress: string,
   chainlinkFeiEthOracleAddress: string,
   compositeOracleAddress: string
+  compoundDaiAddress: string,
   ethReserveStabilizerAddress: string,
   ratioPCVControllerAddress: string,
   wethAddress: string,
@@ -62,6 +76,7 @@ export type MainnetContractAddresses = {
   timelockAddress: string,
   multisigAddress: string,
   governorAlphaAddress: string,
+  indexCoopFusePoolDpiAddress: string,
   bentoBoxAddress: string,
   masterKashiAddress: string,
 }
