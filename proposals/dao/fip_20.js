@@ -13,7 +13,7 @@ async function setup(addresses, oldContracts, contracts, logging) {}
  5. Withdraw 9,986.9 ETH from old stabilizer to new stablizer using ratioController
  6. Withdraw 75k ETH from dripper to Compound
  7. Withdraw 75k ETH from dripper to Aave
- 8. Withdraw 14,611 ETH from dripper to stETH deposit
+ 8. Withdraw 14,135 ETH from dripper to stETH deposit
  9. Update ETH Bonding Curve allocation
 */
 async function run(addresses, oldContracts, contracts, logging = false) {
