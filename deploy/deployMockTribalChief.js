@@ -50,9 +50,6 @@ const longRewardSchedule = [
   },
 ];
 
-const LPTokenA = '0xbf8aF59B104F58c91C72e8b0676CBB1F279e5561';
-const LPTokenB = '0xB76bB26510BCfE8bC337a54ec217eD04458B9De9';
-
 // Create a mock deployment of the tribalchief, tribe and LP tokens
 async function main() {
   const governorAlphaAddress = process.env.RINKEBY_GOVERNOR_ALPHA;
@@ -78,13 +75,13 @@ async function main() {
   console.log(`Fei address: ${fei.address}`);
   console.log(`Tribe address: ${tribe.address}`);
 
-  // const LPTokenA = await MockConfigurableERC20.new('LP Token A', 'LP_A');
-  // const LPTokenB = await MockConfigurableERC20.new('LP Token B', 'LP_B');
-  // console.log(`LP Token A: ${LPTokenA.address}`);
-  // console.log(`LP Token B: ${LPTokenB.address}`);
+  const LPTokenA = await MockConfigurableERC20.new('LP Token A', 'LP_A');
+  const LPTokenB = await MockConfigurableERC20.new('LP Token B', 'LP_B');
+  console.log(`LP Token A: ${LPTokenA.address}`);
+  console.log(`LP Token B: ${LPTokenB.address}`);
 
-  // await LPTokenA.mint(receiver, mintAmount);
-  // await LPTokenB.mint(receiver, mintAmount);
+  await LPTokenA.mint(receiver, mintAmount);
+  await LPTokenB.mint(receiver, mintAmount);
 
   const tribalChief = await TribalChief.new(
     core.address, tribe.address, { from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 },
