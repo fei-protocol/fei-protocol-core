@@ -470,7 +470,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
             _rewarder.onSushiReward(pid, msg.sender, to, 0, user.virtualAmount);
         }
 
-        if (unlockedTotalAmount > 0) {
+        if (unlockedTotalAmount != 0) {
             stakedToken[pid].safeTransfer(to, unlockedTotalAmount);
         }
 
