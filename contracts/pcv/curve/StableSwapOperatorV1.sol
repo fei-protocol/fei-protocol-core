@@ -204,7 +204,10 @@ contract StableSwapOperatorV1 is PCVDeposit {
         // remove 3pool liquidity in DAI (3crv -> DAI)
         uint256 _3crvBalance = IERC20(_3crv).balanceOf(address(this));
         uint256 _daiBalanceBefore = IERC20(_dai).balanceOf(address(this));
-        IERC20(_3pool).approve(_3pool, _3crvBalance);
+        // 3crv needs to reset allowance to 0, see CurveTokenV1.vy#L117 :
+        // assert _value == 0 or self.allowances[msg.sender][_spender] == 0
+        IERC20(_3crv).approve(_3crv, 0);
+        IERC20(_3crv).approve(_3crv, _3crvBalance);
         IStableSwap(_3pool).remove_liquidity_one_coin(
           _3crvBalance,
           0, // 0 = DAI token index

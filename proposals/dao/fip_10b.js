@@ -50,6 +50,18 @@ async function validate(addresses, oldContracts, contracts) {
   console.log('Curve PCVDeposit Metapool LP tokens balance', (await _metapool.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
   console.log('Curve PCVDeposit FEI balance', (await contracts.fei.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
   console.log('Curve PCVDeposit balance()', (await contracts.curveMetapoolDeposit.balance()) / 1e18);
+  console.log('> withdraw 1M DAI to self');
+  await contracts.curveMetapoolDeposit.withdraw(contracts.curveMetapoolDeposit.address, `1000000${e18}`);
+  console.log('Curve PCVDeposit balance()', (await contracts.curveMetapoolDeposit.balance()) / 1e18);
+  console.log('Curve PCVDeposit Metapool LP tokens balance', (await _metapool.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
+  console.log('Curve PCVDeposit FEI balance', (await contracts.fei.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
+  console.log('Curve PCVDeposit DAI balance', (await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
+  console.log('> re deposit ~1M DAI');
+  await contracts.curveMetapoolDeposit.deposit();
+  console.log('Curve PCVDeposit balance()', (await contracts.curveMetapoolDeposit.balance()) / 1e18);
+  console.log('Curve PCVDeposit Metapool LP tokens balance', (await _metapool.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
+  console.log('Curve PCVDeposit FEI balance', (await contracts.fei.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
+  console.log('Curve PCVDeposit DAI balance', (await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
 }
 
 module.exports = {
