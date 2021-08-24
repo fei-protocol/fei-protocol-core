@@ -129,6 +129,9 @@ contract StableSwapOperatorV1 is PCVDeposit {
 
         // deposit
         if (_3crvBalanceAfter > 0 || _feiToDeposit > 0) {
+            uint256 _balanceBefore = IERC20(pool).balanceOf(address(this));
+
+            { // scope to prevent 'Stack too deep' error
             // build parameters
             uint256[2] memory _addLiquidityAmounts;
             _addLiquidityAmounts[_feiIndex] = _feiToDeposit;
@@ -142,14 +145,20 @@ contract StableSwapOperatorV1 is PCVDeposit {
             IERC20(_3crv).approve(pool, _3crvBalanceAfter);
 
             // do deposit
-            uint256 _balanceBefore = IERC20(pool).balanceOf(address(this));
             IStableSwap(pool).add_liquidity(_addLiquidityAmounts, 0);
+            }
+
+            // slippage check on metapool deposit
             uint256 _balanceAfter = IERC20(pool).balanceOf(address(this));
+            uint256 _balanceDeposited = _balanceAfter - _balanceBefore;
+            uint256 _metapoolVirtualPrice = IStableSwap(pool).get_virtual_price();
+            uint256 _minLpOut = (_feiToDeposit + _3crvBalanceAfter) * 1e18 / _metapoolVirtualPrice * (BASIS_POINTS_GRANULARITY - depositMaxSlippageBasisPoints) / BASIS_POINTS_GRANULARITY;
+            require(_balanceDeposited >= _minLpOut, "StableSwapOperatorV1: metapool deposit slippage too high");
 
             // compute DAI out if we wanted to withdraw liquidity using our
             // new LP tokens, and withdraw fully in DAI.
             uint256 _lpTotalSupply = IERC20(pool).totalSupply();
-            uint256 _3crvOut = (_3crvAmountAfter * (_balanceAfter - _balanceBefore)) / _lpTotalSupply;
+            uint256 _3crvOut = _3crvAmountAfter * _balanceDeposited / _lpTotalSupply;
             uint256 _daiOut = IStableSwap(_3pool).calc_withdraw_one_coin(
               _3crvOut, // LP tokens just deposited
               0 // 3pool coin 0 = DAI

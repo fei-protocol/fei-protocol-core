@@ -127,6 +127,12 @@ describe('StableSwapOperatorV1', function () {
       await this.fei.mint(this.deposit.address, `1000${e18}`, {from: minterAddress});
       await expectRevert(this.deposit.deposit({from: pcvControllerAddress}), 'ERC20: transfer amount exceeds balance');
     });
+    it('should revert if slippage is too high in metapool', async function() {
+      await this.mockMetapool.set_slippage('1000'); // 10% slippage
+      await this.dai.mint(this.deposit.address, `50000000${e18}`);
+      await this.fei.mint(this.deposit.address, `51000000${e18}`, {from: minterAddress});
+      await expectRevert(this.deposit.deposit({from: pcvControllerAddress}), 'StableSwapOperatorV1: metapool deposit slippage too high');
+    });
     it('should revert if slippage is too high in 3pool', async function() {
       await this.mock3pool.set_slippage('1000'); // 10% slippage
       await this.dai.mint(this.deposit.address, `50000000${e18}`);
