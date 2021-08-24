@@ -37,7 +37,9 @@ contract MockCurveMetapool is MockERC20 {
   }
 
   function remove_liquidity_one_coin(uint256 _amount, int128 i, uint256 min_amount) public {
-    IERC20(coins[uint256(uint128(i))]).transfer(msg.sender, _amount * (10000 - slippage) / 10000);
+    uint256 _amountOut = _amount * (10000 - slippage) / 10000;
+    _amountOut = _amountOut * 10000 / 10002; // 0.02% fee
+    IERC20(coins[uint256(uint128(i))]).transfer(msg.sender, _amountOut);
     MockERC20(this).burnFrom(msg.sender, _amount);
   }
 
@@ -46,6 +48,8 @@ contract MockCurveMetapool is MockERC20 {
   }
 
   function calc_withdraw_one_coin(uint256 _token_amount, int128 i) public view returns (uint256) {
-    return _token_amount * (10000 - slippage) / 10000;
+    uint256 _amountOut = _token_amount * (10000 - slippage) / 10000;
+    _amountOut = _amountOut * 10000 / 10002; // 0.02% fee
+    return _amountOut;
   }
 }

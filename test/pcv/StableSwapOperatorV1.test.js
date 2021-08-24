@@ -73,7 +73,7 @@ describe('StableSwapOperatorV1', function () {
       expectEvent(
         await this.deposit.deposit({from: pcvControllerAddress}),
         'Deposit',
-        { _from: pcvControllerAddress, _amount: `50000000${e18}` }
+        { _from: pcvControllerAddress, _amount: '49992501124831275308703694' }
       );
       const lpBalanceAfter = await this.mockMetapool.balanceOf(this.deposit.address);
       expect(lpBalanceAfter.sub(lpBalanceBefore)).to.be.bignumber.equal(`100000000${e18}`);
@@ -163,15 +163,15 @@ describe('StableSwapOperatorV1', function () {
     });
     it('should not transfer tokens if target=self', async function() {
       expect(await this.dai.balanceOf(this.deposit.address)).to.be.bignumber.equal('0');
-      await this.deposit.withdraw(this.deposit.address, `3000${e18}`, {from: pcvControllerAddress});
-      expect(await this.dai.balanceOf(this.deposit.address)).to.be.bignumber.equal(`3000${e18}`);
+      await this.deposit.withdraw(this.deposit.address, `2000${e18}`, {from: pcvControllerAddress});
+      expect(await this.dai.balanceOf(this.deposit.address)).to.be.bignumber.equal(`2000${e18}`);
     });
     it('should keep excess FEI', async function() {
       expect(await this.dai.balanceOf(this.deposit.address)).to.be.bignumber.equal('0');
       expect(await this.fei.balanceOf(this.deposit.address)).to.be.bignumber.equal('0');
-      await this.deposit.withdraw(this.deposit.address, `3000${e18}`, {from: pcvControllerAddress});
-      expect(await this.dai.balanceOf(this.deposit.address)).to.be.bignumber.equal(`3000${e18}`);
-      expect(await this.fei.balanceOf(this.deposit.address)).to.be.bignumber.equal(`3000${e18}`);
+      await this.deposit.withdraw(this.deposit.address, `2000${e18}`, {from: pcvControllerAddress});
+      expect(await this.dai.balanceOf(this.deposit.address)).to.be.bignumber.equal(`2000${e18}`);
+      expect(await this.fei.balanceOf(this.deposit.address)).to.be.bignumber.equal('2000300000000000000000');
     });
     it('should revert if trying to withdraw amount > balance', async function() {
       expect(await this.dai.balanceOf(userAddress)).to.be.bignumber.equal('0');
@@ -186,8 +186,8 @@ describe('StableSwapOperatorV1', function () {
       expect(await this.usdt.balanceOf(this.mock3pool.address)).to.be.bignumber.equal(`300000${e18}`);
       await this.deposit.withdraw(userAddress, `1000${e18}`, {from: pcvControllerAddress});
       expect(await this.dai.balanceOf(userAddress)).to.be.bignumber.equal(`1000${e18}`);
-      expect(await this.mock3pool.balanceOf(this.mockMetapool.address)).to.be.bignumber.equal(`899000${e18}`);
-      expect(await this.fei.balanceOf(this.mockMetapool.address)).to.be.bignumber.equal(`899000${e18}`);
+      expect(await this.mock3pool.balanceOf(this.mockMetapool.address)).to.be.bignumber.equal('898999850000000000000000');
+      expect(await this.fei.balanceOf(this.mockMetapool.address)).to.be.bignumber.equal('898999850000000000000000');
       expect(await this.dai.balanceOf(this.mock3pool.address)).to.be.bignumber.equal(`299000${e18}`);
       expect(await this.usdc.balanceOf(this.mock3pool.address)).to.be.bignumber.equal(`300000${e18}`);
       expect(await this.usdt.balanceOf(this.mock3pool.address)).to.be.bignumber.equal(`300000${e18}`);
@@ -210,14 +210,14 @@ describe('StableSwapOperatorV1', function () {
       await this.dai.mint(this.deposit.address, `5000${e18}`);
       await this.fei.mint(this.deposit.address, `6000${e18}`, {from: minterAddress});
       await this.deposit.deposit({from: pcvControllerAddress});
-      expect(await this.deposit.balance()).to.be.bignumber.equal(`5000${e18}`);
+      expect(await this.deposit.balance()).to.be.bignumber.equal('4999250112483127530870');
     });
     it('should take 3pool slippage into account', async function() {
       await this.dai.mint(this.deposit.address, `5000${e18}`);
       await this.fei.mint(this.deposit.address, `6000${e18}`, {from: minterAddress});
       await this.deposit.deposit({from: pcvControllerAddress});
       await this.mock3pool.set_slippage('50'); // 0.5% slippage
-      expect(await this.deposit.balance()).to.be.bignumber.equal(`4975${e18}`);
+      expect(await this.deposit.balance()).to.be.bignumber.equal('4974253861920711893216');
     });
   });
 });

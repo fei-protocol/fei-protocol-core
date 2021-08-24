@@ -190,6 +190,13 @@ contract StableSwapOperatorV1 is PCVDeposit {
         uint256 _lpTotalSupply = IERC20(pool).totalSupply();
         uint256 _lpToWithdraw = _lpTotalSupply * _amount3crvToWithdraw / IStableSwap(pool).balances(_3crvIndex);
 
+        // overshoot withdraw by the Curve withdraw fee, so that the discrepancy
+        // between amountUnderlying and actual amount out is minimized, when we
+        // will call withdraw_liquidity_one_coin() in the 3pool.
+        // the fee is 0.015% (see SwapTemplateMeta.vy#L916) :
+        // fee: uint256 = self.fee * N_COINS / (4 * (N_COINS - 1))
+        _lpToWithdraw = _lpToWithdraw * 100015 / 100000;
+
         uint256[2] memory _minAmounts; // [0, 0]
         IERC20(pool).approve(pool, _lpToWithdraw);
         IStableSwap(pool).remove_liquidity(_lpToWithdraw, _minAmounts);
