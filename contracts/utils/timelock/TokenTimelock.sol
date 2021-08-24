@@ -72,6 +72,7 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
     /// @notice releases `amount` unlocked tokens to address `to`
     function release(address to, uint256 amount) external override onlyBeneficiary balanceCheck {
         require(amount != 0, "TokenTimelock: no amount desired");
+        require(passedCliff(), "TokenTimelock: Cliff not passed");
 
         uint256 available = availableForRelease();
         require(amount <= available, "TokenTimelock: not enough released tokens");
@@ -81,6 +82,7 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
 
     /// @notice releases maximum unlocked tokens to address `to`
     function releaseMax(address to) external override onlyBeneficiary balanceCheck {
+        require(passedCliff(), "TokenTimelock: Cliff not passed");
         _release(to, availableForRelease());
     }
 
@@ -120,7 +122,14 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
 
     function clawback() public {
         require(msg.sender == clawbackAdmin, "TokenTimelock: Only clawbackAdmin");
+        if (passedCliff()) {
+            _release(beneficiary, availableForRelease());
+        }
         _release(clawbackAdmin, totalToken());
+    }
+
+    function passedCliff() public view returns (bool) {
+        return timeSinceStart() >= cliffSeconds;
     }
 
     function _proportionAvailable(uint256 initialBalance, uint256 elapsed, uint256 duration) internal pure virtual returns (uint256);
@@ -140,8 +149,6 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
     }
 
     function _release(address to, uint256 amount) internal {
-        require(timeSinceStart() >= cliffSeconds, "TokenTimelock: Cliff not passed");
-
         lockedToken.transfer(to, amount);
         emit Release(beneficiary, to, amount);
     }

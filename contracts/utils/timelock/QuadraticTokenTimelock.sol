@@ -12,7 +12,7 @@ contract QuadraticTokenTimelock is TokenTimelock {
     ) TokenTimelock(
         _beneficiary, 
         _duration, 
-        2592000, // 3 months cliff
+        7776000, // 3 months cliff
         _lockedToken, 
         address(0xB8f482539F2d3Ae2C9ea6076894df36D1f632775) // fei labs multisig
     ) {}
