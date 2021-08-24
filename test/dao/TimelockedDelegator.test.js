@@ -11,7 +11,7 @@ const {
 const TimelockedDelegator = artifacts.require('TimelockedDelegator');
 const MockTribe = artifacts.require('MockTribe');
 
-describe.only('TimelockedDelegator', function () {
+describe('TimelockedDelegator', function () {
   let userAddress;
   let secondUserAddress;
   let beneficiaryAddress1;
