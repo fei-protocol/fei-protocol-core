@@ -6,7 +6,6 @@ import { MainnetContractAddresses, MainnetContracts } from './setup/types';
 import { getPeg, getPrice, forceEth } from './setup/utils'
 import { BN, expectApprox, expectRevert, expectEvent } from '../test/helpers'
 import proposals from './proposals_config.json'
-import { rariPool8TribeAddress, feiTribePairAddress, curve3Metapool } from '../contract-addresses/mainnetAddresses.json'
 
 const ERC20 = artifacts.require("ERC20");
 const FToken = artifacts.require("contracts/external/CToken.sol:CToken");
@@ -482,7 +481,6 @@ describe('e2e', function () {
       // approval loop
       for (let i = 0; i < userAddresses.length; i++) {
         await lpToken.approve(tribalChief.address, uintMax, { from: userAddresses[i] });
-        // console.log(`user allowance for tribalchief: ${(await lpToken.allowance(userAddresses[i], tribalChief.address)).toString()} lptoken balance: ${(await lpToken.balanceOf(userAddresses[i])).toString()} user address: ${userAddresses[i]}`);
       }
 
       // deposit loop
@@ -534,8 +532,6 @@ describe('e2e', function () {
             }
           }
 
-          // console.log(`actual pendingRewards: ${(await tribalChief.pendingRewards(pid, userAddresses[j])).toString()}`)
-          // console.log(`expected pendingRewards: ${(pendingBalances[j].add(userIncrementAmount)).toString()}`)
           await expectApprox(
             new BN(await tribalChief.pendingRewards(pid, userAddresses[j])),
             pendingBalances[j].add(userIncrementAmount),
@@ -588,7 +584,8 @@ describe('e2e', function () {
           params: [feiTribeLPTokenOwnerNumberFive],
         });
 
-        uniFeiTribe = await ERC20.at(feiTribePairAddress.address);
+        const { feiTribePairAddress }  = contractAddresses; 
+        uniFeiTribe = await ERC20.at(feiTribePairAddress);
         tribalChief = contracts.tribalChief;
         tribePerBlock = await tribalChief.tribePerBlock();
         tribe = contracts.tribe;
@@ -732,9 +729,11 @@ describe('e2e', function () {
       let tribe;
       let stakingTokenWrapper;
       let tribeFToken;
+      let rariPool8TribeAddress;
 
       before(async function () {
-        tribeFToken = await FToken.at(rariPool8TribeAddress.address);
+        rariPool8TribeAddress = contractAddresses.rariPool8TribeAddress;
+        tribeFToken = await FToken.at(rariPool8TribeAddress);
         stakingTokenWrapper = contracts.stakingTokenWrapper;
         tribalChief = contracts.tribalChief;
         tribePerBlock = await tribalChief.tribePerBlock();
@@ -742,9 +741,9 @@ describe('e2e', function () {
       });
 
       it('call harvest on stakingTokenWrapper', async function () {
-        const feiRariTribeBalanceBefore = await tribe.balanceOf(rariPool8TribeAddress.address);
+        const feiRariTribeBalanceBefore = await tribe.balanceOf(rariPool8TribeAddress);
         await stakingTokenWrapper.harvest();
-        const feiRariTribeBalanceAfter = await tribe.balanceOf(rariPool8TribeAddress.address);
+        const feiRariTribeBalanceAfter = await tribe.balanceOf(rariPool8TribeAddress);
         expect(feiRariTribeBalanceBefore).to.be.bignumber.lt(feiRariTribeBalanceAfter);
       });
 
@@ -754,10 +753,10 @@ describe('e2e', function () {
 
         for (let i = 0; i < 10; i++) {
           const startingFTokenCash = await tribeFToken.getCash();
-          const feiRariTribeBalanceBefore = await tribe.balanceOf(rariPool8TribeAddress.address);
+          const feiRariTribeBalanceBefore = await tribe.balanceOf(rariPool8TribeAddress);
           await stakingTokenWrapper.harvest();
           const endingFTokenCash = await tribeFToken.getCash();
-          const feiRariTribeBalanceAfter = await tribe.balanceOf(rariPool8TribeAddress.address);
+          const feiRariTribeBalanceAfter = await tribe.balanceOf(rariPool8TribeAddress);
           // check that the share price went up
           expect(feiRariTribeBalanceBefore.add(rewardPerBlock)).to.be.bignumber.equal(feiRariTribeBalanceAfter);
           expect(startingFTokenCash.add(rewardPerBlock)).to.be.bignumber.equal(endingFTokenCash);
@@ -786,10 +785,11 @@ describe('e2e', function () {
           params: [feiTribeLPTokenOwner],
         });
 
+        const { curve3MetapoolAddress } = contractAddresses;
         tribalChief = contracts.tribalChief;
         tribePerBlock = await tribalChief.tribePerBlock();
         tribe = contracts.tribe;
-        crvMetaPool = await ERC20.at(curve3Metapool.address);
+        crvMetaPool = await ERC20.at(curve3MetapoolAddress);
       });
 
       it('balance check CRV tokens', async function () {

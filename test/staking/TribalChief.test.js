@@ -133,11 +133,11 @@ describe('TribalChief', () => {
 
   const multiplier20 = '12000';
   const multiplier40 = '14000';
-  const zeroMultiplier = '10000';
+  const oneMultiplier = '10000';
   const defaultRewardsObject = [
     {
       lockLength: 0,
-      rewardMultiplier: zeroMultiplier,
+      rewardMultiplier: oneMultiplier,
     },
     {
       lockLength: 1000,
@@ -148,7 +148,7 @@ describe('TribalChief', () => {
   const linearRewardObject = [
     {
       lockLength: 100,
-      rewardMultiplier: zeroMultiplier,
+      rewardMultiplier: oneMultiplier,
     },
     {
       lockLength: 200,
@@ -1865,7 +1865,7 @@ describe('TribalChief', () => {
 
       it('governor should be able to step down the pool multiplier and not unlock the pool', async function () {
         await this.tribalChief.governorAddPoolMultiplier(
-          pid, 100, zeroMultiplier, { from: governorAddress },
+          pid, 100, oneMultiplier, { from: governorAddress },
         );
         // assert that the pool did not unlock
         expect(
@@ -1873,7 +1873,7 @@ describe('TribalChief', () => {
         ).to.be.false;
         expect(
           await this.tribalChief.rewardMultipliers(pid, 100),
-        ).to.be.bignumber.equal(zeroMultiplier);
+        ).to.be.bignumber.equal(oneMultiplier);
 
         // now have a user test and ensure this new reward is given
         const userAddresses = [userAddress];
@@ -2216,15 +2216,15 @@ describe('TribalChief', () => {
         [
           {
             lockLength: 100,
-            rewardMultiplier: zeroMultiplier,
+            rewardMultiplier: oneMultiplier,
           },
           {
             lockLength: 300,
-            rewardMultiplier: (new BN(zeroMultiplier)).mul(new BN('3')).toString(),
+            rewardMultiplier: (new BN(oneMultiplier)).mul(new BN('3')).toString(),
           },
           {
             lockLength: 0,
-            rewardMultiplier: zeroMultiplier,
+            rewardMultiplier: oneMultiplier,
           },
         ],
         { from: governorAddress },
@@ -2257,7 +2257,7 @@ describe('TribalChief', () => {
         [
           {
             lockLength: 100,
-            rewardMultiplier: zeroMultiplier,
+            rewardMultiplier: oneMultiplier,
           },
         ],
         { from: governorAddress },
@@ -2474,7 +2474,7 @@ describe('TribalChief', () => {
       // user should have no reward debt or virtual amount as they forfeited their rewards
       const { virtualAmount, rewardDebt } = await this.tribalChief.userInfo(pid, userAddress);
       expect(rewardDebt).to.be.bignumber.equal(new BN('0'));
-      // multiplier would be zeromultiplier, however, we deleted that storage so that's not the case anymore, now it's just 0
+      // multiplier would be oneMultiplier, however, we deleted that storage so that's not the case anymore, now it's just 0
       expect(virtualAmount).to.be.bignumber.equal(new BN('0'));
       // user should receive their 1e20 LP tokens that they staked back
       expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(startingLPBalance.add(new BN(lpTokenIncrementAmount)));
@@ -2585,11 +2585,11 @@ describe('TribalChief', () => {
         [
           {
             lockLength: 100,
-            rewardMultiplier: zeroMultiplier,
+            rewardMultiplier: oneMultiplier,
           },
           {
             lockLength: 300,
-            rewardMultiplier: (new BN(zeroMultiplier)).mul(new BN('3')).toString(),
+            rewardMultiplier: (new BN(oneMultiplier)).mul(new BN('3')).toString(),
           },
           {
             lockLength: 1000,
@@ -2610,11 +2610,11 @@ describe('TribalChief', () => {
         [
           {
             lockLength: 100,
-            rewardMultiplier: zeroMultiplier,
+            rewardMultiplier: oneMultiplier,
           },
           {
             lockLength: 300,
-            rewardMultiplier: (new BN(zeroMultiplier)).mul(new BN('3')).toString(),
+            rewardMultiplier: (new BN(oneMultiplier)).mul(new BN('3')).toString(),
           },
         ],
         { from: governorAddress },

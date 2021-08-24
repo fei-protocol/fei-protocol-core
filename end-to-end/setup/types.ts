@@ -79,6 +79,9 @@ export type MainnetContractAddresses = {
   indexCoopFusePoolDpiAddress: string,
   bentoBoxAddress: string,
   masterKashiAddress: string,
+  feiTribePairAddress: string,
+  rariPool8TribeAddress: string,
+  curve3MetapoolAddress: string,
 }
 
 export type ProposalConfig = {
