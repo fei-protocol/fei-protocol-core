@@ -11,7 +11,7 @@ const {
 const TimelockedDelegator = artifacts.require('TimelockedDelegator');
 const MockTribe = artifacts.require('MockTribe');
 
-describe('TimelockedDelegator', function () {
+describe.only('TimelockedDelegator', function () {
   let userAddress;
   let secondUserAddress;
   let beneficiaryAddress1;
@@ -46,13 +46,13 @@ describe('TimelockedDelegator', function () {
   describe('Release', function() {
     describe('Immediate', function() {
       it('reverts', async function() {
-        await expectRevert(this.delegator.release(beneficiaryAddress1, '100', {from: beneficiaryAddress1}), 'LinearTokenTimelock: not enough released tokens');
+        await expectRevert(this.delegator.release(beneficiaryAddress1, '100', {from: beneficiaryAddress1}), 'TokenTimelock: not enough released tokens');
       });
     });
 
     describe('Zero', function() {
       it('reverts', async function() {
-        await expectRevert(this.delegator.release(beneficiaryAddress1, '0', {from: beneficiaryAddress1}), 'LinearTokenTimelock: no amount desired');
+        await expectRevert(this.delegator.release(beneficiaryAddress1, '0', {from: beneficiaryAddress1}), 'TokenTimelock: no amount desired');
       });
     });
 
@@ -116,7 +116,7 @@ describe('TimelockedDelegator', function () {
       describe('Excess Release', function() {
         it('reverts', async function() {
           await time.increase(this.quarter);
-          await expectRevert(this.delegator.release(beneficiaryAddress1, this.totalTribe, {from: beneficiaryAddress1}), 'LinearTokenTimelock: not enough released tokens');
+          await expectRevert(this.delegator.release(beneficiaryAddress1, this.totalTribe, {from: beneficiaryAddress1}), 'TokenTimelock: not enough released tokens');
         });
       });
     });
@@ -310,12 +310,12 @@ describe('TimelockedDelegator', function () {
   describe('Access', function() {
     describe('Delegate', function() {
       it('Non-beneficiary set reverts', async function() {
-        await expectRevert(this.delegator.delegate(userAddress, new BN(100), {from: userAddress}), 'LinearTokenTimelock: Caller is not a beneficiary');
+        await expectRevert(this.delegator.delegate(userAddress, new BN(100), {from: userAddress}), 'TokenTimelock: Caller is not a beneficiary');
       });
     });
     describe('Undelegate', function() {
       it('Non-beneficiary set reverts', async function() {
-        await expectRevert(this.delegator.undelegate(userAddress, {from: userAddress}), 'LinearTokenTimelock: Caller is not a beneficiary');
+        await expectRevert(this.delegator.undelegate(userAddress, {from: userAddress}), 'TokenTimelock: Caller is not a beneficiary');
       });
     });
     describe('Set Pending Beneficiary', function() {
@@ -329,7 +329,7 @@ describe('TimelockedDelegator', function () {
       });
 
       it('Non-beneficiary set reverts', async function() {
-        await expectRevert(this.delegator.setPendingBeneficiary(userAddress, {from: userAddress}), 'LinearTokenTimelock: Caller is not a beneficiary');
+        await expectRevert(this.delegator.setPendingBeneficiary(userAddress, {from: userAddress}), 'TokenTimelock: Caller is not a beneficiary');
       });
     });
 
@@ -345,13 +345,13 @@ describe('TimelockedDelegator', function () {
       });
 
       it('Non pending beneficiary reverts', async function() {
-        await expectRevert(this.delegator.acceptBeneficiary({from: secondUserAddress}), 'LinearTokenTimelock: Caller is not pending beneficiary');
+        await expectRevert(this.delegator.acceptBeneficiary({from: secondUserAddress}), 'TokenTimelock: Caller is not pending beneficiary');
       });
     });
 
     describe('Release', function() {
       it('Non-beneficiary set reverts', async function() {
-        await expectRevert(this.delegator.release(userAddress, '100', {from: userAddress}), 'LinearTokenTimelock: Caller is not a beneficiary');
+        await expectRevert(this.delegator.release(userAddress, '100', {from: userAddress}), 'TokenTimelock: Caller is not a beneficiary');
       });
     });
   });

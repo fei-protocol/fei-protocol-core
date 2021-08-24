@@ -4,10 +4,10 @@ pragma solidity ^0.8.4;
 // Inspired by OpenZeppelin TokenTimelock contract
 // Reference: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/TokenTimelock.sol
 
-import "./Timed.sol";
-import "./ILinearTokenTimelock.sol";
+import "../Timed.sol";
+import "./ITokenTimelock.sol";
 
-contract LinearTokenTimelock is ILinearTokenTimelock, Timed {
+abstract contract TokenTimelock is ITokenTimelock, Timed {
 
     /// @notice ERC20 basic token contract being held in timelock
     IERC20 public override lockedToken;
@@ -23,21 +23,32 @@ contract LinearTokenTimelock is ILinearTokenTimelock, Timed {
 
     uint256 internal lastBalance;
 
+    /// @notice number of seconds before releasing is allowed
+    uint256 public immutable cliffSeconds;
+
+    address public immutable clawbackAdmin;
+
     constructor(
         address _beneficiary,
         uint256 _duration,
-        address _lockedToken
+        uint256 _cliffSeconds,
+        address _lockedToken,
+        address _clawbackAdmin
     ) Timed(_duration) {
-        require(_duration != 0, "LinearTokenTimelock: duration is 0");
+        require(_duration != 0, "TokenTimelock: duration is 0");
         require(
             _beneficiary != address(0),
-            "LinearTokenTimelock: Beneficiary must not be 0 address"
+            "TokenTimelock: Beneficiary must not be 0 address"
         );
 
         beneficiary = _beneficiary;
         _initTimed();
 
         _setLockedToken(_lockedToken);
+
+        cliffSeconds = _cliffSeconds;
+
+        clawbackAdmin = _clawbackAdmin;
     }
 
     // Prevents incoming LP tokens from messing up calculations
@@ -53,17 +64,17 @@ contract LinearTokenTimelock is ILinearTokenTimelock, Timed {
     modifier onlyBeneficiary() {
         require(
             msg.sender == beneficiary,
-            "LinearTokenTimelock: Caller is not a beneficiary"
+            "TokenTimelock: Caller is not a beneficiary"
         );
         _;
     }
 
     /// @notice releases `amount` unlocked tokens to address `to`
     function release(address to, uint256 amount) external override onlyBeneficiary balanceCheck {
-        require(amount != 0, "LinearTokenTimelock: no amount desired");
+        require(amount != 0, "TokenTimelock: no amount desired");
 
         uint256 available = availableForRelease();
-        require(amount <= available, "LinearTokenTimelock: not enough released tokens");
+        require(amount <= available, "TokenTimelock: not enough released tokens");
 
         _release(to, amount);
     }
@@ -86,9 +97,8 @@ contract LinearTokenTimelock is ILinearTokenTimelock, Timed {
     /// @notice amount of held tokens unlocked and available for release
     function availableForRelease() public view override returns (uint256) {
         uint256 elapsed = timeSinceStart();
-        uint256 _duration = duration;
 
-        uint256 totalAvailable = initialBalance * elapsed / _duration;
+        uint256 totalAvailable = _proportionAvailable(initialBalance, elapsed, duration);
         uint256 netAvailable = totalAvailable - alreadyReleasedAmount();
         return netAvailable;
     }
@@ -108,10 +118,17 @@ contract LinearTokenTimelock is ILinearTokenTimelock, Timed {
         _setBeneficiary(msg.sender);
     }
 
+    function clawback() public {
+        require(msg.sender == clawbackAdmin, "TokenTimelock: Only clawbackAdmin");
+        _release(clawbackAdmin, totalToken());
+    }
+
+    function _proportionAvailable(uint256 initialBalance, uint256 elapsed, uint256 duration) internal pure virtual returns (uint256);
+
     function _setBeneficiary(address newBeneficiary) internal {
         require(
             newBeneficiary == pendingBeneficiary,
-            "LinearTokenTimelock: Caller is not pending beneficiary"
+            "TokenTimelock: Caller is not pending beneficiary"
         );
         beneficiary = newBeneficiary;
         emit BeneficiaryUpdate(newBeneficiary);
@@ -123,6 +140,8 @@ contract LinearTokenTimelock is ILinearTokenTimelock, Timed {
     }
 
     function _release(address to, uint256 amount) internal {
+        require(timeSinceStart() >= cliffSeconds, "TokenTimelock: Cliff not passed");
+
         lockedToken.transfer(to, amount);
         emit Release(beneficiary, to, amount);
     }
