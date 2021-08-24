@@ -80,7 +80,7 @@ contract StableSwapOperatorV1 is PCVDeposit {
     /// @notice deposit DAI, USDC, USDT, 3crv, and FEI into the pool.
     /// Note: the FEI has to be minted & deposited on this contract in a previous
     ///       tx, as this contract does not use the Minter role.
-    function deposit() public override onlyPCVController whenNotPaused {
+    function deposit() public override whenNotPaused {
         IFei _fei = fei();
         uint256 _3crvVirtualPrice = IStableSwap(_3pool).get_virtual_price();
 

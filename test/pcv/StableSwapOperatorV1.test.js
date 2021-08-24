@@ -78,8 +78,11 @@ describe('StableSwapOperatorV1', function () {
       const lpBalanceAfter = await this.mockMetapool.balanceOf(this.deposit.address);
       expect(lpBalanceAfter.sub(lpBalanceBefore)).to.be.bignumber.equal(`100000000${e18}`);
     });
-    it('should revert if not PCVController', async function() {
-      await expectRevert(this.deposit.deposit({from: userAddress}), 'CoreRef: Caller is not a PCV controller');
+    it('should be callable by anyone, even if not PCVController', async function() {
+      await this.dai.mint(this.deposit.address, `50000000${e18}`);
+      await this.fei.mint(this.deposit.address, `51000000${e18}`, {from: minterAddress});
+      await this.deposit.deposit({from: userAddress});
+      expect(await this.mockMetapool.balanceOf(this.deposit.address)).to.be.bignumber.equal(`100000000${e18}`);
     });
     it('should deposit DAI held in the contract', async function() {
       await this.dai.mint(this.deposit.address, `5000${e18}`);
