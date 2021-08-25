@@ -25,4 +25,9 @@ contract OptimisticTimelock is Timelock, CoreRef {
     function executeTransaction(address target, uint value, string memory signature, bytes memory data, uint eta) public override whenNotPaused payable returns (bytes memory) {
         return super.executeTransaction(target, value, signature, data, eta);
     }
+
+    function governorSetPendingAdmin(address newAdmin) public onlyGovernor {
+        pendingAdmin = newAdmin;
+        emit NewPendingAdmin(newAdmin);
+    }
 }
