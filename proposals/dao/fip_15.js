@@ -11,6 +11,8 @@ const twoMillionTribe = `2000000${e18}`;
 const allocPoints = 1000;
 const oneMultiplier = '10000';
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const dripAmount = new BN(Math.floor(((3.154e+7 / 13) * 75) / 35)).mul(new BN(10).pow(new BN(18)));
+const { forceEth } = require('../../end-to-end/setup/utils.ts');
 
 const defaultPoolRewardObject = [
   {
@@ -20,12 +22,19 @@ const defaultPoolRewardObject = [
 ];
 
 async function setup(addresses, oldContracts, contracts, logging) {
-  const { timelockAddress } = addresses;
+  const { timelockAddress, ratioPCVControllerAddress } = addresses;
 
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
     params: [timelockAddress],
   });
+
+  await hre.network.provider.request({
+    method: 'hardhat_impersonateAccount',
+    params: [ratioPCVControllerAddress],
+  });
+
+  await forceEth(ratioPCVControllerAddress);
 }
 
 // assert that state changes correctly
@@ -34,10 +43,10 @@ async function setup(addresses, oldContracts, contracts, logging) {
 // add tests to the validate function. Just test things like balances, allocation points, etc
 async function run(addresses, oldContracts, contracts, logging = false) {
   const {
-    stakingTokenWrapper, tribalChief, tribe, core 
+    stakingTokenWrapper, tribalChief, tribe, core, erc20Dripper
   } = contracts;
   const {
-    timelockAddress, feiRewardsDistributorAddress, feiTribePairAddress, curve3MetapoolAddress 
+    timelockAddress, feiRewardsDistributorAddress, feiTribePairAddress, curve3MetapoolAddress, ratioPCVControllerAddress
   } = addresses;
 
   // we should subtract 2 million off this number to leave 2 million tribe in the DAO
@@ -51,11 +60,14 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     await adminSigner.sendTransaction({ data: encodedGovernorWithdrawTribe, to: feiRewardsDistributorAddress })
   ).wait();
     
-  const tribeBalanceToAllocate = tribeBalanceToMigrate.sub(new BN(twoMillionTribe));
+  const tribeBalanceToAllocate = tribeBalanceToMigrate.sub(new BN(twoMillionTribe)).sub(dripAmount);
+
   // distribute 75 tribe per block instead of 100
   await tribalChief.updateBlockReward(seventyFiveTribe);
-  // then migrate the balance minus 2 million to the tribalchief
-  await core.allocateTribe(tribalChief.address, tribeBalanceToAllocate);
+  // then migrate the balance minus 2 million and the first drip amount to the tribalchief
+  await core.allocateTribe(erc20Dripper.address, tribeBalanceToAllocate);
+  // then send the first drip amount straight to the TribalChief
+  await core.allocateTribe(tribalChief.address, dripAmount);
 
   await tribalChief.add(
     allocPoints,
