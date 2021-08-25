@@ -2,9 +2,8 @@ pragma solidity ^0.8.4;
 
 import "./../PCVDeposit.sol";
 import "./../../utils/Timed.sol";
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
-contract ERC20Dripper is PCVDeposit, Timed, Initializable {
+contract ERC20Dripper is PCVDeposit, Timed {
    using Address for address payable;
  
    /// @notice target address to drip tokens to
@@ -40,12 +39,6 @@ contract ERC20Dripper is PCVDeposit, Timed, Initializable {
 
        // start timer
        _initTimed();
-   }
-
-   /// @notice drip ERC20 tokens to target for the first time
-   /// only callable once, and should be called immediately after construction
-   function init() external initializer {
-       _drip();
    }
  
    /// @notice drip ERC20 tokens to target

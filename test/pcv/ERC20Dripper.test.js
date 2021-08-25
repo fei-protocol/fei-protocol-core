@@ -106,33 +106,6 @@ describe('ERC20Dripper', () => {
         'Timed: time not ended'
       ); 
     });
-
-    it('should not be able to call init twice', async function () {
-      const tribalChiefStartingBalance = await this.tribe.balanceOf(this.tribalChief.address);
-      await this.dripper.init();
-      const tribalChiefEndingBalance = await this.tribe.balanceOf(this.tribalChief.address);
-  
-      expect(await this.dripper.isTimeEnded()).to.be.false;
-      expect(tribalChiefStartingBalance.add(dripAmount)).to.be.bignumber.equal(tribalChiefEndingBalance);
-
-      await expectRevert(
-        this.dripper.init(),
-        'Initializable: contract is already initialized'
-      ); 
-    });
-    
-    it('should be able to call init when paused', async function () {
-      expect(await this.dripper.paused()).to.be.false;
-      await this.dripper.pause({ from: governorAddress });
-      expect(await this.dripper.paused()).to.be.true;
-
-      const tribalChiefStartingBalance = await this.tribe.balanceOf(this.tribalChief.address);
-      await this.dripper.init();
-      const tribalChiefEndingBalance = await this.tribe.balanceOf(this.tribalChief.address);
-
-      expect(await this.dripper.isTimeEnded()).to.be.false;
-      expect(tribalChiefStartingBalance.add(dripAmount)).to.be.bignumber.equal(tribalChiefEndingBalance);
-    });
   });
 
   describe('construction suite', () => {
@@ -204,17 +177,8 @@ describe('ERC20Dripper', () => {
       expect(tribalChiefStartingBalance.add(dripAmount)).to.be.bignumber.equal(tribalChiefEndingBalance);
     });
 
-    it('should be able to call drip after init when enough time has passed through multiple periods', async function () {
-      // scope things so we can redeclare the same constant values
-      {
-        const tribalChiefStartingBalance = await this.tribe.balanceOf(this.tribalChief.address);
-        await this.dripper.init();
-        const tribalChiefEndingBalance = await this.tribe.balanceOf(this.tribalChief.address);
-
-        expect(await this.dripper.isTimeEnded()).to.be.false;
-        expect(tribalChiefStartingBalance.add(dripAmount)).to.be.bignumber.equal(tribalChiefEndingBalance);
-      }
-      for (let i = 0; i < 10; i++) {
+    it('should be able to call drip when enough time has passed through multiple periods', async function () {
+      for (let i = 0; i < 11; i++) {
         await time.increase(dripFrequency);
         await time.advanceBlock();
 
