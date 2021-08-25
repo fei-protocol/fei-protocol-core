@@ -42,26 +42,14 @@ async function teardown(addresses, oldContracts, contracts, logging) {}
 
 // Run any validations required on the fip using mocha or console logging
 async function validate(addresses, oldContracts, contracts) {
-  const _3crv = await ERC20.at('0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490');
-  const _metapool = await ERC20.at('0x06cb22615ba53e60d67bf6c341a0fd5e718e1655');
+  const _3crv = await ERC20.at(addresses.curve3crvAddress);
+  const _metapool = await ERC20.at(addresses.curveMetapoolAddress);
   console.log('metapool 3crv balance', (await _3crv.balanceOf('0x06cb22615ba53e60d67bf6c341a0fd5e718e1655')) / 1e18);
   console.log('metapool FEI balance', (await contracts.fei.balanceOf('0x06cb22615ba53e60d67bf6c341a0fd5e718e1655')) / 1e18);
   console.log('Compound PCVDeposit DAI balance', (await contracts.dai.balanceOf(addresses.compoundDaiPCVDepositAddress)) / 1e18);
   console.log('Curve PCVDeposit Metapool LP tokens balance', (await _metapool.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
   console.log('Curve PCVDeposit FEI balance', (await contracts.fei.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
   console.log('Curve PCVDeposit balance()', (await contracts.curveMetapoolDeposit.balance()) / 1e18);
-  console.log('> withdraw 1M DAI to self');
-  await contracts.curveMetapoolDeposit.withdraw(contracts.curveMetapoolDeposit.address, `1000000${e18}`);
-  console.log('Curve PCVDeposit balance()', (await contracts.curveMetapoolDeposit.balance()) / 1e18);
-  console.log('Curve PCVDeposit Metapool LP tokens balance', (await _metapool.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
-  console.log('Curve PCVDeposit FEI balance', (await contracts.fei.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
-  console.log('Curve PCVDeposit DAI balance', (await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
-  console.log('> re deposit ~1M DAI');
-  await contracts.curveMetapoolDeposit.deposit();
-  console.log('Curve PCVDeposit balance()', (await contracts.curveMetapoolDeposit.balance()) / 1e18);
-  console.log('Curve PCVDeposit Metapool LP tokens balance', (await _metapool.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
-  console.log('Curve PCVDeposit FEI balance', (await contracts.fei.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
-  console.log('Curve PCVDeposit DAI balance', (await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
 }
 
 module.exports = {

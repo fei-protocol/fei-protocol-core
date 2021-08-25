@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 // Curve metapool
-interface IStableSwap {
+interface IStableSwap2 {
     function coins(uint256 arg0) external view returns (address);
     function balances(uint256 arg0) external view returns (uint256);
     function add_liquidity(uint256[2] memory amounts, uint256 min_mint_amount) external;
@@ -16,8 +16,14 @@ interface IStableSwap {
     function get_virtual_price() external view returns (uint256);
     function calc_withdraw_one_coin(uint256 _token_amount, int128 i) external view returns (uint256);
 }
-interface I3Pool {
+interface IStableSwap3 {
+    function coins(uint256 arg0) external view returns (address);
+    function balances(uint256 arg0) external view returns (uint256);
     function add_liquidity(uint256[3] memory amounts, uint256 min_mint_amount) external;
+    function remove_liquidity(uint256 _amount, uint256[3] memory min_amounts) external;
+    function remove_liquidity_one_coin(uint256 _token_amount, int128 i, uint256 min_amount) external;
+    function get_virtual_price() external view returns (uint256);
+    function calc_withdraw_one_coin(uint256 _token_amount, int128 i) external view returns (uint256);
 }
 
 /// @title StableSwapOperator: implementation for a Curve Metapool market-maker.
@@ -67,14 +73,14 @@ contract StableSwapOperatorV1 is PCVDeposit {
         depositMaxSlippageBasisPoints = _depositMaxSlippageBasisPoints;
 
         // cached private variables
-        uint8 _3crvIndexTmp = IStableSwap(pool).coins(0) == address(fei()) ? 1 : 0;
+        uint8 _3crvIndexTmp = IStableSwap2(pool).coins(0) == address(fei()) ? 1 : 0;
         _3crvIndex = _3crvIndexTmp;
         _feiIndex = _3crvIndexTmp == 0 ? 1 : 0;
-        _3crv = IStableSwap(pool).coins(_3crvIndexTmp);
+        _3crv = IStableSwap2(pool).coins(_3crvIndexTmp);
         _3pool = _curve3pool;
-        _dai = IStableSwap(_curve3pool).coins(0);
-        _usdc = IStableSwap(_curve3pool).coins(1);
-        _usdt = IStableSwap(_curve3pool).coins(2);
+        _dai = IStableSwap3(_curve3pool).coins(0);
+        _usdc = IStableSwap3(_curve3pool).coins(1);
+        _usdt = IStableSwap3(_curve3pool).coins(2);
     }
 
     /// @notice deposit DAI, USDC, USDT, 3crv, and FEI into the pool.
@@ -82,7 +88,7 @@ contract StableSwapOperatorV1 is PCVDeposit {
     ///       tx, as this contract does not use the Minter role.
     function deposit() public override whenNotPaused {
         IFei _fei = fei();
-        uint256 _3crvVirtualPrice = IStableSwap(_3pool).get_virtual_price();
+        uint256 _3crvVirtualPrice = IStableSwap3(_3pool).get_virtual_price();
 
         // Deposit DAI, USDC, and USDT, to get 3crv
         uint256 _daiBalance = IERC20(_dai).balanceOf(address(this));
@@ -97,7 +103,7 @@ contract StableSwapOperatorV1 is PCVDeposit {
             SafeERC20.safeApprove(IERC20(_dai), _3pool, _daiBalance);
             SafeERC20.safeApprove(IERC20(_usdc), _3pool, _usdcBalance);
             SafeERC20.safeApprove(IERC20(_usdt), _3pool, _usdtBalance);
-            I3Pool(_3pool).add_liquidity(
+            IStableSwap3(_3pool).add_liquidity(
               _add3poolLiquidityAmounts,
               0 // minimum 0 3crv lp tokens out (defensively checked below)
             );
@@ -112,8 +118,8 @@ contract StableSwapOperatorV1 is PCVDeposit {
 
         // get the amount of tokens in the pool
         (uint256 _3crvAmount, uint256 _feiAmount) = (
-            IStableSwap(pool).balances(_3crvIndex),
-            IStableSwap(pool).balances(_feiIndex)
+            IStableSwap2(pool).balances(_3crvIndex),
+            IStableSwap2(pool).balances(_feiIndex)
         );
         // ... and the expected amount of 3crv in it after deposit
         uint256 _3crvAmountAfter = _3crvAmount + _3crvBalanceAfter;
@@ -145,13 +151,13 @@ contract StableSwapOperatorV1 is PCVDeposit {
             IERC20(_3crv).approve(pool, _3crvBalanceAfter);
 
             // do deposit
-            IStableSwap(pool).add_liquidity(_addLiquidityAmounts, 0);
+            IStableSwap2(pool).add_liquidity(_addLiquidityAmounts, 0);
             }
 
             // slippage check on metapool deposit
             uint256 _balanceAfter = IERC20(pool).balanceOf(address(this));
             uint256 _balanceDeposited = _balanceAfter - _balanceBefore;
-            uint256 _metapoolVirtualPrice = IStableSwap(pool).get_virtual_price();
+            uint256 _metapoolVirtualPrice = IStableSwap2(pool).get_virtual_price();
             uint256 _minLpOut = (_feiToDeposit + _3crvBalanceAfter) * 1e18 / _metapoolVirtualPrice * (BASIS_POINTS_GRANULARITY - depositMaxSlippageBasisPoints) / BASIS_POINTS_GRANULARITY;
             require(_balanceDeposited >= _minLpOut, "StableSwapOperatorV1: metapool deposit slippage too high");
 
@@ -159,7 +165,7 @@ contract StableSwapOperatorV1 is PCVDeposit {
             // new LP tokens, and withdraw fully in DAI.
             uint256 _lpTotalSupply = IERC20(pool).totalSupply();
             uint256 _3crvOut = _3crvAmountAfter * _balanceDeposited / _lpTotalSupply;
-            uint256 _daiOut = IStableSwap(_3pool).calc_withdraw_one_coin(
+            uint256 _daiOut = IStableSwap3(_3pool).calc_withdraw_one_coin(
               _3crvOut, // LP tokens just deposited
               0 // 3pool coin 0 = DAI
             );
@@ -185,11 +191,13 @@ contract StableSwapOperatorV1 is PCVDeposit {
         require(amountUnderlying != 0, "StableSwapOperatorV1: Cannot withdraw 0");
 
         // remove liquidity from the metapool
-        uint256 _3crvVirtualPrice = IStableSwap(_3pool).get_virtual_price();
+        uint256 _3crvVirtualPrice = IStableSwap3(_3pool).get_virtual_price();
         uint256 _amount3crvToWithdraw = amountUnderlying * 1e18 / _3crvVirtualPrice;
         uint256 _lpTotalSupply = IERC20(pool).totalSupply();
-        uint256 _lpToWithdraw = _lpTotalSupply * _amount3crvToWithdraw / IStableSwap(pool).balances(_3crvIndex);
+        uint256 _lpToWithdraw = _lpTotalSupply * _amount3crvToWithdraw / IStableSwap2(pool).balances(_3crvIndex);
 
+        uint256 _daiBalanceBefore = IERC20(_dai).balanceOf(address(this));
+        { // scope for removing metapool liquidity & then 3crv to DAI
         // overshoot withdraw by the Curve withdraw fee, so that the discrepancy
         // between amountUnderlying and actual amount out is minimized, when we
         // will call withdraw_liquidity_one_coin() in the 3pool.
@@ -197,22 +205,31 @@ contract StableSwapOperatorV1 is PCVDeposit {
         // fee: uint256 = self.fee * N_COINS / (4 * (N_COINS - 1))
         _lpToWithdraw = _lpToWithdraw * 100015 / 100000;
 
+        // if target amount is more than balance, withdraw all
+        uint256 _lpBalance = IERC20(pool).balanceOf(address(this));
+        if (_lpToWithdraw > _lpBalance) {
+          _lpToWithdraw = _lpBalance;
+        }
+
+        // remove liquidity from metapool
         uint256[2] memory _minAmounts; // [0, 0]
         IERC20(pool).approve(pool, _lpToWithdraw);
-        IStableSwap(pool).remove_liquidity(_lpToWithdraw, _minAmounts);
+        uint256 _3crvBalanceBefore = IERC20(_3crv).balanceOf(address(this));
+        IStableSwap2(pool).remove_liquidity(_lpToWithdraw, _minAmounts);
+        uint256 _3crvBalanceAfter = IERC20(_3crv).balanceOf(address(this));
+        uint256 _3crvBalanceWithdrawn = _3crvBalanceAfter - _3crvBalanceBefore;
 
         // remove 3pool liquidity in DAI (3crv -> DAI)
-        uint256 _3crvBalance = IERC20(_3crv).balanceOf(address(this));
-        uint256 _daiBalanceBefore = IERC20(_dai).balanceOf(address(this));
         // 3crv needs to reset allowance to 0, see CurveTokenV1.vy#L117 :
         // assert _value == 0 or self.allowances[msg.sender][_spender] == 0
         IERC20(_3crv).approve(_3crv, 0);
-        IERC20(_3crv).approve(_3crv, _3crvBalance);
-        IStableSwap(_3pool).remove_liquidity_one_coin(
-          _3crvBalance,
+        IERC20(_3crv).approve(_3crv, _3crvBalanceWithdrawn);
+        IStableSwap3(_3pool).remove_liquidity_one_coin(
+          _3crvBalanceWithdrawn,
           0, // 0 = DAI token index
           0 // minimum 0 DAI out (defensively checked below)
         );
+        }
 
         // check slippage
         uint256 _daiBalanceAfter = IERC20(_dai).balanceOf(address(this));
@@ -254,12 +271,12 @@ contract StableSwapOperatorV1 is PCVDeposit {
         uint256 _lpTotalSupply = IERC20(pool).totalSupply();
 
         // get the share of 3crv in the pool
-        uint256 _3crvShare = IStableSwap(pool).balances(_3crvIndex) * _lpBalance / _lpTotalSupply;
+        uint256 _3crvShare = IStableSwap2(pool).balances(_3crvIndex) * _lpBalance / _lpTotalSupply;
         uint256 _total3crv = _3crvShare + _3crvBalance;
 
         uint256 _daiOut = 0;
         if (_total3crv != 0) {
-          _daiOut = IStableSwap(_3pool).calc_withdraw_one_coin(
+          _daiOut = IStableSwap3(_3pool).calc_withdraw_one_coin(
             _total3crv, // total 3pool LP tokens held in this contract
             0 // 3pool coin 0 = DAI
           );

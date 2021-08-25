@@ -174,8 +174,7 @@ describe('StableSwapOperatorV1', function () {
       expect(await this.fei.balanceOf(this.deposit.address)).to.be.bignumber.equal('2000300000000000000000');
     });
     it('should revert if trying to withdraw amount > balance', async function() {
-      expect(await this.dai.balanceOf(userAddress)).to.be.bignumber.equal('0');
-      await expectRevert(this.deposit.withdraw(userAddress, `123456789${e18}`, {from: pcvControllerAddress}), 'ERC20: transfer amount exceeds balance');
+      await expectRevert(this.deposit.withdraw(userAddress, `123456789${e18}`, {from: pcvControllerAddress}), 'StableSwapOperatorV1: 3pool withdraw slippage too high');
     });
     it('should leave tokens in the pool if partial withdraw', async function() {
       expect(await this.dai.balanceOf(userAddress)).to.be.bignumber.equal('0');
