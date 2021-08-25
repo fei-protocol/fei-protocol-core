@@ -42,6 +42,7 @@ export type MainnetContracts = {
   curve3pool: typeof Contract,
   curve3crv: typeof Contract,
   aaveEthPCVDeposit: typeof Contract,
+  aaveRaiPCVDeposit: typeof Contract,
   stAAVE: typeof Contract,
   dpiBondingCurve: typeof Contract,
   daiBondingCurve: typeof Contract,
@@ -50,6 +51,11 @@ export type MainnetContracts = {
   chainlinkDpiUsdOracleWrapper: typeof Contract,
   dpiUniswapPCVDeposit: typeof Contract,
   indexCoopFusePoolDpiPCVDeposit: typeof Contract,
+  raiBondingCurve: typeof Contract,
+  rai: typeof Contract,
+  chainlinkRaiEthOracleWrapper: typeof Contract
+  chainlinkRaiUsdCompositOracle: typeof Contract
+  reflexerStableAssetFusePoolRaiPCVDeposit: typeof Contract,
   kashiFeiTribe: typeof Contract,
   bentoBox: typeof Contract,
   governorAlpha: typeof Contract,
@@ -79,6 +85,7 @@ export type MainnetContractAddresses = {
   multisigAddress: string,
   governorAlphaAddress: string,
   indexCoopFusePoolDpiAddress: string,
+  reflexerStableAssetFusePoolRaiAddress: string
   bentoBoxAddress: string,
   masterKashiAddress: string,
 }

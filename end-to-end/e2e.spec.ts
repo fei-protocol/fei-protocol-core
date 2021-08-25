@@ -212,6 +212,65 @@ describe('e2e', function () {
         await expectApprox(pcvDepositAfter.sub(pcvDepositBefore), allocatedDai, '100');
       })
     });
+
+    describe('RAI', async function () {
+      beforeEach(async function () {
+        // Acquire RAI
+        await hre.network.provider.request({
+          method: 'hardhat_impersonateAccount',
+          params: [contractAddresses.reflexerStableAssetFusePoolRaiAddress]
+        });
+        const raiSeedAmount = tenPow18.mul(toBN(1000))
+
+        await forceEth(contractAddresses.reflexerStableAssetFusePoolRaiAddress);
+        await contracts.rai.transfer(deployAddress, raiSeedAmount.mul(toBN(2)), {from: contractAddresses.reflexerStableAssetFusePoolRaiAddress});
+        
+        // Seed bonding curve with rai
+        const bondingCurve = contracts.raiBondingCurve
+        
+        await contracts.rai.approve(bondingCurve.address, raiSeedAmount.mul(toBN(2)));
+        await bondingCurve.purchase(deployAddress, raiSeedAmount)
+      })
+  
+      it('should allow purchase of Fei through bonding curve', async function () {
+        const bondingCurve = contracts.raiBondingCurve;
+        const fei = contracts.fei;
+        const feiBalanceBefore = await fei.balanceOf(deployAddress);
+
+        const raiAmount = tenPow18; // 1 RAI
+        const oraclePrice = toBN((await bondingCurve.readOracle())[0]);
+        const currentPrice = toBN((await bondingCurve.getCurrentPrice())[0]);
+
+        // expected = amountIn * oracle * price (Note: there is an edge case when crossing scale where this is not true)
+        const expected = raiAmount.mul(oraclePrice).mul(currentPrice).div(tenPow18).div(tenPow18);
+
+        await bondingCurve.purchase(deployAddress, raiAmount);
+
+        const feiBalanceAfter = await fei.balanceOf(deployAddress);
+        const expectedFinalBalance = feiBalanceBefore.add(expected)
+        expect(feiBalanceAfter).to.be.bignumber.equal(expectedFinalBalance);
+      })
+
+      it('should transfer allocation from bonding curve to Fuse', async function () {
+        const bondingCurve = contracts.raiBondingCurve;
+        const fusePCVDeposit = contracts.reflexerStableAssetFusePoolRaiPCVDeposit;
+        const aaveRaiPCVDeposit = contracts.aaveRaiPCVDeposit
+
+        const pcvAllocations = await bondingCurve.getAllocation()
+        expect(pcvAllocations[0].length).to.be.equal(2)
+        
+        const allocatedRai = await bondingCurve.balance()
+        await bondingCurve.allocate()
+
+        // All RAI were allocated
+        const curveBalanceAfter = await bondingCurve.balance();
+        expect(curveBalanceAfter).to.be.bignumber.equal(toBN(0))
+
+        // Half allocated to fuse, half to aave
+        await expectApprox(await fusePCVDeposit.balance(), allocatedRai.div(toBN(2)), '100')
+        await expectApprox(await aaveRaiPCVDeposit.balance(), allocatedRai.div(toBN(2)), '100')
+      })
+    });
   });
 
   describe('StableSwapOperatorV1', async function() {
