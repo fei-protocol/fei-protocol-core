@@ -10,7 +10,7 @@ async function setup(addresses, oldContracts, contracts, logging) {}
  2. Grant Aave dripper as PCV Controller
  3. Grant Compound dripper as PCV Controller
  4. Revoke burner from old stabilizer
- 5. Withdraw 9,986.9 ETH from old stabilizer to new stablizer using ratioController
+ 5. Withdraw 9,984.9 ETH from old stabilizer to new stablizer using ratioController
  6. Withdraw 75k ETH from dripper to Compound
  7. Withdraw 75k ETH from dripper to Aave
  8. Withdraw 14,135 ETH from dripper to stETH deposit
@@ -43,7 +43,7 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   await core.revokeBurner(oldEthReserveStabilizer.address);
 
   // 5.
-  await oldEthReserveStabilizer.withdraw(ethReserveStabilizer.address, `9986${e18}`);
+  await oldEthReserveStabilizer.withdraw(ethReserveStabilizer.address, `9984${e18}`);
 
   // 6.
   await ethPCVDripper.withdrawETH(aaveEthPCVDeposit.address, `75000${e18}`);
