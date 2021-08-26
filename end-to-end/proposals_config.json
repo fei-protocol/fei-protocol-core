@@ -6,7 +6,7 @@
         "voterAddress" : ""
     },
     "fip_20" : {
-        "deploy" : true,
+        "deploy" : false,
         "exec" : false,
         "proposerAddress" : "",
         "voterAddress" : ""
