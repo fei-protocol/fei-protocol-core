@@ -1,4 +1,5 @@
 const { web3 } = require('hardhat');
+const { expect } = require('chai');
 
 const e18 = '000000000000000000';
 
@@ -64,7 +65,15 @@ async function run(addresses, oldContracts, contracts, logging = false) {
 
 async function teardown(addresses, oldContracts, contracts, logging) {}
 
-async function validate(addresses, oldContracts, contracts) {}
+async function validate(addresses, oldContracts, contracts) {
+  const { bondingCurve } = oldContracts;
+  const { aaveEthPCVDepositAddress, compoundEthPCVDepositAddress } = addresses;
+  const allocation = await bondingCurve.getAllocation();
+  expect(allocation[0][0]).to.be.equal(aaveEthPCVDepositAddress);
+  expect(allocation[0][1]).to.be.equal(compoundEthPCVDepositAddress);
+  expect(allocation[1][0]).to.be.bignumber.equal('5000');
+  expect(allocation[1][1]).to.be.bignumber.equal('5000');
+}
 
 module.exports = {
   setup, run, teardown, validate

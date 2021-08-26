@@ -329,7 +329,7 @@ describe('e2e', function () {
       const feiIncentive = await pcvDripper.incentiveAmount()
   
       const userFeiBalanceAfter = await fei.balanceOf(deployAddress)
-      expect(userFeiBalanceAfter).to.bignumber.equal(userFeiBalanceBefore.add(feiIncentive))
+      expectApprox(userFeiBalanceAfter, userFeiBalanceBefore.add(feiIncentive));
     })
   });
 
