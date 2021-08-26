@@ -13,7 +13,7 @@
     "daiBondingCurveAddress": { "artifact": "BondingCurve", "address":  "0xC0afe0E649e32528666F993ce63822c3840e941a"},
     "compositeOracleAddress": { "artifact": "CompositeOracle", "address":  "0x8721f9EAba0B9081069970bCBce38763D3D4f28E"},
     "aaveEthPCVDripController": { "artifact": "PCVDripController", "address":  "0xb3D63876d95d3a5e591D4DE536dC410b97244086"},
-    "compoundEthPCVDripController": { "artifact": "PCVDripController", "address":  "0x4fCB1435fD42CE7ce7Af3cB2e98289F79d2962b3"},
+    "compoundEthPCVDripController": { "artifact": "PCVDripController", "address":  "0xa84C8be28f3d560059339f06C6b6c5B23f53C58C"},
     "aaveEthPCVDeposit": { "artifact": "AavePCVDeposit", "address":  "0x5B86887e171bAE0C2C826e87E34Df8D558C079B9"},
     "chainlinkEthUsdOracleWrapperAddress": { "artifact": "ChainlinkOracleWrapper", "address":  "0xCd3c40AE1256922BA16C7872229385E20Bc8351e"},
     "chainlinkFeiEthOracleWrapperAddress": { "artifact": "ChainlinkOracleWrapper", "address":  "0x060Be7B51F78DFFd04749332fd306BA1228e7444"}, 
