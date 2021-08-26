@@ -30,6 +30,7 @@ const blockReward = '100000000000000000000';
 // assume 35 weeks per year so that we always overfund TribalChief by 50%
 const dripAmount = new BN(Math.floor(((3.154e+7 / 13) * 75) / 35)).mul(new BN(10).pow(new BN(18)));
 // number of seconds between allowed drips
+// this is 1 week in seconds
 const dripFrequency = 604800;
 
 describe('ERC20Dripper', () => {
@@ -118,7 +119,7 @@ describe('ERC20Dripper', () => {
           dripAmount,
           this.tribe.address
         ),
-        'INV_ADDR'
+        'ERC20Dripper: invalid address'
       );
     });
 
@@ -131,7 +132,7 @@ describe('ERC20Dripper', () => {
           dripAmount,
           ZERO_ADDRESS,
         ),
-        'INV_TOKEN_ADDR'
+        'ERC20Dripper: invalid token address'
       );
     });
 
@@ -157,7 +158,7 @@ describe('ERC20Dripper', () => {
           0,
           this.tribe.address
         ),
-        'INV_DRIP'
+        'ERC20Dripper: invalid drip amount'
       );
     });
   });
@@ -165,9 +166,50 @@ describe('ERC20Dripper', () => {
   describe('first suite', () => {
     it('should be able to call drip as any role while not paused', async function () {
       await time.increase(dripFrequency);
-      await time.advanceBlock();
 
       expect(await this.dripper.isTimeEnded()).to.be.true;
+
+      const tribalChiefStartingBalance = await this.tribe.balanceOf(this.tribalChief.address);
+      await this.dripper.drip();
+      const tribalChiefEndingBalance = await this.tribe.balanceOf(this.tribalChief.address);
+
+      expect(await this.dripper.isTimeEnded()).to.be.false;
+      expect(tribalChiefStartingBalance.add(dripAmount)).to.be.bignumber.equal(tribalChiefEndingBalance);
+    });
+
+    it('should not be able to call drip as any role while the contracts are paused', async function () {
+      await time.increase(dripFrequency);
+
+      expect(await this.dripper.isTimeEnded()).to.be.true;
+      expect(await this.dripper.paused()).to.be.false;
+      await this.dripper.pause({ from: governorAddress });
+      expect(await this.dripper.paused()).to.be.true;
+
+      await expectRevert(
+        this.dripper.drip(),
+        'Pausable: paused'
+      );
+      // still waiting to go as the contract is paused
+      expect(await this.dripper.isTimeEnded()).to.be.true;
+    });
+
+    it('should not be able to call drip as any role while the contracts are paused, then unpause and drip', async function () {
+      await time.increase(dripFrequency);
+
+      expect(await this.dripper.isTimeEnded()).to.be.true;
+      expect(await this.dripper.paused()).to.be.false;
+      await this.dripper.pause({ from: governorAddress });
+      expect(await this.dripper.paused()).to.be.true;
+
+      await expectRevert(
+        this.dripper.drip(),
+        'Pausable: paused'
+      );
+      // still waiting to go as the contract is paused
+      expect(await this.dripper.isTimeEnded()).to.be.true;
+
+      await this.dripper.unpause({ from: governorAddress });
+      expect(await this.dripper.paused()).to.be.false;
 
       const tribalChiefStartingBalance = await this.tribe.balanceOf(this.tribalChief.address);
       await this.dripper.drip();
@@ -180,8 +222,7 @@ describe('ERC20Dripper', () => {
     it('should be able to call drip when enough time has passed through multiple periods', async function () {
       for (let i = 0; i < 11; i++) {
         await time.increase(dripFrequency);
-        await time.advanceBlock();
-
+  
         expect(await this.dripper.isTimeEnded()).to.be.true;
 
         const tribalChiefStartingBalance = await this.tribe.balanceOf(this.tribalChief.address);

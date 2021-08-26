@@ -11,8 +11,13 @@ const twoMillionTribe = `2000000${e18}`;
 const allocPoints = 1000;
 const oneMultiplier = '10000';
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+
+// this number takes the total seconds per year, divides by 13 to get the total 
+// number of ethereum blocks per year, then multiplies the amount of blocks by 75 as each block we distribute 75 tribe,
+// then divides the total amount of tribe distributed annually by 35, so that by calling it once every week,
+// we are always overfunded.
+// Then we that quotient and multiply it by 10^18 so that it has the appropriate amount of decimals on it to be the amount of tribe to drip
 const dripAmount = new BN(Math.floor(((3.154e+7 / 13) * 75) / 35)).mul(new BN(10).pow(new BN(18)));
-const { forceEth } = require('../../end-to-end/setup/utils.ts');
 
 const defaultPoolRewardObject = [
   {
@@ -22,19 +27,12 @@ const defaultPoolRewardObject = [
 ];
 
 async function setup(addresses, oldContracts, contracts, logging) {
-  const { timelockAddress, ratioPCVControllerAddress } = addresses;
+  const { timelockAddress } = addresses;
 
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
     params: [timelockAddress],
   });
-
-  await hre.network.provider.request({
-    method: 'hardhat_impersonateAccount',
-    params: [ratioPCVControllerAddress],
-  });
-
-  await forceEth(ratioPCVControllerAddress);
 }
 
 // assert that state changes correctly
@@ -46,7 +44,7 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     stakingTokenWrapper, tribalChief, tribe, core, erc20Dripper
   } = contracts;
   const {
-    timelockAddress, feiRewardsDistributorAddress, feiTribePairAddress, curve3MetapoolAddress, ratioPCVControllerAddress
+    timelockAddress, feiRewardsDistributorAddress, feiTribePairAddress, curve3MetapoolAddress
   } = addresses;
 
   // we should subtract 2 million off this number to leave 2 million tribe in the DAO
