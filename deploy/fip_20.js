@@ -34,7 +34,7 @@ async function deploy(deployAddress, addresses, logging = false) {
     9900, // $0.99 per FEI
     wethAddress,
   );
-  const ethReserveStabilizerAddress = ethReserveStabilizer.address
+  const ethReserveStabilizerAddress = ethReserveStabilizer.address;
   logging && console.log('ETH Reserve Stabilizer deployed to: ', ethReserveStabilizer.address);
 
   const aaveEthPCVDeposit = await AavePCVDeposit.new(
