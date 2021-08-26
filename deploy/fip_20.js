@@ -13,7 +13,6 @@ async function deploy(deployAddress, addresses, logging = false) {
     aaveIncentivesController,
     chainlinkEthUsdOracleWrapperAddress,
     compoundEthPCVDepositAddress,
-    ethReserveStabilizerAddress,
   } = addresses;
 
   if (
@@ -28,15 +27,15 @@ async function deploy(deployAddress, addresses, logging = false) {
     throw new Error('An environment variable contract address is not set');
   }
 
-  // const ethReserveStabilizer = await EthReserveStabilizer.new(
-  //   coreAddress,
-  //   chainlinkEthUsdOracleWrapperAddress,
-  //   chainlinkEthUsdOracleWrapperAddress,
-  //   9900, // $0.99 per FEI
-  //   wethAddress,
-  // );
-  // const ethReserveStabilizerAddress = ethReserveStabilizer.address
-  // logging && console.log('ETH Reserve Stabilizer deployed to: ', ethReserveStabilizer.address);
+  const ethReserveStabilizer = await EthReserveStabilizer.new(
+    coreAddress,
+    chainlinkEthUsdOracleWrapperAddress,
+    chainlinkEthUsdOracleWrapperAddress,
+    9900, // $0.99 per FEI
+    wethAddress,
+  );
+  const ethReserveStabilizerAddress = ethReserveStabilizer.address
+  logging && console.log('ETH Reserve Stabilizer deployed to: ', ethReserveStabilizer.address);
 
   const aaveEthPCVDeposit = await AavePCVDeposit.new(
     coreAddress,
@@ -67,7 +66,7 @@ async function deploy(deployAddress, addresses, logging = false) {
   );
 
   return {
-    // ethReserveStabilizer,
+    ethReserveStabilizer,
     aaveEthPCVDeposit,
     aaveEthPCVDripController,
     compoundEthPCVDripController
