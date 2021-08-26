@@ -7,7 +7,7 @@
             "values": "0",
             "method": "grantBurner(address)",
             "arguments": [
-                "TBD"
+                "0x17305f0e18318994a57b494078CAC866A857F7b6"
             ],
             "description": "Grant Burner to Eth Reserve Stabilizer"
         },
@@ -16,18 +16,18 @@
             "values": "0",
             "method": "grantPCVController(address)",
             "arguments": [
-                "TBD"
+                "0xb3D63876d95d3a5e591D4DE536dC410b97244086"
             ],
-            "description": "Grant PCV Controller to Aave PCV Deposit"
+            "description": "Grant PCV Controller to Aave PCV Deposit Drip Controller"
         },
         {
             "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
             "values": "0",
             "method": "grantPCVController(address)",
             "arguments": [
-                "TBD"
+                "0x4fCB1435fD42CE7ce7Af3cB2e98289F79d2962b3"
             ],
-            "description": "Grant PCV Controller to Compound PCV Deposits"
+            "description": "Grant PCV Controller to Compound PCV Deposit Drip Controller"
         },
         {
             "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
@@ -43,17 +43,17 @@
             "values": "0",
             "method": "withdraw(address,uint256)",
             "arguments": [
-                "TBD",
-                "9986000000000000000000"
+                "0x17305f0e18318994a57b494078CAC866A857F7b6",
+                "6000000000000000000000"
             ],
-            "description": "Withdraw 9,986 ETH from old stabilizer to new stablizer"
+            "description": "Withdraw 6000 ETH from old stabilizer to new stablizer"
         },
         {
             "address": "0xDa079A280FC3e33Eb11A78708B369D5Ca2da54fE",
             "values": "0",
             "method": "withdrawETH(address,uint256)",
             "arguments": [
-                "TBD",
+                "0x4fCB1435fD42CE7ce7Af3cB2e98289F79d2962b3",
                 "75000000000000000000000"
             ],
             "description": "Withdraw 75k ETH from dripper to Compound"
@@ -63,7 +63,7 @@
             "values": "0",
             "method": "withdrawETH(address,uint256)",
             "arguments": [
-                "TBD",
+                "0x5B86887e171bAE0C2C826e87E34Df8D558C079B9",
                 "75000000000000000000000"
             ],
             "description": "Withdraw 75k ETH from dripper to Aave"
@@ -73,7 +73,7 @@
             "values": "0",
             "method": "withdrawETH(address,uint256)",
             "arguments": [
-                "TBD",
+                "0x4fCB1435fD42CE7ce7Af3cB2e98289F79d2962b3",
                 "14135000000000000000000"
             ],
             "description": "Withdraw 14,135 ETH from dripper to stETH deposit"
@@ -84,8 +84,8 @@
             "method": "setAllocation(address[],uint256[])",
             "arguments": [
                 [
-                    "TBD",
-                    "TBD"
+                    "0x5B86887e171bAE0C2C826e87E34Df8D558C079B9",
+                    "0x4fCB1435fD42CE7ce7Af3cB2e98289F79d2962b3"
                 ],
                 [
                     5000,
@@ -93,6 +93,13 @@
                 ]
             ],
             "description": "Update ETH Bonding Curve allocation to 50% Aave/ 50% Compound"
+        },
+        {
+            "address": "0xa08A721dFB595753FFf335636674D76C455B275C",
+            "values": "0",
+            "method": "pause()",
+            "arguments": [],
+            "description": "Pause old reserve stabilizer"
         }
     ],
     "proposal_calldata": ""
