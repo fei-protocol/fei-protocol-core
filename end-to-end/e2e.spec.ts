@@ -298,38 +298,40 @@ describe('e2e', function () {
     expect(userFeiBalanceAfter).to.be.bignumber.equal(userFeiBalanceBefore.sub(feiTokensExchange))
   })
 
-  it('drip controller can withdraw from PCV deposit to stabiliser', async function () {
-    const ethReserveStabilizer = contracts.ethReserveStabilizer
-    const uniswapPCVDeposit = contracts.uniswapPCVDeposit
-    const pcvDripper = contracts.pcvDripController
-    const fei = contracts.fei
-
-    const userFeiBalanceBefore = await fei.balanceOf(deployAddress)
-    let stabilizerBalanceBefore = await ethReserveStabilizer.balance()
-
-    const dripAmount = await pcvDripper.dripAmount();
-    if (stabilizerBalanceBefore.gt(dripAmount)) {
-      await ethReserveStabilizer.withdraw(deployAddress, stabilizerBalanceBefore);
-      stabilizerBalanceBefore = await ethReserveStabilizer.balance()
-    }
-
-    const pcvDepositBefore = await uniswapPCVDeposit.balance()
-    // Trigger drip
-    await time.increase(await pcvDripper.remainingTime());
-    await pcvDripper.drip({from: deployAddress});
-
-    // Check PCV deposit loses dripAmount ETH and stabilizer gets dripAmount ETH
-    const pcvDepositAfter = toBN(await uniswapPCVDeposit.balance())
-    await expectApprox(pcvDepositAfter, pcvDepositBefore.sub(dripAmount), '100')
-
-    const stabilizerBalanceAfter = toBN(await ethReserveStabilizer.balance())
-    await expectApprox(stabilizerBalanceAfter, stabilizerBalanceBefore.add(dripAmount), '100')
-
-    const feiIncentive = await pcvDripper.incentiveAmount()
-
-    const userFeiBalanceAfter = await fei.balanceOf(deployAddress)
-    expect(userFeiBalanceAfter).to.bignumber.equal(userFeiBalanceBefore.add(feiIncentive))
-  })
+  describe('Drip Controller', async () => {
+    it('drip controller can withdraw from PCV deposit to stabiliser', async function () {
+      const ethReserveStabilizer = contracts.ethReserveStabilizer
+      const aaveEthPCVDeposit = contracts.aaveEthPCVDeposit
+      const pcvDripper = contracts.aaveEthPCVDripController;
+      const fei = contracts.fei
+  
+      const userFeiBalanceBefore = await fei.balanceOf(deployAddress)
+      let stabilizerBalanceBefore = await ethReserveStabilizer.balance()
+  
+      const dripAmount = await pcvDripper.dripAmount();
+      if (stabilizerBalanceBefore.gt(dripAmount)) {
+        await ethReserveStabilizer.withdraw(deployAddress, stabilizerBalanceBefore);
+        stabilizerBalanceBefore = await ethReserveStabilizer.balance()
+      }
+  
+      const pcvDepositBefore = await aaveEthPCVDeposit.balance()
+      // Trigger drip
+      await time.increase(await pcvDripper.remainingTime());
+      await pcvDripper.drip({from: deployAddress});
+  
+      // Check PCV deposit loses dripAmount ETH and stabilizer gets dripAmount ETH
+      const pcvDepositAfter = toBN(await aaveEthPCVDeposit.balance())
+      await expectApprox(pcvDepositAfter, pcvDepositBefore.sub(dripAmount), '100')
+  
+      const stabilizerBalanceAfter = toBN(await ethReserveStabilizer.balance())
+      await expectApprox(stabilizerBalanceAfter, stabilizerBalanceBefore.add(dripAmount), '100')
+  
+      const feiIncentive = await pcvDripper.incentiveAmount()
+  
+      const userFeiBalanceAfter = await fei.balanceOf(deployAddress)
+      expect(userFeiBalanceAfter).to.bignumber.equal(userFeiBalanceBefore.add(feiIncentive))
+    })
+  });
 
   describe('Reweights', async () => {
     it('should perform reweight above peg correctly',  async function () {
