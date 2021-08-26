@@ -62,7 +62,7 @@ describe('e2e', function () {
         expect(feiBalanceAfter).to.be.bignumber.equal(expectedFinalBalance);
       })
   
-      it('should transfer allocation from bonding curve to the reserve stabiliser', async function () {
+      it('should transfer allocation from bonding curve to compound and aave', async function () {
         const { bondingCurve, aaveEthPCVDeposit, compoundEthPCVDeposit } = contracts;
         
         await compoundEthPCVDeposit.deposit();
