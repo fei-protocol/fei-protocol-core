@@ -54,6 +54,7 @@ export type MainnetContracts = {
   reflexerStableAssetFusePoolRaiPCVDeposit: typeof Contract,
   kashiFeiTribe: typeof Contract,
   bentoBox: typeof Contract,
+  aaveEthPCVDripController: typeof Contract,
   governorAlpha: typeof Contract,
 }
 
