@@ -21,6 +21,7 @@ const Tribe = artifacts.require('MockTribe');
 const MockCoreRef = artifacts.require('MockCoreRef');
 const TribalChief = artifacts.require('TribalChief');
 const MockERC20 = artifacts.require('MockERC20');
+const Proxy = artifacts.require('TransparentUpgradeableProxy');
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const uintMax = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
 const ACC_TRIBE_PRECISION = new BN('100000000000000000000000');
@@ -214,7 +215,19 @@ describe('TribalChief', () => {
       this.tribe = await Tribe.new();
       this.coreRef = await MockCoreRef.new(this.core.address);
 
-      this.tribalChief = await TribalChief.new(this.core.address, this.tribe.address);
+      /// we can and probably should do this with a framework,
+      // but for now I'm going to write it out by hand.
+
+      // spin up the logic contract by hand
+      const tribalChief = await TribalChief.new(this.core.address);
+      // create a new proxy contract
+      const proxyContract = await Proxy.new(tribalChief.address, tribalChief.address, '0x', { from: userAddress });
+
+      // instantiate the tribalchief pointed at the proxy contract
+      this.tribalChief = await TribalChief.at(proxyContract.address);
+
+      // initialize the tribalchief by hand
+      await this.tribalChief.initialize(this.core.address, this.tribe.address);
 
       // create and mint LP tokens
       this.curveLPToken = await MockERC20.new();
@@ -2184,7 +2197,19 @@ describe('TribalChief', () => {
       this.tribe = await Tribe.new();
       this.coreRef = await MockCoreRef.new(this.core.address);
 
-      this.tribalChief = await TribalChief.new(this.core.address, this.tribe.address);
+      /// we can and probably should do this with a framework,
+      // but for now I'm going to write it out by hand.
+
+      // spin up the logic contract by hand
+      const tribalChief = await TribalChief.new(this.core.address);
+      // create a new proxy contract
+      const proxyContract = await Proxy.new(tribalChief.address, tribalChief.address, '0x');
+
+      // instantiate the tribalchief pointed at the proxy contract
+      this.tribalChief = await TribalChief.at(proxyContract.address);
+
+      // initialize the tribalchief by hand
+      await this.tribalChief.initialize(this.core.address, this.tribe.address);
 
       // create and mint LP tokens
       this.curveLPToken = await MockERC20.new();
@@ -2553,7 +2578,19 @@ describe('TribalChief', () => {
       this.tribe = await Tribe.new();
       this.coreRef = await MockCoreRef.new(this.core.address);
 
-      this.tribalChief = await TribalChief.new(this.core.address, this.tribe.address);
+      /// we can and probably should do this with a framework,
+      // but for now I'm going to write it out by hand.
+
+      // spin up the logic contract by hand
+      const tribalChief = await TribalChief.new(this.core.address);
+      // create a new proxy contract
+      const proxyContract = await Proxy.new(tribalChief.address, tribalChief.address, '0x');
+
+      // instantiate the tribalchief pointed at the proxy contract
+      this.tribalChief = await TribalChief.at(proxyContract.address);
+
+      // initialize the tribalchief by hand
+      await this.tribalChief.initialize(this.core.address, this.tribe.address);
 
       // create and mint LP tokens
       this.curveLPToken = await MockERC20.new();
