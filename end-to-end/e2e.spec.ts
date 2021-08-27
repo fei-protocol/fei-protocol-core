@@ -62,19 +62,22 @@ describe('e2e', function () {
         expect(feiBalanceAfter).to.be.bignumber.equal(expectedFinalBalance);
       })
   
-      it('should transfer allocation from bonding curve to the reserve stabiliser', async function () {
-        const bondingCurve = contracts.bondingCurve;
-        const uniswapPCVDeposit = contracts.uniswapPCVDeposit
-  
-        const pcvDepositBefore = await uniswapPCVDeposit.balance()
-  
+      it('should transfer allocation from bonding curve to compound and aave', async function () {
+        const { bondingCurve, aaveEthPCVDeposit, compoundEthPCVDeposit } = contracts;
+        
+        await compoundEthPCVDeposit.deposit();
+        const compoundETHBefore = await compoundEthPCVDeposit.balance()
+
+        await aaveEthPCVDeposit.deposit();
+        const aaveETHBefore = await aaveEthPCVDeposit.balance()
+
         const curveEthBalanceBefore = toBN(await web3.eth.getBalance(bondingCurve.address));
         expect(curveEthBalanceBefore).to.be.bignumber.greaterThan(toBN(0))
   
         const fei = contracts.fei;
         const callerFeiBalanceBefore = await fei.balanceOf(deployAddress)
         const pcvAllocations = await bondingCurve.getAllocation()
-        expect(pcvAllocations[0].length).to.be.equal(1)
+        expect(pcvAllocations[0].length).to.be.equal(2)
   
         const durationWindow = await bondingCurve.duration()
   
@@ -87,9 +90,11 @@ describe('e2e', function () {
         const curveEthBalanceAfter = toBN(await web3.eth.getBalance(bondingCurve.address));
         expect(curveEthBalanceAfter).to.be.bignumber.equal(curveEthBalanceBefore.sub(allocatedEth))
         
-        const pcvDepositAfter = await uniswapPCVDeposit.balance()
-        await expectApprox(pcvDepositAfter, pcvDepositBefore.add(allocatedEth), '100')
-  
+        const compoundETHAfter = await compoundEthPCVDeposit.balance()
+        const aaveETHAfter = await aaveEthPCVDeposit.balance()
+        await expectApprox(compoundETHAfter, compoundETHBefore.add(allocatedEth.div(toBN(2))), '100')
+        await expectApprox(aaveETHAfter, aaveETHBefore.add(allocatedEth.div(toBN(2))), '100')
+
         const feiIncentive = await bondingCurve.incentiveAmount();
         const callerFeiBalanceAfter = await fei.balanceOf(deployAddress);
         expect(callerFeiBalanceAfter).to.be.bignumber.equal(callerFeiBalanceBefore.add(feiIncentive))
@@ -293,33 +298,40 @@ describe('e2e', function () {
     expect(userFeiBalanceAfter).to.be.bignumber.equal(userFeiBalanceBefore.sub(feiTokensExchange))
   })
 
-  it('drip controller can withdraw from PCV deposit to stabiliser', async function () {
-    const ethReserveStabilizer = contracts.ethReserveStabilizer
-    const uniswapPCVDeposit = contracts.uniswapPCVDeposit
-    const pcvDripper = contracts.pcvDripController
-    const fei = contracts.fei
-
-    const userFeiBalanceBefore = await fei.balanceOf(deployAddress)
-    const pcvDepositBefore = await uniswapPCVDeposit.balance()
-    const stabilizerBalanceBefore = await ethReserveStabilizer.balance()
-
-    // Trigger drip
-    await time.increase(await pcvDripper.remainingTime());
-    await pcvDripper.drip({from: deployAddress});
-
-    // Check PCV deposit loses dripAmount ETH and stabilizer gets dripAmount ETH
-    const dripAmount = toBN(await pcvDripper.dripAmount())
-    const pcvDepositAfter = toBN(await uniswapPCVDeposit.balance())
-    await expectApprox(pcvDepositAfter, pcvDepositBefore.sub(dripAmount), '100')
-
-    const stabilizerBalanceAfter = toBN(await ethReserveStabilizer.balance())
-    await expectApprox(stabilizerBalanceAfter, stabilizerBalanceBefore.add(dripAmount), '100')
-
-    const feiIncentive = await pcvDripper.incentiveAmount()
-
-    const userFeiBalanceAfter = await fei.balanceOf(deployAddress)
-    expect(userFeiBalanceAfter).to.bignumber.equal(userFeiBalanceBefore.add(feiIncentive))
-  })
+  describe('Drip Controller', async () => {
+    it('drip controller can withdraw from PCV deposit to stabiliser', async function () {
+      const ethReserveStabilizer = contracts.ethReserveStabilizer
+      const aaveEthPCVDeposit = contracts.aaveEthPCVDeposit
+      const pcvDripper = contracts.aaveEthPCVDripController;
+      const fei = contracts.fei
+  
+      const userFeiBalanceBefore = await fei.balanceOf(deployAddress)
+      let stabilizerBalanceBefore = await ethReserveStabilizer.balance()
+  
+      const dripAmount = await pcvDripper.dripAmount();
+      if (stabilizerBalanceBefore.gt(dripAmount)) {
+        await ethReserveStabilizer.withdraw(deployAddress, stabilizerBalanceBefore);
+        stabilizerBalanceBefore = await ethReserveStabilizer.balance()
+      }
+  
+      const pcvDepositBefore = await aaveEthPCVDeposit.balance()
+      // Trigger drip
+      await time.increase(await pcvDripper.remainingTime());
+      await pcvDripper.drip({from: deployAddress});
+  
+      // Check PCV deposit loses dripAmount ETH and stabilizer gets dripAmount ETH
+      const pcvDepositAfter = toBN(await aaveEthPCVDeposit.balance())
+      await expectApprox(pcvDepositAfter, pcvDepositBefore.sub(dripAmount), '100')
+  
+      const stabilizerBalanceAfter = toBN(await ethReserveStabilizer.balance())
+      await expectApprox(stabilizerBalanceAfter, stabilizerBalanceBefore.add(dripAmount), '100')
+  
+      const feiIncentive = await pcvDripper.incentiveAmount()
+  
+      const userFeiBalanceAfter = await fei.balanceOf(deployAddress)
+      expectApprox(userFeiBalanceAfter, userFeiBalanceBefore.add(feiIncentive));
+    })
+  });
 
   describe('Reweights', async () => {
     it('should perform reweight above peg correctly',  async function () {
@@ -346,8 +358,8 @@ describe('e2e', function () {
       // asset pool ratio = oracle ratio
       const peg = await getPeg(controller)
       const currentPrice = await getPrice(controller);
-      expect(peg).to.be.bignumber.equal(currentPrice)
-  
+      expectApprox(peg, currentPrice, '100');
+
       // ensure timer reset
       const timeReset = !(await controller.isTimeEnded());
       expect(timeReset).to.equal(true)
@@ -404,6 +416,8 @@ describe('e2e', function () {
     it('should be able to deposit and withdraw ETH',  async function () {
       const ethCompoundPCVDeposit = contracts.compoundEthPCVDeposit;
       const amount = tenPow18.mul(toBN(200));
+      await ethCompoundPCVDeposit.deposit();
+
       await web3.eth.sendTransaction({from: deployAddress, to: ethCompoundPCVDeposit.address, value: amount });
 
       const balanceBefore = await ethCompoundPCVDeposit.balance();
@@ -420,6 +434,13 @@ describe('e2e', function () {
     it('should be able to deposit and withdraw ETH',  async function () {
       const aaveEthPCVDeposit = contracts.aaveEthPCVDeposit;
       const amount = tenPow18.mul(toBN(200));
+
+      try { 
+        await aaveEthPCVDeposit.deposit();
+      } catch (e) {
+
+      }
+
       await web3.eth.sendTransaction({from: deployAddress, to: aaveEthPCVDeposit.address, value: amount });
 
       const balanceBefore = await aaveEthPCVDeposit.balance();
