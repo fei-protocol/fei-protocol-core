@@ -16,19 +16,15 @@ const {
   expectApprox,
 } = require('../helpers');
 
-const MockCore = artifacts.require('MockCore');
 const Tribe = artifacts.require('MockTribe');
 const MockCoreRef = artifacts.require('MockCoreRef');
 const TribalChief = artifacts.require('TribalChief');
 const ERC20Dripper = artifacts.require('ERC20Dripper');
 
-const MockERC20 = artifacts.require('MockERC20');
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-const ACC_TRIBE_PRECISION = new BN('100000000000000000000000');
-const blockReward = '100000000000000000000';
 
-// assume 35 weeks per year so that we always overfund TribalChief by 50%
-const dripAmount = new BN(Math.floor(((3.154e+7 / 13) * 75) / 35)).mul(new BN(10).pow(new BN(18)));
+// We will drip 4 million tribe per week
+const dripAmount = new BN(4000000).mul(new BN(10).pow(new BN(18)));
 // number of seconds between allowed drips
 // this is 1 week in seconds
 const dripFrequency = 604800;

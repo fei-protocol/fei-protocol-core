@@ -9,12 +9,8 @@ const ERC20Dripper = artifacts.require('ERC20Dripper');
 // this is 1 week in seconds
 const dripFrequency = 604800;
 
-// this number takes the total seconds per year, divides by 13 to get the total 
-// number of ethereum blocks per year, then multiplies the amount of blocks by 75 as each block we distribute 75 tribe,
-// then divides the total amount of tribe distributed annually by 35, so that by calling it once every week,
-// we are always overfunded.
-// Then we that quotient and multiply it by 10^18 so that it has the appropriate amount of decimals on it to be the amount of tribe to drip
-const dripAmount = new BN(Math.floor(((3.154e+7 / 13) * 75) / 35)).mul(new BN(10).pow(new BN(18)));
+// We will drip 4 million tribe per week
+const dripAmount = new BN(4000000).mul(new BN(10).pow(new BN(18)));
 
 async function deploy(deployAddress, addresses, logging = false) {
   const { coreAddress, tribeAddress, rariPool8TribeAddress } = addresses;
