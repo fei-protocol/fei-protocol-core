@@ -51,6 +51,9 @@ export type MainnetContracts = {
   governorAlpha: typeof Contract,
   tribalChief: typeof Contract,
   stakingTokenWrapper: typeof Contract,
+  feiTribePair: typeof Contract,
+  rariPool8Tribe: typeof Contract,
+  curve3Metapool: typeof Contract,
 }
 
 export type MainnetContractAddresses = {

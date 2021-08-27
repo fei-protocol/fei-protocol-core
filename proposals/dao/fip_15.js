@@ -101,10 +101,12 @@ async function validate(addresses, oldContracts, contracts, logging) {
     tribalChiefCurve3FEIMetaPool: await tribalChief.stakedToken(2) === curve3MetapoolAddress,
   };
 
-  // assert that the expected values all came back true
-  for (const key in expectedValues) {
-    expect(expectedValues[key]).to.be.true;
-  }
+  expect(expectedValues.feiRewardsDistributorBalance).to.be.true;
+  expect(expectedValues.tribalChiefAllocPoints).to.be.true;
+  expect(expectedValues.tribalChiefNumPools).to.be.true;
+  expect(expectedValues.tribalChiefStakingTokenWrapperPool).to.be.true;
+  expect(expectedValues.tribalChiefFEITRIBEUniswapPool).to.be.true;
+  expect(expectedValues.tribalChiefCurve3FEIMetaPool).to.be.true;
 
   console.log(expectedValues);
 }

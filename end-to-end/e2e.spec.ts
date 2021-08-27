@@ -551,7 +551,6 @@ describe('e2e', function () {
 
         if (virtualAmount.toString() !== '0') {
           const afterStakedTokenBalance = await stakedToken.balanceOf(address);
-          expect(afterStakedTokenBalance).to.be.bignumber.gt(startingStakedTokenBalance);
           expect(afterStakedTokenBalance).to.be.bignumber.equal(startingStakedTokenBalance.add(stakedTokens));
         }
       }
@@ -584,8 +583,8 @@ describe('e2e', function () {
           params: [feiTribeLPTokenOwnerNumberFive],
         });
 
-        const { feiTribePairAddress }  = contractAddresses; 
-        uniFeiTribe = await ERC20.at(feiTribePairAddress);
+        // const { feiTribePairAddress }  = contractAddresses; 
+        uniFeiTribe = contracts.feiTribePair;
         tribalChief = contracts.tribalChief;
         tribePerBlock = await tribalChief.tribePerBlock();
         tribe = contracts.tribe;
@@ -785,11 +784,10 @@ describe('e2e', function () {
           params: [feiTribeLPTokenOwner],
         });
 
-        const { curve3MetapoolAddress } = contractAddresses;
         tribalChief = contracts.tribalChief;
         tribePerBlock = await tribalChief.tribePerBlock();
         tribe = contracts.tribe;
-        crvMetaPool = await ERC20.at(curve3MetapoolAddress);
+        crvMetaPool = contracts.curve3Metapool;
       });
 
       it('balance check CRV tokens', async function () {
