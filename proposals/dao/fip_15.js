@@ -40,7 +40,7 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     stakingTokenWrapper, tribalChief, tribe, core, erc20Dripper
   } = contracts;
   const {
-    timelockAddress, feiRewardsDistributorAddress, feiTribePairAddress, curve3MetapoolAddress
+    timelockAddress, feiRewardsDistributorAddress, feiTribePairAddress, curve3MetapoolAddress, tribalChiefOptimisticTimelockAddress
   } = addresses;
 
   // we should subtract 2 million off this number to leave 2 million tribe in the DAO
@@ -87,6 +87,11 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     ZERO_ADDRESS,
     defaultPoolRewardObject,
   );
+
+  const role = await tribalChief.CONTRACT_ADMIN_ROLE();
+
+  await core.createRole(role, await core.GOVERN_ROLE());
+  await core.grantRole(role, tribalChiefOptimisticTimelockAddress);
 }
 
 async function teardown(addresses, oldContracts, contracts, logging) {}
@@ -95,7 +100,12 @@ async function teardown(addresses, oldContracts, contracts, logging) {}
 // but to just log out what just happened
 // this function will log out false if anything incorrect happened during the run or deploy
 async function validate(addresses, oldContracts, contracts, logging) {
-  const { feiRewardsDistributorAddress, feiTribePairAddress, curve3MetapoolAddress } = addresses;
+  const { 
+    feiRewardsDistributorAddress, 
+    feiTribePairAddress, 
+    curve3MetapoolAddress,
+    tribalChiefOptimisticTimelockAddress 
+  } = addresses;
   const { stakingTokenWrapper, tribalChief, tribe} = contracts;
 
   const expectedValues = {
@@ -115,6 +125,8 @@ async function validate(addresses, oldContracts, contracts, logging) {
   expect(expectedValues.tribalChiefCurve3FEIMetaPool).to.be.true;
 
   console.log(expectedValues);
+
+  expect(await tribalChief.isContractAdmin(tribalChiefOptimisticTimelockAddress)).to.be.true;
 }
 
 module.exports = {
