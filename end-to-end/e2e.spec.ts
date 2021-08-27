@@ -308,6 +308,57 @@ describe('e2e', function () {
     expect(userFeiBalanceAfter).to.be.bignumber.equal(userFeiBalanceBefore.sub(feiTokensExchange))
   })
 
+  describe('Optimistic Approval', async () => {
+    beforeEach(async function () {
+      const { tribalChiefOptimisticMultisigAddress, timelockAddress } = contractAddresses;
+      const { tribalChiefOptimisticTimelock } = contracts;
+
+      await hre.network.provider.request({
+        method: 'hardhat_impersonateAccount',
+        params: [tribalChiefOptimisticMultisigAddress]
+      });
+
+      await hre.network.provider.request({
+        method: 'hardhat_impersonateAccount',
+        params: [timelockAddress]
+      });
+
+      await web3.eth.sendTransaction({from: deployAddress, to: tribalChiefOptimisticMultisigAddress, value: '40000000000000000'});
+
+    });
+    it('governor can cancel a proposal', async () => {
+      const { tribalChiefOptimisticMultisigAddress, timelockAddress } = contractAddresses;
+      const { tribalChiefOptimisticTimelock } = contracts;
+
+      await tribalChiefOptimisticTimelock.queueTransaction(deployAddress, 0, 'sig()', '0x', '10000000000000000', {from: tribalChiefOptimisticMultisigAddress});
+      const hash = await tribalChiefOptimisticTimelock.getTxHash(deployAddress, 0, 'sig()', '0x', '10000000000000000');
+      expect(await tribalChiefOptimisticTimelock.queuedTransactions(hash)).to.be.true;
+
+      await tribalChiefOptimisticTimelock.vetoTransactions([deployAddress], [0], ['sig()'], ['0x'], ['10000000000000000'], {from: timelockAddress});
+      
+      expect(await tribalChiefOptimisticTimelock.queuedTransactions(hash)).to.be.false;
+    });
+
+    it('proposal can execute on tribalChief', async () => {
+      const { tribalChiefOptimisticMultisigAddress } = contractAddresses;
+      const { tribalChiefOptimisticTimelock, tribalChief } = contracts;
+
+      const oldBlockReward = await tribalChief.tribePerBlock();
+
+      await tribalChiefOptimisticTimelock.queueTransaction(tribalChief.address, 0, 'updateBlockReward(uint256)', '0x0000000000000000000000000000000000000000000000000000000000000001', '100000000000', {from: tribalChiefOptimisticMultisigAddress});
+      const hash = await tribalChiefOptimisticTimelock.getTxHash(tribalChief.address, 0, 'updateBlockReward(uint256)', '0x0000000000000000000000000000000000000000000000000000000000000001', '100000000000');
+      expect(await tribalChiefOptimisticTimelock.queuedTransactions(hash)).to.be.true;
+      
+      await time.increaseTo('100000000000');
+      await tribalChiefOptimisticTimelock.executeTransaction(tribalChief.address, 0, 'updateBlockReward(uint256)', '0x0000000000000000000000000000000000000000000000000000000000000001', '100000000000', {from: tribalChiefOptimisticMultisigAddress});
+
+      expect(await tribalChief.tribePerBlock()).to.be.bignumber.equal('1');
+      expect(await tribalChiefOptimisticTimelock.queuedTransactions(hash)).to.be.false;
+    
+      await tribalChief.updateBlockReward(oldBlockReward);
+    });
+  });
+
   describe('Drip Controller', async () => {
     it('drip controller can withdraw from PCV deposit to stabiliser', async function () {
       const ethReserveStabilizer = contracts.ethReserveStabilizer
