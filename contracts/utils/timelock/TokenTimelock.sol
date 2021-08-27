@@ -120,7 +120,7 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
         _setBeneficiary(msg.sender);
     }
 
-    function clawback() public {
+    function clawback() public balanceCheck {
         require(msg.sender == clawbackAdmin, "TokenTimelock: Only clawbackAdmin");
         if (passedCliff()) {
             _release(beneficiary, availableForRelease());
