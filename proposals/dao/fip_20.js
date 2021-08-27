@@ -1,3 +1,5 @@
+import { expectApprox } from '../../test/helpers';
+
 const { web3 } = require('hardhat');
 const { expect } = require('chai');
 
@@ -63,16 +65,26 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   await oldEthReserveStabilizer.pause();
 }
 
-async function teardown(addresses, oldContracts, contracts, logging) {}
+async function teardown(addresses, oldContracts, contracts, logging) {
+  const { aaveEthPCVDeposit, compoundEthPCVDeposit, ethLidoPCVDeposit } = contracts;
+  await aaveEthPCVDeposit.deposit();
+  await compoundEthPCVDeposit.deposit();
+  await ethLidoPCVDeposit.deposit();
+}
 
 async function validate(addresses, oldContracts, contracts) {
   const { bondingCurve } = oldContracts;
+  const { aaveEthPCVDeposit, compoundEthPCVDeposit, ethLidoPCVDeposit } = contracts;
   const { aaveEthPCVDepositAddress, compoundEthPCVDepositAddress } = addresses;
   const allocation = await bondingCurve.getAllocation();
   expect(allocation[0][0]).to.be.equal(aaveEthPCVDepositAddress);
   expect(allocation[0][1]).to.be.equal(compoundEthPCVDepositAddress);
   expect(allocation[1][0]).to.be.bignumber.equal('5000');
   expect(allocation[1][1]).to.be.bignumber.equal('5000');
+
+  expectApprox(await aaveEthPCVDeposit.balance(), `75000${e18}`);
+  expectApprox(await compoundEthPCVDeposit.balance(), `75000${e18}`);
+  expectApprox(await ethLidoPCVDeposit.balance(), `24220${e18}`);
 }
 
 module.exports = {
