@@ -51,6 +51,7 @@ export type MainnetContracts = {
   governorAlpha: typeof Contract,
   tribalChief: typeof Contract,
   stakingTokenWrapper: typeof Contract,
+  erc20Dripper: typeof Contract,
 }
 
 export type MainnetContractAddresses = {

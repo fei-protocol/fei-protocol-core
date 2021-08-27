@@ -13,6 +13,12 @@ const uintMax = '115792089237316195423570985008687907853269984665640564039457584
 
 const { toBN } = web3.utils;
 
+// We will drip 4 million tribe per week
+const dripAmount = new BN(4000000).mul(new BN(10).pow(new BN(18)));
+// number of seconds between allowed drips
+// this is 1 week in seconds
+const dripFrequency = 604800;
+
 describe('e2e', function () {
   let contracts: MainnetContracts;
   let contractAddresses: MainnetContractAddresses;
@@ -968,6 +974,62 @@ describe('e2e', function () {
         // withdraw from deposit to clear the setup for the next test
         await unstakeAndHarvestAllPositions(userAddresses, pid, tribalChief, crvMetaPool);
       });
+    });
+  });
+
+  describe('ERC20Dripper', async () => {
+    let tribalChief;
+    let tribePerBlock;
+    let tribe;
+    let dripper;
+    let timelockAddress;
+    let minter;
+
+    before(async function () {
+      dripper = contracts.erc20Dripper;
+      tribalChief = contracts.tribalChief;
+      tribePerBlock = await tribalChief.tribePerBlock();
+      tribe = contracts.tribe;
+      timelockAddress = contractAddresses.timelockAddress;
+    });
+
+    beforeEach(async function () {
+      minter = await tribe.minter();
+      await hre.network.provider.request({
+        method: 'hardhat_impersonateAccount',
+        params: [minter],
+      });
+      await forceEth(minter);
+
+      await tribe.mint(dripper.address, dripAmount.mul(new BN(11)), { from: minter });
+    });
+
+    it('should be able to withdraw as PCV controller', async function () {
+      const totalLockedTribe = await dripper.balance();
+      const dripperStartingBalance = await tribe.balanceOf(dripper.address);
+      await dripper.withdraw(
+        tribalChief.address, totalLockedTribe, { from: timelockAddress }
+      );
+      const dripperEndingBalance = await tribe.balanceOf(dripper.address);
+
+      expect(dripperEndingBalance).to.be.bignumber.equal(new BN(0));
+      expect(dripperStartingBalance).to.be.bignumber.equal(totalLockedTribe);
+    });
+
+
+    it('should be able to call drip when enough time has passed through multiple periods', async function () {
+      for (let i = 0; i < 11; i++) {
+        await time.increase(dripFrequency);
+  
+        expect(await dripper.isTimeEnded()).to.be.true;
+
+        const tribalChiefStartingBalance = await tribe.balanceOf(tribalChief.address);
+        await dripper.drip();
+        const tribalChiefEndingBalance = await tribe.balanceOf(tribalChief.address);
+
+        expect(await dripper.isTimeEnded()).to.be.false;
+        expect(tribalChiefStartingBalance.add(dripAmount)).to.be.bignumber.equal(tribalChiefEndingBalance);
+      }
     });
   });
 });
