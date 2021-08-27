@@ -8,7 +8,8 @@
     "pcvDripControllerAddress",
     "dpiBondingCurveAddress",
     "daiBondingCurveAddress",
-    "dpiUniswapPCVDepositAddress"
+    "dpiUniswapPCVDepositAddress",
+    "raiBondingCurveAddress"
   ],
   "burner": [
     "ethReserveStabilizerAddress",
@@ -22,7 +23,9 @@
   "pcvController": [
     "timelockAddress",
     "ratioPCVControllerAddress",
-    "pcvDripControllerAddress"
+    "pcvDripControllerAddress",
+    "aaveEthPCVDripControllerAddress",
+    "compoundEthPCVDripControllerAddress"
   ],
   "guardian": [
     "multisigAddress"

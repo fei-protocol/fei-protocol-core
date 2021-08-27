@@ -25,7 +25,7 @@ async function sudo(addresses, logging = false) {
 
   // Force ETH to the Timelock to send txs on its behalf
   logging ? console.log('Deploying ForceEth') : undefined;
-  const forceEth = await ForceEth.new({value: '1000000000000000000'});
+  const forceEth = await ForceEth.new({value: '2000000000000000000'});
 
   logging ? console.log('Forcing ETH to timelock') : undefined;
   await forceEth.forceEth(timelockAddress);
