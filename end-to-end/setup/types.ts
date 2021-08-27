@@ -54,6 +54,7 @@ export type MainnetContracts = {
   feiTribePair: typeof Contract,
   rariPool8Tribe: typeof Contract,
   curve3Metapool: typeof Contract,
+  erc20Dripper: typeof Contract,
 }
 
 export type MainnetContractAddresses = {
