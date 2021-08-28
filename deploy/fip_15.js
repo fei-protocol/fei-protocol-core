@@ -1,7 +1,6 @@
 /* eslint-disable max-len */
 const { BN } = require('../test/helpers');
 
-const StakingTokenWrapper = artifacts.require('StakingTokenWrapper');
 const TribalChief = artifacts.require('TribalChief');
 const ERC20Dripper = artifacts.require('ERC20Dripper');
 const OptimisticTimelock = artifacts.require('OptimisticTimelock');
@@ -18,7 +17,6 @@ async function deploy(deployAddress, addresses, logging = false) {
   const { 
     coreAddress, 
     tribeAddress, 
-    rariPool8TribeAddress, 
     tribalChiefOptimisticMultisigAddress 
   } = addresses;
 
@@ -35,11 +33,6 @@ async function deploy(deployAddress, addresses, logging = false) {
     tribeAddress
   );
 
-  const stakingTokenWrapper = await StakingTokenWrapper.new(
-    tribalChief.address,
-    rariPool8TribeAddress,
-  );
-
   const tribalChiefOptimisticTimelock = await OptimisticTimelock.new(
     coreAddress,
     tribalChiefOptimisticMultisigAddress,
@@ -48,7 +41,6 @@ async function deploy(deployAddress, addresses, logging = false) {
   );
 
   return {
-    stakingTokenWrapper,
     erc20Dripper,
     tribalChief,
     tribalChiefOptimisticTimelock,

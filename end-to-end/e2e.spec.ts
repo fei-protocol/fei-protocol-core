@@ -737,7 +737,7 @@ describe('e2e', function () {
       });
 
       it('stakes uniswap fei/tribe LP tokens', async function () {
-        const pid = 1;
+        const pid = 0;
 
         const perBlockReward = tribePerBlock.div(await tribalChief.numPools());
         await uniFeiTribe.approve(tribalChief.address, totalStaked, { from: feiTribeLPTokenOwner });
@@ -765,7 +765,8 @@ describe('e2e', function () {
 
       it('multiple users stake uniswap fei/tribe LP tokens', async function () {
         const userAddresses = [feiTribeLPTokenOwner, feiTribeLPTokenOwnerNumberFour]
-        const userPerBlockReward = tribePerBlock.div(await tribalChief.numPools()).div(new BN(userAddresses.length));      const pid = 1;
+        const userPerBlockReward = tribePerBlock.div(await tribalChief.numPools()).div(new BN(userAddresses.length));      
+        const pid = 0;
 
         await testMultipleUsersPooling(
           tribalChief,
@@ -807,7 +808,7 @@ describe('e2e', function () {
       it('multiple users stake uniswap fei/tribe LP tokens, one user calls emergency withdraw and loses all reward debt', async function () {
         const userAddresses = [feiTribeLPTokenOwner, feiTribeLPTokenOwnerNumberFour, feiTribeLPTokenOwnerNumberFive]
         const userPerBlockReward = tribePerBlock.div(await tribalChief.numPools()).div(new BN(userAddresses.length));
-        const pid = 1;
+        const pid = 0;
 
         await testMultipleUsersPooling(
           tribalChief,
@@ -859,47 +860,6 @@ describe('e2e', function () {
       });
     });
 
-    describe('Rari StakingTokenWrapper', async () => {
-      let tribalChief;
-      let tribePerBlock;
-      let tribe;
-      let stakingTokenWrapper;
-      let tribeFToken;
-      let rariPool8TribeAddress;
-
-      before(async function () {
-        rariPool8TribeAddress = contractAddresses.rariPool8TribeAddress;
-        tribeFToken = await FToken.at(rariPool8TribeAddress);
-        stakingTokenWrapper = contracts.stakingTokenWrapper;
-        tribalChief = contracts.tribalChief;
-        tribePerBlock = await tribalChief.tribePerBlock();
-        tribe = contracts.tribe;
-      });
-
-      it('call harvest on stakingTokenWrapper', async function () {
-        const feiRariTribeBalanceBefore = await tribe.balanceOf(rariPool8TribeAddress);
-        await stakingTokenWrapper.harvest();
-        const feiRariTribeBalanceAfter = await tribe.balanceOf(rariPool8TribeAddress);
-        expect(feiRariTribeBalanceBefore).to.be.bignumber.lt(feiRariTribeBalanceAfter);
-      });
-
-      it('call harvest on stakingTokenWrapper, check getCash on FToken, assert cash increased 25 tribe per block', async function () {
-        await stakingTokenWrapper.harvest();
-        const rewardPerBlock = tribePerBlock.div(new BN(3));
-
-        for (let i = 0; i < 10; i++) {
-          const startingFTokenCash = await tribeFToken.getCash();
-          const feiRariTribeBalanceBefore = await tribe.balanceOf(rariPool8TribeAddress);
-          await stakingTokenWrapper.harvest();
-          const endingFTokenCash = await tribeFToken.getCash();
-          const feiRariTribeBalanceAfter = await tribe.balanceOf(rariPool8TribeAddress);
-          // check that the share price went up
-          expect(feiRariTribeBalanceBefore.add(rewardPerBlock)).to.be.bignumber.equal(feiRariTribeBalanceAfter);
-          expect(startingFTokenCash.add(rewardPerBlock)).to.be.bignumber.equal(endingFTokenCash);
-        }
-      });
-    });
-
     describe('FEICRV3Metapool', async () => {
       const CRVMetaPoolLPTokenOwner = '0x9544A83A8cB74062c836AA11565d4BB4A54fe40D';
       const feiTribeLPTokenOwner = '0x7D809969f6A04777F0A87FF94B57E56078E5fE0F';
@@ -932,7 +892,7 @@ describe('e2e', function () {
       });
 
       it('can stake CRV tokens', async function () {
-        const pid = 2;
+        const pid = 1;
 
         const perBlockReward = tribePerBlock.div(await tribalChief.numPools());
         await crvMetaPool.approve(tribalChief.address, totalStaked, { from: CRVMetaPoolLPTokenOwner });
@@ -959,7 +919,7 @@ describe('e2e', function () {
       });
 
       it('can stake CRV tokens, then withdrawFromDeposit', async function () {
-        const pid = 2;
+        const pid = 1;
 
         const perBlockReward = tribePerBlock.div(await tribalChief.numPools());
         await crvMetaPool.approve(tribalChief.address, totalStaked, { from: CRVMetaPoolLPTokenOwner });
@@ -1007,7 +967,7 @@ describe('e2e', function () {
       });
       
       it('can stake CRV tokens with multiple users', async function () {
-        const pid = 2;
+        const pid = 1;
         const userAddresses = [feiTribeLPTokenOwner, CRVMetaPoolLPTokenOwner];
         const userPerBlockReward = tribePerBlock.div(await tribalChief.numPools()).div(new BN(userAddresses.length));
 
@@ -1050,7 +1010,7 @@ describe('e2e', function () {
       });
 
       it('can stake CRV tokens, one user calls emergency withdraw and loses all reward debt', async function () {
-        const pid = 2;
+        const pid = 1;
         const userAddresses = [feiTribeLPTokenOwner, CRVMetaPoolLPTokenOwner];
         const userPerBlockReward = tribePerBlock.div(await tribalChief.numPools()).div(new BN(userAddresses.length));
 
