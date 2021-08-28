@@ -135,7 +135,7 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
         _setContractAdminRole(keccak256("TRIBAL_CHIEF_ADMIN_ROLE"));
 
         // set constant values here as we cannot use constants with proxies
-        tribalChiefTribePerBlock = 1e20;
+        tribalChiefTribePerBlock = 75e18;
         ACC_TRIBE_PRECISION = 1e23;
         SCALE_FACTOR = 1e4;
     }

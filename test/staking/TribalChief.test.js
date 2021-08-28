@@ -108,7 +108,7 @@ const withdrawFromDepositReport = [];
 const harvestReport = [];
 const depositReport = [];
 
-describe('TribalChief', () => {
+describe.only('TribalChief', () => {
   // this is the process ID of the staking rewards that we will use
   let pid;
   let minterAddress;
@@ -228,6 +228,8 @@ describe('TribalChief', () => {
 
       // initialize the tribalchief by hand
       await this.tribalChief.initialize(this.core.address, this.tribe.address);
+
+      await this.tribalChief.updateBlockReward(blockReward, {from: governorAddress});
 
       // create and mint LP tokens
       this.curveLPToken = await MockERC20.new();
@@ -2211,6 +2213,8 @@ describe('TribalChief', () => {
       // initialize the tribalchief by hand
       await this.tribalChief.initialize(this.core.address, this.tribe.address);
 
+      await this.tribalChief.updateBlockReward(blockReward, {from: governorAddress});
+
       // create and mint LP tokens
       this.curveLPToken = await MockERC20.new();
       await this.curveLPToken.mint(userAddress, totalStaked);
@@ -2591,6 +2595,8 @@ describe('TribalChief', () => {
 
       // initialize the tribalchief by hand
       await this.tribalChief.initialize(this.core.address, this.tribe.address);
+
+      await this.tribalChief.updateBlockReward(blockReward, {from: governorAddress});
 
       // create and mint LP tokens
       this.curveLPToken = await MockERC20.new();

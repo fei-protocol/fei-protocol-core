@@ -6,7 +6,6 @@ const hre = require('hardhat');
 const { BN, expect } = require('../../test/helpers');
 
 const e18 = '000000000000000000';
-const seventyFiveTribe = `75${e18}`;
 const twoMillionTribe = `2000000${e18}`;
 const allocPoints = 1000;
 const oneMultiplier = '10000';
@@ -31,10 +30,13 @@ async function setup(addresses, oldContracts, contracts, logging) {
   });
 }
 
-// assert that state changes correctly
-// add the first couple of pools to the tribal chief
-// add pool for curve staking, fei/tribe on univ2, rari tribe pool
-// add tests to the validate function. Just test things like balances, allocation points, etc
+// 1. Withdraw TRIBE from old dripper
+// 2. Allocate TRIBE to new dripper
+// 3. Allocate first drip to TribalChief
+// 4. Add FEI-TRIBE pair address
+// 5. Add curve metapool address
+// 6. Create TribalChief admin role
+// 7. Grant TribalChief admin role to optimistic timelock
 async function run(addresses, oldContracts, contracts, logging = false) {
   const {
     stakingTokenWrapper, tribalChief, tribe, core, erc20Dripper
@@ -56,8 +58,6 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     
   const tribeBalanceToAllocate = tribeBalanceToMigrate.sub(new BN(twoMillionTribe)).sub(dripAmount);
 
-  // distribute 75 tribe per block instead of 100
-  await tribalChief.updateBlockReward(seventyFiveTribe);
   // then migrate the balance minus 2 million and the first drip amount to the tribalchief
   await core.allocateTribe(erc20Dripper.address, tribeBalanceToAllocate);
   // then send the first drip amount straight to the TribalChief
