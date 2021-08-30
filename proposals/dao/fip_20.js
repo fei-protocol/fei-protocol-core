@@ -84,7 +84,6 @@ async function validate(addresses, oldContracts, contracts) {
 
   expectApprox(await aaveEthPCVDeposit.balance(), `75000${e18}`);
   expectApprox(await compoundEthPCVDeposit.balance(), `75000${e18}`);
-  expectApprox(await ethLidoPCVDeposit.balance(), `24220${e18}`);
 }
 
 module.exports = {

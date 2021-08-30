@@ -5,7 +5,6 @@
     "uniswapPCVControllerAddress",
     "feiRewardsDistributorAddress",
     "timelockAddress",
-    "pcvDripControllerAddress",
     "dpiBondingCurveAddress",
     "daiBondingCurveAddress",
     "dpiUniswapPCVDepositAddress",
@@ -23,7 +22,6 @@
   "pcvController": [
     "timelockAddress",
     "ratioPCVControllerAddress",
-    "pcvDripControllerAddress",
     "aaveEthPCVDripControllerAddress",
     "compoundEthPCVDripControllerAddress"
   ],

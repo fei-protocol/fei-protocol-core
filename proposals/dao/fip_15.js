@@ -63,15 +63,6 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   // then send the first drip amount straight to the TribalChief
   await core.allocateTribe(tribalChief.address, dripAmount);
 
-  await tribalChief.add(
-    allocPoints,
-    stakingTokenWrapper.address,
-    ZERO_ADDRESS,
-    defaultPoolRewardObject,
-  );
-  // Initialize the staking token wrapper before creating the next pool
-  await stakingTokenWrapper.init(0);
-
   // create the pool for fei/tribe LP tokens
   await tribalChief.add(
     allocPoints,
@@ -106,21 +97,19 @@ async function validate(addresses, oldContracts, contracts, logging) {
     curve3MetapoolAddress,
     tribalChiefOptimisticTimelockAddress 
   } = addresses;
-  const { stakingTokenWrapper, tribalChief, tribe} = contracts;
+  const { tribalChief, tribe} = contracts;
 
   const expectedValues = {
     feiRewardsDistributorBalance: (await tribe.balanceOf(feiRewardsDistributorAddress)).toString() === '0',
-    tribalChiefAllocPoints: (await tribalChief.totalAllocPoint()).toString() === (allocPoints * 3).toString(),
-    tribalChiefNumPools: (await tribalChief.numPools()).toString() === (3).toString(),
-    tribalChiefStakingTokenWrapperPool: await tribalChief.stakedToken(0) === stakingTokenWrapper.address,
-    tribalChiefFEITRIBEUniswapPool: await tribalChief.stakedToken(1) === feiTribePairAddress,
-    tribalChiefCurve3FEIMetaPool: await tribalChief.stakedToken(2) === curve3MetapoolAddress,
+    tribalChiefAllocPoints: (await tribalChief.totalAllocPoint()).toString() === (allocPoints * 2).toString(),
+    tribalChiefNumPools: (await tribalChief.numPools()).toString() === (2).toString(),
+    tribalChiefFEITRIBEUniswapPool: await tribalChief.stakedToken(0) === feiTribePairAddress,
+    tribalChiefCurve3FEIMetaPool: await tribalChief.stakedToken(1) === curve3MetapoolAddress,
   };
 
   expect(expectedValues.feiRewardsDistributorBalance).to.be.true;
   expect(expectedValues.tribalChiefAllocPoints).to.be.true;
   expect(expectedValues.tribalChiefNumPools).to.be.true;
-  expect(expectedValues.tribalChiefStakingTokenWrapperPool).to.be.true;
   expect(expectedValues.tribalChiefFEITRIBEUniswapPool).to.be.true;
   expect(expectedValues.tribalChiefCurve3FEIMetaPool).to.be.true;
 

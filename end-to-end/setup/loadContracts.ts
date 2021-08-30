@@ -27,8 +27,8 @@ export async function getContracts(contractAddresses: MainnetContractAddresses):
     }
     return accumulator
   })
-  // TODO: Figure out why core isn't getting added to the map. Temporary fix to just add it in manually below
-  deployedContractObjects['core'] = await getContract('coreAddress', contractAddresses['coreAddress'])
+  // TODO: Figure out why the first address in mainnetAddresses.json isn't getting added to the map. Temporary fix to just add it in manually below
+  deployedContractObjects['aave'] = await getContract('aaveAddress', contractAddresses['aaveAddress'])
   return deployedContractObjects as unknown as MainnetContracts
 }
 

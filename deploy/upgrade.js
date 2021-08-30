@@ -80,18 +80,7 @@ async function deploy(deployAddress, addresses, logging = false) {
   );
   
   logging ? console.log('TRIBE Reserve Stabilizer: ', tribeReserveStabilizer.address) : undefined;
-  
-  const pcvDripController = await PCVDripController.new(
-    coreAddress,
-    uniswapPCVDeposit.address,
-    ethReserveStabilizerAddress,
-    3600, // hourly
-    tenPow18.mul(new BN('5000')), // 5000 ETH drip
-    tenPow18.mul(new BN('100')) // 100 FEI incentive
-  );
-  
-  logging ? console.log('PCV Drip controller', pcvDripController.address) : undefined;
-  
+   
   const ratioPCVController = await RatioPCVController.new(
     coreAddress
   );
@@ -102,7 +91,6 @@ async function deploy(deployAddress, addresses, logging = false) {
     uniswapPCVDeposit,
     uniswapPCVController,
     bondingCurve,
-    pcvDripController,
     ratioPCVController,
     tribeReserveStabilizer
   };
