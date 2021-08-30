@@ -11,7 +11,6 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     bondingCurve,
     tribeReserveStabilizer,
     ratioPCVController,
-    pcvDripController,
     core,
     tribe
   } = contracts;
@@ -40,12 +39,6 @@ async function run(addresses, oldContracts, contracts, logging = false) {
 
   logging ? console.log('Granting PCVController to new RatioPCVController') : undefined;
   await core.grantPCVController(ratioPCVController.address);
-
-  logging ? console.log('Granting PCVController to new PCVDripController') : undefined;
-  await core.grantPCVController(pcvDripController.address);
-
-  logging ? console.log('Granting Minter to new PCVDripController') : undefined;
-  await core.grantMinter(pcvDripController.address);
 
   await oldRatioPCVController.withdrawRatio(oldContracts.uniswapPCVDeposit.address, uniswapPCVDeposit.address, '10000'); // move 100% of PCV from old -> new
 }
