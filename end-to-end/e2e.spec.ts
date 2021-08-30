@@ -78,7 +78,9 @@ describe('e2e', function () {
         await compoundEthPCVDeposit.deposit();
         const compoundETHBefore = await compoundEthPCVDeposit.balance()
 
-        await aaveEthPCVDeposit.deposit();
+        if ((await web3.eth.getBalance(aaveEthPCVDeposit.address)).toString() !== '0') {
+          await aaveEthPCVDeposit.deposit();
+        }
         const aaveETHBefore = await aaveEthPCVDeposit.balance()
 
         const curveEthBalanceBefore = toBN(await web3.eth.getBalance(bondingCurve.address));
@@ -186,6 +188,10 @@ describe('e2e', function () {
         const daiSeedAmount = tenPow18.mul(toBN(1000000)); // 1M DAI
         await forceEth(contractAddresses.compoundDaiAddress);
         await contracts.dai.transfer(deployAddress, daiSeedAmount, {from: contractAddresses.compoundDaiAddress});
+      
+        const bondingCurve = contracts.daiBondingCurve;
+        // increase mint cap
+        await bondingCurve.setMintCap(tenPow18.mul(tenPow18));
       })
 
       it('should allow purchase of Fei through bonding curve', async function () {
@@ -205,7 +211,7 @@ describe('e2e', function () {
 
         const feiBalanceAfter = await fei.balanceOf(deployAddress);
         const expectedFinalBalance = feiBalanceBefore.add(expected);
-        expect(feiBalanceAfter).to.be.bignumber.equal(expectedFinalBalance);
+        expectApprox(feiBalanceAfter, expectedFinalBalance);
       })
 
       it('should transfer allocation from bonding curve to the compound deposit', async function () {
@@ -269,7 +275,10 @@ describe('e2e', function () {
       it('should transfer allocation from bonding curve to Fuse', async function () {
         const bondingCurve = contracts.raiBondingCurve;
         const fusePCVDeposit = contracts.reflexerStableAssetFusePoolRaiPCVDeposit;
+        const fuseBalanceBefore = await fusePCVDeposit.balance();
+
         const aaveRaiPCVDeposit = contracts.aaveRaiPCVDeposit
+        const aaveBalanceBefore = await aaveRaiPCVDeposit.balance();
 
         const pcvAllocations = await bondingCurve.getAllocation()
         expect(pcvAllocations[0].length).to.be.equal(2)
@@ -281,9 +290,12 @@ describe('e2e', function () {
         const curveBalanceAfter = await bondingCurve.balance();
         expect(curveBalanceAfter).to.be.bignumber.equal(toBN(0))
 
+        const fuseBalanceAfter = await fusePCVDeposit.balance();
+        const aaveBalanceAfter = await aaveRaiPCVDeposit.balance();
+
         // Half allocated to fuse, half to aave
-        await expectApprox(await fusePCVDeposit.balance(), allocatedRai.div(toBN(2)), '100')
-        await expectApprox(await aaveRaiPCVDeposit.balance(), allocatedRai.div(toBN(2)), '100')
+        await expectApprox(fuseBalanceAfter.sub(fuseBalanceBefore), allocatedRai.div(toBN(2)), '100')
+        await expectApprox(aaveBalanceAfter.sub(aaveBalanceBefore), allocatedRai.div(toBN(2)), '100')
       })
     });
   });
