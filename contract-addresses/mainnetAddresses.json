@@ -37,10 +37,10 @@
     "wethERC20Address": { "artifact": "IERC20", "address":  "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"},
     "stethAddress" : { "artifact": "IERC20", "address":  "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"},
     "indexAddress" : { "artifact": "IERC20", "address" : "0x0954906da0Bf32d5479e25f46056d22f08464cab" },
-    "snapshotDelegateRegistry" : { "artifact": "DelegateRegistry", "address" : "0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446" },
-    "ethOTCEscrow" : { "artifact": "OtcEscrow", "address": "0x6Cfed416f0729d5754f13fDDf297789079208E2e"},
-    "tribeOTCEscrow" : { "artifact": "OtcEscrow", "address": "0xe2fE8041429e4bd51c40F92C6cDb699527171298"},
-    "feiOTCEscrow" : { "artifact": "OtcEscrow", "address": "0x9B9fE1b732839a53948B02E5164c0A50fdf11e06"},
+    "snapshotDelegateRegistryAddress" : { "artifact": "DelegateRegistry", "address" : "0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446" },
+    "ethOTCEscrowAddress" : { "artifact": "OtcEscrow", "address": "0x6Cfed416f0729d5754f13fDDf297789079208E2e"},
+    "tribeOTCEscrowAddress" : { "artifact": "OtcEscrow", "address": "0xe2fE8041429e4bd51c40F92C6cDb699527171298"},
+    "feiOTCEscrowAddress" : { "artifact": "OtcEscrow", "address": "0x9B9fE1b732839a53948B02E5164c0A50fdf11e06"},
     "indexDelegatorAddress" : { "artifact": "SnapshotDelegatorPCVDeposit", "address": "0x0ee81df08B20e4f9E0F534e50da437D24491c4ee" },
     "defiPulseOTCAddress" : { "address" : "0x673d140eed36385cb784e279f8759f495c97cf03" },
     "compoundEthAddress" : { "address" : "0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5" },
@@ -104,7 +104,7 @@
     "aRaiAddress" : {"address": "0xc9BC48c72154ef3e5425641a3c747242112a46AF"},
     "aaveRaiPCVDeposit": {"artifact" : "AavePCVDeposit", "address": "0xd2174d78637a40448112aa6B30F9B19e6CF9d1F9"},
     "stAAVEAddress" : {"artifact" : "IERC20", "address": "0x4da27a545c0c5b758a6ba100e3a049001de870f5" },
-    "aaveLendingPool" : {"address": "0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9"},
-    "aaveTribeIncentivesController" : {"address": "0xFF865335401F12B88fa3FF5A3a51685A7f224191"},
-    "aaveIncentivesController" : {"address": "0xd784927ff2f95ba542bfc824c8a8a98f3495f6b5"}
+    "aaveLendingPoolAddress" : {"address": "0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9"},
+    "aaveTribeIncentivesControllerAddress" : {"address": "0xFF865335401F12B88fa3FF5A3a51685A7f224191"},
+    "aaveIncentivesControllerAddress" : {"address": "0xd784927ff2f95ba542bfc824c8a8a98f3495f6b5"}
 }
