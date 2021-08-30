@@ -25,6 +25,8 @@ async function deploy(deployAddress, addresses, logging = false) {
     tribeAddress,
   );
 
+  logging && console.log('TribalChief deployed to: ', tribalChief.address);
+
   const erc20Dripper = await ERC20Dripper.new(
     coreAddress,
     tribalChief.address,
@@ -33,12 +35,16 @@ async function deploy(deployAddress, addresses, logging = false) {
     tribeAddress
   );
 
+  logging && console.log('ERC20 Dripper deployed to: ', erc20Dripper.address);
+
   const tribalChiefOptimisticTimelock = await OptimisticTimelock.new(
     coreAddress,
     tribalChiefOptimisticMultisigAddress,
     fourDays,
     fourDays
   );
+
+  logging && console.log('TribalChiefOptimisticTimelock deployed to: ', tribalChiefOptimisticTimelock.address);
 
   return {
     erc20Dripper,
