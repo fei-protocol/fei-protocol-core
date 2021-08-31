@@ -37,17 +37,24 @@ async function setup(addresses, oldContracts, contracts, logging) {
 // 5. Add curve metapool address
 // 6. Create TribalChief admin role
 // 7. Grant TribalChief admin role to optimistic timelock
+// 8. Send 7000 TRIBE to OA multisig
 async function run(addresses, oldContracts, contracts, logging = false) {
   const {
-    stakingTokenWrapper, tribalChief, tribe, core, erc20Dripper
+    tribalChief, tribe, core, erc20Dripper
   } = contracts;
   const {
-    timelockAddress, feiRewardsDistributorAddress, feiTribePairAddress, curve3MetapoolAddress, tribalChiefOptimisticTimelockAddress
+    timelockAddress, 
+    feiRewardsDistributorAddress, 
+    feiTribePairAddress, 
+    curve3MetapoolAddress, 
+    tribalChiefOptimisticTimelockAddress,
+    tribalChiefOptimisticMultisigAddress
   } = addresses;
 
   // we should subtract 2 million off this number to leave 2 million tribe in the DAO
   const tribeBalanceToMigrate = await tribe.balanceOf(feiRewardsDistributorAddress);
 
+  // 1. Withdraw TRIBE from old dripper
   const governorWithdrawTribeAbi = ['function governorWithdrawTribe(uint256 amount)'];
   const governorWithdrawTribeInterface = new ethers.utils.Interface(governorWithdrawTribeAbi);
   const encodedGovernorWithdrawTribe = governorWithdrawTribeInterface.encodeFunctionData('governorWithdrawTribe', [tribeBalanceToMigrate.toString()]);
@@ -58,12 +65,12 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     
   const tribeBalanceToAllocate = tribeBalanceToMigrate.sub(new BN(twoMillionTribe)).sub(dripAmount);
 
-  // then migrate the balance minus 2 million and the first drip amount to the tribalchief
+  // 2. Allocate TRIBE to new dripper
   await core.allocateTribe(erc20Dripper.address, tribeBalanceToAllocate);
-  // then send the first drip amount straight to the TribalChief
+  // 3. Allocate first drip to TribalChief
   await core.allocateTribe(tribalChief.address, dripAmount);
 
-  // create the pool for fei/tribe LP tokens
+  // 4. create the pool for fei/tribe LP tokens
   await tribalChief.add(
     allocPoints,
     feiTribePairAddress,
@@ -71,7 +78,7 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     defaultPoolRewardObject,
   );
 
-  // create the pool for fei/curve3Metapool LP tokens
+  // 5. create the pool for fei/curve3Metapool LP tokens
   await tribalChief.add(
     allocPoints,
     curve3MetapoolAddress,
@@ -81,8 +88,14 @@ async function run(addresses, oldContracts, contracts, logging = false) {
 
   const role = await tribalChief.CONTRACT_ADMIN_ROLE();
 
+  // 6. Create TribalChief admin role
   await core.createRole(role, await core.GOVERN_ROLE());
+
+  // 7. Grant TribalChief admin role to optimistic timelock
   await core.grantRole(role, tribalChiefOptimisticTimelockAddress);
+
+  // 8. Send 7000 TRIBE to OA multisig
+  await core.allocateTribe(tribalChiefOptimisticMultisigAddress, `7000${e18}`);
 }
 
 async function teardown(addresses, oldContracts, contracts, logging) {}
