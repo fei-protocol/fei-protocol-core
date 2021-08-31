@@ -4,6 +4,7 @@ const { BN } = require('../test/helpers');
 
 const TribalChief = artifacts.require('TribalChief');
 const TransparentUpgradeableProxy = artifacts.require('TransparentUpgradeableProxy');
+const ProxyAdmin = artifacts.require('ProxyAdmin');
 const ERC20Dripper = artifacts.require('ERC20Dripper');
 const OptimisticTimelock = artifacts.require('OptimisticTimelock');
 
@@ -29,6 +30,16 @@ async function deploy(deployAddress, addresses, logging = false) {
 
   logging && console.log('TribalChief impl deployed to: ', tribalChiefImpl.address);
 
+  // Create a new Proxy admin
+  const proxyAdmin = await ProxyAdmin.new();
+
+  logging && console.log('ProxyAdmin deployed to: ', proxyAdmin.address);
+
+  // Grant ownership of that admin to the DAO, so the DAO can perform future contract upgrades
+  await proxyAdmin.transferOwnership(timelockAddress);
+
+  logging && console.log('Transferred ownership of proxy to the DAO');
+
   // This initialize calldata gets atomically executed against the impl logic 
   // upon construction of the proxy
   const calldata = await web3.eth.abi.encodeFunctionCall({
@@ -46,7 +57,7 @@ async function deploy(deployAddress, addresses, logging = false) {
   const tribalChief = await TribalChief.at(
     (await TransparentUpgradeableProxy.new(
       tribalChiefImpl.address, 
-      timelockAddress, 
+      proxyAdmin.address, 
       calldata
     )).address
   );
@@ -77,6 +88,7 @@ async function deploy(deployAddress, addresses, logging = false) {
     tribalChief,
     tribalChiefImpl,
     tribalChiefOptimisticTimelock,
+    proxyAdmin
   };
 }
 
