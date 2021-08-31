@@ -15,5 +15,5 @@ interface ICollateralizationOracle is IOracle {
 
     function pcvValue() external view returns (uint256);
 
-    function pcvEquityValue() external view returns (uint256); 
+    function pcvEquityValue() external view returns (uint256);
 }
