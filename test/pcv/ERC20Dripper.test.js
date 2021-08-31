@@ -20,6 +20,7 @@ const Tribe = artifacts.require('MockTribe');
 const MockCoreRef = artifacts.require('MockCoreRef');
 const TribalChief = artifacts.require('TribalChief');
 const ERC20Dripper = artifacts.require('ERC20Dripper');
+const TransparentUpgradeableProxy = artifacts.require('TransparentUpgradeableProxy');
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
@@ -29,7 +30,7 @@ const dripAmount = new BN(4000000).mul(new BN(10).pow(new BN(18)));
 // this is 1 week in seconds
 const dripFrequency = 604800;
 
-describe('ERC20Dripper', () => {
+describe.only('ERC20Dripper', () => {
   before(async () => {
     ({
       userAddress,
@@ -60,7 +61,17 @@ describe('ERC20Dripper', () => {
     this.tribe = await Tribe.new();
     this.coreRef = await MockCoreRef.new(this.core.address);
 
-    this.tribalChief = await TribalChief.new(this.core.address, this.tribe.address);
+    // spin up the logic contract by hand
+    const tribalChief = await TribalChief.new(this.core.address);
+    // create a new proxy contract
+    const proxyContract = await TransparentUpgradeableProxy.new(tribalChief.address, tribalChief.address, '0x', { from: userAddress });
+
+    // instantiate the tribalchief pointed at the proxy contract
+    this.tribalChief = await TribalChief.at(proxyContract.address);
+
+    // initialize the tribalchief by hand
+    await this.tribalChief.initialize(this.core.address, this.tribe.address);
+
     this.dripper = await ERC20Dripper.new(
       this.core.address,
       this.tribalChief.address,
