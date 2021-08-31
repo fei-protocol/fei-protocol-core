@@ -9,7 +9,7 @@ contract MockCollateralizationOracle is MockOracle {
 
     uint256 public pcvValue = 5e20;
 
-    constructor(uint256 exchangeRate) 
+    constructor(uint256 exchangeRate)
         MockOracle(exchangeRate)
     {
     }
