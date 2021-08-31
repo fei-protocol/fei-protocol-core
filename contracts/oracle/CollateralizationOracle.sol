@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "./IOracle.sol";
+import "./ICollateralizationOracle.sol";
 import "../refs/CoreRef.sol";
 import "../pcv/IPCVDepositV2.sol";
 
@@ -10,28 +11,38 @@ import "../pcv/IPCVDepositV2.sol";
 /// @notice Reads a list of PCVDeposit that report their amount of collateral
 ///         and the amount of protocol-owned FEI they manage, to deduce the
 ///         protocol-wide collateralization ratio.
-///         The protocol collateralization ratio is defined as the total USD
-///         value of assets held in the PCV, minus the circulating FEI.
-///         The circulating FEI is defined as the total FEI supply, minus the
-///         protocol-owned FEI managed by the various deposits.
-contract CollateralizationOracle is CoreRef {
+contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     using Decimal for Decimal.D256;
 
     // ----------- Events -----------
 
-    event DepositAdd(address indexed _from, address _deposit);
+    event DepositAdd(address indexed _from, address _deposit, address _token);
     event DepositRemove(address indexed _from, address _deposit);
     event OracleSet(address indexed _from, address _token, address _oracle);
 
     // ----------- Properties -----------
 
-    /// @notice array of PCVDeposits to inspect
+    /// @notice Array of PCVDeposits to inspect
     address[] public pcvDeposits;
 
-    /// @notice map of oracles to use to get USD values of assets held in
+    /// @notice Map of oracles to use to get USD values of assets held in
     ///         PCV deposits. This map is used to get the oracle address from
     ///         and ERC20 address.
-    mapping(address => address) public oracles;
+    mapping(address => address) public token2oracle;
+    /// @notice Map from token address to an array of deposit addresses. It is
+    //          used to iterate on all deposits while making oracle requests
+    //          only once.
+    mapping(address => address[]) public token2deposits;
+    /// @notice Map from deposit address to token address. It is used like an
+    ///         indexed version of the pcvDeposits array, to check existence
+    ///         of a PCVdeposit in the current config.
+    mapping(address => address) public deposit2token;
+    /// @notice Array of all tokens held in the PCV. Used for iteration on tokens
+    ///         and oracles.
+    address[] public tokensInPcv;
+    /// @notice Map to know if a given token is in the PCV. Used like an indexed
+    ///         version of the tokensInPcv array.
+    mapping(address => uint8) public isTokenInPcv;
 
     // ----------- Constructor -----------
 
@@ -45,26 +56,32 @@ contract CollateralizationOracle is CoreRef {
 
     /// @notice Add a PCVDeposit to the list of deposits inspected by the
     ///         collateralization ratio oracle.
-    ///         note : this function reverts of the deposit is already in the list.
-    /// @param _deposit : the PCVDeposit to add t othe list.
+    ///         note : this function reverts if the deposit is already in the list.
+    ///         note : this function reverts if the deposit's token has no oracle.
+    /// @param _deposit : the PCVDeposit to add to the list.
     function addDeposit(address _deposit) external onlyGovernor {
-        // flag to indicate of the given _deposit has been found in the list
-        // of PCVdeposits declared in this contract.
-        bool found = false;
-        for (uint256 i = 0; i < pcvDeposits.length; i++) {
-            if (pcvDeposits[i] == _deposit) {
-                found = true;
-            }
-        }
-
         // if the PCVDeposit is already listed, revert.
-        require(!found, "CollateralizationOracle: add _deposit duplicate");
+        require(deposit2token[_deposit] == address(0), "CollateralizationOracle: deposit duplicate");
+
+        // get the token in which the deposit reports its token
+        address _token = IPCVDepositV2(_deposit).balanceReportedIn();
+
+        // revert if there is no oracle of this deposit's token
+        require(token2oracle[_token] != address(0), "CollateralizationOracle: no oracle");
 
         // add the PCVDeposit to the list
         pcvDeposits.push(_deposit);
 
+        // update maps & arrays for faster access
+        deposit2token[_deposit] = _token;
+        token2deposits[_token].push(_deposit);
+        if (isTokenInPcv[_token] == 0) {
+          isTokenInPcv[_token] = 1;
+          tokensInPcv.push(_token);
+        }
+
         // emit event
-        emit DepositAdd(msg.sender, _deposit);
+        emit DepositAdd(msg.sender, _deposit, _token);
     }
 
     /// @notice Remove a PCVDeposit from the list of deposits inspected by
@@ -72,32 +89,47 @@ contract CollateralizationOracle is CoreRef {
     ///         note : this function reverts if the input deposit is not found.
     /// @param _deposit : the PCVDeposit address to remove from the list.
     function removeDeposit(address _deposit) external onlyGovernor {
-        // flag to indicate of the given _deposit has been found in the list
-        // of PCVdeposits declared in this contract.
+        // get the token in which the deposit reports its token
+        address _token = deposit2token[_deposit];
+
+        // revert if the deposit is not found
+        require(_token != address(0), "CollateralizationOracle: deposit not found");
+
+        // update maps & arrays for faster access
+        // deposits array for the deposit's token
+        deposit2token[_deposit] = address(0);
+        uint256 _nDepositsWithToken = token2deposits[_token].length;
         bool found = false;
-
-        // If the PCVDeposit to remove is last in the array, no need to loop.
-        if (pcvDeposits[pcvDeposits.length - 1] == _deposit) {
-            found = true;
-        }
-        // loop through PCVDeposits to find the given deposit, and remove it
-        // from the array if found
-        else {
-            for (uint256 i = 0; i < pcvDeposits.length; i++) {
-                if (pcvDeposits[i] == _deposit) {
-                    found = true;
-                }
-
-                if (found) {
-                    pcvDeposits[i] = pcvDeposits[i + 1];
-                }
+        for (uint256 i = 0; !found && i < _nDepositsWithToken; i++) {
+            if (token2deposits[_token][i] == _deposit) {
+                found = true;
+                token2deposits[_token][i] = token2deposits[_token][_nDepositsWithToken - 1];
             }
         }
-
-        // revert if the deposit has not been found
-        require(found, "CollateralizationOracle: remove _deposit not found");
-
-        // remove last element from the array of deposits
+        token2deposits[_token].pop();
+        // if it was the last deposit to have this token, remove this token from
+        // the arrays also
+        if (token2deposits[_token].length == 0) {
+          isTokenInPcv[_token] = 0;
+          uint256 _nTokensInPcv = tokensInPcv.length;
+          found = false;
+          for (uint256 i = 0; !found && i < _nTokensInPcv; i++) {
+              if (tokensInPcv[i] == _token) {
+                  found = true;
+                  tokensInPcv[i] = tokensInPcv[_nTokensInPcv - 1];
+              }
+          }
+          tokensInPcv.pop();
+        }
+        // remove from the main array
+        uint256 _nDeposits = pcvDeposits.length;
+        found = false;
+        for (uint256 i = 0; !found && i < _nDeposits; i++) {
+            if (pcvDeposits[i] == _deposit) {
+                found = true;
+                pcvDeposits[i] = pcvDeposits[_nDeposits - 1];
+            }
+        }
         pcvDeposits.pop();
 
         // emit event
@@ -109,56 +141,147 @@ contract CollateralizationOracle is CoreRef {
     /// @param _oracle : price feed oracle for the given asset
     function setOracle(address _token, address _oracle) external onlyGovernor {
         // add oracle to the map(ERC20Address) => OracleAddress
-        oracles[_token] = _oracle;
+        token2oracle[_token] = _oracle;
 
         // emit event
         emit OracleSet(msg.sender, _token, _oracle);
     }
 
-    // ----------- View/Pure methods -----------
+    // ----------- IOracle override methods -----------
+    /// @notice update all oracles required for this oracle to work
+    function update() external override whenNotPaused {
+        for (uint256 i = 0; i < tokensInPcv.length; i++) {
+            IOracle(token2oracle[tokensInPcv[i]]).update();
+        }
+    }
+
+    // @notice returns true if any of the oracles required for this oracle to
+    //         work are outdated.
+    function isOutdated() external override view returns (bool) {
+        bool _outdated = false;
+        for (uint256 i = 0; i < tokensInPcv.length && !_outdated; i++) {
+            _outdated = _outdated || IOracle(token2oracle[tokensInPcv[i]]).isOutdated();
+        }
+        return _outdated;
+    }
 
     /// @notice Get the current collateralization ratio of the protocol.
-    /// @return _collateralRatio the current collateral ratio of the protocol,
-    ///         expressed on a 1e18 basis.
-    /// @return _protocolControlledValue the total USD value of all assets held
-    ///         by the protocol, expressed on a 1e18 basis.
-    /// @return _circulatingFei the total amount of FEI circulating (i.e. not
-    ///         owned by the protocol).
-    function read() external view returns (uint256, uint256, uint256) {
+    /// @return _collateralRatio the current collateral ratio of the protocol.
+    /// @return _globalValid the current oracle validity status (false if any
+    ///         of the oracles for tokens held in the PCV are invalid, or if
+    ///         this contract is paused).
+    function read() public override view returns (Decimal.D256 memory, bool) {
         // The total amount of FEI controlled (owned) by the protocol
         uint256 _protocolControlledFei = 0;
         // The total USD value of assets held in the PCV
         uint256 _protocolControlledValue = 0;
+        // false if any of the token oracles are invalid, or if paused
+        bool _globalValid = !paused();
 
-        // For each PCVDeposit...
-        for (uint256 i = 0; i < pcvDeposits.length; i++) {
-            IPCVDepositV2 _deposit = IPCVDepositV2(pcvDeposits[i]);
+        // For each token...
+        for (uint256 i = 0; i < tokensInPcv.length; i++) {
+            address _token = tokensInPcv[i];
+            (Decimal.D256 memory _price, bool _valid) = IOracle(token2oracle[_token]).read();
+            _globalValid = _globalValid && _valid;
 
-            // Get the asset this PCVDeposit reports its balance, and read a
-            // price feed to get the USD value of this asset.
-            address _token = _deposit.balanceReportedIn();
-            require(oracles[_token] != address(0), "CollateralizationOracle: oracle not found");
-            (Decimal.D256 memory _price, bool _valid) = IOracle(oracles[_token]).read();
-            require(_valid, "CollateralizationOracle: oracle invalid");
+            // For each deposit...
+            for (uint256 j = 0; j < token2deposits[_token].length; j++) {
+                IPCVDepositV2 _deposit = IPCVDepositV2(token2deposits[_token][j]);
 
-            // Increment the total protocol controlled value by the USD value of
-            // the asset held in this PCVDeposit
-            _protocolControlledValue += _price.mul(_deposit.resistantBalance()).asUint256();
+                // Increment the total protocol controlled value by the USD value of
+                // the asset held in this PCVDeposit
+                _protocolControlledValue += _price.mul(_deposit.resistantBalance()).asUint256();
 
-            // Increment the total protocol controlled FEI by the amount of FEI
-            // held by this PCVDeposit
-            _protocolControlledFei += _deposit.resistantProtocolOwnedFei();
+                // Increment the total protocol controlled FEI by the amount of FEI
+                // held by this PCVDeposit
+                _protocolControlledFei += _deposit.resistantProtocolOwnedFei();
+            }
         }
 
         // The circulating FEI is defined as the total FEI supply, minus the
         // protocol-owned FEI managed by the various deposits.
-        uint256 _circulatingFei = fei().totalSupply() - _protocolControlledFei;
+        uint256 _userCirculatingFei = fei().totalSupply() - _protocolControlledFei;
 
         // The protocol collateralization ratio is defined as the total USD
         // value of assets held in the PCV, minus the circulating FEI.
-        uint256 _collateralRatio = _protocolControlledValue * 1e18 / _circulatingFei;
+        Decimal.D256 memory _collateralRatio = Decimal.ratio(_protocolControlledValue, _userCirculatingFei);
 
         // return values
-        return (_collateralRatio, _protocolControlledValue, _circulatingFei);
+        return (_collateralRatio, _globalValid);
+    }
+
+    // ----------- ICollateralizationOracle override methods -----------
+
+    /// @notice returns true if the protocol is overcollateralized. Overcollateralization
+    ///         is defined as the protocol having more assets in its PCV (Protocol
+    ///         Controlled Value) than the circulating (user-owned) FEI.
+    function isOvercollateralized() external view override whenNotPaused returns (bool) {
+        return pcvEquityValue() > 0;
+    }
+
+    /// @notice returns the amount of circulating (user-owned) FEI. User Circulating
+    ///         FEI is defined as the total supply of FEI minus the FEI held in the
+    ///         various protocol's contracts.
+    function userCirculatingFei() external view override whenNotPaused returns (uint256) {
+        uint256 _protocolControlledFei = 0;
+
+        for (uint256 i = 0; i < pcvDeposits.length; i++) {
+            IPCVDepositV2 _deposit = IPCVDepositV2(pcvDeposits[i]);
+            _protocolControlledFei += _deposit.resistantProtocolOwnedFei();
+        }
+
+        return fei().totalSupply() - _protocolControlledFei;
+    }
+
+    /// @notice returns the total PCV (Protocol Controlled Value) of Fei Protocol. The
+    ///         PCV is the value of all assets held by the protocol, denominated in USD,
+    ///         that is either held on the protocol's contracts, or deployed productively
+    ///         in liquidity pools, lending services, etc.
+    function pcvValue() external view override whenNotPaused returns (uint256) {
+        uint256 _pcv = 0;
+
+        // For each token...
+        for (uint256 i = 0; i < tokensInPcv.length; i++) {
+            address _token = tokensInPcv[i];
+            (Decimal.D256 memory _price, bool _valid) = IOracle(token2oracle[_token]).read();
+            require(_valid, "CollateralizationOracle: oracle invalid");
+
+            // For each deposit...
+            for (uint256 j = 0; j < token2deposits[_token].length; j++) {
+                IPCVDepositV2 _deposit = IPCVDepositV2(token2deposits[_token][j]);
+                _pcv += _price.mul(_deposit.resistantBalance()).asUint256();
+            }
+        }
+
+        return _pcv;
+    }
+
+    /// @notice returns the total PCV Equity of Fei Protocol. The PCV equity is
+    ///         defined as the total PCV dollar value minus User Circulating FEI.
+    ///         See pcvValue() and userCirculatingFei() for more details.
+    function pcvEquityValue() public view override whenNotPaused returns (uint256) {
+        uint256 _pcv = 0;
+        uint256 _protocolControlledFei = 0;
+
+        // For each token...
+        for (uint256 i = 0; i < tokensInPcv.length; i++) {
+            address _token = tokensInPcv[i];
+            (Decimal.D256 memory _price, bool _valid) = IOracle(token2oracle[_token]).read();
+            require(_valid, "CollateralizationOracle: oracle invalid");
+
+            // For each deposit...
+            for (uint256 j = 0; j < token2deposits[_token].length; j++) {
+                IPCVDepositV2 _deposit = IPCVDepositV2(token2deposits[_token][j]);
+                _pcv += _price.mul(_deposit.resistantBalance()).asUint256();
+                _protocolControlledFei += _deposit.resistantProtocolOwnedFei();
+            }
+        }
+
+        uint256 _userCirculatingFei = fei().totalSupply() - _protocolControlledFei;
+        uint256 _equity = 0;
+        if (_pcv > _userCirculatingFei) {
+            _equity = _pcv - _userCirculatingFei;
+        }
+        return _equity;
     }
 }
