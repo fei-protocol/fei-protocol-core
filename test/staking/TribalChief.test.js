@@ -108,7 +108,7 @@ const withdrawFromDepositReport = [];
 const harvestReport = [];
 const depositReport = [];
 
-describe.only('TribalChief', () => {
+describe('TribalChief', () => {
   // this is the process ID of the staking rewards that we will use
   let pid;
   let minterAddress;
