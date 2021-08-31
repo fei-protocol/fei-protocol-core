@@ -108,9 +108,10 @@ async function validate(addresses, oldContracts, contracts, logging) {
     feiRewardsDistributorAddress, 
     feiTribePairAddress, 
     curve3MetapoolAddress,
-    tribalChiefOptimisticTimelockAddress 
+    tribalChiefOptimisticTimelockAddress,
+    coreAddress 
   } = addresses;
-  const { tribalChief, tribe} = contracts;
+  const { tribalChief, tribe, core } = contracts;
 
   const expectedValues = {
     feiRewardsDistributorBalance: (await tribe.balanceOf(feiRewardsDistributorAddress)).toString() === '0',
@@ -129,6 +130,10 @@ async function validate(addresses, oldContracts, contracts, logging) {
   console.log(expectedValues);
 
   expect(await tribalChief.isContractAdmin(tribalChiefOptimisticTimelockAddress)).to.be.true;
+  expect(await tribalChief.core()).to.be.equal(coreAddress);
+  expect(await tribalChief.tribe()).to.be.equal(tribe.address);
+  expect(await tribalChief.tribePerBlock()).to.be.bignumber.equal(`75${e18}`);
+  expect(await tribalChief.CONTRACT_ADMIN_ROLE()).to.be.not.equal(await core.GOVERN_ROLE());
 }
 
 module.exports = {

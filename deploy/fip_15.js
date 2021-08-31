@@ -1,7 +1,9 @@
 /* eslint-disable max-len */
+const { web3 } = require('hardhat');
 const { BN } = require('../test/helpers');
 
 const TribalChief = artifacts.require('TribalChief');
+const TransparentUpgradeableProxy = artifacts.require('TransparentUpgradeableProxy');
 const ERC20Dripper = artifacts.require('ERC20Dripper');
 const OptimisticTimelock = artifacts.require('OptimisticTimelock');
 
@@ -16,13 +18,37 @@ const dripAmount = new BN(4000000).mul(new BN(10).pow(new BN(18)));
 async function deploy(deployAddress, addresses, logging = false) {
   const { 
     coreAddress, 
-    tribeAddress, 
+    tribeAddress,
+    timelockAddress, 
     tribalChiefOptimisticMultisigAddress 
   } = addresses;
 
-  const tribalChief = await TribalChief.new(
+  const tribalChiefImpl = await TribalChief.new(
     coreAddress,
-    tribeAddress,
+  );
+
+  logging && console.log('TribalChief impl deployed to: ', tribalChiefImpl.address);
+
+  // This initialize calldata gets atomically executed against the impl logic 
+  // upon construction of the proxy
+  const calldata = await web3.eth.abi.encodeFunctionCall({
+    name: 'initialize',
+    type: 'function',
+    inputs: [{
+      type: 'address',
+      name: 'core'
+    }, {
+      type: 'address',
+      name: 'tribe'
+    }]
+  }, [coreAddress, tribeAddress]);
+
+  const tribalChief = await TribalChief.at(
+    (await TransparentUpgradeableProxy.new(
+      tribalChiefImpl.address, 
+      timelockAddress, 
+      calldata
+    )).address
   );
 
   logging && console.log('TribalChief deployed to: ', tribalChief.address);
@@ -49,6 +75,7 @@ async function deploy(deployAddress, addresses, logging = false) {
   return {
     erc20Dripper,
     tribalChief,
+    tribalChiefImpl,
     tribalChiefOptimisticTimelock,
   };
 }
