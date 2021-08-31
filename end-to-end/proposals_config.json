@@ -1,6 +1,6 @@
 {
     "fip_15": {
-        "deploy" : true,
+        "deploy" : false,
         "exec" : false,
         "proposal_calldata" : "",
         "proposerAddress" : "0xe0ac4559739bD36f0913FB0A3f5bFC19BCBaCD52",

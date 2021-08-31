@@ -27,7 +27,6 @@ async function deploy(deployAddress, addresses, logging = false) {
   const tribalChiefImpl = await TribalChief.new(
     coreAddress,
   );
-
   logging && console.log('TribalChief impl deployed to: ', tribalChiefImpl.address);
 
   // Create a new Proxy admin

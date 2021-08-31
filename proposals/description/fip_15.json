@@ -16,7 +16,7 @@
             "values": "0",
             "method": "allocateTribe(address,uint256)",
             "arguments": [
-                "TBD ERC20 Dripper",
+                "0x3Fe0EAD3500e767F0F8bC2d3B5AF7755B1b21A6a",
                 "118508838570600494412126519"
             ],
             "description": "Allocate 118m TRIBE to ERC20 Dripper"
@@ -26,13 +26,13 @@
             "values": "0",
             "method": "allocateTribe(address,uint256)",
             "arguments": [
-                "TBD TribalChief",
+                "0x9e1076cC0d19F9B0b8019F384B0a29E48Ee46f7f",
                 "4000000000000000000000000"
             ],
             "description": "Allocate 4M TRIBE to TribalChief"
         },
         {
-            "address": "TBD TribalChief",
+            "address": "0x9e1076cC0d19F9B0b8019F384B0a29E48Ee46f7f",
             "values": "0",
             "method": "add(uint256,address,(uint128,uint128)[])",
             "arguments": [
@@ -46,7 +46,7 @@
             "description": "Add FEI-TRIBE pair to tribalchief"
         },
         {
-            "address": "TBD TribalChief",
+            "address": "0x9e1076cC0d19F9B0b8019F384B0a29E48Ee46f7f",
             "values": "0",
             "method": "add(uint256,address,(uint128,uint128)[])",
             "arguments": [
@@ -64,7 +64,7 @@
             "values": "0",
             "method": "createRole(bytes32,bytes32)",
             "arguments": [
-                "TBD Admin Role",
+                "0x23970cab3799b6876df4319661e6c03cc45bd59628799d92e988dd8cbdc90e31",
                 "0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e"
             ],
             "description": "Create Admin Role"
@@ -74,8 +74,8 @@
             "values": "0",
             "method": "grantRole(bytes32,address)",
             "arguments": [
-                "TBD Admin Role",
-                "TBD Optimistic Timelock Address"
+                "0x23970cab3799b6876df4319661e6c03cc45bd59628799d92e988dd8cbdc90e31",
+                "0x27Fae9E49AD955A24bB578B66Cdc962b5029fbA9"
             ],
             "description": "Grant Admin Role to OA Timelock"
         },
