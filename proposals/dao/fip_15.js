@@ -38,6 +38,7 @@ async function setup(addresses, oldContracts, contracts, logging) {
 // 6. Create TribalChief admin role
 // 7. Grant TribalChief admin role to optimistic timelock
 // 8. Send 7000 TRIBE to OA multisig
+// 9. Revoke minter from FeiRewardsDistributorAddress
 async function run(addresses, oldContracts, contracts, logging = false) {
   const {
     tribalChief, tribe, core, erc20Dripper
@@ -96,6 +97,9 @@ async function run(addresses, oldContracts, contracts, logging = false) {
 
   // 8. Send 7000 TRIBE to OA multisig
   await core.allocateTribe(tribalChiefOptimisticMultisigAddress, `7000${e18}`);
+
+  // 9. Revoke minter from FeiRewardsDistributorAddress
+  await core.revokeMinter(feiRewardsDistributorAddress);
 }
 
 async function teardown(addresses, oldContracts, contracts, logging) {}

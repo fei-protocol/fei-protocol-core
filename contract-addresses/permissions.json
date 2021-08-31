@@ -3,7 +3,6 @@
     "bondingCurveAddress",
     "uniswapPCVDepositAddress",
     "uniswapPCVControllerAddress",
-    "feiRewardsDistributorAddress",
     "timelockAddress",
     "dpiBondingCurveAddress",
     "daiBondingCurveAddress",
