@@ -1,0 +1,103 @@
+{
+    "proposal_title": "FIP-15: TribalChief",
+    "proposal_description_link": "",
+    "proposal_commands": [
+        {
+            "address": "0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5",
+            "values": "0",
+            "method": "governorWithdrawTribe(uint256)",
+            "arguments": [
+                "124508838570600494412126519"
+            ],
+            "description": "Withdraw Tribe from old dripper"
+        },
+        {
+            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "values": "0",
+            "method": "allocateTribe(address,uint256)",
+            "arguments": [
+                "TBD ERC20 Dripper",
+                "118508838570600494412126519"
+            ],
+            "description": "Allocate 118m TRIBE to ERC20 Dripper"
+        },
+        {
+            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "values": "0",
+            "method": "allocateTribe(address,uint256)",
+            "arguments": [
+                "TBD TribalChief",
+                "4000000000000000000000000"
+            ],
+            "description": "Allocate 4M TRIBE to TribalChief"
+        },
+        {
+            "address": "TBD TribalChief",
+            "values": "0",
+            "method": "add(uint256,address,(uint128,uint128)[])",
+            "arguments": [
+                "1000",
+                "0x9928e4046d7c6513326cCeA028cD3e7a91c7590A",
+                [
+                    0,
+                    10000
+                ]
+            ],
+            "description": "Add FEI-TRIBE pair to tribalchief"
+        },
+        {
+            "address": "TBD TribalChief",
+            "values": "0",
+            "method": "add(uint256,address,(uint128,uint128)[])",
+            "arguments": [
+                "1000",
+                "0x06cb22615BA53E60D67Bf6C341a0fD5E718E1655",
+                [
+                    0,
+                    10000
+                ]
+            ],
+            "description": "Add Curve metapool to tribalchief"
+        },
+        {
+            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "values": "0",
+            "method": "createRole(bytes32,bytes32)",
+            "arguments": [
+                "TBD Admin Role",
+                "0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e"
+            ],
+            "description": "Create Admin Role"
+        },
+        {
+            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "values": "0",
+            "method": "grantRole(bytes32,address)",
+            "arguments": [
+                "TBD Admin Role",
+                "TBD Optimistic Timelock Address"
+            ],
+            "description": "Grant Admin Role to OA Timelock"
+        },
+        {
+            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "values": "0",
+            "method": "allocateTribe(address,uint256)",
+            "arguments": [
+                "0x35ED000468f397AA943009bD60cc6d2d9a7d32fF",
+                "7000000000000000000000"
+            ],
+            "description": "Allocate 7k TRIBE to OA Multisig"
+        },
+        {
+            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "values": "0",
+            "method": "revokeMinter(address)",
+            "arguments": [
+                "0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5"
+            ],
+            "description": "Revoke Minter from old rewards distributor"
+        }
+    ],
+    "proposal_calldata": ""
+}
