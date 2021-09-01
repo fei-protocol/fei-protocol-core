@@ -5,6 +5,7 @@ import 'hardhat-gas-reporter';
 import 'hardhat-contract-sizer';
 import 'solidity-coverage';
 import '@typechain/hardhat'
+import "@idle-finance/hardhat-proposals-plugin";
 import { HardhatUserConfig } from "hardhat/config";
 
 require('dotenv').config();
@@ -64,6 +65,10 @@ const config: HardhatUserConfig = {
     target: 'web3-v1',
     alwaysGenerateOverloads: false, // should overloads with full signatures like deposit(uint256) be generated always, even if there are no overloads?
   },
+  proposals: {
+    governor: "0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B",
+    votingToken: "0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B"
+  }
 };
 
 export default config
