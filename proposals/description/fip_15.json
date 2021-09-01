@@ -1,6 +1,6 @@
 {
     "proposal_title": "FIP-15: TribalChief",
-    "proposal_description_link": "",
+    "proposal_description_link": "https://docs.google.com/document/d/1tF6ZaT6l7fnq_NdCjyyxGcikbRUR65U9H2wwcIupwUk/edit",
     "proposal_commands": [
         {
             "address": "0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5",
@@ -34,10 +34,11 @@
         {
             "address": "0x9e1076cC0d19F9B0b8019F384B0a29E48Ee46f7f",
             "values": "0",
-            "method": "add(uint256,address,(uint128,uint128)[])",
+            "method": "add(uint256,address,address,(uint128,uint128)[])",
             "arguments": [
                 "1000",
                 "0x9928e4046d7c6513326cCeA028cD3e7a91c7590A",
+                "0x0000000000000000000000000000000000000000",
                 [
                     0,
                     10000
@@ -48,10 +49,11 @@
         {
             "address": "0x9e1076cC0d19F9B0b8019F384B0a29E48Ee46f7f",
             "values": "0",
-            "method": "add(uint256,address,(uint128,uint128)[])",
+            "method": "add(uint256,address,address,(uint128,uint128)[])",
             "arguments": [
                 "1000",
                 "0x06cb22615BA53E60D67Bf6C341a0fD5E718E1655",
+                "0x0000000000000000000000000000000000000000",
                 [
                     0,
                     10000
