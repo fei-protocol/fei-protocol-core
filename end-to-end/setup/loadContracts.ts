@@ -1,5 +1,5 @@
 import mainnetAddresses from '../../contract-addresses/mainnetAddresses.json'
-import { artifacts } from 'hardhat'
+import { artifacts, ethers } from 'hardhat'
 import { MainnetContractAddresses, MainnetContracts } from './types';
 
 const contractArtifacts = {}
@@ -64,4 +64,24 @@ export async function getContract(contractName: string, contractAddress: string)
     contractArtifacts[artifact] = artifacts.require(artifact);
   }
   return contractArtifacts[artifact].at(contractAddress)
+}
+
+/**
+ * Load all contract addresses from a .json, according to the network configured
+ */
+export function getMainnetContractAddresses(): MainnetContractAddresses {
+  const addresses = {}
+  Object.keys(mainnetAddresses).map(function(key) {
+    addresses[key] = mainnetAddresses[key].address;
+  });
+  // @ts-ignore
+  return addresses;
+}
+
+export async function getMainnetContracts() {
+  return await getContracts(getMainnetContractAddresses());
+}
+
+export function getEthersContract(contract) {
+  return new ethers.Contract(contract.address, contract.abi, contract.contract.provider);
 }

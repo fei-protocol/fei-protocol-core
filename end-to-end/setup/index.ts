@@ -1,7 +1,5 @@
-import mainnetAddressesV1 from '../../contract-addresses/mainnetAddresses.json'
 import permissions from '../../contract-addresses/permissions.json'
-
-import { getContracts, getContractAddresses } from './loadContracts'
+import { getContracts, getContractAddresses, getMainnetContractAddresses } from './loadContracts'
 import {
   Config,
   ContractAccessRights,
@@ -29,7 +27,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     private config: Config,
     private proposals: any,
   ) {
-      this.mainnetAddresses = this.getMainnetContractAddresses()
+      this.mainnetAddresses = getMainnetContractAddresses()
       this.proposals = proposals
   }
 
@@ -160,17 +158,5 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
 
     // @ts-ignore
     return accessControlRoles;
-  }
-
-  /**
-   * Load all contract addresses from a .json, according to the network configured
-   */
-  private getMainnetContractAddresses() {
-    const addresses = {}
-    Object.keys(mainnetAddressesV1).map(function(key) {
-      addresses[key] = mainnetAddressesV1[key].address;
-    });
-    // @ts-ignore
-    return addresses;
   }
 }
