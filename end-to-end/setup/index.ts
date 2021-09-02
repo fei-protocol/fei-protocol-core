@@ -11,6 +11,8 @@ import {
 } from './types'
 import { sudo } from '../../scripts/utils/sudo'
 import { exec } from '../../proposals/dao/exec'
+import getProposalCalldata from '../../proposals/utils/getProposalCalldata';
+import constructProposal from '../../proposals/utils/constructProposal';
 
 /**
  * Coordinate initialising an end-to-end testing environment
@@ -93,7 +95,8 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
         voterAddress: config.voterAddress,
         governorAlphaAddress: contracts.governorAlpha.address,
       }
-      await exec(config.proposal_calldata, config.totalValue, addresses);
+      const calldata = await getProposalCalldata(await constructProposal(proposalName, this.config.logging), this.config.logging);
+      await exec(calldata, config.totalValue, addresses);
     } else {
       await run(contractAddresses, existingContracts, contracts, this.config.logging)
     }
