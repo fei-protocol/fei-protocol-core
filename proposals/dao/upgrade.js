@@ -1,3 +1,5 @@
+import hre from 'hardhat';
+
 async function setup(addresses, oldContracts, contracts, logging) {}
 
 async function run(addresses, oldContracts, contracts, logging = false) {
@@ -34,6 +36,11 @@ async function run(addresses, oldContracts, contracts, logging = false) {
 
   // special role
   // check via tribe contract
+  await hre.network.provider.request({
+    method: 'hardhat_impersonateAccount',
+    params: [timelockAddress]
+  });
+
   logging ? console.log('Transferring TRIBE Minter role to TribeReserveStabilizer') : undefined;
   await tribe.setMinter(tribeReserveStabilizer.address, {from: timelockAddress});
 
