@@ -55,6 +55,13 @@ export type MainnetContracts = {
   bentoBox: typeof Contract,
   aaveEthPCVDripController: typeof Contract,
   governorAlpha: typeof Contract,
+  tribalChief: typeof Contract,
+  stakingTokenWrapper: typeof Contract,
+  feiTribePair: typeof Contract,
+  rariPool8Tribe: typeof Contract,
+  curve3Metapool: typeof Contract,
+  erc20Dripper: typeof Contract,
+  tribalChiefOptimisticTimelock: typeof Contract,
 }
 
 export type MainnetContractAddresses = {
@@ -83,6 +90,10 @@ export type MainnetContractAddresses = {
   reflexerStableAssetFusePoolRaiAddress: string
   bentoBoxAddress: string,
   masterKashiAddress: string,
+  feiTribePairAddress: string,
+  rariPool8TribeAddress: string,
+  curve3MetapoolAddress: string,
+  tribalChiefOptimisticMultisigAddress: string,
 }
 
 export type ProposalConfig = {

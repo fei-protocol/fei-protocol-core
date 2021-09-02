@@ -13,9 +13,20 @@ abstract contract CoreRef is ICoreRef, Pausable {
     /// @notice a role used with a subset of governor permissions for this contract only
     bytes32 public override CONTRACT_ADMIN_ROLE;
 
+    /// @notice boolean to check whether or not the contract has been initialized.
+    /// cannot be initialized twice.
+    bool private _initialized;
+
+    constructor(address coreAddress) {
+        _initialize(coreAddress);
+    }
+
     /// @notice CoreRef constructor
     /// @param coreAddress Fei Core to reference
-    constructor(address coreAddress) {
+    function _initialize(address coreAddress) internal {
+        require(!_initialized, "CoreRef: already initialized");
+        _initialized = true;
+
         _core = ICore(coreAddress);
         _setContractAdminRole(_core.GOVERN_ROLE());
     }
