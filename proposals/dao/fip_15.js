@@ -124,21 +124,11 @@ async function validate(addresses, oldContracts, contracts, logging) {
     proxyAdmin 
   } = contracts;
 
-  const expectedValues = {
-    feiRewardsDistributorBalance: (await tribe.balanceOf(feiRewardsDistributorAddress)).toString() === '0',
-    tribalChiefAllocPoints: (await tribalChief.totalAllocPoint()).toString() === (allocPoints * 2).toString(),
-    tribalChiefNumPools: (await tribalChief.numPools()).toString() === (2).toString(),
-    tribalChiefFEITRIBEUniswapPool: await tribalChief.stakedToken(0) === feiTribePairAddress,
-    tribalChiefCurve3FEIMetaPool: await tribalChief.stakedToken(1) === curve3MetapoolAddress,
-  };
-
-  expect(expectedValues.feiRewardsDistributorBalance).to.be.true;
-  expect(expectedValues.tribalChiefAllocPoints).to.be.true;
-  expect(expectedValues.tribalChiefNumPools).to.be.true;
-  expect(expectedValues.tribalChiefFEITRIBEUniswapPool).to.be.true;
-  expect(expectedValues.tribalChiefCurve3FEIMetaPool).to.be.true;
-
-  console.log(expectedValues);
+  expect((await tribe.balanceOf(feiRewardsDistributorAddress)).toString()).to.be.equal('0');
+  expect((await tribalChief.totalAllocPoint()).toString()).to.be.equal((allocPoints * 2).toString());
+  expect((await tribalChief.numPools()).toString()).to.be.equal('2');
+  expect(await tribalChief.stakedToken(0)).to.be.equal(feiTribePairAddress);
+  expect(await tribalChief.stakedToken(1)).to.be.equal(curve3MetapoolAddress);
 
   expect(await tribalChief.isContractAdmin(tribalChiefOptimisticTimelockAddress)).to.be.true;
   expect(await tribalChief.core()).to.be.equal(coreAddress);
