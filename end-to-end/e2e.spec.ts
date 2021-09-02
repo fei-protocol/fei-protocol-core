@@ -33,7 +33,7 @@ describe('e2e', function () {
     deployAddress = (await web3.eth.getAccounts())[0];
     
     const config = {
-      logging: true,
+      logging: Boolean(process.env.LOGGING),
       deployAddress: deployAddress,
       version: version,
     }
