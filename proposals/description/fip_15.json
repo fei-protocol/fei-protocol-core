@@ -3,7 +3,7 @@
     "proposal_description_link": "https://docs.google.com/document/d/1tF6ZaT6l7fnq_NdCjyyxGcikbRUR65U9H2wwcIupwUk/edit",
     "proposal_commands": [
         {
-            "address": "0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5",
+            "target": "feiRewardsDistributor",
             "values": "0",
             "method": "governorWithdrawTribe(uint256)",
             "arguments": [
@@ -12,7 +12,7 @@
             "description": "Withdraw Tribe from old dripper"
         },
         {
-            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "target": "core",
             "values": "0",
             "method": "allocateTribe(address,uint256)",
             "arguments": [
@@ -22,7 +22,7 @@
             "description": "Allocate 118m TRIBE to ERC20 Dripper"
         },
         {
-            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "target": "core",
             "values": "0",
             "method": "allocateTribe(address,uint256)",
             "arguments": [
@@ -32,37 +32,31 @@
             "description": "Allocate 4M TRIBE to TribalChief"
         },
         {
-            "address": "0x9e1076cC0d19F9B0b8019F384B0a29E48Ee46f7f",
+            "target": "tribalChief",
             "values": "0",
-            "method": "add(uint256,address,address,(uint128,uint128)[])",
+            "method": "add(uint120,address,address,(uint128,uint128)[])",
             "arguments": [
                 "1000",
                 "0x9928e4046d7c6513326cCeA028cD3e7a91c7590A",
                 "0x0000000000000000000000000000000000000000",
-                [
-                    0,
-                    10000
-                ]
+                [[0, 10000]]
             ],
             "description": "Add FEI-TRIBE pair to tribalchief"
         },
         {
-            "address": "0x9e1076cC0d19F9B0b8019F384B0a29E48Ee46f7f",
+            "target": "tribalChief",
             "values": "0",
-            "method": "add(uint256,address,address,(uint128,uint128)[])",
+            "method": "add(uint120,address,address,(uint128,uint128)[])",
             "arguments": [
                 "1000",
                 "0x06cb22615BA53E60D67Bf6C341a0fD5E718E1655",
                 "0x0000000000000000000000000000000000000000",
-                [
-                    0,
-                    10000
-                ]
+                [[0, 10000]]
             ],
             "description": "Add Curve metapool to tribalchief"
         },
         {
-            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "target": "core",
             "values": "0",
             "method": "createRole(bytes32,bytes32)",
             "arguments": [
@@ -72,7 +66,7 @@
             "description": "Create Admin Role"
         },
         {
-            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "target": "core",
             "values": "0",
             "method": "grantRole(bytes32,address)",
             "arguments": [
@@ -82,7 +76,7 @@
             "description": "Grant Admin Role to OA Timelock"
         },
         {
-            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "target": "core",
             "values": "0",
             "method": "allocateTribe(address,uint256)",
             "arguments": [
@@ -92,7 +86,7 @@
             "description": "Allocate 7k TRIBE to OA Multisig"
         },
         {
-            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "target": "core",
             "values": "0",
             "method": "revokeMinter(address)",
             "arguments": [
