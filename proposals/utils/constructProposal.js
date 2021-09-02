@@ -1,4 +1,4 @@
-import { getMainnetContracts, getEthersContract } from '../../end-to-end/setup/loadContracts';
+import { getMainnetContracts, getEthersContract } from '../../end-to-end/setup/loadContracts.ts';
 
 const fs = require('fs');
 
