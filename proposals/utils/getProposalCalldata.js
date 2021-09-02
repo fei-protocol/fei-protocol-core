@@ -1,5 +1,9 @@
 const { web3 } = require('hardhat');
 
+/**
+ * Take in a hardhat proposal object and output the proposal calldatas
+ * See `proposals/utils/getProposalCalldata.js` on how to construct the proposal calldata
+ */ 
 export default async function getProposalCalldata(proposal, logging = false) {
   const calldata = await web3.eth.abi.encodeFunctionCall({
     name: 'propose',

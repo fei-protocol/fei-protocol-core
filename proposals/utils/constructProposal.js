@@ -1,9 +1,16 @@
-import { getMainnetContracts, getEthersContract } from '../../end-to-end/setup/loadContracts';
+import { getMainnetContracts, getEthersContract } from '../../end-to-end/setup/loadContracts.ts';
 
 const fs = require('fs');
 
 const { proposals } = require('hardhat');
 
+/**
+ * Constucts a hardhat proposal object 
+ * https://github.com/Idle-Finance/hardhat-proposals-plugin/blob/main/src/proposals/proposal.ts
+ * 
+ * Uses the data in `proposals/description/${proposalName}.json` for the commands
+ * Uses the text in `proposals/description/${proposalName}.txt` for the description
+ */ 
 export default async function constructProposal(proposalName, logging = false) {
   const proposalInfo = await import(`../description/${proposalName}`);
   const proposalDescription = fs.readFileSync(`${__dirname}/../description/${proposalName}.txt`);
