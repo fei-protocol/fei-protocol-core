@@ -1,7 +1,5 @@
-import mainnetAddressesV1 from '../../contract-addresses/mainnetAddresses.json'
 import permissions from '../../contract-addresses/permissions.json'
-
-import { getContracts, getContractAddresses } from './loadContracts'
+import { getContracts, getContractAddresses, getMainnetContractAddresses } from './loadContracts'
 import {
   Config,
   ContractAccessRights,
@@ -13,6 +11,8 @@ import {
 } from './types'
 import { sudo } from '../../scripts/utils/sudo'
 import { exec } from '../../proposals/dao/exec'
+import getProposalCalldata from '../../proposals/utils/getProposalCalldata';
+import constructProposal from '../../proposals/utils/constructProposal';
 
 /**
  * Coordinate initialising an end-to-end testing environment
@@ -29,7 +29,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     private config: Config,
     private proposals: any,
   ) {
-      this.mainnetAddresses = this.getMainnetContractAddresses()
+      this.mainnetAddresses = getMainnetContractAddresses()
       this.proposals = proposals
   }
 
@@ -95,7 +95,8 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
         voterAddress: config.voterAddress,
         governorAlphaAddress: contracts.governorAlpha.address,
       }
-      await exec(config.proposal_calldata, config.totalValue, addresses);
+      const calldata = await getProposalCalldata(await constructProposal(proposalName, this.config.logging), this.config.logging);
+      await exec(calldata, config.totalValue, addresses);
     } else {
       await run(contractAddresses, existingContracts, contracts, this.config.logging)
     }
@@ -160,17 +161,5 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
 
     // @ts-ignore
     return accessControlRoles;
-  }
-
-  /**
-   * Load all contract addresses from a .json, according to the network configured
-   */
-  private getMainnetContractAddresses() {
-    const addresses = {}
-    Object.keys(mainnetAddressesV1).map(function(key) {
-      addresses[key] = mainnetAddressesV1[key].address;
-    });
-    // @ts-ignore
-    return addresses;
   }
 }
