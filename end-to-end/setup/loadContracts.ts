@@ -82,6 +82,10 @@ export async function getMainnetContracts() {
   return await getContracts(getMainnetContractAddresses());
 }
 
+/**
+ * Convert a web3 contract object to an ethers Contract object using a provider NOT signer
+ * The contract would be read only without a signer
+ */
 export function getEthersContract(contract) {
   return new ethers.Contract(contract.address, contract.abi, contract.contract.provider);
 }
