@@ -115,8 +115,21 @@ describe('TribeReserveStabilizer', function () {
   });
 
   describe('WithdrawERC20', function() {
-    it('reverts', async function() {
-      await expectRevert(this.reserveStabilizer.withdrawERC20(userAddress, userAddress, '1000000000', {from: pcvControllerAddress}), 'TribeReserveStabilizer: can\'t withdraw');
+    it('tribe token reverts', async function() {
+      await expectRevert(this.reserveStabilizer.withdrawERC20(this.tribe.address, userAddress, '1000000000', {from: pcvControllerAddress}), 'TribeReserveStabilizer: can\'t withdraw');
+    });
+
+    it('non-tribe token succeeds', async function() {
+      await this.fei.mint(this.reserveStabilizer.address, 1000, {from: minterAddress});  
+
+      await this.reserveStabilizer.withdrawERC20(this.fei.address, userAddress, '1000', {from: pcvControllerAddress});
+      expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal('40001000');
+    });
+
+    it('non-pcv controller reverts', async function() {
+      await this.fei.mint(this.reserveStabilizer.address, 1000, {from: minterAddress});  
+
+      await expectRevert(this.reserveStabilizer.withdrawERC20(this.fei.address, userAddress, '1000', {from: userAddress}), 'CoreRef: Caller is not a PCV controller');
     });
   });
 

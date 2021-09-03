@@ -54,12 +54,13 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
 
     /// @dev reverts. Held TRIBE should only be released by exchangeFei or mint
     function withdraw(address, uint256) external pure override {
-        revert("TribeReserveStabilizer: can't withdraw");
+        revert("TribeReserveStabilizer: can't withdraw TRIBE");
     }
 
-    /// @dev reverts. Held TRIBE should only be released by exchangeFei or mint
-    function withdrawERC20(address, address, uint256) public pure override {
-        revert("TribeReserveStabilizer: can't withdraw");
+    /// @dev reverts if _token is TRIBE. Held TRIBE should only be released by exchangeFei or mint
+    function withdrawERC20(address _token, address _to, uint256 _amount) public override {
+        require(_token != address(token), "TribeReserveStabilizer: can't withdraw TRIBE");
+        super.withdrawERC20(_token, _to, _amount);
     }
 
     /// @notice check whether collateralization ratio is below the threshold set
