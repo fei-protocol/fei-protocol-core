@@ -11,8 +11,6 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     bondingCurve,
     tribeReserveStabilizer,
     ratioPCVController,
-    pcvDripController,
-    ethReserveStabilizer,
     core,
     tribe
   } = contracts;
@@ -39,17 +37,8 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   logging ? console.log('Transferring TRIBE Minter role to TribeReserveStabilizer') : undefined;
   await tribe.setMinter(tribeReserveStabilizer.address, {from: timelockAddress});
 
-  logging ? console.log('Granting Burner to new EthReserveStabilizer') : undefined;
-  await core.grantBurner(ethReserveStabilizer.address);
-
   logging ? console.log('Granting PCVController to new RatioPCVController') : undefined;
   await core.grantPCVController(ratioPCVController.address);
-
-  logging ? console.log('Granting PCVController to new PCVDripController') : undefined;
-  await core.grantPCVController(pcvDripController.address);
-
-  logging ? console.log('Granting Minter to new PCVDripController') : undefined;
-  await core.grantMinter(pcvDripController.address);
 
   await oldRatioPCVController.withdrawRatio(oldContracts.uniswapPCVDeposit.address, uniswapPCVDeposit.address, '10000'); // move 100% of PCV from old -> new
 }
@@ -61,7 +50,6 @@ async function teardown(addresses, oldContracts, contracts) {
   const {
     uniswapPCVDeposit,
     uniswapPCVController,
-    ethReserveStabilizer,
     ratioPCVController,
     bondingCurve,
   } = oldContracts;
@@ -72,7 +60,6 @@ async function teardown(addresses, oldContracts, contracts) {
   await core.revokeMinter(bondingCurve.address);
 
   await core.revokeBurner(uniswapPCVController.address);
-  await core.revokeBurner(ethReserveStabilizer.address);  
 
   await core.revokePCVController(ratioPCVController.address);
   await core.revokePCVController(uniswapPCVController.address);

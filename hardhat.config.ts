@@ -5,6 +5,7 @@ import 'hardhat-gas-reporter';
 import 'hardhat-contract-sizer';
 import 'solidity-coverage';
 import '@typechain/hardhat'
+import "@idle-finance/hardhat-proposals-plugin";
 import { HardhatUserConfig } from "hardhat/config";
 
 require('dotenv').config();
@@ -29,7 +30,7 @@ const config: HardhatUserConfig = {
       chainId: 5777, // Any network (default: none)
       forking: {
         url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-        blockNumber: 13018540
+        blockNumber: 13135475
       }
     },
     localhost: {
@@ -57,13 +58,17 @@ const config: HardhatUserConfig = {
     tests: runE2ETests ? './end-to-end' : './test',
   },
   mocha: {
-    timeout: 100000,
+    timeout: 1000000,
   },
   typechain: {
     outDir: 'types',
     target: 'web3-v1',
     alwaysGenerateOverloads: false, // should overloads with full signatures like deposit(uint256) be generated always, even if there are no overloads?
   },
+  proposals: {
+    governor: "0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B",
+    votingToken: "0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B"
+  }
 };
 
 export default config

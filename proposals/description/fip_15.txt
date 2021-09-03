@@ -1,0 +1,35 @@
+This proposal would upgrade Fei’s staking infrastructure to the TribalChief. The TribalChief allows TRIBE emissions to be split among a configurable set of staking reward tokens in different proportions. It also allows for reward multiplier boosts for locking the stake to be added on a per-pool basis.
+
+It will start the emissions at 75 TRIBE per block, roughly equal to the current emissions with the intention of following the 2 year decreasing schedule with regular emission rate decreases.
+
+The pool will start with two incentivized pools at equal (1000 AP) proportions:
+* FEI-TRIBE Uniswap V2 LP
+* FEI-3Crv Curve Factory Metapool LP
+
+The proposal also introduces Optimistic Approval, which is a multisig gated by a Timelock that can be vetoed by the DAO or the Guardian. All TribalChief actions can be taken by Optimistic Approval other than increasing emissions and withdrawing TRIBE. These actions can only be performed by the DAO.
+
+As soon as Rari Capital adds native staking rewards to Fuse, an additional reward stream (1000AP) will be sent there via Optimistic Approval. 
+
+
+Specifically this proposal:
+* Withdraws all TRIBE from the old RewardDripper and revokes minting from it
+* Allocates all TRIBE minus 6m (Saddle rewards + first drip) to a new TRIBE dripper
+* Sends first TRIBE drip to TribalChief
+* Adds the two reward pools
+* Creates a new admin role and grant to the Optimistic Timelock
+* Sends 7000 TRIBE to the Optimistic Multisig
+
+
+TribalChief Snapshot: https://snapshot.fei.money/#/fei.eth/proposal/Qmc5tJ9Hg1V8mnNB56AptxHAnpmHX1KefJ1Uw9TcSgfoKF 
+
+TribalChief Forum Discussion:
+https://tribe.fei.money/t/tribalchief-staking-rewards-upgrade/3350 
+
+Optimistic Approval Snapshot: 
+https://snapshot.fei.money/#/fei.eth/proposal/QmbqR88Ta6rM2QmmHj75UZSVZhTSawGf5JbgJGuuJQNDeZ 
+
+Optimistic Approval Forum Discussion:
+https://tribe.fei.money/t/fip-21-optimistic-approval/3429 
+
+Proposal Code:
+https://github.com/fei-protocol/fei-protocol-core/pull/145
