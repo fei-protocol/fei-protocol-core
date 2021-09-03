@@ -25,7 +25,7 @@ interface ITribeReserveStabilizer {
 
     // ----------- Getters -----------
 
-    function isCollateralizationAboveThreshold() external view returns (bool);
+    function isCollateralizationBelowThreshold() external view returns (bool);
 
     function collateralizationOracle() external view returns (ICollateralizationOracle);
 

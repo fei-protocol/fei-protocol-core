@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 
 import "./ReserveStabilizer.sol";
 import "./ITribeReserveStabilizer.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 interface ITribe is IERC20 {
     function mint(address to, uint256 amount) external;
@@ -39,31 +40,34 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
     
         _collateralizationThreshold = Decimal.ratio(_collateralizationThresholdBasisPoints, BASIS_POINTS_GRANULARITY);
         emit CollateralizationThresholdUpdate(0, _collateralizationThresholdBasisPoints);
+        
+        // Setting token here because it isn't available until after CoreRef is constructed
+        token = tribe();
     }
 
     /// @notice exchange FEI for minted TRIBE
-    /// @dev Collateralization oracle price must be above threshold
+    /// @dev Collateralization oracle price must be below threshold
     function exchangeFei(uint256 feiAmount) public override returns(uint256) {
-        require(isCollateralizationAboveThreshold(), "TribeReserveStabilizer: Collateralization ratio too low");
+        require(isCollateralizationBelowThreshold(), "TribeReserveStabilizer: Collateralization ratio above threshold");
         return super.exchangeFei(feiAmount);
     }
 
-    /// @dev reverts because this contract doesn't hold any TRIBE
+    /// @dev reverts. Held TRIBE should only be released by exchangeFei or mint
     function withdraw(address, uint256) external pure override {
-        revert("TribeReserveStabilizer: nothing to withdraw");
+        revert("TribeReserveStabilizer: can't withdraw");
     }
 
-    /// @notice returns the amount of the held TRIBE
-    function balance() public view override returns(uint256) {
-        return tribeBalance();
+    /// @dev reverts. Held TRIBE should only be released by exchangeFei or mint
+    function withdrawERC20(address, address, uint256) public pure override {
+        revert("TribeReserveStabilizer: can't withdraw");
     }
 
-    /// @notice check whether collateralization ratio is above the threshold set
+    /// @notice check whether collateralization ratio is below the threshold set
     /// @dev returns false if the oracle is invalid
-    function isCollateralizationAboveThreshold() public override view returns(bool) {
-        (Decimal.D256 memory price, bool valid) = collateralizationOracle.read();
+    function isCollateralizationBelowThreshold() public override view returns(bool) {
+        (Decimal.D256 memory ratio, bool valid) = collateralizationOracle.read();
 
-        return valid && price.lessThanOrEqualTo(_collateralizationThreshold);
+        return valid && ratio.lessThanOrEqualTo(_collateralizationThreshold);
     }
 
     /// @notice set the Collateralization oracle
@@ -90,7 +94,7 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
     /// @param to the address to send TRIBE to
     /// @param amount the amount of TRIBE to send
     function mint(address to, uint256 amount) external override onlyGovernor {
-        _mint(to, amount);
+        _transfer(to, amount);
     }
 
     /// @notice changes the TRIBE minter address
@@ -101,8 +105,21 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
         _tribe.setMinter(newMinter);
     }
 
+    // Transfer held TRIBE first, then mint to cover remainder
     function _transfer(address to, uint256 amount) internal override {
-        _mint(to, amount);
+        uint256 _tribeBalance = balance();
+        uint256 mintAmount = amount;
+        if(_tribeBalance != 0) {
+            uint256 transferAmount = Math.min(_tribeBalance, amount);
+
+            _withdrawERC20(address(token), to, transferAmount);
+
+            mintAmount = mintAmount - transferAmount;
+            assert(mintAmount + transferAmount == amount);
+        }
+        if (mintAmount != 0) {
+            _mint(to, mintAmount);
+        }
     }
 
     function _mint(address to, uint256 amount) internal {
