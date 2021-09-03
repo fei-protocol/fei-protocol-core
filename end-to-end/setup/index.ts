@@ -10,8 +10,6 @@ import {
   ProposalConfig
 } from './types'
 import { sudo } from '../../scripts/utils/sudo'
-import { exec } from '../../proposals/dao/exec'
-import getProposalCalldata from '../../proposals/utils/getProposalCalldata';
 import constructProposal from '../../proposals/utils/constructProposal';
 
 /**
@@ -87,16 +85,10 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     // setup the DAO proposal
     await setup(contractAddresses, existingContracts, contracts, this.config.logging);
 
-    // Run the DAO proposal
-    // If the `exec` flag is activated, then run the upgrade directly from tx calldata
+    // Simulate the DAO proposal
     if (config.exec) {
-      const addresses = { 
-        proposerAddress: config.proposerAddress,
-        voterAddress: config.voterAddress,
-        governorAlphaAddress: contracts.governorAlpha.address,
-      }
-      const calldata = await getProposalCalldata(await constructProposal(proposalName, this.config.logging), this.config.logging);
-      await exec(calldata, config.totalValue, addresses);
+      const proposal = await constructProposal(proposalName, this.config.logging);
+      await proposal.simulate();
     } else {
       await run(contractAddresses, existingContracts, contracts, this.config.logging)
     }

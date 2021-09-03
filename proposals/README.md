@@ -1,10 +1,28 @@
-# Making a DAO Proposal
+# Making and testing an FIP DAO Proposal
+Fei Improvement Proposals (FIPs) are the primary mechanism to update Fei Protocol functionality on-chain. 
+
+The proposal flow is automated and integrated into the end-to-end test suite off of live mainnet fork data. This ensures the effect of proposals can be thoroughly tested during development and pre/post execution.
+
 This guide assumes you already have enough TRIBE to make a proposal on-chain.
 
-## Optional Step 1: Does Proposal Require New Code?
-If your proposal requires new code additions to succeed, these need to be developed and reviewed. It should first be reviewed by the Fei Core smart contracts team and the team of any relevant integrations before sending to audit.
+## Step 1: Proposal Description
+Follow `/proposals/description/fip_x.json` for the proposal title and commands.
+Add the proposal description text as `/proposals/description/fip_x.txt`
+
+These files will be used to programatically generate the proposal calldata for submission. If some of the addresses are not yet deployed, leave a placeholder such as "TO-ADD: New Bonding Curve" until they have been deployed
+
+Make sure these files are up to date and approved by the Fei Core smart contracts team before continuing development.
+
+### Updating Permissions
+If your proposal updates the access control permissions of a contract, you need to list/remove the address key in the appropriate sections of `/contract-addresses/permissions.json`
+
+The key names are the same as the ones in `/contract-addresses/mainnet-addresses.json`
+
+These permissiones are validated against on-chain state in the last e2e test
+
 
 ## Optional Step 2: Does Proposal Require New Contract Deployments?
+
 Whether a deployment of a new instance of a pre-exisiting or new contract, if your proposal requires a new contract deployment you'll need to write a deploy script.
 
 See examples in the `deploy` folder, name your file `fip_x.js`
@@ -17,32 +35,26 @@ To execute the deployment run:
 * mainnet - `DEPLOY_FILE=fip_x npm run deploy:main`
 * local - `DEPLOY_FILE=fip_x npm run deploy:localhost`
 
-## Step 3: Proposal Description
+If your proposal requires new code additions to succeed, these need to be developed and reviewed. It should first be reviewed by the Fei Core smart contracts team and the team of any relevant integrations before sending to audit.
 
-Follow `/proposals/description/fip_x.json`
+## Step 3: Proposal Mocking and Integration Test
+Write a script following the template of `proposals/dao/fip_x.js`. The script should use the injected `addresses`, `contracts`, and `oldContracts` parameters to trigger the appropriate governor functions with the intended inputs.
 
-Make sure this description is up to date and approved by the Fei Core smart contracts team before continuing development.
+* `addresses` contains a flat mapping of address names to addresses found in `contract-addresses/mainnetAddresses.json`
+* `contracts` contains a flat mapping of contract names to contract objects using the specified artifact and contract from `contract-addresses/mainnetAddresses.json` AFTER all of the deploy and upgrade steps have taken place
 
-The exect text should be provided in a link to a google doc or commented on the PR. The proposal title should mirror the title used in the on-chain proposal.
-
-## Step 4: Proposal Mocking and Integration Test
-Write a script following the template of `proposals/dao/fip_x.js` they import the contract addresses and trigger the appropriate governor functions with the intended inputs.
+* `oldContracts` contains a flat mapping of contract names to contract objects using the specified artifact and contract from `contract-addresses/mainnetAddresses.json` from BEFORE all of the deploy and upgrade steps have taken place, in case actions need to be taken on the prior versions of upgraded contracts
 
 The setup, teardown, and validation hooks are used to compare the output of the dao script to the actual on-chain calldata proposed to the governor.
 
 Add an object with the key `fip_x` to `end-to-end/proposals_config.json`, 
 
-Your proposal will be run before any integration tests via `npm run test:e2e`
-* deploy - set to true only if you added a deploy script for your proposal in step 2, otherwise false. This will run your deploy script before the integration tests and add the contract objects as keys in `contracts` parameter of each of the hooks.
-* exec - set to false until step 5. When true, the e2e tests will run the actual calldata through the dao instead of the `run` hook which mocks the behavior
+Your proposal will be run before any integration tests via `npm run test:e2e`. Fill in the following parameters:
+* deploy - set to true only if you added a deploy script for your proposal in the optional step, otherwise false. This will run your deploy script before the integration tests and add the contract objects as keys in `contracts` parameter of each of the hooks.
+* exec - When true, the e2e tests will run the actual proposal through the dao instead of the `run` hook which mocks the behavior. It imports the proposal steps from the `proposals/description/fip_x.json` file
 
-### Updating Permissions
-If your proposal updates the access control permissions of a contract, you need to list/remove the address key in the appropriate sections of `/contract-addresses/permissions.json`
-
-These are validated in the last e2e test
-
-## Optional Step 5: Deploying and Updating Addresses
-If your contract has a deployment step from Step 2, you need to deploy your new contracts to mainnet before moving on to Step 6.
+## Optional Step 4: Deploying and Updating Addresses
+If your contract has an optional deployment step from above, you need to deploy your new contracts to mainnet before moving on to Step 5.
 
 Run your deploy script if you had one from step 2. Update `/contract-addresses/mainnet-addresses.json` with the new contract addresses. 
 
@@ -50,28 +62,19 @@ Update the fork block inside the hardhat config and set the deploy flag to false
 
 Finally rerun `npm run test:e2e` and make sure everything passes as expected.
 
-## Step 6: Testing Exact Proposal Calldata
+## Step 5: Testing Exact Proposal
 
-This script does a full end-to-end DAO proposal, vote, queue, and execution on the exact calldata to be submitted to the DAO.
+This script does a full end-to-end DAO proposal, vote, queue, and execution on the exact proposal to be submitted to the DAO.
 
-The goal of this step is to compare the execution results of the calldata to the mock script from step 4. Any setup and teardown calls in the `proposals/dao/fip_x.js` file will still execute, but the run step is replaced by the execution of the DAO code in `proposals/dao/exec.js`.
+The goal of this step is to compare the execution results of the calldata to the mock script from step 3. Any setup and teardown calls in the `proposals/dao/fip_x.js` file will still execute, but the run step is replaced by the execution of the proposal steps in `proposals/description/fip_x.json`.
 
-First compose the calldata, we recommend using the Tally interface + metamask (if you want to build a tool to construct it within the repo using the json descriptions, apply for a grant!).
-
-Make sure to have visibility into the calldata on your browser wallet. In Metamask this is 
-in settings -> advanced -> show hex data. Upon Tx submission you will read this data.
-
-To get the calldata, submit a proposal on https://www.withtally.com/governance/fei/proposal/new with the intended proposal commands, title and description. Click "Submit proposal" but **do not** confirm the Metamask transaction. 
-
-Copy the calldata into the config entry for `fip_x` in `end-to-end/proposals_config.json` for integration testing:
-* exec - set to true
-* proposal_calldata - fill in the copied calldata
-* proposer - fill in proposer address
-* voter - 0xB8f482539F2d3Ae2C9ea6076894df36D1f632775
+Set the exec flag to true into the config entry for `fip_x` in `end-to-end/proposals_config.json`
 
 Then run `npm run test:e2e`
 
-## Step 7: Propose on-chain
-Send a transaction to the Fei DAO (0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B) using the calldata previously submitted
+## Step 6: Propose on-chain
+Construct the calldata by running `DEPLOY_FILE=fip_x npm run calldata`
+
+Send a transaction to the Fei DAO (0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B) using the calldata
 
 Verify on https://www.withtally.com/governance/fei/ that your proposal submitted and everything looks as expected

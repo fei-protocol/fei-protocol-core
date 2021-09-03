@@ -22,7 +22,9 @@
     "deploy:main": "npx hardhat run --network mainnet deploy/migrations.js",
     "deploy:ropsten": "npx hardhat run --network ropsten deploy/migrations.js",
     "deploy:rinkeby": "npx hardhat run --network rinkeby deploy/migrations.js",
-    "abis": "node scripts/abis.js"
+    "abis": "node scripts/abis.js",
+    "calldata": "npx hardhat run proposals/utils/getProposalCalldata.js",
+    "check-proposal": "npx hardhat run proposals/utils/checkProposal.js"
   },
   "author": "joeysantoro",
   "license": "AGPL-3.0-only",
