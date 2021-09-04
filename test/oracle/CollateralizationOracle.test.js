@@ -63,6 +63,46 @@ describe('CollateralizationOracle', function () {
     this.oracle = await CollateralizationOracle.new(this.core.address);
   });
 
+  describe('getters', function() {
+    beforeEach(async function() {
+      await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
+      await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
+      await this.oracle.setOracle(this.token2.address, this.oracle2.address, { from: governorAddress });
+      await this.oracle.addDeposit(this.deposit2.address, { from: governorAddress });
+    });
+    it('excludedDeposits(address) => bool', async function() {
+      expect(await this.oracle.excludedDeposits(this.deposit1.address)).to.be.equal(false);
+    });
+    it('tokenToOracle(address) => address', async function() {
+      expect(await this.oracle.tokenToOracle(this.token1.address)).to.be.equal(this.oracle1.address);
+    });
+    it('depositToToken(address) => address', async function() {
+      expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(this.token1.address);
+    });
+    it('isTokenInPcv(address) => bool', async function() {
+      expect(await this.oracle.isTokenInPcv(this.token1.address)).to.be.equal(true);
+      expect(await this.oracle.isTokenInPcv(ZERO_ADDRESS)).to.be.equal(false);
+    });
+    it('getTokensInPcv() => address[]', async function() {
+      const tokens = await this.oracle.getTokensInPcv();
+      expect(tokens.length).to.be.equal(2);
+      expect(tokens[0]).to.be.equal(this.token1.address);
+      expect(tokens[1]).to.be.equal(this.token2.address);
+    });
+    it('getTokenInPcv(uint256) => address', async function() {
+      expect(await this.oracle.getTokenInPcv('0')).to.be.equal(this.token1.address);
+      expect(await this.oracle.getTokenInPcv('1')).to.be.equal(this.token2.address);
+    });
+    it('getDepositsForToken(address) => address[]', async function() {
+      const deposits = await this.oracle.getDepositsForToken(this.token1.address);
+      expect(deposits.length).to.be.equal(1);
+      expect(deposits[0]).to.be.equal(this.deposit1.address);
+    });
+    it('getDepositForToken(address, uint256) => address', async function() {
+      expect(await this.oracle.getDepositForToken(this.token1.address, '0')).to.be.equal(this.deposit1.address);
+    });
+  });
+
   describe('addDeposit()', function() {
     it('should emit DepositAdd', async function() {
       await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
@@ -79,9 +119,9 @@ describe('CollateralizationOracle', function () {
     it('should update maps & array properties', async function() {
       await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
       await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
-      expect(await this.oracle.tokenToDeposits(this.token1.address, '0')).to.be.equal(this.deposit1.address);
+      expect(await this.oracle.getDepositForToken(this.token1.address, '0')).to.be.equal(this.deposit1.address);
       expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(this.token1.address);
-      expect(await this.oracle.tokensInPcv('0')).to.be.equal(this.token1.address);
+      expect(await this.oracle.getTokenInPcv('0')).to.be.equal(this.token1.address);
       expect(await this.oracle.isTokenInPcv(this.token1.address)).to.be.equal(true);
     });
     it('should revert if not governor', async function() {
@@ -133,16 +173,16 @@ describe('CollateralizationOracle', function () {
       // initial situation : 1 deposit
       await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
       await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
-      expect(await this.oracle.tokenToDeposits(this.token1.address, '0')).to.be.equal(this.deposit1.address);
+      expect(await this.oracle.getDepositForToken(this.token1.address, '0')).to.be.equal(this.deposit1.address);
       expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(this.token1.address);
-      expect(await this.oracle.tokensInPcv('0')).to.be.equal(this.token1.address);
+      expect(await this.oracle.getTokenInPcv('0')).to.be.equal(this.token1.address);
       expect(await this.oracle.isTokenInPcv(this.token1.address)).to.be.equal(true);
       // remove deposit
       await this.oracle.removeDeposit(this.deposit1.address, { from: governorAddress })
       // after remove
-      await expectRevert.unspecified(this.oracle.tokenToDeposits(this.token1.address, '0'));
+      await expectRevert.unspecified(this.oracle.getDepositForToken(this.token1.address, '0'));
       expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(ZERO_ADDRESS);
-      await expectRevert.unspecified(this.oracle.tokensInPcv('0'));
+      await expectRevert.unspecified(this.oracle.getTokenInPcv('0'));
       expect(await this.oracle.isTokenInPcv(this.token1.address)).to.be.equal(false);
     });
     it('should revert if not governor', async function() {
@@ -199,18 +239,18 @@ describe('CollateralizationOracle', function () {
     });
     it('should update maps & array properties', async function() {
       // initial situation : 1 deposit
-      expect(await this.oracle.tokenToDeposits(this.token1.address, '0')).to.be.equal(this.deposit1.address);
+      expect(await this.oracle.getDepositForToken(this.token1.address, '0')).to.be.equal(this.deposit1.address);
       expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(this.token1.address);
-      expect(await this.oracle.tokensInPcv('0')).to.be.equal(this.token1.address);
+      expect(await this.oracle.getTokenInPcv('0')).to.be.equal(this.token1.address);
       expect(await this.oracle.isTokenInPcv(this.token1.address)).to.be.equal(true);
       // swap deposit
       await this.oracle.swapDeposit(this.deposit1.address, this.deposit1bis.address, { from: governorAddress });
       // after swap
-      expect(await this.oracle.tokenToDeposits(this.token1.address, '0')).to.be.equal(this.deposit1bis.address);
-      await expectRevert.unspecified(this.oracle.tokenToDeposits(this.token1.address, '1'));
+      expect(await this.oracle.getDepositForToken(this.token1.address, '0')).to.be.equal(this.deposit1bis.address);
+      await expectRevert.unspecified(this.oracle.getDepositForToken(this.token1.address, '1'));
       expect(await this.oracle.depositToToken(this.deposit1bis.address)).to.be.equal(this.token1.address);
       expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(ZERO_ADDRESS);
-      expect(await this.oracle.tokensInPcv('0')).to.be.equal(this.token1.address);
+      expect(await this.oracle.getTokenInPcv('0')).to.be.equal(this.token1.address);
       expect(await this.oracle.isTokenInPcv(this.token1.address)).to.be.equal(true);
     });
     it('should revert if not governor', async function() {

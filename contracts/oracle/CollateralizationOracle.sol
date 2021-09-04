@@ -5,6 +5,7 @@ import "./IOracle.sol";
 import "./ICollateralizationOracle.sol";
 import "../refs/CoreRef.sol";
 import "../pcv/IPCVDepositV2.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 interface IPausable {
     function paused() external view returns (bool);
@@ -17,6 +18,7 @@ interface IPausable {
 ///         protocol-wide collateralization ratio.
 contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     using Decimal for Decimal.D256;
+    using EnumerableSet for EnumerableSet.AddressSet;
 
     // ----------- Events -----------
 
@@ -36,17 +38,14 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     /// @notice Map from token address to an array of deposit addresses. It is
     //          used to iterate on all deposits while making oracle requests
     //          only once.
-    mapping(address => address[]) public tokenToDeposits;
+    mapping(address => EnumerableSet.AddressSet) private tokenToDeposits;
     /// @notice Map from deposit address to token address. It is used like an
     ///         indexed version of the pcvDeposits array, to check existence
     ///         of a PCVdeposit in the current config.
     mapping(address => address) public depositToToken;
     /// @notice Array of all tokens held in the PCV. Used for iteration on tokens
     ///         and oracles.
-    address[] public tokensInPcv;
-    /// @notice Map to know if a given token is in the PCV. Used like an indexed
-    ///         version of the tokensInPcv array.
-    mapping(address => bool) public isTokenInPcv;
+    EnumerableSet.AddressSet private tokensInPcv;
 
     // ----------- Constructor -----------
 
@@ -55,6 +54,43 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     constructor(
         address _core
     ) CoreRef(_core) {}
+
+    // ----------- Convenience getters -----------
+
+    /// @notice returns true if a token is held in the pcv
+    function isTokenInPcv(address token) external view returns(bool) {
+        return tokensInPcv.contains(token);
+    }
+
+    /// @notice returns an array of the addresses of tokens held in the pcv.
+    function getTokensInPcv() external view returns(address[] memory) {
+        uint256 _length = tokensInPcv.length();
+        address[] memory tokens = new address[](_length);
+        for (uint256 i = 0; i < _length; i++) {
+            tokens[i] = tokensInPcv.at(i);
+        }
+        return tokens;
+    }
+
+    /// @notice returns token at index i of the array of PCV tokens
+    function getTokenInPcv(uint256 i) external view returns(address) {
+        return tokensInPcv.at(i);
+    }
+
+    /// @notice returns an array of the deposits holding a given token.
+    function getDepositsForToken(address _token) external view returns(address[] memory) {
+        uint256 _length = tokenToDeposits[_token].length();
+        address[] memory deposits = new address[](_length);
+        for (uint256 i = 0; i < _length; i++) {
+            deposits[i] = tokenToDeposits[_token].at(i);
+        }
+        return deposits;
+    }
+
+    /// @notice returns the address of deposit at index i of token _token
+    function getDepositForToken(address token, uint256 i) external view returns(address) {
+        return tokenToDeposits[token].at(i);
+    }
 
     // ----------- State-changing methods -----------
 
@@ -84,11 +120,8 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
 
         // update maps & arrays for faster access
         depositToToken[_deposit] = _token;
-        tokenToDeposits[_token].push(_deposit);
-        if (!isTokenInPcv[_token]) {
-          isTokenInPcv[_token] = true;
-          tokensInPcv.push(_token);
-        }
+        tokenToDeposits[_token].add(_deposit);
+        tokensInPcv.add(_token);
 
         // emit event
         emit DepositAdd(msg.sender, _deposit, _token);
@@ -108,26 +141,12 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
         // update maps & arrays for faster access
         // deposits array for the deposit's token
         depositToToken[_deposit] = address(0);
-        bool found = false;
-        for (uint256 i = 0; !found; i++) {
-            if (tokenToDeposits[_token][i] == _deposit) {
-                found = true;
-                tokenToDeposits[_token][i] = tokenToDeposits[_token][tokenToDeposits[_token].length - 1];
-                tokenToDeposits[_token].pop();
-            }
-        }
+        tokenToDeposits[_token].remove(_deposit);
+
         // if it was the last deposit to have this token, remove this token from
         // the arrays also
-        if (tokenToDeposits[_token].length == 0) {
-          isTokenInPcv[_token] = false;
-          found = false;
-          for (uint256 i = 0; !found; i++) {
-              if (tokensInPcv[i] == _token) {
-                  found = true;
-                  tokensInPcv[i] = tokensInPcv[tokensInPcv.length - 1];
-                  tokensInPcv.pop();
-              }
-          }
+        if (tokenToDeposits[_token].length() == 0) {
+          tokensInPcv.remove(_token);
         }
 
         // emit event
@@ -155,13 +174,8 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
         // update maps & arrays for faster access
         depositToToken[_oldDeposit] = address(0);
         depositToToken[_newDeposit] = _token;
-        bool found = false;
-        for (uint256 i = 0; !found; i++) {
-            if (tokenToDeposits[_token][i] == _oldDeposit) {
-                found = true;
-                tokenToDeposits[_token][i] = _newDeposit;
-            }
-        }
+        tokenToDeposits[_token].remove(_oldDeposit);
+        tokenToDeposits[_token].add(_newDeposit);
 
         // emit event
         emit DepositRemove(msg.sender, _oldDeposit);
@@ -184,8 +198,8 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     /// @notice update all oracles required for this oracle to work that are not
     ///         paused themselves.
     function update() external override whenNotPaused {
-        for (uint256 i = 0; i < tokensInPcv.length; i++) {
-            address _oracle = tokenToOracle[tokensInPcv[i]];
+        for (uint256 i = 0; i < tokensInPcv.length(); i++) {
+            address _oracle = tokenToOracle[tokensInPcv.at(i)];
             if (!IPausable(_oracle).paused()) {
                 IOracle(_oracle).update();
             }
@@ -196,8 +210,8 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     //         work are outdated.
     function isOutdated() external override view returns (bool) {
         bool _outdated = false;
-        for (uint256 i = 0; i < tokensInPcv.length && !_outdated; i++) {
-            address _oracle = tokenToOracle[tokensInPcv[i]];
+        for (uint256 i = 0; i < tokensInPcv.length() && !_outdated; i++) {
+            address _oracle = tokenToOracle[tokensInPcv.at(i)];
             if (!IPausable(_oracle).paused()) {
                 _outdated = _outdated || IOracle(_oracle).isOutdated();
             }
@@ -240,7 +254,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     function pcvStats() public override view returns (
       uint256 protocolControlledValue,
       uint256 userCirculatingFei,
-      uint256 protocolEquity,
+      int256 protocolEquity,
       bool validityStatus
     ) {
         uint256 _protocolControlledFei = 0;
@@ -248,16 +262,16 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
         validityStatus = !paused();
 
         // For each token...
-        for (uint256 i = 0; i < tokensInPcv.length; i++) {
-            address _token = tokensInPcv[i];
+        for (uint256 i = 0; i < tokensInPcv.length(); i++) {
+            address _token = tokensInPcv.at(i);
             bool _oracleRead = false; // used to read oracle only once
             bool _oracleValid = false; // validity flag of oracle.read()
             Decimal.D256 memory _oraclePrice = Decimal.zero();
 
             // For each deposit...
             uint256 _totalTokenBalance  = 0;
-            for (uint256 j = 0; j < tokenToDeposits[_token].length; j++) {
-                address _deposit = tokenToDeposits[_token][j];
+            for (uint256 j = 0; j < tokenToDeposits[_token].length(); j++) {
+                address _deposit = tokenToDeposits[_token].at(j);
 
                 // ignore deposits that are excluded by the Guardian
                 if (!excludedDeposits[_deposit]) {
