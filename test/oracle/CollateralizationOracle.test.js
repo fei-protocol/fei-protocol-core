@@ -9,7 +9,7 @@ const {
 
 const CollateralizationOracle = artifacts.require('CollateralizationOracle');
 const MockPCVDepositV2 = artifacts.require('MockPCVDepositV2');
-const MockOracle = artifacts.require('MockOracle');
+const MockOracleCoreRef = artifacts.require('MockOracleCoreRef');
 const MockERC20 = artifacts.require('MockERC20');
 const IFei = artifacts.require('IFei');
 
@@ -26,18 +26,20 @@ describe('CollateralizationOracle', function () {
     this.fei = await IFei.at(await this.core.fei());
 
     // fake stablecoin
-    this.oracle1 = await MockOracle.new(1);
+    this.oracle1 = await MockOracleCoreRef.new(this.core.address, 1);
     this.token1 = await MockERC20.new();
     this.deposit1 = await MockPCVDepositV2.new(
+      this.core.address,
       this.token1.address,
       `2000${e18}`,// balance
       `1000${e18}`// protocol FEI
     );
     await this.fei.mint(this.deposit1.address, `1000${e18}`);
     // fake ETH
-    this.oracle2 = await MockOracle.new(3000);
+    this.oracle2 = await MockOracleCoreRef.new(this.core.address, 3000);
     this.token2 = await MockERC20.new();
     this.deposit2 = await MockPCVDepositV2.new(
+      this.core.address,
       this.token2.address,
       `1${e18}`,// balance
       `1000${e18}`// protocol FEI
@@ -199,6 +201,18 @@ describe('CollateralizationOracle', function () {
         await this.oracle.update();
         expect(await this.oracle1.updated()).to.be.equal(true);
       });
+      it('should not revert if some oracles are paused', async function() {
+        expect(await this.oracle1.updated()).to.be.equal(false);
+        expect(await this.oracle2.updated()).to.be.equal(false);
+        await this.oracle1.pause({ from: governorAddress });
+        await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
+        await this.oracle.setOracle(this.token2.address, this.oracle2.address, { from: governorAddress });
+        await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
+        await this.oracle.addDeposit(this.deposit2.address, { from: governorAddress });
+        await this.oracle.update();
+        expect(await this.oracle1.updated()).to.be.equal(false);
+        expect(await this.oracle2.updated()).to.be.equal(true);
+      });
     });
 
     describe('isOutdated()', function() {
@@ -208,6 +222,19 @@ describe('CollateralizationOracle', function () {
         await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
         await this.oracle1.setOutdated(true);
         expect(await this.oracle.isOutdated()).to.be.equal(true);
+      });
+      it('should not be outdated if a paused oracle is outdated', async function() {
+        expect(await this.oracle1.isOutdated()).to.be.equal(false);
+        expect(await this.oracle2.isOutdated()).to.be.equal(false);
+        await this.oracle1.setOutdated(true);
+        await this.oracle1.pause({ from: governorAddress });
+        expect(await this.oracle1.isOutdated()).to.be.equal(true);
+        expect(await this.oracle2.isOutdated()).to.be.equal(false);
+        await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
+        await this.oracle.setOracle(this.token2.address, this.oracle2.address, { from: governorAddress });
+        await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
+        await this.oracle.addDeposit(this.deposit2.address, { from: governorAddress });
+        expect(await this.oracle.isOutdated()).to.be.equal(false);
       });
     });
 
@@ -223,6 +250,13 @@ describe('CollateralizationOracle', function () {
       });
       it('should be invalid if the contract is paused', async function() {
         await this.oracle.pause({ from: governorAddress });
+        await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
+        await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
+        const val = await this.oracle.read();
+        expect(val[1]).to.be.equal(false); // not valid
+      });
+      it('should be invalid if an oracle is invalid', async function() {
+        await this.oracle1.setValid(false);
         await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
         await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
         const val = await this.oracle.read();
@@ -255,46 +289,51 @@ describe('CollateralizationOracle', function () {
       });
     });
 
-    describe('userCirculatingFei()', function() {
-      it('should revert if paused', async function() {
-        await this.oracle.pause({ from: governorAddress });
-        await expectRevert(this.oracle.userCirculatingFei(), 'Pausable: paused');
+    /*uint256 protocolControlledValue,
+    uint256 userCirculatingFei,
+    uint256 protocolEquity,
+    bool validityStatus
+    */
+
+    describe('pcvStats()', function() {
+      it('should return the PCV value in USD', async function() {
+        expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.bignumber.equal(`5000${e18}`);
+        await this.oracle2.setExchangeRate(5000); // 3000 -> 5000
+        expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.bignumber.equal(`7000${e18}`);
       });
       it('should return the total amount of circulating fei', async function() {
-        expect(await this.oracle.userCirculatingFei()).to.be.bignumber.equal(`2500${e18}`);
+        expect((await this.oracle.pcvStats()).userCirculatingFei).to.be.bignumber.equal(`2500${e18}`);
         await this.fei.mint(userAddress, `2500${e18}`);
-        expect(await this.oracle.userCirculatingFei()).to.be.bignumber.equal(`5000${e18}`);
+        expect((await this.oracle.pcvStats()).userCirculatingFei).to.be.bignumber.equal(`5000${e18}`);
         await this.fei.mint(userAddress, `2500${e18}`);
-        expect(await this.oracle.userCirculatingFei()).to.be.bignumber.equal(`7500${e18}`);
-      });
-    });
-
-    describe('pcvValue()', function() {
-      it('should revert if paused', async function() {
-        await this.oracle.pause({ from: governorAddress });
-        await expectRevert(this.oracle.pcvValue(), 'Pausable: paused');
-      });
-      it('should return the PCV value in USD', async function() {
-        expect(await this.oracle.pcvValue()).to.be.bignumber.equal(`5000${e18}`);
-        await this.oracle2.setExchangeRate(5000); // 3000 -> 5000
-        expect(await this.oracle.pcvValue()).to.be.bignumber.equal(`7000${e18}`);
-      });
-    });
-
-    describe('pcvEquityValue()', function() {
-      it('should revert if paused', async function() {
-        await this.oracle.pause({ from: governorAddress });
-        await expectRevert(this.oracle.pcvEquityValue(), 'Pausable: paused');
+        expect((await this.oracle.pcvStats()).userCirculatingFei).to.be.bignumber.equal(`7500${e18}`);
       });
       it('should return the PCV equity in USD (PCV value - circulating FEI)', async function() {
-        expect(await this.oracle.pcvEquityValue()).to.be.bignumber.equal(`2500${e18}`);
+        expect((await this.oracle.pcvStats()).protocolEquity).to.be.bignumber.equal(`2500${e18}`);
         await this.fei.mint(userAddress, `2500${e18}`);
-        expect(await this.oracle.pcvEquityValue()).to.be.bignumber.equal('0');
+          expect((await this.oracle.pcvStats()).protocolEquity).to.be.bignumber.equal('0');
         await this.oracle2.setExchangeRate(4000); // 3000 -> 4000
-        expect(await this.oracle.pcvEquityValue()).to.be.bignumber.equal(`1000${e18}`);
+        expect((await this.oracle.pcvStats()).protocolEquity).to.be.bignumber.equal(`1000${e18}`);
         await this.fei.mint(userAddress, `5000${e18}`);
         // expect 0 for negative equity, too
-        expect(await this.oracle.pcvEquityValue()).to.be.bignumber.equal('0');
+        expect((await this.oracle.pcvStats()).protocolEquity).to.be.bignumber.equal('0');
+      });
+      it('should be invalid if an oracle is invalid', async function() {
+        await this.oracle1.setValid(false);
+        expect((await this.oracle.pcvStats()).validityStatus).to.be.equal(false);
+      });
+      it('should be invalid if paused', async function() {
+        await this.oracle.pause({ from: governorAddress });
+        expect((await this.oracle.pcvStats()).validityStatus).to.be.equal(false);
+      });
+      it('should be valid if not paused and all oracles are valid', async function() {
+        expect((await this.oracle.pcvStats()).validityStatus).to.be.equal(true);
+      });
+      it('should ignore paused deposits', async function() {
+        expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.bignumber.equal(`5000${e18}`);
+        await this.deposit1.pause({ from: governorAddress });
+        expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.bignumber.equal(`3000${e18}`);
+        expect((await this.oracle.pcvStats()).validityStatus).to.be.equal(true);
       });
     });
   });

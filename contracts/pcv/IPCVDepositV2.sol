@@ -8,8 +8,9 @@ import "./IPCVDeposit.sol";
 interface IPCVDepositV2 is IPCVDeposit {
     // ----------- Getters -----------
 
+    // gets the token address in which this deposit returns its balance
     function balanceReportedIn() external view returns (address);
 
-    function resistantBalance() external view returns (uint256);
-    function resistantProtocolOwnedFei() external view returns (uint256);
+    // gets the resistant token balance and protocol owned fei of this deposit
+    function balanceAndFei() external view returns (uint256, uint256);
 }
