@@ -266,13 +266,6 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
             bool _oracleValid = false; // validity flag of oracle.read()
             Decimal.D256 memory _oraclePrice = Decimal.zero();
 
-            // Use a price of 0 for FEI, because the deposits that report their
-            // balance in FEI should add 0$ to the Protocol-controlled value.
-            if (_token == _fei) {
-              _oracleRead = true;
-              _oracleValid = true;
-            }
-
             // For each deposit...
             uint256 _nTokens = 0;
             for (uint256 j = 0; j < tokenToDeposits[_token].length; j++) {
