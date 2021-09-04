@@ -452,8 +452,7 @@ describe('CollateralizationOracle', function () {
         await this.oracle2.setExchangeRate(4000); // 3000 -> 4000
         expect((await this.oracle.pcvStats()).protocolEquity).to.be.bignumber.equal(`1000${e18}`);
         await this.fei.mint(userAddress, `5000${e18}`);
-        // expect 0 for negative equity, too
-        expect((await this.oracle.pcvStats()).protocolEquity).to.be.bignumber.equal('0');
+        expect((await this.oracle.pcvStats()).protocolEquity).to.be.bignumber.equal(`-4000${e18}`);
       });
       it('should be invalid if an oracle is invalid', async function() {
         await this.oracle1.setValid(false);
