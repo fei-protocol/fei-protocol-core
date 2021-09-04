@@ -67,9 +67,9 @@ describe('CollateralizationOracle', function () {
         await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress }),
         'DepositAdd',
         {
-          _from: governorAddress,
-          _deposit: this.deposit1.address,
-          _token: this.token1.address
+          from: governorAddress,
+          deposit: this.deposit1.address,
+          token: this.token1.address
         }
       );
     });
@@ -122,8 +122,8 @@ describe('CollateralizationOracle', function () {
         await this.oracle.removeDeposit(this.deposit1.address, { from: governorAddress }),
         'DepositRemove',
         {
-          _from: governorAddress,
-          _deposit: this.deposit1.address
+          from: governorAddress,
+          deposit: this.deposit1.address
         }
       );
     });
@@ -166,14 +166,15 @@ describe('CollateralizationOracle', function () {
   });
 
   describe('setOracle()', function() {
-    it('should emit OracleSet', async function() {
+    it('should emit OracleUpdate', async function() {
       expectEvent(
         await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress }),
-        'OracleSet',
+        'OracleUpdate',
         {
-          _from: governorAddress,
-          _token: this.token1.address,
-          _oracle: this.oracle1.address
+          from: governorAddress,
+          token: this.token1.address,
+          oldOracle: ZERO_ADDRESS,
+          newOracle: this.oracle1.address
         }
       );
     });

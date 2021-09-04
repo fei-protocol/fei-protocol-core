@@ -16,9 +16,9 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
 
     // ----------- Events -----------
 
-    event DepositAdd(address indexed _from, address _deposit, address _token);
-    event DepositRemove(address indexed _from, address _deposit);
-    event OracleSet(address indexed _from, address _token, address _oracle);
+    event DepositAdd(address from, address indexed deposit, address indexed token);
+    event DepositRemove(address from, address indexed deposit);
+    event OracleUpdate(address from, address indexed token, address indexed oldOracle, address indexed newOracle);
 
     // ----------- Properties -----------
 
@@ -138,13 +138,14 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
 
     /// @notice Set the price feed oracle (in USD) for a given asset.
     /// @param _token : the asset to add price oracle for
-    /// @param _oracle : price feed oracle for the given asset
-    function setOracle(address _token, address _oracle) external onlyGovernor {
+    /// @param _newOracle : price feed oracle for the given asset
+    function setOracle(address _token, address _newOracle) external onlyGovernor {
         // add oracle to the map(ERC20Address) => OracleAddress
-        token2oracle[_token] = _oracle;
+        address _oldOracle = token2oracle[_token];
+        token2oracle[_token] = _newOracle;
 
         // emit event
-        emit OracleSet(msg.sender, _token, _oracle);
+        emit OracleUpdate(msg.sender, _token, _oldOracle, _newOracle);
     }
 
     // ----------- IOracle override methods -----------
