@@ -42,7 +42,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     address[] public tokensInPcv;
     /// @notice Map to know if a given token is in the PCV. Used like an indexed
     ///         version of the tokensInPcv array.
-    mapping(address => uint8) public isTokenInPcv;
+    mapping(address => bool) public isTokenInPcv;
 
     // ----------- Constructor -----------
 
@@ -75,8 +75,8 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
         // update maps & arrays for faster access
         depositToToken[_deposit] = _token;
         tokenToDeposits[_token].push(_deposit);
-        if (isTokenInPcv[_token] == 0) {
-          isTokenInPcv[_token] = 1;
+        if (isTokenInPcv[_token] == false) {
+          isTokenInPcv[_token] = true;
           tokensInPcv.push(_token);
         }
 
@@ -110,7 +110,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
         // if it was the last deposit to have this token, remove this token from
         // the arrays also
         if (tokenToDeposits[_token].length == 0) {
-          isTokenInPcv[_token] = 0;
+          isTokenInPcv[_token] = false;
           uint256 _nTokensInPcv = tokensInPcv.length;
           found = false;
           for (uint256 i = 0; !found && i < _nTokensInPcv; i++) {
