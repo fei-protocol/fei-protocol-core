@@ -26,9 +26,6 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
 
     // ----------- Properties -----------
 
-    /// @notice Array of PCVDeposits to inspect
-    address[] public pcvDeposits;
-
     /// @notice List of PCVDeposits to exclude from calculations
     mapping(address => bool) public excludedDeposits;
 
@@ -85,9 +82,6 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
         // revert if there is no oracle of this deposit's token
         require(tokenToOracle[_token] != address(0), "CollateralizationOracle: no oracle");
 
-        // add the PCVDeposit to the list
-        pcvDeposits.push(_deposit);
-
         // update maps & arrays for faster access
         depositToToken[_deposit] = _token;
         tokenToDeposits[_token].push(_deposit);
@@ -135,15 +129,6 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
               }
           }
         }
-        // remove from the main array
-        found = false;
-        for (uint256 i = 0; !found; i++) {
-            if (pcvDeposits[i] == _deposit) {
-                found = true;
-                pcvDeposits[i] = pcvDeposits[pcvDeposits.length - 1];
-                pcvDeposits.pop();
-            }
-        }
 
         // emit event
         emit DepositRemove(msg.sender, _deposit);
@@ -167,19 +152,10 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
         // revert if token is different
         require(_token == _newToken, "CollateralizationOracle: deposit has different token");
 
-        // swap the PCVDeposit in the list
-        bool found = false;
-        for (uint256 i = 0; !found; i++) {
-            if (pcvDeposits[i] == _oldDeposit) {
-                found = true;
-                pcvDeposits[i] = _newDeposit;
-            }
-        }
-
         // update maps & arrays for faster access
         depositToToken[_oldDeposit] = address(0);
         depositToToken[_newDeposit] = _token;
-        found = false;
+        bool found = false;
         for (uint256 i = 0; !found; i++) {
             if (tokenToDeposits[_token][i] == _oldDeposit) {
                 found = true;
