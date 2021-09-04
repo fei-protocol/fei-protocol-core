@@ -6,6 +6,10 @@ import "./ICollateralizationOracle.sol";
 import "../refs/CoreRef.sol";
 import "../pcv/IPCVDepositV2.sol";
 
+interface IPausable {
+    function paused() external view returns (bool);
+}
+
 /// @title Fei Protocol's Collateralization Oracle
 /// @author eswak
 /// @notice Reads a list of PCVDeposit that report their amount of collateral
@@ -146,10 +150,14 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     }
 
     // ----------- IOracle override methods -----------
-    /// @notice update all oracles required for this oracle to work
+    /// @notice update all oracles required for this oracle to work that are not
+    ///         paused themselves.
     function update() external override whenNotPaused {
         for (uint256 i = 0; i < tokensInPcv.length; i++) {
-            IOracle(tokenToOracle[tokensInPcv[i]]).update();
+            address _oracle = tokenToOracle[tokensInPcv[i]];
+            if (!IPausable(_oracle).paused()) {
+                IOracle(_oracle).update();
+            }
         }
     }
 
@@ -158,136 +166,114 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     function isOutdated() external override view returns (bool) {
         bool _outdated = false;
         for (uint256 i = 0; i < tokensInPcv.length && !_outdated; i++) {
-            _outdated = _outdated || IOracle(tokenToOracle[tokensInPcv[i]]).isOutdated();
+            address _oracle = tokenToOracle[tokensInPcv[i]];
+            if (!IPausable(_oracle).paused()) {
+                _outdated = _outdated || IOracle(_oracle).isOutdated();
+            }
         }
         return _outdated;
     }
 
     /// @notice Get the current collateralization ratio of the protocol.
-    /// @return _collateralRatio the current collateral ratio of the protocol.
-    /// @return _globalValid the current oracle validity status (false if any
+    /// @return collateralRatio the current collateral ratio of the protocol.
+    /// @return validityStatus the current oracle validity status (false if any
     ///         of the oracles for tokens held in the PCV are invalid, or if
     ///         this contract is paused).
-    function read() public override view returns (Decimal.D256 memory, bool) {
-        // The total amount of FEI controlled (owned) by the protocol
-        uint256 _protocolControlledFei = 0;
-        // The total USD value of assets held in the PCV
-        uint256 _protocolControlledValue = 0;
-        // false if any of the token oracles are invalid, or if paused
-        bool _globalValid = !paused();
-
-        // For each token...
-        for (uint256 i = 0; i < tokensInPcv.length; i++) {
-            address _token = tokensInPcv[i];
-            (Decimal.D256 memory _price, bool _valid) = IOracle(tokenToOracle[_token]).read();
-            _globalValid = _globalValid && _valid;
-
-            uint256 _nTokens = 0;
-            // For each deposit...
-            for (uint256 j = 0; j < tokenToDeposits[_token].length; j++) {
-                IPCVDepositV2 _deposit = IPCVDepositV2(tokenToDeposits[_token][j]);
-
-                // Increment the number of tokens held by the protocol
-                _nTokens += _deposit.resistantBalance();
-
-                // Increment the total protocol controlled FEI by the amount of FEI
-                // held by this PCVDeposit
-                _protocolControlledFei += _deposit.resistantProtocolOwnedFei();
-            }
-
-            // Increment the total PCV by the number of tokens held times the USD
-            // value of this token.
-            _protocolControlledValue += _price.mul(_nTokens).asUint256();
-        }
-
-        // The circulating FEI is defined as the total FEI supply, minus the
-        // protocol-owned FEI managed by the various deposits.
-        uint256 _userCirculatingFei = fei().totalSupply() - _protocolControlledFei;
+    function read() public override view returns (Decimal.D256 memory collateralRatio, bool validityStatus) {
+        // fetch PCV stats
+        (
+          uint256 _protocolControlledValue,
+          uint256 _userCirculatingFei,
+          , // we don't need protocol equity
+          bool _valid
+        ) = pcvStats();
 
         // The protocol collateralization ratio is defined as the total USD
         // value of assets held in the PCV, minus the circulating FEI.
-        Decimal.D256 memory _collateralRatio = Decimal.ratio(_protocolControlledValue, _userCirculatingFei);
-
-        // return values
-        return (_collateralRatio, _globalValid);
+        collateralRatio = Decimal.ratio(_protocolControlledValue, _userCirculatingFei);
+        validityStatus = _valid;
     }
 
     // ----------- ICollateralizationOracle override methods -----------
 
+    /// @notice returns the Protocol-Controlled Value, User-circulating FEI, and
+    ///         Protocol Equity.
+    /// @return protocolControlledValue : the total USD value of all assets held
+    ///         by the protocol.
+    /// @return userCirculatingFei : the number of FEI not owned by the protocol.
+    /// @return protocolEquity : the difference between PCV and user circulating FEI.
+    ///         If there are more circulating FEI than $ in the PCV, equity is 0.
+    /// @return validityStatus : the current oracle validity status (false if any
+    ///         of the oracles for tokens held in the PCV are invalid, or if
+    ///         this contract is paused).
+    function pcvStats() public override view returns (
+      uint256 protocolControlledValue,
+      uint256 userCirculatingFei,
+      uint256 protocolEquity,
+      bool validityStatus
+    ) {
+        uint256 _protocolControlledFei = 0;
+        address _fei = address(fei());
+        validityStatus = !paused();
+
+        // For each token...
+        for (uint256 i = 0; i < tokensInPcv.length; i++) {
+            address _token = tokensInPcv[i];
+            bool _oracleRead = false; // used to read oracle only once
+            bool _oracleValid = false; // validity flag of oracle.read()
+            Decimal.D256 memory _oraclePrice = Decimal.zero();
+
+            // Use a price of 0 for FEI, because the deposits that report their
+            // balance in FEI should add 0$ to the Protocol-controlled value.
+            if (_token == _fei) {
+              _oracleRead = true;
+              _oracleValid = true;
+            }
+
+            // For each deposit...
+            uint256 _nTokens = 0;
+            for (uint256 j = 0; j < tokenToDeposits[_token].length; j++) {
+                address _deposit = tokenToDeposits[_token][j];
+
+                // ignore deposits that are paused
+                if (!IPausable(_deposit).paused()) {
+                  // On the first unpaused deposit, read the oracle.
+                  // This is done inside the loop, after _deposit.paused() check,
+                  // because if all deposits of an asset are paused, there is no
+                  // need to read the oracle.
+                  if (!_oracleRead) {
+                    (_oraclePrice, _oracleValid) = IOracle(tokenToOracle[_token]).read();
+                    _oracleRead = true;
+                    if (!_oracleValid) {
+                      validityStatus = false;
+                    }
+                  }
+
+                  // read the deposit
+                  (uint256 _depositBalance, uint256 _depositFei) = IPCVDepositV2(_deposit).balanceAndFei();
+                  _nTokens += _depositBalance;
+                  _protocolControlledFei += _depositFei;
+                }
+            }
+
+            protocolControlledValue += _oraclePrice.mul(_nTokens).asUint256();
+        }
+
+        userCirculatingFei = fei().totalSupply() - _protocolControlledFei;
+        if (protocolControlledValue > userCirculatingFei) {
+            protocolEquity = protocolControlledValue - userCirculatingFei;
+        }
+
+        userCirculatingFei = fei().totalSupply() - _protocolControlledFei;
+    }
+
     /// @notice returns true if the protocol is overcollateralized. Overcollateralization
     ///         is defined as the protocol having more assets in its PCV (Protocol
-    ///         Controlled Value) than the circulating (user-owned) FEI.
+    ///         Controlled Value) than the circulating (user-owned) FEI, i.e.
+    ///         a positive Protocol Equity.
+    ///         Note: the validity status is ignored in this function.
     function isOvercollateralized() external view override whenNotPaused returns (bool) {
-        return pcvEquityValue() > 0;
-    }
-
-    /// @notice returns the amount of circulating (user-owned) FEI. User Circulating
-    ///         FEI is defined as the total supply of FEI minus the FEI held in the
-    ///         various protocol's contracts.
-    function userCirculatingFei() external view override whenNotPaused returns (uint256) {
-        uint256 _protocolControlledFei = 0;
-
-        for (uint256 i = 0; i < pcvDeposits.length; i++) {
-            IPCVDepositV2 _deposit = IPCVDepositV2(pcvDeposits[i]);
-            _protocolControlledFei += _deposit.resistantProtocolOwnedFei();
-        }
-
-        return fei().totalSupply() - _protocolControlledFei;
-    }
-
-    /// @notice returns the total PCV (Protocol Controlled Value) of Fei Protocol. The
-    ///         PCV is the value of all assets held by the protocol, denominated in USD,
-    ///         that is either held on the protocol's contracts, or deployed productively
-    ///         in liquidity pools, lending services, etc.
-    function pcvValue() external view override whenNotPaused returns (uint256) {
-        uint256 _pcv = 0;
-
-        // For each token...
-        for (uint256 i = 0; i < tokensInPcv.length; i++) {
-            address _token = tokensInPcv[i];
-            (Decimal.D256 memory _price, bool _valid) = IOracle(tokenToOracle[_token]).read();
-            require(_valid, "CollateralizationOracle: oracle invalid");
-
-            // For each deposit...
-            uint256 _nTokens = 0;
-            for (uint256 j = 0; j < tokenToDeposits[_token].length; j++) {
-                IPCVDepositV2 _deposit = IPCVDepositV2(tokenToDeposits[_token][j]);
-                _nTokens += _deposit.resistantBalance();
-            }
-            _pcv += _price.mul(_nTokens).asUint256();
-        }
-
-        return _pcv;
-    }
-
-    /// @notice returns the total PCV Equity of Fei Protocol. The PCV equity is
-    ///         defined as the total PCV dollar value minus User Circulating FEI.
-    ///         See pcvValue() and userCirculatingFei() for more details.
-    function pcvEquityValue() public view override whenNotPaused returns (uint256) {
-        uint256 _pcv = 0;
-        uint256 _protocolControlledFei = 0;
-
-        // For each token...
-        for (uint256 i = 0; i < tokensInPcv.length; i++) {
-            address _token = tokensInPcv[i];
-            (Decimal.D256 memory _price, bool _valid) = IOracle(tokenToOracle[_token]).read();
-            require(_valid, "CollateralizationOracle: oracle invalid");
-
-            // For each deposit...
-            uint256 _nTokens = 0;
-            for (uint256 j = 0; j < tokenToDeposits[_token].length; j++) {
-                IPCVDepositV2 _deposit = IPCVDepositV2(tokenToDeposits[_token][j]);
-                _nTokens += _deposit.resistantBalance();
-                _protocolControlledFei += _deposit.resistantProtocolOwnedFei();
-            }
-            _pcv += _price.mul(_nTokens).asUint256();
-        }
-
-        uint256 _userCirculatingFei = fei().totalSupply() - _protocolControlledFei;
-        uint256 _equity = 0;
-        if (_pcv > _userCirculatingFei) {
-            _equity = _pcv - _userCirculatingFei;
-        }
-        return _equity;
+        (,, uint256 _protocolEquity,) = pcvStats();
+        return _protocolEquity > 0;
     }
 }

@@ -9,11 +9,10 @@ interface ICollateralizationOracle is IOracle {
 
     // ----------- Getters -----------
 
+    // returns the PCV value, User-circulating FEI, and Protocol Equity, as well
+    // as a validity status.
+    function pcvStats() external view returns (uint256, uint256, uint256, bool);
+
+    // true if Protocol Equity > 0
     function isOvercollateralized() external view returns (bool);
-
-    function userCirculatingFei() external view returns (uint256);
-
-    function pcvValue() external view returns (uint256);
-
-    function pcvEquityValue() external view returns (uint256);
 }
