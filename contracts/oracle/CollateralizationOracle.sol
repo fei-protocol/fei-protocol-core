@@ -298,9 +298,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
         }
 
         userCirculatingFei = fei().totalSupply() - _protocolControlledFei;
-        if (protocolControlledValue > userCirculatingFei) {
-            protocolEquity = protocolControlledValue - userCirculatingFei;
-        }
+        protocolEquity = int256(protocolControlledValue) - int256(userCirculatingFei);
 
         userCirculatingFei = fei().totalSupply() - _protocolControlledFei;
     }
@@ -311,7 +309,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     ///         a positive Protocol Equity.
     ///         Note: the validity status is ignored in this function.
     function isOvercollateralized() external override view whenNotPaused returns (bool) {
-        (,, uint256 _protocolEquity, bool _valid) = pcvStats();
+        (,, int256 _protocolEquity, bool _valid) = pcvStats();
         require(_valid, "CollateralizationOracle: reading is invalid");
         return _protocolEquity > 0;
     }
