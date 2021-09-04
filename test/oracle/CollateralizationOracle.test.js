@@ -167,6 +167,89 @@ describe('CollateralizationOracle', function () {
     });
   });
 
+  describe('swapDeposit()', function() {
+    beforeEach(async function() {
+      this.deposit1bis = await MockPCVDepositV2.new(
+        this.core.address,
+        this.token1.address,
+        `2000${e18}`,// balance
+        `1000${e18}`// protocol FEI
+      );
+      await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
+      await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
+    });
+    it('should emit DepositRemove', async function() {
+      expectEvent(
+        await this.oracle.swapDeposit(this.deposit1.address, this.deposit1bis.address, { from: governorAddress }),
+        'DepositRemove',
+        {
+          from: governorAddress,
+          deposit: this.deposit1.address
+        }
+      );
+    });
+    it('should emit DepositAdd', async function() {
+      expectEvent(
+        await this.oracle.swapDeposit(this.deposit1.address, this.deposit1bis.address, { from: governorAddress }),
+        'DepositAdd',
+        {
+          from: governorAddress,
+          deposit: this.deposit1bis.address,
+          token: this.token1.address
+        }
+      );
+    });
+    it('should update maps & array properties', async function() {
+      // initial situation : 1 deposit
+      expect(await this.oracle.pcvDeposits('0')).to.be.equal(this.deposit1.address);
+      expect(await this.oracle.tokenToDeposits(this.token1.address, '0')).to.be.equal(this.deposit1.address);
+      expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(this.token1.address);
+      expect(await this.oracle.tokensInPcv('0')).to.be.equal(this.token1.address);
+      expect(await this.oracle.isTokenInPcv(this.token1.address)).to.be.equal(true);
+      // swap deposit
+      await this.oracle.swapDeposit(this.deposit1.address, this.deposit1bis.address, { from: governorAddress });
+      // after swap
+      expect(await this.oracle.pcvDeposits('0')).to.be.equal(this.deposit1bis.address);
+      await expectRevert.unspecified(this.oracle.pcvDeposits('1'));
+      expect(await this.oracle.tokenToDeposits(this.token1.address, '0')).to.be.equal(this.deposit1bis.address);
+      await expectRevert.unspecified(this.oracle.tokenToDeposits(this.token1.address, '1'));
+      expect(await this.oracle.depositToToken(this.deposit1bis.address)).to.be.equal(this.token1.address);
+      expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(ZERO_ADDRESS);
+      expect(await this.oracle.tokensInPcv('0')).to.be.equal(this.token1.address);
+      expect(await this.oracle.isTokenInPcv(this.token1.address)).to.be.equal(true);
+    });
+    it('should revert if not governor', async function() {
+      await expectRevert(
+        this.oracle.swapDeposit(
+          this.deposit1.address,
+          this.deposit1bis.address,
+          { from: userAddress }
+        ),
+        'CoreRef: Caller is not a governor'
+      );
+    });
+    it('should revert if deposit is not found', async function() {
+      await expectRevert(
+        this.oracle.swapDeposit(
+          this.deposit2.address,
+          this.deposit1bis.address,
+          { from: governorAddress }
+        ),
+        'CollateralizationOracle: deposit not found'
+      );
+    });
+    it('should revert if new deposit is already found', async function() {
+      await expectRevert(
+        this.oracle.swapDeposit(
+          this.deposit1.address,
+          this.deposit1.address,
+          { from: governorAddress }
+        ),
+        'CollateralizationOracle: deposit duplicate'
+      );
+    });
+  });
+
   describe('setOracle()', function() {
     it('should emit OracleUpdate', async function() {
       expectEvent(

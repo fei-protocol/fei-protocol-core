@@ -137,6 +137,49 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
         emit DepositRemove(msg.sender, _deposit);
     }
 
+    /// @notice Swap a PCVDeposit with a new one, for instance when a new version
+    ///         of a deposit (holding the same token) is deployed.
+    /// @param _oldDeposit : the PCVDeposit to remove from the list.
+    /// @param _newDeposit : the PCVDeposit to add to the list.
+    function swapDeposit(address _oldDeposit, address _newDeposit) external onlyGovernor {
+        // get the token in which the old deposit reports its token
+        address _token = depositToToken[_oldDeposit];
+        address _newToken = IPCVDepositV2(_newDeposit).balanceReportedIn();
+
+        // revert if old deposit is not found
+        require(_token != address(0), "CollateralizationOracle: deposit not found");
+
+        // revert if new deposit is found
+        require(depositToToken[_newDeposit] == address(0), "CollateralizationOracle: deposit duplicate");
+
+        // revert if token is different
+        require(_token == _newToken, "CollateralizationOracle: deposit has different token");
+
+        // swap the PCVDeposit in the list
+        bool found = false;
+        for (uint256 i = 0; !found; i++) {
+            if (pcvDeposits[i] == _oldDeposit) {
+                found = true;
+                pcvDeposits[i] = _newDeposit;
+            }
+        }
+
+        // update maps & arrays for faster access
+        depositToToken[_oldDeposit] = address(0);
+        depositToToken[_newDeposit] = _token;
+        found = false;
+        for (uint256 i = 0; !found; i++) {
+            if (tokenToDeposits[_token][i] == _oldDeposit) {
+                found = true;
+                tokenToDeposits[_token][i] = _newDeposit;
+            }
+        }
+
+        // emit event
+        emit DepositRemove(msg.sender, _oldDeposit);
+        emit DepositAdd(msg.sender, _newDeposit, _token);
+    }
+
     /// @notice Set the price feed oracle (in USD) for a given asset.
     /// @param _token : the asset to add price oracle for
     /// @param _newOracle : price feed oracle for the given asset
