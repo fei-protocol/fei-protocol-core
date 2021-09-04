@@ -98,36 +98,33 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
         // update maps & arrays for faster access
         // deposits array for the deposit's token
         depositToToken[_deposit] = address(0);
-        uint256 _nDepositsWithToken = tokenToDeposits[_token].length;
         bool found = false;
-        for (uint256 i = 0; !found && i < _nDepositsWithToken; i++) {
+        for (uint256 i = 0; !found; i++) {
             if (tokenToDeposits[_token][i] == _deposit) {
                 found = true;
-                tokenToDeposits[_token][i] = tokenToDeposits[_token][_nDepositsWithToken - 1];
+                tokenToDeposits[_token][i] = tokenToDeposits[_token][tokenToDeposits[_token].length - 1];
+                tokenToDeposits[_token].pop();
             }
         }
-        tokenToDeposits[_token].pop();
         // if it was the last deposit to have this token, remove this token from
         // the arrays also
         if (tokenToDeposits[_token].length == 0) {
           isTokenInPcv[_token] = false;
-          uint256 _nTokensInPcv = tokensInPcv.length;
           found = false;
-          for (uint256 i = 0; !found && i < _nTokensInPcv; i++) {
+          for (uint256 i = 0; !found; i++) {
               if (tokensInPcv[i] == _token) {
                   found = true;
-                  tokensInPcv[i] = tokensInPcv[_nTokensInPcv - 1];
+                  tokensInPcv[i] = tokensInPcv[tokensInPcv.length - 1];
+                  tokensInPcv.pop();
               }
           }
-          tokensInPcv.pop();
         }
         // remove from the main array
-        uint256 _nDeposits = pcvDeposits.length;
         found = false;
-        for (uint256 i = 0; !found && i < _nDeposits; i++) {
+        for (uint256 i = 0; !found; i++) {
             if (pcvDeposits[i] == _deposit) {
                 found = true;
-                pcvDeposits[i] = pcvDeposits[_nDeposits - 1];
+                pcvDeposits[i] = pcvDeposits[pcvDeposits.length - 1];
             }
         }
         pcvDeposits.pop();
