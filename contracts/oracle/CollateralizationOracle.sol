@@ -29,6 +29,9 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     /// @notice Array of PCVDeposits to inspect
     address[] public pcvDeposits;
 
+    /// @notice List of PCVDeposits to exclude from calculations
+    mapping(address => bool) public excludedDeposits;
+
     /// @notice Map of oracles to use to get USD values of assets held in
     ///         PCV deposits. This map is used to get the oracle address from
     ///         and ERC20 address.
@@ -58,6 +61,15 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
 
     // ----------- State-changing methods -----------
 
+    /// @notice Guardians can exclude & re-include some PCVDeposits from the list,
+    ///         because a faulty deposit or a paused oracle that prevents reading
+    ///         from certain deposits could be problematic.
+    /// @param _deposit : the deposit to exclude or re-enable.
+    /// @param _excluded : the new exclusion flag for this deposit.
+    function setDepositExclusion(address _deposit, bool _excluded) external onlyGuardianOrGovernor {
+        excludedDeposits[_deposit] = _excluded;
+    }
+
     /// @notice Add a PCVDeposit to the list of deposits inspected by the
     ///         collateralization ratio oracle.
     ///         note : this function reverts if the deposit is already in the list.
@@ -79,7 +91,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
         // update maps & arrays for faster access
         depositToToken[_deposit] = _token;
         tokenToDeposits[_token].push(_deposit);
-        if (isTokenInPcv[_token] == false) {
+        if (!isTokenInPcv[_token]) {
           isTokenInPcv[_token] = true;
           tokensInPcv.push(_token);
         }
@@ -267,32 +279,32 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
             Decimal.D256 memory _oraclePrice = Decimal.zero();
 
             // For each deposit...
-            uint256 _nTokens = 0;
+            uint256 _totalTokenBalance  = 0;
             for (uint256 j = 0; j < tokenToDeposits[_token].length; j++) {
                 address _deposit = tokenToDeposits[_token][j];
 
-                // ignore deposits that are paused
-                if (!IPausable(_deposit).paused()) {
-                  // On the first unpaused deposit, read the oracle.
-                  // This is done inside the loop, after _deposit.paused() check,
-                  // because if all deposits of an asset are paused, there is no
-                  // need to read the oracle.
-                  if (!_oracleRead) {
-                    (_oraclePrice, _oracleValid) = IOracle(tokenToOracle[_token]).read();
-                    _oracleRead = true;
-                    if (!_oracleValid) {
-                      validityStatus = false;
+                // ignore deposits that are excluded by the Guardian
+                if (!excludedDeposits[_deposit]) {
+                    // On the first inspected deposit, read the oracle.
+                    // This is done inside the loop, after exclusion check,
+                    // because if all deposits of an asset are excluded, there is
+                    // no need to read the oracle.
+                    if (!_oracleRead) {
+                        (_oraclePrice, _oracleValid) = IOracle(tokenToOracle[_token]).read();
+                        _oracleRead = true;
+                        if (!_oracleValid) {
+                            validityStatus = false;
+                        }
                     }
-                  }
 
-                  // read the deposit
-                  (uint256 _depositBalance, uint256 _depositFei) = IPCVDepositV2(_deposit).balanceAndFei();
-                  _nTokens += _depositBalance;
-                  _protocolControlledFei += _depositFei;
+                    // read the deposit
+                    (uint256 _depositBalance, uint256 _depositFei) = IPCVDepositV2(_deposit).balanceAndFei();
+                    _totalTokenBalance += _depositBalance;
+                    _protocolControlledFei += _depositFei;
                 }
             }
 
-            protocolControlledValue += _oraclePrice.mul(_nTokens).asUint256();
+            protocolControlledValue += _oraclePrice.mul(_totalTokenBalance).asUint256();
         }
 
         userCirculatingFei = fei().totalSupply() - _protocolControlledFei;

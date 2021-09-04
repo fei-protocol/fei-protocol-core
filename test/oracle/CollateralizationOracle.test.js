@@ -17,10 +17,11 @@ const e18 = '000000000000000000';
 
 describe('CollateralizationOracle', function () {
   let userAddress;
+  let guardianAddress;
   let governorAddress;
 
   beforeEach(async function () {
-    ({ userAddress, governorAddress } = await getAddresses());
+    ({ userAddress, guardianAddress, governorAddress } = await getAddresses());
     this.core = await getCore(true);
     await this.core.grantMinter(userAddress, {from: governorAddress});
     this.fei = await IFei.at(await this.core.fei());
@@ -250,6 +251,26 @@ describe('CollateralizationOracle', function () {
     });
   });
 
+  describe('setDepositExclusion()', function() {
+    it('should allow guardian to exclude a deposit', async function() {
+      await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
+      await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
+      await this.oracle.setOracle(this.token2.address, this.oracle2.address, { from: governorAddress });
+      await this.oracle.addDeposit(this.deposit2.address, { from: governorAddress });
+
+      expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.bignumber.equal(`5000${e18}`);
+      await this.oracle.setDepositExclusion(this.deposit1.address, true, { from: guardianAddress });
+      expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.bignumber.equal(`3000${e18}`);
+      expect((await this.oracle.pcvStats()).validityStatus).to.be.equal(true);
+    });
+    it('should revert if not guardian', async function() {
+      await expectRevert(
+        this.oracle.setDepositExclusion(this.deposit1.address, true, { from: userAddress }),
+        'CoreRef: Caller is not a guardian or governor'
+      );
+    });
+  });
+
   describe('setOracle()', function() {
     it('should emit OracleUpdate', async function() {
       expectEvent(
@@ -377,12 +398,6 @@ describe('CollateralizationOracle', function () {
       });
     });
 
-    /*uint256 protocolControlledValue,
-    uint256 userCirculatingFei,
-    uint256 protocolEquity,
-    bool validityStatus
-    */
-
     describe('pcvStats()', function() {
       it('should return the PCV value in USD', async function() {
         expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.bignumber.equal(`5000${e18}`);
@@ -415,12 +430,6 @@ describe('CollateralizationOracle', function () {
         expect((await this.oracle.pcvStats()).validityStatus).to.be.equal(false);
       });
       it('should be valid if not paused and all oracles are valid', async function() {
-        expect((await this.oracle.pcvStats()).validityStatus).to.be.equal(true);
-      });
-      it('should ignore paused deposits', async function() {
-        expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.bignumber.equal(`5000${e18}`);
-        await this.deposit1.pause({ from: governorAddress });
-        expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.bignumber.equal(`3000${e18}`);
         expect((await this.oracle.pcvStats()).validityStatus).to.be.equal(true);
       });
     });
