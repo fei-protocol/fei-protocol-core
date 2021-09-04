@@ -361,6 +361,11 @@ describe('CollateralizationOracle', function () {
         await this.oracle.pause({ from: governorAddress });
         await expectRevert(this.oracle.isOvercollateralized(), 'Pausable: paused');
       });
+      it('should revert if invalid', async function() {
+        expect(await this.oracle.isOvercollateralized()).to.be.equal(true);
+        await this.oracle1.setValid(false);
+        await expectRevert(this.oracle.isOvercollateralized(), 'CollateralizationOracle: reading is invalid');
+      });
       it('should return true/false if the protocol is overcollateralized or not', async function() {
         expect(await this.oracle.isOvercollateralized()).to.be.equal(true);
         await this.fei.mint(userAddress, `2499${e18}`);

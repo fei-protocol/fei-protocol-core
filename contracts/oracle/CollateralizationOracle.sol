@@ -308,8 +308,9 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     ///         Controlled Value) than the circulating (user-owned) FEI, i.e.
     ///         a positive Protocol Equity.
     ///         Note: the validity status is ignored in this function.
-    function isOvercollateralized() external view override whenNotPaused returns (bool) {
-        (,, uint256 _protocolEquity,) = pcvStats();
+    function isOvercollateralized() external override view whenNotPaused returns (bool) {
+        (,, uint256 _protocolEquity, bool _valid) = pcvStats();
+        require(_valid, "CollateralizationOracle: reading is invalid");
         return _protocolEquity > 0;
     }
 }
