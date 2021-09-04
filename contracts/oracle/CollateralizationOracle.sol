@@ -125,9 +125,9 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
             if (pcvDeposits[i] == _deposit) {
                 found = true;
                 pcvDeposits[i] = pcvDeposits[pcvDeposits.length - 1];
+                pcvDeposits.pop();
             }
         }
-        pcvDeposits.pop();
 
         // emit event
         emit DepositRemove(msg.sender, _deposit);
