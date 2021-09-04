@@ -182,18 +182,22 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
             (Decimal.D256 memory _price, bool _valid) = IOracle(tokenToOracle[_token]).read();
             _globalValid = _globalValid && _valid;
 
+            uint256 _nTokens = 0;
             // For each deposit...
             for (uint256 j = 0; j < tokenToDeposits[_token].length; j++) {
                 IPCVDepositV2 _deposit = IPCVDepositV2(tokenToDeposits[_token][j]);
 
-                // Increment the total protocol controlled value by the USD value of
-                // the asset held in this PCVDeposit
-                _protocolControlledValue += _price.mul(_deposit.resistantBalance()).asUint256();
+                // Increment the number of tokens held by the protocol
+                _nTokens += _deposit.resistantBalance();
 
                 // Increment the total protocol controlled FEI by the amount of FEI
                 // held by this PCVDeposit
                 _protocolControlledFei += _deposit.resistantProtocolOwnedFei();
             }
+
+            // Increment the total PCV by the number of tokens held times the USD
+            // value of this token.
+            _protocolControlledValue += _price.mul(_nTokens).asUint256();
         }
 
         // The circulating FEI is defined as the total FEI supply, minus the
@@ -245,10 +249,12 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
             require(_valid, "CollateralizationOracle: oracle invalid");
 
             // For each deposit...
+            uint256 _nTokens = 0;
             for (uint256 j = 0; j < tokenToDeposits[_token].length; j++) {
                 IPCVDepositV2 _deposit = IPCVDepositV2(tokenToDeposits[_token][j]);
-                _pcv += _price.mul(_deposit.resistantBalance()).asUint256();
+                _nTokens += _deposit.resistantBalance();
             }
+            _pcv += _price.mul(_nTokens).asUint256();
         }
 
         return _pcv;
@@ -268,11 +274,13 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
             require(_valid, "CollateralizationOracle: oracle invalid");
 
             // For each deposit...
+            uint256 _nTokens = 0;
             for (uint256 j = 0; j < tokenToDeposits[_token].length; j++) {
                 IPCVDepositV2 _deposit = IPCVDepositV2(tokenToDeposits[_token][j]);
-                _pcv += _price.mul(_deposit.resistantBalance()).asUint256();
+                _nTokens += _deposit.resistantBalance();
                 _protocolControlledFei += _deposit.resistantProtocolOwnedFei();
             }
+            _pcv += _price.mul(_nTokens).asUint256();
         }
 
         uint256 _userCirculatingFei = fei().totalSupply() - _protocolControlledFei;
