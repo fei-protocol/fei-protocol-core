@@ -287,7 +287,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
                     }
 
                     // read the deposit
-                    (uint256 _depositBalance, uint256 _depositFei) = IPCVDepositV2(_deposit).balanceAndFei();
+                    (uint256 _depositBalance, uint256 _depositFei) = IPCVDepositV2(_deposit).resistantBalanceAndFei();
                     _totalTokenBalance += _depositBalance;
                     _protocolControlledFei += _depositFei;
                 }

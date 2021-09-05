@@ -12,5 +12,5 @@ interface IPCVDepositV2 is IPCVDeposit {
     function balanceReportedIn() external view returns (address);
 
     // gets the resistant token balance and protocol owned fei of this deposit
-    function balanceAndFei() external view returns (uint256, uint256);
+    function resistantBalanceAndFei() external view returns (uint256, uint256);
 }
