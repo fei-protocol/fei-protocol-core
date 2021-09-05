@@ -171,6 +171,9 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     /// @param _token : the asset to add price oracle for
     /// @param _newOracle : price feed oracle for the given asset
     function setOracle(address _token, address _newOracle) external onlyGovernor {
+        require(_token != address(0), "CollateralizationOracle: token must be != 0x0");
+        require(_newOracle != address(0), "CollateralizationOracle: oracle must be != 0x0");
+
         // add oracle to the map(ERC20Address) => OracleAddress
         address _oldOracle = tokenToOracle[_token];
         tokenToOracle[_token] = _newOracle;
