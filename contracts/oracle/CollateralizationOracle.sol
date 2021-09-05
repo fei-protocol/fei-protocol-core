@@ -108,7 +108,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     ///         note : this function reverts if the deposit is already in the list.
     ///         note : this function reverts if the deposit's token has no oracle.
     /// @param _deposit : the PCVDeposit to add to the list.
-    function addDeposit(address _deposit) external onlyGovernor {
+    function addDeposit(address _deposit) public onlyGovernor {
         // if the PCVDeposit is already listed, revert.
         require(depositToToken[_deposit] == address(0), "CollateralizationOracle: deposit duplicate");
 
@@ -131,7 +131,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     ///         the collateralization ratio oracle.
     ///         note : this function reverts if the input deposit is not found.
     /// @param _deposit : the PCVDeposit address to remove from the list.
-    function removeDeposit(address _deposit) external onlyGovernor {
+    function removeDeposit(address _deposit) public onlyGovernor {
         // get the token in which the deposit reports its token
         address _token = depositToToken[_deposit];
 
@@ -158,28 +158,13 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     /// @param _oldDeposit : the PCVDeposit to remove from the list.
     /// @param _newDeposit : the PCVDeposit to add to the list.
     function swapDeposit(address _oldDeposit, address _newDeposit) external onlyGovernor {
-        // get the token in which the old deposit reports its token
-        address _token = depositToToken[_oldDeposit];
-        address _newToken = IPCVDepositV2(_newDeposit).balanceReportedIn();
-
-        // revert if old deposit is not found
-        require(_token != address(0), "CollateralizationOracle: deposit not found");
-
-        // revert if new deposit is found
-        require(depositToToken[_newDeposit] == address(0), "CollateralizationOracle: deposit duplicate");
+        address _oldToken = depositToToken[_oldDeposit];
+        removeDeposit(_oldDeposit);
+        addDeposit(_newDeposit);
+        address _newToken = depositToToken[_newDeposit];
 
         // revert if token is different
-        require(_token == _newToken, "CollateralizationOracle: deposit has different token");
-
-        // update maps & arrays for faster access
-        depositToToken[_oldDeposit] = address(0);
-        depositToToken[_newDeposit] = _token;
-        tokenToDeposits[_token].remove(_oldDeposit);
-        tokenToDeposits[_token].add(_newDeposit);
-
-        // emit event
-        emit DepositRemove(msg.sender, _oldDeposit);
-        emit DepositAdd(msg.sender, _newDeposit, _token);
+        require(_oldToken == _newToken, "CollateralizationOracle: deposit has different token");
     }
 
     /// @notice Set the price feed oracle (in USD) for a given asset.
