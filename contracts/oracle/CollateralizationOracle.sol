@@ -158,13 +158,8 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     /// @param _oldDeposit : the PCVDeposit to remove from the list.
     /// @param _newDeposit : the PCVDeposit to add to the list.
     function swapDeposit(address _oldDeposit, address _newDeposit) external onlyGovernor {
-        address _oldToken = depositToToken[_oldDeposit];
         removeDeposit(_oldDeposit);
         addDeposit(_newDeposit);
-        address _newToken = depositToToken[_newDeposit];
-
-        // revert if token is different
-        require(_oldToken == _newToken, "CollateralizationOracle: deposit has different token");
     }
 
     /// @notice Set the price feed oracle (in USD) for a given asset.
