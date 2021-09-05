@@ -26,4 +26,8 @@ contract MockCollateralizationOracle is MockOracle {
     function pcvEquityValue() public view returns (int256) {
         return int256(pcvValue) - int256(userCirculatingFei);
     }
+
+    function pcvStats() public view returns(uint256, uint256, int256, bool) {
+        return (pcvValue, userCirculatingFei, pcvEquityValue(), valid);
+    }
 }

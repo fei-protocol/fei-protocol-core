@@ -41,7 +41,7 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
         FeiTimedMinter(_core, _target, _incentive, _frequency, 0)
     {
         _setCollateralizationOracle(_collateralizationOracle);
-        _setAprBasisPoints(_aprBasisPoints);
+        _setAPRBasisPoints(_aprBasisPoints);
     }
 
     /// @notice triggers a minting of FEI based on the PCV equity
@@ -67,10 +67,10 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
 
     /// @notice sets the new APR for determining buyback size from PCV equity
     function setAPRBasisPoints(uint256 newAprBasisPoints) external override onlyGovernorOrAdmin {
-        _setAprBasisPoints(newAprBasisPoints);
+        _setAPRBasisPoints(newAprBasisPoints);
     }
 
-    function _setAprBasisPoints(uint256 newAprBasisPoints) internal {
+    function _setAPRBasisPoints(uint256 newAprBasisPoints) internal {
         require(newAprBasisPoints != 0, "PCVEquityMinter: zero APR");
         require(newAprBasisPoints <= MAX_APR_BASIS_POINTS, "PCVEquityMinter: APR above max");
 
