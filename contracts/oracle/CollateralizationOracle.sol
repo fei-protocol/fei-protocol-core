@@ -258,7 +258,6 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
       bool validityStatus
     ) {
         uint256 _protocolControlledFei = 0;
-        address _fei = address(fei());
         validityStatus = !paused();
 
         // For each token...
@@ -299,8 +298,6 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
 
         userCirculatingFei = fei().totalSupply() - _protocolControlledFei;
         protocolEquity = int256(protocolControlledValue) - int256(userCirculatingFei);
-
-        userCirculatingFei = fei().totalSupply() - _protocolControlledFei;
     }
 
     /// @notice returns true if the protocol is overcollateralized. Overcollateralization
