@@ -330,6 +330,18 @@ describe('CollateralizationOracle', function () {
         'CoreRef: Caller is not a governor'
       );
     });
+    it('should revert if token = 0x0', async function() {
+      await expectRevert(
+        this.oracle.setOracle(ZERO_ADDRESS, this.oracle1.address, { from: governorAddress }),
+        'CollateralizationOracle: token must be != 0x0'
+      );
+    });
+    it('should revert if oracle = 0x0', async function() {
+      await expectRevert(
+        this.oracle.setOracle(this.token1.address, ZERO_ADDRESS, { from: governorAddress }),
+        'CollateralizationOracle: oracle must be != 0x0'
+      );
+    });
   });
 
   describe('IOracle', function() {
