@@ -26,6 +26,7 @@ contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized {
         @param _target the target for minted FEI
         @param _incentive the incentive amount for calling mint paid in FEI
         @param _frequency the frequency minting happens
+        @param _initialMintAmount the initial FEI amount to mint
     */
     constructor(
         address _core,
@@ -38,6 +39,8 @@ contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized {
         Timed(_frequency)
         Incentivized(_incentive)
     {
+        _initTimed();
+
         _setTarget(_target);
         _setMintAmount(_initialMintAmount);
     }
