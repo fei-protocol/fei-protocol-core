@@ -71,7 +71,7 @@ describe('FeiTimedMinter', function () {
   describe('Set Target', function() {
     it('governor succeeds', async function() {
       await this.feiMinter.setTarget(secondUserAddress, {from: governorAddress});
-      expect(await this.feiMinter.target()).to.be.bignumber.equal(secondUserAddress);
+      expect(await this.feiMinter.target()).to.be.equal(secondUserAddress);
     });
   
     it('non-governor reverts', async function() {
@@ -91,10 +91,6 @@ describe('FeiTimedMinter', function () {
   
     it('non-governor reverts', async function() {
       await expectRevert(this.feiMinter.setMintAmount('500', {from: userAddress}), 'CoreRef: Caller is not a governor');
-    });
-  
-    it('zero address reverts', async function() {
-      await expectRevert(this.feiMinter.setMintAmount(0, {from: governorAddress}), 'FeiTimedMinter: zero amount');
     });
   });
 

@@ -90,7 +90,6 @@ contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized {
     }
 
     function _setMintAmount(uint256 newMintAmount) internal {
-        require(newMintAmount != 0, "FeiTimedMinter: zero amount");
         uint256 oldMintAmount = _mintAmount;
         _mintAmount = newMintAmount;
         emit MintAmountUpdate(oldMintAmount, newMintAmount);
