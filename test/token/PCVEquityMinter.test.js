@@ -65,7 +65,7 @@ describe.only('PCVEquityMinter', function () {
       expectApprox(await this.feiMinter.remainingTime(), this.frequency);
         
       // mint sent
-      const expected = 4e20 * .02 / (24 * 365); // This is equity * APR / durations / year
+      const expected = (4e20 * 0.02) / (24 * 365); // This is equity * APR / durations / year
       expectApprox(await this.fei.balanceOf(userAddress), expected);
         
       // incentive for caller
