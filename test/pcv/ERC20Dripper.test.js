@@ -30,7 +30,7 @@ const dripAmount = new BN(4000000).mul(new BN(10).pow(new BN(18)));
 // this is 1 week in seconds
 const dripFrequency = 604800;
 
-describe.only('ERC20Dripper', () => {
+describe('ERC20Dripper', () => {
   before(async () => {
     ({
       userAddress,
@@ -112,7 +112,7 @@ describe.only('ERC20Dripper', () => {
       await expectRevert(
         this.dripper.drip(),
         'Timed: time not ended'
-      ); 
+      );
     });
   });
 
@@ -229,7 +229,7 @@ describe.only('ERC20Dripper', () => {
     it('should be able to call drip when enough time has passed through multiple periods', async function () {
       for (let i = 0; i < 11; i++) {
         await time.increase(dripFrequency);
-  
+
         expect(await this.dripper.isTimeEnded()).to.be.true;
 
         const tribalChiefStartingBalance = await this.tribe.balanceOf(this.tribalChief.address);
