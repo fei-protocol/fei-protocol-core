@@ -274,10 +274,12 @@ describe('CollateralizationOracle', function () {
       );
     });
     it('should revert if new deposit is already found', async function() {
+      await this.oracle.setOracle(this.token2.address, this.oracle2.address, { from: governorAddress });
+      await this.oracle.addDeposit(this.deposit2.address, { from: governorAddress });
       await expectRevert(
         this.oracle.swapDeposit(
           this.deposit1.address,
-          this.deposit1.address,
+          this.deposit2.address,
           { from: governorAddress }
         ),
         'CollateralizationOracle: deposit duplicate'
