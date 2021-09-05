@@ -251,37 +251,30 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
         // For each token...
         for (uint256 i = 0; i < tokensInPcv.length(); i++) {
             address _token = tokensInPcv.at(i);
-            bool _oracleRead = false; // used to read oracle only once
-            bool _oracleValid = false; // validity flag of oracle.read()
-            Decimal.D256 memory _oraclePrice = Decimal.zero();
+            uint256 _totalTokenBalance  = 0;
 
             // For each deposit...
-            uint256 _totalTokenBalance  = 0;
             for (uint256 j = 0; j < tokenToDeposits[_token].length(); j++) {
                 address _deposit = tokenToDeposits[_token].at(j);
 
                 // ignore deposits that are excluded by the Guardian
                 if (!excludedDeposits[_deposit]) {
-                    // On the first inspected deposit, read the oracle.
-                    // This is done inside the loop, after exclusion check,
-                    // because if all deposits of an asset are excluded, there is
-                    // no need to read the oracle.
-                    if (!_oracleRead) {
-                        (_oraclePrice, _oracleValid) = IOracle(tokenToOracle[_token]).read();
-                        _oracleRead = true;
-                        if (!_oracleValid) {
-                            validityStatus = false;
-                        }
-                    }
-
-                    // read the deposit
+                    // read the deposit, and increment token balance/protocol fei
                     (uint256 _depositBalance, uint256 _depositFei) = IPCVDepositV2(_deposit).resistantBalanceAndFei();
                     _totalTokenBalance += _depositBalance;
                     _protocolControlledFei += _depositFei;
                 }
             }
 
-            protocolControlledValue += _oraclePrice.mul(_totalTokenBalance).asUint256();
+            // If the protocol holds non-zero balance of tokens, fetch the oracle price to
+            // increment PCV by _totalTokenBalance * oracle price USD.
+            if (_totalTokenBalance != 0) {
+                (Decimal.D256 memory _oraclePrice, bool _oracleValid) = IOracle(tokenToOracle[_token]).read();
+                if (!_oracleValid) {
+                    validityStatus = false;
+                }
+                protocolControlledValue += _oraclePrice.mul(_totalTokenBalance).asUint256();
+            }
         }
 
         userCirculatingFei = fei().totalSupply() - _protocolControlledFei;
