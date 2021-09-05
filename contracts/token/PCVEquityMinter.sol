@@ -2,11 +2,13 @@ pragma solidity ^0.8.0;
 
 import "./FeiTimedMinter.sol";
 import "./IPCVEquityMinter.sol";
+import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @title PCVEquityMinter
 /// @notice A FeiTimedMinter that mints based on a percentage of PCV equity
 contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
-    
+    using SafeCast for int256;
+
     /// @notice The maximum percentage of PCV equity to be minted per year, in basis points 
     uint256 public constant override MAX_APR_BASIS_POINTS = 2000; // Max 20% per year
 
@@ -49,13 +51,13 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
     }
 
     function mintAmount() public view override returns (uint256) {
-        // TODO make signed and cast
-        uint256 equity = collateralizationOracle.pcvEquityValue();
+        (,,int256 equity, bool valid) = collateralizationOracle.pcvStats();
 
         require(equity > 0, "PCVEquityMinter: Equity is nonpositive");
+        require(valid, "PCVEquityMinter: invalid CR oracle");
 
         // return total equity scaled proportionally by the APR and the ratio of the mint frequency to the entire year
-        return equity * aprBasisPoints / BASIS_POINTS_GRANULARITY * duration / SECONDS_PER_YEAR;
+        return equity.toUint256() * aprBasisPoints / BASIS_POINTS_GRANULARITY * duration / SECONDS_PER_YEAR;
     }
     
     /// @notice set the collateralization oracle
