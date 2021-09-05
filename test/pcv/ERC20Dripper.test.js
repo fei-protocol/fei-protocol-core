@@ -30,7 +30,7 @@ const dripAmount = new BN(4000000).mul(new BN(10).pow(new BN(18)));
 // this is 1 week in seconds
 const dripFrequency = 604800;
 
-describe.only('ERC20Dripper', () => {
+describe('ERC20Dripper', () => {
   before(async () => {
     ({
       userAddress,
