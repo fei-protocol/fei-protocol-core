@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 import "./IPCVSwapper.sol";
 import "../utils/WethPCVDeposit.sol";
 import "../../utils/Incentivized.sol";
+import "../../utils/RateLimitedMinter.sol";
 import "../../refs/OracleRef.sol";
 import "../../utils/Timed.sol";
 import "../../external/UniswapV2Library.sol";
@@ -14,7 +15,7 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 
 /// @title implementation for PCV Swapper that swaps ERC20 tokens on Uniswap
 /// @author eswak
-contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Incentivized {
+contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Incentivized, RateLimitedMinter {
     using SafeERC20 for IERC20;
     using Decimal for Decimal.D256;
 
@@ -46,25 +47,39 @@ contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Inc
         int256 _decimalsNormalizer;
     }
 
+    struct PCVSwapperData {
+      address _tokenSpent;
+      address _tokenReceived;
+      address _tokenReceivingAddress;
+      uint256 _maxSpentPerSwap;
+      uint256 _maximumSlippageBasisPoints;
+    }
+
     constructor(
         address _core,
         IUniswapV2Pair _pair,
-        // solhint-disable-next-line var-name-mixedcase
         OracleData memory oracleData,
+        PCVSwapperData memory pcvSwapperData,
         uint256 _swapFrequency,
-        address _tokenSpent,
-        address _tokenReceived,
-        address _tokenReceivingAddress,
-        uint256 _maxSpentPerSwap,
-        uint256 _maximumSlippageBasisPoints,
         uint256 _swapIncentiveAmount
-    ) OracleRef(
-      _core, 
-      oracleData._oracle, 
-      oracleData._backupOracle,
-      oracleData._decimalsNormalizer,
-      oracleData._invertOraclePrice
-    ) Timed(_swapFrequency) Incentivized(_swapIncentiveAmount) {
+    ) 
+    OracleRef(
+        _core, 
+        oracleData._oracle, 
+        oracleData._backupOracle,
+        oracleData._decimalsNormalizer,
+        oracleData._invertOraclePrice
+      ) 
+      Timed(_swapFrequency) 
+      Incentivized(_swapIncentiveAmount) 
+      RateLimitedMinter(_swapIncentiveAmount / _swapFrequency, _swapIncentiveAmount, false) 
+    {
+        address _tokenSpent = pcvSwapperData._tokenSpent;
+        address _tokenReceived = pcvSwapperData._tokenReceived;
+        address _tokenReceivingAddress = pcvSwapperData._tokenReceivingAddress;
+        uint256 _maxSpentPerSwap = pcvSwapperData._maxSpentPerSwap;
+        uint256 _maximumSlippageBasisPoints = pcvSwapperData._maximumSlippageBasisPoints;
+
         require(_pair.token0() == _tokenSpent || _pair.token1() == _tokenSpent, "PCVSwapperUniswap: token spent not in pair");
         require(_pair.token0() == _tokenReceived || _pair.token1() == _tokenReceived, "PCVSwapperUniswap: token received not in pair");
         pair = _pair;
@@ -216,5 +231,9 @@ contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Inc
       Decimal.D256 memory maxSlippage = Decimal.ratio(BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, BASIS_POINTS_GRANULARITY);
       Decimal.D256 memory oraclePriceMinusSlippage = maxSlippage.mul(oracleAmountOut);
       return oraclePriceMinusSlippage.asUint256();
+    }
+
+    function _mintFei(address to, uint256 amountIn) internal override(CoreRef, RateLimitedMinter) {
+      RateLimitedMinter._mintFei(to, amountIn);
     }
 }

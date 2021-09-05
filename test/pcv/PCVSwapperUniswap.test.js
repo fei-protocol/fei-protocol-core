@@ -57,12 +57,14 @@ describe('PCVSwapperUniswap', function () {
         _invertOraclePrice: false,
         _decimalsNormalizer: 0,
       }, 
+      {
+        _tokenSpent: this.weth.address,
+        _tokenReceived: this.fei.address,
+        _tokenReceivingAddress: userAddress,
+        _maxSpentPerSwap: `100${e18}`,
+        _maximumSlippageBasisPoints: '300' 
+      },
       '1000', // default minimum interval between swaps
-      this.weth.address, // tokenSpent
-      this.fei.address, // tokenReceived
-      userAddress, // tokenReceivingAddress
-      `100${e18}`, // maxSpentPerSwap
-      '300', // maximumSlippageBasisPoints
       `200${e18}` // swap incentive = 200 FEI
     );
 
