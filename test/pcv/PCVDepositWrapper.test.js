@@ -7,7 +7,7 @@ const PCVDepositWrapper = artifacts.require('PCVDepositWrapper');
 const MockPCVDepositV2 = artifacts.require('MockPCVDepositV2');
 const MockERC20 = artifacts.require('MockERC20');
 
-describe.only('PCVDepositWrapper', function () {
+describe('PCVDepositWrapper', function () {
   beforeEach(async function () {
     this.balance = '2000';
     this.core = await getCore();
