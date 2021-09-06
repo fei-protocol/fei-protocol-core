@@ -125,7 +125,7 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
     }
 
     function _mint(address to, uint256 amount) internal {
-        ITribe _tribe = ITribe(address(tribe()));
+        ITribe _tribe = ITribe(address(token));
         _tribe.mint(to, amount);
     }
 }
