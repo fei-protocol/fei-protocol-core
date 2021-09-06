@@ -48,6 +48,9 @@ contract EthLidoPCVDeposit is PCVDeposit {
     uint256 public maximumSlippageBasisPoints;
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
+    /// @dev used as the reporting token address for balances
+    address public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+
     constructor(
         address _core,
         address _steth,
@@ -176,5 +179,10 @@ contract EthLidoPCVDeposit is PCVDeposit {
         require(_maximumSlippageBasisPoints <= BASIS_POINTS_GRANULARITY, "EthLidoPCVDeposit: Exceeds bp granularity.");
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
         emit UpdateMaximumSlippage(_maximumSlippageBasisPoints);
+    }
+
+    /// @notice display the related token of the balance reported
+    function balanceReportedIn() public pure override returns (address) {
+        return WETH;
     }
 }

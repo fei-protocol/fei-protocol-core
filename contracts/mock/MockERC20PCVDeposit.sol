@@ -44,6 +44,15 @@ contract MockERC20PCVDeposit is IPCVDeposit {
     	return token.balanceOf(address(this));
     }
 
+    /// @notice display the related token of the balance reported
+    function balanceReportedIn() public view override returns (address) {
+        return address(token);
+    }
+
+    function resistantBalanceAndFei() public view virtual override returns(uint256, uint256) {
+      return (balance(), 0);
+    }
+    
     function setBeneficiary(address payable _beneficiary) public {
         beneficiary = _beneficiary;
     }
