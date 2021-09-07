@@ -3,11 +3,12 @@ pragma solidity ^0.8.0;
 import "../refs/CoreRef.sol";
 import "../utils/Timed.sol";
 import "../utils/Incentivized.sol";
+import "../utils/RateLimitedMinter.sol";
 import "./IFeiTimedMinter.sol";
 
 /// @title FeiTimedMinter
 /// @notice a contract which mints FEI to a target address on a timed cadence
-contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized {
+contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized, RateLimitedMinter {
     
     /// @notice most frequent that mints can happen
     uint256 public constant override MIN_MINT_FREQUENCY = 1 hours; // Min 1 hour per mint
@@ -38,6 +39,7 @@ contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized {
         CoreRef(_core)
         Timed(_frequency)
         Incentivized(_incentive)
+        RateLimitedMinter((_initialMintAmount + _incentive) / _frequency, (_initialMintAmount + _incentive), true) 
     {
         _initTimed();
 
@@ -54,9 +56,10 @@ contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized {
 
         uint256 amount = mintAmount();
 
-        fei().mint(target, amount);
-
+        // incentivizing before minting so if there is a partial mint it goes to target not caller
         _incentivize();
+
+        _mintFei(target, amount);
         
         emit FeiMinting(msg.sender, amount);
     }
@@ -93,5 +96,9 @@ contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized {
         uint256 oldMintAmount = _mintAmount;
         _mintAmount = newMintAmount;
         emit MintAmountUpdate(oldMintAmount, newMintAmount);
+    }
+
+    function _mintFei(address to, uint256 amountIn) internal override(CoreRef, RateLimitedMinter) {
+      RateLimitedMinter._mintFei(to, amountIn);
     }
 }

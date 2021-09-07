@@ -14,6 +14,7 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
 
     uint256 private constant SECONDS_PER_YEAR = 365 days;
     uint256 private constant BASIS_POINTS_GRANULARITY = 10000;
+    uint256 private constant FEI_MINTING_LIMIT_PER_SECOND = 1000e18; // 1000 FEI/s or ~86m FEI/day
 
     /// @notice the collateralization oracle used to determine PCV equity
     ICollateralizationOracle public override collateralizationOracle;
@@ -38,7 +39,7 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
         ICollateralizationOracle _collateralizationOracle,
         uint256 _aprBasisPoints
     ) 
-        FeiTimedMinter(_core, _target, _incentive, _frequency, 0)
+        FeiTimedMinter(_core, _target, _incentive, _frequency, FEI_MINTING_LIMIT_PER_SECOND * _frequency)
     {
         _setCollateralizationOracle(_collateralizationOracle);
         _setAPRBasisPoints(_aprBasisPoints);

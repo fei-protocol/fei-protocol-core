@@ -56,20 +56,44 @@ describe.only('PCVEquityMinter', function () {
       await expectRevert(this.feiMinter.mint({from: userAddress}), 'Timed: time not ended');
     });
   
-    it('after time succeeds', async function () {
-      await time.increase(this.frequency);
-      await time.increase(this.frequency);
-      await this.feiMinter.mint({from: secondUserAddress});
-  
-      // timer reset
-      expectApprox(await this.feiMinter.remainingTime(), this.frequency);
+    describe('after time', function() {
+      beforeEach(async function() {
+        await time.increase(this.frequency);
+        await time.increase(this.frequency);
+      });
+
+      it('below rate limit succeeds', async function () {
+        await this.feiMinter.mint({from: secondUserAddress});
+    
+        // timer reset
+        expectApprox(await this.feiMinter.remainingTime(), this.frequency);
+          
+        // mint sent
+        const expected = (4e20 * 0.02) / (24 * 365); // This is equity * APR / durations / year
+        expectApprox(await this.fei.balanceOf(userAddress), expected);
+          
+        // incentive for caller
+        expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(this.incentive);
+      });
+
+      it('above rate limit does partial mint', async function () {
+        // set PCV equity to be massive
+        await this.collateralizationOracle.set('0', '10000000000000000000000000000000000');
         
-      // mint sent
-      const expected = (4e20 * 0.02) / (24 * 365); // This is equity * APR / durations / year
-      expectApprox(await this.fei.balanceOf(userAddress), expected);
-        
-      // incentive for caller
-      expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(this.incentive);
+        // The buffer is the expected value with excess equity
+        const expected = await this.feiMinter.buffer();
+
+        await this.feiMinter.mint({from: secondUserAddress});
+    
+        // timer reset
+        expectApprox(await this.feiMinter.remainingTime(), this.frequency);
+          
+        // mint sent
+        expectApprox(await this.fei.balanceOf(userAddress), expected);
+          
+        // incentive for caller
+        expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(this.incentive);
+      });
     });
   });
     
