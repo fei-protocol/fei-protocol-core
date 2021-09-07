@@ -1,5 +1,6 @@
 const {
   BN,
+  MAX_UINT256,
   expectRevert,
   expect,
   getAddresses,
@@ -34,7 +35,17 @@ describe('TribeReserveStabilizer', function () {
     this.collateralizationOracle = await MockCollateralizationOracle.new(1);
     this.pcvDeposit = await MockPCVDeposit.new(userAddress);
 
-    this.reserveStabilizer = await TribeReserveStabilizer.new(this.core.address, this.oracle.address, this.oracle.address, '9000', this.collateralizationOracle.address, '10000');
+    this.reserveStabilizer = await TribeReserveStabilizer.new(
+      this.core.address, 
+      this.oracle.address, 
+      this.oracle.address, 
+      '9000', // $.90 exchange rate
+      this.collateralizationOracle.address, 
+      '10000', // 100% CR threshold
+      '10000000', // max rate limit per second
+      '10000000', // rate limit per second
+      '10000000000' // buffer cap
+    );
 
     await this.core.grantBurner(this.reserveStabilizer.address, {from: governorAddress});
 
@@ -69,6 +80,44 @@ describe('TribeReserveStabilizer', function () {
 
         expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
         expect(await this.reserveStabilizer.balance()).to.be.bignumber.equal(new BN('0'));
+      });
+    });
+
+    describe('No Held TRIBE', function() {
+      it('mints all TRIBE', async function() {
+        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal(new BN('0'));
+        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+        await this.reserveStabilizer.exchangeFei('4444445', {from: userAddress});
+        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal(new BN('0'));
+        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN('10000'));
+      });
+    });
+
+    describe('Some Held TRIBE', function() {
+      beforeEach(async function() {
+        this.mintAmount = new BN('10000');
+        await this.reserveStabilizer.mint(this.reserveStabilizer.address, this.mintAmount, {from: governorAddress});
+        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal(this.mintAmount);
+      });
+
+      it('mints some TRIBE', async function() {
+        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+        await this.reserveStabilizer.exchangeFei('8888889', {from: userAddress});
+        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal('0');
+        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN('20000'));
+      });
+    });
+
+    describe('Exceed Buffer', function() {
+      beforeEach(async function() {
+        await this.fei.mint(userAddress, '100000000000000000000000', {from: minterAddress});  
+        this.buffer = await this.reserveStabilizer.buffer();
+        this.feiAmount = this.buffer.mul(new BN('400')); // mul by oracle price
+        await this.reserveStabilizer.exchangeFei(this.feiAmount, {from: userAddress});
+      });
+
+      it('reverts', async function() {
+        await expectRevert(this.reserveStabilizer.exchangeFei(this.feiAmount, {from: userAddress}), 'RateLimitedMinter: rate limit hit');
       });
     });
 
@@ -174,25 +223,11 @@ describe('TribeReserveStabilizer', function () {
         expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal(this.mintAmount);
       });
 
-      it('exactly enough held - mints 0 TRIBE', async function() {
-        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
-        await this.reserveStabilizer.mint(userAddress, '10000', {from: governorAddress});
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal(new BN('0'));
-        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN('10000'));
-      });
-
-      it('not enough held - mints some TRIBE', async function() {
+      it('mints all TRIBE', async function() {
         expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
         await this.reserveStabilizer.mint(userAddress, '20000', {from: governorAddress});
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal(new BN('0'));
+        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal(this.mintAmount);
         expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN('20000'));
-      });
-
-      it('more than enough held - mints 0 TRIBE', async function() {
-        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
-        await this.reserveStabilizer.mint(userAddress, '5000', {from: governorAddress});
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal(new BN('5000'));
-        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN('5000'));
       });
     });
   });

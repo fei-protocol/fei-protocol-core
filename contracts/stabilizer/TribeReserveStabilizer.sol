@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 
 import "./ReserveStabilizer.sol";
 import "./ITribeReserveStabilizer.sol";
+import "../utils/RateLimited.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
 interface ITribe is IERC20 {
@@ -12,7 +13,7 @@ interface ITribe is IERC20 {
 
 /// @title implementation for a TRIBE Reserve Stabilizer
 /// @author Fei Protocol
-contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
+contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, RateLimited {
     using Decimal for Decimal.D256;
 
     /// @notice a collateralization oracle
@@ -33,8 +34,14 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
         address _backupOracle,
         uint256 _usdPerFeiBasisPoints,
         ICollateralizationOracle _collateralizationOracle,
-        uint256 _collateralizationThresholdBasisPoints
-    ) ReserveStabilizer(_core, _tribeOracle, _backupOracle, IERC20(address(0)), _usdPerFeiBasisPoints) {
+        uint256 _collateralizationThresholdBasisPoints,
+        uint256 _maxRateLimitPerSecond,
+        uint256 _rateLimitPerSecond,
+        uint256 _bufferCap
+    ) 
+      ReserveStabilizer(_core, _tribeOracle, _backupOracle, IERC20(address(0)), _usdPerFeiBasisPoints) 
+      RateLimited(_maxRateLimitPerSecond, _rateLimitPerSecond, _bufferCap, false)
+    {
         collateralizationOracle = _collateralizationOracle;
         emit CollateralizationOracleUpdate(address(0), address(_collateralizationOracle));
     
@@ -96,7 +103,7 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
     /// @param to the address to send TRIBE to
     /// @param amount the amount of TRIBE to send
     function mint(address to, uint256 amount) external override onlyGovernor {
-        _transfer(to, amount);
+        _mint(to, amount);
     }
 
     /// @notice changes the TRIBE minter address
@@ -109,6 +116,7 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
 
     // Transfer held TRIBE first, then mint to cover remainder
     function _transfer(address to, uint256 amount) internal override {
+        _depleteBuffer(amount);
         uint256 _tribeBalance = balance();
         uint256 mintAmount = amount;
         if(_tribeBalance != 0) {
