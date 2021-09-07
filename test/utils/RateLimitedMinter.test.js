@@ -5,7 +5,7 @@ const {
   expect,
   expectApprox,
   getAddresses,
-  getCore,
+  getCore, 
 } = require('../helpers');
     
 const RateLimitedMinter = artifacts.require('MockRateLimitedMinter');
@@ -25,12 +25,12 @@ describe('RateLimitedMinter', function () {
   
     this.fei = await Fei.at(await this.core.fei());
 
-    this.feiLimitPerSecond = '1';
-    this.mintingBufferCap = '20000';
+    this.rateLimitPerSecond = '1';
+    this.bufferCap = '20000';
     this.rateLimitedMinter = await RateLimitedMinter.new(
       this.core.address, 
-      this.feiLimitPerSecond, 
-      this.mintingBufferCap, 
+      this.rateLimitPerSecond, 
+      this.bufferCap, 
       false
     );
 
@@ -40,21 +40,21 @@ describe('RateLimitedMinter', function () {
   describe('Mint', function() {
     describe('Full mint', function() {
       beforeEach(async function () {
-        await this.rateLimitedMinter.mint(userAddress, this.mintingBufferCap);
+        await this.rateLimitedMinter.mint(userAddress, this.bufferCap);
       });
 
       it('clears out buffer', async function() {
-        expectApprox(await this.rateLimitedMinter.mintingBuffer(), '0');
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.mintingBufferCap);
+        expectApprox(await this.rateLimitedMinter.buffer(), '0');
+        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.bufferCap);
       });
 
       it('second mint reverts', async function() {
-        await expectRevert(this.rateLimitedMinter.mint(userAddress, this.mintingBufferCap), 'RateLimitedMinter: rate limit hit');
+        await expectRevert(this.rateLimitedMinter.mint(userAddress, this.bufferCap), 'RateLimitedMinter: rate limit hit');
       });
 
       it('time increase refreshes buffer', async function() {
         await time.increase('1000');
-        expectApprox(await this.rateLimitedMinter.mintingBuffer(), '1000');
+        expectApprox(await this.rateLimitedMinter.buffer(), '1000');
       });
     });
     describe('Partial Mint', function() {
@@ -65,47 +65,47 @@ describe('RateLimitedMinter', function () {
       });
     
       it('partially clears out buffer', async function() {
-        expectApprox(await this.rateLimitedMinter.mintingBuffer(), '10000');
+        expectApprox(await this.rateLimitedMinter.buffer(), '10000');
         expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.mintAmount);
       });
     
       it('second mint is partial', async function() {
-        await this.rateLimitedMinter.mint(userAddress, this.mintingBufferCap);
-        expectApprox(await this.fei.balanceOf(userAddress), this.mintingBufferCap);
-        expectApprox(await this.rateLimitedMinter.mintingBuffer(), '0');
+        await this.rateLimitedMinter.mint(userAddress, this.bufferCap);
+        expectApprox(await this.fei.balanceOf(userAddress), this.bufferCap);
+        expectApprox(await this.rateLimitedMinter.buffer(), '0');
       });
     
       it('time increase refreshes buffer', async function() {
         await time.increase('1000');
-        expectApprox(await this.rateLimitedMinter.mintingBuffer(), '11000');
+        expectApprox(await this.rateLimitedMinter.buffer(), '11000');
       });
     });
   });
   
   describe('Set Fei Limit Per Second', function() {
     it('governor succeeds', async function() {
-      await this.rateLimitedMinter.setFeiLimitPerSecond('10000', {from: governorAddress});
-      expect(await this.rateLimitedMinter.feiLimitPerSecond()).to.be.bignumber.equal(new BN('10000'));
+      await this.rateLimitedMinter.setRateLimitPerSecond('10000', {from: governorAddress});
+      expect(await this.rateLimitedMinter.rateLimitPerSecond()).to.be.bignumber.equal(new BN('10000'));
     });
   
     it('non-governor reverts', async function() {
-      await expectRevert(this.rateLimitedMinter.setFeiLimitPerSecond('10000', {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.rateLimitedMinter.setRateLimitPerSecond('10000', {from: userAddress}), 'CoreRef: Caller is not a governor');
     });
   
     it('too high fei rate reverts', async function() {
-      await expectRevert(this.rateLimitedMinter.setFeiLimitPerSecond(new BN('20000000000000000000000'), {from: governorAddress}), 'RateLimitedMinter: feiLimitPerSecond too high');
+      await expectRevert(this.rateLimitedMinter.setRateLimitPerSecond(new BN('20000000000000000000000'), {from: governorAddress}), 'RateLimitedMinter: rateLimitPerSecond too high');
     });
   });
 
   describe('Set Minting Buffer Cap', function() {
     it('governor succeeds', async function() {
-      await this.rateLimitedMinter.setMintingBufferCap('10000', {from: governorAddress});
-      expect(await this.rateLimitedMinter.mintingBufferCap()).to.be.bignumber.equal(new BN('10000'));
-      expect(await this.rateLimitedMinter.mintingBuffer()).to.be.bignumber.equal(new BN('10000'));
+      await this.rateLimitedMinter.setbufferCap('10000', {from: governorAddress});
+      expect(await this.rateLimitedMinter.bufferCap()).to.be.bignumber.equal(new BN('10000'));
+      expect(await this.rateLimitedMinter.buffer()).to.be.bignumber.equal(new BN('10000'));
     });
   
     it('non-governor reverts', async function() {
-      await expectRevert(this.rateLimitedMinter.setMintingBufferCap('10000', {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.rateLimitedMinter.setbufferCap('10000', {from: userAddress}), 'CoreRef: Caller is not a governor');
     });
   });
 });

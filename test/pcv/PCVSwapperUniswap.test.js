@@ -49,9 +49,8 @@ describe('PCVSwapperUniswap', function () {
     this.chainlinkOracleWrapper = await ChainlinkOracleWrapper.new(this.core.address, this.mockChainlinkOracle.address);
 
     this.swapper = await PCVSwapperUniswap.new(
-      this.core.address, // core
-      this.pair.address, // pair
       {
+        _core: this.core.address,
         _oracle: this.oracle.address, // oracle
         _backupOracle: this.oracle.address, // backup oracle
         _invertOraclePrice: false,
@@ -62,10 +61,14 @@ describe('PCVSwapperUniswap', function () {
         _tokenReceived: this.fei.address,
         _tokenReceivingAddress: userAddress,
         _maxSpentPerSwap: `100${e18}`,
-        _maximumSlippageBasisPoints: '300' 
+        _maximumSlippageBasisPoints: '300',
+        _pair: this.pair.address,
+
       },
-      '1000', // default minimum interval between swaps
-      `200${e18}` // swap incentive = 200 FEI
+      {
+        _swapFrequency: '1000',
+        _swapIncentiveAmount: `200${e18}` // swap incentive = 200 FEI
+      }       
     );
 
     await this.core.grantPCVController(pcvControllerAddress, {from: governorAddress});

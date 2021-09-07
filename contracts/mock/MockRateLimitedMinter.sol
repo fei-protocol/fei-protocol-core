@@ -16,7 +16,7 @@ contract MockRateLimitedMinter is RateLimitedMinter {
     {}
 
 	function setDoPartialMint(bool _doPartialMint) public {
-		doPartialMint = _doPartialMint;
+		doPartialAction = _doPartialMint;
 	}
 
     function mint(address to, uint256 amount) public {

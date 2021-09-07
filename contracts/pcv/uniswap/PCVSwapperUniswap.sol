@@ -39,6 +39,7 @@ contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Inc
     IUniswapV2Pair public immutable pair;
 
     struct OracleData {
+        address _core;
         address _oracle;
         address _backupOracle;
         // invert should be false if the oracle is reported in tokenSpent terms otherwise true
@@ -53,32 +54,35 @@ contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Inc
       address _tokenReceivingAddress;
       uint256 _maxSpentPerSwap;
       uint256 _maximumSlippageBasisPoints;
+      IUniswapV2Pair _pair;
     }
 
+    struct MinterData {
+      uint256 _swapFrequency;
+      uint256 _swapIncentiveAmount;
+    }
     constructor(
-        address _core,
-        IUniswapV2Pair _pair,
         OracleData memory oracleData,
         PCVSwapperData memory pcvSwapperData,
-        uint256 _swapFrequency,
-        uint256 _swapIncentiveAmount
+        MinterData memory minterData
     ) 
-    OracleRef(
-        _core, 
+      OracleRef(
+        oracleData._core, 
         oracleData._oracle, 
         oracleData._backupOracle,
         oracleData._decimalsNormalizer,
         oracleData._invertOraclePrice
       ) 
-      Timed(_swapFrequency) 
-      Incentivized(_swapIncentiveAmount) 
-      RateLimitedMinter(_swapIncentiveAmount / _swapFrequency, _swapIncentiveAmount, false) 
+      Timed(minterData._swapFrequency) 
+      Incentivized(minterData._swapIncentiveAmount) 
+      RateLimitedMinter(minterData._swapIncentiveAmount / minterData._swapFrequency, minterData._swapIncentiveAmount, false) 
     {
         address _tokenSpent = pcvSwapperData._tokenSpent;
         address _tokenReceived = pcvSwapperData._tokenReceived;
         address _tokenReceivingAddress = pcvSwapperData._tokenReceivingAddress;
         uint256 _maxSpentPerSwap = pcvSwapperData._maxSpentPerSwap;
         uint256 _maximumSlippageBasisPoints = pcvSwapperData._maximumSlippageBasisPoints;
+        IUniswapV2Pair _pair = pcvSwapperData._pair;
 
         require(_pair.token0() == _tokenSpent || _pair.token1() == _tokenSpent, "PCVSwapperUniswap: token spent not in pair");
         require(_pair.token0() == _tokenReceived || _pair.token1() == _tokenReceived, "PCVSwapperUniswap: token received not in pair");
