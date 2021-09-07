@@ -32,7 +32,11 @@ describe('CollateralizationOracle', function () {
     this.deposit1 = await MockPCVDepositV2.new(
       this.core.address,
       this.token1.address,
+<<<<<<< HEAD
       `2000${e18}`, // balance
+=======
+      `2000${e18}`,// balance
+>>>>>>> feat/v2
       `1000${e18}`// protocol FEI
     );
     await this.fei.mint(this.deposit1.address, `1000${e18}`);
@@ -178,7 +182,11 @@ describe('CollateralizationOracle', function () {
       expect(await this.oracle.getTokenInPcv('0')).to.be.equal(this.token1.address);
       expect(await this.oracle.isTokenInPcv(this.token1.address)).to.be.equal(true);
       // remove deposit
+<<<<<<< HEAD
       await this.oracle.removeDeposit(this.deposit1.address, { from: governorAddress });
+=======
+      await this.oracle.removeDeposit(this.deposit1.address, { from: governorAddress })
+>>>>>>> feat/v2
       // after remove
       await expectRevert.unspecified(this.oracle.getDepositForToken(this.token1.address, '0'));
       expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(ZERO_ADDRESS);
@@ -210,7 +218,11 @@ describe('CollateralizationOracle', function () {
       this.deposit1bis = await MockPCVDepositV2.new(
         this.core.address,
         this.token1.address,
+<<<<<<< HEAD
         `2000${e18}`, // balance
+=======
+        `2000${e18}`,// balance
+>>>>>>> feat/v2
         `1000${e18}`// protocol FEI
       );
       await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
@@ -462,7 +474,11 @@ describe('CollateralizationOracle', function () {
       it('should return the PCV equity in USD (PCV value - circulating FEI)', async function() {
         expect((await this.oracle.pcvStats()).protocolEquity).to.be.bignumber.equal(`2500${e18}`);
         await this.fei.mint(userAddress, `2500${e18}`);
+<<<<<<< HEAD
         expect((await this.oracle.pcvStats()).protocolEquity).to.be.bignumber.equal('0');
+=======
+          expect((await this.oracle.pcvStats()).protocolEquity).to.be.bignumber.equal('0');
+>>>>>>> feat/v2
         await this.oracle2.setExchangeRate(4000); // 3000 -> 4000
         expect((await this.oracle.pcvStats()).protocolEquity).to.be.bignumber.equal(`1000${e18}`);
         await this.fei.mint(userAddress, `5000${e18}`);
