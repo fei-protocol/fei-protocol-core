@@ -23,6 +23,7 @@ abstract contract RateLimited is CoreRef {
     /// @notice a flag for whether to allow partial actions to complete if the buffer is less than amount
     bool public doPartialAction;
 
+    /// @notice the buffer at the timestamp of lastBufferUsedTime
     uint256 private _bufferStored;
 
     event BufferCapUpdate(uint256 oldBufferCap, uint256 newBufferCap);
@@ -59,6 +60,13 @@ abstract contract RateLimited is CoreRef {
         return Math.min(_bufferStored + (rateLimitPerSecond * elapsed), bufferCap);
     }
 
+    /** 
+        @notice the method that enforces the rate limit. Decreases buffer by "amount". 
+        If buffer is <= amount either
+        1. Does a partial mint by the amount remaining in the buffer or
+        2. Reverts
+        Depending on whether doPartialAction is true or false
+    */
     function _depleteBuffer(uint256 amount) internal returns(uint256) {
         uint256 newBuffer = buffer();
         
