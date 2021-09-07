@@ -34,7 +34,7 @@ abstract contract RateLimited is CoreRef {
         _bufferStored = _bufferCap;
         _setBufferCap(_bufferCap);
 
-        require(_rateLimitPerSecond <= _maxRateLimitPerSecond, "RateLimitedMinter: rateLimitPerSecond too high");
+        require(_rateLimitPerSecond <= _maxRateLimitPerSecond, "RateLimited: rateLimitPerSecond too high");
         _setRateLimitPerSecond(_rateLimitPerSecond);
         
         MAX_RATE_LIMIT_PER_SECOND = _maxRateLimitPerSecond;
@@ -43,7 +43,7 @@ abstract contract RateLimited is CoreRef {
 
     /// @notice set the rate limit per second
     function setRateLimitPerSecond(uint256 newRateLimitPerSecond) external onlyGovernorOrAdmin {
-        require(newRateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND, "RateLimitedMinter: rateLimitPerSecond too high");
+        require(newRateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND, "RateLimited: rateLimitPerSecond too high");
         _setRateLimitPerSecond(newRateLimitPerSecond);
     }
 
@@ -67,7 +67,7 @@ abstract contract RateLimited is CoreRef {
             usedAmount = newBuffer;
         }
 
-        require(usedAmount <= newBuffer, "RateLimitedMinter: rate limit hit");
+        require(usedAmount <= newBuffer, "RateLimited: rate limit hit");
 
         _bufferStored = newBuffer - usedAmount;
 
