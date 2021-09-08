@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
+import "../../refs/CoreRef.sol";
+
 /// @title abstract contract for splitting PCV into different deposits
 /// @author Fei Protocol
-abstract contract PCVSplitter {
+abstract contract PCVSplitter is CoreRef {
 
     /// @notice total allocation allowed representing 100%
     uint256 public constant ALLOCATION_GRANULARITY = 10_000;
@@ -12,6 +14,7 @@ abstract contract PCVSplitter {
     address[] private pcvDeposits;
 
     event AllocationUpdate(address[] oldPCVDeposits, uint256[] oldRatios, address[] newPCVDeposits, uint256[] newRatios);
+    event Allocate(address indexed caller, uint256 amount);
 
     /// @notice PCVSplitter constructor
     /// @param _pcvDeposits list of PCV Deposits to split to
@@ -52,6 +55,14 @@ abstract contract PCVSplitter {
         return (pcvDeposits, ratios);
     }
 
+    /// @notice sets the allocation of held PCV
+    function setAllocation(
+        address[] calldata _allocations,
+        uint256[] calldata _ratios
+    ) external onlyGovernorOrAdmin {
+        _setAllocation(_allocations, _ratios);
+    }
+
     /// @notice distribute funds to single PCV deposit
     /// @param amount amount of funds to send
     /// @param pcvDeposit the pcv deposit to send funds
@@ -85,5 +96,6 @@ abstract contract PCVSplitter {
             uint256 amount = total * ratios[i] / granularity;
             _allocateSingle(amount, pcvDeposits[i]);
         }
+        emit Allocate(msg.sender, total);
     }
 }
