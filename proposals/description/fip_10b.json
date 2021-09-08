@@ -1,0 +1,34 @@
+{
+    "proposal_title": "FIP-10b: Deposit DAI in Curve Metapool",
+    "proposal_description_link": "",
+    "proposal_commands": [
+        {
+          "address": "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
+          "values": "0",
+          "method": "mint(address,uint256)",
+          "arguments": [
+              "tbdCurveDepositAddress",
+              "51000000000000000000000000"
+          ],
+          "description": "Mint 51M FEI for the Curve deposit"
+        },
+        {
+            "address": "0xe0f73b8d76d2ad33492f995af218b03564b8ce20",
+            "values": "0",
+            "method": "withdraw(address,uint256)",
+            "arguments": [
+                "tbdCurveDepositAddress",
+                "50000000000000000000000000"
+            ],
+            "description": "Move 50M DAI from Compound to Curve deposit"
+        },
+        {
+            "address": "tbdCurveDepositAddress",
+            "values": "0",
+            "method": "deposit()",
+            "arguments": [],
+            "description": "Deposit DAI and FEI in the Curve metapool"
+        }
+    ],
+    "proposal_calldata": ""
+}

@@ -14,6 +14,9 @@ interface IPausable {
 /// @notice Reads a list of PCVDeposit that report their amount of collateral
 ///         and the amount of protocol-owned FEI they manage, to deduce the
 ///         protocol-wide collateralization ratio.
+
+// TODO: rename CollaratalizationOracleWrapper
+// TODO: use Timed utility
 contract CollateralizationMemoizer is IOracle, CoreRef {
     using Decimal for Decimal.D256;
 
@@ -31,6 +34,7 @@ contract CollateralizationMemoizer is IOracle, CoreRef {
     /// @notice address of the CollateralizationOracle to memoize
     address public collateralizationOracle;
 
+    // TODO should be private, probably don't need docs
     /// @notice cached value of the Protocol Controlled Value
     uint256 public cachedProtocolControlledValue;
     /// @notice cached value of the User Circulating FEI
@@ -42,6 +46,8 @@ contract CollateralizationMemoizer is IOracle, CoreRef {
     uint256 public lastUpdate;
     /// @notice validity duration of the cached value
     uint256 public validityDuration;
+
+    // TODO rename deviationThresholdBasisPoints
     /// @notice deviation threshold to consider cached values outdated, in basis
     ///         points (base 10_000)
     uint256 public deviationThreshold;
@@ -56,6 +62,7 @@ contract CollateralizationMemoizer is IOracle, CoreRef {
 
     // ----------- IOracle override methods -----------
     /// @notice update reading of the CollateralizationOracle
+    // TODO should this update the CR oracle base or no? I'd lean no but maybe it should
     function update() external override whenNotPaused {
         // fetch a fresh round of information
         (
@@ -73,9 +80,11 @@ contract CollateralizationMemoizer is IOracle, CoreRef {
     }
 
     // @notice returns true if the cached values are outdated.
+    // TODO function should be reworked with early returning to simplify readability
     function isOutdated() external override view returns (bool outdated) {
         // check if cached value is fresh
         if (block.timestamp > lastUpdate + validityDuration) {
+            // TODO can just early return here 
             outdated = true;
         }
         // check if deviation thresholds are met
@@ -88,6 +97,8 @@ contract CollateralizationMemoizer is IOracle, CoreRef {
             ) = ICollateralizationOracle(collateralizationOracle).pcvStats();
 
             require(_validityStatus, "CollateralizationMemoizer: CollateralizationOracle reading is invalid");
+            // TODO maybe add a helper method that returns % diff between two numbers
+            // then invalidate if that number exceeds the threshold. Would be simpler logic
 
             Decimal.D256 memory _thresholdLow = Decimal.from(10_000 - deviationThreshold).div(10_000);
             Decimal.D256 memory _thresholdHigh = Decimal.from(10_000 + deviationThreshold).div(10_000);
@@ -135,6 +146,7 @@ contract CollateralizationMemoizer is IOracle, CoreRef {
     /// @return validityStatus : the current oracle validity status (false if any
     ///         of the oracles for tokens held in the PCV are invalid, or if
     ///         this contract is paused).
+    // TODO this should be a view method and just return the cached values with a flag on staleness
     function pcvStats() external returns (
       uint256 protocolControlledValue,
       uint256 userCirculatingFei,
