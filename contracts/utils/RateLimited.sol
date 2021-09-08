@@ -75,6 +75,7 @@ abstract contract RateLimited is CoreRef {
             usedAmount = newBuffer;
         }
 
+        require(newBuffer != 0, "RateLimited: no rate limit buffer");
         require(usedAmount <= newBuffer, "RateLimited: rate limit hit");
 
         _bufferStored = newBuffer - usedAmount;
