@@ -11,6 +11,9 @@ interface CEther {
 /// @author Fei Protocol
 contract EthCompoundPCVDeposit is CompoundPCVDepositBase {
 
+    /// @dev used as the reporting token address for balances
+    address public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+
     /// @notice Compound ETH PCV Deposit constructor
     /// @param _core Fei Core for reference
     /// @param _cToken Compound cToken to deposit
@@ -38,5 +41,10 @@ contract EthCompoundPCVDeposit is CompoundPCVDepositBase {
 
     function _transferUnderlying(address to, uint256 amount) internal override {
         Address.sendValue(payable(to), amount);
+    }
+
+    /// @notice display the related token of the balance reported
+    function balanceReportedIn() public pure override returns (address) {
+        return WETH;
     }
 }
