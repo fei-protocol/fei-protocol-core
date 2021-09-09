@@ -59,6 +59,7 @@ contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized, RateLi
         // incentivizing before minting so if there is a partial mint it goes to target not caller
         _incentivize();
 
+        // Calls the overriden RateLimitedMinter _mintFei which includes the rate limiting logic
         _mintFei(target, amount);
         
         emit FeiMinting(msg.sender, amount);
