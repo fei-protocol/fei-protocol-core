@@ -124,7 +124,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
         ) = ICollateralizationOracle(collateralizationOracle).pcvStats();
 
         // only update if valid
-        require(_validityStatus, "CollateralizationMemoizer: CollateralizationOracle is invalid");
+        require(_validityStatus, "CollateralizationOracleWrapper: CollateralizationOracle is invalid");
 
         // set cache variables
         cachedProtocolControlledValue = _protocolControlledValue;
@@ -173,12 +173,12 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
             bool _validityStatus
         ) = ICollateralizationOracle(collateralizationOracle).pcvStats();
 
-        require(_validityStatus, "CollateralizationMemoizer: CollateralizationOracle reading is invalid");
+        require(_validityStatus, "CollateralizationOracleWrapper: CollateralizationOracle reading is invalid");
 
         Decimal.D256 memory _thresholdLow = Decimal.from(10_000 - deviationThresholdBasisPoints).div(10_000);
         Decimal.D256 memory _thresholdHigh = Decimal.from(10_000 + deviationThresholdBasisPoints).div(10_000);
 
-        obsolete = !paused();
+        obsolete = paused();
 
         // Protocol Controlled Value checks
         Decimal.D256 memory pcvRatio = Decimal.from(_protocolControlledValue).div(cachedProtocolControlledValue);
@@ -237,7 +237,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
     ///         a positive Protocol Equity.
     ///         Note: the validity status is ignored in this function.
     function isOvercollateralized() external override view returns (bool) {
-        require(!isOutdated(), "CollateralizationMemoizer: cache is outdated");
+        require(!isOutdated(), "CollateralizationOracleWrapper: cache is outdated");
         return cachedProtocolEquity > 0;
     }
 
@@ -267,6 +267,6 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
           fetchedValidityStatus
       ) = ICollateralizationOracle(collateralizationOracle).pcvStats();
 
-      validityStatus = validityStatus && !paused();
+      validityStatus = fetchedValidityStatus && !paused();
     }
 }
