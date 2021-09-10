@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 
 import "./IOracle.sol";
 import "./ICollateralizationOracle.sol";
+import "../utils/Timed.sol";
 import "../refs/CoreRef.sol";
 
 interface IPausable {
@@ -14,10 +15,10 @@ interface IPausable {
 /// @notice Reads a list of PCVDeposit that report their amount of collateral
 ///         and the amount of protocol-owned FEI they manage, to deduce the
 ///         protocol-wide collateralization ratio.
-contract CollateralizationMemoizer is IOracle, CoreRef {
+contract CollateralizationOracleWrapper is ICollateralizationOracle, CoreRef {
     using Decimal for Decimal.D256;
 
-    // ----------- Events -----------
+    // ----------- Events ------------------------------------------------------
 
     event CachedValueUpdate(
         address from,
@@ -26,7 +27,7 @@ contract CollateralizationMemoizer is IOracle, CoreRef {
         int256 indexed protocolEquity
     );
 
-    // ----------- Properties -----------
+    // ----------- Properties --------------------------------------------------
 
     /// @notice address of the CollateralizationOracle to memoize
     address public collateralizationOracle;
@@ -44,9 +45,9 @@ contract CollateralizationMemoizer is IOracle, CoreRef {
     uint256 public validityDuration;
     /// @notice deviation threshold to consider cached values outdated, in basis
     ///         points (base 10_000)
-    uint256 public deviationThreshold;
+    uint256 public deviationThresholdBasisPoints;
 
-    // ----------- Constructor -----------
+    // ----------- Constructor -------------------------------------------------
 
     /// @notice CollateralizationOracle constructor
     /// @param _core Fei Core for reference
@@ -54,7 +55,7 @@ contract CollateralizationMemoizer is IOracle, CoreRef {
         address _core
     ) CoreRef(_core) {}
 
-    // ----------- IOracle override methods -----------
+    // ----------- IOracle override methods ------------------------------------
     /// @notice update reading of the CollateralizationOracle
     function update() external override whenNotPaused {
         // fetch a fresh round of information
@@ -68,48 +69,25 @@ contract CollateralizationMemoizer is IOracle, CoreRef {
         // only update if valid
         require(_validityStatus, "CollateralizationMemoizer: CollateralizationOracle is invalid");
 
-        // Update cached variables
-        _setCache(_protocolControlledValue, _userCirculatingFei, _protocolEquity);
+        // set cache variables
+        cachedProtocolControlledValue = _protocolControlledValue;
+        cachedUserCirculatingFei = _userCirculatingFei;
+        cachedProtocolEquity = _protocolEquity;
+        lastUpdate = block.timestamp;
+
+        // emit event
+        emit CachedValueUpdate(
+            msg.sender,
+            cachedProtocolControlledValue,
+            cachedUserCirculatingFei,
+            cachedProtocolEquity
+        );
     }
 
     // @notice returns true if the cached values are outdated.
-    function isOutdated() external override view returns (bool outdated) {
+    function isOutdated() public override view returns (bool outdated) {
         // check if cached value is fresh
-        if (block.timestamp > lastUpdate + validityDuration) {
-            outdated = true;
-        }
-        // check if deviation thresholds are met
-        if (!outdated) {
-            (
-                uint256 _protocolControlledValue,
-                uint256 _userCirculatingFei,
-                , // int256 _protocolEquity,
-                bool _validityStatus
-            ) = ICollateralizationOracle(collateralizationOracle).pcvStats();
-
-            require(_validityStatus, "CollateralizationMemoizer: CollateralizationOracle reading is invalid");
-
-            Decimal.D256 memory _thresholdLow = Decimal.from(10_000 - deviationThreshold).div(10_000);
-            Decimal.D256 memory _thresholdHigh = Decimal.from(10_000 + deviationThreshold).div(10_000);
-
-            // PCV < threshold
-            Decimal.D256 memory pcvRatio = Decimal.from(_protocolControlledValue).div(cachedProtocolControlledValue);
-            outdated = outdated || pcvRatio.lessThan(_thresholdLow);
-            // PCV > threshold
-            if (!outdated) {
-                outdated = outdated || pcvRatio.greaterThan(_thresholdHigh);
-            }
-            // CircFEI < threshold
-            if (!outdated) {
-                Decimal.D256 memory circFeiRatio = Decimal.from(_userCirculatingFei).div(cachedUserCirculatingFei);
-                outdated = outdated || circFeiRatio.lessThan(_thresholdLow);
-                // CircFEI > threshold
-                if (!outdated) {
-                    outdated = outdated || circFeiRatio.greaterThan(_thresholdHigh);
-                }
-            }
-            // no need to check protocol equity, it is deduced from the other 2
-        }
+        return block.timestamp > lastUpdate + validityDuration;
     }
 
     /// @notice Get the current collateralization ratio of the protocol, from cache.
@@ -117,12 +95,59 @@ contract CollateralizationMemoizer is IOracle, CoreRef {
     /// @return validityStatus the current oracle validity status (false if any
     ///         of the oracles for tokens held in the PCV are invalid, or if
     ///         this contract is paused).
-    function read() public view override returns (Decimal.D256 memory collateralRatio, bool validityStatus) {
+    function read() external view override returns (Decimal.D256 memory collateralRatio, bool validityStatus) {
         collateralRatio = Decimal.ratio(cachedProtocolControlledValue, cachedUserCirculatingFei);
-        validityStatus = block.timestamp <= lastUpdate + validityDuration;
+        validityStatus = !paused() && !isOutdated();
     }
 
-    // ----------- ICollateralizationOracle override methods -----------
+    // ----------- Wrapper-specific methods ------------------------------------
+    // @notice returns true if the cached values are obsolete, i.e. the actual CR
+    //         readings deviated from cached value by more than a threshold.
+    //         This function is intended to be called off-chain by keepers.
+    //         If executed on-chain, it consumes more gas than an actual update()
+    //         call _and_ does not persist the read values in the cached state.
+    function isExceededDeviationThreshold() public view returns (bool obsolete) {
+        (
+            uint256 _protocolControlledValue,
+            uint256 _userCirculatingFei,
+            , // int256 _protocolEquity,
+            bool _validityStatus
+        ) = ICollateralizationOracle(collateralizationOracle).pcvStats();
+
+        require(_validityStatus, "CollateralizationMemoizer: CollateralizationOracle reading is invalid");
+
+        Decimal.D256 memory _thresholdLow = Decimal.from(10_000 - deviationThresholdBasisPoints).div(10_000);
+        Decimal.D256 memory _thresholdHigh = Decimal.from(10_000 + deviationThresholdBasisPoints).div(10_000);
+
+        obsolete = !paused();
+
+        // Protocol Controlled Value checks
+        Decimal.D256 memory pcvRatio = Decimal.from(_protocolControlledValue).div(cachedProtocolControlledValue);
+        // PCV < threshold
+        obsolete = obsolete || pcvRatio.lessThan(_thresholdLow);
+        // PCV > threshold
+        obsolete = obsolete || pcvRatio.greaterThan(_thresholdHigh);
+
+        // Circulating Fei checks
+        Decimal.D256 memory circFeiRatio = Decimal.from(_userCirculatingFei).div(cachedUserCirculatingFei);
+        // CircFEI < threshold
+        obsolete = obsolete || circFeiRatio.lessThan(_thresholdLow);
+        // CircFEI > threshold
+        obsolete = obsolete || circFeiRatio.greaterThan(_thresholdHigh);
+    }
+
+    // @notice returns true if the cached values are obsolete or outdated, i.e.
+    //         the reading is too old, or the actual CR readings deviated from cached
+    //         value by more than a threshold.
+    //         This function is intended to be called off-chain by keepers, to
+    //         know if they should call the update() function. If executed on-chain,
+    //         it consumes more gas than an actual update() + read() call _and_
+    //         does not persist the read values in the cached state.
+    function isOutdatedOrExceededDeviationThreshold() external view returns (bool) {
+        return isOutdated() || isExceededDeviationThreshold();
+    }
+
+    // ----------- ICollateralizationOracle override methods -------------------
 
     /// @notice returns the Protocol-Controlled Value, User-circulating FEI, and
     ///         Protocol Equity. If there is a fresh cached value, return it.
@@ -135,37 +160,16 @@ contract CollateralizationMemoizer is IOracle, CoreRef {
     /// @return validityStatus : the current oracle validity status (false if any
     ///         of the oracles for tokens held in the PCV are invalid, or if
     ///         this contract is paused).
-    function pcvStats() external returns (
-      uint256 protocolControlledValue,
-      uint256 userCirculatingFei,
-      int256 protocolEquity,
-      bool validityStatus
+    function pcvStats() external override view returns (
+        uint256 protocolControlledValue,
+        uint256 userCirculatingFei,
+        int256 protocolEquity,
+        bool validityStatus
     ) {
-        validityStatus = !paused();
-
-        // if data is fresh,
-        if (block.timestamp <= lastUpdate + validityDuration) {
-            protocolControlledValue = cachedProtocolControlledValue;
-            userCirculatingFei = cachedUserCirculatingFei;
-            protocolEquity = cachedProtocolEquity;
-        }
-        // else, fetch data
-        else {
-            bool fetchedValidityStatus;
-            (
-                protocolControlledValue,
-                userCirculatingFei,
-                protocolEquity,
-                fetchedValidityStatus
-            ) = ICollateralizationOracle(collateralizationOracle).pcvStats();
-
-            validityStatus = validityStatus && fetchedValidityStatus;
-
-            // refresh cached values if data is valid
-            if (validityStatus) {
-                _setCache(protocolControlledValue, userCirculatingFei, protocolEquity);
-            }
-        }
+        validityStatus = !paused() && !isOutdated();
+        protocolControlledValue = cachedProtocolControlledValue;
+        userCirculatingFei = cachedUserCirculatingFei;
+        protocolEquity = cachedProtocolEquity;
     }
 
     /// @notice returns true if the protocol is overcollateralized. Overcollateralization
@@ -173,32 +177,37 @@ contract CollateralizationMemoizer is IOracle, CoreRef {
     ///         Controlled Value) than the circulating (user-owned) FEI, i.e.
     ///         a positive Protocol Equity.
     ///         Note: the validity status is ignored in this function.
-    function isOvercollateralized() external view whenNotPaused returns (bool) {
+    function isOvercollateralized() external override view returns (bool) {
         require(block.timestamp <= lastUpdate + validityDuration, "CollateralizationMemoizer: cache is outdated");
         return cachedProtocolEquity > 0;
     }
 
-    // ---------------------- Internal methods ----------------------
+    // ----------- Wrapper-specific methods ------------------------------------
 
-    /// @notice set the cached values for the last read values from the
-    ///         CollateralizationOrache, and emit the update event.
-    function _setCache(
+    /// @notice returns the Protocol-Controlled Value, User-circulating FEI, and
+    ///         Protocol Equity, from an actual fresh call to the CollateralizationOracle.
+    /// @return protocolControlledValue : the total USD value of all assets held
+    ///         by the protocol.
+    /// @return userCirculatingFei : the number of FEI not owned by the protocol.
+    /// @return protocolEquity : the difference between PCV and user circulating FEI.
+    ///         If there are more circulating FEI than $ in the PCV, equity is 0.
+    /// @return validityStatus : the current oracle validity status (false if any
+    ///         of the oracles for tokens held in the PCV are invalid, or if
+    ///         this contract is paused).
+    function pcvStatsCurrent() external view returns (
         uint256 protocolControlledValue,
         uint256 userCirculatingFei,
-        int256 protocolEquity
-    ) internal {
-        // set cache variables
-        cachedProtocolControlledValue = protocolControlledValue;
-        cachedUserCirculatingFei = userCirculatingFei;
-        cachedProtocolEquity = protocolEquity;
-        lastUpdate = block.timestamp;
+        int256 protocolEquity,
+        bool validityStatus
+    ) {
+      bool fetchedValidityStatus;
+      (
+          protocolControlledValue,
+          userCirculatingFei,
+          protocolEquity,
+          fetchedValidityStatus
+      ) = ICollateralizationOracle(collateralizationOracle).pcvStats();
 
-        // emit event
-        emit CachedValueUpdate(
-            msg.sender,
-            cachedProtocolControlledValue,
-            cachedUserCirculatingFei,
-            cachedProtocolEquity
-        );
+      validityStatus = validityStatus && !paused() && !isOutdated();
     }
 }
