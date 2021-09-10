@@ -78,6 +78,12 @@ describe('CollateralizationOracleWrapper', function () {
         'CoreRef: Caller is not a governor'
       );
     });
+    it('should revert if address = 0x0', async function() {
+      await expectRevert(
+        this.oracleWrapper.setCollateralizationOracle(ZERO_ADDRESS, { from: governorAddress }),
+        'CollateralizationOracleWrapper: invalid address'
+      );
+    });
   });
 
   describe('setDeviationThresholdBasisPoints()', function() {
@@ -96,6 +102,16 @@ describe('CollateralizationOracleWrapper', function () {
       await expectRevert(
         this.oracleWrapper.setDeviationThresholdBasisPoints('300', { from: userAddress }),
         'CoreRef: Caller is not a governor'
+      );
+    });
+    it('should revert if invalid value', async function() {
+      await expectRevert(
+        this.oracleWrapper.setDeviationThresholdBasisPoints('0', { from: governorAddress }),
+        'CollateralizationOracleWrapper: invalid basis points'
+      );
+      await expectRevert(
+        this.oracleWrapper.setDeviationThresholdBasisPoints('10001', { from: governorAddress }),
+        'CollateralizationOracleWrapper: invalid basis points'
       );
     });
   });

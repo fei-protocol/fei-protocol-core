@@ -79,6 +79,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
     /// to cache values from.
     /// @param _newCollateralizationOracle the address of the new oracle.
     function setCollateralizationOracle(address _newCollateralizationOracle) external onlyGovernor {
+        require(_newCollateralizationOracle != address(0), "CollateralizationOracleWrapper: invalid address");
         address _oldCollateralizationOracle = collateralizationOracle;
 
         collateralizationOracle = _newCollateralizationOracle;
@@ -94,6 +95,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
     /// cached value deviated significantly from the actual fresh readings.
     /// @param _newDeviationThresholdBasisPoints the new value to set.
     function setDeviationThresholdBasisPoints(uint256 _newDeviationThresholdBasisPoints) external onlyGovernor {
+        require(_newDeviationThresholdBasisPoints > 0 && _newDeviationThresholdBasisPoints <= 10_000, "CollateralizationOracleWrapper: invalid basis points");
         uint256 _oldDeviationThresholdBasisPoints = deviationThresholdBasisPoints;
 
         deviationThresholdBasisPoints = _newDeviationThresholdBasisPoints;
@@ -235,7 +237,6 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
     ///         is defined as the protocol having more assets in its PCV (Protocol
     ///         Controlled Value) than the circulating (user-owned) FEI, i.e.
     ///         a positive Protocol Equity.
-    ///         Note: the validity status is ignored in this function.
     function isOvercollateralized() external override view returns (bool) {
         require(!isOutdated(), "CollateralizationOracleWrapper: cache is outdated");
         return cachedProtocolEquity > 0;
