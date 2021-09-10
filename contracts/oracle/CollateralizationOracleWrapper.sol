@@ -15,7 +15,7 @@ interface IPausable {
 /// @notice Reads a list of PCVDeposit that report their amount of collateral
 ///         and the amount of protocol-owned FEI they manage, to deduce the
 ///         protocol-wide collateralization ratio.
-contract CollateralizationOracleWrapper is ICollateralizationOracle, CoreRef {
+contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, CoreRef {
     using Decimal for Decimal.D256;
 
     // ----------- Events ------------------------------------------------------
@@ -25,6 +25,18 @@ contract CollateralizationOracleWrapper is ICollateralizationOracle, CoreRef {
         uint256 indexed protocolControlledValue,
         uint256 indexed userCirculatingFei,
         int256 indexed protocolEquity
+    );
+
+    event CollateralizationOracleUpdate(
+        address from,
+        address indexed oldOracleAddress,
+        address indexed newOracleAddress
+    );
+
+    event DeviationThresholdUpdate(
+        address from,
+        uint256 indexed oldThreshold,
+        uint256 indexed newThreshold
     );
 
     // ----------- Properties --------------------------------------------------
@@ -39,21 +51,66 @@ contract CollateralizationOracleWrapper is ICollateralizationOracle, CoreRef {
     /// @notice cached value of the Protocol Equity
     int256 public cachedProtocolEquity;
 
-    /// @notice timestamp of the last read operation on the CollateralizationOracle
-    uint256 public lastUpdate;
-    /// @notice validity duration of the cached value
-    uint256 public validityDuration;
     /// @notice deviation threshold to consider cached values outdated, in basis
     ///         points (base 10_000)
     uint256 public deviationThresholdBasisPoints;
 
     // ----------- Constructor -------------------------------------------------
 
-    /// @notice CollateralizationOracle constructor
-    /// @param _core Fei Core for reference
+    /// @notice CollateralizationOracleWrapper constructor
+    /// @param _core Fei Core for reference.
+    /// @param _collateralizationOracle the CollateralizationOracle to inspect.
+    /// @param _validityDuration the duration after which a reading becomes outdated.
+    /// @param _deviationThresholdBasisPoints threshold for deviation after which
+    ///        keepers should call the update() function.
     constructor(
-        address _core
-    ) CoreRef(_core) {}
+        address _core,
+        address _collateralizationOracle,
+        uint256 _validityDuration,
+        uint256 _deviationThresholdBasisPoints
+    ) CoreRef(_core) Timed(_validityDuration) {
+        collateralizationOracle = _collateralizationOracle;
+        deviationThresholdBasisPoints = _deviationThresholdBasisPoints;
+    }
+
+    // ----------- Setter methods ----------------------------------------------
+
+    /// @notice set the address of the CollateralizationOracle to inspect, and
+    /// to cache values from.
+    /// @param _newCollateralizationOracle the address of the new oracle.
+    function setCollateralizationOracle(address _newCollateralizationOracle) external onlyGovernor {
+        address _oldCollateralizationOracle = collateralizationOracle;
+
+        collateralizationOracle = _newCollateralizationOracle;
+
+        emit CollateralizationOracleUpdate(
+            msg.sender,
+            _oldCollateralizationOracle,
+            _newCollateralizationOracle
+        );
+    }
+
+    /// @notice set the deviation threshold in basis points, used to detect if the
+    /// cached value deviated significantly from the actual fresh readings.
+    /// @param _newDeviationThresholdBasisPoints the new value to set.
+    function setDeviationThresholdBasisPoints(uint256 _newDeviationThresholdBasisPoints) external onlyGovernor {
+        uint256 _oldDeviationThresholdBasisPoints = deviationThresholdBasisPoints;
+
+        deviationThresholdBasisPoints = _newDeviationThresholdBasisPoints;
+
+        emit DeviationThresholdUpdate(
+            msg.sender,
+            _oldDeviationThresholdBasisPoints,
+            _newDeviationThresholdBasisPoints
+        );
+    }
+
+    /// @notice set the validity duration of the cached collateralization values.
+    /// @param _validityDuration the new validity duration
+    /// This function will emit a DurationUpdate event from Timed.sol
+    function setValidityDuration(uint256 _validityDuration) external onlyGovernor {
+        _setDuration(_validityDuration);
+    }
 
     // ----------- IOracle override methods ------------------------------------
     /// @notice update reading of the CollateralizationOracle
@@ -73,7 +130,9 @@ contract CollateralizationOracleWrapper is ICollateralizationOracle, CoreRef {
         cachedProtocolControlledValue = _protocolControlledValue;
         cachedUserCirculatingFei = _userCirculatingFei;
         cachedProtocolEquity = _protocolEquity;
-        lastUpdate = block.timestamp;
+
+        // reset time
+        _initTimed();
 
         // emit event
         emit CachedValueUpdate(
@@ -87,7 +146,7 @@ contract CollateralizationOracleWrapper is ICollateralizationOracle, CoreRef {
     // @notice returns true if the cached values are outdated.
     function isOutdated() public override view returns (bool outdated) {
         // check if cached value is fresh
-        return block.timestamp > lastUpdate + validityDuration;
+        return isTimeEnded();
     }
 
     /// @notice Get the current collateralization ratio of the protocol, from cache.
@@ -151,7 +210,7 @@ contract CollateralizationOracleWrapper is ICollateralizationOracle, CoreRef {
 
     /// @notice returns the Protocol-Controlled Value, User-circulating FEI, and
     ///         Protocol Equity. If there is a fresh cached value, return it.
-    ///         Otherwise, call the CollateralizationOrache to get fresh data.
+    ///         Otherwise, call the CollateralizationOracle to get fresh data.
     /// @return protocolControlledValue : the total USD value of all assets held
     ///         by the protocol.
     /// @return userCirculatingFei : the number of FEI not owned by the protocol.
@@ -178,7 +237,7 @@ contract CollateralizationOracleWrapper is ICollateralizationOracle, CoreRef {
     ///         a positive Protocol Equity.
     ///         Note: the validity status is ignored in this function.
     function isOvercollateralized() external override view returns (bool) {
-        require(block.timestamp <= lastUpdate + validityDuration, "CollateralizationMemoizer: cache is outdated");
+        require(!isOutdated(), "CollateralizationMemoizer: cache is outdated");
         return cachedProtocolEquity > 0;
     }
 
@@ -208,6 +267,6 @@ contract CollateralizationOracleWrapper is ICollateralizationOracle, CoreRef {
           fetchedValidityStatus
       ) = ICollateralizationOracle(collateralizationOracle).pcvStats();
 
-      validityStatus = validityStatus && !paused() && !isOutdated();
+      validityStatus = validityStatus && !paused();
     }
 }
