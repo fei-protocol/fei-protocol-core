@@ -1,22 +1,26 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "./MockOracle.sol";
+import "./MockOracleCoreRef.sol";
 
-contract MockCollateralizationOracle is MockOracle {
+contract MockCollateralizationOracle is MockOracleCoreRef {
 
     uint256 public userCirculatingFei = 1e20;
 
     uint256 public pcvValue = 5e20;
 
-    constructor(uint256 exchangeRate)
-        MockOracle(exchangeRate)
+    constructor(address core, uint256 exchangeRate)
+        MockOracleCoreRef(core, exchangeRate)
     {
     }
 
     function set(uint _userCirculatingFei, uint _pcvValue) public {
         userCirculatingFei = _userCirculatingFei;
         pcvValue = _pcvValue;
+    }
+
+    function pcvStats() public view returns (uint256, uint256, int256, bool) {
+        return (pcvValue, userCirculatingFei, pcvEquityValue(), valid);
     }
 
     function isOvercollateralized() public view returns (bool) {
