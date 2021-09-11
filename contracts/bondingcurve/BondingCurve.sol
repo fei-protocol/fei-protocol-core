@@ -151,14 +151,6 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         _setMintCap(_mintCap);
     }
 
-    /// @notice sets the allocation of incoming PCV
-    function setAllocation(
-        address[] calldata allocations,
-        uint256[] calldata ratios
-    ) external override onlyGovernor {
-        _setAllocation(allocations, ratios);
-    }
-
     /// @notice batch allocate held PCV
     function allocate() external override whenNotPaused {
         uint256 amount = balance();
@@ -176,8 +168,6 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
             _initTimed(); // reset window
             _incentivize();
         }
-
-        emit Allocate(msg.sender, amount);
     }
 
     /// @notice a boolean signalling whether Scale has been reached
