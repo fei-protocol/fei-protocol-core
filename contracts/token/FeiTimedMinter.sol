@@ -62,6 +62,8 @@ contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized, RateLi
         // Calls the overriden RateLimitedMinter _mintFei which includes the rate limiting logic
         _mintFei(target, amount);
         
+        _afterMint();
+        
         emit FeiMinting(msg.sender, amount);
     }
     
@@ -102,4 +104,6 @@ contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized, RateLi
     function _mintFei(address to, uint256 amountIn) internal override(CoreRef, RateLimitedMinter) {
       RateLimitedMinter._mintFei(to, amountIn);
     }
+
+    function _afterMint() internal virtual {}
 }

@@ -10,10 +10,11 @@ const {
 } = require('../helpers');
       
 const PCVEquityMinter = artifacts.require('PCVEquityMinter');
+const PCVSwapper = artifacts.require('MockPCVSwapper');
 const MockCollateralizationOracle = artifacts.require('MockCollateralizationOracle');
 const Fei = artifacts.require('Fei');
     
-describe.only('PCVEquityMinter', function () {
+describe('PCVEquityMinter', function () {
   let userAddress;
   let secondUserAddress;
   let governorAddress;
@@ -26,17 +27,19 @@ describe.only('PCVEquityMinter', function () {
     } = await getAddresses());
         
     this.core = await getCore(true);
-    this.collateralizationOracle = await MockCollateralizationOracle.new('1');
+    this.collateralizationOracle = await MockCollateralizationOracle.new(this.core.address, '1');
 
     this.fei = await Fei.at(await this.core.fei());
     
+    this.swapper = await PCVSwapper.new();
+
     this.incentive = '100';
     this.frequency = '3600'; // 1 hour
     this.intialMintAmount = '10000';
     this.aprBasisPoints = '200'; // 2%
     this.feiMinter = await PCVEquityMinter.new(
       this.core.address,
-      userAddress, 
+      this.swapper.address, 
       this.incentive, 
       this.frequency, 
       this.collateralizationOracle.address,
@@ -70,10 +73,11 @@ describe.only('PCVEquityMinter', function () {
           
         // mint sent
         const expected = (4e20 * 0.02) / (24 * 365); // This is equity * APR / durations / year
-        expectApprox(await this.fei.balanceOf(userAddress), expected);
+        expectApprox(await this.fei.balanceOf(this.swapper.address), expected);
           
         // incentive for caller
         expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(this.incentive);
+        expect(await this.swapper.swapped()).to.be.true;
       });
 
       it('above rate limit does partial mint', async function () {
@@ -89,10 +93,11 @@ describe.only('PCVEquityMinter', function () {
         expectApprox(await this.feiMinter.remainingTime(), this.frequency);
           
         // mint sent
-        expectApprox(await this.fei.balanceOf(userAddress), expected);
+        expectApprox(await this.fei.balanceOf(this.swapper.address), expected);
           
         // incentive for caller
         expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(this.incentive);
+        expect(await this.swapper.swapped()).to.be.true;
       });
     });
   });
