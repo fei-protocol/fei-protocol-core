@@ -36,6 +36,10 @@ export type MainnetContracts = {
   rariPool8EthPCVDeposit: typeof Contract,
   compoundEthPCVDeposit: typeof Contract,
   compoundDaiPCVDeposit: typeof Contract,
+  curveMetapoolDeposit: typeof Contract,
+  curveMetapool: typeof Contract,
+  curve3pool: typeof Contract,
+  curve3crv: typeof Contract,
   aaveEthPCVDeposit: typeof Contract,
   aaveRaiPCVDeposit: typeof Contract,
   stAAVE: typeof Contract,
@@ -105,7 +109,7 @@ export type ProposalConfig = {
   totalValue: number,
 }
 
-export type ContractAccessRights = 
+export type ContractAccessRights =
   {
     minter: string[],
     burner: string[],
