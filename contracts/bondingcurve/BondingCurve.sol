@@ -246,7 +246,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         require(availableToMint() >= amountOut, "BondingCurve: exceeds mint cap");
 
         _incrementTotalPurchased(amountOut);
-        fei().mint(to, amountOut);
+        _mintFei(to, amountOut);
 
         emit Purchase(to, amountIn, amountOut);
 
