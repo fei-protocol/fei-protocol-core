@@ -49,6 +49,7 @@
     "solidity-coverage": "^0.7.16"
   },
   "devDependencies": {
+    "@idle-finance/hardhat-proposals-plugin": "^0.2.3",
     "@typechain/hardhat": "^2.0.2",
     "@types/chai": "^4.2.18",
     "@types/mocha": "^8.2.2",

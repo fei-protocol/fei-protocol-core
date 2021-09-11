@@ -7,6 +7,7 @@ import "./IRewarder.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 /// @notice migration functionality has been removed as this is only going to be used to distribute staking rewards
 
@@ -16,7 +17,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 /// All legacy code that relied on MasterChef V1 has been removed so that this contract will pay out staking rewards in tribe.
 /// The assumption this code makes is that this MasterChief contract will be funded before going live and offering staking rewards.
 /// This contract will not have the ability to mint tribe.
-contract TribalChief is CoreRef, ReentrancyGuard {
+contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
     using SafeERC20 for IERC20;
     using SafeCast for uint256;
     using SafeCast for int256;
@@ -77,8 +78,8 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     }
 
     /// @notice Address of Tribe contract.
-    IERC20 public immutable TRIBE;
-
+    /// Cannot be immutable due to limitations of proxies
+    IERC20 public TRIBE;
     /// @notice Info of each pool.
     PoolInfo[] public poolInfo;
     /// @notice Address of the token you can stake in each pool.
@@ -94,12 +95,17 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @dev Total allocation points. Must be the sum of all allocation points in all pools.
     uint256 public totalAllocPoint;
 
+
+    /// @notice these variables cannot be initialized with a constant value 
+    /// because of the way that upgradeable contracts work, their initial write
+    // to storage doesn't happen as the logic contract doesn't run the constructor
+
     /// the amount of tribe distributed per block
-    uint256 private tribalChiefTribePerBlock = 1e20;
+    uint256 private tribalChiefTribePerBlock;
     /// variable has been made constant to cut down on gas costs
-    uint256 private constant ACC_TRIBE_PRECISION = 1e23;
+    uint256 private ACC_TRIBE_PRECISION;
     /// decimals for rewards multiplier
-    uint256 public constant SCALE_FACTOR = 1e4;
+    uint256 public SCALE_FACTOR;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount, uint256 indexed depositID);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount, address indexed to);
@@ -114,11 +120,24 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     event NewTribePerBlock(uint256 indexed amount);
     event PoolLocked(bool indexed locked, uint256 indexed pid);
 
+    /// @notice The way this function is constructed, you will not be able to 
+    /// call initialize after this function is constructed, effectively 
+    /// only allowing TribalChief to be used through delegate calls.
+    /// @param coreAddress The Core contract address.
+    constructor(address coreAddress) CoreRef(coreAddress) {}
+
     /// @param _core The Core contract address.
     /// @param _tribe The TRIBE token contract address.
-    constructor(address _core, IERC20 _tribe) CoreRef(_core) {
+    function initialize(address _core, IERC20 _tribe) external initializer {        
+        CoreRef._initialize(_core);    
+        
         TRIBE = _tribe;
         _setContractAdminRole(keccak256("TRIBAL_CHIEF_ADMIN_ROLE"));
+
+        // set constant values here as we cannot use constants with proxies
+        tribalChiefTribePerBlock = 75e18;
+        ACC_TRIBE_PRECISION = 1e23;
+        SCALE_FACTOR = 1e4;
     }
 
     /// @notice Allows governor to change the amount of tribe per block
@@ -194,6 +213,17 @@ contract TribalChief is CoreRef, ReentrancyGuard {
     /// @notice Returns the number of user deposits in a single pool.
     function openUserDeposits(uint256 pid, address user) public view returns (uint256) {
         return depositInfo[pid][user].length;
+    }
+
+    /// @notice Returns the amount a user deposited in a single pool.
+    function getTotalStakedInPool(uint256 pid, address user) public view returns (uint256) {
+        uint256 amount = 0;
+        for (uint256 i = 0; i < depositInfo[pid][user].length; i++) {
+            DepositInfo storage poolDeposit = depositInfo[pid][user][i];
+            amount += poolDeposit.amount;
+        }
+
+        return amount;
     }
 
 
@@ -459,7 +489,9 @@ contract TribalChief is CoreRef, ReentrancyGuard {
             _rewarder.onSushiReward(pid, msg.sender, to, 0, user.virtualAmount);
         }
 
-        stakedToken[pid].safeTransfer(to, unlockedTotalAmount);
+        if (unlockedTotalAmount != 0) {
+            stakedToken[pid].safeTransfer(to, unlockedTotalAmount);
+        }
 
         emit Withdraw(msg.sender, pid, unlockedTotalAmount, to);
     }
@@ -510,7 +542,7 @@ contract TribalChief is CoreRef, ReentrancyGuard {
         int256 accumulatedTribe = ( (user.virtualAmount * pool.accTribePerShare ) / ACC_TRIBE_PRECISION ).toInt256();
 
         // this should never happen
-        assert(accumulatedTribe >= 0 && accumulatedTribe - user.rewardDebt > 0);
+        assert(accumulatedTribe >= 0 && accumulatedTribe - user.rewardDebt >= 0);
 
         uint256 pendingTribe = (accumulatedTribe - user.rewardDebt).toUint256();
 

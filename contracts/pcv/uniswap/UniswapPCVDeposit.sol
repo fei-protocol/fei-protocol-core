@@ -159,7 +159,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     }
 
     function _addLiquidity(uint256 tokenAmount, uint256 feiAmount) internal {
-        _mintFei(feiAmount);
+        _mintFei(address(this), feiAmount);
 
         uint256 endOfTime = type(uint256).max;
         // Deposit price gated by slippage parameter

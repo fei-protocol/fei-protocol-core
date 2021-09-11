@@ -16,10 +16,12 @@ const {
   expectApprox,
 } = require('../helpers');
 
+const MockCore = artifacts.require('MockCore');
 const Tribe = artifacts.require('MockTribe');
 const MockCoreRef = artifacts.require('MockCoreRef');
 const TribalChief = artifacts.require('TribalChief');
 const MockERC20 = artifacts.require('MockERC20');
+const Proxy = artifacts.require('TransparentUpgradeableProxy');
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const uintMax = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
 const ACC_TRIBE_PRECISION = new BN('100000000000000000000000');
@@ -132,11 +134,11 @@ describe('TribalChief', () => {
 
   const multiplier20 = '12000';
   const multiplier40 = '14000';
-  const zeroMultiplier = '10000';
+  const oneMultiplier = '10000';
   const defaultRewardsObject = [
     {
       lockLength: 0,
-      rewardMultiplier: zeroMultiplier,
+      rewardMultiplier: oneMultiplier,
     },
     {
       lockLength: 1000,
@@ -147,7 +149,7 @@ describe('TribalChief', () => {
   const linearRewardObject = [
     {
       lockLength: 100,
-      rewardMultiplier: zeroMultiplier,
+      rewardMultiplier: oneMultiplier,
     },
     {
       lockLength: 200,
@@ -213,7 +215,21 @@ describe('TribalChief', () => {
       this.tribe = await Tribe.new();
       this.coreRef = await MockCoreRef.new(this.core.address);
 
-      this.tribalChief = await TribalChief.new(this.core.address, this.tribe.address);
+      /// we can and probably should do this with a framework,
+      // but for now I'm going to write it out by hand.
+
+      // spin up the logic contract by hand
+      const tribalChief = await TribalChief.new(this.core.address);
+      // create a new proxy contract
+      const proxyContract = await Proxy.new(tribalChief.address, tribalChief.address, '0x', { from: userAddress });
+
+      // instantiate the tribalchief pointed at the proxy contract
+      this.tribalChief = await TribalChief.at(proxyContract.address);
+
+      // initialize the tribalchief by hand
+      await this.tribalChief.initialize(this.core.address, this.tribe.address);
+
+      await this.tribalChief.updateBlockReward(blockReward, {from: governorAddress});
 
       // create and mint LP tokens
       this.curveLPToken = await MockERC20.new();
@@ -670,6 +686,45 @@ describe('TribalChief', () => {
         const expectedRewards = totalAccTribePerShare.mul(new BN(totalStaked)).div(new BN(ACC_TRIBE_PRECISION));
         expect(rewards).to.be.bignumber.equal(expectedRewards);
       });
+
+      it('should be able to deposit multiple times and withdrawAllAndHarvest', async function () {
+        await this.LPToken.approve(this.tribalChief.address, totalStaked);
+        expectEvent(
+          await this.tribalChief.deposit(pid, totalStaked, 100, { from: userAddress }),
+          'Deposit', {
+            user: userAddress,
+            pid: new BN(pid.toString()),
+            amount: new BN(totalStaked),
+            depositID: new BN('0'),
+          },
+        );
+
+        for (let i = 0; i < 5; i++) {
+          await time.advanceBlock();
+        }
+
+        const startingLPBalance = await this.LPToken.balanceOf(userAddress);
+        const rewards = await this.tribalChief.pendingRewards(pid, userAddress);
+        await this.tribalChief.withdrawAllAndHarvest(pid, userAddress, { from: userAddress });
+
+        // tribe per share from first 5 blocks, full reward
+        const expectedAccTribeFirst5Blocks = new BN(5).mul(new BN(blockReward));
+        await expectApprox(rewards, expectedAccTribeFirst5Blocks);
+        // assert that no LP tokens were withdrawn when calling withdrawAllAndHarvest
+        expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(startingLPBalance);
+
+        await this.LPToken.mint(userAddress, totalStaked);
+        await this.LPToken.approve(this.tribalChief.address, totalStaked);
+        expectEvent(
+          await this.tribalChief.deposit(pid, totalStaked, 100, { from: userAddress }),
+          'Deposit', {
+            user: userAddress,
+            pid: new BN(pid.toString()),
+            amount: new BN(totalStaked),
+            depositID: new BN('1'),
+          },
+        );
+      });
     });
 
     describe('Test Staking', () => {
@@ -699,7 +754,7 @@ describe('TribalChief', () => {
         ).to.be.bignumber.equal(new BN(totalStaked));
       });
 
-      it('should be able to get pending sushi', async function () {
+      it('should be able to get pending tribe', async function () {
         const userAddresses = [userAddress];
 
         expect(Number(await this.tribalChief.numPools())).to.be.equal(1);
@@ -714,6 +769,28 @@ describe('TribalChief', () => {
           totalStaked,
           pid,
         );
+
+        await this.tribalChief.withdrawAllAndHarvest(pid, userAddress);
+      });
+
+      it('should be able to get pending tribe', async function () {
+        const userAddresses = [userAddress];
+
+        expect(Number(await this.tribalChief.numPools())).to.be.equal(1);
+
+        await testMultipleUsersPooling(
+          this.tribalChief,
+          this.LPToken,
+          userAddresses,
+          new BN('100000000000000000000'),
+          10,
+          0,
+          totalStaked,
+          pid,
+        );
+
+        await this.tribalChief.harvest(pid, userAddress);
+        await this.tribalChief.withdrawAllAndHarvest(pid, userAddress);
       });
 
       it('should be able to get pending sushi', async function () {
@@ -966,6 +1043,31 @@ describe('TribalChief', () => {
         );
       });
 
+      it('should be able to getTotalStakedInPool with one user depositing multiple times', async function () {
+        const userAddresses = [userAddress];
+        await this.LPToken.mint(userAddress, new BN(10).mul(new BN(totalStaked)));
+        for (let i = 0; i < 10; i++) {
+          const amountOfDeposits = i + 1;
+
+          await testMultipleUsersPooling(
+            this.tribalChief,
+            this.LPToken,
+            userAddresses,
+            new BN('100000000000000000000'),
+            1,
+            0,
+            totalStaked,
+            pid,
+          );
+
+          // expected amount staked is totalstaked * amountOfDeposits
+          const expectedTotalStaked = new BN(totalStaked).mul(new BN(amountOfDeposits));
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddress);
+
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+        }
+      });
+
       it('should be able to distribute sushi after 10 blocks with 4 users staking using helper function', async function () {
         const userAddresses = [userAddress, secondUserAddress, thirdUserAddress, fourthUserAddress];
 
@@ -979,6 +1081,13 @@ describe('TribalChief', () => {
           totalStaked,
           pid,
         );
+
+        for (let i = 0; i < userAddresses.length; i++) {
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+        }
       });
 
       it('should be able to distribute sushi after 10 blocks with 2 users staking using helper function', async function () {
@@ -994,6 +1103,13 @@ describe('TribalChief', () => {
           totalStaked,
           pid,
         );
+
+        for (let i = 0; i < userAddresses.length; i++) {
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+        }
       });
 
       it('should be able to distribute sushi after 10 blocks with 10 users staking using helper function', async function () {
@@ -1020,6 +1136,13 @@ describe('TribalChief', () => {
           totalStaked,
           pid,
         );
+
+        for (let i = 0; i < userAddresses.length; i++) {
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+        }
       });
 
       it('should be able to distribute sushi after 10 blocks with 3 pools, 3 users staking in each pool', async function () {
@@ -1114,6 +1237,13 @@ describe('TribalChief', () => {
           totalStaked,
           pid,
         );
+
+        for (let i = 0; i < userAddresses.length; i++) {
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+        }
       });
 
       it('should be able to assert numPools', async function () {
@@ -1160,6 +1290,12 @@ describe('TribalChief', () => {
           expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddresses[i]);
+
+          // assert that getTotalStakedInPool returns proper amount
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+
           await this.tribalChief.withdrawAllAndHarvest(
             pid, userAddresses[i], { from: userAddresses[i] },
           );
@@ -1207,6 +1343,11 @@ describe('TribalChief', () => {
           expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddresses[i]);
+          // assert that getTotalStakedInPool returns proper amount
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+
           await this.tribalChief.withdrawAllAndHarvest(
             pid, userAddresses[i], { from: userAddresses[i] },
           );
@@ -1302,6 +1443,11 @@ describe('TribalChief', () => {
           expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddresses[i]);
+          // assert that getTotalStakedInPool returns proper amount
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+
           await this.tribalChief.withdrawAllAndHarvest(
             pid, userAddresses[i], { from: userAddresses[i] },
           );
@@ -1339,6 +1485,12 @@ describe('TribalChief', () => {
           expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddresses[i]);
+
+          // assert that getTotalStakedInPool returns proper amount
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+
           await this.tribalChief.withdrawAllAndHarvest(
             pid, userAddresses[i], { from: userAddresses[i] },
           );
@@ -1386,6 +1538,12 @@ describe('TribalChief', () => {
           expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddresses[i]);
+
+          // assert that getTotalStakedInPool returns proper amount
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+
           await this.tribalChief.withdrawAllAndHarvest(
             pid, userAddresses[i], { from: userAddresses[i] },
           );
@@ -1443,6 +1601,11 @@ describe('TribalChief', () => {
           expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(new BN('0'));
 
           const pendingTribeBeforeHarvest = await this.tribalChief.pendingRewards(pid, address);
+
+          // assert that getTotalStakedInPool returns proper amount
+          const expectedTotalStaked = new BN(totalStaked);
+          const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
+          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
 
           const index = (await this.tribalChief.openUserDeposits(pid, userAddress)).sub(new BN('1')).toString();
           await this.tribalChief.withdrawFromDeposit(
@@ -1561,6 +1724,11 @@ describe('TribalChief', () => {
           totalStaked,
           pid,
         );
+
+        // assert that getTotalStakedInPool returns proper amount
+        const expectedTotalStaked = new BN(totalStaked).mul(new BN(5));
+        const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddress);
+        expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
 
         await this.tribalChief.harvest(pid, userAddress);
         // should get per block reward 6x.
@@ -1712,7 +1880,7 @@ describe('TribalChief', () => {
 
       it('governor should be able to step down the pool multiplier and not unlock the pool', async function () {
         await this.tribalChief.governorAddPoolMultiplier(
-          pid, 100, zeroMultiplier, { from: governorAddress },
+          pid, 100, oneMultiplier, { from: governorAddress },
         );
         // assert that the pool did not unlock
         expect(
@@ -1720,7 +1888,7 @@ describe('TribalChief', () => {
         ).to.be.false;
         expect(
           await this.tribalChief.rewardMultipliers(pid, 100),
-        ).to.be.bignumber.equal(zeroMultiplier);
+        ).to.be.bignumber.equal(oneMultiplier);
 
         // now have a user test and ensure this new reward is given
         const userAddresses = [userAddress];
@@ -2031,7 +2199,21 @@ describe('TribalChief', () => {
       this.tribe = await Tribe.new();
       this.coreRef = await MockCoreRef.new(this.core.address);
 
-      this.tribalChief = await TribalChief.new(this.core.address, this.tribe.address);
+      /// we can and probably should do this with a framework,
+      // but for now I'm going to write it out by hand.
+
+      // spin up the logic contract by hand
+      const tribalChief = await TribalChief.new(this.core.address);
+      // create a new proxy contract
+      const proxyContract = await Proxy.new(tribalChief.address, tribalChief.address, '0x');
+
+      // instantiate the tribalchief pointed at the proxy contract
+      this.tribalChief = await TribalChief.at(proxyContract.address);
+
+      // initialize the tribalchief by hand
+      await this.tribalChief.initialize(this.core.address, this.tribe.address);
+
+      await this.tribalChief.updateBlockReward(blockReward, {from: governorAddress});
 
       // create and mint LP tokens
       this.curveLPToken = await MockERC20.new();
@@ -2063,15 +2245,15 @@ describe('TribalChief', () => {
         [
           {
             lockLength: 100,
-            rewardMultiplier: zeroMultiplier,
+            rewardMultiplier: oneMultiplier,
           },
           {
             lockLength: 300,
-            rewardMultiplier: (new BN(zeroMultiplier)).mul(new BN('3')).toString(),
+            rewardMultiplier: (new BN(oneMultiplier)).mul(new BN('3')).toString(),
           },
           {
             lockLength: 0,
-            rewardMultiplier: zeroMultiplier,
+            rewardMultiplier: oneMultiplier,
           },
         ],
         { from: governorAddress },
@@ -2104,7 +2286,7 @@ describe('TribalChief', () => {
         [
           {
             lockLength: 100,
-            rewardMultiplier: zeroMultiplier,
+            rewardMultiplier: oneMultiplier,
           },
         ],
         { from: governorAddress },
@@ -2321,7 +2503,7 @@ describe('TribalChief', () => {
       // user should have no reward debt or virtual amount as they forfeited their rewards
       const { virtualAmount, rewardDebt } = await this.tribalChief.userInfo(pid, userAddress);
       expect(rewardDebt).to.be.bignumber.equal(new BN('0'));
-      // multiplier would be zeromultiplier, however, we deleted that storage so that's not the case anymore, now it's just 0
+      // multiplier would be oneMultiplier, however, we deleted that storage so that's not the case anymore, now it's just 0
       expect(virtualAmount).to.be.bignumber.equal(new BN('0'));
       // user should receive their 1e20 LP tokens that they staked back
       expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(startingLPBalance.add(new BN(lpTokenIncrementAmount)));
@@ -2400,7 +2582,21 @@ describe('TribalChief', () => {
       this.tribe = await Tribe.new();
       this.coreRef = await MockCoreRef.new(this.core.address);
 
-      this.tribalChief = await TribalChief.new(this.core.address, this.tribe.address);
+      /// we can and probably should do this with a framework,
+      // but for now I'm going to write it out by hand.
+
+      // spin up the logic contract by hand
+      const tribalChief = await TribalChief.new(this.core.address);
+      // create a new proxy contract
+      const proxyContract = await Proxy.new(tribalChief.address, tribalChief.address, '0x');
+
+      // instantiate the tribalchief pointed at the proxy contract
+      this.tribalChief = await TribalChief.at(proxyContract.address);
+
+      // initialize the tribalchief by hand
+      await this.tribalChief.initialize(this.core.address, this.tribe.address);
+
+      await this.tribalChief.updateBlockReward(blockReward, {from: governorAddress});
 
       // create and mint LP tokens
       this.curveLPToken = await MockERC20.new();
@@ -2432,11 +2628,11 @@ describe('TribalChief', () => {
         [
           {
             lockLength: 100,
-            rewardMultiplier: zeroMultiplier,
+            rewardMultiplier: oneMultiplier,
           },
           {
             lockLength: 300,
-            rewardMultiplier: (new BN(zeroMultiplier)).mul(new BN('3')).toString(),
+            rewardMultiplier: (new BN(oneMultiplier)).mul(new BN('3')).toString(),
           },
           {
             lockLength: 1000,
@@ -2457,11 +2653,11 @@ describe('TribalChief', () => {
         [
           {
             lockLength: 100,
-            rewardMultiplier: zeroMultiplier,
+            rewardMultiplier: oneMultiplier,
           },
           {
             lockLength: 300,
-            rewardMultiplier: (new BN(zeroMultiplier)).mul(new BN('3')).toString(),
+            rewardMultiplier: (new BN(oneMultiplier)).mul(new BN('3')).toString(),
           },
         ],
         { from: governorAddress },

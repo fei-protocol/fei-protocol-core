@@ -2,12 +2,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-
-interface ITribalChief {
-    function stakedToken(uint256 _index) external view returns(IERC20);
-    function deposit(uint256 _pid, uint256 _amount, uint256 _lockLength) external;
-    function harvest(uint256 pid, address to) external;
-}
+import "./ITribalChief.sol";
 
 /// @title StakingTokenWrapper for TribalChief
 /// @notice Allows the TribalChief to distribute TRIBE to a beneficiary contract 

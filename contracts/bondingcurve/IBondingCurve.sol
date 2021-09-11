@@ -17,8 +17,6 @@ interface IBondingCurve {
 
     event Purchase(address indexed to, uint256 amountIn, uint256 amountOut);
 
-    event Allocate(address indexed caller, uint256 amount);
-
     event Reset(uint256 oldTotalPurchased);
     
     // ----------- State changing Api -----------
@@ -39,11 +37,6 @@ interface IBondingCurve {
     function setDiscount(uint256 newDiscount) external;
 
     function setScale(uint256 newScale) external;
-
-    function setAllocation(
-        address[] calldata pcvDeposits,
-        uint256[] calldata ratios
-    ) external;
 
     function setIncentiveFrequency(uint256 newFrequency) external;
 

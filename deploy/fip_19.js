@@ -1,7 +1,7 @@
-const ChainlinkOracleWrapper= artifacts.require('ChainlinkOracleWrapper');
+const ChainlinkOracleWrapper = artifacts.require('ChainlinkOracleWrapper');
 const ChainlinkCompositOracle = artifacts.require('CompositeOracle');
 const ERC20CompoundPCVDeposit = artifacts.require('ERC20CompoundPCVDeposit');
-const AavePCVDeposit = artifacts.require("AavePCVDeposit")
+const AavePCVDeposit = artifacts.require('AavePCVDeposit');
 const BondingCurve = artifacts.require('BondingCurve');
 
 const e18 = '000000000000000000';
@@ -19,15 +19,15 @@ async function deploy(deployAddress, addresses, logging = false) {
   } = addresses;
 
   if (
-    !coreAddress || 
-    !chainlinkRaiEthOracleAddress || 
-    !chainlinkEthUsdOracleWrapperAddress || 
-    !raiAddress || 
-    !reflexerStableAssetFusePoolRaiAddress || 
-    !aaveLendingPool ||
-    !aRaiAddress ||
-    !aaveIncentivesController
-    ) {
+    !coreAddress 
+    || !chainlinkRaiEthOracleAddress 
+    || !chainlinkEthUsdOracleWrapperAddress 
+    || !raiAddress 
+    || !reflexerStableAssetFusePoolRaiAddress 
+    || !aaveLendingPool
+    || !aRaiAddress
+    || !aaveIncentivesController
+  ) {
     throw new Error('An environment variable contract address is not set');
   }
 
@@ -38,7 +38,6 @@ async function deploy(deployAddress, addresses, logging = false) {
   );
 
   logging ? console.log('RAI/ETH Oracle Wrapper deployed to: ', chainlinkRaiEthOracleWrapper.address) : undefined;
-
 
   const chainlinkRaiUsdCompositOracle = await ChainlinkCompositOracle.new(
     coreAddress, 
