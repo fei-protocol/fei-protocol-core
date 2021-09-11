@@ -4,15 +4,17 @@ pragma solidity ^0.8.0;
 import "../../../refs/CoreRef.sol";
 import "./IBaseBalancerPoolManager.sol";
 
-contract BaseBalancerPoolManager is IBaseBalancerPoolManager, CoreRef {
+abstract contract BaseBalancerPoolManager is IBaseBalancerPoolManager, CoreRef {
     
-    constructor(address _core) CoreRef(_core) {}
+    constructor() {
+        _setContractAdminRole(keccak256("BALANCER_MANAGER_ADMIN_ROLE"));
+    }
 
-    function setSwapFee(IBasePool pool, uint256 swapFee) external override onlyGovernorOrAdmin {
+    function setSwapFee(IBasePool pool, uint256 swapFee) public override onlyGovernorOrAdmin {
         pool.setSwapFeePercentage(swapFee);
     }
 
-    function setPaused(IBasePool pool, bool paused) external override onlyGovernorOrAdmin {
+    function setPaused(IBasePool pool, bool paused) public override onlyGovernorOrAdmin {
         pool.setPaused(paused);
     }
 
@@ -20,7 +22,7 @@ contract BaseBalancerPoolManager is IBaseBalancerPoolManager, CoreRef {
         IBasePool pool, 
         IERC20 token, 
         IAssetManager.PoolConfig memory poolConfig
-    ) external override onlyGovernorOrAdmin {
+    ) public override onlyGovernorOrAdmin {
         pool.setAssetManagerPoolConfig(token, poolConfig);
     }
 }

@@ -2,8 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "../IWeightedPool.sol";
+import "./IBaseBalancerPoolManager.sol";
 
-interface IWeightedBalancerPoolManager {
+interface IWeightedBalancerPoolManager is IBaseBalancerPoolManager {
     // ----------- Governor or admin only state changing API -----------
     function setSwapEnabled(IWeightedPool pool, bool swapEnabled) external;
 

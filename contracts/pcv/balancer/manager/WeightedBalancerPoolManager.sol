@@ -4,11 +4,11 @@ pragma solidity ^0.8.0;
 import "./IWeightedBalancerPoolManager.sol";
 import "./BaseBalancerPoolManager.sol";
 
-contract WeightedBalancerPoolManager is IWeightedBalancerPoolManager, BaseBalancerPoolManager {
+abstract contract WeightedBalancerPoolManager is IWeightedBalancerPoolManager, BaseBalancerPoolManager {
     
-    constructor(address _core) BaseBalancerPoolManager(_core) {}
+    constructor() BaseBalancerPoolManager() {}
 
-    function setSwapEnabled(IWeightedPool pool, bool swapEnabled) external override onlyGovernorOrAdmin {
+    function setSwapEnabled(IWeightedPool pool, bool swapEnabled) public override onlyGovernorOrAdmin {
         pool.setSwapEnabled(swapEnabled);
     }
 
@@ -17,7 +17,7 @@ contract WeightedBalancerPoolManager is IWeightedBalancerPoolManager, BaseBalanc
         uint256 startTime,
         uint256 endTime,
         uint256[] memory endWeights
-    ) external override onlyGovernorOrAdmin {
+    ) public override onlyGovernorOrAdmin {
         pool.updateWeightsGradually(startTime, endTime, endWeights);
     }
 }
