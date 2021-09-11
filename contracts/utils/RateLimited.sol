@@ -23,6 +23,7 @@ abstract contract RateLimited is CoreRef {
     /// @notice a flag for whether to allow partial actions to complete if the buffer is less than amount
     bool public doPartialAction;
 
+    /// @notice the buffer at the timestamp of lastBufferUsedTime
     uint256 private _bufferStored;
 
     event BufferCapUpdate(uint256 oldBufferCap, uint256 newBufferCap);
@@ -34,7 +35,7 @@ abstract contract RateLimited is CoreRef {
         _bufferStored = _bufferCap;
         _setBufferCap(_bufferCap);
 
-        require(_rateLimitPerSecond <= _maxRateLimitPerSecond, "RateLimitedMinter: rateLimitPerSecond too high");
+        require(_rateLimitPerSecond <= _maxRateLimitPerSecond, "RateLimited: rateLimitPerSecond too high");
         _setRateLimitPerSecond(_rateLimitPerSecond);
         
         MAX_RATE_LIMIT_PER_SECOND = _maxRateLimitPerSecond;
@@ -43,7 +44,7 @@ abstract contract RateLimited is CoreRef {
 
     /// @notice set the rate limit per second
     function setRateLimitPerSecond(uint256 newRateLimitPerSecond) external onlyGovernorOrAdmin {
-        require(newRateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND, "RateLimitedMinter: rateLimitPerSecond too high");
+        require(newRateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND, "RateLimited: rateLimitPerSecond too high");
         _setRateLimitPerSecond(newRateLimitPerSecond);
     }
 
@@ -59,6 +60,13 @@ abstract contract RateLimited is CoreRef {
         return Math.min(_bufferStored + (rateLimitPerSecond * elapsed), bufferCap);
     }
 
+    /** 
+        @notice the method that enforces the rate limit. Decreases buffer by "amount". 
+        If buffer is <= amount either
+        1. Does a partial mint by the amount remaining in the buffer or
+        2. Reverts
+        Depending on whether doPartialAction is true or false
+    */
     function _depleteBuffer(uint256 amount) internal returns(uint256) {
         uint256 newBuffer = buffer();
         
@@ -67,8 +75,8 @@ abstract contract RateLimited is CoreRef {
             usedAmount = newBuffer;
         }
 
-        require(newBuffer != 0, "RateLimitedMinter: no rate limit buffer");
-        require(usedAmount <= newBuffer, "RateLimitedMinter: rate limit hit");
+        require(newBuffer != 0, "RateLimited: no rate limit buffer");
+        require(usedAmount <= newBuffer, "RateLimited: rate limit hit");
 
         _bufferStored = newBuffer - usedAmount;
 

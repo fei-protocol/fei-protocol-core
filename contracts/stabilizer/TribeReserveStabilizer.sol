@@ -3,6 +3,8 @@ pragma solidity ^0.8.4;
 
 import "./ReserveStabilizer.sol";
 import "./ITribeReserveStabilizer.sol";
+import "../utils/RateLimited.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 interface ITribe is IERC20 {
     function mint(address to, uint256 amount) external;
@@ -11,81 +13,90 @@ interface ITribe is IERC20 {
 
 /// @title implementation for a TRIBE Reserve Stabilizer
 /// @author Fei Protocol
-contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
+contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, RateLimited {
     using Decimal for Decimal.D256;
 
-    /// @notice a FEI oracle reporting USD per FEI
-    IOracle public override feiOracle;
+    /// @notice a collateralization oracle
+    ICollateralizationOracle public override collateralizationOracle;
 
-    Decimal.D256 private _feiPriceThreshold;
+    Decimal.D256 private _collateralizationThreshold;
 
     /// @notice Tribe Reserve Stabilizer constructor
     /// @param _core Fei Core to reference
     /// @param _tribeOracle the TRIBE price oracle to reference
     /// @param _backupOracle the backup oracle to reference
     /// @param _usdPerFeiBasisPoints the USD price per FEI to sell TRIBE at
-    /// @param _feiOracle the FEI price oracle to reference
-    /// @param _feiPriceThresholdBasisPoints the FEI price below which the stabilizer becomes active. Reported in basis points (1/10000)
+    /// @param _collateralizationOracle the collateralization oracle to reference
+    /// @param _collateralizationThresholdBasisPoints the collateralization ratio below which the stabilizer becomes active. Reported in basis points (1/10000)
     constructor(
         address _core,
         address _tribeOracle,
         address _backupOracle,
         uint256 _usdPerFeiBasisPoints,
-        IOracle _feiOracle,
-        uint256 _feiPriceThresholdBasisPoints
-    ) ReserveStabilizer(_core, _tribeOracle, _backupOracle, IERC20(address(0)), _usdPerFeiBasisPoints) {
-        feiOracle = _feiOracle;
-        emit FeiOracleUpdate(address(0), address(_feiOracle));
+        ICollateralizationOracle _collateralizationOracle,
+        uint256 _collateralizationThresholdBasisPoints,
+        uint256 _maxRateLimitPerSecond,
+        uint256 _rateLimitPerSecond,
+        uint256 _bufferCap
+    ) 
+      ReserveStabilizer(_core, _tribeOracle, _backupOracle, IERC20(address(0)), _usdPerFeiBasisPoints) 
+      RateLimited(_maxRateLimitPerSecond, _rateLimitPerSecond, _bufferCap, false)
+    {
+        collateralizationOracle = _collateralizationOracle;
+        emit CollateralizationOracleUpdate(address(0), address(_collateralizationOracle));
     
-        _feiPriceThreshold = Decimal.ratio(_feiPriceThresholdBasisPoints, BASIS_POINTS_GRANULARITY);
-        emit FeiPriceThresholdUpdate(0, _feiPriceThresholdBasisPoints);
+        _collateralizationThreshold = Decimal.ratio(_collateralizationThresholdBasisPoints, BASIS_POINTS_GRANULARITY);
+        emit CollateralizationThresholdUpdate(0, _collateralizationThresholdBasisPoints);
+        
+        // Setting token here because it isn't available until after CoreRef is constructed
+        // This does skip the _setDecimalsNormalizerFromToken call in ReserveStabilizer constructor, but it isn't needed because TRIBE is 18 decimals
+        token = tribe();
     }
 
     /// @notice exchange FEI for minted TRIBE
-    /// @dev FEI oracle price must be below threshold
+    /// @dev Collateralization oracle price must be below threshold
     function exchangeFei(uint256 feiAmount) public override returns(uint256) {
-        require(isFeiBelowThreshold(), "TribeReserveStabilizer: FEI price too high");
+        require(isCollateralizationBelowThreshold(), "TribeReserveStabilizer: Collateralization ratio above threshold");
         return super.exchangeFei(feiAmount);
     }
 
-    /// @dev reverts because this contract doesn't hold any TRIBE
+    /// @dev reverts. Held TRIBE should only be released by exchangeFei or mint
     function withdraw(address, uint256) external pure override {
-        revert("TribeReserveStabilizer: nothing to withdraw");
+        revert("TribeReserveStabilizer: can't withdraw TRIBE");
     }
 
-    /// @notice returns the amount of the held TRIBE
-    function balance() public view override returns(uint256) {
-        return tribeBalance();
+    /// @dev reverts if _token is TRIBE. Held TRIBE should only be released by exchangeFei or mint
+    function withdrawERC20(address _token, address _to, uint256 _amount) public override {
+        require(_token != address(token), "TribeReserveStabilizer: can't withdraw TRIBE");
+        super.withdrawERC20(_token, _to, _amount);
     }
 
-    /// @notice check whether FEI price is below the threshold set relative to USD
-    /// @dev returns false if the FEI oracle is invalid
-    function isFeiBelowThreshold() public override view returns(bool) {
-        (Decimal.D256 memory price, bool valid) = feiOracle.read();
+    /// @notice check whether collateralization ratio is below the threshold set
+    /// @dev returns false if the oracle is invalid
+    function isCollateralizationBelowThreshold() public override view returns(bool) {
+        (Decimal.D256 memory ratio, bool valid) = collateralizationOracle.read();
 
-        return valid && price.lessThanOrEqualTo(_feiPriceThreshold);
+        return valid && ratio.lessThanOrEqualTo(_collateralizationThreshold);
     }
 
-    /// @notice set the FEI oracle
-    function setFeiOracle(IOracle newFeiOracle) external override onlyGovernor {
-        require(address(newFeiOracle) != address(0), "TribeReserveStabilizer: zero address");
-        address oldFeiOracle = address(feiOracle);
-        feiOracle = newFeiOracle;
-        emit FeiOracleUpdate(oldFeiOracle, address(newFeiOracle));
+    /// @notice set the Collateralization oracle
+    function setCollateralizationOracle(ICollateralizationOracle newCollateralizationOracle) external override onlyGovernor {
+        require(address(newCollateralizationOracle) != address(0), "TribeReserveStabilizer: zero address");
+        address oldCollateralizationOracle = address(collateralizationOracle);
+        collateralizationOracle = newCollateralizationOracle;
+        emit CollateralizationOracleUpdate(oldCollateralizationOracle, address(newCollateralizationOracle));
     }
     
-    /// @notice set the FEI price threshold below which exchanging becomes active
-    function setFeiPriceThreshold(uint256 newFeiPriceThresholdBasisPoints) external override onlyGovernor {
-        require(newFeiPriceThresholdBasisPoints <= BASIS_POINTS_GRANULARITY, "TribeReserveStabilizer: fei price threshold too high");
-        
-        uint256 oldFeiPriceThresholdBasisPoints = _feiPriceThreshold.mul(BASIS_POINTS_GRANULARITY).asUint256();
-        _feiPriceThreshold = Decimal.ratio(newFeiPriceThresholdBasisPoints, BASIS_POINTS_GRANULARITY);
-        emit FeiPriceThresholdUpdate(oldFeiPriceThresholdBasisPoints, newFeiPriceThresholdBasisPoints);
+    /// @notice set the collateralization threshold below which exchanging becomes active
+    function setCollateralizationThreshold(uint256 newCollateralizationThresholdBasisPoints) external override onlyGovernor {        
+        uint256 oldCollateralizationThresholdBasisPoints = _collateralizationThreshold.mul(BASIS_POINTS_GRANULARITY).asUint256();
+        _collateralizationThreshold = Decimal.ratio(newCollateralizationThresholdBasisPoints, BASIS_POINTS_GRANULARITY);
+        emit CollateralizationThresholdUpdate(oldCollateralizationThresholdBasisPoints, newCollateralizationThresholdBasisPoints);
     }
 
-    /// @notice the FEI price threshold below which exchanging becomes active
-    function feiPriceThreshold() external view override returns(Decimal.D256 memory) {
-        return _feiPriceThreshold;
+    /// @notice the collateralization threshold below which exchanging becomes active
+    function collateralizationThreshold() external view override returns(Decimal.D256 memory) {
+        return _collateralizationThreshold;
     }
 
     /// @notice mints TRIBE to the target address
@@ -103,12 +114,26 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
         _tribe.setMinter(newMinter);
     }
 
+    // Transfer held TRIBE first, then mint to cover remainder
     function _transfer(address to, uint256 amount) internal override {
-        _mint(to, amount);
+        _depleteBuffer(amount);
+        uint256 _tribeBalance = balance();
+        uint256 mintAmount = amount;
+        if(_tribeBalance != 0) {
+            uint256 transferAmount = Math.min(_tribeBalance, amount);
+
+            _withdrawERC20(address(token), to, transferAmount);
+
+            mintAmount = mintAmount - transferAmount;
+            assert(mintAmount + transferAmount == amount);
+        }
+        if (mintAmount != 0) {
+            _mint(to, mintAmount);
+        }
     }
 
     function _mint(address to, uint256 amount) internal {
-        ITribe _tribe = ITribe(address(tribe()));
+        ITribe _tribe = ITribe(address(token));
         _tribe.mint(to, amount);
     }
 }

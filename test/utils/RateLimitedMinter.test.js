@@ -49,7 +49,7 @@ describe('RateLimitedMinter', function () {
       });
 
       it('second mint reverts', async function() {
-        await expectRevert(this.rateLimitedMinter.mint(userAddress, this.bufferCap), 'RateLimitedMinter: rate limit hit');
+        await expectRevert(this.rateLimitedMinter.mint(userAddress, this.bufferCap), 'RateLimited: rate limit hit');
       });
 
       it('time increase refreshes buffer', async function() {
@@ -93,7 +93,7 @@ describe('RateLimitedMinter', function () {
     });
   
     it('too high fei rate reverts', async function() {
-      await expectRevert(this.rateLimitedMinter.setRateLimitPerSecond(new BN('20000000000000000000000'), {from: governorAddress}), 'RateLimitedMinter: rateLimitPerSecond too high');
+      await expectRevert(this.rateLimitedMinter.setRateLimitPerSecond(new BN('20000000000000000000000'), {from: governorAddress}), 'RateLimited: rateLimitPerSecond too high');
     });
   });
 
