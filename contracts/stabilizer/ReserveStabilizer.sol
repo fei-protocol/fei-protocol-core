@@ -18,7 +18,6 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, PCVDeposit {
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice the ERC20 token exchanged on this stablizer
-    /// @dev left as 0x0 address for ETH and TRIBE stabilizers
     IERC20 public token;
 
     /// @notice ERC20 Reserve Stabilizer constructor
