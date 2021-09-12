@@ -21,6 +21,10 @@ pragma solidity ^0.8.0;
 interface IAsset {
 
 }
+
+// interface with required methods from Balancer V2 IVault
+// https://github.com/balancer-labs/balancer-v2-monorepo/blob/389b52f1fc9e468de854810ce9dc3251d2d5b212/pkg/vault/contracts/interfaces/IVault.sol
+
 /**
  * @dev Full external interface for the Vault core contract - no external or public methods exist in the contract that
  * don't override one of these declarations.

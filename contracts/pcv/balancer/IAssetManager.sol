@@ -14,6 +14,9 @@
 
 pragma solidity ^0.8.0;
 
+// interface with required methods from Balancer V2 IBasePool
+// https://github.com/balancer-labs/balancer-v2-monorepo/blob/389b52f1fc9e468de854810ce9dc3251d2d5b212/pkg/asset-manager-utils/contracts/IAssetManager.sol
+
 interface IAssetManager {
     struct PoolConfig {
         uint64 targetPercentage;

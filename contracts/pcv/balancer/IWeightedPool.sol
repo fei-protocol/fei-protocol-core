@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import "./IBasePool.sol";
 
+// interface with required methods from Balancer V2 WeightedPool
+// https://github.com/balancer-labs/balancer-v2-monorepo/blob/389b52f1fc9e468de854810ce9dc3251d2d5b212/pkg/pool-weighted/contracts/WeightedPool.sol
 interface IWeightedPool is IBasePool {
     function getSwapEnabled() external view returns (bool);
 

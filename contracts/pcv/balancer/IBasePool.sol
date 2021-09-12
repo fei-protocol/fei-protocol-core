@@ -5,6 +5,9 @@ import "./IAssetManager.sol";
 import "./IVault.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+// interface with required methods from Balancer V2 IBasePool
+// https://github.com/balancer-labs/balancer-v2-monorepo/blob/389b52f1fc9e468de854810ce9dc3251d2d5b212/pkg/pool-utils/contracts/BasePool.sol
+
 interface IBasePool is IERC20 {
 
     function getSwapFeePercentage() external view returns (uint256);

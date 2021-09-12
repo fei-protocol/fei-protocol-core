@@ -4,6 +4,9 @@ pragma solidity ^0.8.0;
 import "./IWeightedBalancerPoolManager.sol";
 import "./BaseBalancerPoolManager.sol";
 
+/// @title WeightedBalancerPoolManager
+/// @notice an abstract utility class for a contract that manages a Balancer WeightedPool (including LBP)
+/// exposes the governable methods to Fei Governors or admins
 abstract contract WeightedBalancerPoolManager is IWeightedBalancerPoolManager, BaseBalancerPoolManager {
     
     constructor() BaseBalancerPoolManager() {}

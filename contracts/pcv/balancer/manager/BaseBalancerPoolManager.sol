@@ -4,6 +4,9 @@ pragma solidity ^0.8.0;
 import "../../../refs/CoreRef.sol";
 import "./IBaseBalancerPoolManager.sol";
 
+/// @title BaseBalancerPoolManager
+/// @notice an abstract utility class for a contract that manages a Balancer BasePool
+/// exposes the governable methods to Fei Governors or admins
 abstract contract BaseBalancerPoolManager is IBaseBalancerPoolManager, CoreRef {
     
     constructor() {
