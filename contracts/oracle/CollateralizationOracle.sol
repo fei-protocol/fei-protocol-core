@@ -109,6 +109,17 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     ///         note : this function reverts if the deposit's token has no oracle.
     /// @param _deposit : the PCVDeposit to add to the list.
     function addDeposit(address _deposit) public onlyGovernor {
+        _addDeposit(_deposit);
+    }
+
+    /// @notice adds a list of multiple PCV deposits. See addDeposit.
+    function addDeposits(address[] memory _deposits) public onlyGovernor {
+        for (uint256 i = 0; i < _deposits.length; i++) {
+            _addDeposit(_deposits[i]);
+        }
+    }
+
+    function _addDeposit(address _deposit) internal {
         // if the PCVDeposit is already listed, revert.
         require(depositToToken[_deposit] == address(0), "CollateralizationOracle: deposit duplicate");
 
@@ -132,6 +143,17 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     ///         note : this function reverts if the input deposit is not found.
     /// @param _deposit : the PCVDeposit address to remove from the list.
     function removeDeposit(address _deposit) public onlyGovernor {
+        _removeDeposit(_deposit);
+    }
+
+    /// @notice removes a list of multiple PCV deposits. See removeDeposit.
+    function removeDeposits(address[] memory _deposits) public onlyGovernor {
+        for (uint256 i = 0; i < _deposits.length; i++) {
+            _removeDeposit(_deposits[i]);
+        }
+    }
+
+    function _removeDeposit(address _deposit) internal {
         // get the token in which the deposit reports its token
         address _token = depositToToken[_deposit];
 
@@ -166,6 +188,18 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     /// @param _token : the asset to add price oracle for
     /// @param _newOracle : price feed oracle for the given asset
     function setOracle(address _token, address _newOracle) external onlyGovernor {
+        _setOracle(_token, _newOracle);
+    }
+
+    /// @notice adds a list of token oracles. See setOracle.
+    function setOracles(address[] memory _tokens, address[] memory _oracles) public onlyGovernor {
+        require(_tokens.length == _oracles.length, "CollateralizationOracle: length mismatch");
+        for (uint256 i = 0; i < _tokens.length; i++) {
+            _setOracle(_tokens[i], _oracles[i]);
+        }
+    }
+
+    function _setOracle(address _token, address _newOracle) internal {
         require(_token != address(0), "CollateralizationOracle: token must be != 0x0");
         require(_newOracle != address(0), "CollateralizationOracle: oracle must be != 0x0");
 
