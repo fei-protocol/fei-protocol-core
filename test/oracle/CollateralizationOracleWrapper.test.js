@@ -13,7 +13,7 @@ const MockCollateralizationOracle = artifacts.require('MockCollateralizationOrac
 
 const e18 = '000000000000000000';
 
-describe('CollateralizationOracleWrapper', function () {
+describe.only('CollateralizationOracleWrapper', function () {
   let userAddress;
   let guardianAddress;
   let governorAddress;
@@ -257,11 +257,6 @@ describe('CollateralizationOracleWrapper', function () {
         this.oracleWrapper.isExceededDeviationThreshold({ from: userAddress }),
         'CollateralizationOracleWrapper: CollateralizationOracle reading is invalid'
       );
-    });
-    it('should return true if paused', async function() {
-      expect(await this.oracleWrapper.isExceededDeviationThreshold()).to.be.equal(false);
-      await this.oracleWrapper.pause({ from: governorAddress });
-      expect(await this.oracleWrapper.isExceededDeviationThreshold()).to.be.equal(true);
     });
     it('should return true if threshold is exceeded', async function() {
       expect(await this.oracleWrapper.isExceededDeviationThreshold()).to.be.equal(false);

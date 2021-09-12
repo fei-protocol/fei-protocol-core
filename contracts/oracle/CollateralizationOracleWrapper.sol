@@ -45,11 +45,11 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
     address public override collateralizationOracle;
 
     /// @notice cached value of the Protocol Controlled Value
-    uint256 private cachedProtocolControlledValue;
+    uint256 public cachedProtocolControlledValue;
     /// @notice cached value of the User Circulating FEI
-    uint256 private cachedUserCirculatingFei;
+    uint256 public cachedUserCirculatingFei;
     /// @notice cached value of the Protocol Equity
-    int256 private cachedProtocolEquity;
+    int256 public cachedProtocolEquity;
 
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
