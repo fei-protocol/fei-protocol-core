@@ -76,7 +76,6 @@ describe('EthBondingCurve', function () {
 
     it('buffer', async function() {
       expect(await this.bondingCurve.buffer()).to.be.bignumber.equal(this.buffer);
-      expect(await this.bondingCurve.BASIS_POINTS_GRANULARITY()).to.be.bignumber.equal('10000');
     });
 
     it('incentive amount', async function() {
