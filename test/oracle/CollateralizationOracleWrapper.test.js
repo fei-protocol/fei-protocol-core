@@ -280,11 +280,6 @@ describe('CollateralizationOracleWrapper', function () {
         'CollateralizationOracleWrapper: CollateralizationOracle reading is invalid'
       );
     });
-    it('should return true if paused', async function() {
-      expect(await this.oracleWrapper.isExceededDeviationThreshold()).to.be.equal(false);
-      await this.oracleWrapper.pause({ from: governorAddress });
-      expect(await this.oracleWrapper.isExceededDeviationThreshold()).to.be.equal(true);
-    });
     it('should return true if threshold is exceeded', async function() {
       expect(await this.oracleWrapper.isExceededDeviationThreshold()).to.be.equal(false);
       await this.oracle.set('1000', '2500');

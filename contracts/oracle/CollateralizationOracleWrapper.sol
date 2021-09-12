@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "./IOracle.sol";
-import "./ICollateralizationOracle.sol";
+import "./ICollateralizationOracleWrapper.sol";
 import "../utils/Timed.sol";
 import "../refs/CoreRef.sol";
 
@@ -15,7 +15,7 @@ interface IPausable {
 /// @notice Reads a list of PCVDeposit that report their amount of collateral
 ///         and the amount of protocol-owned FEI they manage, to deduce the
 ///         protocol-wide collateralization ratio.
-contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, CoreRef {
+contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrapper, CoreRef {
     using Decimal for Decimal.D256;
 
     // ----------- Events ------------------------------------------------------
@@ -42,7 +42,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
     // ----------- Properties --------------------------------------------------
 
     /// @notice address of the CollateralizationOracle to memoize
-    address public collateralizationOracle;
+    address public override collateralizationOracle;
 
     /// @notice cached value of the Protocol Controlled Value
     uint256 public cachedProtocolControlledValue;
@@ -51,9 +51,11 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
     /// @notice cached value of the Protocol Equity
     int256 public cachedProtocolEquity;
 
+    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
+
     /// @notice deviation threshold to consider cached values outdated, in basis
     ///         points (base 10_000)
-    uint256 public deviationThresholdBasisPoints;
+    uint256 public override deviationThresholdBasisPoints;
 
     // ----------- Constructor -------------------------------------------------
 
@@ -89,7 +91,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
     /// @notice set the address of the CollateralizationOracle to inspect, and
     /// to cache values from.
     /// @param _newCollateralizationOracle the address of the new oracle.
-    function setCollateralizationOracle(address _newCollateralizationOracle) external onlyGovernor {
+    function setCollateralizationOracle(address _newCollateralizationOracle) external override onlyGovernor {
         require(_newCollateralizationOracle != address(0), "CollateralizationOracleWrapper: invalid address");
         address _oldCollateralizationOracle = collateralizationOracle;
 
@@ -105,7 +107,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
     /// @notice set the deviation threshold in basis points, used to detect if the
     /// cached value deviated significantly from the actual fresh readings.
     /// @param _newDeviationThresholdBasisPoints the new value to set.
-    function setDeviationThresholdBasisPoints(uint256 _newDeviationThresholdBasisPoints) external onlyGovernor {
+    function setDeviationThresholdBasisPoints(uint256 _newDeviationThresholdBasisPoints) external override onlyGovernor {
         require(_newDeviationThresholdBasisPoints > 0 && _newDeviationThresholdBasisPoints <= 10_000, "CollateralizationOracleWrapper: invalid basis points");
         uint256 _oldDeviationThresholdBasisPoints = deviationThresholdBasisPoints;
 
@@ -121,13 +123,28 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
     /// @notice set the validity duration of the cached collateralization values.
     /// @param _validityDuration the new validity duration
     /// This function will emit a DurationUpdate event from Timed.sol
-    function setValidityDuration(uint256 _validityDuration) external onlyGovernor {
+    function setValidityDuration(uint256 _validityDuration) external override onlyGovernor {
         _setDuration(_validityDuration);
     }
 
     // ----------- IOracle override methods ------------------------------------
     /// @notice update reading of the CollateralizationOracle
     function update() external override whenNotPaused {
+        _update();
+    }
+
+    /** 
+        @notice this method reverts if the oracle is not outdated
+        It is useful if the caller is incentivized for calling only when the deviation threshold or frequency has passed
+    */ 
+    function updateIfOutdated() external override whenNotPaused {
+        require(_update(), "CollateralizationOracleWrapper: not outdated");
+    }
+
+    // returns true if the oracle was outdated at update time
+    function _update() internal returns (bool) {
+        bool outdated = isOutdated();
+
         // fetch a fresh round of information
         (
             uint256 _protocolControlledValue,
@@ -154,6 +171,10 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
             cachedUserCirculatingFei,
             cachedProtocolEquity
         );
+
+        return outdated 
+            || _isExceededDeviationThreshold(cachedProtocolControlledValue, _protocolControlledValue)
+            || _isExceededDeviationThreshold(cachedUserCirculatingFei, _userCirculatingFei);
     }
 
     // @notice returns true if the cached values are outdated.
@@ -178,7 +199,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
     //         This function is intended to be called off-chain by keepers.
     //         If executed on-chain, it consumes more gas than an actual update()
     //         call _and_ does not persist the read values in the cached state.
-    function isExceededDeviationThreshold() public view returns (bool obsolete) {
+    function isExceededDeviationThreshold() public view override returns (bool obsolete) {
         (
             uint256 _protocolControlledValue,
             uint256 _userCirculatingFei,
@@ -188,24 +209,14 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
 
         require(_validityStatus, "CollateralizationOracleWrapper: CollateralizationOracle reading is invalid");
 
-        Decimal.D256 memory _thresholdLow = Decimal.from(10_000 - deviationThresholdBasisPoints).div(10_000);
-        Decimal.D256 memory _thresholdHigh = Decimal.from(10_000 + deviationThresholdBasisPoints).div(10_000);
+        return _isExceededDeviationThreshold(cachedProtocolControlledValue, _protocolControlledValue)
+            || _isExceededDeviationThreshold(cachedUserCirculatingFei, _userCirculatingFei);
+    }
 
-        obsolete = paused();
-
-        // Protocol Controlled Value checks
-        Decimal.D256 memory pcvRatio = Decimal.from(_protocolControlledValue).div(cachedProtocolControlledValue);
-        // PCV < threshold
-        obsolete = obsolete || pcvRatio.lessThan(_thresholdLow);
-        // PCV > threshold
-        obsolete = obsolete || pcvRatio.greaterThan(_thresholdHigh);
-
-        // Circulating Fei checks
-        Decimal.D256 memory circFeiRatio = Decimal.from(_userCirculatingFei).div(cachedUserCirculatingFei);
-        // CircFEI < threshold
-        obsolete = obsolete || circFeiRatio.lessThan(_thresholdLow);
-        // CircFEI > threshold
-        obsolete = obsolete || circFeiRatio.greaterThan(_thresholdHigh);
+    function _isExceededDeviationThreshold(uint256 cached, uint256 current) internal view returns (bool) {
+        uint256 delta = current > cached ? current- cached : cached - current;
+        uint256 deviationBaisPoints = delta * BASIS_POINTS_GRANULARITY / current;
+        return deviationBaisPoints > deviationThresholdBasisPoints;
     }
 
     // @notice returns true if the cached values are obsolete or outdated, i.e.
@@ -215,7 +226,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
     //         know if they should call the update() function. If executed on-chain,
     //         it consumes more gas than an actual update() + read() call _and_
     //         does not persist the read values in the cached state.
-    function isOutdatedOrExceededDeviationThreshold() external view returns (bool) {
+    function isOutdatedOrExceededDeviationThreshold() external view override returns (bool) {
         return isOutdated() || isExceededDeviationThreshold();
     }
 
@@ -265,7 +276,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracle, Core
     /// @return validityStatus : the current oracle validity status (false if any
     ///         of the oracles for tokens held in the PCV are invalid, or if
     ///         this contract is paused).
-    function pcvStatsCurrent() external view returns (
+    function pcvStatsCurrent() external view override returns (
         uint256 protocolControlledValue,
         uint256 userCirculatingFei,
         int256 protocolEquity,
