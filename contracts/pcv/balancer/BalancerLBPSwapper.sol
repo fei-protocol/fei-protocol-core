@@ -246,7 +246,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         if (spentTokenBalance > minTokenSpentBalance) {
             // uses exact tokens in encoding for deposit, supplying both tokens
             // will use some of the previously withdrawn tokenReceived to seed the 1% required for new auction
-            uint256[] memory amountsIn = _getTokensIn();
+            uint256[] memory amountsIn = _getTokensIn(spentTokenBalance);
             bytes memory userData = abi.encode(IWeightedPool.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT, amountsIn, 0);
 
             IVault.JoinPoolRequest memory joinRequest;
@@ -338,7 +338,10 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
 
     function _initializePool() internal {
         // Balancer LBP initialization uses a unique JoinKind which only takes in amountsIn
-        uint256[] memory amountsIn = _getTokensIn();
+        uint256 spentTokenBalance = IERC20(tokenSpent).balanceOf(address(this)); 
+        require(spentTokenBalance >= minTokenSpentBalance, "BalancerLBPSwapper: not enough tokenSpent to init");
+
+        uint256[] memory amountsIn = _getTokensIn(spentTokenBalance);
         bytes memory userData = abi.encode(IWeightedPool.JoinKind.INIT, amountsIn);
 
         IVault.JoinPoolRequest memory joinRequest;
@@ -364,10 +367,9 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         _initTimed();
     }
 
-    function _getTokensIn() internal view returns(uint256[] memory amountsIn) {
+    function _getTokensIn(uint256 spentTokenBalance) internal view returns(uint256[] memory amountsIn) {
         amountsIn = new uint256[](2);
 
-        uint256 spentTokenBalance = IERC20(tokenSpent).balanceOf(address(this)); 
         uint256 receivedTokenBalance = readOracle().mul(spentTokenBalance).mul(ONE_PERCENT).div(NINETY_NINE_PERCENT).asUint256();
     
         if (address(assets[0]) == tokenSpent) {
