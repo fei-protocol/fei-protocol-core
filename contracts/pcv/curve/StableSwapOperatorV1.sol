@@ -284,4 +284,8 @@ contract StableSwapOperatorV1 is PCVDeposit {
 
         return _daiOut;
     }
+
+    function balanceReportedIn() public view override returns(address) {
+        return _dai;
+    }
 }

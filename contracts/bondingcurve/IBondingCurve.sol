@@ -61,8 +61,6 @@ interface IBondingCurve {
 
     function totalPurchased() external view returns (uint256);
 
-    function balance() external view returns (uint256);
-
     function token() external view returns (IERC20);
 
     function mintCap() external view returns (uint256);
