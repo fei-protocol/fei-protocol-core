@@ -32,7 +32,7 @@ describe('TribeReserveStabilizer', function () {
     this.fei = await Fei.at(await this.core.fei());
     this.tribe = await Tribe.at(await this.core.tribe());
     this.oracle = await MockOracle.new(400); // 400:1 oracle price
-    this.collateralizationOracle = await MockCollateralizationOracle.new(1);
+    this.collateralizationOracle = await MockCollateralizationOracle.new(this.core.address, 1);
     this.pcvDeposit = await MockPCVDeposit.new(userAddress);
 
     this.reserveStabilizer = await TribeReserveStabilizer.new(
@@ -117,7 +117,7 @@ describe('TribeReserveStabilizer', function () {
       });
 
       it('reverts', async function() {
-        await expectRevert(this.reserveStabilizer.exchangeFei(this.feiAmount, {from: userAddress}), 'RateLimitedMinter: rate limit hit');
+        await expectRevert(this.reserveStabilizer.exchangeFei(this.feiAmount, {from: userAddress}), 'RateLimited: rate limit hit');
       });
     });
 

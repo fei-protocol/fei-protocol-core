@@ -13,7 +13,7 @@ const PCVEquityMinter = artifacts.require('PCVEquityMinter');
 const MockCollateralizationOracle = artifacts.require('MockCollateralizationOracle');
 const Fei = artifacts.require('Fei');
     
-describe.only('PCVEquityMinter', function () {
+describe('PCVEquityMinter', function () {
   let userAddress;
   let secondUserAddress;
   let governorAddress;
@@ -26,7 +26,7 @@ describe.only('PCVEquityMinter', function () {
     } = await getAddresses());
         
     this.core = await getCore(true);
-    this.collateralizationOracle = await MockCollateralizationOracle.new('1');
+    this.collateralizationOracle = await MockCollateralizationOracle.new(this.core.address, '1');
 
     this.fei = await Fei.at(await this.core.fei());
     
