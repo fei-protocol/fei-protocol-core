@@ -8,14 +8,13 @@ import "../../utils/Incentivized.sol";
 import "../../refs/UniRef.sol";
 import "../../external/UniswapV2Library.sol";
 import "../../utils/Timed.sol";
+import "../../Constants.sol";
 
 /// @title a PCV controller for reweighting the Uniswap pair price to a peg
 /// @author Fei Protocol
 contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivized {
     using Decimal for Decimal.D256;
     using Babylonian for uint256;
-
-    uint256 internal constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice returns the linked pcv deposit contract
     IPCVDeposit public override pcvDeposit;
@@ -46,7 +45,7 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
 
         _minDistanceForReweight = Decimal.ratio(
             _minDistanceForReweightBPs,
-            BASIS_POINTS_GRANULARITY
+            Constants.BASIS_POINTS_GRANULARITY
         );
         emit ReweightMinDistanceUpdate(0, _minDistanceForReweightBPs);
 
@@ -89,12 +88,12 @@ contract UniswapPCVController is IUniswapPCVController, UniRef, Timed, Incentivi
         override
         onlyGovernor
     {
-        require(newReweightMinDistanceBPs <= BASIS_POINTS_GRANULARITY, "UniswapPCVController: reweight min distance too high");
+        require(newReweightMinDistanceBPs <= Constants.BASIS_POINTS_GRANULARITY, "UniswapPCVController: reweight min distance too high");
         
-        uint256 oldReweightMinDistanceBPs = _minDistanceForReweight.mul(BASIS_POINTS_GRANULARITY).asUint256();
+        uint256 oldReweightMinDistanceBPs = _minDistanceForReweight.mul(Constants.BASIS_POINTS_GRANULARITY).asUint256();
         _minDistanceForReweight = Decimal.ratio(
             newReweightMinDistanceBPs,
-            BASIS_POINTS_GRANULARITY
+            Constants.BASIS_POINTS_GRANULARITY
         );
         emit ReweightMinDistanceUpdate(oldReweightMinDistanceBPs, newReweightMinDistanceBPs);
     }

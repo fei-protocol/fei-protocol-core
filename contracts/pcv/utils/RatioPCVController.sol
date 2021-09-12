@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
+import "../../Constants.sol";
 import "../../refs/CoreRef.sol";
 import "../IPCVDeposit.sol";
 
@@ -8,8 +9,6 @@ import "../IPCVDeposit.sol";
 /// @author Fei Protocol
 contract RatioPCVController is CoreRef {
     
-    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
-
     /// @notice PCV controller constructor
     /// @param _core Fei Core for reference
     constructor(
@@ -25,8 +24,8 @@ contract RatioPCVController is CoreRef {
         onlyPCVController
         whenNotPaused
     {
-        require(basisPoints <= BASIS_POINTS_GRANULARITY, "RatioPCVController: basisPoints too high");
-        uint256 amount = pcvDeposit.balance() * basisPoints / BASIS_POINTS_GRANULARITY;
+        require(basisPoints <= Constants.BASIS_POINTS_GRANULARITY, "RatioPCVController: basisPoints too high");
+        uint256 amount = pcvDeposit.balance() * basisPoints / Constants.BASIS_POINTS_GRANULARITY;
         require(amount != 0, "RatioPCVController: no value to withdraw");
 
         pcvDeposit.withdraw(to, amount);
@@ -42,8 +41,8 @@ contract RatioPCVController is CoreRef {
         onlyPCVController
         whenNotPaused
     {
-        require(basisPoints <= BASIS_POINTS_GRANULARITY, "RatioPCVController: basisPoints too high");
-        uint256 amount = IERC20(token).balanceOf(address(pcvDeposit)) * basisPoints / BASIS_POINTS_GRANULARITY;
+        require(basisPoints <= Constants.BASIS_POINTS_GRANULARITY, "RatioPCVController: basisPoints too high");
+        uint256 amount = IERC20(token).balanceOf(address(pcvDeposit)) * basisPoints / Constants.BASIS_POINTS_GRANULARITY;
         require(amount != 0, "RatioPCVController: no value to withdraw");
 
         pcvDeposit.withdrawERC20(token, to, amount);

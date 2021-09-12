@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 import "./IReserveStabilizer.sol";
 import "../pcv/PCVDeposit.sol";
 import "../refs/OracleRef.sol";
+import "../Constants.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title implementation for an ERC20 Reserve Stabilizer
@@ -13,9 +14,6 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, PCVDeposit {
 
     /// @notice the USD per FEI exchange rate denominated in basis points (1/10000)
     uint256 public override usdPerFeiBasisPoints;
-    
-    /// @notice the denominator for basis granularity (10,000)
-    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice the ERC20 token exchanged on this stablizer
     IERC20 public token;
@@ -39,7 +37,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, PCVDeposit {
         0, // default to zero for ETH and TRIBE which both have 18 decimals
         true // invert the price oracle, as the operation performed here needs to convert FEI into underlying
     ) {
-        require(_usdPerFeiBasisPoints <= BASIS_POINTS_GRANULARITY, "ReserveStabilizer: Exceeds bp granularity");
+        require(_usdPerFeiBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "ReserveStabilizer: Exceeds bp granularity");
         usdPerFeiBasisPoints = _usdPerFeiBasisPoints;
         emit UsdPerFeiRateUpdate(0, _usdPerFeiBasisPoints);
 
@@ -66,7 +64,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, PCVDeposit {
     /// @notice returns the amount out of tokens from the reserves for a given amount of FEI
     /// @param amountFeiIn the amount of FEI in
     function getAmountOut(uint256 amountFeiIn) public view override returns(uint256) {
-        uint256 adjustedAmountIn = amountFeiIn * usdPerFeiBasisPoints / BASIS_POINTS_GRANULARITY;
+        uint256 adjustedAmountIn = amountFeiIn * usdPerFeiBasisPoints / Constants.BASIS_POINTS_GRANULARITY;
         return readOracle().mul(adjustedAmountIn).asUint256();
     }
 
@@ -90,7 +88,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, PCVDeposit {
     /// @notice sets the USD per FEI exchange rate rate
     /// @param newUsdPerFeiBasisPoints the USD per FEI exchange rate denominated in basis points (1/10000)
     function setUsdPerFeiRate(uint256 newUsdPerFeiBasisPoints) external override onlyGovernor {
-        require(newUsdPerFeiBasisPoints <= BASIS_POINTS_GRANULARITY, "ReserveStabilizer: Exceeds bp granularity");
+        require(newUsdPerFeiBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "ReserveStabilizer: Exceeds bp granularity");
         uint256 oldUsdPerFeiBasisPoints = usdPerFeiBasisPoints;
         usdPerFeiBasisPoints = newUsdPerFeiBasisPoints;
         emit UsdPerFeiRateUpdate(oldUsdPerFeiBasisPoints, newUsdPerFeiBasisPoints);

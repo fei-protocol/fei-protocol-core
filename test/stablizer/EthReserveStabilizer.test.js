@@ -31,11 +31,12 @@ describe('EthReserveStabilizer', function () {
     this.core = await getCore(true);
   
     this.fei = await Fei.at(await this.core.fei());
-    this.weth = await MockWeth.new();
     this.oracle = await MockOracle.new(400); // 400:1 oracle price
     this.pcvDeposit = await MockPCVDeposit.new(userAddress);
 
-    this.reserveStabilizer = await EthReserveStabilizer.new(this.core.address, this.oracle.address, this.oracle.address, '9000', this.weth.address);
+    this.reserveStabilizer = await EthReserveStabilizer.new(this.core.address, this.oracle.address, this.oracle.address, '9000');
+
+    this.weth = await MockWeth.at('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2');
 
     await this.core.grantBurner(this.reserveStabilizer.address, {from: governorAddress});
 
@@ -116,7 +117,7 @@ describe('EthReserveStabilizer', function () {
   describe('Deposit', function() {
     it('unwraps WETH', async function() {
       await this.weth.deposit({value: '10000'});
-      await this.weth.mint(this.reserveStabilizer.address, '10000');
+      await this.weth.transfer(this.reserveStabilizer.address, '10000');
       const reserveBalanceBefore = new BN(await balance.current(this.reserveStabilizer.address));
       await this.reserveStabilizer.deposit();
 

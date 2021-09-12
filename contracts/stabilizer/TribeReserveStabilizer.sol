@@ -45,7 +45,7 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, R
         collateralizationOracle = _collateralizationOracle;
         emit CollateralizationOracleUpdate(address(0), address(_collateralizationOracle));
     
-        _collateralizationThreshold = Decimal.ratio(_collateralizationThresholdBasisPoints, BASIS_POINTS_GRANULARITY);
+        _collateralizationThreshold = Decimal.ratio(_collateralizationThresholdBasisPoints, Constants.BASIS_POINTS_GRANULARITY);
         emit CollateralizationThresholdUpdate(0, _collateralizationThresholdBasisPoints);
         
         // Setting token here because it isn't available until after CoreRef is constructed
@@ -89,8 +89,8 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, R
     
     /// @notice set the collateralization threshold below which exchanging becomes active
     function setCollateralizationThreshold(uint256 newCollateralizationThresholdBasisPoints) external override onlyGovernor {        
-        uint256 oldCollateralizationThresholdBasisPoints = _collateralizationThreshold.mul(BASIS_POINTS_GRANULARITY).asUint256();
-        _collateralizationThreshold = Decimal.ratio(newCollateralizationThresholdBasisPoints, BASIS_POINTS_GRANULARITY);
+        uint256 oldCollateralizationThresholdBasisPoints = _collateralizationThreshold.mul(Constants.BASIS_POINTS_GRANULARITY).asUint256();
+        _collateralizationThreshold = Decimal.ratio(newCollateralizationThresholdBasisPoints, Constants.BASIS_POINTS_GRANULARITY);
         emit CollateralizationThresholdUpdate(oldCollateralizationThresholdBasisPoints, newCollateralizationThresholdBasisPoints);
     }
 

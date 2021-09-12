@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "./IUniswapPCVDeposit.sol";
+import "../../Constants.sol";
 import "../PCVDeposit.sol";
 import "../../refs/UniRef.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
@@ -14,8 +15,6 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
 
     /// @notice a slippage protection parameter, deposits revert when spot price is > this % from oracle
     uint256 public override maxBasisPointsFromPegLP;
-
-    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice the Uniswap router contract
     IUniswapV2Router02 public override router;
@@ -107,7 +106,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
         onlyGovernor
     {
         require(
-            _maxBasisPointsFromPegLP <= BASIS_POINTS_GRANULARITY,
+            _maxBasisPointsFromPegLP <= Constants.BASIS_POINTS_GRANULARITY,
             "UniswapPCVDeposit: basis points from peg too high"
         );
 
@@ -178,8 +177,8 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     /// @notice used as slippage protection when adding liquidity to the pool
     function _getMinLiquidity(uint256 amount) internal view returns (uint256) {
         return
-            (amount * (BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP)) /
-            BASIS_POINTS_GRANULARITY;
+            (amount * (Constants.BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP)) /
+            Constants.BASIS_POINTS_GRANULARITY;
     }
 
     /// @notice ratio of all pair liquidity owned by this contract
