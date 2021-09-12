@@ -65,6 +65,8 @@ contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized, RateLi
         
             emit FeiMinting(msg.sender, amount);
         }
+        // After mint called whether a "mint" happens or not to allow incentivized target hooks
+        _afterMint();
     }
     
     function mintAmount() public view virtual override returns (uint256) {
@@ -104,4 +106,6 @@ contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized, RateLi
     function _mintFei(address to, uint256 amountIn) internal override(CoreRef, RateLimitedMinter) {
       RateLimitedMinter._mintFei(to, amountIn);
     }
+
+    function _afterMint() internal virtual {}
 }

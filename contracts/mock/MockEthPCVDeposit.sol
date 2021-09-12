@@ -43,11 +43,20 @@ contract MockEthPCVDeposit is IPCVDeposit {
         emit WithdrawETH(msg.sender, to, amountOut);
     }
 
-    function balance() external view override returns(uint256) {
+    function balance() public view override returns(uint256) {
     	return total;
     }
 
     function setBeneficiary(address payable _beneficiary) public {
         beneficiary = _beneficiary;
+    }
+
+        /// @notice display the related token of the balance reported
+    function balanceReportedIn() public view override returns (address) {
+        return address(0);
+    }
+
+    function resistantBalanceAndFei() public view virtual override returns(uint256, uint256) {
+      return (balance(), 0);
     }
 }
