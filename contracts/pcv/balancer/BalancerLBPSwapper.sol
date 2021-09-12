@@ -5,8 +5,7 @@ import "./manager/WeightedBalancerPoolManager.sol";
 import "./IVault.sol";
 import "../../utils/Timed.sol";
 import "../../refs/OracleRef.sol";
-// TODO move to utils or higher level folder
-import "../uniswap/IPCVSwapper.sol";
+import "../IPCVSwapper.sol";
 
 // TODO make the thing a PCV Deposit
 contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPoolManager {

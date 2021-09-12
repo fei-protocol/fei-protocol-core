@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "./IPCVSwapper.sol";
+import "../IPCVSwapper.sol";
 import "../utils/WethPCVDeposit.sol";
 import "../../utils/Incentivized.sol";
 import "../../refs/OracleRef.sol";
