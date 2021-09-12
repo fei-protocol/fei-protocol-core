@@ -7,10 +7,15 @@ import "../../utils/Timed.sol";
 import "../../refs/OracleRef.sol";
 import "../IPCVSwapper.sol";
 
-// TODO make the thing a PCV Deposit
 contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPoolManager {
     using Decimal for Decimal.D256;
 
+    // ------------- Events -------------
+    event SplippageToleranceUpdate(uint256 oldSlippageToleranceBasisPoints, uint256 newSlippageToleranceBasisPoints);
+
+    event MinTokenSpentUpdate(uint256 oldMinTokenSpentBalance, uint256 newMinTokenSpentBalance);
+
+    // ------------- State -------------
     IWeightedPool public pool;
     IVault public vault;
     bytes32 public pid;
@@ -19,7 +24,6 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     address public override tokenReceived;
     address public override tokenReceivingAddress;
 
-    // TODO make this settable
     uint256 public minTokenSpentBalance;
 
     uint256 private constant ONE_PERCENT = 0.01e18;
@@ -28,6 +32,9 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     IAsset[] private assets;
     uint256[] private initialWeights;
     uint256[] private endWeights;
+
+    uint256 public slippageToleranceBasisPoints;
+    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
     
     struct OracleData {
         address _oracle;
@@ -45,7 +52,8 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         address _tokenSpent,
         address _tokenReceived,
         address _tokenReceivingAddress,
-        uint256 _minTokenSpentBalance
+        uint256 _minTokenSpentBalance,
+        uint256 _slippageToleranceBasisPoints
     ) 
         OracleRef(
             _core, 
@@ -63,7 +71,9 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
 
         tokenSpent = _tokenSpent;
         tokenReceived = _tokenReceived;
-        minTokenSpentBalance = _minTokenSpentBalance;
+
+        _setMinTokenSpent(_minTokenSpentBalance);
+        _setSlippageTolerance(_slippageToleranceBasisPoints);
     }
 
     function init(IWeightedPool _pool) external {
@@ -131,7 +141,6 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
             uint256 lastChangeBlock
         ) = getReserves();
 
-        // TODO look at griefing / DOS
         require(lastChangeBlock < block.number, "BalancerLBPSwapper: pool changed this block");
 
         (
@@ -248,6 +257,18 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
        _setDuration(_frequency);
     }
 
+    /// @notice sets the minimum token spent balance
+	/// @param newMinTokenSpentBalance minimum amount of FEI to trigger a new auction
+    function setMinTokenSpent(uint256 newMinTokenSpentBalance) external onlyGovernorOrAdmin {
+       _setMinTokenSpent(newMinTokenSpentBalance);
+    }
+
+    /// @notice sets the minimum deposit slippage
+	/// @param newSlippageToleranceBasisPoints minimum amount of slippage allowed on withdrawals
+    function setSlippageTolerance(uint256 newSlippageToleranceBasisPoints) external onlyGovernorOrAdmin {
+       _setSlippageTolerance(newSlippageToleranceBasisPoints);
+    }
+
     /// @notice Sets the address receiving swap's inbound tokens
     /// @param newTokenReceivingAddress the address that will receive tokens
     function setReceivingAddress(address newTokenReceivingAddress) external override onlyGovernorOrAdmin {
@@ -302,8 +323,20 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         }
     }
 
-    // TODO make this a global param
+    function _setMinTokenSpent(uint256 newMinTokenSpentBalance) internal {
+      uint256 oldMinTokenSpentBalance = minTokenSpentBalance;
+      minTokenSpentBalance = newMinTokenSpentBalance;
+      emit MinTokenSpentUpdate(oldMinTokenSpentBalance, newMinTokenSpentBalance);
+    }
+
+    function _setSlippageTolerance(uint256 newSlippageToleranceBasisPoints) internal {
+      require(newSlippageToleranceBasisPoints <= BASIS_POINTS_GRANULARITY, "BalancerLBPSwapper: slippage tolerance > 100%");
+      uint256 oldSlippageToleranceBasisPoints = slippageToleranceBasisPoints;
+      slippageToleranceBasisPoints = newSlippageToleranceBasisPoints;
+      emit SplippageToleranceUpdate(oldSlippageToleranceBasisPoints, newSlippageToleranceBasisPoints);
+    }
+
     function _scaleBySlippageTolerance(uint256 input) internal view returns(uint256) {
-        return input * 99 / 100;
+        return input * (BASIS_POINTS_GRANULARITY - slippageToleranceBasisPoints) / BASIS_POINTS_GRANULARITY;
     }
 }
