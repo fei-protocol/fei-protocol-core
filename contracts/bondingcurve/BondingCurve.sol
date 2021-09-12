@@ -15,7 +15,7 @@ import "../Constants.sol";
  * @author Fei Protocol
  * 
  */ 
-contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivized {
+contract BondingCurve is IPCVDepositBalances, IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivized {
     using Decimal for Decimal.D256;
 
     /// @notice the Scale target at which bonding curve price fixes
@@ -107,14 +107,12 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     }
 
     /// @notice display the related token of the balance reported
-    /// @dev to allow compatibility with the Collateralization Oracle even though this contract isn't an IPCVDeposit
-    function balanceReportedIn() public view returns (address) {
+    function balanceReportedIn() public view override returns (address) {
         return address(token);
     }
 
     /// @notice returns a manipulation resistant account of both the balance of underlying and protocol owned FEI
-    /// @dev to allow compatibility with the Collateralization Oracle even though this contract isn't an IPCVDeposit
-    function resistantBalanceAndFei() public view returns(uint256, uint256) {
+    function resistantBalanceAndFei() public view override returns(uint256, uint256) {
       return (balance(), 0);
     }
 
