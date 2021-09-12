@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 
 library Constants {
+    /// @notice the denominator for basis points granularity (10,000)
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
     
     /// @notice WETH9 address
