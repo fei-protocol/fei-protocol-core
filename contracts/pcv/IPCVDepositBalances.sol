@@ -6,12 +6,13 @@ pragma solidity ^0.8.4;
 interface IPCVDepositBalances {
     
     // ----------- Getters -----------
-
+    
+    /// @notice gets the effective balance of "balanceReportedIn" token if the deposit were fully withdrawn
     function balance() external view returns (uint256);
 
-    // gets the token address in which this deposit returns its balance
+    /// @notice gets the token address in which this deposit returns its balance
     function balanceReportedIn() external view returns (address);
 
-    // gets the resistant token balance and protocol owned fei of this deposit
+    /// @notice gets the resistant token balance and protocol owned fei of this deposit
     function resistantBalanceAndFei() external view returns (uint256, uint256);
 }
