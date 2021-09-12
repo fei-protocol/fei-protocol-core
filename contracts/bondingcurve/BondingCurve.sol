@@ -8,13 +8,14 @@ import "../pcv/utils/PCVSplitter.sol";
 import "../utils/Incentivized.sol";
 import "../pcv/IPCVDeposit.sol";
 import "../utils/Timed.sol";
+import "../Constants.sol";
 
 /**
  * @title a bonding curve for purchasing FEI with ERC-20 tokens
  * @author Fei Protocol
  * 
  */ 
-contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivized {
+contract BondingCurve is IPCVDepositBalances, IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivized {
     using Decimal for Decimal.D256;
 
     /// @notice the Scale target at which bonding curve price fixes
@@ -34,8 +35,6 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
 
     /// @notice the cap on how much FEI can be minted by the bonding curve
     uint256 public override mintCap;
-
-    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice constructor
     /// @param _core Fei Core to reference
@@ -107,6 +106,16 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         return token.balanceOf(address(this));
     }
 
+    /// @notice display the related token of the balance reported
+    function balanceReportedIn() public view override returns (address) {
+        return address(token);
+    }
+
+    /// @notice returns a manipulation resistant account of both the balance of underlying and protocol owned FEI
+    function resistantBalanceAndFei() public view override returns(uint256, uint256) {
+      return (balance(), 0);
+    }
+
     /// @notice sets the bonding curve Scale target
     function setScale(uint256 newScale) external override onlyGovernorOrAdmin {
         _setScale(newScale);
@@ -122,7 +131,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     /// @notice sets the bonding curve price buffer
     function setBuffer(uint256 newBuffer) external override onlyGovernorOrAdmin {
         require(
-            newBuffer < BASIS_POINTS_GRANULARITY,
+            newBuffer < Constants.BASIS_POINTS_GRANULARITY,
             "BondingCurve: Buffer exceeds or matches granularity"
         );
         uint256 oldBuffer = buffer;
@@ -133,7 +142,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     /// @notice sets the bonding curve price discount
     function setDiscount(uint256 newDiscount) external override onlyGovernorOrAdmin {
         require(
-            newDiscount < BASIS_POINTS_GRANULARITY,
+            newDiscount < Constants.BASIS_POINTS_GRANULARITY,
             "BondingCurve: Buffer exceeds or matches granularity"
         );
         uint256 oldDiscount = discount;
@@ -151,20 +160,12 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         _setMintCap(_mintCap);
     }
 
-    /// @notice sets the allocation of incoming PCV
-    function setAllocation(
-        address[] calldata allocations,
-        uint256[] calldata ratios
-    ) external override onlyGovernor {
-        _setAllocation(allocations, ratios);
-    }
-
     /// @notice batch allocate held PCV
     function allocate() external override whenNotPaused {
         uint256 amount = balance();
         uint256 usdValueHeld = readOracle().mul(amount).asUint256();
         // the premium is the USD value held multiplied by the buffer that a user would pay to get FEI assuming FEI is $1
-        uint256 premium = usdValueHeld * buffer / BASIS_POINTS_GRANULARITY;
+        uint256 premium = usdValueHeld * buffer / Constants.BASIS_POINTS_GRANULARITY;
 
         // this requirement mitigates gaming the allocate function and ensures it is only called when sufficient demand has been met
         require(premium >= incentiveAmount, "BondingCurve: Not enough PCV held");
@@ -176,8 +177,6 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
             _initTimed(); // reset window
             _incentivize();
         }
-
-        emit Allocate(msg.sender, amount);
     }
 
     /// @notice a boolean signalling whether Scale has been reached
@@ -246,7 +245,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         require(availableToMint() >= amountOut, "BondingCurve: exceeds mint cap");
 
         _incrementTotalPurchased(amountOut);
-        fei().mint(to, amountOut);
+        _mintFei(to, amountOut);
 
         emit Purchase(to, amountIn, amountOut);
 
@@ -281,14 +280,14 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         virtual
         returns (Decimal.D256 memory)
     {
-        uint256 granularity = BASIS_POINTS_GRANULARITY;
+        uint256 granularity = Constants.BASIS_POINTS_GRANULARITY;
         // uses 1/1-b because the oracle price is inverted
         return Decimal.ratio(granularity, granularity - discount);
     }
 
     /// @notice returns the buffer on the post-scale bonding curve price
     function _getBufferMultiplier() internal view returns (Decimal.D256 memory) {
-        uint256 granularity = BASIS_POINTS_GRANULARITY;
+        uint256 granularity = Constants.BASIS_POINTS_GRANULARITY;
         // uses 1/1+b because the oracle price is inverted
         return Decimal.ratio(granularity, granularity + buffer);
     }

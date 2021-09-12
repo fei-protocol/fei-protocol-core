@@ -1,17 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
+import "../../refs/CoreRef.sol";
+import "../../Constants.sol";
+
 /// @title abstract contract for splitting PCV into different deposits
 /// @author Fei Protocol
-abstract contract PCVSplitter {
-
-    /// @notice total allocation allowed representing 100%
-    uint256 public constant ALLOCATION_GRANULARITY = 10_000;
+abstract contract PCVSplitter is CoreRef {
 
     uint256[] private ratios;
     address[] private pcvDeposits;
 
     event AllocationUpdate(address[] oldPCVDeposits, uint256[] oldRatios, address[] newPCVDeposits, uint256[] newRatios);
+    event Allocate(address indexed caller, uint256 amount);
 
     /// @notice PCVSplitter constructor
     /// @param _pcvDeposits list of PCV Deposits to split to
@@ -38,7 +39,7 @@ abstract contract PCVSplitter {
         }
 
         require(
-            total == ALLOCATION_GRANULARITY,
+            total == Constants.BASIS_POINTS_GRANULARITY,
             "PCVSplitter: ratios do not total 100%"
         );
     }
@@ -50,6 +51,14 @@ abstract contract PCVSplitter {
         returns (address[] memory, uint256[] memory)
     {
         return (pcvDeposits, ratios);
+    }
+
+    /// @notice sets the allocation of held PCV
+    function setAllocation(
+        address[] calldata _allocations,
+        uint256[] calldata _ratios
+    ) external onlyGovernorOrAdmin {
+        _setAllocation(_allocations, _ratios);
     }
 
     /// @notice distribute funds to single PCV deposit
@@ -80,10 +89,11 @@ abstract contract PCVSplitter {
     /// @notice distribute funds to all pcv deposits at specified allocation ratios
     /// @param total amount of funds to send
     function _allocate(uint256 total) internal {
-        uint256 granularity = ALLOCATION_GRANULARITY;
+        uint256 granularity = Constants.BASIS_POINTS_GRANULARITY;
         for (uint256 i; i < ratios.length; i++) {
             uint256 amount = total * ratios[i] / granularity;
             _allocateSingle(amount, pcvDeposits[i]);
         }
+        emit Allocate(msg.sender, total);
     }
 }

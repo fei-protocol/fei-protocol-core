@@ -95,4 +95,9 @@ contract AavePCVDeposit is WethPCVDeposit {
     function balance() public view override returns (uint256) {
         return aToken.balanceOf(address(this));
     }
+
+    /// @notice display the related token of the balance reported
+    function balanceReportedIn() public view override returns (address) {
+        return address(token);
+    }
 }

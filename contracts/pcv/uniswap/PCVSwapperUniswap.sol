@@ -2,8 +2,10 @@
 pragma solidity ^0.8.4;
 
 import "../IPCVSwapper.sol";
+import "../../Constants.sol";
 import "../utils/WethPCVDeposit.sol";
 import "../../utils/Incentivized.sol";
+import "../../utils/RateLimitedMinter.sol";
 import "../../refs/OracleRef.sol";
 import "../../utils/Timed.sol";
 import "../../external/UniswapV2Library.sol";
@@ -14,7 +16,7 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 
 /// @title implementation for PCV Swapper that swaps ERC20 tokens on Uniswap
 /// @author eswak
-contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Incentivized {
+contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Incentivized, RateLimitedMinter {
     using SafeERC20 for IERC20;
     using Decimal for Decimal.D256;
 
@@ -32,12 +34,12 @@ contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Inc
     uint256 public maxSpentPerSwap;
     /// @notice the maximum amount of slippage vs oracle price
     uint256 public maximumSlippageBasisPoints;
-    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice Uniswap pair to swap on
     IUniswapV2Pair public immutable pair;
 
     struct OracleData {
+        address _core;
         address _oracle;
         address _backupOracle;
         // invert should be false if the oracle is reported in tokenSpent terms otherwise true
@@ -46,25 +48,42 @@ contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Inc
         int256 _decimalsNormalizer;
     }
 
+    struct PCVSwapperData {
+      address _tokenSpent;
+      address _tokenReceived;
+      address _tokenReceivingAddress;
+      uint256 _maxSpentPerSwap;
+      uint256 _maximumSlippageBasisPoints;
+      IUniswapV2Pair _pair;
+    }
+
+    struct MinterData {
+      uint256 _swapFrequency;
+      uint256 _swapIncentiveAmount;
+    }
     constructor(
-        address _core,
-        IUniswapV2Pair _pair,
-        // solhint-disable-next-line var-name-mixedcase
         OracleData memory oracleData,
-        uint256 _swapFrequency,
-        address _tokenSpent,
-        address _tokenReceived,
-        address _tokenReceivingAddress,
-        uint256 _maxSpentPerSwap,
-        uint256 _maximumSlippageBasisPoints,
-        uint256 _swapIncentiveAmount
-    ) OracleRef(
-      _core, 
-      oracleData._oracle, 
-      oracleData._backupOracle,
-      oracleData._decimalsNormalizer,
-      oracleData._invertOraclePrice
-    ) Timed(_swapFrequency) Incentivized(_swapIncentiveAmount) {
+        PCVSwapperData memory pcvSwapperData,
+        MinterData memory minterData
+    ) 
+      OracleRef(
+        oracleData._core, 
+        oracleData._oracle, 
+        oracleData._backupOracle,
+        oracleData._decimalsNormalizer,
+        oracleData._invertOraclePrice
+      ) 
+      Timed(minterData._swapFrequency) 
+      Incentivized(minterData._swapIncentiveAmount) 
+      RateLimitedMinter(minterData._swapIncentiveAmount / minterData._swapFrequency, minterData._swapIncentiveAmount, false) 
+    {
+        address _tokenSpent = pcvSwapperData._tokenSpent;
+        address _tokenReceived = pcvSwapperData._tokenReceived;
+        address _tokenReceivingAddress = pcvSwapperData._tokenReceivingAddress;
+        uint256 _maxSpentPerSwap = pcvSwapperData._maxSpentPerSwap;
+        uint256 _maximumSlippageBasisPoints = pcvSwapperData._maximumSlippageBasisPoints;
+        IUniswapV2Pair _pair = pcvSwapperData._pair;
+
         require(_pair.token0() == _tokenSpent || _pair.token1() == _tokenSpent, "PCVSwapperUniswap: token spent not in pair");
         require(_pair.token0() == _tokenReceived || _pair.token1() == _tokenReceived, "PCVSwapperUniswap: token received not in pair");
         pair = _pair;
@@ -97,8 +116,13 @@ contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Inc
 
     /// @notice Reads the balance of tokenReceived held in the contract
 		/// @return held balance of token of tokenReceived
-    function balance() external view override returns(uint256) {
+    function balance() public view override returns(uint256) {
       return IERC20(tokenReceived).balanceOf(address(this));
+    }
+
+    /// @notice display the related token of the balance reported
+    function balanceReportedIn() public view override returns (address) {
+        return address(tokenReceived);
     }
 
     // =======================================================================
@@ -122,7 +146,7 @@ contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Inc
     /// @param newMaximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
     function setMaximumSlippage(uint256 newMaximumSlippageBasisPoints) external onlyGovernor {
         uint256 oldMaxSlippage = maximumSlippageBasisPoints;
-        require(newMaximumSlippageBasisPoints <= BASIS_POINTS_GRANULARITY, "PCVSwapperUniswap: Exceeds bp granularity.");
+        require(newMaximumSlippageBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "PCVSwapperUniswap: Exceeds bp granularity.");
         maximumSlippageBasisPoints = newMaximumSlippageBasisPoints;
         emit UpdateMaximumSlippage(oldMaxSlippage, newMaximumSlippageBasisPoints);
     }
@@ -213,8 +237,12 @@ contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Inc
     function _getMinimumAcceptableAmountOut(uint256 amountIn) internal view returns (uint256) {
       Decimal.D256 memory oraclePrice = readOracle();
       Decimal.D256 memory oracleAmountOut = oraclePrice.mul(amountIn);
-      Decimal.D256 memory maxSlippage = Decimal.ratio(BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, BASIS_POINTS_GRANULARITY);
+      Decimal.D256 memory maxSlippage = Decimal.ratio(Constants.BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, Constants.BASIS_POINTS_GRANULARITY);
       Decimal.D256 memory oraclePriceMinusSlippage = maxSlippage.mul(oracleAmountOut);
       return oraclePriceMinusSlippage.asUint256();
+    }
+
+    function _mintFei(address to, uint256 amountIn) internal override(CoreRef, RateLimitedMinter) {
+      RateLimitedMinter._mintFei(to, amountIn);
     }
 }
