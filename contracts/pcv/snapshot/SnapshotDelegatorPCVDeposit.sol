@@ -63,6 +63,11 @@ contract SnapshotDelegatorPCVDeposit is PCVDeposit {
         return token.balanceOf(address(this));
     }
 
+    /// @notice display the related token of the balance reported
+    function balanceReportedIn() public view override returns (address) {
+        return address(token);
+    }
+
     /// @notice sets the snapshot delegate
     /// @dev callable by governor or admin
     function setDelegate(address newDelegate) external onlyGovernorOrAdmin {

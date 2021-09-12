@@ -22,7 +22,7 @@ contract EthReserveStabilizer is ReserveStabilizer {
         address _backupOracle,
         uint256 _usdPerFeiBasisPoints,
         address _WETH
-    ) ReserveStabilizer(_core, _oracle, _backupOracle, IERC20(address(0)), _usdPerFeiBasisPoints) {
+    ) ReserveStabilizer(_core, _oracle, _backupOracle, IERC20(_WETH), _usdPerFeiBasisPoints) {
         WETH = _WETH;
     }
 

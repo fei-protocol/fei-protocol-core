@@ -41,4 +41,10 @@ interface IPCVDeposit {
     // ----------- Getters -----------
 
     function balance() external view returns (uint256);
+
+    // gets the token address in which this deposit returns its balance
+    function balanceReportedIn() external view returns (address);
+
+    // gets the resistant token balance and protocol owned fei of this deposit
+    function resistantBalanceAndFei() external view returns (uint256, uint256);
 }
