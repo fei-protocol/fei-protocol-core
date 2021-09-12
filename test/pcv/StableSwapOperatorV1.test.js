@@ -53,10 +53,10 @@ describe('StableSwapOperatorV1', function () {
     await this.dai.mint(userAddress, `300000${e18}`);
     await this.usdc.mint(userAddress, `300000${e18}`);
     await this.usdt.mint(userAddress, `300000${e18}`);
-    await this.dai.approve(this.mock3pool.address, `300000${e18}`, {from:userAddress});
-    await this.usdc.approve(this.mock3pool.address, `300000${e18}`, {from:userAddress});
-    await this.usdt.approve(this.mock3pool.address, `300000${e18}`, {from:userAddress});
-    await this.mock3pool.add_liquidity([`300000${e18}`, `300000${e18}`, `300000${e18}`], 0, {from:userAddress});
+    await this.dai.approve(this.mock3pool.address, `300000${e18}`, {from: userAddress});
+    await this.usdc.approve(this.mock3pool.address, `300000${e18}`, {from: userAddress});
+    await this.usdt.approve(this.mock3pool.address, `300000${e18}`, {from: userAddress});
+    await this.mock3pool.add_liquidity([`300000${e18}`, `300000${e18}`, `300000${e18}`], 0, {from: userAddress});
 
     // add liquidity to metapool
     await this.fei.mint(userAddress, `900000${e18}`, {from: minterAddress});
