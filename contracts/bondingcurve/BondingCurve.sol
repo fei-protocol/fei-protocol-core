@@ -106,6 +106,18 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         return token.balanceOf(address(this));
     }
 
+    /// @notice display the related token of the balance reported
+    /// @dev to allow compatibility with the Collateralization Oracle even though this contract isn't an IPCVDeposit
+    function balanceReportedIn() public view returns (address) {
+        return address(token);
+    }
+
+    /// @notice returns a manipulation resistant account of both the balance of underlying and protocol owned FEI
+    /// @dev to allow compatibility with the Collateralization Oracle even though this contract isn't an IPCVDeposit
+    function resistantBalanceAndFei() public view returns(uint256, uint256) {
+      return (balance(), 0);
+    }
+
     /// @notice sets the bonding curve Scale target
     function setScale(uint256 newScale) external override onlyGovernorOrAdmin {
         _setScale(newScale);

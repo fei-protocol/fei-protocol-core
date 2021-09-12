@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 import "./FeiTimedMinter.sol";
 import "./IPCVEquityMinter.sol";
 import "../Constants.sol";
+import "../pcv/uniswap/IPCVSwapper.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @title PCVEquityMinter
@@ -85,5 +86,9 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
         address oldCollateralizationOracle = address(collateralizationOracle);
         collateralizationOracle = newCollateralizationOracle;
         emit CollateralizationOracleUpdate(address(oldCollateralizationOracle), address(newCollateralizationOracle));
+    }
+
+    function _afterMint() internal override {
+        IPCVSwapper(target).swap();
     }
 }

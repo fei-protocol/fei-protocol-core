@@ -85,6 +85,11 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, PCVDeposit {
         return token.balanceOf(address(this));
     }
 
+    /// @notice display the related token of the balance reported
+    function balanceReportedIn() public view override returns (address) {
+        return address(token);
+    }
+
     /// @notice sets the USD per FEI exchange rate rate
     /// @param newUsdPerFeiBasisPoints the USD per FEI exchange rate denominated in basis points (1/10000)
     function setUsdPerFeiRate(uint256 newUsdPerFeiBasisPoints) external override onlyGovernor {

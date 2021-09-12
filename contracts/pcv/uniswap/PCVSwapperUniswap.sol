@@ -116,8 +116,13 @@ contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Inc
 
     /// @notice Reads the balance of tokenReceived held in the contract
 		/// @return held balance of token of tokenReceived
-    function balance() external view override returns(uint256) {
+    function balance() public view override returns(uint256) {
       return IERC20(tokenReceived).balanceOf(address(this));
+    }
+
+    /// @notice display the related token of the balance reported
+    function balanceReportedIn() public view override returns (address) {
+        return address(tokenReceived);
     }
 
     // =======================================================================

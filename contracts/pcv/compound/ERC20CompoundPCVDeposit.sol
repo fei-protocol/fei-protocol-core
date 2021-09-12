@@ -45,4 +45,9 @@ contract ERC20CompoundPCVDeposit is CompoundPCVDepositBase {
     function _transferUnderlying(address to, uint256 amount) internal override {
         SafeERC20.safeTransfer(token, to, amount);
     }
+
+    /// @notice display the related token of the balance reported
+    function balanceReportedIn() public view override returns (address) {
+        return address(token);
+    }
 }

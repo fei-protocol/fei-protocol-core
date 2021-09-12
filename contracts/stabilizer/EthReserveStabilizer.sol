@@ -18,7 +18,7 @@ contract EthReserveStabilizer is ReserveStabilizer {
         address _oracle,
         address _backupOracle,
         uint256 _usdPerFeiBasisPoints
-    ) ReserveStabilizer(_core, _oracle, _backupOracle, IERC20(address(0)), _usdPerFeiBasisPoints) {}
+    ) ReserveStabilizer(_core, _oracle, _backupOracle, IERC20(address(Constants.WETH)), _usdPerFeiBasisPoints) {}
 
     receive() external payable {}
 
