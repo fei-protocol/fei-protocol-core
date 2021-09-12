@@ -13,6 +13,8 @@ contract CollateralizationOracleKeeper is FeiTimedMinter {
         @notice constructor for CollateralizationOracleKeeper
         @param _core the Core address to reference
         @param _incentive the incentive amount for calling mint paid in FEI
+        @param _collateralizationOracleWrapper the collateralizationOracleWrapper to incentivize updates only
+        sets the target to this address and mint amount to 0, relying exclusively on the incentive payment to caller
     */
     constructor(
         address _core,
