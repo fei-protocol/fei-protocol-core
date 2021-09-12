@@ -6,7 +6,11 @@ import "./IVault.sol";
 import "../../utils/Timed.sol";
 import "../../refs/OracleRef.sol";
 import "../IPCVSwapper.sol";
+import "../../Constants.sol";
 
+/// @title BalancerLBPSwapper
+/// @author Fei Protocol
+/// @notice an auction contract which cyclically sells one token for another using Balancer LBP
 contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPoolManager {
     using Decimal for Decimal.D256;
 
@@ -15,26 +19,41 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
 
     event MinTokenSpentUpdate(uint256 oldMinTokenSpentBalance, uint256 newMinTokenSpentBalance);
 
-    // ------------- State -------------
+    // ------------- Balancer State -------------
+    /// @notice the Balancer LBP used for swapping
     IWeightedPool public pool;
+
+    /// @notice the Balancer V2 Vault contract
     IVault public vault;
+
+    /// @notice the Balancer V2 Pool id of `pool`
     bytes32 public pid;
 
-    address public override tokenSpent;
-    address public override tokenReceived;
-    address public override tokenReceivingAddress;
-
-    uint256 public minTokenSpentBalance;
-
+    // Balancer constants for the 99:1 -> 1:99 auction
     uint256 private constant ONE_PERCENT = 0.01e18;
     uint256 private constant NINETY_NINE_PERCENT = 0.99e18;
 
+    // Balancer constants to memoize the target assets and weights from pool
     IAsset[] private assets;
     uint256[] private initialWeights;
     uint256[] private endWeights;
 
+    // ------------- Swapper State -------------
+
+    /// @notice the token to be auctioned
+    address public override tokenSpent;
+
+    /// @notice the token to buy
+    address public override tokenReceived;
+
+    /// @notice the address to send `tokenReceived`
+    address public override tokenReceivingAddress;
+
+    /// @notice the minimum amount of tokenSpent to kick off a new auction on swap()
+    uint256 public minTokenSpentBalance;
+
+    /// @notice the slippage tolerance upon withdrawal from an auction
     uint256 public slippageToleranceBasisPoints;
-    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
     
     struct OracleData {
         address _oracle;
@@ -45,6 +64,17 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         int256 _decimalsNormalizer;
     }
 
+    /**
+    @notice constructor for BalancerLBPSwapper
+    @param _core Core contract to reference
+    @param oracleData The parameters needed to initialize the OracleRef
+    @param _frequency minimum time between auctions and duration of auction
+    @param _tokenSpent the token to be auctioned
+    @param _tokenReceived the token to buy
+    @param _tokenReceivingAddress the address to send `tokenReceived`
+    @param _minTokenSpentBalance the minimum amount of tokenSpent to kick off a new auction on swap()
+    @param _slippageToleranceBasisPoints the slippage tolerance upon withdrawal from an auction
+     */
     constructor(
         address _core,
         OracleData memory oracleData,
@@ -67,25 +97,34 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     {
         _initTimed();
 
-        _setReceivingAddress(_tokenReceivingAddress);
-
+        // tokenSpent and tokenReceived are immutable
         tokenSpent = _tokenSpent;
         tokenReceived = _tokenReceived;
 
+        _setReceivingAddress(_tokenReceivingAddress);
         _setMinTokenSpent(_minTokenSpentBalance);
         _setSlippageTolerance(_slippageToleranceBasisPoints);
     }
 
+    /** 
+    @notice initialize Balancer LBP
+    Needs to be a separate method because this contract needs to be deployed and supplied 
+    as the owner of the pool on construction.
+    Includes various checks to ensure the pool contract is correct and initialization can only be done once
+    @param _pool the Balancer LBP used for swapping
+    */
     function init(IWeightedPool _pool) external {
         require(address(pool) == address(0), "BalancerLBPSwapper: initialized");
 
         pool = _pool;
         IVault _vault = _pool.getVault();
 
-        vault = _pool.getVault();
+        vault = _vault;
 
+        // Check ownership
         require(_pool.getOwner() == address(this), "BalancerLBPSwapper: contract not pool owner");
 
+        // Check correct pool token components
         bytes32 _pid = _pool.getPoolId();
         pid = _pid;
         (IERC20[] memory tokens,,) = _vault.getPoolTokens(_pid);
@@ -101,6 +140,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
             "BalancerLBPSwapper: tokenReceived not in pool"
         );
 
+        // Set the asset array and target weights
         assets = new IAsset[](2);
         assets[0] = IAsset(address(tokens[0]));
         assets[1] = IAsset(address(tokens[1]));
@@ -129,11 +169,15 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         IERC20(tokenReceived).approve(address(_vault), type(uint256).max);
     }
 
-    // Swap algo
-    // 1. Withdraw existing LP tokens
-    // 2. Reset weights
-    // 3. Provide new liquidity
-    // 4. Trigger gradual weight change
+    /**
+        @notice Swap algorithm
+        1. Withdraw existing LP tokens
+        2. Reset weights
+        3. Provide new liquidity
+        4. Trigger gradual weight change
+        5. Transfer remaining tokenReceived to tokenReceivingAddress
+        @dev assumes tokenSpent balance of contract exceeds minTokenSpentBalance to kick off a new auction
+    */
     function swap() external override afterTime whenNotPaused {
         (
             uint256 spentReserves, 
@@ -141,6 +185,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
             uint256 lastChangeBlock
         ) = getReserves();
 
+        // Ensures no actor can change the pool contents earlier in the block
         require(lastChangeBlock < block.number, "BalancerLBPSwapper: pool changed this block");
 
         (
@@ -150,19 +195,22 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
             uint256 receivedBalance
         ) = getPoolBalances(spentReserves, receivedReserves);
 
+        // Balancer locks a small amount of bptTotal after init, so 0 bpt means pool needs initializing
         if (bptTotal == 0) {
             _initializePool();
             return;
         }
         require(swapEndTime() < block.timestamp, "BalancerLBPSwapper: weight update in progress");
 
-        // 1. Withdraw existing LP tokens
+        // 1. Withdraw existing LP tokens (if currently held)
         if (bptBalance != 0) {
             IVault.ExitPoolRequest memory exitRequest;
 
+            // Uses encoding for exact BPT IN withdrawal using all held BPT
             bytes memory userData = abi.encode(IWeightedPool.ExitKind.EXACT_BPT_IN_FOR_TOKENS_OUT, bptBalance);
             uint256[] memory amountsOut = new uint256[](2);
             
+            // Adjusts minimum amounts out for slippage tolerance
             if (address(assets[0]) == tokenSpent) {
                 amountsOut[0] = _scaleBySlippageTolerance(spentBalance);
                 amountsOut[1] = _scaleBySlippageTolerance(receivedBalance);
@@ -175,7 +223,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
             exitRequest.assets = assets;
             exitRequest.minAmountsOut = amountsOut;
             exitRequest.userData = userData;
-            exitRequest.toInternalBalance = false;
+            exitRequest.toInternalBalance = false; // use external balances to be able to transfer out tokenReceived
 
             vault.exitPool(
                 pid,
@@ -184,7 +232,8 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
                 exitRequest
             );
         }
-        // 2. Reset weights
+        // 2. Reset weights to 99:1
+        // Using current block time triggers immediate weight reset
         updateWeightsGradually(
             pool,
             block.timestamp, 
@@ -195,6 +244,8 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         // 3. Provide new liquidity
         uint256 spentTokenBalance = IERC20(tokenSpent).balanceOf(address(this));
         if (spentTokenBalance > minTokenSpentBalance) {
+            // uses exact tokens in encoding for deposit, supplying both tokens
+            // will use some of the previously withdrawn tokenReceived to seed the 1% required for new auction
             uint256[] memory amountsIn = _getTokensIn();
             bytes memory userData = abi.encode(IWeightedPool.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT, amountsIn, 0);
 
@@ -202,7 +253,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
             joinRequest.assets = assets;
             joinRequest.maxAmountsIn = amountsIn;
             joinRequest.userData = userData;
-            joinRequest.fromInternalBalance = false;
+            joinRequest.fromInternalBalance = false; // uses external balances because tokens are held by contract
 
             vault.joinPool(
                 pid,
@@ -211,23 +262,25 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
                 joinRequest
             );
 
-            // 4. Kick off auction
+            // 4. Kick off new auction ending after `duration` seconds
             updateWeightsGradually(
                 pool,
                 block.timestamp, 
                 block.timestamp + duration, 
                 endWeights
             );
-            _initTimed();
+            _initTimed(); // reset timer
         }
-        // Send remaining tokenReceived to target
+        // 5. Send remaining tokenReceived to target
         IERC20(tokenReceived).transfer(tokenReceivingAddress, IERC20(tokenReceived).balanceOf(address(this)));
     }
 
+    /// @notice returns when the next auction ends
     function swapEndTime() public view returns(uint256 endTime) { 
         (,endTime,) = pool.getGradualWeightUpdateParams();
     }
 
+    /// @notice returns the token reserves of `pool` and the last block they updated
     function getReserves() public view returns(uint256 spentReserves, uint256 receivedReserves, uint256 lastChangeBlock) {
         (IERC20[] memory tokens, uint256[] memory balances, uint256 _lastChangeBlock ) = vault.getPoolTokens(pid);
         if (address(tokens[0]) == tokenSpent) {
@@ -236,6 +289,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         return (balances[1], balances[0], _lastChangeBlock);
     }
 
+    /// @notice given token reserves, returns the held balances of the contract based on the ratio of BPT held to total
     function getPoolBalances(uint256 spentReserves, uint256 receivedReserves) public view returns (
         uint256 bptTotal, 
         uint256 bptBalance, 
@@ -283,6 +337,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     }
 
     function _initializePool() internal {
+        // Balancer LBP initialization uses a unique JoinKind which only takes in amountsIn
         uint256[] memory amountsIn = _getTokensIn();
         bytes memory userData = abi.encode(IWeightedPool.JoinKind.INIT, amountsIn);
 
@@ -299,6 +354,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
             joinRequest
         );
 
+        // Kick off the first auction
         updateWeightsGradually(
             pool,
             block.timestamp, 
@@ -330,13 +386,13 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     }
 
     function _setSlippageTolerance(uint256 newSlippageToleranceBasisPoints) internal {
-      require(newSlippageToleranceBasisPoints <= BASIS_POINTS_GRANULARITY, "BalancerLBPSwapper: slippage tolerance > 100%");
+      require(newSlippageToleranceBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "BalancerLBPSwapper: slippage tolerance > 100%");
       uint256 oldSlippageToleranceBasisPoints = slippageToleranceBasisPoints;
       slippageToleranceBasisPoints = newSlippageToleranceBasisPoints;
       emit SplippageToleranceUpdate(oldSlippageToleranceBasisPoints, newSlippageToleranceBasisPoints);
     }
 
     function _scaleBySlippageTolerance(uint256 input) internal view returns(uint256) {
-        return input * (BASIS_POINTS_GRANULARITY - slippageToleranceBasisPoints) / BASIS_POINTS_GRANULARITY;
+        return input * (Constants.BASIS_POINTS_GRANULARITY - slippageToleranceBasisPoints) / Constants.BASIS_POINTS_GRANULARITY;
     }
 }
