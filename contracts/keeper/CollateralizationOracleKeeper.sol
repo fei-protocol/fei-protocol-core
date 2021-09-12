@@ -26,10 +26,7 @@ contract CollateralizationOracleKeeper is FeiTimedMinter {
         collateralizationOracleWrapper = _collateralizationOracleWrapper;
     }
 
-    /// @notice triggers a minting of FEI
-    /// @dev timed and incentivized
-    function mint() public override {
+    function _afterMint() internal override {
         collateralizationOracleWrapper.updateIfOutdated();
-        super.mint();
     }
 }
