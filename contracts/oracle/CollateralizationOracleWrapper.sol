@@ -127,7 +127,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
         It is useful if the caller is incentivized for calling only when the deviation threshold or frequency has passed
     */ 
     function updateIfOutdated() external override whenNotPaused {
-        require(_update(), "CollateralizationOracleWrapper: outdated");
+        require(_update(), "CollateralizationOracleWrapper: not outdated");
     }
 
     // returns true if the oracle was outdated at update time
