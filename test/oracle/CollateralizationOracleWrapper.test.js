@@ -10,6 +10,7 @@ const {
 
 const CollateralizationOracleWrapper = artifacts.require('CollateralizationOracleWrapper');
 const MockCollateralizationOracle = artifacts.require('MockCollateralizationOracle');
+const Proxy = artifacts.require('TransparentUpgradeableProxy');
 
 const e18 = '000000000000000000';
 
@@ -26,6 +27,16 @@ describe('CollateralizationOracleWrapper', function () {
     this.oracle2 = await MockCollateralizationOracle.new(this.core.address, 2);
 
     this.oracleWrapper = await CollateralizationOracleWrapper.new(
+      this.core.address,
+      '600', // 10 min validity duration
+    );
+
+    const proxyContract = await Proxy.new(this.oracleWrapper.address, this.oracleWrapper.address, '0x', { from: userAddress });
+
+    // instantiate the tribalchief pointed at the proxy contract
+    this.oracleWrapper = await CollateralizationOracleWrapper.at(proxyContract.address);
+
+    await this.oracleWrapper.initialize(
       this.core.address,
       this.oracle.address,
       '600', // 10 min validity duration
@@ -57,6 +68,17 @@ describe('CollateralizationOracleWrapper', function () {
     });
     it('duration()', async function() {
       expect(await this.oracleWrapper.duration()).to.be.bignumber.equal('600');
+    });
+  });
+
+  describe('initialize()', function() {
+    it('reverts if already initialized', async function() {
+      await expectRevert(this.oracleWrapper.initialize(      
+        this.core.address,
+        this.oracle.address,
+        '600', // 10 min validity duration
+        '500' // 5% deviation threshold
+      ), 'CollateralizationOracleWrapper: initialized');
     });
   });
 
