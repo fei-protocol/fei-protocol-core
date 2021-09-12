@@ -13,7 +13,7 @@ const MockCollateralizationOracle = artifacts.require('MockCollateralizationOrac
 
 const e18 = '000000000000000000';
 
-describe.only('CollateralizationOracleWrapper', function () {
+describe('CollateralizationOracleWrapper', function () {
   let userAddress;
   let guardianAddress;
   let governorAddress;
