@@ -1,3 +1,4 @@
+const { env, hrtime } = require('process');
 const {
   BN,
   expectEvent,
@@ -8,6 +9,8 @@ const {
   getAddresses,
   getCore,
 } = require('../helpers');
+const hre = require('hardhat');
+
 
 const EthBondingCurve = artifacts.require('EthBondingCurve');
 const Fei = artifacts.require('Fei');
@@ -21,6 +24,13 @@ describe('EthBondingCurve', function () {
   let governorAddress;
   let beneficiaryAddress1;
   let beneficiaryAddress2;
+
+  this.beforeAll(async function() {
+    // Can only get the current price on a forked network (since we haven't deployed Uniswap stuff in test setup)
+    if (!hre.network.config.forking) {
+      return this.skip();
+    }
+  });
 
   beforeEach(async function () {
     ({
