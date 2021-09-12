@@ -51,9 +51,18 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
 
     /// @notice CollateralizationOracle constructor
     /// @param _core Fei Core for reference
+    /// @param _deposits the initial list of PCV deposits
+    /// @param _tokens the initial supported tokens for oracle
+    /// @param _oracles the matching set of oracles for _tokens
     constructor(
-        address _core
-    ) CoreRef(_core) {}
+        address _core,
+        address[] memory _deposits,
+        address[] memory _tokens,
+        address[] memory _oracles
+    ) CoreRef(_core) {
+        _setOracles(_tokens, _oracles);
+        _addDeposits(_deposits);
+    }
 
     // ----------- Convenience getters -----------
 
@@ -114,6 +123,10 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
 
     /// @notice adds a list of multiple PCV deposits. See addDeposit.
     function addDeposits(address[] memory _deposits) public onlyGovernor {
+        _addDeposits(_deposits);
+    }
+
+    function _addDeposits(address[] memory _deposits) internal {
         for (uint256 i = 0; i < _deposits.length; i++) {
             _addDeposit(_deposits[i]);
         }
@@ -193,6 +206,10 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
 
     /// @notice adds a list of token oracles. See setOracle.
     function setOracles(address[] memory _tokens, address[] memory _oracles) public onlyGovernor {
+        _setOracles(_tokens, _oracles);
+    }
+
+    function _setOracles(address[] memory _tokens, address[] memory _oracles) internal {
         require(_tokens.length == _oracles.length, "CollateralizationOracle: length mismatch");
         for (uint256 i = 0; i < _tokens.length; i++) {
             _setOracle(_tokens[i], _oracles[i]);

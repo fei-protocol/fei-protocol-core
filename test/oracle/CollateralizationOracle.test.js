@@ -60,15 +60,17 @@ describe('CollateralizationOracle', function () {
     //   Circulating :
     //     - 2500 FEI
     // create oracle
-    this.oracle = await CollateralizationOracle.new(this.core.address);
+    this.oracle = await CollateralizationOracle.new(this.core.address, [], [], []);
   });
 
   describe('getters', function() {
     beforeEach(async function() {
-      await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
-      await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
-      await this.oracle.setOracle(this.token2.address, this.oracle2.address, { from: governorAddress });
-      await this.oracle.addDeposit(this.deposit2.address, { from: governorAddress });
+      this.oracle = await CollateralizationOracle.new(
+        this.core.address, 
+        [this.deposit1.address, this.deposit2.address], 
+        [this.token1.address, this.token2.address], 
+        [this.oracle1.address, this.oracle2.address]
+      );
     });
     it('excludedDeposits(address) => bool', async function() {
       expect(await this.oracle.excludedDeposits(this.deposit1.address)).to.be.equal(false);
@@ -100,6 +102,92 @@ describe('CollateralizationOracle', function () {
     });
     it('getDepositForToken(address, uint256) => address', async function() {
       expect(await this.oracle.getDepositForToken(this.token1.address, '0')).to.be.equal(this.deposit1.address);
+    });
+  });
+
+  describe('Batched setters', function() {
+    describe('Set Oracles', function() {
+      beforeEach(async function() {
+        await this.oracle.setOracles([this.token1.address, this.token2.address], [this.oracle1.address, this.oracle2.address], {from: governorAddress});
+      });
+
+      it('tokenToOracle(address) => address', async function() {
+        expect(await this.oracle.tokenToOracle(this.token1.address)).to.be.equal(this.oracle1.address);
+        expect(await this.oracle.tokenToOracle(this.token2.address)).to.be.equal(this.oracle2.address);
+      });
+
+      it('non-governor reverts', async function() {
+        await expectRevert(
+          this.oracle.setOracles([this.token1.address, this.token2.address], [this.oracle1.address, this.oracle2.address], {from: userAddress}),
+          'CoreRef: Caller is not a governor'
+        );
+      });
+      
+      describe('Add Deposits', function() {
+        beforeEach(async function() {
+          await this.oracle.addDeposits([this.deposit1.address, this.deposit2.address], {from: governorAddress});
+        });
+
+        it('isTokenInPcv(address) => bool', async function() {
+          expect(await this.oracle.isTokenInPcv(this.token1.address)).to.be.equal(true);
+          expect(await this.oracle.isTokenInPcv(ZERO_ADDRESS)).to.be.equal(false);
+        });
+  
+        it('getTokensInPcv() => address[]', async function() {
+          const tokens = await this.oracle.getTokensInPcv();
+          expect(tokens.length).to.be.equal(2);
+          expect(tokens[0]).to.be.equal(this.token1.address);
+          expect(tokens[1]).to.be.equal(this.token2.address);
+        });
+  
+        it('getTokenInPcv(uint256) => address', async function() {
+          expect(await this.oracle.getTokenInPcv('0')).to.be.equal(this.token1.address);
+          expect(await this.oracle.getTokenInPcv('1')).to.be.equal(this.token2.address);
+        });
+
+        it('depositToToken(address) => address', async function() {
+          expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(this.token1.address);
+        });
+    
+        it('getDepositsForToken(address) => address[]', async function() {
+          const deposits = await this.oracle.getDepositsForToken(this.token1.address);
+          expect(deposits.length).to.be.equal(1);
+          expect(deposits[0]).to.be.equal(this.deposit1.address);
+        });
+
+        it('getDepositForToken(address, uint256) => address', async function() {
+          expect(await this.oracle.getDepositForToken(this.token1.address, '0')).to.be.equal(this.deposit1.address);
+        });
+
+        it('non-governor reverts', async function() {
+          await expectRevert(
+            this.oracle.addDeposits([this.deposit1.address, this.deposit2.address], {from: userAddress}),
+            'CoreRef: Caller is not a governor'
+          );
+        });
+
+        describe('Remove Deposits', function() {
+          beforeEach(async function() {
+            await this.oracle.removeDeposits([this.deposit1.address, this.deposit2.address], {from: governorAddress});
+          });
+  
+          it('depositToToken(address) => address', async function() {
+            expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(ZERO_ADDRESS);
+          });
+      
+          it('getDepositsForToken(address) => address[]', async function() {
+            const deposits = await this.oracle.getDepositsForToken(this.token1.address);
+            expect(deposits.length).to.be.equal(0);
+          });
+  
+          it('non-governor reverts', async function() {
+            await expectRevert(
+              this.oracle.removeDeposits([this.deposit1.address, this.deposit2.address], {from: userAddress}),
+              'CoreRef: Caller is not a governor'
+            );
+          });
+        });
+      });
     });
   });
 
