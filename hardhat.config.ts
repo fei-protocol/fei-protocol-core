@@ -24,7 +24,7 @@ if (!(process.env.NODE_OPTIONS && process.env.NODE_OPTIONS.includes('max-old-spa
 }
 
 if (!rinkebyAlchemyApiKey || !testnetPrivateKey || !privateKey || !mainnetAlchemyApiKey) {
-  throw new Error('Please set your Ethereum keys in a .env')
+  console.warn("Not all Ethereum keys provided; some functionality will be unavailable.")
 }
 
 if (enableMainnetForking) {
@@ -55,11 +55,11 @@ const config: HardhatUserConfig = {
     },
     rinkeby: {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${rinkebyAlchemyApiKey}`,
-      accounts: [testnetPrivateKey]
+      accounts: testnetPrivateKey ? [testnetPrivateKey] : []
     },
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-      accounts: [privateKey]
+      accounts: privateKey ? [privateKey] : []
     },
   },
   solidity: {
