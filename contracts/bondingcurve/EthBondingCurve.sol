@@ -2,13 +2,11 @@
 pragma solidity ^0.8.4;
 
 import "./BondingCurve.sol";
+import "../Constants.sol";
 
 /// @title a bonding curve for purchasing FEI with ETH
 /// @author Fei Protocol
 contract EthBondingCurve is BondingCurve {
-
-    /// @dev used as the reporting token address for balances
-    address public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
     struct BondingCurveParams {
         uint256 scale;
@@ -35,7 +33,7 @@ contract EthBondingCurve is BondingCurve {
             params.ratios,
             params.duration,
             params.incentive,
-            IERC20(WETH),
+            IERC20(address(Constants.WETH)),
             params.discount,
             params.buffer
         )
