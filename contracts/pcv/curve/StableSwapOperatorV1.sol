@@ -285,7 +285,35 @@ contract StableSwapOperatorV1 is PCVDeposit {
         return _daiOut;
     }
 
+    /// @notice returns the token address in which this contract reports its
+    /// balance.
+    /// @return the DAI address
     function balanceReportedIn() public view override returns(address) {
         return _dai;
+    }
+
+    /// @notice gets the resistant token balance and protocol owned fei of this deposit
+    /// for balance, returns half of the theoretical USD value of the LP tokens, even though
+    /// there may be some slippage when withdrawing to DAI only. for fei, take the
+    /// same value (assumes there is no broken peg in the pool).
+    /// @return resistantBalance the resistant balance of DAI (theoretical USD value)
+    /// @return resistantFei the resistant balance of FEI (theoretical USD value)
+    function resistantBalanceAndFei() public view override returns (
+        uint256 resistantBalance,
+        uint256 resistantFei
+    ) {
+        uint256 _lpBalance = IERC20(pool).balanceOf(address(this));
+        uint256 _lpVirtualPrice = IStableSwap2(pool).get_virtual_price();
+        uint256 _lpPriceUSD = _lpBalance * _lpVirtualPrice / 1e18;
+        resistantBalance = _lpPriceUSD / 2;
+        resistantFei = resistantBalance;
+
+        // revert if there is 10 times more FEI than 3crv or the other way around,
+        // which would mean there is a broken peg
+        uint256 _3crvVirtualPrice = IStableSwap3(_3pool).get_virtual_price();
+        uint256 _feiInPool = IStableSwap2(pool).balances(uint256(_feiIndex));
+        uint256 _3crvInPool = IStableSwap2(pool).balances(uint256(_3crvIndex));
+        uint256 _ratio = _feiInPool * 1e18 / (_3crvInPool * _3crvVirtualPrice / 1e18);
+        require(_ratio > 0.1e18 && _ratio < 1.9e18, "StableSwapOperatorV1: broken peg");
     }
 }
