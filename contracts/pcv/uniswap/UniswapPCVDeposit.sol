@@ -2,20 +2,21 @@
 pragma solidity ^0.8.4;
 
 import "./IUniswapPCVDeposit.sol";
+import "../../Constants.sol";
 import "../PCVDeposit.sol";
 import "../../refs/UniRef.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
+import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title implementation for Uniswap LP PCV Deposit
 /// @author Fei Protocol
 contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     using Decimal for Decimal.D256;
+    using Babylonian for uint256;
 
     /// @notice a slippage protection parameter, deposits revert when spot price is > this % from oracle
     uint256 public override maxBasisPointsFromPegLP;
-
-    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice the Uniswap router contract
     IUniswapV2Router02 public override router;
@@ -107,7 +108,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
         onlyGovernor
     {
         require(
-            _maxBasisPointsFromPegLP <= BASIS_POINTS_GRANULARITY,
+            _maxBasisPointsFromPegLP <= Constants.BASIS_POINTS_GRANULARITY,
             "UniswapPCVDeposit: basis points from peg too high"
         );
 
@@ -134,6 +135,37 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     function balance() public view override returns (uint256) {
         (, uint256 tokenReserves) = getReserves();
         return _ratioOwned().mul(tokenReserves).asUint256();
+    }
+
+    /// @notice display the related token of the balance reported
+    function balanceReportedIn() public view override returns (address) {
+        return token;
+    }
+
+    /**
+        @notice get the manipulation resistant ETH and FEI in the Uniswap pool
+        @return number of ETH in pool
+        @return number of FEI in pool
+
+        Derivation rETH, rFEI = resistant (ideal) ETH and FEI reserves, P = price of ETH in FEI:
+        1. rETH * rFEI = k
+        2. rETH = k / rFEI
+        3. rETH = (k * rETH) / (rFEI * rETH) 
+        4. rETH ^ 2 = k / P
+        5. rETH = sqrt(k / P)
+        
+        and rFEI = k / rETH by 1.
+     */
+    function resistantBalanceAndFei() public view override returns(uint256, uint256) {
+        (uint256 feiInPool, uint256 ethInPool) = getReserves();
+        Decimal.D256 memory ethFei = readOracle();
+
+        // resistant eth/fei in pool
+        Decimal.D256 memory k = Decimal.from(feiInPool).mul(ethInPool);
+        uint256 resistantEthInPool = k.div(ethFei).asUint256().sqrt();
+        uint256 resistantFeiInPool = k.div(resistantEthInPool).asUint256();
+
+        return (resistantEthInPool, resistantFeiInPool);
     }
 
     /// @notice amount of pair liquidity owned by this contract
@@ -178,8 +210,8 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     /// @notice used as slippage protection when adding liquidity to the pool
     function _getMinLiquidity(uint256 amount) internal view returns (uint256) {
         return
-            (amount * (BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP)) /
-            BASIS_POINTS_GRANULARITY;
+            (amount * (Constants.BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP)) /
+            Constants.BASIS_POINTS_GRANULARITY;
     }
 
     /// @notice ratio of all pair liquidity owned by this contract

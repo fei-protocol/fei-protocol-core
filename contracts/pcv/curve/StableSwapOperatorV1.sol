@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "../PCVDeposit.sol";
+import "../../Constants.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -39,7 +40,6 @@ contract StableSwapOperatorV1 is PCVDeposit {
     // ------------------ Properties -------------------------------------------
 
     uint256 public depositMaxSlippageBasisPoints;
-    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice The StableSwap pool to deposit in
     address public pool;
@@ -113,7 +113,7 @@ contract StableSwapOperatorV1 is PCVDeposit {
         // check for slippage during the 3pool deposit
         uint256 _3crvBalanceAfter = IERC20(_3crv).balanceOf(address(this));
         uint256 _3crvBalanceFromDeposit = _3crvBalanceAfter - _3crvBalanceBefore;
-        uint256 _min3crvOut = (_daiBalance + _usdcBalance + _usdtBalance) * 1e18 / _3crvVirtualPrice * (BASIS_POINTS_GRANULARITY - depositMaxSlippageBasisPoints) / BASIS_POINTS_GRANULARITY;
+        uint256 _min3crvOut = (_daiBalance + _usdcBalance + _usdtBalance) * 1e18 / _3crvVirtualPrice * (Constants.BASIS_POINTS_GRANULARITY - depositMaxSlippageBasisPoints) / Constants.BASIS_POINTS_GRANULARITY;
         require(_3crvBalanceFromDeposit >= _min3crvOut, "StableSwapOperatorV1: 3pool deposit slippage too high");
 
         // get the amount of tokens in the pool
@@ -158,7 +158,7 @@ contract StableSwapOperatorV1 is PCVDeposit {
             uint256 _balanceAfter = IERC20(pool).balanceOf(address(this));
             uint256 _balanceDeposited = _balanceAfter - _balanceBefore;
             uint256 _metapoolVirtualPrice = IStableSwap2(pool).get_virtual_price();
-            uint256 _minLpOut = (_feiToDeposit + _3crvBalanceAfter) * 1e18 / _metapoolVirtualPrice * (BASIS_POINTS_GRANULARITY - depositMaxSlippageBasisPoints) / BASIS_POINTS_GRANULARITY;
+            uint256 _minLpOut = (_feiToDeposit + _3crvBalanceAfter) * 1e18 / _metapoolVirtualPrice * (Constants.BASIS_POINTS_GRANULARITY - depositMaxSlippageBasisPoints) / Constants.BASIS_POINTS_GRANULARITY;
             require(_balanceDeposited >= _minLpOut, "StableSwapOperatorV1: metapool deposit slippage too high");
 
             // compute DAI out if we wanted to withdraw liquidity using our
@@ -233,7 +233,7 @@ contract StableSwapOperatorV1 is PCVDeposit {
 
         // check slippage
         uint256 _daiBalanceAfter = IERC20(_dai).balanceOf(address(this));
-        uint256 _minDaiOut = amountUnderlying * (BASIS_POINTS_GRANULARITY - depositMaxSlippageBasisPoints) / BASIS_POINTS_GRANULARITY;
+        uint256 _minDaiOut = amountUnderlying * (Constants.BASIS_POINTS_GRANULARITY - depositMaxSlippageBasisPoints) / Constants.BASIS_POINTS_GRANULARITY;
         uint256 _daiBalanceWithdrawn = _daiBalanceAfter - _daiBalanceBefore;
         require(_daiBalanceWithdrawn >= _minDaiOut, "StableSwapOperatorV1: 3pool withdraw slippage too high");
 

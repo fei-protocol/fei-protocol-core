@@ -38,4 +38,10 @@ abstract contract PCVDeposit is IPCVDeposit, CoreRef {
         Address.sendValue(to, amountOut);
         emit WithdrawETH(msg.sender, to, amountOut);
     }
+
+    function balance() public view virtual override returns(uint256);
+
+    function resistantBalanceAndFei() public view virtual override returns(uint256, uint256) {
+      return (balance(), 0);
+    }
 }

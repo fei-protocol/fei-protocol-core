@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 import "./IOracle.sol";
 import "./ICollateralizationOracle.sol";
 import "../refs/CoreRef.sol";
-import "../pcv/IPCVDepositV2.sol";
+import "../pcv/IPCVDeposit.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 interface IPausable {
@@ -124,7 +124,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
         require(depositToToken[_deposit] == address(0), "CollateralizationOracle: deposit duplicate");
 
         // get the token in which the deposit reports its token
-        address _token = IPCVDepositV2(_deposit).balanceReportedIn();
+        address _token = IPCVDeposit(_deposit).balanceReportedIn();
 
         // revert if there is no oracle of this deposit's token
         require(tokenToOracle[_token] != address(0), "CollateralizationOracle: no oracle");
@@ -289,7 +289,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
                 // ignore deposits that are excluded by the Guardian
                 if (!excludedDeposits[_deposit]) {
                     // read the deposit, and increment token balance/protocol fei
-                    (uint256 _depositBalance, uint256 _depositFei) = IPCVDepositV2(_deposit).resistantBalanceAndFei();
+                    (uint256 _depositBalance, uint256 _depositFei) = IPCVDeposit(_deposit).resistantBalanceAndFei();
                     _totalTokenBalance += _depositBalance;
                     _protocolControlledFei += _depositFei;
                 }

@@ -2,6 +2,8 @@ pragma solidity ^0.8.0;
 
 import "./FeiTimedMinter.sol";
 import "./IPCVEquityMinter.sol";
+import "../Constants.sol";
+import "../pcv/uniswap/IPCVSwapper.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @title PCVEquityMinter
@@ -13,7 +15,6 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
     uint256 public constant override MAX_APR_BASIS_POINTS = 2000; // Max 20% per year
 
     uint256 private constant SECONDS_PER_YEAR = 365 days;
-    uint256 private constant BASIS_POINTS_GRANULARITY = 10000;
     uint256 private constant FEI_MINTING_LIMIT_PER_SECOND = 1000e18; // 1000 FEI/s or ~86m FEI/day
 
     /// @notice the collateralization oracle used to determine PCV equity
@@ -58,7 +59,7 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
         require(valid, "PCVEquityMinter: invalid CR oracle");
 
         // return total equity scaled proportionally by the APR and the ratio of the mint frequency to the entire year
-        return equity.toUint256() * aprBasisPoints / BASIS_POINTS_GRANULARITY * duration / SECONDS_PER_YEAR;
+        return equity.toUint256() * aprBasisPoints / Constants.BASIS_POINTS_GRANULARITY * duration / SECONDS_PER_YEAR;
     }
     
     /// @notice set the collateralization oracle
@@ -85,5 +86,9 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
         address oldCollateralizationOracle = address(collateralizationOracle);
         collateralizationOracle = newCollateralizationOracle;
         emit CollateralizationOracleUpdate(address(oldCollateralizationOracle), address(newCollateralizationOracle));
+    }
+
+    function _afterMint() internal override {
+        IPCVSwapper(target).swap();
     }
 }

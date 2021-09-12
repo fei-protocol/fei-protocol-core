@@ -2,9 +2,9 @@
 pragma solidity ^0.8.4;
 
 import "../refs/CoreRef.sol";
-import "../pcv/IPCVDepositV2.sol";
+import "../pcv/IPCVDeposit.sol";
 
-contract MockPCVDepositV2 is IPCVDepositV2, CoreRef {
+contract MockPCVDepositV2 is IPCVDeposit, CoreRef {
 
     address public override balanceReportedIn;
 

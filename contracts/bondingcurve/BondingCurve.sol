@@ -8,6 +8,7 @@ import "../pcv/utils/PCVSplitter.sol";
 import "../utils/Incentivized.sol";
 import "../pcv/IPCVDeposit.sol";
 import "../utils/Timed.sol";
+import "../Constants.sol";
 
 /**
  * @title a bonding curve for purchasing FEI with ERC-20 tokens
@@ -34,8 +35,6 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
 
     /// @notice the cap on how much FEI can be minted by the bonding curve
     uint256 public override mintCap;
-
-    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice constructor
     /// @param _core Fei Core to reference
@@ -107,6 +106,18 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         return token.balanceOf(address(this));
     }
 
+    /// @notice display the related token of the balance reported
+    /// @dev to allow compatibility with the Collateralization Oracle even though this contract isn't an IPCVDeposit
+    function balanceReportedIn() public view returns (address) {
+        return address(token);
+    }
+
+    /// @notice returns a manipulation resistant account of both the balance of underlying and protocol owned FEI
+    /// @dev to allow compatibility with the Collateralization Oracle even though this contract isn't an IPCVDeposit
+    function resistantBalanceAndFei() public view returns(uint256, uint256) {
+      return (balance(), 0);
+    }
+
     /// @notice sets the bonding curve Scale target
     function setScale(uint256 newScale) external override onlyGovernorOrAdmin {
         _setScale(newScale);
@@ -122,7 +133,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     /// @notice sets the bonding curve price buffer
     function setBuffer(uint256 newBuffer) external override onlyGovernorOrAdmin {
         require(
-            newBuffer < BASIS_POINTS_GRANULARITY,
+            newBuffer < Constants.BASIS_POINTS_GRANULARITY,
             "BondingCurve: Buffer exceeds or matches granularity"
         );
         uint256 oldBuffer = buffer;
@@ -133,7 +144,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
     /// @notice sets the bonding curve price discount
     function setDiscount(uint256 newDiscount) external override onlyGovernorOrAdmin {
         require(
-            newDiscount < BASIS_POINTS_GRANULARITY,
+            newDiscount < Constants.BASIS_POINTS_GRANULARITY,
             "BondingCurve: Buffer exceeds or matches granularity"
         );
         uint256 oldDiscount = discount;
@@ -156,7 +167,7 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         uint256 amount = balance();
         uint256 usdValueHeld = readOracle().mul(amount).asUint256();
         // the premium is the USD value held multiplied by the buffer that a user would pay to get FEI assuming FEI is $1
-        uint256 premium = usdValueHeld * buffer / BASIS_POINTS_GRANULARITY;
+        uint256 premium = usdValueHeld * buffer / Constants.BASIS_POINTS_GRANULARITY;
 
         // this requirement mitigates gaming the allocate function and ensures it is only called when sufficient demand has been met
         require(premium >= incentiveAmount, "BondingCurve: Not enough PCV held");
@@ -271,14 +282,14 @@ contract BondingCurve is IBondingCurve, OracleRef, PCVSplitter, Timed, Incentivi
         virtual
         returns (Decimal.D256 memory)
     {
-        uint256 granularity = BASIS_POINTS_GRANULARITY;
+        uint256 granularity = Constants.BASIS_POINTS_GRANULARITY;
         // uses 1/1-b because the oracle price is inverted
         return Decimal.ratio(granularity, granularity - discount);
     }
 
     /// @notice returns the buffer on the post-scale bonding curve price
     function _getBufferMultiplier() internal view returns (Decimal.D256 memory) {
-        uint256 granularity = BASIS_POINTS_GRANULARITY;
+        uint256 granularity = Constants.BASIS_POINTS_GRANULARITY;
         // uses 1/1+b because the oracle price is inverted
         return Decimal.ratio(granularity, granularity + buffer);
     }

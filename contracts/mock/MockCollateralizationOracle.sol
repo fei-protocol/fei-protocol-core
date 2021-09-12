@@ -18,7 +18,7 @@ contract MockCollateralizationOracle is MockOracleCoreRef {
         userCirculatingFei = _userCirculatingFei;
         pcvValue = _pcvValue;
     }
-    
+
     function isOvercollateralized() public view returns (bool) {
         return pcvEquityValue() > 0;
     }

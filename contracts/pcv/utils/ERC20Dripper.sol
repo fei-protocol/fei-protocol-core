@@ -74,4 +74,9 @@ contract ERC20Dripper is PCVDeposit, Timed {
     function balance() public view override returns (uint256) {
         return IERC20(token).balanceOf(address(this));
     }
+
+    /// @notice display the related token of the balance reported
+    function balanceReportedIn() public view override returns (address) {
+        return token;
+    }
 }
