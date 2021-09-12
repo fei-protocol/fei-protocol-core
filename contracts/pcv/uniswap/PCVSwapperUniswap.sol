@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "./IPCVSwapper.sol";
+import "../../Constants.sol";
 import "../utils/WethPCVDeposit.sol";
 import "../../utils/Incentivized.sol";
 import "../../utils/RateLimitedMinter.sol";
@@ -33,7 +34,6 @@ contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Inc
     uint256 public maxSpentPerSwap;
     /// @notice the maximum amount of slippage vs oracle price
     uint256 public maximumSlippageBasisPoints;
-    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice Uniswap pair to swap on
     IUniswapV2Pair public immutable pair;
@@ -146,7 +146,7 @@ contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Inc
     /// @param newMaximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
     function setMaximumSlippage(uint256 newMaximumSlippageBasisPoints) external onlyGovernor {
         uint256 oldMaxSlippage = maximumSlippageBasisPoints;
-        require(newMaximumSlippageBasisPoints <= BASIS_POINTS_GRANULARITY, "PCVSwapperUniswap: Exceeds bp granularity.");
+        require(newMaximumSlippageBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "PCVSwapperUniswap: Exceeds bp granularity.");
         maximumSlippageBasisPoints = newMaximumSlippageBasisPoints;
         emit UpdateMaximumSlippage(oldMaxSlippage, newMaximumSlippageBasisPoints);
     }
@@ -237,7 +237,7 @@ contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Inc
     function _getMinimumAcceptableAmountOut(uint256 amountIn) internal view returns (uint256) {
       Decimal.D256 memory oraclePrice = readOracle();
       Decimal.D256 memory oracleAmountOut = oraclePrice.mul(amountIn);
-      Decimal.D256 memory maxSlippage = Decimal.ratio(BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, BASIS_POINTS_GRANULARITY);
+      Decimal.D256 memory maxSlippage = Decimal.ratio(Constants.BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, Constants.BASIS_POINTS_GRANULARITY);
       Decimal.D256 memory oraclePriceMinusSlippage = maxSlippage.mul(oracleAmountOut);
       return oraclePriceMinusSlippage.asUint256();
     }

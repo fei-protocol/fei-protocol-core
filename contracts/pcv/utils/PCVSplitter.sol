@@ -2,13 +2,11 @@
 pragma solidity ^0.8.4;
 
 import "../../refs/CoreRef.sol";
+import "../../Constants.sol";
 
 /// @title abstract contract for splitting PCV into different deposits
 /// @author Fei Protocol
 abstract contract PCVSplitter is CoreRef {
-
-    /// @notice total allocation allowed representing 100%
-    uint256 public constant ALLOCATION_GRANULARITY = 10_000;
 
     uint256[] private ratios;
     address[] private pcvDeposits;
@@ -41,7 +39,7 @@ abstract contract PCVSplitter is CoreRef {
         }
 
         require(
-            total == ALLOCATION_GRANULARITY,
+            total == Constants.BASIS_POINTS_GRANULARITY,
             "PCVSplitter: ratios do not total 100%"
         );
     }
@@ -91,7 +89,7 @@ abstract contract PCVSplitter is CoreRef {
     /// @notice distribute funds to all pcv deposits at specified allocation ratios
     /// @param total amount of funds to send
     function _allocate(uint256 total) internal {
-        uint256 granularity = ALLOCATION_GRANULARITY;
+        uint256 granularity = Constants.BASIS_POINTS_GRANULARITY;
         for (uint256 i; i < ratios.length; i++) {
             uint256 amount = total * ratios[i] / granularity;
             _allocateSingle(amount, pcvDeposits[i]);

@@ -2,14 +2,11 @@
 pragma solidity ^0.8.4;
 
 import "./ReserveStabilizer.sol";
-import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
+import "../Constants.sol";
 
 /// @title implementation for an ETH Reserve Stabilizer
 /// @author Fei Protocol
 contract EthReserveStabilizer is ReserveStabilizer {
-
-    /// @notice wrapped ETH address
-    address public immutable WETH;
 
     /// @notice ETH Reserve Stabilizer constructor
     /// @param _core Fei Core to reference
@@ -20,19 +17,17 @@ contract EthReserveStabilizer is ReserveStabilizer {
         address _core,
         address _oracle,
         address _backupOracle,
-        uint256 _usdPerFeiBasisPoints,
-        address _WETH
-    ) ReserveStabilizer(_core, _oracle, _backupOracle, IERC20(_WETH), _usdPerFeiBasisPoints) {
-        WETH = _WETH;
-    }
+        uint256 _usdPerFeiBasisPoints
+    ) ReserveStabilizer(_core, _oracle, _backupOracle, IERC20(address(Constants.WETH)), _usdPerFeiBasisPoints) {}
 
     receive() external payable {}
 
     /// @notice unwraps any held WETH
     function deposit() external override {
-        uint256 wethBalance = IERC20(WETH).balanceOf(address(this));
+        IERC20 erc20Weth = IERC20(address(Constants.WETH));
+        uint256 wethBalance = erc20Weth.balanceOf(address(this));
         if (wethBalance != 0) {
-            IWETH(WETH).withdraw(wethBalance);
+            Constants.WETH.withdraw(wethBalance);
         }
     }
 

@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 pragma experimental ABIEncoderV2;
 
 import "../PCVDeposit.sol";
+import "../../Constants.sol";
 import "../../refs/CoreRef.sol";
 import "../../external/Decimal.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -46,7 +47,6 @@ contract EthLidoPCVDeposit is PCVDeposit {
 
     // Maximum tolerated slippage
     uint256 public maximumSlippageBasisPoints;
-    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @dev used as the reporting token address for balances
     address public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
@@ -116,7 +116,7 @@ contract EthLidoPCVDeposit is PCVDeposit {
         // @dev: check is not made on "actualAmountOut" directly, because sometimes
         // there are float rounding error, and we get a few wei less. Additionally,
         // the stableswap could return the uint256 amountOut but never transfer tokens.
-        Decimal.D256 memory maxSlippage = Decimal.ratio(BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, BASIS_POINTS_GRANULARITY);
+        Decimal.D256 memory maxSlippage = Decimal.ratio(Constants.BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, Constants.BASIS_POINTS_GRANULARITY);
         uint256 minimumAcceptedAmountOut = maxSlippage.mul(amountIn).asUint256();
         require(amountReceived >= minimumAcceptedAmountOut, "EthLidoPCVDeposit: not enough stETH received.");
 
@@ -135,7 +135,7 @@ contract EthLidoPCVDeposit is PCVDeposit {
 
         // Compute the minimum accepted amount of ETH out of the trade, based
         // on the slippage settings.
-        Decimal.D256 memory maxSlippage = Decimal.ratio(BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, BASIS_POINTS_GRANULARITY);
+        Decimal.D256 memory maxSlippage = Decimal.ratio(Constants.BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints, Constants.BASIS_POINTS_GRANULARITY);
         uint256 minimumAcceptedAmountOut = maxSlippage.mul(amountIn).asUint256();
 
         // Swap stETH for ETH on the Curve pool
@@ -176,7 +176,7 @@ contract EthLidoPCVDeposit is PCVDeposit {
     /// @notice Sets the maximum slippage vs 1:1 price accepted during withdraw.
     /// @param _maximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
     function setMaximumSlippage(uint256 _maximumSlippageBasisPoints) external onlyGovernor {
-        require(_maximumSlippageBasisPoints <= BASIS_POINTS_GRANULARITY, "EthLidoPCVDeposit: Exceeds bp granularity.");
+        require(_maximumSlippageBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "EthLidoPCVDeposit: Exceeds bp granularity.");
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
         emit UpdateMaximumSlippage(_maximumSlippageBasisPoints);
     }
