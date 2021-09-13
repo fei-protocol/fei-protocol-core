@@ -75,8 +75,8 @@ contract StableSwapOperatorV1 is PCVDeposit {
         uint256 _minimumRatioThreshold,
         uint256 _maximumRatioThreshold
     ) CoreRef(_core) {
-        _setMinRatio(_minimumRatioThreshold);
-        _setMaxRatio(_maximumRatioThreshold);
+        _setMinRatioThreshold(_minimumRatioThreshold);
+        _setMaxRatioThreshold(_maximumRatioThreshold);
 
         // public variables
         pool = _pool;
