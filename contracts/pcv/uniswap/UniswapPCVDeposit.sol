@@ -143,8 +143,8 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     }
 
     /**
-        @notice get the manipulation resistant ETH and FEI in the Uniswap pool
-        @return number of ETH in pool
+        @notice get the manipulation resistant Other(example ETH) and FEI in the Uniswap pool
+        @return number of other token in pool
         @return number of FEI in pool
 
         Derivation rETH, rFEI = resistant (ideal) ETH and FEI reserves, P = price of ETH in FEI:
@@ -155,17 +155,26 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
         5. rETH = sqrt(k / P)
         
         and rFEI = k / rETH by 1.
+
+        Finally scale the resistant reserves by the ratio owned by the contract
      */
     function resistantBalanceAndFei() public view override returns(uint256, uint256) {
-        (uint256 feiInPool, uint256 ethInPool) = getReserves();
-        Decimal.D256 memory ethFei = readOracle();
+        (uint256 feiInPool, uint256 otherInPool) = getReserves();
 
-        // resistant eth/fei in pool
-        Decimal.D256 memory k = Decimal.from(feiInPool).mul(ethInPool);
-        uint256 resistantEthInPool = k.div(ethFei).asUint256().sqrt();
-        uint256 resistantFeiInPool = k.div(resistantEthInPool).asUint256();
+        Decimal.D256 memory price = readOracle();
 
-        return (resistantEthInPool, resistantFeiInPool);
+        uint256 k = feiInPool * otherInPool;
+
+        // resistant other/fei in pool
+        uint256 resistantOtherInPool = Decimal.one().div(price).mul(k).asUint256().sqrt();
+
+        uint256 resistantFeiInPool = Decimal.ratio(k, resistantOtherInPool).asUint256();
+
+        Decimal.D256 memory ratioOwned = _ratioOwned();
+        return (
+            ratioOwned.mul(resistantOtherInPool).asUint256(), 
+            ratioOwned.mul(resistantFeiInPool).asUint256()
+        );
     }
 
     /// @notice amount of pair liquidity owned by this contract
