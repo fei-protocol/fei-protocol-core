@@ -17,7 +17,7 @@ const runE2ETests = process.env.RUN_E2E_TESTS;
 const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
 
 if (!rinkebyAlchemyApiKey || !testnetPrivateKey || !privateKey || !mainnetAlchemyApiKey) {
-  throw new Error('Please set your Ethereum keys in a .env')
+  console.warn("Not all Ethereum keys provided; some functionality will be unavailable.")
 }
 
 const config: HardhatUserConfig = {
@@ -28,21 +28,21 @@ const config: HardhatUserConfig = {
     hardhat: {
       gas: 12e6,
       chainId: 5777, // Any network (default: none)
-      forking: {
+      forking: mainnetAlchemyApiKey ? {
         url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
         blockNumber: 13135475
-      }
+      } : undefined
     },
     localhost: {
       url: 'http://127.0.0.1:8545'
     },
     rinkeby: {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${rinkebyAlchemyApiKey}`,
-      accounts: [testnetPrivateKey]
+      accounts: testnetPrivateKey ? [testnetPrivateKey] : []
     },
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-      accounts: [privateKey]
+      accounts: privateKey ? [privateKey] : []
     },
   },
   solidity: {

@@ -44,6 +44,11 @@ contract StableSwapOperatorV1 is PCVDeposit {
     /// @notice The StableSwap pool to deposit in
     address public pool;
 
+    /// @notice the min and max ratios for FEI-to-value in pool (these can be set by governance)
+    /// @notice this ratio is expressed as a percentile with 18 decimal precision, ie 0.1e18 = 10%
+    uint256 public minimumRatioThreshold;
+    uint256 public maximumRatioThreshold;
+
     // ------------------ Private properties -----------------------------------
 
     /// some fixed variables to interact with the pool
@@ -66,8 +71,14 @@ contract StableSwapOperatorV1 is PCVDeposit {
         address _core,
         address _pool,
         address _curve3pool,
-        uint256 _depositMaxSlippageBasisPoints
+        uint256 _depositMaxSlippageBasisPoints,
+        uint256 _minimumRatioThreshold,
+        uint256 _maximumRatioThreshold
     ) CoreRef(_core) {
+        require(minimumRatioThreshold < maximumRatioThreshold, "Min ratio must be less than max ratio");
+        require(minimumRatioThreshold >= 0.01e18, "Min ratio must be at least 1%.");
+        require(maximumRatioThreshold <= 100e18, "Max ratio cannot be above 100x.");
+
         // public variables
         pool = _pool;
         depositMaxSlippageBasisPoints = _depositMaxSlippageBasisPoints;
@@ -81,6 +92,27 @@ contract StableSwapOperatorV1 is PCVDeposit {
         _dai = IStableSwap3(_curve3pool).coins(0);
         _usdc = IStableSwap3(_curve3pool).coins(1);
         _usdt = IStableSwap3(_curve3pool).coins(2);
+    }
+
+
+    /// @notice set the minimum ratio threshold for a valid reading of restistant balances
+    function setMinRatio(uint256 _minimumRatioThreshold) public onlyGovernor {
+        require(_minimumRatioThreshold < maximumRatioThreshold, "Min ratio must be less than max ratio");
+        require(_minimumRatioThreshold >= 0.01e18, "Min ratio must be at least 1%.");
+        minimumRatioThreshold = _minimumRatioThreshold;
+    }
+
+    /// @notice set the maximum ratio threshold for a valid reading of resistant balances
+    function setMaxRatio(uint256 _maximumRatioThreshold) public onlyGovernor {
+        require(_maximumRatioThreshold > minimumRatioThreshold, "Max ratio must be greater than min ratio");
+        require(_maximumRatioThreshold <= 100e18, "Max ratio cannot be above 100x.");
+        maximumRatioThreshold = _maximumRatioThreshold;
+    }
+
+    /// @notice set both min & max ratios
+    function setRatios(uint256 _minimumRatioThreshold, uint256 _maximumRatioThreshold) public onlyGovernor {
+        setMinRatio(_minimumRatioThreshold);
+        setMaxRatio(_maximumRatioThreshold);
     }
 
     /// @notice deposit DAI, USDC, USDT, 3crv, and FEI into the pool.
@@ -314,6 +346,6 @@ contract StableSwapOperatorV1 is PCVDeposit {
         uint256 _feiInPool = IStableSwap2(pool).balances(uint256(_feiIndex));
         uint256 _3crvInPool = IStableSwap2(pool).balances(uint256(_3crvIndex));
         uint256 _ratio = _feiInPool * 1e18 / (_3crvInPool * _3crvVirtualPrice / 1e18);
-        require(_ratio > 0.1e18 && _ratio < 1.9e18, "StableSwapOperatorV1: broken peg");
+        require(_ratio > minimumRatioThreshold && _ratio < maximumRatioThreshold, "StableSwapOperatorV1: broken peg");
     }
 }
