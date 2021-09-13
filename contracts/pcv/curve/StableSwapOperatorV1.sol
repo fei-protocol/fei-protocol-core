@@ -75,8 +75,8 @@ contract StableSwapOperatorV1 is PCVDeposit {
         uint256 _minimumRatioThreshold,
         uint256 _maximumRatioThreshold
     ) CoreRef(_core) {
-        setMinRatio(_minimumRatioThreshold);
-        setMaxRatio(_maximumRatioThreshold);
+        _setMinRatio(_minimumRatioThreshold);
+        _setMaxRatio(_maximumRatioThreshold);
 
         // public variables
         pool = _pool;
@@ -96,14 +96,12 @@ contract StableSwapOperatorV1 is PCVDeposit {
 
     /// @notice set the minimum ratio threshold for a valid reading of restistant balances
     function setMinRatio(uint256 _minimumRatioThreshold) public onlyGovernor {
-
-        minimumRatioThreshold = _minimumRatioThreshold;
+        _setMinRatioThreshold(_minimumRatioThreshold);
     }
 
     /// @notice set the maximum ratio threshold for a valid reading of resistant balances
     function setMaxRatio(uint256 _maximumRatioThreshold) public onlyGovernor {
-
-        maximumRatioThreshold = _maximumRatioThreshold;
+        _setMaxRatioThreshold(_maximumRatioThreshold);
     }
 
     /// @notice set both min & max ratios
@@ -112,12 +110,12 @@ contract StableSwapOperatorV1 is PCVDeposit {
         _setMaxRatioThreshold(_maximumRatioThreshold);
     }
 
-    function _setMinRatioThreshold(uint256 _minimumRatioThreshold) private {
-        require(_minimumRatioThreshold >= 0.01e18, "Min ratio must be at least 0.01%.");
+    function _setMinRatioThreshold(uint256 _minimumRatioThreshold) internal {
+        require(_minimumRatioThreshold >= 0.0001e18, "Min ratio must be at least 0.01%.");
         minimumRatioThreshold = _minimumRatioThreshold;
     }
 
-    function _setMaxRatioThreshold(uint256 _maximumRatioThreshold) private {
+    function _setMaxRatioThreshold(uint256 _maximumRatioThreshold) internal {
         require(_maximumRatioThreshold <= 10_000e18, "Max ratio cannot be above 10,000x.");
         maximumRatioThreshold = _maximumRatioThreshold;
     }
