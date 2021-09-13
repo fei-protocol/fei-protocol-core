@@ -14,6 +14,7 @@ const rinkebyAlchemyApiKey = process.env.RINKEBY_ALCHEMY_API_KEY;
 const testnetPrivateKey = process.env.TESTNET_PRIVATE_KEY;
 const privateKey = process.env.ETH_PRIVATE_KEY;
 const runE2ETests = process.env.RUN_E2E_TESTS;
+const enableMainnetForking = process.env.ENABLE_MAINNET_FORKING;
 const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
 
 if (!(process.env.NODE_OPTIONS && process.env.NODE_OPTIONS.includes('max-old-space-size'))) {
@@ -26,6 +27,16 @@ if (!rinkebyAlchemyApiKey || !testnetPrivateKey || !privateKey || !mainnetAlchem
   throw new Error('Please set your Ethereum keys in a .env')
 }
 
+if (enableMainnetForking) {
+  if (!mainnetAlchemyApiKey) {
+    throw new Error("Cannot fork mainnet without mainnet alchemy api key.")
+  }
+
+  console.log("Mainnet forking enabled.")
+} else {
+  console.log("Mainnet forking disabled.")
+}
+
 const config: HardhatUserConfig = {
   gasReporter: {
     enabled: !!process.env.REPORT_GAS,
@@ -34,7 +45,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       gas: 12e6,
       chainId: 5777, // Any network (default: none)
-      forking: {
+      forking: enableMainnetForking ? {
         url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
         blockNumber: 13147150
       }
