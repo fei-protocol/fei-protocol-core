@@ -6,6 +6,7 @@ import 'hardhat-contract-sizer';
 import 'solidity-coverage';
 import '@typechain/hardhat'
 import "@idle-finance/hardhat-proposals-plugin";
+import "solidity-coverage"
 import { HardhatUserConfig } from "hardhat/config";
 
 require('dotenv').config();
@@ -16,6 +17,12 @@ const privateKey = process.env.ETH_PRIVATE_KEY;
 const runE2ETests = process.env.RUN_E2E_TESTS;
 const enableMainnetForking = process.env.ENABLE_MAINNET_FORKING;
 const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
+
+if (!process.env.NODE_OPTIONS.includes('max-old-space-size')) {
+  throw new Error(`Please export node env var max-old-space-size before running hardhat. "export NODE_OPTIONS=--max-old-space-size=4096"`);
+} else {
+  console.log(`Node option max-old-space-size correctly set. Good job.`);
+}
 
 if (!rinkebyAlchemyApiKey || !testnetPrivateKey || !privateKey || !mainnetAlchemyApiKey) {
   console.warn("Not all Ethereum keys provided; some functionality will be unavailable.")

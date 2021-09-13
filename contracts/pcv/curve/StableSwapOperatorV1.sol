@@ -124,14 +124,12 @@ contract StableSwapOperatorV1 is PCVDeposit {
     /// Note: the FEI has to be minted & deposited on this contract in a previous
     ///       tx, as this contract does not use the Minter role.
     function deposit() public override whenNotPaused {
-        IFei _fei = fei();
-        uint256 _3crvVirtualPrice = IStableSwap3(_3pool).get_virtual_price();
-
-        // Deposit DAI, USDC, and USDT, to get 3crv
+        // Deposit DAI, USDC, and USDT, to get 3crv 
         uint256 _daiBalance = IERC20(_dai).balanceOf(address(this));
         uint256 _usdcBalance = IERC20(_usdc).balanceOf(address(this));
         uint256 _usdtBalance = IERC20(_usdt).balanceOf(address(this));
         uint256 _3crvBalanceBefore = IERC20(_3crv).balanceOf(address(this));
+        
         if (_daiBalance != 0 || _usdcBalance != 0 || _usdtBalance != 0) {
             uint256[3] memory _add3poolLiquidityAmounts;
             _add3poolLiquidityAmounts[0] = _daiBalance;
@@ -149,9 +147,11 @@ contract StableSwapOperatorV1 is PCVDeposit {
         // get the number of 3crv held by the contract, and also
         // check for slippage during the 3pool deposit
         uint256 _3crvBalanceAfter = IERC20(_3crv).balanceOf(address(this));
-        uint256 _3crvBalanceFromDeposit = _3crvBalanceAfter - _3crvBalanceBefore;
-        uint256 _min3crvOut = (_daiBalance + _usdcBalance + _usdtBalance) * 1e18 / _3crvVirtualPrice * (Constants.BASIS_POINTS_GRANULARITY - depositMaxSlippageBasisPoints) / Constants.BASIS_POINTS_GRANULARITY;
-        require(_3crvBalanceFromDeposit >= _min3crvOut, "StableSwapOperatorV1: 3pool deposit slippage too high");
+        {
+            uint256 _3crvBalanceFromDeposit = _3crvBalanceAfter - _3crvBalanceBefore;
+            uint256 _min3crvOut = (_daiBalance + _usdcBalance + _usdtBalance) * 1e18 / IStableSwap3(_3pool).get_virtual_price() * (Constants.BASIS_POINTS_GRANULARITY - depositMaxSlippageBasisPoints) / Constants.BASIS_POINTS_GRANULARITY;
+            require(_3crvBalanceFromDeposit >= _min3crvOut, "StableSwapOperatorV1: 3pool deposit slippage too high");
+        }
 
         // get the amount of tokens in the pool
         (uint256 _3crvAmount, uint256 _feiAmount) = (
@@ -162,7 +162,7 @@ contract StableSwapOperatorV1 is PCVDeposit {
         uint256 _3crvAmountAfter = _3crvAmount + _3crvBalanceAfter;
 
         // get the usd value of 3crv in the pool
-        uint256 _3crvUsdValue = _3crvAmountAfter * _3crvVirtualPrice / 1e18;
+        uint256 _3crvUsdValue = _3crvAmountAfter * IStableSwap3(_3pool).get_virtual_price() / 1e18;
 
         // compute the number of FEI to deposit
         uint256 _feiToDeposit = 0;
@@ -175,37 +175,40 @@ contract StableSwapOperatorV1 is PCVDeposit {
             uint256 _balanceBefore = IERC20(pool).balanceOf(address(this));
 
             { // scope to prevent 'Stack too deep' error
-            // build parameters
-            uint256[2] memory _addLiquidityAmounts;
-            _addLiquidityAmounts[_feiIndex] = _feiToDeposit;
-            _addLiquidityAmounts[_3crvIndex] = _3crvBalanceAfter;
+                // build parameters
+                uint256[2] memory _addLiquidityAmounts;
+                _addLiquidityAmounts[_feiIndex] = _feiToDeposit;
+                _addLiquidityAmounts[_3crvIndex] = _3crvBalanceAfter;
 
-            // approvals
-            IERC20(address(_fei)).approve(pool, _feiToDeposit);
-            // 3crv needs to reset allowance to 0, see CurveTokenV1.vy#L117 :
-            // assert _value == 0 or self.allowances[msg.sender][_spender] == 0
-            IERC20(_3crv).approve(pool, 0);
-            IERC20(_3crv).approve(pool, _3crvBalanceAfter);
+                // approvals
+                IERC20(address(fei())).approve(pool, _feiToDeposit);
+                // 3crv needs to reset allowance to 0, see CurveTokenV1.vy#L117 :
+                // assert _value == 0 or self.allowances[msg.sender][_spender] == 0
+                IERC20(_3crv).approve(pool, 0);
+                IERC20(_3crv).approve(pool, _3crvBalanceAfter);
 
-            // do deposit
-            IStableSwap2(pool).add_liquidity(_addLiquidityAmounts, 0);
+                // do deposit
+                IStableSwap2(pool).add_liquidity(_addLiquidityAmounts, 0);
             }
 
             // slippage check on metapool deposit
-            uint256 _balanceAfter = IERC20(pool).balanceOf(address(this));
-            uint256 _balanceDeposited = _balanceAfter - _balanceBefore;
-            uint256 _metapoolVirtualPrice = IStableSwap2(pool).get_virtual_price();
-            uint256 _minLpOut = (_feiToDeposit + _3crvBalanceAfter) * 1e18 / _metapoolVirtualPrice * (Constants.BASIS_POINTS_GRANULARITY - depositMaxSlippageBasisPoints) / Constants.BASIS_POINTS_GRANULARITY;
-            require(_balanceDeposited >= _minLpOut, "StableSwapOperatorV1: metapool deposit slippage too high");
+            uint256 _balanceDeposited = IERC20(pool).balanceOf(address(this)) - _balanceBefore;
+            {
+                uint256 _metapoolVirtualPrice = IStableSwap2(pool).get_virtual_price();
+                uint256 _minLpOut = (_feiToDeposit + _3crvBalanceAfter) * 1e18 / _metapoolVirtualPrice * (Constants.BASIS_POINTS_GRANULARITY - depositMaxSlippageBasisPoints) / Constants.BASIS_POINTS_GRANULARITY;
+                require(_balanceDeposited >= _minLpOut, "StableSwapOperatorV1: metapool deposit slippage too high");
+            }
 
             // compute DAI out if we wanted to withdraw liquidity using our
             // new LP tokens, and withdraw fully in DAI.
-            uint256 _lpTotalSupply = IERC20(pool).totalSupply();
-            uint256 _3crvOut = _3crvAmountAfter * _balanceDeposited / _lpTotalSupply;
-            uint256 _daiOut = IStableSwap3(_3pool).calc_withdraw_one_coin(
-              _3crvOut, // LP tokens just deposited
-              0 // 3pool coin 0 = DAI
-            );
+            uint256 _daiOut;
+            {
+                uint256 _3crvOut = _3crvAmountAfter * _balanceDeposited / IERC20(pool).totalSupply();
+                _daiOut = IStableSwap3(_3pool).calc_withdraw_one_coin(
+                _3crvOut, // LP tokens just deposited
+                0 // 3pool coin 0 = DAI
+                );
+            }
 
             // emit event
             emit Deposit(msg.sender, _daiOut);
