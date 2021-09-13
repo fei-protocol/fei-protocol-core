@@ -1,3 +1,5 @@
+const hre = require('hardhat');
+const { env, hrtime } = require('process');
 const {
   BN,
   expectEvent,
@@ -21,6 +23,15 @@ describe('EthBondingCurve', function () {
   let governorAddress;
   let beneficiaryAddress1;
   let beneficiaryAddress2;
+
+  this.beforeAll(async function() {
+    // Can only get the current price on a forked network (since we haven't deployed Uniswap stuff in test setup)
+    if (!hre.network.config.forking) {
+      return this.skip();
+    }
+
+    return undefined;
+  });
 
   beforeEach(async function () {
     ({

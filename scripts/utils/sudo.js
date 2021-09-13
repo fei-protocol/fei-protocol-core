@@ -38,7 +38,7 @@ async function sudo(addresses, logging = false) {
   await core.grantBurner(accounts[0], {from: accounts[0]});
 
   logging ? console.log('Minting FEI to accounts[0]') : undefined;
-  await fei.mint(accounts[0], new BN('10000000000000000000000000000000000'));
+  await fei.mint(accounts[0], new BN('10000000000000000000000000'));
 }
 
 module.exports = { sudo };
