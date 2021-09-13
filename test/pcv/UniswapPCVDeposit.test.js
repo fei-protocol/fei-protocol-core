@@ -16,7 +16,7 @@ const MockOracle = artifacts.require('MockOracle');
 const MockPair = artifacts.require('MockUniswapV2PairLiquidity');
 const MockRouter = artifacts.require('MockRouter');
 
-describe.only('EthUniswapPCVDeposit', function () {
+describe('EthUniswapPCVDeposit', function () {
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit
   let userAddress;
   let governorAddress;
