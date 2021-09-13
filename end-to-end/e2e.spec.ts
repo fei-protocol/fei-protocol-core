@@ -1,14 +1,11 @@
 import hre, { artifacts, expect, web3 } from 'hardhat'
 import { time } from '@openzeppelin/test-helpers';
 import { TestEndtoEndCoordinator } from './setup';
-import { syncPool } from '../scripts/utils/syncPool'
 import { MainnetContractAddresses, MainnetContracts } from './setup/types';
-import { getPeg, getPrice, forceEth } from './setup/utils'
-import { BN, expectApprox, expectRevert, expectEvent } from '../test/helpers'
+import { forceEth } from './setup/utils'
+import { BN, expectApprox, expectEvent } from '../test/helpers'
 import proposals from './proposals_config.json'
 
-const ERC20 = artifacts.require("ERC20");
-const FToken = artifacts.require("contracts/external/CToken.sol:CToken");
 const uintMax = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
 const { toBN } = web3.utils;
@@ -42,6 +39,155 @@ describe('e2e', function () {
 
     await contracts.uniswapPCVDeposit.deposit()
   })
+
+  describe('Collateralization Oracle', async function () {
+    it('exempting an address removes from PCV stats', async function () {
+      const {collateralizationOracle, compoundEthPCVDeposit } = contracts;
+
+      const beforeBalance = await compoundEthPCVDeposit.balance();
+
+      const beforeStats = await collateralizationOracle.pcvStats();
+      await collateralizationOracle.setDepositExclusion(compoundEthPCVDeposit.address, true);
+      const afterStats = await collateralizationOracle.pcvStats();
+
+      expectApprox(afterStats[0], beforeStats[0].sub(beforeBalance));
+      expectApprox(afterStats[1], afterStats[1]);
+      expectApprox(afterStats[2], beforeStats[2].sub(beforeBalance));
+    });
+  });
+
+  describe('Collateralization Oracle Keeper', async function () {
+    it('can only call when deviation or time met', async function () {     
+      const { staticPcvDepositWrapper, collateralizationOracleWrapper, collateralizationOracleKeeper, fei } = contracts;
+
+      const beforeBalance = await fei.balanceOf(deployAddress);
+
+      await collateralizationOracleWrapper.update();
+
+      // After updating everything should be up to date
+      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.false;
+
+      // After time increase, should be outdated
+      await time.increase(await collateralizationOracleWrapper.remainingTime());
+
+      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.true;
+      expect(await collateralizationOracleWrapper.isOutdated()).to.be.true;
+      expect(await collateralizationOracleWrapper.isExceededDeviationThreshold()).to.be.false;
+
+      // UpdateIfOutdated succeeds
+      await collateralizationOracleWrapper.updateIfOutdated({from: deployAddress});
+
+      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.false;
+      
+      // Increase PCV balance to exceed deviation threshold
+      const pcvStats = await collateralizationOracleWrapper.pcvStats();
+      await staticPcvDepositWrapper.setBalance(pcvStats[0]);
+
+      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.true;
+      expect(await collateralizationOracleWrapper.isOutdated()).to.be.false;
+      expect(await collateralizationOracleWrapper.isExceededDeviationThreshold()).to.be.true;
+
+      // Keeper is incentivized to update oracle
+      await time.increase(await collateralizationOracleKeeper.MIN_MINT_FREQUENCY());
+      await collateralizationOracleKeeper.mint({from: deployAddress});
+
+      const incentive = await collateralizationOracleKeeper.incentiveAmount();
+      expect(beforeBalance.add(incentive)).to.be.bignumber.equal(await fei.balanceOf(deployAddress));
+      
+      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.false;
+    });
+  });
+
+  describe('TribeReserveStabilizer', async function() {
+    it('mint TRIBE', async function () {
+      const { tribeReserveStabilizer, tribe } = contracts;
+      const tribeSupply = await tribe.totalSupply();
+      const balanceBefore = await tribe.balanceOf(deployAddress);
+
+      await tribeReserveStabilizer.mint(deployAddress, '100000');
+
+      // Minting increases total supply and target balance
+      expect(balanceBefore.add(new BN('100000'))).to.be.bignumber.equal(await tribe.balanceOf(deployAddress));
+      expect(tribeSupply.add(new BN('100000'))).to.be.bignumber.equal(await tribe.totalSupply());
+    });
+
+    it('exchangeFei', async function () {
+      const { fei, staticPcvDepositWrapper, tribe, tribeReserveStabilizer, collateralizationOracleWrapper } = contracts;
+
+      await fei.mint(deployAddress, tenPow18.mul(tenPow18).mul(toBN(4)));
+      await collateralizationOracleWrapper.update();
+      
+      const userFeiBalanceBefore = toBN(await fei.balanceOf(deployAddress));
+      const userTribeBalanceBefore = await tribe.balanceOf(deployAddress);
+
+      const feiTokensExchange = toBN(40000000000000)
+      await tribeReserveStabilizer.updateOracle();
+      const expectedAmountOut = await tribeReserveStabilizer.getAmountOut(feiTokensExchange);
+      await tribeReserveStabilizer.exchangeFei(feiTokensExchange);
+  
+      const userFeiBalanceAfter = toBN(await fei.balanceOf(deployAddress))
+      const userTribeBalanceAfter = await tribe.balanceOf(deployAddress);
+
+      expect(userTribeBalanceAfter.sub(toBN(expectedAmountOut))).to.be.bignumber.equal(userTribeBalanceBefore);
+      expect(userFeiBalanceAfter).to.be.bignumber.equal(userFeiBalanceBefore.sub(feiTokensExchange));
+
+      await staticPcvDepositWrapper.setBalance(tenPow18.mul(tenPow18).mul(toBN(10)));
+      await collateralizationOracleWrapper.update();
+      expect(await tribeReserveStabilizer.isCollateralizationBelowThreshold()).to.be.false;
+    });
+  });
+
+  describe('PCV Equity Minter + LBP', async function() {
+    it('mints appropriate amount and swaps', async function() {
+      const { pcvEquityMinter, collateralizationOracleWrapper, staticPcvDepositWrapper, feiTribeLBPSwapper, tribe, tribeSplitter } = contracts;
+
+      await time.increase(await pcvEquityMinter.remainingTime());
+
+      const pcvStats = await collateralizationOracleWrapper.pcvStats();
+      await staticPcvDepositWrapper.setBalance(pcvStats[0]);
+      await collateralizationOracleWrapper.update();
+
+      const mintAmount = await pcvEquityMinter.mintAmount();
+
+      const balancesBefore = await feiTribeLBPSwapper.getReserves();
+
+      const splitterBalanceBefore = await tribe.balanceOf(tribeSplitter.address);
+
+      await pcvEquityMinter.mint();
+
+      const balancesAfter = await feiTribeLBPSwapper.getReserves();
+    
+      expectApprox(balancesBefore[0].add(mintAmount), balancesAfter[0]);
+      expect(await feiTribeLBPSwapper.swapEndTime()).to.be.bignumber.greaterThan(toBN(await time.latest()));
+      
+      await time.increase(await pcvEquityMinter.duration());
+      await pcvEquityMinter.mint();
+
+      expect(await tribe.balanceOf(tribeSplitter.address)).to.be.bignumber.greaterThan(splitterBalanceBefore);
+    });
+  });
+
+  describe('TRIBE Splitter', async function () {
+    it('splits TRIBE 3 ways', async function () {
+      const { tribeSplitter, tribeReserveStabilizer, tribe, erc20Dripper, core } = contracts;
+
+      await core.allocateTribe(tribeSplitter.address, '1000000');
+
+      const beforeBalanceStabilizer = await tribe.balanceOf(tribeReserveStabilizer.address);
+      const beforeBalanceDripper = await tribe.balanceOf(erc20Dripper.address);
+      const beforeBalanceCore = await tribe.balanceOf(core.address);
+
+      await tribeSplitter.allocate();
+
+      const afterBalanceStabilizer = await tribe.balanceOf(tribeReserveStabilizer.address);
+      const afterBalanceDripper = await tribe.balanceOf(erc20Dripper.address);
+      const afterBalanceCore = await tribe.balanceOf(core.address);
+
+      expectApprox(beforeBalanceStabilizer, afterBalanceStabilizer.sub(new BN('600000')));
+      expectApprox(beforeBalanceDripper, afterBalanceDripper.sub(new BN('200000')));
+      expectApprox(beforeBalanceCore, afterBalanceCore.sub(new BN('200000')));
+    });
+  });
 
   describe('BondingCurve', async () => {
     describe('ETH', async function () {

@@ -66,6 +66,14 @@ export type MainnetContracts = {
   curve3Metapool: typeof Contract,
   erc20Dripper: typeof Contract,
   tribalChiefOptimisticTimelock: typeof Contract,
+  staticPcvDepositWrapper: typeof Contract,
+  collateralizationOracle: typeof Contract,
+  collateralizationOracleWrapper: typeof Contract,
+  collateralizationOracleKeeper: typeof Contract,
+  tribeReserveStabilizerAddress: typeof Contract,
+  pcvEquityMinter: typeof Contract,
+  tribeSplitter: typeof Contract,
+  feiTribeLBPSwapper: typeof Contract,
 }
 
 export type MainnetContractAddresses = {

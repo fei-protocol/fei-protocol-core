@@ -234,7 +234,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         }
         // 2. Reset weights to 99:1
         // Using current block time triggers immediate weight reset
-        updateWeightsGradually(
+        _updateWeightsGradually(
             pool,
             block.timestamp, 
             block.timestamp, 
@@ -263,7 +263,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
             );
 
             // 4. Kick off new auction ending after `duration` seconds
-            updateWeightsGradually(
+            _updateWeightsGradually(
                 pool,
                 block.timestamp, 
                 block.timestamp + duration, 
@@ -358,7 +358,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         );
 
         // Kick off the first auction
-        updateWeightsGradually(
+        _updateWeightsGradually(
             pool,
             block.timestamp, 
             block.timestamp + duration, 

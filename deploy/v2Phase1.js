@@ -553,6 +553,7 @@ async function deploy(deployAddress, addresses, logging = false) {
     tribeSplitter,
     feiTribeLBPSwapper,
     pcvEquityMinter,
+    staticPcvDepositWrapper,
   };
 }
 
