@@ -136,10 +136,6 @@ async function validate(addresses, oldContracts, contracts) {
   expect((await collateralizationOracle.getDepositsForToken(wethAddress)).length).to.be.equal(6);
   expect((await collateralizationOracle.getDepositsForToken(feiAddress)).length).to.be.equal(11);
 
-  console.log(pcvStats[0].toString());
-  console.log(pcvStats[1].toString());
-  console.log(pcvStats[2].toString());
-
   expect(await feiTribeLBPSwapper.CONTRACT_ADMIN_ROLE()).to.be.not.equal(await core.GOVERN_ROLE());
     
   expect(await proxyAdmin.getProxyImplementation(collateralizationOracleWrapper.address)).to.be.equal(collateralizationOracleWrapperImpl.address);
