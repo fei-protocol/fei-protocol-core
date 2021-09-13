@@ -161,12 +161,12 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     function resistantBalanceAndFei() public view override returns(uint256, uint256) {
         (uint256 feiInPool, uint256 otherInPool) = getReserves();
 
-        Decimal.D256 memory price = readOracle();
+        Decimal.D256 memory priceOfToken = readOracle();
 
         uint256 k = feiInPool * otherInPool;
 
         // resistant other/fei in pool
-        uint256 resistantOtherInPool = Decimal.one().div(price).mul(k).asUint256().sqrt();
+        uint256 resistantOtherInPool = Decimal.one().div(priceOfToken).mul(k).asUint256().sqrt();
 
         uint256 resistantFeiInPool = Decimal.ratio(k, resistantOtherInPool).asUint256();
 
