@@ -44,6 +44,11 @@ contract StableSwapOperatorV1 is PCVDeposit {
     /// @notice The StableSwap pool to deposit in
     address public pool;
 
+    /// @notice the min and max ratios for FEI-to-value in pool (these can be set by governance)
+    /// @notice this ratio is expressed as a percentile with 18 decimal precision, ie 0.1e18 = 10%
+    uint256 public minimumRatioThreshold;
+    uint256 public maximumRatioThreshold;
+
     // ------------------ Private properties -----------------------------------
 
     /// some fixed variables to interact with the pool
@@ -66,8 +71,13 @@ contract StableSwapOperatorV1 is PCVDeposit {
         address _core,
         address _pool,
         address _curve3pool,
-        uint256 _depositMaxSlippageBasisPoints
+        uint256 _depositMaxSlippageBasisPoints,
+        uint256 _minimumRatioThreshold,
+        uint256 _maximumRatioThreshold
     ) CoreRef(_core) {
+        _setMinRatio(_minimumRatioThreshold);
+        _setMaxRatio(_maximumRatioThreshold);
+
         // public variables
         pool = _pool;
         depositMaxSlippageBasisPoints = _depositMaxSlippageBasisPoints;
@@ -81,6 +91,33 @@ contract StableSwapOperatorV1 is PCVDeposit {
         _dai = IStableSwap3(_curve3pool).coins(0);
         _usdc = IStableSwap3(_curve3pool).coins(1);
         _usdt = IStableSwap3(_curve3pool).coins(2);
+    }
+
+
+    /// @notice set the minimum ratio threshold for a valid reading of restistant balances
+    function setMinRatio(uint256 _minimumRatioThreshold) public onlyGovernor {
+        _setMinRatioThreshold(_minimumRatioThreshold);
+    }
+
+    /// @notice set the maximum ratio threshold for a valid reading of resistant balances
+    function setMaxRatio(uint256 _maximumRatioThreshold) public onlyGovernor {
+        _setMaxRatioThreshold(_maximumRatioThreshold);
+    }
+
+    /// @notice set both min & max ratios
+    function setRatios(uint256 _minimumRatioThreshold, uint256 _maximumRatioThreshold) public onlyGovernor {
+        _setMinRatioThreshold(_minimumRatioThreshold);
+        _setMaxRatioThreshold(_maximumRatioThreshold);
+    }
+
+    function _setMinRatioThreshold(uint256 _minimumRatioThreshold) internal {
+        require(_minimumRatioThreshold >= 0.0001e18, "Min ratio must be at least 0.01%.");
+        minimumRatioThreshold = _minimumRatioThreshold;
+    }
+
+    function _setMaxRatioThreshold(uint256 _maximumRatioThreshold) internal {
+        require(_maximumRatioThreshold <= 10_000e18, "Max ratio cannot be above 10,000x.");
+        maximumRatioThreshold = _maximumRatioThreshold;
     }
 
     /// @notice deposit DAI, USDC, USDT, 3crv, and FEI into the pool.
@@ -285,7 +322,35 @@ contract StableSwapOperatorV1 is PCVDeposit {
         return _daiOut;
     }
 
+    /// @notice returns the token address in which this contract reports its
+    /// balance.
+    /// @return the DAI address
     function balanceReportedIn() public view override returns(address) {
         return _dai;
+    }
+
+    /// @notice gets the resistant token balance and protocol owned fei of this deposit
+    /// for balance, returns half of the theoretical USD value of the LP tokens, even though
+    /// there may be some slippage when withdrawing to DAI only. for fei, take the
+    /// same value (assumes there is no broken peg in the pool).
+    /// @return resistantBalance the resistant balance of DAI (theoretical USD value)
+    /// @return resistantFei the resistant balance of FEI (theoretical USD value)
+    function resistantBalanceAndFei() public view override returns (
+        uint256 resistantBalance,
+        uint256 resistantFei
+    ) {
+        uint256 _lpBalance = IERC20(pool).balanceOf(address(this));
+        uint256 _lpVirtualPrice = IStableSwap2(pool).get_virtual_price();
+        uint256 _lpPriceUSD = _lpBalance * _lpVirtualPrice / 1e18;
+        resistantBalance = _lpPriceUSD / 2;
+        resistantFei = resistantBalance;
+
+        // revert if there is 10 times more FEI than 3crv or the other way around,
+        // which would mean there is a broken peg
+        uint256 _3crvVirtualPrice = IStableSwap3(_3pool).get_virtual_price();
+        uint256 _feiInPool = IStableSwap2(pool).balances(uint256(_feiIndex));
+        uint256 _3crvInPool = IStableSwap2(pool).balances(uint256(_3crvIndex));
+        uint256 _ratio = _feiInPool * 1e18 / (_3crvInPool * _3crvVirtualPrice / 1e18);
+        require(_ratio > minimumRatioThreshold && _ratio < maximumRatioThreshold, "StableSwapOperatorV1: broken peg");
     }
 }

@@ -219,4 +219,31 @@ describe('StableSwapOperatorV1', function () {
       expect(await this.deposit.balance()).to.be.bignumber.equal('4974253861920711893216');
     });
   });
+  describe('balanceReportedIn()', function() {
+    it('should return the DAI address', async function() {
+      expect(await this.deposit.balanceReportedIn()).to.be.equal(this.dai.address);
+    });
+  });
+  describe('resistantBalanceAndFei()', function() {
+    it('should return the current balance as half of the USD of LP tokens', async function() {
+      await this.dai.mint(this.deposit.address, `5000${e18}`);
+      await this.fei.mint(this.deposit.address, `6000${e18}`, {from: minterAddress});
+      await this.deposit.deposit({from: pcvControllerAddress});
+      expect((await this.deposit.resistantBalanceAndFei()).resistantBalance).to.be.bignumber.equal(`5000${e18}`);
+    });
+    it('should return the FEI as half of the USD value of LP tokens', async function() {
+      await this.dai.mint(this.deposit.address, `5000${e18}`);
+      await this.fei.mint(this.deposit.address, `6000${e18}`, {from: minterAddress});
+      await this.deposit.deposit({from: pcvControllerAddress});
+      expect((await this.deposit.resistantBalanceAndFei()).resistantFei).to.be.bignumber.equal(`5000${e18}`);
+    });
+    it('should revert if a peg is broken (amount in pool differs more than 50%)', async function() {
+      await this.dai.mint(this.deposit.address, `5000${e18}`);
+      await this.fei.mint(this.deposit.address, `6000${e18}`, {from: minterAddress});
+      await this.deposit.deposit({from: pcvControllerAddress});
+      expect((await this.deposit.resistantBalanceAndFei()).resistantFei).to.be.bignumber.equal(`5000${e18}`);
+      await this.fei.mint(this.mockMetapool.address, `10000000${e18}`, {from: minterAddress});
+      await expectRevert(this.deposit.resistantBalanceAndFei(), 'StableSwapOperatorV1: broken peg');
+    });
+  });
 });
