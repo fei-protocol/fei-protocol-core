@@ -1,6 +1,8 @@
 const { constants: { MAX_UINT256 } } = require('@openzeppelin/test-helpers');
 const { expect } = require('../../test/helpers');
 
+const e18 = '000000000000000000';
+
 async function setup(addresses, oldContracts, contracts, logging) {}
 
 /*
@@ -16,7 +18,7 @@ V2 Phase 1 Upgrade Steps
 9. Set ETH Bonding Curve Minting Cap Max
 10. Move PCV from old ETH Uni PCV Deposit to new
 11. Move PCV from old DPI Uni PCV Deposit to new
-12. TODO: Seed TRIBE to LBP Swapper
+12. Seed TRIBE to LBP Swapper
 */
 async function run(addresses, oldContracts, contracts, logging = false) {
   const {
@@ -31,6 +33,7 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     ratioPCVController,
     pcvEquityMinter,
     collateralizationOracleKeeper,
+    feiTribeLBPSwapper,
     core,
     tribe
   } = contracts;
@@ -68,6 +71,8 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   await oldRatioPCVController.withdrawRatio(oldContracts.uniswapPCVDeposit.address, uniswapPCVDeposit.address, '10000'); // move 100% of PCV from old -> new
 
   await ratioPCVController.withdrawRatio(oldContracts.dpiUniswapPCVDeposit.address, dpiUniswapPCVDeposit.address, '10000'); // move 100% of PCV from old -> new
+
+  await core.allocateTribe(feiTribeLBPSwapper.address, `1000000${e18}`);
 }
 
 /// /  --------------------- NOT RUN ON CHAIN ----------------------

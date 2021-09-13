@@ -21,6 +21,15 @@ abstract contract WeightedBalancerPoolManager is IWeightedBalancerPoolManager, B
         uint256 endTime,
         uint256[] memory endWeights
     ) public override onlyGovernorOrAdmin {
+        _updateWeightsGradually(pool, startTime, endTime, endWeights);
+    }
+
+    function _updateWeightsGradually(
+        IWeightedPool pool,
+        uint256 startTime,
+        uint256 endTime,
+        uint256[] memory endWeights
+    ) internal {
         pool.updateWeightsGradually(startTime, endTime, endWeights);
     }
 }
