@@ -2,16 +2,16 @@
   "minter": [
     "bondingCurveAddress",
     "uniswapPCVDepositAddress",
-    "uniswapPCVControllerAddress",
     "timelockAddress",
     "dpiBondingCurveAddress",
     "daiBondingCurveAddress",
     "dpiUniswapPCVDepositAddress",
-    "raiBondingCurveAddress"
+    "raiBondingCurveAddress",
+    "pcvEquityMinterAddress",
+    "collateralizationOracleKeeperAddress"
   ],
   "burner": [
     "ethReserveStabilizerAddress",
-    "uniswapPCVControllerAddress",
     "tribeReserveStabilizerAddress"
   ],
   "governor": [

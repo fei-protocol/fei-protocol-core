@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 
 import "./IOracle.sol";
 import "./ICollateralizationOracleWrapper.sol";
+import "../Constants.sol";
 import "../utils/Timed.sol";
 import "../refs/CoreRef.sol";
 
@@ -50,8 +51,6 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
     uint256 public cachedUserCirculatingFei;
     /// @notice cached value of the Protocol Equity
     int256 public cachedProtocolEquity;
-
-    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice deviation threshold to consider cached values outdated, in basis
     ///         points (base 10_000)
@@ -215,7 +214,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
 
     function _isExceededDeviationThreshold(uint256 cached, uint256 current) internal view returns (bool) {
         uint256 delta = current > cached ? current- cached : cached - current;
-        uint256 deviationBaisPoints = delta * BASIS_POINTS_GRANULARITY / current;
+        uint256 deviationBaisPoints = delta * Constants.BASIS_POINTS_GRANULARITY / current;
         return deviationBaisPoints > deviationThresholdBasisPoints;
     }
 
