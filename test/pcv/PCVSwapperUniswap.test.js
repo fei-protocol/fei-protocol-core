@@ -1,3 +1,5 @@
+const hre = require('hardhat');
+
 const {
   BN,
   time,
@@ -32,6 +34,8 @@ describe('PCVSwapperUniswap', function () {
     if (!hre.network.config.forking) {
       return this.skip();
     }
+
+    return undefined;
   });
 
   beforeEach(async function () {

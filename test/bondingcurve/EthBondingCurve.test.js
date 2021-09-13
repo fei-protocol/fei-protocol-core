@@ -1,3 +1,4 @@
+const hre = require('hardhat');
 const { env, hrtime } = require('process');
 const {
   BN,
@@ -9,8 +10,6 @@ const {
   getAddresses,
   getCore,
 } = require('../helpers');
-const hre = require('hardhat');
-
 
 const EthBondingCurve = artifacts.require('EthBondingCurve');
 const Fei = artifacts.require('Fei');
@@ -30,6 +29,8 @@ describe('EthBondingCurve', function () {
     if (!hre.network.config.forking) {
       return this.skip();
     }
+
+    return undefined;
   });
 
   beforeEach(async function () {
