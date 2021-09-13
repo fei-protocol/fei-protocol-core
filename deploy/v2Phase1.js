@@ -13,9 +13,11 @@ const TransparentUpgradeableProxy = artifacts.require('TransparentUpgradeablePro
 const PCVEquityMinter = artifacts.require('PCVEquityMinter');
 const ERC20Splitter = artifacts.require('ERC20Splitter');
 const PCVDepositWrapper = artifacts.require('PCVDepositWrapper');
+const StaticPCVDepositWrapper = artifacts.require('StaticPCVDepositWrapper');
 const BalancerLBPSwapper = artifacts.require('BalancerLBPSwapper');
 const ChainlinkOracleWrapper = artifacts.require('ChainlinkOracleWrapper');
 const CompositeOracle = artifacts.require('CompositeOracle');
+const ConstantOracle = artifacts.require('ConstantOracle');
 const ILiquidityBootstrappingPoolFactory = artifacts.require('ILiquidityBootstrappingPoolFactory');
 
 // Constants
@@ -57,6 +59,8 @@ const DISCOUNT = '0'; // 0%
 const BC_DURATION = '86400'; // 1w
 const BC_INCENTIVE = `500${e18}`;
 
+const USD_ADDRESS = '0x1111111111111111111111111111111111111111';
+
 async function deploy(deployAddress, addresses, logging = false) {
   const {
     coreAddress,
@@ -84,11 +88,11 @@ async function deploy(deployAddress, addresses, logging = false) {
     rariPool9FeiPCVDepositAddress,
     rariPool19DpiPCVDepositAddress,
     rariPool19FeiPCVDepositAddress,
+    rariPool18FeiPCVDepositAddress,
     rariPool24FeiPCVDepositAddress,
     rariPool25FeiPCVDepositAddress,
     rariPool26FeiPCVDepositAddress,
     rariPool27FeiPCVDepositAddress,
-    poolPartyFeiPCVDepositAddress,
     rariPool9RaiPCVDepositAddress,
     creamFeiPCVDepositAddress,
     compoundDaiPCVDepositAddress,
@@ -245,7 +249,111 @@ async function deploy(deployAddress, addresses, logging = false) {
 
   logging && console.log('compoundEthPCVDepositWrapper: ', compoundEthPCVDepositWrapper.address);
 
+  // ----------- FEI PCV Deposit Wrapper Contracts ---------------
+
+  const rariPool8FeiPCVDepositWrapper = await PCVDepositWrapper.new(
+    rariPool8FeiPCVDepositAddress,
+    feiAddress,
+    true
+  );
+
+  logging && console.log('rariPool8FeiPCVDepositWrapper: ', rariPool8FeiPCVDepositWrapper.address);
+
+  const rariPool9FeiPCVDepositWrapper = await PCVDepositWrapper.new(
+    rariPool9FeiPCVDepositAddress,
+    feiAddress,
+    true
+  );
+
+  logging && console.log('rariPool9FeiPCVDepositWrapper: ', rariPool9FeiPCVDepositWrapper.address);
+
+  const rariPool7FeiPCVDepositWrapper = await PCVDepositWrapper.new(
+    rariPool7FeiPCVDepositAddress,
+    feiAddress,
+    true
+  );
+
+  logging && console.log('rariPool7FeiPCVDepositWrapper: ', rariPool7FeiPCVDepositWrapper.address);
+
+  const rariPool6FeiPCVDepositWrapper = await PCVDepositWrapper.new(
+    rariPool6FeiPCVDepositAddress,
+    feiAddress,
+    true
+  );
+
+  logging && console.log('rariPool6FeiPCVDepositWrapper: ', rariPool6FeiPCVDepositWrapper.address);
+
+  const rariPool19FeiPCVDepositWrapper = await PCVDepositWrapper.new(
+    rariPool19FeiPCVDepositAddress,
+    feiAddress,
+    true
+  );
+
+  logging && console.log('rariPool19FeiPCVDepositWrapper: ', rariPool19FeiPCVDepositWrapper.address);
+
+  const rariPool24FeiPCVDepositWrapper = await PCVDepositWrapper.new(
+    rariPool24FeiPCVDepositAddress,
+    feiAddress,
+    true
+  );
+
+  logging && console.log('rariPool24FeiPCVDepositWrapper: ', rariPool24FeiPCVDepositWrapper.address);
+
+  const rariPool25FeiPCVDepositWrapper = await PCVDepositWrapper.new(
+    rariPool25FeiPCVDepositAddress,
+    feiAddress,
+    true
+  );
+
+  logging && console.log('rariPool25FeiPCVDepositWrapper: ', rariPool25FeiPCVDepositWrapper.address);
+
+  const rariPool26FeiPCVDepositWrapper = await PCVDepositWrapper.new(
+    rariPool26FeiPCVDepositAddress,
+    feiAddress,
+    true
+  );
+
+  logging && console.log('rariPool26FeiPCVDepositWrapper: ', rariPool26FeiPCVDepositWrapper.address);
+
+  const rariPool27FeiPCVDepositWrapper = await PCVDepositWrapper.new(
+    rariPool27FeiPCVDepositAddress,
+    feiAddress,
+    true
+  );
+
+  logging && console.log('rariPool27FeiPCVDepositWrapper: ', rariPool27FeiPCVDepositWrapper.address);
+
+  const rariPool18FeiPCVDepositWrapper = await PCVDepositWrapper.new(
+    rariPool18FeiPCVDepositAddress,
+    feiAddress,
+    true
+  );
+
+  logging && console.log('rariPool18FeiPCVDepositWrapper: ', rariPool18FeiPCVDepositWrapper.address);
+
+  const creamFeiPCVDepositWrapper = await PCVDepositWrapper.new(
+    creamFeiPCVDepositAddress,
+    feiAddress,
+    true
+  );
+
+  logging && console.log('creamFeiPCVDepositWrapper: ', creamFeiPCVDepositWrapper.address);
+
+  const staticPcvDepositWrapper = await StaticPCVDepositWrapper.new(
+    coreAddress,
+    `4000000${e18}`, // 4M PCV for 100k INDEX @ ~$40
+    `8500000${e18}` // 8.5M FEI in Kashi
+  );
+
+  logging && console.log('staticPcvDepositWrapper: ', staticPcvDepositWrapper.address);
+
   // ----------- Collateralization Contracts ---------------
+
+  const zeroConstantOracle = await ConstantOracle.new(coreAddress, 0);
+  logging && console.log('zeroConstantOracle: ', zeroConstantOracle.address);
+
+  const oneConstantOracle = await ConstantOracle.new(coreAddress, 10000);
+  logging && console.log('oneConstantOracle: ', oneConstantOracle.address);
 
   const collateralizationOracle = await CollateralizationOracle.new(
     coreAddress,
@@ -263,10 +371,29 @@ async function deploy(deployAddress, addresses, logging = false) {
       dpiUniswapPCVDeposit.address,
       uniswapPCVDeposit.address,
       compoundEthPCVDepositWrapper.address,
-      aaveEthPCVDepositWrapper.address
+      aaveEthPCVDepositWrapper.address,
+      rariPool8FeiPCVDepositWrapper.address,
+      rariPool7FeiPCVDepositWrapper.address,
+      rariPool6FeiPCVDepositWrapper.address,
+      rariPool9FeiPCVDepositWrapper.address,
+      rariPool19FeiPCVDepositWrapper.address,
+      rariPool18FeiPCVDepositWrapper.address,
+      rariPool24FeiPCVDepositWrapper.address,
+      rariPool25FeiPCVDepositWrapper.address,
+      rariPool26FeiPCVDepositWrapper.address,
+      rariPool27FeiPCVDepositWrapper.address,
+      creamFeiPCVDepositWrapper.address,
+      staticPcvDepositWrapper.address
     ],
-    [daiAddress, dpiAddress, wethAddress, raiAddress],
-    [chainlinkDaiUsdOracleWrapperAddress, chainlinkDpiUsdOracleWrapperAddress, chainlinkEthUsdOracleWrapperAddress, chainlinkRaiUsdCompositOracleAddress],
+    [daiAddress, dpiAddress, wethAddress, raiAddress, feiAddress, USD_ADDRESS],
+    [
+      chainlinkDaiUsdOracleWrapperAddress, 
+      chainlinkDpiUsdOracleWrapperAddress, 
+      chainlinkEthUsdOracleWrapperAddress, 
+      chainlinkRaiUsdCompositOracleAddress,
+      zeroConstantOracle.address,
+      oneConstantOracle.address
+    ],
   );
 
   logging && console.log('Collateralization Oracle: ', collateralizationOracle.address);

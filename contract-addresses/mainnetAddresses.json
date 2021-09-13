@@ -79,6 +79,8 @@
     "raiBondingCurveAddress": { "artifact": "BondingCurve", "address":  "0x25d60212D47Dd8F6Ff0469367E4c6C98Cd3411A5"},
     "rariPool19DpiAddress": { "artifact" : "CErc20Delegator", "address": "0xf06f65a6b7d2c401fcb8b3273d036d21fe2a5963"},
     "rariPool19DpiPCVDepositAddress": { "artifact" : "ERC20CompoundPCVDeposit", "address": "0x3dD3d945C4253bAc5B4Cc326a001B7d3f9C4DD66"},
+    "rariPool18FeiAddress": { "artifact" : "CErc20Delegator", "address": "0x17b1A2E012cC4C31f83B90FF11d3942857664efc"},
+    "rariPool18FeiPCVDepositAddress": { "artifact" : "ERC20CompoundPCVDeposit", "address": "0x5A8CB4556e5D5935Af06beab8292905f48131479"},
     "rariPool19FeiAddress": { "artifact" : "CErc20Delegator", "address": "0x04281F6715Dea6A8EbBCE143D86ea506FF326531"},
     "rariPool19FeiPCVDepositAddress": { "artifact" : "ERC20CompoundPCVDeposit", "address": "0xD6960adba53212bBE96E54a7AFeDA2066437D000"},
     "rariPool24FeiAddress": { "artifact" : "CErc20Delegator", "address": "0xb5A817E5354736eafe3A0C85620433eE75daA649"},

@@ -129,11 +129,16 @@ async function validate(addresses, oldContracts, contracts) {
   const update = await collateralizationOracleWrapper.update();
   console.log(`update gas: ${update.receipt.gasUsed}`);
 
-  expect((await collateralizationOracle.getTokensInPcv()).length).to.be.equal(4);
+  expect((await collateralizationOracle.getTokensInPcv()).length).to.be.equal(6);
   expect((await collateralizationOracle.getDepositsForToken(daiAddress)).length).to.be.equal(2);
   expect((await collateralizationOracle.getDepositsForToken(dpiAddress)).length).to.be.equal(3);
   expect((await collateralizationOracle.getDepositsForToken(raiAddress)).length).to.be.equal(3);
   expect((await collateralizationOracle.getDepositsForToken(wethAddress)).length).to.be.equal(6);
+  expect((await collateralizationOracle.getDepositsForToken(feiAddress)).length).to.be.equal(11);
+
+  console.log(pcvStats[0].toString());
+  console.log(pcvStats[1].toString());
+  console.log(pcvStats[2].toString());
 
   expect(await feiTribeLBPSwapper.CONTRACT_ADMIN_ROLE()).to.be.not.equal(await core.GOVERN_ROLE());
     
