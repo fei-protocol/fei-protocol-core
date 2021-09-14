@@ -16,15 +16,12 @@ const privateKey = process.env.ETH_PRIVATE_KEY;
 const runE2ETests = process.env.RUN_E2E_TESTS;
 const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
 
-<<<<<<< HEAD
-=======
 if (!(process.env.NODE_OPTIONS && process.env.NODE_OPTIONS.includes('max-old-space-size'))) {
   throw new Error(`Please export node env var max-old-space-size before running hardhat. "export NODE_OPTIONS=--max-old-space-size=4096"`);
 } else {
   console.log(`Node option max-old-space-size correctly set. Good job.`);
 }
 
->>>>>>> 7d64f16... fix hardhat config, small stuff
 if (!rinkebyAlchemyApiKey || !testnetPrivateKey || !privateKey || !mainnetAlchemyApiKey) {
   throw new Error('Please set your Ethereum keys in a .env')
 }
