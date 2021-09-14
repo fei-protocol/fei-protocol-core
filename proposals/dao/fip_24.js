@@ -26,15 +26,15 @@ async function setup(addresses, oldContracts, contracts, logging) {}
 async function run(addresses, oldContracts, contracts, logging) {
     const {
         fei,
-        optimisticTimelock,
-        optimisticMultisig,
+        tribalChiefOptimisticTimelock,
+        tribalChiefOptimisticMultisig,
         ethLidoPCVDeposit,
         oldETHReserveStabilizer
     } = contracts;
 
-    await fei.mint(optimisticTimelock.address, '100000000000000000000');
-    await optimisticMultisig.withdraw(oldETHReserveStabilizer.address, '5000000000000000000');
-    await optimisticMultisig.withdraw(ethLidoPCVDeposit.address, '5000000000000000000');
+    await fei.mint(tribalChiefOptimisticTimelock.address, '100000000000000000000');
+    await tribalChiefOptimisticMultisig.withdraw(oldETHReserveStabilizer.address, '5000000000000000000');
+    await tribalChiefOptimisticMultisig.withdraw(ethLidoPCVDeposit.address, '5000000000000000000');
     await ethLidoPCVDeposit.deposit();
 }
 
@@ -46,18 +46,18 @@ async function teardown(addresses, oldContracts, contracts, logging) {}
 async function validate(addresses, oldContracts, contracts) {
     const {
         fei,
-        optimisticTimelock,
-        optimisticMultisig,
+        tribalChiefOptimisticTimelock,
+        tribalChiefOptimisticMultisig,
         ethLidoPCVDeposit,
         oldETHReserveStabilizer
     } = contracts;
 
     // Optimistic timelock should have 1 million FEI
-    const optimisticTimeLockFEIBalance = await fei.balanceOf(optimisticTimelock.address);
+    const optimisticTimeLockFEIBalance = await fei.balanceOf(tribalChiefOptimisticTimelock.address);
     assert.equal(optimisticTimeLockFEIBalance.toString(), '100000000000000000000');
 
     // Optimistic multisig should have 50 eth
-    const optimisticMultisigETHBalance = web3.eth.getBalance(optimisticMultisig.address);
+    const optimisticMultisigETHBalance = web3.eth.getBalance(tribalChiefOptimisticMultisig.address);
     assert.equal(optimisticMultisigETHBalance.toString(), '5000000000000000000');
 
     // EthLidoPCVDeposit should have NO eth
