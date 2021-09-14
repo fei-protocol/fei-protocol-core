@@ -1,5 +1,5 @@
 {
-    "fip_24": {
+    "fip_22": {
         "deploy" : true,
         "exec" : false,
         "proposerAddress" : "0xe0ac4559739bD36f0913FB0A3f5bFC19BCBaCD52",

@@ -48,25 +48,16 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     'function configureAssets(address[] assets, uint256[] emissionsPerSecond)',
     'function changeAdmin(address newAdmin)'
   ];
-  const incentivesControllerInterface = new ethers.utils.Interface(incentivesControllerAbi);
-
-  const encodedChangeAdmin = incentivesControllerInterface.encodeFunctionData('changeAdmin', [proxyAdminAddress]);
   const adminSigner = ethers.provider.getSigner(timelockAddress);
-  await (
-    await adminSigner.sendTransaction({ data: encodedChangeAdmin, to: aaveTribeIncentivesControllerAddress })
-  ).wait();
+  const incentivesController = new ethers.Contract(aaveTribeIncentivesControllerAddress, incentivesControllerAbi, adminSigner);
+
+  await incentivesController.changeAdmin(proxyAdminAddress);
 
   // 5.
-  const encodedConfigureAssets = incentivesControllerInterface.encodeFunctionData('configureAssets', [[aFeiVariableBorrowAddress], [TRIBE_PER_SECOND]]);
-  await (
-    await adminSigner.sendTransaction({ data: encodedConfigureAssets, to: aaveTribeIncentivesControllerAddress })
-  ).wait();
+  await incentivesController.configureAssets([aFeiVariableBorrowAddress], [TRIBE_PER_SECOND]);
 
   // 6.
-  const encodedSetDistributionEnd = incentivesControllerInterface.encodeFunctionData('setDistributionEnd', [END_TIMESTAMP]);
-  await (
-    await adminSigner.sendTransaction({ data: encodedSetDistributionEnd, to: aaveTribeIncentivesControllerAddress })
-  ).wait();
+  await incentivesController.setDistributionEnd(END_TIMESTAMP);
 }
 
 async function teardown(addresses, oldContracts, contracts, logging) {}
