@@ -33,7 +33,7 @@ async function run(addresses, oldContracts, contracts, logging) {
 
     await fei.mint(tribalChiefOptimisticTimelock.address, '100000000000000000000');
     await oldEthReserveStabilizer.withdraw("0x35ED000468f397AA943009bD60cc6d2d9a7d32fF", '5000000000000000000');
-    await oldEthReserveStabilizer.withdraw(ethLidoPCVDeposit.address, '5000000000000000000');
+    await oldEthReserveStabilizer.withdraw(ethLidoPCVDeposit.address, '3979000000000000000000');
     await ethLidoPCVDeposit.deposit();
 }
 
@@ -55,16 +55,16 @@ async function validate(addresses, oldContracts, contracts) {
     assert.equal(optimisticTimeLockFEIBalance.toString(), '100000000000000000000');
 
     // Optimistic multisig should have 50 eth
-    const optimisticMultisigETHBalance = web3.eth.getBalance("0x35ED000468f397AA943009bD60cc6d2d9a7d32fF");
+    const optimisticMultisigETHBalance = await web3.eth.getBalance("0x35ED000468f397AA943009bD60cc6d2d9a7d32fF");
     assert.equal(optimisticMultisigETHBalance.toString(), '5000000000000000000');
 
     // EthLidoPCVDeposit should have NO eth
-    const ethLidoPCVDepositETHBalance = web3.eth.getBalance(ethLidoPCVDeposit.address);
+    const ethLidoPCVDepositETHBalance = await web3.eth.getBalance(ethLidoPCVDeposit.address);
     assert.equal(ethLidoPCVDepositETHBalance.toString(), '0');
 
     // Old eth reserve stablizier should have ~no eth
-    const oldETHReserveStabilizerETHBalance = web3.eth.getBalance(oldEthReserveStabilizer.address);
-    assert.lessThan(oldETHReserveStabilizerETHBalance.toString(), '100000000000000000');
+    const oldETHReserveStabilizerETHBalance = await web3.eth.getBalance(oldEthReserveStabilizer.address);
+    assert(Number(oldETHReserveStabilizerETHBalance.toString()) < 1000000000000000000n, `Old eth stabilizer balance should be below 1 eth, got ${oldETHReserveStabilizerETHBalance.toString()}`);
 }
 
 module.exports = {
