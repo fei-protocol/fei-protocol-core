@@ -27,14 +27,13 @@ async function run(addresses, oldContracts, contracts, logging) {
     const {
         fei,
         tribalChiefOptimisticTimelock,
-        tribalChiefOptimisticMultisig,
         ethLidoPCVDeposit,
-        oldETHReserveStabilizer
+        oldEthReserveStabilizer
     } = contracts;
 
     await fei.mint(tribalChiefOptimisticTimelock.address, '100000000000000000000');
-    await tribalChiefOptimisticMultisig.withdraw(oldETHReserveStabilizer.address, '5000000000000000000');
-    await tribalChiefOptimisticMultisig.withdraw(ethLidoPCVDeposit.address, '5000000000000000000');
+    await oldEthReserveStabilizer.withdraw("0x35ED000468f397AA943009bD60cc6d2d9a7d32fF", '5000000000000000000');
+    await oldEthReserveStabilizer.withdraw(ethLidoPCVDeposit.address, '5000000000000000000');
     await ethLidoPCVDeposit.deposit();
 }
 
@@ -47,9 +46,8 @@ async function validate(addresses, oldContracts, contracts) {
     const {
         fei,
         tribalChiefOptimisticTimelock,
-        tribalChiefOptimisticMultisig,
         ethLidoPCVDeposit,
-        oldETHReserveStabilizer
+        oldEthReserveStabilizer
     } = contracts;
 
     // Optimistic timelock should have 1 million FEI
@@ -57,7 +55,7 @@ async function validate(addresses, oldContracts, contracts) {
     assert.equal(optimisticTimeLockFEIBalance.toString(), '100000000000000000000');
 
     // Optimistic multisig should have 50 eth
-    const optimisticMultisigETHBalance = web3.eth.getBalance(tribalChiefOptimisticMultisig.address);
+    const optimisticMultisigETHBalance = web3.eth.getBalance("0x35ED000468f397AA943009bD60cc6d2d9a7d32fF");
     assert.equal(optimisticMultisigETHBalance.toString(), '5000000000000000000');
 
     // EthLidoPCVDeposit should have NO eth
@@ -65,7 +63,7 @@ async function validate(addresses, oldContracts, contracts) {
     assert.equal(ethLidoPCVDepositETHBalance.toString(), '0');
 
     // Old eth reserve stablizier should have ~no eth
-    const oldETHReserveStabilizerETHBalance = web3.eth.getBalance(oldETHReserveStabilizer.address);
+    const oldETHReserveStabilizerETHBalance = web3.eth.getBalance(oldEthReserveStabilizer.address);
     assert.lessThan(oldETHReserveStabilizerETHBalance.toString(), '100000000000000000');
 }
 
