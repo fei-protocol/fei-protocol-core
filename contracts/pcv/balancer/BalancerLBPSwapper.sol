@@ -30,8 +30,6 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     uint256 private constant ONE_PERCENT = 0.01e18;
     uint256 private constant NINETY_NINE_PERCENT = 0.99e18;
 
-    uint256 internal constant ONE = 1e18; // 18 decimal places
-
     // Balancer constants to memoize the target assets and weights from pool
     IAsset[] private assets;
     uint256[] private initialWeights;
