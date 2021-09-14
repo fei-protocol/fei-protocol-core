@@ -1,0 +1,44 @@
+{
+    "proposal_title": "FIP-24 Gas Refund for TribalChief Transition",
+    "proposal_description_link": "",
+    "proposal_commands": [
+        {
+            "address": "0x639572471f2f318464dc01066a56867130e45E25",
+            "values": "0",
+            "method": "mint(address,uint256)",
+            "arguments": [
+                "0x27Fae9E49AD955A24bB578B66Cdc962b5029fbA9",
+                "1000000000000000000000000"
+            ],
+            "description": "Mint 1 million FEI to the optimistic timelock"
+        },
+        {
+            "address": "0xa08A721dFB595753FFf335636674D76C455B275C",
+            "values": "0",
+            "method": "withdraw(address,uint256)",
+            "arguments": [
+                "0x35ED000468f397AA943009bD60cc6d2d9a7d32fF",
+                "50000000000000000000"
+            ],
+            "description": "Withdraw 50 ETH from old reserve stabilizer and send to OA multisig"
+        },
+        {
+            "address": "0xa08A721dFB595753FFf335636674D76C455B275C",
+            "values": "0",
+            "method": "withdraw(address,uint256)",
+            "arguments": [
+                "0xAc38Ee05C0204A1E119C625d0a560D6731478880",
+                "3934000000000000000000"
+            ],
+            "description": "Withdraw remaining eth in old reserve stabilizer and send to EthLidoPCVDeposit"
+        },
+        {
+            "address": "0xAc38Ee05C0204A1E119C625d0a560D6731478880",
+            "values": "0",
+            "method": "deposit()",
+            "arguments": [
+            ],
+            "description": "Call deposit on the EthLidoPCVDeposit contract."
+        }
+    ]
+}
