@@ -3,7 +3,7 @@
     "proposal_description_link": "",
     "proposal_commands": [
         {
-            "address": "0x639572471f2f318464dc01066a56867130e45E25",
+            "address": "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
             "values": "0",
             "method": "mint(address,uint256)",
             "arguments": [
