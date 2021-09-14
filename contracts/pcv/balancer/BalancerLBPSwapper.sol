@@ -6,7 +6,6 @@ import "./IVault.sol";
 import "../../utils/Timed.sol";
 import "../../refs/OracleRef.sol";
 import "../IPCVSwapper.sol";
-import "../../Constants.sol";
 
 /// @title BalancerLBPSwapper
 /// @author Fei Protocol
@@ -15,8 +14,6 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     using Decimal for Decimal.D256;
 
     // ------------- Events -------------
-    event SplippageToleranceUpdate(uint256 oldSlippageToleranceBasisPoints, uint256 newSlippageToleranceBasisPoints);
-
     event MinTokenSpentUpdate(uint256 oldMinTokenSpentBalance, uint256 newMinTokenSpentBalance);
 
     // ------------- Balancer State -------------
@@ -32,6 +29,8 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     // Balancer constants for the 99:1 -> 1:99 auction
     uint256 private constant ONE_PERCENT = 0.01e18;
     uint256 private constant NINETY_NINE_PERCENT = 0.99e18;
+
+    uint256 internal constant ONE = 1e18; // 18 decimal places
 
     // Balancer constants to memoize the target assets and weights from pool
     IAsset[] private assets;
@@ -51,9 +50,6 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
 
     /// @notice the minimum amount of tokenSpent to kick off a new auction on swap()
     uint256 public minTokenSpentBalance;
-
-    /// @notice the slippage tolerance upon withdrawal from an auction
-    uint256 public slippageToleranceBasisPoints;
     
     struct OracleData {
         address _oracle;
@@ -73,7 +69,6 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     @param _tokenReceived the token to buy
     @param _tokenReceivingAddress the address to send `tokenReceived`
     @param _minTokenSpentBalance the minimum amount of tokenSpent to kick off a new auction on swap()
-    @param _slippageToleranceBasisPoints the slippage tolerance upon withdrawal from an auction
      */
     constructor(
         address _core,
@@ -82,8 +77,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         address _tokenSpent,
         address _tokenReceived,
         address _tokenReceivingAddress,
-        uint256 _minTokenSpentBalance,
-        uint256 _slippageToleranceBasisPoints
+        uint256 _minTokenSpentBalance
     ) 
         OracleRef(
             _core, 
@@ -103,7 +97,6 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
 
         _setReceivingAddress(_tokenReceivingAddress);
         _setMinTokenSpent(_minTokenSpentBalance);
-        _setSlippageTolerance(_slippageToleranceBasisPoints);
     }
 
     /** 
@@ -208,20 +201,9 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
 
             // Uses encoding for exact BPT IN withdrawal using all held BPT
             bytes memory userData = abi.encode(IWeightedPool.ExitKind.EXACT_BPT_IN_FOR_TOKENS_OUT, bptBalance);
-            uint256[] memory amountsOut = new uint256[](2);
-            
-            // Adjusts minimum amounts out for slippage tolerance
-            if (address(assets[0]) == tokenSpent) {
-                amountsOut[0] = _scaleBySlippageTolerance(spentBalance);
-                amountsOut[1] = _scaleBySlippageTolerance(receivedBalance);
-            } else {
-                amountsOut[0] = _scaleBySlippageTolerance(receivedBalance);
-                amountsOut[1] = _scaleBySlippageTolerance(spentBalance);
-            }
-
 
             exitRequest.assets = assets;
-            exitRequest.minAmountsOut = amountsOut;
+            exitRequest.minAmountsOut = new uint256[](2); // 0 min
             exitRequest.userData = userData;
             exitRequest.toInternalBalance = false; // use external balances to be able to transfer out tokenReceived
 
@@ -317,12 +299,6 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
        _setMinTokenSpent(newMinTokenSpentBalance);
     }
 
-    /// @notice sets the minimum deposit slippage
-	/// @param newSlippageToleranceBasisPoints minimum amount of slippage allowed on withdrawals
-    function setSlippageTolerance(uint256 newSlippageToleranceBasisPoints) external onlyGovernorOrAdmin {
-       _setSlippageTolerance(newSlippageToleranceBasisPoints);
-    }
-
     /// @notice Sets the address receiving swap's inbound tokens
     /// @param newTokenReceivingAddress the address that will receive tokens
     function setReceivingAddress(address newTokenReceivingAddress) external override onlyGovernorOrAdmin {
@@ -385,16 +361,5 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
       uint256 oldMinTokenSpentBalance = minTokenSpentBalance;
       minTokenSpentBalance = newMinTokenSpentBalance;
       emit MinTokenSpentUpdate(oldMinTokenSpentBalance, newMinTokenSpentBalance);
-    }
-
-    function _setSlippageTolerance(uint256 newSlippageToleranceBasisPoints) internal {
-      require(newSlippageToleranceBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "BalancerLBPSwapper: slippage tolerance > 100%");
-      uint256 oldSlippageToleranceBasisPoints = slippageToleranceBasisPoints;
-      slippageToleranceBasisPoints = newSlippageToleranceBasisPoints;
-      emit SplippageToleranceUpdate(oldSlippageToleranceBasisPoints, newSlippageToleranceBasisPoints);
-    }
-
-    function _scaleBySlippageTolerance(uint256 input) internal view returns(uint256) {
-        return input * (Constants.BASIS_POINTS_GRANULARITY - slippageToleranceBasisPoints) / Constants.BASIS_POINTS_GRANULARITY;
     }
 }
