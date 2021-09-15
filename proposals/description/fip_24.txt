@@ -11,8 +11,7 @@ To account for dust and other inefficiencies, users will still be eligible if th
 Specifically, this proposal will:
     1 - Mint 1 million FEI (the upper bound of possible eligible addresses) to the optimistic mulitisig (triblechief) timelock
     2 - Withdraw 50 ETH from old ETH reserve stabilizer and send to OA multisig to pay for multisend gas fees and future operations
-    3 - Withdraw remaining eth in old reserve stabilizer and send to EthLidoPCVDeposit
-    4-  Call deposit on the EthLidoPCVDeposit contract to trigger ETH deposit in step #3
+    3 - Withdraw remaining eth in old reserve stabilizer and send to new reserve stabilizer
 
 Forum Thread
 https://tribe.fei.money/t/fip-24-gas-refund-for-tribal-chief-transition/3493

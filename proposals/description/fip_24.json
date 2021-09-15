@@ -27,18 +27,10 @@
             "values": "0",
             "method": "withdraw(address,uint256)",
             "arguments": [
-                "0xAc38Ee05C0204A1E119C625d0a560D6731478880",
+                "0x17305f0e18318994a57b494078CAC866A857F7b6",
                 "3934910050296751636951"
             ],
-            "description": "Withdraw remaining eth in old reserve stabilizer and send to EthLidoPCVDeposit"
-        },
-        {
-            "address": "0xAc38Ee05C0204A1E119C625d0a560D6731478880",
-            "values": "0",
-            "method": "deposit()",
-            "arguments": [
-            ],
-            "description": "Call deposit on the EthLidoPCVDeposit contract."
+            "description": "Withdraw remaining eth in old reserve stabilizer and send to new reserve stabilizer."
         }
     ]
 }

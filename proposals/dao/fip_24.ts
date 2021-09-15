@@ -36,15 +36,13 @@ async function run(addresses, oldContracts, contracts, logging) {
     const {
         fei,
         tribalChiefOptimisticTimelock,
-        ethLidoPCVDeposit,
-        oldEthReserveStabilizer
+        oldEthReserveStabilizer,
+        ethReserveStabilizer
     } = contracts;
 
     await fei.mint(tribalChiefOptimisticTimelock.address, (ethers.constants.WeiPerEther.mul(1_000_000)).toString());
     await oldEthReserveStabilizer.withdraw(tribalChiefOptimisticMultisigAddress, (ethers.constants.WeiPerEther.mul(50)).toString());
-    await oldEthReserveStabilizer.withdraw(ethLidoPCVDeposit.address, '3934910050296751636951');
-    
-    await ethLidoPCVDeposit.deposit();
+    await oldEthReserveStabilizer.withdraw(ethReserveStabilizer.address, '3934910050296751636951');
 }
 
 // Tears down any changes made in setup() that need to be cleaned up before doing 
@@ -71,10 +69,6 @@ async function validate(addresses, oldContracts, contracts) {
     // Optimistic multisig should have 50 eth
     const optimisticMultisigETHBalance = await web3.eth.getBalance(tribalChiefOptimisticMultisigAddress);
     assert.equal(optimisticMultisigETHBalance.toString(), (ethers.constants.WeiPerEther.mul(50)).toString());
-
-    // EthLidoPCVDeposit should have NO eth
-    const ethLidoPCVDepositETHBalance = await web3.eth.getBalance(ethLidoPCVDeposit.address);
-    assert.equal(ethLidoPCVDepositETHBalance.toString(), '0');
 
     // Old eth reserve stablizier should have zero eth
     const oldETHReserveStabilizerETHBalance = await web3.eth.getBalance(oldEthReserveStabilizer.address);
