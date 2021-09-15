@@ -1,6 +1,7 @@
-import ethers from 'ethers';
-import { web3 } from "hardhat-web3"
+import "@nomiclabs/hardhat-web3"
+import "@nomiclabs/hardhat-ethers"
 import { assert } from "chai"
+import { web3, ethers } from "hardhat"
 
 /*
  DAO Proposal Steps
@@ -65,11 +66,11 @@ async function validate(addresses, oldContracts, contracts) {
 
     // Optimistic timelock should have 1 million FEI
     const optimisticTimeLockFEIBalance = await fei.balanceOf(tribalChiefOptimisticTimelock.address);
-    assert.equal(optimisticTimeLockFEIBalance.toString(), '100000000000000000000');
+    assert.equal(optimisticTimeLockFEIBalance.toString(), (ethers.constants.WeiPerEther.mul(1_000_000)).toString());
 
     // Optimistic multisig should have 50 eth
     const optimisticMultisigETHBalance = await web3.eth.getBalance(tribalChiefOptimisticMultisigAddress);
-    assert.equal(optimisticMultisigETHBalance.toString(), '5000000000000000000');
+    assert.equal(optimisticMultisigETHBalance.toString(), (ethers.constants.WeiPerEther.mul(50)).toString());
 
     // EthLidoPCVDeposit should have NO eth
     const ethLidoPCVDepositETHBalance = await web3.eth.getBalance(ethLidoPCVDeposit.address);

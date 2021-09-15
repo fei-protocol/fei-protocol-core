@@ -28,7 +28,7 @@
             "method": "withdraw(address,uint256)",
             "arguments": [
                 "0xAc38Ee05C0204A1E119C625d0a560D6731478880",
-                "3979000000000000000000"
+                "3934910050296751636951"
             ],
             "description": "Withdraw remaining eth in old reserve stabilizer and send to EthLidoPCVDeposit"
         },
