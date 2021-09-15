@@ -3,6 +3,7 @@
     "proposal_description_link": "",
     "proposal_commands": [
         {
+            "target": "fei",
             "address": "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
             "values": "0",
             "method": "mint(address,uint256)",
@@ -13,6 +14,7 @@
             "description": "Mint 1 million FEI to the optimistic timelock"
         },
         {
+            "target": "oldEthReserveStabilizer",
             "address": "0xa08A721dFB595753FFf335636674D76C455B275C",
             "values": "0",
             "method": "withdraw(address,uint256)",
@@ -23,6 +25,7 @@
             "description": "Withdraw 50 ETH from old reserve stabilizer and send to OA multisig"
         },
         {
+            "target": "oldEthReserveStabilizer",
             "address": "0xa08A721dFB595753FFf335636674D76C455B275C",
             "values": "0",
             "method": "withdraw(address,uint256)",
