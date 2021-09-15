@@ -40,7 +40,7 @@ describe('e2e', function () {
     e2eCoord = new TestEndtoEndCoordinator(config, proposals);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment())
 
-    //await contracts.uniswapPCVDeposit.deposit()
+    await contracts.uniswapPCVDeposit.deposit()
   })
 
   describe('BondingCurve', async () => {

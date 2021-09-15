@@ -1,6 +1,6 @@
 FIP-24 Gas Refund for TribalChief Transition
 
-This proposal will provide gas refunds in the form of FEI to eligible addresses.
+This proposal will provide gas refunds in the form of FEI to eligible addresses and fund the OA multisig with ETH to carry out the token multisend transactions.
 
 Eligibliity is defined as follows:
 
