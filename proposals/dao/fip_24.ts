@@ -1,3 +1,7 @@
+import ethers from 'ethers';
+import { web3 } from "hardhat-web3"
+import { assert } from "chai"
+
 /*
  DAO Proposal Steps
     1. Mint 1 million FEI to the optimistic timelock
@@ -25,15 +29,20 @@ async function setup(addresses, oldContracts, contracts, logging) {}
 // Note that these mock the on-chain proposal, but the actual execution will be handled by the governor
 async function run(addresses, oldContracts, contracts, logging) {
     const {
+        tribalChiefOptimisticMultisigAddress
+    } = addresses
+
+    const {
         fei,
         tribalChiefOptimisticTimelock,
         ethLidoPCVDeposit,
         oldEthReserveStabilizer
     } = contracts;
 
-    await fei.mint(tribalChiefOptimisticTimelock.address, '100000000000000000000');
-    await oldEthReserveStabilizer.withdraw("0x35ED000468f397AA943009bD60cc6d2d9a7d32fF", '5000000000000000000');
-    await oldEthReserveStabilizer.withdraw(ethLidoPCVDeposit.address, '3979000000000000000000');
+    await fei.mint(tribalChiefOptimisticTimelock.address, (ethers.constants.WeiPerEther.mul(1_000_000)).toString());
+    await oldEthReserveStabilizer.withdraw(tribalChiefOptimisticMultisigAddress, (ethers.constants.WeiPerEther.mul(50)).toString());
+    await oldEthReserveStabilizer.withdraw(ethLidoPCVDeposit.address, '3934910050296751636951');
+    
     await ethLidoPCVDeposit.deposit();
 }
 
@@ -43,6 +52,10 @@ async function teardown(addresses, oldContracts, contracts, logging) {}
 
 // Run any validations required on the fip using mocha or console logging
 async function validate(addresses, oldContracts, contracts) {
+    const {
+        tribalChiefOptimisticMultisigAddress
+    } = addresses
+
     const {
         fei,
         tribalChiefOptimisticTimelock,
@@ -55,16 +68,16 @@ async function validate(addresses, oldContracts, contracts) {
     assert.equal(optimisticTimeLockFEIBalance.toString(), '100000000000000000000');
 
     // Optimistic multisig should have 50 eth
-    const optimisticMultisigETHBalance = await web3.eth.getBalance("0x35ED000468f397AA943009bD60cc6d2d9a7d32fF");
+    const optimisticMultisigETHBalance = await web3.eth.getBalance(tribalChiefOptimisticMultisigAddress);
     assert.equal(optimisticMultisigETHBalance.toString(), '5000000000000000000');
 
     // EthLidoPCVDeposit should have NO eth
     const ethLidoPCVDepositETHBalance = await web3.eth.getBalance(ethLidoPCVDeposit.address);
     assert.equal(ethLidoPCVDepositETHBalance.toString(), '0');
 
-    // Old eth reserve stablizier should have ~no eth
+    // Old eth reserve stablizier should have zero eth
     const oldETHReserveStabilizerETHBalance = await web3.eth.getBalance(oldEthReserveStabilizer.address);
-    assert(Number(oldETHReserveStabilizerETHBalance.toString()) < 1000000000000000000n, `Old eth stabilizer balance should be below 1 eth, got ${oldETHReserveStabilizerETHBalance.toString()}`);
+    assert.equal(oldETHReserveStabilizerETHBalance.toString(), '0', `Old eth stabilizer balance should be zero, got ${oldETHReserveStabilizerETHBalance.toString()}`);
 }
 
 module.exports = {
