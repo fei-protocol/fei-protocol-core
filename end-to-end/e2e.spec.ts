@@ -40,6 +40,38 @@ describe('e2e', function () {
     await contracts.uniswapPCVDeposit.deposit()
   })
 
+  describe('PCV Equity Minter + LBP', async function() {
+    it('mints appropriate amount and swaps', async function() {
+      const { pcvEquityMinter, collateralizationOracleWrapper, staticPcvDepositWrapper, feiTribeLBPSwapper, tribe, tribeSplitter } = contracts;
+
+      await time.increase(await pcvEquityMinter.remainingTime());
+
+      const pcvStats = await collateralizationOracleWrapper.pcvStats();
+      if (pcvStats[2] < 0) {
+        await staticPcvDepositWrapper.setBalance(pcvStats[0]);
+      }
+      await collateralizationOracleWrapper.update();
+
+      const mintAmount = await pcvEquityMinter.mintAmount();
+      console.log(mintAmount.toString());
+      const balancesBefore = await feiTribeLBPSwapper.getReserves();
+
+      const splitterBalanceBefore = await tribe.balanceOf(tribeSplitter.address);
+
+      await pcvEquityMinter.mint();
+
+      const balancesAfter = await feiTribeLBPSwapper.getReserves();
+    
+      expectApprox(balancesBefore[0].add(mintAmount), balancesAfter[0]);
+      expect(await feiTribeLBPSwapper.swapEndTime()).to.be.bignumber.greaterThan(toBN(await time.latest()));
+      
+      await time.increase(await pcvEquityMinter.duration());
+      await pcvEquityMinter.mint();
+
+      expect(await tribe.balanceOf(tribeSplitter.address)).to.be.bignumber.greaterThan(splitterBalanceBefore);
+    });
+  });
+
   describe('Collateralization Oracle', async function () {
     it('exempting an address removes from PCV stats', async function () {
       const {collateralizationOracle, compoundEthPCVDeposit } = contracts;
@@ -134,36 +166,6 @@ describe('e2e', function () {
       await staticPcvDepositWrapper.setBalance(tenPow18.mul(tenPow18).mul(toBN(10)));
       await collateralizationOracleWrapper.update();
       expect(await tribeReserveStabilizer.isCollateralizationBelowThreshold()).to.be.false;
-    });
-  });
-
-  describe('PCV Equity Minter + LBP', async function() {
-    it('mints appropriate amount and swaps', async function() {
-      const { pcvEquityMinter, collateralizationOracleWrapper, staticPcvDepositWrapper, feiTribeLBPSwapper, tribe, tribeSplitter } = contracts;
-
-      await time.increase(await pcvEquityMinter.remainingTime());
-
-      const pcvStats = await collateralizationOracleWrapper.pcvStats();
-      await staticPcvDepositWrapper.setBalance(pcvStats[0]);
-      await collateralizationOracleWrapper.update();
-
-      const mintAmount = await pcvEquityMinter.mintAmount();
-
-      const balancesBefore = await feiTribeLBPSwapper.getReserves();
-
-      const splitterBalanceBefore = await tribe.balanceOf(tribeSplitter.address);
-
-      await pcvEquityMinter.mint();
-
-      const balancesAfter = await feiTribeLBPSwapper.getReserves();
-    
-      expectApprox(balancesBefore[0].add(mintAmount), balancesAfter[0]);
-      expect(await feiTribeLBPSwapper.swapEndTime()).to.be.bignumber.greaterThan(toBN(await time.latest()));
-      
-      await time.increase(await pcvEquityMinter.duration());
-      await pcvEquityMinter.mint();
-
-      expect(await tribe.balanceOf(tribeSplitter.address)).to.be.bignumber.greaterThan(splitterBalanceBefore);
     });
   });
 
