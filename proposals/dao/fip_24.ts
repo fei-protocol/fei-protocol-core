@@ -58,7 +58,6 @@ async function validate(addresses, oldContracts, contracts) {
     const {
         fei,
         tribalChiefOptimisticTimelock,
-        ethLidoPCVDeposit,
         oldEthReserveStabilizer
     } = contracts;
 
@@ -67,7 +66,7 @@ async function validate(addresses, oldContracts, contracts) {
     assert.equal(optimisticTimeLockFEIBalance.toString(), (ethers.constants.WeiPerEther.mul(1_000_000)).toString());
 
     // Optimistic multisig should have 50 eth
-    const optimisticMultisigETHBalance = await web3.eth.getBalance(tribalChiefOptimisticMultisigAddress);
+    const optimisticMultisigETHBalance = await web3.eth.getBalance("0x35ED000468f397AA943009bD60cc6d2d9a7d32fF");
     assert.equal(optimisticMultisigETHBalance.toString(), (ethers.constants.WeiPerEther.mul(50)).toString());
 
     // Old eth reserve stablizier should have zero eth
