@@ -1,3 +1,4 @@
+const hre = require('hardhat');
 const {
   web3,
   BN,
@@ -20,6 +21,7 @@ describe('EthReserveStabilizer', function () {
   let minterAddress;
   let pcvControllerAddress;
 
+  // eslint-disable-next-line consistent-return
   this.beforeAll(async function() {
     // Can only get the current price on a forked network (since we haven't deployed Uniswap stuff in test setup)
     if (!hre.network.config.forking) {
@@ -35,8 +37,6 @@ describe('EthReserveStabilizer', function () {
       pcvControllerAddress,
     } = await getAddresses());
 
-
-    
     this.core = await getCore(true);
   
     this.fei = await Fei.at(await this.core.fei());
