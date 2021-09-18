@@ -62,6 +62,8 @@ export type MainnetContracts = {
   curve3Metapool: typeof Contract,
   erc20Dripper: typeof Contract,
   tribalChiefOptimisticTimelock: typeof Contract,
+  aaveLendingPool: typeof Contract,
+  aaveTribeIncentivesController: typeof Contract,
 }
 
 export type MainnetContractAddresses = {
