@@ -15,7 +15,7 @@ const Fei = artifacts.require('Fei');
 const MockERC20 = artifacts.require('MockERC20');
 const e18 = '000000000000000000';
 
-describe('StableSwapOperatorV1', function () {
+describe.only('StableSwapOperatorV1', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
@@ -46,7 +46,9 @@ describe('StableSwapOperatorV1', function () {
       this.core.address,
       this.mockMetapool.address,
       this.mock3pool.address,
-      '100' // 1% max slippage on deposit
+      '100', // 1% max slippage on deposit,
+      '100000000000000000',
+      `10${e18}`,
     );
 
     // add liquidity to 3pool
