@@ -5,8 +5,8 @@ const { ethers } = require('hardhat');
 const { expect } = require('chai');
 
 const e18 = '000000000000000000';
-const END_TIMESTAMP = '10000000';
-const TRIBE_PER_SECOND = '10000';
+const END_TIMESTAMP = '1647993600'; // 3-23-22
+const TRIBE_PER_SECOND = '250000000000000000'; // .25 TRIBE/s
 
 async function setup(addresses, oldContracts, contracts, logging) {}
 
