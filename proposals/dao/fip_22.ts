@@ -1,15 +1,13 @@
-import { expectApprox, time } from '../../test/helpers';
-
-const { ethers } = require('hardhat');
-const { expect } = require('chai');
+import { time, BN } from '../../test/helpers';
+import { ethers } from "hardhat";
+import { expect } from "chai";
 
 const e18 = '000000000000000000';
+
 const START_TIMESTAMP = '1632355200'; // 9-23-21
 const END_TIMESTAMP = '1647993600'; // 3-23-22
 const TRIBE_PER_SECOND = '250000000000000000'; // .25 TRIBE/s
 const FEI_PROPOSAL_ID = 37;
-
-const IERC20 = artifacts.require('IERC20');
 
 async function setup(addresses, oldContracts, contracts, logging) {
   const { aaveGovernanceV2, aaveLendingPool, fei } = contracts;
@@ -97,10 +95,10 @@ async function validate(addresses, oldContracts, contracts) {
   } = addresses;
 
   const aFeiVariableBorrowAddress = variableDebtTokenAddress;
-  const aFei = await IERC20.at(aTokenAddress);
+  const aFei = await ethers.getContractAt('IERC20', aTokenAddress);
 
-  expectApprox(await fei.balanceOf(aaveFeiPCVDeposit.address), '0');
-  expectApprox(await aFei.balanceOf(aaveFeiPCVDeposit.address), `25000000${e18}`);
+  expect(await fei.balanceOf(aaveFeiPCVDeposit.address)).to.be.bignumber.equal('0');
+  expect((await aFei.balanceOf(aaveFeiPCVDeposit.address)).toString()).to.be.equal(`25000000${e18}`);
   
   // TODO waiting for exact aFEI address to be known
   // expectApprox(await aaveFeiPCVDeposit.balance(), `25000000${e18}`);
