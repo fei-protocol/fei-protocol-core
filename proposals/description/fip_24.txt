@@ -1,0 +1,20 @@
+FIP-24 Gas Refund for TribalChief Transition
+
+This proposal will provide gas refunds in the form of FEI to eligible addresses and fund the OA multisig with ETH to carry out the token multisend transactions.
+
+Eligibliity is defined as follows:
+
+A user must have >$1 worth of FEI-TRIBE LP tokens staked between August 1, 2021 and September 3, 2021.
+A user must have at least the same amount of FEI-TRIBE LP tokens staked in TribalChief on September 30 at 11:59PM PST. 
+To account for dust and other inefficiencies, users will still be eligible if they have at least 98% of the same number of FEI-TRIBE LP tokens staked.
+
+Specifically, this proposal will:
+    1 - Mint 1 million FEI (the upper bound of possible eligible addresses) to the optimistic mulitisig (triblechief) timelock
+    2 - Withdraw 50 ETH from old ETH reserve stabilizer and send to OA multisig to pay for multisend gas fees and future operations
+    3 - Withdraw remaining eth in old reserve stabilizer and send to new reserve stabilizer
+
+Forum Thread
+https://tribe.fei.money/t/fip-24-gas-refund-for-tribal-chief-transition/3493
+
+Snapshot Vote
+https://snapshot.fei.money/#/fei.eth/proposal/QmUXci4SffdLERxfaAU4Qm2ksSv9UE4fQ7squVMQVZrLcv
