@@ -13,7 +13,7 @@
     "comma-dangle": 0,
     "func-names": 0,
     "space-before-function-paren": 0,
-    "max-len": 1,
+    "max-len": 0,
     "no-multi-spaces": 0,
     "no-trailing-spaces": 0,
     "object-curly-spacing": 0,
@@ -26,7 +26,8 @@
     "no-restricted-syntax": 0,
     "no-underscore-dangle": 0,
     "no-unused-vars": 0,
-    "no-empty-function": 0
+    "no-empty-function": 0,
+    "no-console": 0
   },
   "globals": {
     "artifacts": "readonly",

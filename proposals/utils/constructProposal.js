@@ -31,6 +31,7 @@ export default async function constructProposal(proposalName, logging = false) {
 
     logging && console.log(`Adding proposal step: ${command.description}`);
   }
+  
   proposalBuilder.setDescription(`${proposalInfo.proposal_title}\n${proposalDescription.toString()}`); // Set proposal description
 
   const proposal = proposalBuilder.build();
