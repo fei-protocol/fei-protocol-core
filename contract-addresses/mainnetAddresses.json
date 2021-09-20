@@ -3,6 +3,7 @@
     "aaveAddress" : {"artifact" : "IERC20", "address" : "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9"},
     "aaveEthPCVDepositAddress": { "artifact": "AavePCVDeposit", "address":  "0x5B86887e171bAE0C2C826e87E34Df8D558C079B9"},
     "aaveEthPCVDripControllerAddress": { "artifact": "PCVDripController", "address":  "0xb3D63876d95d3a5e591D4DE536dC410b97244086"},
+    "aaveFeiPCVDepositAddress" : { "artifact" : "AavePCVDeposit", "address" : "0xaFBd7Bd91B4c1Dd289EE47a4F030FBeDfa7ABc12"},
     "aaveGovernanceV2Address" : {"artifact" : "IAaveGovernanceV2", "address" : "0xEC568fffba86c094cf06b22134B23074DFE2252c"},
     "aaveIncentivesControllerAddress" : {"address": "0xd784927ff2f95ba542bfc824c8a8a98f3495f6b5"},
     "aaveLendingPoolAddress" : {"artifact" : "ILendingPool", "address": "0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9"},

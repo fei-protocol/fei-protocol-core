@@ -7,14 +7,14 @@
             "values": "0",
             "method": "mint(address,uint256)",
             "arguments": [
-                "0xB51f09B6F103D697dc5d64DC904Ad6a2Dad39987",
+                "0xaFBd7Bd91B4c1Dd289EE47a4F030FBeDfa7ABc12",
                 "25000000000000000000000000"
             ],
             "description": "Mint 25m FEI to Aave PCV Deposit"
         },
         {
-            "address": "0xB51f09B6F103D697dc5d64DC904Ad6a2Dad39987",
-            "target" : "rariPool6FeiPCVDeposit",
+            "address": "0xaFBd7Bd91B4c1Dd289EE47a4F030FBeDfa7ABc12",
+            "target" : "aaveFeiPCVDeposit",
             "values": "0",
             "method": "deposit()",
             "arguments": [],
