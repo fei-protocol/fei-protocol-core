@@ -43,6 +43,54 @@ describe('e2e', function () {
     await contracts.uniswapPCVDeposit.deposit()
   })
 
+  describe('Aave borrowing', async () => {
+    it('grants rewards', async function() {
+      const {
+        aaveEthPCVDeposit,
+        aaveLendingPool,
+        aaveTribeIncentivesController,
+        fei,
+        tribe
+      } = contracts;
+
+      await hre.network.provider.request({
+        method: 'hardhat_impersonateAccount',
+        params: [aaveEthPCVDeposit.address]
+      });
+
+      await aaveEthPCVDeposit.withdrawERC20(await aaveEthPCVDeposit.aToken(), deployAddress, tenPow18.mul(toBN(10000)));
+
+      const borrowAmount = tenPow18.mul(toBN(1000000));
+      const balanceBefore = await fei.balanceOf(deployAddress);
+
+      // 1. Borrow
+      await aaveLendingPool.borrow(
+        fei.address,
+        borrowAmount,
+        2,
+        0,
+        deployAddress,
+        {from: deployAddress}
+      );
+
+      expect(await fei.balanceOf(deployAddress)).to.be.bignumber.equal(balanceBefore.add(borrowAmount));
+    
+      const {
+        variableDebtTokenAddress,
+      } = await aaveLendingPool.getReserveData(fei.address);
+    
+      // 2. Fast forward time
+      await time.increase('100000');
+      // 3. Get reward amount
+      const rewardAmount = await aaveTribeIncentivesController.getRewardsBalance([variableDebtTokenAddress], deployAddress);
+      expectApprox(rewardAmount, tenPow18.mul(toBN(25000)));
+      // 4. Claim reward amount
+      await aaveTribeIncentivesController.claimRewards([variableDebtTokenAddress], rewardAmount, deployAddress);
+
+      expectApprox(rewardAmount, await tribe.balanceOf(deployAddress));
+    });
+  });
+
   describe('BondingCurve', async () => {
     describe('ETH', async function () {
       beforeEach(async function () {
