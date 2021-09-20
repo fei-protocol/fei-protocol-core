@@ -1,13 +1,8 @@
-{   "upgrade" : {
+{
+    "upgrade" : {
         "deploy" : true,
         "exec" : false,
         "proposerAddress" : "0xe0ac4559739bD36f0913FB0A3f5bFC19BCBaCD52",
-        "voterAddress" : "0xB8f482539F2d3Ae2C9ea6076894df36D1f632775"
-    },
-    "fip_24": {
-        "deploy": false,
-        "exec": true,
-        "proposerAddress" : "0xb81cf4981Ef648aaA73F07a18B03970f04d5D8bF",
         "voterAddress" : "0xB8f482539F2d3Ae2C9ea6076894df36D1f632775"
     }
 }
