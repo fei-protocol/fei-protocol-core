@@ -73,7 +73,7 @@ const config: HardhatUserConfig = {
     },
   },
   paths: {
-    tests: runE2ETests ? './end-to-end' : './test',
+    tests: runE2ETests ? './test/integration/' : './test/unit/',
   },
   mocha: {
     timeout: 1000000,

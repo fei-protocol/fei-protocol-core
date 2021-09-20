@@ -10,6 +10,9 @@
     "outDir": "dist",
     "resolveJsonModule": true,
   },
-  "include": ["./src", "./test", "end-to-end/setup", "end-to-end/e2e.spec.ts"],
+  "include": [
+    "test/*", "test/**/*",
+    "scripts/*", "scripts/**/*"
+  ],
   "files": ["hardhat.config.ts"]
 }
