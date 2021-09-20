@@ -1,22 +1,12 @@
-import { time, BN } from '../../test/helpers';
 import { ethers } from "hardhat";
 import { expect } from "chai";
 
 const e18 = '000000000000000000';
 
-const START_TIMESTAMP = '1632355200'; // 9-23-21
 const END_TIMESTAMP = '1647993600'; // 3-23-22
 const TRIBE_PER_SECOND = '250000000000000000'; // .25 TRIBE/s
-const FEI_PROPOSAL_ID = 37;
 
-async function setup(addresses, oldContracts, contracts, logging) {
-  const { aaveGovernanceV2, aaveLendingPool, fei } = contracts;
-  const proposal = await aaveGovernanceV2.getProposalById(FEI_PROPOSAL_ID);
-  await time.advanceBlockTo(proposal.endBlock);
-  await aaveGovernanceV2.queue(FEI_PROPOSAL_ID);
-  await time.increaseTo(START_TIMESTAMP);
-  await aaveGovernanceV2.execute(FEI_PROPOSAL_ID);
-}
+async function setup(addresses, oldContracts, contracts, logging) {}
 
 /*
  1. Mint 25M FEI to Aave FEI PCV Deposit
@@ -30,21 +20,15 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   const {
     fei,
     aaveFeiPCVDeposit,
-    erc20Dripper,
-    aaveLendingPool
+    erc20Dripper
   } = contracts;
 
   const {
     aaveTribeIncentivesControllerAddress,
+    aFeiVariableDebtAddress,
     timelockAddress,
     proxyAdminAddress
   } = addresses;
-
-  const {
-    variableDebtTokenAddress,
-  } = await aaveLendingPool.getReserveData(fei.address);
-
-  const aFeiVariableBorrowAddress = variableDebtTokenAddress;
 
   // 1. 
   await fei.mint(aaveFeiPCVDeposit.address, `25000000${e18}`);
@@ -67,7 +51,7 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   await incentivesController.changeAdmin(proxyAdminAddress);
 
   // 5.
-  await incentivesController.configureAssets([aFeiVariableBorrowAddress], [TRIBE_PER_SECOND]);
+  await incentivesController.configureAssets([aFeiVariableDebtAddress], [TRIBE_PER_SECOND]);
 
   // 6.
   await incentivesController.setDistributionEnd(END_TIMESTAMP);
@@ -81,27 +65,18 @@ async function validate(addresses, oldContracts, contracts) {
     aaveFeiPCVDeposit,
     proxyAdmin,
     fei,
-    aaveLendingPool
+    aFei
   } = contracts;
 
   const {
-    aTokenAddress,
-    variableDebtTokenAddress,
-  } = await aaveLendingPool.getReserveData(fei.address);
-
-  const {
     aaveTribeIncentivesControllerAddress,
+    aFeiVariableDebtAddress,
     timelockAddress
   } = addresses;
 
-  const aFeiVariableBorrowAddress = variableDebtTokenAddress;
-  const aFei = await ethers.getContractAt('IERC20', aTokenAddress);
-
   expect(await fei.balanceOf(aaveFeiPCVDeposit.address)).to.be.bignumber.equal('0');
   expect((await aFei.balanceOf(aaveFeiPCVDeposit.address)).toString()).to.be.equal(`25000000${e18}`);
-  
-  // TODO waiting for exact aFEI address to be known
-  // expectApprox(await aaveFeiPCVDeposit.balance(), `25000000${e18}`);
+  expect(await aaveFeiPCVDeposit.balance()).to.be.bignumber.equal(`25000000${e18}`);
 
   expect(await tribe.balanceOf(aaveTribeIncentivesControllerAddress)).to.be.bignumber.equal(`4000000${e18}`);
   expect(await proxyAdmin.getProxyAdmin(aaveTribeIncentivesControllerAddress)).to.be.equal(proxyAdmin.address);
@@ -115,7 +90,7 @@ async function validate(addresses, oldContracts, contracts) {
   const end = await incentivesController.getDistributionEnd();
   expect(end.toString()).to.be.equal(END_TIMESTAMP);
 
-  const config = await incentivesController.getAssetData(aFeiVariableBorrowAddress);
+  const config = await incentivesController.getAssetData(aFeiVariableDebtAddress);
   expect(config[1].toString()).to.be.equal(TRIBE_PER_SECOND);
 }
 

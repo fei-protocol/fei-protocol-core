@@ -47,7 +47,7 @@
             "values": "0",
             "method": "configureAssets(address[],uint256[])",
             "arguments": [
-                ["0x1DdcF68f4C2600CBE534212765F964342a2faf02"],
+                ["0xC2e10006AccAb7B45D9184FcF5b7EC7763f5BaAe"],
                 ["250000000000000000"]
             ],
             "description": "Trigger reward rate for aFeiVariableBorrow"
