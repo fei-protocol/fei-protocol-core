@@ -27,6 +27,6 @@ abstract contract Incentivized is CoreRef {
     /// @notice incentivize a call with incentiveAmount FEI rewards
     /// @dev no-op if the contract does not have Minter role
     function _incentivize() internal ifMinterSelf {
-        fei().mint(msg.sender, incentiveAmount);
+        _mintFei(msg.sender, incentiveAmount);
     }
 }

@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./CompoundPCVDepositBase.sol";
+import "../../Constants.sol";
 
 interface CEther {
     function mint() external payable;
@@ -38,5 +39,10 @@ contract EthCompoundPCVDeposit is CompoundPCVDepositBase {
 
     function _transferUnderlying(address to, uint256 amount) internal override {
         Address.sendValue(payable(to), amount);
+    }
+
+    /// @notice display the related token of the balance reported
+    function balanceReportedIn() public pure override returns (address) {
+        return address(Constants.WETH);
     }
 }

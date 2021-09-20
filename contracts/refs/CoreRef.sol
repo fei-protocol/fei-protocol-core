@@ -149,8 +149,10 @@ abstract contract CoreRef is ICoreRef, Pausable {
         fei().burn(feiBalance());
     }
 
-    function _mintFei(uint256 amount) internal {
-        fei().mint(address(this), amount);
+    function _mintFei(address to, uint256 amount) internal virtual {
+        if (amount != 0) {
+            fei().mint(to, amount);
+        }
     }
 
     function _setContractAdminRole(bytes32 newContractAdminRole) internal {

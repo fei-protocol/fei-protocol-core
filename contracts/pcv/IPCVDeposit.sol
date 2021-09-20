@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
+import "./IPCVDepositBalances.sol";
+
 /// @title a PCV Deposit interface
 /// @author Fei Protocol
-interface IPCVDeposit {
+interface IPCVDeposit is IPCVDepositBalances {
     // ----------- Events -----------
     event Deposit(address indexed _from, uint256 _amount);
 
@@ -37,8 +39,4 @@ interface IPCVDeposit {
     function withdrawERC20(address token, address to, uint256 amount) external;
 
     function withdrawETH(address payable to, uint256 amount) external;
-    
-    // ----------- Getters -----------
-
-    function balance() external view returns (uint256);
 }

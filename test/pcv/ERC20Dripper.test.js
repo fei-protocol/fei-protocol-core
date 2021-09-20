@@ -112,7 +112,7 @@ describe('ERC20Dripper', () => {
       await expectRevert(
         this.dripper.drip(),
         'Timed: time not ended'
-      ); 
+      );
     });
   });
 
@@ -229,7 +229,7 @@ describe('ERC20Dripper', () => {
     it('should be able to call drip when enough time has passed through multiple periods', async function () {
       for (let i = 0; i < 11; i++) {
         await time.increase(dripFrequency);
-  
+
         expect(await this.dripper.isTimeEnded()).to.be.true;
 
         const tribalChiefStartingBalance = await this.tribe.balanceOf(this.tribalChief.address);

@@ -6,6 +6,7 @@ import 'hardhat-contract-sizer';
 import 'solidity-coverage';
 import '@typechain/hardhat'
 import "@idle-finance/hardhat-proposals-plugin";
+import "solidity-coverage"
 import { HardhatUserConfig } from "hardhat/config";
 
 require('dotenv').config();

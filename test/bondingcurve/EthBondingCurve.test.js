@@ -1,5 +1,5 @@
-const { env, hrtime } = require('process');
 const hre = require('hardhat');
+
 const {
   BN,
   expectEvent,
@@ -30,6 +30,8 @@ describe('EthBondingCurve', function () {
     if (!hre.network.config.forking) {
       return this.skip();
     }
+
+    return undefined;
   });
 
   beforeEach(async function () {
@@ -86,7 +88,6 @@ describe('EthBondingCurve', function () {
 
     it('buffer', async function() {
       expect(await this.bondingCurve.buffer()).to.be.bignumber.equal(this.buffer);
-      expect(await this.bondingCurve.BASIS_POINTS_GRANULARITY()).to.be.bignumber.equal('10000');
     });
 
     it('incentive amount', async function() {

@@ -36,6 +36,10 @@ export type MainnetContracts = {
   rariPool8EthPCVDeposit: typeof Contract,
   compoundEthPCVDeposit: typeof Contract,
   compoundDaiPCVDeposit: typeof Contract,
+  curveMetapoolDeposit: typeof Contract,
+  curveMetapool: typeof Contract,
+  curve3pool: typeof Contract,
+  curve3crv: typeof Contract,
   aaveEthPCVDeposit: typeof Contract,
   aaveRaiPCVDeposit: typeof Contract,
   stAAVE: typeof Contract,
@@ -62,6 +66,14 @@ export type MainnetContracts = {
   curve3Metapool: typeof Contract,
   erc20Dripper: typeof Contract,
   tribalChiefOptimisticTimelock: typeof Contract,
+  staticPcvDepositWrapper: typeof Contract,
+  collateralizationOracle: typeof Contract,
+  collateralizationOracleWrapper: typeof Contract,
+  collateralizationOracleKeeper: typeof Contract,
+  tribeReserveStabilizerAddress: typeof Contract,
+  pcvEquityMinter: typeof Contract,
+  tribeSplitter: typeof Contract,
+  feiTribeLBPSwapper: typeof Contract,
   aaveLendingPool: typeof Contract,
   aaveTribeIncentivesController: typeof Contract,
 }
@@ -107,7 +119,7 @@ export type ProposalConfig = {
   totalValue: number,
 }
 
-export type ContractAccessRights = 
+export type ContractAccessRights =
   {
     minter: string[],
     burner: string[],

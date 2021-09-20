@@ -1,14 +1,11 @@
 import hre, { artifacts, expect, web3 } from 'hardhat'
 import { time } from '@openzeppelin/test-helpers';
 import { TestEndtoEndCoordinator } from './setup';
-import { syncPool } from '../scripts/utils/syncPool'
 import { MainnetContractAddresses, MainnetContracts } from './setup/types';
-import { getPeg, getPrice, forceEth } from './setup/utils'
-import { BN, expectApprox, expectRevert, expectEvent } from '../test/helpers'
+import { forceEth } from './setup/utils'
+import { BN, expectApprox, expectEvent } from '../test/helpers'
 import proposals from './proposals_config.json'
 
-const ERC20 = artifacts.require("ERC20");
-const FToken = artifacts.require("contracts/external/CToken.sol:CToken");
 const uintMax = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
 const { toBN } = web3.utils;
@@ -31,7 +28,7 @@ describe('e2e', function () {
     // Setup test environment and get contracts
     const version = 1
     deployAddress = (await web3.eth.getAccounts())[0];
-    
+
     const config = {
       logging: Boolean(process.env.LOGGING),
       deployAddress: deployAddress,
@@ -42,6 +39,157 @@ describe('e2e', function () {
 
     await contracts.uniswapPCVDeposit.deposit()
   })
+
+  describe('PCV Equity Minter + LBP', async function() {
+    it('mints appropriate amount and swaps', async function() {
+      const { pcvEquityMinter, collateralizationOracleWrapper, staticPcvDepositWrapper, feiTribeLBPSwapper, tribe, tribeSplitter } = contracts;
+
+      await time.increase(await pcvEquityMinter.remainingTime());
+
+      const pcvStats = await collateralizationOracleWrapper.pcvStats();
+      if (pcvStats[2] < 0) {
+        await staticPcvDepositWrapper.setBalance(pcvStats[0]);
+      }
+      await collateralizationOracleWrapper.update();
+
+      const mintAmount = await pcvEquityMinter.mintAmount();
+      console.log(mintAmount.toString());
+      const balancesBefore = await feiTribeLBPSwapper.getReserves();
+
+      const splitterBalanceBefore = await tribe.balanceOf(tribeSplitter.address);
+
+      await pcvEquityMinter.mint();
+
+      const balancesAfter = await feiTribeLBPSwapper.getReserves();
+    
+      expectApprox(balancesBefore[0].add(mintAmount), balancesAfter[0]);
+      expect(await feiTribeLBPSwapper.swapEndTime()).to.be.bignumber.greaterThan(toBN(await time.latest()));
+      
+      await time.increase(await pcvEquityMinter.duration());
+      await pcvEquityMinter.mint();
+
+      expect(await tribe.balanceOf(tribeSplitter.address)).to.be.bignumber.greaterThan(splitterBalanceBefore);
+    });
+  });
+
+  describe('Collateralization Oracle', async function () {
+    it('exempting an address removes from PCV stats', async function () {
+      const {collateralizationOracle, compoundEthPCVDeposit } = contracts;
+
+      const beforeBalance = await compoundEthPCVDeposit.balance();
+
+      const beforeStats = await collateralizationOracle.pcvStats();
+      await collateralizationOracle.setDepositExclusion(compoundEthPCVDeposit.address, true);
+      const afterStats = await collateralizationOracle.pcvStats();
+
+      expectApprox(afterStats[0], beforeStats[0].sub(beforeBalance));
+      expectApprox(afterStats[1], afterStats[1]);
+      expectApprox(afterStats[2], beforeStats[2].sub(beforeBalance));
+    });
+  });
+
+  describe('Collateralization Oracle Keeper', async function () {
+    it('can only call when deviation or time met', async function () {     
+      const { staticPcvDepositWrapper, collateralizationOracleWrapper, collateralizationOracleKeeper, fei } = contracts;
+
+      const beforeBalance = await fei.balanceOf(deployAddress);
+
+      await collateralizationOracleWrapper.update();
+
+      // After updating everything should be up to date
+      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.false;
+
+      // After time increase, should be outdated
+      await time.increase(await collateralizationOracleWrapper.remainingTime());
+
+      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.true;
+      expect(await collateralizationOracleWrapper.isOutdated()).to.be.true;
+      expect(await collateralizationOracleWrapper.isExceededDeviationThreshold()).to.be.false;
+
+      // UpdateIfOutdated succeeds
+      await collateralizationOracleWrapper.updateIfOutdated({from: deployAddress});
+
+      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.false;
+      
+      // Increase PCV balance to exceed deviation threshold
+      const pcvStats = await collateralizationOracleWrapper.pcvStats();
+      await staticPcvDepositWrapper.setBalance(pcvStats[0]);
+
+      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.true;
+      expect(await collateralizationOracleWrapper.isOutdated()).to.be.false;
+      expect(await collateralizationOracleWrapper.isExceededDeviationThreshold()).to.be.true;
+
+      // Keeper is incentivized to update oracle
+      await time.increase(await collateralizationOracleKeeper.MIN_MINT_FREQUENCY());
+      await collateralizationOracleKeeper.mint({from: deployAddress});
+
+      const incentive = await collateralizationOracleKeeper.incentiveAmount();
+      expect(beforeBalance.add(incentive)).to.be.bignumber.equal(await fei.balanceOf(deployAddress));
+      
+      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.false;
+    });
+  });
+
+  describe('TribeReserveStabilizer', async function() {
+    it('mint TRIBE', async function () {
+      const { tribeReserveStabilizer, tribe } = contracts;
+      const tribeSupply = await tribe.totalSupply();
+      const balanceBefore = await tribe.balanceOf(deployAddress);
+
+      await tribeReserveStabilizer.mint(deployAddress, '100000');
+
+      // Minting increases total supply and target balance
+      expect(balanceBefore.add(new BN('100000'))).to.be.bignumber.equal(await tribe.balanceOf(deployAddress));
+      expect(tribeSupply.add(new BN('100000'))).to.be.bignumber.equal(await tribe.totalSupply());
+    });
+
+    it('exchangeFei', async function () {
+      const { fei, staticPcvDepositWrapper, tribe, tribeReserveStabilizer, collateralizationOracleWrapper } = contracts;
+
+      await fei.mint(deployAddress, tenPow18.mul(tenPow18).mul(toBN(4)));
+      await collateralizationOracleWrapper.update();
+      
+      const userFeiBalanceBefore = toBN(await fei.balanceOf(deployAddress));
+      const userTribeBalanceBefore = await tribe.balanceOf(deployAddress);
+
+      const feiTokensExchange = toBN(40000000000000)
+      await tribeReserveStabilizer.updateOracle();
+      const expectedAmountOut = await tribeReserveStabilizer.getAmountOut(feiTokensExchange);
+      await tribeReserveStabilizer.exchangeFei(feiTokensExchange);
+  
+      const userFeiBalanceAfter = toBN(await fei.balanceOf(deployAddress))
+      const userTribeBalanceAfter = await tribe.balanceOf(deployAddress);
+
+      expect(userTribeBalanceAfter.sub(toBN(expectedAmountOut))).to.be.bignumber.equal(userTribeBalanceBefore);
+      expect(userFeiBalanceAfter).to.be.bignumber.equal(userFeiBalanceBefore.sub(feiTokensExchange));
+
+      await staticPcvDepositWrapper.setBalance(tenPow18.mul(tenPow18).mul(toBN(10)));
+      await collateralizationOracleWrapper.update();
+      expect(await tribeReserveStabilizer.isCollateralizationBelowThreshold()).to.be.false;
+    });
+  });
+
+  describe('TRIBE Splitter', async function () {
+    it('splits TRIBE 3 ways', async function () {
+      const { tribeSplitter, tribeReserveStabilizer, tribe, erc20Dripper, core } = contracts;
+
+      await core.allocateTribe(tribeSplitter.address, '1000000');
+
+      const beforeBalanceStabilizer = await tribe.balanceOf(tribeReserveStabilizer.address);
+      const beforeBalanceDripper = await tribe.balanceOf(erc20Dripper.address);
+      const beforeBalanceCore = await tribe.balanceOf(core.address);
+
+      await tribeSplitter.allocate();
+
+      const afterBalanceStabilizer = await tribe.balanceOf(tribeReserveStabilizer.address);
+      const afterBalanceDripper = await tribe.balanceOf(erc20Dripper.address);
+      const afterBalanceCore = await tribe.balanceOf(core.address);
+
+      expectApprox(beforeBalanceStabilizer, afterBalanceStabilizer.sub(new BN('600000')));
+      expectApprox(beforeBalanceDripper, afterBalanceDripper.sub(new BN('200000')));
+      expectApprox(beforeBalanceCore, afterBalanceCore.sub(new BN('200000')));
+    });
+  });
 
   describe('Aave borrowing', async () => {
     it('grants rewards', async function() {
@@ -100,21 +248,21 @@ describe('e2e', function () {
         await bondingCurve.purchase(deployAddress, ethSeedAmount, {value: ethSeedAmount})
         await bondingCurve.updateOracle();
       })
-  
+
       it('should allow purchase of Fei through bonding curve', async function () {
         const bondingCurve = contracts.bondingCurve;
         const fei = contracts.fei;
         const feiBalanceBefore = await fei.balanceOf(deployAddress);
-  
+
         const ethAmount = tenPow18; // 1 ETH
         const oraclePrice = toBN((await bondingCurve.readOracle())[0]);
         const currentPrice = toBN((await bondingCurve.getCurrentPrice())[0]);
-  
+
         // expected = amountIn * oracle * price (Note: there is an edge case when crossing scale where this is not true)
         const expected = ethAmount.mul(oraclePrice).mul(currentPrice).div(tenPow18).div(tenPow18);
-  
+
         await bondingCurve.purchase(deployAddress, ethAmount, {value: ethAmount});
-        
+
         const feiBalanceAfter = await fei.balanceOf(deployAddress);
         const expectedFinalBalance = feiBalanceBefore.add(expected)
         expect(feiBalanceAfter).to.be.bignumber.equal(expectedFinalBalance);
@@ -133,20 +281,21 @@ describe('e2e', function () {
 
         const curveEthBalanceBefore = toBN(await web3.eth.getBalance(bondingCurve.address));
         expect(curveEthBalanceBefore).to.be.bignumber.greaterThan(toBN(0))
-  
+
         const fei = contracts.fei;
         const callerFeiBalanceBefore = await fei.balanceOf(deployAddress)
         const pcvAllocations = await bondingCurve.getAllocation()
+
         expect(pcvAllocations[0].length).to.be.equal(2)
   
         const durationWindow = await bondingCurve.duration()
-  
+
         // pass the duration window, so Fei incentive will be sent
         await time.increase(durationWindow);
-  
+
         const allocatedEth = await bondingCurve.balance()
         await bondingCurve.allocate()
-      
+
         const curveEthBalanceAfter = toBN(await web3.eth.getBalance(bondingCurve.address));
         expect(curveEthBalanceAfter).to.be.bignumber.equal(curveEthBalanceBefore.sub(allocatedEth))
         
@@ -172,7 +321,7 @@ describe('e2e', function () {
 
         await forceEth(contractAddresses.indexCoopFusePoolDpiAddress);
         await contracts.dpi.transfer(deployAddress, dpiSeedAmount.mul(toBN(2)), {from: contractAddresses.indexCoopFusePoolDpiAddress});
-        
+
         // Seed bonding curve with dpi
         const bondingCurve = contracts.dpiBondingCurve
         // increase mint cap
@@ -181,26 +330,26 @@ describe('e2e', function () {
         await contracts.dpi.approve(bondingCurve.address, dpiSeedAmount.mul(toBN(2)));
         await bondingCurve.purchase(deployAddress, dpiSeedAmount)
       })
-  
+
       it('should allow purchase of Fei through bonding curve', async function () {
         const bondingCurve = contracts.dpiBondingCurve;
         const fei = contracts.fei;
         const feiBalanceBefore = await fei.balanceOf(deployAddress);
-  
+
         const dpiAmount = tenPow18; // 1 DPI
         const oraclePrice = toBN((await bondingCurve.readOracle())[0]);
         const currentPrice = toBN((await bondingCurve.getCurrentPrice())[0]);
-  
+
         // expected = amountIn * oracle * price (Note: there is an edge case when crossing scale where this is not true)
         const expected = dpiAmount.mul(oraclePrice).mul(currentPrice).div(tenPow18).div(tenPow18);
-  
+
         await bondingCurve.purchase(deployAddress, dpiAmount);
-        
+
         const feiBalanceAfter = await fei.balanceOf(deployAddress);
         const expectedFinalBalance = feiBalanceBefore.add(expected)
         expect(feiBalanceAfter).to.be.bignumber.equal(expectedFinalBalance);
       })
-  
+
       it('should transfer allocation from bonding curve to the uniswap deposit and Fuse', async function () {
         const bondingCurve = contracts.dpiBondingCurve;
         const uniswapPCVDeposit = contracts.dpiUniswapPCVDeposit;
@@ -208,16 +357,16 @@ describe('e2e', function () {
 
         const pcvAllocations = await bondingCurve.getAllocation()
         expect(pcvAllocations[0].length).to.be.equal(2)
-    
+
         const pcvDepositBefore = await uniswapPCVDeposit.balance();
         const fuseBalanceBefore = await fusePCVDeposit.balance();
 
         const allocatedDpi = await bondingCurve.balance()
         await bondingCurve.allocate()
-      
+
         const curveBalanceAfter = await bondingCurve.balance();
         await expectApprox(curveBalanceAfter, toBN(0), '100')
-        
+
         const pcvDepositAfter = await uniswapPCVDeposit.balance()
         await expectApprox(pcvDepositAfter.sub(pcvDepositBefore), allocatedDpi.mul(toBN(9)).div(toBN(10)), '10')
 
@@ -348,6 +497,35 @@ describe('e2e', function () {
     });
   });
 
+  describe('StableSwapOperatorV1', async function() {
+    it('should properly withdraw ~1M DAI to self', async function () {
+      const daiBalanceBefore = await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address);
+      //console.log('daiBalanceBefore', daiBalanceBefore / 1e18);
+      await contracts.curveMetapoolDeposit.withdraw(contracts.curveMetapoolDeposit.address, tenPow18.mul(toBN(1e6)));
+      const daiBalanceAfter = await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address);
+      //console.log('daiBalanceAfter', daiBalanceAfter / 1e18);
+      const daiBalanceWithdrawn = daiBalanceAfter.sub(daiBalanceBefore);
+      //console.log('daiBalanceWithdrawn', daiBalanceWithdrawn / 1e18);
+      await expectApprox(daiBalanceWithdrawn, tenPow18.mul(toBN(1e6)), '1000');
+    });
+    it('should properly re-deposit ~1M DAI just withdrawn', async function () {
+      const daiBalanceBefore = await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address);
+      const balanceBefore = await contracts.curveMetapoolDeposit.balance();
+      //console.log('daiBalanceBefore', daiBalanceBefore / 1e18);
+      //console.log('balanceBefore', balanceBefore / 1e18);
+      await expectApprox(daiBalanceBefore, tenPow18.mul(toBN(1e6)), '1000');
+      await contracts.curveMetapoolDeposit.deposit();
+      const daiBalanceAfter = await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address);
+      expect(daiBalanceAfter).to.be.bignumber.equal('0');
+      //console.log('daiBalanceAfter', daiBalanceAfter / 1e18);
+      const balanceAfter = await contracts.curveMetapoolDeposit.balance();
+      const balanceChange = balanceAfter.sub(balanceBefore);
+      //console.log('balanceChange', balanceChange / 1e18);
+      //console.log('balanceAfter', balanceAfter / 1e18);
+      await expectApprox(balanceChange, tenPow18.mul(toBN(1e6)), '1000');
+    });
+  });
+
   it('should be able to redeem Fei from stabiliser', async function () {
     const fei = contracts.fei;
     const reserveStabilizer = contracts.ethReserveStabilizer;
@@ -363,7 +541,7 @@ describe('e2e', function () {
 
     const contractEthBalanceAfter = toBN(await web3.eth.getBalance(reserveStabilizer.address))
     const userFeiBalanceAfter = toBN(await fei.balanceOf(deployAddress))
-  
+
     expect(contractEthBalanceBefore.sub(toBN(expectedAmountOut))).to.be.bignumber.equal(contractEthBalanceAfter)
     expect(userFeiBalanceAfter).to.be.bignumber.equal(userFeiBalanceBefore.sub(feiTokensExchange))
   })
@@ -454,70 +632,6 @@ describe('e2e', function () {
     })
   });
 
-  describe('Reweights', async () => {
-    it('should perform reweight above peg correctly',  async function () {
-      // Sync pool to 3% above peg
-      await syncPool(
-        toBN('9700'),
-        {
-          feiAddress: contractAddresses.feiAddress,
-          ethUniswapPCVDepositAddress: contractAddresses.uniswapPCVDepositAddress,
-          ethPairAddress: contractAddresses.feiEthPairAddress, // this is fei eth pair
-        },
-        deployAddress,
-      );
-  
-      const controller = contracts.uniswapPCVController
-      await time.increase(await controller.remainingTime());
-  
-      const eligible = await controller.reweightEligible();
-      expect(eligible).to.be.equal(true)
-  
-      await controller.reweight();
-  
-      // Check that the reweight was successful
-      // asset pool ratio = oracle ratio
-      const peg = await getPeg(controller)
-      const currentPrice = await getPrice(controller);
-      expectApprox(peg, currentPrice, '100');
-
-      // ensure timer reset
-      const timeReset = !(await controller.isTimeEnded());
-      expect(timeReset).to.equal(true)
-    })
-  
-    it('should perform reweight below peg correctly',  async function () {
-      // Sync pool to 3% below peg
-      await syncPool(
-        toBN('10300'),
-        {
-          feiAddress: contractAddresses.feiAddress,
-          ethUniswapPCVDepositAddress: contractAddresses.uniswapPCVDepositAddress,
-          ethPairAddress: contractAddresses.feiEthPairAddress, // this is fei eth pair
-        },
-        deployAddress,
-      );
-  
-      const controller = contracts.uniswapPCVController
-      await time.increase(await controller.remainingTime());
-  
-      const eligible = await controller.reweightEligible();
-      expect(eligible).to.be.equal(true)
-  
-      await controller.reweight();
-  
-      // Check that the reweight was successful
-      // asset pool ratio = oracle ratio
-      const peg = await getPeg(controller)
-      const currentPrice = await getPrice(controller);
-      expect(peg).to.be.bignumber.equal(currentPrice)
-  
-      // ensure timer reset
-      const timeReset = !(await controller.isTimeEnded());
-      expect(timeReset).to.equal(true)
-    })
-  })
-
   describe('Compound', async () => {
     it('should be able to deposit and withdraw ERC20 tokens',  async function () {
       const erc20CompoundPCVDeposit = contracts.rariPool8FeiPCVDeposit;
@@ -533,7 +647,7 @@ describe('e2e', function () {
       await erc20CompoundPCVDeposit.withdraw(deployAddress, amount);
       expect((await erc20CompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.lessThan(amount);
     })
-  
+
     it('should be able to deposit and withdraw ETH',  async function () {
       const ethCompoundPCVDeposit = contracts.compoundEthPCVDeposit;
       const amount = tenPow18.mul(toBN(200));
@@ -551,7 +665,7 @@ describe('e2e', function () {
     })
   })
 
-  describe('Aave', async () => {  
+  describe('Aave', async () => {
     it('should be able to deposit and withdraw ETH',  async function () {
       const aaveEthPCVDeposit = contracts.aaveEthPCVDeposit;
       const amount = tenPow18.mul(toBN(200));
@@ -615,7 +729,7 @@ describe('e2e', function () {
       const governorId = await core.GOVERN_ROLE()
       const numGovernorRoles = await core.getRoleMemberCount(governorId)
       expect(numGovernorRoles.toNumber()).to.be.equal(accessRights.governor.length)
-      
+
       const guardianId = await core.GUARDIAN_ROLE()
       const numGuaridanRoles = await core.getRoleMemberCount(guardianId)
       expect(numGuaridanRoles.toNumber()).to.be.equal(accessRights.guardian.length)

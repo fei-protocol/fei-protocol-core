@@ -3,6 +3,7 @@ const {
   BN,
   expectEvent,
   expectRevert,
+  expectApprox,
   expect,
   getAddresses,
   getCore,
@@ -44,8 +45,23 @@ describe('EthUniswapPCVDeposit', function () {
     await this.core.grantMinter(this.pcvDeposit.address, {from: governorAddress});
 
     await this.pair.set(50000000, 100000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 500:1 FEI/ETH with 10k liquidity
+
     await this.fei.mint(this.pair.address, 50000000, {from: minterAddress});  
     await this.weth.mint(this.pair.address, 100000);  
+  });
+
+  describe('Resistant Balance', function() {
+    it('succeeds', async function() {
+      await this.pair.transfer(this.pcvDeposit.address, LIQUIDITY_INCREMENT, {from: userAddress});
+      const resistantBalances = await this.pcvDeposit.resistantBalanceAndFei();
+
+      // Resistant balances should multiply to k and have price of 400
+      // PCV deposit owns half of the LP
+      expect(resistantBalances[0]).to.be.bignumber.equal(new BN(111803));
+      expect(resistantBalances[1]).to.be.bignumber.equal(new BN(44721519));
+      expectApprox(resistantBalances[0].mul(resistantBalances[1]), '5000000000000');
+      expectApprox(resistantBalances[1].div(resistantBalances[0]), '400', '10');
+    });
   });
 
   describe('Deposit', function() {

@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "./BondingCurve.sol";
+import "../Constants.sol";
 
 /// @title a bonding curve for purchasing FEI with ETH
 /// @author Fei Protocol
@@ -32,7 +33,7 @@ contract EthBondingCurve is BondingCurve {
             params.ratios,
             params.duration,
             params.incentive,
-            IERC20(address(0)),
+            IERC20(address(Constants.WETH)),
             params.discount,
             params.buffer
         )
