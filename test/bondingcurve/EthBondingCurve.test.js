@@ -1,5 +1,7 @@
+
 const hre = require('hardhat');
 const { env, hrtime } = require('process');
+
 const {
   BN,
   expectEvent,
@@ -24,6 +26,7 @@ describe('EthBondingCurve', function () {
   let beneficiaryAddress1;
   let beneficiaryAddress2;
 
+  // eslint-disable-next-line consistent-return
   this.beforeAll(async function() {
     // Can only get the current price on a forked network (since we haven't deployed Uniswap stuff in test setup)
     if (!hre.network.config.forking) {

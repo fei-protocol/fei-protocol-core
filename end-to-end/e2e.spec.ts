@@ -191,6 +191,54 @@ describe('e2e', function () {
     });
   });
 
+  describe('Aave borrowing', async () => {
+    it('grants rewards', async function() {
+      const {
+        aaveEthPCVDeposit,
+        aaveLendingPool,
+        aaveTribeIncentivesController,
+        fei,
+        tribe
+      } = contracts;
+
+      await hre.network.provider.request({
+        method: 'hardhat_impersonateAccount',
+        params: [aaveEthPCVDeposit.address]
+      });
+
+      await aaveEthPCVDeposit.withdrawERC20(await aaveEthPCVDeposit.aToken(), deployAddress, tenPow18.mul(toBN(10000)));
+
+      const borrowAmount = tenPow18.mul(toBN(1000000));
+      const balanceBefore = await fei.balanceOf(deployAddress);
+
+      // 1. Borrow
+      await aaveLendingPool.borrow(
+        fei.address,
+        borrowAmount,
+        2,
+        0,
+        deployAddress,
+        {from: deployAddress}
+      );
+
+      expect(await fei.balanceOf(deployAddress)).to.be.bignumber.equal(balanceBefore.add(borrowAmount));
+    
+      const {
+        variableDebtTokenAddress,
+      } = await aaveLendingPool.getReserveData(fei.address);
+    
+      // 2. Fast forward time
+      await time.increase('100000');
+      // 3. Get reward amount
+      const rewardAmount = await aaveTribeIncentivesController.getRewardsBalance([variableDebtTokenAddress], deployAddress);
+      expectApprox(rewardAmount, tenPow18.mul(toBN(25000)));
+      // 4. Claim reward amount
+      await aaveTribeIncentivesController.claimRewards([variableDebtTokenAddress], rewardAmount, deployAddress);
+
+      expectApprox(rewardAmount, await tribe.balanceOf(deployAddress));
+    });
+  });
+
   describe('BondingCurve', async () => {
     describe('ETH', async function () {
       beforeEach(async function () {
@@ -864,8 +912,7 @@ describe('e2e', function () {
 
       it('stakes uniswap fei/tribe LP tokens', async function () {
         const pid = 0;
-
-        const perBlockReward = tribePerBlock.div(await tribalChief.numPools());
+        
         await uniFeiTribe.approve(tribalChief.address, totalStaked, { from: feiTribeLPTokenOwner });
         await tribalChief.deposit(pid, totalStaked, 0, { from: feiTribeLPTokenOwner });
 
@@ -874,25 +921,30 @@ describe('e2e', function () {
           await time.advanceBlock();
         }
 
-        expect(
-          Number(await tribalChief.pendingRewards(pid, feiTribeLPTokenOwner)),
-        ).to.be.equal(perBlockReward * advanceBlockAmount);
+        const balanceOfPool = await uniFeiTribe.balanceOf(tribalChief.address);
+        const perBlockReward = tribePerBlock.div(await tribalChief.numPools()).mul(new BN(totalStaked)).div(balanceOfPool);
+
+        expectApprox(await tribalChief.pendingRewards(pid, feiTribeLPTokenOwner), perBlockReward * advanceBlockAmount);
 
         await tribalChief.harvest(pid, feiTribeLPTokenOwner, { from: feiTribeLPTokenOwner });
 
         // add on one to the advance block amount as we have
         // advanced one more block when calling the harvest function
-        expect(
-          Number(await tribe.balanceOf(feiTribeLPTokenOwner)),
-        ).to.be.equal(perBlockReward * (advanceBlockAmount + 1));
+        expectApprox(await tribe.balanceOf(feiTribeLPTokenOwner), perBlockReward * (advanceBlockAmount + 1));
         // now withdraw from deposit to clear the setup for the next test
         await unstakeAndHarvestAllPositions([feiTribeLPTokenOwner], pid, tribalChief, uniFeiTribe);
       });
 
       it('multiple users stake uniswap fei/tribe LP tokens', async function () {
         const userAddresses = [feiTribeLPTokenOwner, feiTribeLPTokenOwnerNumberFour]
-        const userPerBlockReward = tribePerBlock.div(await tribalChief.numPools()).div(new BN(userAddresses.length));      
         const pid = 0;
+
+        const balanceOfPool = await uniFeiTribe.balanceOf(tribalChief.address);
+        const staked = new BN(totalStaked);
+        const userPerBlockReward = tribePerBlock
+          .div(await tribalChief.numPools())
+          .mul(staked)
+          .div(balanceOfPool.add(staked.mul(new BN(userAddresses.length))));
 
         await testMultipleUsersPooling(
           tribalChief,
@@ -933,8 +985,14 @@ describe('e2e', function () {
 
       it('multiple users stake uniswap fei/tribe LP tokens, one user calls emergency withdraw and loses all reward debt', async function () {
         const userAddresses = [feiTribeLPTokenOwner, feiTribeLPTokenOwnerNumberFour, feiTribeLPTokenOwnerNumberFive]
-        const userPerBlockReward = tribePerBlock.div(await tribalChief.numPools()).div(new BN(userAddresses.length));
         const pid = 0;
+
+        const balanceOfPool = await uniFeiTribe.balanceOf(tribalChief.address);
+        const staked = new BN(totalStaked);
+        const userPerBlockReward = tribePerBlock
+          .div(await tribalChief.numPools())
+          .mul(staked)
+          .div(balanceOfPool.add(staked.mul(new BN(userAddresses.length))));
 
         await testMultipleUsersPooling(
           tribalChief,
@@ -983,211 +1041,6 @@ describe('e2e', function () {
         }
         // withdraw from deposit to clear the setup for the next test
         await unstakeAndHarvestAllPositions(userAddresses, pid, tribalChief, uniFeiTribe);
-      });
-    });
-
-    describe('FEICRV3Metapool', async () => {
-      const CRVMetaPoolLPTokenOwner = '0x9544A83A8cB74062c836AA11565d4BB4A54fe40D';
-      const feiTribeLPTokenOwner = '0x7D809969f6A04777F0A87FF94B57E56078E5fE0F';
-      const totalStaked = '100000000000000000000';
-
-      let tribalChief;
-      let tribePerBlock;
-      let tribe;
-      let crvMetaPool;
-
-      before(async function () {
-        await hre.network.provider.request({
-          method: 'hardhat_impersonateAccount',
-          params: [CRVMetaPoolLPTokenOwner],
-        });
-
-        await hre.network.provider.request({
-          method: 'hardhat_impersonateAccount',
-          params: [feiTribeLPTokenOwner],
-        });
-
-        tribalChief = contracts.tribalChief;
-        tribePerBlock = await tribalChief.tribePerBlock();
-        tribe = contracts.tribe;
-        crvMetaPool = contracts.curve3Metapool;
-      });
-
-      it('balance check CRV tokens', async function () {
-        expect(await crvMetaPool.balanceOf(CRVMetaPoolLPTokenOwner)).to.be.bignumber.gt(new BN(0));
-      });
-
-      it('can stake CRV tokens', async function () {
-        const pid = 1;
-
-        const perBlockReward = tribePerBlock.div(await tribalChief.numPools());
-        await crvMetaPool.approve(tribalChief.address, totalStaked, { from: CRVMetaPoolLPTokenOwner });
-        await tribalChief.deposit(pid, totalStaked, 0, { from: CRVMetaPoolLPTokenOwner });
-
-        const advanceBlockAmount = 3;
-        for (let i = 0; i < advanceBlockAmount; i++) {
-          await time.advanceBlock();
-        }
-
-        expect(
-          Number(await tribalChief.pendingRewards(pid, CRVMetaPoolLPTokenOwner)),
-        ).to.be.equal(perBlockReward * advanceBlockAmount);
-        
-        const startingTribeBalance = await tribe.balanceOf(CRVMetaPoolLPTokenOwner);
-        await tribalChief.harvest(pid, CRVMetaPoolLPTokenOwner, { from: CRVMetaPoolLPTokenOwner });
-
-        const tribeDelta = (await tribe.balanceOf(CRVMetaPoolLPTokenOwner)).sub(startingTribeBalance);
-        // add on one to the advance block amount as we have
-        // advanced one more block when calling the harvest function
-        expect(tribeDelta).to.be.bignumber.equal(perBlockReward.mul(new BN(advanceBlockAmount + 1)));
-        // now withdraw from deposit to clear the setup for the next test
-        await unstakeAndHarvestAllPositions([CRVMetaPoolLPTokenOwner], pid, tribalChief, crvMetaPool);
-      });
-
-      it('can stake CRV tokens, then withdrawFromDeposit', async function () {
-        const pid = 1;
-
-        const perBlockReward = tribePerBlock.div(await tribalChief.numPools());
-        await crvMetaPool.approve(tribalChief.address, totalStaked, { from: CRVMetaPoolLPTokenOwner });
-        await tribalChief.deposit(pid, totalStaked, 0, { from: CRVMetaPoolLPTokenOwner });
-
-        const advanceBlockAmount = 3;
-        for (let i = 0; i < advanceBlockAmount; i++) {
-          await time.advanceBlock();
-        }
-
-        expect(
-          Number(await tribalChief.pendingRewards(pid, CRVMetaPoolLPTokenOwner)),
-        ).to.be.equal(perBlockReward * advanceBlockAmount);
-        
-        let startingTribeBalance = await tribe.balanceOf(CRVMetaPoolLPTokenOwner);
-        await tribalChief.harvest(pid, CRVMetaPoolLPTokenOwner, { from: CRVMetaPoolLPTokenOwner });
-
-        {
-          const tribeDelta = (await tribe.balanceOf(CRVMetaPoolLPTokenOwner)).sub(startingTribeBalance);
-          // add on one to the advance block amount as we have advanced one more block when calling the harvest function
-          expect(tribeDelta).to.be.bignumber.equal(perBlockReward.mul(new BN(advanceBlockAmount + 1)));
-        }
-        const startingCRVLPTokenBalance = await crvMetaPool.balanceOf(CRVMetaPoolLPTokenOwner);
-        await tribalChief.withdrawFromDeposit(pid, totalStaked, CRVMetaPoolLPTokenOwner, 0, { from: CRVMetaPoolLPTokenOwner });
-        // now withdraw from deposit to clear the setup for the next test
-        const endingCRVLpTokenBalance = await crvMetaPool.balanceOf(CRVMetaPoolLPTokenOwner);
-        expect(startingCRVLPTokenBalance.add(new BN(totalStaked))).to.be.bignumber.equal(endingCRVLpTokenBalance);
-
-        {
-          startingTribeBalance = await tribe.balanceOf(CRVMetaPoolLPTokenOwner);
-          await tribalChief.harvest(pid, CRVMetaPoolLPTokenOwner, { from: CRVMetaPoolLPTokenOwner });
-          const tribeDelta = (await tribe.balanceOf(CRVMetaPoolLPTokenOwner)).sub(startingTribeBalance);
-          // We only received rewards on the withdraw tx, not on the harvest tx
-          expect(tribeDelta).to.be.bignumber.equal(perBlockReward);
-          const { rewardDebt, virtualAmount } = await tribalChief.userInfo(pid, CRVMetaPoolLPTokenOwner);
-          expect(rewardDebt).to.be.bignumber.equal(new BN(0));
-          expect(virtualAmount).to.be.bignumber.equal(new BN(0));
-        }
-        // ensure that the virtual total supply got zero'd as well
-        expect((await tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(new BN('0'));
-        
-        await unstakeAndHarvestAllPositions([CRVMetaPoolLPTokenOwner], pid, tribalChief, crvMetaPool);
-        // ensure that user deposits got zero'd after calling withdrawAllAndHarvest
-        expect(await tribalChief.openUserDeposits(pid, CRVMetaPoolLPTokenOwner)).to.be.bignumber.equal(new BN('0'));
-      });
-      
-      it('can stake CRV tokens with multiple users', async function () {
-        const pid = 1;
-        const userAddresses = [feiTribeLPTokenOwner, CRVMetaPoolLPTokenOwner];
-        const userPerBlockReward = tribePerBlock.div(await tribalChief.numPools()).div(new BN(userAddresses.length));
-
-        await crvMetaPool.transfer(feiTribeLPTokenOwner, totalStaked, { from: CRVMetaPoolLPTokenOwner });
-        await testMultipleUsersPooling(
-          tribalChief,
-          crvMetaPool,
-          userAddresses,
-          userPerBlockReward,
-          1,
-          0,
-          totalStaked,
-          pid,
-        );
-
-        for (let i = 0; i < userAddresses.length; i++) {
-          const pendingTribe = await tribalChief.pendingRewards(pid, userAddresses[i]);
-
-          // assert that getTotalStakedInPool returns proper amount
-          const expectedTotalStaked = new BN(totalStaked);
-          const poolStakedAmount = await tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
-          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
-          const startingUniLPTokenBalance = await crvMetaPool.balanceOf(userAddresses[i])
-          const startingTribeBalance = await tribe.balanceOf(userAddresses[i])
-
-          await tribalChief.withdrawAllAndHarvest(
-            pid, userAddresses[i], { from: userAddresses[i] },
-          );
-
-          expect(
-            await crvMetaPool.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.equal(new BN(totalStaked).add(startingUniLPTokenBalance));
-
-          expect(
-            await tribe.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.gt(pendingTribe.add(startingTribeBalance));
-        }
-        // withdraw from deposit to clear the setup for the next test
-        await unstakeAndHarvestAllPositions(userAddresses, pid, tribalChief, crvMetaPool);
-      });
-
-      it('can stake CRV tokens, one user calls emergency withdraw and loses all reward debt', async function () {
-        const pid = 1;
-        const userAddresses = [feiTribeLPTokenOwner, CRVMetaPoolLPTokenOwner];
-        const userPerBlockReward = tribePerBlock.div(await tribalChief.numPools()).div(new BN(userAddresses.length));
-
-        await crvMetaPool.transfer(feiTribeLPTokenOwner, totalStaked, { from: CRVMetaPoolLPTokenOwner });
-        await testMultipleUsersPooling(
-          tribalChief,
-          crvMetaPool,
-          userAddresses,
-          userPerBlockReward,
-          1,
-          0,
-          totalStaked,
-          pid,
-        );
-
-        const startingUniLPTokenBalance = await crvMetaPool.balanceOf(CRVMetaPoolLPTokenOwner);
-        const { virtualAmount } = await tribalChief.userInfo(pid, CRVMetaPoolLPTokenOwner);
-
-        await tribalChief.emergencyWithdraw(pid, CRVMetaPoolLPTokenOwner, { from: CRVMetaPoolLPTokenOwner });
-
-        const endingUniLPTokenBalance = await crvMetaPool.balanceOf(CRVMetaPoolLPTokenOwner);
-        expect(startingUniLPTokenBalance.add(virtualAmount)).to.be.bignumber.equal(endingUniLPTokenBalance);
-        const { rewardDebt } = await tribalChief.userInfo(pid, CRVMetaPoolLPTokenOwner);
-        expect(rewardDebt).to.be.bignumber.equal(new BN(0));
-
-        // remove CRVMetaPoolLPTokenOwner from userAddresses array
-        userAddresses.pop();
-        for (let i = 0; i < userAddresses.length; i++) {
-          const pendingTribe = await tribalChief.pendingRewards(pid, userAddresses[i]);
-
-          // assert that getTotalStakedInPool returns proper amount
-          const expectedTotalStaked = new BN(totalStaked);
-          const poolStakedAmount = await tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
-          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
-          const startingUniLPTokenBalance = await crvMetaPool.balanceOf(userAddresses[i])
-          const startingTribeBalance = await tribe.balanceOf(userAddresses[i])
-
-          await tribalChief.withdrawAllAndHarvest(
-            pid, userAddresses[i], { from: userAddresses[i] },
-          );
-
-          expect(
-            await crvMetaPool.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.equal(new BN(totalStaked).add(startingUniLPTokenBalance));
-
-          expect(
-            await tribe.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.gt(pendingTribe.add(startingTribeBalance));
-        }
-        // withdraw from deposit to clear the setup for the next test
-        await unstakeAndHarvestAllPositions(userAddresses, pid, tribalChief, crvMetaPool);
       });
     });
   });

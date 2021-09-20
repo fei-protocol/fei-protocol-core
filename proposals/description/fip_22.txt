@@ -1,0 +1,16 @@
+This proposal adds 4M TRIBE of incentives to Aave and mints 25M FEI to deposit.
+
+Specifically, the 4M TRIBE will incentivize only variable rate borrowing at a constant rate over 6 months.
+The final rewards epoch time is on March 23, 2022: 1647993600.
+
+The aFEI token uses a custom rewards contract developed by the Fei Core team and approved by Aave.
+It allows for rewards in a distinct token (TRIBE in this case), instead of stAAVE.
+
+The 25M FEI deployment falls within the "Lending Deployments Framework" of FIP-13.
+
+The proposal also updates the Proxy admin of the Aave TRIBE incentives controller.
+This is required to allow the DAO to initiate the incentives. The new admin is the default ProxyAdmin also used for TribalChief.
+This address is still controlled by the Fei DAO.
+
+Forum discussion: https://tribe.fei.money/t/fip-22-aave-borrowing-incentives/3449
+Code: https://github.com/fei-protocol/fei-protocol-core/pull/177

@@ -74,6 +74,8 @@ export type MainnetContracts = {
   pcvEquityMinter: typeof Contract,
   tribeSplitter: typeof Contract,
   feiTribeLBPSwapper: typeof Contract,
+  aaveLendingPool: typeof Contract,
+  aaveTribeIncentivesController: typeof Contract,
 }
 
 export type MainnetContractAddresses = {

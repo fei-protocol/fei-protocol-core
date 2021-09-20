@@ -18,7 +18,7 @@ const runE2ETests = process.env.RUN_E2E_TESTS;
 const enableMainnetForking = process.env.ENABLE_MAINNET_FORKING;
 const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
 
-if (!process.env.NODE_OPTIONS.includes('max-old-space-size')) {
+if (!(process.env.NODE_OPTIONS && process.env.NODE_OPTIONS.includes('max-old-space-size'))) {
   throw new Error(`Please export node env var max-old-space-size before running hardhat. "export NODE_OPTIONS=--max-old-space-size=4096"`);
 } else {
   console.log(`Node option max-old-space-size correctly set. Good job.`);
@@ -48,8 +48,8 @@ const config: HardhatUserConfig = {
       chainId: 5777, // Any network (default: none)
       forking: enableMainnetForking ? {
         url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-        blockNumber: 13214320
-      } : undefined
+        blockNumber: 13264395
+      }: undefined
     },
     localhost: {
       url: 'http://127.0.0.1:8545'

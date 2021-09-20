@@ -1,6 +1,5 @@
 {
     "proposal_title": "FIP-X: Title",
-    "proposal_description_link": "",
     "proposal_commands": [
         {
             "address": "",
@@ -9,7 +8,6 @@
             "arguments": [],
             "description": ""
         }
-    ],
-    "proposal_calldata": "0x..."
+    ]
 }
 

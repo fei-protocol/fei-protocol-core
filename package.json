@@ -22,7 +22,9 @@
     "deploy:main": "npx hardhat run --network mainnet deploy/migrations.js",
     "deploy:ropsten": "npx hardhat run --network ropsten deploy/migrations.js",
     "deploy:rinkeby": "npx hardhat run --network rinkeby deploy/migrations.js",
-    "abis": "node scripts/abis.js"
+    "abis": "node scripts/abis.js",
+    "calldata": "npx hardhat run proposals/utils/getProposalCalldata.js",
+    "check-proposal": "npx hardhat run proposals/utils/checkProposal.js"
   },
   "author": "joeysantoro",
   "license": "AGPL-3.0-only",
@@ -60,6 +62,7 @@
     "eslint-plugin-import": "^2.23.4",
     "ethereum-waffle": "^3.3.0",
     "ethers": "^5.2.0",
+    "hardhat-web3": "^1.0.1",
     "mocha": "^7.0.0",
     "solidity-coverage": "^0.7.17",
     "ts-node": "^10.0.0",
