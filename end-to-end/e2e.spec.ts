@@ -480,7 +480,6 @@ describe('e2e', function () {
         await fusePCVDeposit.deposit();
         const fuseBalanceBefore = await fusePCVDeposit.balance();
 
-        // await aaveRaiPCVDeposit.deposit();
         const aaveBalanceBefore = await aaveRaiPCVDeposit.balance();
 
         const pcvAllocations = await bondingCurve.getAllocation()
