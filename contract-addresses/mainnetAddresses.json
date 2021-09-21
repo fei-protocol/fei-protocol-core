@@ -65,6 +65,7 @@
     "feiRewardsDistributorAddress" : { "artifact": "IFeiRewardsDistributor", "address": "0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5"},
     "feiTribePairAddress": { "artifact": "IUniswapV2Pair", "address":  "0x9928e4046d7c6513326cCeA028cD3e7a91c7590A"},
     "governorAlphaAddress": { "artifact": "GovernorAlpha", "address":  "0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B"},
+    "gUniFeiDaiLPAddress": {"address": "0x3D1556e84783672f2a3bd187a592520291442539"},
     "indexAddress" : { "artifact": "IERC20", "address" : "0x0954906da0Bf32d5479e25f46056d22f08464cab" },
     "indexCoopFusePoolDpiAddress" : {"artifact" : "CErc20Delegator", "address" : "0xf06f65a6b7d2c401fcb8b3273d036d21fe2a5963"},
     "indexCoopFusePoolDpiPCVDepositAddress" : { "artifact" : "ERC20CompoundPCVDeposit", "address" : "0x3dD3d945C4253bAc5B4Cc326a001B7d3f9C4DD66" },

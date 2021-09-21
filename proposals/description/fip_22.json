@@ -61,6 +61,18 @@
                 "1647993600"
             ],
             "description" : "Set distribution end"
+        },
+        {
+            "target": "tribalChief",
+            "values": "0",
+            "method": "add(uint120,address,address,(uint128,uint128)[])",
+            "arguments": [
+                "100",
+                "0x3D1556e84783672f2a3bd187a592520291442539",
+                "0x0000000000000000000000000000000000000000",
+                [[0, 10000]]
+            ],
+            "description": "Add G-UNI FEI-DAI pool to tribalchief"
         }
     ]
 }
