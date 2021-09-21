@@ -1,5 +1,5 @@
 const { constants: { MAX_UINT256 } } = require('@openzeppelin/test-helpers');
-const { expect } = require('../../../test/helpers');
+const { expect } = require('../../test/helpers');
 
 const e18 = '000000000000000000';
 

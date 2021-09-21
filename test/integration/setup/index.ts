@@ -10,7 +10,7 @@ import {
   ProposalConfig
 } from './types'
 import { sudo } from '../../../scripts/utils/sudo'
-import constructProposal from '../../../scripts/proposals/utils/constructProposal';
+import constructProposal from '../../../scripts/utils/constructProposal';
 
 /**
  * Coordinate initialising an end-to-end testing environment
@@ -80,7 +80,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     }
     
     // Get the upgrade setup, run and teardown scripts
-    const { setup, run, teardown, validate } = await import('../../../scripts/proposals/dao/' + proposalName);
+    const { setup, run, teardown, validate } = await import('../../../proposals/dao/' + proposalName);
 
     // setup the DAO proposal
     await setup(contractAddresses, existingContracts, contracts, this.config.logging);

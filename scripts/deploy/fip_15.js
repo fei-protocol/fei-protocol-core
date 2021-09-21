@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 const { web3 } = require('hardhat');
-const { BN } = require('../test/helpers');
+const { BN } = require('../../test/helpers');
 
 const TribalChief = artifacts.require('TribalChief');
 const TransparentUpgradeableProxy = artifacts.require('TransparentUpgradeableProxy');

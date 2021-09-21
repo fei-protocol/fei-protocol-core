@@ -1,5 +1,5 @@
 const hre = require('hardhat');
-const { forceEth } = require('../../end-to-end/setup/utils.ts');
+const { forceEth } = require('../../test/helpers');
 
 const ERC20 = artifacts.require('ERC20');
 

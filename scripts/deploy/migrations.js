@@ -1,4 +1,4 @@
-import mainnetAddressesV1 from '../contract-addresses/mainnetAddresses.json';
+import mainnetAddressesV1 from '../../contract-addresses/mainnetAddresses.json';
 
 const { web3 } = require('hardhat');
 
