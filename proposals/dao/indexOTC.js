@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const hre = require('hardhat');
-const { forceEth } = require('../../end-to-end/setup/utils.ts');
+const { forceEth } = require('../../test/helpers');
 
 const e18 = '000000000000000000';
 const e15 =    '000000000000000';
