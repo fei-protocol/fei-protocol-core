@@ -15,7 +15,7 @@ const Fei = artifacts.require('Fei');
 const MockERC20 = artifacts.require('MockERC20');
 const e18 = '000000000000000000';
 
-describe.only('StableSwapOperatorV1', function () {
+describe('StableSwapOperatorV1', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;

@@ -19,16 +19,19 @@ V2 Phase 1 Upgrade Steps
 10. Move PCV from old ETH Uni PCV Deposit to new
 11. Move PCV from old DPI Uni PCV Deposit to new
 12. Seed TRIBE to LBP Swapper
+13. Update DPI Bonding Curve allocation
 */
 async function run(addresses, oldContracts, contracts, logging = false) {
   const {
-    timelockAddress
+    timelockAddress,
+    rariPool19DpiPCVDepositAddress
   } = addresses;
 
   const { 
     dpiUniswapPCVDeposit,
     uniswapPCVDeposit,
     bondingCurve,
+    dpiBondingCurve,
     tribeReserveStabilizer,
     ratioPCVController,
     pcvEquityMinter,
@@ -73,6 +76,8 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   await ratioPCVController.withdrawRatio(oldContracts.dpiUniswapPCVDeposit.address, dpiUniswapPCVDeposit.address, '10000'); // move 100% of PCV from old -> new
 
   await core.allocateTribe(feiTribeLBPSwapper.address, `1000000${e18}`);
+
+  await dpiBondingCurve.setAllocation([dpiUniswapPCVDeposit.address, rariPool19DpiPCVDepositAddress], ['9000', '1000']);
 }
 
 /// /  --------------------- NOT RUN ON CHAIN ----------------------
