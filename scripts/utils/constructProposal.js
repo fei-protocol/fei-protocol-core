@@ -1,4 +1,4 @@
-import { getMainnetContracts, getEthersContract } from '../../../test/integration/setup/loadContracts';
+import { getMainnetContracts, getEthersContract } from '../../test/integration/setup/loadContracts.ts';
 
 const fs = require('fs');
 
@@ -12,8 +12,8 @@ const { proposals } = require('hardhat');
  * Uses the text in `proposals/description/${proposalName}.txt` for the description
  */ 
 export default async function constructProposal(proposalName, logging = false) {
-  const proposalInfo = await import(`../description/${proposalName}`);
-  const proposalDescription = fs.readFileSync(`${__dirname}/../description/${proposalName}.txt`);
+  const proposalInfo = await import(`../../proposals/description/${proposalName}`);
+  const proposalDescription = fs.readFileSync(`${__dirname}/../../proposals/description/${proposalName}.txt`);
 
   const contracts = await getMainnetContracts();
   const proposalBuilder = proposals.builders.alpha();

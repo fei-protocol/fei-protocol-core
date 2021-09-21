@@ -1,4 +1,4 @@
-import { getMainnetContracts, getContractAddresses } from '../../integration/setup/loadContracts.ts';
+import { getMainnetContracts, getContractAddresses } from '../../test/integration/setup/loadContracts.ts';
 
 const hre = require('hardhat');
 const { time } = require('@openzeppelin/test-helpers');
@@ -72,7 +72,7 @@ async function checkProposal() {
   console.log('Success');
       
   // Get the upgrade setup, run and teardown scripts
-  const { teardown, validate } = await import(`../dao/${proposalName}`);
+  const { teardown, validate } = await import(`../../proposals/dao/${proposalName}`);
 
   const contractAddresses = await getContractAddresses(contracts);
   
