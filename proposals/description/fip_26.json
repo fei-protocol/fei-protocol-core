@@ -1,0 +1,68 @@
+{
+    "proposal_title": "FIP-26 + FIP-27 Bonding Curve Cap and Spread Updates",
+    "proposal_commands": [
+        {
+            "target": "bondingCurve",
+            "values": "0",
+            "method": "setBuffer(uint256)",
+            "arguments": [
+                "50"
+            ],
+            "description": "Set Bonding Curve Buffer to 0.5%"
+        },
+        {
+            "target": "ethReserveStabilizer",
+            "values": "0",
+            "method": "setUsdPerFeiRate(uint256)",
+            "arguments": [
+                "9950"
+            ],
+            "description": "Set Reserve Stabilzier price to $0.995"
+        },
+        {
+            "target": "daiBondingCurve",
+            "values": "0",
+            "method": "setMintCap(uint256)",
+            "arguments": [
+                "150000000000000000000000000"
+            ],
+            "description": "Set DAI Mint Cap to $150M"
+        },
+        {
+            "target": "daiBondingCurve",
+            "values": "0",
+            "method": "setScale(uint256)",
+            "arguments": [
+                "100000000000000000000000000"
+            ],
+            "description": "Set DAI Scale to $100M"
+        },
+        {
+            "target": "daiBondingCurve",
+            "values": "0",
+            "method": "setDiscount(uint256)",
+            "arguments": [
+                "0"
+            ],
+            "description": "Set DAI Discount to 0"
+        },
+        {
+            "target": "dpiBondingCurve",
+            "values": "0",
+            "method": "setMintCap(uint256)",
+            "arguments": [
+                "50000000000000000000000000"
+            ],
+            "description": "Set DPI Mint Cap to $50M"
+        },
+        {
+            "target": "raiBondingCurve",
+            "values": "0",
+            "method": "setMintCap(uint256)",
+            "arguments": [
+                "20000000000000000000000000"
+            ],
+            "description": "Set RAI Mint Cap to $20M"
+        }
+    ]
+}
