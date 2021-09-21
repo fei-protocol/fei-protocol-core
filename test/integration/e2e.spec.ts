@@ -171,6 +171,8 @@ describe('e2e', function () {
     it('splits TRIBE 3 ways', async function () {
       const { tribeSplitter, tribeReserveStabilizer, tribe, erc20Dripper, core } = contracts;
 
+      await tribeSplitter.allocate();
+
       await core.allocateTribe(tribeSplitter.address, '1000000');
 
       const beforeBalanceStabilizer = await tribe.balanceOf(tribeReserveStabilizer.address);
