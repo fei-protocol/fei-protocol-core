@@ -1,5 +1,7 @@
 const StableSwapOperatorV1 = artifacts.require('StableSwapOperatorV1');
 
+const e18 = '000000000000000000';
+
 async function deploy(deployAddress, addresses, logging = false) {
   const {
     coreAddress,
@@ -18,6 +20,8 @@ async function deploy(deployAddress, addresses, logging = false) {
     curveMetapoolAddress, // FEI-3crv metapool
     curve3poolAddress, // Curve 3pool
     '50', // 0.5% max slippage
+    '100000000000000000', // minimum 1:99 FEI in pool
+    `10${e18}`, // maximum 99:1 FEI in pool
     { from: deployAddress }
   );
 

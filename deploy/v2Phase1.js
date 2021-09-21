@@ -39,7 +39,7 @@ const TRIBE_BUFFER_CAP = `5000000${e18}`; // 5M TRIBE
 
 // LBP swapper
 const LBP_FREQUENCY = '604800'; // weekly
-const MIN_LBP_SIZE = `1000000${e18}`; // 1M FEI
+const MIN_LBP_SIZE = `100000${e18}`; // 100k FEI
 
 // PCV Equity Minter
 const PCV_EQUITY_MINTER_INCENTIVE = `1000${e18}`; // 1000 FEI
