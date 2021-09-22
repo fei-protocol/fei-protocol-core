@@ -19,8 +19,6 @@ describe('EthBondingCurve', function () {
   let beneficiaryAddress1: string;
   let beneficiaryAddress2: string;
 
-
-
   // eslint-disable-next-line consistent-return
   this.beforeAll(async function() {
     // Can only get the current price on a forked network (since we haven't deployed Uniswap stuff in test setup)

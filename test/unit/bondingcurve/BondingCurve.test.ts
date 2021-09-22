@@ -11,12 +11,12 @@ const MockOracle = artifacts.readArtifactSync('MockOracle');
 const toBN = ethers.BigNumber.from
   
 describe('BondingCurve', function () {
-  let userAddress;
-  let secondUserAddress;
-  let governorAddress;
-  let beneficiaryAddress1;
-  let beneficiaryAddress2;
-  let keeperAddress;
+  let userAddress: string
+  let secondUserAddress: string
+  let governorAddress: string
+  let beneficiaryAddress1: string
+  let beneficiaryAddress2: string
+  let keeperAddress: string
   
   beforeEach(async function () {
     ({
