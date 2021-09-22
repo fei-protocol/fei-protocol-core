@@ -5,16 +5,11 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
-const {
-  BN,
-  time,
-  getCore,
-  expectEvent,
-  expectRevert,
-  expect,
-  getAddresses,
-  expectApprox,
-} = require('../../helpers');
+import { time, getCore, expectEvent, expectRevert, getAddresses, expectApprox } from '../../helpers';
+import { expect } from 'chai';
+import hre, { artifacts, ethers } from 'hardhat';
+
+const toBN = ethers.BigNumber.from
 
 const Tribe = artifacts.readArtifactSync('MockTribe');
 const MockCoreRef = artifacts.readArtifactSync('MockCoreRef');
@@ -25,7 +20,7 @@ const TransparentUpgradeableProxy = artifacts.readArtifactSync('TransparentUpgra
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 // We will drip 4 million tribe per week
-const dripAmount = new BN(4000000).mul(new BN(10).pow(new BN(18)));
+const dripAmount = toBN(4000000).mul(toBN(10).pow(toBN(18)));
 // number of seconds between allowed drips
 // this is 1 week in seconds
 const dripFrequency = 604800;
@@ -81,7 +76,7 @@ describe('ERC20Dripper', () => {
     );
 
     // 11 if max times we call drip in any given test
-    await this.tribe.mint(this.dripper.address, dripAmount.mul(new BN(11)));
+    await this.tribe.mint(this.dripper.address, dripAmount.mul(toBN(11)));
   });
 
   describe('security suite', () => {
@@ -103,7 +98,7 @@ describe('ERC20Dripper', () => {
       );
       const dripperEndingBalance = await this.tribe.balanceOf(this.dripper.address);
 
-      expect(dripperEndingBalance).to.be.bignumber.equal(new BN(0));
+      expect(dripperEndingBalance).to.be.bignumber.equal(toBN(0));
       expect(dripperStartingBalance).to.be.bignumber.equal(totalLockedTribe);
     });
 
