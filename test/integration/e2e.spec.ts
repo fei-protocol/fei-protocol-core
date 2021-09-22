@@ -77,12 +77,12 @@ describe('e2e', function () {
       const balancesAfter = await feiTribeLBPSwapper.getReserves()
     
       expectApprox(balancesBefore[0].add(mintAmount), balancesAfter[0]);
-      expect(await feiTribeLBPSwapper.swapEndTime()).to.be.greaterThan(toBN(await time.latest()));
+      expect(await feiTribeLBPSwapper.swapEndTime()).to.be.gt(toBN((await time.latest()).toString()));
       
-      await time.increase(await pcvEquityMinter.duration());
+      await time.increase((await pcvEquityMinter.duration()).toString());
       await pcvEquityMinter.mint();
 
-      expect(await tribe.balanceOf(tribeSplitter.address)).to.be.greaterThan(splitterBalanceBefore);
+      expect(await tribe.balanceOf(tribeSplitter.address)).to.be.gt(toBN(splitterBalanceBefore));
     });
   });
 
@@ -114,7 +114,7 @@ describe('e2e', function () {
       expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.false;
 
       // After time increase, should be outdated
-      await time.increase(await collateralizationOracleWrapper.remainingTime());
+      await time.increase((await collateralizationOracleWrapper.remainingTime()).toString());
 
       expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.true;
       expect(await collateralizationOracleWrapper.isOutdated()).to.be.true;
@@ -134,7 +134,7 @@ describe('e2e', function () {
       expect(await collateralizationOracleWrapper.isExceededDeviationThreshold()).to.be.true;
 
       // Keeper is incentivized to update oracle
-      await time.increase(await collateralizationOracleKeeper.MIN_MINT_FREQUENCY());
+      await time.increase((await collateralizationOracleKeeper.MIN_MINT_FREQUENCY()).toString());
       await collateralizationOracleKeeper.mint();
 
       const incentive = await collateralizationOracleKeeper.incentiveAmount();
@@ -306,7 +306,7 @@ describe('e2e', function () {
         const durationWindow = await bondingCurve.duration()
 
         // pass the duration window, so Fei incentive will be sent
-        await time.increase(durationWindow);
+        await time.increase(durationWindow.toString());
 
         const allocatedEth = await bondingCurve.balance()
         await bondingCurve.allocate()
@@ -648,16 +648,16 @@ describe('e2e', function () {
 
       await hre.network.provider.request({
         method: 'hardhat_impersonateAccount',
-        params: [tribalChiefOptimisticMultisig]
+        params: [timelock]
       });
 
-      const tribalChiefOptimisticTimelockSigner = await ethers.getSigner(tribalChiefOptimisticMultisig);
+      const timelockSigner = await ethers.getSigner(timelock);
 
-      await tribalChiefOptimisticTimelock.connect(tribalChiefOptimisticTimelockSigner).vetoTransactions([deployAddress], [0], ['sig()'], ['0x'], ['10000000000000000']);
+      await tribalChiefOptimisticTimelock.connect(timelockSigner).vetoTransactions([deployAddress], [0], ['sig()'], ['0x'], ['10000000000000000']);
       
       await hre.network.provider.request({
         method: 'hardhat_stopImpersonatingAccount',
-        params: [tribalChiefOptimisticMultisig]
+        params: [timelock]
       })
 
       expect(await tribalChiefOptimisticTimelock.queuedTransactions(hash)).to.be.false;
@@ -708,7 +708,7 @@ describe('e2e', function () {
   
       const pcvDepositBefore = await aaveEthPCVDeposit.balance()
       // Trigger drip
-      await time.increase(await pcvDripper.remainingTime());
+      await time.increase((await pcvDripper.remainingTime()).toString());
       await pcvDripper.drip();
   
       // Check PCV deposit loses dripAmount ETH and stabilizer gets dripAmount ETH
@@ -921,13 +921,13 @@ describe('e2e', function () {
 
         const userSigner = await ethers.getSigner(userAddresses[i])
         
-        /*
-        expectEvent(
+        
+        /*expectEvent(*/
           await tribalChief.connect(userSigner).deposit(
             pid,
             totalStaked,
             lockBlockAmount
-          ),
+          )/*,
           'Deposit', {
             user: userAddresses[i],
             pid: toBN(pid.toString()),
@@ -1287,10 +1287,9 @@ describe('e2e', function () {
       expect(dripperStartingBalance.eq(totalLockedTribe)).to.be.true;
     });
 
-
     it('should be able to call drip when enough time has passed through multiple periods', async function () {
       for (let i = 0; i < 11; i++) {
-        await time.increase(dripFrequency);
+        await time.increase(dripFrequency.toString());
   
         expect(await dripper.isTimeEnded()).to.be.true;
 
