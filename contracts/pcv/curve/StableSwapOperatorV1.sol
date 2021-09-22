@@ -95,17 +95,17 @@ contract StableSwapOperatorV1 is PCVDeposit {
 
 
     /// @notice set the minimum ratio threshold for a valid reading of restistant balances
-    function setMinRatio(uint256 _minimumRatioThreshold) public onlyGovernor {
+    function setMinRatio(uint256 _minimumRatioThreshold) public onlyGovernorOrAdmin {
         _setMinRatioThreshold(_minimumRatioThreshold);
     }
 
     /// @notice set the maximum ratio threshold for a valid reading of resistant balances
-    function setMaxRatio(uint256 _maximumRatioThreshold) public onlyGovernor {
+    function setMaxRatio(uint256 _maximumRatioThreshold) public onlyGovernorOrAdmin {
         _setMaxRatioThreshold(_maximumRatioThreshold);
     }
 
     /// @notice set both min & max ratios
-    function setRatios(uint256 _minimumRatioThreshold, uint256 _maximumRatioThreshold) public onlyGovernor {
+    function setRatios(uint256 _minimumRatioThreshold, uint256 _maximumRatioThreshold) public onlyGovernorOrAdmin {
         _setMinRatioThreshold(_minimumRatioThreshold);
         _setMaxRatioThreshold(_maximumRatioThreshold);
     }
