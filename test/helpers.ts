@@ -88,7 +88,11 @@ async function expectApprox(actual, expected, magnitude = '1000') {
   let diff = actualBN.sub(expectedBN);
   let diffAbs = diff.abs();
 
-  expect(diffAbs.div(expected).lt(magnitudeBN)).to.be.true;
+  if (expected.toString() == '0' || expected == 0 || expected == '0') {
+    expect(diffAbs).to.be.lt(magnitudeBN);
+  } else {
+    expect(diffAbs.div(expected).lt(magnitudeBN)).to.be.true;
+  }
 }
 
 export {

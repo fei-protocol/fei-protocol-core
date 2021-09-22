@@ -161,9 +161,10 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     // Array of all deployed contracts
    Object.keys(permissions).map(role => {
       const contracts = permissions[role];
-      const addresses = contracts.map(contract => {
-        return this.afterUpgradeAddresses[contract];
+      const addresses = contracts.map(contractName => {
+        return this.afterUpgradeAddresses[contractName];
       });
+      
       accessControlRoles[role] = addresses;
     });
 

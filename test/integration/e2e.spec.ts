@@ -835,36 +835,43 @@ describe('e2e', function () {
       const core = contracts.core;
       const accessControl = e2eCoord.getAccessControlMapping()
 
-      for (let i = 0; i < accessControl.minter.length; i += 1) {
+      console.log(`Testing minter role...`)
+      for (let i = 0; i < accessControl.minter.length; i++) {
         const contractAddress = accessControl.minter[i]
+        console.log(`Minter contract address: ${contractAddress}`)
         const isMinter = await core.isMinter(contractAddress)
-        expect(isMinter).to.be.equal(true)
+        expect(isMinter).to.be.true
       }
 
+      console.log(`Testing burner role...`)
       for (let i = 0; i < accessControl.burner.length; i += 1) {
         const contractAddress = accessControl.burner[i]
         const isBurner = await core.isBurner(contractAddress)
         expect(isBurner).to.be.equal(true)
       }
 
+      console.log(`Testing pcv controller role...`)
       for (let i = 0; i < accessControl.pcvController.length; i += 1) {
         const contractAddress = accessControl.pcvController[i]
         const isPCVController = await core.isPCVController(contractAddress)
         expect(isPCVController).to.be.equal(true)
       }
 
+      console.log(`Testing guardian role...`)
       for (let i = 0; i < accessControl.guardian.length; i += 1) {
       const contractAddress = accessControl.guardian[i]
         const isGuardian = await core.isGuardian(contractAddress)
         expect(isGuardian).to.be.equal(true)
       }
 
+      console.log(`Testing governor role...`)
       for (let i = 0; i < accessControl.governor.length; i += 1) {
         const contractAddress = accessControl.governor[i]
         const isGovernor = await core.isGovernor(contractAddress)
         expect(isGovernor).to.be.equal(true)
       }
 
+      console.log(`Testing tribe minter address...`)
       const tribe = contracts.tribe
       const tribeMinter = await tribe.minter()
       expect(tribeMinter).to.equal(contractAddresses.tribeReserveStabilizer)
