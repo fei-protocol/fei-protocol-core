@@ -127,7 +127,7 @@ describe('EthLidoPCVDeposit', function () {
     describe('withdraw()', function() {
       it('should emit Withdrawal', async function() {
         await this.steth.mintAt(this.pcvDeposit.address);
-        const balanceBeforeWithdraw = new BN(await web3.eth.getBalance(secondUserAddress));
+        const balanceBeforeWithdraw = toBN(await web3.eth.getBalance(secondUserAddress));
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal(`100000${e18}`);
         await expectEvent(
           await this.pcvDeposit.withdraw(secondUserAddress, `1${e18}`, {from: pcvControllerAddress}),
@@ -138,7 +138,7 @@ describe('EthLidoPCVDeposit', function () {
             _amount: `1${e18}`
           }
         );
-        const balanceAfterWithdraw = new BN(await web3.eth.getBalance(secondUserAddress));
+        const balanceAfterWithdraw = toBN(await web3.eth.getBalance(secondUserAddress));
         expect(balanceAfterWithdraw.sub(balanceBeforeWithdraw)).to.be.bignumber.equal(`1${e18}`);
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal(`99999${e18}`);
       });
@@ -194,7 +194,7 @@ describe('EthLidoPCVDeposit', function () {
 
   describe('withdrawETH()', function() {
     it('should emit WithdrawETH', async function() {
-      const balanceBeforeWithdraw = new BN(await web3.eth.getBalance(secondUserAddress));
+      const balanceBeforeWithdraw = toBN(await web3.eth.getBalance(secondUserAddress));
       await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: `1${e18}`});
       await expectEvent(
         await this.pcvDeposit.withdrawETH(secondUserAddress, `1${e18}`, {from: pcvControllerAddress}),
@@ -205,7 +205,7 @@ describe('EthLidoPCVDeposit', function () {
           _amount: `1${e18}`
         }
       );
-      const balanceAfterWithdraw = new BN(await web3.eth.getBalance(secondUserAddress));
+      const balanceAfterWithdraw = toBN(await web3.eth.getBalance(secondUserAddress));
       expect(balanceAfterWithdraw.sub(balanceBeforeWithdraw)).to.be.bignumber.equal(`1${e18}`);
     });
     it('should revert if trying to withdraw more than balance', async function() {

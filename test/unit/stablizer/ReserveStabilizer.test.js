@@ -37,7 +37,7 @@ describe('ReserveStabilizer', function () {
 
     await this.core.grantBurner(this.reserveStabilizer.address, {from: governorAddress});
 
-    this.initialBalance = new BN('1000000000000000000');
+    this.initialBalance = toBN('1000000000000000000');
     await this.token.mint(this.reserveStabilizer.address, this.initialBalance);
 
     await this.fei.mint(userAddress, 40000000, {from: minterAddress});  
@@ -50,10 +50,10 @@ describe('ReserveStabilizer', function () {
         await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
         const reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
 
-        this.expectedOut = new BN('90000');
+        this.expectedOut = toBN('90000');
         expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
 
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
         expect(await this.reserveStabilizer.balance()).to.be.bignumber.equal(this.initialBalance.sub(this.expectedOut));
       });
     });
@@ -66,10 +66,10 @@ describe('ReserveStabilizer', function () {
         await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
         const reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
 
-        this.expectedOut = new BN('45000');
+        this.expectedOut = toBN('45000');
         expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
 
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
         expect(await this.reserveStabilizer.balance()).to.be.bignumber.equal(this.initialBalance.sub(this.expectedOut));
       });
     });
@@ -82,10 +82,10 @@ describe('ReserveStabilizer', function () {
         await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
         const reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
 
-        this.expectedOut = new BN('95000');
+        this.expectedOut = toBN('95000');
         expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
 
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
         expect(await this.reserveStabilizer.balance()).to.be.bignumber.equal(this.initialBalance.sub(this.expectedOut));
       });
     });
@@ -98,15 +98,15 @@ describe('ReserveStabilizer', function () {
 
     describe('Not Enough token', function() {
       it('reverts', async function() {
-        await this.fei.mint(userAddress, new BN('4000000000000000000000000000'), {from: minterAddress});  
-        await expectRevert(this.reserveStabilizer.exchangeFei(new BN('4000000000000000000000000000'), {from: userAddress}), 'revert');
+        await this.fei.mint(userAddress, toBN('4000000000000000000000000000'), {from: minterAddress});  
+        await expectRevert(this.reserveStabilizer.exchangeFei(toBN('4000000000000000000000000000'), {from: userAddress}), 'revert');
       });
     });
 
     describe('Paused', function() {
       it('reverts', async function() {
         await this.reserveStabilizer.pause({from: governorAddress});
-        await expectRevert(this.reserveStabilizer.exchangeFei(new BN('400000'), {from: userAddress}), 'Pausable: paused');
+        await expectRevert(this.reserveStabilizer.exchangeFei(toBN('400000'), {from: userAddress}), 'Pausable: paused');
       });
     });
   });
@@ -120,8 +120,8 @@ describe('ReserveStabilizer', function () {
       const reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
       const userBalanceAfter = await this.token.balanceOf(userAddress);
 
-      expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(new BN('10000'));
-      expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(new BN('10000'));
+      expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(toBN('10000'));
+      expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(toBN('10000'));
     });
 
     it('not enough token reverts', async function() {
@@ -136,7 +136,7 @@ describe('ReserveStabilizer', function () {
   describe('Set USD per FEI', function() {
     it('governor succeeds', async function() {
       await this.reserveStabilizer.setUsdPerFeiRate('10000', {from: governorAddress});
-      expect(await this.reserveStabilizer.usdPerFeiBasisPoints()).to.be.bignumber.equal(new BN('10000'));
+      expect(await this.reserveStabilizer.usdPerFeiBasisPoints()).to.be.bignumber.equal(toBN('10000'));
     });
 
     it('non-governor reverts', async function() {

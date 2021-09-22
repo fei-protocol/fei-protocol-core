@@ -18,52 +18,148 @@ describe('TimelockedDelegator', function () {
     } = await getAddresses());
     this.core = await getCore();
 
-    this.delay = new BN(1000);
-    this.timelock = await OptimisticTimelock.new(this.core.address, userAddress, this.delay, this.delay);
+    this.delay = toBN(1000);
+    const timelockFactory = await ethers.getContractFactory(OptimisticTimelock.abi, OptimisticTimelock.bytecode)
+    this.timelock = await timelockFactory.deploy(this.core.address, userAddress, this.delay, this.delay);
   });
 
   describe('Pausable', function () {
     beforeEach(async function () {
-      await this.timelock.pause({from: governorAddress});
+      await hre.network.provider.request({
+        'method': 'hardhat_impersonateAccount',
+        'params': [governorAddress]
+      })
+
+      const governorSigner = await ethers.getSigner(governorAddress)
+
+      await this.timelock.connect(governorSigner).pause();
+
+      await hre.network.provider.request({
+        'method': 'hardhat_stopImpersonatingAccount',
+        'params': [governorAddress]
+      })
     });
 
     it('queue reverts', async function() {
       const eta = (await time.latest()).add(this.delay);
-      await expectRevert(this.timelock.queueTransaction(userAddress, 100, '', '0x0', eta, {from: userAddress}), 'Pausable: paused');
+
+      await hre.network.provider.request({
+        'method': 'hardhat_impersonateAccount',
+        'params': [userAddress]
+      })
+
+      const userSigner = await ethers.getSigner(userAddress)
+
+      await expectRevert(this.timelock.connect(userSigner).queueTransaction(userAddress, 100, '', '0x0', eta), 'Pausable: paused');
+
+      await hre.network.provider.request({
+        'method': 'hardhat_stopImpersonatingAccount',
+        'params': [userAddress]
+      })
     });
 
     it('execute reverts', async function() {
       const eta = (await time.latest()).add(this.delay);
-      await expectRevert(this.timelock.executeTransaction(userAddress, 100, '', '0x0', eta, {from: userAddress}), 'Pausable: paused');
+
+      await hre.network.provider.request({
+        'method': 'hardhat_impersonateAccount',
+        'params': [userAddress]
+      })
+
+      const userSigner = await ethers.getSigner(userAddress)
+      await expectRevert(this.timelock.connect(userSigner).executeTransaction(userAddress, 100, '', '0x0', eta, {from: userAddress}), 'Pausable: paused');
+      await hre.network.provider.request({
+        'method': 'hardhat_stopImpersonatingAccount',
+        'params': [userAddress]
+      })
     });
   });
 
   describe('Veto', function () {
     it('non-governor or guardian reverts', async function() {
       const eta = (await time.latest()).add(this.delay);
-      await expectRevert(this.timelock.vetoTransactions([userAddress], [100], [''], ['0x0'], [eta], {from: userAddress}), 'CoreRef: Caller is not a guardian or governor');
+      await hre.network.provider.request({
+        'method': 'hardhat_impersonateAccount',
+        'params': [userAddress]
+      })
+
+      const userSigner = await ethers.getSigner(userAddress)
+      
+      await expectRevert(this.timelock.connect(userSigner).vetoTransactions([userAddress], [100], [''], ['0x0'], [eta], {from: userAddress}), 'CoreRef: Caller is not a guardian or governor');
+      
+      await hre.network.provider.request({
+        'method': 'hardhat_stopImpersonatingAccount',
+        'params': [userAddress]
+      })
+
     });
 
     it('guardian succeeds', async function() {
       const eta = (await time.latest()).add(this.delay).add(this.delay);
-      await this.timelock.queueTransaction(userAddress, 100, '', '0x0', eta, {from: userAddress});
+      await hre.network.provider.request({
+        'method': 'hardhat_impersonateAccount',
+        'params': [userAddress]
+      })
+
+      const userSigner = await ethers.getSigner(userAddress)
+      await this.timelock.connect(userSigner).queueTransaction(userAddress, 100, '', '0x0', eta, {from: userAddress});
 
       const txHash = await this.timelock.getTxHash(userAddress, 100, '', '0x0', eta);
       expect(await this.timelock.queuedTransactions(txHash)).to.be.equal(true);
 
-      await this.timelock.vetoTransactions([userAddress], [100], [''], ['0x0'], [eta], {from: guardianAddress});
+      await hre.network.provider.request({
+        'method': 'hardhat_stopImpersonatingAccount',
+        'params': [userAddress]
+      })
+
+      await hre.network.provider.request({
+        'method': 'hardhat_impersonateAccount',
+        'params': [guardianAddress]
+      })
+
+      const guardianSigner = await ethers.getSigner(guardianAddress)
+      await this.timelock.connect(guardianSigner).vetoTransactions([userAddress], [100], [''], ['0x0'], [eta]);
       expect(await this.timelock.queuedTransactions(txHash)).to.be.equal(false);
+
+      await hre.network.provider.request({
+        'method': 'hardhat_stopImpersonatingAccount',
+        'params': [guardianAddress]
+      })
     });
 
     it('governor succeeds', async function() {
       const eta = (await time.latest()).add(this.delay).add(this.delay);
-      await this.timelock.queueTransaction(userAddress, 100, '', '0x0', eta, {from: userAddress});
+      await hre.network.provider.request({
+        'method': 'hardhat_impersonateAccount',
+        'params': [userAddress]
+      })
+
+      const userSigner = await ethers.getSigner(userAddress)
+
+      await this.timelock.connect(userSigner).queueTransaction(userAddress, 100, '', '0x0', eta);
+
+      await hre.network.provider.request({
+        'method': 'hardhat_stopImpersonatingAccount',
+        'params': [userAddress]
+      })
   
       const txHash = await this.timelock.getTxHash(userAddress, 100, '', '0x0', eta);
       expect(await this.timelock.queuedTransactions(txHash)).to.be.equal(true);
   
-      await this.timelock.vetoTransactions([userAddress], [100], [''], ['0x0'], [eta], {from: governorAddress});
+      await hre.network.provider.request({
+        'method': 'hardhat_impersonateAccount',
+        'params': [governorAddress]
+      })
+
+      const governorSigner = await ethers.getSigner(governorAddress)
+
+      await this.timelock.connect(governorSigner).vetoTransactions([userAddress], [100], [''], ['0x0'], [eta]);
       expect(await this.timelock.queuedTransactions(txHash)).to.be.equal(false);
+
+      await hre.network.provider.request({
+        'method': 'hardhat_stopImpersonatingAccount',
+        'params': [governorAddress]
+      })
     });
   });
 });

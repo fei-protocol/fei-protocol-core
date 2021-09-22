@@ -17,11 +17,27 @@ describe('TimelockedDelegator', function () {
       secondUserAddress,
       beneficiaryAddress1,
     } = await getAddresses());
-    this.tribe = await MockTribe.new({from: beneficiaryAddress1});
+
+    await hre.network.provider.request({
+      'method': 'hardhat_impersonateAccount',
+      'params': [beneficiaryAddress1]
+    })
+
+    const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
+
+    const mockTribeFactory = await ethers.getContractFactory(MockTribe.abi, MockTribe.bytecode, beneficiaryAddress1Signer)
+    this.tribe = await mockTribeFactory.deploy();
     this.window = toBN(4 * 365 * 24 * 60 * 60);
-    this.delegator = await TimelockedDelegator.new(this.tribe.address, beneficiaryAddress1, this.window, {gas: 8000000, from: beneficiaryAddress1});
+
+    const delegatorFactory = await ethers.getContractFactory(TimelockedDelegator.abi, TimelockedDelegator.bytecode, beneficiaryAddress1Signer)
+    this.delegator = await delegatorFactory.deploy(this.tribe.address, beneficiaryAddress1, this.window, {gas: 8000000});
     this.totalTribe = toBN('10000');
     await this.tribe.mint(this.delegator.address, this.totalTribe);
+
+    await hre.network.provider.request({
+      'method': 'hardhat_stopImpersonatingAccount',
+      'params': [beneficiaryAddress1]
+    })
   });
 
   describe('Init', function() {
@@ -30,24 +46,42 @@ describe('TimelockedDelegator', function () {
     });
 
     it('totalDelegated', async function() {
-      expect(await this.delegator.totalDelegated()).to.be.bignumber.equal(toBN('0'));
+      expect(await this.delegator.totalDelegated()).to.be.equal(toBN('0'));
     });
 
     it('totalToken', async function() {
-      expect(await this.delegator.totalToken()).to.be.bignumber.equal(this.totalTribe);
+      expect(await this.delegator.totalToken()).to.be.equal(this.totalTribe);
     });
   });
 
   describe('Release', function() {
     describe('Immediate', function() {
       it('reverts', async function() {
-        await expectRevert(this.delegator.release(beneficiaryAddress1, '100', {from: beneficiaryAddress1}), 'LinearTokenTimelock: not enough released tokens');
+        await hre.network.provider.request({
+          'method': 'hardhat_impersonateAccount',
+          'params': [beneficiaryAddress1]
+        })
+        const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
+        await expectRevert(this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, '100'), 'LinearTokenTimelock: not enough released tokens');
+        await hre.network.provider.request({
+          'method': 'hardhat_stopImpersonatingAccount',
+          'params': [beneficiaryAddress1]
+        })
       });
     });
 
     describe('Zero', function() {
       it('reverts', async function() {
-        await expectRevert(this.delegator.release(beneficiaryAddress1, '0', {from: beneficiaryAddress1}), 'LinearTokenTimelock: no amount desired');
+        await hre.network.provider.request({
+          'method': 'hardhat_impersonateAccount',
+          'params': [beneficiaryAddress1]
+        })
+        const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
+        await expectRevert(this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, '0'), 'LinearTokenTimelock: no amount desired');
+        await hre.network.provider.request({
+          'method': 'hardhat_stopImpersonatingAccount',
+          'params': [beneficiaryAddress1]
+        })
       });
     });
 
@@ -56,8 +90,13 @@ describe('TimelockedDelegator', function () {
         this.quarter = this.window.div(toBN(4));
         await time.increase(this.quarter);
         this.quarterAmount = this.totalTribe.div(toBN(4));
+        await hre.network.provider.request({
+          'method': 'hardhat_impersonateAccount',
+          'params': [beneficiaryAddress1]
+        })
+        const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
         expectEvent(
-          await this.delegator.release(beneficiaryAddress1, this.quarterAmount, {from: beneficiaryAddress1}),
+          await this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, this.quarterAmount),
           'Release',
           {
             _beneficiary: beneficiaryAddress1,
@@ -65,53 +104,84 @@ describe('TimelockedDelegator', function () {
             _amount: this.quarterAmount
           }
         );
+        await hre.network.provider.request({
+          'method': 'hardhat_stopImpersonatingAccount',
+          'params': [beneficiaryAddress1]
+        })
       });
       it('releases tokens', async function() {
-        expect(await this.delegator.totalToken()).to.be.bignumber.equal(this.quarterAmount.mul(toBN(3)));
-        expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(this.quarterAmount);
+        expect(await this.delegator.totalToken()).to.be.equal(this.quarterAmount.mul(toBN(3)));
+        expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.equal(this.quarterAmount);
       });
 
       it('updates released amounts', async function() {
-        expect(await this.delegator.alreadyReleasedAmount()).to.be.bignumber.equal(this.quarterAmount);
-        expect(await this.delegator.availableForRelease()).to.be.bignumber.equal(toBN(0));
+        expect(await this.delegator.alreadyReleasedAmount()).to.be.equal(this.quarterAmount);
+        expect(await this.delegator.availableForRelease()).to.be.equal(toBN(0));
       });
 
       describe('Another Quarter', function() {
         beforeEach(async function() {
+          await hre.network.provider.request({
+            'method': 'hardhat_impersonateAccount',
+            'params': [beneficiaryAddress1]
+          })
+          const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
           await time.increase(this.quarter);
-          expect(await this.delegator.availableForRelease()).to.be.bignumber.equal(this.quarterAmount);
-          await this.delegator.release(beneficiaryAddress1, this.quarterAmount, {from: beneficiaryAddress1});
+          expect(await this.delegator.availableForRelease()).to.be.equal(this.quarterAmount);
+          await this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, this.quarterAmount);
+          await hre.network.provider.request({
+            'method': 'hardhat_stopImpersonatingAccount',
+            'params': [beneficiaryAddress1]
+          })
         });
         it('releases tokens', async function() {
-          expect(await this.delegator.totalToken()).to.be.bignumber.equal(this.totalTribe.div(toBN(2)));
-          expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(this.totalTribe.div(toBN(2)));
+          expect(await this.delegator.totalToken()).to.be.equal(this.totalTribe.div(toBN(2)));
+          expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.equal(this.totalTribe.div(toBN(2)));
         });
 
         it('updates released amounts', async function() {
-          expect(await this.delegator.alreadyReleasedAmount()).to.be.bignumber.equal(this.totalTribe.div(toBN(2)));
+          expect(await this.delegator.alreadyReleasedAmount()).to.be.equal(this.totalTribe.div(toBN(2)));
         });
       });
 
       describe('ReleaseMax Another Quarter', function() {
         beforeEach(async function() {
+          await hre.network.provider.request({
+            'method': 'hardhat_impersonateAccount',
+            'params': [beneficiaryAddress1]
+          })
+          const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
           await time.increase(this.quarter);
-          expect(await this.delegator.availableForRelease()).to.be.bignumber.equal(this.quarterAmount);
-          await this.delegator.releaseMax(beneficiaryAddress1, {from: beneficiaryAddress1});
+          expect(await this.delegator.availableForRelease()).to.be.equal(this.quarterAmount);
+          await this.delegator.connect(beneficiaryAddress1Signer).releaseMax(beneficiaryAddress1);
+          await hre.network.provider.request({
+            'method': 'hardhat_stopImpersonatingAccount',
+            'params': [beneficiaryAddress1]
+          })
         });
         it('releases tokens', async function() {
-          expect(await this.delegator.totalToken()).to.be.bignumber.equal(this.totalTribe.div(toBN(2)));
-          expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(this.totalTribe.div(toBN(2)));
+          expect(await this.delegator.totalToken()).to.be.equal(this.totalTribe.div(toBN(2)));
+          expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.equal(this.totalTribe.div(toBN(2)));
         });
 
         it('updates released amounts', async function() {
-          expect(await this.delegator.alreadyReleasedAmount()).to.be.bignumber.equal(this.totalTribe.div(toBN(2)));
+          expect(await this.delegator.alreadyReleasedAmount()).to.be.equal(this.totalTribe.div(toBN(2)));
         });
       });
 
       describe('Excess Release', function() {
         it('reverts', async function() {
           await time.increase(this.quarter);
-          await expectRevert(this.delegator.release(beneficiaryAddress1, this.totalTribe, {from: beneficiaryAddress1}), 'LinearTokenTimelock: not enough released tokens');
+          await hre.network.provider.request({
+            'method': 'hardhat_impersonateAccount',
+            'params': [beneficiaryAddress1]
+          })
+          const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
+          await expectRevert(this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, this.totalTribe), 'LinearTokenTimelock: not enough released tokens');
+          await hre.network.provider.request({
+            'method': 'hardhat_stopImpersonatingAccount',
+            'params': [beneficiaryAddress1]
+          })
         });
       });
     });
@@ -123,8 +193,13 @@ describe('TimelockedDelegator', function () {
 
       describe('Total Release', function() {
         beforeEach(async function() {
+          await hre.network.provider.request({
+            'method': 'hardhat_impersonateAccount',
+            'params': [beneficiaryAddress1]
+          })
+          const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
           expectEvent(
-            await this.delegator.release(beneficiaryAddress1, this.totalTribe, {from: beneficiaryAddress1}),
+            await this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, this.totalTribe, {from: beneficiaryAddress1}),
             'Release',
             {
               _beneficiary: beneficiaryAddress1,
@@ -132,23 +207,32 @@ describe('TimelockedDelegator', function () {
               _amount: this.totalTribe
             }
           );
+          await hre.network.provider.request({
+            'method': 'hardhat_stopImpersonatingAccount',
+            'params': [beneficiaryAddress1]
+          })
         });
 
         it('releases tokens', async function() {
-          expect(await this.delegator.totalToken()).to.be.bignumber.equal(toBN(0));
-          expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(this.totalTribe);
+          expect(await this.delegator.totalToken()).to.be.equal(toBN(0));
+          expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.equal(this.totalTribe);
         });
   
         it('updates released amounts', async function() {
-          expect(await this.delegator.alreadyReleasedAmount()).to.be.bignumber.equal(this.totalTribe);
-          expect(await this.delegator.availableForRelease()).to.be.bignumber.equal(toBN(0));
+          expect(await this.delegator.alreadyReleasedAmount()).to.be.equal(this.totalTribe);
+          expect(await this.delegator.availableForRelease()).to.be.equal(toBN(0));
         });
       });
 
       describe('Release To', function() {
         beforeEach(async function() {
+          await hre.network.provider.request({
+            'method': 'hardhat_impersonateAccount',
+            'params': [beneficiaryAddress1]
+          })
+          const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
           expectEvent(
-            await this.delegator.release(userAddress, this.totalTribe, {from: beneficiaryAddress1}),
+            await this.delegator.connect(beneficiaryAddress1Signer).release(userAddress, this.totalTribe),
             'Release',
             {
               _beneficiary: beneficiaryAddress1,
@@ -156,25 +240,34 @@ describe('TimelockedDelegator', function () {
               _amount: this.totalTribe
             }
           );
+          await hre.network.provider.request({
+            'method': 'hardhat_stopImpersonatingAccount',
+            'params': [beneficiaryAddress1]
+          })
         });
 
         it('releases tokens', async function() {
-          expect(await this.delegator.totalToken()).to.be.bignumber.equal(toBN(0));
-          expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(this.totalTribe);
-          expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(toBN(0));
+          expect(await this.delegator.totalToken()).to.be.equal(toBN(0));
+          expect(await this.tribe.balanceOf(userAddress)).to.be.equal(this.totalTribe);
+          expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.equal(toBN(0));
         });
   
         it('updates released amounts', async function() {
-          expect(await this.delegator.alreadyReleasedAmount()).to.be.bignumber.equal(this.totalTribe);
-          expect(await this.delegator.availableForRelease()).to.be.bignumber.equal(toBN(0));
+          expect(await this.delegator.alreadyReleasedAmount()).to.be.equal(this.totalTribe);
+          expect(await this.delegator.availableForRelease()).to.be.equal(toBN(0));
         });
       });
 
       describe('Partial Release', function() {
         beforeEach(async function() {
           this.halfAmount = this.totalTribe.div(toBN(2));
+          await hre.network.provider.request({
+            'method': 'hardhat_impersonateAccount',
+            'params': [beneficiaryAddress1]
+          })
+          const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
           expectEvent(
-            await this.delegator.release(beneficiaryAddress1, this.halfAmount, {from: beneficiaryAddress1}),
+            await this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, this.halfAmount, {from: beneficiaryAddress1}),
             'Release',
             {
               _beneficiary: beneficiaryAddress1,
@@ -182,16 +275,20 @@ describe('TimelockedDelegator', function () {
               _amount: this.halfAmount
             }
           );
+          await hre.network.provider.request({
+            'method': 'hardhat_stopImpersonatingAccount',
+            'params': [beneficiaryAddress1]
+          })
         });
 
         it('releases tokens', async function() {
-          expect(await this.delegator.totalToken()).to.be.bignumber.equal(this.halfAmount);
-          expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(this.halfAmount);
+          expect(await this.delegator.totalToken()).to.be.equal(this.halfAmount);
+          expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.equal(this.halfAmount);
         });
   
         it('updates released amounts', async function() {
-          expect(await this.delegator.alreadyReleasedAmount()).to.be.bignumber.equal(this.halfAmount);
-          expect(await this.delegator.availableForRelease()).to.be.bignumber.equal(this.halfAmount);
+          expect(await this.delegator.alreadyReleasedAmount()).to.be.equal(this.halfAmount);
+          expect(await this.delegator.availableForRelease()).to.be.equal(this.halfAmount);
         });
       });
     });
@@ -200,53 +297,80 @@ describe('TimelockedDelegator', function () {
   describe('Delegation', function() {
     describe('Not enough Tribe', function() {
       it('reverts', async function() {
-        await expectRevert(this.delegator.delegate(userAddress, 10001, {from: beneficiaryAddress1}), 'TimelockedDelegator: Not enough Tribe');
+        await hre.network.provider.request({
+          'method': 'hardhat_impersonateAccount',
+          'params': [beneficiaryAddress1]
+        })
+        const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
+        await expectRevert(this.delegator.connect(beneficiaryAddress1Signer).delegate(userAddress, 10001), 'TimelockedDelegator: Not enough Tribe');
+        await hre.network.provider.request({
+          'method': 'hardhat_stopImpersonatingAccount',
+          'params': [beneficiaryAddress1]
+        })
       });
     }); 
     describe('Enough Tribe', function() {
       beforeEach(async function() {
+        await hre.network.provider.request({
+          'method': 'hardhat_impersonateAccount',
+          'params': [beneficiaryAddress1]
+        })
+        const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
         expectEvent(
-          await this.delegator.delegate(userAddress, 100, {from: beneficiaryAddress1}),
+          await this.delegator.connect(beneficiaryAddress1Signer).delegate(userAddress, 100),
           'Delegate',
           {
             _delegatee: userAddress,
             _amount: '100'
           }
         );
+        await hre.network.provider.request({
+          'method': 'hardhat_stopImpersonatingAccount',
+          'params': [beneficiaryAddress1]
+        })
       });
       describe('Single Delegation', function() {
         it('updates balances', async function() {
-          expect(await this.tribe.balanceOf(this.delegator.address)).to.be.bignumber.equal(toBN(9900));
+          expect(await this.tribe.balanceOf(this.delegator.address)).to.be.equal(toBN(9900));
           const delegatee = await this.delegator.delegateContract(userAddress);
-          expect(await this.tribe.balanceOf(delegatee)).to.be.bignumber.equal(toBN(100));
+          expect(await this.tribe.balanceOf(delegatee)).to.be.equal(toBN(100));
         });
 
         it('updates delegated amount', async function() {
-          expect(await this.delegator.totalDelegated()).to.be.bignumber.equal(toBN(100));
+          expect(await this.delegator.totalDelegated()).to.be.equal(toBN(100));
         });
 
         it('maintains total token', async function() {
-          expect(await this.delegator.totalToken()).to.be.bignumber.equal(toBN(10000));
+          expect(await this.delegator.totalToken()).to.be.equal(toBN(10000));
         });
       });
 
       describe('Double Delegation', function() {
         beforeEach(async function() {
           this.originalDelegatee = await this.delegator.delegateContract(userAddress);
-          await this.delegator.delegate(userAddress, 100, {from: beneficiaryAddress1});
+          await hre.network.provider.request({
+            'method': 'hardhat_impersonateAccount',
+            'params': [beneficiaryAddress1]
+          })
+          const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
+          await this.delegator.connect(beneficiaryAddress1Signer).delegate(userAddress, 100);
+          await hre.network.provider.request({
+            'method': 'hardhat_stopImpersonatingAccount',
+            'params': [beneficiaryAddress1]
+          })
         });
         it('updates balances', async function() {
-          expect(await this.tribe.balanceOf(this.delegator.address)).to.be.bignumber.equal(toBN(9800));
+          expect(await this.tribe.balanceOf(this.delegator.address)).to.be.equal(toBN(9800));
           const delegatee = await this.delegator.delegateContract(userAddress);
-          expect(await this.tribe.balanceOf(delegatee)).to.be.bignumber.equal(toBN(200));
+          expect(await this.tribe.balanceOf(delegatee)).to.be.equal(toBN(200));
         });
 
         it('updates delegated amount', async function() {
-          expect(await this.delegator.totalDelegated()).to.be.bignumber.equal(toBN(200));
+          expect(await this.delegator.totalDelegated()).to.be.equal(toBN(200));
         });
 
         it('maintains total token', async function() {
-          expect(await this.delegator.totalToken()).to.be.bignumber.equal(toBN(10000));
+          expect(await this.delegator.totalToken()).to.be.equal(toBN(10000));
         });
 
         it('original delegatee is deleted', async function() {
@@ -257,26 +381,35 @@ describe('TimelockedDelegator', function () {
       describe('Undelegation', function() {
         beforeEach(async function() {
           this.delegatee = await this.delegator.delegateContract(userAddress);
+          await hre.network.provider.request({
+            'method': 'hardhat_impersonateAccount',
+            'params': [beneficiaryAddress1]
+          })
+          const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
           expectEvent(
-            await this.delegator.undelegate(userAddress, {from: beneficiaryAddress1}),
+            await this.delegator.connect(beneficiaryAddress1Signer).undelegate(userAddress),
             'Undelegate',
             {
               _delegatee: userAddress,
               _amount: '100'
             }
           );
+          await hre.network.provider.request({
+            'method': 'hardhat_stopImpersonatingAccount',
+            'params': [beneficiaryAddress1]
+          })
         });
         it('updates balances', async function() {
-          expect(await this.tribe.balanceOf(this.delegator.address)).to.be.bignumber.equal(toBN(10000));
-          expect(await this.tribe.balanceOf(this.delegatee)).to.be.bignumber.equal(toBN(0));
+          expect(await this.tribe.balanceOf(this.delegator.address)).to.be.equal(toBN(10000));
+          expect(await this.tribe.balanceOf(this.delegatee)).to.be.equal(toBN(0));
         });
 
         it('updates delegated amount', async function() {
-          expect(await this.delegator.totalDelegated()).to.be.bignumber.equal(toBN(0));
+          expect(await this.delegator.totalDelegated()).to.be.equal(toBN(0));
         });
 
         it('maintains total token', async function() {
-          expect(await this.delegator.totalToken()).to.be.bignumber.equal(toBN(10000));
+          expect(await this.delegator.totalToken()).to.be.equal(toBN(10000));
         });
 
         it('delegatee is deleted', async function() {
@@ -285,7 +418,16 @@ describe('TimelockedDelegator', function () {
 
         describe('Double Undelegation', function() {
           it('reverts', async function() {
-            await expectRevert(this.delegator.undelegate(userAddress, {from: beneficiaryAddress1}), 'TimelockedDelegator: Delegate contract nonexistent');
+            await hre.network.provider.request({
+              'method': 'hardhat_impersonateAccount',
+              'params': [beneficiaryAddress1]
+            })
+            const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
+            await expectRevert(this.delegator.connect(beneficiaryAddress1Signer).undelegate(userAddress), 'TimelockedDelegator: Delegate contract nonexistent');
+            await hre.network.provider.request({
+              'method': 'hardhat_stopImpersonatingAccount',
+              'params': [beneficiaryAddress1]
+            })
           });
         });
       });
@@ -298,7 +440,7 @@ describe('TimelockedDelegator', function () {
     });
 
     it('updates total token', async function() {
-      expect(await this.delegator.totalToken()).to.be.bignumber.equal(toBN(20000));
+      expect(await this.delegator.totalToken()).to.be.equal(toBN(20000));
     });
   });
 
@@ -315,11 +457,20 @@ describe('TimelockedDelegator', function () {
     });
     describe('Set Pending Beneficiary', function() {
       it('Beneficiary set succeeds', async function() {
+        await hre.network.provider.request({
+          'method': 'hardhat_impersonateAccount',
+          'params': [beneficiaryAddress1]
+        })
+        const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
         expectEvent(
-          await this.delegator.setPendingBeneficiary(userAddress, {from: beneficiaryAddress1}),
+          await this.delegator.connect(beneficiaryAddress1Signer).setPendingBeneficiary(userAddress),
           'PendingBeneficiaryUpdate',
           {_pendingBeneficiary: userAddress}
         );
+        await hre.network.provider.request({
+          'method': 'hardhat_stopImpersonatingAccount',
+          'params': [beneficiaryAddress1]
+        })
         expect(await this.delegator.pendingBeneficiary()).to.be.equal(userAddress);
       });
 
@@ -330,7 +481,16 @@ describe('TimelockedDelegator', function () {
 
     describe('Accept Beneficiary', function() {
       it('Pending Beneficiary succeeds', async function() {
-        await this.delegator.setPendingBeneficiary(userAddress, {from: beneficiaryAddress1});
+        await hre.network.provider.request({
+          'method': 'hardhat_impersonateAccount',
+          'params': [beneficiaryAddress1]
+        })
+        const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
+        await this.delegator.connect(beneficiaryAddress1Signer).setPendingBeneficiary(userAddress);
+        await hre.network.provider.request({
+          'method': 'hardhat_stopImpersonatingAccount',
+          'params': [beneficiaryAddress1]
+        })
         expectEvent(
           await this.delegator.acceptBeneficiary({from: userAddress}),
           'BeneficiaryUpdate',

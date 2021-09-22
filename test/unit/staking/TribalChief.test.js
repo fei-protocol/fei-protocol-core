@@ -24,7 +24,7 @@ const MockERC20 = artifacts.readArtifactSync('MockERC20');
 const Proxy = artifacts.readArtifactSync('TransparentUpgradeableProxy');
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const uintMax = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
-const ACC_TRIBE_PRECISION = new BN('100000000000000000000000');
+const ACC_TRIBE_PRECISION = toBN('100000000000000000000000');
 const blockReward = '100000000000000000000';
 
 async function testMultipleUsersPooling(
@@ -65,8 +65,8 @@ async function testMultipleUsersPooling(
       ),
       'Deposit', {
         user: userAddresses[i],
-        pid: new BN(pid.toString()),
-        amount: new BN(totalStaked),
+        pid: toBN(pid.toString()),
+        amount: toBN(totalStaked),
         depositID: currentIndex,
       },
     );
@@ -74,13 +74,13 @@ async function testMultipleUsersPooling(
 
   const pendingBalances = [];
   for (let i = 0; i < userAddresses.length; i++) {
-    const balance = new BN(await tribalChief.pendingRewards(pid, userAddresses[i]));
+    const balance = toBN(await tribalChief.pendingRewards(pid, userAddresses[i]));
     pendingBalances.push(balance);
   }
 
   for (let i = 0; i < blocksToAdvance; i++) {
     for (let j = 0; j < pendingBalances.length; j++) {
-      pendingBalances[j] = new BN(await tribalChief.pendingRewards(pid, userAddresses[j]));
+      pendingBalances[j] = toBN(await tribalChief.pendingRewards(pid, userAddresses[j]));
     }
 
     await time.advanceBlock();
@@ -95,7 +95,7 @@ async function testMultipleUsersPooling(
       }
 
       await expectApprox(
-        new BN(await tribalChief.pendingRewards(pid, userAddresses[j])),
+        toBN(await tribalChief.pendingRewards(pid, userAddresses[j])),
         pendingBalances[j].add(userIncrementAmount),
       );
     }
@@ -182,7 +182,7 @@ describe('TribalChief', () => {
   // This is also the amount of LP tokens that will be staked into the tribalChief contract
   const totalStaked = '100000000000000000000000000000000000';
   // this is the amount of tribe we will mint to the tribalChief contract
-  const mintAmount = new BN('1000000000000000000000000000000000000000000000');
+  const mintAmount = toBN('1000000000000000000000000000000000000000000000');
 
   before(async () => {
     ({
@@ -352,7 +352,7 @@ describe('TribalChief', () => {
       it('should be able to resetRewards as governor', async function () {
         expect(
           (await this.tribalChief.poolInfo(pid)).allocPoint,
-        ).to.be.bignumber.equal(new BN(allocationPoints));
+        ).to.be.bignumber.equal(toBN(allocationPoints));
         expect((await this.tribalChief.poolInfo(pid)).unlocked).to.be.false;
 
         expectEvent(
@@ -360,7 +360,7 @@ describe('TribalChief', () => {
           'PoolLocked',
           {
             locked: false,
-            pid: new BN(pid),
+            pid: toBN(pid),
           },
         );
 
@@ -368,10 +368,10 @@ describe('TribalChief', () => {
         expect((await this.tribalChief.poolInfo(pid)).unlocked).to.be.true;
         expect(
           (await this.tribalChief.poolInfo(pid)).allocPoint,
-        ).to.be.bignumber.equal(new BN('0'));
+        ).to.be.bignumber.equal(toBN('0'));
         expect(
           await this.tribalChief.totalAllocPoint(),
-        ).to.be.bignumber.equal(new BN('0'));
+        ).to.be.bignumber.equal(toBN('0'));
       });
 
       it('governor should be able to add rewards stream', async function () {
@@ -386,7 +386,7 @@ describe('TribalChief', () => {
         expect(Number(await this.tribalChief.numPools())).to.be.equal(2);
         expect(
           (await this.tribalChief.poolInfo(1)).allocPoint,
-        ).to.be.bignumber.equal(new BN(allocationPoints));
+        ).to.be.bignumber.equal(toBN(allocationPoints));
       });
 
       it('should not be able to set rewards stream as non governor', async function () {
@@ -426,7 +426,7 @@ describe('TribalChief', () => {
         );
         expect(
           (await this.tribalChief.poolInfo(pid)).allocPoint,
-        ).to.be.bignumber.equal(new BN(newAllocationPoints));
+        ).to.be.bignumber.equal(toBN(newAllocationPoints));
       });
 
       it('should not be able to governorWithdrawTribe as non governor', async function () {
@@ -439,7 +439,7 @@ describe('TribalChief', () => {
       it('should be able to governorWithdrawTribe as governor', async function () {
         // assert that core's tribe balance before doing the governor withdraw is 0
         let coreBalance = await this.tribe.balanceOf(this.core.address);
-        expect(coreBalance).to.be.bignumber.equal(new BN('0'));
+        expect(coreBalance).to.be.bignumber.equal(toBN('0'));
 
         const withdrawAmount = await this.tribe.balanceOf(this.tribalChief.address);
         expect(withdrawAmount).to.be.bignumber.equal(mintAmount);
@@ -455,7 +455,7 @@ describe('TribalChief', () => {
         expect(coreBalance).to.be.bignumber.equal(mintAmount);
 
         const afterTribalChiefBalance = await this.tribe.balanceOf(this.tribalChief.address);
-        expect(afterTribalChiefBalance).to.be.bignumber.equal(new BN('0'));
+        expect(afterTribalChiefBalance).to.be.bignumber.equal(toBN('0'));
       });
 
       it('should not be able to updateBlockReward as non governor', async function () {
@@ -475,20 +475,20 @@ describe('TribalChief', () => {
           6000000000,
         ];
 
-        expect(await this.tribalChief.tribePerBlock()).to.be.bignumber.equal(new BN('100000000000000000000'));
+        expect(await this.tribalChief.tribePerBlock()).to.be.bignumber.equal(toBN('100000000000000000000'));
         for (let i = 0; i < newBlockRewards.length; i++) {
         // update the block reward
           expectEvent(
             await this.tribalChief.updateBlockReward(newBlockRewards[i], { from: governorAddress }),
             'NewTribePerBlock', {
-              amount: new BN(newBlockRewards[i].toString()),
+              amount: toBN(newBlockRewards[i].toString()),
             },
           );
 
           // assert this new block reward is in place
           expect(
             await this.tribalChief.tribePerBlock(),
-          ).to.be.bignumber.equal(new BN(newBlockRewards[i]));
+          ).to.be.bignumber.equal(toBN(newBlockRewards[i]));
         }
       });
 
@@ -529,13 +529,13 @@ describe('TribalChief', () => {
 
         expect(
           (await this.tribalChief.poolInfo(pid)).accTribePerShare,
-        ).to.be.bignumber.equal(new BN(0));
+        ).to.be.bignumber.equal(toBN(0));
 
         await testMultipleUsersPooling(
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('100000000000000000000'),
+          toBN('100000000000000000000'),
           1,
           0,
           totalStaked,
@@ -548,8 +548,8 @@ describe('TribalChief', () => {
 
         await this.tribalChief.updatePool(pid);
 
-        const expectedAccTribePerShare = (new BN(100).mul(new BN(blockReward).mul(new BN(ACC_TRIBE_PRECISION))))
-          .div(new BN(totalStaked));
+        const expectedAccTribePerShare = (toBN(100).mul(toBN(blockReward).mul(toBN(ACC_TRIBE_PRECISION))))
+          .div(toBN(totalStaked));
 
         expect(
           (await this.tribalChief.poolInfo(pid)).accTribePerShare,
@@ -561,13 +561,13 @@ describe('TribalChief', () => {
 
         expect(
           (await this.tribalChief.poolInfo(pid)).accTribePerShare,
-        ).to.be.bignumber.equal(new BN(0));
+        ).to.be.bignumber.equal(toBN(0));
 
         await testMultipleUsersPooling(
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('100000000000000000000'),
+          toBN('100000000000000000000'),
           1,
           0,
           totalStaked,
@@ -580,8 +580,8 @@ describe('TribalChief', () => {
 
         await this.tribalChief.updatePool(pid);
 
-        const expectedAccTribePerShare = (new BN(10).mul(new BN(blockReward).mul(new BN(ACC_TRIBE_PRECISION))))
-          .div(new BN(totalStaked));
+        const expectedAccTribePerShare = (toBN(10).mul(toBN(blockReward).mul(toBN(ACC_TRIBE_PRECISION))))
+          .div(toBN(totalStaked));
 
         expect(
           (await this.tribalChief.poolInfo(pid)).accTribePerShare,
@@ -593,13 +593,13 @@ describe('TribalChief', () => {
 
         expect(
           (await this.tribalChief.poolInfo(pid)).accTribePerShare,
-        ).to.be.bignumber.equal(new BN(0));
+        ).to.be.bignumber.equal(toBN(0));
 
         await testMultipleUsersPooling(
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('100000000000000000000'),
+          toBN('100000000000000000000'),
           1,
           0,
           totalStaked,
@@ -612,8 +612,8 @@ describe('TribalChief', () => {
 
         await this.tribalChief.resetRewards(pid, { from: governorAddress });
 
-        const expectedAccTribePerShare = (new BN(10).mul(new BN(blockReward).mul(new BN(ACC_TRIBE_PRECISION))))
-          .div(new BN(totalStaked));
+        const expectedAccTribePerShare = (toBN(10).mul(toBN(blockReward).mul(toBN(ACC_TRIBE_PRECISION))))
+          .div(toBN(totalStaked));
 
         expect(
           (await this.tribalChief.poolInfo(pid)).accTribePerShare,
@@ -621,9 +621,9 @@ describe('TribalChief', () => {
 
         const { allocPoint } = await this.tribalChief.poolInfo(pid);
         // alloc points are now 0
-        expect(new BN(0)).to.be.bignumber.equal(allocPoint);
+        expect(toBN(0)).to.be.bignumber.equal(allocPoint);
         const rewards = await this.tribalChief.pendingRewards(pid, userAddress);
-        const expectedRewards = expectedAccTribePerShare.mul(new BN(totalStaked)).div(new BN(ACC_TRIBE_PRECISION));
+        const expectedRewards = expectedAccTribePerShare.mul(toBN(totalStaked)).div(toBN(ACC_TRIBE_PRECISION));
         expect(rewards).to.be.bignumber.equal(expectedRewards);
       });
 
@@ -632,13 +632,13 @@ describe('TribalChief', () => {
 
         expect(
           (await this.tribalChief.poolInfo(pid)).accTribePerShare,
-        ).to.be.bignumber.equal(new BN(0));
+        ).to.be.bignumber.equal(toBN(0));
 
         await testMultipleUsersPooling(
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('100000000000000000000'),
+          toBN('100000000000000000000'),
           1,
           0,
           totalStaked,
@@ -664,12 +664,12 @@ describe('TribalChief', () => {
         await this.tribalChief.set(pid, 0, ZERO_ADDRESS, false, { from: governorAddress });
 
         // tribe per share from first 8 blocks, full reward
-        const expectedAccTribePerShareFirst8Blocks = (new BN(8).mul(new BN(blockReward).mul(new BN(ACC_TRIBE_PRECISION))))
-          .div(new BN(totalStaked));
+        const expectedAccTribePerShareFirst8Blocks = (toBN(8).mul(toBN(blockReward).mul(toBN(ACC_TRIBE_PRECISION))))
+          .div(toBN(totalStaked));
 
         // tribe per share from last 2 blocks, which was cut in half
-        const expectedAccTribePerShareLast2Blocks = (new BN(2).mul(new BN(blockReward).div(new BN(2)).mul(new BN(ACC_TRIBE_PRECISION))))
-          .div(new BN(totalStaked));
+        const expectedAccTribePerShareLast2Blocks = (toBN(2).mul(toBN(blockReward).div(toBN(2)).mul(toBN(ACC_TRIBE_PRECISION))))
+          .div(toBN(totalStaked));
 
         const totalAccTribePerShare = expectedAccTribePerShareLast2Blocks.add(expectedAccTribePerShareFirst8Blocks);
 
@@ -681,9 +681,9 @@ describe('TribalChief', () => {
         const { allocPoint } = await this.tribalChief.poolInfo(pid);
 
         // alloc points are now 0 for this pool
-        expect(new BN(0)).to.be.bignumber.equal(allocPoint);
+        expect(toBN(0)).to.be.bignumber.equal(allocPoint);
         const rewards = await this.tribalChief.pendingRewards(pid, userAddress);
-        const expectedRewards = totalAccTribePerShare.mul(new BN(totalStaked)).div(new BN(ACC_TRIBE_PRECISION));
+        const expectedRewards = totalAccTribePerShare.mul(toBN(totalStaked)).div(toBN(ACC_TRIBE_PRECISION));
         expect(rewards).to.be.bignumber.equal(expectedRewards);
       });
 
@@ -693,9 +693,9 @@ describe('TribalChief', () => {
           await this.tribalChief.deposit(pid, totalStaked, 100, { from: userAddress }),
           'Deposit', {
             user: userAddress,
-            pid: new BN(pid.toString()),
-            amount: new BN(totalStaked),
-            depositID: new BN('0'),
+            pid: toBN(pid.toString()),
+            amount: toBN(totalStaked),
+            depositID: toBN('0'),
           },
         );
 
@@ -708,7 +708,7 @@ describe('TribalChief', () => {
         await this.tribalChief.withdrawAllAndHarvest(pid, userAddress, { from: userAddress });
 
         // tribe per share from first 5 blocks, full reward
-        const expectedAccTribeFirst5Blocks = new BN(5).mul(new BN(blockReward));
+        const expectedAccTribeFirst5Blocks = toBN(5).mul(toBN(blockReward));
         await expectApprox(rewards, expectedAccTribeFirst5Blocks);
         // assert that no LP tokens were withdrawn when calling withdrawAllAndHarvest
         expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(startingLPBalance);
@@ -719,9 +719,9 @@ describe('TribalChief', () => {
           await this.tribalChief.deposit(pid, totalStaked, 100, { from: userAddress }),
           'Deposit', {
             user: userAddress,
-            pid: new BN(pid.toString()),
-            amount: new BN(totalStaked),
-            depositID: new BN('1'),
+            pid: toBN(pid.toString()),
+            amount: toBN(totalStaked),
+            depositID: toBN('1'),
           },
         );
       });
@@ -731,27 +731,27 @@ describe('TribalChief', () => {
       it('should be able to stake LP Tokens', async function () {
         expect(
           await this.LPToken.balanceOf(userAddress),
-        ).to.be.bignumber.equal(new BN(totalStaked));
+        ).to.be.bignumber.equal(toBN(totalStaked));
 
         await this.LPToken.approve(this.tribalChief.address, totalStaked);
         expectEvent(
           await this.tribalChief.deposit(pid, totalStaked, 0, { from: userAddress }),
           'Deposit', {
             user: userAddress,
-            pid: new BN(pid.toString()),
-            amount: new BN(totalStaked),
-            depositID: new BN('0'),
+            pid: toBN(pid.toString()),
+            amount: toBN(totalStaked),
+            depositID: toBN('0'),
           },
         );
-        expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+        expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
 
         // grab the index by getting the amount of deposit they have and subtracting 1
-        const index = (await this.tribalChief.openUserDeposits(pid, userAddress)).sub(new BN('1')).toString();
+        const index = (await this.tribalChief.openUserDeposits(pid, userAddress)).sub(toBN('1')).toString();
         // assert user has received their balance in
         // the tribalChief contract registered under their account
         expect(
           (await this.tribalChief.depositInfo(pid, userAddress, index)).amount,
-        ).to.be.bignumber.equal(new BN(totalStaked));
+        ).to.be.bignumber.equal(toBN(totalStaked));
       });
 
       it('should be able to get pending tribe', async function () {
@@ -763,7 +763,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('100000000000000000000'),
+          toBN('100000000000000000000'),
           10,
           0,
           totalStaked,
@@ -782,7 +782,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('100000000000000000000'),
+          toBN('100000000000000000000'),
           10,
           0,
           totalStaked,
@@ -871,7 +871,7 @@ describe('TribalChief', () => {
         expect(
           await this.tribe.balanceOf(userAddress),
         ).to.be.bignumber.equal(
-          new BN((((perBlockReward / 2) * (advanceBlockAmount - 3)) + (perBlockReward)).toString())
+          toBN((((perBlockReward / 2) * (advanceBlockAmount - 3)) + (perBlockReward)).toString())
             .add(startingTribeBalance),
         );
 
@@ -917,7 +917,7 @@ describe('TribalChief', () => {
         }
 
         const expectedAmount = startingTribeBalance
-          .add(new BN(((perBlockReward / 2) * (advanceBlockAmount - 1)).toString()));
+          .add(toBN(((perBlockReward / 2) * (advanceBlockAmount - 1)).toString()));
         await this.tribalChief.harvest(pid, userAddress, { from: userAddress });
         expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(expectedAmount);
       });
@@ -964,7 +964,7 @@ describe('TribalChief', () => {
         const rewardAmount = endingTribeBalance.sub(startingTribeBalance);
 
         expect(rewardAmount).to.be.bignumber.equal(
-          new BN(((perBlockReward / 2) * advanceBlockAmount).toString()),
+          toBN(((perBlockReward / 2) * advanceBlockAmount).toString()),
         );
       });
 
@@ -1035,7 +1035,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('20000000000000000000'),
+          toBN('20000000000000000000'),
           10,
           0,
           totalStaked,
@@ -1045,7 +1045,7 @@ describe('TribalChief', () => {
 
       it('should be able to getTotalStakedInPool with one user depositing multiple times', async function () {
         const userAddresses = [userAddress];
-        await this.LPToken.mint(userAddress, new BN(10).mul(new BN(totalStaked)));
+        await this.LPToken.mint(userAddress, toBN(10).mul(toBN(totalStaked)));
         for (let i = 0; i < 10; i++) {
           const amountOfDeposits = i + 1;
 
@@ -1053,7 +1053,7 @@ describe('TribalChief', () => {
             this.tribalChief,
             this.LPToken,
             userAddresses,
-            new BN('100000000000000000000'),
+            toBN('100000000000000000000'),
             1,
             0,
             totalStaked,
@@ -1061,7 +1061,7 @@ describe('TribalChief', () => {
           );
 
           // expected amount staked is totalstaked * amountOfDeposits
-          const expectedTotalStaked = new BN(totalStaked).mul(new BN(amountOfDeposits));
+          const expectedTotalStaked = toBN(totalStaked).mul(toBN(amountOfDeposits));
           const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddress);
 
           expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
@@ -1075,7 +1075,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('25000000000000000000'),
+          toBN('25000000000000000000'),
           10,
           0,
           totalStaked,
@@ -1083,7 +1083,7 @@ describe('TribalChief', () => {
         );
 
         for (let i = 0; i < userAddresses.length; i++) {
-          const expectedTotalStaked = new BN(totalStaked);
+          const expectedTotalStaked = toBN(totalStaked);
           const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
 
           expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
@@ -1097,7 +1097,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('50000000000000000000'),
+          toBN('50000000000000000000'),
           10,
           0,
           totalStaked,
@@ -1105,7 +1105,7 @@ describe('TribalChief', () => {
         );
 
         for (let i = 0; i < userAddresses.length; i++) {
-          const expectedTotalStaked = new BN(totalStaked);
+          const expectedTotalStaked = toBN(totalStaked);
           const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
 
           expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
@@ -1130,7 +1130,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('10000000000000000000'),
+          toBN('10000000000000000000'),
           10,
           0,
           totalStaked,
@@ -1138,7 +1138,7 @@ describe('TribalChief', () => {
         );
 
         for (let i = 0; i < userAddresses.length; i++) {
-          const expectedTotalStaked = new BN(totalStaked);
+          const expectedTotalStaked = toBN(totalStaked);
           const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
 
           expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
@@ -1146,8 +1146,8 @@ describe('TribalChief', () => {
       });
 
       it('should be able to distribute sushi after 10 blocks with 3 pools, 3 users staking in each pool', async function () {
-        await expect(await this.tribalChief.numPools()).to.be.bignumber.equal(new BN('1'));
-        await expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(new BN('100'));
+        await expect(await this.tribalChief.numPools()).to.be.bignumber.equal(toBN('1'));
+        await expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(toBN('100'));
 
         let tx = await this.tribalChief.add(
           allocationPoints,
@@ -1157,8 +1157,8 @@ describe('TribalChief', () => {
           { from: governorAddress },
         );
         const secondPid = Number(tx.logs[0].args.pid);
-        await expect(await this.tribalChief.numPools()).to.be.bignumber.equal(new BN('2'));
-        await expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(new BN('200'));
+        await expect(await this.tribalChief.numPools()).to.be.bignumber.equal(toBN('2'));
+        await expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(toBN('200'));
 
         tx = await this.tribalChief.add(
           allocationPoints,
@@ -1169,24 +1169,24 @@ describe('TribalChief', () => {
         );
         // grab PID from the logs
         const thirdPid = Number(tx.logs[0].args.pid);
-        await expect(await this.tribalChief.numPools()).to.be.bignumber.equal(new BN('3'));
-        await expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(new BN('300'));
+        await expect(await this.tribalChief.numPools()).to.be.bignumber.equal(toBN('3'));
+        await expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(toBN('300'));
 
         const userAddressesFirstList = [userAddress, secondUserAddress, thirdUserAddress];
         const userAdddressesSecondList = [fourthUserAddress, fifthUserAddress, sixthUserAddress];
         const userAdddressesThirdList = [seventhUserAddress, eigthUserAddress, ninthUserAddress];
 
         // pool 1, all users deposit with a locklength of 100
-        await testMultipleUsersPooling(this.tribalChief, this.LPToken, userAddressesFirstList, new BN('11111111110000000000'), 1, 100, totalStaked, pid);
+        await testMultipleUsersPooling(this.tribalChief, this.LPToken, userAddressesFirstList, toBN('11111111110000000000'), 1, 100, totalStaked, pid);
 
         // pool 2, 3 user deposits with different locklengths
         const lockLengths = [100, 200, 300];
-        const rewardArrayPoolTwo = [new BN('5555555550000000000'), new BN('11111111110000000000'), new BN('16666666660000000000')];
+        const rewardArrayPoolTwo = [toBN('5555555550000000000'), toBN('11111111110000000000'), toBN('16666666660000000000')];
         await testMultipleUsersPooling(this.tribalChief, this.LPToken, userAdddressesSecondList, rewardArrayPoolTwo, 3, lockLengths, totalStaked, secondPid);
 
         // pool 3, 1 user deposits with different locklengths
         const lockLengthsPoolThree = [250, 250, 500];
-        const rewardArrayPoolThree = [new BN('8333333330000000000'), new BN('8333333330000000000'), new BN('16666666660000000000')];
+        const rewardArrayPoolThree = [toBN('8333333330000000000'), toBN('8333333330000000000'), toBN('16666666660000000000')];
         await testMultipleUsersPooling(this.tribalChief, this.LPToken, userAdddressesThirdList, rewardArrayPoolThree, 3, lockLengthsPoolThree, totalStaked, thirdPid);
 
         async function testFailureWithdraw(poolPid, users, tribalChief) {
@@ -1231,7 +1231,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('5000000000000000000'),
+          toBN('5000000000000000000'),
           10,
           0,
           totalStaked,
@@ -1239,7 +1239,7 @@ describe('TribalChief', () => {
         );
 
         for (let i = 0; i < userAddresses.length; i++) {
-          const expectedTotalStaked = new BN(totalStaked);
+          const expectedTotalStaked = toBN(totalStaked);
           const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
 
           expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
@@ -1279,20 +1279,20 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('5000000000000000000'),
+          toBN('5000000000000000000'),
           10,
           0,
           totalStaked,
           pid,
         );
         for (let i = 0; i < userAddresses.length; i++) {
-          expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
-          expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+          expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(toBN('0'));
+          expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(toBN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddresses[i]);
 
           // assert that getTotalStakedInPool returns proper amount
-          const expectedTotalStaked = new BN(totalStaked);
+          const expectedTotalStaked = toBN(totalStaked);
           const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
           expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
 
@@ -1302,7 +1302,7 @@ describe('TribalChief', () => {
 
           expect(
             await this.LPToken.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.equal(new BN(totalStaked));
+          ).to.be.bignumber.equal(toBN(totalStaked));
           expect(
             await this.tribe.balanceOf(userAddresses[i]),
           ).to.be.bignumber.gt(pendingTribe);
@@ -1331,7 +1331,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('10000000000000000000'),
+          toBN('10000000000000000000'),
           10,
           0,
           totalStaked,
@@ -1339,12 +1339,12 @@ describe('TribalChief', () => {
         );
 
         for (let i = 0; i < userAddresses.length; i++) {
-          expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
-          expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+          expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(toBN('0'));
+          expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(toBN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddresses[i]);
           // assert that getTotalStakedInPool returns proper amount
-          const expectedTotalStaked = new BN(totalStaked);
+          const expectedTotalStaked = toBN(totalStaked);
           const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
           expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
 
@@ -1354,7 +1354,7 @@ describe('TribalChief', () => {
 
           expect(
             await this.LPToken.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.equal(new BN(totalStaked));
+          ).to.be.bignumber.equal(toBN(totalStaked));
           expect(
             await this.tribe.balanceOf(userAddresses[i]),
           ).to.be.bignumber.gt(pendingTribe);
@@ -1374,7 +1374,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('20000000000000000000'),
+          toBN('20000000000000000000'),
           10,
           0,
           totalStaked,
@@ -1382,8 +1382,8 @@ describe('TribalChief', () => {
         );
 
         for (let i = 0; i < userAddresses.length; i++) {
-          expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
-          expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+          expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(toBN('0'));
+          expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(toBN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddresses[i]);
           await this.tribalChief.withdrawAllAndHarvest(
@@ -1392,7 +1392,7 @@ describe('TribalChief', () => {
 
           expect(
             await this.LPToken.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.equal(new BN(totalStaked));
+          ).to.be.bignumber.equal(toBN(totalStaked));
           expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.gt(pendingTribe);
         }
       });
@@ -1404,7 +1404,7 @@ describe('TribalChief', () => {
         ];
 
         const startingAllocPoints = await this.tribalChief.totalAllocPoint();
-        expect(startingAllocPoints).to.be.bignumber.equal(new BN(allocationPoints.toString()));
+        expect(startingAllocPoints).to.be.bignumber.equal(toBN(allocationPoints.toString()));
         // only add 4 pools as the before each hook always adds 1 pool
 
         for (let i = 1; i < 5; i++) {
@@ -1419,7 +1419,7 @@ describe('TribalChief', () => {
         }
 
         // assert that allocation points are correct and are now at 500
-        expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(new BN((allocationPoints * 5).toString()));
+        expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(toBN((allocationPoints * 5).toString()));
         // assert that we have 5 pools
         expect(Number(await this.tribalChief.numPools())).to.be.equal(5);
 
@@ -1431,7 +1431,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('10000000000000000000'),
+          toBN('10000000000000000000'),
           10,
           0,
           totalStaked,
@@ -1439,12 +1439,12 @@ describe('TribalChief', () => {
         );
 
         for (let i = 0; i < userAddresses.length; i++) {
-          expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
-          expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+          expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(toBN('0'));
+          expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(toBN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddresses[i]);
           // assert that getTotalStakedInPool returns proper amount
-          const expectedTotalStaked = new BN(totalStaked);
+          const expectedTotalStaked = toBN(totalStaked);
           const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
           expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
 
@@ -1454,7 +1454,7 @@ describe('TribalChief', () => {
 
           expect(
             await this.LPToken.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.equal(new BN(totalStaked));
+          ).to.be.bignumber.equal(toBN(totalStaked));
           expect(
             await this.tribe.balanceOf(userAddresses[i]),
           ).to.be.bignumber.gt(pendingTribe);
@@ -1473,7 +1473,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('25000000000000000000'),
+          toBN('25000000000000000000'),
           10,
           0,
           totalStaked,
@@ -1481,13 +1481,13 @@ describe('TribalChief', () => {
         );
 
         for (let i = 0; i < userAddresses.length; i++) {
-          expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
-          expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+          expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(toBN('0'));
+          expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(toBN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddresses[i]);
 
           // assert that getTotalStakedInPool returns proper amount
-          const expectedTotalStaked = new BN(totalStaked);
+          const expectedTotalStaked = toBN(totalStaked);
           const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
           expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
 
@@ -1497,7 +1497,7 @@ describe('TribalChief', () => {
 
           expect(
             await this.LPToken.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.equal(new BN(totalStaked));
+          ).to.be.bignumber.equal(toBN(totalStaked));
           expect(
             await this.tribe.balanceOf(userAddresses[i]),
           ).to.be.bignumber.gt(pendingTribe);
@@ -1526,7 +1526,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('10000000000000000000'),
+          toBN('10000000000000000000'),
           10,
           0,
           totalStaked,
@@ -1534,13 +1534,13 @@ describe('TribalChief', () => {
         );
 
         for (let i = 0; i < userAddresses.length; i++) {
-          expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
-          expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(new BN('0'));
+          expect(await this.LPToken.balanceOf(userAddresses[i])).to.be.bignumber.equal(toBN('0'));
+          expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.equal(toBN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddresses[i]);
 
           // assert that getTotalStakedInPool returns proper amount
-          const expectedTotalStaked = new BN(totalStaked);
+          const expectedTotalStaked = toBN(totalStaked);
           const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
           expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
 
@@ -1550,7 +1550,7 @@ describe('TribalChief', () => {
 
           expect(
             await this.LPToken.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.equal(new BN(totalStaked));
+          ).to.be.bignumber.equal(toBN(totalStaked));
           expect(
             await this.tribe.balanceOf(userAddresses[i]),
           ).to.be.bignumber.gt(pendingTribe);
@@ -1587,7 +1587,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('5000000000000000000'),
+          toBN('5000000000000000000'),
           10,
           0,
           totalStaked,
@@ -1597,27 +1597,27 @@ describe('TribalChief', () => {
         for (let i = 0; i < userAddresses.length; i++) {
           const address = userAddresses[i];
 
-          expect(await this.LPToken.balanceOf(address)).to.be.bignumber.equal(new BN('0'));
-          expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(new BN('0'));
+          expect(await this.LPToken.balanceOf(address)).to.be.bignumber.equal(toBN('0'));
+          expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(toBN('0'));
 
           const pendingTribeBeforeHarvest = await this.tribalChief.pendingRewards(pid, address);
 
           // assert that getTotalStakedInPool returns proper amount
-          const expectedTotalStaked = new BN(totalStaked);
+          const expectedTotalStaked = toBN(totalStaked);
           const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
           expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
 
-          const index = (await this.tribalChief.openUserDeposits(pid, userAddress)).sub(new BN('1')).toString();
+          const index = (await this.tribalChief.openUserDeposits(pid, userAddress)).sub(toBN('1')).toString();
           await this.tribalChief.withdrawFromDeposit(
             pid, totalStaked, address, index, { from: address },
           );
 
-          expect(await this.LPToken.balanceOf(address)).to.be.bignumber.equal(new BN(totalStaked));
-          expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(new BN('0'));
+          expect(await this.LPToken.balanceOf(address)).to.be.bignumber.equal(toBN(totalStaked));
+          expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(toBN('0'));
 
           // assert that reward debt went negative after we withdrew
           // all of our principle without harvesting
-          expect((await this.tribalChief.userInfo(pid, address)).rewardDebt).to.be.bignumber.lt(new BN('-1'));
+          expect((await this.tribalChief.userInfo(pid, address)).rewardDebt).to.be.bignumber.lt(toBN('-1'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, address);
           expect(pendingTribe).to.be.bignumber.gt(pendingTribeBeforeHarvest);
@@ -1641,7 +1641,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('33333333333300000000'),
+          toBN('33333333333300000000'),
           10,
           0,
           totalStaked,
@@ -1651,19 +1651,19 @@ describe('TribalChief', () => {
         for (let i = 0; i < userAddresses.length; i++) {
           const address = userAddresses[i];
 
-          expect(await this.LPToken.balanceOf(address)).to.be.bignumber.equal(new BN('0'));
-          expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(new BN('0'));
+          expect(await this.LPToken.balanceOf(address)).to.be.bignumber.equal(toBN('0'));
+          expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(toBN('0'));
 
           // subtract 1 from the amount of deposits
           const pendingTribeBeforeHarvest = await this.tribalChief.pendingRewards(pid, address);
 
-          const index = (await this.tribalChief.openUserDeposits(pid, userAddress)).sub(new BN('1')).toString();
+          const index = (await this.tribalChief.openUserDeposits(pid, userAddress)).sub(toBN('1')).toString();
           await this.tribalChief.withdrawFromDeposit(
             pid, totalStaked, address, index, { from: address },
           );
 
-          expect(await this.LPToken.balanceOf(address)).to.be.bignumber.equal(new BN(totalStaked));
-          expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(new BN('0'));
+          expect(await this.LPToken.balanceOf(address)).to.be.bignumber.equal(toBN(totalStaked));
+          expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(toBN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, address);
           expect(pendingTribe).to.be.bignumber.gt(pendingTribeBeforeHarvest);
@@ -1681,13 +1681,13 @@ describe('TribalChief', () => {
         ];
 
         await this.LPToken.mint(userAddress, totalStaked); // approve double total staked
-        await this.LPToken.approve(this.tribalChief.address, new BN(totalStaked).mul(new BN('2')));
+        await this.LPToken.approve(this.tribalChief.address, toBN(totalStaked).mul(toBN('2')));
 
         await testMultipleUsersPooling(
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN(blockReward),
+          toBN(blockReward),
           1,
           0,
           totalStaked,
@@ -1699,7 +1699,7 @@ describe('TribalChief', () => {
         // 1 block to do 2nd deposit,
         // 1 block to advance,
         // 1 block for the harvest
-        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN('300000000000000000000'));
+        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN('300000000000000000000'));
       });
 
       it('pendingRewards should be able to get all rewards data across 5 deposits in a single pool', async function () {
@@ -1711,14 +1711,14 @@ describe('TribalChief', () => {
           userAddress,
         ];
 
-        await this.LPToken.mint(userAddress, new BN(totalStaked).mul(new BN('5'))); // approve double total staked
-        await this.LPToken.approve(this.tribalChief.address, new BN(totalStaked).mul(new BN('5')));
+        await this.LPToken.mint(userAddress, toBN(totalStaked).mul(toBN('5'))); // approve double total staked
+        await this.LPToken.approve(this.tribalChief.address, toBN(totalStaked).mul(toBN('5')));
 
         await testMultipleUsersPooling(
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN(blockReward),
+          toBN(blockReward),
           1,
           0,
           totalStaked,
@@ -1726,7 +1726,7 @@ describe('TribalChief', () => {
         );
 
         // assert that getTotalStakedInPool returns proper amount
-        const expectedTotalStaked = new BN(totalStaked).mul(new BN(5));
+        const expectedTotalStaked = toBN(totalStaked).mul(toBN(5));
         const poolStakedAmount = await this.tribalChief.getTotalStakedInPool(pid, userAddress);
         expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
 
@@ -1738,7 +1738,7 @@ describe('TribalChief', () => {
         // we lose about 0.0000000017% on this harvest, so we need to use expect approx
         await expectApprox(
           await this.tribe.balanceOf(userAddress),
-          ((new BN(blockReward)).mul(new BN('6'))),
+          ((toBN(blockReward)).mul(toBN('6'))),
         );
       });
 
@@ -1756,14 +1756,14 @@ describe('TribalChief', () => {
           userAddress,
         ];
 
-        await this.LPToken.mint(userAddress, new BN(totalStaked).mul(new BN('10'))); // approve double total staked
-        await this.LPToken.approve(this.tribalChief.address, new BN(totalStaked).mul(new BN('10')));
+        await this.LPToken.mint(userAddress, toBN(totalStaked).mul(toBN('10'))); // approve double total staked
+        await this.LPToken.approve(this.tribalChief.address, toBN(totalStaked).mul(toBN('10')));
 
         await testMultipleUsersPooling(
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN(blockReward),
+          toBN(blockReward),
           1,
           0,
           totalStaked,
@@ -1778,7 +1778,7 @@ describe('TribalChief', () => {
         // we lose about 0.0000000017% on this harvest, so we need to use expect approx
         await expectApprox(
           await this.tribe.balanceOf(userAddress),
-          ((new BN(blockReward)).mul(new BN('11'))),
+          ((toBN(blockReward)).mul(toBN('11'))),
         );
       });
 
@@ -1789,7 +1789,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN(blockReward),
+          toBN(blockReward),
           5,
           0,
           totalStaked,
@@ -1797,7 +1797,7 @@ describe('TribalChief', () => {
         );
 
         await this.tribalChief.harvest(pid, userAddress);
-        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN('600000000000000000000'));
+        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN('600000000000000000000'));
       });
 
       it('harvest should be able to claim all rewards from multiple deposits in a single pool', async function () {
@@ -1808,12 +1808,12 @@ describe('TribalChief', () => {
         ];
 
         await this.LPToken.mint(userAddress, totalStaked); // approve double total staked
-        await this.LPToken.approve(this.tribalChief.address, new BN(totalStaked).mul(new BN('2')));
+        await this.LPToken.approve(this.tribalChief.address, toBN(totalStaked).mul(toBN('2')));
 
         const incrementAmount = [
-          new BN('66666666666600000000'), // user one should receive 2/3 of block rewards
-          new BN('66666666666600000000'),
-          new BN('33333333333300000000'), // user two should receive 1/3 of block rewards
+          toBN('66666666666600000000'), // user one should receive 2/3 of block rewards
+          toBN('66666666666600000000'),
+          toBN('33333333333300000000'), // user two should receive 1/3 of block rewards
         ];
 
         await testMultipleUsersPooling(
@@ -1839,11 +1839,11 @@ describe('TribalChief', () => {
           const endingLP = await this.LPToken.balanceOf(userAddress);
 
           // ensure the users LPToken balance increased
-          expect(startingLP.add(new BN(totalStaked))).to.be.bignumber.equal(endingLP);
+          expect(startingLP.add(toBN(totalStaked))).to.be.bignumber.equal(endingLP);
         }
 
         const startingTribe = await this.tribe.balanceOf(userAddress);
-        expect(startingTribe).to.be.bignumber.equal(new BN('0'));
+        expect(startingTribe).to.be.bignumber.equal(toBN('0'));
 
         // get all of the pending rewards for this user
         const allPendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
@@ -1854,7 +1854,7 @@ describe('TribalChief', () => {
 
         // ensure user does not have any pending rewards remaining
         const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
-        expect(pendingTribe).to.be.bignumber.equal(new BN('0'));
+        expect(pendingTribe).to.be.bignumber.equal(toBN('0'));
       });
     });
 
@@ -1896,7 +1896,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('100000000000000000000'),
+          toBN('100000000000000000000'),
           3,
           100,
           totalStaked,
@@ -1923,7 +1923,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('100000000000000000000'),
+          toBN('100000000000000000000'),
           3,
           100,
           totalStaked,
@@ -2013,7 +2013,7 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('33333333333300000000'),
+          toBN('33333333333300000000'),
           10,
           0,
           totalStaked,
@@ -2023,13 +2023,13 @@ describe('TribalChief', () => {
         for (let i = 0; i < userAddresses.length; i++) {
           const address = userAddresses[i];
 
-          expect(await this.LPToken.balanceOf(address)).to.be.bignumber.equal(new BN('0'));
-          expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(new BN('0'));
+          expect(await this.LPToken.balanceOf(address)).to.be.bignumber.equal(toBN('0'));
+          expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(toBN('0'));
 
           // subtract 1 from the amount of deposits
           const pendingTribeBeforeHarvest = await this.tribalChief.pendingRewards(pid, address);
 
-          const index = (await this.tribalChief.openUserDeposits(pid, userAddress)).sub(new BN('1')).toString();
+          const index = (await this.tribalChief.openUserDeposits(pid, userAddress)).sub(toBN('1')).toString();
           const tx = await this.tribalChief.withdrawFromDeposit(
             pid, totalStaked, address, index, { from: address },
           );
@@ -2039,8 +2039,8 @@ describe('TribalChief', () => {
           };
           withdrawFromDepositReport.push(obj);
 
-          expect(await this.LPToken.balanceOf(address)).to.be.bignumber.equal(new BN(totalStaked));
-          expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(new BN('0'));
+          expect(await this.LPToken.balanceOf(address)).to.be.bignumber.equal(toBN(totalStaked));
+          expect(await this.tribe.balanceOf(address)).to.be.bignumber.equal(toBN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, address);
           expect(pendingTribe).to.be.bignumber.gt(pendingTribeBeforeHarvest);
@@ -2063,7 +2063,7 @@ describe('TribalChief', () => {
             this.tribalChief,
             this.LPToken,
             userAddresses,
-            new BN('100000000000000000000'),
+            toBN('100000000000000000000'),
             0,
             0,
             totalStaked,
@@ -2081,17 +2081,17 @@ describe('TribalChief', () => {
 
           expect(
             await this.LPToken.balanceOf(userAddress),
-          ).to.be.bignumber.equal((new BN(totalStaked)).mul(new BN(i.toString())));
+          ).to.be.bignumber.equal((toBN(totalStaked)).mul(toBN(i.toString())));
 
           // ensure that the reward debt got zero'd out
           // virtual amount should go to 0
           const { rewardDebt, virtualAmount } = await this.tribalChief.userInfo(pid, userAddress);
-          expect(rewardDebt).to.be.bignumber.equal(new BN('0'));
-          expect(virtualAmount).to.be.bignumber.equal(new BN('0'));
+          expect(rewardDebt).to.be.bignumber.equal(toBN('0'));
+          expect(virtualAmount).to.be.bignumber.equal(toBN('0'));
           // ensure that the open user deposits got zero'd out and array is 0 length
-          expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('0'));
+          expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(toBN('0'));
           // ensure that the virtual total supply got zero'd as well
-          expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(new BN('0'));
+          expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(toBN('0'));
 
           await this.LPToken.mint(
             userAddress,
@@ -2109,7 +2109,7 @@ describe('TribalChief', () => {
             this.tribalChief,
             this.LPToken,
             userAddresses,
-            new BN('100000000000000000000'),
+            toBN('100000000000000000000'),
             0,
             0,
             totalStaked,
@@ -2128,17 +2128,17 @@ describe('TribalChief', () => {
 
           expect(
             await this.LPToken.balanceOf(userAddress),
-          ).to.be.bignumber.equal((new BN(totalStaked)).mul(new BN(i.toString())));
+          ).to.be.bignumber.equal((toBN(totalStaked)).mul(toBN(i.toString())));
 
           // ensure that the reward debt got zero'd out
           // virtual amount should go to 0
           const { rewardDebt, virtualAmount } = await this.tribalChief.userInfo(pid, userAddress);
-          expect(rewardDebt).to.be.bignumber.equal(new BN('0'));
-          expect(virtualAmount).to.be.bignumber.equal(new BN('0'));
+          expect(rewardDebt).to.be.bignumber.equal(toBN('0'));
+          expect(virtualAmount).to.be.bignumber.equal(toBN('0'));
           // ensure that the open user deposits got zero'd out and array is 0 length
-          expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('0'));
+          expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(toBN('0'));
           // ensure that the virtual total supply got zero'd as well
-          expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(new BN('0'));
+          expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(toBN('0'));
 
           await this.LPToken.mint(
             userAddress,
@@ -2155,13 +2155,13 @@ describe('TribalChief', () => {
           this.tribalChief,
           this.LPToken,
           userAddresses,
-          new BN('100000000000000000000'),
+          toBN('100000000000000000000'),
           3,
           this.lockLength,
           totalStaked,
           pid,
         );
-        expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+        expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
 
         const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
         const tx = await this.tribalChief.withdrawAllAndHarvest(
@@ -2173,7 +2173,7 @@ describe('TribalChief', () => {
         };
         withdrawAllAndHarvestReport.push(obj);
 
-        expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+        expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
         expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
       });
 
@@ -2235,7 +2235,7 @@ describe('TribalChief', () => {
       // mint tribe tokens to the tribalChief contract to distribute as rewards
       await this.tribe.mint(this.tribalChief.address, mintAmount, { from: minterAddress });
       this.multiplier = multiplier20;
-      expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(new BN('0'));
+      expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(toBN('0'));
 
       // create new reward stream
       const tx = await this.tribalChief.add(
@@ -2249,7 +2249,7 @@ describe('TribalChief', () => {
           },
           {
             lockLength: 300,
-            rewardMultiplier: (new BN(oneMultiplier)).mul(new BN('3')).toString(),
+            rewardMultiplier: (toBN(oneMultiplier)).mul(toBN('3')).toString(),
           },
           {
             lockLength: 0,
@@ -2263,21 +2263,21 @@ describe('TribalChief', () => {
       pid = Number(tx.logs[0].args.pid);
       expect(
         await this.tribalChief.totalAllocPoint(),
-      ).to.be.bignumber.equal(new BN(allocationPoints.toString()));
-      expect(await this.tribalChief.numPools()).to.be.bignumber.equal(new BN('1'));
+      ).to.be.bignumber.equal(toBN(allocationPoints.toString()));
+      expect(await this.tribalChief.numPools()).to.be.bignumber.equal(toBN('1'));
 
       // set allocation points of earlier pool to 0 so that
       // full block rewards are given out to this pool
-      expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(new BN('100'));
+      expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(toBN('100'));
 
       expect(
         (await this.tribalChief.poolInfo(0)).allocPoint,
-      ).to.be.bignumber.equal(new BN(allocationPoints.toString()));
+      ).to.be.bignumber.equal(toBN(allocationPoints.toString()));
     });
 
     it('should be able to get allocation points and update allocation points for adding a new pool', async function () {
-      expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(new BN('100'));
-      expect(await this.tribalChief.numPools()).to.be.bignumber.equal(new BN('1'));
+      expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(toBN('100'));
+      expect(await this.tribalChief.numPools()).to.be.bignumber.equal(toBN('1'));
       // create new reward stream
       await this.tribalChief.add(
         allocationPoints,
@@ -2292,8 +2292,8 @@ describe('TribalChief', () => {
         { from: governorAddress },
       );
 
-      expect(await this.tribalChief.numPools()).to.be.bignumber.equal(new BN('2'));
-      expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(new BN('200'));
+      expect(await this.tribalChief.numPools()).to.be.bignumber.equal(toBN('2'));
+      expect(await this.tribalChief.totalAllocPoint()).to.be.bignumber.equal(toBN('200'));
     });
 
     it('should be able to get pending sushi and receive multiplier for depositing on force lock pool', async function () {
@@ -2303,7 +2303,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         10,
         300,
         totalStaked,
@@ -2318,7 +2318,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        [new BN('25000000000000000000'), new BN('75000000000000000000')],
+        [toBN('25000000000000000000'), toBN('75000000000000000000')],
         10,
         [100, 300],
         totalStaked,
@@ -2333,7 +2333,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        [new BN('50000000000000000000'), new BN('50000000000000000000')],
+        [toBN('50000000000000000000'), toBN('50000000000000000000')],
         10,
         [100, 100],
         totalStaked,
@@ -2349,7 +2349,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         5,
         100,
         totalStaked,
@@ -2369,7 +2369,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         1,
         0,
         '50000000000000000000',
@@ -2380,7 +2380,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         1,
         100,
         '50000000000000000000',
@@ -2392,7 +2392,7 @@ describe('TribalChief', () => {
         'tokens locked',
       );
       // ensure the users still has open deposits
-      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('2'));
+      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(toBN('2'));
     });
 
     it('should be able to withdraw a single deposit from a forced lock pool when it becomes unlocked', async function () {
@@ -2403,7 +2403,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         1,
         0,
         depositAmount,
@@ -2414,13 +2414,13 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         1,
         100,
         depositAmount,
         pid,
       );
-      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('2'));
+      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(toBN('2'));
 
       let userVirtualAmount = (await this.tribalChief.userInfo(pid, userAddress)).virtualAmount;
       // get total deposited amount by adding both deposits together
@@ -2429,9 +2429,9 @@ describe('TribalChief', () => {
           (await this.tribalChief.depositInfo(pid, userAddress, 1)).amount,
         );
 
-      expect(userDepositedAmount).to.be.bignumber.equal(new BN(depositAmount).mul(new BN('2')));
-      expect(userVirtualAmount).to.be.bignumber.equal(new BN(depositAmount).mul(new BN('2')));
-      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(new BN(depositAmount).mul(new BN('2')));
+      expect(userDepositedAmount).to.be.bignumber.equal(toBN(depositAmount).mul(toBN('2')));
+      expect(userVirtualAmount).to.be.bignumber.equal(toBN(depositAmount).mul(toBN('2')));
+      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(toBN(depositAmount).mul(toBN('2')));
 
       const startingUserLPTokenBalance = await this.LPToken.balanceOf(userAddress);
       await this.tribalChief.withdrawFromDeposit(
@@ -2450,18 +2450,18 @@ describe('TribalChief', () => {
       userVirtualAmount = (await this.tribalChief.userInfo(pid, userAddress)).virtualAmount;
       // verify the users amount deposited went down, the user virtual amount and
       // the virtual total supply went down by 50%
-      expect(userVirtualAmount).to.be.bignumber.equal(new BN(depositAmount));
-      expect(userDepositedAmount).to.be.bignumber.equal(new BN(depositAmount));
-      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(new BN(depositAmount));
+      expect(userVirtualAmount).to.be.bignumber.equal(toBN(depositAmount));
+      expect(userDepositedAmount).to.be.bignumber.equal(toBN(depositAmount));
+      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(toBN(depositAmount));
 
       // verify that user's lp token balance increased by the right amount
       expect(await this.LPToken.balanceOf(userAddress))
         .to.be.bignumber.equal(
-          startingUserLPTokenBalance.add(new BN(depositAmount)),
+          startingUserLPTokenBalance.add(toBN(depositAmount)),
         );
 
       // ensure the user still has both open deposits as the first one never got closed out
-      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('2'));
+      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(toBN('2'));
     });
 
     it('should be able to emergency withdraw from a forced lock pool when the first deposit is unlocked and the other is locked and the pool has been unlocked by the governor', async function () {
@@ -2471,7 +2471,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         1,
         0,
         '50000000000000000000',
@@ -2482,7 +2482,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         1,
         100,
         '50000000000000000000',
@@ -2499,20 +2499,20 @@ describe('TribalChief', () => {
       const startingLPBalance = await this.LPToken.balanceOf(userAddress);
       await this.tribalChief.emergencyWithdraw(pid, userAddress, { from: userAddress });
       // user should have no tribe token as they forfeited their rewards
-      expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+      expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
       // user should have no reward debt or virtual amount as they forfeited their rewards
       const { virtualAmount, rewardDebt } = await this.tribalChief.userInfo(pid, userAddress);
-      expect(rewardDebt).to.be.bignumber.equal(new BN('0'));
+      expect(rewardDebt).to.be.bignumber.equal(toBN('0'));
       // multiplier would be oneMultiplier, however, we deleted that storage so that's not the case anymore, now it's just 0
-      expect(virtualAmount).to.be.bignumber.equal(new BN('0'));
+      expect(virtualAmount).to.be.bignumber.equal(toBN('0'));
       // user should receive their 1e20 LP tokens that they staked back
-      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(startingLPBalance.add(new BN(lpTokenIncrementAmount)));
+      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(startingLPBalance.add(toBN(lpTokenIncrementAmount)));
 
       // virtual total supply should now be 0
-      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(new BN('0'));
+      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(toBN('0'));
 
       // ensure that all the users deposits got deleted from the system
-      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('0'));
+      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(toBN('0'));
     });
 
     it('should not be able to emergency withdraw from a forced lock pool when a users tokens are locked', async function () {
@@ -2523,7 +2523,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         5,
         100,
         totalStaked,
@@ -2536,7 +2536,7 @@ describe('TribalChief', () => {
       );
 
       // ensure the user still has an open deposit
-      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('1'));
+      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(toBN('1'));
     });
 
     it('should be able to emergency withdraw from a forced lock pool when a users tokens are past the unlock block', async function () {
@@ -2547,31 +2547,31 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         100,
         100,
         totalStaked,
         pid,
       );
 
-      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('1'));
+      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(toBN('1'));
       expectEvent(
         await this.tribalChief.emergencyWithdraw(pid, userAddress, { from: userAddress }),
         'EmergencyWithdraw', {
           user: userAddress,
-          pid: new BN(pid.toString()),
-          amount: new BN(totalStaked),
+          pid: toBN(pid.toString()),
+          amount: toBN(totalStaked),
           to: userAddress,
         },
       );
       // ensure that the reward debt got zero'd out
       // virtual amount should go to 0
       const { rewardDebt, virtualAmount } = await this.tribalChief.userInfo(pid, userAddress);
-      expect(rewardDebt).to.be.bignumber.equal(new BN('0'));
-      expect(virtualAmount).to.be.bignumber.equal(new BN('0'));
+      expect(rewardDebt).to.be.bignumber.equal(toBN('0'));
+      expect(virtualAmount).to.be.bignumber.equal(toBN('0'));
       // ensure that the open user deposits got zero'd out and array is 0 length
-      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('0'));
-      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(new BN('0'));
+      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(toBN('0'));
+      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(toBN('0'));
     });
   });
 
@@ -2632,7 +2632,7 @@ describe('TribalChief', () => {
           },
           {
             lockLength: 300,
-            rewardMultiplier: (new BN(oneMultiplier)).mul(new BN('3')).toString(),
+            rewardMultiplier: (toBN(oneMultiplier)).mul(toBN('3')).toString(),
           },
           {
             lockLength: 1000,
@@ -2657,7 +2657,7 @@ describe('TribalChief', () => {
           },
           {
             lockLength: 300,
-            rewardMultiplier: (new BN(oneMultiplier)).mul(new BN('3')).toString(),
+            rewardMultiplier: (toBN(oneMultiplier)).mul(toBN('3')).toString(),
           },
         ],
         { from: governorAddress },
@@ -2675,7 +2675,7 @@ describe('TribalChief', () => {
       expect(
         (await this.tribalChief.poolInfo(0)).lastRewardBlock,
       ).to.be.bignumber.gt(
-        new BN('0'),
+        toBN('0'),
       );
     });
 
@@ -2684,7 +2684,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         [userAddress],
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         1,
         this.lockLength,
         totalStaked,
@@ -2708,7 +2708,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         10,
         this.lockLength,
         totalStaked,
@@ -2737,7 +2737,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('1000000000000000000'),
+        toBN('1000000000000000000'),
         10,
         1000,
         totalStaked,
@@ -2749,18 +2749,18 @@ describe('TribalChief', () => {
         multiplier,
       } = await this.tribalChief.depositInfo(pid, userAddress, 0);
       // assert that this user has a deposit with a 10x multiplier and the correct amount credited to their deposit and virtual liquidity
-      expect(multiplier).to.be.bignumber.equal(new BN(multiplier10x));
-      expect(amount).to.be.bignumber.equal(new BN(totalStaked));
+      expect(multiplier).to.be.bignumber.equal(toBN(multiplier10x));
+      expect(amount).to.be.bignumber.equal(toBN(totalStaked));
 
       // assert that the virtual amount is equal to 10x the amount they deposited
       const { rewardDebt, virtualAmount } = await this.tribalChief.userInfo(pid, userAddress);
-      expect(virtualAmount).to.be.bignumber.equal(amount.mul(new BN('10')));
+      expect(virtualAmount).to.be.bignumber.equal(amount.mul(toBN('10')));
 
       // formula for reward debt
       // (amount * multiplier) / SCALE_FACTOR
       // (virtualAmountDelta * pool.accTribePerShare) / ACC_TRIBE_PRECISION
       const { accTribePerShare } = await this.tribalChief.poolInfo(0);
-      const expectedRewardDebt = (new BN(totalStaked)).mul(new BN('10')).mul(accTribePerShare).div(ACC_TRIBE_PRECISION);
+      const expectedRewardDebt = (toBN(totalStaked)).mul(toBN('10')).mul(accTribePerShare).div(ACC_TRIBE_PRECISION);
       expect(rewardDebt).to.be.bignumber.equal(expectedRewardDebt);
     });
 
@@ -2786,7 +2786,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         3,
         this.lockLength,
         totalStaked,
@@ -2808,7 +2808,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         100,
         this.lockLength,
         totalStaked,
@@ -2817,7 +2817,7 @@ describe('TribalChief', () => {
 
       await expectRevert.unspecified(
         this.tribalChief.withdrawFromDeposit(
-          pid, new BN(totalStaked).mul(new BN('20')), userAddress, 0, { from: userAddress },
+          pid, toBN(totalStaked).mul(toBN('20')), userAddress, 0, { from: userAddress },
         ),
       );
     });
@@ -2829,7 +2829,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         3,
         this.lockLength,
         totalStaked,
@@ -2844,10 +2844,10 @@ describe('TribalChief', () => {
       );
 
       // ensure lp tokens were refunded and reward debt went negative
-      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN(totalStaked));
+      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(toBN(totalStaked));
       const { rewardDebt, virtualAmount } = await this.tribalChief.userInfo(pid, userAddress);
-      expect(rewardDebt).to.be.bignumber.lt(new BN('-1'));
-      expect(virtualAmount).to.be.bignumber.eq(new BN('0'));
+      expect(rewardDebt).to.be.bignumber.lt(toBN('-1'));
+      expect(virtualAmount).to.be.bignumber.eq(toBN('0'));
     });
 
     it('should not be able to emergency withdraw before locking period is over', async function () {
@@ -2858,7 +2858,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         3,
         this.lockLength,
         totalStaked,
@@ -2879,7 +2879,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         3,
         this.lockLength,
         totalStaked,
@@ -2888,7 +2888,7 @@ describe('TribalChief', () => {
 
       const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
       await this.tribalChief.withdrawAllAndHarvest(pid, userAddress, { from: userAddress });
-      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN('0'));
+      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
       expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
     });
 
@@ -2900,7 +2900,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         this.lockLength, // we should advance lock length blocks so that once the function is complete we can withdraw
         this.lockLength,
         totalStaked,
@@ -2910,12 +2910,12 @@ describe('TribalChief', () => {
       const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
       const secondUserStartingLPTokenBalance = await this.LPToken.balanceOf(secondUserAddress);
       // assert that this user has 0 tribe to begin with before receiving proceeds from the harvest
-      expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN('0'));
+      expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal(toBN('0'));
 
       await this.tribalChief.withdrawAllAndHarvest(pid, secondUserAddress, { from: userAddress });
 
       // ensure that the rewards and LPToken got paid out to the second user address that we specified
-      expect(await this.LPToken.balanceOf(secondUserAddress)).to.be.bignumber.equal(new BN(totalStaked).add(secondUserStartingLPTokenBalance));
+      expect(await this.LPToken.balanceOf(secondUserAddress)).to.be.bignumber.equal(toBN(totalStaked).add(secondUserStartingLPTokenBalance));
       expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.gte(pendingTribe);
     });
 
@@ -2927,7 +2927,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         this.lockLength,
         this.lockLength,
         totalStaked,
@@ -2936,14 +2936,14 @@ describe('TribalChief', () => {
 
       const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
       await this.tribalChief.withdrawAllAndHarvest(pid, userAddress, { from: userAddress });
-      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN(totalStaked));
+      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(toBN(totalStaked));
       expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
       // assert that virtual amount and reward debt updated correctly
       const { rewardDebt, virtualAmount } = await this.tribalChief.userInfo(pid, userAddress);
-      expect(virtualAmount).to.be.bignumber.equal(new BN('0'));
-      expect(rewardDebt).to.be.bignumber.equal(new BN('0'));
+      expect(virtualAmount).to.be.bignumber.equal(toBN('0'));
+      expect(rewardDebt).to.be.bignumber.equal(toBN('0'));
       // assert that the virtual total supply is 0
-      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(new BN('0'));
+      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(toBN('0'));
     });
 
     it('calling withdrawAllAndHarvest after lockup period should delete arrays when all liquidity is withdrawn from that pool', async function () {
@@ -2954,7 +2954,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         50,
         this.lockLength,
         totalStaked,
@@ -2964,12 +2964,12 @@ describe('TribalChief', () => {
       await this.LPToken.mint(userAddress, totalStaked); // approve double total staked
       await this.LPToken.approve(this.tribalChief.address, totalStaked);
       await this.tribalChief.deposit(pid, totalStaked, this.lockLength, { from: userAddress });
-      expect((await this.tribalChief.openUserDeposits(pid, userAddress))).to.be.bignumber.equal(new BN('2'));
+      expect((await this.tribalChief.openUserDeposits(pid, userAddress))).to.be.bignumber.equal(toBN('2'));
       // assert that the virtual total supply is equal
       // to the staked amount which is total staked x 2
       expect(
         (await this.tribalChief.poolInfo(pid)).virtualTotalSupply,
-      ).to.be.bignumber.equal((new BN(totalStaked)).mul(new BN('2')));
+      ).to.be.bignumber.equal((toBN(totalStaked)).mul(toBN('2')));
 
       for (let i = 0; i < 50; i++) {
         await time.advanceBlock();
@@ -2980,7 +2980,7 @@ describe('TribalChief', () => {
 
       // there should still be 2 open user deposits as the first deposit just got
       // zero'd out and did not get deleted
-      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('2'));
+      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(toBN('2'));
 
       // assert that the deposit info is zero'd out after this users withdraw call
       const {
@@ -2988,11 +2988,11 @@ describe('TribalChief', () => {
         unlockBlock,
         multiplier,
       } = await this.tribalChief.depositInfo(pid, userAddress, 0);
-      expect(amount).to.be.bignumber.equal(new BN('0'));
-      expect(unlockBlock).to.be.bignumber.equal(new BN('0'));
-      expect(multiplier).to.be.bignumber.equal(new BN('0'));
+      expect(amount).to.be.bignumber.equal(toBN('0'));
+      expect(unlockBlock).to.be.bignumber.equal(toBN('0'));
+      expect(multiplier).to.be.bignumber.equal(toBN('0'));
 
-      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN(totalStaked));
+      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(toBN(totalStaked));
       expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
 
       for (let i = 0; i < 50; i++) {
@@ -3003,9 +3003,9 @@ describe('TribalChief', () => {
       // assert that the virtual total supply is equal to the staked amount
       expect(
         (await this.tribalChief.poolInfo(pid)).virtualTotalSupply,
-      ).to.be.bignumber.equal(new BN(totalStaked));
+      ).to.be.bignumber.equal(toBN(totalStaked));
       await this.tribalChief.withdrawAllAndHarvest(pid, userAddress, { from: userAddress });
-      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal((new BN(totalStaked)).mul(new BN('2')));
+      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal((toBN(totalStaked)).mul(toBN('2')));
 
       expect(
         await this.tribe.balanceOf(userAddress),
@@ -3013,15 +3013,15 @@ describe('TribalChief', () => {
 
       // ensure that the open deposits are now 0 as they should have been
       // deleted in the withdrawallandharvest function call
-      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(new BN('0'));
+      expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.bignumber.equal(toBN('0'));
 
       // assert that the virtual total supply is 0
-      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(new BN('0'));
+      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(toBN('0'));
 
       // assert that virtual amount and reward debt updated correctly
       const { rewardDebt, virtualAmount } = await this.tribalChief.userInfo(pid, userAddress);
-      expect(virtualAmount).to.be.bignumber.equal(new BN('0'));
-      expect(rewardDebt).to.be.bignumber.equal(new BN('0'));
+      expect(virtualAmount).to.be.bignumber.equal(toBN('0'));
+      expect(rewardDebt).to.be.bignumber.equal(toBN('0'));
     });
 
     it('Negative rewards debt when calling withdrawAllAndHarvest should not revert and should give out correct reward amount', async function () {
@@ -3032,7 +3032,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         this.lockLength,
         this.lockLength,
         totalStaked,
@@ -3045,23 +3045,23 @@ describe('TribalChief', () => {
       );
 
       // assert that the virtual total supply is 0
-      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(new BN('0'));
+      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(toBN('0'));
 
-      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN(totalStaked));
+      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(toBN(totalStaked));
 
       // expect that reward debt goes negative when we withdraw and don't harvest
-      expect((await this.tribalChief.userInfo(pid, userAddress)).rewardDebt).to.be.bignumber.lt(new BN('-1'));
+      expect((await this.tribalChief.userInfo(pid, userAddress)).rewardDebt).to.be.bignumber.lt(toBN('-1'));
 
       await this.tribalChief.withdrawAllAndHarvest(pid, userAddress, { from: userAddress });
       expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
 
       // assert that virtual amount and reward debt updated correctly
       const { rewardDebt, virtualAmount } = await this.tribalChief.userInfo(pid, userAddress);
-      expect(virtualAmount).to.be.bignumber.equal(new BN('0'));
-      expect(rewardDebt).to.be.bignumber.equal(new BN('0'));
+      expect(virtualAmount).to.be.bignumber.equal(toBN('0'));
+      expect(rewardDebt).to.be.bignumber.equal(toBN('0'));
 
       // assert that the virtual total supply is 0
-      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(new BN('0'));
+      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(toBN('0'));
     });
 
     it('Negative rewards debt when calling Harvest should not revert and should give out correct reward amount', async function () {
@@ -3072,7 +3072,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         this.lockLength,
         this.lockLength,
         totalStaked,
@@ -3085,23 +3085,23 @@ describe('TribalChief', () => {
       );
 
       // assert that the virtual total supply is 0
-      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(new BN('0'));
+      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(toBN('0'));
 
-      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN(totalStaked));
+      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(toBN(totalStaked));
 
       // expect that reward debt goes negative when we withdraw and don't harvest
-      expect((await this.tribalChief.userInfo(pid, userAddress)).rewardDebt).to.be.bignumber.lt(new BN('-1'));
+      expect((await this.tribalChief.userInfo(pid, userAddress)).rewardDebt).to.be.bignumber.lt(toBN('-1'));
 
       await this.tribalChief.harvest(pid, userAddress, { from: userAddress });
       expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
 
       // assert that virtual amount and reward debt updated correctly
       const { rewardDebt, virtualAmount } = await this.tribalChief.userInfo(pid, userAddress);
-      expect(virtualAmount).to.be.bignumber.equal(new BN('0'));
-      expect(rewardDebt).to.be.bignumber.equal(new BN('0'));
+      expect(virtualAmount).to.be.bignumber.equal(toBN('0'));
+      expect(rewardDebt).to.be.bignumber.equal(toBN('0'));
 
       // assert that the virtual total supply is 0
-      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(new BN('0'));
+      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(toBN('0'));
     });
 
     it('should be able to withdraw principle after locking period is over by calling withdraw and then harvest', async function () {
@@ -3112,7 +3112,7 @@ describe('TribalChief', () => {
         this.tribalChief,
         this.LPToken,
         userAddresses,
-        new BN('100000000000000000000'),
+        toBN('100000000000000000000'),
         this.lockLength,
         this.lockLength,
         totalStaked,
@@ -3125,15 +3125,15 @@ describe('TribalChief', () => {
       );
       await this.tribalChief.harvest(pid, userAddress, { from: userAddress });
 
-      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(new BN(totalStaked));
+      expect(await this.LPToken.balanceOf(userAddress)).to.be.bignumber.equal(toBN(totalStaked));
       expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
       // assert that virtual amount and reward debt updated
       // correctly on the withdrawFromDeposit call
       const { rewardDebt, virtualAmount } = await this.tribalChief.userInfo(pid, userAddress);
-      expect(virtualAmount).to.be.bignumber.equal(new BN('0'));
-      expect(rewardDebt).to.be.bignumber.equal(new BN('0'));
+      expect(virtualAmount).to.be.bignumber.equal(toBN('0'));
+      expect(rewardDebt).to.be.bignumber.equal(toBN('0'));
       // assert that the virtual total supply is 0
-      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(new BN('0'));
+      expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.bignumber.equal(toBN('0'));
     });
   });
 });

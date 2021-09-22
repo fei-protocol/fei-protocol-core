@@ -23,7 +23,7 @@ describe('Core', function () {
       governorAddress,
       guardianAddress,
     } = await getAddresses());
-    this.core = await getCore(false);
+    this.core = await getCore();
     
     this.tribe = await ethers.getContractAt(Tribe.abi, (await this.core.tribe()));
 

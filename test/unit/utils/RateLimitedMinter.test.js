@@ -85,7 +85,7 @@ describe('RateLimitedMinter', function () {
   describe('Set Fei Limit Per Second', function() {
     it('governor succeeds', async function() {
       await this.rateLimitedMinter.setRateLimitPerSecond('10000', {from: governorAddress});
-      expect(await this.rateLimitedMinter.rateLimitPerSecond()).to.be.bignumber.equal(new BN('10000'));
+      expect(await this.rateLimitedMinter.rateLimitPerSecond()).to.be.bignumber.equal(toBN('10000'));
     });
   
     it('non-governor reverts', async function() {
@@ -93,15 +93,15 @@ describe('RateLimitedMinter', function () {
     });
   
     it('too high fei rate reverts', async function() {
-      await expectRevert(this.rateLimitedMinter.setRateLimitPerSecond(new BN('20000000000000000000000'), {from: governorAddress}), 'RateLimited: rateLimitPerSecond too high');
+      await expectRevert(this.rateLimitedMinter.setRateLimitPerSecond(toBN('20000000000000000000000'), {from: governorAddress}), 'RateLimited: rateLimitPerSecond too high');
     });
   });
 
   describe('Set Minting Buffer Cap', function() {
     it('governor succeeds', async function() {
       await this.rateLimitedMinter.setbufferCap('10000', {from: governorAddress});
-      expect(await this.rateLimitedMinter.bufferCap()).to.be.bignumber.equal(new BN('10000'));
-      expect(await this.rateLimitedMinter.buffer()).to.be.bignumber.equal(new BN('10000'));
+      expect(await this.rateLimitedMinter.bufferCap()).to.be.bignumber.equal(toBN('10000'));
+      expect(await this.rateLimitedMinter.buffer()).to.be.bignumber.equal(toBN('10000'));
     });
   
     it('non-governor reverts', async function() {

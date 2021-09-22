@@ -47,7 +47,7 @@ describe('OracleRef', () => {
     });
 
     it('decimals normalizer', async function () {
-      expect(await this.oracleRef.decimalsNormalizer()).to.be.bignumber.equal(new BN('0'));
+      expect(await this.oracleRef.decimalsNormalizer()).to.be.bignumber.equal(toBN('0'));
     });
   });
   describe('Access', () => {
@@ -91,7 +91,7 @@ describe('OracleRef', () => {
 
     describe('Set Decimals Normalizer', () => {
       it('Governor set succeeds', async function () {
-        expect(await this.oracleRef.decimalsNormalizer()).to.be.bignumber.equal(new BN('0'));
+        expect(await this.oracleRef.decimalsNormalizer()).to.be.bignumber.equal(toBN('0'));
         expectEvent(
           await this.oracleRef.setDecimalsNormalizer(4, { from: governorAddress }),
           'DecimalsNormalizerUpdate',
@@ -100,7 +100,7 @@ describe('OracleRef', () => {
             newDecimalsNormalizer: '4',
           },
         );
-        expect(await this.oracleRef.decimalsNormalizer()).to.be.bignumber.equal(new BN('4'));
+        expect(await this.oracleRef.decimalsNormalizer()).to.be.bignumber.equal(toBN('4'));
       });
 
       it('Non-governor set reverts', async function () {

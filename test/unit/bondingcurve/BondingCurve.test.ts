@@ -27,7 +27,7 @@ describe('BondingCurve', function () {
       beneficiaryAddress1,
       beneficiaryAddress2,
 	  } = await getAddresses());
-    this.core = await getCore(true);
+    this.core = await getCore();
   
     this.fei = await ethers.getContractAt(Fei.abi, await this.core.fei());
       

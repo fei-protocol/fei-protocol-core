@@ -56,8 +56,8 @@ describe('UniswapPCVController', function () {
       await this.pcvController.forceReweight({from: guardianAddress});
     });
     it('pcvDeposit gets all tokens', async function() {
-      expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
-      expect(await balance.current(this.pcvController.address)).to.be.bignumber.equal(new BN(0));
+      expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(toBN(100000));
+      expect(await balance.current(this.pcvController.address)).to.be.bignumber.equal(toBN(0));
     });
   });
 
@@ -86,12 +86,12 @@ describe('UniswapPCVController', function () {
       });  
 
       it('pair loses some tokens in swap', async function() {
-        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(98995));
+        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(98995));
       });
 
       it('pcvDeposit gets remaining tokens', async function() {
-        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(101005));
-        expect(await this.token.balanceOf(this.pcvController.address)).to.be.bignumber.equal(new BN(0));
+        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(toBN(101005));
+        expect(await this.token.balanceOf(this.pcvController.address)).to.be.bignumber.equal(toBN(0));
       });
     });
 
@@ -109,13 +109,13 @@ describe('UniswapPCVController', function () {
         });
 
         it('pair gets no token in swap', async function() {
-          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
+          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(0));
         });
         it('pcvDeposit token value remains constant', async function() {
-          expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
+          expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(toBN(100000));
         });
         it('pair FEI balance rebases', async function() {
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(50000000));
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(50000000));
         });
       });
     });
@@ -134,13 +134,13 @@ describe('UniswapPCVController', function () {
       });
 
       it('pair gets no token in swap', async function() {
-        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
+        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(0));
       });
       it('pcvDeposit token value remains constant', async function() {
-        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
+        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(toBN(100000));
       });
       it('pair FEI balance rebases', async function() {
-        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(40000000));
+        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(40000000));
       });
     });
   });
@@ -167,7 +167,7 @@ describe('UniswapPCVController', function () {
 
       describe('After time period passes', function() {
         beforeEach(async function() {
-          await time.increase(new BN('14400'));
+          await time.increase(toBN('14400'));
         });
 
         it('Reweight eligible', async function() {
@@ -192,7 +192,7 @@ describe('UniswapPCVController', function () {
       it('reverts', async function() {
         await this.token.mint(this.pair.address, 100000);
         await this.pair.set(100000, 50400000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 504:1 FEI/token with 10k liquidity
-        await time.increase(new BN('14400'));
+        await time.increase(toBN('14400'));
 
         expect(await this.pcvController.reweightEligible()).to.be.equal(false);
         await expectRevert(this.pcvController.reweight(), 'UniswapPCVController: Not passed reweight time or not at min distance');
@@ -205,19 +205,19 @@ describe('UniswapPCVController', function () {
         await this.token.mint(this.pcvDeposit.address, 100000);
         await this.token.mint(this.pair.address, 100000);
         await this.pair.set(100000, 49000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
-        await time.increase(new BN('14400'));
+        await time.increase(toBN('14400'));
         expect(await this.pcvController.reweightEligible()).to.be.equal(true);
         await this.pcvController.reweight({from: userAddress});
       });
 
       it('pair loses some tokens in swap', async function() {
-        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(98995));
+        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(98995));
       });
       it('pcvDeposit tokens value goes up', async function() {
-        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(101005));
+        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(toBN(101005));
       });
       it('pair FEI balance rebases', async function() {
-        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(49498970));
+        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(49498970));
       });
     });
 
@@ -226,20 +226,20 @@ describe('UniswapPCVController', function () {
         await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
         await this.token.mint(this.pcvDeposit.address, 100000);
         await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/token with 10k liquidity
-        await time.increase(new BN('14400'));
+        await time.increase(toBN('14400'));
         await this.core.revokeMinter(this.pcvController.address, {from: governorAddress});     
         expect(await this.pcvController.reweightEligible()).to.be.equal(true);
         await this.pcvController.reweight({from: userAddress});
       });
 
       it('pair gets no tokens in swap', async function() {
-        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
+        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(0));
       });
       it('pcvDeposit tokens value remains constant', async function() {
-        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
+        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(toBN(100000));
       });
       it('pair FEI balance rebases', async function() {
-        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(50000000));
+        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(50000000));
       });
     });
 
@@ -248,20 +248,20 @@ describe('UniswapPCVController', function () {
         await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
         await this.token.mint(this.pcvDeposit.address, 100000);
         await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
-        await time.increase(new BN('14400'));
+        await time.increase(toBN('14400'));
         await this.core.grantMinter(this.pcvController.address, {from: governorAddress});     
         expect(await this.pcvController.reweightEligible()).to.be.equal(true);
         await this.pcvController.reweight({from: userAddress});
       });
 
       it('pair gets no tokens in swap', async function() {
-        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(0));
+        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(0));
       });
       it('pcvDeposit token value remains constant', async function() {
-        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(new BN(100000));
+        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(toBN(100000));
       });
       it('pair FEI balance rebases', async function() {
-        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(new BN(50000000));
+        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(50000000));
       });
     });
   });

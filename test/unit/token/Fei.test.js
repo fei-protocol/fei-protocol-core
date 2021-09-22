@@ -56,7 +56,7 @@ describe('Fei', function () {
       });
 
       it('mints new Fei tokens', async function () {
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
+        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN(100));
       });
     });
   });
@@ -89,7 +89,7 @@ describe('Fei', function () {
       });
 
       it('burn Fei tokens', async function () {
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
+        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN(100));
       });
     });
     describe('from burner to user without sufficient balance', function () {
@@ -128,11 +128,11 @@ describe('Fei', function () {
         });
 
         it('balances update', async function () {
-          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(200));
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN(200));
         });
 
         it('incentive applied', async function () {
-          expect(await this.fei.balanceOf(this.incentivizedAddress)).to.be.bignumber.equal(new BN(100));
+          expect(await this.fei.balanceOf(this.incentivizedAddress)).to.be.bignumber.equal(toBN(100));
         });
       });
       describe('on receiver', function () {
@@ -143,11 +143,11 @@ describe('Fei', function () {
         });
 
         it('balances update', async function () {
-          expect(await this.fei.balanceOf(this.incentivizedAddress)).to.be.bignumber.equal(new BN(200));
+          expect(await this.fei.balanceOf(this.incentivizedAddress)).to.be.bignumber.equal(toBN(200));
         });
 
         it('incentive applied', async function () {
-          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN(100));
         });
       });
       describe('on all', function () {
@@ -163,11 +163,11 @@ describe('Fei', function () {
         });
 
         it('balances update', async function () {
-          expect(await this.fei.balanceOf(this.incentivizedAddress)).to.be.bignumber.equal(new BN(200));
+          expect(await this.fei.balanceOf(this.incentivizedAddress)).to.be.bignumber.equal(toBN(200));
         });
 
         it('incentive applied', async function () {
-          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN(100));
         });
       });
       describe('on sender and receiver', function () {
@@ -178,7 +178,7 @@ describe('Fei', function () {
         });
 
         it('balances update with incentives', async function () {
-          expect(await this.fei.balanceOf(this.incentivizedAddress)).to.be.bignumber.equal(new BN(400)); // infinite FEI ;)
+          expect(await this.fei.balanceOf(this.incentivizedAddress)).to.be.bignumber.equal(toBN(400)); // infinite FEI ;)
         });
       });
       describe('on receiver and all', function () {
@@ -192,11 +192,11 @@ describe('Fei', function () {
         });
 
         it('balances update', async function () {
-          expect(await this.fei.balanceOf(this.incentivizedAddress)).to.be.bignumber.equal(new BN(200));
+          expect(await this.fei.balanceOf(this.incentivizedAddress)).to.be.bignumber.equal(toBN(200));
         });
 
         it('incentive applied', async function () {
-          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(200));
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN(200));
         });
       });
     });
@@ -221,15 +221,15 @@ describe('Fei', function () {
         });
 
         it('balances update', async function () {
-          expect(await this.fei.balanceOf(this.incentivizedAddress)).to.be.bignumber.equal(new BN(200));
+          expect(await this.fei.balanceOf(this.incentivizedAddress)).to.be.bignumber.equal(toBN(200));
         });
 
         it('incentive applied', async function () {
-          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(100));
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN(100));
         });
 
         it('operator approval decrements', async function () {
-          expect(await this.fei.allowance(userAddress, this.operatorAddress)).to.be.bignumber.equal(new BN(0));
+          expect(await this.fei.allowance(userAddress, this.operatorAddress)).to.be.bignumber.equal(toBN(0));
         });
       });
       describe('on sender and operator', function () {
@@ -245,11 +245,11 @@ describe('Fei', function () {
         });
 
         it('balances update', async function () {
-          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(200));
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN(200));
         });
 
         it('incentive applied', async function () {
-          expect(await this.fei.balanceOf(this.incentivizedAddress)).to.be.bignumber.equal(new BN(200));
+          expect(await this.fei.balanceOf(this.incentivizedAddress)).to.be.bignumber.equal(toBN(200));
         });
       });
 
@@ -269,15 +269,15 @@ describe('Fei', function () {
         });
 
         it('balances update', async function () {
-          expect(await this.fei.balanceOf(this.incentivizedAddress)).to.be.bignumber.equal(new BN(200));
+          expect(await this.fei.balanceOf(this.incentivizedAddress)).to.be.bignumber.equal(toBN(200));
         });
 
         it('incentive applied', async function () {
-          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(new BN(200));
+          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN(200));
         });
 
         it('operator approval decrements', async function () {
-          expect(await this.fei.allowance(userAddress, this.operatorAddress)).to.be.bignumber.equal(new BN(0));
+          expect(await this.fei.allowance(userAddress, this.operatorAddress)).to.be.bignumber.equal(toBN(0));
         });
       });
     });

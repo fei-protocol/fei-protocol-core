@@ -46,7 +46,7 @@ async function getAddresses() {
   };
 }
 
-async function getCore(complete) {
+async function getCore() {
   const {
     governorAddress,
     pcvControllerAddress,

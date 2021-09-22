@@ -32,7 +32,7 @@ describe('AavePCVDeposit', function () {
       this.token.address // filling in dummy address for incentives controller
     );
   
-    this.depositAmount = new BN('1000000000000000000');
+    this.depositAmount = toBN('1000000000000000000');
   });
       
   describe('Deposit', function() {
@@ -49,13 +49,13 @@ describe('AavePCVDeposit', function () {
       });
   
       it('succeeds', async function() {
-        expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(new BN('0'));
+        expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(toBN('0'));
         await this.aavePCVDeposit.deposit();
         // Balance should increment with the new deposited aTokens underlying
         expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(this.depositAmount);
         
         // Held balance should be 0, now invested into Aave
-        expect(await this.token.balanceOf(this.aavePCVDeposit.address)).to.be.bignumber.equal(new BN('0'));
+        expect(await this.token.balanceOf(this.aavePCVDeposit.address)).to.be.bignumber.equal(toBN('0'));
       });
     });
   });
@@ -78,7 +78,7 @@ describe('AavePCVDeposit', function () {
       // withdrawing should take balance back to 0
       expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(this.depositAmount);
       await this.aavePCVDeposit.withdraw(userAddress, this.depositAmount, {from: pcvControllerAddress});
-      expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(new BN('0'));
+      expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(toBN('0'));
         
       const userBalanceAfter = await this.token.balanceOf(userAddress);
   
@@ -101,12 +101,12 @@ describe('AavePCVDeposit', function () {
   
       it('succeeds', async function() {
         expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(this.depositAmount);
-        await this.aavePCVDeposit.withdrawERC20(this.aToken.address, userAddress, this.depositAmount.div(new BN('2')), {from: pcvControllerAddress});        
+        await this.aavePCVDeposit.withdrawERC20(this.aToken.address, userAddress, this.depositAmount.div(toBN('2')), {from: pcvControllerAddress});        
 
         // balance should also get cut in half
-        expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(this.depositAmount.div(new BN('2')));
+        expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(this.depositAmount.div(toBN('2')));
   
-        expect(await this.aToken.balanceOf(userAddress)).to.be.bignumber.equal(this.depositAmount.div(new BN('2')));
+        expect(await this.aToken.balanceOf(userAddress)).to.be.bignumber.equal(this.depositAmount.div(toBN('2')));
       });
     });
   });

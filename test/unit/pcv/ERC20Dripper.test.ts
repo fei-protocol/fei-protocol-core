@@ -60,7 +60,7 @@ describe('ERC20Dripper', () => {
   });
 
   beforeEach(async function () {
-    this.core = await getCore(false);
+    this.core = await getCore();
 
     const tribeFactory = await ethers.getContractFactory(Tribe.abi, Tribe.bytecode)
     this.tribe = await tribeFactory.deploy();

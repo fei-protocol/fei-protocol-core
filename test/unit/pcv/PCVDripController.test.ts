@@ -23,8 +23,8 @@ describe('PCVDripController', function () {
     
     this.sourcePCVDeposit = await MockPCVDeposit.new(beneficiaryAddress1);
     this.pcvDeposit = await MockPCVDeposit.new(beneficiaryAddress1);
-    this.dripAmount = new BN('500000000000000000');
-    this.incentiveAmount = new BN('100000000000000000');
+    this.dripAmount = toBN('500000000000000000');
+    this.incentiveAmount = toBN('100000000000000000');
 
     this.pcvDripper = await PCVDripController.new(this.core.address, this.sourcePCVDeposit.address, this.pcvDeposit.address, '1000', this.dripAmount, this.incentiveAmount);
     await this.core.grantMinter(this.pcvDripper.address, {from: governorAddress});
@@ -141,7 +141,7 @@ describe('PCVDripController', function () {
     describe('Set dripAmount', function() {
       it('governor succeeds', async function() {
         await this.pcvDripper.setDripAmount('10000', {from: governorAddress});
-        expect(await this.pcvDripper.dripAmount()).to.be.bignumber.equal(new BN('10000'));
+        expect(await this.pcvDripper.dripAmount()).to.be.bignumber.equal(toBN('10000'));
       });
 
       it('non-governor reverts', async function() {

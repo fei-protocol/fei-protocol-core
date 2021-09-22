@@ -15,22 +15,22 @@ describe.skip('UniswapOracle', function () {
     this.core = await getCore(true);
     
     this.startTime = await time.latest();
-    this.delta = new BN(1000);
-    this.hundredTwelve = new BN(2).pow(new BN(112));
+    this.delta = toBN(1000);
+    this.hundredTwelve = toBN(2).pow(toBN(112));
     await time.increase(this.delta);
     
     this.cursor = this.startTime.add(this.delta);
-    this.cumulative = this.hundredTwelve.mul(this.delta.add(new BN(2))).mul(new BN(500)).div(new BN(1e12));
+    this.cumulative = this.hundredTwelve.mul(this.delta.add(toBN(2))).mul(toBN(500)).div(toBN(1e12));
     
-    this.pair = await MockPairTrade.new(this.cumulative, 0, this.cursor, new BN(100000).mul(new BN(1e12)), 50000000); // 500:1 FEI/ETH initial price
+    this.pair = await MockPairTrade.new(this.cumulative, 0, this.cursor, toBN(100000).mul(toBN(1e12)), 50000000); // 500:1 FEI/ETH initial price
 
-    this.duration = new BN('600');
+    this.duration = toBN('600');
     this.oracle = await UniswapOracle.new(this.core.address, this.pair.address, this.duration, true); // 10 min TWAP using price0
   });
 
   describe('Init', function() {
     it('priors', async function() {
-      expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.cursor.add(new BN(2)));
+      expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.cursor.add(toBN(2)));
       expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.cumulative);
     });
 
@@ -58,7 +58,7 @@ describe.skip('UniswapOracle', function () {
 
     describe('Initialized', function() {
       beforeEach(async function() {
-        await this.pair.set(this.cumulative.add(this.hundredTwelve.mul(this.delta).mul(new BN(500)).div(new BN(1e12))), 0, this.cursor.add(new BN(1000)));
+        await this.pair.set(this.cumulative.add(this.hundredTwelve.mul(this.delta).mul(toBN(500)).div(toBN(1e12))), 0, this.cursor.add(toBN(1000)));
         await this.pair.setReserves(100000, 50000000);
         await time.increase(this.delta);
         await this.oracle.update();
@@ -100,7 +100,7 @@ describe.skip('UniswapOracle', function () {
     
     describe('Within duration', function() {
       beforeEach(async function() {
-        await this.pair.set(this.cumulative.add(this.hundredTwelve.mul(this.delta).mul(new BN(500)).div(new BN(1e12))), 0, this.cursor.add(new BN(1000)));
+        await this.pair.set(this.cumulative.add(this.hundredTwelve.mul(this.delta).mul(toBN(500)).div(toBN(1e12))), 0, this.cursor.add(toBN(1000)));
         await this.oracle.update();
       });
 
@@ -116,8 +116,8 @@ describe.skip('UniswapOracle', function () {
 
     describe('Exceeds duration', function() {
       beforeEach(async function() {
-        this.expectedTime = this.cursor.add(new BN(1000));
-        this.expectedCumulative = this.cumulative.add(this.hundredTwelve.mul(this.delta).mul(new BN(500)).div(new BN(1e12))); 
+        this.expectedTime = this.cursor.add(toBN(1000));
+        this.expectedCumulative = this.cumulative.add(this.hundredTwelve.mul(this.delta).mul(toBN(500)).div(toBN(1e12))); 
         await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
         await this.pair.setReserves(100000, 50000000);
         await time.increase(this.delta);
@@ -142,8 +142,8 @@ describe.skip('UniswapOracle', function () {
     describe('Price Moves', function() {
       describe('Upward', function() {
         beforeEach(async function() {
-          this.expectedTime = this.cursor.add(new BN(1000));
-          this.expectedCumulative = this.cumulative.add(this.hundredTwelve.mul(this.delta).mul(new BN(490)).div(new BN(1e12))); 
+          this.expectedTime = this.cursor.add(toBN(1000));
+          this.expectedCumulative = this.cumulative.add(this.hundredTwelve.mul(this.delta).mul(toBN(490)).div(toBN(1e12))); 
           await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
           await this.pair.setReserves(100000, 49000000);
           await time.increase(this.delta);
@@ -159,8 +159,8 @@ describe.skip('UniswapOracle', function () {
 
       describe('Downward', function() {
         beforeEach(async function() {
-          this.expectedTime = this.cursor.add(new BN(1000));
-          this.expectedCumulative = this.cumulative.add(this.hundredTwelve.mul(this.delta).mul(new BN(510)).div(new BN(1e12))); 
+          this.expectedTime = this.cursor.add(toBN(1000));
+          this.expectedCumulative = this.cumulative.add(this.hundredTwelve.mul(this.delta).mul(toBN(510)).div(toBN(1e12))); 
           await this.pair.set(this.expectedCumulative, 0, this.expectedTime);
           await this.pair.setReserves(100000, 51000000);
           await time.increase(this.delta);
@@ -184,7 +184,7 @@ describe.skip('UniswapOracle', function () {
           'DurationUpdate',
           { _duration: '1000' }
         );
-        expect(await this.oracle.duration()).to.be.bignumber.equal(new BN(1000));
+        expect(await this.oracle.duration()).to.be.bignumber.equal(toBN(1000));
       });
 
       it('Non-governor set reverts', async function() {
