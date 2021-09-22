@@ -40,7 +40,7 @@ describe('EthReserveStabilizer', function () {
       pcvControllerAddress,
     } = await getAddresses());
 
-    this.core = await getCore(true);
+    this.core = await getCore();
   
     this.fei = await Fei.at(await this.core.fei());
     this.oracle = await MockOracle.new(400); // 400:1 oracle price

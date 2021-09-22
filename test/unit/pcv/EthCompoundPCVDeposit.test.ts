@@ -17,7 +17,7 @@ describe('EthCompoundPCVDeposit', function () {
       governorAddress
     } = await getAddresses());
   
-    this.core = await getCore(true);
+    this.core = await getCore();
 
     this.cToken = await MockCToken.new(userAddress, true);
       
@@ -40,13 +40,13 @@ describe('EthCompoundPCVDeposit', function () {
       });
 
       it('succeeds', async function() {
-        expect(await this.compoundPCVDeposit.balance()).to.be.bignumber.equal(toBN('0'));
+        expect(await this.compoundPCVDeposit.balance()).to.be.equal(toBN('0'));
         await this.compoundPCVDeposit.deposit();
         // Balance should increment with the new deposited cTokens underlying
-        expect(await this.compoundPCVDeposit.balance()).to.be.bignumber.equal(this.depositAmount);
+        expect(await this.compoundPCVDeposit.balance()).to.be.equal(this.depositAmount);
         
         // Held balance should be 0, now invested into Compound
-        expect(await balance.current(this.compoundPCVDeposit.address)).to.be.bignumber.equal(toBN('0'));
+        expect(await balance.current(this.compoundPCVDeposit.address)).to.be.equal(toBN('0'));
       });
     });
   });
@@ -75,13 +75,13 @@ describe('EthCompoundPCVDeposit', function () {
         const userBalanceBefore = await balance.current(userAddress);
         
         // withdrawing should take balance back to 0
-        expect(await this.compoundPCVDeposit.balance()).to.be.bignumber.equal(this.depositAmount);
+        expect(await this.compoundPCVDeposit.balance()).to.be.equal(this.depositAmount);
         await this.compoundPCVDeposit.withdraw(userAddress, this.depositAmount, {from: pcvControllerAddress});
-        expect(await this.compoundPCVDeposit.balance()).to.be.bignumber.equal(toBN('0'));
+        expect(await this.compoundPCVDeposit.balance()).to.be.equal(toBN('0'));
         
         const userBalanceAfter = await balance.current(userAddress);
 
-        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(this.depositAmount);
+        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal(this.depositAmount);
       });
     });
   });
@@ -100,14 +100,14 @@ describe('EthCompoundPCVDeposit', function () {
       });
 
       it('succeeds', async function() {
-        expect(await this.compoundPCVDeposit.balance()).to.be.bignumber.equal(this.depositAmount);
+        expect(await this.compoundPCVDeposit.balance()).to.be.equal(this.depositAmount);
         // cToken exchange rate is 2 in the mock, so this would withdraw half of the cTokens
         await this.compoundPCVDeposit.withdrawERC20(this.cToken.address, userAddress, this.depositAmount.div(toBN('4')), {from: pcvControllerAddress});        
         
         // balance should also get cut in half
-        expect(await this.compoundPCVDeposit.balance()).to.be.bignumber.equal(this.depositAmount.div(toBN('2')));
+        expect(await this.compoundPCVDeposit.balance()).to.be.equal(this.depositAmount.div(toBN('2')));
 
-        expect(await this.cToken.balanceOf(userAddress)).to.be.bignumber.equal(this.depositAmount.div(toBN('4')));
+        expect(await this.cToken.balanceOf(userAddress)).to.be.equal(this.depositAmount.div(toBN('4')));
       });
     });
   });

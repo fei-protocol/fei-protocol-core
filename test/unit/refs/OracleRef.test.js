@@ -18,7 +18,7 @@ describe('OracleRef', () => {
   beforeEach(async function () {
     ({ userAddress, governorAddress } = await getAddresses());
 
-    this.core = await getCore(true);
+    this.core = await getCore();
 
     this.token = await MockERC20.new();
 

@@ -26,7 +26,7 @@ describe('UniswapPCVController', function () {
       guardianAddress
     } = await getAddresses());
 
-    this.core = await getCore(true);
+    this.core = await getCore();
 
     this.fei = await Fei.at(await this.core.fei());
     this.oracle = await MockOracle.new(500);
@@ -56,8 +56,8 @@ describe('UniswapPCVController', function () {
       await this.pcvController.forceReweight({from: guardianAddress});
     });
     it('pcvDeposit gets all tokens', async function() {
-      expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(toBN(100000));
-      expect(await balance.current(this.pcvController.address)).to.be.bignumber.equal(toBN(0));
+      expect(await this.pcvDeposit.balance()).to.be.equal(toBN(100000));
+      expect(await balance.current(this.pcvController.address)).to.be.equal(toBN(0));
     });
   });
 
@@ -86,12 +86,12 @@ describe('UniswapPCVController', function () {
       });  
 
       it('pair loses some tokens in swap', async function() {
-        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(98995));
+        expect(await this.token.balanceOf(this.pair.address)).to.be.equal(toBN(98995));
       });
 
       it('pcvDeposit gets remaining tokens', async function() {
-        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(toBN(101005));
-        expect(await this.token.balanceOf(this.pcvController.address)).to.be.bignumber.equal(toBN(0));
+        expect(await this.pcvDeposit.balance()).to.be.equal(toBN(101005));
+        expect(await this.token.balanceOf(this.pcvController.address)).to.be.equal(toBN(0));
       });
     });
 
@@ -109,13 +109,13 @@ describe('UniswapPCVController', function () {
         });
 
         it('pair gets no token in swap', async function() {
-          expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(0));
+          expect(await this.token.balanceOf(this.pair.address)).to.be.equal(toBN(0));
         });
         it('pcvDeposit token value remains constant', async function() {
-          expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(toBN(100000));
+          expect(await this.pcvDeposit.balance()).to.be.equal(toBN(100000));
         });
         it('pair FEI balance rebases', async function() {
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(50000000));
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(50000000));
         });
       });
     });
@@ -134,13 +134,13 @@ describe('UniswapPCVController', function () {
       });
 
       it('pair gets no token in swap', async function() {
-        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(0));
+        expect(await this.token.balanceOf(this.pair.address)).to.be.equal(toBN(0));
       });
       it('pcvDeposit token value remains constant', async function() {
-        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(toBN(100000));
+        expect(await this.pcvDeposit.balance()).to.be.equal(toBN(100000));
       });
       it('pair FEI balance rebases', async function() {
-        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(40000000));
+        expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(40000000));
       });
     });
   });
@@ -211,13 +211,13 @@ describe('UniswapPCVController', function () {
       });
 
       it('pair loses some tokens in swap', async function() {
-        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(98995));
+        expect(await this.token.balanceOf(this.pair.address)).to.be.equal(toBN(98995));
       });
       it('pcvDeposit tokens value goes up', async function() {
-        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(toBN(101005));
+        expect(await this.pcvDeposit.balance()).to.be.equal(toBN(101005));
       });
       it('pair FEI balance rebases', async function() {
-        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(49498970));
+        expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(49498970));
       });
     });
 
@@ -233,13 +233,13 @@ describe('UniswapPCVController', function () {
       });
 
       it('pair gets no tokens in swap', async function() {
-        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(0));
+        expect(await this.token.balanceOf(this.pair.address)).to.be.equal(toBN(0));
       });
       it('pcvDeposit tokens value remains constant', async function() {
-        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(toBN(100000));
+        expect(await this.pcvDeposit.balance()).to.be.equal(toBN(100000));
       });
       it('pair FEI balance rebases', async function() {
-        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(50000000));
+        expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(50000000));
       });
     });
 
@@ -255,13 +255,13 @@ describe('UniswapPCVController', function () {
       });
 
       it('pair gets no tokens in swap', async function() {
-        expect(await this.token.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(0));
+        expect(await this.token.balanceOf(this.pair.address)).to.be.equal(toBN(0));
       });
       it('pcvDeposit token value remains constant', async function() {
-        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(toBN(100000));
+        expect(await this.pcvDeposit.balance()).to.be.equal(toBN(100000));
       });
       it('pair FEI balance rebases', async function() {
-        expect(await this.fei.balanceOf(this.pair.address)).to.be.bignumber.equal(toBN(50000000));
+        expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(50000000));
       });
     });
   });
@@ -283,7 +283,7 @@ describe('UniswapPCVController', function () {
             _newMinDistanceBasisPoints: '50' 
           }
         );
-        expect((await this.pcvController.minDistanceForReweight())[0]).to.be.bignumber.equal('5000000000000000');
+        expect((await this.pcvController.minDistanceForReweight())[0]).to.be.equal('5000000000000000');
       });
 
       it('Non-governor set reverts', async function() {
@@ -294,7 +294,7 @@ describe('UniswapPCVController', function () {
     describe('Duration', function() {
       it('Governor set succeeds', async function() {
         await this.pcvController.setDuration(10, {from: governorAddress});
-        expect(await this.pcvController.duration()).to.be.bignumber.equal('10');
+        expect(await this.pcvController.duration()).to.be.equal('10');
       });
 
       it('Non-governor set reverts', async function() {

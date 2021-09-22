@@ -24,13 +24,13 @@ describe('StaticPCVDepositWrapper', function () {
   });
 
   it('returns stored values', async function() {
-    expect(await this.deposit.balance()).to.be.bignumber.equal(this.balance);
-    expect(await this.deposit.feiReportBalance()).to.be.bignumber.equal(this.fei);
+    expect(await this.deposit.balance()).to.be.equal(this.balance);
+    expect(await this.deposit.feiReportBalance()).to.be.equal(this.fei);
 
     const resistantBalances = await this.deposit.resistantBalanceAndFei();
   
-    expect(resistantBalances[0]).to.be.bignumber.equal(this.balance);
-    expect(resistantBalances[1]).to.be.bignumber.equal(this.fei);
+    expect(resistantBalances[0]).to.be.equal(this.balance);
+    expect(resistantBalances[1]).to.be.equal(this.fei);
   });
 
   it('set balances', async function() {
@@ -39,13 +39,13 @@ describe('StaticPCVDepositWrapper', function () {
     await this.deposit.setBalance('300', { from: governorAddress});
     await this.deposit.setFeiReportBalance('400', { from: governorAddress});
 
-    expect(await this.deposit.balance()).to.be.bignumber.equal(this.balance);
-    expect(await this.deposit.feiReportBalance()).to.be.bignumber.equal(this.fei);
+    expect(await this.deposit.balance()).to.be.equal(this.balance);
+    expect(await this.deposit.feiReportBalance()).to.be.equal(this.fei);
 
     const resistantBalances = await this.deposit.resistantBalanceAndFei();
   
-    expect(resistantBalances[0]).to.be.bignumber.equal(this.balance);
-    expect(resistantBalances[1]).to.be.bignumber.equal(this.fei);
+    expect(resistantBalances[0]).to.be.equal(this.balance);
+    expect(resistantBalances[1]).to.be.equal(this.fei);
   });
 
   it('set balances non-governor reverts', async function () {

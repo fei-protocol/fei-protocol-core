@@ -26,7 +26,7 @@ describe('ReserveStabilizer', function () {
       pcvControllerAddress,
     } = await getAddresses());
     
-    this.core = await getCore(true);
+    this.core = await getCore();
 
     this.fei = await Fei.at(await this.core.fei());
     this.token = await MockERC20.new();

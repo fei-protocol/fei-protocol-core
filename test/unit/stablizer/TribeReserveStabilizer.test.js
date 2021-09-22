@@ -27,7 +27,7 @@ describe('TribeReserveStabilizer', function () {
       minterAddress,
       pcvControllerAddress,
     } = await getAddresses());
-    this.core = await getCore(true);
+    this.core = await getCore();
   
     this.fei = await Fei.at(await this.core.fei());
     this.tribe = await Tribe.at(await this.core.tribe());

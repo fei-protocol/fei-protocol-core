@@ -18,7 +18,7 @@ describe('AavePCVDeposit', function () {
       governorAddress
     } = await getAddresses());
     
-    this.core = await getCore(true);
+    this.core = await getCore();
   
     this.lendingPool = await MockLendingPool.new();
     this.token = await MockERC20.new();
@@ -49,13 +49,13 @@ describe('AavePCVDeposit', function () {
       });
   
       it('succeeds', async function() {
-        expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(toBN('0'));
+        expect(await this.aavePCVDeposit.balance()).to.be.equal(toBN('0'));
         await this.aavePCVDeposit.deposit();
         // Balance should increment with the new deposited aTokens underlying
-        expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(this.depositAmount);
+        expect(await this.aavePCVDeposit.balance()).to.be.equal(this.depositAmount);
         
         // Held balance should be 0, now invested into Aave
-        expect(await this.token.balanceOf(this.aavePCVDeposit.address)).to.be.bignumber.equal(toBN('0'));
+        expect(await this.token.balanceOf(this.aavePCVDeposit.address)).to.be.equal(toBN('0'));
       });
     });
   });
@@ -76,13 +76,13 @@ describe('AavePCVDeposit', function () {
       const userBalanceBefore = await this.token.balanceOf(userAddress);
         
       // withdrawing should take balance back to 0
-      expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(this.depositAmount);
+      expect(await this.aavePCVDeposit.balance()).to.be.equal(this.depositAmount);
       await this.aavePCVDeposit.withdraw(userAddress, this.depositAmount, {from: pcvControllerAddress});
-      expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(toBN('0'));
+      expect(await this.aavePCVDeposit.balance()).to.be.equal(toBN('0'));
         
       const userBalanceAfter = await this.token.balanceOf(userAddress);
   
-      expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(this.depositAmount);
+      expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal(this.depositAmount);
     });
   });
   
@@ -100,13 +100,13 @@ describe('AavePCVDeposit', function () {
       });
   
       it('succeeds', async function() {
-        expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(this.depositAmount);
+        expect(await this.aavePCVDeposit.balance()).to.be.equal(this.depositAmount);
         await this.aavePCVDeposit.withdrawERC20(this.aToken.address, userAddress, this.depositAmount.div(toBN('2')), {from: pcvControllerAddress});        
 
         // balance should also get cut in half
-        expect(await this.aavePCVDeposit.balance()).to.be.bignumber.equal(this.depositAmount.div(toBN('2')));
+        expect(await this.aavePCVDeposit.balance()).to.be.equal(this.depositAmount.div(toBN('2')));
   
-        expect(await this.aToken.balanceOf(userAddress)).to.be.bignumber.equal(this.depositAmount.div(toBN('2')));
+        expect(await this.aToken.balanceOf(userAddress)).to.be.equal(this.depositAmount.div(toBN('2')));
       });
     });
   });

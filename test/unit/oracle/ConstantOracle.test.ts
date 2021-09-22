@@ -9,8 +9,10 @@ describe('ConstantOracle', function () {
 
   beforeEach(async function () {
     ({ governorAddress } = await getAddresses());  
-    this.core = await getCore(true);
-    this.oracle = await ConstantOracle.new(this.core.address, '200100');
+    this.core = await getCore();
+
+    const constantOracleFactory = await ethers.getContractFactory(ConstantOracle.abi, ConstantOracle.bytecode)
+    this.oracle = await constantOracleFactory.deploy(this.core.address, '200100');
   });
 
   it('isOutdated() false', async function() {
@@ -27,9 +29,18 @@ describe('ConstantOracle', function () {
     expect(read[1]).to.be.equal(true); // valid
   });
   it('read() is invalid if paused', async function() {
-    await this.oracle.pause({from: governorAddress});
+    await hre.network.provider.request({
+      'method': 'harhat_impersonateAccount',
+      'params': [governorAddress]
+    })
+    const governorSigner = await ethers.getSigner(governorAddress)
+    await this.oracle.connect(governorSigner).pause();
     const read = await this.oracle.read();
     expect(read[1]).to.be.equal(false); // invalid
+    await hre.network.provider.request({
+      'method':'hardhat_stopImpersonatingAccount',
+      'params': [governorAddress]
+    })
   });
   it('read() is always a Decimal (with 18 decimals)', async function() {
     expect((await this.oracle.read())[0] / 1e18).to.be.equal(20.01);

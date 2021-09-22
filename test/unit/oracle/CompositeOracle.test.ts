@@ -10,7 +10,7 @@ describe('CompositeOracle', function () {
 
   beforeEach(async function () {
     ({ governorAddress } = await getAddresses());
-    this.core = await getCore(true);
+    this.core = await getCore();
       
     this.oracleA = await MockOracle.new(400);
     this.oracleB = await MockOracle.new(2);

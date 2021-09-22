@@ -24,7 +24,7 @@ describe('FeiTimedMinter', function () {
       governorAddress,
     } = await getAddresses());
       
-    this.core = await getCore(true);
+    this.core = await getCore();
   
     this.fei = await Fei.at(await this.core.fei());
   

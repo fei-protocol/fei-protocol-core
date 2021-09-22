@@ -27,11 +27,11 @@ describe('PCVDepositWrapper', function () {
     );
 
     expect(await pcvDepositWrapper.balanceReportedIn()).to.be.equal(this.token.address);
-    expect(await pcvDepositWrapper.balance()).to.be.bignumber.equal(this.balance);
+    expect(await pcvDepositWrapper.balance()).to.be.equal(this.balance);
     const resistantBalances = await pcvDepositWrapper.resistantBalanceAndFei();
 
-    expect(resistantBalances[0]).to.be.bignumber.equal(this.balance);
-    expect(resistantBalances[1]).to.be.bignumber.equal('0');
+    expect(resistantBalances[0]).to.be.equal(this.balance);
+    expect(resistantBalances[1]).to.be.equal('0');
   });
 
   it('Protocol owned FEI PCV deposit', async function() {
@@ -42,10 +42,10 @@ describe('PCVDepositWrapper', function () {
     );
 
     expect(await pcvDepositWrapper.balanceReportedIn()).to.be.equal(this.token.address);
-    expect(await pcvDepositWrapper.balance()).to.be.bignumber.equal(this.balance);
+    expect(await pcvDepositWrapper.balance()).to.be.equal(this.balance);
     const resistantBalances = await pcvDepositWrapper.resistantBalanceAndFei();
 
-    expect(resistantBalances[0]).to.be.bignumber.equal(this.balance);
-    expect(resistantBalances[1]).to.be.bignumber.equal(this.balance);
+    expect(resistantBalances[0]).to.be.equal(this.balance);
+    expect(resistantBalances[1]).to.be.equal(this.balance);
   });
 });

@@ -24,7 +24,7 @@ describe('EthLidoPCVDeposit', function () {
       pcvControllerAddress
     } = await getAddresses());
 
-    this.core = await getCore(true);
+    this.core = await getCore();
 
     this.fei = await Fei.at(await this.core.fei());
     this.steth = await MockStEthToken.new();
@@ -45,7 +45,7 @@ describe('EthLidoPCVDeposit', function () {
     it('should accept ETH transfers', async function() {
       // send 23 ETH
       await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: `23${e18}`});
-      expect(await web3.eth.getBalance(this.pcvDeposit.address)).to.be.bignumber.equal(`23${e18}`);
+      expect(await web3.eth.getBalance(this.pcvDeposit.address)).to.be.equal(`23${e18}`);
     });
   });
 
@@ -63,7 +63,7 @@ describe('EthLidoPCVDeposit', function () {
       );
     });
     it('should emit UpdateMaximumSlippage', async function() {
-      expect(await this.pcvDeposit.maximumSlippageBasisPoints()).to.be.bignumber.equal('100');
+      expect(await this.pcvDeposit.maximumSlippageBasisPoints()).to.be.equal('100');
       await expectEvent(
         await this.pcvDeposit.setMaximumSlippage('500', { from: governorAddress }),
         'UpdateMaximumSlippage',
@@ -71,24 +71,24 @@ describe('EthLidoPCVDeposit', function () {
           maximumSlippageBasisPoints: '500'
         }
       );
-      expect(await this.pcvDeposit.maximumSlippageBasisPoints()).to.be.bignumber.equal('500');
+      expect(await this.pcvDeposit.maximumSlippageBasisPoints()).to.be.equal('500');
     });
   });
 
   describe('IPCVDeposit interface override', function() {
     describe('balance()', function() {
       it('should return the amount of stETH held', async function() {
-        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal('0');
-        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal('0');
+        expect(await this.pcvDeposit.balance()).to.be.equal('0');
+        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal('0');
         await this.steth.mintAt(this.pcvDeposit.address);
-        expect(await this.pcvDeposit.balance()).to.be.bignumber.equal(`100000${e18}`);
-        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal(`100000${e18}`);
+        expect(await this.pcvDeposit.balance()).to.be.equal(`100000${e18}`);
+        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`100000${e18}`);
       });
     });
 
     describe('deposit()', function() {
       it('should revert if no ETH is on the contract', async function() {
-        expect(await web3.eth.getBalance(this.pcvDeposit.address)).to.be.bignumber.equal('0');
+        expect(await web3.eth.getBalance(this.pcvDeposit.address)).to.be.equal('0');
         await expectRevert(
           this.pcvDeposit.deposit(),
           'EthLidoPCVDeposit: cannot deposit 0.'
@@ -96,7 +96,7 @@ describe('EthLidoPCVDeposit', function () {
       });
       it('should emit Deposit', async function() {
         await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: `1${e18}`});
-        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal('0');
+        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal('0');
         await expectEvent(
           await this.pcvDeposit.deposit(),
           'Deposit',
@@ -105,22 +105,22 @@ describe('EthLidoPCVDeposit', function () {
             _amount: `1${e18}`
           }
         );
-        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal(`1${e18}`);
+        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`1${e18}`);
       });
       it('should use Curve if slippage is negative', async function() {
         await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: `1${e18}`});
-        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal('0');
+        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal('0');
         await this.stableswap.setSlippage(1000, true); // 10% negative slippage (bonus) for ETH -> stETH
         await this.pcvDeposit.deposit();
-        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal('1100000000000000000'); // got 1.1 stETH
+        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal('1100000000000000000'); // got 1.1 stETH
       });
       it('should directly stake if slippage is positive', async function() {
         await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: `1${e18}`});
-        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal('0');
+        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal('0');
         await this.stableswap.setSlippage(1000, false); // 10% positive slippage (disadvantage) for ETH -> stETH
         await this.pcvDeposit.deposit();
         // didn't get 0.9 stETH out of a swap Curve, but did a direct 1:1 deposit directly on Lido
-        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal(`1${e18}`);
+        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`1${e18}`);
       });
     });
 
@@ -128,7 +128,7 @@ describe('EthLidoPCVDeposit', function () {
       it('should emit Withdrawal', async function() {
         await this.steth.mintAt(this.pcvDeposit.address);
         const balanceBeforeWithdraw = toBN(await web3.eth.getBalance(secondUserAddress));
-        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal(`100000${e18}`);
+        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`100000${e18}`);
         await expectEvent(
           await this.pcvDeposit.withdraw(secondUserAddress, `1${e18}`, {from: pcvControllerAddress}),
           'Withdrawal',
@@ -139,8 +139,8 @@ describe('EthLidoPCVDeposit', function () {
           }
         );
         const balanceAfterWithdraw = toBN(await web3.eth.getBalance(secondUserAddress));
-        expect(balanceAfterWithdraw.sub(balanceBeforeWithdraw)).to.be.bignumber.equal(`1${e18}`);
-        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal(`99999${e18}`);
+        expect(balanceAfterWithdraw.sub(balanceBeforeWithdraw)).to.be.equal(`1${e18}`);
+        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`99999${e18}`);
       });
       it('should revert if slippage is too high', async function() {
         await this.steth.mintAt(this.pcvDeposit.address);
@@ -168,8 +168,8 @@ describe('EthLidoPCVDeposit', function () {
     describe('withdrawERC20()', function() {
       it('should emit WithdrawERC20', async function() {
         await this.steth.mintAt(this.pcvDeposit.address);
-        expect(await this.steth.balanceOf(secondUserAddress)).to.be.bignumber.equal('0');
-        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal(`100000${e18}`);
+        expect(await this.steth.balanceOf(secondUserAddress)).to.be.equal('0');
+        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`100000${e18}`);
         await expectEvent(
           await this.pcvDeposit.withdrawERC20(this.steth.address, secondUserAddress, `1${e18}`, {from: pcvControllerAddress}),
           'WithdrawERC20',
@@ -180,8 +180,8 @@ describe('EthLidoPCVDeposit', function () {
             _amount: `1${e18}`
           }
         );
-        expect(await this.steth.balanceOf(secondUserAddress)).to.be.bignumber.equal(`1${e18}`);
-        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.bignumber.equal(`99999${e18}`);
+        expect(await this.steth.balanceOf(secondUserAddress)).to.be.equal(`1${e18}`);
+        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`99999${e18}`);
       });
       it('should revert if not PCVController', async function() {
         await expectRevert(
@@ -206,7 +206,7 @@ describe('EthLidoPCVDeposit', function () {
         }
       );
       const balanceAfterWithdraw = toBN(await web3.eth.getBalance(secondUserAddress));
-      expect(balanceAfterWithdraw.sub(balanceBeforeWithdraw)).to.be.bignumber.equal(`1${e18}`);
+      expect(balanceAfterWithdraw.sub(balanceBeforeWithdraw)).to.be.equal(`1${e18}`);
     });
     it('should revert if trying to withdraw more than balance', async function() {
       await expectRevert(

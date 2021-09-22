@@ -10,13 +10,17 @@ const e18 = '000000000000000000';
 
 describe('ChainlinkOracleWrapper', function () {
   beforeEach(async function () {
-    this.core = await getCore(true);
-    this.mockChainlinkOracle = await MockChainlinkOracle.new(`500${e8}`, 8); // 8 decimals, val = 500
-    this.mockChainlinkOracle2 = await MockChainlinkOracle.new(`600${e18}`, 18); // 18 decimals, val = 600
-    this.mockChainlinkOracle3 = await MockChainlinkOracle.new('700', 0); // 0 decimals, val = 700
-    this.oracle = await ChainlinkOracleWrapper.new(this.core.address, this.mockChainlinkOracle.address);
-    this.oracle2 = await ChainlinkOracleWrapper.new(this.core.address, this.mockChainlinkOracle2.address);
-    this.oracle3 = await ChainlinkOracleWrapper.new(this.core.address, this.mockChainlinkOracle3.address);
+    this.core = await getCore();
+
+    const mockChainlinkOracleFactory = await ethers.getContractFactory(MockChainlinkOracle.abi, MockChainlinkOracle.bytecode)
+    const chainlinkOracleWrapperFactory = await ethers.getContractFactory(ChainlinkOracleWrapper.abi, ChainlinkOracleWrapper.bytecode)
+
+    this.mockChainlinkOracle = await mockChainlinkOracleFactory.deploy(`500${e8}`, 8); // 8 decimals, val = 500
+    this.mockChainlinkOracle2 = await mockChainlinkOracleFactory.deploy(`600${e18}`, 18); // 18 decimals, val = 600
+    this.mockChainlinkOracle3 = await mockChainlinkOracleFactory.deploy('700', 0); // 0 decimals, val = 700
+    this.oracle = await chainlinkOracleWrapperFactory.deploy(this.core.address, this.mockChainlinkOracle.address);
+    this.oracle2 = await chainlinkOracleWrapperFactory.deploy(this.core.address, this.mockChainlinkOracle2.address);
+    this.oracle3 = await chainlinkOracleWrapperFactory.deploy(this.core.address, this.mockChainlinkOracle3.address);
   });
 
   it('paused() is false on deploy', async function() {

@@ -15,7 +15,7 @@ describe('CollateralizationOracleWrapper', function () {
 
   beforeEach(async function () {
     ({ userAddress, guardianAddress, governorAddress } = await getAddresses());
-    this.core = await getCore(true);
+    this.core = await getCore();
     this.oracle = await MockCollateralizationOracle.new(this.core.address, 2);
     await this.oracle.set('1000', '3000');
     this.oracle2 = await MockCollateralizationOracle.new(this.core.address, 2);

@@ -1,4 +1,5 @@
 import { ZERO_ADDRESS, getCore, getAddresses, expectRevert, expectEvent } from '../../helpers';
+import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat'
 
 const CollateralizationOracle = artifacts.readArtifactSync('CollateralizationOracle');
@@ -16,7 +17,7 @@ describe('CollateralizationOracle', function () {
 
   beforeEach(async function () {
     ({ userAddress, guardianAddress, governorAddress } = await getAddresses());
-    this.core = await getCore(true);
+    this.core = await getCore();
     await this.core.grantMinter(userAddress, {from: governorAddress});
     this.fei = await IFei.at(await this.core.fei());
 

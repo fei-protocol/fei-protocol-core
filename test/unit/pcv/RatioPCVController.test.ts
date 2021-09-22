@@ -16,7 +16,7 @@ describe('RatioPCVController', function () {
       governorAddress,
       pcvControllerAddress,
     } = await getAddresses());
-    this.core = await getCore(true);
+    this.core = await getCore();
     this.token = await MockERC20.new();
 
     this.pcvController = await RatioPCVController.new(this.core.address);
@@ -36,8 +36,8 @@ describe('RatioPCVController', function () {
         const userBalanceAfter = await balance.current(userAddress);
         const reserveBalanceAfter = await balance.current(this.pcvDeposit.address);
 
-        expect(reserveBalanceAfter).to.be.bignumber.equal(toBN('0'));
-        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(this.pcvAmount);
+        expect(reserveBalanceAfter).to.be.equal(toBN('0'));
+        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal(this.pcvAmount);
       });
 
       it('50%', async function() {
@@ -47,8 +47,8 @@ describe('RatioPCVController', function () {
         const userBalanceAfter = await balance.current(userAddress);
         const reserveBalanceAfter = await balance.current(this.pcvDeposit.address);
 
-        expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.pcvAmount.div(toBN('2')));
-        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(this.pcvAmount.div(toBN('2')));
+        expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.equal(this.pcvAmount.div(toBN('2')));
+        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal(this.pcvAmount.div(toBN('2')));
       });
 
       it('200% reverts', async function() {
@@ -87,8 +87,8 @@ describe('RatioPCVController', function () {
         const userBalanceAfter = await this.token.balanceOf(userAddress);
         const reserveBalanceAfter = await this.token.balanceOf(this.pcvDeposit.address);
 
-        expect(reserveBalanceAfter).to.be.bignumber.equal(toBN('0'));
-        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(this.pcvAmount);
+        expect(reserveBalanceAfter).to.be.equal(toBN('0'));
+        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal(this.pcvAmount);
       });
 
       it('50%', async function() {
@@ -98,8 +98,8 @@ describe('RatioPCVController', function () {
         const userBalanceAfter = await this.token.balanceOf(userAddress);
         const reserveBalanceAfter = await this.token.balanceOf(this.pcvDeposit.address);
 
-        expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.pcvAmount.div(toBN('2')));
-        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(this.pcvAmount.div(toBN('2')));
+        expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.equal(this.pcvAmount.div(toBN('2')));
+        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal(this.pcvAmount.div(toBN('2')));
       });
 
       it('200% reverts', async function() {

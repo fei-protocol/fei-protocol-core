@@ -4,6 +4,7 @@ import hre, { ethers, artifacts } from 'hardhat'
 
 const UniswapOracle = artifacts.readArtifactSync('UniswapOracle');
 const MockPairTrade = artifacts.readArtifactSync('MockUniswapV2PairTrade');
+const toBN = ethers.BigNumber.from
 
 describe.skip('UniswapOracle', function () {
   let userAddress: string
@@ -12,7 +13,7 @@ describe.skip('UniswapOracle', function () {
   beforeEach(async function () {
     ({ userAddress, governorAddress } = await getAddresses());
 
-    this.core = await getCore(true);
+    this.core = await getCore();
     
     this.startTime = await time.latest();
     this.delta = toBN(1000);

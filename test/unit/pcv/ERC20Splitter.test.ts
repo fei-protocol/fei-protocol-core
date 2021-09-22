@@ -16,7 +16,7 @@ describe('ERC20Splitter', function () {
       secondUserAddress,
       governorAddress,
     } = await getAddresses());
-    this.core = await getCore(true);
+    this.core = await getCore();
     this.tribe = await Tribe.at(await this.core.tribe());
     this.erc20Splitter = await ERC20Splitter.new(
       this.core.address, 
@@ -29,16 +29,16 @@ describe('ERC20Splitter', function () {
   });
 
   it('Unpaused allocates TRIBE successfully', async function() {
-    expect(await this.tribe.balanceOf(this.erc20Splitter.address)).to.be.bignumber.equal('100000');
+    expect(await this.tribe.balanceOf(this.erc20Splitter.address)).to.be.equal('100000');
 
     expectEvent(await this.erc20Splitter.allocate({from: userAddress}), 'Allocate', {
       caller: userAddress,
       amount: '100000'
     });
 
-    expect(await this.tribe.balanceOf(this.erc20Splitter.address)).to.be.bignumber.equal('0');
-    expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal('90000');
-    expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.equal('10000');
+    expect(await this.tribe.balanceOf(this.erc20Splitter.address)).to.be.equal('0');
+    expect(await this.tribe.balanceOf(userAddress)).to.be.equal('90000');
+    expect(await this.tribe.balanceOf(secondUserAddress)).to.be.equal('10000');
   });
   
   it('Paused reverts', async function() {

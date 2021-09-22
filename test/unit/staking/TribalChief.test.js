@@ -210,7 +210,7 @@ describe('TribalChief', () => {
 
   describe('first suite', () => {
     beforeEach(async function () {
-      this.core = await getCore(false);
+      this.core = await getCore();
 
       this.tribe = await Tribe.new();
       this.coreRef = await MockCoreRef.new(this.core.address);
@@ -2194,7 +2194,7 @@ describe('TribalChief', () => {
 
   describe('Test Pool with Force Lockup', () => {
     beforeEach(async function () {
-      this.core = await getCore(false);
+      this.core = await getCore();
 
       this.tribe = await Tribe.new();
       this.coreRef = await MockCoreRef.new(this.core.address);
@@ -2577,7 +2577,7 @@ describe('TribalChief', () => {
 
   describe('Test Rewards Multiplier', () => {
     beforeEach(async function () {
-      this.core = await getCore(false);
+      this.core = await getCore();
 
       this.tribe = await Tribe.new();
       this.coreRef = await MockCoreRef.new(this.core.address);
