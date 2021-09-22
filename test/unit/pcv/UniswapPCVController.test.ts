@@ -1,13 +1,6 @@
-const {
-  BN,
-  expectEvent,
-  expectRevert, 
-  balance,
-  time, 
-  expect,
-  getAddresses,
-  getCore
-} = require('../../helpers');
+import { expectEvent, expectRevert, balance, time, getAddresses, getCore } from '../../helpers';
+import { expect } from 'chai'
+import hre, { ethers, artifacts } from 'hardhat'
 
 const UniswapPCVController = artifacts.readArtifactSync('UniswapPCVController');
 const Fei = artifacts.readArtifactSync('Fei');

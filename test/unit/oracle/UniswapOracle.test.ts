@@ -1,19 +1,13 @@
-const {
-  BN,
-  expectEvent,
-  expectRevert,
-  time,
-  expect,
-  getAddresses,
-  getCore,
-} = require('../../helpers');
+import { expectEvent, expectRevert, time, getAddresses, getCore } from '../../helpers';
+import { expect } from 'chai'
+import hre, { ethers, artifacts } from 'hardhat'
 
 const UniswapOracle = artifacts.readArtifactSync('UniswapOracle');
 const MockPairTrade = artifacts.readArtifactSync('MockUniswapV2PairTrade');
 
 describe.skip('UniswapOracle', function () {
-  let userAddress;
-  let governorAddress;
+  let userAddress: string
+  let governorAddress: string
 
   beforeEach(async function () {
     ({ userAddress, governorAddress } = await getAddresses());

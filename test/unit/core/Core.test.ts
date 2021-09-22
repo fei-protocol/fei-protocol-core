@@ -1,22 +1,18 @@
-const {
-  BN,
-  expectEvent,
-  expectRevert,
-  expect,
-  getCore,
-  getAddresses,
-} = require('../../helpers');
+import { expectEvent, expectRevert, getCore, getAddresses } from '../../helpers';
+import { expect } from 'chai'
+import hre, { ethers, artifacts } from 'hardhat'
 
 const Tribe = artifacts.readArtifactSync('Tribe');
 const MockCoreRef = artifacts.readArtifactSync('MockCoreRef');
+const toBN = ethers.BigNumber.from
 
 describe('Core', function () {
-  let userAddress;
-  let minterAddress;
-  let burnerAddress;
-  let pcvControllerAddress;
-  let governorAddress;
-  let guardianAddress;
+  let userAddress: string
+  let minterAddress: string
+  let burnerAddress: string
+  let pcvControllerAddress: string
+  let governorAddress: string
+  let guardianAddress: string
 
   beforeEach(async function () {
     ({
@@ -29,8 +25,10 @@ describe('Core', function () {
     } = await getAddresses());
     this.core = await getCore(false);
     
-    this.tribe = await Tribe.at(await this.core.tribe());
-    this.coreRef = await MockCoreRef.new(this.core.address);
+    this.tribe = await ethers.getContractAt(Tribe.abi, (await this.core.tribe()));
+
+    const coreRefFactory = await ethers.getContractFactory(MockCoreRef.abi, MockCoreRef.bytecode)
+    this.coreRef = await coreRefFactory.deploy(this.core.address);
 
     this.minterRole = await this.core.MINTER_ROLE();
     this.burnerRole = await this.core.BURNER_ROLE();
@@ -49,12 +47,12 @@ describe('Core', function () {
           _amount: '1000'
         }
       );
-      expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal('1000');
+      expect(await this.tribe.balanceOf(userAddress)).to.be.equal('1000');
     });
 
     it('not enough reverts', async function() {
       const amount = await this.tribe.balanceOf(this.core.address);
-      await expectRevert(this.core.allocateTribe(userAddress, amount.add(new BN('1')), {from: governorAddress}), 'Core: Not enough Tribe');
+      await expectRevert(this.core.allocateTribe(userAddress, amount.add(toBN('1')), {from: governorAddress}), 'Core: Not enough Tribe');
     });
 	
     it('non governor reverts', async function() {
@@ -123,11 +121,11 @@ describe('Core', function () {
   		});
   		describe('Member Count', function() {
   			it('is one', async function() {
-  				expect(await this.core.getRoleMemberCount(this.minterRole)).to.be.bignumber.equal(new BN(1));
+  				expect(await this.core.getRoleMemberCount(this.minterRole)).to.be.equal(toBN(1));
   			});
   			it('updates to two', async function() {
   				await this.core.grantMinter(userAddress, {from: governorAddress});
-  				expect(await this.core.getRoleMemberCount(this.minterRole)).to.be.bignumber.equal(new BN(2));
+  				expect(await this.core.getRoleMemberCount(this.minterRole)).to.be.equal(toBN(2));
   			});
   		});
   		describe('Admin', function() {
@@ -186,11 +184,11 @@ describe('Core', function () {
   		});
   		describe('Member Count', function() {
   			it('is one', async function() {
-  				expect(await this.core.getRoleMemberCount(this.burnerRole)).to.be.bignumber.equal(new BN(1));
+  				expect(await this.core.getRoleMemberCount(this.burnerRole)).to.be.equal(toBN(1));
   			});
   			it('updates to two', async function() {
   				await this.core.grantBurner(userAddress, {from: governorAddress});
-  				expect(await this.core.getRoleMemberCount(this.burnerRole)).to.be.bignumber.equal(new BN(2));
+  				expect(await this.core.getRoleMemberCount(this.burnerRole)).to.be.equal(toBN(2));
   			});
   		});
   		describe('Admin', function() {
@@ -249,11 +247,11 @@ describe('Core', function () {
   		});
   		describe('Member Count', function() {
   			it('is one', async function() {
-  				expect(await this.core.getRoleMemberCount(this.pcvControllerRole)).to.be.bignumber.equal(new BN(1));
+  				expect(await this.core.getRoleMemberCount(this.pcvControllerRole)).to.be.equal(toBN(1));
   			});
   			it('updates to two', async function() {
   				await this.core.grantPCVController(userAddress, {from: governorAddress});
-  				expect(await this.core.getRoleMemberCount(this.pcvControllerRole)).to.be.bignumber.equal(new BN(2));
+  				expect(await this.core.getRoleMemberCount(this.pcvControllerRole)).to.be.equal(toBN(2));
   			});
   		});
   		describe('Admin', function() {
@@ -312,11 +310,11 @@ describe('Core', function () {
   		});
   		describe('Member Count', function() {
   			it('is one', async function() {
-  				expect(await this.core.getRoleMemberCount(this.governorRole)).to.be.bignumber.equal(new BN(2)); // gov and core
+  				expect(await this.core.getRoleMemberCount(this.governorRole)).to.be.equal(toBN(2)); // gov and core
   			});
   			it('updates to two', async function() {
   				await this.core.grantGovernor(userAddress, {from: governorAddress});
-  				expect(await this.core.getRoleMemberCount(this.governorRole)).to.be.bignumber.equal(new BN(3)); // gov, core, and user
+  				expect(await this.core.getRoleMemberCount(this.governorRole)).to.be.equal(toBN(3)); // gov, core, and user
   			});
   		});
   		describe('Admin', function() {
@@ -414,11 +412,11 @@ describe('Core', function () {
       });
       describe('Member Count', function() {
         it('is one', async function() {
-          expect(await this.core.getRoleMemberCount(this.guardianRole)).to.be.bignumber.equal(new BN(1));
+          expect(await this.core.getRoleMemberCount(this.guardianRole)).to.be.equal(toBN(1));
         });
         it('updates to two', async function() {
           await this.core.grantGuardian(userAddress, {from: governorAddress});
-          expect(await this.core.getRoleMemberCount(this.guardianRole)).to.be.bignumber.equal(new BN(2));
+          expect(await this.core.getRoleMemberCount(this.guardianRole)).to.be.equal(toBN(2));
         });
       });
       describe('Admin', function() {
@@ -515,11 +513,11 @@ describe('Core', function () {
       });
       describe('Member Count', function() {
         it('is one', async function() {
-          expect(await this.core.getRoleMemberCount(this.role)).to.be.bignumber.equal(new BN(1));
+          expect(await this.core.getRoleMemberCount(this.role)).to.be.equal(toBN(1));
         });
         it('updates to two', async function() {
           await this.core.grantRole(this.role, userAddress, {from: governorAddress});
-          expect(await this.core.getRoleMemberCount(this.role)).to.be.bignumber.equal(new BN(2));
+          expect(await this.core.getRoleMemberCount(this.role)).to.be.equal(toBN(2));
         });
       });
       describe('Admin', function() {

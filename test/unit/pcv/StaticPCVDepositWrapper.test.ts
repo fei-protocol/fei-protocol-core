@@ -1,14 +1,11 @@
-const {
-  expect,
-  getCore,
-  getAddresses,
-  expectRevert,
-} = require('../../helpers');
+import { getCore, getAddresses, expectRevert } from '../../helpers';
+import { expect } from 'chai'
+import hre, { artifacts, ethers } from 'hardhat'
   
 const StaticPCVDepositWrapper = artifacts.readArtifactSync('StaticPCVDepositWrapper');
 
 describe('StaticPCVDepositWrapper', function () {
-  let governorAddress;
+  let governorAddress: string
   beforeEach(async function () {
     ({ governorAddress } = await getAddresses());  
 

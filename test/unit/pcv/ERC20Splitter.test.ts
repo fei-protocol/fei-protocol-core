@@ -1,18 +1,14 @@
-const {
-  expectEvent,
-  expectRevert,
-  expect,
-  getAddresses,
-  getCore,
-} = require('../../helpers');
+import { expectEvent, expectRevert, getAddresses, getCore } from '../../helpers';
+import { expect } from 'chai'
+import hre, { ethers, artifacts } from 'hardhat'
   
 const ERC20Splitter = artifacts.readArtifactSync('ERC20Splitter');
 const Tribe = artifacts.readArtifactSync('Tribe');
 
 describe('ERC20Splitter', function () {
-  let userAddress;
-  let secondUserAddress;
-  let governorAddress;
+  let userAddress: string
+  let secondUserAddress: string
+  let governorAddress: string
   
   beforeEach(async function () {
     ({

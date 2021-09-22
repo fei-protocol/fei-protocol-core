@@ -1,4 +1,6 @@
-const { expect, getCore } = require('../../helpers');
+import { getCore } from '../../helpers';
+import { expect } from 'chai'
+import hre, { ethers, artifacts } from 'hardhat'
 
 const ChainlinkOracleWrapper = artifacts.readArtifactSync('ChainlinkOracleWrapper');
 const MockChainlinkOracle = artifacts.readArtifactSync('MockChainlinkOracle');

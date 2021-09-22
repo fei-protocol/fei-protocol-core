@@ -1,15 +1,6 @@
-const hre = require('hardhat');
-
-const {
-  BN,
-  time,
-  web3,
-  expectRevert,
-  expectEvent,
-  expect,
-  getAddresses,
-  getCore,
-} = require('../../helpers');
+import hre, { ethers, artifacts } from 'hardhat';
+import { expect } from 'chai'
+import { time, expectRevert, expectEvent, getAddresses, getCore } from '../../helpers';
 
 const PCVSwapperUniswap = artifacts.readArtifactSync('PCVSwapperUniswap');
 const ChainlinkOracleWrapper = artifacts.readArtifactSync('ChainlinkOracleWrapper');
@@ -22,12 +13,12 @@ const MockChainlinkOracle = artifacts.readArtifactSync('MockChainlinkOracle');
 const e18 = '000000000000000000';
 
 describe('PCVSwapperUniswap', function () {
-  let userAddress;
-  let secondUserAddress;
-  let minterAddress;
-  let guardianAddress;
-  let governorAddress;
-  let pcvControllerAddress;
+  let userAddress: string
+  let secondUserAddress: string
+  let minterAddress: string
+  let guardianAddress: string
+  let governorAddress: string
+  let pcvControllerAddress: string
 
   // eslint-disable-next-line consistent-return
   this.beforeAll(async function() {

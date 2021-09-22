@@ -1,15 +1,12 @@
-const {
-  expectRevert,
-  expect,
-  getAddresses,
-  getCore
-} = require('../../helpers');
+import { expectRevert, getAddresses, getCore } from '../../helpers';
+import { expect } from 'chai'
+import hre, { ethers, artifacts } from 'hardhat'
   
 const CompositeOracle = artifacts.readArtifactSync('CompositeOracle');
 const MockOracle = artifacts.readArtifactSync('MockOracle');
   
 describe('CompositeOracle', function () {
-  let governorAddress;
+  let governorAddress: string
 
   beforeEach(async function () {
     ({ governorAddress } = await getAddresses());

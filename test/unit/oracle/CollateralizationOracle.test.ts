@@ -1,11 +1,5 @@
-const {
-  ZERO_ADDRESS,
-  expect,
-  getCore,
-  getAddresses,
-  expectRevert,
-  expectEvent
-} = require('../../helpers');
+import { ZERO_ADDRESS, getCore, getAddresses, expectRevert, expectEvent } from '../../helpers';
+import hre, { ethers, artifacts } from 'hardhat'
 
 const CollateralizationOracle = artifacts.readArtifactSync('CollateralizationOracle');
 const MockPCVDepositV2 = artifacts.readArtifactSync('MockPCVDepositV2');
@@ -16,9 +10,9 @@ const IFei = artifacts.readArtifactSync('IFei');
 const e18 = '000000000000000000';
 
 describe('CollateralizationOracle', function () {
-  let userAddress;
-  let guardianAddress;
-  let governorAddress;
+  let userAddress: string
+  let guardianAddress: string
+  let governorAddress: string
 
   beforeEach(async function () {
     ({ userAddress, guardianAddress, governorAddress } = await getAddresses());

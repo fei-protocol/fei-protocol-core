@@ -1,14 +1,7 @@
-const ether = require('@openzeppelin/test-helpers/src/ether');
-const {
-  BN,
-  web3,
-  expectRevert,
-  expectEvent,
-  expect,
-  getAddresses,
-  getCore,
-  forceEth
-} = require('../../helpers');
+import ether from '@openzeppelin/test-helpers/src/ether';
+import { expectRevert, expectEvent, getAddresses, getCore } from '../../helpers';
+import { expect } from 'chai'
+import hre, { artifacts, ethers } from 'hardhat'
 
 const EthLidoPCVDeposit = artifacts.readArtifactSync('EthLidoPCVDeposit');
 const Fei = artifacts.readArtifactSync('Fei');

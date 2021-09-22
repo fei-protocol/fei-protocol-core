@@ -1,12 +1,6 @@
-const {
-  BN,
-  expectEvent,
-  expectRevert,
-  time,
-  expect,
-  getAddresses,
-  getCore
-} = require('../../helpers');
+import { expectEvent, expectRevert, time, getAddresses, getCore } from '../../helpers';
+import { expect } from 'chai'
+import hre, { ethers, artifacts } from 'hardhat'
 
 const StableSwapOperatorV1 = artifacts.readArtifactSync('StableSwapOperatorV1');
 const MockCurve3pool = artifacts.readArtifactSync('MockCurve3pool');
@@ -16,11 +10,11 @@ const MockERC20 = artifacts.readArtifactSync('MockERC20');
 const e18 = '000000000000000000';
 
 describe('StableSwapOperatorV1', function () {
-  let userAddress;
-  let governorAddress;
-  let minterAddress;
-  let burnerAddress;
-  let pcvControllerAddress;
+  let userAddress: string
+  let governorAddress: string
+  let minterAddress: string
+  let burnerAddress: string
+  let pcvControllerAddress: string
 
   beforeEach(async function () {
     ({

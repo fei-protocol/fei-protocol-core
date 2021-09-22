@@ -1,7 +1,6 @@
-const {
-  expect,
-  getCore,
-} = require('../../helpers');
+import { getCore } from '../../helpers';
+import { expect } from 'chai'
+import hre, { artifacts, ethers } from 'hardhat'
 
 const PCVDepositWrapper = artifacts.readArtifactSync('PCVDepositWrapper');
 const MockPCVDepositV2 = artifacts.readArtifactSync('MockPCVDepositV2');

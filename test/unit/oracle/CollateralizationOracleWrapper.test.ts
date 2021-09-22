@@ -1,12 +1,6 @@
-const {
-  ZERO_ADDRESS,
-  expect,
-  time,
-  getCore,
-  getAddresses,
-  expectRevert,
-  expectEvent
-} = require('../../helpers');
+import { ZERO_ADDRESS, time, getCore, getAddresses, expectRevert, expectEvent } from '../../helpers';
+import { expect } from 'chai'
+import hre, { ethers, artifacts } from 'hardhat'
 
 const CollateralizationOracleWrapper = artifacts.readArtifactSync('CollateralizationOracleWrapper');
 const MockCollateralizationOracle = artifacts.readArtifactSync('MockCollateralizationOracle');
@@ -15,9 +9,9 @@ const Proxy = artifacts.readArtifactSync('TransparentUpgradeableProxy');
 const e18 = '000000000000000000';
 
 describe('CollateralizationOracleWrapper', function () {
-  let userAddress;
-  let guardianAddress;
-  let governorAddress;
+  let userAddress: string
+  let guardianAddress: string
+  let governorAddress: string
 
   beforeEach(async function () {
     ({ userAddress, guardianAddress, governorAddress } = await getAddresses());

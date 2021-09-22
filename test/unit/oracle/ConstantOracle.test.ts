@@ -1,9 +1,11 @@
-const { expect, getCore, getAddresses } = require('../../helpers');
+import { getCore, getAddresses } from '../../helpers';
+import { expect } from 'chai'
+import hre, { ethers, artifacts } from 'hardhat'
 
 const ConstantOracle = artifacts.readArtifactSync('ConstantOracle');
 
 describe('ConstantOracle', function () {
-  let governorAddress;
+  let governorAddress: string
 
   beforeEach(async function () {
     ({ governorAddress } = await getAddresses());  

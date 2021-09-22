@@ -1,21 +1,15 @@
-const {
-  web3,
-  BN,
-  expectRevert,
-  balance,
-  expect,
-  getAddresses,
-  getCore,
-} = require('../../helpers');
+import { expectRevert, balance, getAddresses, getCore } from '../../helpers';
+import { expect } from 'chai'
+import hre, { ethers, artifacts } from 'hardhat'
       
 const AavePCVDeposit = artifacts.readArtifactSync('AavePCVDeposit');
 const MockLendingPool = artifacts.readArtifactSync('MockLendingPool');
 const MockERC20 = artifacts.readArtifactSync('MockERC20');
 
 describe('AavePCVDeposit', function () {
-  let userAddress;
-  let pcvControllerAddress;
-  let governorAddress;
+  let userAddress: string
+  let pcvControllerAddress: string
+  let governorAddress: string
       
   beforeEach(async function () {
     ({

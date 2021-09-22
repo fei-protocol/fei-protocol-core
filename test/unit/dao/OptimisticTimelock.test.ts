@@ -1,18 +1,14 @@
-const {
-  BN,
-  expectRevert,
-  getAddresses,
-  getCore,
-  time,
-  expect,
-} = require('../../helpers');
+import { expectRevert, getAddresses, getCore, time } from '../../helpers';
+import { expect } from 'chai'
+import hre, { ethers, artifacts } from 'hardhat'
   
 const OptimisticTimelock = artifacts.readArtifactSync('OptimisticTimelock');
+const toBN = ethers.BigNumber.from
   
 describe('TimelockedDelegator', function () {
-  let userAddress;
-  let guardianAddress;
-  let governorAddress;
+  let userAddress: string
+  let guardianAddress: string
+  let governorAddress: string
   
   beforeEach(async function () {
     ({

@@ -1,13 +1,6 @@
-const {
-  web3,
-  BN,
-  expectEvent,
-  expectRevert,
-  expectApprox,
-  expect,
-  getAddresses,
-  getCore,
-} = require('../../helpers');
+import { expectEvent, expectRevert, expectApprox, getAddresses, getCore } from '../../helpers';
+import { expect } from 'chai'
+import hre, { artifacts, ethers } from 'hardhat'
 
 const UniswapPCVDeposit = artifacts.readArtifactSync('UniswapPCVDeposit');
 const Fei = artifacts.readArtifactSync('Fei');
