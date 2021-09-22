@@ -1,5 +1,8 @@
-This proposal adds 4M TRIBE of incentives to Aave and mints 25M FEI to deposit.
+This proposal combines:
+* FIP-22 - add 4M TRIBE of incentives to Aave and mints 25M FEI to deposit
+* FIP-25 - add G-UNI FEI-DAI LP to staking rewards
 
+FIP-22:
 Specifically, the 4M TRIBE will incentivize only variable rate borrowing at a constant rate over 6 months.
 The final rewards epoch time is on March 23, 2022: 1647993600.
 
@@ -14,3 +17,9 @@ This address is still controlled by the Fei DAO.
 
 Forum discussion: https://tribe.fei.money/t/fip-22-aave-borrowing-incentives/3449
 Code: https://github.com/fei-protocol/fei-protocol-core/pull/177
+
+FIP-25:
+Add G-UNI FEI-DAI LP to the TribalChief staking rewards at 100 AP.
+
+Forum Discussion: https://tribe.fei.money/t/fip-25-a-case-for-directing-tribe-rewards-to-g-uni-pools/3459
+Code: https://github.com/fei-protocol/fei-protocol-core/pull/184
