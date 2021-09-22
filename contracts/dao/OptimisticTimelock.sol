@@ -1,33 +1,36 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "./Timelock.sol";
+import "@openzeppelin/contracts/governance/TimelockController.sol";
 import "../refs/CoreRef.sol";
 
 // Timelock with veto admin roles
-contract OptimisticTimelock is Timelock, CoreRef {
+contract OptimisticTimelock is TimelockController, CoreRef {
 
-    constructor(address core_, address admin_, uint delay_, uint minDelay_) 
-        Timelock(admin_, delay_, minDelay_)
+    constructor(
+        address core_, 
+        uint256 minDelay, 
+        address[] memory proposers,
+        address[] memory executors
+    ) 
+        TimelockController(minDelay, proposers, executors)
         CoreRef(core_)
-    {}
-
-    function queueTransaction(address target, uint value, string memory signature, bytes memory data, uint eta) public override whenNotPaused returns (bytes32) {
-        return super.queueTransaction(target, value, signature, data, eta);
+    {
+        // Only guardians and governors are timelock admins
+        revokeRole(TIMELOCK_ADMIN_ROLE, msg.sender);
     }
 
-    function vetoTransactions(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory datas, uint[] memory etas) public onlyGuardianOrGovernor {
-        for (uint i = 0; i < targets.length; i++) {
-            _cancelTransaction(targets[i], values[i], signatures[i], datas[i], etas[i]);
-        }
-    }
+    /**
+        @notice allow guardian or governor to assume timelock admin roles
+        This more elegantly achieves optimistic timelock as follows:
+        - veto: grant self PROPOSER_ROLE and cancel
+        - pause proposals: revoke PROPOSER_ROLE from target
+        - pause execution: revoke EXECUTOR_ROLE from target
+        - set new proposer: revoke old proposer and add new one
 
-    function executeTransaction(address target, uint value, string memory signature, bytes memory data, uint eta) public override whenNotPaused payable returns (bytes memory) {
-        return super.executeTransaction(target, value, signature, data, eta);
-    }
-
-    function governorSetPendingAdmin(address newAdmin) public onlyGovernor {
-        pendingAdmin = newAdmin;
-        emit NewPendingAdmin(newAdmin);
+        In addition it allows for much more granular and flexible access for multisig operators
+    */
+    function becomeAdmin() public onlyGuardianOrGovernor {
+        this.grantRole(TIMELOCK_ADMIN_ROLE, msg.sender);
     }
 }
