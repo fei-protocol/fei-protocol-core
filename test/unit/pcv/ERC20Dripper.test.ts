@@ -25,9 +25,20 @@ const dripAmount = toBN(4000000).mul(toBN(10).pow(toBN(18)));
 // this is 1 week in seconds
 const dripFrequency = 604800;
 
+let userAddress: string
+let secondUserAddress: string
+let thirdUserAddress: string
+let fourthUserAddress: string
+let fifthUserAddress: string
+let sixthUserAddress: string
+let seventhUserAddress: string
+let eigthUserAddress: string
+let ninthUserAddress: string
+let tenthUserAddress: string
+
 describe('ERC20Dripper', () => {
   before(async () => {
-    ({
+    let {
       userAddress,
       secondUserAddress,
       beneficiaryAddress1,
@@ -38,16 +49,16 @@ describe('ERC20Dripper', () => {
       governorAddress,
       genesisGroup,
       guardianAddress,
-    } = await getAddresses());
+    } = await getAddresses();
 
-    thirdUserAddress = beneficiaryAddress1;
-    fourthUserAddress = minterAddress;
-    fifthUserAddress = burnerAddress;
-    sixthUserAddress = pcvControllerAddress;
-    seventhUserAddress = governorAddress;
-    eigthUserAddress = genesisGroup;
-    ninthUserAddress = guardianAddress;
-    tenthUserAddress = beneficiaryAddress2;
+    const thirdUserAddress = beneficiaryAddress1;
+    const fourthUserAddress = minterAddress;
+    const fifthUserAddress = burnerAddress;
+    const sixthUserAddress = pcvControllerAddress;
+    const seventhUserAddress = governorAddress;
+    const eigthUserAddress = genesisGroup;
+    const ninthUserAddress = guardianAddress;
+    const tenthUserAddress = beneficiaryAddress2;
   });
 
   beforeEach(async function () {
