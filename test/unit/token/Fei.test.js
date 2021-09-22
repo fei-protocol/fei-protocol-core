@@ -8,9 +8,9 @@ const {
   getCore,
 } = require('../../helpers');
 
-const Fei = artifacts.require('Fei');
-const MockIncentive = artifacts.require('MockUniswapIncentive');
-const MockIncentivized = artifacts.require('MockIncentivized');
+const Fei = artifacts.readArtifactSync('Fei');
+const MockIncentive = artifacts.readArtifactSync('MockUniswapIncentive');
+const MockIncentivized = artifacts.readArtifactSync('MockIncentivized');
 
 describe('Fei', function () {
   let userAddress;

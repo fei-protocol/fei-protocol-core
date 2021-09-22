@@ -1,7 +1,7 @@
-const ChainlinkOracleWrapper = artifacts.require('ChainlinkOracleWrapper');
-const ERC20CompoundPCVDeposit = artifacts.require('ERC20CompoundPCVDeposit');
-const UniswapPCVDeposit = artifacts.require('UniswapPCVDeposit');
-const BondingCurve = artifacts.require('BondingCurve');
+const ChainlinkOracleWrapper = artifacts.readArtifactSync('ChainlinkOracleWrapper');
+const ERC20CompoundPCVDeposit = artifacts.readArtifactSync('ERC20CompoundPCVDeposit');
+const UniswapPCVDeposit = artifacts.readArtifactSync('UniswapPCVDeposit');
+const BondingCurve = artifacts.readArtifactSync('BondingCurve');
 
 const e18 = '000000000000000000';
 

@@ -8,8 +8,8 @@ const {
   getCore,
 } = require('../../helpers');
     
-const EthCompoundPCVDeposit = artifacts.require('EthCompoundPCVDeposit');
-const MockCToken = artifacts.require('MockCToken');
+const EthCompoundPCVDeposit = artifacts.readArtifactSync('EthCompoundPCVDeposit');
+const MockCToken = artifacts.readArtifactSync('MockCToken');
   
 describe('EthCompoundPCVDeposit', function () {
   let userAddress;

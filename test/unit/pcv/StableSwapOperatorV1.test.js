@@ -8,11 +8,11 @@ const {
   getCore
 } = require('../../helpers');
 
-const StableSwapOperatorV1 = artifacts.require('StableSwapOperatorV1');
-const MockCurve3pool = artifacts.require('MockCurve3pool');
-const MockCurveMetapool = artifacts.require('MockCurveMetapool');
-const Fei = artifacts.require('Fei');
-const MockERC20 = artifacts.require('MockERC20');
+const StableSwapOperatorV1 = artifacts.readArtifactSync('StableSwapOperatorV1');
+const MockCurve3pool = artifacts.readArtifactSync('MockCurve3pool');
+const MockCurveMetapool = artifacts.readArtifactSync('MockCurveMetapool');
+const Fei = artifacts.readArtifactSync('Fei');
+const MockERC20 = artifacts.readArtifactSync('MockERC20');
 const e18 = '000000000000000000';
 
 describe('StableSwapOperatorV1', function () {

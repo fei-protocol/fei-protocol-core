@@ -1,5 +1,6 @@
 import { ethers } from "hardhat";
 import { expect } from "chai";
+import { TeardownUpgradeFunc, ValidateUpgradeFunc } from "../../test/integration/setup/types";
 
 const e18 = '000000000000000000';
 
@@ -57,9 +58,9 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   await incentivesController.setDistributionEnd(END_TIMESTAMP);
 }
 
-async function teardown(addresses, oldContracts, contracts, logging) {}
+const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {}
 
-async function validate(addresses, oldContracts, contracts) {
+const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
   const {
     tribe,
     aaveFeiPCVDeposit,
@@ -69,16 +70,16 @@ async function validate(addresses, oldContracts, contracts) {
   } = contracts;
 
   const {
-    aaveTribeIncentivesControllerAddress,
-    aFeiVariableDebtAddress,
-    timelockAddress
+    aaveTribeIncentivesController: aaveTribeIncentivesControllerAddress,
+    aFeiVariableDebt: aFeiVariableDebtAddress,
+    timelock: timelockAddress
   } = addresses;
 
-  expect(await fei.balanceOf(aaveFeiPCVDeposit.address)).to.be.bignumber.equal('0');
+  expect((await fei.balanceOf(aaveFeiPCVDeposit.address)).toString()).to.be.equal('0');
   expect((await aFei.balanceOf(aaveFeiPCVDeposit.address)).toString()).to.be.equal(`25000000${e18}`);
-  expect(await aaveFeiPCVDeposit.balance()).to.be.bignumber.equal(`25000000${e18}`);
+  expect((await aaveFeiPCVDeposit.balance()).toString()).to.be.equal(`25000000${e18}`);
 
-  expect(await tribe.balanceOf(aaveTribeIncentivesControllerAddress)).to.be.bignumber.equal(`4000000${e18}`);
+  expect((await tribe.balanceOf(aaveTribeIncentivesControllerAddress)).toString()).to.be.equal(`4000000${e18}`);
   expect(await proxyAdmin.getProxyAdmin(aaveTribeIncentivesControllerAddress)).to.be.equal(proxyAdmin.address);
 
   // eslint-disable-next-line object-curly-newline, key-spacing, quote-props, quotes

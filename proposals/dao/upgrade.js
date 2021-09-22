@@ -41,8 +41,15 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     params: [timelockAddress]
   });
 
+  const timelockSigner = await ethers.getSigner(timelock.address)
+
   logging ? console.log('Transferring TRIBE Minter role to TribeReserveStabilizer') : undefined;
-  await tribe.setMinter(tribeReserveStabilizer.address, {from: timelockAddress});
+  await tribe.connect(timelockSigner).setMinter(tribeReserveStabilizer.address);
+
+  await hre.network.provider.request({
+    method: "hardhat_stopImpersonatingAccount",
+    params: [timelock.address],
+  });
 
   logging ? console.log('Granting PCVController to new RatioPCVController') : undefined;
   await core.grantPCVController(ratioPCVController.address);

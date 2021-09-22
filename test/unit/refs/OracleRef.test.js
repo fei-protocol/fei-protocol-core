@@ -7,9 +7,9 @@ const {
   getCore,
 } = require('../../helpers');
 
-const ReserveStabilizer = artifacts.require('ReserveStabilizer');
-const MockOracle = artifacts.require('MockOracle');
-const MockERC20 = artifacts.require('MockERC20');
+const ReserveStabilizer = artifacts.readArtifactSync('ReserveStabilizer');
+const MockOracle = artifacts.readArtifactSync('MockOracle');
+const MockERC20 = artifacts.readArtifactSync('MockERC20');
 
 describe('OracleRef', () => {
   let userAddress;

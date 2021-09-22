@@ -9,8 +9,8 @@ const {
   expectApprox,
 } = require('../../helpers');
     
-const FeiTimedMinter = artifacts.require('FeiTimedMinter');
-const Fei = artifacts.require('Fei');
+const FeiTimedMinter = artifacts.readArtifactSync('FeiTimedMinter');
+const Fei = artifacts.readArtifactSync('Fei');
   
 describe('FeiTimedMinter', function () {
   let userAddress;

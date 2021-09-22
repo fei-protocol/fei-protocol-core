@@ -16,12 +16,12 @@ const {
   expectApprox,
 } = require('../../helpers');
 
-const MockCore = artifacts.require('MockCore');
-const Tribe = artifacts.require('MockTribe');
-const MockCoreRef = artifacts.require('MockCoreRef');
-const TribalChief = artifacts.require('TribalChief');
-const MockERC20 = artifacts.require('MockERC20');
-const Proxy = artifacts.require('TransparentUpgradeableProxy');
+const MockCore = artifacts.readArtifactSync('MockCore');
+const Tribe = artifacts.readArtifactSync('MockTribe');
+const MockCoreRef = artifacts.readArtifactSync('MockCoreRef');
+const TribalChief = artifacts.readArtifactSync('TribalChief');
+const MockERC20 = artifacts.readArtifactSync('MockERC20');
+const Proxy = artifacts.readArtifactSync('TransparentUpgradeableProxy');
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const uintMax = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
 const ACC_TRIBE_PRECISION = new BN('100000000000000000000000');

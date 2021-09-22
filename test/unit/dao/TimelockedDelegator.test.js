@@ -8,8 +8,8 @@ const {
   expect,
 } = require('../../helpers');
 
-const TimelockedDelegator = artifacts.require('TimelockedDelegator');
-const MockTribe = artifacts.require('MockTribe');
+const TimelockedDelegator = artifacts.readArtifactSync('TimelockedDelegator');
+const MockTribe = artifacts.readArtifactSync('MockTribe');
 
 describe('TimelockedDelegator', function () {
   let userAddress;

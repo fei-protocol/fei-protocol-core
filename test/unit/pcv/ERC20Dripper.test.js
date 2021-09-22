@@ -16,11 +16,11 @@ const {
   expectApprox,
 } = require('../../helpers');
 
-const Tribe = artifacts.require('MockTribe');
-const MockCoreRef = artifacts.require('MockCoreRef');
-const TribalChief = artifacts.require('TribalChief');
-const ERC20Dripper = artifacts.require('ERC20Dripper');
-const TransparentUpgradeableProxy = artifacts.require('TransparentUpgradeableProxy');
+const Tribe = artifacts.readArtifactSync('MockTribe');
+const MockCoreRef = artifacts.readArtifactSync('MockCoreRef');
+const TribalChief = artifacts.readArtifactSync('TribalChief');
+const ERC20Dripper = artifacts.readArtifactSync('ERC20Dripper');
+const TransparentUpgradeableProxy = artifacts.readArtifactSync('TransparentUpgradeableProxy');
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 

@@ -7,12 +7,12 @@ const {
   getCore,
 } = require('../../helpers');
   
-const TribeReserveStabilizer = artifacts.require('TribeReserveStabilizer');
-const Fei = artifacts.require('Fei');
-const Tribe = artifacts.require('Tribe');
-const MockOracle = artifacts.require('MockOracle');
-const MockCollateralizationOracle = artifacts.require('MockCollateralizationOracle');
-const MockPCVDeposit = artifacts.require('MockEthUniswapPCVDeposit');
+const TribeReserveStabilizer = artifacts.readArtifactSync('TribeReserveStabilizer');
+const Fei = artifacts.readArtifactSync('Fei');
+const Tribe = artifacts.readArtifactSync('Tribe');
+const MockOracle = artifacts.readArtifactSync('MockOracle');
+const MockCollateralizationOracle = artifacts.readArtifactSync('MockCollateralizationOracle');
+const MockPCVDeposit = artifacts.readArtifactSync('MockEthUniswapPCVDeposit');
 
 describe('TribeReserveStabilizer', function () {
   let userAddress;

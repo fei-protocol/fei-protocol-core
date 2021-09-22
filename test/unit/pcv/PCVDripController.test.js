@@ -9,9 +9,9 @@ const {
   getCore,
 } = require('../../helpers');
   
-const PCVDripController = artifacts.require('PCVDripController');
-const MockPCVDeposit = artifacts.require('MockEthUniswapPCVDeposit');
-const Fei = artifacts.require('Fei');
+const PCVDripController = artifacts.readArtifactSync('PCVDripController');
+const MockPCVDeposit = artifacts.readArtifactSync('MockEthUniswapPCVDeposit');
+const Fei = artifacts.readArtifactSync('Fei');
 
 describe('PCVDripController', function () {
   let userAddress;

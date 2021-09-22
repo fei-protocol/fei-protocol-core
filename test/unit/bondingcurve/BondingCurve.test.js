@@ -8,11 +8,11 @@ const {
   getAddresses,
 } = require('../../helpers');
   
-const BondingCurve = artifacts.require('BondingCurve');
-const Fei = artifacts.require('Fei');
-const MockERC20PCVDeposit = artifacts.require('MockERC20PCVDeposit');
-const MockERC20 = artifacts.require('MockERC20');
-const MockOracle = artifacts.require('MockOracle');
+const BondingCurve = artifacts.readArtifactSync('BondingCurve');
+const Fei = artifacts.readArtifactSync('Fei');
+const MockERC20PCVDeposit = artifacts.readArtifactSync('MockERC20PCVDeposit');
+const MockERC20 = artifacts.readArtifactSync('MockERC20');
+const MockOracle = artifacts.readArtifactSync('MockOracle');
   
 describe('BondingCurve', function () {
   let userAddress;

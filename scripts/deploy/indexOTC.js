@@ -1,7 +1,7 @@
 import { formatBytes32String } from '@ethersproject/strings';
 
-const OtcEscrow = artifacts.require('OtcEscrow');
-const SnapshotDelegatorPCVDeposit = artifacts.require('SnapshotDelegatorPCVDeposit');
+const OtcEscrow = artifacts.readArtifactSync('OtcEscrow');
+const SnapshotDelegatorPCVDeposit = artifacts.readArtifactSync('SnapshotDelegatorPCVDeposit');
 
 const e18 = '000000000000000000';
 const e15 =    '000000000000000';

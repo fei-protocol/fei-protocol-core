@@ -8,9 +8,9 @@ const {
   web3,
 } = require('../../helpers');
 
-const RatioPCVController = artifacts.require('RatioPCVController');
-const MockERC20 = artifacts.require('MockERC20');
-const MockPCVDeposit = artifacts.require('MockEthUniswapPCVDeposit');
+const RatioPCVController = artifacts.readArtifactSync('RatioPCVController');
+const MockERC20 = artifacts.readArtifactSync('MockERC20');
+const MockPCVDeposit = artifacts.readArtifactSync('MockEthUniswapPCVDeposit');
 
 describe('RatioPCVController', function () {
   let userAddress;

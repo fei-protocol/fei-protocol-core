@@ -9,10 +9,10 @@ const {
   expectApprox,
 } = require('../../helpers');
       
-const PCVEquityMinter = artifacts.require('PCVEquityMinter');
-const PCVSwapper = artifacts.require('MockPCVSwapper');
-const MockCollateralizationOracle = artifacts.require('MockCollateralizationOracle');
-const Fei = artifacts.require('Fei');
+const PCVEquityMinter = artifacts.readArtifactSync('PCVEquityMinter');
+const PCVSwapper = artifacts.readArtifactSync('MockPCVSwapper');
+const MockCollateralizationOracle = artifacts.readArtifactSync('MockCollateralizationOracle');
+const Fei = artifacts.readArtifactSync('Fei');
     
 describe('PCVEquityMinter', function () {
   let userAddress;

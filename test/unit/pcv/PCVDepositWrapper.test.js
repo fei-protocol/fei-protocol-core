@@ -3,9 +3,9 @@ const {
   getCore,
 } = require('../../helpers');
 
-const PCVDepositWrapper = artifacts.require('PCVDepositWrapper');
-const MockPCVDepositV2 = artifacts.require('MockPCVDepositV2');
-const MockERC20 = artifacts.require('MockERC20');
+const PCVDepositWrapper = artifacts.readArtifactSync('PCVDepositWrapper');
+const MockPCVDepositV2 = artifacts.readArtifactSync('MockPCVDepositV2');
+const MockERC20 = artifacts.readArtifactSync('MockERC20');
 
 describe('PCVDepositWrapper', function () {
   beforeEach(async function () {

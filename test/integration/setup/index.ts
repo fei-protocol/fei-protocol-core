@@ -1,5 +1,5 @@
 import permissions from '../../../contract-addresses/permissions.json'
-import { getContracts, getContractAddresses, getMainnetContractAddresses } from './loadContracts'
+import { getAllContractAddresses, getAllContracts } from './loadContracts'
 import {
   Config,
   ContractAccessRights,
@@ -7,10 +7,17 @@ import {
   MainnetContracts,
   TestCoordinator,
   Env,
-  ProposalConfig
+  ProposalConfig,
+  namedContractsToNamedAddresses,
+  NamedAddresses
 } from './types'
 import { sudo } from '../../../scripts/utils/sudo'
 import constructProposal from '../../../scripts/utils/constructProposal';
+import '@nomiclabs/hardhat-ethers'
+import { artifacts } from 'hardhat'
+import { ethers } from 'ethers'
+
+import { NamedContracts, DeployFunc, SetupUpgradeFunc, RunUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from './types';
 
 /**
  * Coordinate initialising an end-to-end testing environment
@@ -19,16 +26,19 @@ import constructProposal from '../../../scripts/utils/constructProposal';
 */
 export class TestEndtoEndCoordinator implements TestCoordinator {
    
-  private mainnetAddresses; //: MainnetContractAddresses;
-  private afterUpgradeContracts: MainnetContracts;
-  private afterUpgradeAddresses: MainnetContractAddresses;
+  private mainnetContracts: NamedContracts
+  private afterUpgradeContracts: NamedContracts
+  private afterUpgradeAddresses: NamedAddresses
 
   constructor(
     private config: Config,
     private proposals: any,
   ) {
-      this.mainnetAddresses = getMainnetContractAddresses()
       this.proposals = proposals
+  }
+
+  public async initMainnetContracts(): Promise<void> {
+    this.mainnetContracts = await getAllContracts() as unknown as NamedContracts
   }
 
   /**
@@ -42,15 +52,20 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    *
    */
    public async loadEnvironment(): Promise<Env> {
-    // @ts-ignore
-    let existingContracts = await getContracts(this.mainnetAddresses)
+    await this.initMainnetContracts()
+    let existingContracts = this.mainnetContracts
 
-    // Grant priviledges to deploy address
-    await sudo(this.mainnetAddresses, this.config.logging)
+    // Grant privileges to deploy address
+    await sudo(existingContracts, this.config.logging)
 
     const proposalNames = Object.keys(this.proposals);
     for (let i = 0; i < proposalNames.length; i++) {
       existingContracts = await this.applyUpgrade(existingContracts, proposalNames[i], this.proposals[proposalNames[i]]);
+    }
+
+    this.afterUpgradeAddresses = {
+      ...getAllContractAddresses(),
+      ...namedContractsToNamedAddresses(existingContracts),
     }
 
     return { contracts: this.afterUpgradeContracts, contractAddresses: this.afterUpgradeAddresses }
@@ -59,24 +74,28 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   /**
    * Apply an upgrade to the locally instantiated protocol
    */
-  async applyUpgrade(existingContracts: MainnetContracts, proposalName: string, config: ProposalConfig) {
+  async applyUpgrade(existingContracts: NamedContracts, proposalName: string, config: ProposalConfig): Promise<NamedContracts> {
     let deployedUpgradedContracts = {}
 
     if (config["deploy"]) {
+      console.log(`Applying upgrade for proposal: ${proposalName}`)
       const { deploy } = await import('../../../scripts/deploy/' + proposalName);
-      deployedUpgradedContracts = await deploy(this.config.deployAddress, this.mainnetAddresses, this.config.logging)
+      const deployTyped = deploy as DeployFunc;
+      deployedUpgradedContracts = await deployTyped(this.config.deployAddress, this.mainnetContracts, this.config.logging)
     }
 
-    const contracts: MainnetContracts = {
+    const contracts: NamedContracts = {
       ...existingContracts,
       ...deployedUpgradedContracts
     }
+
     this.setLocalTestContracts(contracts)
     this.setLocalTestContractAddresses(contracts)
     
-    const contractAddresses = {
-      ...this.mainnetAddresses,
-      ...getContractAddresses(contracts),
+    const contractAddresses: {[key: string]: string} = {
+      ...namedContractsToNamedAddresses(this.mainnetContracts),
+      ...namedContractsToNamedAddresses(contracts),
+      ...getAllContractAddresses()
     }
     
     // Get the upgrade setup, run and teardown scripts
@@ -88,15 +107,19 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     // Simulate the DAO proposal
     if (config.exec) {
       const proposal = await constructProposal(proposalName, this.config.logging);
+      console.log(`Simulating proposal...`)
       await proposal.simulate();
     } else {
+      console.log(`Running proposal...`)
       await run(contractAddresses, existingContracts, contracts, this.config.logging)
     }
 
     // teardown the DAO proposal
+    console.log(`Running proposal teardown...`)
     await teardown(contractAddresses, existingContracts, contracts);
 
     if (validate) {
+      console.log(`Running proposal validation...`)
       await validate(contractAddresses, existingContracts, contracts);
     }
 
@@ -106,23 +129,16 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   /**
    * Set the web3 contracts used in the test environment
    */
-  setLocalTestContracts(contracts: MainnetContracts) {
+  setLocalTestContracts(contracts: NamedContracts) {
     this.afterUpgradeContracts = contracts;
   }
 
   /**
    * Set the addresses of the contracts used in the test environment
    */
-  async setLocalTestContractAddresses(contracts: MainnetContracts) {
+  async setLocalTestContractAddresses(contracts: NamedContracts) {
     // @ts-ignore
-    this.afterUpgradeAddresses =  { ...this.mainnetAddresses, ...getContractAddresses(contracts), };
-  }
-
-  /**
-   * Get all contract addresses used in the test environment
-   */
-  getLocalProtocolAddresses(): MainnetContractAddresses {
-    return this.mainnetAddresses
+    this.afterUpgradeAddresses =  { ...this.mainnetAddresses };
   }
 
   /**

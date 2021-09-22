@@ -10,11 +10,11 @@ const {
   getCore,
 } = require('../../helpers');
   
-const EthReserveStabilizer = artifacts.require('EthReserveStabilizer');
-const Fei = artifacts.require('Fei');
-const MockWeth = artifacts.require('MockWeth');
-const MockOracle = artifacts.require('MockOracle');
-const MockPCVDeposit = artifacts.require('MockEthUniswapPCVDeposit');
+const EthReserveStabilizer = artifacts.readArtifactSync('EthReserveStabilizer');
+const Fei = artifacts.readArtifactSync('Fei');
+const MockWeth = artifacts.readArtifactSync('MockWeth');
+const MockOracle = artifacts.readArtifactSync('MockOracle');
+const MockPCVDeposit = artifacts.readArtifactSync('MockEthUniswapPCVDeposit');
 
 describe('EthReserveStabilizer', function () {
   let userAddress;

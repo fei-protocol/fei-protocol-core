@@ -11,10 +11,10 @@ const {
   getCore,
 } = require('../../helpers');
 
-const EthBondingCurve = artifacts.require('EthBondingCurve');
-const Fei = artifacts.require('Fei');
-const MockEthPCVDeposit = artifacts.require('MockEthPCVDeposit');
-const MockOracle = artifacts.require('MockOracle');
+const EthBondingCurve = artifacts.readArtifactSync('EthBondingCurve');
+const Fei = artifacts.readArtifactSync('Fei');
+const MockEthPCVDeposit = artifacts.readArtifactSync('MockEthPCVDeposit');
+const MockOracle = artifacts.readArtifactSync('MockOracle');
 
 describe('EthBondingCurve', function () {
   let userAddress;

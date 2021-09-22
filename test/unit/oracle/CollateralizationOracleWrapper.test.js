@@ -8,9 +8,9 @@ const {
   expectEvent
 } = require('../../helpers');
 
-const CollateralizationOracleWrapper = artifacts.require('CollateralizationOracleWrapper');
-const MockCollateralizationOracle = artifacts.require('MockCollateralizationOracle');
-const Proxy = artifacts.require('TransparentUpgradeableProxy');
+const CollateralizationOracleWrapper = artifacts.readArtifactSync('CollateralizationOracleWrapper');
+const MockCollateralizationOracle = artifacts.readArtifactSync('MockCollateralizationOracle');
+const Proxy = artifacts.readArtifactSync('TransparentUpgradeableProxy');
 
 const e18 = '000000000000000000';
 

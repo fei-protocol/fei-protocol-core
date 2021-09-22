@@ -8,9 +8,9 @@ const {
   getCore,
 } = require('../../helpers');
       
-const AavePCVDeposit = artifacts.require('AavePCVDeposit');
-const MockLendingPool = artifacts.require('MockLendingPool');
-const MockERC20 = artifacts.require('MockERC20');
+const AavePCVDeposit = artifacts.readArtifactSync('AavePCVDeposit');
+const MockLendingPool = artifacts.readArtifactSync('MockLendingPool');
+const MockERC20 = artifacts.readArtifactSync('MockERC20');
 
 describe('AavePCVDeposit', function () {
   let userAddress;

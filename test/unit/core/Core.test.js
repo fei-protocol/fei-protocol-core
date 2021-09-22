@@ -7,8 +7,8 @@ const {
   getAddresses,
 } = require('../../helpers');
 
-const Tribe = artifacts.require('Tribe');
-const MockCoreRef = artifacts.require('MockCoreRef');
+const Tribe = artifacts.readArtifactSync('Tribe');
+const MockCoreRef = artifacts.readArtifactSync('MockCoreRef');
 
 describe('Core', function () {
   let userAddress;

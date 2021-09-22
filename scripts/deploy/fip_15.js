@@ -2,11 +2,11 @@
 const { web3 } = require('hardhat');
 const { BN } = require('../../test/helpers');
 
-const TribalChief = artifacts.require('TribalChief');
-const TransparentUpgradeableProxy = artifacts.require('TransparentUpgradeableProxy');
-const ProxyAdmin = artifacts.require('ProxyAdmin');
-const ERC20Dripper = artifacts.require('ERC20Dripper');
-const OptimisticTimelock = artifacts.require('OptimisticTimelock');
+const TribalChief = artifacts.readArtifactSync('TribalChief');
+const TransparentUpgradeableProxy = artifacts.readArtifactSync('TransparentUpgradeableProxy');
+const ProxyAdmin = artifacts.readArtifactSync('ProxyAdmin');
+const ERC20Dripper = artifacts.readArtifactSync('ERC20Dripper');
+const OptimisticTimelock = artifacts.readArtifactSync('OptimisticTimelock');
 
 // number of seconds between allowed drips
 // this is 1 week in seconds

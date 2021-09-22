@@ -5,7 +5,7 @@ const {
   expectRevert,
 } = require('../../helpers');
   
-const StaticPCVDepositWrapper = artifacts.require('StaticPCVDepositWrapper');
+const StaticPCVDepositWrapper = artifacts.readArtifactSync('StaticPCVDepositWrapper');
 
 describe('StaticPCVDepositWrapper', function () {
   let governorAddress;

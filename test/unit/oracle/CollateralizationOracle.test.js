@@ -7,11 +7,11 @@ const {
   expectEvent
 } = require('../../helpers');
 
-const CollateralizationOracle = artifacts.require('CollateralizationOracle');
-const MockPCVDepositV2 = artifacts.require('MockPCVDepositV2');
-const MockOracleCoreRef = artifacts.require('MockOracleCoreRef');
-const MockERC20 = artifacts.require('MockERC20');
-const IFei = artifacts.require('IFei');
+const CollateralizationOracle = artifacts.readArtifactSync('CollateralizationOracle');
+const MockPCVDepositV2 = artifacts.readArtifactSync('MockPCVDepositV2');
+const MockOracleCoreRef = artifacts.readArtifactSync('MockOracleCoreRef');
+const MockERC20 = artifacts.readArtifactSync('MockERC20');
+const IFei = artifacts.readArtifactSync('IFei');
 
 const e18 = '000000000000000000';
 

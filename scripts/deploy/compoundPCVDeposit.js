@@ -1,5 +1,5 @@
-const EthCompoundPCVDeposit = artifacts.require('EthCompoundPCVDeposit');
-const ERC20CompoundPCVDeposit = artifacts.require('ERC20CompoundPCVDeposit');
+const EthCompoundPCVDeposit = artifacts.readArtifactSync('EthCompoundPCVDeposit');
+const ERC20CompoundPCVDeposit = artifacts.readArtifactSync('ERC20CompoundPCVDeposit');
 
 async function deploy(deployAddress, addresses, logging = false) {
   const {

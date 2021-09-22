@@ -1,8 +1,8 @@
-const ChainlinkOracleWrapper = artifacts.require('ChainlinkOracleWrapper');
-const ChainlinkCompositOracle = artifacts.require('CompositeOracle');
-const BalancerLBPSwapper = artifacts.require('BalancerLBPSwapper');
-const WeightedBalancerPoolManager = artifacts.require('WeightedBalancerPoolManager');
-const ILiquidityBootstrappingPoolFactory = artifacts.require('ILiquidityBootstrappingPoolFactory');
+const ChainlinkOracleWrapper = artifacts.readArtifactSync('ChainlinkOracleWrapper');
+const ChainlinkCompositOracle = artifacts.readArtifactSync('CompositeOracle');
+const BalancerLBPSwapper = artifacts.readArtifactSync('BalancerLBPSwapper');
+const WeightedBalancerPoolManager = artifacts.readArtifactSync('WeightedBalancerPoolManager');
+const ILiquidityBootstrappingPoolFactory = artifacts.readArtifactSync('ILiquidityBootstrappingPoolFactory');
 
 const e16 = '0000000000000000';
 const e14 = '00000000000000';

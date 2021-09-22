@@ -1,4 +1,4 @@
-const StableSwapOperatorV1 = artifacts.require('StableSwapOperatorV1');
+const StableSwapOperatorV1 = artifacts.readArtifactSync('StableSwapOperatorV1');
 
 const e18 = '000000000000000000';
 

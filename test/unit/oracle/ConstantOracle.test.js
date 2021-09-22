@@ -1,6 +1,6 @@
 const { expect, getCore, getAddresses } = require('../../helpers');
 
-const ConstantOracle = artifacts.require('ConstantOracle');
+const ConstantOracle = artifacts.readArtifactSync('ConstantOracle');
 
 describe('ConstantOracle', function () {
   let governorAddress;

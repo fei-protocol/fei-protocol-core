@@ -8,8 +8,8 @@ const {
   getCore, 
 } = require('../../helpers');
     
-const RateLimitedMinter = artifacts.require('MockRateLimitedMinter');
-const Fei = artifacts.require('Fei');
+const RateLimitedMinter = artifacts.readArtifactSync('MockRateLimitedMinter');
+const Fei = artifacts.readArtifactSync('Fei');
   
 describe('RateLimitedMinter', function () {
   let userAddress;

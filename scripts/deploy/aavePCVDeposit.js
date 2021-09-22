@@ -1,4 +1,4 @@
-const AavePCVDeposit = artifacts.require('AavePCVDeposit');
+const AavePCVDeposit = artifacts.readArtifactSync('AavePCVDeposit');
 
 async function deploy(deployAddress, addresses, logging = false) {
   const {

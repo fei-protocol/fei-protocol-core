@@ -10,10 +10,10 @@ const {
   forceEth
 } = require('../../helpers');
 
-const EthLidoPCVDeposit = artifacts.require('EthLidoPCVDeposit');
-const Fei = artifacts.require('Fei');
-const MockStEthStableSwap = artifacts.require('MockStEthStableSwap');
-const MockStEthToken = artifacts.require('MockStEthToken');
+const EthLidoPCVDeposit = artifacts.readArtifactSync('EthLidoPCVDeposit');
+const Fei = artifacts.readArtifactSync('Fei');
+const MockStEthStableSwap = artifacts.readArtifactSync('MockStEthStableSwap');
+const MockStEthToken = artifacts.readArtifactSync('MockStEthToken');
 
 const e18 = '000000000000000000';
 

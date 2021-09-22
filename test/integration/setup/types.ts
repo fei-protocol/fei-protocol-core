@@ -1,14 +1,31 @@
-const { web3 } = require('hardhat');
-const { Contract } = web3.eth
+import { ethers } from 'ethers'
 
 export type Env = {
-  contracts: MainnetContracts,
-  contractAddresses: MainnetContractAddresses,
+  contracts: NamedContracts,
+  contractAddresses: NamedAddresses,
 }
 
 export interface TestCoordinator {
   loadEnvironment(): Promise<Env>;
 }
+
+export function namedContractsToNamedAddresses(contracts: NamedContracts): NamedAddresses {
+  let namedAddresses: NamedAddresses = {}
+  
+  Object.keys(contracts).map(function(contractName, index) {
+    namedAddresses[contractName] = contracts[contractName].address
+  })
+
+  return namedAddresses
+}
+
+export type NamedContracts = { [key: string]: ethers.Contract }
+export type NamedAddresses = { [key: string]: string }
+export type DeployFunc = (deployAddress: string, contracts: NamedContracts, logging: boolean) => Promise<NamedContracts>
+export type SetupUpgradeFunc = (addresses: NamedAddresses, oldContracts: NamedContracts, contracts: NamedContracts, logging: boolean) => Promise<void>
+export type RunUpgradeFunc = (addresses: NamedAddresses, oldContracts: NamedContracts, contracts: NamedContracts, logging: boolean) => Promise<void>
+export type TeardownUpgradeFunc = (addresses: NamedAddresses, oldContracts: NamedContracts, contracts: NamedContracts, logging: boolean) => Promise<void>
+export type ValidateUpgradeFunc = (addresses: NamedAddresses, oldContracts: NamedContracts, contracts: NamedContracts, logging: boolean) => Promise<void>
 
 export type Config = {
   version: number;
@@ -16,98 +33,98 @@ export type Config = {
   logging: boolean;
 }
 
-export type MainnetContracts = {
-  core: typeof Contract,
-  tribe: typeof Contract,
-  fei: typeof Contract,
-  uniswapPCVDeposit: typeof Contract,
-  uniswapPCVController: typeof Contract,
-  bondingCurve: typeof Contract,
-  chainlinkEthUsdOracle: typeof Contract,
-  chainlinkFeiEthOracle: typeof Contract,
-  compositeOracle: typeof Contract,
-  ethReserveStabilizer: typeof Contract,
-  ratioPCVController: typeof Contract,
-  tribeReserveStabilizer: typeof Contract,
-  feiRewardsDistributor: typeof Contract,
-  timelock: typeof Contract,
-  feiEthPair: typeof Contract,
-  rariPool8FeiPCVDeposit: typeof Contract,
-  rariPool8EthPCVDeposit: typeof Contract,
-  compoundEthPCVDeposit: typeof Contract,
-  compoundDaiPCVDeposit: typeof Contract,
-  curveMetapoolDeposit: typeof Contract,
-  curveMetapool: typeof Contract,
-  curve3pool: typeof Contract,
-  curve3crv: typeof Contract,
-  aaveEthPCVDeposit: typeof Contract,
-  aaveRaiPCVDeposit: typeof Contract,
-  stAAVE: typeof Contract,
-  dpiBondingCurve: typeof Contract,
-  daiBondingCurve: typeof Contract,
-  dpi: typeof Contract,
-  dai: typeof Contract,
-  chainlinkDpiUsdOracleWrapper: typeof Contract,
-  dpiUniswapPCVDeposit: typeof Contract,
-  indexCoopFusePoolDpiPCVDeposit: typeof Contract,
-  raiBondingCurve: typeof Contract,
-  rai: typeof Contract,
-  chainlinkRaiEthOracleWrapper: typeof Contract
-  chainlinkRaiUsdCompositOracle: typeof Contract
-  reflexerStableAssetFusePoolRaiPCVDeposit: typeof Contract,
-  kashiFeiTribe: typeof Contract,
-  bentoBox: typeof Contract,
-  aaveEthPCVDripController: typeof Contract,
-  governorAlpha: typeof Contract,
-  tribalChief: typeof Contract,
-  stakingTokenWrapper: typeof Contract,
-  feiTribePair: typeof Contract,
-  rariPool8Tribe: typeof Contract,
-  curve3Metapool: typeof Contract,
-  erc20Dripper: typeof Contract,
-  tribalChiefOptimisticTimelock: typeof Contract,
-  staticPcvDepositWrapper: typeof Contract,
-  collateralizationOracle: typeof Contract,
-  collateralizationOracleWrapper: typeof Contract,
-  collateralizationOracleKeeper: typeof Contract,
-  tribeReserveStabilizerAddress: typeof Contract,
-  pcvEquityMinter: typeof Contract,
-  tribeSplitter: typeof Contract,
-  feiTribeLBPSwapper: typeof Contract,
-  aaveLendingPool: typeof Contract,
-  aaveTribeIncentivesController: typeof Contract,
+export interface MainnetContracts {
+  core: ethers.Contract
+  tribe: ethers.Contract
+  fei: ethers.Contract
+  uniswapPCVDeposit: ethers.Contract
+  uniswapPCVController: ethers.Contract
+  bondingCurve: ethers.Contract
+  chainlinkEthUsdOracle: ethers.Contract
+  chainlinkFeiEthOracle: ethers.Contract
+  compositeOracle: ethers.Contract
+  ethReserveStabilizer: ethers.Contract
+  ratioPCVController: ethers.Contract
+  tribeReserveStabilizer: ethers.Contract
+  feiRewardsDistributor: ethers.Contract
+  timelock: ethers.Contract
+  feiEthPair: ethers.Contract
+  rariPool8FeiPCVDeposit: ethers.Contract
+  rariPool8EthPCVDeposit: ethers.Contract
+  compoundEthPCVDeposit: ethers.Contract
+  compoundDaiPCVDeposit: ethers.Contract
+  curveMetapoolDeposit: ethers.Contract
+  curveMetapool: ethers.Contract
+  curve3pool: ethers.Contract
+  curve3crv: ethers.Contract
+  aaveEthPCVDeposit: ethers.Contract
+  aaveRaiPCVDeposit: ethers.Contract
+  stAAVE: ethers.Contract
+  dpiBondingCurve: ethers.Contract
+  daiBondingCurve: ethers.Contract
+  dpi: ethers.Contract
+  dai: ethers.Contract
+  chainlinkDpiUsdOracleWrapper: ethers.Contract
+  dpiUniswapPCVDeposit: ethers.Contract
+  indexCoopFusePoolDpiPCVDeposit: ethers.Contract
+  raiBondingCurve: ethers.Contract
+  rai: ethers.Contract
+  chainlinkRaiEthOracleWrapper: ethers.Contract
+  chainlinkRaiUsdCompositOracle: ethers.Contract
+  reflexerStableAssetFusePoolRaiPCVDeposit: ethers.Contract
+  kashiFeiTribe: ethers.Contract
+  bentoBox: ethers.Contract
+  aaveEthPCVDripController: ethers.Contract
+  governorAlpha: ethers.Contract
+  tribalChief: ethers.Contract
+  stakingTokenWrapper: ethers.Contract
+  feiTribePair: ethers.Contract
+  rariPool8Tribe: ethers.Contract
+  curve3Metapool: ethers.Contract
+  erc20Dripper: ethers.Contract
+  tribalChiefOptimisticTimelock: ethers.Contract
+  staticPcvDepositWrapper: ethers.Contract
+  collateralizationOracle: ethers.Contract
+  collateralizationOracleWrapper: ethers.Contract
+  collateralizationOracleKeeper: ethers.Contract
+  tribeReserveStabilizerAddress: ethers.Contract
+  pcvEquityMinter: ethers.Contract
+  tribeSplitter: ethers.Contract
+  feiTribeLBPSwapper: ethers.Contract
+  aaveLendingPool: ethers.Contract
+  aaveTribeIncentivesController: ethers.Contract
 }
 
-export type MainnetContractAddresses = {
-  coreAddress: string,
-  tribeAddress: string,
-  feiAddress: string,
-  uniswapPCVDepositAddress: string,
-  uniswapPCVControllerAddress: string,
-  bondingCurveAddress: string,
-  chainlinkEthUsdOracleAddress: string,
-  chainlinkFeiEthOracleAddress: string,
-  compositeOracleAddress: string
-  compoundDaiAddress: string,
-  ethReserveStabilizerAddress: string,
-  ratioPCVControllerAddress: string,
-  wethAddress: string,
-  uniswapRouterAddress: string,
-  feiEthPairAddress: string,
-  uniswapOracleAddress: string,
-  feiRewardsDistributorAddress: string,
-  tribeReserveStabilizerAddress: string,
-  timelockAddress: string,
-  multisigAddress: string,
-  governorAlphaAddress: string,
-  indexCoopFusePoolDpiAddress: string,
-  reflexerStableAssetFusePoolRaiAddress: string
-  bentoBoxAddress: string,
-  masterKashiAddress: string,
-  feiTribePairAddress: string,
-  rariPool8TribeAddress: string,
-  curve3MetapoolAddress: string,
-  tribalChiefOptimisticMultisigAddress: string,
+export interface MainnetContractAddresses {
+  core: string
+  tribe: string
+  fei: string
+  uniswapPCVDeposit: string
+  uniswapPCVController: string
+  bondingCurve: string
+  chainlinkEthUsdOracle: string
+  chainlinkFeiEthOracle: string
+  compositeOracle: string
+  compoundDai: string
+  ethReserveStabilizer: string
+  ratioPCVController: string
+  weth: string
+  uniswapRouter: string
+  feiEthPair: string
+  uniswapOracle: string
+  feiRewardsDistributor: string
+  tribeReserveStabilizer: string
+  timelock: string
+  multisig: string
+  governorAlpha: string
+  indexCoopFusePoolDpi: string
+  reflexerStableAssetFusePoolRai: string
+  bentoBox: string
+  masterKashi: string
+  feiTribePair: string
+  rariPool8Tribe: string
+  curve3Metapool: string
+  tribalChiefOptimisticMultisig: string
 }
 
 export type ProposalConfig = {

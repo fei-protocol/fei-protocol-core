@@ -1,13 +1,12 @@
-import '@nomiclabs/hardhat-waffle';
-import '@nomiclabs/hardhat-truffle5';
-import '@nomiclabs/hardhat-web3';
-import 'hardhat-gas-reporter';
-import 'hardhat-contract-sizer';
-import 'solidity-coverage';
+import '@nomiclabs/hardhat-waffle'
+import '@nomiclabs/hardhat-ethers'
+import '@nomiclabs/hardhat-web3'
 import '@typechain/hardhat'
-import "@idle-finance/hardhat-proposals-plugin";
-import "solidity-coverage"
-import { HardhatUserConfig } from "hardhat/config";
+import "@idle-finance/hardhat-proposals-plugin"
+import 'hardhat-gas-reporter'
+import 'hardhat-contract-sizer'
+import 'solidity-coverage'
+import { HardhatUserConfig } from "hardhat/config"
 
 require('dotenv').config();
 

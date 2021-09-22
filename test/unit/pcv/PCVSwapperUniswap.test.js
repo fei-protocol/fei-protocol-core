@@ -11,13 +11,13 @@ const {
   getCore,
 } = require('../../helpers');
 
-const PCVSwapperUniswap = artifacts.require('PCVSwapperUniswap');
-const ChainlinkOracleWrapper = artifacts.require('ChainlinkOracleWrapper');
-const Fei = artifacts.require('Fei');
-const MockOracle = artifacts.require('MockOracle');
-const MockWeth = artifacts.require('MockWeth');
-const MockPair = artifacts.require('MockUniswapV2PairLiquidity');
-const MockChainlinkOracle = artifacts.require('MockChainlinkOracle');
+const PCVSwapperUniswap = artifacts.readArtifactSync('PCVSwapperUniswap');
+const ChainlinkOracleWrapper = artifacts.readArtifactSync('ChainlinkOracleWrapper');
+const Fei = artifacts.readArtifactSync('Fei');
+const MockOracle = artifacts.readArtifactSync('MockOracle');
+const MockWeth = artifacts.readArtifactSync('MockWeth');
+const MockPair = artifacts.readArtifactSync('MockUniswapV2PairLiquidity');
+const MockChainlinkOracle = artifacts.readArtifactSync('MockChainlinkOracle');
 
 const e18 = '000000000000000000';
 

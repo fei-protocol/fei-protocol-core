@@ -21,7 +21,6 @@ async function deploy(deployAddress, addresses, logging = false) {
     feiAddress,
     aFeiAddress,
     aaveTribeIncentivesControllerAddress,
-    { from: deployAddress }
   );
   logging && console.log('Aave FEI PCV Deposit deployed to: ', aaveFeiPCVDeposit.address);
   

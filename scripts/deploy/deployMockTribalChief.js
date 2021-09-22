@@ -1,8 +1,8 @@
 /* eslint-disable no-undef */
-const Fei = artifacts.require('Fei');
-const TribalChief = artifacts.require('TribalChief');
-const MockCore = artifacts.require('MockCore');
-const MockConfigurableERC20 = artifacts.require('MockConfigurableERC20');
+const Fei = artifacts.readArtifactSync('Fei');
+const TribalChief = artifacts.readArtifactSync('TribalChief');
+const MockCore = artifacts.readArtifactSync('MockCore');
+const MockConfigurableERC20 = artifacts.readArtifactSync('MockConfigurableERC20');
 
 const mintAmount = '10000000000000000000000000000';
 const allocationPoints = 1000;

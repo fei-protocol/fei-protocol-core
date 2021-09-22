@@ -1,7 +1,7 @@
 const { web3 } = require('hardhat');
 
-const Timelock = artifacts.require('Timelock');
-const GovernorAlpha = artifacts.require('GovernorAlpha');
+const Timelock = artifacts.readArtifactSync('Timelock');
+const GovernorAlpha = artifacts.readArtifactSync('GovernorAlpha');
 
 async function deploy(deployAddress, addresses, logging = false) {
   const {

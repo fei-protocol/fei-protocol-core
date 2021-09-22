@@ -6,8 +6,8 @@ const {
   getCore,
 } = require('../../helpers');
   
-const ERC20Splitter = artifacts.require('ERC20Splitter');
-const Tribe = artifacts.require('Tribe');
+const ERC20Splitter = artifacts.readArtifactSync('ERC20Splitter');
+const Tribe = artifacts.readArtifactSync('Tribe');
 
 describe('ERC20Splitter', function () {
   let userAddress;

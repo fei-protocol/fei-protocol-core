@@ -8,8 +8,8 @@ const {
   getCore,
 } = require('../../helpers');
 
-const UniswapOracle = artifacts.require('UniswapOracle');
-const MockPairTrade = artifacts.require('MockUniswapV2PairTrade');
+const UniswapOracle = artifacts.readArtifactSync('UniswapOracle');
+const MockPairTrade = artifacts.readArtifactSync('MockUniswapV2PairTrade');
 
 describe.skip('UniswapOracle', function () {
   let userAddress;

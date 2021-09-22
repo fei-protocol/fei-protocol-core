@@ -1,24 +1,34 @@
-import hre, { artifacts, expect, web3 } from 'hardhat'
+import hre, { artifacts, ethers } from 'hardhat'
 import { time } from '@openzeppelin/test-helpers';
 import { TestEndtoEndCoordinator } from './setup';
-import { MainnetContractAddresses, MainnetContracts } from './setup/types';
+import { MainnetContractAddresses, MainnetContracts, NamedAddresses, NamedContracts } from './setup/types';
 import { forceEth } from './setup/utils'
-import { BN, expectApprox, expectEvent } from '../../test/helpers'
+import { expectApprox, expectEvent } from '../../test/helpers'
 import proposals from './proposals_config.json'
+import { BigNumber, Contract } from 'ethers';
+import chai from "chai";
+import { expect } from "chai";
+import CBN from "chai-bn";
+import { Named } from 'typechain';
+import { solidity } from 'ethereum-waffle';
 
-const uintMax = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
+before(() => {
+  chai.use(CBN(ethers.BigNumber));
+  chai.use(solidity)
+});
 
-const { toBN } = web3.utils;
+const uintMax = ethers.constants.MaxUint256
+const toBN = ethers.BigNumber.from
 
 // We will drip 4 million tribe per week
-const dripAmount = new BN(4000000).mul(new BN(10).pow(new BN(18)));
+const dripAmount = toBN(4000000).mul(toBN(10).pow(toBN(18)));
 // number of seconds between allowed drips
 // this is 1 week in seconds
 const dripFrequency = 604800;
 
 describe('e2e', function () {
-  let contracts: MainnetContracts;
-  let contractAddresses: MainnetContractAddresses;
+  let contracts: NamedContracts;
+  let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
 
@@ -27,46 +37,52 @@ describe('e2e', function () {
   before(async function () {
     // Setup test environment and get contracts
     const version = 1
-    deployAddress = (await web3.eth.getAccounts())[0];
+    deployAddress = (await ethers.getSigners())[0].address
+    if (!deployAddress) throw new Error(`No deploy address!`)
 
     const config = {
       logging: Boolean(process.env.LOGGING),
       deployAddress: deployAddress,
       version: version,
     }
+
     e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+
+    console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment())
+    console.log(`Environment loaded.`);
   })
 
   describe('PCV Equity Minter + LBP', async function() {
     it('mints appropriate amount and swaps', async function() {
       const { pcvEquityMinter, collateralizationOracleWrapper, staticPcvDepositWrapper, feiTribeLBPSwapper, tribe, tribeSplitter } = contracts;
 
-      await time.increase(await pcvEquityMinter.remainingTime());
+      await time.increase((await pcvEquityMinter.remainingTime()).toString())
 
-      const pcvStats = await collateralizationOracleWrapper.pcvStats();
+      const pcvStats = await collateralizationOracleWrapper.pcvStats()
+
       if (pcvStats[2] < 0) {
-        await staticPcvDepositWrapper.setBalance(pcvStats[0]);
+        await staticPcvDepositWrapper.setBalance(pcvStats[0])
       }
-      await collateralizationOracleWrapper.update();
+      await collateralizationOracleWrapper.update()
 
-      const mintAmount = await pcvEquityMinter.mintAmount();
+      const mintAmount = await pcvEquityMinter.mintAmount()
 
       const balancesBefore = await feiTribeLBPSwapper.getReserves();
 
-      const splitterBalanceBefore = await tribe.balanceOf(tribeSplitter.address);
+      const splitterBalanceBefore = await tribe.balanceOf(tribeSplitter.address)
 
-      await pcvEquityMinter.mint();
+      await pcvEquityMinter.mint()
 
-      const balancesAfter = await feiTribeLBPSwapper.getReserves();
+      const balancesAfter = await feiTribeLBPSwapper.getReserves()
     
       expectApprox(balancesBefore[0].add(mintAmount), balancesAfter[0]);
-      expect(await feiTribeLBPSwapper.swapEndTime()).to.be.bignumber.greaterThan(toBN(await time.latest()));
+      expect(await feiTribeLBPSwapper.swapEndTime()).to.be.greaterThan(toBN(await time.latest()));
       
       await time.increase(await pcvEquityMinter.duration());
       await pcvEquityMinter.mint();
 
-      expect(await tribe.balanceOf(tribeSplitter.address)).to.be.bignumber.greaterThan(splitterBalanceBefore);
+      expect(await tribe.balanceOf(tribeSplitter.address)).to.be.greaterThan(splitterBalanceBefore);
     });
   });
 
@@ -105,7 +121,7 @@ describe('e2e', function () {
       expect(await collateralizationOracleWrapper.isExceededDeviationThreshold()).to.be.false;
 
       // UpdateIfOutdated succeeds
-      await collateralizationOracleWrapper.updateIfOutdated({from: deployAddress});
+      await collateralizationOracleWrapper.updateIfOutdated();
 
       expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.false;
       
@@ -119,10 +135,10 @@ describe('e2e', function () {
 
       // Keeper is incentivized to update oracle
       await time.increase(await collateralizationOracleKeeper.MIN_MINT_FREQUENCY());
-      await collateralizationOracleKeeper.mint({from: deployAddress});
+      await collateralizationOracleKeeper.mint();
 
       const incentive = await collateralizationOracleKeeper.incentiveAmount();
-      expect(beforeBalance.add(incentive)).to.be.bignumber.equal(await fei.balanceOf(deployAddress));
+      expect(beforeBalance.add(incentive)).to.be.equal(await fei.balanceOf(deployAddress));
       
       expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.false;
     });
@@ -137,8 +153,8 @@ describe('e2e', function () {
       await tribeReserveStabilizer.mint(deployAddress, '100000');
 
       // Minting increases total supply and target balance
-      expect(balanceBefore.add(new BN('100000'))).to.be.bignumber.equal(await tribe.balanceOf(deployAddress));
-      expect(tribeSupply.add(new BN('100000'))).to.be.bignumber.equal(await tribe.totalSupply());
+      expect(balanceBefore.add(toBN('100000'))).to.be.equal(await tribe.balanceOf(deployAddress));
+      expect(tribeSupply.add(toBN('100000'))).to.be.equal(await tribe.totalSupply());
     });
 
     it('exchangeFei', async function () {
@@ -158,8 +174,8 @@ describe('e2e', function () {
       const userFeiBalanceAfter = toBN(await fei.balanceOf(deployAddress))
       const userTribeBalanceAfter = await tribe.balanceOf(deployAddress);
 
-      expect(userTribeBalanceAfter.sub(toBN(expectedAmountOut))).to.be.bignumber.equal(userTribeBalanceBefore);
-      expect(userFeiBalanceAfter).to.be.bignumber.equal(userFeiBalanceBefore.sub(feiTokensExchange));
+      expect(userTribeBalanceAfter.sub(toBN(expectedAmountOut))).to.be.equal(userTribeBalanceBefore);
+      expect(userFeiBalanceAfter.eq(userFeiBalanceBefore.sub(feiTokensExchange))).to.be.true;
 
       await staticPcvDepositWrapper.setBalance(tenPow18.mul(tenPow18).mul(toBN(10)));
       await collateralizationOracleWrapper.update();
@@ -185,9 +201,9 @@ describe('e2e', function () {
       const afterBalanceDripper = await tribe.balanceOf(erc20Dripper.address);
       const afterBalanceCore = await tribe.balanceOf(core.address);
 
-      expectApprox(beforeBalanceStabilizer.add(new BN('600000')), afterBalanceStabilizer);
-      expectApprox(beforeBalanceDripper.add(new BN('200000')), afterBalanceDripper);
-      expectApprox(beforeBalanceCore.add(new BN('200000')), afterBalanceCore);
+      expectApprox(beforeBalanceStabilizer.add(toBN('600000')), afterBalanceStabilizer);
+      expectApprox(beforeBalanceDripper.add(toBN('200000')), afterBalanceDripper);
+      expectApprox(beforeBalanceCore.add(toBN('200000')), afterBalanceCore);
     });
   });
 
@@ -217,11 +233,10 @@ describe('e2e', function () {
         borrowAmount,
         2,
         0,
-        deployAddress,
-        {from: deployAddress}
+        deployAddress
       );
 
-      expect(await fei.balanceOf(deployAddress)).to.be.bignumber.equal(balanceBefore.add(borrowAmount));
+      expect(await fei.balanceOf(deployAddress)).to.be.equal(balanceBefore.add(borrowAmount));
     
       const {
         variableDebtTokenAddress,
@@ -265,7 +280,7 @@ describe('e2e', function () {
 
         const feiBalanceAfter = await fei.balanceOf(deployAddress);
         const expectedFinalBalance = feiBalanceBefore.add(expected)
-        expect(feiBalanceAfter).to.be.bignumber.equal(expectedFinalBalance);
+        expect(feiBalanceAfter.eq(expectedFinalBalance)).to.be.true;
       })
   
       it('should transfer allocation from bonding curve to compound and aave', async function () {
@@ -274,13 +289,13 @@ describe('e2e', function () {
         await compoundEthPCVDeposit.deposit();
         const compoundETHBefore = await compoundEthPCVDeposit.balance()
 
-        if ((await web3.eth.getBalance(aaveEthPCVDeposit.address)).toString() !== '0') {
+        if ((await ethers.provider.getBalance(aaveEthPCVDeposit.address)).toString() !== '0') {
           await aaveEthPCVDeposit.deposit();
         }
         const aaveETHBefore = await aaveEthPCVDeposit.balance()
 
-        const curveEthBalanceBefore = toBN(await web3.eth.getBalance(bondingCurve.address));
-        expect(curveEthBalanceBefore).to.be.bignumber.greaterThan(toBN(0))
+        const curveEthBalanceBefore = toBN(await ethers.provider.getBalance(bondingCurve.address));
+        expect(curveEthBalanceBefore.gt(toBN(0))).to.be.true;
 
         const fei = contracts.fei;
         const callerFeiBalanceBefore = await fei.balanceOf(deployAddress)
@@ -296,8 +311,8 @@ describe('e2e', function () {
         const allocatedEth = await bondingCurve.balance()
         await bondingCurve.allocate()
 
-        const curveEthBalanceAfter = toBN(await web3.eth.getBalance(bondingCurve.address));
-        expect(curveEthBalanceAfter).to.be.bignumber.equal(curveEthBalanceBefore.sub(allocatedEth))
+        const curveEthBalanceAfter = toBN(await ethers.provider.getBalance(bondingCurve.address));
+        expect(curveEthBalanceAfter.eq(curveEthBalanceBefore.sub(allocatedEth))).to.be.true;
         
         const compoundETHAfter = await compoundEthPCVDeposit.balance()
         const aaveETHAfter = await aaveEthPCVDeposit.balance()
@@ -306,7 +321,7 @@ describe('e2e', function () {
 
         const feiIncentive = await bondingCurve.incentiveAmount();
         const callerFeiBalanceAfter = await fei.balanceOf(deployAddress);
-        expect(callerFeiBalanceAfter).to.be.bignumber.equal(callerFeiBalanceBefore.add(feiIncentive))
+        expect(callerFeiBalanceAfter.eq(callerFeiBalanceBefore.add(feiIncentive))).to.be.true
       })
     });
 
@@ -315,12 +330,25 @@ describe('e2e', function () {
         // Acquire DPI
         await hre.network.provider.request({
           method: 'hardhat_impersonateAccount',
-          params: [contractAddresses.indexCoopFusePoolDpiAddress]
+          params: [contractAddresses.indexCoopFusePoolDpi]
         });
         const dpiSeedAmount = tenPow18.mul(toBN(10))
 
-        await forceEth(contractAddresses.indexCoopFusePoolDpiAddress);
-        await contracts.dpi.transfer(deployAddress, dpiSeedAmount.mul(toBN(2)), {from: contractAddresses.indexCoopFusePoolDpiAddress});
+        await forceEth(contractAddresses.indexCoopFusePoolDpi);
+
+        await hre.network.provider.request({
+          method: 'hardhat_impersonateAccount',
+          params: [contractAddresses.indexCoopFusePoolDpi]
+        });
+
+        const indexCoopFusePoolDpiSigner = await ethers.getSigner(contractAddresses.indexCoopFusePoolDpi);
+
+        await contracts.dpi.connect(indexCoopFusePoolDpiSigner).transfer(deployAddress, dpiSeedAmount.mul(toBN(2)));
+
+        await hre.network.provider.request({
+          method: "hardhat_stopImpersonatingAccount",
+          params: [contractAddresses.indexCoopFusePoolDpi],
+        });
 
         // Seed bonding curve with dpi
         const bondingCurve = contracts.dpiBondingCurve
@@ -347,7 +375,7 @@ describe('e2e', function () {
 
         const feiBalanceAfter = await fei.balanceOf(deployAddress);
         const expectedFinalBalance = feiBalanceBefore.add(expected)
-        expect(feiBalanceAfter).to.be.bignumber.equal(expectedFinalBalance);
+        expect(feiBalanceAfter.eq((expectedFinalBalance))).to.be.true;
       })
 
       it('should transfer allocation from bonding curve to the uniswap deposit and Fuse', async function () {
@@ -382,12 +410,27 @@ describe('e2e', function () {
         // Acquire DAI
         await hre.network.provider.request({
           method: 'hardhat_impersonateAccount',
-          params: [contractAddresses.compoundDaiAddress]
+          params: [contractAddresses.compoundDai]
         });
+
         const daiSeedAmount = tenPow18.mul(toBN(1000000)); // 1M DAI
-        await forceEth(contractAddresses.compoundDaiAddress);
-        await contracts.dai.transfer(deployAddress, daiSeedAmount, {from: contractAddresses.compoundDaiAddress});
+
+        await forceEth(contractAddresses.compoundDai);
+
+        await hre.network.provider.request({
+          method: 'hardhat_impersonateAccount',
+          params: [contractAddresses.compoundDai]
+        });
+
+        const compoundDaiSigner = await ethers.getSigner(contractAddresses.compoundDai);
+
+        await contracts.dai.connect(compoundDaiSigner).transfer(deployAddress, daiSeedAmount);
       
+        await hre.network.provider.request({
+          method: "hardhat_stopImpersonatingAccount",
+          params: [contractAddresses.compoundDai]
+        });
+
         const bondingCurve = contracts.daiBondingCurve;
         // increase mint cap
         await bondingCurve.setMintCap(tenPow18.mul(tenPow18));
@@ -438,13 +481,21 @@ describe('e2e', function () {
         // Acquire RAI
         await hre.network.provider.request({
           method: 'hardhat_impersonateAccount',
-          params: [contractAddresses.reflexerStableAssetFusePoolRaiAddress]
+          params: [contractAddresses.reflexerStableAssetFusePoolRai]
         });
+
+        const reflexerStableAssetFusePoolRaiSigner = await ethers.getSigner(contractAddresses.reflexerStableAssetFusePoolRai);
+
         const raiSeedAmount = tenPow18.mul(toBN(10000))
 
-        await forceEth(contractAddresses.reflexerStableAssetFusePoolRaiAddress);
-        await contracts.rai.transfer(deployAddress, raiSeedAmount.mul(toBN(2)), {from: contractAddresses.reflexerStableAssetFusePoolRaiAddress});
+        await forceEth(contractAddresses.reflexerStableAssetFusePoolRai);
+        await contracts.rai.connect(reflexerStableAssetFusePoolRaiSigner).transfer(deployAddress, raiSeedAmount.mul(toBN(2)));
         
+        await hre.network.provider.request({
+          method: "hardhat_stopImpersonatingAccount",
+          params: [contractAddresses.reflexerStableAssetFusePoolRai]
+        })
+
         // Seed bonding curve with rai
         const bondingCurve = contracts.raiBondingCurve
         
@@ -471,7 +522,7 @@ describe('e2e', function () {
 
         const feiBalanceAfter = await fei.balanceOf(deployAddress);
         const expectedFinalBalance = feiBalanceBefore.add(expected)
-        expect(feiBalanceAfter).to.be.bignumber.equal(expectedFinalBalance);
+        expect(feiBalanceAfter.eq(expectedFinalBalance)).to.be.true;
       })
 
       it('should transfer allocation from bonding curve to Fuse', async function () {
@@ -492,7 +543,7 @@ describe('e2e', function () {
 
         // All RAI were allocated
         const curveBalanceAfter = await bondingCurve.balance();
-        expect(curveBalanceAfter).to.be.bignumber.equal(toBN(0))
+        expect(curveBalanceAfter.eq(toBN(0))).to.be.true;
 
         const fuseBalanceAfter = await fusePCVDeposit.balance();
         const aaveBalanceAfter = await aaveRaiPCVDeposit.balance();
@@ -523,7 +574,7 @@ describe('e2e', function () {
       await expectApprox(daiBalanceBefore, tenPow18.mul(toBN(1e6)), '1000');
       await contracts.curveMetapoolDeposit.deposit();
       const daiBalanceAfter = await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address);
-      expect(daiBalanceAfter).to.be.bignumber.equal('0');
+      expect(daiBalanceAfter.eq(toBN('0'))).to.be.true;
       //console.log('daiBalanceAfter', daiBalanceAfter / 1e18);
       const balanceAfter = await contracts.curveMetapoolDeposit.balance();
       const balanceChange = balanceAfter.sub(balanceBefore);
@@ -536,9 +587,10 @@ describe('e2e', function () {
   it('should be able to redeem Fei from stabiliser', async function () {
     const fei = contracts.fei;
     const reserveStabilizer = contracts.ethReserveStabilizer;
-    await web3.eth.sendTransaction({from: deployAddress, to: reserveStabilizer.address, value: tenPow18.mul(toBN(200))});
+    const signer = (await ethers.getSigners())[0]
+    await signer.sendTransaction({to: reserveStabilizer.address, value: tenPow18.mul(toBN(200))});
 
-    const contractEthBalanceBefore = toBN(await web3.eth.getBalance(reserveStabilizer.address))
+    const contractEthBalanceBefore = toBN(await ethers.provider.getBalance(reserveStabilizer.address))
     const userFeiBalanceBefore = toBN(await fei.balanceOf(deployAddress))
 
     const feiTokensExchange = toBN(40000000000000)
@@ -546,58 +598,92 @@ describe('e2e', function () {
     const expectedAmountOut = await reserveStabilizer.getAmountOut(feiTokensExchange)
     await reserveStabilizer.exchangeFei(feiTokensExchange)
 
-    const contractEthBalanceAfter = toBN(await web3.eth.getBalance(reserveStabilizer.address))
+    const contractEthBalanceAfter = toBN(await ethers.provider.getBalance(reserveStabilizer.address))
     const userFeiBalanceAfter = toBN(await fei.balanceOf(deployAddress))
 
-    expect(contractEthBalanceBefore.sub(toBN(expectedAmountOut))).to.be.bignumber.equal(contractEthBalanceAfter)
-    expect(userFeiBalanceAfter).to.be.bignumber.equal(userFeiBalanceBefore.sub(feiTokensExchange))
+    expect(contractEthBalanceBefore.sub(toBN(expectedAmountOut))).to.be.equal(contractEthBalanceAfter)
+    expect(userFeiBalanceAfter).to.be.equal(userFeiBalanceBefore.sub(feiTokensExchange))
   })
 
   describe('Optimistic Approval', async () => {
     beforeEach(async function () {
-      const { tribalChiefOptimisticMultisigAddress, timelockAddress } = contractAddresses;
+      const { tribalChiefOptimisticMultisig, timelock } = contractAddresses;
       const { tribalChiefOptimisticTimelock } = contracts;
 
       await hre.network.provider.request({
         method: 'hardhat_impersonateAccount',
-        params: [tribalChiefOptimisticMultisigAddress]
+        params: [tribalChiefOptimisticMultisig]
       });
 
       await hre.network.provider.request({
         method: 'hardhat_impersonateAccount',
-        params: [timelockAddress]
+        params: [timelock]
       });
 
-      await web3.eth.sendTransaction({from: deployAddress, to: tribalChiefOptimisticMultisigAddress, value: '40000000000000000'});
+      const signer = (await ethers.getSigners())[0]
 
+      await signer.sendTransaction({to: tribalChiefOptimisticMultisig, value: toBN('40000000000000000')});
     });
+
     it('governor can cancel a proposal', async () => {
-      const { tribalChiefOptimisticMultisigAddress, timelockAddress } = contractAddresses;
+      const { tribalChiefOptimisticMultisig, timelock } = contractAddresses;
       const { tribalChiefOptimisticTimelock } = contracts;
 
-      await tribalChiefOptimisticTimelock.queueTransaction(deployAddress, 0, 'sig()', '0x', '10000000000000000', {from: tribalChiefOptimisticMultisigAddress});
+      await hre.network.provider.request({
+        method: 'hardhat_impersonateAccount',
+        params: [tribalChiefOptimisticMultisig]
+      });
+
+      const tribalChiefOptimisticMultisigSigner = await ethers.getSigner(tribalChiefOptimisticMultisig);
+
+      await tribalChiefOptimisticTimelock.connect(tribalChiefOptimisticMultisigSigner).queueTransaction(deployAddress, 0, 'sig()', '0x', '10000000000000000');
+      
+      await hre.network.provider.request({
+        method: 'hardhat_stopImpersonatingAccount',
+        params: [tribalChiefOptimisticMultisig]
+      })
+      
       const hash = await tribalChiefOptimisticTimelock.getTxHash(deployAddress, 0, 'sig()', '0x', '10000000000000000');
       expect(await tribalChiefOptimisticTimelock.queuedTransactions(hash)).to.be.true;
 
-      await tribalChiefOptimisticTimelock.vetoTransactions([deployAddress], [0], ['sig()'], ['0x'], ['10000000000000000'], {from: timelockAddress});
+      await hre.network.provider.request({
+        method: 'hardhat_impersonateAccount',
+        params: [tribalChiefOptimisticMultisig]
+      });
+
+      const tribalChiefOptimisticTimelockSigner = await ethers.getSigner(tribalChiefOptimisticMultisig);
+
+      await tribalChiefOptimisticTimelock.connect(tribalChiefOptimisticTimelockSigner).vetoTransactions([deployAddress], [0], ['sig()'], ['0x'], ['10000000000000000']);
       
+      await hre.network.provider.request({
+        method: 'hardhat_stopImpersonatingAccount',
+        params: [tribalChiefOptimisticMultisig]
+      })
+
       expect(await tribalChiefOptimisticTimelock.queuedTransactions(hash)).to.be.false;
     });
 
     it('proposal can execute on tribalChief', async () => {
-      const { tribalChiefOptimisticMultisigAddress } = contractAddresses;
+      const { tribalChiefOptimisticMultisig } = contractAddresses;
       const { tribalChiefOptimisticTimelock, tribalChief } = contracts;
 
       const oldBlockReward = await tribalChief.tribePerBlock();
 
-      await tribalChiefOptimisticTimelock.queueTransaction(tribalChief.address, 0, 'updateBlockReward(uint256)', '0x0000000000000000000000000000000000000000000000000000000000000001', '100000000000', {from: tribalChiefOptimisticMultisigAddress});
+      await hre.network.provider.request({
+        method: 'hardhat_impersonateAccount',
+        params: [tribalChiefOptimisticMultisig]
+      });
+
+      const tribalChiefOptimisticMultisigSigner = await ethers.getSigner(tribalChiefOptimisticMultisig);
+
+      await tribalChiefOptimisticTimelock.connect(tribalChiefOptimisticMultisigSigner).queueTransaction(tribalChief.address, 0, 'updateBlockReward(uint256)', '0x0000000000000000000000000000000000000000000000000000000000000001', '100000000000');
       const hash = await tribalChiefOptimisticTimelock.getTxHash(tribalChief.address, 0, 'updateBlockReward(uint256)', '0x0000000000000000000000000000000000000000000000000000000000000001', '100000000000');
       expect(await tribalChiefOptimisticTimelock.queuedTransactions(hash)).to.be.true;
       
       await time.increaseTo('100000000000');
-      await tribalChiefOptimisticTimelock.executeTransaction(tribalChief.address, 0, 'updateBlockReward(uint256)', '0x0000000000000000000000000000000000000000000000000000000000000001', '100000000000', {from: tribalChiefOptimisticMultisigAddress});
+      await tribalChiefOptimisticTimelock.connect(tribalChiefOptimisticMultisigSigner).executeTransaction(tribalChief.address, 0, 'updateBlockReward(uint256)', '0x0000000000000000000000000000000000000000000000000000000000000001', '100000000000');
 
-      expect(await tribalChief.tribePerBlock()).to.be.bignumber.equal('1');
+      expect(await tribalChief.tribePerBlock()).to.be.equal('1');
       expect(await tribalChiefOptimisticTimelock.queuedTransactions(hash)).to.be.false;
     
       await tribalChief.updateBlockReward(oldBlockReward);
@@ -623,7 +709,7 @@ describe('e2e', function () {
       const pcvDepositBefore = await aaveEthPCVDeposit.balance()
       // Trigger drip
       await time.increase(await pcvDripper.remainingTime());
-      await pcvDripper.drip({from: deployAddress});
+      await pcvDripper.drip();
   
       // Check PCV deposit loses dripAmount ETH and stabilizer gets dripAmount ETH
       const pcvDepositAfter = toBN(await aaveEthPCVDeposit.balance())
@@ -652,7 +738,7 @@ describe('e2e', function () {
       expectApprox((await erc20CompoundPCVDeposit.balance()).sub(balanceBefore), amount, '100');
 
       await erc20CompoundPCVDeposit.withdraw(deployAddress, amount);
-      expect((await erc20CompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.lessThan(amount);
+      expect((await erc20CompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.lt(amount);
     })
 
     it('should be able to deposit and withdraw ETH',  async function () {
@@ -660,7 +746,8 @@ describe('e2e', function () {
       const amount = tenPow18.mul(toBN(200));
       await ethCompoundPCVDeposit.deposit();
 
-      await web3.eth.sendTransaction({from: deployAddress, to: ethCompoundPCVDeposit.address, value: amount });
+      const signer = (await ethers.getSigners())[0];
+      await signer.sendTransaction({to: ethCompoundPCVDeposit.address, value: amount });
 
       const balanceBefore = await ethCompoundPCVDeposit.balance();
 
@@ -668,7 +755,7 @@ describe('e2e', function () {
       expectApprox((await ethCompoundPCVDeposit.balance()).sub(balanceBefore), amount, '100');
 
       await ethCompoundPCVDeposit.withdraw(deployAddress, amount);
-      expect((await ethCompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.lessThan(amount);
+      expect((await ethCompoundPCVDeposit.balance()).sub(balanceBefore)).to.be.lt(amount);
     })
   })
 
@@ -683,7 +770,8 @@ describe('e2e', function () {
 
       }
 
-      await web3.eth.sendTransaction({from: deployAddress, to: aaveEthPCVDeposit.address, value: amount });
+      const signer = (await ethers.getSigners())[0];
+      await signer.sendTransaction({to: aaveEthPCVDeposit.address, value: amount });
 
       const balanceBefore = await aaveEthPCVDeposit.balance();
 
@@ -692,13 +780,14 @@ describe('e2e', function () {
 
       await aaveEthPCVDeposit.withdraw(deployAddress, amount);
 
-      expect((await aaveEthPCVDeposit.balance()).sub(balanceBefore)).to.be.bignumber.lessThan(amount);
+      expect((await aaveEthPCVDeposit.balance()).sub(balanceBefore)).to.be.lt(toBN(amount));
     })
 
     it('should be able to earn and claim stAAVE', async () => {
       const aaveEthPCVDeposit = contracts.aaveEthPCVDeposit;
       const amount = tenPow18.mul(toBN(200));
-      await web3.eth.sendTransaction({from: deployAddress, to: aaveEthPCVDeposit.address, value: amount });
+      const signer = (await ethers.getSigners())[0];
+      await signer.sendTransaction({to: aaveEthPCVDeposit.address, value: amount });
 
       const aaveBalanceBefore = await contracts.stAAVE.balanceOf(aaveEthPCVDeposit.address);
       await aaveEthPCVDeposit.deposit();
@@ -706,7 +795,7 @@ describe('e2e', function () {
       await aaveEthPCVDeposit.claimRewards();
       const aaveBalanceAfter = await contracts.stAAVE.balanceOf(aaveEthPCVDeposit.address);
 
-      expect(aaveBalanceAfter.sub(aaveBalanceBefore)).to.be.bignumber.greaterThan(toBN(0));
+      expect(aaveBalanceAfter.sub(aaveBalanceBefore).gt(toBN(0)));
     });
   })
 
@@ -778,27 +867,39 @@ describe('e2e', function () {
 
       const tribe = contracts.tribe
       const tribeMinter = await tribe.minter()
-      expect(tribeMinter).to.equal(contractAddresses.tribeReserveStabilizerAddress)
+      expect(tribeMinter).to.equal(contractAddresses.tribeReserveStabilizer)
     })
   })
 
   describe('TribalChief', async () => {
     async function testMultipleUsersPooling(
-      tribalChief,
-      lpToken,
-      userAddresses,
-      incrementAmount,
-      blocksToAdvance,
-      lockLength,
-      totalStaked,
-      pid,
+      tribalChief: Contract,
+      lpToken: Contract,
+      userAddresses: string | any[],
+      incrementAmount: string | any[] | BigNumber,
+      blocksToAdvance: number,
+      lockLength: string | number | any[],
+      totalStaked: string,
+      pid: number,
     ) {
       // if lock length isn't defined, it defaults to 0
       lockLength = lockLength === undefined ? 0 : lockLength;
 
       // approval loop
       for (let i = 0; i < userAddresses.length; i++) {
-        await lpToken.approve(tribalChief.address, uintMax, { from: userAddresses[i] });
+        await hre.network.provider.request({
+          method: 'hardhat_impersonateAccount',
+          params: [userAddresses[i]]
+        });
+      
+        const userSigner = await ethers.getSigner(userAddresses[i])
+
+        await lpToken.connect(userSigner).approve(tribalChief.address, uintMax);
+
+        await hre.network.provider.request({
+          method: 'hardhat_stopImpersonatingAccount',
+          params: [userAddresses[i]]
+        });
       }
 
       // deposit loop
@@ -812,31 +913,44 @@ describe('e2e', function () {
         }
 
         const currentIndex = await tribalChief.openUserDeposits(pid, userAddresses[i]);
+
+        await hre.network.provider.request({
+          method: 'hardhat_impersonateAccount',
+          params: [userAddresses[i]]
+        });
+
+        const userSigner = await ethers.getSigner(userAddresses[i])
+        
+        /*
         expectEvent(
-          await tribalChief.deposit(
+          await tribalChief.connect(userSigner).deposit(
             pid,
             totalStaked,
-            lockBlockAmount,
-            { from: userAddresses[i] },
+            lockBlockAmount
           ),
           'Deposit', {
             user: userAddresses[i],
-            pid: new BN(pid.toString()),
-            amount: new BN(totalStaked),
+            pid: toBN(pid.toString()),
+            amount: toBN(totalStaked),
             depositID: currentIndex,
           },
-        );
+        );*/
+
+        await hre.network.provider.request({
+          method: 'hardhat_stopImpersonatingAccount',
+          params: [userAddresses[i]]
+        });
       }
 
       const pendingBalances = [];
       for (let i = 0; i < userAddresses.length; i++) {
-        const balance = new BN(await tribalChief.pendingRewards(pid, userAddresses[i]));
+        const balance = toBN(await tribalChief.pendingRewards(pid, userAddresses[i]));
         pendingBalances.push(balance);
       }
 
       for (let i = 0; i < blocksToAdvance; i++) {
         for (let j = 0; j < pendingBalances.length; j++) {
-          pendingBalances[j] = new BN(await tribalChief.pendingRewards(pid, userAddresses[j]));
+          pendingBalances[j] = toBN(await tribalChief.pendingRewards(pid, userAddresses[j]));
         }
 
         await time.advanceBlock();
@@ -851,25 +965,37 @@ describe('e2e', function () {
           }
 
           await expectApprox(
-            new BN(await tribalChief.pendingRewards(pid, userAddresses[j])),
+            toBN(await tribalChief.pendingRewards(pid, userAddresses[j])),
             pendingBalances[j].add(userIncrementAmount),
           );
         }
       }
     }
 
-    async function unstakeAndHarvestAllPositions(userAddresses, pid, tribalChief, stakedToken) {
+    async function unstakeAndHarvestAllPositions(userAddresses: string | any[], pid: number, tribalChief: Contract, stakedToken: Contract) {
       for (let i = 0; i < userAddresses.length; i++) {
         const address = userAddresses[i];
         const startingStakedTokenBalance = await stakedToken.balanceOf(address);
         const { virtualAmount } = await tribalChief.userInfo(pid, address);
         const stakedTokens = await tribalChief.getTotalStakedInPool(pid, address);
 
-        await tribalChief.withdrawAllAndHarvest(pid, address, { from: address });
+        await hre.network.provider.request({
+          method: 'hardhat_impersonateAccount',
+          params: [address]
+        });
+
+        const userSigner = await ethers.getSigner(address)
+
+        await tribalChief.connect(userSigner).withdrawAllAndHarvest(pid, address);
+
+        await hre.network.provider.request({
+          method: 'hardhat_stopImpersonatingAccount',
+          params: [address]
+        });
 
         if (virtualAmount.toString() !== '0') {
           const afterStakedTokenBalance = await stakedToken.balanceOf(address);
-          expect(afterStakedTokenBalance).to.be.bignumber.equal(startingStakedTokenBalance.add(stakedTokens));
+          expect(afterStakedTokenBalance.eq(startingStakedTokenBalance.add(stakedTokens))).to.be.true;
         }
       }
     }
@@ -880,10 +1006,10 @@ describe('e2e', function () {
       const feiTribeLPTokenOwnerNumberFive = '0x2464E8F7809c05FCd77C54292c69187Cb66FE294';
       const totalStaked = '100000000000000000000';
 
-      let uniFeiTribe;
-      let tribalChief;
-      let tribePerBlock;
-      let tribe;
+      let uniFeiTribe: Contract
+      let tribalChief: Contract
+      let tribePerBlock: BigNumber
+      let tribe: Contract
 
       before(async function () {
         await hre.network.provider.request({
@@ -912,16 +1038,23 @@ describe('e2e', function () {
       afterEach(async function () {});
 
       it('find uni fei/tribe LP balances', async function () {
-        expect(await uniFeiTribe.balanceOf(feiTribeLPTokenOwner)).to.be.bignumber.gt(new BN(0));
-        expect(await uniFeiTribe.balanceOf(feiTribeLPTokenOwnerNumberFour)).to.be.bignumber.gt(new BN(0));
-        expect(await uniFeiTribe.balanceOf(feiTribeLPTokenOwnerNumberFive)).to.be.bignumber.gt(new BN(0));
+        expect(await uniFeiTribe.balanceOf(feiTribeLPTokenOwner)).to.be.gt(toBN(0));
+        expect(await uniFeiTribe.balanceOf(feiTribeLPTokenOwnerNumberFour)).to.be.gt(toBN(0));
+        expect(await uniFeiTribe.balanceOf(feiTribeLPTokenOwnerNumberFive)).to.be.gt(toBN(0));
       });
 
       it('stakes uniswap fei/tribe LP tokens', async function () {
         const pid = 0;
         
-        await uniFeiTribe.approve(tribalChief.address, totalStaked, { from: feiTribeLPTokenOwner });
-        await tribalChief.deposit(pid, totalStaked, 0, { from: feiTribeLPTokenOwner });
+        await hre.network.provider.request({
+          method: 'hardhat_impersonateAccount',
+          params: [feiTribeLPTokenOwner]
+        });
+
+        const feiTribeLPTokenOwnerSigner = await ethers.getSigner(feiTribeLPTokenOwner);
+
+        await uniFeiTribe.connect(feiTribeLPTokenOwnerSigner).approve(tribalChief.address, totalStaked);
+        await tribalChief.connect(feiTribeLPTokenOwnerSigner).deposit(pid, totalStaked, 0);
 
         const advanceBlockAmount = 3;
         for (let i = 0; i < advanceBlockAmount; i++) {
@@ -929,29 +1062,34 @@ describe('e2e', function () {
         }
 
         const balanceOfPool = await uniFeiTribe.balanceOf(tribalChief.address);
-        const perBlockReward = tribePerBlock.div(await tribalChief.numPools()).mul(new BN(totalStaked)).div(balanceOfPool);
+        const perBlockReward = tribePerBlock.div(await tribalChief.numPools()).mul(toBN(totalStaked)).div(balanceOfPool);
 
-        expectApprox(await tribalChief.pendingRewards(pid, feiTribeLPTokenOwner), perBlockReward * advanceBlockAmount);
+        expectApprox(await tribalChief.pendingRewards(pid, feiTribeLPTokenOwner), Number(perBlockReward.toString()) * advanceBlockAmount);
 
-        await tribalChief.harvest(pid, feiTribeLPTokenOwner, { from: feiTribeLPTokenOwner });
+        await tribalChief.connect(feiTribeLPTokenOwnerSigner).harvest(pid, feiTribeLPTokenOwner);
 
         // add on one to the advance block amount as we have
         // advanced one more block when calling the harvest function
-        expectApprox(await tribe.balanceOf(feiTribeLPTokenOwner), perBlockReward * (advanceBlockAmount + 1));
+        expectApprox(await tribe.balanceOf(feiTribeLPTokenOwner), Number(perBlockReward.toString()) * (advanceBlockAmount + 1));
         // now withdraw from deposit to clear the setup for the next test
         await unstakeAndHarvestAllPositions([feiTribeLPTokenOwner], pid, tribalChief, uniFeiTribe);
+
+        await hre.network.provider.request({
+          method: 'hardhat_stopImpersonatingAccount',
+          params: [feiTribeLPTokenOwner]
+        });
       });
 
       it('multiple users stake uniswap fei/tribe LP tokens', async function () {
         const userAddresses = [feiTribeLPTokenOwner, feiTribeLPTokenOwnerNumberFour]
         const pid = 0;
 
-        const balanceOfPool = await uniFeiTribe.balanceOf(tribalChief.address);
-        const staked = new BN(totalStaked);
+        const balanceOfPool: BigNumber = await uniFeiTribe.balanceOf(tribalChief.address);
+        const staked = ethers.BigNumber.from(totalStaked);
         const userPerBlockReward = tribePerBlock
           .div(await tribalChief.numPools())
           .mul(staked)
-          .div(balanceOfPool.add(staked.mul(new BN(userAddresses.length))));
+          .div(balanceOfPool.add(staked.mul(toBN(userAddresses.length))));
 
         await testMultipleUsersPooling(
           tribalChief,
@@ -968,23 +1106,35 @@ describe('e2e', function () {
           const pendingTribe = await tribalChief.pendingRewards(pid, userAddresses[i]);
 
           // assert that getTotalStakedInPool returns proper amount
-          const expectedTotalStaked = new BN(totalStaked);
+          const expectedTotalStaked = toBN(totalStaked);
           const poolStakedAmount = await tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
-          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+          expect(expectedTotalStaked).to.be.equal(poolStakedAmount);
           const startingUniLPTokenBalance = await uniFeiTribe.balanceOf(userAddresses[i])
           const startingTribeBalance = await tribe.balanceOf(userAddresses[i])
 
-          await tribalChief.withdrawAllAndHarvest(
-            pid, userAddresses[i], { from: userAddresses[i] },
+          await hre.network.provider.request({
+            method: 'hardhat_impersonateAccount',
+            params: [userAddresses[i]]
+          });
+
+          const userSigner = await ethers.getSigner(userAddresses[i]);
+
+          await tribalChief.connect(userSigner).withdrawAllAndHarvest(
+            pid, userAddresses[i]
           );
+          
+          await hre.network.provider.request({
+            method: 'hardhat_stopImpersonatingAccount',
+            params: [userAddresses[i]]
+          });
 
           expect(
             await uniFeiTribe.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.equal(new BN(totalStaked).add(startingUniLPTokenBalance));
+          ).to.be.equal(toBN(totalStaked).add(startingUniLPTokenBalance));
 
           expect(
             await tribe.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.gt(pendingTribe.add(startingTribeBalance));
+          ).to.be.gt(pendingTribe.add(startingTribeBalance));
         }
         // withdraw from deposit to clear the setup for the next test
         await unstakeAndHarvestAllPositions(userAddresses, pid, tribalChief, uniFeiTribe);
@@ -995,11 +1145,11 @@ describe('e2e', function () {
         const pid = 0;
 
         const balanceOfPool = await uniFeiTribe.balanceOf(tribalChief.address);
-        const staked = new BN(totalStaked);
+        const staked = toBN(totalStaked);
         const userPerBlockReward = tribePerBlock
           .div(await tribalChief.numPools())
           .mul(staked)
-          .div(balanceOfPool.add(staked.mul(new BN(userAddresses.length))));
+          .div(balanceOfPool.add(staked.mul(toBN(userAddresses.length))));
 
         await testMultipleUsersPooling(
           tribalChief,
@@ -1015,12 +1165,24 @@ describe('e2e', function () {
         const startingUniLPTokenBalance = await uniFeiTribe.balanceOf(feiTribeLPTokenOwnerNumberFive);
         const { virtualAmount } = await tribalChief.userInfo(pid, feiTribeLPTokenOwnerNumberFive);
 
-        await tribalChief.emergencyWithdraw(pid, feiTribeLPTokenOwnerNumberFive, { from: feiTribeLPTokenOwnerNumberFive });
+        await hre.network.provider.request({
+          method: 'hardhat_impersonateAccount',
+          params: [feiTribeLPTokenOwnerNumberFive]
+        });
+
+        const feiTribeLPTokenOwnerNumberFiveSigner = await ethers.getSigner(feiTribeLPTokenOwnerNumberFive);
+
+        await tribalChief.connect(feiTribeLPTokenOwnerNumberFiveSigner).emergencyWithdraw(pid, feiTribeLPTokenOwnerNumberFive);
+
+        await hre.network.provider.request({
+          method: 'hardhat_stopImpersonatingAccount',
+          params: [feiTribeLPTokenOwnerNumberFive]
+        });
 
         const endingUniLPTokenBalance = await uniFeiTribe.balanceOf(feiTribeLPTokenOwnerNumberFive);
-        expect(startingUniLPTokenBalance.add(virtualAmount)).to.be.bignumber.equal(endingUniLPTokenBalance);
+        expect(startingUniLPTokenBalance.add(virtualAmount)).to.be.equal(endingUniLPTokenBalance);
         const { rewardDebt } = await tribalChief.userInfo(pid, feiTribeLPTokenOwnerNumberFive);
-        expect(rewardDebt).to.be.bignumber.equal(new BN(0));
+        expect(rewardDebt).to.be.equal(toBN(0));
 
         // remove user 5 from userAddresses array
         userAddresses.pop();
@@ -1028,23 +1190,35 @@ describe('e2e', function () {
           const pendingTribe = await tribalChief.pendingRewards(pid, userAddresses[i]);
 
           // assert that getTotalStakedInPool returns proper amount
-          const expectedTotalStaked = new BN(totalStaked);
+          const expectedTotalStaked = toBN(totalStaked);
           const poolStakedAmount = await tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
-          expect(expectedTotalStaked).to.be.bignumber.equal(poolStakedAmount);
+          expect(expectedTotalStaked).to.be.equal(poolStakedAmount);
           const startingUniLPTokenBalance = await uniFeiTribe.balanceOf(userAddresses[i])
           const startingTribeBalance = await tribe.balanceOf(userAddresses[i])
 
-          await tribalChief.withdrawAllAndHarvest(
-            pid, userAddresses[i], { from: userAddresses[i] },
+          await hre.network.provider.request({
+            method: 'hardhat_impersonateAccount',
+            params: [userAddresses[i]]
+          });
+
+          const userSigner = await ethers.getSigner(userAddresses[i]);
+
+          await tribalChief.connect(userSigner).withdrawAllAndHarvest(
+            pid, userAddresses[i]
           );
+
+          await hre.network.provider.request({
+            method: 'hardhat_stopImpersonatingAccount',
+            params: [userAddresses[i]]
+          });
 
           expect(
             await uniFeiTribe.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.equal(new BN(totalStaked).add(startingUniLPTokenBalance));
+          ).to.be.equal(toBN(totalStaked).add(startingUniLPTokenBalance));
 
           expect(
             await tribe.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.gt(pendingTribe.add(startingTribeBalance));
+          ).to.be.gt(pendingTribe.add(startingTribeBalance));
         }
         // withdraw from deposit to clear the setup for the next test
         await unstakeAndHarvestAllPositions(userAddresses, pid, tribalChief, uniFeiTribe);
@@ -1053,19 +1227,19 @@ describe('e2e', function () {
   });
 
   describe('ERC20Dripper', async () => {
-    let tribalChief;
-    let tribePerBlock;
-    let tribe;
-    let dripper;
-    let timelockAddress;
-    let minter;
+    let tribalChief: Contract;
+    let tribePerBlock: any;
+    let tribe: Contract;
+    let dripper: Contract;
+    let timelockAddress: string;
+    let minter: string;
 
     before(async function () {
       dripper = contracts.erc20Dripper;
       tribalChief = contracts.tribalChief;
       tribePerBlock = await tribalChief.tribePerBlock();
       tribe = contracts.tribe;
-      timelockAddress = contractAddresses.timelockAddress;
+      timelockAddress = contractAddresses.timelock;
     });
 
     beforeEach(async function () {
@@ -1074,21 +1248,43 @@ describe('e2e', function () {
         method: 'hardhat_impersonateAccount',
         params: [minter],
       });
+
+      const minterSigner = await ethers.getSigner(minter);
+
       await forceEth(minter);
 
-      await tribe.mint(dripper.address, dripAmount.mul(new BN(11)), { from: minter });
+      await tribe.connect(minterSigner).mint(dripper.address, dripAmount.mul(toBN(11)));
+
+      await hre.network.provider.request({
+        method: 'hardhat_stopImpersonatingAccount',
+        params: [minter],
+      });
     });
 
     it('should be able to withdraw as PCV controller', async function () {
       const totalLockedTribe = await dripper.balance();
       const dripperStartingBalance = await tribe.balanceOf(dripper.address);
-      await dripper.withdraw(
-        tribalChief.address, totalLockedTribe, { from: timelockAddress }
+
+      await hre.network.provider.request({
+        method: 'hardhat_impersonateAccount',
+        params: [timelockAddress]
+      });
+
+      const timelockSigner = await ethers.getSigner(timelockAddress);
+
+      await dripper.connect(timelockSigner).withdraw(
+        tribalChief.address, totalLockedTribe
       );
+
+      await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [timelockAddress],
+      });
+
       const dripperEndingBalance = await tribe.balanceOf(dripper.address);
 
-      expect(dripperEndingBalance).to.be.bignumber.equal(new BN(0));
-      expect(dripperStartingBalance).to.be.bignumber.equal(totalLockedTribe);
+      expect(dripperEndingBalance.eq(toBN(0))).to.be.true;
+      expect(dripperStartingBalance.eq(totalLockedTribe)).to.be.true;
     });
 
 
@@ -1103,7 +1299,7 @@ describe('e2e', function () {
         const tribalChiefEndingBalance = await tribe.balanceOf(tribalChief.address);
 
         expect(await dripper.isTimeEnded()).to.be.false;
-        expect(tribalChiefStartingBalance.add(dripAmount)).to.be.bignumber.equal(tribalChiefEndingBalance);
+        expect(tribalChiefStartingBalance.add(dripAmount).eq(tribalChiefEndingBalance)).to.be.true;
       }
     });
   });

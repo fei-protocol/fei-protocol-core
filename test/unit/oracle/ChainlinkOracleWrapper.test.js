@@ -1,7 +1,7 @@
 const { expect, getCore } = require('../../helpers');
 
-const ChainlinkOracleWrapper = artifacts.require('ChainlinkOracleWrapper');
-const MockChainlinkOracle = artifacts.require('MockChainlinkOracle');
+const ChainlinkOracleWrapper = artifacts.readArtifactSync('ChainlinkOracleWrapper');
+const MockChainlinkOracle = artifacts.readArtifactSync('MockChainlinkOracle');
 
 const e8 = '00000000';
 const e18 = '000000000000000000';

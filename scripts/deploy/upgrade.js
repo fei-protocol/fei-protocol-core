@@ -1,13 +1,13 @@
 const { BN, ether } = require('@openzeppelin/test-helpers');
 const { constants: { ZERO_ADDRESS } } = require('@openzeppelin/test-helpers');
 
-const UniswapPCVDeposit = artifacts.require('UniswapPCVDeposit');
-const UniswapPCVController = artifacts.require('UniswapPCVController');
-const EthBondingCurve = artifacts.require('EthBondingCurve');
+const UniswapPCVDeposit = artifacts.readArtifactSync('UniswapPCVDeposit');
+const UniswapPCVController = artifacts.readArtifactSync('UniswapPCVController');
+const EthBondingCurve = artifacts.readArtifactSync('EthBondingCurve');
 
-const TribeReserveStabilizer = artifacts.require('TribeReserveStabilizer');
-const PCVDripController = artifacts.require('PCVDripController');
-const RatioPCVController = artifacts.require('RatioPCVController');
+const TribeReserveStabilizer = artifacts.readArtifactSync('TribeReserveStabilizer');
+const PCVDripController = artifacts.readArtifactSync('PCVDripController');
+const RatioPCVController = artifacts.readArtifactSync('RatioPCVController');
 
 async function deploy(deployAddress, addresses, logging = false) {
   const {

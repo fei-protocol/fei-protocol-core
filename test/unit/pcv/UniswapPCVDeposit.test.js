@@ -9,12 +9,12 @@ const {
   getCore,
 } = require('../../helpers');
 
-const UniswapPCVDeposit = artifacts.require('UniswapPCVDeposit');
-const Fei = artifacts.require('Fei');
-const MockWeth = artifacts.require('MockWeth');
-const MockOracle = artifacts.require('MockOracle');
-const MockPair = artifacts.require('MockUniswapV2PairLiquidity');
-const MockRouter = artifacts.require('MockRouter');
+const UniswapPCVDeposit = artifacts.readArtifactSync('UniswapPCVDeposit');
+const Fei = artifacts.readArtifactSync('Fei');
+const MockWeth = artifacts.readArtifactSync('MockWeth');
+const MockOracle = artifacts.readArtifactSync('MockOracle');
+const MockPair = artifacts.readArtifactSync('MockUniswapV2PairLiquidity');
+const MockRouter = artifacts.readArtifactSync('MockRouter');
 
 describe('EthUniswapPCVDeposit', function () {
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit

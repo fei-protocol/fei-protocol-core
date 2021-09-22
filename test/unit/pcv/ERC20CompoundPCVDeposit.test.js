@@ -6,9 +6,9 @@ const {
   getCore,
 } = require('../../helpers');
       
-const ERC20CompoundPCVDeposit = artifacts.require('ERC20CompoundPCVDeposit');
-const MockCToken = artifacts.require('MockCToken');
-const MockERC20 = artifacts.require('MockERC20');
+const ERC20CompoundPCVDeposit = artifacts.readArtifactSync('ERC20CompoundPCVDeposit');
+const MockCToken = artifacts.readArtifactSync('MockCToken');
+const MockERC20 = artifacts.readArtifactSync('MockERC20');
 
 describe('ERC20CompoundPCVDeposit', function () {
   let userAddress;

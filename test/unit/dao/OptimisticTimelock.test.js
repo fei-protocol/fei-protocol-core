@@ -7,7 +7,7 @@ const {
   expect,
 } = require('../../helpers');
   
-const OptimisticTimelock = artifacts.require('OptimisticTimelock');
+const OptimisticTimelock = artifacts.readArtifactSync('OptimisticTimelock');
   
 describe('TimelockedDelegator', function () {
   let userAddress;

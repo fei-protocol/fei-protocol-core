@@ -5,8 +5,8 @@ const {
   getCore
 } = require('../../helpers');
   
-const CompositeOracle = artifacts.require('CompositeOracle');
-const MockOracle = artifacts.require('MockOracle');
+const CompositeOracle = artifacts.readArtifactSync('CompositeOracle');
+const MockOracle = artifacts.readArtifactSync('MockOracle');
   
 describe('CompositeOracle', function () {
   let governorAddress;
