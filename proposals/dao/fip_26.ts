@@ -1,14 +1,15 @@
 import { expect } from "chai";
+import { ethers } from "hardhat";
 
-const e18 = '000000000000000000';
+const e18 = ethers.constants.WeiPerEther;
 
 const FEI_PER_USD = '9950';
 const BUFFER = '50';
-const DAI_CAP = `150000000${e18}`;
-const DAI_SCALE = `100000000${e18}`;
+const DAI_CAP = e18.mul(150_000_000).toString();
+const DAI_SCALE = e18.mul(100_000_000).toString();
 const DAI_DISCOUNT = '0';
-const DPI_CAP = `50000000${e18}`;
-const RAI_CAP = `20000000${e18}`;
+const DPI_CAP = e18.mul(50_000_000).toString();
+const RAI_CAP = e18.mul(20_000_000).toString();
 
 async function setup(addresses, oldContracts, contracts, logging) {}
 
