@@ -130,16 +130,9 @@ describe('PCVSwapperUniswap', function () {
           expect(await this.fei.balanceOf(userAddress)).to.be.equal('0');
           await this.fei.mint(this.swapper.address, `1${e18}`, {from: minterAddress});
           expect(await this.fei.balanceOf(this.swapper.address)).to.be.equal(`1${e18}`);
-          await expectEvent(
-            await this.swapper.withdraw(userAddress, `1${e18}`, {from: pcvControllerAddress}),
-            'WithdrawERC20',
-            {
-              _caller: pcvControllerAddress,
-              _to: userAddress,
-              _token: this.fei.address,
-              _amount: `1${e18}`
-            }
-          );
+          await await expect(
+            await this.swapper.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, `1${e18}`))
+            .to.emit(this.swapper, 'WithdrawERC20').withArgs(pcvControllerAddress, userAddress, this.fei.address, `1${e18}`);
           expect(await this.fei.balanceOf(this.swapper.address)).to.be.equal('0');
           expect(await this.fei.balanceOf(userAddress)).to.be.equal(`1${e18}`);
         });
@@ -178,11 +171,9 @@ describe('PCVSwapperUniswap', function () {
       describe('As Governor', function() {
         it('setReceivingAddress() emit UpdateReceivingAddress', async function() {
           expect(await this.swapper.tokenReceivingAddress()).to.equal(userAddress);
-          await expectEvent(
-            await this.swapper.setReceivingAddress(secondUserAddress, {from: governorAddress}),
-            'UpdateReceivingAddress',
-            { newTokenReceivingAddress: secondUserAddress }
-          );
+          await expect(
+            await this.swapper.connect(impersonatedSigners[governorAddress]).setReceivingAddress(secondUserAddress))
+            .to.emit(this.swapper, 'UpdateReceivingAddress').withArgs(secondUserAddress)
           expect(await this.swapper.tokenReceivingAddress()).to.equal(secondUserAddress);
         });
       });
@@ -201,15 +192,9 @@ describe('PCVSwapperUniswap', function () {
           await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.swapper.address, value: `10${e18}`});
           await this.swapper.wrapETH();
           const balanceBefore = toBN(await ethers.provider.getBalance(secondUserAddress));
-          await expectEvent(
-            await this.swapper.withdrawETH(secondUserAddress, `10${e18}`, {from: pcvControllerAddress}),
-            'WithdrawETH',
-            {
-              _caller: pcvControllerAddress,
-              _to: secondUserAddress,
-              _amount: `10${e18}`
-            }
-          );
+          await await expect(
+            await this.swapper.connect(impersonatedSigners[pcvControllerAddress]).withdrawETH(secondUserAddress, `10${e18}`))
+            .to.emit(this.swapper, 'WithdrawETH').withArgs(pcvControllerAddress, secondUserAddress, `10${e18}`);
           expect(await ethers.provider.getBalance(secondUserAddress)).to.be.equal(toBN(`10${e18}`).add(balanceBefore));
         });
         it('withdrawETH() revert if not enough WETH to unwrap', async function() {
@@ -228,16 +213,10 @@ describe('PCVSwapperUniswap', function () {
           expect(await this.fei.balanceOf(userAddress)).to.be.equal('0');
           await this.fei.mint(this.swapper.address, `1${e18}`, {from: minterAddress});
           expect(await this.fei.balanceOf(this.swapper.address)).to.be.equal(`1${e18}`);
-          await expectEvent(
-            await this.swapper.withdrawERC20(this.fei.address, userAddress, `1${e18}`, {from: pcvControllerAddress}),
-            'WithdrawERC20',
-            {
-              _caller: pcvControllerAddress,
-              _to: userAddress,
-              _token: this.fei.address,
-              _amount: `1${e18}`
-            }
-          );
+          await expect(
+            await this.swapper.withdrawERC20(this.fei.address, userAddress, `1${e18}`, {from: pcvControllerAddress}))
+            .to.emit(this.swapper, 'WithdrawERC20').withArgs(pcvControllerAddress, userAddress, this.fei.address, `1${e18}`);
+
           expect(await this.fei.balanceOf(this.swapper.address)).to.be.equal('0');
           expect(await this.fei.balanceOf(userAddress)).to.be.equal(`1${e18}`);
         });
@@ -262,17 +241,9 @@ describe('PCVSwapperUniswap', function () {
         await time.increase('1000');
         await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.swapper.address, value: `100${e18}`});
         await this.swapper.wrapETH({ from: pcvControllerAddress });
-        await expectEvent(
-          await this.swapper.swap({from: userAddress}),
-          'Swap',
-          {
-            _caller: userAddress,
-            _tokenSpent: this.weth.address,
-            _tokenReceived: this.fei.address,
-            _amountSpent: `100${e18}`,
-            _amountReceived: '248259939361825041733566' // not exactly 250000e18 because of slippage & fees
-          }
-        );
+        await await expect(
+          await this.swapper.connect(impersonatedSigners[userAddress]).swap())
+          .to.emit(this.swapper, 'Swap').withArgs(userAddress, this.weth.address, this.fei.address, `100${e18}`, '248259939361825041733566')
       });
     });
   });
@@ -292,13 +263,10 @@ describe('PCVSwapperUniswap', function () {
     });
     it('setMaximumSlippage() emit UpdateMaximumSlippage', async function() {
       expect(await this.swapper.maximumSlippageBasisPoints()).to.be.equal('300');
-      await expectEvent(
-        await this.swapper.setMaximumSlippage('500', { from: governorAddress }),
-        'UpdateMaximumSlippage',
-        {
-          newMaximumSlippage: '500'
-        }
-      );
+      await await expect(
+        await this.swapper.connect(impersonatedSigners[governorAddress]).setMaximumSlippage('500'))
+        .to.emit(this.swapper, 'UpdateMaximumSlippage').withArgs('500')
+
       expect(await this.swapper.maximumSlippageBasisPoints()).to.be.equal('500');
     });
     it('setMaxSpentPerSwap() revert if not governor', async function() {
@@ -315,13 +283,10 @@ describe('PCVSwapperUniswap', function () {
     });
     it('setMaxSpentPerSwap() emit UpdateMaxSpentPerSwap', async function() {
       expect(await this.swapper.maxSpentPerSwap()).to.be.equal(`100${e18}`);
-      await expectEvent(
-        await this.swapper.setMaxSpentPerSwap(`50${e18}`, { from: governorAddress }),
-        'UpdateMaxSpentPerSwap',
-        {
-          newMaxSpentPerSwap: `50${e18}`
-        }
-      );
+      await await expect(
+        await this.swapper.connect(impersonatedSigners[governorAddress]).setMaxSpentPerSwap(`50${e18}`))
+        .to.emit(this.swapper, 'UpdateMaxSpentPerSwap').withArgs(`50${e18}`);
+
       expect(await this.swapper.maxSpentPerSwap()).to.be.equal(`50${e18}`);
     });
     it('setSwapFrequency() revert if not governor', async function() {
@@ -332,14 +297,10 @@ describe('PCVSwapperUniswap', function () {
     });
     it('setSwapFrequency() emit UpdateSwapFrequency', async function() {
       expect(await this.swapper.duration()).to.be.equal('1000');
-      await expectEvent(
-        await this.swapper.setSwapFrequency('2000', { from: governorAddress }),
-        'DurationUpdate',
-        {
-          oldDuration: '1000',
-          newDuration: '2000'
-        }
-      );
+      await await expect(
+        await this.swapper.connect(impersonatedSigners[governorAddress]).setSwapFrequency('2000'))
+        .to.emit(this.swapper, 'DurationUpdate').withArgs('1000', '2000')
+
       expect(await this.swapper.duration()).to.be.equal('2000');
     });
   });

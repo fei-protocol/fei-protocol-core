@@ -74,7 +74,7 @@ describe('OracleRef', () => {
     describe('Set Backup Oracle', () => {
       it('Governor set succeeds', async function () {
         expect(await this.oracleRef.backupOracle()).to.be.equal(this.backupOracle.address);
-        /*expectEvent(*/
+        /*await expect(*/
           await this.oracleRef.connect(impersonatedSigners[governorAddress]).setBackupOracle(userAddress)
           /*'BackupOracleUpdate',
           {
@@ -93,7 +93,7 @@ describe('OracleRef', () => {
     describe('Set Do Invert', () => {
       it('Governor set succeeds', async function () {
         expect(await this.oracleRef.doInvert()).to.be.equal(true);
-        /*expectEvent(*/
+        /*await expect(*/
           await this.oracleRef.connect(impersonatedSigners[governorAddress]).setDoInvert(false)
           /*'InvertUpdate',
           {
@@ -112,7 +112,7 @@ describe('OracleRef', () => {
     describe('Set Decimals Normalizer', () => {
       it('Governor set succeeds', async function () {
         expect(await this.oracleRef.decimalsNormalizer()).to.be.equal(toBN('0'));
-        /*expectEvent(*/
+        /*await expect(*/
           await this.oracleRef.connect(impersonatedSigners[governorAddress]).setDecimalsNormalizer(4)
           /*'DecimalsNormalizerUpdate',
           {

@@ -95,13 +95,10 @@ describe('EthLidoPCVDeposit', function () {
     });
     it('should emit UpdateMaximumSlippage', async function() {
       expect(await this.pcvDeposit.maximumSlippageBasisPoints()).to.be.equal('100');
-      await expectEvent(
-        await this.pcvDeposit.setMaximumSlippage('500', { from: governorAddress }),
-        'UpdateMaximumSlippage',
-        {
-          maximumSlippageBasisPoints: '500'
-        }
-      );
+      await await expect(
+        await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaximumSlippage('500'))
+        .to.emit(this.pcvDeposit, 'UpdateMaximumSlippage').withArgs('500')
+
       expect(await this.pcvDeposit.maximumSlippageBasisPoints()).to.be.equal('500');
     });
   });
@@ -128,14 +125,10 @@ describe('EthLidoPCVDeposit', function () {
       it('should emit Deposit', async function() {
         await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: `1${e18}`});
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal('0');
-        await expectEvent(
-          await this.pcvDeposit.deposit(),
-          'Deposit',
-          {
-            _from: userAddress,
-            _amount: `1${e18}`
-          }
-        );
+        await expect(
+          await this.pcvDeposit.deposit())
+          .to.emit(this.pcvDeposit, 'Deposit').withArgs(userAddress, `1${e18}`)
+
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`1${e18}`);
       });
       it('should use Curve if slippage is negative', async function() {
@@ -160,15 +153,10 @@ describe('EthLidoPCVDeposit', function () {
         await this.steth.mintAt(this.pcvDeposit.address);
         const balanceBeforeWithdraw = toBN(await ethers.provider.getBalance(secondUserAddress));
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`100000${e18}`);
-        await expectEvent(
-          await this.pcvDeposit.withdraw(secondUserAddress, `1${e18}`, {from: pcvControllerAddress}),
-          'Withdrawal',
-          {
-            _caller: pcvControllerAddress,
-            _to: secondUserAddress,
-            _amount: `1${e18}`
-          }
-        );
+        await await expect(
+          await this.pcvDeposit.withdraw(secondUserAddress, `1${e18}`, {from: pcvControllerAddress}))
+          .to.emit(this.pcvDeposit, 'Withdrawal').withArgs(pcvControllerAddress, secondUserAddress, `1${e18}`)
+
         const balanceAfterWithdraw = toBN(await ethers.provider.getBalance(secondUserAddress));
         expect(balanceAfterWithdraw.sub(balanceBeforeWithdraw)).to.be.equal(`1${e18}`);
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`99999${e18}`);
@@ -201,16 +189,9 @@ describe('EthLidoPCVDeposit', function () {
         await this.steth.mintAt(this.pcvDeposit.address);
         expect(await this.steth.balanceOf(secondUserAddress)).to.be.equal('0');
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`100000${e18}`);
-        await expectEvent(
-          await this.pcvDeposit.withdrawERC20(this.steth.address, secondUserAddress, `1${e18}`, {from: pcvControllerAddress}),
-          'WithdrawERC20',
-          {
-            _caller: pcvControllerAddress,
-            _token: this.steth.address,
-            _to: secondUserAddress,
-            _amount: `1${e18}`
-          }
-        );
+        await expect(
+          await this.pcvDeposit.withdrawERC20(this.steth.address, secondUserAddress, `1${e18}`, {from: pcvControllerAddress}))
+          .to.emit(this.pcvDeposit, 'WithdrawERC20').withArgs(pcvControllerAddress, this.steth.address, secondUserAddress, `1${e18}`)
         expect(await this.steth.balanceOf(secondUserAddress)).to.be.equal(`1${e18}`);
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`99999${e18}`);
       });
@@ -227,15 +208,10 @@ describe('EthLidoPCVDeposit', function () {
     it('should emit WithdrawETH', async function() {
       const balanceBeforeWithdraw = toBN(await ethers.provider.getBalance(secondUserAddress));
       await (await ethers.getSigner(userAddress)).sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: `1${e18}`});
-      await expectEvent(
-        await this.pcvDeposit.withdrawETH(secondUserAddress, `1${e18}`, {from: pcvControllerAddress}),
-        'WithdrawETH',
-        {
-          _caller: pcvControllerAddress,
-          _to: secondUserAddress,
-          _amount: `1${e18}`
-        }
-      );
+      await await expect(
+        await this.pcvDeposit.connect(impersonatedSigners[pcvControllerAddress]).withdrawETH(secondUserAddress, `1${e18}`))
+        .to.emit(this.pcvDeposit, 'WithdrawETH').withArgs(pcvControllerAddress, secondUserAddress, `1${e18}`)
+
       const balanceAfterWithdraw = toBN(await ethers.provider.getBalance(secondUserAddress));
       expect(balanceAfterWithdraw.sub(balanceBeforeWithdraw)).to.be.equal(`1${e18}`);
     });

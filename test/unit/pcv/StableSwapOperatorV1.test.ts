@@ -96,11 +96,9 @@ describe('StableSwapOperatorV1', function () {
       await this.dai.mint(this.deposit.address, `50000000${e18}`);
       await this.fei.mint(this.deposit.address, `51000000${e18}`, {from: minterAddress});
       const lpBalanceBefore = await this.mockMetapool.balanceOf(this.deposit.address);
-      expectEvent(
-        await this.deposit.deposit({from: pcvControllerAddress}),
-        'Deposit',
-        { _from: pcvControllerAddress, _amount: '49992501124831275308703694' }
-      );
+      await expect(
+        await this.deposit.connect(impersonatedSigners[pcvControllerAddress]).deposit())
+        .to.emit(this.deposit, 'Deposit').withArgs('49992501124831275308703694')
       const lpBalanceAfter = await this.mockMetapool.balanceOf(this.deposit.address);
       expect(lpBalanceAfter.sub(lpBalanceBefore)).to.be.equal(`100000000${e18}`);
     });
@@ -174,11 +172,10 @@ describe('StableSwapOperatorV1', function () {
     });
     it('should emit Withdrawal event on success', async function() {
       expect(await this.dai.balanceOf(userAddress)).to.be.equal('0');
-      expectEvent(
-        await this.deposit.withdraw(userAddress, `1000${e18}`, {from: pcvControllerAddress}),
-        'Withdrawal',
-        { _caller: pcvControllerAddress, _to: userAddress, _amount: `1000${e18}` }
-      );
+      await expect(
+        await this.deposit.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, `1000${e18}`))
+        .to.emit(this.deposit, 'Withdrawal').withArgs(pcvControllerAddress, userAddress, `1000${e18}`);
+
       expect(await this.dai.balanceOf(userAddress)).to.be.equal(`1000${e18}`);
     });
     it('should revert if not PCVController', async function() {

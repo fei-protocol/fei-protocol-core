@@ -64,7 +64,7 @@ describe('Fei', function () {
 
     describe('from minter', function () {
       beforeEach(async function () {
-        /*expectEvent(*/
+        /*await expect(*/
           await (await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 100)).wait()
           /*'Minting',
           {
@@ -97,7 +97,7 @@ describe('Fei', function () {
     describe('from burner to user with sufficient balance', function () {
       beforeEach(async function () {
         await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 200);
-        /*expectEvent(*/
+        /*await expect(*/
           await this.fei.connect(impersonatedSigners[burnerAddress]).burnFrom(userAddress, 100)
           /*'Burning',
           {
@@ -125,7 +125,7 @@ describe('Fei', function () {
       this.incentivizedContract = await (await ethers.getContractFactory('MockIncentivized')).deploy(this.core.address);
       this.incentivizedAddress = this.incentivizedContract.address;
       await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.incentive.address);
-      /*expectEvent(*/
+      /*await expect(*/
       await (await (this.fei.connect(impersonatedSigners[governorAddress])).setIncentiveContract(this.incentivizedAddress, this.incentive.address)).wait()
         /*'IncentiveContractUpdate',
         {

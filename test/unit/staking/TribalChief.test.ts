@@ -55,20 +55,12 @@ async function testMultipleUsersPooling(
     }
 
     const currentIndex = await tribalChief.openUserDeposits(pid, userAddresses[i]);
-    expectEvent(
-      await tribalChief.deposit(
+    await expect(
+      await tribalChief.connect(impersonatedSigners[userAddresses[i]]).deposit(
         pid,
         totalStaked,
-        lockBlockAmount,
-        { from: userAddresses[i] },
-      ),
-      'Deposit', {
-        user: userAddresses[i],
-        pid: toBN(pid.toString()),
-        amount: toBN(totalStaked),
-        depositID: currentIndex,
-      },
-    );
+        lockBlockAmount
+      )).to.emit(tribalChief, 'Deposit').withArgs(userAddresses[i], toBN(pid.toString()), toBN(totalStaked), currentIndex)
   }
 
   const pendingBalances = [];
@@ -354,14 +346,9 @@ describe('TribalChief', () => {
         ).to.be.equal(toBN(allocationPoints));
         expect((await this.tribalChief.poolInfo(pid)).unlocked).to.be.false;
 
-        expectEvent(
-          await this.tribalChief.connect(impersonatedSigners[governorAddress]).resetRewards(pid),
-          'PoolLocked',
-          {
-            locked: false,
-            pid: toBN(pid),
-          },
-        );
+        await expect(
+          await this.tribalChief.connect(impersonatedSigners[governorAddress]).resetRewards(pid))
+          .to.emit(this.tribalChief, 'PoolLocked').withArgs(false, toBN(pid))
 
         // assert that pool is unlocked, total and pool allocation points are now 0
         expect((await this.tribalChief.poolInfo(pid)).unlocked).to.be.true;
@@ -438,13 +425,9 @@ describe('TribalChief', () => {
 
         const withdrawAmount = await this.tribe.balanceOf(this.tribalChief.address);
         expect(withdrawAmount).to.be.equal(mintAmount);
-        expectEvent(
-          await this.tribalChief.governorWithdrawTribe(withdrawAmount, { from: governorAddress }),
-          'TribeWithdraw',
-          {
-            amount: withdrawAmount,
-          },
-        );
+        await expect(
+          await this.tribalChief.connec(impersonatedSigners[governorAddress]).governorWithdrawTribe(withdrawAmount))
+          .to.emit(this.tribalChief, 'TribeWithraw').withArgs(withdrawAmount)
 
         coreBalance = await this.tribe.balanceOf(this.core.address);
         expect(coreBalance).to.be.equal(mintAmount);
@@ -473,12 +456,9 @@ describe('TribalChief', () => {
         expect(await this.tribalChief.tribePerBlock()).to.be.equal(toBN('100000000000000000000'));
         for (let i = 0; i < newBlockRewards.length; i++) {
         // update the block reward
-          expectEvent(
-            await this.tribalChief.updateBlockReward(newBlockRewards[i], { from: governorAddress }),
-            'NewTribePerBlock', {
-              amount: toBN(newBlockRewards[i].toString()),
-            },
-          );
+          await expect(
+            await this.tribalChief.connect(impersonatedSigners[governorAddress]).updateBlockReward(newBlockRewards[i]))
+            .to.emit(this.tribalChief, 'NewTribePerBlock').withArgs(toBN(newBlockRewards[i].toString()));
 
           // assert this new block reward is in place
           expect(
@@ -489,25 +469,18 @@ describe('TribalChief', () => {
 
       it('governor should be able to pause the TribalChief', async function () {
         expect(await this.tribalChief.paused()).to.be.false;
-        expectEvent(
-          await this.tribalChief.pause({ from: governorAddress }),
-          'Paused',
-          {
-            account: governorAddress,
-          },
-        );
+        await expect(
+          await this.tribalChief.connect(impersonatedSigners[governorAddress]).pause())
+          .to.emit(this.tribalChief, 'Paused').withArgs(governorAddress)
+
         expect(await this.tribalChief.paused()).to.be.true;
       });
 
       it('user should not be able to deposit when the TribalChief is paused', async function () {
         expect(await this.tribalChief.paused()).to.be.false;
-        expectEvent(
-          await this.tribalChief.pause({ from: governorAddress }),
-          'Paused',
-          {
-            account: governorAddress,
-          },
-        );
+        await expect(
+          await this.tribalChief.connect(impersonatedSigners[governorAddress]).pause())
+          .to.emit(this.tribalChief, 'Paused').withArgs(governorAddress);
         expect(await this.tribalChief.paused()).to.be.true;
 
         await this.LPToken.approve(this.tribalChief.address, totalStaked);
@@ -684,15 +657,9 @@ describe('TribalChief', () => {
 
       it('should be able to deposit multiple times and withdrawAllAndHarvest', async function () {
         await this.LPToken.approve(this.tribalChief.address, totalStaked);
-        expectEvent(
-          await this.tribalChief.deposit(pid, totalStaked, 100, { from: userAddress }),
-          'Deposit', {
-            user: userAddress,
-            pid: toBN(pid.toString()),
-            amount: toBN(totalStaked),
-            depositID: toBN('0'),
-          },
-        );
+        await expect(
+          await this.tribalChief.connect(impersonatedSigners[userAddress]).deposit(pid, totalStaked, 100))
+          .to.emit(this.tribalChief, 'Deposit').withArgs(userAddress, toBN(pid.toString()), toBN(totalStaked), toBN('0'));
 
         for (let i = 0; i < 5; i++) {
           await time.advanceBlock();
@@ -710,15 +677,9 @@ describe('TribalChief', () => {
 
         await this.LPToken.mint(userAddress, totalStaked);
         await this.LPToken.approve(this.tribalChief.address, totalStaked);
-        expectEvent(
-          await this.tribalChief.deposit(pid, totalStaked, 100, { from: userAddress }),
-          'Deposit', {
-            user: userAddress,
-            pid: toBN(pid.toString()),
-            amount: toBN(totalStaked),
-            depositID: toBN('1'),
-          },
-        );
+        await expect(
+          await this.tribalChief.connect(impersonatedSigners[userAddress]).deposit(pid, totalStaked, 100))
+          .to.emit(this.tribalChief, 'Deposit').withArgs(userAddress, toBN(pid.toString()), toBN(totalStaked), toBN('1'));
       });
     });
 
@@ -729,15 +690,10 @@ describe('TribalChief', () => {
         ).to.be.equal(toBN(totalStaked));
 
         await this.LPToken.approve(this.tribalChief.address, totalStaked);
-        expectEvent(
-          await this.tribalChief.deposit(pid, totalStaked, 0, { from: userAddress }),
-          'Deposit', {
-            user: userAddress,
-            pid: toBN(pid.toString()),
-            amount: toBN(totalStaked),
-            depositID: toBN('0'),
-          },
-        );
+        await expect(
+          await this.tribalChief.connect(impersonatedSigners[userAddress]).deposit(pid, totalStaked, 0))
+          .to.emit(this.tribalChief, 'Deposit').withArgs(userAddress, toBN(pid.toString()), toBN(totalStaked), toBN('0'));
+
         expect(await this.LPToken.balanceOf(userAddress)).to.be.equal(toBN('0'));
 
         // grab the index by getting the amount of deposit they have and subtracting 1
@@ -2550,15 +2506,10 @@ describe('TribalChief', () => {
       );
 
       expect(await this.tribalChief.openUserDeposits(pid, userAddress)).to.be.equal(toBN('1'));
-      expectEvent(
-        await this.tribalChief.emergencyWithdraw(pid, userAddress, { from: userAddress }),
-        'EmergencyWithdraw', {
-          user: userAddress,
-          pid: toBN(pid.toString()),
-          amount: toBN(totalStaked),
-          to: userAddress,
-        },
-      );
+      await expect(
+        await this.tribalChief.emergencyWithdraw(pid, userAddress, { from: userAddress }))
+        .to.emit(this.tribalChief, 'EmergencyWithdraw').withArgs(userAddress, toBN(pid.toString()), toBN(totalStaked), userAddress)
+
       // ensure that the reward debt got zero'd out
       // virtual amount should go to 0
       const { rewardDebt, virtualAmount } = await this.tribalChief.userInfo(pid, userAddress);

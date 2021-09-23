@@ -54,7 +54,7 @@ describe('ERC20Splitter', function () {
   it('Unpaused allocates TRIBE successfully', async function() {
     expect(await this.tribe.balanceOf(this.erc20Splitter.address)).to.be.equal('100000');
 
-    /*expectEvent(*/await this.erc20Splitter.connect(impersonatedSigners[userAddress]).allocate()/*, 'Allocate', {
+    /*await expect(*/await this.erc20Splitter.connect(impersonatedSigners[userAddress]).allocate()/*, 'Allocate', {
       caller: userAddress,
       amount: '100000'
     }); */

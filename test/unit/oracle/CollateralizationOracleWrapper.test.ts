@@ -107,15 +107,9 @@ describe('CollateralizationOracleWrapper', function () {
 
   describe('setCollateralizationOracle()', function() {
     it('should emit CollateralizationOracleUpdate', async function() {
-      expectEvent(
-        await this.oracleWrapper.setCollateralizationOracle(this.oracle2.address, { from: governorAddress }),
-        'CollateralizationOracleUpdate',
-        {
-          from: governorAddress,
-          oldOracleAddress: this.oracle.address,
-          newOracleAddress: this.oracle2.address
-        }
-      );
+      await expect(
+        await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setCollateralizationOracle(this.oracle2.address))
+        .to.emit(this.oracleWrapper, 'CollateralizationOracleUpdate').withArgs(governorAddress, this.oracle.address, this.oracle2.address);
     });
     it('should revert if not governor', async function() {
       await expectRevert(
@@ -133,15 +127,10 @@ describe('CollateralizationOracleWrapper', function () {
 
   describe('setDeviationThresholdBasisPoints()', function() {
     it('should emit DeviationThresholdUpdate', async function() {
-      expectEvent(
-        await this.oracleWrapper.setDeviationThresholdBasisPoints('300', { from: governorAddress }),
-        'DeviationThresholdUpdate',
-        {
-          from: governorAddress,
-          oldThreshold: '500',
-          newThreshold: '300'
-        }
-      );
+      await expect(
+        await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setDeviationThresholdBasisPoints('300'))
+        .to.emit(this.oracleWrapper, 'DeviationThresholdUpdate').withArgs(governorAddress, '500', '300');
+
     });
     it('should revert if not governor', async function() {
       await expectRevert(
@@ -163,14 +152,9 @@ describe('CollateralizationOracleWrapper', function () {
 
   describe('setValidityDuration()', function() {
     it('should emit DurationUpdate', async function() {
-      expectEvent(
-        await this.oracleWrapper.setValidityDuration('3600', { from: governorAddress }),
-        'DurationUpdate',
-        {
-          oldDuration: '600',
-          newDuration: '3600'
-        }
-      );
+      await expect(
+        await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setValidityDuration('3600'))
+        .to.emit(this.oracleWrapper, 'DurationUpdate').withArgs('600', '3600');
     });
     it('should revert if not governor', async function() {
       await expectRevert(

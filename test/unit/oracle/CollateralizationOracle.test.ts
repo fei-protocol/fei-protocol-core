@@ -218,15 +218,9 @@ describe('CollateralizationOracle', function () {
   describe('addDeposit()', function() {
     it('should emit DepositAdd', async function() {
       await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
-      expectEvent(
-        await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address),
-        'DepositAdd',
-        {
-          from: governorAddress,
-          deposit: this.deposit1.address,
-          token: this.token1.address
-        }
-      );
+      await expect(
+        await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address))
+        .to.emit(this.oracle, 'DepositAdd').withArgs(governorAddress, this.deposit1.address, this.token1.address);
     });
     it('should update maps & array properties', async function() {
       await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
@@ -269,14 +263,10 @@ describe('CollateralizationOracle', function () {
     it('should emit DepositRemove', async function() {
       await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
       await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
-      expectEvent(
-        await this.oracle.connect(impersonatedSigners[governorAddress]).removeDeposit(this.deposit1.address),
-        'DepositRemove',
-        {
-          from: governorAddress,
-          deposit: this.deposit1.address
-        }
-      );
+      await expect(
+        await this.oracle.connect(impersonatedSigners[governorAddress]).removeDeposit(this.deposit1.address))
+        .to.emit(this.oracle, 'DepositRemove').withArgs(governorAddress, this.deposit1.address)
+
     });
     it('should update maps & array properties', async function() {
       // initial situation : 1 deposit
@@ -326,25 +316,16 @@ describe('CollateralizationOracle', function () {
       await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
     });
     it('should emit DepositRemove', async function() {
-      expectEvent(
-        await this.oracle.connect(impersonatedSigners[governorAddress]).swapDeposit(this.deposit1.address, this.deposit1bis.address),
-        'DepositRemove',
-        {
-          from: governorAddress,
-          deposit: this.deposit1.address
-        }
-      );
+      await expect(
+        await this.oracle.connect(impersonatedSigners[governorAddress]).swapDeposit(this.deposit1.address, this.deposit1bis.address))
+        .to.emit(this.oracle, 'DepositRemove').withArgs(governorAddress, this.deposit1.address)
+
     });
     it('should emit DepositAdd', async function() {
-      expectEvent(
-        await this.oracle.connect(impersonatedSigners[governorAddress]).swapDeposit(this.deposit1.address, this.deposit1bis.address),
-        'DepositAdd',
-        {
-          from: governorAddress,
-          deposit: this.deposit1bis.address,
-          token: this.token1.address
-        }
-      );
+      await expect(
+        await this.oracle.connect(impersonatedSigners[governorAddress]).swapDeposit(this.deposit1.address, this.deposit1bis.address))
+        .to.emit(this.oracle, 'DepositAdd').withArgs(governorAddress, this.deposit1bis.address, this.token1.address)
+
     });
     it('should update maps & array properties', async function() {
       // initial situation : 1 deposit
@@ -415,16 +396,10 @@ describe('CollateralizationOracle', function () {
 
   describe('setOracle()', function() {
     it('should emit OracleUpdate', async function() {
-      expectEvent(
-        await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address),
-        'OracleUpdate',
-        {
-          from: governorAddress,
-          token: this.token1.address,
-          oldOracle: ZERO_ADDRESS,
-          newOracle: this.oracle1.address
-        }
-      );
+      await expect(
+        await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address))
+        .to.emit(this.oracle, 'OracleUpdate').withArgs(governorAddress, this.token1.address, ZERO_ADDRESS, this.oracle1.address)
+
     });
     it('should update maps & array properties', async function() {
       await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);

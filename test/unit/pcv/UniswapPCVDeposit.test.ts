@@ -318,15 +318,9 @@ describe('EthUniswapPCVDeposit', function () {
 
       describe('Partial', function() {
         beforeEach(async function() {
-          expectEvent(
-            await this.pcvDeposit.withdraw(beneficiaryAddress1, '50000', {from: pcvControllerAddress}),
-            'Withdrawal',
-            {
-              _caller: pcvControllerAddress,
-              _to: beneficiaryAddress1,
-              _amount: '50000'
-            }
-          );
+          await expect(
+            await this.pcvDeposit.connect(impersonatedSigners[pcvControllerAddress]).withdraw(beneficiaryAddress1, '50000'))
+            .to.emit(this.pcvDeposit, 'Withdrawal').withArgs(pcvControllerAddress, beneficiaryAddress1, '50000')
         });
 
         it('user balance updates', async function() {
@@ -381,14 +375,10 @@ describe('EthUniswapPCVDeposit', function () {
   describe('Access', function() {
     describe('setMaxBasisPointsFromPegLP', function() {
       it('Governor set succeeds', async function() {
-        expectEvent(
-          await this.pcvDeposit.setMaxBasisPointsFromPegLP(300, {from: governorAddress}), 
-          'MaxBasisPointsFromPegLPUpdate', 
-          { 
-            oldMaxBasisPointsFromPegLP: '100',
-            newMaxBasisPointsFromPegLP: '300'
-          }
-        );
+        await expect(
+          await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxBasisPointsFromPegLP(300))
+          .to.emit(this.pcvDeposit, 'MaxBasisPointsFromPegLPUpdate').withArgs('100', '300')
+
         expect(await this.pcvDeposit.maxBasisPointsFromPegLP()).to.be.equal('300');
       });
 
@@ -404,16 +394,10 @@ describe('EthUniswapPCVDeposit', function () {
     describe('withdrawERC20', function() {
       it('PCVController succeeds', async function() {
         this.weth.mint(this.pcvDeposit.address, toBN('1000'));
-        expectEvent(
-          await this.pcvDeposit.withdrawERC20(this.weth.address, userAddress, toBN('1000'), {from: pcvControllerAddress}), 
-          'WithdrawERC20', 
-          { 
-            _caller: pcvControllerAddress,
-            _token: this.weth.address,
-            _to: userAddress,
-            _amount: '1000'
-          }
-        );
+        await expect(
+          await this.pcvDeposit.connect(impersonatedSigners[pcvControllerAddress]).withdrawERC20(this.weth.address, userAddress, toBN('1000')))
+          .to.emit(this.pcvDeposit, 'WithdrawERC20').withArgs(pcvControllerAddress, this.weth.address, userAddress, '1000')
+
         expect(await this.weth.balanceOf(userAddress)).to.be.equal('1000');
       });
 
@@ -425,14 +409,10 @@ describe('EthUniswapPCVDeposit', function () {
     describe('Pair', function() {
       it('Governor set succeeds', async function() {
         const pair2 = await (await ethers.getContractFactory('MockPair')).deploy(this.weth.address, this.fei.address);
-        expectEvent(
-          await this.pcvDeposit.setPair(pair2.address, {from: governorAddress}), 
-          'PairUpdate', 
-          {
-            oldPair: this.pair.address,
-            newPair: pair2.address
-          }
-        );
+        await expect(
+          await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setPair(pair2.address))
+          .to.emit(this.pcvDeposit, 'PairUpdate').withArgs(this.pair.address, pair2.address) 
+
         expect(await this.pcvDeposit.pair()).to.be.equal(pair2.address);
       });
 

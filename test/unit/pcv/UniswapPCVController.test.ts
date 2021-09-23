@@ -1,4 +1,4 @@
-import { expectEvent, expectRevert, balance, time, getAddresses, getCore } from '../../helpers';
+import { expectRevert, balance, time, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat'
 import { Signer } from 'ethers'
@@ -107,11 +107,9 @@ describe('UniswapPCVController', function () {
         await this.token.mint(this.pcvDeposit.address, 100000);
         await this.token.mint(this.pair.address, 100000);
         await this.pair.set(100000, 49000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
-        expectEvent(
-          await this.pcvController.forceReweight({from: guardianAddress}),
-          'Reweight',
-          { _caller: guardianAddress }
-        );
+        await expect(
+          await this.pcvController.connect(impersonatedSigners[guardianAddress]).forceReweight())
+          .to.emit(this.pcvController, 'Reweight').withArgs(guardianAddress)
       });  
 
       it('pair loses some tokens in swap', async function() {
@@ -130,11 +128,9 @@ describe('UniswapPCVController', function () {
           await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
           await this.token.mint(this.pcvDeposit.address, 100000);
           await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
-          expectEvent(
-            await this.pcvController.forceReweight({from: guardianAddress}),
-            'Reweight',
-            { _caller: guardianAddress }
-          );
+          await expect(
+            await this.pcvController.connect(impersonatedSigners[guardianAddress]).forceReweight())
+            .to.emit(this.pcvController, 'Reweight').withArgs(guardianAddress)
         });
 
         it('pair gets no token in swap', async function() {
@@ -155,11 +151,9 @@ describe('UniswapPCVController', function () {
         await this.oracle.setExchangeRate(400);
         await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
         await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
-        expectEvent(
-          await this.pcvController.forceReweight({from: guardianAddress}),
-          'Reweight',
-          { _caller: guardianAddress }
-        );
+        await expect(
+          await this.pcvController.connect(impersonatedSigners[guardianAddress]).forceReweight())
+          .to.emit(this.pcvController, 'Reweight').withArgs(guardianAddress)
       });
 
       it('pair gets no token in swap', async function() {
@@ -304,14 +298,10 @@ describe('UniswapPCVController', function () {
 
     describe('Reweight Min Distance', function() {
       it('Governor set succeeds', async function() {
-        expectEvent(
-          await this.pcvController.setReweightMinDistance(50, {from: governorAddress}),
-          'ReweightMinDistanceUpdate',
-          { 
-            _oldMinDistanceBasisPoints: '100',
-            _newMinDistanceBasisPoints: '50' 
-          }
-        );
+        await expect(
+          await this.pcvController.connect(impersonatedSigners[governorAddress]).setReweightMinDistance(50))
+          .to.emit(this.pcvController, 'ReweightMinDistanceUpdate').withArgs('100', '50')
+
         expect((await this.pcvController.minDistanceForReweight())[0]).to.be.equal('5000000000000000');
       });
 
@@ -345,14 +335,10 @@ describe('UniswapPCVController', function () {
 
     describe('PCV Deposit', function() {
       it('Governor set succeeds', async function() {
-        expectEvent(
-          await this.pcvController.setPCVDeposit(userAddress, {from: governorAddress}),
-          'PCVDepositUpdate',
-          { 
-            _oldPCVDeposit: this.pcvDeposit.address, 
-            _newPCVDeposit: userAddress
-          }
-        );
+        await expect(
+          await this.pcvController.connect(impersonatedSigners[governorAddress]).setPCVDeposit(userAddress))
+          .to.emit(this.pcvController, 'PCVDepositUpdate').withArgs(this.pcvDeposit.address, userAddress)
+
         expect(await this.pcvController.pcvDeposit()).to.be.equal(userAddress);
       });
 
