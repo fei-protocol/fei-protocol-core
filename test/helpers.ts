@@ -2,7 +2,7 @@ import { ZERO_ADDRESS, MAX_UINT256 } from '@openzeppelin/test-helpers/src/consta
 
 import hre, { web3, ethers, artifacts } from 'hardhat';
 
-import { expectEvent, expectRevert, balance, contract, time } from '@openzeppelin/test-helpers';
+import { expectRevert, balance, contract, time } from '@openzeppelin/test-helpers';
 
 import chai from 'chai';
 import CBN from "chai-bn";
@@ -99,7 +99,6 @@ export {
   // utils
   ZERO_ADDRESS,
   MAX_UINT256,
-  expectEvent,
   expectRevert,
   balance,
   time,

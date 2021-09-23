@@ -1,7 +1,7 @@
-import { expectEvent, expectRevert, time, getCore, getAddresses } from '../../helpers';
+import { expectRevert, time, getCore, getAddresses } from '../../helpers';
 import { expect } from 'chai'
-import hre, { artifacts, ethers } from "hardhat"
-import { Signer } from 'ethers'
+import hre, { artifacts, ethers, network } from "hardhat"
+import { BigNumber, Signer } from 'ethers'
   
 const BondingCurve = artifacts.readArtifactSync('BondingCurve');
 const Fei = artifacts.readArtifactSync('Fei');
@@ -51,6 +51,12 @@ describe('BondingCurve', function () {
       beneficiaryAddress1,
       beneficiaryAddress2,
 	  } = await getAddresses());
+
+    await network.provider.request({
+      method: "hardhat_reset",
+      params: []
+    })
+
     this.core = await getCore();
   
     this.fei = await ethers.getContractAt(Fei.abi, await this.core.fei());
@@ -149,15 +155,9 @@ describe('BondingCurve', function () {
           this.expectedFei1 = toBN('25252525252');
           expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei1);
           await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
-          expectEvent(
-            await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
-            'Purchase',
-            {
-              to: userAddress,
-              amountIn: this.purchaseAmount,
-              amountOut: this.expectedFei1
-            }
-          );
+          await expect(await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount))
+            .to.emit(this.bondingCurve, 'Purchase')
+            .withArgs(userAddress, this.purchaseAmount, this.expectedFei1);
         });
   
         it('correct FEI sent', async function() {
@@ -186,15 +186,9 @@ describe('BondingCurve', function () {
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
             await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
             expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
-            expectEvent(
-              await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
-              'Purchase',
-              {
-                to: userAddress,
-                amountIn: this.purchaseAmount,
-                amountOut: this.expectedFei2
-              }
-            );
+            await expect(await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount))
+              .to.emit(this.bondingCurve, 'Purchase')
+              .withArgs(userAddress, this.purchaseAmount, this.expectedFei2);
           });
   
           it('correct FEI sent', async function() {
@@ -224,15 +218,9 @@ describe('BondingCurve', function () {
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
             expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
             await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
-            expectEvent(
-              await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(secondUserAddress, this.purchaseAmount),
-              'Purchase',
-              {
-                to: secondUserAddress,
-                amountIn: this.purchaseAmount,
-                amountOut: this.expectedFei2
-              }
-            );
+            await expect(await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(secondUserAddress, this.purchaseAmount))
+              .to.emit(this.bondingCurve, 'Purchase')
+              .withArgs(secondUserAddress, this.purchaseAmount, this.expectedFei2);
           });
   
           it('correct FEI sent', async function() {
@@ -265,15 +253,9 @@ describe('BondingCurve', function () {
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
             expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
             await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
-            expectEvent(
-              await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
-              'Purchase',
-              {
-                to: userAddress,
-                amountIn: this.purchaseAmount,
-                amountOut: this.expectedFei2
-              }
-            );
+            await expect(await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount))
+              .to.emit(this.bondingCurve, 'Purchase')
+              .withArgs(userAddress, this.purchaseAmount, this.expectedFei2);
           });
   
           it('correct FEI sent', async function() {
@@ -313,15 +295,9 @@ describe('BondingCurve', function () {
           this.expectedFei1 = toBN('200020002000');
           expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei1);
           await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
-          expectEvent(
-            await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
-            'Purchase',
-            {
-              to: userAddress,
-              amountIn: this.purchaseAmount,
-              amountOut: this.expectedFei1
-            }
-          );
+          await expect(await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount))
+            .to.emit(this.bondingCurve, 'Purchase')
+            .withArgs(userAddress, this.purchaseAmount, this.expectedFei1);
         });
   
         it('correct FEI sent', async function() {
@@ -350,15 +326,9 @@ describe('BondingCurve', function () {
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
             expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
             await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
-            expectEvent(
-              await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
-              'Purchase',
-              {
-                to: userAddress,
-                amountIn: this.purchaseAmount,
-                amountOut: this.expectedFei2
-              }
-            );
+            await expect(await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount))
+              .to.emit(this.bondingCurve, 'Purchase')
+              .withArgs(userAddress, this.purchaseAmount, this.expectedFei2);
           });
     
           it('correct FEI sent', async function() {
@@ -383,11 +353,8 @@ describe('BondingCurve', function () {
   
           describe('reset', function() {
             beforeEach(async function() {
-              expectEvent(
-                await this.bondingCurve.connect(impersonatedSigners[governorAddress]).reset(),
-                'Reset',
-                {}
-              );
+              await expect(await this.bondingCurve.connect(impersonatedSigners[governorAddress]).reset())
+                .to.emit(this.bondingCurve, 'Reset');
             });
   
             it('totalPurchased', async function() {
@@ -408,15 +375,9 @@ describe('BondingCurve', function () {
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
             expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
             await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
-            expectEvent(
-              await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
-              'Purchase',
-              {
-                to: userAddress,
-                amountIn: this.purchaseAmount,
-                amountOut: this.expectedFei2
-              }
-            );
+            await expect(await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount))
+              .to.emit(this.bondingCurve, 'Purchase')
+              .withArgs(userAddress, this.purchaseAmount, this.expectedFei2);
           });
     
           it('correct FEI sent', async function() {
@@ -448,15 +409,9 @@ describe('BondingCurve', function () {
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
             expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
             await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
-            expectEvent(
-              await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
-              'Purchase',
-              {
-                to: userAddress,
-                amountIn: this.purchaseAmount,
-                amountOut: this.expectedFei2
-              }
-            );
+            await expect(await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount))
+              .to.emit(this.bondingCurve, 'Purchase')
+              .withArgs(userAddress, this.purchaseAmount, this.expectedFei2);
           });
     
           it('correct FEI sent', async function() {
@@ -513,17 +468,14 @@ describe('BondingCurve', function () {
         this.beneficiaryBalance2 = await this.token.balanceOf(beneficiaryAddress2);
   
         this.keeperFei = await this.fei.balanceOf(keeperAddress);
-  
-        await time.increase(this.incentiveDuration);
+
+        await time.increase(10);
         await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
 
         await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount);
-        expectEvent(await this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate(),
-          'Allocate',
-          {
-            caller: keeperAddress,
-            amount: this.purchaseAmount
-          }); 
+        await expect(await this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate())
+          .to.emit(this.bondingCurve, 'Allocate')
+          .withArgs(keeperAddress, this.purchaseAmount);
       });
   
       it('splits funds', async function() {
@@ -550,12 +502,9 @@ describe('BondingCurve', function () {
             this.keeperFei = await this.fei.balanceOf(keeperAddress);
             await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
             await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount);
-            expectEvent(await this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate(),
-              'Allocate',
-              {
-                caller: keeperAddress,
-                amount: this.purchaseAmount
-              }); 
+            await expect(await this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate())
+              .to.emit(this.bondingCurve, 'Allocate')
+              .withArgs(keeperAddress, this.purchaseAmount);
           });
       
           it('splits funds', async function() {
@@ -575,15 +524,12 @@ describe('BondingCurve', function () {
 
             this.keeperFei = await this.fei.balanceOf(keeperAddress);
   
-            await time.increase(this.incentiveDuration);
+            await time.increase(10);
             await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
             await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount);
-            expectEvent(await this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate(),
-              'Allocate',
-              {
-                caller: keeperAddress,
-                amount: this.purchaseAmount
-              }); 
+            await expect(await this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate())
+              .to.emit(this.bondingCurve, 'Allocate')
+              .withArgs(keeperAddress, this.purchaseAmount);
           });
       
           it('splits funds', async function() {
@@ -603,17 +549,15 @@ describe('BondingCurve', function () {
   
             this.keeperFei = await this.fei.balanceOf(keeperAddress);
   
-            await time.increase(this.incentiveDuration);
-            await this.bondingCurve.setAllocation([this.pcvDeposit1.address, this.pcvDeposit2.address], [5000, 5000]);
+            await time.increase(10);
+            await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setAllocation([this.pcvDeposit1.address, this.pcvDeposit2.address], [5000, 5000]);
 
             await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
             await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount);
-            expectEvent(await this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate(),
-              'Allocate',
-              {
-                caller: keeperAddress,
-                amount: this.purchaseAmount
-              }); 
+            await expect(await this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate())
+              .to.emit(this.bondingCurve, 'Allocate')
+              .withArgs(keeperAddress, this.purchaseAmount);
+
           });
     
           it('splits funds', async function() {
@@ -643,14 +587,8 @@ describe('BondingCurve', function () {
     });
   
     it('Governor set succeeds', async function() {
-      expectEvent(
-        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setAllocation([this.pcvDeposit1.address], [10000]), 
-        'AllocationUpdate', 
-        { 
-          oldPCVDeposits: [this.pcvDeposit1.address, this.pcvDeposit2.address],
-          newPCVDeposits: [this.pcvDeposit1.address] 
-        }
-      );
+      await expect(await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setAllocation([this.pcvDeposit1.address], [10000]))
+        .to.emit(this.bondingCurve, 'AllocationUpdate')
   
       const result = await this.bondingCurve.getAllocation();
       expect(result[0].length).to.be.equal(1);
@@ -666,14 +604,10 @@ describe('BondingCurve', function () {
   
   describe('Oracle', function() {
     it('Governor set succeeds', async function() {
-      expectEvent(
-        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setOracle(userAddress),
-        'OracleUpdate',
-        {
-          oldOracle: this.oracle.address,
-          newOracle: userAddress
-        }
-      );
+      await expect(
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setOracle(userAddress)
+      ).to.emit(this.bondingCurve, 'OracleUpdate').withArgs(this.oracle.address, userAddress)
+
       expect(await this.bondingCurve.oracle()).to.be.equal(userAddress);
     });
   
@@ -684,14 +618,10 @@ describe('BondingCurve', function () {
   
   describe('Scale', function() {
     it('Governor set succeeds', async function() {
-      expectEvent(
-        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setScale(100),
-        'ScaleUpdate',
-        { 
-          oldScale: this.scale,
-          newScale: toBN(100)
-        }
-      );
+      await expect(
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setScale(100)
+      ).to.emit(this.bondingCurve, 'ScaleUpdate').withArgs(this.scale, toBN(100))
+
       expect(await this.bondingCurve.scale()).to.be.equal(toBN(100));
     });
   
@@ -702,14 +632,10 @@ describe('BondingCurve', function () {
   
   describe('Buffer', function() {
     it('Governor set succeeds', async function() {
-      expectEvent(
-        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setBuffer(1000),
-        'BufferUpdate',
-        {
-          oldBuffer: this.buffer,
-          newBuffer: toBN(1000)
-        }
-      );
+      await expect(
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setBuffer(1000)
+      ).to.emit(this.bondingCurve, 'BufferUpdate').withArgs(this.buffer, toBN(1000))
+
       expect(await this.bondingCurve.buffer()).to.be.equal(toBN(1000));
     });
   
@@ -724,14 +650,10 @@ describe('BondingCurve', function () {
   
   describe('Discount', function() {
     it('Governor set succeeds', async function() {
-      expectEvent(
-        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setDiscount(1000),
-        'DiscountUpdate',
-        {
-          oldDiscount: '100',
-          newDiscount: toBN(1000)
-        }
-      );
+      await expect(
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setDiscount(1000)
+      ).to.emit(this.bondingCurve, 'DiscountUpdate').withArgs('100', toBN(1000))
+
       expect(await this.bondingCurve.discount()).to.be.equal(toBN(1000));
     });
   
@@ -746,14 +668,9 @@ describe('BondingCurve', function () {
   
   describe('Core', function() {
     it('Governor set succeeds', async function() {
-      expectEvent(
-        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setCore(userAddress), 
-        'CoreUpdate', 
-        {
-          oldCore: this.core.address,
-          newCore: userAddress
-        }
-      );
+      await expect(
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setCore(userAddress)
+      ).to.emit(this.bondingCurve, 'CoreUpdate').withArgs(this.core.address, userAddress)
   
       expect(await this.bondingCurve.core()).to.be.equal(userAddress);
     });
@@ -766,14 +683,9 @@ describe('BondingCurve', function () {
   describe('Incentive Amount', function() {
     it('Governor set succeeds', async function() {
       this.incentiveAmount = toBN('10');
-      expectEvent(
-        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setIncentiveAmount(this.incentiveAmount), 
-        'IncentiveUpdate', 
-        { 
-          oldIncentiveAmount: toBN('100'),
-          newIncentiveAmount: this.incentiveAmount 
-        }
-      );
+      await expect(
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setIncentiveAmount(this.incentiveAmount)
+      ).to.emit(this.bondingCurve, 'IncentiveUpdate').withArgs(toBN('100'), this.incentiveAmount)
   
       expect(await this.bondingCurve.incentiveAmount()).to.be.equal(this.incentiveAmount);
     });
@@ -786,14 +698,9 @@ describe('BondingCurve', function () {
   describe('Incentive Frequency', function() {
     it('Governor set succeeds', async function() {
       this.incentiveFrequency = toBN('70');
-      expectEvent(
-        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setIncentiveFrequency(this.incentiveFrequency), 
-        'DurationUpdate', 
-        { 
-          oldDuration: this.incentiveDuration,
-          newDuration: this.incentiveFrequency 
-        }
-      );
+      await expect(
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setIncentiveFrequency(this.incentiveFrequency)
+      ).to.emit(this.bondingCurve, 'DurationUpdate').withArgs(this.incentiveDuration, this.incentiveFrequency)
   
       expect(await this.bondingCurve.duration()).to.be.equal(this.incentiveFrequency);
     });
