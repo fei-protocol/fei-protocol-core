@@ -58,7 +58,7 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     }
     /// @notice sets the referenced backup oracle
     /// @param newBackupOracle the new backup oracle to reference
-    function setBackupOracle(address newBackupOracle) external override onlyGovernor {
+    function setBackupOracle(address newBackupOracle) external override onlyGovernorOrAdmin {
         _setBackupOracle(newBackupOracle);
     }
 

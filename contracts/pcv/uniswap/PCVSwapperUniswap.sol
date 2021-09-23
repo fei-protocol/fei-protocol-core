@@ -144,7 +144,7 @@ contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Inc
 
     /// @notice Sets the maximum slippage vs Oracle price accepted during swaps
     /// @param newMaximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
-    function setMaximumSlippage(uint256 newMaximumSlippageBasisPoints) external onlyGovernor {
+    function setMaximumSlippage(uint256 newMaximumSlippageBasisPoints) external onlyGovernorOrAdmin {
         uint256 oldMaxSlippage = maximumSlippageBasisPoints;
         require(newMaximumSlippageBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "PCVSwapperUniswap: Exceeds bp granularity.");
         maximumSlippageBasisPoints = newMaximumSlippageBasisPoints;
@@ -153,7 +153,7 @@ contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Inc
 
     /// @notice Sets the maximum tokens spent on each swap
     /// @param newMaxSpentPerSwap the maximum number of tokens to be swapped on each call
-    function setMaxSpentPerSwap(uint256 newMaxSpentPerSwap) external onlyGovernor {
+    function setMaxSpentPerSwap(uint256 newMaxSpentPerSwap) external onlyGovernorOrAdmin {
         uint256 oldMaxSpentPerSwap = maxSpentPerSwap;
         require(newMaxSpentPerSwap != 0, "PCVSwapperUniswap: Cannot swap 0.");
         maxSpentPerSwap = newMaxSpentPerSwap;
@@ -162,7 +162,7 @@ contract PCVSwapperUniswap is IPCVSwapper, WethPCVDeposit, OracleRef, Timed, Inc
 
     /// @notice sets the minimum time between swaps
 		/// @param _duration minimum time between swaps in seconds
-    function setSwapFrequency(uint256 _duration) external onlyGovernor {
+    function setSwapFrequency(uint256 _duration) external onlyGovernorOrAdmin {
        _setDuration(_duration);
     }
 

@@ -92,7 +92,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, PCVDeposit {
 
     /// @notice sets the USD per FEI exchange rate rate
     /// @param newUsdPerFeiBasisPoints the USD per FEI exchange rate denominated in basis points (1/10000)
-    function setUsdPerFeiRate(uint256 newUsdPerFeiBasisPoints) external override onlyGovernor {
+    function setUsdPerFeiRate(uint256 newUsdPerFeiBasisPoints) external override onlyGovernorOrAdmin {
         require(newUsdPerFeiBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "ReserveStabilizer: Exceeds bp granularity");
         uint256 oldUsdPerFeiBasisPoints = usdPerFeiBasisPoints;
         usdPerFeiBasisPoints = newUsdPerFeiBasisPoints;

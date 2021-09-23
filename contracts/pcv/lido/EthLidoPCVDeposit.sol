@@ -172,7 +172,7 @@ contract EthLidoPCVDeposit is PCVDeposit {
     // =======================================================================
     /// @notice Sets the maximum slippage vs 1:1 price accepted during withdraw.
     /// @param _maximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
-    function setMaximumSlippage(uint256 _maximumSlippageBasisPoints) external onlyGovernor {
+    function setMaximumSlippage(uint256 _maximumSlippageBasisPoints) external onlyGovernorOrAdmin {
         require(_maximumSlippageBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "EthLidoPCVDeposit: Exceeds bp granularity.");
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
         emit UpdateMaximumSlippage(_maximumSlippageBasisPoints);
