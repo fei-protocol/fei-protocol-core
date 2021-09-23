@@ -10,6 +10,8 @@ const Fei = artifacts.readArtifactSync('Fei');
 const MockERC20 = artifacts.readArtifactSync('MockERC20');
 const e18 = '000000000000000000';
 
+const toBN = ethers.BigNumber.from
+
 describe('StableSwapOperatorV1', function () {
   let userAddress: string
   let governorAddress: string
@@ -55,16 +57,16 @@ describe('StableSwapOperatorV1', function () {
 
     // create contracts
     this.core = await getCore();
-    this.fei = await Fei.at(await this.core.fei());
-    this.dai = await MockERC20.new();
-    this.usdc = await MockERC20.new();
-    this.usdt = await MockERC20.new();
+    this.fei = await ethers.getContractAt('Fei', await this.core.fei());
+    this.dai = await (await ethers.getContractFactory('MockERC20')).deploy();
+    this.usdc = await (await ethers.getContractFactory('MockERC20')).deploy();
+    this.usdt = await (await ethers.getContractFactory('MockERC20')).deploy();
 
-    this.mock3pool = await MockCurve3pool.new(this.dai.address, this.usdc.address, this.usdt.address);
+    this.mock3pool = await (await ethers.getContractFactory('MockCurve3pool')).deploy(this.dai.address, this.usdc.address, this.usdt.address);
 
-    this.mockMetapool = await MockCurveMetapool.new(this.mock3pool.address, this.fei.address);
+    this.mockMetapool = await (await ethers.getContractFactory('MockCurveMetapool')).deploy(this.mock3pool.address, this.fei.address);
 
-    this.deposit = await StableSwapOperatorV1.new(
+    this.deposit = await (await ethers.getContractFactory('StableSwapOperatorV1')).deploy(
       this.core.address,
       this.mockMetapool.address,
       this.mock3pool.address,

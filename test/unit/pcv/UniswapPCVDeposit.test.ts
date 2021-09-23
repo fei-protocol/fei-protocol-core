@@ -10,6 +10,8 @@ const MockOracle = artifacts.readArtifactSync('MockOracle');
 const MockPair = artifacts.readArtifactSync('MockUniswapV2PairLiquidity');
 const MockRouter = artifacts.readArtifactSync('MockRouter');
 
+const toBN = ethers.BigNumber.from
+
 describe('EthUniswapPCVDeposit', function () {
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit
   let userAddress;
@@ -55,13 +57,13 @@ describe('EthUniswapPCVDeposit', function () {
     } = await getAddresses());
     this.core = await getCore();
 
-    this.fei = await Fei.at(await this.core.fei());
-    this.weth = await MockWeth.new();
-    this.pair = await MockPair.new(this.fei.address, this.weth.address);
-    this.oracle = await MockOracle.new(400); // 400:1 oracle price
-    this.router = await MockRouter.new(this.pair.address);
+    this.fei = await ethers.getContractAt('Fei', await this.core.fei());
+    this.weth = await (await ethers.getContractFactory('MockWeth')).deploy();
+    this.pair = await (await ethers.getContractFactory('MockPair')).deploy(this.fei.address, this.weth.address);
+    this.oracle = await (await ethers.getContractFactory('MockOracle')).deploy(400); // 400:1 oracle price
+    this.router = await (await ethers.getContractFactory('MockRouter')).deploy(this.pair.address);
     this.router.setWETH(this.weth.address);
-    this.pcvDeposit = await UniswapPCVDeposit.new(this.core.address, this.pair.address, this.router.address, this.oracle.address, this.oracle.address, '100');
+    this.pcvDeposit = await (await ethers.getContractFactory('UniswapPCVDeposit')).deploy(this.core.address, this.pair.address, this.router.address, this.oracle.address, this.oracle.address, '100');
 
     await this.core.grantMinter(this.pcvDeposit.address, {from: governorAddress});
 
@@ -89,7 +91,7 @@ describe('EthUniswapPCVDeposit', function () {
     describe('Paused', function() {
       it('reverts', async function() {
         await this.pcvDeposit.pause({from: governorAddress});
-        await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
+        await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
         await expectRevert(this.pcvDeposit.deposit({from: userAddress}), 'Pausable: paused');
       });
     });
@@ -112,7 +114,7 @@ describe('EthUniswapPCVDeposit', function () {
     });
     describe('Post deposit values', function() {
       beforeEach(async function() {
-        await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
+        await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
         await this.pcvDeposit.deposit({from: userAddress});
       });
 
@@ -139,7 +141,7 @@ describe('EthUniswapPCVDeposit', function () {
       });      
       describe('With existing liquidity', function() {
         beforeEach(async function() {
-          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
+          await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
           await this.pcvDeposit.deposit({from: userAddress});
         });
 
@@ -167,7 +169,7 @@ describe('EthUniswapPCVDeposit', function () {
       describe('Pool price changes under threshold', function() {
         it('reverts', async function() {
           await this.router.setAmountMin(39000000);
-          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
+          await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
           await expectRevert(this.pcvDeposit.deposit({from: userAddress}), 'amount liquidity revert');
         });
 
@@ -175,7 +177,7 @@ describe('EthUniswapPCVDeposit', function () {
           beforeEach(async function() {
             await this.router.setAmountMin(39000000);
             await this.pcvDeposit.setMaxBasisPointsFromPegLP(300, {from: governorAddress});
-            await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
+            await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
             await this.pcvDeposit.deposit({from: userAddress});
           });
   
@@ -204,7 +206,7 @@ describe('EthUniswapPCVDeposit', function () {
       describe('Pool price changes over threshold', function() {
         beforeEach(async function() {
           await this.router.setAmountMin(41000000);
-          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
+          await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
           await this.pcvDeposit.deposit({from: userAddress});
         });
 
@@ -232,7 +234,7 @@ describe('EthUniswapPCVDeposit', function () {
       describe('Transfers held ETH and burns FEI', function() {
         beforeEach(async function() {
           await this.weth.mint(this.pcvDeposit.address, '100000');
-          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
+          await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
           await this.fei.mint(this.pcvDeposit.address, '1000', {from: minterAddress});
           await this.pcvDeposit.deposit({from: userAddress});
         });
@@ -262,7 +264,7 @@ describe('EthUniswapPCVDeposit', function () {
         beforeEach(async function() {
           await this.oracle.setExchangeRate(600); // 600:1 oracle price
           // Then deposit
-          await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
+          await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
           await this.pcvDeposit.deposit({from: userAddress});
         });
 
@@ -309,7 +311,7 @@ describe('EthUniswapPCVDeposit', function () {
     });
     describe('With Balance', function() {
       beforeEach(async function() {
-        await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
+        await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: '100000'});
         await this.pcvDeposit.deposit({from: userAddress});
         this.beneficiaryBalance = await this.weth.balanceOf(beneficiaryAddress1);
       });
@@ -422,7 +424,7 @@ describe('EthUniswapPCVDeposit', function () {
 
     describe('Pair', function() {
       it('Governor set succeeds', async function() {
-        const pair2 = await MockPair.new(this.weth.address, this.fei.address);
+        const pair2 = await (await ethers.getContractFactory('MockPair')).deploy(this.weth.address, this.fei.address);
         expectEvent(
           await this.pcvDeposit.setPair(pair2.address, {from: governorAddress}), 
           'PairUpdate', 

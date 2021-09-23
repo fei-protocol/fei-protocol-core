@@ -5,6 +5,8 @@ import { Signer } from 'ethers'
     
 const EthCompoundPCVDeposit = artifacts.readArtifactSync('EthCompoundPCVDeposit');
 const MockCToken = artifacts.readArtifactSync('MockCToken');
+
+const toBN = ethers.BigNumber.from
   
 describe('EthCompoundPCVDeposit', function () {
   let userAddress;
@@ -47,9 +49,9 @@ describe('EthCompoundPCVDeposit', function () {
   
     this.core = await getCore();
 
-    this.cToken = await MockCToken.new(userAddress, true);
+    this.cToken = await (await ethers.getContractFactory('MockCToken')).deploy(userAddress, true);
       
-    this.compoundPCVDeposit = await EthCompoundPCVDeposit.new(this.core.address, this.cToken.address);
+    this.compoundPCVDeposit = await (await ethers.getContractFactory('EthCompoundPCVDeposit')).deploy(this.core.address, this.cToken.address);
 
     this.depositAmount = toBN('1000000000000000000');
   });
@@ -64,7 +66,7 @@ describe('EthCompoundPCVDeposit', function () {
   
     describe('Not Paused', function() {
       beforeEach(async function() {
-        await web3.eth.sendTransaction({from: userAddress, to: this.compoundPCVDeposit.address, value: this.depositAmount});
+        await (await ethers.getSigner(userAddress)).sendTransaction({from: userAddress, to: this.compoundPCVDeposit.address, value: this.depositAmount});
       });
 
       it('succeeds', async function() {
@@ -95,7 +97,7 @@ describe('EthCompoundPCVDeposit', function () {
 
     describe('Not Paused', function() {
       beforeEach(async function() {
-        await web3.eth.sendTransaction({from: userAddress, to: this.compoundPCVDeposit.address, value: this.depositAmount});
+        await (await ethers.getSigner(userAddress)).sendTransaction({from: userAddress, to: this.compoundPCVDeposit.address, value: this.depositAmount});
         await this.compoundPCVDeposit.deposit();
       });
 
@@ -123,7 +125,7 @@ describe('EthCompoundPCVDeposit', function () {
 
     describe('From PCVController', function() {
       beforeEach(async function() {
-        await web3.eth.sendTransaction({from: userAddress, to: this.compoundPCVDeposit.address, value: this.depositAmount});
+        await (await ethers.getSigner(userAddress)).sendTransaction({from: userAddress, to: this.compoundPCVDeposit.address, value: this.depositAmount});
         await this.compoundPCVDeposit.deposit();
       });
 

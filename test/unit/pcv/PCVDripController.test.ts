@@ -7,6 +7,8 @@ const PCVDripController = artifacts.readArtifactSync('PCVDripController');
 const MockPCVDeposit = artifacts.readArtifactSync('MockEthUniswapPCVDeposit');
 const Fei = artifacts.readArtifactSync('Fei');
 
+const toBN = ethers.BigNumber.from
+
 describe('PCVDripController', function () {
   let userAddress;
   let governorAddress;
@@ -47,17 +49,17 @@ describe('PCVDripController', function () {
     } = await getAddresses());
 
     this.core = await getCore();
-    this.fei = await Fei.at(await this.core.fei());
+    this.fei = await ethers.getContractAt('Fei', await this.core.fei());
     
-    this.sourcePCVDeposit = await MockPCVDeposit.new(beneficiaryAddress1);
-    this.pcvDeposit = await MockPCVDeposit.new(beneficiaryAddress1);
+    this.sourcePCVDeposit = await (await ethers.getContractFactory('MockPCVDeposit')).deploy(beneficiaryAddress1);
+    this.pcvDeposit = await (await ethers.getContractFactory('MockPCVDeposit')).deploy(beneficiaryAddress1);
     this.dripAmount = toBN('500000000000000000');
     this.incentiveAmount = toBN('100000000000000000');
 
-    this.pcvDripper = await PCVDripController.new(this.core.address, this.sourcePCVDeposit.address, this.pcvDeposit.address, '1000', this.dripAmount, this.incentiveAmount);
+    this.pcvDripper = await(await ethers.getContractFactory('PCVDripController')).deploy(this.core.address, this.sourcePCVDeposit.address, this.pcvDeposit.address, '1000', this.dripAmount, this.incentiveAmount);
     await this.core.grantMinter(this.pcvDripper.address, {from: governorAddress});
 
-    await web3.eth.sendTransaction({from: userAddress, to: this.sourcePCVDeposit.address, value: '1000000000000000000'});
+    await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.sourcePCVDeposit.address, value: '1000000000000000000'});
   });
   
   describe('Drip', function() {
@@ -111,7 +113,7 @@ describe('PCVDripController', function () {
 
         describe('Target balance too high', function() {
           beforeEach(async function() {
-            await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: this.dripAmount});
+            await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: this.dripAmount});
           });
 
           it('reverts', async function() {        
@@ -156,7 +158,7 @@ describe('PCVDripController', function () {
     
         describe('Target balance too high', function() {
           beforeEach(async function() {
-            await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: this.dripAmount});
+            await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: this.dripAmount});
             await time.increase('1000');
           });
 

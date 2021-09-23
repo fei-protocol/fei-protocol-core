@@ -54,13 +54,13 @@ describe('TribeReserveStabilizer', function () {
     } = await getAddresses());
     this.core = await getCore();
   
-    this.fei = await Fei.at(await this.core.fei());
-    this.tribe = await Tribe.at(await this.core.tribe());
-    this.oracle = await MockOracle.new(400); // 400:1 oracle price
-    this.collateralizationOracle = await MockCollateralizationOracle.new(this.core.address, 1);
-    this.pcvDeposit = await MockPCVDeposit.new(userAddress);
+    this.fei = await ethers.getContractAt('Fei', await this.core.fei());
+    this.tribe = await ethers.getContractAt('Tribe', await this.core.tribe());
+    this.oracle = await (await ethers.getContractFactory('MockOracle')).deploy(400); // 400:1 oracle price
+    this.collateralizationOracle = await (await ethers.getContractFactory('MockCollateralizationOracle')).deploy(this.core.address, 1);
+    this.pcvDeposit = await (await ethers.getContractFactory('MockPCVDeposit')).deploy(userAddress);
 
-    this.reserveStabilizer = await TribeReserveStabilizer.new(
+    this.reserveStabilizer = await (await ethers.getContractFactory('TribeReserveStabilizer')).deploy(
       this.core.address, 
       this.oracle.address, 
       this.oracle.address, 

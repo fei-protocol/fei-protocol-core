@@ -7,6 +7,8 @@ const RatioPCVController = artifacts.readArtifactSync('RatioPCVController');
 const MockERC20 = artifacts.readArtifactSync('MockERC20');
 const MockPCVDeposit = artifacts.readArtifactSync('MockEthUniswapPCVDeposit');
 
+const toBN = ethers.BigNumber.from
+
 describe('RatioPCVController', function () {
   let userAddress: string
   let governorAddress: string
@@ -46,15 +48,15 @@ describe('RatioPCVController', function () {
       pcvControllerAddress,
     } = await getAddresses());
     this.core = await getCore();
-    this.token = await MockERC20.new();
+    this.token = await (await ethers.getContractFactory('MockERC20')).deploy();
 
-    this.pcvController = await RatioPCVController.new(this.core.address);
+    this.pcvController = await (await ethers.getContractFactory('RatioPCVController')).deploy(this.core.address);
 
-    this.pcvDeposit = await MockPCVDeposit.new(userAddress);
+    this.pcvDeposit = await (await ethers.getContractFactory('MockPCVDeposit')).deploy(userAddress);
     await this.pcvDeposit.setBeneficiary(this.pcvDeposit.address);
 
     this.pcvAmount = toBN('10000000000');
-    await web3.eth.sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: this.pcvAmount});
+    await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: this.pcvAmount});
   });
   
   describe('Withdraw', function() {

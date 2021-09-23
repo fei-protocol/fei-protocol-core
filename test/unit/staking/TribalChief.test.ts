@@ -181,46 +181,35 @@ describe('TribalChief', () => {
   const mintAmount = toBN('1000000000000000000000000000000000000000000000');
 
   before(async () => {
-    ({
-      userAddress,
-      secondUserAddress,
-      beneficiaryAddress1,
-      beneficiaryAddress2,
-      minterAddress,
-      burnerAddress,
-      pcvControllerAddress,
-      governorAddress,
-      genesisGroup,
-      guardianAddress,
-    } = await getAddresses());
+    const addresses = await getAddresses()
 
-    thirdUserAddress = beneficiaryAddress1;
-    fourthUserAddress = minterAddress;
-    fifthUserAddress = burnerAddress;
-    sixthUserAddress = pcvControllerAddress;
-    seventhUserAddress = governorAddress;
-    eigthUserAddress = genesisGroup;
-    ninthUserAddress = guardianAddress;
-    tenthUserAddress = beneficiaryAddress2;
+    thirdUserAddress = addresses.beneficiaryAddress1;
+    fourthUserAddress = addresses.minterAddress;
+    fifthUserAddress = addresses.burnerAddress;
+    sixthUserAddress = addresses.pcvControllerAddress;
+    seventhUserAddress = addresses.governorAddress;
+    eigthUserAddress = addresses.genesisGroup;
+    ninthUserAddress = addresses.guardianAddress;
+    tenthUserAddress = addresses.beneficiaryAddress2;
   });
 
   describe('first suite', () => {
     beforeEach(async function () {
       this.core = await getCore();
 
-      this.tribe = await Tribe.new();
-      this.coreRef = await MockCoreRef.new(this.core.address);
+      this.tribe = await (await ethers.getContractFactory('Tribe')).deploy();
+      this.coreRef = await (await ethers.getContractFactory('MockCoreRef')).deploy(this.core.address);
 
       /// we can and probably should do this with a framework,
       // but for now I'm going to write it out by hand.
 
       // spin up the logic contract by hand
-      const tribalChief = await TribalChief.new(this.core.address);
+      const tribalChief = await (await ethers.getContractFactory('TribalChief')).deploy(this.core.address);
       // create a new proxy contract
-      const proxyContract = await Proxy.new(tribalChief.address, tribalChief.address, '0x', { from: userAddress });
+      const proxyContract = await (await ethers.getContractFactory('Proxy')).deploy(tribalChief.address, tribalChief.address, '0x', { from: userAddress });
 
       // instantiate the tribalchief pointed at the proxy contract
-      this.tribalChief = await TribalChief.at(proxyContract.address);
+      this.tribalChief = await ethers.getContractAt('TribalChief', proxyContract.address);
 
       // initialize the tribalchief by hand
       await this.tribalChief.initialize(this.core.address, this.tribe.address);
@@ -228,11 +217,11 @@ describe('TribalChief', () => {
       await this.tribalChief.updateBlockReward(blockReward, {from: governorAddress});
 
       // create and mint LP tokens
-      this.curveLPToken = await MockERC20.new();
+      this.curveLPToken = await (await ethers.getContractFactory('MockERC20')).deploy();
       await this.curveLPToken.mint(userAddress, totalStaked);
       await this.curveLPToken.mint(secondUserAddress, totalStaked);
 
-      this.LPToken = await MockERC20.new();
+      this.LPToken = await (await ethers.getContractFactory('MockERC20')).deploy();
       await this.LPToken.mint(userAddress, totalStaked);
       await this.LPToken.mint(secondUserAddress, totalStaked);
       await this.LPToken.mint(thirdUserAddress, totalStaked);
@@ -2192,19 +2181,19 @@ describe('TribalChief', () => {
     beforeEach(async function () {
       this.core = await getCore();
 
-      this.tribe = await Tribe.new();
-      this.coreRef = await MockCoreRef.new(this.core.address);
+      this.tribe = await (await ethers.getContractFactory('Tribe')).deploy();
+      this.coreRef = await (await ethers.getContractFactory('MockCoreRef')).deploy(this.core.address);
 
       /// we can and probably should do this with a framework,
       // but for now I'm going to write it out by hand.
 
       // spin up the logic contract by hand
-      const tribalChief = await TribalChief.new(this.core.address);
+      const tribalChief = await (await ethers.getContractFactory('TribalChief')).deploy(this.core.address);
       // create a new proxy contract
-      const proxyContract = await Proxy.new(tribalChief.address, tribalChief.address, '0x');
+      const proxyContract = await (await ethers.getContractFactory('Proxy')).deploy(tribalChief.address, tribalChief.address, '0x');
 
       // instantiate the tribalchief pointed at the proxy contract
-      this.tribalChief = await TribalChief.at(proxyContract.address);
+      this.tribalChief = await ethers.getContractAt('TribalChief', proxyContract.address);
 
       // initialize the tribalchief by hand
       await this.tribalChief.initialize(this.core.address, this.tribe.address);
@@ -2212,11 +2201,11 @@ describe('TribalChief', () => {
       await this.tribalChief.updateBlockReward(blockReward, {from: governorAddress});
 
       // create and mint LP tokens
-      this.curveLPToken = await MockERC20.new();
+      this.curveLPToken = await (await ethers.getContractFactory('MockERC20')).deploy();
       await this.curveLPToken.mint(userAddress, totalStaked);
       await this.curveLPToken.mint(secondUserAddress, totalStaked);
 
-      this.LPToken = await MockERC20.new();
+      this.LPToken = await (await ethers.getContractFactory('MockERC20')).deploy();
       await this.LPToken.mint(userAddress, totalStaked);
       await this.LPToken.mint(secondUserAddress, totalStaked);
       await this.LPToken.mint(thirdUserAddress, totalStaked);
@@ -2575,19 +2564,19 @@ describe('TribalChief', () => {
     beforeEach(async function () {
       this.core = await getCore();
 
-      this.tribe = await Tribe.new();
-      this.coreRef = await MockCoreRef.new(this.core.address);
+      this.tribe = await (await ethers.getContractFactory('Tribe')).deploy();
+      this.coreRef = await (await ethers.getContractFactory('MockCoreRef')).deploy(this.core.address);
 
       /// we can and probably should do this with a framework,
       // but for now I'm going to write it out by hand.
 
       // spin up the logic contract by hand
-      const tribalChief = await TribalChief.new(this.core.address);
+      const tribalChief = await (await ethers.getContractFactory('TribalChief')).deploy(this.core.address);
       // create a new proxy contract
-      const proxyContract = await Proxy.new(tribalChief.address, tribalChief.address, '0x');
+      const proxyContract = await (await ethers.getContractFactory('Proxy')).deploy(tribalChief.address, tribalChief.address, '0x');
 
       // instantiate the tribalchief pointed at the proxy contract
-      this.tribalChief = await TribalChief.at(proxyContract.address);
+      this.tribalChief = await ethers.getContractAt('TribalChief', proxyContract.address);
 
       // initialize the tribalchief by hand
       await this.tribalChief.initialize(this.core.address, this.tribe.address);
@@ -2595,11 +2584,11 @@ describe('TribalChief', () => {
       await this.tribalChief.updateBlockReward(blockReward, {from: governorAddress});
 
       // create and mint LP tokens
-      this.curveLPToken = await MockERC20.new();
+      this.curveLPToken = await (await ethers.getContractFactory('MockERC20')).deploy();
       await this.curveLPToken.mint(userAddress, totalStaked);
       await this.curveLPToken.mint(secondUserAddress, totalStaked);
 
-      this.LPToken = await MockERC20.new();
+      this.LPToken = await (await ethers.getContractFactory('MockERC20')).deploy();
       await this.LPToken.mint(userAddress, totalStaked);
       await this.LPToken.mint(secondUserAddress, totalStaked);
       await this.LPToken.mint(thirdUserAddress, totalStaked);

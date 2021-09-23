@@ -1,4 +1,4 @@
-import { getCore } from '../../helpers';
+import { getCore, getAddresses } from '../../helpers';
 import { expect } from 'chai'
 import hre, { artifacts, ethers } from 'hardhat'
 import { Signer } from 'ethers'
@@ -6,6 +6,8 @@ import { Signer } from 'ethers'
 const PCVDepositWrapper = artifacts.readArtifactSync('PCVDepositWrapper');
 const MockPCVDepositV2 = artifacts.readArtifactSync('MockPCVDepositV2');
 const MockERC20 = artifacts.readArtifactSync('MockERC20');
+
+const toBN = ethers.BigNumber.from
 
 describe('PCVDepositWrapper', function () {
   let impersonatedSigners: { [key: string]: Signer } = { }
@@ -38,8 +40,8 @@ describe('PCVDepositWrapper', function () {
   beforeEach(async function () {
     this.balance = '2000';
     this.core = await getCore();
-    this.token = await MockERC20.new();
-    this.deposit = await MockPCVDepositV2.new(
+    this.token = await (await ethers.getContractFactory('MockERC20')).deploy();
+    this.deposit = await (await ethers.getContractFactory('MockPCVDepositV2')).deploy(
       this.core.address,
       this.token.address,
       this.balance,
@@ -48,7 +50,7 @@ describe('PCVDepositWrapper', function () {
   });
 
   it('normal PCV deposit', async function() {
-    const pcvDepositWrapper = await PCVDepositWrapper.new(
+    const pcvDepositWrapper = await (await ethers.getContractFactory('PCVDepositWrapper')).deploy(
       this.deposit.address,
       this.token.address,
       false
@@ -63,7 +65,7 @@ describe('PCVDepositWrapper', function () {
   });
 
   it('Protocol owned FEI PCV deposit', async function() {
-    const pcvDepositWrapper = await PCVDepositWrapper.new(
+    const pcvDepositWrapper = await (await ethers.getContractFactory('PCVDepositWrapper')).deploy(
       this.deposit.address,
       this.token.address,
       true

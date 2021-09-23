@@ -2,6 +2,7 @@ import hre, { ethers, artifacts } from 'hardhat';
 import { expectRevert, balance, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai'
 import { Signer } from 'ethers'
+import { HardhatNetworkConfig } from 'hardhat/types';
 
 const toBN = ethers.BigNumber.from
   
@@ -20,7 +21,7 @@ describe('EthReserveStabilizer', function () {
   // eslint-disable-next-line consistent-return
   this.beforeAll(async function() {
     // Can only get the current price on a forked network (since we haven't deployed Uniswap stuff in test setup)
-    if (!hre.network.config.forking) {
+    if (!((hre.network.config) as HardhatNetworkConfig).forking) {
       return this.skip();
     } 
     
@@ -64,18 +65,19 @@ describe('EthReserveStabilizer', function () {
 
     this.core = await getCore();
   
-    this.fei = await Fei.at(await this.core.fei());
-    this.oracle = await MockOracle.new(400); // 400:1 oracle price
-    this.pcvDeposit = await MockPCVDeposit.new(userAddress);
+    this.fei = await ethers.getContractAt('Fei', await this.core.fei());
+    this.oracle = await (await ethers.getContractFactory('MockOracle')).deploy(400); // 400:1 oracle price
+    this.pcvDeposit = await (await ethers.getContractFactory('MockPCVDeposit')).deploy(userAddress);
 
-    this.reserveStabilizer = await EthReserveStabilizer.new(this.core.address, this.oracle.address, this.oracle.address, '9000');
+    this.reserveStabilizer = await (await ethers.getContractFactory('EthReserveStabilizer')).deploy(this.core.address, this.oracle.address, this.oracle.address, '9000');
 
-    this.weth = await MockWeth.at('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2');
+    this.weth = await ethers.getContractAt('MockWeth', '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2');
 
     await this.core.grantBurner(this.reserveStabilizer.address, {from: governorAddress});
 
     this.initialBalance = toBN('1000000000000000000');
-    await web3.eth.sendTransaction({from: userAddress, to: this.reserveStabilizer.address, value: this.initialBalance});
+
+    await (await ethers.getSigner(userAddress)).sendTransaction({from: userAddress, to: this.reserveStabilizer.address, value: this.initialBalance});
 
     await this.fei.mint(userAddress, 40000000, {from: minterAddress});  
   });
@@ -155,7 +157,7 @@ describe('EthReserveStabilizer', function () {
       const reserveBalanceBefore = toBN(await balance.current(this.reserveStabilizer.address));
       await this.reserveStabilizer.deposit();
 
-      expect(await web3.eth.getBalance(this.reserveStabilizer.address)).to.be.equal(reserveBalanceBefore.add(toBN('10000')).toString());
+      expect(await ethers.provider.getBalance(this.reserveStabilizer.address)).to.be.equal(reserveBalanceBefore.add(toBN('10000')).toString());
       expect(await this.weth.balanceOf(this.reserveStabilizer.address)).to.be.equal('0');
     });
   });

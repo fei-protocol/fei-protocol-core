@@ -9,6 +9,7 @@ const MockOracle = artifacts.readArtifactSync('MockOracle');
 const MockPair = artifacts.readArtifactSync('MockUniswapV2PairLiquidity');
 const MockPCVDeposit = artifacts.readArtifactSync('MockERC20UniswapPCVDeposit');
 const MockERC20 = artifacts.readArtifactSync('MockERC20');
+const toBN = ethers.BigNumber.from
 
 describe('UniswapPCVController', function () {
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit
@@ -56,13 +57,13 @@ describe('UniswapPCVController', function () {
 
     this.core = await getCore();
 
-    this.fei = await Fei.at(await this.core.fei());
-    this.oracle = await MockOracle.new(500);
-    this.token = await MockERC20.new();
-    this.pair = await MockPair.new(this.token.address, this.fei.address);
-    this.pcvDeposit = await MockPCVDeposit.new(this.token.address);
+    this.fei = await ethers.getContractAt('Fei', await this.core.fei());
+    this.oracle = await (await ethers.getContractFactory('MockOracle')).deploy(500);
+    this.token = await (await ethers.getContractFactory('MockERC20')).deploy();
+    this.pair = await (await ethers.getContractFactory('MockPair')).deploy(this.token.address, this.fei.address);
+    this.pcvDeposit = await (await ethers.getContractFactory('MockPCVDeposit')).deploy(this.token.address);
 
-    this.pcvController = await UniswapPCVController.new(
+    this.pcvController = await (await ethers.getContractFactory('UniswapPCVController')).deploy(
       this.core.address, 
       this.pcvDeposit.address, 
       this.oracle.address,
@@ -332,7 +333,7 @@ describe('UniswapPCVController', function () {
 
     describe('Pair', function() {
       it('Governor set succeeds', async function() {
-        const pair2 = await MockPair.new(this.token.address, this.fei.address);
+        const pair2 = await (await ethers.getContractFactory('MockPair')).deploy(this.token.address, this.fei.address);
         await this.pcvController.setPair(pair2.address, {from: governorAddress});
         expect(await this.pcvController.pair()).to.be.equal(pair2.address);
       });

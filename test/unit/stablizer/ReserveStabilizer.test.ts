@@ -2,6 +2,8 @@ import { expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat';
 import { Signer } from 'ethers'
+
+const toBN = ethers.BigNumber.from
   
 const ReserveStabilizer = artifacts.readArtifactSync('ReserveStabilizer');
 const Fei = artifacts.readArtifactSync('Fei');
@@ -52,12 +54,12 @@ describe('ReserveStabilizer', function () {
     
     this.core = await getCore();
 
-    this.fei = await Fei.at(await this.core.fei());
-    this.token = await MockERC20.new();
-    this.oracle = await MockOracle.new(400); // 400:1 oracle price
-    this.pcvDeposit = await MockPCVDeposit.new(userAddress);
+    this.fei = await ethers.getContractAt('Fei', await this.core.fei());
+    this.token = await (await ethers.getContractFactory('MockERC20')).deploy();
+    this.oracle = await (await ethers.getContractFactory('MockOracle')).deploy(400); // 400:1 oracle price
+    this.pcvDeposit = await (await ethers.getContractFactory('MockPCVDeposit')).deploy(userAddress);
 
-    this.reserveStabilizer = await ReserveStabilizer.new(this.core.address, this.oracle.address, this.oracle.address, this.token.address, '9000');
+    this.reserveStabilizer = await (await ethers.getContractFactory('ReserveStabilizer')).deploy(this.core.address, this.oracle.address, this.oracle.address, this.token.address, '9000');
 
     await this.core.grantBurner(this.reserveStabilizer.address, {from: governorAddress});
 

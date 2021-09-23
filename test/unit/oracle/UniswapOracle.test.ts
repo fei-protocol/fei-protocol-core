@@ -52,10 +52,10 @@ describe.skip('UniswapOracle', function () {
     this.cursor = this.startTime.add(this.delta);
     this.cumulative = this.hundredTwelve.mul(this.delta.add(toBN(2))).mul(toBN(500)).div(toBN(1e12));
     
-    this.pair = await MockPairTrade.new(this.cumulative, 0, this.cursor, toBN(100000).mul(toBN(1e12)), 50000000); // 500:1 FEI/ETH initial price
+    this.pair = await (await ethers.getContractFactory('MockPairTrade')).deploy(this.cumulative, 0, this.cursor, toBN(100000).mul(toBN(1e12)), 50000000); // 500:1 FEI/ETH initial price
 
     this.duration = toBN('600');
-    this.oracle = await UniswapOracle.new(this.core.address, this.pair.address, this.duration, true); // 10 min TWAP using price0
+    this.oracle = await (await ethers.getContractFactory('UniswapOracle')).deploy(this.core.address, this.pair.address, this.duration, true); // 10 min TWAP using price0
   });
 
   describe('Init', function() {

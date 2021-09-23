@@ -4,6 +4,7 @@ import hre, { artifacts, ethers } from 'hardhat'
 import { Signer } from 'ethers'
   
 const StaticPCVDepositWrapper = artifacts.readArtifactSync('StaticPCVDepositWrapper');
+const toBN = ethers.BigNumber.from
 
 describe('StaticPCVDepositWrapper', function () {
   let governorAddress: string
@@ -41,7 +42,7 @@ describe('StaticPCVDepositWrapper', function () {
     this.balance = '2000';
     this.fei = '1000';
     this.core = await getCore();
-    this.deposit = await StaticPCVDepositWrapper.new(
+    this.deposit = await (await ethers.getContractFactory('StaticPCVDepositWrapper')).deploy(
       this.core.address,
       this.balance,
       this.fei

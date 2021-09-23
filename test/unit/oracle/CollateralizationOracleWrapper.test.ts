@@ -45,19 +45,19 @@ describe('CollateralizationOracleWrapper', function () {
   beforeEach(async function () {
     ({ userAddress, guardianAddress, governorAddress } = await getAddresses());
     this.core = await getCore();
-    this.oracle = await MockCollateralizationOracle.new(this.core.address, 2);
+    this.oracle = await (await ethers.getContractFactory('MockCollateralizationOracle')).deploy(this.core.address, 2);
     await this.oracle.set('1000', '3000');
-    this.oracle2 = await MockCollateralizationOracle.new(this.core.address, 2);
+    this.oracle2 = await (await ethers.getContractFactory('MockCollateralizationOracle')).deploy(this.core.address, 2);
 
-    this.oracleWrapper = await CollateralizationOracleWrapper.new(
+    this.oracleWrapper = await (await ethers.getContractFactory('CollateralizationOracleWrapper')).deploy(
       this.core.address,
       '600', // 10 min validity duration
     );
 
-    const proxyContract = await Proxy.new(this.oracleWrapper.address, this.oracleWrapper.address, '0x', { from: userAddress });
+    const proxyContract = await (await ethers.getContractFactory('TransparentUpgradeableProxy')).deploy(this.oracleWrapper.address, this.oracleWrapper.address, '0x', { from: userAddress });
 
     // instantiate the tribalchief pointed at the proxy contract
-    this.oracleWrapper = await CollateralizationOracleWrapper.at(proxyContract.address);
+    this.oracleWrapper = await ethers.getContractAt('CollateralizationOracleWrapper', proxyContract.address);
 
     await this.oracleWrapper.initialize(
       this.core.address,
