@@ -1,12 +1,6 @@
-const {
-  BN,
-  time,
-  expectRevert,
-  expect,
-  expectApprox,
-  getAddresses,
-  getCore, 
-} = require('../../helpers');
+import { time, expectRevert, expectApprox, getAddresses, getCore } from '../../helpers';
+import { expect } from 'chai'
+import hre, { ethers, artifacts } from 'hardhat';
     
 const RateLimitedMinter = artifacts.readArtifactSync('MockRateLimitedMinter');
 const Fei = artifacts.readArtifactSync('Fei');

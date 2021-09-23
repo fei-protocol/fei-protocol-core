@@ -1,13 +1,6 @@
-const {
-  ZERO_ADDRESS,
-  BN,
-  expectRevert,
-  expect,
-  time,
-  getAddresses,
-  getCore,
-  expectApprox,
-} = require('../../helpers');
+import { ZERO_ADDRESS, expectRevert, time, getAddresses, getCore, expectApprox } from '../../helpers';
+import { expect } from 'chai';
+import hre, { ethers, artifacts } from 'hardhat'
     
 const FeiTimedMinter = artifacts.readArtifactSync('FeiTimedMinter');
 const Fei = artifacts.readArtifactSync('Fei');

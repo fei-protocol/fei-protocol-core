@@ -1,14 +1,7 @@
-const hre = require('hardhat');
+import hre, { ethers, artifacts } from 'hardhat';
 
-const {
-  web3,
-  BN,
-  expectRevert,
-  balance,
-  expect,
-  getAddresses,
-  getCore,
-} = require('../../helpers');
+import { expectRevert, balance, getAddresses, getCore } from '../../helpers';
+import { expect } from 'chai'
   
 const EthReserveStabilizer = artifacts.readArtifactSync('EthReserveStabilizer');
 const Fei = artifacts.readArtifactSync('Fei');

@@ -1,10 +1,6 @@
-const {
-  BN,
-  expectRevert,
-  expect,
-  getAddresses,
-  getCore,
-} = require('../../helpers');
+import { expectRevert, getAddresses, getCore } from '../../helpers';
+import { expect } from 'chai'
+import hre, { ethers, artifacts } from 'hardhat';
   
 const ReserveStabilizer = artifacts.readArtifactSync('ReserveStabilizer');
 const Fei = artifacts.readArtifactSync('Fei');

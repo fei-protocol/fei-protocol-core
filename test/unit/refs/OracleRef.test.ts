@@ -1,11 +1,6 @@
-const {
-  expectEvent,
-  expectRevert,
-  expect,
-  BN,
-  getAddresses,
-  getCore,
-} = require('../../helpers');
+import { expectEvent, expectRevert, getAddresses, getCore } from '../../helpers';
+import { expect } from 'chai'
+import hre, { ethers, artifacts } from 'hardhat';
 
 const ReserveStabilizer = artifacts.readArtifactSync('ReserveStabilizer');
 const MockOracle = artifacts.readArtifactSync('MockOracle');

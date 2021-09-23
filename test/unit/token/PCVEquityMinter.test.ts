@@ -1,13 +1,6 @@
-const {
-  ZERO_ADDRESS,
-  BN,
-  expectRevert,
-  expect,
-  time,
-  getAddresses,
-  getCore,
-  expectApprox,
-} = require('../../helpers');
+import { ZERO_ADDRESS, expectRevert, time, getAddresses, getCore, expectApprox } from '../../helpers';
+import { expect } from 'chai'
+import hre, { ethers, artifacts } from 'hardhat';
       
 const PCVEquityMinter = artifacts.readArtifactSync('PCVEquityMinter');
 const PCVSwapper = artifacts.readArtifactSync('MockPCVSwapper');

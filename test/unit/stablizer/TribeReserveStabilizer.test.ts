@@ -1,11 +1,6 @@
-const {
-  BN,
-  MAX_UINT256,
-  expectRevert,
-  expect,
-  getAddresses,
-  getCore,
-} = require('../../helpers');
+import { MAX_UINT256, expectRevert, getAddresses, getCore } from '../../helpers';
+import hre, { ethers, artifacts } from 'hardhat'
+import { expect } from 'chai'
   
 const TribeReserveStabilizer = artifacts.readArtifactSync('TribeReserveStabilizer');
 const Fei = artifacts.readArtifactSync('Fei');
