@@ -1,0 +1,63 @@
+{
+    "proposal_title": "FIP-28/29 FeiRari TRIBE and Optimistic Approval",
+    "proposal_commands": [
+        {
+            "target": "",
+            "address": "",
+            "values": "0",
+            "method": "",
+            "arguments": [],
+            "description": "Make fTRIBE unborrowable"
+        },
+        {
+            "target": "fei",
+            "values": "0",
+            "method": "mint(address,uint256)",
+            "arguments": [
+                "TBD multisig",
+                "50000000000000000000000000"
+            ],
+            "description": "Mint 50m FEI to Multisig"
+        },
+        {
+            "target": "",
+            "address": "",
+            "values": "0",
+            "method": "",
+            "arguments": [],
+            "description": "set admin Comptroller"
+        },
+        {
+            "target": "",
+            "address": "",
+            "values": "0",
+            "method": "",
+            "arguments": [],
+            "description": "set admin fDAI"
+        },
+        {
+            "target": "",
+            "address": "",
+            "values": "0",
+            "method": "",
+            "arguments": [],
+            "description": "set admin fTRIBE"
+        },
+        {
+            "target": "",
+            "address": "",
+            "values": "0",
+            "method": "",
+            "arguments": [],
+            "description": "set admin fETH"
+        },
+        {
+            "target": "",
+            "address": "",
+            "values": "0",
+            "method": "",
+            "arguments": [],
+            "description": "set admin fFEI"
+        }
+    ]
+}
