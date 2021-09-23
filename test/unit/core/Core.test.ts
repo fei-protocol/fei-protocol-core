@@ -1,6 +1,7 @@
 import { expectEvent, expectRevert, getCore, getAddresses } from '../../helpers';
 import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat'
+import { Signer } from 'ethers'
 
 const Tribe = artifacts.readArtifactSync('Tribe');
 const MockCoreRef = artifacts.readArtifactSync('MockCoreRef');

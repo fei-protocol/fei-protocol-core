@@ -1,6 +1,7 @@
 import { expectEvent, expectRevert, time, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat'
+import { Signer } from 'ethers'
 
 const StableSwapOperatorV1 = artifacts.readArtifactSync('StableSwapOperatorV1');
 const MockCurve3pool = artifacts.readArtifactSync('MockCurve3pool');
@@ -15,6 +16,33 @@ describe('StableSwapOperatorV1', function () {
   let minterAddress: string
   let burnerAddress: string
   let pcvControllerAddress: string
+
+  let impersonatedSigners: { [key: string]: Signer } = { }
+
+  before(async() => {
+    const addresses = await getAddresses()
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress,
+      addresses.pcvControllerAddress,
+      addresses.minterAddress,
+      addresses.burnerAddress,
+      addresses.beneficiaryAddress1,
+      addresses.beneficiaryAddress2
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
+  });
 
   beforeEach(async function () {
     ({

@@ -1,6 +1,7 @@
 import { ZERO_ADDRESS, getCore, getAddresses, expectRevert, expectEvent } from '../../helpers';
 import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat'
+import { Signer } from 'ethers'
 
 const CollateralizationOracle = artifacts.readArtifactSync('CollateralizationOracle');
 const MockPCVDepositV2 = artifacts.readArtifactSync('MockPCVDepositV2');
@@ -15,16 +16,44 @@ describe('CollateralizationOracle', function () {
   let guardianAddress: string
   let governorAddress: string
 
+  let impersonatedSigners: { [key: string]: Signer } = { }
+
+  before(async() => {
+    const addresses = await getAddresses()
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress,
+      addresses.pcvControllerAddress,
+      addresses.minterAddress,
+      addresses.burnerAddress,
+      addresses.beneficiaryAddress1,
+      addresses.beneficiaryAddress2
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
+  });
+
+
   beforeEach(async function () {
     ({ userAddress, guardianAddress, governorAddress } = await getAddresses());
     this.core = await getCore();
-    await this.core.grantMinter(userAddress, {from: governorAddress});
-    this.fei = await IFei.at(await this.core.fei());
+    await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(userAddress);
+    this.fei = await ethers.getContractAt('IFei', await this.core.fei());
 
     // fake stablecoin
-    this.oracle1 = await MockOracleCoreRef.new(this.core.address, 1);
-    this.token1 = await MockERC20.new();
-    this.deposit1 = await MockPCVDepositV2.new(
+    this.oracle1 = await(await ethers.getContractFactory('MockOracleCoreRef')).deploy(this.core.address, 1);
+    this.token1 = await(await ethers.getContractFactory('MockERC20')).deploy();
+    this.deposit1 = await(await ethers.getContractFactory('MockPCVDepositV2')).deploy(
       this.core.address,
       this.token1.address,
       `2000${e18}`, // balance
@@ -32,9 +61,9 @@ describe('CollateralizationOracle', function () {
     );
     await this.fei.mint(this.deposit1.address, `1000${e18}`);
     // fake ETH
-    this.oracle2 = await MockOracleCoreRef.new(this.core.address, 3000);
-    this.token2 = await MockERC20.new();
-    this.deposit2 = await MockPCVDepositV2.new(
+    this.oracle2 = await (await ethers.getContractFactory('MockOracleCoreRef')).deploy(this.core.address, 3000);
+    this.token2 = await (await ethers.getContractFactory('MockERC20')).deploy();
+    this.deposit2 = await(await ethers.getContractFactory('MockPCVDepositV2')).deploy(
       this.core.address,
       this.token2.address,
       `1${e18}`, // balance
@@ -55,12 +84,12 @@ describe('CollateralizationOracle', function () {
     //   Circulating :
     //     - 2500 FEI
     // create oracle
-    this.oracle = await CollateralizationOracle.new(this.core.address, [], [], []);
+    this.oracle = await (await ethers.getContractFactory('CollateralizationOracle')).deploy(this.core.address, [], [], []);
   });
 
   describe('getters', function() {
     beforeEach(async function() {
-      this.oracle = await CollateralizationOracle.new(
+      this.oracle = await (await ethers.getContractFactory('CollateralizationOracle')).deploy(
         this.core.address, 
         [this.deposit1.address, this.deposit2.address], 
         [this.token1.address, this.token2.address], 
@@ -103,7 +132,7 @@ describe('CollateralizationOracle', function () {
   describe('Batched setters', function() {
     describe('Set Oracles', function() {
       beforeEach(async function() {
-        await this.oracle.setOracles([this.token1.address, this.token2.address], [this.oracle1.address, this.oracle2.address], {from: governorAddress});
+        await this.oracle.connect(impersonatedSigners[governorAddress]).setOracles([this.token1.address, this.token2.address], [this.oracle1.address, this.oracle2.address]);
       });
 
       it('tokenToOracle(address) => address', async function() {
@@ -113,14 +142,14 @@ describe('CollateralizationOracle', function () {
 
       it('non-governor reverts', async function() {
         await expectRevert(
-          this.oracle.setOracles([this.token1.address, this.token2.address], [this.oracle1.address, this.oracle2.address], {from: userAddress}),
+          this.oracle.connect(impersonatedSigners[userAddress]).setOracles([this.token1.address, this.token2.address], [this.oracle1.address, this.oracle2.address]),
           'CoreRef: Caller is not a governor'
         );
       });
       
       describe('Add Deposits', function() {
         beforeEach(async function() {
-          await this.oracle.addDeposits([this.deposit1.address, this.deposit2.address], {from: governorAddress});
+          await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposits([this.deposit1.address, this.deposit2.address]);
         });
 
         it('isTokenInPcv(address) => bool', async function() {
@@ -156,14 +185,14 @@ describe('CollateralizationOracle', function () {
 
         it('non-governor reverts', async function() {
           await expectRevert(
-            this.oracle.addDeposits([this.deposit1.address, this.deposit2.address], {from: userAddress}),
+            this.oracle.connect(impersonatedSigners[userAddress]).addDeposits([this.deposit1.address, this.deposit2.address]),
             'CoreRef: Caller is not a governor'
           );
         });
 
         describe('Remove Deposits', function() {
           beforeEach(async function() {
-            await this.oracle.removeDeposits([this.deposit1.address, this.deposit2.address], {from: governorAddress});
+            await this.oracle.connect(impersonatedSigners[governorAddress]).removeDeposits([this.deposit1.address, this.deposit2.address]);
           });
   
           it('depositToToken(address) => address', async function() {
@@ -177,7 +206,7 @@ describe('CollateralizationOracle', function () {
   
           it('non-governor reverts', async function() {
             await expectRevert(
-              this.oracle.removeDeposits([this.deposit1.address, this.deposit2.address], {from: userAddress}),
+              this.oracle.connect(impersonatedSigners[userAddress]).removeDeposits([this.deposit1.address, this.deposit2.address]),
               'CoreRef: Caller is not a governor'
             );
           });
@@ -188,9 +217,9 @@ describe('CollateralizationOracle', function () {
 
   describe('addDeposit()', function() {
     it('should emit DepositAdd', async function() {
-      await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
+      await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
       expectEvent(
-        await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress }),
+        await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address),
         'DepositAdd',
         {
           from: governorAddress,
@@ -200,39 +229,36 @@ describe('CollateralizationOracle', function () {
       );
     });
     it('should update maps & array properties', async function() {
-      await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
-      await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
+      await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
+      await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
       expect(await this.oracle.getDepositForToken(this.token1.address, '0')).to.be.equal(this.deposit1.address);
       expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(this.token1.address);
       expect(await this.oracle.getTokenInPcv('0')).to.be.equal(this.token1.address);
       expect(await this.oracle.isTokenInPcv(this.token1.address)).to.be.equal(true);
     });
     it('should revert if not governor', async function() {
-      await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
+      await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
       await expectRevert(
-        this.oracle.addDeposit(
-          this.deposit1.address,
-          { from: userAddress }
+        this.oracle.connect(impersonatedSigners[userAddress]).addDeposit(
+          this.deposit1.address
         ),
         'CoreRef: Caller is not a governor'
       );
     });
     it('should revert if deposit is duplicate', async function() {
-      await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
-      await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
+      await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
+      await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
       await expectRevert(
-        this.oracle.addDeposit(
-          this.deposit1.address,
-          { from: governorAddress }
+        this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(
+          this.deposit1.address
         ),
         'CollateralizationOracle: deposit duplicate'
       );
     });
     it('should revert if deposit has no oracle', async function() {
       await expectRevert(
-        this.oracle.addDeposit(
+        this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(
           this.deposit1.address,
-          { from: governorAddress }
         ),
         'CollateralizationOracle: no oracle'
       );
@@ -241,10 +267,10 @@ describe('CollateralizationOracle', function () {
 
   describe('removeDeposit()', function() {
     it('should emit DepositRemove', async function() {
-      await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
-      await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
+      await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
+      await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
       expectEvent(
-        await this.oracle.removeDeposit(this.deposit1.address, { from: governorAddress }),
+        await this.oracle.connect(impersonatedSigners[governorAddress]).removeDeposit(this.deposit1.address),
         'DepositRemove',
         {
           from: governorAddress,
@@ -254,14 +280,14 @@ describe('CollateralizationOracle', function () {
     });
     it('should update maps & array properties', async function() {
       // initial situation : 1 deposit
-      await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
-      await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
+      await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
+      await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
       expect(await this.oracle.getDepositForToken(this.token1.address, '0')).to.be.equal(this.deposit1.address);
       expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(this.token1.address);
       expect(await this.oracle.getTokenInPcv('0')).to.be.equal(this.token1.address);
       expect(await this.oracle.isTokenInPcv(this.token1.address)).to.be.equal(true);
       // remove deposit
-      await this.oracle.removeDeposit(this.deposit1.address, { from: governorAddress });
+      await this.oracle.connect(impersonatedSigners[governorAddress]).removeDeposit(this.deposit1.address);
       // after remove
       await expectRevert.unspecified(this.oracle.getDepositForToken(this.token1.address, '0'));
       expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(ZERO_ADDRESS);
@@ -290,18 +316,18 @@ describe('CollateralizationOracle', function () {
 
   describe('swapDeposit()', function() {
     beforeEach(async function() {
-      this.deposit1bis = await MockPCVDepositV2.new(
+      this.deposit1bis = await (await ethers.getContractFactory('MockPCVDepositV2')).deploy(
         this.core.address,
         this.token1.address,
         `2000${e18}`, // balance
         `1000${e18}`// protocol FEI
       );
-      await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
-      await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
+      await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
+      await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
     });
     it('should emit DepositRemove', async function() {
       expectEvent(
-        await this.oracle.swapDeposit(this.deposit1.address, this.deposit1bis.address, { from: governorAddress }),
+        await this.oracle.connect(impersonatedSigners[governorAddress]).swapDeposit(this.deposit1.address, this.deposit1bis.address),
         'DepositRemove',
         {
           from: governorAddress,
@@ -311,7 +337,7 @@ describe('CollateralizationOracle', function () {
     });
     it('should emit DepositAdd', async function() {
       expectEvent(
-        await this.oracle.swapDeposit(this.deposit1.address, this.deposit1bis.address, { from: governorAddress }),
+        await this.oracle.connect(impersonatedSigners[governorAddress]).swapDeposit(this.deposit1.address, this.deposit1bis.address),
         'DepositAdd',
         {
           from: governorAddress,
@@ -327,7 +353,7 @@ describe('CollateralizationOracle', function () {
       expect(await this.oracle.getTokenInPcv('0')).to.be.equal(this.token1.address);
       expect(await this.oracle.isTokenInPcv(this.token1.address)).to.be.equal(true);
       // swap deposit
-      await this.oracle.swapDeposit(this.deposit1.address, this.deposit1bis.address, { from: governorAddress });
+      await this.oracle.connect(impersonatedSigners[governorAddress]).swapDeposit(this.deposit1.address, this.deposit1bis.address);
       // after swap
       expect(await this.oracle.getDepositForToken(this.token1.address, '0')).to.be.equal(this.deposit1bis.address);
       await expectRevert.unspecified(this.oracle.getDepositForToken(this.token1.address, '1'));
@@ -338,32 +364,29 @@ describe('CollateralizationOracle', function () {
     });
     it('should revert if not governor', async function() {
       await expectRevert(
-        this.oracle.swapDeposit(
+        this.oracle.connect(impersonatedSigners[userAddress]).swapDeposit(
           this.deposit1.address,
-          this.deposit1bis.address,
-          { from: userAddress }
+          this.deposit1bis.address
         ),
         'CoreRef: Caller is not a governor'
       );
     });
     it('should revert if deposit is not found', async function() {
       await expectRevert(
-        this.oracle.swapDeposit(
+        this.oracle.connect(impersonatedSigners[governorAddress]).swapDeposit(
           this.deposit2.address,
-          this.deposit1bis.address,
-          { from: governorAddress }
+          this.deposit1bis.address
         ),
         'CollateralizationOracle: deposit not found'
       );
     });
     it('should revert if new deposit is already found', async function() {
-      await this.oracle.setOracle(this.token2.address, this.oracle2.address, { from: governorAddress });
-      await this.oracle.addDeposit(this.deposit2.address, { from: governorAddress });
+      await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token2.address, this.oracle2.address);
+      await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit2.address);
       await expectRevert(
-        this.oracle.swapDeposit(
+        this.oracle.connect(impersonatedSigners[governorAddress]).swapDeposit(
           this.deposit1.address,
-          this.deposit2.address,
-          { from: governorAddress }
+          this.deposit2.address
         ),
         'CollateralizationOracle: deposit duplicate'
       );
@@ -372,19 +395,19 @@ describe('CollateralizationOracle', function () {
 
   describe('setDepositExclusion()', function() {
     it('should allow guardian to exclude a deposit', async function() {
-      await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
-      await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
-      await this.oracle.setOracle(this.token2.address, this.oracle2.address, { from: governorAddress });
-      await this.oracle.addDeposit(this.deposit2.address, { from: governorAddress });
+      await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
+      await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
+      await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token2.address, this.oracle2.address);
+      await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit2.address);
 
-      expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.bignumber.equal(`5000${e18}`);
-      await this.oracle.setDepositExclusion(this.deposit1.address, true, { from: guardianAddress });
-      expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.bignumber.equal(`3000${e18}`);
+      expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.equal(`5000${e18}`);
+      await this.oracle.connect(impersonatedSigners[guardianAddress]).setDepositExclusion(this.deposit1.address, true);
+      expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.equal(`3000${e18}`);
       expect((await this.oracle.pcvStats()).validityStatus).to.be.equal(true);
     });
     it('should revert if not guardian', async function() {
       await expectRevert(
-        this.oracle.setDepositExclusion(this.deposit1.address, true, { from: userAddress }),
+        this.oracle.connect(impersonatedSigners[userAddress]).setDepositExclusion(this.deposit1.address, true),
         'CoreRef: Caller is not a guardian or governor'
       );
     });
@@ -393,7 +416,7 @@ describe('CollateralizationOracle', function () {
   describe('setOracle()', function() {
     it('should emit OracleUpdate', async function() {
       expectEvent(
-        await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress }),
+        await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address),
         'OracleUpdate',
         {
           from: governorAddress,
@@ -404,24 +427,24 @@ describe('CollateralizationOracle', function () {
       );
     });
     it('should update maps & array properties', async function() {
-      await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
+      await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
       expect(await this.oracle.tokenToOracle(this.token1.address)).to.be.equal(this.oracle1.address);
     });
     it('should revert if not governor', async function() {
       await expectRevert(
-        this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: userAddress }),
+        this.oracle.connect(impersonatedSigners[userAddress]).setOracle(this.token1.address, this.oracle1.address),
         'CoreRef: Caller is not a governor'
       );
     });
     it('should revert if token = 0x0', async function() {
       await expectRevert(
-        this.oracle.setOracle(ZERO_ADDRESS, this.oracle1.address, { from: governorAddress }),
+        this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(ZERO_ADDRESS, this.oracle1.address),
         'CollateralizationOracle: token must be != 0x0'
       );
     });
     it('should revert if oracle = 0x0', async function() {
       await expectRevert(
-        this.oracle.setOracle(this.token1.address, ZERO_ADDRESS, { from: governorAddress }),
+        this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, ZERO_ADDRESS),
         'CollateralizationOracle: oracle must be != 0x0'
       );
     });
@@ -431,8 +454,8 @@ describe('CollateralizationOracle', function () {
     describe('update()', function() {
       it('should propagage update() calls', async function() {
         expect(await this.oracle1.updated()).to.be.equal(false);
-        await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
-        await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
+        await this.connect(impersonatedSigners[governorAddress]).oracle.setOracle(this.token1.address, this.oracle1.address);
+        await this.connect(impersonatedSigners[governorAddress]).oracle.addDeposit(this.deposit1.address);
         await this.oracle.update();
         expect(await this.oracle1.updated()).to.be.equal(true);
       });
@@ -440,10 +463,10 @@ describe('CollateralizationOracle', function () {
         expect(await this.oracle1.updated()).to.be.equal(false);
         expect(await this.oracle2.updated()).to.be.equal(false);
         await this.oracle1.pause({ from: governorAddress });
-        await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
-        await this.oracle.setOracle(this.token2.address, this.oracle2.address, { from: governorAddress });
-        await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
-        await this.oracle.addDeposit(this.deposit2.address, { from: governorAddress });
+        await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
+        await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token2.address, this.oracle2.address);
+        await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
+        await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit2.address);
         await this.oracle.update();
         expect(await this.oracle1.updated()).to.be.equal(false);
         expect(await this.oracle2.updated()).to.be.equal(true);
@@ -453,8 +476,8 @@ describe('CollateralizationOracle', function () {
     describe('isOutdated()', function() {
       it('should be outdated if one of the oracles is outdated', async function() {
         expect(await this.oracle.isOutdated()).to.be.equal(false);
-        await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
-        await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
+        await this.connect(impersonatedSigners[governorAddress]).oracle.setOracle(this.token1.address, this.oracle1.address);
+        await this.connect(impersonatedSigners[governorAddress]).oracle.addDeposit(this.deposit1.address);
         await this.oracle1.setOutdated(true);
         expect(await this.oracle.isOutdated()).to.be.equal(true);
       });
@@ -462,38 +485,38 @@ describe('CollateralizationOracle', function () {
         expect(await this.oracle1.isOutdated()).to.be.equal(false);
         expect(await this.oracle2.isOutdated()).to.be.equal(false);
         await this.oracle1.setOutdated(true);
-        await this.oracle1.pause({ from: governorAddress });
+        await this.oracle1.connect(impersonatedSigners[governorAddress]).pause();
         expect(await this.oracle1.isOutdated()).to.be.equal(true);
         expect(await this.oracle2.isOutdated()).to.be.equal(false);
-        await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
-        await this.oracle.setOracle(this.token2.address, this.oracle2.address, { from: governorAddress });
-        await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
-        await this.oracle.addDeposit(this.deposit2.address, { from: governorAddress });
+        await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
+        await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token2.address, this.oracle2.address);
+        await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
+        await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit2.address);
         expect(await this.oracle.isOutdated()).to.be.equal(false);
       });
     });
 
     describe('read()', function() {
       it('should return the global collateral ratio', async function() {
-        await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
-        await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
-        await this.oracle.setOracle(this.token2.address, this.oracle2.address, { from: governorAddress });
-        await this.oracle.addDeposit(this.deposit2.address, { from: governorAddress });
+        await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
+        await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
+        await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token2.address, this.oracle2.address);
+        await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit2.address);
         const val = await this.oracle.read();
-        expect(val[0].value).to.be.bignumber.equal(`2${e18}`); // collateral ratio
+        expect(val[0].value).to.be.equal(`2${e18}`); // collateral ratio
         expect(val[1]).to.be.equal(true); // valid
       });
       it('should be invalid if the contract is paused', async function() {
-        await this.oracle.pause({ from: governorAddress });
-        await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
-        await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
+        await this.oracle.connect(impersonatedSigners[governorAddress]).pause();
+        await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
+        await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
         const val = await this.oracle.read();
         expect(val[1]).to.be.equal(false); // not valid
       });
       it('should be invalid if an oracle is invalid', async function() {
         await this.oracle1.setValid(false);
-        await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
-        await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
+        await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
+        await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
         const val = await this.oracle.read();
         expect(val[1]).to.be.equal(false); // not valid
       });
@@ -502,15 +525,15 @@ describe('CollateralizationOracle', function () {
 
   describe('ICollateralizationOracle', function() {
     beforeEach(async function() {
-      await this.oracle.setOracle(this.token1.address, this.oracle1.address, { from: governorAddress });
-      await this.oracle.addDeposit(this.deposit1.address, { from: governorAddress });
-      await this.oracle.setOracle(this.token2.address, this.oracle2.address, { from: governorAddress });
-      await this.oracle.addDeposit(this.deposit2.address, { from: governorAddress });
+      await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
+      await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
+      await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token2.address, this.oracle2.address);
+      await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit2.address);
     });
 
     describe('isOvercollateralized()', function() {
       it('should revert if paused', async function() {
-        await this.oracle.pause({ from: governorAddress });
+        await this.oracle.connect(impersonatedSigners[governorAddress]).pause();
         await expectRevert(this.oracle.isOvercollateralized(), 'Pausable: paused');
       });
       it('should revert if invalid', async function() {
@@ -531,32 +554,32 @@ describe('CollateralizationOracle', function () {
 
     describe('pcvStats()', function() {
       it('should return the PCV value in USD', async function() {
-        expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.bignumber.equal(`5000${e18}`);
+        expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.equal(`5000${e18}`);
         await this.oracle2.setExchangeRate(5000); // 3000 -> 5000
-        expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.bignumber.equal(`7000${e18}`);
+        expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.equal(`7000${e18}`);
       });
       it('should return the total amount of circulating fei', async function() {
-        expect((await this.oracle.pcvStats()).userCirculatingFei).to.be.bignumber.equal(`2500${e18}`);
+        expect((await this.oracle.pcvStats()).userCirculatingFei).to.be.equal(`2500${e18}`);
         await this.fei.mint(userAddress, `2500${e18}`);
-        expect((await this.oracle.pcvStats()).userCirculatingFei).to.be.bignumber.equal(`5000${e18}`);
+        expect((await this.oracle.pcvStats()).userCirculatingFei).to.be.equal(`5000${e18}`);
         await this.fei.mint(userAddress, `2500${e18}`);
-        expect((await this.oracle.pcvStats()).userCirculatingFei).to.be.bignumber.equal(`7500${e18}`);
+        expect((await this.oracle.pcvStats()).userCirculatingFei).to.be.equal(`7500${e18}`);
       });
       it('should return the PCV equity in USD (PCV value - circulating FEI)', async function() {
-        expect((await this.oracle.pcvStats()).protocolEquity).to.be.bignumber.equal(`2500${e18}`);
+        expect((await this.oracle.pcvStats()).protocolEquity).to.be.equal(`2500${e18}`);
         await this.fei.mint(userAddress, `2500${e18}`);
-        expect((await this.oracle.pcvStats()).protocolEquity).to.be.bignumber.equal('0');
+        expect((await this.oracle.pcvStats()).protocolEquity).to.be.equal('0');
         await this.oracle2.setExchangeRate(4000); // 3000 -> 4000
-        expect((await this.oracle.pcvStats()).protocolEquity).to.be.bignumber.equal(`1000${e18}`);
+        expect((await this.oracle.pcvStats()).protocolEquity).to.be.equal(`1000${e18}`);
         await this.fei.mint(userAddress, `5000${e18}`);
-        expect((await this.oracle.pcvStats()).protocolEquity).to.be.bignumber.equal(`-4000${e18}`);
+        expect((await this.oracle.pcvStats()).protocolEquity).to.be.equal(`-4000${e18}`);
       });
       it('should be invalid if an oracle is invalid', async function() {
         await this.oracle1.setValid(false);
         expect((await this.oracle.pcvStats()).validityStatus).to.be.equal(false);
       });
       it('should be invalid if paused', async function() {
-        await this.oracle.pause({ from: governorAddress });
+        await this.oracle.connect(impersonatedSigners[governorAddress]).pause();
         expect((await this.oracle.pcvStats()).validityStatus).to.be.equal(false);
       });
       it('should be valid if not paused and all oracles are valid', async function() {

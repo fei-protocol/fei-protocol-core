@@ -1,7 +1,9 @@
 import hre, { ethers, artifacts } from 'hardhat';
-
 import { expectRevert, balance, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai'
+import { Signer } from 'ethers'
+
+const toBN = ethers.BigNumber.from
   
 const EthReserveStabilizer = artifacts.readArtifactSync('EthReserveStabilizer');
 const Fei = artifacts.readArtifactSync('Fei');
@@ -23,6 +25,33 @@ describe('EthReserveStabilizer', function () {
     } 
     
     return undefined;
+  });
+
+  let impersonatedSigners: { [key: string]: Signer } = { }
+
+  before(async() => {
+    const addresses = await getAddresses()
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress,
+      addresses.pcvControllerAddress,
+      addresses.minterAddress,
+      addresses.burnerAddress,
+      addresses.beneficiaryAddress1,
+      addresses.beneficiaryAddress2
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
   });
 
   beforeEach(async function () {
@@ -59,10 +88,10 @@ describe('EthReserveStabilizer', function () {
         const reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
 
         this.expectedOut = toBN('90000');
-        expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
+        expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.equal(this.expectedOut);
 
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
-        expect(await this.reserveStabilizer.balance()).to.be.bignumber.equal(this.initialBalance.sub(this.expectedOut));
+        expect(await this.fei.balanceOf(userAddress)).to.be.equal(toBN('0'));
+        expect(await this.reserveStabilizer.balance()).to.be.equal(this.initialBalance.sub(this.expectedOut));
       });
     });
 
@@ -75,10 +104,10 @@ describe('EthReserveStabilizer', function () {
         const reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
 
         this.expectedOut = toBN('45000');
-        expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
+        expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.equal(this.expectedOut);
 
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
-        expect(await this.reserveStabilizer.balance()).to.be.bignumber.equal(this.initialBalance.sub(this.expectedOut));
+        expect(await this.fei.balanceOf(userAddress)).to.be.equal(toBN('0'));
+        expect(await this.reserveStabilizer.balance()).to.be.equal(this.initialBalance.sub(this.expectedOut));
       });
     });
 
@@ -91,10 +120,10 @@ describe('EthReserveStabilizer', function () {
         const reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
 
         this.expectedOut = toBN('95000');
-        expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(this.expectedOut);
+        expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.equal(this.expectedOut);
 
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
-        expect(await this.reserveStabilizer.balance()).to.be.bignumber.equal(this.initialBalance.sub(this.expectedOut));
+        expect(await this.fei.balanceOf(userAddress)).to.be.equal(toBN('0'));
+        expect(await this.reserveStabilizer.balance()).to.be.equal(this.initialBalance.sub(this.expectedOut));
       });
     });
 
@@ -127,7 +156,7 @@ describe('EthReserveStabilizer', function () {
       await this.reserveStabilizer.deposit();
 
       expect(await web3.eth.getBalance(this.reserveStabilizer.address)).to.be.equal(reserveBalanceBefore.add(toBN('10000')).toString());
-      expect(await this.weth.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal('0');
+      expect(await this.weth.balanceOf(this.reserveStabilizer.address)).to.be.equal('0');
     });
   });
 
@@ -140,8 +169,8 @@ describe('EthReserveStabilizer', function () {
       const reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
       const userBalanceAfter = await balance.current(userAddress);
 
-      expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.bignumber.equal(toBN('10000'));
-      expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(toBN('10000'));
+      expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.equal(toBN('10000'));
+      expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal(toBN('10000'));
     });
 
     it('not enough eth reverts', async function() {
@@ -156,7 +185,7 @@ describe('EthReserveStabilizer', function () {
   describe('Set USD per FEI', function() {
     it('governor succeeds', async function() {
       await this.reserveStabilizer.setUsdPerFeiRate('10000', {from: governorAddress});
-      expect(await this.reserveStabilizer.usdPerFeiBasisPoints()).to.be.bignumber.equal(toBN('10000'));
+      expect(await this.reserveStabilizer.usdPerFeiBasisPoints()).to.be.equal(toBN('10000'));
     });
 
     it('non-governor reverts', async function() {

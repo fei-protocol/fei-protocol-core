@@ -1,6 +1,7 @@
 import { ZERO_ADDRESS, time, getCore, getAddresses, expectRevert, expectEvent } from '../../helpers';
 import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat'
+import { Signer } from 'ethers'
 
 const CollateralizationOracleWrapper = artifacts.readArtifactSync('CollateralizationOracleWrapper');
 const MockCollateralizationOracle = artifacts.readArtifactSync('MockCollateralizationOracle');
@@ -12,6 +13,34 @@ describe('CollateralizationOracleWrapper', function () {
   let userAddress: string
   let guardianAddress: string
   let governorAddress: string
+
+  let impersonatedSigners: { [key: string]: Signer } = { }
+
+  before(async() => {
+    const addresses = await getAddresses()
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress,
+      addresses.pcvControllerAddress,
+      addresses.minterAddress,
+      addresses.burnerAddress,
+      addresses.beneficiaryAddress1,
+      addresses.beneficiaryAddress2
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
+  });
+
 
   beforeEach(async function () {
     ({ userAddress, guardianAddress, governorAddress } = await getAddresses());
@@ -43,25 +72,25 @@ describe('CollateralizationOracleWrapper', function () {
       expect(await this.oracleWrapper.collateralizationOracle()).to.be.equal(this.oracle.address);
     });
     it('cachedProtocolControlledValue()', async function() {
-      expect(await this.oracleWrapper.cachedProtocolControlledValue()).to.be.bignumber.equal('0');
+      expect(await this.oracleWrapper.cachedProtocolControlledValue()).to.be.equal('0');
       await this.oracleWrapper.update();
-      expect(await this.oracleWrapper.cachedProtocolControlledValue()).to.be.bignumber.equal('3000');
+      expect(await this.oracleWrapper.cachedProtocolControlledValue()).to.be.equal('3000');
     });
     it('cachedUserCirculatingFei()', async function() {
-      expect(await this.oracleWrapper.cachedUserCirculatingFei()).to.be.bignumber.equal('0');
+      expect(await this.oracleWrapper.cachedUserCirculatingFei()).to.be.equal('0');
       await this.oracleWrapper.update();
-      expect(await this.oracleWrapper.cachedUserCirculatingFei()).to.be.bignumber.equal('1000');
+      expect(await this.oracleWrapper.cachedUserCirculatingFei()).to.be.equal('1000');
     });
     it('cachedProtocolEquity()', async function() {
-      expect(await this.oracleWrapper.cachedProtocolEquity()).to.be.bignumber.equal('0');
+      expect(await this.oracleWrapper.cachedProtocolEquity()).to.be.equal('0');
       await this.oracleWrapper.update();
-      expect(await this.oracleWrapper.cachedProtocolEquity()).to.be.bignumber.equal('2000');
+      expect(await this.oracleWrapper.cachedProtocolEquity()).to.be.equal('2000');
     });
     it('deviationThresholdBasisPoints()', async function() {
-      expect(await this.oracleWrapper.deviationThresholdBasisPoints()).to.be.bignumber.equal('500');
+      expect(await this.oracleWrapper.deviationThresholdBasisPoints()).to.be.equal('500');
     });
     it('duration()', async function() {
-      expect(await this.oracleWrapper.duration()).to.be.bignumber.equal('600');
+      expect(await this.oracleWrapper.duration()).to.be.equal('600');
     });
   });
 
@@ -154,13 +183,13 @@ describe('CollateralizationOracleWrapper', function () {
   describe('IOracle', function() {
     describe('update()', function() {
       it('should refresh the cached values', async function() {
-        expect(await this.oracleWrapper.cachedProtocolControlledValue()).to.be.bignumber.equal('0');
-        expect(await this.oracleWrapper.cachedUserCirculatingFei()).to.be.bignumber.equal('0');
-        expect(await this.oracleWrapper.cachedProtocolEquity()).to.be.bignumber.equal('0');
+        expect(await this.oracleWrapper.cachedProtocolControlledValue()).to.be.equal('0');
+        expect(await this.oracleWrapper.cachedUserCirculatingFei()).to.be.equal('0');
+        expect(await this.oracleWrapper.cachedProtocolEquity()).to.be.equal('0');
         await this.oracleWrapper.update();
-        expect(await this.oracleWrapper.cachedProtocolControlledValue()).to.be.bignumber.equal('3000');
-        expect(await this.oracleWrapper.cachedUserCirculatingFei()).to.be.bignumber.equal('1000');
-        expect(await this.oracleWrapper.cachedProtocolEquity()).to.be.bignumber.equal('2000');
+        expect(await this.oracleWrapper.cachedProtocolControlledValue()).to.be.equal('3000');
+        expect(await this.oracleWrapper.cachedUserCirculatingFei()).to.be.equal('1000');
+        expect(await this.oracleWrapper.cachedProtocolEquity()).to.be.equal('2000');
       });
       it('should refresh the outdated status', async function() {
         await this.oracleWrapper.update();
@@ -199,24 +228,24 @@ describe('CollateralizationOracleWrapper', function () {
       it('should return the cached collateral ratio', async function() {
         await this.oracleWrapper.update();
         const val = await this.oracleWrapper.read();
-        expect(val[0].value).to.be.bignumber.equal(`3${e18}`); // collateral ratio
+        expect(val[0].value).to.be.equal(`3${e18}`); // collateral ratio
         expect(val[1]).to.be.equal(true); // valid
       });
       it('should be invalid if the contract is paused', async function() {
         await this.oracleWrapper.update();
         await this.oracleWrapper.pause({ from: governorAddress });
         const val = await this.oracleWrapper.read();
-        expect(val[0].value).to.be.bignumber.equal(`3${e18}`); // collateral ratio
+        expect(val[0].value).to.be.equal(`3${e18}`); // collateral ratio
         expect(val[1]).to.be.equal(false); // invalid
       });
       it('should be invalid if the cached value is is outdated', async function() {
         await this.oracleWrapper.update();
         const val = await this.oracleWrapper.read();
-        expect(val[0].value).to.be.bignumber.equal(`3${e18}`); // collateral ratio
+        expect(val[0].value).to.be.equal(`3${e18}`); // collateral ratio
         expect(val[1]).to.be.equal(true); // valid
         await time.increase('10000');
         const val2 = await this.oracleWrapper.read();
-        expect(val2[0].value).to.be.bignumber.equal(`3${e18}`); // collateral ratio
+        expect(val2[0].value).to.be.equal(`3${e18}`); // collateral ratio
         expect(val2[1]).to.be.equal(false); // invalid
       });
     });
@@ -244,9 +273,9 @@ describe('CollateralizationOracleWrapper', function () {
     describe('pcvStats()', function() {
       it('should return the cached values', async function() {
         const stats = await this.oracleWrapper.pcvStats();
-        expect(stats.protocolControlledValue).to.be.bignumber.equal('3000');
-        expect(stats.userCirculatingFei).to.be.bignumber.equal('1000');
-        expect(stats.protocolEquity).to.be.bignumber.equal('2000');
+        expect(stats.protocolControlledValue).to.be.equal('3000');
+        expect(stats.userCirculatingFei).to.be.equal('1000');
+        expect(stats.protocolEquity).to.be.equal('2000');
         expect(stats.validityStatus).to.be.equal(true);
       });
       it('should be invalid if paused', async function() {
@@ -290,17 +319,17 @@ describe('CollateralizationOracleWrapper', function () {
     it('should return the actual (not cached) values', async function() {
       await this.oracle.setValid(true);
       const stats = await this.oracleWrapper.pcvStatsCurrent();
-      expect(stats.protocolControlledValue).to.be.bignumber.equal('3000');
-      expect(stats.userCirculatingFei).to.be.bignumber.equal('1000');
-      expect(stats.protocolEquity).to.be.bignumber.equal('2000');
+      expect(stats.protocolControlledValue).to.be.equal('3000');
+      expect(stats.userCirculatingFei).to.be.equal('1000');
+      expect(stats.protocolEquity).to.be.equal('2000');
       expect(stats.validityStatus).to.be.equal(true);
-      expect(await this.oracleWrapper.cachedProtocolControlledValue()).to.be.bignumber.equal('0');
-      expect(await this.oracleWrapper.cachedUserCirculatingFei()).to.be.bignumber.equal('0');
-      expect(await this.oracleWrapper.cachedProtocolEquity()).to.be.bignumber.equal('0');
+      expect(await this.oracleWrapper.cachedProtocolControlledValue()).to.be.equal('0');
+      expect(await this.oracleWrapper.cachedUserCirculatingFei()).to.be.equal('0');
+      expect(await this.oracleWrapper.cachedProtocolEquity()).to.be.equal('0');
       await this.oracleWrapper.update();
-      expect(await this.oracleWrapper.cachedProtocolControlledValue()).to.be.bignumber.equal('3000');
-      expect(await this.oracleWrapper.cachedUserCirculatingFei()).to.be.bignumber.equal('1000');
-      expect(await this.oracleWrapper.cachedProtocolEquity()).to.be.bignumber.equal('2000');
+      expect(await this.oracleWrapper.cachedProtocolControlledValue()).to.be.equal('3000');
+      expect(await this.oracleWrapper.cachedUserCirculatingFei()).to.be.equal('1000');
+      expect(await this.oracleWrapper.cachedProtocolEquity()).to.be.equal('2000');
     });
     it('should be invalid if paused', async function() {
       await this.oracleWrapper.pause({ from: governorAddress });

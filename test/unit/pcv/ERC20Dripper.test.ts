@@ -8,6 +8,7 @@
 import { time, getCore, expectEvent, expectRevert, getAddresses, expectApprox } from '../../helpers';
 import { expect } from 'chai';
 import hre, { artifacts, ethers } from 'hardhat';
+import { Signer } from 'ethers'
 
 const toBN = ethers.BigNumber.from
 

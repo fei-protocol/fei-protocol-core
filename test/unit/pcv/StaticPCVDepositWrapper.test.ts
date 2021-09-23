@@ -1,11 +1,40 @@
 import { getCore, getAddresses, expectRevert } from '../../helpers';
 import { expect } from 'chai'
 import hre, { artifacts, ethers } from 'hardhat'
+import { Signer } from 'ethers'
   
 const StaticPCVDepositWrapper = artifacts.readArtifactSync('StaticPCVDepositWrapper');
 
 describe('StaticPCVDepositWrapper', function () {
   let governorAddress: string
+
+  let impersonatedSigners: { [key: string]: Signer } = { }
+
+  before(async() => {
+    const addresses = await getAddresses()
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress,
+      addresses.pcvControllerAddress,
+      addresses.minterAddress,
+      addresses.burnerAddress,
+      addresses.beneficiaryAddress1,
+      addresses.beneficiaryAddress2
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
+  });
+
   beforeEach(async function () {
     ({ governorAddress } = await getAddresses());  
 

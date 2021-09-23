@@ -1,6 +1,7 @@
 import { MAX_UINT256, expectRevert, getAddresses, getCore } from '../../helpers';
 import hre, { ethers, artifacts } from 'hardhat'
 import { expect } from 'chai'
+import { Signer } from 'ethers'
 
 const toBN = ethers.BigNumber.from
 
@@ -16,6 +17,33 @@ describe('TribeReserveStabilizer', function () {
   let governorAddress;
   let minterAddress;
   let pcvControllerAddress;
+
+  let impersonatedSigners: { [key: string]: Signer } = { }
+
+  before(async() => {
+    const addresses = await getAddresses()
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress,
+      addresses.pcvControllerAddress,
+      addresses.minterAddress,
+      addresses.burnerAddress,
+      addresses.beneficiaryAddress1,
+      addresses.beneficiaryAddress2
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
+  });
 
   beforeEach(async function () {
     ({
@@ -58,10 +86,10 @@ describe('TribeReserveStabilizer', function () {
         await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
         const userBalanceAfter = await this.tribe.balanceOf(userAddress);
 
-        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(toBN('90000'));
+        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal(toBN('90000'));
 
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
-        expect(await this.reserveStabilizer.balance()).to.be.bignumber.equal(toBN('0'));
+        expect(await this.fei.balanceOf(userAddress)).to.be.equal(toBN('0'));
+        expect(await this.reserveStabilizer.balance()).to.be.equal(toBN('0'));
       });
     });
 
@@ -73,20 +101,20 @@ describe('TribeReserveStabilizer', function () {
         await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
         const userBalanceAfter = await this.tribe.balanceOf(userAddress);
 
-        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.bignumber.equal(toBN('45000'));
+        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal(toBN('45000'));
 
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
-        expect(await this.reserveStabilizer.balance()).to.be.bignumber.equal(toBN('0'));
+        expect(await this.fei.balanceOf(userAddress)).to.be.equal(toBN('0'));
+        expect(await this.reserveStabilizer.balance()).to.be.equal(toBN('0'));
       });
     });
 
     describe('No Held TRIBE', function() {
       it('mints all TRIBE', async function() {
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal(toBN('0'));
-        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
+        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.equal(toBN('0'));
+        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('0'));
         await this.reserveStabilizer.exchangeFei('4444445', {from: userAddress});
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal(toBN('0'));
-        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN('10000'));
+        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.equal(toBN('0'));
+        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('10000'));
       });
     });
 
@@ -94,14 +122,14 @@ describe('TribeReserveStabilizer', function () {
       beforeEach(async function() {
         this.mintAmount = toBN('10000');
         await this.reserveStabilizer.mint(this.reserveStabilizer.address, this.mintAmount, {from: governorAddress});
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal(this.mintAmount);
+        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.equal(this.mintAmount);
       });
 
       it('mints some TRIBE', async function() {
-        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
+        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('0'));
         await this.reserveStabilizer.exchangeFei('8888889', {from: userAddress});
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal('0');
-        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN('20000'));
+        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.equal('0');
+        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('20000'));
       });
     });
 
@@ -169,7 +197,7 @@ describe('TribeReserveStabilizer', function () {
       await this.fei.mint(this.reserveStabilizer.address, 1000, {from: minterAddress});  
 
       await this.reserveStabilizer.withdrawERC20(this.fei.address, userAddress, '1000', {from: pcvControllerAddress});
-      expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal('40001000');
+      expect(await this.fei.balanceOf(userAddress)).to.be.equal('40001000');
     });
 
     it('non-pcv controller reverts', async function() {
@@ -196,7 +224,7 @@ describe('TribeReserveStabilizer', function () {
     describe('Access', function() {
       it('governor succeeds', async function() {
         await this.reserveStabilizer.mint(userAddress, '10000', {from: governorAddress});
-        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN('10000'));
+        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('10000'));
       });
   
       it('non-governor reverts', async function() {
@@ -205,11 +233,11 @@ describe('TribeReserveStabilizer', function () {
     });
     describe('No Held TRIBE', function() {
       it('mints all TRIBE', async function() {
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal(toBN('0'));
-        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
+        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.equal(toBN('0'));
+        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('0'));
         await this.reserveStabilizer.mint(userAddress, '10000', {from: governorAddress});
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal(toBN('0'));
-        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN('10000'));
+        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.equal(toBN('0'));
+        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('10000'));
       });
     });
 
@@ -217,14 +245,14 @@ describe('TribeReserveStabilizer', function () {
       beforeEach(async function() {
         this.mintAmount = toBN('10000');
         await this.reserveStabilizer.mint(this.reserveStabilizer.address, this.mintAmount, {from: governorAddress});
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal(this.mintAmount);
+        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.equal(this.mintAmount);
       });
 
       it('mints all TRIBE', async function() {
-        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN('0'));
+        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('0'));
         await this.reserveStabilizer.mint(userAddress, '20000', {from: governorAddress});
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.bignumber.equal(this.mintAmount);
-        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN('20000'));
+        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.equal(this.mintAmount);
+        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('20000'));
       });
     });
   });
@@ -243,7 +271,7 @@ describe('TribeReserveStabilizer', function () {
   describe('Set USD per FEI', function() {
     it('governor succeeds', async function() {
       await this.reserveStabilizer.setUsdPerFeiRate('10000', {from: governorAddress});
-      expect(await this.reserveStabilizer.usdPerFeiBasisPoints()).to.be.bignumber.equal(toBN('10000'));
+      expect(await this.reserveStabilizer.usdPerFeiBasisPoints()).to.be.equal(toBN('10000'));
     });
 
     it('non-governor reverts', async function() {

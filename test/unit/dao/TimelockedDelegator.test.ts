@@ -1,6 +1,7 @@
 import { expectEvent, expectRevert, getAddresses, time } from '../../helpers';
 import { expect } from 'chai'
 import hre, { web3, ethers, artifacts } from 'hardhat'
+import { Signer } from 'ethers'
 
 const TimelockedDelegator = artifacts.readArtifactSync('TimelockedDelegator');
 const MockTribe = artifacts.readArtifactSync('MockTribe');

@@ -1,6 +1,7 @@
 import { expectEvent, expectRevert, time, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat'
+import { Signer } from 'ethers'
 
 const UniswapOracle = artifacts.readArtifactSync('UniswapOracle');
 const MockPairTrade = artifacts.readArtifactSync('MockUniswapV2PairTrade');
@@ -9,6 +10,34 @@ const toBN = ethers.BigNumber.from
 describe.skip('UniswapOracle', function () {
   let userAddress: string
   let governorAddress: string
+
+  let impersonatedSigners: { [key: string]: Signer } = { }
+
+  before(async() => {
+    const addresses = await getAddresses()
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress,
+      addresses.pcvControllerAddress,
+      addresses.minterAddress,
+      addresses.burnerAddress,
+      addresses.beneficiaryAddress1,
+      addresses.beneficiaryAddress2
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
+  });
+
 
   beforeEach(async function () {
     ({ userAddress, governorAddress } = await getAddresses());
@@ -31,8 +60,8 @@ describe.skip('UniswapOracle', function () {
 
   describe('Init', function() {
     it('priors', async function() {
-      expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.cursor.add(toBN(2)));
-      expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.cumulative);
+      expect(await this.oracle.priorTimestamp()).to.be.equal(this.cursor.add(toBN(2)));
+      expect(await this.oracle.priorCumulative()).to.be.equal(this.cumulative);
     });
 
     it('pair', async function() {
@@ -40,7 +69,7 @@ describe.skip('UniswapOracle', function () {
     });
 
     it('duration', async function() {
-      expect(await this.oracle.duration()).to.be.bignumber.equal(this.duration);
+      expect(await this.oracle.duration()).to.be.equal(this.duration);
     });
 
     it('paused', async function() {
@@ -106,8 +135,8 @@ describe.skip('UniswapOracle', function () {
       });
 
       it('no change', async function() {
-        expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.priorCumulativePrice);
-        expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.cursor);
+        expect(await this.oracle.priorCumulative()).to.be.equal(this.priorCumulativePrice);
+        expect(await this.oracle.priorTimestamp()).to.be.equal(this.cursor);
       });
 
       it('not outdated', async function() {
@@ -134,8 +163,8 @@ describe.skip('UniswapOracle', function () {
           'Update',
           { _peg: '499' }
         );
-        expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.expectedCumulative);
-        expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.expectedTime);
+        expect(await this.oracle.priorCumulative()).to.be.equal(this.expectedCumulative);
+        expect(await this.oracle.priorTimestamp()).to.be.equal(this.expectedTime);
         expect((await this.oracle.read())[0].value).to.be.equal('499999999999999999999');
       });
     });
@@ -152,8 +181,8 @@ describe.skip('UniswapOracle', function () {
         });
 
         it('updates', async function() {
-          expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.expectedCumulative);
-          expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.expectedTime);
+          expect(await this.oracle.priorCumulative()).to.be.equal(this.expectedCumulative);
+          expect(await this.oracle.priorTimestamp()).to.be.equal(this.expectedTime);
           expect((await this.oracle.read())[0].value).to.be.equal('489999999999999999999');
         });
       });
@@ -169,8 +198,8 @@ describe.skip('UniswapOracle', function () {
         });
 
         it('updates', async function() {
-          expect(await this.oracle.priorCumulative()).to.be.bignumber.equal(this.expectedCumulative);
-          expect(await this.oracle.priorTimestamp()).to.be.bignumber.equal(this.expectedTime);
+          expect(await this.oracle.priorCumulative()).to.be.equal(this.expectedCumulative);
+          expect(await this.oracle.priorTimestamp()).to.be.equal(this.expectedTime);
           expect((await this.oracle.read())[0].value).to.be.equal('509999999999999999999');
         });
       });
@@ -185,7 +214,7 @@ describe.skip('UniswapOracle', function () {
           'DurationUpdate',
           { _duration: '1000' }
         );
-        expect(await this.oracle.duration()).to.be.bignumber.equal(toBN(1000));
+        expect(await this.oracle.duration()).to.be.equal(toBN(1000));
       });
 
       it('Non-governor set reverts', async function() {

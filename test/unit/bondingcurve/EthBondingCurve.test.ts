@@ -70,28 +70,28 @@ describe('EthBondingCurve', function () {
     });
 
     it('getAmountOut', async function() {
-      expect(await this.bondingCurve.getAmountOut('50000000')).to.be.bignumber.equal(toBN('25252525252'));
+      expect(await this.bondingCurve.getAmountOut('50000000')).to.be.equal(toBN('25252525252'));
     });
 
     it('scale', async function() {
-      expect(await this.bondingCurve.scale()).to.be.bignumber.equal(this.scale);
+      expect(await this.bondingCurve.scale()).to.be.equal(this.scale);
       expect(await this.bondingCurve.atScale()).to.be.equal(false);
     });
 
     it('balance', async function() {
-      expect(await this.bondingCurve.balance()).to.be.bignumber.equal(toBN('0'));
+      expect(await this.bondingCurve.balance()).to.be.equal(toBN('0'));
     });
 
     it('totalPurchased', async function() {
-      expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(toBN('0'));
+      expect(await this.bondingCurve.totalPurchased()).to.be.equal(toBN('0'));
     });
 
     it('buffer', async function() {
-      expect(await this.bondingCurve.buffer()).to.be.bignumber.equal(this.buffer);
+      expect(await this.bondingCurve.buffer()).to.be.equal(this.buffer);
     });
 
     it('incentive amount', async function() {
-      expect(await this.bondingCurve.incentiveAmount()).to.be.bignumber.equal(this.incentiveAmount);
+      expect(await this.bondingCurve.incentiveAmount()).to.be.equal(this.incentiveAmount);
     });
   });
 
@@ -126,7 +126,7 @@ describe('EthBondingCurve', function () {
       describe('Pre Scale', function() {
         beforeEach(async function() {
           this.expectedFei1 = toBN('25252525252');
-          expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei1);
+          expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei1);
           expectEvent(
             await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount}),
             'Purchase',
@@ -139,11 +139,11 @@ describe('EthBondingCurve', function () {
         });
 
         it('correct FEI sent', async function() {
-          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.expectedFei1);
+          expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.expectedFei1);
         });
 
         it('totalPurchased', async function() {
-          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(this.expectedFei1);
+          expect(await this.bondingCurve.totalPurchased()).to.be.equal(this.expectedFei1);
         });
 
         it('not at Scale', async function() {
@@ -155,14 +155,14 @@ describe('EthBondingCurve', function () {
         });
 
         it('total PCV held', async function() {
-          expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount);
+          expect(await this.bondingCurve.balance()).to.be.equal(this.purchaseAmount);
         });
 
         describe('Second Purchase', function() {
           beforeEach(async function() {
             this.expectedFei2 = toBN('25252525252');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
-            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
+            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
             expectEvent(
               await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount}),
               'Purchase',
@@ -175,11 +175,11 @@ describe('EthBondingCurve', function () {
           });
 
           it('correct FEI sent', async function() {
-            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.totalExpected);
           });
   
           it('totalPurchased', async function() {
-            expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.bondingCurve.totalPurchased()).to.be.equal(this.totalExpected);
           });
   
           it('not at Scale', async function() {
@@ -191,7 +191,7 @@ describe('EthBondingCurve', function () {
           });
   
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(toBN(2)));
+            expect(await this.bondingCurve.balance()).to.be.equal(this.purchaseAmount.mul(toBN(2)));
           });
         });
 
@@ -199,7 +199,7 @@ describe('EthBondingCurve', function () {
           beforeEach(async function() {
             this.expectedFei2 = toBN('25252525252');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
-            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
+            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
             expectEvent(
               await this.bondingCurve.purchase(secondUserAddress, this.purchaseAmount, {value: this.purchaseAmount}),
               'Purchase',
@@ -212,12 +212,12 @@ describe('EthBondingCurve', function () {
           });
 
           it('correct FEI sent', async function() {
-            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.expectedFei1);
-            expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(this.expectedFei2);
+            expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.expectedFei1);
+            expect(await this.fei.balanceOf(secondUserAddress)).to.be.equal(this.expectedFei2);
           });
   
           it('totalPurchased', async function() {
-            expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.bondingCurve.totalPurchased()).to.be.equal(this.totalExpected);
           });
   
           it('not at Scale', async function() {
@@ -229,7 +229,7 @@ describe('EthBondingCurve', function () {
           });
   
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(toBN(2)));
+            expect(await this.bondingCurve.balance()).to.be.equal(this.purchaseAmount.mul(toBN(2)));
           });
         });
 
@@ -239,7 +239,7 @@ describe('EthBondingCurve', function () {
             await this.oracle.setExchangeRate(400);
             this.expectedFei2 = toBN('20202020202');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
-            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
+            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
             expectEvent(
               await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount}),
               'Purchase',
@@ -252,11 +252,11 @@ describe('EthBondingCurve', function () {
           });
 
           it('correct FEI sent', async function() {
-            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.totalExpected);
           });
   
           it('totalPurchased', async function() {
-            expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.bondingCurve.totalPurchased()).to.be.equal(this.totalExpected);
           });
   
           it('not at Scale', async function() {
@@ -268,7 +268,7 @@ describe('EthBondingCurve', function () {
           });
   
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(toBN(2)));
+            expect(await this.bondingCurve.balance()).to.be.equal(this.purchaseAmount.mul(toBN(2)));
           });
         });
       });
@@ -286,7 +286,7 @@ describe('EthBondingCurve', function () {
         beforeEach(async function() {
           this.purchaseAmount =  toBN('200000000');
           this.expectedFei1 = toBN('101010101010');
-          expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei1);
+          expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei1);
           expectEvent(
             await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount}),
             'Purchase',
@@ -299,11 +299,11 @@ describe('EthBondingCurve', function () {
         });
 
         it('correct FEI sent', async function() {
-          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.expectedFei1);
+          expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.expectedFei1);
         });
 
         it('totalPurchased', async function() {
-          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(this.expectedFei1);
+          expect(await this.bondingCurve.totalPurchased()).to.be.equal(this.expectedFei1);
         });
 
         it('At Scale', async function() {
@@ -315,14 +315,14 @@ describe('EthBondingCurve', function () {
         });
 
         it('total PCV held', async function() {
-          expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount);
+          expect(await this.bondingCurve.balance()).to.be.equal(this.purchaseAmount);
         });
 
         describe('Post Scale', function() {
           beforeEach(async function() {
             this.expectedFei2 = toBN('99009900990');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
-            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
+            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
             expectEvent(
               await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount}),
               'Purchase',
@@ -335,11 +335,11 @@ describe('EthBondingCurve', function () {
           });
   
           it('correct FEI sent', async function() {
-            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.totalExpected);
           });
   
           it('totalPurchased', async function() {
-            expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.bondingCurve.totalPurchased()).to.be.equal(this.totalExpected);
           });
   
           it('at Scale', async function() {
@@ -351,7 +351,7 @@ describe('EthBondingCurve', function () {
           });
   
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(toBN(2)));
+            expect(await this.bondingCurve.balance()).to.be.equal(this.purchaseAmount.mul(toBN(2)));
           });
 
           describe('reset', function() {
@@ -367,7 +367,7 @@ describe('EthBondingCurve', function () {
             });
 
             it('totalPurchased', async function() {
-              expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(toBN('0'));
+              expect(await this.bondingCurve.totalPurchased()).to.be.equal(toBN('0'));
             });
 
             it('at Scale', async function() {
@@ -382,7 +382,7 @@ describe('EthBondingCurve', function () {
             await this.bondingCurve.setBuffer(500, {from: governorAddress});
             this.expectedFei2 = toBN('95238095238');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
-            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
+            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
             expectEvent(
               await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount}),
               'Purchase',
@@ -395,11 +395,11 @@ describe('EthBondingCurve', function () {
           });
   
           it('correct FEI sent', async function() {
-            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.totalExpected);
           });
   
           it('totalPurchased', async function() {
-            expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.bondingCurve.totalPurchased()).to.be.equal(this.totalExpected);
           });
   
           it('at Scale', async function() {
@@ -411,7 +411,7 @@ describe('EthBondingCurve', function () {
           });
   
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(toBN(2)));
+            expect(await this.bondingCurve.balance()).to.be.equal(this.purchaseAmount.mul(toBN(2)));
           });
         });
 
@@ -421,7 +421,7 @@ describe('EthBondingCurve', function () {
             await this.oracle.setExchangeRate(600);
             this.expectedFei2 = toBN('118811881188');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
-            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
+            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
             expectEvent(
               await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount}),
               'Purchase',
@@ -434,11 +434,11 @@ describe('EthBondingCurve', function () {
           });
   
           it('correct FEI sent', async function() {
-            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.totalExpected);
           });
   
           it('totalPurchased', async function() {
-            expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.bondingCurve.totalPurchased()).to.be.equal(this.totalExpected);
           });
   
           it('at Scale', async function() {
@@ -450,7 +450,7 @@ describe('EthBondingCurve', function () {
           });
   
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(toBN(2)));
+            expect(await this.bondingCurve.balance()).to.be.equal(this.purchaseAmount.mul(toBN(2)));
           });
         });
       });
@@ -491,12 +491,12 @@ describe('EthBondingCurve', function () {
       });
 
       it('splits funds', async function() {
-        expect(await balance.current(beneficiaryAddress1)).to.be.bignumber.equal(this.beneficiaryBalance1.add(toBN('9000000')));
-        expect(await balance.current(beneficiaryAddress2)).to.be.bignumber.equal(this.beneficiaryBalance2.add(toBN('1000000')));
+        expect(await balance.current(beneficiaryAddress1)).to.be.equal(this.beneficiaryBalance1.add(toBN('9000000')));
+        expect(await balance.current(beneficiaryAddress2)).to.be.equal(this.beneficiaryBalance2.add(toBN('1000000')));
       });
         
       it('incentivizes', async function() {
-        expect(await this.fei.balanceOf(keeperAddress)).to.be.bignumber.equal(this.keeperFei.add(this.incentiveAmount));
+        expect(await this.fei.balanceOf(keeperAddress)).to.be.equal(this.keeperFei.add(this.incentiveAmount));
       });
 
       describe('Second Allocate', async function() {
@@ -523,12 +523,12 @@ describe('EthBondingCurve', function () {
           });
     
           it('splits funds', async function() {
-            expect(await balance.current(beneficiaryAddress1)).to.be.bignumber.equal(this.beneficiaryBalance1.add(toBN('9000000')));
-            expect(await balance.current(beneficiaryAddress2)).to.be.bignumber.equal(this.beneficiaryBalance2.add(toBN('1000000')));
+            expect(await balance.current(beneficiaryAddress1)).to.be.equal(this.beneficiaryBalance1.add(toBN('9000000')));
+            expect(await balance.current(beneficiaryAddress2)).to.be.equal(this.beneficiaryBalance2.add(toBN('1000000')));
           });
             
           it('no incentives', async function() {
-            expect(await this.fei.balanceOf(keeperAddress)).to.be.bignumber.equal(this.keeperFei);
+            expect(await this.fei.balanceOf(keeperAddress)).to.be.equal(this.keeperFei);
           });
         });
 
@@ -550,12 +550,12 @@ describe('EthBondingCurve', function () {
           });
     
           it('splits funds', async function() {
-            expect(await balance.current(beneficiaryAddress1)).to.be.bignumber.equal(this.beneficiaryBalance1.add(toBN('9000000')));
-            expect(await balance.current(beneficiaryAddress2)).to.be.bignumber.equal(this.beneficiaryBalance2.add(toBN('1000000')));
+            expect(await balance.current(beneficiaryAddress1)).to.be.equal(this.beneficiaryBalance1.add(toBN('9000000')));
+            expect(await balance.current(beneficiaryAddress2)).to.be.equal(this.beneficiaryBalance2.add(toBN('1000000')));
           });
             
           it('incentivizes', async function() {
-            expect(await this.fei.balanceOf(keeperAddress)).to.be.bignumber.equal(this.keeperFei.add(this.incentiveAmount));
+            expect(await this.fei.balanceOf(keeperAddress)).to.be.equal(this.keeperFei.add(this.incentiveAmount));
           });
         });
 
@@ -578,12 +578,12 @@ describe('EthBondingCurve', function () {
           });
   
           it('splits funds', async function() {
-            expect(await balance.current(beneficiaryAddress1)).to.be.bignumber.equal(this.beneficiaryBalance1.add(toBN('5000000')));
-            expect(await balance.current(beneficiaryAddress2)).to.be.bignumber.equal(this.beneficiaryBalance2.add(toBN('5000000')));
+            expect(await balance.current(beneficiaryAddress1)).to.be.equal(this.beneficiaryBalance1.add(toBN('5000000')));
+            expect(await balance.current(beneficiaryAddress2)).to.be.equal(this.beneficiaryBalance2.add(toBN('5000000')));
           });
           
           it('incentivizes', async function() {
-            expect(await this.fei.balanceOf(keeperAddress)).to.be.bignumber.equal(this.keeperFei.add(this.incentiveAmount));
+            expect(await this.fei.balanceOf(keeperAddress)).to.be.equal(this.keeperFei.add(this.incentiveAmount));
           });
         });
       });
@@ -617,7 +617,7 @@ describe('EthBondingCurve', function () {
       expect(result[0].length).to.be.equal(1);
       expect(result[0][0]).to.be.equal(this.pcvDeposit1.address);
       expect(result[1].length).to.be.equal(1);
-      expect(result[1][0]).to.be.bignumber.equal(toBN(10000));
+      expect(result[1][0]).to.be.equal(toBN(10000));
     });
 
     it('Non-governor set reverts', async function() {
@@ -653,7 +653,7 @@ describe('EthBondingCurve', function () {
           newScale: toBN(100)
         }
       );
-      expect(await this.bondingCurve.scale()).to.be.bignumber.equal(toBN(100));
+      expect(await this.bondingCurve.scale()).to.be.equal(toBN(100));
     });
 
     it('Non-governor set reverts', async function() {
@@ -671,7 +671,7 @@ describe('EthBondingCurve', function () {
           newBuffer: toBN(1000)
         }
       );
-      expect(await this.bondingCurve.buffer()).to.be.bignumber.equal(toBN(1000));
+      expect(await this.bondingCurve.buffer()).to.be.equal(toBN(1000));
     });
 
     it('Governor set outside range reverts', async function() {
@@ -693,7 +693,7 @@ describe('EthBondingCurve', function () {
           newDiscount: toBN(1000)
         }
       );
-      expect(await this.bondingCurve.discount()).to.be.bignumber.equal(toBN(1000));
+      expect(await this.bondingCurve.discount()).to.be.equal(toBN(1000));
     });
 
     it('Governor set outside range reverts', async function() {
@@ -736,7 +736,7 @@ describe('EthBondingCurve', function () {
         }
       );
 
-      expect(await this.bondingCurve.incentiveAmount()).to.be.bignumber.equal(this.incentiveAmount);
+      expect(await this.bondingCurve.incentiveAmount()).to.be.equal(this.incentiveAmount);
     });
 
     it('Non-governor set reverts', async function() {
@@ -756,7 +756,7 @@ describe('EthBondingCurve', function () {
         }
       );
 
-      expect(await this.bondingCurve.duration()).to.be.bignumber.equal(this.incentiveFrequency);
+      expect(await this.bondingCurve.duration()).to.be.equal(this.incentiveFrequency);
     });
 
     it('Non-governor set reverts', async function() {

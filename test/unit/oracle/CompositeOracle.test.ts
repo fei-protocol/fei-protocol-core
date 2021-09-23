@@ -1,6 +1,7 @@
 import { expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat'
+import { Signer } from 'ethers'
   
 const CompositeOracle = artifacts.readArtifactSync('CompositeOracle');
 const MockOracle = artifacts.readArtifactSync('MockOracle');
@@ -8,14 +9,42 @@ const MockOracle = artifacts.readArtifactSync('MockOracle');
 describe('CompositeOracle', function () {
   let governorAddress: string
 
+  let impersonatedSigners: { [key: string]: Signer } = { }
+
+  before(async() => {
+    const addresses = await getAddresses()
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress,
+      addresses.pcvControllerAddress,
+      addresses.minterAddress,
+      addresses.burnerAddress,
+      addresses.beneficiaryAddress1,
+      addresses.beneficiaryAddress2
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
+  });
+
+
   beforeEach(async function () {
     ({ governorAddress } = await getAddresses());
     this.core = await getCore();
       
-    this.oracleA = await MockOracle.new(400);
-    this.oracleB = await MockOracle.new(2);
+    this.oracleA = await(await ethers.getContractFactory('MockOracle')).deploy(400);
+    this.oracleB = await (await ethers.getContractFactory('MockOracle')).deploy(2);
 
-    this.oracle = await CompositeOracle.new(this.core.address, this.oracleA.address, this.oracleB.address);
+    this.oracle = await (await ethers.getContractFactory('CompositeOracle')).deploy(this.core.address, this.oracleA.address, this.oracleB.address);
   });
   
   describe('Init', function() {
