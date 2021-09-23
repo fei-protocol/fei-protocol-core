@@ -76,6 +76,7 @@ export type MainnetContracts = {
   feiTribeLBPSwapper: typeof Contract,
   aaveLendingPool: typeof Contract,
   aaveTribeIncentivesController: typeof Contract,
+  optimisticTimelock: typeof Contract,
 }
 
 export type MainnetContractAddresses = {

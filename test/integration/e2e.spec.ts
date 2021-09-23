@@ -556,7 +556,6 @@ describe('e2e', function () {
   describe('Optimistic Approval', async () => {
     beforeEach(async function () {
       const { tribalChiefOptimisticMultisigAddress, timelockAddress } = contractAddresses;
-      const { tribalChiefOptimisticTimelock } = contracts;
 
       await hre.network.provider.request({
         method: 'hardhat_impersonateAccount',
@@ -570,35 +569,55 @@ describe('e2e', function () {
 
       await web3.eth.sendTransaction({from: deployAddress, to: tribalChiefOptimisticMultisigAddress, value: '40000000000000000'});
 
+      await web3.eth.sendTransaction({from: timelockAddress, to: tribalChiefOptimisticMultisigAddress, value: '40000000000000000'});
+
     });
-    it('governor can cancel a proposal', async () => {
-      const { tribalChiefOptimisticMultisigAddress, timelockAddress } = contractAddresses;
-      const { tribalChiefOptimisticTimelock } = contracts;
+    it('governor can assume timelock admin', async () => {
+      const { timelockAddress } = contractAddresses;
+      const { optimisticTimelock } = contracts;
 
-      await tribalChiefOptimisticTimelock.queueTransaction(deployAddress, 0, 'sig()', '0x', '10000000000000000', {from: tribalChiefOptimisticMultisigAddress});
-      const hash = await tribalChiefOptimisticTimelock.getTxHash(deployAddress, 0, 'sig()', '0x', '10000000000000000');
-      expect(await tribalChiefOptimisticTimelock.queuedTransactions(hash)).to.be.true;
-
-      await tribalChiefOptimisticTimelock.vetoTransactions([deployAddress], [0], ['sig()'], ['0x'], ['10000000000000000'], {from: timelockAddress});
+      await optimisticTimelock.becomeAdmin({from: timelockAddress});
       
-      expect(await tribalChiefOptimisticTimelock.queuedTransactions(hash)).to.be.false;
+      const admin = await optimisticTimelock.TIMELOCK_ADMIN_ROLE();
+      expect(await optimisticTimelock.hasRole(admin, timelockAddress)).to.be.true;
     });
 
     it('proposal can execute on tribalChief', async () => {
       const { tribalChiefOptimisticMultisigAddress } = contractAddresses;
-      const { tribalChiefOptimisticTimelock, tribalChief } = contracts;
+      const { optimisticTimelock, tribalChief } = contracts;
 
       const oldBlockReward = await tribalChief.tribePerBlock();
+      await optimisticTimelock.schedule(
+        tribalChief.address, 
+        0, 
+        '0xf580ffcb0000000000000000000000000000000000000000000000000000000000000001', 
+        '0x0000000000000000000000000000000000000000000000000000000000000000', 
+        '0x0000000000000000000000000000000000000000000000000000000000000001', 
+        '500000', 
+        {from: tribalChiefOptimisticMultisigAddress}
+      );
 
-      await tribalChiefOptimisticTimelock.queueTransaction(tribalChief.address, 0, 'updateBlockReward(uint256)', '0x0000000000000000000000000000000000000000000000000000000000000001', '100000000000', {from: tribalChiefOptimisticMultisigAddress});
-      const hash = await tribalChiefOptimisticTimelock.getTxHash(tribalChief.address, 0, 'updateBlockReward(uint256)', '0x0000000000000000000000000000000000000000000000000000000000000001', '100000000000');
-      expect(await tribalChiefOptimisticTimelock.queuedTransactions(hash)).to.be.true;
+      const hash = await optimisticTimelock.hashOperation(
+        tribalChief.address, 
+        0, 
+        '0xf580ffcb0000000000000000000000000000000000000000000000000000000000000001', 
+        '0x0000000000000000000000000000000000000000000000000000000000000000', 
+        '0x0000000000000000000000000000000000000000000000000000000000000001', 
+      );
+      expect(await optimisticTimelock.isOperationPending(hash)).to.be.true;
       
-      await time.increaseTo('100000000000');
-      await tribalChiefOptimisticTimelock.executeTransaction(tribalChief.address, 0, 'updateBlockReward(uint256)', '0x0000000000000000000000000000000000000000000000000000000000000001', '100000000000', {from: tribalChiefOptimisticMultisigAddress});
+      await time.increase('500000');
+      await optimisticTimelock.execute(        
+        tribalChief.address, 
+        0, 
+        '0xf580ffcb0000000000000000000000000000000000000000000000000000000000000001', 
+        '0x0000000000000000000000000000000000000000000000000000000000000000', 
+        '0x0000000000000000000000000000000000000000000000000000000000000001', 
+        {from: tribalChiefOptimisticMultisigAddress}
+      );
 
       expect(await tribalChief.tribePerBlock()).to.be.bignumber.equal('1');
-      expect(await tribalChiefOptimisticTimelock.queuedTransactions(hash)).to.be.false;
+      expect(await optimisticTimelock.isOperationDone(hash)).to.be.true;
     
       await tribalChief.updateBlockReward(oldBlockReward);
     });
