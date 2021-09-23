@@ -1,6 +1,6 @@
 import hre, { ethers } from "hardhat";
 import { expect } from "chai";
-const { time } = require('../../test/helpers');
+import { time } from "../../test/helpers";
 
 async function setup(addresses, oldContracts, contracts, logging) {}
 
@@ -42,15 +42,6 @@ async function teardown(addresses, oldContracts, contracts, logging) {
         method: 'hardhat_impersonateAccount',
         params: [tribalChiefOptimisticMultisigAddress],
     });
-
-    await tribalChiefOptimisticTimelock.queueTransaction(
-        '0x956F47F50A910163D8BF957Cf5846D573E7f87CA',
-        '0',
-        'transfer(address,uint256)',
-        '0x000000000000000000000000bc9c084a12678ef5b516561df902fdc426d9548300000000000000000000000000000000000000000000d3c21bcecceda1000000',
-        '1632873600',
-        {from: tribalChiefOptimisticMultisigAddress}
-    );
 
     await time.increase('1000000');
 
