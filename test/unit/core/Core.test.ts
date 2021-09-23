@@ -15,6 +15,8 @@ describe('Core', function () {
   let governorAddress: string
   let guardianAddress: string
 
+  let impersonatedSigners: {[key: string]: Signer} = {}
+
   beforeEach(async function () {
     ({
       userAddress,
@@ -41,7 +43,7 @@ describe('Core', function () {
   describe('Allocate Tribe', function() {
     it('updates', async function() {
       await(
-        await this.core.allocateTribe(userAddress, 1000, {from: governorAddress}))
+        await this.core.connect(impersonatedSigners[governorAddress]).allocateTribe(userAddress, 1000))
         .to.emit(this.core, 'TribeAllocation').withArgs(userAddress, 1000);
 
       expect(await this.tribe.balanceOf(userAddress)).to.be.equal('1000');
