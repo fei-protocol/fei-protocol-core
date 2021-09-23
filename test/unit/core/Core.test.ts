@@ -1,4 +1,4 @@
-import { expectEvent, expectRevert, getCore, getAddresses } from '../../helpers';
+import { expectRevert, getCore, getAddresses } from '../../helpers';
 import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat'
 import { Signer } from 'ethers'
@@ -40,14 +40,10 @@ describe('Core', function () {
 
   describe('Allocate Tribe', function() {
     it('updates', async function() {
-      expectEvent(
-        await this.core.allocateTribe(userAddress, 1000, {from: governorAddress}),
-        'TribeAllocation',
-        {
-          _to: userAddress,
-          _amount: '1000'
-        }
-      );
+      await(
+        await this.core.allocateTribe(userAddress, 1000, {from: governorAddress}))
+        .to.emit(this.core, 'TribeAllocation').withArgs(userAddress, 1000);
+
       expect(await this.tribe.balanceOf(userAddress)).to.be.equal('1000');
     });
 
@@ -63,13 +59,10 @@ describe('Core', function () {
 
   describe('Fei Update', function() {
     it('updates', async function() {
-      expectEvent(
-        await this.core.setFei(userAddress, {from: governorAddress}),
-        'FeiUpdate',
-        {
-          _fei: userAddress
-        }
-      );
+      await expect(
+        await this.core.setFei(userAddress, {from: governorAddress}))
+        .to.emit(this.core, 'FeiUpdate').withArgs(userAddress);
+
       expect(await this.core.fei()).to.be.equal(userAddress);
     });
 	
@@ -80,13 +73,10 @@ describe('Core', function () {
 
   describe('Tribe Update', function() {
     it('updates', async function() {
-      expectEvent(
-        await this.core.setTribe(userAddress, {from: governorAddress}),
-        'TribeUpdate',
-        {
-          _tribe: userAddress
-        }
-      );
+      await expect(
+        await this.core.setTribe(userAddress, {from: governorAddress}))
+        .to.emit(this.core, 'TribeUpdate').withArgs(userAddress);
+
       expect(await this.core.tribe()).to.be.equal(userAddress);
     });
 	

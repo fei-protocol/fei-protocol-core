@@ -1,6 +1,6 @@
 import hre, { ethers, artifacts } from 'hardhat';
 import { expect } from 'chai'
-import { time, expectRevert, expectEvent, getAddresses, getCore } from '../../helpers';
+import { time, expectRevert, getAddresses, getCore } from '../../helpers';
 import { Signer } from 'ethers'
 import { HardhatNetworkConfig } from 'hardhat/types';
 

@@ -8,15 +8,12 @@ const toBN = ethers.BigNumber.from
 
 const MockOracle = artifacts.readArtifactSync('MockOracle');
 
-
-
 describe.skip('EthBondingCurve', function () {
   let userAddress: string;
   let keeperAddress: string;
   let secondUserAddress: string;
 
   let impersonatedSigners: { [key: string]: Signer } = { }
-
 
   let core, fei
   let bondingCurve, oracle, pcvDeposit1, pcvDeposit2

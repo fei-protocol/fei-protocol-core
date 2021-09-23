@@ -1,5 +1,5 @@
 import ether from '@openzeppelin/test-helpers/src/ether';
-import { expectRevert, expectEvent, getAddresses, getCore } from '../../helpers';
+import { expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai'
 import hre, { artifacts, ethers } from 'hardhat'
 import { Signer } from 'ethers'

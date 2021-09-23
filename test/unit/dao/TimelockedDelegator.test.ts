@@ -1,4 +1,4 @@
-import { expectEvent, expectRevert, getAddresses, time } from '../../helpers';
+import { expectRevert, getAddresses, time } from '../../helpers';
 import { expect } from 'chai'
 import hre, { web3, ethers, artifacts } from 'hardhat'
 import { Signer } from 'ethers'
@@ -96,15 +96,10 @@ describe('TimelockedDelegator', function () {
           'params': [beneficiaryAddress1]
         })
         const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
-        expectEvent(
-          await this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, this.quarterAmount),
-          'Release',
-          {
-            _beneficiary: beneficiaryAddress1,
-            _recipient: beneficiaryAddress1,
-            _amount: this.quarterAmount
-          }
-        );
+        await expect(
+          await this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, this.quarterAmount))
+          .to.emit(this.delegator, 'Release').withArgs(beneficiaryAddress1, beneficiaryAddress1, this.quarterAmount)
+
         await hre.network.provider.request({
           'method': 'hardhat_stopImpersonatingAccount',
           'params': [beneficiaryAddress1]
@@ -199,15 +194,10 @@ describe('TimelockedDelegator', function () {
             'params': [beneficiaryAddress1]
           })
           const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
-          expectEvent(
-            await this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, this.totalTribe, {from: beneficiaryAddress1}),
-            'Release',
-            {
-              _beneficiary: beneficiaryAddress1,
-              _recipient: beneficiaryAddress1,
-              _amount: this.totalTribe
-            }
-          );
+          await expect(
+            await this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, this.totalTribe))
+            .to.emit(this.delegator, 'Release').withArgs(beneficiaryAddress1, beneficiaryAddress1, this.totalTribe)
+
           await hre.network.provider.request({
             'method': 'hardhat_stopImpersonatingAccount',
             'params': [beneficiaryAddress1]
@@ -232,15 +222,10 @@ describe('TimelockedDelegator', function () {
             'params': [beneficiaryAddress1]
           })
           const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
-          expectEvent(
-            await this.delegator.connect(beneficiaryAddress1Signer).release(userAddress, this.totalTribe),
-            'Release',
-            {
-              _beneficiary: beneficiaryAddress1,
-              _recipient: userAddress,
-              _amount: this.totalTribe
-            }
-          );
+          await expect(
+            await this.delegator.connect(beneficiaryAddress1Signer).release(userAddress, this.totalTribe))
+            .to.emit(this.delegator, 'Release').withArgs(beneficiaryAddress1, userAddress, this.totalTribe)
+
           await hre.network.provider.request({
             'method': 'hardhat_stopImpersonatingAccount',
             'params': [beneficiaryAddress1]
@@ -267,15 +252,10 @@ describe('TimelockedDelegator', function () {
             'params': [beneficiaryAddress1]
           })
           const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
-          expectEvent(
-            await this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, this.halfAmount, {from: beneficiaryAddress1}),
-            'Release',
-            {
-              _beneficiary: beneficiaryAddress1,
-              _recipient: beneficiaryAddress1,
-              _amount: this.halfAmount
-            }
-          );
+          await expect(
+            await this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, this.halfAmount))
+            .to.emit(this.delegator, 'Release').withArgs(beneficiaryAddress1, beneficiaryAddress1, this.halfAmount)
+
           await hre.network.provider.request({
             'method': 'hardhat_stopImpersonatingAccount',
             'params': [beneficiaryAddress1]
@@ -317,14 +297,10 @@ describe('TimelockedDelegator', function () {
           'params': [beneficiaryAddress1]
         })
         const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
-        expectEvent(
-          await this.delegator.connect(beneficiaryAddress1Signer).delegate(userAddress, 100),
-          'Delegate',
-          {
-            _delegatee: userAddress,
-            _amount: '100'
-          }
-        );
+        await expect(
+          await this.delegator.connect(beneficiaryAddress1Signer).delegate(userAddress, 100))
+          .to.emit(this.delegator, 'Delegate').withArgs(userAddress, 100)
+
         await hre.network.provider.request({
           'method': 'hardhat_stopImpersonatingAccount',
           'params': [beneficiaryAddress1]
@@ -387,14 +363,10 @@ describe('TimelockedDelegator', function () {
             'params': [beneficiaryAddress1]
           })
           const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
-          expectEvent(
-            await this.delegator.connect(beneficiaryAddress1Signer).undelegate(userAddress),
-            'Undelegate',
-            {
-              _delegatee: userAddress,
-              _amount: '100'
-            }
-          );
+          await expect(
+            await this.delegator.connect(beneficiaryAddress1Signer).undelegate(userAddress))
+            .to.emit(this.delegator, 'Undelegate').withArgs(userAddress, 100)
+
           await hre.network.provider.request({
             'method': 'hardhat_stopImpersonatingAccount',
             'params': [beneficiaryAddress1]
@@ -463,11 +435,10 @@ describe('TimelockedDelegator', function () {
           'params': [beneficiaryAddress1]
         })
         const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1)
-        expectEvent(
-          await this.delegator.connect(beneficiaryAddress1Signer).setPendingBeneficiary(userAddress),
-          'PendingBeneficiaryUpdate',
-          {_pendingBeneficiary: userAddress}
-        );
+        await expect(
+          await this.delegator.connect(beneficiaryAddress1Signer).setPendingBeneficiary(userAddress))
+          .to.emit(this.delegator, 'PendingBeneficiaryUpdate').withArgs(userAddress)
+
         await hre.network.provider.request({
           'method': 'hardhat_stopImpersonatingAccount',
           'params': [beneficiaryAddress1]
@@ -492,11 +463,11 @@ describe('TimelockedDelegator', function () {
           'method': 'hardhat_stopImpersonatingAccount',
           'params': [beneficiaryAddress1]
         })
-        expectEvent(
-          await this.delegator.acceptBeneficiary({from: userAddress}),
-          'BeneficiaryUpdate',
-          {_beneficiary: userAddress}
-        );
+        const userAddressSigner = await ethers.getSigner(userAddress)
+        await expect(
+          await this.delegator.connect(userAddressSigner).acceptBeneficiary())
+          .to.emit(this.delegator, 'BeneficiaryUpdate').withArgs(userAddress)
+
         expect(await this.delegator.beneficiary()).to.be.equal(userAddress);
       });
 

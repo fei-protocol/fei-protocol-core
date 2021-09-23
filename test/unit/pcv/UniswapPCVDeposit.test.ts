@@ -1,4 +1,4 @@
-import { expectEvent, expectRevert, expectApprox, getAddresses, getCore } from '../../helpers';
+import { expectRevert, expectApprox, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai'
 import hre, { artifacts, ethers } from 'hardhat'
 import { Signer } from 'ethers'

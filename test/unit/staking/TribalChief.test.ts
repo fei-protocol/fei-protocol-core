@@ -6,7 +6,7 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 import { time } from '@openzeppelin/test-helpers';
-import { expectEvent, expectRevert, getCore, getAddresses, expectApprox } from '../../helpers';
+import { expectRevert, getCore, getAddresses, expectApprox } from '../../helpers';
 import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat';
 import { Signer } from 'ethers';

@@ -5,7 +5,7 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
-import { time, getCore, expectEvent, expectRevert, getAddresses, expectApprox } from '../../helpers';
+import { time, getCore, expectRevert, getAddresses, expectApprox } from '../../helpers';
 import { expect } from 'chai';
 import hre, { artifacts, ethers } from 'hardhat';
 import { Signer } from 'ethers'

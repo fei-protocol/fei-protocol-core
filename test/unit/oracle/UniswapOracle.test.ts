@@ -1,4 +1,4 @@
-import { expectEvent, expectRevert, time, getAddresses, getCore } from '../../helpers';
+import { expectRevert, time, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat'
 import { Signer } from 'ethers'
@@ -158,11 +158,10 @@ describe.skip('UniswapOracle', function () {
       });
 
       it('updates', async function() {
-        expectEvent(
-          await this.oracle.update(),
-          'Update',
-          { _peg: '499' }
-        );
+        await expect(
+          await this.oracle.update())
+          .to.emit(this.oracle, 'Update').withArgs('499')
+
         expect(await this.oracle.priorCumulative()).to.be.equal(this.expectedCumulative);
         expect(await this.oracle.priorTimestamp()).to.be.equal(this.expectedTime);
         expect((await this.oracle.read())[0].value).to.be.equal('499999999999999999999');
@@ -209,11 +208,10 @@ describe.skip('UniswapOracle', function () {
   describe('Access', function() {
     describe('Duration', function() {
       it('Governor set succeeds', async function() {
-        expectEvent(
-          await this.oracle.setDuration(1000, {from: governorAddress}),
-          'DurationUpdate',
-          { _duration: '1000' }
-        );
+        await expect(
+          await this.oracle.connect(impersonatedSigners[governorAddress]).setDuration(1000))
+          .to.emit(this.oracle, 'DurationUpdate').withArgs('1000')
+
         expect(await this.oracle.duration()).to.be.equal(toBN(1000));
       });
 
