@@ -89,22 +89,22 @@ async function run(addresses, oldContracts, contracts, logging = false) {
 async function teardown(addresses, oldContracts, contracts) {
   const core = await contracts.core;
 
+  const  { uniswapPCVControllerAddress } = addresses;
   const {
     uniswapPCVDeposit,
     dpiUniswapPCVDeposit,
-    uniswapPCVController,
     ratioPCVController,
     bondingCurve,
   } = oldContracts;
 
   // Revoke controller permissions
-  await core.revokeMinter(uniswapPCVController.address);
+  await core.revokeMinter(uniswapPCVControllerAddress);
   await core.revokeMinter(uniswapPCVDeposit.address);
   await core.revokeMinter(dpiUniswapPCVDeposit.address);
   await core.revokeMinter(bondingCurve.address);
 
   await core.revokePCVController(ratioPCVController.address);
-  await core.revokePCVController(uniswapPCVController.address);
+  await core.revokePCVController(uniswapPCVControllerAddress);
 
   // Deposit Uni and DPI
   await contracts.dpiUniswapPCVDeposit.deposit();
