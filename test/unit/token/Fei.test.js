@@ -1,13 +1,8 @@
-const {
-  BN,
-  ZERO_ADDRESS,
-  expectEvent,
-  expectRevert,
-  expect,
-  getAddresses,
-  getCore,
-} = require('../../helpers');
+import {  ZERO_ADDRESS, expectEvent, expectRevert, getAddresses, getCore } from '../../helpers';
+import { expect } from 'chai'
+import hre, { ethers, artifacts } from 'hardhat';
 
+const toBN = ethers.BigNumber.from
 const Fei = artifacts.readArtifactSync('Fei');
 const MockIncentive = artifacts.readArtifactSync('MockUniswapIncentive');
 const MockIncentivized = artifacts.readArtifactSync('MockIncentivized');

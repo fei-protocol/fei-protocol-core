@@ -1,7 +1,10 @@
 import { expectRevert, balance, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat'
-      
+import { Signer } from 'ethers';
+
+const toBN = ethers.BigNumber.from
+
 const AavePCVDeposit = artifacts.readArtifactSync('AavePCVDeposit');
 const MockLendingPool = artifacts.readArtifactSync('MockLendingPool');
 const MockERC20 = artifacts.readArtifactSync('MockERC20');
@@ -10,6 +13,27 @@ describe('AavePCVDeposit', function () {
   let userAddress: string
   let pcvControllerAddress: string
   let governorAddress: string
+  
+  let impersonatedSigners: { [key: string]: Signer } = { }
+
+  before(async() => {
+    const addresses = await getAddresses()
+
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
+  });
       
   beforeEach(async function () {
     ({
@@ -20,11 +44,15 @@ describe('AavePCVDeposit', function () {
     
     this.core = await getCore();
   
-    this.lendingPool = await MockLendingPool.new();
-    this.token = await MockERC20.new();
-    this.aToken = await MockERC20.at(await this.lendingPool.aToken());   
+    const lendingPoolFactory = await ethers.getContractFactory('MockLendingPool');
+    this.lendingPool = await lendingPoolFactory.deploy();
 
-    this.aavePCVDeposit = await AavePCVDeposit.new(
+    const tokenFactory = await ethers.getContractFactory('MockERC20');
+    this.token = await tokenFactory.deploy();
+    this.aToken = await ethers.getContractAt('MockERC20', (await this.lendingPool.aToken()));   
+
+    const aavePCVDepositFactory = await ethers.getContractFactory('AavePCVDeposit');
+    this.aavePCVDeposit = await aavePCVDepositFactory.deploy(
       this.core.address, 
       this.lendingPool.address, 
       this.token.address,
@@ -38,7 +66,7 @@ describe('AavePCVDeposit', function () {
   describe('Deposit', function() {
     describe('Paused', function() {
       it('reverts', async function() {
-        await this.aavePCVDeposit.pause({from: governorAddress});
+        await this.aavePCVDeposit.connect(impersonatedSigners[governorAddress]).pause();
         await expectRevert(this.aavePCVDeposit.deposit(), 'Pausable: paused');
       });
     });
@@ -68,7 +96,7 @@ describe('AavePCVDeposit', function () {
 
     describe('Not PCVController', function() {
       it('reverts', async function() {
-        await expectRevert(this.aavePCVDeposit.withdraw(userAddress, this.depositAmount, {from: userAddress}), 'CoreRef: Caller is not a PCV controller');
+        await expectRevert(this.aavePCVDeposit.connect(impersonatedSigners[userAddress]).withdraw(userAddress, this.depositAmount), 'CoreRef: Caller is not a PCV controller');
       });
     });
   
@@ -77,7 +105,7 @@ describe('AavePCVDeposit', function () {
         
       // withdrawing should take balance back to 0
       expect(await this.aavePCVDeposit.balance()).to.be.equal(this.depositAmount);
-      await this.aavePCVDeposit.withdraw(userAddress, this.depositAmount, {from: pcvControllerAddress});
+      await this.aavePCVDeposit.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, this.depositAmount);
       expect(await this.aavePCVDeposit.balance()).to.be.equal(toBN('0'));
         
       const userBalanceAfter = await this.token.balanceOf(userAddress);
@@ -89,7 +117,7 @@ describe('AavePCVDeposit', function () {
   describe('WithdrawERC20', function() {
     describe('Not PCVController', function() {
       it('reverts', async function() {
-        await expectRevert(this.aavePCVDeposit.withdrawERC20(this.aToken.address, userAddress, this.depositAmount, {from: userAddress}), 'CoreRef: Caller is not a PCV controller');
+        await expectRevert(this.aavePCVDeposit.connect(impersonatedSigners[userAddress]).withdrawERC20(this.aToken.address, userAddress, this.depositAmount), 'CoreRef: Caller is not a PCV controller');
       });
     });
   
@@ -101,11 +129,10 @@ describe('AavePCVDeposit', function () {
   
       it('succeeds', async function() {
         expect(await this.aavePCVDeposit.balance()).to.be.equal(this.depositAmount);
-        await this.aavePCVDeposit.withdrawERC20(this.aToken.address, userAddress, this.depositAmount.div(toBN('2')), {from: pcvControllerAddress});        
+        await this.aavePCVDeposit.connect(impersonatedSigners[pcvControllerAddress]).withdrawERC20(this.aToken.address, userAddress, this.depositAmount.div(toBN('2')));        
 
         // balance should also get cut in half
         expect(await this.aavePCVDeposit.balance()).to.be.equal(this.depositAmount.div(toBN('2')));
-  
         expect(await this.aToken.balanceOf(userAddress)).to.be.equal(this.depositAmount.div(toBN('2')));
       });
     });

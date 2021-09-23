@@ -1,6 +1,7 @@
 import { expectEvent, expectRevert, time, getCore, getAddresses } from '../../helpers';
 import { expect } from 'chai'
 import hre, { artifacts, ethers } from "hardhat"
+import { Signer } from 'ethers'
   
 const BondingCurve = artifacts.readArtifactSync('BondingCurve');
 const Fei = artifacts.readArtifactSync('Fei');
@@ -17,6 +18,28 @@ describe('BondingCurve', function () {
   let beneficiaryAddress1: string
   let beneficiaryAddress2: string
   let keeperAddress: string
+
+  let impersonatedSigners: { [key: string]: Signer } = { }
+
+  before(async() => {
+    const addresses = await getAddresses()
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
+  });
   
   beforeEach(async function () {
     ({
@@ -62,9 +85,9 @@ describe('BondingCurve', function () {
     );
 
     await this.token.mint(userAddress, '1000000000000000000000000');
-    await this.core.grantMinter(this.bondingCurve.address, {from: governorAddress});
+    await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.bondingCurve.address);
 
-    await this.bondingCurve.setMintCap(this.scale.mul(toBN('10')), {from: governorAddress});
+    await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setMintCap(this.scale.mul(toBN('10')));
   });
   
   describe('Init', function() {
@@ -73,28 +96,28 @@ describe('BondingCurve', function () {
     });
   
     it('getAmountOut', async function() {
-      expect(await this.bondingCurve.getAmountOut('50000000')).to.be.bignumber.equal(toBN('25252525252'));
+      expect(await this.bondingCurve.getAmountOut('50000000')).to.be.equal(toBN('25252525252'));
     });
   
     it('scale', async function() {
-      expect(await this.bondingCurve.scale()).to.be.bignumber.equal(this.scale);
+      expect(await this.bondingCurve.scale()).to.be.equal(this.scale);
       expect(await this.bondingCurve.atScale()).to.be.equal(false);
     });
   
     it('balance', async function() {
-      expect(await this.bondingCurve.balance()).to.be.bignumber.equal(toBN('0'));
+      expect(await this.bondingCurve.balance()).to.be.equal(toBN('0'));
     });
   
     it('totalPurchased', async function() {
-      expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(toBN('0'));
+      expect(await this.bondingCurve.totalPurchased()).to.be.equal(toBN('0'));
     });
   
     it('buffer', async function() {
-      expect(await this.bondingCurve.buffer()).to.be.bignumber.equal(this.buffer);
+      expect(await this.bondingCurve.buffer()).to.be.equal(this.buffer);
     });
   
     it('incentive amount', async function() {
-      expect(await this.bondingCurve.incentiveAmount()).to.be.bignumber.equal(this.incentiveAmount);
+      expect(await this.bondingCurve.incentiveAmount()).to.be.equal(this.incentiveAmount);
     });
   });
   
@@ -106,8 +129,8 @@ describe('BondingCurve', function () {
     describe('Paused', function() {
       it('reverts', async function() {
         await this.bondingCurve.pause({from: governorAddress});
-        await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
-        await expectRevert(this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}), 'Pausable: paused');
+        await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
+        await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount), 'Pausable: paused');
       });
     });
   
@@ -115,18 +138,18 @@ describe('BondingCurve', function () {
       describe('Invalid Oracle', function() {
         it('reverts', async function() {
           this.oracle.setValid(false);
-          await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
-          await expectRevert(this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}), 'OracleRef: oracle invalid');     
+          await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
+          await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount), 'OracleRef: oracle invalid');     
         });
       });
   
       describe('Pre Scale', function() {
         beforeEach(async function() {
           this.expectedFei1 = toBN('25252525252');
-          expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei1);
-          await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
+          expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei1);
+          await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
           expectEvent(
-            await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}),
+            await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
             'Purchase',
             {
               to: userAddress,
@@ -137,11 +160,11 @@ describe('BondingCurve', function () {
         });
   
         it('correct FEI sent', async function() {
-          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.expectedFei1);
+          expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.expectedFei1);
         });
   
         it('totalPurchased', async function() {
-          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(this.expectedFei1);
+          expect(await this.bondingCurve.totalPurchased()).to.be.equal(this.expectedFei1);
         });
   
         it('not at Scale', async function() {
@@ -153,17 +176,17 @@ describe('BondingCurve', function () {
         });
   
         it('total PCV held', async function() {
-          expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount);
+          expect(await this.bondingCurve.balance()).to.be.equal(this.purchaseAmount);
         });
   
         describe('Second Purchase', function() {
           beforeEach(async function() {
             this.expectedFei2 = toBN('25252525252');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
-            await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
-            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
+            await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
+            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
             expectEvent(
-              await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}),
+              await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
               'Purchase',
               {
                 to: userAddress,
@@ -174,11 +197,11 @@ describe('BondingCurve', function () {
           });
   
           it('correct FEI sent', async function() {
-            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.totalExpected);
           });
     
           it('totalPurchased', async function() {
-            expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.bondingCurve.totalPurchased()).to.be.equal(this.totalExpected);
           });
     
           it('not at Scale', async function() {
@@ -190,7 +213,7 @@ describe('BondingCurve', function () {
           });
     
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(toBN(2)));
+            expect(await this.bondingCurve.balance()).to.be.equal(this.purchaseAmount.mul(toBN(2)));
           });
         });
   
@@ -198,10 +221,10 @@ describe('BondingCurve', function () {
           beforeEach(async function() {
             this.expectedFei2 = toBN('25252525252');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
-            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
-            await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
+            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
+            await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
             expectEvent(
-              await this.bondingCurve.purchase(secondUserAddress, this.purchaseAmount, {from: userAddress}),
+              await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(secondUserAddress, this.purchaseAmount),
               'Purchase',
               {
                 to: secondUserAddress,
@@ -212,12 +235,12 @@ describe('BondingCurve', function () {
           });
   
           it('correct FEI sent', async function() {
-            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.expectedFei1);
-            expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(this.expectedFei2);
+            expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.expectedFei1);
+            expect(await this.fei.balanceOf(secondUserAddress)).to.be.equal(this.expectedFei2);
           });
     
           it('totalPurchased', async function() {
-            expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.bondingCurve.totalPurchased()).to.be.equal(this.totalExpected);
           });
     
           it('not at Scale', async function() {
@@ -229,7 +252,7 @@ describe('BondingCurve', function () {
           });
     
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(toBN(2)));
+            expect(await this.bondingCurve.balance()).to.be.equal(this.purchaseAmount.mul(toBN(2)));
           });
         });
   
@@ -239,10 +262,10 @@ describe('BondingCurve', function () {
             await this.oracle.setExchangeRate(400);
             this.expectedFei2 = toBN('20202020202');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
-            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
-            await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
+            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
+            await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
             expectEvent(
-              await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}),
+              await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
               'Purchase',
               {
                 to: userAddress,
@@ -253,11 +276,11 @@ describe('BondingCurve', function () {
           });
   
           it('correct FEI sent', async function() {
-            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.totalExpected);
           });
     
           it('totalPurchased', async function() {
-            expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.bondingCurve.totalPurchased()).to.be.equal(this.totalExpected);
           });
     
           it('not at Scale', async function() {
@@ -269,16 +292,16 @@ describe('BondingCurve', function () {
           });
     
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(toBN(2)));
+            expect(await this.bondingCurve.balance()).to.be.equal(this.purchaseAmount.mul(toBN(2)));
           });
         });
       });
       describe('Exceeding cap', function() {
         it('reverts', async function() {
           this.purchaseAmount = toBN('4000000000');
-          await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
+          await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
           await expectRevert(
-            this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}),
+            this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
             'BondingCurve: exceeds mint cap'
           );
         });
@@ -287,10 +310,10 @@ describe('BondingCurve', function () {
         beforeEach(async function() {
           this.purchaseAmount = toBN('400000000');
           this.expectedFei1 = toBN('200020002000');
-          expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei1);
-          await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
+          expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei1);
+          await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
           expectEvent(
-            await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}),
+            await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
             'Purchase',
             {
               to: userAddress,
@@ -301,11 +324,11 @@ describe('BondingCurve', function () {
         });
   
         it('correct FEI sent', async function() {
-          expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.expectedFei1);
+          expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.expectedFei1);
         });
   
         it('totalPurchased', async function() {
-          expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(this.expectedFei1);
+          expect(await this.bondingCurve.totalPurchased()).to.be.equal(this.expectedFei1);
         });
   
         it('At Scale', async function() {
@@ -317,17 +340,17 @@ describe('BondingCurve', function () {
         });
   
         it('total PCV held', async function() {
-          expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount);
+          expect(await this.bondingCurve.balance()).to.be.equal(this.purchaseAmount);
         });
   
         describe('Post Scale', function() {
           beforeEach(async function() {
             this.expectedFei2 = toBN('198019801980');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
-            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
-            await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
+            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
+            await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
             expectEvent(
-              await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}),
+              await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount, {from: userAddress}),
               'Purchase',
               {
                 to: userAddress,
@@ -338,11 +361,11 @@ describe('BondingCurve', function () {
           });
     
           it('correct FEI sent', async function() {
-            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.totalExpected);
           });
     
           it('totalPurchased', async function() {
-            expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.bondingCurve.totalPurchased()).to.be.equal(this.totalExpected);
           });
     
           it('at Scale', async function() {
@@ -354,20 +377,20 @@ describe('BondingCurve', function () {
           });
     
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(toBN(2)));
+            expect(await this.bondingCurve.balance()).to.be.equal(this.purchaseAmount.mul(toBN(2)));
           });
   
           describe('reset', function() {
             beforeEach(async function() {
               expectEvent(
-                await this.bondingCurve.reset({from: governorAddress}),
+                await this.bondingCurve.connect(impersonatedSigners[governorAddress]).reset(),
                 'Reset',
                 {}
               );
             });
   
             it('totalPurchased', async function() {
-              expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(toBN('0'));
+              expect(await this.bondingCurve.totalPurchased()).to.be.equal(toBN('0'));
             });
   
             it('at Scale', async function() {
@@ -382,10 +405,10 @@ describe('BondingCurve', function () {
             await this.bondingCurve.setBuffer(500, {from: governorAddress});
             this.expectedFei2 = toBN('190476190476');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
-            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
-            await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
+            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
+            await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
             expectEvent(
-              await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}),
+              await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
               'Purchase',
               {
                 to: userAddress,
@@ -396,11 +419,11 @@ describe('BondingCurve', function () {
           });
     
           it('correct FEI sent', async function() {
-            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.totalExpected);
           });
     
           it('totalPurchased', async function() {
-            expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.bondingCurve.totalPurchased()).to.be.equal(this.totalExpected);
           });
     
           it('at Scale', async function() {
@@ -412,7 +435,7 @@ describe('BondingCurve', function () {
           });
     
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(toBN(2)));
+            expect(await this.bondingCurve.balance()).to.be.equal(this.purchaseAmount.mul(toBN(2)));
           });
         });
   
@@ -422,10 +445,10 @@ describe('BondingCurve', function () {
             await this.oracle.setExchangeRate(600);
             this.expectedFei2 = toBN('237623762376');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
-            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.bignumber.equal(this.expectedFei2);
-            await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
+            expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
+            await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
             expectEvent(
-              await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress}),
+              await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
               'Purchase',
               {
                 to: userAddress,
@@ -436,11 +459,11 @@ describe('BondingCurve', function () {
           });
     
           it('correct FEI sent', async function() {
-            expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.totalExpected);
           });
     
           it('totalPurchased', async function() {
-            expect(await this.bondingCurve.totalPurchased()).to.be.bignumber.equal(this.totalExpected);
+            expect(await this.bondingCurve.totalPurchased()).to.be.equal(this.totalExpected);
           });
     
           it('at Scale', async function() {
@@ -452,7 +475,7 @@ describe('BondingCurve', function () {
           });
     
           it('total PCV held', async function() {
-            expect(await this.bondingCurve.balance()).to.be.bignumber.equal(this.purchaseAmount.mul(toBN(2)));
+            expect(await this.bondingCurve.balance()).to.be.equal(this.purchaseAmount.mul(toBN(2)));
           });
         });
       });
@@ -462,23 +485,23 @@ describe('BondingCurve', function () {
   describe('Allocate', function() {
     describe('Paused', function() {
       it('reverts', async function() {
-        await this.bondingCurve.pause({from: governorAddress});
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).pause();
         await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), 'Pausable: paused');
       });
     });
   
     describe('No Purchase', function() {
       it('reverts', async function() {
-        await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), 'BondingCurve: Not enough PCV held'); 
+        await expectRevert(this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate(), 'BondingCurve: Not enough PCV held'); 
       });
     });
             
     describe('Purchase too low', function() {
       it('reverts', async function() {
         this.purchaseAmount = toBN('1');
-        await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
-        await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress});
-        await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), 'BondingCurve: Not enough PCV held'); 
+        await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
+        await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount);
+        await expectRevert(this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate({from: keeperAddress}), 'BondingCurve: Not enough PCV held'); 
       });
     });
   
@@ -491,10 +514,10 @@ describe('BondingCurve', function () {
         this.keeperFei = await this.fei.balanceOf(keeperAddress);
   
         await time.increase(this.incentiveDuration);
-        await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
+        await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
 
-        await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress});
-        expectEvent(await this.bondingCurve.allocate({from: keeperAddress}),
+        await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount);
+        expectEvent(await this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate(),
           'Allocate',
           {
             caller: keeperAddress,
@@ -503,18 +526,18 @@ describe('BondingCurve', function () {
       });
   
       it('splits funds', async function() {
-        expect(await this.token.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(this.beneficiaryBalance1.add(toBN('9000000')));
-        expect(await this.token.balanceOf(beneficiaryAddress2)).to.be.bignumber.equal(this.beneficiaryBalance2.add(toBN('1000000')));
+        expect(await this.token.balanceOf(beneficiaryAddress1)).to.be.equal(this.beneficiaryBalance1.add(toBN('9000000')));
+        expect(await this.token.balanceOf(beneficiaryAddress2)).to.be.equal(this.beneficiaryBalance2.add(toBN('1000000')));
       });
           
       it('incentivizes', async function() {
-        expect(await this.fei.balanceOf(keeperAddress)).to.be.bignumber.equal(this.keeperFei.add(this.incentiveAmount));
+        expect(await this.fei.balanceOf(keeperAddress)).to.be.equal(this.keeperFei.add(this.incentiveAmount));
       });
   
       describe('Second Allocate', async function() {
         describe('No Purchase', function() {
           it('reverts', async function() {
-            await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), 'BondingCurve: Not enough PCV held'); 
+            await expectRevert(this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate(), 'BondingCurve: Not enough PCV held'); 
           });
         });
   
@@ -524,9 +547,9 @@ describe('BondingCurve', function () {
             this.beneficiaryBalance2 = await this.token.balanceOf(beneficiaryAddress2);
   
             this.keeperFei = await this.fei.balanceOf(keeperAddress);
-            await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
-            await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress});
-            expectEvent(await this.bondingCurve.allocate({from: keeperAddress}),
+            await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
+            await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount);
+            expectEvent(await this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate(),
               'Allocate',
               {
                 caller: keeperAddress,
@@ -535,12 +558,12 @@ describe('BondingCurve', function () {
           });
       
           it('splits funds', async function() {
-            expect(await this.token.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(this.beneficiaryBalance1.add(toBN('9000000')));
-            expect(await this.token.balanceOf(beneficiaryAddress2)).to.be.bignumber.equal(this.beneficiaryBalance2.add(toBN('1000000')));
+            expect(await this.token.balanceOf(beneficiaryAddress1)).to.be.equal(this.beneficiaryBalance1.add(toBN('9000000')));
+            expect(await this.token.balanceOf(beneficiaryAddress2)).to.be.equal(this.beneficiaryBalance2.add(toBN('1000000')));
           });
               
           it('no incentives', async function() {
-            expect(await this.fei.balanceOf(keeperAddress)).to.be.bignumber.equal(this.keeperFei);
+            expect(await this.fei.balanceOf(keeperAddress)).to.be.equal(this.keeperFei);
           });
         });
   
@@ -552,9 +575,9 @@ describe('BondingCurve', function () {
             this.keeperFei = await this.fei.balanceOf(keeperAddress);
   
             await time.increase(this.incentiveDuration);
-            await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
-            await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress});
-            expectEvent(await this.bondingCurve.allocate({from: keeperAddress}),
+            await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
+            await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount);
+            expectEvent(await this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate(),
               'Allocate',
               {
                 caller: keeperAddress,
@@ -563,12 +586,12 @@ describe('BondingCurve', function () {
           });
       
           it('splits funds', async function() {
-            expect(await this.token.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(this.beneficiaryBalance1.add(toBN('9000000')));
-            expect(await this.token.balanceOf(beneficiaryAddress2)).to.be.bignumber.equal(this.beneficiaryBalance2.add(toBN('1000000')));
+            expect(await this.token.balanceOf(beneficiaryAddress1)).to.be.equal(this.beneficiaryBalance1.add(toBN('9000000')));
+            expect(await this.token.balanceOf(beneficiaryAddress2)).to.be.equal(this.beneficiaryBalance2.add(toBN('1000000')));
           });
               
           it('incentivizes', async function() {
-            expect(await this.fei.balanceOf(keeperAddress)).to.be.bignumber.equal(this.keeperFei.add(this.incentiveAmount));
+            expect(await this.fei.balanceOf(keeperAddress)).to.be.equal(this.keeperFei.add(this.incentiveAmount));
           });
         });
   
@@ -580,11 +603,11 @@ describe('BondingCurve', function () {
             this.keeperFei = await this.fei.balanceOf(keeperAddress);
   
             await time.increase(this.incentiveDuration);
-            await this.bondingCurve.setAllocation([this.pcvDeposit1.address, this.pcvDeposit2.address], [5000, 5000], {from: governorAddress});
+            await this.bondingCurve.setAllocation([this.pcvDeposit1.address, this.pcvDeposit2.address], [5000, 5000]);
 
-            await this.token.approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
-            await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {from: userAddress});
-            expectEvent(await this.bondingCurve.allocate({from: keeperAddress}),
+            await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
+            await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount);
+            expectEvent(await this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate(),
               'Allocate',
               {
                 caller: keeperAddress,
@@ -593,12 +616,12 @@ describe('BondingCurve', function () {
           });
     
           it('splits funds', async function() {
-            expect(await this.token.balanceOf(beneficiaryAddress1)).to.be.bignumber.equal(this.beneficiaryBalance1.add(toBN('5000000')));
-            expect(await this.token.balanceOf(beneficiaryAddress2)).to.be.bignumber.equal(this.beneficiaryBalance2.add(toBN('5000000')));
+            expect(await this.token.balanceOf(beneficiaryAddress1)).to.be.equal(this.beneficiaryBalance1.add(toBN('5000000')));
+            expect(await this.token.balanceOf(beneficiaryAddress2)).to.be.equal(this.beneficiaryBalance2.add(toBN('5000000')));
           });
             
           it('incentivizes', async function() {
-            expect(await this.fei.balanceOf(keeperAddress)).to.be.bignumber.equal(this.keeperFei.add(this.incentiveAmount));
+            expect(await this.fei.balanceOf(keeperAddress)).to.be.equal(this.keeperFei.add(this.incentiveAmount));
           });
         });
       });
@@ -620,7 +643,7 @@ describe('BondingCurve', function () {
   
     it('Governor set succeeds', async function() {
       expectEvent(
-        await this.bondingCurve.setAllocation([this.pcvDeposit1.address], [10000], {from: governorAddress}), 
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setAllocation([this.pcvDeposit1.address], [10000]), 
         'AllocationUpdate', 
         { 
           oldPCVDeposits: [this.pcvDeposit1.address, this.pcvDeposit2.address],
@@ -632,18 +655,18 @@ describe('BondingCurve', function () {
       expect(result[0].length).to.be.equal(1);
       expect(result[0][0]).to.be.equal(this.pcvDeposit1.address);
       expect(result[1].length).to.be.equal(1);
-      expect(result[1][0]).to.be.bignumber.equal(toBN(10000));
+      expect(result[1][0]).to.be.equal(toBN(10000));
     });
   
     it('Non-governor set reverts', async function() {
-      await expectRevert(this.bondingCurve.setAllocation([this.pcvDeposit1.address], [10000], {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).setAllocation([this.pcvDeposit1.address], [10000]), 'CoreRef: Caller is not a governor');
     });
   });
   
   describe('Oracle', function() {
     it('Governor set succeeds', async function() {
       expectEvent(
-        await this.bondingCurve.setOracle(userAddress, {from: governorAddress}),
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setOracle(userAddress),
         'OracleUpdate',
         {
           oldOracle: this.oracle.address,
@@ -654,76 +677,76 @@ describe('BondingCurve', function () {
     });
   
     it('Non-governor set reverts', async function() {
-      await expectRevert(this.bondingCurve.setOracle(userAddress, {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).setOracle(userAddress), 'CoreRef: Caller is not a governor');
     });
   });
   
   describe('Scale', function() {
     it('Governor set succeeds', async function() {
       expectEvent(
-        await this.bondingCurve.setScale(100, {from: governorAddress}),
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setScale(100),
         'ScaleUpdate',
         { 
           oldScale: this.scale,
           newScale: toBN(100)
         }
       );
-      expect(await this.bondingCurve.scale()).to.be.bignumber.equal(toBN(100));
+      expect(await this.bondingCurve.scale()).to.be.equal(toBN(100));
     });
   
     it('Non-governor set reverts', async function() {
-      await expectRevert(this.bondingCurve.setScale(100, {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).setScale(100), 'CoreRef: Caller is not a governor');
     });
   });
   
   describe('Buffer', function() {
     it('Governor set succeeds', async function() {
       expectEvent(
-        await this.bondingCurve.setBuffer(1000, {from: governorAddress}),
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setBuffer(1000),
         'BufferUpdate',
         {
           oldBuffer: this.buffer,
           newBuffer: toBN(1000)
         }
       );
-      expect(await this.bondingCurve.buffer()).to.be.bignumber.equal(toBN(1000));
+      expect(await this.bondingCurve.buffer()).to.be.equal(toBN(1000));
     });
   
     it('Governor set outside range reverts', async function() {
-      await expectRevert(this.bondingCurve.setBuffer(10000, {from: governorAddress}), 'BondingCurve: Buffer exceeds or matches granularity');
+      await expectRevert(this.bondingCurve.connect(impersonatedSigners[governorAddress]).setBuffer(10000), 'BondingCurve: Buffer exceeds or matches granularity');
     });
   
     it('Non-governor set reverts', async function() {
-      await expectRevert(this.bondingCurve.setBuffer(1000, {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).setBuffer(1000), 'CoreRef: Caller is not a governor');
     });
   });
   
   describe('Discount', function() {
     it('Governor set succeeds', async function() {
       expectEvent(
-        await this.bondingCurve.setDiscount(1000, {from: governorAddress}),
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setDiscount(1000),
         'DiscountUpdate',
         {
           oldDiscount: '100',
           newDiscount: toBN(1000)
         }
       );
-      expect(await this.bondingCurve.discount()).to.be.bignumber.equal(toBN(1000));
+      expect(await this.bondingCurve.discount()).to.be.equal(toBN(1000));
     });
   
     it('Governor set outside range reverts', async function() {
-      await expectRevert(this.bondingCurve.setDiscount(10000, {from: governorAddress}), 'BondingCurve: Buffer exceeds or matches granularity');
+      await expectRevert(this.bondingCurve.connect(impersonatedSigners[governorAddress]).setDiscount(10000), 'BondingCurve: Buffer exceeds or matches granularity');
     });
   
     it('Non-governor set reverts', async function() {
-      await expectRevert(this.bondingCurve.setDiscount(1000, {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).setDiscount(1000), 'CoreRef: Caller is not a governor');
     });
   });
   
   describe('Core', function() {
     it('Governor set succeeds', async function() {
       expectEvent(
-        await this.bondingCurve.setCore(userAddress, {from: governorAddress}), 
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setCore(userAddress), 
         'CoreUpdate', 
         {
           oldCore: this.core.address,
@@ -735,7 +758,7 @@ describe('BondingCurve', function () {
     });
   
     it('Non-governor set reverts', async function() {
-      await expectRevert(this.bondingCurve.setCore(userAddress, {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).setCore(userAddress), 'CoreRef: Caller is not a governor');
     });
   });
   
@@ -743,7 +766,7 @@ describe('BondingCurve', function () {
     it('Governor set succeeds', async function() {
       this.incentiveAmount = toBN('10');
       expectEvent(
-        await this.bondingCurve.setIncentiveAmount(this.incentiveAmount, {from: governorAddress}), 
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setIncentiveAmount(this.incentiveAmount), 
         'IncentiveUpdate', 
         { 
           oldIncentiveAmount: toBN('100'),
@@ -751,11 +774,11 @@ describe('BondingCurve', function () {
         }
       );
   
-      expect(await this.bondingCurve.incentiveAmount()).to.be.bignumber.equal(this.incentiveAmount);
+      expect(await this.bondingCurve.incentiveAmount()).to.be.equal(this.incentiveAmount);
     });
   
     it('Non-governor set reverts', async function() {
-      await expectRevert(this.bondingCurve.setIncentiveAmount(toBN('10'), {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).setIncentiveAmount(toBN('10')), 'CoreRef: Caller is not a governor');
     });
   });
   
@@ -763,7 +786,7 @@ describe('BondingCurve', function () {
     it('Governor set succeeds', async function() {
       this.incentiveFrequency = toBN('70');
       expectEvent(
-        await this.bondingCurve.setIncentiveFrequency(this.incentiveFrequency, {from: governorAddress}), 
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setIncentiveFrequency(this.incentiveFrequency), 
         'DurationUpdate', 
         { 
           oldDuration: this.incentiveDuration,
@@ -771,11 +794,11 @@ describe('BondingCurve', function () {
         }
       );
   
-      expect(await this.bondingCurve.duration()).to.be.bignumber.equal(this.incentiveFrequency);
+      expect(await this.bondingCurve.duration()).to.be.equal(this.incentiveFrequency);
     });
   
     it('Non-governor set reverts', async function() {
-      await expectRevert(this.bondingCurve.setIncentiveFrequency(toBN('10'), {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).setIncentiveFrequency(toBN('10')), 'CoreRef: Caller is not a governor');
     });
   });
   
@@ -786,28 +809,28 @@ describe('BondingCurve', function () {
   
     describe('Pause', function() {
       it('Governor succeeds', async function() {
-        await this.bondingCurve.pause({from: governorAddress});
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).pause();
         expect(await this.bondingCurve.paused()).to.be.equal(true);
       });
   
       it('Non-governor reverts', async function() {
-        await expectRevert(this.bondingCurve.pause({from: userAddress}), 'CoreRef: Caller is not a guardian or governor');
+        await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).pause(), 'CoreRef: Caller is not a guardian or governor');
       });
     });
   
     describe('Unpause', function() {
       beforeEach(async function() {
-        await this.bondingCurve.pause({from: governorAddress});
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).pause();
         expect(await this.bondingCurve.paused()).to.be.equal(true);
       });
   
       it('Governor succeeds', async function() {
-        await this.bondingCurve.unpause({from: governorAddress});
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).unpause();
         expect(await this.bondingCurve.paused()).to.be.equal(false);
       });
   
       it('Non-governor reverts', async function() {
-        await expectRevert(this.bondingCurve.unpause({from: userAddress}), 'CoreRef: Caller is not a guardian or governor');
+        await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).unpause(), 'CoreRef: Caller is not a guardian or governor');
       });
     });
   });

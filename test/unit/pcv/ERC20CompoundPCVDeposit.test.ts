@@ -1,7 +1,10 @@
 import { expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat'
-      
+import { Signer } from 'ethers'
+
+const toBN = ethers.BigNumber.from
+
 const ERC20CompoundPCVDeposit = artifacts.readArtifactSync('ERC20CompoundPCVDeposit');
 const MockCToken = artifacts.readArtifactSync('MockCToken');
 const MockERC20 = artifacts.readArtifactSync('MockERC20');
@@ -11,6 +14,28 @@ describe('ERC20CompoundPCVDeposit', function () {
   let pcvControllerAddress: string
   let governorAddress: string
       
+  let impersonatedSigners: { [key: string]: Signer } = { }
+
+  before(async() => {
+    const addresses = await getAddresses()
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
+  });
+
   beforeEach(async function () {
     ({
       userAddress,
@@ -20,17 +45,17 @@ describe('ERC20CompoundPCVDeposit', function () {
     
     this.core = await getCore();
   
-    this.token = await MockERC20.new();
-    this.cToken = await MockCToken.new(this.token.address, false);
+    this.token = await (await ethers.getContractFactory('MockERC20')).deploy();
+    this.cToken = await (await ethers.getContractFactory('MockCToken')).deploy(this.token.address, false);
         
-    this.compoundPCVDeposit = await ERC20CompoundPCVDeposit.new(this.core.address, this.cToken.address, this.token.address);
+    this.compoundPCVDeposit = await (await ethers.getContractFactory('ERC20CompoundPCVDeposit')).deploy(this.core.address, this.cToken.address, this.token.address);
     this.depositAmount = toBN('1000000000000000000');
   });
       
   describe('Deposit', function() {
     describe('Paused', function() {
       it('reverts', async function() {
-        await this.compoundPCVDeposit.pause({from: governorAddress});
+        await this.compoundPCVDeposit.connect(impersonatedSigners[governorAddress]).pause();
         await expectRevert(this.compoundPCVDeposit.deposit(), 'Pausable: paused');
       });
     });
@@ -55,14 +80,14 @@ describe('ERC20CompoundPCVDeposit', function () {
   describe('Withdraw', function() {
     describe('Paused', function() {
       it('reverts', async function() {
-        await this.compoundPCVDeposit.pause({from: governorAddress});
-        await expectRevert(this.compoundPCVDeposit.withdraw(userAddress, this.depositAmount, {from: pcvControllerAddress}), 'Pausable: paused');
+        await this.compoundPCVDeposit.connect(impersonatedSigners[governorAddress]).pause();
+        await expectRevert(this.compoundPCVDeposit.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, this.depositAmount), 'Pausable: paused');
       });
     });
   
     describe('Not PCVController', function() {
       it('reverts', async function() {
-        await expectRevert(this.compoundPCVDeposit.withdraw(userAddress, this.depositAmount, {from: userAddress}), 'CoreRef: Caller is not a PCV controller');
+        await expectRevert(this.compoundPCVDeposit.connect(impersonatedSigners[userAddress]).withdraw(userAddress, this.depositAmount), 'CoreRef: Caller is not a PCV controller');
       });
     });
   
@@ -77,7 +102,7 @@ describe('ERC20CompoundPCVDeposit', function () {
         
         // withdrawing should take balance back to 0
         expect(await this.compoundPCVDeposit.balance()).to.be.equal(this.depositAmount);
-        await this.compoundPCVDeposit.withdraw(userAddress, this.depositAmount, {from: pcvControllerAddress});
+        await this.compoundPCVDeposit.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, this.depositAmount);
         expect(await this.compoundPCVDeposit.balance()).to.be.equal(toBN('0'));
         
         const userBalanceAfter = await this.token.balanceOf(userAddress);
@@ -90,7 +115,7 @@ describe('ERC20CompoundPCVDeposit', function () {
   describe('WithdrawERC20', function() {
     describe('Not PCVController', function() {
       it('reverts', async function() {
-        await expectRevert(this.compoundPCVDeposit.withdrawERC20(this.cToken.address, userAddress, this.depositAmount, {from: userAddress}), 'CoreRef: Caller is not a PCV controller');
+        await expectRevert(this.compoundPCVDeposit.connect(impersonatedSigners[userAddress]).withdrawERC20(this.cToken.address, userAddress, this.depositAmount), 'CoreRef: Caller is not a PCV controller');
       });
     });
   
@@ -103,7 +128,7 @@ describe('ERC20CompoundPCVDeposit', function () {
       it('succeeds', async function() {
         expect(await this.compoundPCVDeposit.balance()).to.be.equal(this.depositAmount);
         // cToken exchange rate is 2 in the mock, so this would withdraw half of the cTokens
-        await this.compoundPCVDeposit.withdrawERC20(this.cToken.address, userAddress, this.depositAmount.div(toBN('4')), {from: pcvControllerAddress});        
+        await this.compoundPCVDeposit.connect(impersonatedSigners[pcvControllerAddress]).withdrawERC20(this.cToken.address, userAddress, this.depositAmount.div(toBN('4')));        
 
         // balance should also get cut in half
         expect(await this.compoundPCVDeposit.balance()).to.be.equal(this.depositAmount.div(toBN('2')));

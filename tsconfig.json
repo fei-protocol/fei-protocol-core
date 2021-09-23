@@ -12,7 +12,8 @@
   },
   "include": [
     "test/*", "test/**/*",
-    "scripts/*", "scripts/**/*"
+    "scripts/*", "scripts/**/*",
+    "proposals/*", "proposals/**/*",
   ],
   "files": ["hardhat.config.ts"]
 }

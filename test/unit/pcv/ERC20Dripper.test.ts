@@ -49,6 +49,8 @@ describe('ERC20Dripper', () => {
   before(async () => {
     const addresses = await getAddresses()
 
+    userAddress = addresses.userAddress;
+    secondUserAddress = addresses.secondUserAddress;
     thirdUserAddress = addresses.beneficiaryAddress1;
     fourthUserAddress = addresses.minterAddress;
     fifthUserAddress = addresses.burnerAddress;
@@ -57,6 +59,15 @@ describe('ERC20Dripper', () => {
     eigthUserAddress = addresses.genesisGroup;
     ninthUserAddress = addresses.guardianAddress;
     tenthUserAddress = addresses.beneficiaryAddress2;
+    pcvControllerAddress = addresses.pcvControllerAddress;
+    governorAddress = addresses.governorAddress;
+    beneficiaryAddress1 = addresses.beneficiaryAddress1;
+    beneficiaryAddress2 = addresses.beneficiaryAddress2;
+    minterAddress = addresses.minterAddress;
+    burnerAddress = addresses.burnerAddress;
+    genesisGroup = addresses.genesisGroup;
+    guardianAddress = addresses.guardianAddress;
+
   });
 
   beforeEach(async function () {
@@ -110,9 +121,12 @@ describe('ERC20Dripper', () => {
   describe('security suite', () => {
     it('should not be able to withdraw as non PCV controller', async function () {
       const totalLockedTribe = await this.dripper.balance();
+
+      await hre.network.provider.request({method: 'hardhat_impersonateAccount', params: [thirdUserAddress]});
+
       await expectRevert(
-        this.dripper.withdraw(
-          this.tribalChief.address, totalLockedTribe, { from: thirdUserAddress }
+        this.dripper.connect(await ethers.getSigner(thirdUserAddress)).withdraw(
+          this.tribalChief.address, totalLockedTribe
         ),
         'CoreRef: Caller is not a PCV controller'
       );
@@ -145,7 +159,7 @@ describe('ERC20Dripper', () => {
     });
 
     it('should not be able to call drip before the timer is up', async function () {
-      expect((await this.dripper.isTimeEnded()).toString()).to.be.false;
+      expect((await this.dripper.isTimeEnded())).to.be.false;
       await expectRevert(
         this.dripper.drip(),
         'Timed: time not ended'
@@ -284,7 +298,9 @@ describe('ERC20Dripper', () => {
       // still waiting to go as the contract is paused
       expect(await this.dripper.isTimeEnded()).to.be.true;
 
-      await this.dripper.unpause({ from: governorAddress });
+      await hre.network.provider.request({method: 'hardhat_impersonateAccount', params: [governorAddress]})
+      await this.dripper.connect(await ethers.getSigner(governorAddress)).unpause();
+
       expect(await this.dripper.paused()).to.be.false;
 
       const tribalChiefStartingBalance = await this.tribe.balanceOf(this.tribalChief.address);
