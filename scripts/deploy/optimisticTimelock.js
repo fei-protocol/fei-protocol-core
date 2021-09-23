@@ -21,6 +21,7 @@ async function deploy(deployAddress, addresses, logging = false) {
     [tribalChiefOptimisticMultisigAddress]
   );
 
+  logging && console.log('Optimistic Timelock deployed to: ', optimisticTimelock.address);
   return {
     optimisticTimelock
   };
