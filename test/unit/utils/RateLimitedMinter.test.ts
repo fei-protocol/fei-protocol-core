@@ -1,13 +1,39 @@
 import { time, expectRevert, expectApprox, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat';
+import { Signer } from 'ethers'
     
+const toBN = ethers.BigNumber.from
+
 const RateLimitedMinter = artifacts.readArtifactSync('MockRateLimitedMinter');
 const Fei = artifacts.readArtifactSync('Fei');
   
 describe('RateLimitedMinter', function () {
   let userAddress;
   let governorAddress;
+
+  let impersonatedSigners: { [key: string]: Signer } = { }
+
+  before(async() => {
+    const addresses = await getAddresses()
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
+  });
+
   
   beforeEach(async function () {
     ({
@@ -17,18 +43,18 @@ describe('RateLimitedMinter', function () {
       
     this.core = await getCore();
   
-    this.fei = await Fei.at(await this.core.fei());
+    this.fei = await ethers.getContractAt('Fei', await this.core.fei());
 
     this.rateLimitPerSecond = '1';
     this.bufferCap = '20000';
-    this.rateLimitedMinter = await RateLimitedMinter.new(
+    this.rateLimitedMinter = await (await ethers.getContractFactory('MockRateLimitedMinter')).deploy(
       this.core.address, 
       this.rateLimitPerSecond, 
       this.bufferCap, 
       false
     );
 
-    await this.core.grantMinter(this.rateLimitedMinter.address, {from: governorAddress});
+    await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.rateLimitedMinter.address);
   });
   
   describe('Mint', function() {
@@ -39,7 +65,7 @@ describe('RateLimitedMinter', function () {
 
       it('clears out buffer', async function() {
         expectApprox(await this.rateLimitedMinter.buffer(), '0');
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.bufferCap);
+        expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.bufferCap);
       });
 
       it('second mint reverts', async function() {
@@ -60,7 +86,7 @@ describe('RateLimitedMinter', function () {
     
       it('partially clears out buffer', async function() {
         expectApprox(await this.rateLimitedMinter.buffer(), '10000');
-        expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(this.mintAmount);
+        expect(await this.fei.balanceOf(userAddress)).to.be.equal(this.mintAmount);
       });
     
       it('second mint is partial', async function() {
@@ -78,28 +104,28 @@ describe('RateLimitedMinter', function () {
   
   describe('Set Fei Limit Per Second', function() {
     it('governor succeeds', async function() {
-      await this.rateLimitedMinter.setRateLimitPerSecond('10000', {from: governorAddress});
-      expect(await this.rateLimitedMinter.rateLimitPerSecond()).to.be.bignumber.equal(toBN('10000'));
+      await this.rateLimitedMinter.connect(impersonatedSigners[governorAddress]).setRateLimitPerSecond('10000');
+      expect(await this.rateLimitedMinter.rateLimitPerSecond()).to.be.equal(toBN('10000'));
     });
   
     it('non-governor reverts', async function() {
-      await expectRevert(this.rateLimitedMinter.setRateLimitPerSecond('10000', {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.rateLimitedMinter.connect(impersonatedSigners[userAddress]).setRateLimitPerSecond('10000'), 'CoreRef: Caller is not a governor');
     });
   
     it('too high fei rate reverts', async function() {
-      await expectRevert(this.rateLimitedMinter.setRateLimitPerSecond(toBN('20000000000000000000000'), {from: governorAddress}), 'RateLimited: rateLimitPerSecond too high');
+      await expectRevert(this.rateLimitedMinter.connect(impersonatedSigners[governorAddress]).setRateLimitPerSecond(toBN('20000000000000000000000')), 'RateLimited: rateLimitPerSecond too high');
     });
   });
 
   describe('Set Minting Buffer Cap', function() {
     it('governor succeeds', async function() {
-      await this.rateLimitedMinter.setbufferCap('10000', {from: governorAddress});
-      expect(await this.rateLimitedMinter.bufferCap()).to.be.bignumber.equal(toBN('10000'));
-      expect(await this.rateLimitedMinter.buffer()).to.be.bignumber.equal(toBN('10000'));
+      await this.rateLimitedMinter.connect(impersonatedSigners[governorAddress]).setbufferCap('10000', {from: governorAddress});
+      expect(await this.rateLimitedMinter.bufferCap()).to.be.equal(toBN('10000'));
+      expect(await this.rateLimitedMinter.buffer()).to.be.equal(toBN('10000'));
     });
   
     it('non-governor reverts', async function() {
-      await expectRevert(this.rateLimitedMinter.setbufferCap('10000', {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.rateLimitedMinter.connect(impersonatedSigners[userAddress]).setbufferCap('10000'), 'CoreRef: Caller is not a governor');
     });
   });
 });
