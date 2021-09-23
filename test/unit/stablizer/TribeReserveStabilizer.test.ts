@@ -1,7 +1,9 @@
 import { MAX_UINT256, expectRevert, getAddresses, getCore } from '../../helpers';
 import hre, { ethers, artifacts } from 'hardhat'
 import { expect } from 'chai'
-  
+
+const toBN = ethers.BigNumber.from
+
 const TribeReserveStabilizer = artifacts.readArtifactSync('TribeReserveStabilizer');
 const Fei = artifacts.readArtifactSync('Fei');
 const Tribe = artifacts.readArtifactSync('Tribe');

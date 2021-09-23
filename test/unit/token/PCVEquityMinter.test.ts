@@ -1,6 +1,7 @@
 import { ZERO_ADDRESS, expectRevert, time, getAddresses, getCore, expectApprox } from '../../helpers';
 import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat';
+import { Signer } from 'ethers'
       
 const PCVEquityMinter = artifacts.readArtifactSync('PCVEquityMinter');
 const PCVSwapper = artifacts.readArtifactSync('MockPCVSwapper');
@@ -8,9 +9,33 @@ const MockCollateralizationOracle = artifacts.readArtifactSync('MockCollateraliz
 const Fei = artifacts.readArtifactSync('Fei');
     
 describe('PCVEquityMinter', function () {
-  let userAddress;
-  let secondUserAddress;
-  let governorAddress;
+  let userAddress: string
+  let secondUserAddress: string
+  let governorAddress: string
+
+  let impersonatedSigners: { [key: string]: Signer } = { }
+
+  before(async() => {
+    const addresses = await getAddresses()
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress,
+      addresses.secondUserAddress
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
+  });
+
     
   beforeEach(async function () {
     ({
@@ -20,17 +45,17 @@ describe('PCVEquityMinter', function () {
     } = await getAddresses());
         
     this.core = await getCore();
-    this.collateralizationOracle = await MockCollateralizationOracle.new(this.core.address, '1');
+    this.collateralizationOracle = await (await ethers.getContractFactory('MockCollateralizationOracle')).deploy(this.core.address, '1');
 
-    this.fei = await Fei.at(await this.core.fei());
+    this.fei = await ethers.getContractAt('Fei', await this.core.fei());
     
-    this.swapper = await PCVSwapper.new();
+    this.swapper = await (await ethers.getContractFactory('MockPCVSwapper')).deploy();
 
     this.incentive = '100';
     this.frequency = '3600'; // 1 hour
     this.intialMintAmount = '10000';
     this.aprBasisPoints = '200'; // 2%
-    this.feiMinter = await PCVEquityMinter.new(
+    this.feiMinter = await (await ethers.getContractFactory('PCVEquityMinter')).deploy(
       this.core.address,
       this.swapper.address, 
       this.incentive, 
@@ -39,17 +64,17 @@ describe('PCVEquityMinter', function () {
       this.aprBasisPoints
     );
     
-    await this.core.grantMinter(this.feiMinter.address, {from: governorAddress}); 
+    await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.feiMinter.address); 
   });
     
   describe('Mint', function() {
-    it('paued reverts', async function() {
-      await this.feiMinter.pause({from: governorAddress});
-      await expectRevert(this.feiMinter.mint({from: userAddress}), 'Pausable: paused');
+    it('pasued reverts', async function() {
+      await this.feiMinter.connect(impersonatedSigners[governorAddress]).pause();
+      await expectRevert(this.feiMinter.connect(impersonatedSigners[userAddress]).mint(), 'Pausable: paused');
     });
   
     it('before time reverts', async function() {
-      await expectRevert(this.feiMinter.mint({from: userAddress}), 'Timed: time not ended');
+      await expectRevert(this.feiMinter.connect(impersonatedSigners[userAddress]).mint(), 'Timed: time not ended');
     });
   
     describe('after time', function() {
@@ -59,17 +84,17 @@ describe('PCVEquityMinter', function () {
       });
 
       it('below rate limit succeeds', async function () {
-        await this.feiMinter.mint({from: secondUserAddress});
+        await this.feiMinter.connect(impersonatedSigners[secondUserAddress]).mint();
     
         // timer reset
         expectApprox(await this.feiMinter.remainingTime(), this.frequency);
           
         // mint sent
         const expected = (4e20 * 0.02) / (24 * 365); // This is equity * APR / durations / year
-        expectApprox(await this.fei.balanceOf(this.swapper.address), expected);
+        expectApprox(await this.fei.balanceOf(this.swapper.address), expected.toFixed(0));
           
         // incentive for caller
-        expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(this.incentive);
+        expect(await this.fei.balanceOf(secondUserAddress)).to.be.equal(this.incentive);
         expect(await this.swapper.swapped()).to.be.true;
       });
 
@@ -80,7 +105,7 @@ describe('PCVEquityMinter', function () {
         // The buffer is the expected value with excess equity
         const expected = await this.feiMinter.buffer();
 
-        await this.feiMinter.mint({from: secondUserAddress});
+        await this.feiMinter.connect(impersonatedSigners[secondUserAddress]).mint();
     
         // timer reset
         expectApprox(await this.feiMinter.remainingTime(), this.frequency);
@@ -89,7 +114,7 @@ describe('PCVEquityMinter', function () {
         expectApprox(await this.fei.balanceOf(this.swapper.address), expected);
           
         // incentive for caller
-        expect(await this.fei.balanceOf(secondUserAddress)).to.be.bignumber.equal(this.incentive);
+        expect(await this.fei.balanceOf(secondUserAddress)).to.be.equal(this.incentive);
         expect(await this.swapper.swapped()).to.be.true;
       });
     });
@@ -97,35 +122,35 @@ describe('PCVEquityMinter', function () {
     
   describe('Set Collateralization Oracle', function() {
     it('governor succeeds', async function() {
-      await this.feiMinter.setCollateralizationOracle(secondUserAddress, {from: governorAddress});
+      await this.feiMinter.connect(impersonatedSigners[governorAddress]).setCollateralizationOracle(secondUserAddress);
       expect(await this.feiMinter.collateralizationOracle()).to.be.equal(secondUserAddress);
     });
     
     it('non-governor reverts', async function() {
-      await expectRevert(this.feiMinter.setCollateralizationOracle(secondUserAddress, {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.feiMinter.connect(impersonatedSigners[userAddress]).setCollateralizationOracle(secondUserAddress), 'CoreRef: Caller is not a governor');
     });
     
     it('zero address reverts', async function() {
-      await expectRevert(this.feiMinter.setCollateralizationOracle(ZERO_ADDRESS, {from: governorAddress}), 'PCVEquityMinter: zero address');
+      await expectRevert(this.feiMinter.connect(impersonatedSigners[governorAddress]).setCollateralizationOracle(ZERO_ADDRESS), 'PCVEquityMinter: zero address');
     });
   });
   
   describe('Set APR Basis Points', function() {
     it('governor succeeds', async function() {
-      await this.feiMinter.setAPRBasisPoints('1000', {from: governorAddress});
-      expect(await this.feiMinter.aprBasisPoints()).to.be.bignumber.equal('1000');
+      await this.feiMinter.connect(impersonatedSigners[governorAddress]).setAPRBasisPoints('1000');
+      expect(await this.feiMinter.aprBasisPoints()).to.be.equal('1000');
     });
     
     it('non-governor reverts', async function() {
-      await expectRevert(this.feiMinter.setAPRBasisPoints('1000', {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.feiMinter.connect(impersonatedSigners[userAddress]).setAPRBasisPoints('1000'), 'CoreRef: Caller is not a governor');
     });
     
     it('zero reverts', async function() {
-      await expectRevert(this.feiMinter.setAPRBasisPoints('0', {from: governorAddress}), 'PCVEquityMinter: zero APR');
+      await expectRevert(this.feiMinter.connect(impersonatedSigners[governorAddress]).setAPRBasisPoints('0'), 'PCVEquityMinter: zero APR');
     });
   
     it('above max reverts', async function() {
-      await expectRevert(this.feiMinter.setAPRBasisPoints('5000', {from: governorAddress}), 'PCVEquityMinter: APR above max');
+      await expectRevert(this.feiMinter.connect(impersonatedSigners[governorAddress]).setAPRBasisPoints('5000'), 'PCVEquityMinter: APR above max');
     });
   });
 });
