@@ -28,7 +28,8 @@ describe('BondingCurve', function () {
     const impersonatedAddresses = [
       addresses.userAddress,
       addresses.pcvControllerAddress,
-      addresses.governorAddress
+      addresses.governorAddress,
+      addresses.keeperAddress
     ]
 
     for (const address of impersonatedAddresses) {
@@ -128,7 +129,7 @@ describe('BondingCurve', function () {
   
     describe('Paused', function() {
       it('reverts', async function() {
-        await this.bondingCurve.pause({from: governorAddress});
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).pause();
         await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
         await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount), 'Pausable: paused');
       });
@@ -348,9 +349,9 @@ describe('BondingCurve', function () {
             this.expectedFei2 = toBN('198019801980');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
             expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
-            await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount, {from: userAddress});
+            await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
             expectEvent(
-              await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount, {from: userAddress}),
+              await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
               'Purchase',
               {
                 to: userAddress,
@@ -402,7 +403,7 @@ describe('BondingCurve', function () {
         describe('Buffer Change', function() {
           beforeEach(async function() {
             // 5% buffer
-            await this.bondingCurve.setBuffer(500, {from: governorAddress});
+            await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setBuffer(500);
             this.expectedFei2 = toBN('190476190476');
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
             expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
@@ -486,7 +487,7 @@ describe('BondingCurve', function () {
     describe('Paused', function() {
       it('reverts', async function() {
         await this.bondingCurve.connect(impersonatedSigners[governorAddress]).pause();
-        await expectRevert(this.bondingCurve.allocate({from: keeperAddress}), 'Pausable: paused');
+        await expectRevert(this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate(), 'Pausable: paused');
       });
     });
   
@@ -501,7 +502,7 @@ describe('BondingCurve', function () {
         this.purchaseAmount = toBN('1');
         await this.token.connect(impersonatedSigners[userAddress]).approve(this.bondingCurve.address, this.purchaseAmount);
         await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount);
-        await expectRevert(this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate({from: keeperAddress}), 'BondingCurve: Not enough PCV held'); 
+        await expectRevert(this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate(), 'BondingCurve: Not enough PCV held'); 
       });
     });
   

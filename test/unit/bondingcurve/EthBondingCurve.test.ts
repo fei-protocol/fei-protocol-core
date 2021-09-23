@@ -3,6 +3,7 @@ import hre, { artifacts, ethers } from 'hardhat';
 import { expectEvent, expectRevert, balance, time, getAddresses, getCore } from '../../helpers';
 import { expect } from "chai";
 import { HardhatNetworkConfig } from 'hardhat/types';
+import { Signer } from 'ethers'
 
 const toBN = ethers.BigNumber.from
 
@@ -18,6 +19,29 @@ describe('EthBondingCurve', function () {
   let governorAddress: string;
   let beneficiaryAddress1: string;
   let beneficiaryAddress2: string;
+
+  let impersonatedSigners: { [key: string]: Signer } = { }
+
+  before(async() => {
+    const addresses = await getAddresses()
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress,
+      addresses.keeperAddress
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
+  });
 
   // eslint-disable-next-line consistent-return
   this.beforeAll(async function() {
@@ -59,9 +83,9 @@ describe('EthBondingCurve', function () {
     this.bondingCurve = await bondingCurveFactory.deploy(this.core.address, this.oracle.address, this.oracle.address, {
       scale: '100000000000', buffer: '100', discount: '100', duration: this.incentiveDuration.toString(), incentive: this.incentiveAmount.toString(), pcvDeposits: [this.pcvDeposit1.address, this.pcvDeposit2.address], ratios: [9000, 1000]
     });
-    await this.core.grantMinter(this.bondingCurve.address, {from: governorAddress});
+    await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.bondingCurve.address);
 
-    await this.bondingCurve.setMintCap(this.scale.mul(toBN('10')), {from: governorAddress});
+    await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setMintCap(this.scale.mul(toBN('10')));
   });
 
   describe('Init', function() {
@@ -708,7 +732,7 @@ describe('EthBondingCurve', function () {
   describe('Core', function() {
     it('Governor set succeeds', async function() {
       expectEvent(
-        await this.bondingCurve.setCore(userAddress, {from: governorAddress}), 
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setCore(userAddress), 
         'CoreUpdate', 
         {
           oldCore: this.core.address,
@@ -720,7 +744,7 @@ describe('EthBondingCurve', function () {
     });
 
     it('Non-governor set reverts', async function() {
-      await expectRevert(this.bondingCurve.setCore(userAddress, {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).setCore(userAddress), 'CoreRef: Caller is not a governor');
     });
   });
 
@@ -728,7 +752,7 @@ describe('EthBondingCurve', function () {
     it('Governor set succeeds', async function() {
       this.incentiveAmount = toBN('10');
       expectEvent(
-        await this.bondingCurve.setIncentiveAmount(this.incentiveAmount, {from: governorAddress}), 
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setIncentiveAmount(this.incentiveAmount), 
         'IncentiveUpdate', 
         { 
           oldIncentiveAmount: toBN('100'),
@@ -740,7 +764,7 @@ describe('EthBondingCurve', function () {
     });
 
     it('Non-governor set reverts', async function() {
-      await expectRevert(this.bondingCurve.setIncentiveAmount(toBN('10'), {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).setIncentiveAmount(toBN('10')), 'CoreRef: Caller is not a governor');
     });
   });
 
@@ -748,7 +772,7 @@ describe('EthBondingCurve', function () {
     it('Governor set succeeds', async function() {
       this.incentiveFrequency = toBN('70');
       expectEvent(
-        await this.bondingCurve.setIncentiveFrequency(this.incentiveFrequency, {from: governorAddress}), 
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setIncentiveFrequency(this.incentiveFrequency), 
         'DurationUpdate', 
         { 
           oldDuration: this.incentiveDuration,
@@ -760,7 +784,7 @@ describe('EthBondingCurve', function () {
     });
 
     it('Non-governor set reverts', async function() {
-      await expectRevert(this.bondingCurve.setIncentiveFrequency(toBN('10'), {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).setIncentiveFrequency(toBN('10')), 'CoreRef: Caller is not a governor');
     });
   });
 
@@ -771,28 +795,28 @@ describe('EthBondingCurve', function () {
 
     describe('Pause', function() {
       it('Governor succeeds', async function() {
-        await this.bondingCurve.pause({from: governorAddress});
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).pause();
         expect(await this.bondingCurve.paused()).to.be.equal(true);
       });
 
       it('Non-governor reverts', async function() {
-        await expectRevert(this.bondingCurve.pause({from: userAddress}), 'CoreRef: Caller is not a guardian or governor');
+        await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).pause(), 'CoreRef: Caller is not a guardian or governor');
       });
     });
 
     describe('Unpause', function() {
       beforeEach(async function() {
-        await this.bondingCurve.pause({from: governorAddress});
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).pause();
         expect(await this.bondingCurve.paused()).to.be.equal(true);
       });
 
       it('Governor succeeds', async function() {
-        await this.bondingCurve.unpause({from: governorAddress});
+        await this.bondingCurve.connect(impersonatedSigners[governorAddress]).unpause();
         expect(await this.bondingCurve.paused()).to.be.equal(false);
       });
 
       it('Non-governor reverts', async function() {
-        await expectRevert(this.bondingCurve.unpause({from: userAddress}), 'CoreRef: Caller is not a guardian or governor');
+        await expectRevert(this.bondingCurve.connect(impersonatedSigners[userAddress]).unpause(), 'CoreRef: Caller is not a guardian or governor');
       });
     });
   });

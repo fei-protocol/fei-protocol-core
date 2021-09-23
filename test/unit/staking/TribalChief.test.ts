@@ -9,6 +9,7 @@ import { time } from '@openzeppelin/test-helpers';
 import { expectEvent, expectRevert, getCore, getAddresses, expectApprox } from '../../helpers';
 import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat';
+import { Signer } from 'ethers';
 
 const toBN = ethers.BigNumber.from
 
@@ -22,6 +23,8 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const uintMax = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
 const ACC_TRIBE_PRECISION = toBN('100000000000000000000000');
 const blockReward = '100000000000000000000';
+
+let impersonatedSigners: { [key: string]: Signer } = { }
 
 async function testMultipleUsersPooling(
   tribalChief,
@@ -38,7 +41,7 @@ async function testMultipleUsersPooling(
 
   // approval loop
   for (let i = 0; i < userAddresses.length; i++) {
-    await lpToken.approve(tribalChief.address, uintMax, { from: userAddresses[i] });
+    await lpToken.connect(impersonatedSigners[userAddresses[i]]).approve(tribalChief.address, uintMax);
   }
 
   // deposit loop
@@ -180,6 +183,8 @@ describe('TribalChief', () => {
   // this is the amount of tribe we will mint to the tribalChief contract
   const mintAmount = toBN('1000000000000000000000000000000000000000000000');
 
+  
+
   before(async () => {
     const addresses = await getAddresses()
 
@@ -191,6 +196,22 @@ describe('TribalChief', () => {
     eigthUserAddress = addresses.genesisGroup;
     ninthUserAddress = addresses.guardianAddress;
     tenthUserAddress = addresses.beneficiaryAddress2;
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
   });
 
   describe('first suite', () => {
@@ -214,7 +235,7 @@ describe('TribalChief', () => {
       // initialize the tribalchief by hand
       await this.tribalChief.initialize(this.core.address, this.tribe.address);
 
-      await this.tribalChief.updateBlockReward(blockReward, {from: governorAddress});
+      await this.tribalChief.connect(impersonatedSigners[governorAddress]).updateBlockReward(blockReward);
 
       // create and mint LP tokens
       this.curveLPToken = await (await ethers.getContractFactory('MockERC20')).deploy();
@@ -234,10 +255,10 @@ describe('TribalChief', () => {
       await this.LPToken.mint(tenthUserAddress, totalStaked);
 
       // mint tribe tokens to the tribalChief contract to distribute as rewards
-      await this.tribe.mint(this.tribalChief.address, mintAmount, { from: minterAddress });
+      await this.tribe.connect(impersonatedSigners[minterAddress]).mint(this.tribalChief.address, mintAmount);
 
       // create new reward stream
-      const tx = await this.tribalChief.add(
+      const tx = await this.tribalChief.connect(impersonatedSigners[governorAddress]).add(
         allocationPoints,
         this.LPToken.address,
         ZERO_ADDRESS,
@@ -248,8 +269,7 @@ describe('TribalChief', () => {
               rewardMultiplier: '11000',
             },
           ],
-        ),
-        { from: governorAddress },
+        )
       );
       // grab PID from the logs
       pid = Number(tx.logs[0].args.pid);
@@ -260,12 +280,11 @@ describe('TribalChief', () => {
     describe('Test Security', () => {
       it('should not be able to add rewards stream as non governor', async function () {
         await expectRevert(
-          this.tribalChief.add(
+          this.tribalChief.connect(impersonatedSigners[userAddress]).add(
             allocationPoints,
             this.LPToken.address,
             ZERO_ADDRESS,
-            defaultRewardsObject,
-            { from: userAddress },
+            defaultRewardsObject
           ),
           'CoreRef: Caller is not a governor',
         );
@@ -273,12 +292,11 @@ describe('TribalChief', () => {
 
       it('should not be able to add rewards stream with 0 allocation points', async function () {
         await expectRevert(
-          this.tribalChief.add(
+          this.tribalChief.connect(impersonatedSigners[governorAddress]).add(
             0,
             this.LPToken.address,
             ZERO_ADDRESS,
-            defaultRewardsObject,
-            { from: governorAddress },
+            defaultRewardsObject
           ),
           'pool must have allocation points to be created',
         );
@@ -286,35 +304,31 @@ describe('TribalChief', () => {
 
       it('should not be able to unlockPool as non governor', async function () {
         await expectRevert(
-          this.tribalChief.unlockPool(
-            pid,
-            { from: userAddress },
+          this.tribalChief.connect(impersonatedSigners[userAddress]).unlockPool(
+            pid
           ),
           'CoreRef: Caller is not a governor',
         );
       });
 
       it('should be able to unlockPool as governor', async function () {
-        await this.tribalChief.unlockPool(
-          pid,
-          { from: governorAddress },
+        await this.tribalChief.connect(impersonatedSigners[governorAddress]).unlockPool(
+          pid
         );
         expect((await this.tribalChief.poolInfo(pid)).unlocked).to.be.true;
       });
 
       it('should be able to lockPool as governor', async function () {
-        await this.tribalChief.lockPool(
-          pid,
-          { from: governorAddress },
+        await this.tribalChief.connect(impersonatedSigners[governorAddress]).lockPool(
+          pid
         );
         expect((await this.tribalChief.poolInfo(pid)).unlocked).to.be.false;
       });
 
       it('should not be able to lockPool as non governor', async function () {
         await expectRevert(
-          this.tribalChief.lockPool(
-            pid,
-            { from: userAddress },
+          this.tribalChief.connect(impersonatedSigners[userAddress]).lockPool(
+            pid
           ),
           'CoreRef: Caller is not a governor',
         );
@@ -322,14 +336,14 @@ describe('TribalChief', () => {
 
       it('should not be able to change rewards multiplier as non governor', async function () {
         await expectRevert(
-          this.tribalChief.governorAddPoolMultiplier(pid, 0, 0, { from: userAddress }),
+          this.tribalChief.connect(impersonatedSigners[userAddress]).governorAddPoolMultiplier(pid, 0, 0),
           'CoreRef: Caller is not a governor',
         );
       });
 
       it('should not be able to resetRewards as non governor', async function () {
         await expectRevert(
-          this.tribalChief.resetRewards(pid, { from: userAddress }),
+          this.tribalChief.connect(impersonatedSigners[userAddress]).resetRewards(pid),
           'CoreRef: Caller is not a guardian or governor',
         );
       });
@@ -341,7 +355,7 @@ describe('TribalChief', () => {
         expect((await this.tribalChief.poolInfo(pid)).unlocked).to.be.false;
 
         expectEvent(
-          await this.tribalChief.resetRewards(pid, { from: governorAddress }),
+          await this.tribalChief.connect(impersonatedSigners[governorAddress]).resetRewards(pid),
           'PoolLocked',
           {
             locked: false,
@@ -361,12 +375,11 @@ describe('TribalChief', () => {
 
       it('governor should be able to add rewards stream', async function () {
         expect(Number(await this.tribalChief.numPools())).to.be.equal(1);
-        await this.tribalChief.add(
+        await this.tribalChief.connect(impersonatedSigners[governorAddress]).add(
           allocationPoints,
           this.LPToken.address,
           ZERO_ADDRESS,
-          defaultRewardsObject,
-          { from: governorAddress },
+          defaultRewardsObject
         );
         expect(Number(await this.tribalChief.numPools())).to.be.equal(2);
         expect(
@@ -376,12 +389,11 @@ describe('TribalChief', () => {
 
       it('should not be able to set rewards stream as non governor', async function () {
         await expectRevert(
-          this.tribalChief.set(
+          this.tribalChief.connect(impersonatedSigners[userAddress]).set(
             0,
             allocationPoints,
             this.LPToken.address,
-            true,
-            { from: userAddress },
+            true
           ),
           'CoreRef: Caller is not a governor',
         );
@@ -389,12 +401,11 @@ describe('TribalChief', () => {
 
       it('should not be able to set total allocation points to 0', async function () {
         await expectRevert(
-          this.tribalChief.set(
+          this.tribalChief.connect(impersonatedSigners[governorAddress]).set(
             0,
             0,
             this.LPToken.address,
-            true,
-            { from: governorAddress },
+            true
           ),
           'total allocation points cannot be 0',
         );
@@ -402,12 +413,11 @@ describe('TribalChief', () => {
 
       it('governor should be able to set rewards stream with new amount of allocation points', async function () {
         const newAllocationPoints = 10;
-        await this.tribalChief.set(
+        await this.tribalChief.connect(impersonatedSigners[governorAddress]).set(
           0,
           newAllocationPoints,
           this.LPToken.address,
-          true,
-          { from: governorAddress },
+          true
         );
         expect(
           (await this.tribalChief.poolInfo(pid)).allocPoint,
@@ -1290,7 +1300,7 @@ describe('TribalChief', () => {
           ).to.be.equal(toBN(totalStaked));
           expect(
             await this.tribe.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.gt(pendingTribe);
+          ).to.be.gt(pendingTribe);
         }
       });
 
@@ -1342,7 +1352,7 @@ describe('TribalChief', () => {
           ).to.be.equal(toBN(totalStaked));
           expect(
             await this.tribe.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.gt(pendingTribe);
+          ).to.be.gt(pendingTribe);
         }
       });
 
@@ -1378,7 +1388,7 @@ describe('TribalChief', () => {
           expect(
             await this.LPToken.balanceOf(userAddresses[i]),
           ).to.be.equal(toBN(totalStaked));
-          expect(await this.tribe.balanceOf(userAddresses[i])).to.be.bignumber.gt(pendingTribe);
+          expect(await this.tribe.balanceOf(userAddresses[i])).to.be.gt(pendingTribe);
         }
       });
 
@@ -1442,7 +1452,7 @@ describe('TribalChief', () => {
           ).to.be.equal(toBN(totalStaked));
           expect(
             await this.tribe.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.gt(pendingTribe);
+          ).to.be.gt(pendingTribe);
         }
       });
 
@@ -1485,7 +1495,7 @@ describe('TribalChief', () => {
           ).to.be.equal(toBN(totalStaked));
           expect(
             await this.tribe.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.gt(pendingTribe);
+          ).to.be.gt(pendingTribe);
         }
       });
 
@@ -1538,7 +1548,7 @@ describe('TribalChief', () => {
           ).to.be.equal(toBN(totalStaked));
           expect(
             await this.tribe.balanceOf(userAddresses[i]),
-          ).to.be.bignumber.gt(pendingTribe);
+          ).to.be.gt(pendingTribe);
         }
       });
     });
@@ -1602,14 +1612,14 @@ describe('TribalChief', () => {
 
           // assert that reward debt went negative after we withdrew
           // all of our principle without harvesting
-          expect((await this.tribalChief.userInfo(pid, address)).rewardDebt).to.be.bignumber.lt(toBN('-1'));
+          expect((await this.tribalChief.userInfo(pid, address)).rewardDebt).to.be.lt(toBN('-1'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, address);
-          expect(pendingTribe).to.be.bignumber.gt(pendingTribeBeforeHarvest);
+          expect(pendingTribe).to.be.gt(pendingTribeBeforeHarvest);
 
           await this.tribalChief.harvest(pid, address, { from: address });
           const tribeBalance = await this.tribe.balanceOf(address);
-          expect(tribeBalance).to.be.bignumber.gte(pendingTribe);
+          expect(tribeBalance).to.be.gte(pendingTribe);
         }
       });
 
@@ -1651,11 +1661,11 @@ describe('TribalChief', () => {
           expect(await this.tribe.balanceOf(address)).to.be.equal(toBN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, address);
-          expect(pendingTribe).to.be.bignumber.gt(pendingTribeBeforeHarvest);
+          expect(pendingTribe).to.be.gt(pendingTribeBeforeHarvest);
 
           await this.tribalChief.harvest(pid, address, { from: address });
           const tribeBalance = await this.tribe.balanceOf(address);
-          expect(tribeBalance).to.be.bignumber.gte(pendingTribe);
+          expect(tribeBalance).to.be.gte(pendingTribe);
         }
       });
 
@@ -2028,7 +2038,7 @@ describe('TribalChief', () => {
           expect(await this.tribe.balanceOf(address)).to.be.equal(toBN('0'));
 
           const pendingTribe = await this.tribalChief.pendingRewards(pid, address);
-          expect(pendingTribe).to.be.bignumber.gt(pendingTribeBeforeHarvest);
+          expect(pendingTribe).to.be.gt(pendingTribeBeforeHarvest);
 
           const harvestTx = await this.tribalChief.harvest(pid, address, { from: address });
           harvestReport.push({
@@ -2036,7 +2046,7 @@ describe('TribalChief', () => {
             msg: `user ${i} harvests`,
           });
           const tribeBalance = await this.tribe.balanceOf(address);
-          expect(tribeBalance).to.be.bignumber.gte(pendingTribe);
+          expect(tribeBalance).to.be.gte(pendingTribe);
         }
       });
 
@@ -2159,7 +2169,7 @@ describe('TribalChief', () => {
         withdrawAllAndHarvestReport.push(obj);
 
         expect(await this.LPToken.balanceOf(userAddress)).to.be.equal(toBN('0'));
-        expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
+        expect(await this.tribe.balanceOf(userAddress)).to.be.gte(pendingTribe);
       });
 
       it('', async () => {
@@ -2659,7 +2669,7 @@ describe('TribalChief', () => {
       // ensure that the last reward block isn't 0 for both pools
       expect(
         (await this.tribalChief.poolInfo(0)).lastRewardBlock,
-      ).to.be.bignumber.gt(
+      ).to.be.gt(
         toBN('0'),
       );
     });
@@ -2682,8 +2692,8 @@ describe('TribalChief', () => {
       const newAccTribePerShare = (await this.tribalChief.poolInfo(pid)).accTribePerShare;
       const newRewardBlock = (await this.tribalChief.poolInfo(pid)).lastRewardBlock;
 
-      expect(newAccTribePerShare).to.be.bignumber.gt(accTribePerShare);
-      expect(newRewardBlock).to.be.bignumber.gt(lastRewardBlock);
+      expect(newAccTribePerShare).to.be.gt(accTribePerShare);
+      expect(newRewardBlock).to.be.gt(lastRewardBlock);
     });
 
     it('should be able to get pending sushi and receive multiplier for locking', async function () {
@@ -2750,16 +2760,16 @@ describe('TribalChief', () => {
     });
 
     it('should not be able to deposit with an unsupported locklength', async function () {
-      await this.LPToken.approve(this.tribalChief.address, totalStaked, { from: userAddress });
+      await this.LPToken.connect(impersonatedSigners[userAddress]).approve(this.tribalChief.address, totalStaked);
       await expectRevert(
-        this.tribalChief.deposit(pid, totalStaked, 100000, { from: userAddress }),
+        this.tribalChief.connect(impersonatedSigners[userAddress]).deposit(pid, totalStaked, 100000),
         'invalid lock length',
       );
     });
 
     it('should not be able to deposit without LPToken approval', async function () {
       await expectRevert(
-        this.tribalChief.deposit(pid, totalStaked, 100, { from: userAddress }),
+        this.tribalChief.connect(impersonatedSigners[userAddress]).deposit(pid, totalStaked, 100),
         'transfer amount exceeds allowance',
       );
     });
@@ -2779,8 +2789,8 @@ describe('TribalChief', () => {
       );
 
       await expectRevert(
-        this.tribalChief.withdrawFromDeposit(
-          pid, totalStaked, userAddress, 0, { from: userAddress },
+        this.tribalChief.connect(impersonatedSigners[userAddress]).withdrawFromDeposit(
+          pid, totalStaked, userAddress, 0
         ),
         'tokens locked',
       );
@@ -2801,8 +2811,8 @@ describe('TribalChief', () => {
       );
 
       await expectRevert.unspecified(
-        this.tribalChief.withdrawFromDeposit(
-          pid, toBN(totalStaked).mul(toBN('20')), userAddress, 0, { from: userAddress },
+        this.tribalChief.connect(impersonatedSigners[userAddress]).withdrawFromDeposit(
+          pid, toBN(totalStaked).mul(toBN('20')), userAddress, 0
         ),
       );
     });
@@ -2821,7 +2831,7 @@ describe('TribalChief', () => {
         pid,
       );
 
-      await this.tribalChief.unlockPool(pid, { from: governorAddress });
+      await this.tribalChief.connect(impersonatedSigners[governorAddress]).unlockPool(pid);
       expect((await this.tribalChief.poolInfo(pid)).unlocked).to.be.true;
 
       await this.tribalChief.withdrawFromDeposit(
@@ -2831,8 +2841,8 @@ describe('TribalChief', () => {
       // ensure lp tokens were refunded and reward debt went negative
       expect(await this.LPToken.balanceOf(userAddress)).to.be.equal(toBN(totalStaked));
       const { rewardDebt, virtualAmount } = await this.tribalChief.userInfo(pid, userAddress);
-      expect(rewardDebt).to.be.bignumber.lt(toBN('-1'));
-      expect(virtualAmount).to.be.bignumber.eq(toBN('0'));
+      expect(rewardDebt).to.be.lt(toBN('-1'));
+      expect(virtualAmount).to.be.eq(toBN('0'));
     });
 
     it('should not be able to emergency withdraw before locking period is over', async function () {
@@ -2851,7 +2861,7 @@ describe('TribalChief', () => {
       );
 
       await expectRevert(
-        this.tribalChief.emergencyWithdraw(pid, userAddress, { from: userAddress }),
+        this.tribalChief.connect(impersonatedSigners[userAddress]).emergencyWithdraw(pid, userAddress),
         'tokens locked',
       );
     });
@@ -2872,9 +2882,9 @@ describe('TribalChief', () => {
       );
 
       const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
-      await this.tribalChief.withdrawAllAndHarvest(pid, userAddress, { from: userAddress });
+      await this.tribalChief.connect(impersonatedSigners[userAddress]).withdrawAllAndHarvest(pid, userAddress);
       expect(await this.LPToken.balanceOf(userAddress)).to.be.equal(toBN('0'));
-      expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
+      expect(await this.tribe.balanceOf(userAddress)).to.be.gte(pendingTribe);
     });
 
     it('should be able to `to` address when calling withdrawAllAndHarvest, all tribe rewards and principle are paid out to the specified user', async function () {
@@ -2897,11 +2907,11 @@ describe('TribalChief', () => {
       // assert that this user has 0 tribe to begin with before receiving proceeds from the harvest
       expect(await this.tribe.balanceOf(secondUserAddress)).to.be.equal(toBN('0'));
 
-      await this.tribalChief.withdrawAllAndHarvest(pid, secondUserAddress, { from: userAddress });
+      await this.tribalChief.connect(impersonatedSigners[userAddress]).withdrawAllAndHarvest(pid, secondUserAddress);
 
       // ensure that the rewards and LPToken got paid out to the second user address that we specified
       expect(await this.LPToken.balanceOf(secondUserAddress)).to.be.equal(toBN(totalStaked).add(secondUserStartingLPTokenBalance));
-      expect(await this.tribe.balanceOf(secondUserAddress)).to.be.bignumber.gte(pendingTribe);
+      expect(await this.tribe.balanceOf(secondUserAddress)).to.be.gte(pendingTribe);
     });
 
     it('should be able to withdraw principle after locking period is over by calling withdrawAllAndHarvest', async function () {
@@ -2920,9 +2930,9 @@ describe('TribalChief', () => {
       );
 
       const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
-      await this.tribalChief.withdrawAllAndHarvest(pid, userAddress, { from: userAddress });
+      await this.tribalChief.connect(impersonatedSigners[userAddress]).withdrawAllAndHarvest(pid, userAddress);
       expect(await this.LPToken.balanceOf(userAddress)).to.be.equal(toBN(totalStaked));
-      expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
+      expect(await this.tribe.balanceOf(userAddress)).to.be.gte(pendingTribe);
       // assert that virtual amount and reward debt updated correctly
       const { rewardDebt, virtualAmount } = await this.tribalChief.userInfo(pid, userAddress);
       expect(virtualAmount).to.be.equal(toBN('0'));
@@ -2948,7 +2958,7 @@ describe('TribalChief', () => {
 
       await this.LPToken.mint(userAddress, totalStaked); // approve double total staked
       await this.LPToken.approve(this.tribalChief.address, totalStaked);
-      await this.tribalChief.deposit(pid, totalStaked, this.lockLength, { from: userAddress });
+      await this.tribalChief.connect(impersonatedSigners[userAddress]).deposit(pid, totalStaked, this.lockLength);
       expect((await this.tribalChief.openUserDeposits(pid, userAddress))).to.be.equal(toBN('2'));
       // assert that the virtual total supply is equal
       // to the staked amount which is total staked x 2
@@ -2961,7 +2971,7 @@ describe('TribalChief', () => {
       }
 
       let pendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
-      await this.tribalChief.withdrawAllAndHarvest(pid, userAddress, { from: userAddress });
+      await this.tribalChief.connect(impersonatedSigners[userAddress]).withdrawAllAndHarvest(pid, userAddress, { from: userAddress });
 
       // there should still be 2 open user deposits as the first deposit just got
       // zero'd out and did not get deleted
@@ -2978,7 +2988,7 @@ describe('TribalChief', () => {
       expect(multiplier).to.be.equal(toBN('0'));
 
       expect(await this.LPToken.balanceOf(userAddress)).to.be.equal(toBN(totalStaked));
-      expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
+      expect(await this.tribe.balanceOf(userAddress)).to.be.gte(pendingTribe);
 
       for (let i = 0; i < 50; i++) {
         await time.advanceBlock();
@@ -2994,7 +3004,7 @@ describe('TribalChief', () => {
 
       expect(
         await this.tribe.balanceOf(userAddress),
-      ).to.be.bignumber.gte(currentTribe.add(pendingTribe));
+      ).to.be.gte(currentTribe.add(pendingTribe));
 
       // ensure that the open deposits are now 0 as they should have been
       // deleted in the withdrawallandharvest function call
@@ -3025,8 +3035,8 @@ describe('TribalChief', () => {
       );
 
       const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
-      await this.tribalChief.withdrawFromDeposit(
-        pid, totalStaked, userAddress, 0, { from: userAddress },
+      await this.tribalChief.connect(impersonatedSigners[userAddress]).withdrawFromDeposit(
+        pid, totalStaked, userAddress, 0
       );
 
       // assert that the virtual total supply is 0
@@ -3035,10 +3045,10 @@ describe('TribalChief', () => {
       expect(await this.LPToken.balanceOf(userAddress)).to.be.equal(toBN(totalStaked));
 
       // expect that reward debt goes negative when we withdraw and don't harvest
-      expect((await this.tribalChief.userInfo(pid, userAddress)).rewardDebt).to.be.bignumber.lt(toBN('-1'));
+      expect((await this.tribalChief.userInfo(pid, userAddress)).rewardDebt).to.be.lt(toBN('-1'));
 
-      await this.tribalChief.withdrawAllAndHarvest(pid, userAddress, { from: userAddress });
-      expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
+      await this.tribalChief.connect(impersonatedSigners[userAddress]).withdrawAllAndHarvest(pid, userAddress);
+      expect(await this.tribe.balanceOf(userAddress)).to.be.gte(pendingTribe);
 
       // assert that virtual amount and reward debt updated correctly
       const { rewardDebt, virtualAmount } = await this.tribalChief.userInfo(pid, userAddress);
@@ -3075,10 +3085,10 @@ describe('TribalChief', () => {
       expect(await this.LPToken.balanceOf(userAddress)).to.be.equal(toBN(totalStaked));
 
       // expect that reward debt goes negative when we withdraw and don't harvest
-      expect((await this.tribalChief.userInfo(pid, userAddress)).rewardDebt).to.be.bignumber.lt(toBN('-1'));
+      expect((await this.tribalChief.userInfo(pid, userAddress)).rewardDebt).to.be.lt(toBN('-1'));
 
       await this.tribalChief.harvest(pid, userAddress, { from: userAddress });
-      expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
+      expect(await this.tribe.balanceOf(userAddress)).to.be.gte(pendingTribe);
 
       // assert that virtual amount and reward debt updated correctly
       const { rewardDebt, virtualAmount } = await this.tribalChief.userInfo(pid, userAddress);
@@ -3105,13 +3115,13 @@ describe('TribalChief', () => {
       );
 
       const pendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
-      await this.tribalChief.withdrawFromDeposit(
-        pid, totalStaked, userAddress, 0, { from: userAddress },
+      await this.tribalChief.connect(impersonatedSigners[userAddress]).withdrawFromDeposit(
+        pid, totalStaked, userAddress, 0
       );
-      await this.tribalChief.harvest(pid, userAddress, { from: userAddress });
+      await this.tribalChief.connect(impersonatedSigners[userAddress]).harvest(pid, userAddress);
 
       expect(await this.LPToken.balanceOf(userAddress)).to.be.equal(toBN(totalStaked));
-      expect(await this.tribe.balanceOf(userAddress)).to.be.bignumber.gte(pendingTribe);
+      expect(await this.tribe.balanceOf(userAddress)).to.be.gte(pendingTribe);
       // assert that virtual amount and reward debt updated
       // correctly on the withdrawFromDeposit call
       const { rewardDebt, virtualAmount } = await this.tribalChief.userInfo(pid, userAddress);
