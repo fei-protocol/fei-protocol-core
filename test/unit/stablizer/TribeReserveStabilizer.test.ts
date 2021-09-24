@@ -148,14 +148,14 @@ describe('TribeReserveStabilizer', function () {
 
     describe('FEI above threshold', function() {
       it('reverts', async function() {
-        await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).setCollateralizationThreshold('9900', {});this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).setCollateralizationThreshold('9900', {});
+        await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).setCollateralizationThreshold('9900', {});
         await expectRevert(this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000, {}), 'TribeReserveStabilizer: Collateralization ratio above threshold');
       });
     });
 
     describe('Paused', function() {
       it('reverts', async function() {
-        await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});
+        await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});
         await expectRevert(this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(toBN('400000'), {}), 'Pausable: paused');
       });
     });
@@ -215,7 +215,7 @@ describe('TribeReserveStabilizer', function () {
 
   describe('Paused', function() {
     it('reverts', async function() {
-      await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});
+      await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});
       await expectRevert(this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(toBN('400000'), {}), 'Pausable: paused');
     });
   });

@@ -59,13 +59,13 @@ describe('PCVDripController', function () {
     this.pcvDripper = await(await ethers.getContractFactory('PCVDripController')).deploy(this.core.address, this.sourcePCVDeposit.address, this.pcvDeposit.address, '1000', this.dripAmount, this.incentiveAmount);
     await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.pcvDripper.address, {});
 
-    await impersonatedSigners[userAddress].sendTransaction({to: this.sourcePCVDeposit.address, value: '1000000000000000000'});
+    await impersonatedSigners[userAddress].sendTransaction({to: this.sourcePCVDeposit.address, value: toBN('1000000000000000000')});
   });
   
   describe('Drip', function() {
     describe('Paused', function() {
       it('reverts', async function() {
-        await time.increase('1000');
+        await time.increase(1000);
         await this.pcvDripper.connect(impersonatedSigners[governorAddress]).pause({});
         await expectRevert(this.pcvDripper.drip(), 'Pausable: paused');
       });
@@ -79,7 +79,7 @@ describe('PCVDripController', function () {
 
     describe('After time', function() {
       beforeEach(async function() {
-        await time.increase('1000');
+        await time.increase(1000);
       });
       describe('Target balance low enough', function() {
         it('succeeds', async function() {
@@ -125,7 +125,7 @@ describe('PCVDripController', function () {
 
     describe('Second attempt', function() {
       beforeEach(async function() {
-        await time.increase('1000');
+        await time.increase(1000);
         await this.pcvDripper.drip();
       });
 
@@ -139,7 +139,7 @@ describe('PCVDripController', function () {
         describe('Target balance low enough', function() {
           beforeEach(async function() {
             await this.pcvDeposit.withdraw(userAddress, this.dripAmount);
-            await time.increase('1000');
+            await time.increase(1000);
           });
           it('succeeds', async function() {
             const sourceBalanceBefore = await this.sourcePCVDeposit.balance();
@@ -159,7 +159,7 @@ describe('PCVDripController', function () {
         describe('Target balance too high', function() {
           beforeEach(async function() {
             await impersonatedSigners[userAddress].sendTransaction({to: this.pcvDeposit.address, value: this.dripAmount});
-            await time.increase('1000');
+            await time.increase(1000);
           });
 
           it('reverts', async function() {        

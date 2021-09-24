@@ -608,7 +608,7 @@ describe('Core', function () {
     });
 
     it('non-governor fails', async function() {
-      await expectRevert(this.core.createRole(this.role, this.adminRole), 'Permissions: Caller is not a governor');
+      await expectRevert(this.core.connect(impersonatedSigners[userAddress]).createRole(this.role, this.adminRole), 'Permissions: Caller is not a governor');
     });
   });
 });

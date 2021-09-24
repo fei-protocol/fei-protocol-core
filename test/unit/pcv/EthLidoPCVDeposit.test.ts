@@ -75,7 +75,7 @@ describe('EthLidoPCVDeposit', function () {
   describe('receive()', function() {
     it('should accept ETH transfers', async function() {
       // send 23 ETH
-      await impersonatedSigners[userAddress].sendTransaction({to: this.pcvDeposit.address, value: `23${e18}`});
+      await impersonatedSigners[userAddress].sendTransaction({to: this.pcvDeposit.address, value: toBN(`23${e18}`)});
       expect(await ethers.provider.getBalance(this.pcvDeposit.address)).to.be.equal(`23${e18}`);
     });
   });
@@ -123,7 +123,7 @@ describe('EthLidoPCVDeposit', function () {
         );
       });
       it('should emit Deposit', async function() {
-        await impersonatedSigners[userAddress].sendTransaction({to: this.pcvDeposit.address, value: `1${e18}`});
+        await impersonatedSigners[userAddress].sendTransaction({to: this.pcvDeposit.address, value: toBN(`1${e18}`)});
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal('0');
         await expect(
           await this.pcvDeposit.deposit())
@@ -132,15 +132,15 @@ describe('EthLidoPCVDeposit', function () {
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`1${e18}`);
       });
       it('should use Curve if slippage is negative', async function() {
-        await impersonatedSigners[userAddress].sendTransaction({to: this.pcvDeposit.address, value: `1${e18}`});
+        await impersonatedSigners[userAddress].sendTransaction({to: this.pcvDeposit.address, value: toBN(`1${e18}`)});
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal('0');
         await this.stableswap.setSlippage(1000, true); // 10% negative slippage (bonus) for ETH -> stETH
         await this.pcvDeposit.deposit();
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal('1100000000000000000'); // got 1.1 stETH
       });
       it('should directly stake if slippage is positive', async function() {
-        await (await ethers.getSigner(userAddress)).sendTransaction({to: this.pcvDeposit.address, value: `1${e18}`});
-        expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal('0');
+        await (await ethers.getSigner(userAddress)).sendTransaction({to: this.pcvDeposit.address, value: toBN(`1${e18}`)});
+        expect((await this.steth.balanceOf(this.pcvDeposit.address)).toString()).to.be.equal('0');
         await this.stableswap.setSlippage(1000, false); // 10% positive slippage (disadvantage) for ETH -> stETH
         await this.pcvDeposit.deposit();
         // didn't get 0.9 stETH out of a swap Curve, but did a direct 1:1 deposit directly on Lido

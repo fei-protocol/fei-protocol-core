@@ -20,6 +20,7 @@ describe('TimelockedDelegator', function () {
     // add any addresses you want to impersonate here
     const impersonatedAddresses = [
       addresses.userAddress,
+      addresses.secondUserAddress,
       addresses.pcvControllerAddress,
       addresses.governorAddress
     ]
@@ -110,7 +111,7 @@ describe('TimelockedDelegator', function () {
 
     describe('One Quarter', function() {
       beforeEach(async function() {
-        this.quarter = this.window.div(toBN(4));
+        this.quarter = Number(this.window.div(toBN(4)).toString());
         await time.increase(this.quarter);
         this.quarterAmount = this.totalTribe.div(toBN(4));
         await hre.network.provider.request({
@@ -206,7 +207,7 @@ describe('TimelockedDelegator', function () {
 
     describe('Total Window', function() {
       beforeEach(async function() {
-        await time.increase(this.window);
+        await time.increase(Number((this.window).toString()));
       });
 
       describe('Total Release', function() {

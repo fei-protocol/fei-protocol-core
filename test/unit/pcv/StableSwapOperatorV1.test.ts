@@ -79,13 +79,13 @@ describe('StableSwapOperatorV1', function () {
     await this.dai.mint(userAddress, `300000${e18}`);
     await this.usdc.mint(userAddress, `300000${e18}`);
     await this.usdt.mint(userAddress, `300000${e18}`);
-    await this.dai.connect(impersonatedSigners[userAddress]).approve(this.mock3pool.address, `300000${e18}`, {});this.dai.connect(impersonatedSigners[userAddress]).approve(this.mock3pool.address, `300000${e18}`, {});this.dai.connect(impersonatedSigners[userAddress]).approve(this.mock3pool.address, `300000${e18}`, {});this.dai.connect(impersonatedSigners[userAddress]).approve(this.mock3pool.address, `300000${e18}`, {});
+    await this.dai.connect(impersonatedSigners[userAddress]).approve(this.mock3pool.address, `300000${e18}`, {});
     await this.usdc.connect(impersonatedSigners[userAddress]).approve(this.mock3pool.address, `300000${e18}`, {});
     await this.usdt.connect(impersonatedSigners[userAddress]).approve(this.mock3pool.address, `300000${e18}`, {});
     await this.mock3pool.connect(impersonatedSigners[userAddress]).add_liquidity([`300000${e18}`, `300000${e18}`, `300000${e18}`], 0, {});
 
     // add liquidity to metapool
-    await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, `900000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, `900000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, `900000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, `900000${e18}`, {});
+    await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, `900000${e18}`, {});
     await this.fei.connect(impersonatedSigners[userAddress]).approve(this.mockMetapool.address, `900000${e18}`, {});
     await this.mock3pool.connect(impersonatedSigners[userAddress]).approve(this.mockMetapool.address, `900000${e18}`, {});
     await this.mockMetapool.connect(impersonatedSigners[userAddress]).add_liquidity([`900000${e18}`, `900000${e18}`], 0, {});
@@ -104,63 +104,63 @@ describe('StableSwapOperatorV1', function () {
     });
     it('should be callable by anyone, even if not PCVController', async function() {
       await this.dai.mint(this.deposit.address, `50000000${e18}`);
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `51000000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `51000000${e18}`, {});
+      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `51000000${e18}`, {});
       await this.deposit.connect(impersonatedSigners[userAddress]).deposit({});
       expect(await this.mockMetapool.balanceOf(this.deposit.address)).to.be.equal(`100000000${e18}`);
     });
     it('should deposit DAI held in the contract', async function() {
       await this.dai.mint(this.deposit.address, `5000${e18}`);
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
+      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
       await this.deposit.connect(impersonatedSigners[pcvControllerAddress]).deposit({});
       expect(await this.mockMetapool.balanceOf(this.deposit.address)).to.be.equal(`10000${e18}`);
     });
     it('should deposit USDC held in the contract', async function() {
       await this.usdc.mint(this.deposit.address, `5000${e18}`);
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
+      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
       await this.deposit.connect(impersonatedSigners[pcvControllerAddress]).deposit({});
       expect(await this.mockMetapool.balanceOf(this.deposit.address)).to.be.equal(`10000${e18}`);
     });
     it('should deposit USDT held in the contract', async function() {
       await this.usdt.mint(this.deposit.address, `5000${e18}`);
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
+      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
       await this.deposit.connect(impersonatedSigners[pcvControllerAddress]).deposit({});
       expect(await this.mockMetapool.balanceOf(this.deposit.address)).to.be.equal(`10000${e18}`);
     });
     it('should deposit 3crv held in the contract', async function() {
       await this.mock3pool.mint(this.deposit.address, `5000${e18}`);
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
+      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
       await this.deposit.connect(impersonatedSigners[pcvControllerAddress]).deposit({});
       expect(await this.mockMetapool.balanceOf(this.deposit.address)).to.be.equal(`10000${e18}`);
     });
     it('should leave the pool in a balanced state', async function() {
       await this.dai.mint(this.deposit.address, `5000${e18}`);
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
+      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
       await this.deposit.connect(impersonatedSigners[pcvControllerAddress]).deposit({});
       expect(await this.mock3pool.balanceOf(this.mockMetapool.address)).to.be.equal(`905000${e18}`);
       expect(await this.fei.balanceOf(this.mockMetapool.address)).to.be.equal(`905000${e18}`);
     });
     it('should keep excess FEI', async function() {
       await this.dai.mint(this.deposit.address, `50000000${e18}`);
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `51000000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `51000000${e18}`, {});
+      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `51000000${e18}`, {});
       await this.deposit.connect(impersonatedSigners[pcvControllerAddress]).deposit({});
-      expect(await this.fei.balanceOf(this.deposit.address)).to.be.equal(`1000000${e18}`);
+      expect((await this.fei.balanceOf(this.deposit.address)).toString()).to.be.equal(`1000000${e18}`);
       expect(await this.fei.balanceOf(this.mockMetapool.address)).to.be.equal(`50900000${e18}`);
     });
     it('should revert if not enough FEI for tokens held', async function() {
       await this.dai.mint(this.deposit.address, `5000${e18}`);
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `1000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `1000${e18}`, {});
+      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `1000${e18}`, {});
       await expectRevert(this.deposit.connect(impersonatedSigners[pcvControllerAddress]).deposit({}), 'ERC20: transfer amount exceeds balance');
     });
     it('should revert if slippage is too high in metapool', async function() {
       await this.mockMetapool.set_slippage('1000'); // 10% slippage
       await this.dai.mint(this.deposit.address, `50000000${e18}`);
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `51000000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `51000000${e18}`, {});
+      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `51000000${e18}`, {});
       await expectRevert(this.deposit.connect(impersonatedSigners[pcvControllerAddress]).deposit({}), 'StableSwapOperatorV1: metapool deposit slippage too high');
     });
     it('should revert if slippage is too high in 3pool', async function() {
       await this.mock3pool.set_slippage('1000'); // 10% slippage
       await this.dai.mint(this.deposit.address, `50000000${e18}`);
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `51000000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `51000000${e18}`, {});
+      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `51000000${e18}`, {});
       await expectRevert(this.deposit.connect(impersonatedSigners[pcvControllerAddress]).deposit({}), 'StableSwapOperatorV1: 3pool deposit slippage too high');
     });
   });
@@ -230,13 +230,13 @@ describe('StableSwapOperatorV1', function () {
   describe('balance()', function() {
     it('should return the current balance, excluding FEI', async function() {
       await this.dai.mint(this.deposit.address, `5000${e18}`);
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
+      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
       await this.deposit.connect(impersonatedSigners[pcvControllerAddress]).deposit({});
       expect(await this.deposit.balance()).to.be.equal('4999250112483127530870');
     });
     it('should take 3pool slippage into account', async function() {
       await this.dai.mint(this.deposit.address, `5000${e18}`);
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
+      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
       await this.deposit.connect(impersonatedSigners[pcvControllerAddress]).deposit({});
       await this.mock3pool.set_slippage('50'); // 0.5% slippage
       expect(await this.deposit.balance()).to.be.equal('4974253861920711893216');
@@ -250,19 +250,19 @@ describe('StableSwapOperatorV1', function () {
   describe('resistantBalanceAndFei()', function() {
     it('should return the current balance as half of the USD of LP tokens', async function() {
       await this.dai.mint(this.deposit.address, `5000${e18}`);
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
+      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
       await this.deposit.connect(impersonatedSigners[pcvControllerAddress]).deposit({});
       expect((await this.deposit.resistantBalanceAndFei()).resistantBalance).to.be.equal(`5000${e18}`);
     });
     it('should return the FEI as half of the USD value of LP tokens', async function() {
       await this.dai.mint(this.deposit.address, `5000${e18}`);
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
+      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
       await this.deposit.connect(impersonatedSigners[pcvControllerAddress]).deposit({});
       expect((await this.deposit.resistantBalanceAndFei()).resistantFei).to.be.equal(`5000${e18}`);
     });
     it('should revert if a peg is broken (amount in pool differs more than 50%)', async function() {
       await this.dai.mint(this.deposit.address, `5000${e18}`);
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
+      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.deposit.address, `6000${e18}`, {});
       await this.deposit.connect(impersonatedSigners[pcvControllerAddress]).deposit({});
       expect((await this.deposit.resistantBalanceAndFei()).resistantFei).to.be.equal(`5000${e18}`);
       await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.mockMetapool.address, `10000000${e18}`, {});

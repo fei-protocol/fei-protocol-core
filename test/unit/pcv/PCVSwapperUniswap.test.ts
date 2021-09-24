@@ -349,21 +349,21 @@ describe('PCVSwapperUniswap', function () {
     it('revert if slippage is too high', async function() {
       await time.increase(1000);
       await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.swapper.address, value: toBN(`1000${e18}`)});
-      await this.swapper.connect(impersonatedSigners[pcvControllerAddress]).wrapETH({  });this.swapper.connect(impersonatedSigners[pcvControllerAddress]).wrapETH({  });
+      await this.swapper.connect(impersonatedSigners[pcvControllerAddress]).wrapETH({  });
       await this.swapper.connect(impersonatedSigners[governorAddress]).setMaxSpentPerSwap(`1000${e18}`, {});
       await expectRevert(this.swapper.swap(), 'PCVSwapperUniswap: slippage too high.');
     });
     it('send tokens to tokenReceivingAddress', async function() {
       await time.increase(1000);
       await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.swapper.address, value: toBN(`100${e18}`)});
-      await this.swapper.connect(impersonatedSigners[pcvControllerAddress]).wrapETH({  });this.swapper.connect(impersonatedSigners[pcvControllerAddress]).wrapETH({  });
+      await this.swapper.connect(impersonatedSigners[pcvControllerAddress]).wrapETH({  });
       await this.swapper.connect(impersonatedSigners[userAddress]).swap({});
       expect(await this.fei.balanceOf(userAddress)).to.be.equal('248259939361825041733566');
     });
     it('swap remaining tokens if balance < maxSpentPerSwap', async function() {
       await time.increase(1000);
       await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.swapper.address, value: toBN(`50${e18}`)});
-      await this.swapper.connect(impersonatedSigners[pcvControllerAddress]).wrapETH({  });this.swapper.connect(impersonatedSigners[pcvControllerAddress]).wrapETH({  });
+      await this.swapper.connect(impersonatedSigners[pcvControllerAddress]).wrapETH({  });
       await this.swapper.connect(impersonatedSigners[userAddress]).swap({});
       expect(await this.fei.balanceOf(userAddress)).to.be.equal('124376992277398866659880');
     });
@@ -380,7 +380,7 @@ describe('PCVSwapperUniswap', function () {
     it('send FEI incentive to caller if swapper is Minter', async function() {
       await time.increase(1000);
       await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.swapper.address, value: toBN(`50${e18}`)});
-      await this.swapper.connect(impersonatedSigners[pcvControllerAddress]).wrapETH({  });this.swapper.connect(impersonatedSigners[pcvControllerAddress]).wrapETH({  });
+      await this.swapper.connect(impersonatedSigners[pcvControllerAddress]).wrapETH({  });
       await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.swapper.address, {});
       expect((await this.fei.balanceOf(secondUserAddress)) / 1e18).to.be.equal(0);
       await this.swapper.connect(impersonatedSigners[secondUserAddress]).swap({});

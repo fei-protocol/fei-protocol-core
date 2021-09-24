@@ -49,7 +49,7 @@ describe('UniswapOracle', function () {
     this.hundredTwelve = toBN(2).pow(toBN(112));
     await time.increase(Number(this.delta.toString()));
     
-    this.cursor = this.startTime.add(toBN(Number(this.delta.toString())));
+    this.cursor = this.startTime.add(Number(this.delta.toString()));
     this.cumulative = this.hundredTwelve.mul(this.delta.add(toBN(2))).mul(toBN(500)).div(toBN(1e12));
     
     this.pair = await (await ethers.getContractFactory('MockUniswapV2PairTrade')).deploy(this.cumulative, 0, this.cursor, toBN(100000).mul(toBN(1e12)), 50000000); // 500:1 FEI/ETH initial price

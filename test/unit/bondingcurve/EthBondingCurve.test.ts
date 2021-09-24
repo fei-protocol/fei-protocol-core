@@ -5,7 +5,7 @@ import { Signer } from 'ethers'
 
 const toBN = ethers.BigNumber.from
 
-describe.only('EthBondingCurve', function () {
+describe('EthBondingCurve', function () {
   let userAddress: string;
   let keeperAddress: string;
   let secondUserAddress: string;
@@ -32,6 +32,11 @@ describe.only('EthBondingCurve', function () {
       addresses.guardianAddress
     ]
 
+    await hre.network.provider.request({
+      method: "hardhat_reset",
+      params: []
+    })
+
     for (const address of impersonatedAddresses) {
       await hre.network.provider.request({
         method: "hardhat_impersonateAccount",
@@ -46,6 +51,7 @@ describe.only('EthBondingCurve', function () {
     const addresses = await getAddresses()
 
     userAddress = addresses.userAddress
+    secondUserAddress = addresses.secondUserAddress
     governorAddress = addresses.governorAddress
     beneficiaryAddress1 = addresses.beneficiaryAddress1
     beneficiaryAddress2 = addresses.beneficiaryAddress2
@@ -53,10 +59,11 @@ describe.only('EthBondingCurve', function () {
     minterAddress = addresses.minterAddress
     burnerAddress = addresses.burnerAddress
 
-    await hre.network.provider.request({
+    // We can't use this here because the tests are state-dependent on each other. 
+    /* await hre.network.provider.request({
       method: "hardhat_reset",
       params: []
-    })
+    }) */
 
     await deployDevelopmentWeth()
 
@@ -78,11 +85,11 @@ describe.only('EthBondingCurve', function () {
 
     this.bondingCurveFactory = await ethers.getContractFactory('EthBondingCurve');
     this.bondingCurve = await this.bondingCurveFactory.deploy(this.core.address, this.oracle.address, this.oracle.address, {
-      scale: '100000000000', 
+      scale: '100000000000',
       buffer: '100', 
       discount: '100', 
-      duration: this.incentiveDuration.toString(), 
-      incentive: this.incentiveAmount.toString(), 
+      duration: '10',
+      incentive: '100',
       pcvDeposits: [this.pcvDeposit1.address, this.pcvDeposit2.address], 
       ratios: [9000, 1000]
     });
@@ -97,7 +104,7 @@ describe.only('EthBondingCurve', function () {
     });
 
     it('getAmountOut', async function() {
-      expect(await this.bondingCurve.getAmountOut('50000000')).to.be.equal('25252525252');
+      expect((await this.bondingCurve.getAmountOut('50000000')).toString()).to.be.equal('25252525252');
     });
 
     it('scale', async function() {
@@ -288,7 +295,7 @@ describe.only('EthBondingCurve', function () {
       });
       describe('Crossing Scale', function() {
         beforeEach(async function() {
-          this.purchaseAmount =  toBN('200000000');
+          this.purchaseAmount = toBN('200000000');
           this.expectedFei1 = toBN('101010101010');
           expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei1);
           await expect(

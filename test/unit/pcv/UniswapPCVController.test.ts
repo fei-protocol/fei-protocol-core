@@ -88,7 +88,7 @@ describe('UniswapPCVController', function () {
     });
     it('pcvDeposit gets all tokens', async function() {
       expect(await this.pcvDeposit.balance()).to.be.equal(toBN(100000));
-      expect(await balance.current(this.pcvController.address)).to.be.equal(toBN(0));
+      expect(Number(await balance.current(this.pcvController.address)).toString()).to.be.equal('0');
     });
   });
 
@@ -96,7 +96,7 @@ describe('UniswapPCVController', function () {
     describe('At peg', function() {
       beforeEach(async function() {
         await this.token.mint(this.pcvDeposit.address, 100000);
-        await this.pair.connect(impersonatedSigners[userAddress]).set(100000, 50000000, LIQUIDITY_INCREMENT, { value: 100000}); // 500:1 FEI/token with 10k liquidity
+        await this.pair.connect(impersonatedSigners[userAddress]).set(100000, 50000000, LIQUIDITY_INCREMENT, { value: toBN(100000) }); // 500:1 FEI/token with 10k liquidity
       });
 
       it('reverts', async function() {
@@ -230,7 +230,7 @@ describe('UniswapPCVController', function () {
         await this.token.mint(this.pcvDeposit.address, toBN(100000));
         await this.token.mint(this.pair.address, toBN(100000));
         await this.pair.connect(impersonatedSigners[userAddress]).set(100000, 49000000, LIQUIDITY_INCREMENT, { value: 100000}); // 490:1 FEI/token with 10k liquidity
-        await time.increase(toBN('14400'));
+        await time.increase(14400);
         expect(await this.pcvController.reweightEligible()).to.be.equal(true);
         await this.pcvController.connect(impersonatedSigners[userAddress]).reweight({});
       });
@@ -251,7 +251,7 @@ describe('UniswapPCVController', function () {
         await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pair.address, 1000000, {}); // top up to 51m
         await this.token.mint(this.pcvDeposit.address, 100000);
         await this.pair.connect(impersonatedSigners[userAddress]).set(100000, 51000000, LIQUIDITY_INCREMENT, { value: 100000}); // 510:1 FEI/token with 10k liquidity
-        await time.increase(toBN('14400'));
+        await time.increase(14400);
         await this.core.connect(impersonatedSigners[governorAddress]).revokeMinter(this.pcvController.address, {});     
         expect(await this.pcvController.reweightEligible()).to.be.equal(true);
         await this.pcvController.connect(impersonatedSigners[userAddress]).reweight({});
@@ -273,7 +273,7 @@ describe('UniswapPCVController', function () {
         await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pair.address, 1000000, {}); // top up to 51m
         await this.token.mint(this.pcvDeposit.address, toBN(100000));
         await this.pair.connect(impersonatedSigners[userAddress]).set(100000, 51000000, LIQUIDITY_INCREMENT, { value: 100000}); // 490:1 FEI/token with 10k liquidity
-        await time.increase(toBN('14400'));
+        await time.increase(14400);
         await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.pcvController.address, {});     
         expect(await this.pcvController.reweightEligible()).to.be.equal(true);
         await this.pcvController.connect(impersonatedSigners[userAddress]).reweight({});

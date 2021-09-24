@@ -124,14 +124,14 @@ describe('ReserveStabilizer', function () {
 
     describe('Not Enough token', function() {
       it('reverts', async function() {
-        await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, toBN('4000000000000000000000000000'), {});  this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, toBN('4000000000000000000000000000'), {});  
+        await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, toBN('4000000000000000000000000000'), {});
         await expectRevert(this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(toBN('4000000000000000000000000000'), {}), 'revert');
       });
     });
 
     describe('Paused', function() {
       it('reverts', async function() {
-        await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});
+        await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});
         await expectRevert(this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(toBN('400000'), {}), 'Pausable: paused');
       });
     });

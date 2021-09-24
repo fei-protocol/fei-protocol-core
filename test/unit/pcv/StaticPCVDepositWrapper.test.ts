@@ -66,7 +66,7 @@ describe('StaticPCVDepositWrapper', function () {
   it('set balances', async function() {
     this.balance = '300';
     this.fei = '400';
-    await this.deposit.connect(impersonatedSigners[governorAddress]).setBalance('300', { });this.deposit.connect(impersonatedSigners[governorAddress]).setBalance('300', { });
+    await this.deposit.connect(impersonatedSigners[governorAddress]).setBalance('300', { });
     await this.deposit.connect(impersonatedSigners[governorAddress]).setFeiReportBalance('400', { });
 
     expect(await this.deposit.balance()).to.be.equal(this.balance);

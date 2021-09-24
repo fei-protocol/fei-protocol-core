@@ -52,7 +52,7 @@ describe('RatioPCVController', function () {
 
     this.pcvController = await (await ethers.getContractFactory('RatioPCVController')).deploy(this.core.address);
 
-    this.pcvDeposit = await (await ethers.getContractFactory('MockPCVDeposit')).deploy(userAddress);
+    this.pcvDeposit = await (await ethers.getContractFactory('MockEthUniswapPCVDeposit')).deploy(userAddress);
     await this.pcvDeposit.setBeneficiary(this.pcvDeposit.address);
 
     this.pcvAmount = toBN('10000000000');
@@ -67,8 +67,8 @@ describe('RatioPCVController', function () {
         const userBalanceAfter = await balance.current(userAddress);
         const reserveBalanceAfter = await balance.current(this.pcvDeposit.address);
 
-        expect(reserveBalanceAfter).to.be.equal(toBN('0'));
-        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal(this.pcvAmount);
+        expect(reserveBalanceAfter.toString()).to.be.equal('0');
+        expect((userBalanceAfter.sub(userBalanceBefore)).toString()).to.be.equal(this.pcvAmount.toString());
       });
 
       it('50%', async function() {
@@ -78,8 +78,8 @@ describe('RatioPCVController', function () {
         const userBalanceAfter = await balance.current(userAddress);
         const reserveBalanceAfter = await balance.current(this.pcvDeposit.address);
 
-        expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.equal(this.pcvAmount.div(toBN('2')));
-        expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal(this.pcvAmount.div(toBN('2')));
+        expect(toBN(reserveBalanceBefore.sub(reserveBalanceAfter).toString())).to.be.equal(this.pcvAmount.div(toBN(2)));
+        expect((userBalanceAfter.sub(userBalanceBefore)).toString()).to.be.equal(this.pcvAmount.div(toBN(2)).toString());
       });
 
       it('200% reverts', async function() {
@@ -101,7 +101,7 @@ describe('RatioPCVController', function () {
 
     describe('paused', function() {
       it('reverts', async function() {
-        await this.pcvController.connect(impersonatedSigners[governorAddress]).pause({});this.pcvController.connect(impersonatedSigners[governorAddress]).pause({});
+        await this.pcvController.connect(impersonatedSigners[governorAddress]).pause({});
         await expectRevert(this.pcvController.connect(impersonatedSigners[pcvControllerAddress]).withdrawRatio(this.pcvDeposit.address, userAddress, '10000', {}), 'Pausable: paused');
       });
     });
@@ -152,7 +152,7 @@ describe('RatioPCVController', function () {
 
     describe('paused', function() {
       it('reverts', async function() {
-        await this.pcvController.connect(impersonatedSigners[governorAddress]).pause({});this.pcvController.connect(impersonatedSigners[governorAddress]).pause({});
+        await this.pcvController.connect(impersonatedSigners[governorAddress]).pause({});
         await expectRevert(this.pcvController.connect(impersonatedSigners[pcvControllerAddress]).withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '10000', {}), 'Pausable: paused');
       });
     });

@@ -1,32 +1,15 @@
-import hre, { ethers, artifacts } from 'hardhat';
-import { expectRevert, balance, getAddresses, getCore } from '../../helpers';
+import hre, { ethers } from 'hardhat';
+import { expectRevert, balance, getAddresses, getCore, deployDevelopmentWeth } from '../../helpers';
 import { expect } from 'chai'
 import { Signer } from 'ethers'
-import { HardhatNetworkConfig } from 'hardhat/types';
 
 const toBN = ethers.BigNumber.from
-  
-const EthReserveStabilizer = artifacts.readArtifactSync('EthReserveStabilizer');
-const Fei = artifacts.readArtifactSync('Fei');
-const MockWeth = artifacts.readArtifactSync('MockWeth');
-const MockOracle = artifacts.readArtifactSync('MockOracle');
-const MockPCVDeposit = artifacts.readArtifactSync('MockEthUniswapPCVDeposit');
 
 describe('EthReserveStabilizer', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
   let pcvControllerAddress;
-
-  // eslint-disable-next-line consistent-return
-  this.beforeAll(async function() {
-    // Can only get the current price on a forked network (since we haven't deployed Uniswap stuff in test setup)
-    if (!((hre.network.config) as HardhatNetworkConfig).forking) {
-      return this.skip();
-    } 
-    
-    return undefined;
-  });
 
   let impersonatedSigners: { [key: string]: Signer } = { }
 
@@ -45,6 +28,12 @@ describe('EthReserveStabilizer', function () {
       addresses.beneficiaryAddress2
     ]
 
+    await hre.network.provider.request({
+      method: 'hardhat_reset'
+    })
+
+    await deployDevelopmentWeth()
+
     for (const address of impersonatedAddresses) {
       await hre.network.provider.request({
         method: "hardhat_impersonateAccount",
@@ -56,22 +45,21 @@ describe('EthReserveStabilizer', function () {
   });
 
   beforeEach(async function () {
-    ({
-      userAddress,
-      governorAddress,
-      minterAddress,
-      pcvControllerAddress,
-    } = await getAddresses());
+    const addresses = await getAddresses()
+
+    userAddress = addresses.userAddress
+    governorAddress = addresses.governorAddress
+    minterAddress = addresses.minterAddress
+    pcvControllerAddress = addresses.pcvControllerAddress
 
     this.core = await getCore();
-  
     this.fei = await ethers.getContractAt('Fei', await this.core.fei());
     this.oracle = await (await ethers.getContractFactory('MockOracle')).deploy(400); // 400:1 oracle price
     this.pcvDeposit = await (await ethers.getContractFactory('MockEthUniswapPCVDeposit')).deploy(userAddress);
 
     this.reserveStabilizer = await (await ethers.getContractFactory('EthReserveStabilizer')).deploy(this.core.address, this.oracle.address, this.oracle.address, '9000');
 
-    this.weth = await ethers.getContractAt('MockWeth', '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2');
+    this.weth = await ethers.getContractAt('WETH9', '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2');
 
     await this.core.connect(impersonatedSigners[governorAddress]).grantBurner(this.reserveStabilizer.address, {});
 
@@ -144,7 +132,7 @@ describe('EthReserveStabilizer', function () {
 
     describe('Paused', function() {
       it('reverts', async function() {
-        await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});
+        await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});
         await expectRevert(this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(toBN('400000'), {}), 'Pausable: paused');
       });
     });
@@ -154,7 +142,7 @@ describe('EthReserveStabilizer', function () {
     it('unwraps WETH', async function() {
       await this.weth.deposit({value: '10000'});
       await this.weth.transfer(this.reserveStabilizer.address, '10000');
-      const reserveBalanceBefore = toBN(await balance.current(this.reserveStabilizer.address));
+      const reserveBalanceBefore = toBN((await balance.current(this.reserveStabilizer.address)).toString());
       await this.reserveStabilizer.deposit();
 
       expect(await ethers.provider.getBalance(this.reserveStabilizer.address)).to.be.equal(reserveBalanceBefore.add(toBN('10000')).toString());
@@ -171,8 +159,8 @@ describe('EthReserveStabilizer', function () {
       const reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
       const userBalanceAfter = await balance.current(userAddress);
 
-      expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.equal(toBN('10000'));
-      expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal(toBN('10000'));
+      expect((reserveBalanceBefore.sub(reserveBalanceAfter)).toString()).to.be.equal('10000');
+      expect((userBalanceAfter.sub(userBalanceBefore)).toString()).to.be.equal('10000');
     });
 
     it('not enough eth reverts', async function() {

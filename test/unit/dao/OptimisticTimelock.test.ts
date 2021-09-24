@@ -64,7 +64,7 @@ describe('TimelockedDelegator', function () {
     });
 
     it('queue reverts', async function() {
-      const eta = toBN(await time.latest()).add(Number(this.delay).toString());
+      const eta = toBN((await time.latest()).toString()).add(Number(this.delay).toString());
 
       await hre.network.provider.request({
         'method': 'hardhat_impersonateAccount',
@@ -82,7 +82,7 @@ describe('TimelockedDelegator', function () {
     });
 
     it('execute reverts', async function() {
-      const eta = toBN(await time.latest()).add(this.delay);
+      const eta = toBN((await time.latest()).toString()).add(this.delay);
 
       await hre.network.provider.request({
         'method': 'hardhat_impersonateAccount',
@@ -118,7 +118,7 @@ describe('TimelockedDelegator', function () {
     });
 
     it('guardian succeeds', async function() {
-      const eta = toBN(await time.latest()).add(this.delay).add(Number(this.delay.toString()));
+      const eta = toBN((await time.latest()).toString()).add(this.delay).add(Number(this.delay.toString()));
       await hre.network.provider.request({
         'method': 'hardhat_impersonateAccount',
         'params': [userAddress]
@@ -151,7 +151,7 @@ describe('TimelockedDelegator', function () {
     });
 
     it('governor succeeds', async function() {
-      const eta = toBN(await time.latest()).add(Number(this.delay.toString())).add(Number(this.delay).toString());
+      const eta = toBN((await time.latest()).toString()).add(Number(this.delay.toString())).add(Number(this.delay).toString());
       await hre.network.provider.request({
         'method': 'hardhat_impersonateAccount',
         'params': [userAddress]
