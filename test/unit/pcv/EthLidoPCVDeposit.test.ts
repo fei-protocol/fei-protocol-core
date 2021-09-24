@@ -62,7 +62,7 @@ describe('EthLidoPCVDeposit', function () {
     this.stableswap = await (await ethers.getContractFactory('MockStEthStableSwap')).deploy(this.steth.address);
     await this.steth.mintAt(this.stableswap.address);
 
-    await forceSpecificEth(this.stableswap.address, '100'+ethers.constants.WeiPerEther.toString());
+    await forceSpecificEth(this.stableswap.address, '10'+ethers.constants.WeiPerEther.toString());
 
     this.pcvDeposit = await (await ethers.getContractFactory('EthLidoPCVDeposit')).deploy(
       this.core.address,
@@ -208,14 +208,14 @@ describe('EthLidoPCVDeposit', function () {
 
   describe('withdrawETH()', function() {
     it('should emit WithdrawETH', async function() {
-      const balanceBeforeWithdraw = toBN(await ethers.provider.getBalance(secondUserAddress));
-      await (await ethers.getSigner(userAddress)).sendTransaction({to: this.pcvDeposit.address, value: `1${e18}`});
+      const balanceBeforeWithdraw = toBN((await ethers.provider.getBalance(secondUserAddress)).toString());
+      await (await ethers.getSigner(userAddress)).sendTransaction({to: this.pcvDeposit.address, value: toBN(`1${e18}`)});
       await await expect(
         await this.pcvDeposit.connect(impersonatedSigners[pcvControllerAddress]).withdrawETH(secondUserAddress, `1${e18}`))
         .to.emit(this.pcvDeposit, 'WithdrawETH').withArgs(pcvControllerAddress, secondUserAddress, `1${e18}`)
 
-      const balanceAfterWithdraw = toBN(await ethers.provider.getBalance(secondUserAddress));
-      expect(balanceAfterWithdraw.sub(balanceBeforeWithdraw)).to.be.equal(`1${e18}`);
+      const balanceAfterWithdraw = toBN((await ethers.provider.getBalance(secondUserAddress)).toString());
+      expect(balanceAfterWithdraw.sub(balanceBeforeWithdraw).toString()).to.be.equal(`1${e18}`);
     });
     it('should revert if trying to withdraw more than balance', async function() {
       await expectRevert(

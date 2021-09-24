@@ -78,10 +78,10 @@ describe('EthReserveStabilizer', function () {
         const reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
 
         this.expectedOut = toBN('90000');
-        expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.equal(this.expectedOut);
+        expect(reserveBalanceBefore.sub(reserveBalanceAfter).toString()).to.be.equal(this.expectedOut.toString());
 
-        expect(await this.fei.balanceOf(userAddress)).to.be.equal(toBN('0'));
-        expect(await this.reserveStabilizer.balance()).to.be.equal(this.initialBalance.sub(this.expectedOut));
+        expect((await this.fei.balanceOf(userAddress)).toString()).to.be.equal('0');
+        expect((await this.reserveStabilizer.balance()).toString()).to.be.equal(this.initialBalance.sub(this.expectedOut).toString());
       });
     });
 
@@ -93,11 +93,11 @@ describe('EthReserveStabilizer', function () {
         await this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000, {});
         const reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
 
-        this.expectedOut = toBN('45000');
-        expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.equal(this.expectedOut);
+        this.expectedOut = '45000';
+        expect(reserveBalanceBefore.sub(reserveBalanceAfter).toString()).to.be.equal(this.expectedOut);
 
-        expect(await this.fei.balanceOf(userAddress)).to.be.equal(toBN('0'));
-        expect(await this.reserveStabilizer.balance()).to.be.equal(this.initialBalance.sub(this.expectedOut));
+        expect((await this.fei.balanceOf(userAddress)).toString()).to.be.equal('0');
+        expect((await this.reserveStabilizer.balance()).toString()).to.be.equal(this.initialBalance.sub(this.expectedOut).toString());
       });
     });
 
@@ -109,11 +109,11 @@ describe('EthReserveStabilizer', function () {
         await this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000, {});
         const reserveBalanceAfter = await balance.current(this.reserveStabilizer.address);
 
-        this.expectedOut = toBN('95000');
-        expect(reserveBalanceBefore.sub(reserveBalanceAfter)).to.be.equal(this.expectedOut);
+        this.expectedOut = '95000';
+        expect(reserveBalanceBefore.sub(reserveBalanceAfter).toString()).to.be.equal(this.expectedOut);
 
-        expect(await this.fei.balanceOf(userAddress)).to.be.equal(toBN('0'));
-        expect(await this.reserveStabilizer.balance()).to.be.equal(this.initialBalance.sub(this.expectedOut));
+        expect((await this.fei.balanceOf(userAddress)).toString()).to.be.equal('0');
+        expect((await this.reserveStabilizer.balance()).toString()).to.be.equal(this.initialBalance.sub(this.expectedOut).toString());
       });
     });
 

@@ -89,8 +89,8 @@ describe('PCVDripController', function () {
           const dripperBalanceAfter = await this.sourcePCVDeposit.balance();
           const beneficiaryBalanceAfter = await balance.current(this.pcvDeposit.address);
   
-          expect(dripperBalanceBefore.sub(dripperBalanceAfter)).to.be.equal(this.dripAmount);
-          expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore)).to.be.equal(this.dripAmount);
+          expect(dripperBalanceBefore.sub(dripperBalanceAfter).toString()).to.be.equal(this.dripAmount.toString());
+          expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore).toString()).to.be.equal(this.dripAmount.toString());
   
           // timer reset
           expect(await this.pcvDripper.isTimeEnded()).to.be.equal(false);
@@ -103,8 +103,8 @@ describe('PCVDripController', function () {
             const sourceBalanceAfter = await this.sourcePCVDeposit.balance();
             const beneficiaryBalanceAfter = await balance.current(this.pcvDeposit.address);
     
-            expect(sourceBalanceBefore.sub(sourceBalanceAfter)).to.be.equal(this.dripAmount);
-            expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore)).to.be.equal(this.dripAmount);
+            expect(sourceBalanceBefore.sub(sourceBalanceAfter).toString()).to.be.equal(this.dripAmount.toString());
+            expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore).toString()).to.be.equal(this.dripAmount.toString());
     
             // timer reset
             expect(await this.pcvDripper.isTimeEnded()).to.be.equal(false);
@@ -148,8 +148,8 @@ describe('PCVDripController', function () {
             const sourceBalanceAfter = await this.sourcePCVDeposit.balance();
             const beneficiaryBalanceAfter = await balance.current(this.pcvDeposit.address);
       
-            expect(sourceBalanceBefore.sub(sourceBalanceAfter)).to.be.equal(this.dripAmount);
-            expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore)).to.be.equal(this.dripAmount);
+            expect(sourceBalanceBefore.sub(sourceBalanceAfter).toString()).to.be.equal(this.dripAmount.toString());
+            expect(beneficiaryBalanceAfter.sub(beneficiaryBalanceBefore).toString()).to.be.equal(this.dripAmount.toString());
       
             // timer reset
             expect(await this.pcvDripper.isTimeEnded()).to.be.equal(false);

@@ -35,6 +35,13 @@ contract WETH9 {
     function() public payable {
         deposit();
     }
+
+    function init() external {
+        decimals = 18;
+        name     = "Wrapped Ether";
+        symbol   = "WETH";
+    }
+
     function deposit() public payable {
         balanceOf[msg.sender] += msg.value;
         Deposit(msg.sender, msg.value);

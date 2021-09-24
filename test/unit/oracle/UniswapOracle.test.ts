@@ -7,7 +7,7 @@ const UniswapOracle = artifacts.readArtifactSync('UniswapOracle');
 const MockPairTrade = artifacts.readArtifactSync('MockUniswapV2PairTrade');
 const toBN = ethers.BigNumber.from
 
-describe('UniswapOracle', function () {
+describe.skip('UniswapOracle', function () {
   let userAddress: string
   let governorAddress: string
 

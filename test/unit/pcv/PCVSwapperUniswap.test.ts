@@ -1,16 +1,7 @@
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { expect } from 'chai'
-import { time, expectRevert, getAddresses, getCore } from '../../helpers';
+import { time, expectRevert, getAddresses, getCore, deployDevelopmentWeth } from '../../helpers';
 import { Signer } from 'ethers'
-import { HardhatNetworkConfig } from 'hardhat/types';
-
-const PCVSwapperUniswap = artifacts.readArtifactSync('PCVSwapperUniswap');
-const ChainlinkOracleWrapper = artifacts.readArtifactSync('ChainlinkOracleWrapper');
-const Fei = artifacts.readArtifactSync('Fei');
-const MockOracle = artifacts.readArtifactSync('MockOracle');
-const MockWeth = artifacts.readArtifactSync('MockWeth');
-const MockPair = artifacts.readArtifactSync('MockUniswapV2PairLiquidity');
-const MockChainlinkOracle = artifacts.readArtifactSync('MockChainlinkOracle');
 
 const e18 = '000000000000000000';
 
@@ -23,16 +14,6 @@ describe('PCVSwapperUniswap', function () {
   let guardianAddress: string
   let governorAddress: string
   let pcvControllerAddress: string
-
-  // eslint-disable-next-line consistent-return
-  this.beforeAll(async function() {
-    // Can only get the current price on a forked network (since we haven't deployed Uniswap stuff in test setup)
-    if (!((hre.network.config) as HardhatNetworkConfig).forking) {
-      return this.skip();
-    }
-
-    return undefined;
-  });
 
   let impersonatedSigners: { [key: string]: Signer } = { }
 
@@ -72,6 +53,8 @@ describe('PCVSwapperUniswap', function () {
       governorAddress,
       pcvControllerAddress
     } = await getAddresses());
+
+    await deployDevelopmentWeth()
 
     this.core = await getCore();
     this.weth = await ethers.getContractAt('MockWeth', '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2');
