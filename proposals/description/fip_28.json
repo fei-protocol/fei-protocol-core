@@ -19,7 +19,7 @@
                 "0xbC9C084a12678ef5B516561df902fdc426d95483",
                 "50000000000000000000000000"
             ],
-            "description": "Mint 50m FEI to Multisig"
+            "description": "Mint 50m FEI to Optimistic Timelock"
         },
         {
             "target": "rariPool8Comptroller",
