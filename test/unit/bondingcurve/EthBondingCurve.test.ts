@@ -1,14 +1,11 @@
-import hre, { artifacts, ethers } from 'hardhat';
-import { expectRevert, time, getAddresses, getCore } from '../../helpers';
+import hre, { ethers } from 'hardhat';
+import { expectRevert, time, getAddresses, getCore, deployDevelopmentWeth } from '../../helpers';
 import { expect } from "chai";
-import { HardhatNetworkConfig } from 'hardhat/types';
 import { Signer } from 'ethers'
 
 const toBN = ethers.BigNumber.from
 
-const MockOracle = artifacts.readArtifactSync('MockOracle');
-
-describe('EthBondingCurve', function () {
+describe.only('EthBondingCurve', function () {
   let userAddress: string;
   let keeperAddress: string;
   let secondUserAddress: string;
@@ -16,9 +13,9 @@ describe('EthBondingCurve', function () {
   let impersonatedSigners: { [key: string]: Signer } = { }
 
   let core, fei
-  let bondingCurve, oracle, pcvDeposit1, pcvDeposit2
+  let oracle, pcvDeposit1, pcvDeposit2
   let mockOracleFactory, mockEthPCVDepositFactory;
-  let scale, incentiveAmount, incentiveDuration, bondingCurveFactory
+  let scale, incentiveAmount, incentiveDuration, bondingCurveFactory, minterAddress, burnerAddress
   let governorAddress, beneficiaryAddress1, beneficiaryAddress2, buffer, pcvDepositAddress1, pcvDepositAddress2
 
   before(async() => {
@@ -45,49 +42,53 @@ describe('EthBondingCurve', function () {
     }
   });
 
-  beforeEach(async() => {
+  beforeEach(async function () {
     const addresses = await getAddresses()
 
+    userAddress = addresses.userAddress
     governorAddress = addresses.governorAddress
     beneficiaryAddress1 = addresses.beneficiaryAddress1
     beneficiaryAddress2 = addresses.beneficiaryAddress2
+    keeperAddress = addresses.keeperAddress
+    minterAddress = addresses.minterAddress
+    burnerAddress = addresses.burnerAddress
 
     await hre.network.provider.request({
       method: "hardhat_reset",
       params: []
     })
 
-    core = await getCore();
+    await deployDevelopmentWeth()
 
-    fei = await ethers.getContractAt('Fei', await core.fei());
+    this.core = await getCore();
+
+    this.fei = await ethers.getContractAt('Fei', await this.core.fei());
     
-    mockOracleFactory = await ethers.getContractFactory('MockOracle');
-    oracle = await mockOracleFactory.deploy(500); // 500 USD per ETH exchange rate 
+    this.mockOracleFactory = await ethers.getContractFactory('MockOracle');
+    this.oracle = await this.mockOracleFactory.deploy(500); // 500 USD per ETH exchange rate 
 
-    mockEthPCVDepositFactory = await ethers.getContractFactory('MockEthPCVDeposit');
-    pcvDeposit1 = await mockEthPCVDepositFactory.deploy(beneficiaryAddress1);
-    pcvDeposit2 = await mockEthPCVDepositFactory.deploy(beneficiaryAddress2);
+    this.mockEthPCVDepositFactory = await ethers.getContractFactory('MockEthPCVDeposit');
+    this.pcvDeposit1 = await this.mockEthPCVDepositFactory.deploy(beneficiaryAddress1);
+    this.pcvDeposit2 = await this.mockEthPCVDepositFactory.deploy(beneficiaryAddress2);
 
-    scale = toBN('100000000000');
-    buffer = toBN('100');
-    incentiveAmount = toBN('100');
-    incentiveDuration = toBN('10');
+    this.scale = toBN('100000000000');
+    this.buffer = toBN('100');
+    this.incentiveAmount = toBN('100');
+    this.incentiveDuration = toBN('10');
 
-    bondingCurveFactory = await ethers.getContractFactory('EthBondingCurve');
-    console.log('Deploying bonding curve...')
-    bondingCurve = await bondingCurveFactory.deploy(core.address, oracle.address, oracle.address, {
+    this.bondingCurveFactory = await ethers.getContractFactory('EthBondingCurve');
+    this.bondingCurve = await this.bondingCurveFactory.deploy(this.core.address, this.oracle.address, this.oracle.address, {
       scale: '100000000000', 
       buffer: '100', 
       discount: '100', 
-      duration: incentiveDuration.toString(), 
-      incentive: incentiveAmount.toString(), 
-      pcvDeposits: [pcvDeposit1.address, pcvDeposit2.address], 
+      duration: this.incentiveDuration.toString(), 
+      incentive: this.incentiveAmount.toString(), 
+      pcvDeposits: [this.pcvDeposit1.address, this.pcvDeposit2.address], 
       ratios: [9000, 1000]
     });
-    console.log('Bonding curve deployed.')
 
-    await core.connect(impersonatedSigners[governorAddress]).grantMinter(bondingCurve.address);
-    await bondingCurve.connect(impersonatedSigners[governorAddress]).setMintCap(scale.mul(toBN('10')));
+    await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.bondingCurve.address);
+    await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setMintCap(this.scale.mul(toBN('10')));
   });
 
   describe('Init', function() {
@@ -96,7 +97,7 @@ describe('EthBondingCurve', function () {
     });
 
     it('getAmountOut', async function() {
-      expect(await this.bondingCurve.getAmountOut('50000000')).to.be.equal(toBN('25252525252'));
+      expect(await this.bondingCurve.getAmountOut('50000000')).to.be.equal('25252525252');
     });
 
     it('scale', async function() {
@@ -321,7 +322,8 @@ describe('EthBondingCurve', function () {
             this.totalExpected = this.expectedFei1.add(this.expectedFei2);
             expect(await this.bondingCurve.getAmountOut(this.purchaseAmount)).to.be.equal(this.expectedFei2);
             await expect(
-              await this.bondingCurve.purchase(userAddress, this.purchaseAmount, {value: this.purchaseAmount})
+              await this.bondingCurve.purchase(
+                userAddress, this.purchaseAmount, {value: this.purchaseAmount})
             ).to.emit(this.bondingCurve, 'Purchase').withArgs(userAddress, this.purchaseAmount, this.expectedFei2);
           });
   

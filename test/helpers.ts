@@ -1,9 +1,6 @@
 import { ZERO_ADDRESS, MAX_UINT256 } from '@openzeppelin/test-helpers/src/constants';
-
-import hre, { web3, ethers, artifacts } from 'hardhat';
-
-import { expectRevert, balance, contract, time } from '@openzeppelin/test-helpers';
-
+import hre, { web3, ethers, artifacts, network } from 'hardhat';
+import { expectRevert, balance, time } from '@openzeppelin/test-helpers';
 import chai from 'chai';
 import CBN from "chai-bn";
 
@@ -11,10 +8,15 @@ import CBN from "chai-bn";
 chai.use(CBN(ethers.BigNumber));
 
 const toBN = ethers.BigNumber.from
-
 const { expect } = chai;
-
 const Core = artifacts.readArtifactSync('Core');
+
+async function deployDevelopmentWeth(): Promise<void> {
+  await network.provider.send("hardhat_setCode", [
+    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    artifacts.readArtifactSync('WETH9').deployedBytecode
+  ])
+}
 
 async function getAddresses() {
   const [
@@ -105,5 +107,6 @@ export {
   // functions
   getCore,
   getAddresses,
-  expectApprox
+  expectApprox,
+  deployDevelopmentWeth
 };
