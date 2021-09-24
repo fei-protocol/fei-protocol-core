@@ -1,9 +1,20 @@
+import hre from 'hardhat';
+
 const { constants: { MAX_UINT256 } } = require('@openzeppelin/test-helpers');
 const { expect } = require('../../test/helpers');
 
 const e18 = '000000000000000000';
 
-async function setup(addresses, oldContracts, contracts, logging) {}
+async function setup(addresses, oldContracts, contracts, logging) {
+  const {
+    timelockAddress
+  } = addresses;
+  
+  await hre.network.provider.request({
+    method: 'hardhat_impersonateAccount',
+    params: [timelockAddress],
+  });
+}
 
 /*
 V2 Phase 1 Upgrade Steps
