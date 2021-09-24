@@ -12,6 +12,28 @@ describe('TimelockedDelegator', function () {
   let secondUserAddress: string
   let beneficiaryAddress1: string
 
+  let impersonatedSigners: { [key: string]: Signer } = { }
+
+  before(async() => {
+    const addresses = await getAddresses()
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
+  });
+
   beforeEach(async function () {
     ({
       userAddress,
@@ -31,7 +53,7 @@ describe('TimelockedDelegator', function () {
     this.window = toBN(4 * 365 * 24 * 60 * 60);
 
     const delegatorFactory = await ethers.getContractFactory(TimelockedDelegator.abi, TimelockedDelegator.bytecode, beneficiaryAddress1Signer)
-    this.delegator = await delegatorFactory.deploy(this.tribe.address, beneficiaryAddress1, this.window, {gas: 8000000});
+    this.delegator = await delegatorFactory.deploy(this.tribe.address, beneficiaryAddress1, this.window, {gasLimit: 8000000});
     this.totalTribe = toBN('10000');
     await this.tribe.mint(this.delegator.address, this.totalTribe);
 
@@ -420,12 +442,12 @@ describe('TimelockedDelegator', function () {
   describe('Access', function() {
     describe('Delegate', function() {
       it('Non-beneficiary set reverts', async function() {
-        await expectRevert(this.delegator.delegate(userAddress, toBN(100), {from: userAddress}), 'LinearTokenTimelock: Caller is not a beneficiary');
+        await expectRevert(this.delegator.connect(impersonatedSigners[userAddress]).delegate(userAddress, toBN(100), {}), 'LinearTokenTimelock: Caller is not a beneficiary');
       });
     });
     describe('Undelegate', function() {
       it('Non-beneficiary set reverts', async function() {
-        await expectRevert(this.delegator.undelegate(userAddress, {from: userAddress}), 'LinearTokenTimelock: Caller is not a beneficiary');
+        await expectRevert(this.delegator.connect(impersonatedSigners[userAddress]).undelegate(userAddress, {}), 'LinearTokenTimelock: Caller is not a beneficiary');
       });
     });
     describe('Set Pending Beneficiary', function() {
@@ -447,7 +469,7 @@ describe('TimelockedDelegator', function () {
       });
 
       it('Non-beneficiary set reverts', async function() {
-        await expectRevert(this.delegator.setPendingBeneficiary(userAddress, {from: userAddress}), 'LinearTokenTimelock: Caller is not a beneficiary');
+        await expectRevert(this.delegator.connect(impersonatedSigners[userAddress]).setPendingBeneficiary(userAddress, {}), 'LinearTokenTimelock: Caller is not a beneficiary');
       });
     });
 
@@ -472,13 +494,13 @@ describe('TimelockedDelegator', function () {
       });
 
       it('Non pending beneficiary reverts', async function() {
-        await expectRevert(this.delegator.acceptBeneficiary({from: secondUserAddress}), 'LinearTokenTimelock: Caller is not pending beneficiary');
+        await expectRevert(this.delegator.connect(impersonatedSigners[secondUserAddress]).acceptBeneficiary({}), 'LinearTokenTimelock: Caller is not pending beneficiary');
       });
     });
 
     describe('Release', function() {
       it('Non-beneficiary set reverts', async function() {
-        await expectRevert(this.delegator.release(userAddress, '100', {from: userAddress}), 'LinearTokenTimelock: Caller is not a beneficiary');
+        await expectRevert(this.delegator.connect(impersonatedSigners[userAddress]).release(userAddress, '100', {}), 'LinearTokenTimelock: Caller is not a beneficiary');
       });
     });
   });

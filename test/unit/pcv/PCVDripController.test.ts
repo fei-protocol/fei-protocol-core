@@ -51,22 +51,22 @@ describe('PCVDripController', function () {
     this.core = await getCore();
     this.fei = await ethers.getContractAt('Fei', await this.core.fei());
     
-    this.sourcePCVDeposit = await (await ethers.getContractFactory('MockPCVDeposit')).deploy(beneficiaryAddress1);
-    this.pcvDeposit = await (await ethers.getContractFactory('MockPCVDeposit')).deploy(beneficiaryAddress1);
+    this.sourcePCVDeposit = await (await ethers.getContractFactory('MockEthUniswapPCVDeposit')).deploy(beneficiaryAddress1);
+    this.pcvDeposit = await (await ethers.getContractFactory('MockEthUniswapPCVDeposit')).deploy(beneficiaryAddress1);
     this.dripAmount = toBN('500000000000000000');
     this.incentiveAmount = toBN('100000000000000000');
 
     this.pcvDripper = await(await ethers.getContractFactory('PCVDripController')).deploy(this.core.address, this.sourcePCVDeposit.address, this.pcvDeposit.address, '1000', this.dripAmount, this.incentiveAmount);
-    await this.core.grantMinter(this.pcvDripper.address, {from: governorAddress});
+    await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.pcvDripper.address, {});
 
-    await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.sourcePCVDeposit.address, value: '1000000000000000000'});
+    await impersonatedSigners[userAddress].sendTransaction({to: this.sourcePCVDeposit.address, value: '1000000000000000000'});
   });
   
   describe('Drip', function() {
     describe('Paused', function() {
       it('reverts', async function() {
         await time.increase('1000');
-        await this.pcvDripper.pause({from: governorAddress});
+        await this.pcvDripper.connect(impersonatedSigners[governorAddress]).pause({});
         await expectRevert(this.pcvDripper.drip(), 'Pausable: paused');
       });
     });
@@ -113,7 +113,7 @@ describe('PCVDripController', function () {
 
         describe('Target balance too high', function() {
           beforeEach(async function() {
-            await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: this.dripAmount});
+            await impersonatedSigners[userAddress].sendTransaction({to: this.pcvDeposit.address, value: this.dripAmount});
           });
 
           it('reverts', async function() {        
@@ -158,7 +158,7 @@ describe('PCVDripController', function () {
     
         describe('Target balance too high', function() {
           beforeEach(async function() {
-            await impersonatedSigners[userAddress].sendTransaction({from: userAddress, to: this.pcvDeposit.address, value: this.dripAmount});
+            await impersonatedSigners[userAddress].sendTransaction({to: this.pcvDeposit.address, value: this.dripAmount});
             await time.increase('1000');
           });
 
@@ -170,32 +170,32 @@ describe('PCVDripController', function () {
     });
     describe('Set dripAmount', function() {
       it('governor succeeds', async function() {
-        await this.pcvDripper.setDripAmount('10000', {from: governorAddress});
+        await this.pcvDripper.connect(impersonatedSigners[governorAddress]).setDripAmount('10000', {});
         expect(await this.pcvDripper.dripAmount()).to.be.equal(toBN('10000'));
       });
 
       it('non-governor reverts', async function() {
-        await expectRevert(this.pcvDripper.setDripAmount('10000', {from: userAddress}), 'CoreRef: Caller is not a governor');
+        await expectRevert(this.pcvDripper.connect(impersonatedSigners[userAddress]).setDripAmount('10000', {}), 'CoreRef: Caller is not a governor');
       });
     });
     describe('Set Source', function() {
       it('governor succeeds', async function() {
-        await this.pcvDripper.setSource(userAddress, {from: governorAddress});
+        await this.pcvDripper.connect(impersonatedSigners[governorAddress]).setSource(userAddress, {});
         expect(await this.pcvDripper.source()).to.be.equal(userAddress);
       });
 
       it('non-governor reverts', async function() {
-        await expectRevert(this.pcvDripper.setSource(userAddress, {from: userAddress}), 'CoreRef: Caller is not a governor');
+        await expectRevert(this.pcvDripper.connect(impersonatedSigners[userAddress]).setSource(userAddress, {}), 'CoreRef: Caller is not a governor');
       });
     });
     describe('Set USD per FEI', function() {
       it('governor succeeds', async function() {
-        await this.pcvDripper.setTarget(userAddress, {from: governorAddress});
+        await this.pcvDripper.connect(impersonatedSigners[governorAddress]).setTarget(userAddress, {});
         expect(await this.pcvDripper.target()).to.be.equal(userAddress);
       });
 
       it('non-governor reverts', async function() {
-        await expectRevert(this.pcvDripper.setTarget(userAddress, {from: userAddress}), 'CoreRef: Caller is not a governor');
+        await expectRevert(this.pcvDripper.connect(impersonatedSigners[userAddress]).setTarget(userAddress, {}), 'CoreRef: Caller is not a governor');
       });
     });
   });

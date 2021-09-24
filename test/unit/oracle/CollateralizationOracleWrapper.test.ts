@@ -54,7 +54,7 @@ describe('CollateralizationOracleWrapper', function () {
       '600', // 10 min validity duration
     );
 
-    const proxyContract = await (await ethers.getContractFactory('TransparentUpgradeableProxy')).deploy(this.oracleWrapper.address, this.oracleWrapper.address, '0x', { from: userAddress });
+    const proxyContract = await (await ethers.getContractFactory('TransparentUpgradeableProxy')).deploy(this.oracleWrapper.connect(impersonatedSigners[userAddress]).address, this.oracleWrapper.address, '0x', {  });
 
     // instantiate the tribalchief pointed at the proxy contract
     this.oracleWrapper = await ethers.getContractAt('CollateralizationOracleWrapper', proxyContract.address);
@@ -113,13 +113,13 @@ describe('CollateralizationOracleWrapper', function () {
     });
     it('should revert if not governor', async function() {
       await expectRevert(
-        this.oracleWrapper.setCollateralizationOracle(this.oracle2.address, { from: userAddress }),
+        this.oracleWrapper.connect(impersonatedSigners[userAddress]).setCollateralizationOracle(this.oracle2.address, {  }),
         'CoreRef: Caller is not a governor'
       );
     });
     it('should revert if address = 0x0', async function() {
       await expectRevert(
-        this.oracleWrapper.setCollateralizationOracle(ZERO_ADDRESS, { from: governorAddress }),
+        this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setCollateralizationOracle(ZERO_ADDRESS, {  }),
         'CollateralizationOracleWrapper: invalid address'
       );
     });
@@ -134,17 +134,17 @@ describe('CollateralizationOracleWrapper', function () {
     });
     it('should revert if not governor', async function() {
       await expectRevert(
-        this.oracleWrapper.setDeviationThresholdBasisPoints('300', { from: userAddress }),
+        this.oracleWrapper.connect(impersonatedSigners[userAddress]).setDeviationThresholdBasisPoints('300', {  }),
         'CoreRef: Caller is not a governor'
       );
     });
     it('should revert if invalid value', async function() {
       await expectRevert(
-        this.oracleWrapper.setDeviationThresholdBasisPoints('0', { from: governorAddress }),
+        this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setDeviationThresholdBasisPoints('0', {  }),
         'CollateralizationOracleWrapper: invalid basis points'
       );
       await expectRevert(
-        this.oracleWrapper.setDeviationThresholdBasisPoints('10001', { from: governorAddress }),
+        this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setDeviationThresholdBasisPoints('10001', {  }),
         'CollateralizationOracleWrapper: invalid basis points'
       );
     });
@@ -158,7 +158,7 @@ describe('CollateralizationOracleWrapper', function () {
     });
     it('should revert if not governor', async function() {
       await expectRevert(
-        this.oracleWrapper.setValidityDuration('3600', { from: userAddress }),
+        this.oracleWrapper.connect(impersonatedSigners[userAddress]).setValidityDuration('3600', {  }),
         'CoreRef: Caller is not a governor'
       );
     });
@@ -183,16 +183,16 @@ describe('CollateralizationOracleWrapper', function () {
         expect(await this.oracleWrapper.isOutdated()).to.be.equal(false);
       });
       it('should revert if paused', async function() {
-        await this.oracleWrapper.pause({ from: governorAddress });
+        await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).pause({  });
         await expectRevert(
-          this.oracleWrapper.update({ from: userAddress }),
+          this.oracleWrapper.connect(impersonatedSigners[userAddress]).update({  }),
           'Pausable: paused'
         );
       });
       it('should revert if CollateralizationOracle is invalid', async function() {
         await this.oracle.setValid(false);
         await expectRevert(
-          this.oracleWrapper.update({ from: userAddress }),
+          this.oracleWrapper.connect(impersonatedSigners[userAddress]).update({  }),
           'CollateralizationOracleWrapper: CollateralizationOracle is invalid'
         );
       });
@@ -217,7 +217,7 @@ describe('CollateralizationOracleWrapper', function () {
       });
       it('should be invalid if the contract is paused', async function() {
         await this.oracleWrapper.update();
-        await this.oracleWrapper.pause({ from: governorAddress });
+        await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).pause({  });
         const val = await this.oracleWrapper.read();
         expect(val[0].value).to.be.equal(`3${e18}`); // collateral ratio
         expect(val[1]).to.be.equal(false); // invalid
@@ -264,7 +264,7 @@ describe('CollateralizationOracleWrapper', function () {
       });
       it('should be invalid if paused', async function() {
         expect((await this.oracleWrapper.pcvStats()).validityStatus).to.be.equal(true);
-        await this.oracleWrapper.pause({ from: governorAddress });
+        await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).pause({  });
         expect((await this.oracleWrapper.pcvStats()).validityStatus).to.be.equal(false);
       });
       it('should be invalid if outdated', async function() {
@@ -283,7 +283,7 @@ describe('CollateralizationOracleWrapper', function () {
     it('should revert if reading is invalid', async function() {
       await this.oracle.setValid(false);
       await expectRevert(
-        this.oracleWrapper.isExceededDeviationThreshold({ from: userAddress }),
+        this.oracleWrapper.connect(impersonatedSigners[userAddress]).isExceededDeviationThreshold({  }),
         'CollateralizationOracleWrapper: CollateralizationOracle reading is invalid'
       );
     });
@@ -316,7 +316,7 @@ describe('CollateralizationOracleWrapper', function () {
       expect(await this.oracleWrapper.cachedProtocolEquity()).to.be.equal('2000');
     });
     it('should be invalid if paused', async function() {
-      await this.oracleWrapper.pause({ from: governorAddress });
+      await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).pause({  });
       expect((await this.oracleWrapper.pcvStatsCurrent()).validityStatus).to.be.equal(false);
     });
     it('should be invalid if the CollateralizationOracle is invalid', async function() {

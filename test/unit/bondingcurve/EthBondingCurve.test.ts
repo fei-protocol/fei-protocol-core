@@ -8,7 +8,7 @@ const toBN = ethers.BigNumber.from
 
 const MockOracle = artifacts.readArtifactSync('MockOracle');
 
-describe.skip('EthBondingCurve', function () {
+describe('EthBondingCurve', function () {
   let userAddress: string;
   let keeperAddress: string;
   let secondUserAddress: string;
@@ -29,7 +29,10 @@ describe.skip('EthBondingCurve', function () {
       addresses.userAddress,
       addresses.pcvControllerAddress,
       addresses.governorAddress,
-      addresses.keeperAddress
+      addresses.keeperAddress,
+      addresses.burnerAddress,
+      addresses.minterAddress,
+      addresses.guardianAddress
     ]
 
     for (const address of impersonatedAddresses) {

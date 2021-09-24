@@ -119,7 +119,7 @@ describe('RateLimitedMinter', function () {
 
   describe('Set Minting Buffer Cap', function() {
     it('governor succeeds', async function() {
-      await this.rateLimitedMinter.connect(impersonatedSigners[governorAddress]).setbufferCap('10000', {from: governorAddress});
+      await this.rateLimitedMinter.connect(impersonatedSigners[governorAddress]).connect(impersonatedSigners[governorAddress]).setbufferCap('10000', {});
       expect(await this.rateLimitedMinter.bufferCap()).to.be.equal(toBN('10000'));
       expect(await this.rateLimitedMinter.buffer()).to.be.equal(toBN('10000'));
     });

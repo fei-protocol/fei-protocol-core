@@ -53,24 +53,31 @@ describe('ConstantOracle', function () {
     await this.oracle.update();
     expect(await this.oracle.isOutdated()).to.be.equal(false);
   });
+
   it('read() is valid', async function() {
     const read = await this.oracle.read();
     expect(read[1]).to.be.equal(true); // valid
   });
+
   it('read() is invalid if paused', async function() {
     await hre.network.provider.request({
-      'method': 'harhat_impersonateAccount',
+      'method': 'hardhat_impersonateAccount',
       'params': [governorAddress]
     })
+
     const governorSigner = await ethers.getSigner(governorAddress)
+
     await this.oracle.connect(governorSigner).pause();
+
     const read = await this.oracle.read();
     expect(read[1]).to.be.equal(false); // invalid
+
     await hre.network.provider.request({
-      'method':'hardhat_stopImpersonatingAccount',
+      'method': 'hardhat_stopImpersonatingAccount',
       'params': [governorAddress]
     })
   });
+
   it('read() is always a Decimal (with 18 decimals)', async function() {
     expect((await this.oracle.read())[0] / 1e18).to.be.equal(20.01);
   });

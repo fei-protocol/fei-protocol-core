@@ -57,23 +57,23 @@ describe('ReserveStabilizer', function () {
     this.fei = await ethers.getContractAt('Fei', await this.core.fei());
     this.token = await (await ethers.getContractFactory('MockERC20')).deploy();
     this.oracle = await (await ethers.getContractFactory('MockOracle')).deploy(400); // 400:1 oracle price
-    this.pcvDeposit = await (await ethers.getContractFactory('MockPCVDeposit')).deploy(userAddress);
+    this.pcvDeposit = await (await ethers.getContractFactory('MockEthUniswapPCVDeposit')).deploy(userAddress);
 
     this.reserveStabilizer = await (await ethers.getContractFactory('ReserveStabilizer')).deploy(this.core.address, this.oracle.address, this.oracle.address, this.token.address, '9000');
 
-    await this.core.grantBurner(this.reserveStabilizer.address, {from: governorAddress});
+    await this.core.connect(impersonatedSigners[governorAddress]).grantBurner(this.reserveStabilizer.address, {});
 
     this.initialBalance = toBN('1000000000000000000');
     await this.token.mint(this.reserveStabilizer.address, this.initialBalance);
 
-    await this.fei.mint(userAddress, 40000000, {from: minterAddress});  
+    await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 40000000, {});  
   });
 
   describe('Exchange', function() {
     describe('Enough FEI', function() {
       it('exchanges for appropriate amount of token', async function() {
         const reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
-        await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
+        await this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000, {});
         const reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
 
         this.expectedOut = toBN('90000');
@@ -89,7 +89,7 @@ describe('ReserveStabilizer', function () {
         await this.oracle.setExchangeRate('800');
 
         const reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
-        await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
+        await this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000, {});
         const reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
 
         this.expectedOut = toBN('45000');
@@ -102,10 +102,10 @@ describe('ReserveStabilizer', function () {
 
     describe('Higher usd per fei', function() {
       it('exchanges for appropriate amount of token', async function() {
-        await this.reserveStabilizer.setUsdPerFeiRate('9500', {from: governorAddress});
+        await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).setUsdPerFeiRate('9500', {});
 
         const reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
-        await this.reserveStabilizer.exchangeFei(40000000, {from: userAddress});
+        await this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000, {});
         const reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
 
         this.expectedOut = toBN('95000');
@@ -118,21 +118,21 @@ describe('ReserveStabilizer', function () {
 
     describe('Not Enough FEI', function() {
       it('reverts', async function() {
-        await expectRevert(this.reserveStabilizer.exchangeFei(50000000, {from: userAddress}), 'ERC20: burn amount exceeds balance');
+        await expectRevert(this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(50000000, {}), 'ERC20: burn amount exceeds balance');
       });
     });
 
     describe('Not Enough token', function() {
       it('reverts', async function() {
-        await this.fei.mint(userAddress, toBN('4000000000000000000000000000'), {from: minterAddress});  
-        await expectRevert(this.reserveStabilizer.exchangeFei(toBN('4000000000000000000000000000'), {from: userAddress}), 'revert');
+        await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, toBN('4000000000000000000000000000'), {});  this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, toBN('4000000000000000000000000000'), {});  
+        await expectRevert(this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(toBN('4000000000000000000000000000'), {}), 'revert');
       });
     });
 
     describe('Paused', function() {
       it('reverts', async function() {
-        await this.reserveStabilizer.pause({from: governorAddress});
-        await expectRevert(this.reserveStabilizer.exchangeFei(toBN('400000'), {from: userAddress}), 'Pausable: paused');
+        await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});
+        await expectRevert(this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(toBN('400000'), {}), 'Pausable: paused');
       });
     });
   });
@@ -142,7 +142,7 @@ describe('ReserveStabilizer', function () {
       const reserveBalanceBefore = await this.token.balanceOf(this.reserveStabilizer.address);
       const userBalanceBefore = await this.token.balanceOf(userAddress);
 
-      await this.reserveStabilizer.withdraw(userAddress, '10000', {from: pcvControllerAddress});
+      await this.reserveStabilizer.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, '10000', {});
       const reserveBalanceAfter = await this.token.balanceOf(this.reserveStabilizer.address);
       const userBalanceAfter = await this.token.balanceOf(userAddress);
 
@@ -151,26 +151,26 @@ describe('ReserveStabilizer', function () {
     });
 
     it('not enough token reverts', async function() {
-      await expectRevert(this.reserveStabilizer.withdraw(userAddress, '10000000000000000000', {from: pcvControllerAddress}), 'revert');
+      await expectRevert(this.reserveStabilizer.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, '10000000000000000000', {}), 'revert');
     });
 
     it('non pcvController', async function() {
-      await expectRevert(this.reserveStabilizer.withdraw(userAddress, '10000', {from: userAddress}), 'CoreRef: Caller is not a PCV controller');
+      await expectRevert(this.reserveStabilizer.connect(impersonatedSigners[userAddress]).withdraw(userAddress, '10000', {}), 'CoreRef: Caller is not a PCV controller');
     });
   });
 
   describe('Set USD per FEI', function() {
     it('governor succeeds', async function() {
-      await this.reserveStabilizer.setUsdPerFeiRate('10000', {from: governorAddress});
+      await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).setUsdPerFeiRate('10000', {});
       expect(await this.reserveStabilizer.usdPerFeiBasisPoints()).to.be.equal(toBN('10000'));
     });
 
     it('non-governor reverts', async function() {
-      await expectRevert(this.reserveStabilizer.setUsdPerFeiRate('10000', {from: userAddress}), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.reserveStabilizer.connect(impersonatedSigners[userAddress]).setUsdPerFeiRate('10000', {}), 'CoreRef: Caller is not a governor');
     });
 
     it('too high usd per fei reverts', async function() {
-      await expectRevert(this.reserveStabilizer.setUsdPerFeiRate('10001', {from: governorAddress}), 'ReserveStabilizer: Exceeds bp granularity');
+      await expectRevert(this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).setUsdPerFeiRate('10001', {}), 'ReserveStabilizer: Exceeds bp granularity');
     });
   });
 });

@@ -63,7 +63,7 @@ describe('RatioPCVController', function () {
     describe('from pcvController', function() {
       it('100%', async function() {
         const userBalanceBefore = await balance.current(userAddress);
-        await this.pcvController.withdrawRatio(this.pcvDeposit.address, userAddress, '10000', {from: pcvControllerAddress});
+        await this.pcvController.connect(impersonatedSigners[pcvControllerAddress]).withdrawRatio(this.pcvDeposit.address, userAddress, '10000', {});
         const userBalanceAfter = await balance.current(userAddress);
         const reserveBalanceAfter = await balance.current(this.pcvDeposit.address);
 
@@ -74,7 +74,7 @@ describe('RatioPCVController', function () {
       it('50%', async function() {
         const userBalanceBefore = await balance.current(userAddress);
         const reserveBalanceBefore = await balance.current(this.pcvDeposit.address);
-        await this.pcvController.withdrawRatio(this.pcvDeposit.address, userAddress, '5000', {from: pcvControllerAddress});
+        await this.pcvController.connect(impersonatedSigners[pcvControllerAddress]).withdrawRatio(this.pcvDeposit.address, userAddress, '5000', {});
         const userBalanceAfter = await balance.current(userAddress);
         const reserveBalanceAfter = await balance.current(this.pcvDeposit.address);
 
@@ -83,26 +83,26 @@ describe('RatioPCVController', function () {
       });
 
       it('200% reverts', async function() {
-        await expectRevert(this.pcvController.withdrawRatio(this.pcvDeposit.address, userAddress, '20000', {from: pcvControllerAddress}), 'RatioPCVController: basisPoints too high');
+        await expectRevert(this.pcvController.connect(impersonatedSigners[pcvControllerAddress]).withdrawRatio(this.pcvDeposit.address, userAddress, '20000', {}), 'RatioPCVController: basisPoints too high');
       });
 
       it('0 value reverts', async function() {                
-        await this.pcvController.withdrawRatio(this.pcvDeposit.address, userAddress, '10000', {from: pcvControllerAddress}); // withdraw all
+        await this.pcvController.connect(impersonatedSigners[pcvControllerAddress]).withdrawRatio(this.pcvDeposit.address, userAddress, '10000', {}); // withdraw all
 
-        await expectRevert(this.pcvController.withdrawRatio(this.pcvDeposit.address, userAddress, '10000', {from: pcvControllerAddress}), 'RatioPCVController: no value to withdraw');
+        await expectRevert(this.pcvController.connect(impersonatedSigners[pcvControllerAddress]).withdrawRatio(this.pcvDeposit.address, userAddress, '10000', {}), 'RatioPCVController: no value to withdraw');
       });
     });
 
     describe('not from pcvController', function() {
       it('reverts', async function() {
-        await expectRevert(this.pcvController.withdrawRatio(this.pcvDeposit.address, userAddress, '10000', {from: userAddress}), 'CoreRef: Caller is not a PCV controller');
+        await expectRevert(this.pcvController.connect(impersonatedSigners[userAddress]).withdrawRatio(this.pcvDeposit.address, userAddress, '10000', {}), 'CoreRef: Caller is not a PCV controller');
       });
     });
 
     describe('paused', function() {
       it('reverts', async function() {
-        await this.pcvController.pause({from: governorAddress});
-        await expectRevert(this.pcvController.withdrawRatio(this.pcvDeposit.address, userAddress, '10000', {from: pcvControllerAddress}), 'Pausable: paused');
+        await this.pcvController.connect(impersonatedSigners[governorAddress]).pause({});this.pcvController.connect(impersonatedSigners[governorAddress]).pause({});
+        await expectRevert(this.pcvController.connect(impersonatedSigners[pcvControllerAddress]).withdrawRatio(this.pcvDeposit.address, userAddress, '10000', {}), 'Pausable: paused');
       });
     });
   });
@@ -114,7 +114,7 @@ describe('RatioPCVController', function () {
     describe('from pcvController', function() {
       it('100%', async function() {
         const userBalanceBefore = await this.token.balanceOf(userAddress);
-        await this.pcvController.withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '10000', {from: pcvControllerAddress});
+        await this.pcvController.connect(impersonatedSigners[pcvControllerAddress]).withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '10000', {});
         const userBalanceAfter = await this.token.balanceOf(userAddress);
         const reserveBalanceAfter = await this.token.balanceOf(this.pcvDeposit.address);
 
@@ -125,7 +125,7 @@ describe('RatioPCVController', function () {
       it('50%', async function() {
         const userBalanceBefore = await this.token.balanceOf(userAddress);
         const reserveBalanceBefore = await this.token.balanceOf(this.pcvDeposit.address);
-        await this.pcvController.withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '5000', {from: pcvControllerAddress});
+        await this.pcvController.connect(impersonatedSigners[pcvControllerAddress]).withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '5000', {});
         const userBalanceAfter = await this.token.balanceOf(userAddress);
         const reserveBalanceAfter = await this.token.balanceOf(this.pcvDeposit.address);
 
@@ -134,26 +134,26 @@ describe('RatioPCVController', function () {
       });
 
       it('200% reverts', async function() {
-        await expectRevert(this.pcvController.withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '20000', {from: pcvControllerAddress}), 'RatioPCVController: basisPoints too high');
+        await expectRevert(this.pcvController.connect(impersonatedSigners[pcvControllerAddress]).withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '20000', {}), 'RatioPCVController: basisPoints too high');
       });
 
       it('0 value reverts', async function() {                
-        await this.pcvController.withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '10000', {from: pcvControllerAddress}); // withdraw all
+        await this.pcvController.connect(impersonatedSigners[pcvControllerAddress]).withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '10000', {}); // withdraw all
 
-        await expectRevert(this.pcvController.withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '10000', {from: pcvControllerAddress}), 'RatioPCVController: no value to withdraw');
+        await expectRevert(this.pcvController.connect(impersonatedSigners[pcvControllerAddress]).withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '10000', {}), 'RatioPCVController: no value to withdraw');
       });
     });
 
     describe('not from pcvController', function() {
       it('reverts', async function() {
-        await expectRevert(this.pcvController.withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '10000', {from: userAddress}), 'CoreRef: Caller is not a PCV controller');
+        await expectRevert(this.pcvController.connect(impersonatedSigners[userAddress]).withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '10000', {}), 'CoreRef: Caller is not a PCV controller');
       });
     });
 
     describe('paused', function() {
       it('reverts', async function() {
-        await this.pcvController.pause({from: governorAddress});
-        await expectRevert(this.pcvController.withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '10000', {from: pcvControllerAddress}), 'Pausable: paused');
+        await this.pcvController.connect(impersonatedSigners[governorAddress]).pause({});this.pcvController.connect(impersonatedSigners[governorAddress]).pause({});
+        await expectRevert(this.pcvController.connect(impersonatedSigners[pcvControllerAddress]).withdrawRatioERC20(this.pcvDeposit.address, this.token.address, userAddress, '10000', {}), 'Pausable: paused');
       });
     });
   });

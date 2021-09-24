@@ -97,7 +97,7 @@ describe('CompositeOracle', function () {
     describe('Both Valid', function() {
       describe('Paused', function() {
         beforeEach(async function() {
-          await this.oracle.pause({from: governorAddress});
+          await this.oracle.connect(impersonatedSigners[governorAddress]).pause({});
         });
   
         it('returns invalid', async function() {
@@ -145,7 +145,7 @@ describe('CompositeOracle', function () {
   describe('Update', function() {
     describe('Paused', function() {
       it('reverts', async function() {
-        await this.oracle.pause({from: governorAddress});
+        await this.oracle.connect(impersonatedSigners[governorAddress]).pause({});
         await expectRevert(this.oracle.update(), 'Pausable: paused');
       });
     });

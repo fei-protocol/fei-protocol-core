@@ -33,7 +33,8 @@ describe('UniswapPCVController', function () {
       addresses.minterAddress,
       addresses.burnerAddress,
       addresses.beneficiaryAddress1,
-      addresses.beneficiaryAddress2
+      addresses.beneficiaryAddress2,
+      addresses.guardianAddress
     ]
 
     for (const address of impersonatedAddresses) {
@@ -60,8 +61,8 @@ describe('UniswapPCVController', function () {
     this.fei = await ethers.getContractAt('Fei', await this.core.fei());
     this.oracle = await (await ethers.getContractFactory('MockOracle')).deploy(500);
     this.token = await (await ethers.getContractFactory('MockERC20')).deploy();
-    this.pair = await (await ethers.getContractFactory('MockPair')).deploy(this.token.address, this.fei.address);
-    this.pcvDeposit = await (await ethers.getContractFactory('MockPCVDeposit')).deploy(this.token.address);
+    this.pair = await (await ethers.getContractFactory('MockUniswapV2PairLiquidity')).deploy(this.token.address, this.fei.address);
+    this.pcvDeposit = await (await ethers.getContractFactory('MockERC20UniswapPCVDeposit')).deploy(this.token.address);
 
     this.pcvController = await (await ethers.getContractFactory('UniswapPCVController')).deploy(
       this.core.address, 
@@ -73,16 +74,17 @@ describe('UniswapPCVController', function () {
       this.pair.address,
       '14400'
     );
-    await this.core.grantBurner(this.pcvController.address, {from: governorAddress});
-    await this.core.grantMinter(this.pcvController.address, {from: governorAddress});
+    await this.core.connect(impersonatedSigners[governorAddress]).grantBurner(this.pcvController.address, {});
+    await this.core.connect(impersonatedSigners[governorAddress]).grantBurner(this.pcvController.address, {});
+    await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.pcvController.address, {});
 
-    await this.fei.mint(this.pair.address, 50000000, {from: minterAddress});
+    await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pair.address, 50000000, {});
   });
 
   describe('Sole LP', function() {
     beforeEach(async function() {
       await this.token.mint(this.pcvDeposit.address, 100000);
-      await this.pcvController.forceReweight({from: guardianAddress});
+      await this.pcvController.connect(impersonatedSigners[guardianAddress]).forceReweight({});
     });
     it('pcvDeposit gets all tokens', async function() {
       expect(await this.pcvDeposit.balance()).to.be.equal(toBN(100000));
@@ -94,11 +96,11 @@ describe('UniswapPCVController', function () {
     describe('At peg', function() {
       beforeEach(async function() {
         await this.token.mint(this.pcvDeposit.address, 100000);
-        await this.pair.set(100000, 50000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 500:1 FEI/token with 10k liquidity
+        await this.pair.connect(impersonatedSigners[userAddress]).set(100000, 50000000, LIQUIDITY_INCREMENT, { value: 100000}); // 500:1 FEI/token with 10k liquidity
       });
 
       it('reverts', async function() {
-        await expectRevert(this.pcvController.forceReweight({from: governorAddress}), 'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT');
+        await expectRevert(this.pcvController.connect(impersonatedSigners[governorAddress]).forceReweight({}), 'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT');
       });
     });
 
@@ -106,7 +108,7 @@ describe('UniswapPCVController', function () {
       beforeEach(async function() {
         await this.token.mint(this.pcvDeposit.address, 100000);
         await this.token.mint(this.pair.address, 100000);
-        await this.pair.set(100000, 49000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
+        await this.pair.connect(impersonatedSigners[userAddress]).set(100000, 49000000, LIQUIDITY_INCREMENT, { value: 100000}); // 490:1 FEI/token with 10k liquidity
         await expect(
           await this.pcvController.connect(impersonatedSigners[guardianAddress]).forceReweight())
           .to.emit(this.pcvController, 'Reweight').withArgs(guardianAddress)
@@ -118,23 +120,23 @@ describe('UniswapPCVController', function () {
 
       it('pcvDeposit gets remaining tokens', async function() {
         expect(await this.pcvDeposit.balance()).to.be.equal(toBN(101005));
-        expect(await this.token.balanceOf(this.pcvController.address)).to.be.equal(toBN(0));
+        expect(await this.token.balanceOf(this.pcvController.address)).to.be.equal(0);
       });
     });
 
     describe('Below peg', function() {
       describe('Rebases', function() {
         beforeEach(async function() {
-          await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
+          await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pair.address, 1000000, {}); // top up to 51m
           await this.token.mint(this.pcvDeposit.address, 100000);
-          await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
+          await this.pair.connect(impersonatedSigners[userAddress]).set(100000, 51000000, LIQUIDITY_INCREMENT, {value: 100000}); // 490:1 FEI/token with 10k liquidity
           await expect(
             await this.pcvController.connect(impersonatedSigners[guardianAddress]).forceReweight())
             .to.emit(this.pcvController, 'Reweight').withArgs(guardianAddress)
         });
 
         it('pair gets no token in swap', async function() {
-          expect(await this.token.balanceOf(this.pair.address)).to.be.equal(toBN(0));
+          expect(await this.token.balanceOf(this.pair.address)).to.be.equal(0);
         });
         it('pcvDeposit token value remains constant', async function() {
           expect(await this.pcvDeposit.balance()).to.be.equal(toBN(100000));
@@ -149,8 +151,8 @@ describe('UniswapPCVController', function () {
       beforeEach(async function() {
         await this.token.mint(this.pcvDeposit.address, 100000);
         await this.oracle.setExchangeRate(400);
-        await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
-        await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
+        await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pair.address, 1000000, {}); // top up to 51mthis.fei.connect(impersonatedSigners[minterAddress]).mint(this.pair.address, 1000000, {}); // top up to 51m
+        await this.pair.connect(impersonatedSigners[userAddress]).set(100000, 51000000, LIQUIDITY_INCREMENT, {value: 100000}); // 490:1 FEI/token with 10k liquidity
         await expect(
           await this.pcvController.connect(impersonatedSigners[guardianAddress]).forceReweight())
           .to.emit(this.pcvController, 'Reweight').withArgs(guardianAddress)
@@ -171,15 +173,15 @@ describe('UniswapPCVController', function () {
   describe('External Reweight', function() {
     describe('Paused', function() {
       it('reverts', async function() {
-        await this.pcvController.pause({from: governorAddress});
+        await this.pcvController.connect(impersonatedSigners[governorAddress]).pause({});
         await expectRevert(this.pcvController.reweight(), 'Pausable: paused');
       });
     });
 
     describe('Not yet at time', function () {
       beforeEach(async function() {
-        await this.token.mint(this.pair.address, 100000);
-        await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/token with 10k liquidity
+        await this.token.mint(this.pair.address, toBN(100000));
+        await this.pair.connect(impersonatedSigners[userAddress]).set(100000, 51000000, LIQUIDITY_INCREMENT, { value: 100000}); // 510:1 FEI/token with 10k liquidity
       });
 
       it('reverts', async function() {
@@ -190,7 +192,7 @@ describe('UniswapPCVController', function () {
 
       describe('After time period passes', function() {
         beforeEach(async function() {
-          await time.increase(toBN('14400'));
+          await time.increase(14400);
         });
 
         it('Reweight eligible', async function() {
@@ -200,8 +202,8 @@ describe('UniswapPCVController', function () {
 
         describe('After Reweight', function() {
           beforeEach(async function() {
-            await this.token.mint(this.pcvDeposit.address, 100000);
-            await this.pcvController.reweight({from: userAddress});
+            await this.token.mint(this.pcvDeposit.address, toBN(100000));
+            await this.pcvController.connect(impersonatedSigners[userAddress]).reweight({});
           });
           it('timer resets', async function() {
             expect(await this.pcvController.isTimeEnded()).to.be.equal(false);
@@ -213,9 +215,9 @@ describe('UniswapPCVController', function () {
 
     describe('Not at min distance', function () {
       it('reverts', async function() {
-        await this.token.mint(this.pair.address, 100000);
-        await this.pair.set(100000, 50400000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 504:1 FEI/token with 10k liquidity
-        await time.increase(toBN('14400'));
+        await this.token.mint(this.pair.address, toBN(100000));
+        await this.pair.connect(impersonatedSigners[userAddress]).set(100000, 50400000, LIQUIDITY_INCREMENT, { value: 100000}); // 504:1 FEI/token with 10k liquidity
+        await time.increase(14400);
 
         expect(await this.pcvController.reweightEligible()).to.be.equal(false);
         await expectRevert(this.pcvController.reweight(), 'UniswapPCVController: Not passed reweight time or not at min distance');
@@ -224,13 +226,13 @@ describe('UniswapPCVController', function () {
 
     describe('Above peg', function() {
       beforeEach(async function() {
-        await this.fei.burnFrom(this.pair.address, 1000000, {from: burnerAddress}); // burn down to 49m
-        await this.token.mint(this.pcvDeposit.address, 100000);
-        await this.token.mint(this.pair.address, 100000);
-        await this.pair.set(100000, 49000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
+        await this.fei.connect(impersonatedSigners[burnerAddress]).burnFrom(this.pair.address, 1000000, {}); // burn down to 49m
+        await this.token.mint(this.pcvDeposit.address, toBN(100000));
+        await this.token.mint(this.pair.address, toBN(100000));
+        await this.pair.connect(impersonatedSigners[userAddress]).set(100000, 49000000, LIQUIDITY_INCREMENT, { value: 100000}); // 490:1 FEI/token with 10k liquidity
         await time.increase(toBN('14400'));
         expect(await this.pcvController.reweightEligible()).to.be.equal(true);
-        await this.pcvController.reweight({from: userAddress});
+        await this.pcvController.connect(impersonatedSigners[userAddress]).reweight({});
       });
 
       it('pair loses some tokens in swap', async function() {
@@ -246,13 +248,13 @@ describe('UniswapPCVController', function () {
 
     describe('No incentive for caller if controller not minter', function() {
       beforeEach(async function() {
-        await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
+        await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pair.address, 1000000, {}); // top up to 51m
         await this.token.mint(this.pcvDeposit.address, 100000);
-        await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 510:1 FEI/token with 10k liquidity
+        await this.pair.connect(impersonatedSigners[userAddress]).set(100000, 51000000, LIQUIDITY_INCREMENT, { value: 100000}); // 510:1 FEI/token with 10k liquidity
         await time.increase(toBN('14400'));
-        await this.core.revokeMinter(this.pcvController.address, {from: governorAddress});     
+        await this.core.connect(impersonatedSigners[governorAddress]).revokeMinter(this.pcvController.address, {});     
         expect(await this.pcvController.reweightEligible()).to.be.equal(true);
-        await this.pcvController.reweight({from: userAddress});
+        await this.pcvController.connect(impersonatedSigners[userAddress]).reweight({});
       });
 
       it('pair gets no tokens in swap', async function() {
@@ -268,13 +270,13 @@ describe('UniswapPCVController', function () {
 
     describe('Incentive for caller if controller is a minter', function() {
       beforeEach(async function() {
-        await this.fei.mint(this.pair.address, 1000000, {from: minterAddress}); // top up to 51m
-        await this.token.mint(this.pcvDeposit.address, 100000);
-        await this.pair.set(100000, 51000000, LIQUIDITY_INCREMENT, {from: userAddress, value: 100000}); // 490:1 FEI/token with 10k liquidity
+        await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pair.address, 1000000, {}); // top up to 51m
+        await this.token.mint(this.pcvDeposit.address, toBN(100000));
+        await this.pair.connect(impersonatedSigners[userAddress]).set(100000, 51000000, LIQUIDITY_INCREMENT, { value: 100000}); // 490:1 FEI/token with 10k liquidity
         await time.increase(toBN('14400'));
-        await this.core.grantMinter(this.pcvController.address, {from: governorAddress});     
+        await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.pcvController.address, {});     
         expect(await this.pcvController.reweightEligible()).to.be.equal(true);
-        await this.pcvController.reweight({from: userAddress});
+        await this.pcvController.connect(impersonatedSigners[userAddress]).reweight({});
       });
 
       it('pair gets no tokens in swap', async function() {
@@ -292,7 +294,7 @@ describe('UniswapPCVController', function () {
   describe('Access', function() {
     describe('Force Reweight', function() {
       it('Non-governor call fails', async function() {
-        await expectRevert(this.pcvController.forceReweight({from: userAddress}), 'CoreRef: Caller is not a guardian or governor');
+        await expectRevert(this.pcvController.connect(impersonatedSigners[userAddress]).forceReweight({}), 'CoreRef: Caller is not a guardian or governor');
       });
     });
 
@@ -306,30 +308,30 @@ describe('UniswapPCVController', function () {
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.pcvController.setReweightMinDistance(50, {from: userAddress}), 'CoreRef: Caller is not a governor');
+        await expectRevert(this.pcvController.connect(impersonatedSigners[userAddress]).setReweightMinDistance(50, {}), 'CoreRef: Caller is not a governor');
       });
     });
 
     describe('Duration', function() {
       it('Governor set succeeds', async function() {
-        await this.pcvController.setDuration(10, {from: governorAddress});
+        await this.pcvController.connect(impersonatedSigners[governorAddress]).setDuration(10, {});
         expect(await this.pcvController.duration()).to.be.equal('10');
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.pcvController.setDuration('10', {from: userAddress}), 'CoreRef: Caller is not a governor');
+        await expectRevert(this.pcvController.connect(impersonatedSigners[userAddress]).setDuration('10', {}), 'CoreRef: Caller is not a governor');
       });
     });
 
     describe('Pair', function() {
       it('Governor set succeeds', async function() {
-        const pair2 = await (await ethers.getContractFactory('MockPair')).deploy(this.token.address, this.fei.address);
-        await this.pcvController.setPair(pair2.address, {from: governorAddress});
+        const pair2 = await (await ethers.getContractFactory('MockUniswapV2PairLiquidity')).deploy(this.token.address, this.fei.address);
+        await this.pcvController.connect(impersonatedSigners[governorAddress]).setPair(pair2.address, {});
         expect(await this.pcvController.pair()).to.be.equal(pair2.address);
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.pcvController.setPair(userAddress, {from: userAddress}), 'CoreRef: Caller is not a governor');
+        await expectRevert(this.pcvController.connect(impersonatedSigners[userAddress]).setPair(userAddress, {}), 'CoreRef: Caller is not a governor');
       });
     });
 
@@ -343,17 +345,17 @@ describe('UniswapPCVController', function () {
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.pcvController.setPCVDeposit(userAddress, {from: userAddress}), 'CoreRef: Caller is not a governor');
+        await expectRevert(this.pcvController.connect(impersonatedSigners[userAddress]).setPCVDeposit(userAddress, {}), 'CoreRef: Caller is not a governor');
       });
     });
     describe('Oracle', function() {
       it('Governor set succeeds', async function() {
-        await this.pcvController.setOracle(userAddress, {from: governorAddress});
+        await this.pcvController.connect(impersonatedSigners[governorAddress]).setOracle(userAddress, {});
         expect(await this.pcvController.oracle()).to.be.equal(userAddress);
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.pcvController.setOracle(userAddress, {from: userAddress}), 'CoreRef: Caller is not a governor');
+        await expectRevert(this.pcvController.connect(impersonatedSigners[userAddress]).setOracle(userAddress, {}), 'CoreRef: Caller is not a governor');
       });
     });
   });

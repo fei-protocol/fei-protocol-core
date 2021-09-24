@@ -7,7 +7,7 @@ const UniswapOracle = artifacts.readArtifactSync('UniswapOracle');
 const MockPairTrade = artifacts.readArtifactSync('MockUniswapV2PairTrade');
 const toBN = ethers.BigNumber.from
 
-describe.skip('UniswapOracle', function () {
+describe('UniswapOracle', function () {
   let userAddress: string
   let governorAddress: string
 
@@ -47,12 +47,12 @@ describe.skip('UniswapOracle', function () {
     this.startTime = await time.latest();
     this.delta = toBN(1000);
     this.hundredTwelve = toBN(2).pow(toBN(112));
-    await time.increase(this.delta);
+    await time.increase(Number(this.delta.toString()));
     
-    this.cursor = this.startTime.add(this.delta);
+    this.cursor = this.startTime.add(toBN(Number(this.delta.toString())));
     this.cumulative = this.hundredTwelve.mul(this.delta.add(toBN(2))).mul(toBN(500)).div(toBN(1e12));
     
-    this.pair = await (await ethers.getContractFactory('MockPairTrade')).deploy(this.cumulative, 0, this.cursor, toBN(100000).mul(toBN(1e12)), 50000000); // 500:1 FEI/ETH initial price
+    this.pair = await (await ethers.getContractFactory('MockUniswapV2PairTrade')).deploy(this.cumulative, 0, this.cursor, toBN(100000).mul(toBN(1e12)), 50000000); // 500:1 FEI/ETH initial price
 
     this.duration = toBN('600');
     this.oracle = await (await ethers.getContractFactory('UniswapOracle')).deploy(this.core.address, this.pair.address, this.duration, true); // 10 min TWAP using price0
@@ -96,7 +96,7 @@ describe.skip('UniswapOracle', function () {
 
       describe('Paused', function() {
         beforeEach(async function() {
-          await this.oracle.pause({from: governorAddress});
+          await this.oracle.connect(impersonatedSigners[governorAddress]).pause({});
         });
 
         it('returns invalid', async function() {
@@ -123,7 +123,7 @@ describe.skip('UniswapOracle', function () {
     
     describe('Paused', function() {
       it('reverts', async function() {
-        await this.oracle.pause({from: governorAddress});
+        await this.oracle.connect(impersonatedSigners[governorAddress]).pause({});
         await expectRevert(this.oracle.update(), 'Pausable: paused');
       });
     });
@@ -216,7 +216,7 @@ describe.skip('UniswapOracle', function () {
       });
 
       it('Non-governor set reverts', async function() {
-        await expectRevert(this.oracle.setDuration(1000, {from: userAddress}), 'CoreRef: Caller is not a governor');
+        await expectRevert(this.oracle.connect(impersonatedSigners[userAddress]).setDuration(1000, {}), 'CoreRef: Caller is not a governor');
       });
     });
   });

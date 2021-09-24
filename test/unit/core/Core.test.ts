@@ -17,6 +17,30 @@ describe('Core', function () {
 
   let impersonatedSigners: {[key: string]: Signer} = {}
 
+  before(async() => {
+    const addresses = await getAddresses()
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress,
+      addresses.minterAddress,
+      addresses.burnerAddress,
+      addresses.guardianAddress
+    ]
+
+    for (const address of impersonatedAddresses) {
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+      })
+
+      impersonatedSigners[address] = await ethers.getSigner(address)
+    }
+  });
+
+
   beforeEach(async function () {
     ({
       userAddress,
@@ -42,7 +66,7 @@ describe('Core', function () {
 
   describe('Allocate Tribe', function() {
     it('updates', async function() {
-      await(
+      await expect(
         await this.core.connect(impersonatedSigners[governorAddress]).allocateTribe(userAddress, 1000))
         .to.emit(this.core, 'TribeAllocation').withArgs(userAddress, 1000);
 
@@ -51,39 +75,39 @@ describe('Core', function () {
 
     it('not enough reverts', async function() {
       const amount = await this.tribe.balanceOf(this.core.address);
-      await expectRevert(this.core.allocateTribe(userAddress, amount.add(toBN('1')), {from: governorAddress}), 'Core: Not enough Tribe');
+      await expectRevert(this.core.connect(impersonatedSigners[governorAddress]).allocateTribe(userAddress, amount.add(toBN('1')), {}), 'Core: Not enough Tribe');
     });
 	
     it('non governor reverts', async function() {
-      await expectRevert(this.core.allocateTribe(userAddress, '1000', {from: userAddress}), 'Permissions: Caller is not a governor');
+      await expectRevert(this.core.connect(impersonatedSigners[userAddress]).allocateTribe(userAddress, '1000', {}), 'Permissions: Caller is not a governor');
     });
   });
 
   describe('Fei Update', function() {
     it('updates', async function() {
       await expect(
-        await this.core.setFei(userAddress, {from: governorAddress}))
+        await this.core.connect(impersonatedSigners[governorAddress]).setFei(userAddress, {}))
         .to.emit(this.core, 'FeiUpdate').withArgs(userAddress);
 
       expect(await this.core.fei()).to.be.equal(userAddress);
     });
 	
     it('non governor reverts', async function() {
-      await expectRevert(this.core.setFei(userAddress, {from: userAddress}), 'Permissions: Caller is not a governor');
+      await expectRevert(this.core.connect(impersonatedSigners[userAddress]).setFei(userAddress, {}), 'Permissions: Caller is not a governor');
     });
   });
 
   describe('Tribe Update', function() {
     it('updates', async function() {
       await expect(
-        await this.core.setTribe(userAddress, {from: governorAddress}))
+        await this.core.connect(impersonatedSigners[governorAddress]).setTribe(userAddress, {}))
         .to.emit(this.core, 'TribeUpdate').withArgs(userAddress);
 
       expect(await this.core.tribe()).to.be.equal(userAddress);
     });
 	
     it('non governor reverts', async function() {
-      await expectRevert(this.core.setTribe(userAddress, {from: userAddress}), 'Permissions: Caller is not a governor');
+      await expectRevert(this.core.connect(impersonatedSigners[userAddress]).setTribe(userAddress, {}), 'Permissions: Caller is not a governor');
     });
   });
 
@@ -96,7 +120,7 @@ describe('Core', function () {
   		});
   		describe('Access revoked', function () {
   			beforeEach(async function() {
-  				await this.core.revokeMinter(minterAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).revokeMinter(minterAddress, {});
   			});
 
   			it('is not registered in core', async function() {
@@ -105,7 +129,7 @@ describe('Core', function () {
   		});
   		describe('Access renounced', function() {
   			beforeEach(async function() {
-  				await this.core.renounceRole(this.minterRole, minterAddress, {from: minterAddress});
+  				await this.core.connect(impersonatedSigners[minterAddress]).renounceRole(this.minterRole, minterAddress, {});
   			});
 
         it('is not registered in core', async function() {
@@ -117,7 +141,7 @@ describe('Core', function () {
   				expect(await this.core.getRoleMemberCount(this.minterRole)).to.be.equal(toBN(1));
   			});
   			it('updates to two', async function() {
-  				await this.core.grantMinter(userAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(userAddress, {});
   				expect(await this.core.getRoleMemberCount(this.minterRole)).to.be.equal(toBN(2));
   			});
   		});
@@ -129,23 +153,23 @@ describe('Core', function () {
   	});
   	describe('Access', function () {
   		it('onlyMinter succeeds', async function() {
-  			await this.coreRef.testMinter({from: minterAddress});
+  			await this.coreRef.connect(impersonatedSigners[minterAddress]).testMinter({});
   		});
 
   		it('onlyBurner reverts', async function() {
-  			await expectRevert(this.coreRef.testBurner({from: minterAddress}), 'CoreRef: Caller is not a burner');
+  			await expectRevert(this.coreRef.connect(impersonatedSigners[minterAddress]).testBurner({}), 'CoreRef: Caller is not a burner');
   		});
 
   		it('onlyGovernor reverts', async function() {
-  			await expectRevert(this.coreRef.testGovernor({from: minterAddress}), 'CoreRef: Caller is not a governor');
+  			await expectRevert(this.coreRef.connect(impersonatedSigners[minterAddress]).testGovernor({}), 'CoreRef: Caller is not a governor');
   		});
 
       it('onlyGovernorOrAdmin reverts', async function() {
-        await expectRevert(this.coreRef.testOnlyGovernorOrAdmin({from: minterAddress}), 'CoreRef: Caller is not a governor or contract admin');
+        await expectRevert(this.coreRef.connect(impersonatedSigners[minterAddress]).testOnlyGovernorOrAdmin({}), 'CoreRef: Caller is not a governor or contract admin');
       });
 
   		it('onlyPCVController reverts', async function() {
-  			await expectRevert(this.coreRef.testPCVController({from: minterAddress}), 'CoreRef: Caller is not a PCV controller');
+  			await expectRevert(this.coreRef.connect(impersonatedSigners[minterAddress]).testPCVController({}), 'CoreRef: Caller is not a PCV controller');
   		});
   	});
   });
@@ -159,7 +183,7 @@ describe('Core', function () {
   		});
   		describe('Access revoked', function () {
   			beforeEach(async function() {
-  				await this.core.revokeBurner(burnerAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).revokeBurner(burnerAddress, {});
   			});
 
   			it('is not registered in core', async function() {
@@ -168,7 +192,7 @@ describe('Core', function () {
   		});
   		describe('Access renounced', function() {
   			beforeEach(async function() {
-  				await this.core.renounceRole(this.burnerRole, burnerAddress, {from: burnerAddress});
+  				await this.core.connect(impersonatedSigners[burnerAddress]).renounceRole(this.burnerRole, burnerAddress, {});
   			});
 
   			it('is not registered in core', async function() {
@@ -180,7 +204,7 @@ describe('Core', function () {
   				expect(await this.core.getRoleMemberCount(this.burnerRole)).to.be.equal(toBN(1));
   			});
   			it('updates to two', async function() {
-  				await this.core.grantBurner(userAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).grantBurner(userAddress, {});
   				expect(await this.core.getRoleMemberCount(this.burnerRole)).to.be.equal(toBN(2));
   			});
   		});
@@ -192,23 +216,23 @@ describe('Core', function () {
   	});
   	describe('Access', function () {
   		it('onlyMinter reverts', async function() {
-  			await expectRevert(this.coreRef.testMinter({from: burnerAddress}), 'CoreRef: Caller is not a minter');
+  			await expectRevert(this.coreRef.connect(impersonatedSigners[burnerAddress]).testMinter({}), 'CoreRef: Caller is not a minter');
   		});
 
   		it('onlyBurner succeeds', async function() {
-  			await this.coreRef.testBurner({from: burnerAddress});
+  			await this.coreRef.connect(impersonatedSigners[burnerAddress]).testBurner({});
   		});
 
   		it('onlyGovernor reverts', async function() {
-  			await expectRevert(this.coreRef.testGovernor({from: burnerAddress}), 'CoreRef: Caller is not a governor');
+  			await expectRevert(this.coreRef.connect(impersonatedSigners[burnerAddress]).testGovernor({}), 'CoreRef: Caller is not a governor');
   		});
 
       it('onlyGovernorOrAdmin reverts', async function() {
-        await expectRevert(this.coreRef.testOnlyGovernorOrAdmin({from: burnerAddress}), 'CoreRef: Caller is not a governor or contract admin');
+        await expectRevert(this.coreRef.connect(impersonatedSigners[burnerAddress]).testOnlyGovernorOrAdmin({}), 'CoreRef: Caller is not a governor or contract admin');
       });
 
   		it('onlyPCVController reverts', async function() {
-  			await expectRevert(this.coreRef.testPCVController({from: burnerAddress}), 'CoreRef: Caller is not a PCV controller');
+  			await expectRevert(this.coreRef.connect(impersonatedSigners[burnerAddress]).testPCVController({}), 'CoreRef: Caller is not a PCV controller');
   		});
   	});
   });
@@ -222,7 +246,7 @@ describe('Core', function () {
   		});
   		describe('Access revoked', function () {
   			beforeEach(async function() {
-  				await this.core.revokePCVController(pcvControllerAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).revokePCVController(pcvControllerAddress, {});
   			});
 
   			it('is not registered in core', async function() {
@@ -231,7 +255,7 @@ describe('Core', function () {
   		});
   		describe('Access renounced', function() {
   			beforeEach(async function() {
-  				await this.core.renounceRole(this.pcvControllerRole, pcvControllerAddress, {from: pcvControllerAddress});
+  				await this.core.connect(impersonatedSigners[pcvControllerAddress]).renounceRole(this.pcvControllerRole, pcvControllerAddress, {});
   			});
 
   			it('is not registered in core', async function() {
@@ -243,7 +267,7 @@ describe('Core', function () {
   				expect(await this.core.getRoleMemberCount(this.pcvControllerRole)).to.be.equal(toBN(1));
   			});
   			it('updates to two', async function() {
-  				await this.core.grantPCVController(userAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).grantPCVController(userAddress, {});
   				expect(await this.core.getRoleMemberCount(this.pcvControllerRole)).to.be.equal(toBN(2));
   			});
   		});
@@ -255,23 +279,23 @@ describe('Core', function () {
   	});
   	describe('Access', function () {
   		it('onlyMinter reverts', async function() {
-  			await expectRevert(this.coreRef.testMinter({from: pcvControllerAddress}), 'CoreRef: Caller is not a minter');
+  			await expectRevert(this.coreRef.connect(impersonatedSigners[pcvControllerAddress]).testMinter({}), 'CoreRef: Caller is not a minter');
   		});
 
   		it('onlyBurner reverts', async function() {
-  			await expectRevert(this.coreRef.testBurner({from: pcvControllerAddress}), 'CoreRef: Caller is not a burner');
+  			await expectRevert(this.coreRef.connect(impersonatedSigners[pcvControllerAddress]).testBurner({}), 'CoreRef: Caller is not a burner');
   		});
 
   		it('onlyGovernor reverts', async function() {
-  			await expectRevert(this.coreRef.testGovernor({from: pcvControllerAddress}), 'CoreRef: Caller is not a governor');
+  			await expectRevert(this.coreRef.connect(impersonatedSigners[pcvControllerAddress]).testGovernor({}), 'CoreRef: Caller is not a governor');
   		});
 
       it('onlyGovernorOrAdmin reverts', async function() {
-        await expectRevert(this.coreRef.testOnlyGovernorOrAdmin({from: pcvControllerAddress}), 'CoreRef: Caller is not a governor or contract admin');
+        await expectRevert(this.coreRef.connect(impersonatedSigners[pcvControllerAddress]).testOnlyGovernorOrAdmin({}), 'CoreRef: Caller is not a governor or contract admin');
       });
 
   		it('onlyPCVController succeeds', async function() {
-  			await this.coreRef.testPCVController({from: pcvControllerAddress});
+  			await this.coreRef.connect(impersonatedSigners[pcvControllerAddress]).testPCVController({});
   		});
   	});
   });
@@ -285,7 +309,7 @@ describe('Core', function () {
   		});
   		describe('Access revoked', function () {
   			beforeEach(async function() {
-  				await this.core.revokeGovernor(governorAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).revokeGovernor(governorAddress, {});
   			});
 
   			it('is not registered in core', async function() {
@@ -294,7 +318,7 @@ describe('Core', function () {
   		});
   		describe('Access renounced', function() {
   			beforeEach(async function() {
-  				await this.core.renounceRole(this.governorRole, governorAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).renounceRole(this.governorRole, governorAddress, {});
   			});
 
   			it('is not registered in core', async function() {
@@ -306,7 +330,7 @@ describe('Core', function () {
   				expect(await this.core.getRoleMemberCount(this.governorRole)).to.be.equal(toBN(2)); // gov and core
   			});
   			it('updates to two', async function() {
-  				await this.core.grantGovernor(userAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).grantGovernor(userAddress, {});
   				expect(await this.core.getRoleMemberCount(this.governorRole)).to.be.equal(toBN(3)); // gov, core, and user
   			});
   		});
@@ -318,60 +342,60 @@ describe('Core', function () {
   	});
   	describe('Access', function () {
   		it('onlyMinter reverts', async function() {
-  			await expectRevert(this.coreRef.testMinter({from: governorAddress}), 'CoreRef: Caller is not a minter');
+  			await expectRevert(this.coreRef.connect(impersonatedSigners[governorAddress]).testMinter({}), 'CoreRef: Caller is not a minter');
   		});
 
   		it('onlyBurner reverts', async function() {
-  			await expectRevert(this.coreRef.testBurner({from: governorAddress}), 'CoreRef: Caller is not a burner');
+  			await expectRevert(this.coreRef.connect(impersonatedSigners[governorAddress]).testBurner({}), 'CoreRef: Caller is not a burner');
   		});
 
   		it('onlyGovernor succeeds', async function() {
-  			await this.coreRef.testGovernor({from: governorAddress});
+  			await this.coreRef.connect(impersonatedSigners[governorAddress]).testGovernor({});
   		});
 
   		it('onlyPCVController reverts', async function() {
-  			await expectRevert(this.coreRef.testPCVController({from: governorAddress}), 'CoreRef: Caller is not a PCV controller');
+  			await expectRevert(this.coreRef.connect(impersonatedSigners[governorAddress]).testPCVController({}), 'CoreRef: Caller is not a PCV controller');
   		});
   	});
 
   	describe('Access Control', function () {
   		describe('Minter', function() {
   			it('can grant', async function() {
-  				await this.core.grantMinter(userAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(userAddress, {});
   				expect(await this.core.isMinter(userAddress)).to.be.equal(true);
   			});
   			it('can revoke', async function() {
-  				await this.core.revokeMinter(minterAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).revokeMinter(minterAddress, {});
   				expect(await this.core.isMinter(minterAddress)).to.be.equal(false);
   			});
   		});
   		describe('Burner', function() {
   			it('can grant', async function() {
-  				await this.core.grantBurner(userAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).grantBurner(userAddress, {});
   				expect(await this.core.isBurner(userAddress)).to.be.equal(true);
   			});
   			it('can revoke', async function() {
-  				await this.core.revokeBurner(burnerAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).revokeBurner(burnerAddress, {});
   				expect(await this.core.isBurner(burnerAddress)).to.be.equal(false);
   			});
   		});
   		describe('PCV Controller', function() {
   			it('can grant', async function() {
-  				await this.core.grantPCVController(userAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).grantPCVController(userAddress, {});
   				expect(await this.core.isPCVController(userAddress)).to.be.equal(true);
   			});
   			it('can revoke', async function() {
-  				await this.core.revokePCVController(pcvControllerAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).revokePCVController(pcvControllerAddress, {});
   				expect(await this.core.isPCVController(pcvControllerAddress)).to.be.equal(false);
   			});
   		});
   		describe('Governor', function() {
   			it('can grant', async function() {
-  				await this.core.grantGovernor(userAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).grantGovernor(userAddress, {});
   				expect(await this.core.isGovernor(userAddress)).to.be.equal(true);
   			});
   			it('can revoke', async function() {
-  				await this.core.revokeGovernor(governorAddress, {from: governorAddress});
+  				await this.core.connect(impersonatedSigners[governorAddress]).revokeGovernor(governorAddress, {});
   				expect(await this.core.isGovernor(governorAddress)).to.be.equal(false);
   			});
   		});
@@ -387,7 +411,7 @@ describe('Core', function () {
       });
       describe('Access revoked', function () {
         beforeEach(async function() {
-          await this.core.revokeGuardian(guardianAddress, {from: governorAddress});
+          await this.core.connect(impersonatedSigners[governorAddress]).revokeGuardian(guardianAddress, {});
         });
 
         it('is not registered in core', async function() {
@@ -396,7 +420,7 @@ describe('Core', function () {
       });
       describe('Access renounced', function() {
         beforeEach(async function() {
-          await this.core.renounceRole(this.guardianRole, guardianAddress, {from: guardianAddress});
+          await this.core.connect(impersonatedSigners[guardianAddress]).renounceRole(this.guardianRole, guardianAddress, {});
         });
 
         it('is not registered in core', async function() {
@@ -408,7 +432,7 @@ describe('Core', function () {
           expect(await this.core.getRoleMemberCount(this.guardianRole)).to.be.equal(toBN(1));
         });
         it('updates to two', async function() {
-          await this.core.grantGuardian(userAddress, {from: governorAddress});
+          await this.core.connect(impersonatedSigners[governorAddress]).grantGuardian(userAddress, {});
           expect(await this.core.getRoleMemberCount(this.guardianRole)).to.be.equal(toBN(2));
         });
       });
@@ -420,61 +444,61 @@ describe('Core', function () {
     });
     describe('Access', function () {
       it('onlyMinter reverts', async function() {
-        await expectRevert(this.coreRef.testMinter({from: guardianAddress}), 'CoreRef: Caller is not a minter');
+        await expectRevert(this.coreRef.connect(impersonatedSigners[guardianAddress]).testMinter({}), 'CoreRef: Caller is not a minter');
       });
 
       it('onlyBurner reverts', async function() {
-        await expectRevert(this.coreRef.testBurner({from: guardianAddress}), 'CoreRef: Caller is not a burner');
+        await expectRevert(this.coreRef.connect(impersonatedSigners[guardianAddress]).testBurner({}), 'CoreRef: Caller is not a burner');
       });
 
       it('onlyGovernor reverts', async function() {
-        await expectRevert(this.coreRef.testGovernor({from: guardianAddress}), 'CoreRef: Caller is not a governor');
+        await expectRevert(this.coreRef.connect(impersonatedSigners[guardianAddress]).testGovernor({}), 'CoreRef: Caller is not a governor');
       });
 
 	  it('onlyGovernorOrAdmin reverts', async function() {
-        await expectRevert(this.coreRef.testOnlyGovernorOrAdmin({from: guardianAddress}), 'CoreRef: Caller is not a governor or contract admin');
+        await expectRevert(this.coreRef.connect(impersonatedSigners[guardianAddress]).testOnlyGovernorOrAdmin({}), 'CoreRef: Caller is not a governor or contract admin');
 	  });
 
       it('onlyPCVController reverts', async function() {
-        await expectRevert(this.coreRef.testPCVController({from: guardianAddress}), 'CoreRef: Caller is not a PCV controller');
+        await expectRevert(this.coreRef.connect(impersonatedSigners[guardianAddress]).testPCVController({}), 'CoreRef: Caller is not a PCV controller');
       });
     });
 
     describe('Access Control', function () {
       describe('Non-Guardian', function() {
         it('cannot revoke', async function() {
-          await expectRevert(this.core.revokeOverride(this.minterRole, minterAddress, {from: userAddress}), 'Permissions: Caller is not a guardian');
+          await expectRevert(this.core.connect(impersonatedSigners[userAddress]).revokeOverride(this.minterRole, minterAddress, {}), 'Permissions: Caller is not a guardian');
         });
       });
 
       describe('Guardian', function() {
         it('can revoke minter', async function() {
-          await this.core.revokeOverride(this.minterRole, minterAddress, {from: guardianAddress});
+          await this.core.connect(impersonatedSigners[guardianAddress]).revokeOverride(this.minterRole, minterAddress, {});
           expect(await this.core.isMinter(minterAddress)).to.be.equal(false);
         });
 
         it('can revoke burner', async function() {
-          await this.core.revokeOverride(this.burnerRole, burnerAddress, {from: guardianAddress});
+          await this.core.connect(impersonatedSigners[guardianAddress]).revokeOverride(this.burnerRole, burnerAddress, {});
           expect(await this.core.isBurner(burnerAddress)).to.be.equal(false);
         });
 
         it('can revoke pcv controller', async function() {
-          await this.core.revokeOverride(this.pcvControllerRole, pcvControllerAddress, {from: guardianAddress});
+          await this.core.connect(impersonatedSigners[guardianAddress]).revokeOverride(this.pcvControllerRole, pcvControllerAddress, {});
           expect(await this.core.isPCVController(pcvControllerAddress)).to.be.equal(false);
         });
 
         it('cannot revoke governor', async function() {
-          await expectRevert(this.core.revokeOverride(this.governorRole, governorAddress, {from: guardianAddress}), 'Permissions: Guardian cannot revoke governor');
+          await expectRevert(this.core.connect(impersonatedSigners[guardianAddress]).revokeOverride(this.governorRole, governorAddress, {}), 'Permissions: Guardian cannot revoke governor');
           expect(await this.core.isGovernor(governorAddress)).to.be.equal(true);
         });
 
         it('can revoke contract admin', async function() {
           this.role = await this.coreRef.CONTRACT_ADMIN_ROLE();
-          await this.core.createRole(this.role, await this.core.GOVERN_ROLE(), {from: governorAddress});
-          await this.core.grantRole(this.role, guardianAddress, {from: governorAddress});
+          await this.core.connect(impersonatedSigners[governorAddress]).createRole(this.role, await this.core.GOVERN_ROLE(), {});
+          await this.core.connect(impersonatedSigners[governorAddress]).grantRole(this.role, guardianAddress, {});
           expect(await this.core.hasRole(this.role, guardianAddress)).to.be.equal(true);
 
-          await this.core.revokeOverride(this.role, guardianAddress, {from: guardianAddress});
+          await this.core.connect(impersonatedSigners[guardianAddress]).revokeOverride(this.role, guardianAddress, {});
           expect(await this.core.hasRole(this.role, guardianAddress)).to.be.equal(false);
         });
       });
@@ -484,8 +508,8 @@ describe('Core', function () {
   describe('Contract Admin', function () {
     beforeEach(async function() {
       this.role = await this.coreRef.CONTRACT_ADMIN_ROLE();
-      await this.core.createRole(this.role, await this.core.GOVERN_ROLE(), {from: governorAddress});
-      await this.core.grantRole(this.role, guardianAddress, {from: governorAddress});
+      await this.core.connect(impersonatedSigners[governorAddress]).createRole(this.role, await this.core.GOVERN_ROLE(), {});
+      await this.core.connect(impersonatedSigners[governorAddress]).grantRole(this.role, guardianAddress, {});
     });
 
     describe('Role', function () {
@@ -497,7 +521,7 @@ describe('Core', function () {
 
       describe('Access renounced', function() {
         beforeEach(async function() {
-          await this.core.renounceRole(this.role, guardianAddress, {from: guardianAddress});
+          await this.core.connect(impersonatedSigners[guardianAddress]).renounceRole(this.role, guardianAddress, {});
         });
 
         it('is not registered in core', async function() {
@@ -509,7 +533,7 @@ describe('Core', function () {
           expect(await this.core.getRoleMemberCount(this.role)).to.be.equal(toBN(1));
         });
         it('updates to two', async function() {
-          await this.core.grantRole(this.role, userAddress, {from: governorAddress});
+          await this.core.connect(impersonatedSigners[governorAddress]).grantRole(this.role, userAddress, {});
           expect(await this.core.getRoleMemberCount(this.role)).to.be.equal(toBN(2));
         });
       });
@@ -521,51 +545,51 @@ describe('Core', function () {
     });
     describe('Access', function () {
       it('onlyMinter reverts', async function() {
-        await expectRevert(this.coreRef.testMinter({from: guardianAddress}), 'CoreRef: Caller is not a minter');
+        await expectRevert(this.coreRef.connect(impersonatedSigners[guardianAddress]).testMinter({}), 'CoreRef: Caller is not a minter');
       });
 
       it('onlyBurner reverts', async function() {
-        await expectRevert(this.coreRef.testBurner({from: guardianAddress}), 'CoreRef: Caller is not a burner');
+        await expectRevert(this.coreRef.connect(impersonatedSigners[guardianAddress]).testBurner({}), 'CoreRef: Caller is not a burner');
       });
 
       it('onlyGovernor reverts', async function() {
-        await expectRevert(this.coreRef.testGovernor({from: guardianAddress}), 'CoreRef: Caller is not a governor');
+        await expectRevert(this.coreRef.connect(impersonatedSigners[guardianAddress]).testGovernor({}), 'CoreRef: Caller is not a governor');
       });
 
       it('onlyGovernorOrAdmin succeeds', async function() {
-        await this.coreRef.testOnlyGovernorOrAdmin({from: guardianAddress});
+        await this.coreRef.connect(impersonatedSigners[guardianAddress]).testOnlyGovernorOrAdmin({});
       });
 
       it('onlyPCVController reverts', async function() {
-        await expectRevert(this.coreRef.testPCVController({from: guardianAddress}), 'CoreRef: Caller is not a PCV controller');
+        await expectRevert(this.coreRef.connect(impersonatedSigners[guardianAddress]).testPCVController({}), 'CoreRef: Caller is not a PCV controller');
       });
     });
 
     describe('Access Control', function () {
       describe('Non-Guardian', function() {
         it('cannot revoke', async function() {
-          await expectRevert(this.core.revokeOverride(this.minterRole, minterAddress, {from: userAddress}), 'Permissions: Caller is not a guardian');
+          await expectRevert(this.core.connect(impersonatedSigners[userAddress]).revokeOverride(this.minterRole, minterAddress, {}), 'Permissions: Caller is not a guardian');
         });
       });
 
       describe('Guardian', function() {
         it('can revoke minter', async function() {
-          await this.core.revokeOverride(this.minterRole, minterAddress, {from: guardianAddress});
+          await this.core.connect(impersonatedSigners[guardianAddress]).revokeOverride(this.minterRole, minterAddress, {});
           expect(await this.core.isMinter(minterAddress)).to.be.equal(false);
         });
 
         it('can revoke burner', async function() {
-          await this.core.revokeOverride(this.burnerRole, burnerAddress, {from: guardianAddress});
+          await this.core.connect(impersonatedSigners[guardianAddress]).revokeOverride(this.burnerRole, burnerAddress, {});
           expect(await this.core.isBurner(burnerAddress)).to.be.equal(false);
         });
 
         it('can revoke pcv controller', async function() {
-          await this.core.revokeOverride(this.pcvControllerRole, pcvControllerAddress, {from: guardianAddress});
+          await this.core.connect(impersonatedSigners[guardianAddress]).revokeOverride(this.pcvControllerRole, pcvControllerAddress, {});
           expect(await this.core.isPCVController(pcvControllerAddress)).to.be.equal(false);
         });
 
         it('cannot revoke governor', async function() {
-          await expectRevert(this.core.revokeOverride(this.governorRole, governorAddress, {from: guardianAddress}), 'Permissions: Guardian cannot revoke governor');
+          await expectRevert(this.core.connect(impersonatedSigners[guardianAddress]).revokeOverride(this.governorRole, governorAddress, {}), 'Permissions: Guardian cannot revoke governor');
           expect(await this.core.isGovernor(governorAddress)).to.be.equal(true);
         });
       });
@@ -579,7 +603,7 @@ describe('Core', function () {
     });
 
     it('governor succeeds', async function() {
-      await this.core.createRole(this.role, this.adminRole, {from: governorAddress});
+      await this.core.connect(impersonatedSigners[governorAddress]).createRole(this.role, this.adminRole, {});
       expect(await this.core.getRoleAdmin(this.role)).to.be.equal(this.adminRole);
     });
 

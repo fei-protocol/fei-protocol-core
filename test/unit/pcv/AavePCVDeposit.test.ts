@@ -3,7 +3,6 @@ import { expect } from 'chai'
 import hre, { ethers, artifacts } from 'hardhat'
 import { Signer } from 'ethers';
 
-
 const toBN = ethers.BigNumber.from
 
 const AavePCVDeposit = artifacts.readArtifactSync('AavePCVDeposit');

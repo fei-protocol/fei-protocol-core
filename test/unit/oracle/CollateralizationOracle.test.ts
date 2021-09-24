@@ -30,7 +30,8 @@ describe('CollateralizationOracle', function () {
       addresses.minterAddress,
       addresses.burnerAddress,
       addresses.beneficiaryAddress1,
-      addresses.beneficiaryAddress2
+      addresses.beneficiaryAddress2,
+      addresses.guardianAddress
     ]
 
     for (const address of impersonatedAddresses) {
@@ -295,9 +296,8 @@ describe('CollateralizationOracle', function () {
     });
     it('should revert if deposit is not found', async function() {
       await expectRevert(
-        this.oracle.removeDeposit(
-          this.deposit2.address,
-          { from: governorAddress }
+        this.oracle.connect(impersonatedSigners[governorAddress]).removeDeposit(
+          this.deposit2.address
         ),
         'CollateralizationOracle: deposit not found'
       );
@@ -429,15 +429,15 @@ describe('CollateralizationOracle', function () {
     describe('update()', function() {
       it('should propagage update() calls', async function() {
         expect(await this.oracle1.updated()).to.be.equal(false);
-        await this.connect(impersonatedSigners[governorAddress]).oracle.setOracle(this.token1.address, this.oracle1.address);
-        await this.connect(impersonatedSigners[governorAddress]).oracle.addDeposit(this.deposit1.address);
+        await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
+        await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
         await this.oracle.update();
         expect(await this.oracle1.updated()).to.be.equal(true);
       });
       it('should not revert if some oracles are paused', async function() {
         expect(await this.oracle1.updated()).to.be.equal(false);
         expect(await this.oracle2.updated()).to.be.equal(false);
-        await this.oracle1.pause({ from: governorAddress });
+        await this.oracle1.connect(impersonatedSigners[governorAddress]).pause({  });
         await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
         await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token2.address, this.oracle2.address);
         await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
@@ -451,8 +451,8 @@ describe('CollateralizationOracle', function () {
     describe('isOutdated()', function() {
       it('should be outdated if one of the oracles is outdated', async function() {
         expect(await this.oracle.isOutdated()).to.be.equal(false);
-        await this.connect(impersonatedSigners[governorAddress]).oracle.setOracle(this.token1.address, this.oracle1.address);
-        await this.connect(impersonatedSigners[governorAddress]).oracle.addDeposit(this.deposit1.address);
+        await this.oracle.connect(impersonatedSigners[governorAddress]).setOracle(this.token1.address, this.oracle1.address);
+        await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
         await this.oracle1.setOutdated(true);
         expect(await this.oracle.isOutdated()).to.be.equal(true);
       });
