@@ -100,7 +100,7 @@ describe('TimelockedDelegator', function () {
 
   describe('Veto', function () {
     it('non-governor or guardian reverts', async function() {
-      const eta = toBN(Number(await time.latest())).add(Number(this.delay.toString());
+      const eta = toBN(Number(await time.latest())).add(Number(this.delay.toString()));
       await hre.network.provider.request({
         'method': 'hardhat_impersonateAccount',
         'params': [userAddress]
