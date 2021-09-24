@@ -65,6 +65,23 @@
                 "0xbC9C084a12678ef5B516561df902fdc426d95483"
             ],
             "description": "set admin fFEI"
+        },
+        {
+            "target": "fei",
+            "values": "0",
+            "method": "mint(address,uint256)",
+            "arguments": [
+                "0x7CeBaB7b4B4399343f6D0D36B550EE097F60d7fE",
+                "1000000000000000000000000"
+            ],
+            "description": "Mint 1m FEI to Fuse Pool 22"
+        },
+        {
+            "target": "rariPool22FeiPCVDeposit",
+            "values": "0",
+            "method": "deposit()",
+            "arguments": [],
+            "description": "Deposit pool 22 FEI"
         }
     ]
 }

@@ -44,7 +44,8 @@ async function validate(addresses, oldContracts, contracts) {
     rariPool8Dai,
     rariPool8Tribe,
     rariPool8Eth,
-    rariPool8Fei
+    rariPool8Fei,
+    rariPool22FeiPCVDeposit
   } = contracts;
 
   const {
@@ -57,6 +58,8 @@ async function validate(addresses, oldContracts, contracts) {
   // minted FEI
   // 1M from before, 50M from proposal
   expect((await fei.balanceOf(optimisticTimelockAddress)).toString()).to.be.equal(e18.mul(51_000_000).toString());
+  
+  expect((await rariPool22FeiPCVDeposit.balance()).toString()).to.be.equal(e18.mul(1_000_000).toString());
   
   // admin transfer
   expect(await rariPool8Comptroller.admin()).to.be.equal(optimisticTimelockAddress);

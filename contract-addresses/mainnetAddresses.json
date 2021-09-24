@@ -92,6 +92,8 @@
     "rariPool18FeiPCVDepositAddress": { "artifact" : "ERC20CompoundPCVDeposit", "address": "0x5A8CB4556e5D5935Af06beab8292905f48131479"},
     "rariPool19FeiAddress": { "artifact" : "CErc20Delegator", "address": "0x04281F6715Dea6A8EbBCE143D86ea506FF326531"},
     "rariPool19FeiPCVDepositAddress": { "artifact" : "ERC20CompoundPCVDeposit", "address": "0xD6960adba53212bBE96E54a7AFeDA2066437D000"},
+    "rariPool22FeiAddress": { "artifact" : "CErc20Delegator", "address": "0x653A32ED7AaA3DB37520125CDB45c17AdB3fdF01"},
+    "rariPool22FeiPCVDepositAddress": { "artifact" : "ERC20CompoundPCVDeposit", "address": "0x7CeBaB7b4B4399343f6D0D36B550EE097F60d7fE"},
     "rariPool24FeiAddress": { "artifact" : "CErc20Delegator", "address": "0xb5A817E5354736eafe3A0C85620433eE75daA649"},
     "rariPool24FeiPCVDepositAddress": { "artifact" : "ERC20CompoundPCVDeposit", "address": "0x1434F99EDB2bD03DECCCFe21288767b8324B7403"},
     "rariPool25FeiAddress": { "artifact" : "CErc20Delegator", "address": "0xE468D0244D75b9b18B27cb682AeC3ab35d33663B"},
