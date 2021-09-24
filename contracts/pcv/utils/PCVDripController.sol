@@ -103,7 +103,7 @@ contract PCVDripController is IPCVDripController, Timed, RateLimitedMinter, Ince
     function setDripAmount(uint256 newDripAmount)
         external
         override
-        onlyGovernor
+        onlyGovernorOrAdmin
     {
         require(newDripAmount != 0, "PCVDripController: zero drip amount");
 

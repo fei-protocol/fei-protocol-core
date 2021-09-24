@@ -1,4 +1,3 @@
-
 {
     "aave" : {"artifactName" : "IERC20", "address" : "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9"},
     "aaveEthPCVDeposit": { "artifactName": "AavePCVDeposit", "address":  "0x5B86887e171bAE0C2C826e87E34Df8D558C079B9"},
@@ -137,5 +136,9 @@
     "uniswapPCVDeposit": { "artifactName": "UniswapPCVDeposit", "address":  "0x5d6446880fcd004c851ea8920a628c70ca101117"},
     "uniswapRouter": {"artifactName": "unknown",  "address":  "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"},
     "weth": { "artifactName": "IWETH", "address":  "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"},
-    "wethERC20": { "artifactName": "IERC20", "address":  "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"}
+    "wethERC20": { "artifactName": "IERC20", "address":  "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"},
+    "gUniFeiDaiLP": { "artifactName": "unknown", "address": "0x3D1556e84783672f2a3bd187a592520291442539"},
+    "optimisticTimelock" : { "artifactName": "OptimisticTimelock", "address" : "0xbC9C084a12678ef5B516561df902fdc426d95483"},
+    "rariPool22FeiAddress": { "artifactName" : "CErc20Delegator", "address": "0x653A32ED7AaA3DB37520125CDB45c17AdB3fdF01"},
+    "rariPool22FeiPCVDepositAddress": { "artifactName" : "ERC20CompoundPCVDeposit", "address": "0x7CeBaB7b4B4399343f6D0D36B550EE097F60d7fE"}
 }

@@ -106,7 +106,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
     /// @notice set the deviation threshold in basis points, used to detect if the
     /// cached value deviated significantly from the actual fresh readings.
     /// @param _newDeviationThresholdBasisPoints the new value to set.
-    function setDeviationThresholdBasisPoints(uint256 _newDeviationThresholdBasisPoints) external override onlyGovernor {
+    function setDeviationThresholdBasisPoints(uint256 _newDeviationThresholdBasisPoints) external override onlyGovernorOrAdmin {
         require(_newDeviationThresholdBasisPoints > 0 && _newDeviationThresholdBasisPoints <= 10_000, "CollateralizationOracleWrapper: invalid basis points");
         uint256 _oldDeviationThresholdBasisPoints = deviationThresholdBasisPoints;
 
@@ -122,7 +122,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
     /// @notice set the validity duration of the cached collateralization values.
     /// @param _validityDuration the new validity duration
     /// This function will emit a DurationUpdate event from Timed.sol
-    function setValidityDuration(uint256 _validityDuration) external override onlyGovernor {
+    function setValidityDuration(uint256 _validityDuration) external override onlyGovernorOrAdmin {
         _setDuration(_validityDuration);
     }
 

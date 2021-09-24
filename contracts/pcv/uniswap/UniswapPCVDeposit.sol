@@ -105,7 +105,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     function setMaxBasisPointsFromPegLP(uint256 _maxBasisPointsFromPegLP)
         public
         override
-        onlyGovernor
+        onlyGovernorOrAdmin
     {
         require(
             _maxBasisPointsFromPegLP <= Constants.BASIS_POINTS_GRANULARITY,

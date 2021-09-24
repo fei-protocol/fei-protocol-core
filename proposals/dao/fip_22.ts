@@ -66,13 +66,15 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts)
     aaveFeiPCVDeposit,
     proxyAdmin,
     fei,
-    aFei
+    aFei,
+    tribalChief
   } = contracts;
 
   const {
     aaveTribeIncentivesController: aaveTribeIncentivesControllerAddress,
     aFeiVariableDebt: aFeiVariableDebtAddress,
-    timelock: timelockAddress
+    timelock: timelockAddress,
+    gUniFeiDaiLP: gUniFeiDaiLPAddress,
   } = addresses;
 
   expect((await fei.balanceOf(aaveFeiPCVDeposit.address)).toString()).to.be.equal('0');
@@ -93,6 +95,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts)
 
   const config = await incentivesController.getAssetData(aFeiVariableDebtAddress);
   expect(config[1].toString()).to.be.equal(TRIBE_PER_SECOND);
+
+  // FIP-25:
+  expect((await tribalChief.totalAllocPoint()).toString()).to.be.equal('2100');
+  expect((await tribalChief.numPools()).toString()).to.be.equal('3');
+  expect(await tribalChief.stakedToken(2)).to.be.equal(gUniFeiDaiLPAddress);
 }
 
 module.exports = {

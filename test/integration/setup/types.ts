@@ -93,6 +93,7 @@ export interface MainnetContracts {
   feiTribeLBPSwapper: ethers.Contract
   aaveLendingPool: ethers.Contract
   aaveTribeIncentivesController: ethers.Contract
+  optimisticTimelock: ethers.Contract
 }
 
 export interface MainnetContractAddresses {

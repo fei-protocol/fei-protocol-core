@@ -117,12 +117,12 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     ///         note : this function reverts if the deposit is already in the list.
     ///         note : this function reverts if the deposit's token has no oracle.
     /// @param _deposit : the PCVDeposit to add to the list.
-    function addDeposit(address _deposit) public onlyGovernor {
+    function addDeposit(address _deposit) public onlyGovernorOrAdmin {
         _addDeposit(_deposit);
     }
 
     /// @notice adds a list of multiple PCV deposits. See addDeposit.
-    function addDeposits(address[] memory _deposits) public onlyGovernor {
+    function addDeposits(address[] memory _deposits) public onlyGovernorOrAdmin {
         _addDeposits(_deposits);
     }
 
@@ -155,12 +155,12 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     ///         the collateralization ratio oracle.
     ///         note : this function reverts if the input deposit is not found.
     /// @param _deposit : the PCVDeposit address to remove from the list.
-    function removeDeposit(address _deposit) public onlyGovernor {
+    function removeDeposit(address _deposit) public onlyGovernorOrAdmin {
         _removeDeposit(_deposit);
     }
 
     /// @notice removes a list of multiple PCV deposits. See removeDeposit.
-    function removeDeposits(address[] memory _deposits) public onlyGovernor {
+    function removeDeposits(address[] memory _deposits) public onlyGovernorOrAdmin {
         for (uint256 i = 0; i < _deposits.length; i++) {
             _removeDeposit(_deposits[i]);
         }
@@ -192,7 +192,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     ///         of a deposit (holding the same token) is deployed.
     /// @param _oldDeposit : the PCVDeposit to remove from the list.
     /// @param _newDeposit : the PCVDeposit to add to the list.
-    function swapDeposit(address _oldDeposit, address _newDeposit) external onlyGovernor {
+    function swapDeposit(address _oldDeposit, address _newDeposit) external onlyGovernorOrAdmin {
         removeDeposit(_oldDeposit);
         addDeposit(_newDeposit);
     }
@@ -200,12 +200,12 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     /// @notice Set the price feed oracle (in USD) for a given asset.
     /// @param _token : the asset to add price oracle for
     /// @param _newOracle : price feed oracle for the given asset
-    function setOracle(address _token, address _newOracle) external onlyGovernor {
+    function setOracle(address _token, address _newOracle) external onlyGovernorOrAdmin {
         _setOracle(_token, _newOracle);
     }
 
     /// @notice adds a list of token oracles. See setOracle.
-    function setOracles(address[] memory _tokens, address[] memory _oracles) public onlyGovernor {
+    function setOracles(address[] memory _tokens, address[] memory _oracles) public onlyGovernorOrAdmin {
         _setOracles(_tokens, _oracles);
     }
 
