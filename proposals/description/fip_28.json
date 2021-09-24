@@ -2,11 +2,13 @@
     "proposal_title": "FIP-28/29 FeiRari TRIBE and Optimistic Approval",
     "proposal_commands": [
         {
-            "target": "",
-            "address": "",
+            "target": "rariPool8Comptroller",
             "values": "0",
-            "method": "",
-            "arguments": [],
+            "method": "_setBorrowPaused(address,bool)",
+            "arguments": [
+                "0xFd3300A9a74b3250F1b2AbC12B47611171910b07",
+                true
+            ],
             "description": "Make fTRIBE unborrowable"
         },
         {
@@ -14,49 +16,54 @@
             "values": "0",
             "method": "mint(address,uint256)",
             "arguments": [
-                "TBD multisig",
+                "0xbC9C084a12678ef5B516561df902fdc426d95483",
                 "50000000000000000000000000"
             ],
             "description": "Mint 50m FEI to Multisig"
         },
         {
-            "target": "",
-            "address": "",
+            "target": "rariPool8Comptroller",
             "values": "0",
-            "method": "",
-            "arguments": [],
+            "method": "_setPendingAdmin(address)",
+            "arguments": [
+                "0xbC9C084a12678ef5B516561df902fdc426d95483"
+            ],
             "description": "set admin Comptroller"
         },
         {
-            "target": "",
-            "address": "",
+            "target": "rariPool8Dai",
             "values": "0",
-            "method": "",
-            "arguments": [],
+            "method": "_setPendingAdmin(address)",
+            "arguments": [
+                "0xbC9C084a12678ef5B516561df902fdc426d95483"
+            ],
             "description": "set admin fDAI"
         },
         {
-            "target": "",
-            "address": "",
+            "target": "rariPool8Tribe",
             "values": "0",
-            "method": "",
-            "arguments": [],
+            "method": "_setPendingAdmin(address)",
+            "arguments": [
+                "0xbC9C084a12678ef5B516561df902fdc426d95483"
+            ],
             "description": "set admin fTRIBE"
         },
         {
-            "target": "",
-            "address": "",
+            "target": "rariPool8Eth",
             "values": "0",
-            "method": "",
-            "arguments": [],
+            "method": "_setPendingAdmin(address)",
+            "arguments": [
+                "0xbC9C084a12678ef5B516561df902fdc426d95483"
+            ],
             "description": "set admin fETH"
         },
         {
-            "target": "",
-            "address": "",
+            "target": "rariPool8Fei",
             "values": "0",
-            "method": "",
-            "arguments": [],
+            "method": "_setPendingAdmin(address)",
+            "arguments": [
+                "0xbC9C084a12678ef5B516561df902fdc426d95483"
+            ],
             "description": "set admin fFEI"
         }
     ]
