@@ -1,33 +1,25 @@
-import { DeployUpgradeFunc } from "../../test/integration/setup/types";
-import hre, { ethers, artifacts } from "hardhat";
+import { DeployUpgradeFunc } from '../../test/integration/setup/types';
+import hre, { ethers, artifacts } from 'hardhat';
 
 const OptimisticTimelock = artifacts.readArtifactSync('OptimisticTimelock');
 
 const fourDays = 4 * 24 * 60 * 60;
 
-const deploy: DeployUpgradeFunc = async(deployAddress, addresses, logging = false) => {
-  const {
-    tribalChiefOptimisticMultisigAddress,
-    coreAddress
-  } = addresses;
+const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
+  const { tribalChiefOptimisticMultisigAddress, coreAddress } = addresses;
 
-  if (
-    !tribalChiefOptimisticMultisigAddress || !coreAddress
-  ) {
+  if (!tribalChiefOptimisticMultisigAddress || !coreAddress) {
     throw new Error('An environment variable contract address is not set');
   }
 
-  const optimisticTimelock = await (await ethers.getContractFactory('OptimisticTimelock')).deploy(
-    coreAddress,
-    fourDays,
-    [tribalChiefOptimisticMultisigAddress],
-    [tribalChiefOptimisticMultisigAddress]
-  );
+  const optimisticTimelock = await (
+    await ethers.getContractFactory('OptimisticTimelock')
+  ).deploy(coreAddress, fourDays, [tribalChiefOptimisticMultisigAddress], [tribalChiefOptimisticMultisigAddress]);
 
   logging && console.log('Optimistic Timelock deployed to: ', optimisticTimelock.address);
   return {
     optimisticTimelock
   };
-}
+};
 
 module.exports = { deploy };

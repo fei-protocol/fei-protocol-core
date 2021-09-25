@@ -1,5 +1,5 @@
-import { expect } from "chai";
-import { ethers } from "hardhat";
+import { expect } from 'chai';
+import { ethers } from 'hardhat';
 
 const e18 = ethers.constants.WeiPerEther;
 
@@ -18,13 +18,7 @@ async function run(addresses, oldContracts, contracts, logging = false) {}
 async function teardown(addresses, oldContracts, contracts, logging) {}
 
 async function validate(addresses, oldContracts, contracts) {
-  const {
-    ethReserveStabilizer,
-    bondingCurve,
-    daiBondingCurve,
-    dpiBondingCurve,
-    raiBondingCurve
-  } = contracts;
+  const { ethReserveStabilizer, bondingCurve, daiBondingCurve, dpiBondingCurve, raiBondingCurve } = contracts;
 
   expect(await bondingCurve.buffer()).to.be.bignumber.equal(BUFFER);
   expect(await ethReserveStabilizer.usdPerFeiBasisPoints()).to.be.bignumber.equal(FEI_PER_USD);
@@ -36,5 +30,8 @@ async function validate(addresses, oldContracts, contracts) {
 }
 
 module.exports = {
-  setup, run, teardown, validate
+  setup,
+  run,
+  teardown,
+  validate
 };

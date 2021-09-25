@@ -1,12 +1,12 @@
 import hre, { ethers } from 'hardhat';
 import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc } from '../../test/integration/setup/types';
 
-const setup: SetupUpgradeFunc = async(addresses, oldContracts, contracts, logging) => {}
+const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
 
-const run: RunUpgradeFunc = async(addresses, oldContracts, contracts, logging = false) => {
-  const timelockAddress = addresses.timelockAddress
+const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
+  const timelockAddress = addresses.timelockAddress;
 
-  const { 
+  const {
     uniswapPCVDeposit,
     uniswapPCVController,
     bondingCurve,
@@ -40,32 +40,27 @@ const run: RunUpgradeFunc = async(addresses, oldContracts, contracts, logging = 
     params: [timelockAddress]
   });
 
-  const timelockSigner = await ethers.getSigner(timelockAddress)
+  const timelockSigner = await ethers.getSigner(timelockAddress);
 
   logging ? console.log('Transferring TRIBE Minter role to TribeReserveStabilizer') : undefined;
   await tribe.connect(timelockSigner).setMinter(tribeReserveStabilizer.address);
 
   await hre.network.provider.request({
-    method: "hardhat_stopImpersonatingAccount",
-    params: [timelockAddress],
+    method: 'hardhat_stopImpersonatingAccount',
+    params: [timelockAddress]
   });
 
   logging ? console.log('Granting PCVController to new RatioPCVController') : undefined;
   await core.grantPCVController(ratioPCVController.address);
 
   await oldRatioPCVController.withdrawRatio(oldContracts.uniswapPCVDeposit.address, uniswapPCVDeposit.address, '10000'); // move 100% of PCV from old -> new
-}
+};
 
 /// /  --------------------- NOT RUN ON CHAIN ----------------------
-const teardown: TeardownUpgradeFunc = async(addresses, oldContracts, contracts) => {
+const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts) => {
   const core = contracts.core;
 
-  const {
-    uniswapPCVDeposit,
-    uniswapPCVController,
-    ratioPCVController,
-    bondingCurve,
-  } = oldContracts;
+  const { uniswapPCVDeposit, uniswapPCVController, ratioPCVController, bondingCurve } = oldContracts;
 
   // Revoke controller permissions
   await core.revokeMinter(uniswapPCVController.address);
@@ -74,6 +69,6 @@ const teardown: TeardownUpgradeFunc = async(addresses, oldContracts, contracts) 
   await core.revokeBurner(uniswapPCVController.address);
   await core.revokePCVController(ratioPCVController.address);
   await core.revokePCVController(uniswapPCVController.address);
-}
+};
 
 module.exports = { setup, run, teardown };

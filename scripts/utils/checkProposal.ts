@@ -11,7 +11,7 @@ require('dotenv').config();
 /**
  * Take in a hardhat proposal object and output the proposal calldatas
  * See `proposals/utils/getProposalCalldata.js` on how to construct the proposal calldata
- */ 
+ */
 async function checkProposal() {
   const proposalName = process.env.DEPLOY_FILE;
 
@@ -19,8 +19,8 @@ async function checkProposal() {
     throw new Error('DEPLOY_FILE env variable not set');
   }
 
-  const contracts = await getAllContracts()
-  
+  const contracts = await getAllContracts();
+
   const { governorAlpha } = contracts;
 
   const proposalNo = process.env.PROPOSAL_NUMBER ? process.env.PROPOSAL_NUMBER : await governorAlpha.proposalCount();
@@ -33,10 +33,10 @@ async function checkProposal() {
   console.log(`Proposal Number: ${proposalNo}`);
 
   let proposal = await governorAlpha.proposals(proposalNo);
-  const {startBlock} = proposal;
+  const { startBlock } = proposal;
 
   // Advance to vote start
-  if (await time.latestBlock() < startBlock) {
+  if ((await time.latestBlock()) < startBlock) {
     console.log(`Advancing To: ${startBlock}`);
     await time.advanceBlockTo(Number(startBlock.toString()));
   } else {
@@ -44,17 +44,17 @@ async function checkProposal() {
   }
 
   try {
-    await governorAlpha.castVote(proposalNo, true, {from: voterAddress});
+    await governorAlpha.castVote(proposalNo, true, { from: voterAddress });
     console.log('Casted vote');
   } catch {
     console.log('Already voted');
   }
 
   proposal = await governorAlpha.proposals(proposalNo);
-  const {endBlock} = proposal;
+  const { endBlock } = proposal;
 
   // Advance to after vote completes and queue the transaction
-  if (await time.latestBlock() < endBlock) {
+  if ((await time.latestBlock()) < endBlock) {
     console.log(`Advancing To: ${endBlock}`);
     await time.advanceBlockTo(Number(endBlock.toString()));
 
@@ -71,17 +71,27 @@ async function checkProposal() {
   console.log('Executing');
   await governorAlpha.execute(proposalNo);
   console.log('Success');
-      
+
   // Get the upgrade setup, run and teardown scripts
   const proposalFuncs: UpgradeFuncs = await import(`../../proposals/proposals/${proposalName}`);
 
   const contractAddresses = getAllContractAddresses();
-  
+
   console.log('Teardown');
-  await proposalFuncs.teardownUpgrade(contractAddresses, contracts as unknown as NamedContracts, contracts as unknown as NamedContracts, true);
-  
+  await proposalFuncs.teardownUpgrade(
+    contractAddresses,
+    contracts as unknown as NamedContracts,
+    contracts as unknown as NamedContracts,
+    true
+  );
+
   console.log('Validate');
-  await proposalFuncs.validateUpgrade(contractAddresses, contracts as unknown as NamedContracts, contracts as unknown as NamedContracts, true);
+  await proposalFuncs.validateUpgrade(
+    contractAddresses,
+    contracts as unknown as NamedContracts,
+    contracts as unknown as NamedContracts,
+    true
+  );
 }
 
 checkProposal()

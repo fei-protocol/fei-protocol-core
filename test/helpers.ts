@@ -2,21 +2,21 @@ import { ZERO_ADDRESS, MAX_UINT256 } from '@openzeppelin/test-helpers/src/consta
 import hre, { web3, ethers, artifacts, network } from 'hardhat';
 import { expectRevert, balance, time } from '@openzeppelin/test-helpers';
 import chai from 'chai';
-import CBN from "chai-bn";
+import CBN from 'chai-bn';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
 
-const toBN = ethers.BigNumber.from
+const toBN = ethers.BigNumber.from;
 const { expect } = chai;
 const Core = artifacts.readArtifactSync('Core');
 const WETH9 = artifacts.readArtifactSync('WETH9');
 
 async function deployDevelopmentWeth(): Promise<void> {
-  await network.provider.send("hardhat_setCode", [
-    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+  await network.provider.send('hardhat_setCode', [
+    '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     WETH9.deployedBytecode
-  ])
+  ]);
 
   const weth = await ethers.getContractAt(WETH9.abi, '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2');
   await weth.init();
@@ -34,7 +34,7 @@ async function getAddresses() {
     pcvControllerAddress,
     minterAddress,
     burnerAddress,
-    guardianAddress,
+    guardianAddress
   ] = await web3.eth.getAccounts();
 
   return {
@@ -48,23 +48,17 @@ async function getAddresses() {
     pcvControllerAddress,
     minterAddress,
     burnerAddress,
-    guardianAddress,
+    guardianAddress
   };
 }
 
 async function getCore() {
-  const {
-    governorAddress,
-    pcvControllerAddress,
-    minterAddress,
-    burnerAddress,
-    guardianAddress,
-  } = await getAddresses();
+  const { governorAddress, pcvControllerAddress, minterAddress, burnerAddress, guardianAddress } = await getAddresses();
 
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
-    params: [governorAddress],
-  })
+    params: [governorAddress]
+  });
 
   const governorSigner = await ethers.getSigner(governorAddress);
 
@@ -80,19 +74,19 @@ async function getCore() {
 
   await hre.network.provider.request({
     method: 'hardhat_stopImpersonatingAccount',
-    params: [governorAddress],
-  })
+    params: [governorAddress]
+  });
 
   return core;
 }
 
 async function expectApprox(actual, expected, magnitude = '1000') {
-  let actualBN = toBN(actual);
-  let expectedBN = toBN(expected);
-  let magnitudeBN = toBN(magnitude);
+  const actualBN = toBN(actual);
+  const expectedBN = toBN(expected);
+  const magnitudeBN = toBN(magnitude);
 
-  let diff = actualBN.sub(expectedBN);
-  let diffAbs = diff.abs();
+  const diff = actualBN.sub(expectedBN);
+  const diffAbs = diff.abs();
 
   if (expected.toString() == '0' || expected == 0 || expected == '0') {
     expect(diffAbs).to.be.lt(magnitudeBN);

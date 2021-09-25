@@ -1,8 +1,8 @@
 import ether from '@openzeppelin/test-helpers/src/ether';
 import { expectRevert, getAddresses, getCore } from '../../helpers';
-import { expect } from 'chai'
-import hre, { artifacts, ethers } from 'hardhat'
-import { Signer } from 'ethers'
+import { expect } from 'chai';
+import hre, { artifacts, ethers } from 'hardhat';
+import { Signer } from 'ethers';
 import { forceEth, forceSpecificEth } from '../../integration/setup/utils';
 
 const EthLidoPCVDeposit = artifacts.readArtifactSync('EthLidoPCVDeposit');
@@ -12,7 +12,7 @@ const MockStEthToken = artifacts.readArtifactSync('MockStEthToken');
 
 const e18 = '000000000000000000';
 
-const toBN = ethers.BigNumber.from
+const toBN = ethers.BigNumber.from;
 
 describe('EthLidoPCVDeposit', function () {
   let userAddress;
@@ -20,10 +20,10 @@ describe('EthLidoPCVDeposit', function () {
   let governorAddress;
   let pcvControllerAddress;
 
-  let impersonatedSigners: { [key: string]: Signer } = { }
+  const impersonatedSigners: { [key: string]: Signer } = {};
 
-  before(async() => {
-    const addresses = await getAddresses()
+  before(async () => {
+    const addresses = await getAddresses();
 
     // add any addresses you want to impersonate here
     const impersonatedAddresses = [
@@ -35,25 +35,20 @@ describe('EthLidoPCVDeposit', function () {
       addresses.burnerAddress,
       addresses.beneficiaryAddress1,
       addresses.beneficiaryAddress2
-    ]
+    ];
 
     for (const address of impersonatedAddresses) {
       await hre.network.provider.request({
-        method: "hardhat_impersonateAccount",
+        method: 'hardhat_impersonateAccount',
         params: [address]
-      })
+      });
 
-      impersonatedSigners[address] = await ethers.getSigner(address)
+      impersonatedSigners[address] = await ethers.getSigner(address);
     }
   });
 
   beforeEach(async function () {
-    ({
-      userAddress,
-      secondUserAddress,
-      governorAddress,
-      pcvControllerAddress
-    } = await getAddresses());
+    ({ userAddress, secondUserAddress, governorAddress, pcvControllerAddress } = await getAddresses());
 
     this.core = await getCore();
 
@@ -62,9 +57,11 @@ describe('EthLidoPCVDeposit', function () {
     this.stableswap = await (await ethers.getContractFactory('MockStEthStableSwap')).deploy(this.steth.address);
     await this.steth.mintAt(this.stableswap.address);
 
-    await forceSpecificEth(this.stableswap.address, '10'+ethers.constants.WeiPerEther.toString());
+    await forceSpecificEth(this.stableswap.address, '10' + ethers.constants.WeiPerEther.toString());
 
-    this.pcvDeposit = await (await ethers.getContractFactory('EthLidoPCVDeposit')).deploy(
+    this.pcvDeposit = await (
+      await ethers.getContractFactory('EthLidoPCVDeposit')
+    ).deploy(
       this.core.address,
       this.steth.address,
       this.stableswap.address,
@@ -72,40 +69,37 @@ describe('EthLidoPCVDeposit', function () {
     );
   });
 
-  describe('receive()', function() {
-    it('should accept ETH transfers', async function() {
+  describe('receive()', function () {
+    it('should accept ETH transfers', async function () {
       // send 23 ETH
-      await impersonatedSigners[userAddress].sendTransaction({to: this.pcvDeposit.address, value: toBN(`23${e18}`)});
+      await impersonatedSigners[userAddress].sendTransaction({ to: this.pcvDeposit.address, value: toBN(`23${e18}`) });
       expect(await ethers.provider.getBalance(this.pcvDeposit.address)).to.be.equal(`23${e18}`);
     });
   });
 
-  describe('setMaximumSlippage()', function() {
-    it('should revert if not governor', async function() {
-      await expectRevert(
-        this.pcvDeposit.setMaximumSlippage('500'),
-        'CoreRef: Caller is not a governor'
-      );
+  describe('setMaximumSlippage()', function () {
+    it('should revert if not governor', async function () {
+      await expectRevert(this.pcvDeposit.setMaximumSlippage('500'), 'CoreRef: Caller is not a governor');
     });
-    it('should revert on invalid value', async function() {
+    it('should revert on invalid value', async function () {
       await expectRevert(
-        this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaximumSlippage('10001', {  }),
+        this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaximumSlippage('10001', {}),
         'EthLidoPCVDeposit: Exceeds bp granularity.'
       );
     });
-    it('should emit UpdateMaximumSlippage', async function() {
+    it('should emit UpdateMaximumSlippage', async function () {
       expect(await this.pcvDeposit.maximumSlippageBasisPoints()).to.be.equal('100');
-      await await expect(
-        await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaximumSlippage('500'))
-        .to.emit(this.pcvDeposit, 'UpdateMaximumSlippage').withArgs('500')
+      await await expect(await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaximumSlippage('500'))
+        .to.emit(this.pcvDeposit, 'UpdateMaximumSlippage')
+        .withArgs('500');
 
       expect(await this.pcvDeposit.maximumSlippageBasisPoints()).to.be.equal('500');
     });
   });
 
-  describe('IPCVDeposit interface override', function() {
-    describe('balance()', function() {
-      it('should return the amount of stETH held', async function() {
+  describe('IPCVDeposit interface override', function () {
+    describe('balance()', function () {
+      it('should return the amount of stETH held', async function () {
         expect(await this.pcvDeposit.balance()).to.be.equal('0');
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal('0');
         await this.steth.mintAt(this.pcvDeposit.address);
@@ -114,32 +108,31 @@ describe('EthLidoPCVDeposit', function () {
       });
     });
 
-    describe('deposit()', function() {
-      it('should revert if no ETH is on the contract', async function() {
+    describe('deposit()', function () {
+      it('should revert if no ETH is on the contract', async function () {
         expect(await ethers.provider.getBalance(this.pcvDeposit.address)).to.be.equal('0');
-        await expectRevert(
-          this.pcvDeposit.deposit(),
-          'EthLidoPCVDeposit: cannot deposit 0.'
-        );
+        await expectRevert(this.pcvDeposit.deposit(), 'EthLidoPCVDeposit: cannot deposit 0.');
       });
-      it('should emit Deposit', async function() {
-        await impersonatedSigners[userAddress].sendTransaction({to: this.pcvDeposit.address, value: toBN(`1${e18}`)});
+      it('should emit Deposit', async function () {
+        await impersonatedSigners[userAddress].sendTransaction({ to: this.pcvDeposit.address, value: toBN(`1${e18}`) });
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal('0');
-        await expect(
-          await this.pcvDeposit.deposit())
-          .to.emit(this.pcvDeposit, 'Deposit').withArgs(userAddress, `1${e18}`)
+        await expect(await this.pcvDeposit.deposit())
+          .to.emit(this.pcvDeposit, 'Deposit')
+          .withArgs(userAddress, `1${e18}`);
 
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`1${e18}`);
       });
-      it('should use Curve if slippage is negative', async function() {
-        await impersonatedSigners[userAddress].sendTransaction({to: this.pcvDeposit.address, value: toBN(`1${e18}`)});
+      it('should use Curve if slippage is negative', async function () {
+        await impersonatedSigners[userAddress].sendTransaction({ to: this.pcvDeposit.address, value: toBN(`1${e18}`) });
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal('0');
         await this.stableswap.setSlippage(1000, true); // 10% negative slippage (bonus) for ETH -> stETH
         await this.pcvDeposit.deposit();
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal('1100000000000000000'); // got 1.1 stETH
       });
-      it('should directly stake if slippage is positive', async function() {
-        await (await ethers.getSigner(userAddress)).sendTransaction({to: this.pcvDeposit.address, value: toBN(`1${e18}`)});
+      it('should directly stake if slippage is positive', async function () {
+        await (
+          await ethers.getSigner(userAddress)
+        ).sendTransaction({ to: this.pcvDeposit.address, value: toBN(`1${e18}`) });
         expect((await this.steth.balanceOf(this.pcvDeposit.address)).toString()).to.be.equal('0');
         await this.stableswap.setSlippage(1000, false); // 10% positive slippage (disadvantage) for ETH -> stETH
         await this.pcvDeposit.deposit();
@@ -148,21 +141,25 @@ describe('EthLidoPCVDeposit', function () {
       });
     });
 
-    describe('withdraw()', function() {
-      it('should emit Withdrawal', async function() {
+    describe('withdraw()', function () {
+      it('should emit Withdrawal', async function () {
         await this.steth.mintAt(this.pcvDeposit.address);
         const balanceBeforeWithdraw = toBN(await ethers.provider.getBalance(secondUserAddress));
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`100000${e18}`);
         await await expect(
-          await this.pcvDeposit.connect(impersonatedSigners[pcvControllerAddress]).withdraw(secondUserAddress, `1${e18}`, {}))
-          .to.emit(this.pcvDeposit, 'Withdrawal').withArgs(pcvControllerAddress, secondUserAddress, `1${e18}`)
+          await this.pcvDeposit
+            .connect(impersonatedSigners[pcvControllerAddress])
+            .withdraw(secondUserAddress, `1${e18}`, {})
+        )
+          .to.emit(this.pcvDeposit, 'Withdrawal')
+          .withArgs(pcvControllerAddress, secondUserAddress, `1${e18}`);
 
         const balanceAfterWithdraw = toBN(await ethers.provider.getBalance(secondUserAddress));
         expect(balanceAfterWithdraw.sub(balanceBeforeWithdraw)).to.be.equal(`1${e18}`);
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`99999${e18}`);
       });
 
-      it('should revert if slippage is too high', async function() {
+      it('should revert if slippage is too high', async function () {
         await this.steth.mintAt(this.pcvDeposit.address);
         await this.stableswap.setSlippage(1000, false); // 10% positive slippage (disavantage) for stETH -> ETH
         await expectRevert(
@@ -170,34 +167,35 @@ describe('EthLidoPCVDeposit', function () {
           'EthLidoPCVDeposit: slippage too high.'
         );
       });
-      
-      it('should revert if trying to withdraw more than balance', async function() {
+
+      it('should revert if trying to withdraw more than balance', async function () {
         await this.steth.mintAt(this.pcvDeposit.address);
         await expectRevert(
           this.pcvDeposit.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, `100001${e18}`, {}),
           'EthLidoPCVDeposit: not enough stETH.'
         );
       });
-      it('should revert if not PCVController', async function() {
-        await expectRevert(
-          this.pcvDeposit.withdraw(userAddress, 1),
-          'CoreRef: Caller is not a PCV controller'
-        );
+      it('should revert if not PCVController', async function () {
+        await expectRevert(this.pcvDeposit.withdraw(userAddress, 1), 'CoreRef: Caller is not a PCV controller');
       });
     });
 
-    describe('withdrawERC20()', function() {
-      it('should emit WithdrawERC20', async function() {
+    describe('withdrawERC20()', function () {
+      it('should emit WithdrawERC20', async function () {
         await this.steth.mintAt(this.pcvDeposit.address);
         expect(await this.steth.balanceOf(secondUserAddress)).to.be.equal('0');
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`100000${e18}`);
         await expect(
-          await this.pcvDeposit.connect(impersonatedSigners[pcvControllerAddress]).withdrawERC20(this.steth.address, secondUserAddress, `1${e18}`, {}))
-          .to.emit(this.pcvDeposit, 'WithdrawERC20').withArgs(pcvControllerAddress, this.steth.address, secondUserAddress, `1${e18}`)
+          await this.pcvDeposit
+            .connect(impersonatedSigners[pcvControllerAddress])
+            .withdrawERC20(this.steth.address, secondUserAddress, `1${e18}`, {})
+        )
+          .to.emit(this.pcvDeposit, 'WithdrawERC20')
+          .withArgs(pcvControllerAddress, this.steth.address, secondUserAddress, `1${e18}`);
         expect(await this.steth.balanceOf(secondUserAddress)).to.be.equal(`1${e18}`);
         expect(await this.steth.balanceOf(this.pcvDeposit.address)).to.be.equal(`99999${e18}`);
       });
-      it('should revert if not PCVController', async function() {
+      it('should revert if not PCVController', async function () {
         await expectRevert(
           this.pcvDeposit.withdrawERC20(this.fei.address, userAddress, 1),
           'CoreRef: Caller is not a PCV controller'
@@ -206,28 +204,31 @@ describe('EthLidoPCVDeposit', function () {
     });
   });
 
-  describe('withdrawETH()', function() {
-    it('should emit WithdrawETH', async function() {
+  describe('withdrawETH()', function () {
+    it('should emit WithdrawETH', async function () {
       const balanceBeforeWithdraw = toBN((await ethers.provider.getBalance(secondUserAddress)).toString());
-      await (await ethers.getSigner(userAddress)).sendTransaction({to: this.pcvDeposit.address, value: toBN(`1${e18}`)});
+      await (
+        await ethers.getSigner(userAddress)
+      ).sendTransaction({ to: this.pcvDeposit.address, value: toBN(`1${e18}`) });
       await await expect(
-        await this.pcvDeposit.connect(impersonatedSigners[pcvControllerAddress]).withdrawETH(secondUserAddress, `1${e18}`))
-        .to.emit(this.pcvDeposit, 'WithdrawETH').withArgs(pcvControllerAddress, secondUserAddress, `1${e18}`)
+        await this.pcvDeposit
+          .connect(impersonatedSigners[pcvControllerAddress])
+          .withdrawETH(secondUserAddress, `1${e18}`)
+      )
+        .to.emit(this.pcvDeposit, 'WithdrawETH')
+        .withArgs(pcvControllerAddress, secondUserAddress, `1${e18}`);
 
       const balanceAfterWithdraw = toBN((await ethers.provider.getBalance(secondUserAddress)).toString());
       expect(balanceAfterWithdraw.sub(balanceBeforeWithdraw).toString()).to.be.equal(`1${e18}`);
     });
-    it('should revert if trying to withdraw more than balance', async function() {
+    it('should revert if trying to withdraw more than balance', async function () {
       await expectRevert(
         this.pcvDeposit.connect(impersonatedSigners[pcvControllerAddress]).withdrawETH(userAddress, `100001${e18}`, {}),
         'Address: insufficient balance'
       );
     });
-    it('should revert if not PCVController', async function() {
-      await expectRevert(
-        this.pcvDeposit.withdraw(userAddress, 1),
-        'CoreRef: Caller is not a PCV controller'
-      );
+    it('should revert if not PCVController', async function () {
+      await expectRevert(this.pcvDeposit.withdraw(userAddress, 1), 'CoreRef: Caller is not a PCV controller');
     });
   });
 });

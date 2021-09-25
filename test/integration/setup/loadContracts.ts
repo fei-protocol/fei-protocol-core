@@ -1,43 +1,43 @@
-import mainnetAddresses from '../../../contract-addresses/mainnetAddresses.json'
-import hre, { artifacts, ethers } from 'hardhat'
+import mainnetAddresses from '../../../contract-addresses/mainnetAddresses.json';
+import hre, { artifacts, ethers } from 'hardhat';
 import { MainnetContracts, NamedAddresses, NamedContracts } from './types';
 
-const contractArtifacts = {}
+const contractArtifacts = {};
 
 interface MainnetContractJSONEntry {
-  artifactName: string
-  address: string
+  artifactName: string;
+  address: string;
 }
 
 interface MainnetContractsJSON {
-  [key: string]: MainnetContractJSONEntry
+  [key: string]: MainnetContractJSONEntry;
 }
 
 export async function getAllContracts(): Promise<MainnetContracts> {
-  const contracts: MainnetContracts = {} as MainnetContracts
-  const addresses = mainnetAddresses as MainnetContractsJSON
+  const contracts: MainnetContracts = {} as MainnetContracts;
+  const addresses = mainnetAddresses as MainnetContractsJSON;
 
   for (const mainnetAddressEntryName in addresses) {
-    const mainnetAddressEntry = addresses[mainnetAddressEntryName]
-    const artifactName = mainnetAddressEntry.artifactName
-    const address = mainnetAddressEntry.address
-    if (artifactName == 'unknown') continue
-    const artifact = artifacts.readArtifactSync(artifactName)
-    const contract = await ethers.getContractAt(artifact.abi, address)
-    contracts[mainnetAddressEntryName] = contract
+    const mainnetAddressEntry = addresses[mainnetAddressEntryName];
+    const artifactName = mainnetAddressEntry.artifactName;
+    const address = mainnetAddressEntry.address;
+    if (artifactName == 'unknown') continue;
+    const artifact = artifacts.readArtifactSync(artifactName);
+    const contract = await ethers.getContractAt(artifact.abi, address);
+    contracts[mainnetAddressEntryName] = contract;
   }
 
-  return contracts
+  return contracts;
 }
 
 export function getAllContractAddresses(): NamedAddresses {
-  const contracts: NamedAddresses = {}
-  const addresses = mainnetAddresses as MainnetContractsJSON
-  
+  const contracts: NamedAddresses = {};
+  const addresses = mainnetAddresses as MainnetContractsJSON;
+
   for (const mainnetAddressEntryName in addresses) {
-    const mainnetAddressEntry = addresses[mainnetAddressEntryName]
-    contracts[mainnetAddressEntryName] = mainnetAddressEntry.address
+    const mainnetAddressEntry = addresses[mainnetAddressEntryName];
+    contracts[mainnetAddressEntryName] = mainnetAddressEntry.address;
   }
 
-  return contracts
+  return contracts;
 }

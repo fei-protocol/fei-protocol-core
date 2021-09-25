@@ -8,9 +8,9 @@
 import { time, getCore, expectRevert, getAddresses, expectApprox } from '../../helpers';
 import { expect } from 'chai';
 import hre, { artifacts, ethers } from 'hardhat';
-import { Signer } from 'ethers'
+import { Signer } from 'ethers';
 
-const toBN = ethers.BigNumber.from
+const toBN = ethers.BigNumber.from;
 
 const Tribe = artifacts.readArtifactSync('MockTribe');
 const MockCoreRef = artifacts.readArtifactSync('MockCoreRef');
@@ -26,29 +26,29 @@ const dripAmount = toBN(4000000).mul(toBN(10).pow(toBN(18)));
 // this is 1 week in seconds
 const dripFrequency = 604800;
 
-let userAddress: string
-let secondUserAddress: string
-let thirdUserAddress: string
-let fourthUserAddress: string
-let fifthUserAddress: string
-let sixthUserAddress: string
-let seventhUserAddress: string
-let eigthUserAddress: string
-let ninthUserAddress: string
-let tenthUserAddress: string
+let userAddress: string;
+let secondUserAddress: string;
+let thirdUserAddress: string;
+let fourthUserAddress: string;
+let fifthUserAddress: string;
+let sixthUserAddress: string;
+let seventhUserAddress: string;
+let eigthUserAddress: string;
+let ninthUserAddress: string;
+let tenthUserAddress: string;
 
-let beneficiaryAddress1: string
-let beneficiaryAddress2: string
-let minterAddress: string
-let burnerAddress: string
-let pcvControllerAddress: string
-let governorAddress: string
-let genesisGroup: string
-let guardianAddress: string
+let beneficiaryAddress1: string;
+let beneficiaryAddress2: string;
+let minterAddress: string;
+let burnerAddress: string;
+let pcvControllerAddress: string;
+let governorAddress: string;
+let genesisGroup: string;
+let guardianAddress: string;
 
 describe('ERC20Dripper', () => {
   before(async () => {
-    const addresses = await getAddresses()
+    const addresses = await getAddresses();
 
     userAddress = addresses.userAddress;
     secondUserAddress = addresses.secondUserAddress;
@@ -68,45 +68,48 @@ describe('ERC20Dripper', () => {
     burnerAddress = addresses.burnerAddress;
     genesisGroup = addresses.genesisGroup;
     guardianAddress = addresses.guardianAddress;
-
   });
 
   beforeEach(async function () {
     this.core = await getCore();
 
-    const tribeFactory = await ethers.getContractFactory(Tribe.abi, Tribe.bytecode)
+    const tribeFactory = await ethers.getContractFactory(Tribe.abi, Tribe.bytecode);
     this.tribe = await tribeFactory.deploy();
 
-    const coreRefFactory = await ethers.getContractFactory(MockCoreRef.abi, MockCoreRef.bytecode)
+    const coreRefFactory = await ethers.getContractFactory(MockCoreRef.abi, MockCoreRef.bytecode);
     this.coreRef = await coreRefFactory.deploy(this.core.address);
 
     // spin up the logic contract by hand
-    const tribalChiefFactory = await ethers.getContractFactory(TribalChief.abi, TribalChief.bytecode)
+    const tribalChiefFactory = await ethers.getContractFactory(TribalChief.abi, TribalChief.bytecode);
     const tribalChief = await tribalChiefFactory.deploy(this.core.address);
     // create a new proxy contract
-    
+
     hre.network.provider.request({
-      'method': 'hardhat_impersonateAccount',
-      'params': [userAddress]
+      method: 'hardhat_impersonateAccount',
+      params: [userAddress]
     });
 
-    const userSigner = await ethers.getSigner(userAddress)
+    const userSigner = await ethers.getSigner(userAddress);
 
-    const proxyContractFactory = await ethers.getContractFactory(TransparentUpgradeableProxy.abi, TransparentUpgradeableProxy.bytecode, userSigner)
+    const proxyContractFactory = await ethers.getContractFactory(
+      TransparentUpgradeableProxy.abi,
+      TransparentUpgradeableProxy.bytecode,
+      userSigner
+    );
     const proxyContract = await proxyContractFactory.deploy(tribalChief.address, tribalChief.address, '0x');
 
     hre.network.provider.request({
-      'method': 'hardhat_stopImpersonatingAccount',
-      'params': [userAddress]
-    })
+      method: 'hardhat_stopImpersonatingAccount',
+      params: [userAddress]
+    });
 
     // instantiate the tribalchief pointed at the proxy contract
-    this.tribalChief = await ethers.getContractAt(TribalChief.abi, proxyContract.address)
+    this.tribalChief = await ethers.getContractAt(TribalChief.abi, proxyContract.address);
 
     // initialize the tribalchief by hand
     await this.tribalChief.initialize(this.core.address, this.tribe.address);
 
-    const dripperFactory = await ethers.getContractFactory(ERC20Dripper.abi, ERC20Dripper.bytecode)
+    const dripperFactory = await ethers.getContractFactory(ERC20Dripper.abi, ERC20Dripper.bytecode);
     this.dripper = await dripperFactory.deploy(
       this.core.address,
       this.tribalChief.address,
@@ -123,12 +126,12 @@ describe('ERC20Dripper', () => {
     it('should not be able to withdraw as non PCV controller', async function () {
       const totalLockedTribe = await this.dripper.balance();
 
-      await hre.network.provider.request({method: 'hardhat_impersonateAccount', params: [thirdUserAddress]});
+      await hre.network.provider.request({ method: 'hardhat_impersonateAccount', params: [thirdUserAddress] });
 
       await expectRevert(
-        this.dripper.connect(await ethers.getSigner(thirdUserAddress)).withdraw(
-          this.tribalChief.address, totalLockedTribe
-        ),
+        this.dripper
+          .connect(await ethers.getSigner(thirdUserAddress))
+          .withdraw(this.tribalChief.address, totalLockedTribe),
         'CoreRef: Caller is not a PCV controller'
       );
     });
@@ -138,20 +141,18 @@ describe('ERC20Dripper', () => {
       const dripperStartingBalance = await this.tribe.balanceOf(this.dripper.address);
 
       hre.network.provider.request({
-        'method': 'hardhat_impersonateAccount',
-        'params': [pcvControllerAddress]
-      })
+        method: 'hardhat_impersonateAccount',
+        params: [pcvControllerAddress]
+      });
 
-      const pcvControllerAddressSigner = await ethers.getSigner(pcvControllerAddress)
+      const pcvControllerAddressSigner = await ethers.getSigner(pcvControllerAddress);
 
-      await this.dripper.connect(pcvControllerAddressSigner).withdraw(
-        this.tribalChief.address, totalLockedTribe
-      );
+      await this.dripper.connect(pcvControllerAddressSigner).withdraw(this.tribalChief.address, totalLockedTribe);
 
       hre.network.provider.request({
-        'method': 'hardhat_stopImpersonatingAccount',
-        'params': [pcvControllerAddress]
-      })
+        method: 'hardhat_stopImpersonatingAccount',
+        params: [pcvControllerAddress]
+      });
 
       const dripperEndingBalance = await this.tribe.balanceOf(this.dripper.address);
 
@@ -160,67 +161,40 @@ describe('ERC20Dripper', () => {
     });
 
     it('should not be able to call drip before the timer is up', async function () {
-      expect((await this.dripper.isTimeEnded())).to.be.false;
-      await expectRevert(
-        this.dripper.drip(),
-        'Timed: time not ended'
-      );
+      expect(await this.dripper.isTimeEnded()).to.be.false;
+      await expectRevert(this.dripper.drip(), 'Timed: time not ended');
     });
   });
 
   describe('construction suite', () => {
     it('should not be able to construct with an invalid target address', async function () {
-      const dripperFactory = await ethers.getContractFactory(ERC20Dripper.abi, ERC20Dripper.bytecode)
+      const dripperFactory = await ethers.getContractFactory(ERC20Dripper.abi, ERC20Dripper.bytecode);
       await expectRevert(
-        dripperFactory.deploy(
-          this.core.address,
-          ZERO_ADDRESS,
-          dripFrequency,
-          dripAmount,
-          this.tribe.address
-        ),
+        dripperFactory.deploy(this.core.address, ZERO_ADDRESS, dripFrequency, dripAmount, this.tribe.address),
         'ERC20Dripper: invalid address'
       );
     });
 
     it('should not be able to construct with an invalid token address', async function () {
-      const dripperFactory = await ethers.getContractFactory(ERC20Dripper.abi, ERC20Dripper.bytecode)
+      const dripperFactory = await ethers.getContractFactory(ERC20Dripper.abi, ERC20Dripper.bytecode);
       await expectRevert(
-        dripperFactory.deploy(
-          this.core.address,
-          this.tribe.address,
-          dripFrequency,
-          dripAmount,
-          ZERO_ADDRESS,
-        ),
+        dripperFactory.deploy(this.core.address, this.tribe.address, dripFrequency, dripAmount, ZERO_ADDRESS),
         'ERC20Dripper: invalid token address'
       );
     });
 
     it('should not be able to construct with an invalid frequency', async function () {
-      const dripperFactory = await ethers.getContractFactory(ERC20Dripper.abi, ERC20Dripper.bytecode)
+      const dripperFactory = await ethers.getContractFactory(ERC20Dripper.abi, ERC20Dripper.bytecode);
       await expectRevert(
-        dripperFactory.deploy(
-          this.core.address,
-          this.tribalChief.address,
-          0,
-          dripAmount,
-          this.tribe.address
-        ),
+        dripperFactory.deploy(this.core.address, this.tribalChief.address, 0, dripAmount, this.tribe.address),
         'Timed: zero duration'
       );
     });
 
     it('should not be able to construct with an invalid drip amount', async function () {
-      const dripperFactory = await ethers.getContractFactory(ERC20Dripper.abi, ERC20Dripper.bytecode)
+      const dripperFactory = await ethers.getContractFactory(ERC20Dripper.abi, ERC20Dripper.bytecode);
       await expectRevert(
-        dripperFactory.deploy(
-          this.core.address,
-          this.tribalChief.address,
-          dripFrequency,
-          0,
-          this.tribe.address
-        ),
+        dripperFactory.deploy(this.core.address, this.tribalChief.address, dripFrequency, 0, this.tribe.address),
         'ERC20Dripper: invalid drip amount'
       );
     });
@@ -247,25 +221,22 @@ describe('ERC20Dripper', () => {
       expect(await this.dripper.paused()).to.be.false;
 
       await hre.network.provider.request({
-        'method': 'hardhat_impersonateAccount',
-        'params': [governorAddress]
-      })
+        method: 'hardhat_impersonateAccount',
+        params: [governorAddress]
+      });
 
-      const governorSigner = await ethers.getSigner(governorAddress)
+      const governorSigner = await ethers.getSigner(governorAddress);
 
       await this.dripper.connect(governorSigner).pause();
 
       await hre.network.provider.request({
-        'method': 'hardhat_stopImpersonatingAccount',
-        'params': [governorAddress]
-      })
+        method: 'hardhat_stopImpersonatingAccount',
+        params: [governorAddress]
+      });
 
       expect(await this.dripper.paused()).to.be.true;
 
-      await expectRevert(
-        this.dripper.drip(),
-        'Pausable: paused'
-      );
+      await expectRevert(this.dripper.drip(), 'Pausable: paused');
       // still waiting to go as the contract is paused
       expect(await this.dripper.isTimeEnded()).to.be.true;
     });
@@ -277,29 +248,26 @@ describe('ERC20Dripper', () => {
       expect(await this.dripper.paused()).to.be.false;
 
       await hre.network.provider.request({
-        'method': 'hardhat_impersonateAccount',
-        'params': [governorAddress]
-      })
+        method: 'hardhat_impersonateAccount',
+        params: [governorAddress]
+      });
 
-      const governorSigner = await ethers.getSigner(governorAddress)
+      const governorSigner = await ethers.getSigner(governorAddress);
 
       await this.dripper.connect(governorSigner).pause();
 
       await hre.network.provider.request({
-        'method': 'hardhat_stopImpersonatingAccount',
-        'params': [governorAddress]
-      })
+        method: 'hardhat_stopImpersonatingAccount',
+        params: [governorAddress]
+      });
 
       expect(await this.dripper.paused()).to.be.true;
 
-      await expectRevert(
-        this.dripper.drip(),
-        'Pausable: paused'
-      );
+      await expectRevert(this.dripper.drip(), 'Pausable: paused');
       // still waiting to go as the contract is paused
       expect(await this.dripper.isTimeEnded()).to.be.true;
 
-      await hre.network.provider.request({method: 'hardhat_impersonateAccount', params: [governorAddress]})
+      await hre.network.provider.request({ method: 'hardhat_impersonateAccount', params: [governorAddress] });
       await this.dripper.connect(await ethers.getSigner(governorAddress)).unpause();
 
       expect(await this.dripper.paused()).to.be.false;

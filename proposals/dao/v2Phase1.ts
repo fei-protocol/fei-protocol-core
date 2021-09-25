@@ -1,11 +1,19 @@
-const { constants: { MAX_UINT256 } } = require('@openzeppelin/test-helpers');
-import '@nomiclabs/hardhat-ethers'
-import hre, { ethers } from 'hardhat'
-import { DeployUpgradeFunc, SetupUpgradeFunc, ValidateUpgradeFunc, RunUpgradeFunc, TeardownUpgradeFunc } from "../../test/integration/setup/types"
+const {
+  constants: { MAX_UINT256 }
+} = require('@openzeppelin/test-helpers');
+import '@nomiclabs/hardhat-ethers';
+import hre, { ethers } from 'hardhat';
+import {
+  DeployUpgradeFunc,
+  SetupUpgradeFunc,
+  ValidateUpgradeFunc,
+  RunUpgradeFunc,
+  TeardownUpgradeFunc
+} from '../../test/integration/setup/types';
 
-import chai from "chai";
-import { expect } from "chai";
-import CBN from "chai-bn";
+import chai from 'chai';
+import { expect } from 'chai';
+import CBN from 'chai-bn';
 
 before(() => {
   chai.use(CBN(ethers.BigNumber));
@@ -13,17 +21,14 @@ before(() => {
 
 const e18 = '000000000000000000';
 
-const setup: SetupUpgradeFunc = async(addresses, oldContracts, contracts, logging) => {
+const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  const { timelock } = addresses;
 
-  const {
-    timelock
-  } = addresses;
-  
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
-    params: [timelock],
+    params: [timelock]
   });
-}
+};
 
 /*
 V2 Phase 1 Upgrade Steps
@@ -42,12 +47,9 @@ V2 Phase 1 Upgrade Steps
 13. Update DPI Bonding Curve allocation
 */
 const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-  const {
-    timelock: timelockAddress,
-    rariPool19DpiPCVDeposit: rariPool19DpiPCVDepositAddress
-  } = addresses;
+  const { timelock: timelockAddress, rariPool19DpiPCVDeposit: rariPool19DpiPCVDepositAddress } = addresses;
 
-  const { 
+  const {
     dpiUniswapPCVDeposit,
     uniswapPCVDeposit,
     bondingCurve,
@@ -93,29 +95,33 @@ const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging =
     params: [timelockAddress]
   });
 
-  const timelockSigner = await ethers.getSigner(timelockAddress)
+  const timelockSigner = await ethers.getSigner(timelockAddress);
 
   await tribe.connect(timelockSigner).setMinter(tribeReserveStabilizer.address);
 
   await hre.network.provider.request({
-    method: "hardhat_stopImpersonatingAccount",
-    params: [timelockAddress],
+    method: 'hardhat_stopImpersonatingAccount',
+    params: [timelockAddress]
   });
 
   logging && console.log('Setting mint cap.');
   await bondingCurve.setMintCap(ethers.constants.MaxUint256);
-  
-  logging && console.log(`Withdrawing ratio from old uniswap pcv deposit to new.`)
+
+  logging && console.log(`Withdrawing ratio from old uniswap pcv deposit to new.`);
   await oldRatioPCVController.withdrawRatio(oldContracts.uniswapPCVDeposit.address, uniswapPCVDeposit.address, '10000'); // move 100% of PCV from old -> new
 
-  await ratioPCVController.withdrawRatio(oldContracts.dpiUniswapPCVDeposit.address, dpiUniswapPCVDeposit.address, '10000'); // move 100% of PCV from old -> new
+  await ratioPCVController.withdrawRatio(
+    oldContracts.dpiUniswapPCVDeposit.address,
+    dpiUniswapPCVDeposit.address,
+    '10000'
+  ); // move 100% of PCV from old -> new
 
-  logging && console.log(`Allocating Tribe...`)
+  logging && console.log(`Allocating Tribe...`);
   await core.allocateTribe(feiTribeLBPSwapper.address, `1000000${e18}`);
 
-  logging && console.log(`Setting allocation...`)
+  logging && console.log(`Setting allocation...`);
   await dpiBondingCurve.setAllocation([dpiUniswapPCVDeposit.address, rariPool19DpiPCVDepositAddress], ['9000', '1000']);
-}
+};
 
 /// /  --------------------- NOT RUN ON CHAIN ----------------------
 /* 
@@ -124,17 +130,12 @@ const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging =
  deposit eth and dpi Uni PCV deposits
 */
 const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts) => {
-  console.log(`Beginning teardown phase...`)
+  console.log(`Beginning teardown phase...`);
 
   const core = contracts.core;
 
-  const  { uniswapPCVController } = addresses;
-  const {
-    uniswapPCVDeposit,
-    dpiUniswapPCVDeposit,
-    ratioPCVController,
-    bondingCurve,
-  } = oldContracts;
+  const { uniswapPCVController } = addresses;
+  const { uniswapPCVDeposit, dpiUniswapPCVDeposit, ratioPCVController, bondingCurve } = oldContracts;
 
   // Revoke controller permissions
   await core.revokeMinter(uniswapPCVController);
@@ -149,29 +150,23 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts)
   await contracts.dpiUniswapPCVDeposit.deposit();
   await contracts.uniswapPCVDeposit.deposit();
 
-  console.log(`Teardown phase complete.`)
-}
+  console.log(`Teardown phase complete.`);
+};
 
-const validate: ValidateUpgradeFunc = async(addresses, oldContracts, contracts) => {
-  console.log(`Beginning validation phase...`)
+const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
+  console.log(`Beginning validation phase...`);
 
-  const { 
-    dai: daiAddress,
-    dpi: dpiAddress,
-    rai: raiAddress,
-    fei: feiAddress,
-    weth: wethAddress, 
-  } = addresses;
-  const { 
+  const { dai: daiAddress, dpi: dpiAddress, rai: raiAddress, fei: feiAddress, weth: wethAddress } = addresses;
+  const {
     collateralizationOracle,
-    collateralizationOracleWrapperImpl, 
+    collateralizationOracleWrapperImpl,
     collateralizationOracleWrapper,
-    core, 
+    core,
     proxyAdmin,
-    feiTribeLBPSwapper 
+    feiTribeLBPSwapper
   } = contracts;
-    
-  console.log(`Getting pcv stats...`)
+
+  console.log(`Getting pcv stats...`);
   const pcvStatsCurrent = await collateralizationOracleWrapper.pcvStatsCurrent();
   const pcvStats = await collateralizationOracle.pcvStats();
 
@@ -180,7 +175,7 @@ const validate: ValidateUpgradeFunc = async(addresses, oldContracts, contracts) 
   expect(pcvStatsCurrent[2].toString()).to.be.equal(pcvStats[2].toString());
   expect(pcvStatsCurrent[3].toString()).to.be.equal(pcvStats[3].toString());
 
-  console.log(`Updating collateralization oracle...`)
+  console.log(`Updating collateralization oracle...`);
   const updateTx = await collateralizationOracleWrapper.update();
 
   //console.log(`Update gas: ${update.receipt.gasUsed}`);
@@ -193,16 +188,18 @@ const validate: ValidateUpgradeFunc = async(addresses, oldContracts, contracts) 
   expect((await collateralizationOracle.getDepositsForToken(feiAddress)).length).to.be.equal(11);
 
   expect(await feiTribeLBPSwapper.CONTRACT_ADMIN_ROLE()).to.be.not.equal(await core.GOVERN_ROLE());
-    
-  expect(await proxyAdmin.getProxyImplementation(collateralizationOracleWrapper.address)).to.be.equal(collateralizationOracleWrapperImpl.address);
+
+  expect(await proxyAdmin.getProxyImplementation(collateralizationOracleWrapper.address)).to.be.equal(
+    collateralizationOracleWrapperImpl.address
+  );
   expect(await proxyAdmin.getProxyAdmin(collateralizationOracleWrapper.address)).to.be.equal(proxyAdmin.address);
 
-  console.log(`Validation phase complete.`)
-}
+  console.log(`Validation phase complete.`);
+};
 
-module.exports = { 
-  setup, 
-  run, 
-  teardown, 
-  validate 
+module.exports = {
+  setup,
+  run,
+  teardown,
+  validate
 };

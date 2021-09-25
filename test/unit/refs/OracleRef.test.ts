@@ -1,5 +1,5 @@
 import { expectRevert, getAddresses, getCore } from '../../helpers';
-import { expect } from 'chai'
+import { expect } from 'chai';
 import hre, { ethers, artifacts } from 'hardhat';
 import { Signer } from 'ethers';
 
@@ -7,31 +7,27 @@ const ReserveStabilizer = artifacts.readArtifactSync('ReserveStabilizer');
 const MockOracle = artifacts.readArtifactSync('MockOracle');
 const MockERC20 = artifacts.readArtifactSync('MockERC20');
 
-const toBN = ethers.BigNumber.from
+const toBN = ethers.BigNumber.from;
 
 describe('OracleRef', () => {
   let userAddress;
   let governorAddress;
 
-  let impersonatedSigners: { [key: string]: Signer } = { }
+  const impersonatedSigners: { [key: string]: Signer } = {};
 
-  before(async() => {
-    const addresses = await getAddresses()
+  before(async () => {
+    const addresses = await getAddresses();
 
     // add any addresses you want to impersonate here
-    const impersonatedAddresses = [
-      addresses.userAddress,
-      addresses.pcvControllerAddress,
-      addresses.governorAddress
-    ]
+    const impersonatedAddresses = [addresses.userAddress, addresses.pcvControllerAddress, addresses.governorAddress];
 
     for (const address of impersonatedAddresses) {
       await hre.network.provider.request({
-        method: "hardhat_impersonateAccount",
+        method: 'hardhat_impersonateAccount',
         params: [address]
-      })
+      });
 
-      impersonatedSigners[address] = await ethers.getSigner(address)
+      impersonatedSigners[address] = await ethers.getSigner(address);
     }
   });
 
@@ -45,12 +41,9 @@ describe('OracleRef', () => {
     this.oracle = await (await ethers.getContractFactory('MockOracle')).deploy(500); // 500 USD per ETH exchange rate
     this.backupOracle = await (await ethers.getContractFactory('MockOracle')).deploy(505); // 505 USD per ETH exchange rate
 
-    this.oracleRef = await (await ethers.getContractFactory('ReserveStabilizer')).deploy(
-      this.core.address,
-      this.oracle.address,
-      this.backupOracle.address,
-      this.token.address, 10000,
-    );
+    this.oracleRef = await (
+      await ethers.getContractFactory('ReserveStabilizer')
+    ).deploy(this.core.address, this.oracle.address, this.backupOracle.address, this.token.address, 10000);
   });
 
   describe('Init', () => {
@@ -75,8 +68,8 @@ describe('OracleRef', () => {
       it('Governor set succeeds', async function () {
         expect(await this.oracleRef.backupOracle()).to.be.equal(this.backupOracle.address);
         /*await expect(*/
-          await this.oracleRef.connect(impersonatedSigners[governorAddress]).setBackupOracle(userAddress)
-          /*'BackupOracleUpdate',
+        await this.oracleRef.connect(impersonatedSigners[governorAddress]).setBackupOracle(userAddress);
+        /*'BackupOracleUpdate',
           {
             oldBackupOracle: this.backupOracle.address,
             newBackupOracle: userAddress,
@@ -86,7 +79,10 @@ describe('OracleRef', () => {
       });
 
       it('Non-governor set reverts', async function () {
-        await expectRevert(this.oracleRef.connect(impersonatedSigners[userAddress]).setBackupOracle(userAddress), 'CoreRef: Caller is not a governor');
+        await expectRevert(
+          this.oracleRef.connect(impersonatedSigners[userAddress]).setBackupOracle(userAddress),
+          'CoreRef: Caller is not a governor'
+        );
       });
     });
 
@@ -94,8 +90,8 @@ describe('OracleRef', () => {
       it('Governor set succeeds', async function () {
         expect(await this.oracleRef.doInvert()).to.be.equal(true);
         /*await expect(*/
-          await this.oracleRef.connect(impersonatedSigners[governorAddress]).setDoInvert(false)
-          /*'InvertUpdate',
+        await this.oracleRef.connect(impersonatedSigners[governorAddress]).setDoInvert(false);
+        /*'InvertUpdate',
           {
             oldDoInvert: true,
             newDoInvert: false,
@@ -105,7 +101,10 @@ describe('OracleRef', () => {
       });
 
       it('Non-governor set reverts', async function () {
-        await expectRevert(this.oracleRef.connect(impersonatedSigners[userAddress]).setDoInvert(false), 'CoreRef: Caller is not a governor');
+        await expectRevert(
+          this.oracleRef.connect(impersonatedSigners[userAddress]).setDoInvert(false),
+          'CoreRef: Caller is not a governor'
+        );
       });
     });
 
@@ -113,8 +112,8 @@ describe('OracleRef', () => {
       it('Governor set succeeds', async function () {
         expect(await this.oracleRef.decimalsNormalizer()).to.be.equal(toBN('0'));
         /*await expect(*/
-          await this.oracleRef.connect(impersonatedSigners[governorAddress]).setDecimalsNormalizer(4)
-          /*'DecimalsNormalizerUpdate',
+        await this.oracleRef.connect(impersonatedSigners[governorAddress]).setDecimalsNormalizer(4);
+        /*'DecimalsNormalizerUpdate',
           {
             oldDecimalsNormalizer: '0',
             newDecimalsNormalizer: '4',
@@ -124,7 +123,10 @@ describe('OracleRef', () => {
       });
 
       it('Non-governor set reverts', async function () {
-        await expectRevert(this.oracleRef.connect(impersonatedSigners[userAddress]).setDecimalsNormalizer(4), 'CoreRef: Caller is not a governor');
+        await expectRevert(
+          this.oracleRef.connect(impersonatedSigners[userAddress]).setDecimalsNormalizer(4),
+          'CoreRef: Caller is not a governor'
+        );
       });
     });
   });
@@ -145,7 +147,9 @@ describe('OracleRef', () => {
     describe('Invalid Oracle', () => {
       it('falls back to backup', async function () {
         await this.oracle.setValid(false);
-        expect((await this.oracleRef.connect(impersonatedSigners[userAddress]).readOracle())[0]).to.be.equal('1980198019801980');
+        expect((await this.oracleRef.connect(impersonatedSigners[userAddress]).readOracle())[0]).to.be.equal(
+          '1980198019801980'
+        );
       });
     });
 
@@ -153,23 +157,32 @@ describe('OracleRef', () => {
       it('reverts', async function () {
         await this.oracle.setValid(false);
         await this.backupOracle.setValid(false);
-        await expectRevert(this.oracleRef.connect(impersonatedSigners[userAddress]).readOracle(), 'OracleRef: oracle invalid');
+        await expectRevert(
+          this.oracleRef.connect(impersonatedSigners[userAddress]).readOracle(),
+          'OracleRef: oracle invalid'
+        );
       });
     });
 
     describe('Valid Oracle', () => {
       it('succeeds', async function () {
-        expect((await this.oracleRef.connect(impersonatedSigners[userAddress]).readOracle())[0]).to.be.equal('2000000000000000');
+        expect((await this.oracleRef.connect(impersonatedSigners[userAddress]).readOracle())[0]).to.be.equal(
+          '2000000000000000'
+        );
       });
 
       it('positive decimal normalizer scales down', async function () {
         await this.oracleRef.connect(impersonatedSigners[governorAddress]).setDecimalsNormalizer(4),
-        expect((await this.oracleRef.connect(impersonatedSigners[userAddress]).readOracle())[0]).to.be.equal('200000000000');
+          expect((await this.oracleRef.connect(impersonatedSigners[userAddress]).readOracle())[0]).to.be.equal(
+            '200000000000'
+          );
       });
 
       it('negative decimal normalizer scales up', async function () {
         await this.oracleRef.connect(impersonatedSigners[governorAddress]).setDecimalsNormalizer(-4),
-        expect((await this.oracleRef.connect(impersonatedSigners[userAddress]).readOracle())[0]).to.be.equal('20000000000000000000');
+          expect((await this.oracleRef.connect(impersonatedSigners[userAddress]).readOracle())[0]).to.be.equal(
+            '20000000000000000000'
+          );
       });
     });
   });
