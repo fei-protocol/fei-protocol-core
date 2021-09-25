@@ -1,15 +1,16 @@
 import { expect } from "chai";
 import hre, { ethers } from "hardhat";
+import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc } from "../../test/integration/setup/types";
 
 const e18 = ethers.constants.WeiPerEther;
 
-async function setup(addresses, oldContracts, contracts, logging) {}
+const setup: SetupUpgradeFunc = async(addresses, oldContracts, contracts, logging) => {}
 
-async function run(addresses, oldContracts, contracts, logging = false) {}
+const run: RunUpgradeFunc = async(addresses, oldContracts, contracts, logging = false) => {}
 
-async function teardown(addresses, oldContracts, contracts, logging) {
+const teardown: TeardownUpgradeFunc = async(addresses, oldContracts, contracts, logging) => {
   const {
-    optimisticTimelockAddress
+    optimisticTimelock
   } = addresses;
 
   const {
@@ -22,22 +23,24 @@ async function teardown(addresses, oldContracts, contracts, logging) {
 
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
-    params: [optimisticTimelockAddress],
+    params: [optimisticTimelock],
   });
 
   await (await ethers.getSigners())[0].sendTransaction({
-    to: optimisticTimelockAddress,
+    to: optimisticTimelock,
     value: ethers.utils.parseEther("10.0")
   });
 
-  await rariPool8Comptroller._acceptAdmin({from: optimisticTimelockAddress});
-  await rariPool8Dai._acceptAdmin({from: optimisticTimelockAddress});
-  await rariPool8Tribe._acceptAdmin({from: optimisticTimelockAddress});
-  await rariPool8Eth._acceptAdmin({from: optimisticTimelockAddress});
-  await rariPool8Fei._acceptAdmin({from: optimisticTimelockAddress});
+  const optimisticTimelockSigner = await ethers.getSigner(optimisticTimelock)
+
+  await rariPool8Comptroller.connect(optimisticTimelockSigner)._acceptAdmin();
+  await rariPool8Dai.connect(optimisticTimelockSigner)._acceptAdmin();
+  await rariPool8Tribe.connect(optimisticTimelockSigner)._acceptAdmin();
+  await rariPool8Eth.connect(optimisticTimelockSigner)._acceptAdmin();
+  await rariPool8Fei.connect(optimisticTimelockSigner)._acceptAdmin();
 }
 
-async function validate(addresses, oldContracts, contracts) {
+const validate = async(addresses, oldContracts, contracts) => {
   const {
     rariPool8Comptroller,
     fei,
@@ -49,7 +52,7 @@ async function validate(addresses, oldContracts, contracts) {
   } = contracts;
 
   const {
-      optimisticTimelockAddress
+      optimisticTimelock
   } = addresses;
 
   // Borrow disabled
@@ -57,16 +60,16 @@ async function validate(addresses, oldContracts, contracts) {
   
   // minted FEI
   // 1M from before, 50M from proposal
-  expect((await fei.balanceOf(optimisticTimelockAddress)).toString()).to.be.equal(e18.mul(51_000_000).toString());
+  expect((await fei.balanceOf(optimisticTimelock)).toString()).to.be.equal(e18.mul(51_000_000).toString());
   
   expect((await rariPool22FeiPCVDeposit.balance()).toString()).to.be.equal(e18.mul(1_000_000).toString());
   
   // admin transfer
-  expect(await rariPool8Comptroller.admin()).to.be.equal(optimisticTimelockAddress);
-  expect(await rariPool8Dai.admin()).to.be.equal(optimisticTimelockAddress);
-  expect(await rariPool8Tribe.admin()).to.be.equal(optimisticTimelockAddress);
-  expect(await rariPool8Eth.admin()).to.be.equal(optimisticTimelockAddress);
-  expect(await rariPool8Fei.admin()).to.be.equal(optimisticTimelockAddress);
+  expect(await rariPool8Comptroller.admin()).to.be.equal(optimisticTimelock);
+  expect(await rariPool8Dai.admin()).to.be.equal(optimisticTimelock);
+  expect(await rariPool8Tribe.admin()).to.be.equal(optimisticTimelock);
+  expect(await rariPool8Eth.admin()).to.be.equal(optimisticTimelock);
+  expect(await rariPool8Fei.admin()).to.be.equal(optimisticTimelock);
 }
 
 module.exports = {

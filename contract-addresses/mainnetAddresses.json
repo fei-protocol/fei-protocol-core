@@ -1,3 +1,4 @@
+
 {
     "aave" : {"artifactName" : "IERC20", "address" : "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9"},
     "aaveEthPCVDeposit": { "artifactName": "AavePCVDeposit", "address":  "0x5B86887e171bAE0C2C826e87E34Df8D558C079B9"},
@@ -64,6 +65,7 @@
     "feiRewardsDistributor" : { "artifactName": "IFeiRewardsDistributor", "address": "0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5"},
     "feiTribePair": { "artifactName": "IUniswapV2Pair", "address":  "0x9928e4046d7c6513326cCeA028cD3e7a91c7590A"},
     "governorAlpha": { "artifactName": "GovernorAlpha", "address":  "0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B"},
+    "gUniFeiDaiLP": { "artifactName": "unknown", "address": "0x3D1556e84783672f2a3bd187a592520291442539"},
     "index" : { "artifactName": "IERC20", "address" : "0x0954906da0Bf32d5479e25f46056d22f08464cab" },
     "indexCoopFusePoolDpi" : {"artifactName" : "CErc20Delegator", "address" : "0xf06f65a6b7d2c401fcb8b3273d036d21fe2a5963"},
     "indexCoopFusePoolDpiPCVDeposit" : { "artifactName" : "ERC20CompoundPCVDeposit", "address" : "0x3dD3d945C4253bAc5B4Cc326a001B7d3f9C4DD66" },
@@ -78,6 +80,7 @@
     "multisend" : { "artifactName" : "IERC20Airdropper", "address": "0x0B36b0F351ea8383506F596743a2DA7DCa204cc3" },
     "multisig": { "artifactName": "unknown", "address":  "0xB8f482539F2d3Ae2C9ea6076894df36D1f632775"},
     "oldEthReserveStabilizer": { "artifactName": "EthReserveStabilizer", "address":  "0xa08A721dFB595753FFf335636674D76C455B275C"},
+    "optimisticTimelock" : { "artifactName": "OptimisticTimelock", "address" : "0xbC9C084a12678ef5B516561df902fdc426d95483"},
     "poolPartyFei" : { "artifactName" : "CErc20Delegator", "address": "0x17b1A2E012cC4C31f83B90FF11d3942857664efc" },
     "poolPartyFeiPCVDeposit" : { "artifactName" : "ERC20CompoundPCVDeposit", "address": "0x5A8CB4556e5D5935Af06beab8292905f48131479" },
     "proxyAdmin" : { "artifactName" : "ProxyAdmin", "address": "0xf8c2b645988b7658E7748BA637fE25bdD46A704A"},
@@ -89,6 +92,8 @@
     "rariPool18FeiPCVDeposit": { "artifactName" : "ERC20CompoundPCVDeposit", "address": "0x5A8CB4556e5D5935Af06beab8292905f48131479"},
     "rariPool19Fei": { "artifactName" : "CErc20Delegator", "address": "0x04281F6715Dea6A8EbBCE143D86ea506FF326531"},
     "rariPool19FeiPCVDeposit": { "artifactName" : "ERC20CompoundPCVDeposit", "address": "0xD6960adba53212bBE96E54a7AFeDA2066437D000"},
+    "rariPool22Fei": { "artifactName" : "CErc20Delegator", "address": "0x653A32ED7AaA3DB37520125CDB45c17AdB3fdF01"},
+    "rariPool22FeiPCVDeposit": { "artifactName" : "ERC20CompoundPCVDeposit", "address": "0x7CeBaB7b4B4399343f6D0D36B550EE097F60d7fE"},
     "rariPool24Fei": { "artifactName" : "CErc20Delegator", "address": "0xb5A817E5354736eafe3A0C85620433eE75daA649"},
     "rariPool24FeiPCVDeposit": { "artifactName" : "ERC20CompoundPCVDeposit", "address": "0x1434F99EDB2bD03DECCCFe21288767b8324B7403"},
     "rariPool25Fei": { "artifactName" : "CErc20Delegator", "address": "0xE468D0244D75b9b18B27cb682AeC3ab35d33663B"},
@@ -101,10 +106,10 @@
     "rariPool6FeiPCVDeposit": { "artifactName" : "ERC20CompoundPCVDeposit", "address": "0xB51f09B6F103D697dc5d64DC904Ad6a2Dad39987"},
     "rariPool7Fei": { "artifactName" : "CErc20Delegator", "address": "0xE640E9beC342B86266B2bD79F3847e7958cb30C4"},
     "rariPool7FeiPCVDeposit": { "artifactName" : "ERC20CompoundPCVDeposit", "address": "0x74B235Fef146cDB5BE0D3786a9f3774674b3615E"},
-    "rariPool8Comptroller": { "artifactName": "unknown", "address":  "0xc54172e34046c1653d1920d40333dd358c7a1af4"},
+    "rariPool8Comptroller": { "artifactName" : "Unitroller", "address":  "0xc54172e34046c1653d1920d40333dd358c7a1af4"},
     "rariPool8Dai": { "artifactName" : "CErc20Delegator", "address":  "0x7e9cE3CAa9910cc048590801e64174957Ed41d43" },
     "rariPool8DaiIrm": {"artifactName": "unknown", "address": "0xede47399e2aa8f076d40dc52896331cba8bd40f7" },
-    "rariPool8Eth": {"artifactName": "unknown",  "address":  "0xbB025D470162CC5eA24daF7d4566064EE7f5F111"},
+    "rariPool8Eth": {"artifactName": "CErc20Delegator",  "address":  "0xbB025D470162CC5eA24daF7d4566064EE7f5F111"},
     "rariPool8EthIrm": {"artifactName": "unknown", "address": "0xbab47e4b692195bf064923178a90ef999a15f819" },
     "rariPool8Fei": { "artifactName" : "CErc20Delegator", "address": "0xd8553552f8868C1Ef160eEdf031cF0BCf9686945"},
     "rariPool8FeiIrm": {"artifactName": "unknown", "address": "0x8f47be5692180079931e2f983db6996647aba0a5" },
@@ -119,6 +124,7 @@
     "reflexerStableAssetFusePoolRai" : {"artifactName" : "CErc20Delegator", "address" : "0x752F119bD4Ee2342CE35E2351648d21962c7CAfE"},
     "reflexerStableAssetFusePoolRaiPCVDeposit" : { "artifactName" : "ERC20CompoundPCVDeposit", "address" : "0x9aAdFfe00eAe6d8e59bB4F7787C6b99388A6960D" },
     "snapshotDelegateRegistry" : { "artifactName": "DelegateRegistry", "address" : "0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446" },
+    "fAAVE" : {"artifactName" : "IERC20", "address": "0x4da27a545c0c5b758a6ba100e3a049001de870f5" },
     "stAAVE" : {"artifactName" : "IERC20", "address": "0x4da27a545c0c5b758a6ba100e3a049001de870f5" },
     "steth" : { "artifactName": "IERC20", "address":  "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"},
     "sushiswapDpiFei" : {"artifactName" : "IUniswapV2Pair", "address": "0x8775aE5e83BC5D926b6277579c2B0d40c7D9b528" },
@@ -136,9 +142,5 @@
     "uniswapPCVDeposit": { "artifactName": "UniswapPCVDeposit", "address":  "0x5d6446880fcd004c851ea8920a628c70ca101117"},
     "uniswapRouter": {"artifactName": "unknown",  "address":  "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"},
     "weth": { "artifactName": "IWETH", "address":  "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"},
-    "wethERC20": { "artifactName": "IERC20", "address":  "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"},
-    "gUniFeiDaiLP": { "artifactName": "unknown", "address": "0x3D1556e84783672f2a3bd187a592520291442539"},
-    "optimisticTimelock" : { "artifactName": "OptimisticTimelock", "address" : "0xbC9C084a12678ef5B516561df902fdc426d95483"},
-    "rariPool22FeiAddress": { "artifactName" : "CErc20Delegator", "address": "0x653A32ED7AaA3DB37520125CDB45c17AdB3fdF01"},
-    "rariPool22FeiPCVDepositAddress": { "artifactName" : "ERC20CompoundPCVDeposit", "address": "0x7CeBaB7b4B4399343f6D0D36B550EE097F60d7fE"}
+    "wethERC20": { "artifactName": "IERC20", "address":  "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"}
 }

@@ -1,5 +1,3 @@
-import hre from 'hardhat';
-
 const { constants: { MAX_UINT256 } } = require('@openzeppelin/test-helpers');
 import '@nomiclabs/hardhat-ethers'
 import hre, { ethers } from 'hardhat'
@@ -15,14 +13,15 @@ before(() => {
 
 const e18 = '000000000000000000';
 
-async function setup(addresses, oldContracts, contracts, logging) {
+const setup: SetupUpgradeFunc = async(addresses, oldContracts, contracts, logging) => {
+
   const {
-    timelockAddress
+    timelock
   } = addresses;
   
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
-    params: [timelockAddress],
+    params: [timelock],
   });
 }
 
