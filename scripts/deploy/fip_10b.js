@@ -1,17 +1,11 @@
-const StableSwapOperatorV1 = artifacts.require('StableSwapOperatorV1');
+const StableSwapOperatorV1 = artifacts.readArtifactSync('StableSwapOperatorV1');
 
 const e18 = '000000000000000000';
 
 async function deploy(deployAddress, addresses, logging = false) {
-  const {
-    coreAddress,
-    curve3poolAddress,
-    curveMetapoolAddress,
-  } = addresses;
+  const { coreAddress, curve3poolAddress, curveMetapoolAddress } = addresses;
 
-  if (
-    !coreAddress || !curve3poolAddress || !curveMetapoolAddress
-  ) {
+  if (!coreAddress || !curve3poolAddress || !curveMetapoolAddress) {
     throw new Error('An environment variable contract address is not set');
   }
 
@@ -28,7 +22,7 @@ async function deploy(deployAddress, addresses, logging = false) {
   logging ? console.log('Curve Metapool Deposit deployed to: ', curveMetapoolDeposit.address) : undefined;
 
   return {
-    curveMetapoolDeposit,
+    curveMetapoolDeposit
   };
 }
 

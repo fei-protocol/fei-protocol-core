@@ -24,7 +24,9 @@ async function setup(addresses, oldContracts, contracts, logging) {
     params: [addresses.compoundDaiAddress]
   });
   await forceEth(addresses.compoundDaiAddress);
-  await contracts.dai.transfer(addresses.compoundDaiPCVDepositAddress, `50000000${e18}`, {from: addresses.compoundDaiAddress});
+  await contracts.dai.transfer(addresses.compoundDaiPCVDepositAddress, `50000000${e18}`, {
+    from: addresses.compoundDaiAddress
+  });
   await contracts.compoundDaiPCVDeposit.deposit();
 }
 
@@ -45,10 +47,22 @@ async function validate(addresses, oldContracts, contracts) {
   const _3crv = await ERC20.at(addresses.curve3crvAddress);
   const _metapool = await ERC20.at(addresses.curveMetapoolAddress);
   console.log('metapool 3crv balance', (await _3crv.balanceOf('0x06cb22615ba53e60d67bf6c341a0fd5e718e1655')) / 1e18);
-  console.log('metapool FEI balance', (await contracts.fei.balanceOf('0x06cb22615ba53e60d67bf6c341a0fd5e718e1655')) / 1e18);
-  console.log('Compound PCVDeposit DAI balance', (await contracts.dai.balanceOf(addresses.compoundDaiPCVDepositAddress)) / 1e18);
-  console.log('Curve PCVDeposit Metapool LP tokens balance', (await _metapool.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
-  console.log('Curve PCVDeposit FEI balance', (await contracts.fei.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18);
+  console.log(
+    'metapool FEI balance',
+    (await contracts.fei.balanceOf('0x06cb22615ba53e60d67bf6c341a0fd5e718e1655')) / 1e18
+  );
+  console.log(
+    'Compound PCVDeposit DAI balance',
+    (await contracts.dai.balanceOf(addresses.compoundDaiPCVDepositAddress)) / 1e18
+  );
+  console.log(
+    'Curve PCVDeposit Metapool LP tokens balance',
+    (await _metapool.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18
+  );
+  console.log(
+    'Curve PCVDeposit FEI balance',
+    (await contracts.fei.balanceOf(contracts.curveMetapoolDeposit.address)) / 1e18
+  );
   console.log('Curve PCVDeposit balance()', (await contracts.curveMetapoolDeposit.balance()) / 1e18);
 }
 
@@ -56,5 +70,5 @@ module.exports = {
   setup,
   run,
   teardown,
-  validate,
+  validate
 };

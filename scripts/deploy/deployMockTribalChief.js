@@ -1,8 +1,8 @@
 /* eslint-disable no-undef */
-const Fei = artifacts.require('Fei');
-const TribalChief = artifacts.require('TribalChief');
-const MockCore = artifacts.require('MockCore');
-const MockConfigurableERC20 = artifacts.require('MockConfigurableERC20');
+const Fei = artifacts.readArtifactSync('Fei');
+const TribalChief = artifacts.readArtifactSync('TribalChief');
+const MockCore = artifacts.readArtifactSync('MockCore');
+const MockConfigurableERC20 = artifacts.readArtifactSync('MockConfigurableERC20');
 
 const mintAmount = '10000000000000000000000000000';
 const allocationPoints = 1000;
@@ -11,43 +11,43 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const shortRewardSchedule = [
   {
     lockLength: 0,
-    rewardMultiplier: `${1e4}`,
+    rewardMultiplier: `${1e4}`
   },
   {
     lockLength: 23,
-    rewardMultiplier: `${15e3}`,
+    rewardMultiplier: `${15e3}`
   },
   {
     lockLength: 46,
-    rewardMultiplier: `${2e4}`,
-  },
+    rewardMultiplier: `${2e4}`
+  }
 ];
 
 const longRewardSchedule = [
   {
     lockLength: 0,
-    rewardMultiplier: `${1e4}`,
+    rewardMultiplier: `${1e4}`
   },
   {
     lockLength: 1080000,
-    rewardMultiplier: `${15e3}`,
+    rewardMultiplier: `${15e3}`
   },
   {
     lockLength: 1620000,
-    rewardMultiplier: `${17e3}`,
+    rewardMultiplier: `${17e3}`
   },
   {
     lockLength: 2160000,
-    rewardMultiplier: `${2e4}`,
+    rewardMultiplier: `${2e4}`
   },
   {
     lockLength: 3240000,
-    rewardMultiplier: `${3e4}`,
+    rewardMultiplier: `${3e4}`
   },
   {
     lockLength: 4320000,
-    rewardMultiplier: `${4e4}`,
-  },
+    rewardMultiplier: `${4e4}`
+  }
 ];
 
 // Create a mock deployment of the tribalchief, tribe and LP tokens
@@ -64,9 +64,7 @@ async function main() {
 
   const core = await MockCore.new({ from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 });
   await core.init({ from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 });
-  await core.grantMinter(
-    core.address, { from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 },
-  );
+  await core.grantMinter(core.address, { from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 });
 
   const fei = await Fei.at(await core.fei());
   const tribe = await Fei.at(await core.tribe());
@@ -83,33 +81,32 @@ async function main() {
   await LPTokenA.mint(receiver, mintAmount);
   await LPTokenB.mint(receiver, mintAmount);
 
-  const tribalChief = await TribalChief.new(
-    core.address, tribe.address, { from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 },
-  );
+  const tribalChief = await TribalChief.new(core.address, tribe.address, {
+    from: accounts[0],
+    gasPrice: 2000000008,
+    gasLimit: 20000000
+  });
   console.log(`TribalChief: ${tribalChief.address}`);
 
-  await tribe.transfer(
-    tribalChief.address, (await tribe.balanceOf(accounts[0])),
-    { from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 },
-  );
+  await tribe.transfer(tribalChief.address, await tribe.balanceOf(accounts[0]), {
+    from: accounts[0],
+    gasPrice: 2000000008,
+    gasLimit: 20000000
+  });
 
   // LP Token A has a short lockup period
-  await tribalChief.add(
-    allocationPoints,
-    LPTokenA.address,
-    ZERO_ADDRESS,
-    shortRewardSchedule,
-    { from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 },
-  );
+  await tribalChief.add(allocationPoints, LPTokenA.address, ZERO_ADDRESS, shortRewardSchedule, {
+    from: accounts[0],
+    gasPrice: 2000000008,
+    gasLimit: 20000000
+  });
 
   // LP Token B has the long lockup period
-  await tribalChief.add(
-    allocationPoints,
-    LPTokenB.address,
-    ZERO_ADDRESS,
-    longRewardSchedule,
-    { from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 },
-  );
+  await tribalChief.add(allocationPoints, LPTokenB.address, ZERO_ADDRESS, longRewardSchedule, {
+    from: accounts[0],
+    gasPrice: 2000000008,
+    gasLimit: 20000000
+  });
 }
 
 main()

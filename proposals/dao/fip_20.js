@@ -34,13 +34,13 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     ethPCVDripper
   } = contracts;
 
-  // 1. 
+  // 1.
   await core.grantBurner(ethReserveStabilizer.address);
 
   // 2.
   await core.grantPCVController(aaveEthPCVDripController.address);
-  
-  // 3. 
+
+  // 3.
   await core.grantPCVController(compoundEthPCVDripController.address);
 
   // 4.
@@ -87,5 +87,8 @@ async function validate(addresses, oldContracts, contracts) {
 }
 
 module.exports = {
-  setup, run, teardown, validate
+  setup,
+  run,
+  teardown,
+  validate
 };

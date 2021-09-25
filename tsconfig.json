@@ -2,6 +2,7 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "allowJs": true,
+    "checkJs": true,
     "noImplicitAny": false,
     "noImplicitThis": false,
     "target": "es2018",
@@ -12,7 +13,9 @@
   },
   "include": [
     "test/*", "test/**/*",
-    "scripts/*", "scripts/**/*"
+    "scripts/*", "scripts/**/*",
+    "proposals/*", "proposals/**/*",
+    "./typechain"
   ],
-  "files": ["hardhat.config.ts"]
+  "files": ["./hardhat.config.ts"]
 }

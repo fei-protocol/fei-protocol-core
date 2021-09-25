@@ -1,6 +1,6 @@
 import mainnetAddressesV1 from '../../contract-addresses/mainnetAddresses.json';
 
-const { web3 } = require('hardhat');
+const { ethers } = require('hardhat');
 
 // Run the deployment for DEPLOY_FILE
 async function main() {
@@ -10,7 +10,7 @@ async function main() {
     throw new Error('DEPLOY_FILE env variable not set');
   }
 
-  const deployAddress = (await web3.eth.getAccounts())[0];
+  const deployAddress = (await ethers.getSigners())[0].address;
 
   const mainnetAddresses = {};
   Object.keys(mainnetAddressesV1).map((key) => {

@@ -17,8 +17,8 @@ const dripAmount = new BN(4000000).mul(new BN(10).pow(new BN(18)));
 const defaultPoolRewardObject = [
   {
     lockLength: 0,
-    rewardMultiplier: oneMultiplier,
-  },
+    rewardMultiplier: oneMultiplier
+  }
 ];
 
 async function setup(addresses, oldContracts, contracts, logging) {
@@ -26,7 +26,7 @@ async function setup(addresses, oldContracts, contracts, logging) {
 
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
-    params: [timelockAddress],
+    params: [timelockAddress]
   });
 }
 
@@ -40,14 +40,12 @@ async function setup(addresses, oldContracts, contracts, logging) {
 // 8. Send 7000 TRIBE to OA multisig
 // 9. Revoke minter from FeiRewardsDistributorAddress
 async function run(addresses, oldContracts, contracts, logging = false) {
+  const { tribalChief, tribe, core, erc20Dripper } = contracts;
   const {
-    tribalChief, tribe, core, erc20Dripper
-  } = contracts;
-  const {
-    timelockAddress, 
-    feiRewardsDistributorAddress, 
-    feiTribePairAddress, 
-    curve3MetapoolAddress, 
+    timelockAddress,
+    feiRewardsDistributorAddress,
+    feiTribePairAddress,
+    curve3MetapoolAddress,
     tribalChiefOptimisticTimelockAddress,
     tribalChiefOptimisticMultisigAddress
   } = addresses;
@@ -58,12 +56,14 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   // 1. Withdraw TRIBE from old dripper
   const governorWithdrawTribeAbi = ['function governorWithdrawTribe(uint256 amount)'];
   const governorWithdrawTribeInterface = new ethers.utils.Interface(governorWithdrawTribeAbi);
-  const encodedGovernorWithdrawTribe = governorWithdrawTribeInterface.encodeFunctionData('governorWithdrawTribe', [tribeBalanceToMigrate.toString()]);
+  const encodedGovernorWithdrawTribe = governorWithdrawTribeInterface.encodeFunctionData('governorWithdrawTribe', [
+    tribeBalanceToMigrate.toString()
+  ]);
   const adminSigner = ethers.provider.getSigner(timelockAddress);
   await (
     await adminSigner.sendTransaction({ data: encodedGovernorWithdrawTribe, to: feiRewardsDistributorAddress })
   ).wait();
-    
+
   const tribeBalanceToAllocate = tribeBalanceToMigrate.sub(new BN(twoMillionTribe)).sub(dripAmount);
 
   // 2. Allocate TRIBE to new dripper
@@ -72,20 +72,10 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   await core.allocateTribe(tribalChief.address, dripAmount);
 
   // 4. create the pool for fei/tribe LP tokens
-  await tribalChief.add(
-    allocPoints,
-    feiTribePairAddress,
-    ZERO_ADDRESS,
-    defaultPoolRewardObject,
-  );
+  await tribalChief.add(allocPoints, feiTribePairAddress, ZERO_ADDRESS, defaultPoolRewardObject);
 
   // 5. create the pool for fei/curve3Metapool LP tokens
-  await tribalChief.add(
-    allocPoints,
-    curve3MetapoolAddress,
-    ZERO_ADDRESS,
-    defaultPoolRewardObject,
-  );
+  await tribalChief.add(allocPoints, curve3MetapoolAddress, ZERO_ADDRESS, defaultPoolRewardObject);
 
   const role = await tribalChief.CONTRACT_ADMIN_ROLE();
 
@@ -108,21 +98,15 @@ async function teardown(addresses, oldContracts, contracts, logging) {}
 // but to just log out what just happened
 // this function will log out false if anything incorrect happened during the run or deploy
 async function validate(addresses, oldContracts, contracts, logging) {
-  const { 
-    feiRewardsDistributorAddress, 
-    feiTribePairAddress, 
+  const {
+    feiRewardsDistributorAddress,
+    feiTribePairAddress,
     curve3MetapoolAddress,
     tribalChiefOptimisticTimelockAddress,
     coreAddress,
     timelockAddress
   } = addresses;
-  const { 
-    tribalChief,
-    tribalChiefImpl, 
-    tribe, 
-    core, 
-    proxyAdmin 
-  } = contracts;
+  const { tribalChief, tribalChiefImpl, tribe, core, proxyAdmin } = contracts;
 
   expect((await tribe.balanceOf(feiRewardsDistributorAddress)).toString()).to.be.equal('0');
   expect((await tribalChief.totalAllocPoint()).toString()).to.be.equal((allocPoints * 2).toString());
@@ -142,5 +126,8 @@ async function validate(addresses, oldContracts, contracts, logging) {
 }
 
 module.exports = {
-  setup, run, teardown, validate,
+  setup,
+  run,
+  teardown,
+  validate
 };

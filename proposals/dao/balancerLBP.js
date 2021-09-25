@@ -1,6 +1,4 @@
-const {
-  time, expect, expectApprox, web3 
-} = require('../../test/helpers');
+const { time, expect, expectApprox, web3 } = require('../../test/helpers');
 
 const e18 = '000000000000000000';
 
@@ -19,7 +17,7 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   } = contracts;
 
   const accounts = await web3.eth.getAccounts();
-  const {timelockAddress} = addresses;
+  const { timelockAddress } = addresses;
 
   const role = await balancerLBPSwapper.CONTRACT_ADMIN_ROLE();
 
@@ -40,7 +38,7 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   const pid = await balancerLBPSwapper.pid();
 
   await core.allocateTribe(accounts[0], `100000${1e18}`);
-  await tribe.approve(balancerVault.address, `1000000${e18}`, {from: accounts[0]});
+  await tribe.approve(balancerVault.address, `1000000${e18}`, { from: accounts[0] });
   await balancerVault.swap(
     {
       poolId: pid,
@@ -69,11 +67,7 @@ async function teardown(addresses, oldContractAddresses, logging) {}
 async function validate(addresses, oldContracts, contracts) {
   const { coreAddress, timelockAddress } = addresses;
 
-  const {
-    core,
-    tribe,
-    balancerLBPSwapper
-  } = contracts;
+  const { core, tribe, balancerLBPSwapper } = contracts;
 
   expect(await balancerLBPSwapper.isContractAdmin(balancerLBPSwapper.address)).to.be.true;
   expect(await balancerLBPSwapper.isContractAdmin(timelockAddress)).to.be.true;
@@ -84,5 +78,8 @@ async function validate(addresses, oldContracts, contracts) {
 }
 
 module.exports = {
-  setup, run, teardown, validate 
+  setup,
+  run,
+  teardown,
+  validate
 };

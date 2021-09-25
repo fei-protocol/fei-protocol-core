@@ -3,17 +3,12 @@ const hre = require('hardhat');
 const { forceEth } = require('../../test/helpers');
 
 const e18 = '000000000000000000';
-const e15 =    '000000000000000';
+const e15 = '000000000000000';
 
 // Run the setup steps required for the DAO proposal to fully execute
 // Approve the 3 OTC contracts for INDEX from the beneficiary
 async function setup(addresses, oldContracts, contracts, logging) {
-  const {
-    defiPulseOTCAddress,
-    ethOTCEscrowAddress,
-    feiOTCEscrowAddress,
-    tribeOTCEscrowAddress,
-  } = addresses;
+  const { defiPulseOTCAddress, ethOTCEscrowAddress, feiOTCEscrowAddress, tribeOTCEscrowAddress } = addresses;
 
   const { index } = contracts;
   await forceEth(defiPulseOTCAddress);
@@ -21,11 +16,11 @@ async function setup(addresses, oldContracts, contracts, logging) {
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
     params: [defiPulseOTCAddress]
-  }); 
+  });
 
-  await index.approve(ethOTCEscrowAddress, `50000${e18}`, {from: defiPulseOTCAddress});
-  await index.approve(tribeOTCEscrowAddress, `25000${e18}`, {from: defiPulseOTCAddress});
-  await index.approve(feiOTCEscrowAddress, `25000${e18}`, {from: defiPulseOTCAddress});
+  await index.approve(ethOTCEscrowAddress, `50000${e18}`, { from: defiPulseOTCAddress });
+  await index.approve(tribeOTCEscrowAddress, `25000${e18}`, { from: defiPulseOTCAddress });
+  await index.approve(feiOTCEscrowAddress, `25000${e18}`, { from: defiPulseOTCAddress });
 }
 
 /*
@@ -42,7 +37,7 @@ Simulate the DAO flow of acquiring and swapping ETH, FEI, and TRIBE OTC for INDE
 */
 async function run(addresses, oldContracts, contracts, logging = false) {
   const { timelockAddress } = addresses;
-  const { 
+  const {
     fei,
     weth,
     core,
@@ -52,33 +47,29 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     tribeOTCEscrow,
     ethPCVDripper,
     indexDelegator,
-    compoundEthPCVDeposit,
+    compoundEthPCVDeposit
   } = contracts;
 
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
     params: [timelockAddress]
-  }); 
+  });
 
   await ethPCVDripper.withdrawETH(compoundEthPCVDeposit.address, `633150${e15}`);
   await compoundEthPCVDeposit.withdrawETH(weth.address, `633150${e15}`);
   await compoundEthPCVDeposit.withdrawERC20(weth.address, ethOTCEscrow.address, `633150${e15}`);
-  await ethOTCEscrow.swap({from: timelockAddress});
+  await ethOTCEscrow.swap({ from: timelockAddress });
   await fei.mint(feiOTCEscrow.address, `991512900${e15}`);
-  await feiOTCEscrow.swap({from: timelockAddress});
+  await feiOTCEscrow.swap({ from: timelockAddress });
   await core.allocateTribe(tribeOTCEscrow.address, `1235325922${e15}`);
-  await tribeOTCEscrow.swap({from: timelockAddress});
+  await tribeOTCEscrow.swap({ from: timelockAddress });
   await index.transfer(indexDelegator.address, `100000${e18}`, { from: timelockAddress });
 }
 
 // Check all of the balances are transferred as expected
 async function validate(addresses, oldContracts, contracts) {
-  const {
-    index, wethERC20, tribe, fei, indexDelegator, snapshotDelegateRegistry
-  } = contracts;
-  const {
-    defiPulseOTCAddress,
-  } = addresses;
+  const { index, wethERC20, tribe, fei, indexDelegator, snapshotDelegateRegistry } = contracts;
+  const { defiPulseOTCAddress } = addresses;
 
   expect((await fei.balanceOf(defiPulseOTCAddress)).toString()).to.be.equal(`991512900${e15}`);
   expect((await tribe.balanceOf(defiPulseOTCAddress)).toString()).to.be.equal(`1235325922${e15}`);
@@ -95,5 +86,8 @@ async function validate(addresses, oldContracts, contracts) {
 async function teardown(addresses, oldContracts, contracts, logging) {}
 
 module.exports = {
-  setup, run, teardown, validate
+  setup,
+  run,
+  teardown,
+  validate
 };
