@@ -12,20 +12,23 @@ async function deploy(deployAddress, addresses, logging = false) {
     dpiAddress,
     sushiswapDpiFeiAddress,
     indexCoopFusePoolDpiAddress,
-    sushiswapRouterAddress,
+    sushiswapRouterAddress
   } = addresses;
 
   if (
-    !coreAddress || !chainlinkDpiUsdOracleAddress || !dpiAddress || !sushiswapDpiFeiAddress || !indexCoopFusePoolDpiAddress || !sushiswapRouterAddress
+    !coreAddress ||
+    !chainlinkDpiUsdOracleAddress ||
+    !dpiAddress ||
+    !sushiswapDpiFeiAddress ||
+    !indexCoopFusePoolDpiAddress ||
+    !sushiswapRouterAddress
   ) {
     throw new Error('An environment variable contract address is not set');
   }
 
-  const chainlinkDpiUsdOracleWrapper = await ChainlinkOracleWrapper.new(
-    coreAddress, 
-    chainlinkDpiUsdOracleAddress,
-    { from: deployAddress }
-  );
+  const chainlinkDpiUsdOracleWrapper = await ChainlinkOracleWrapper.new(coreAddress, chainlinkDpiUsdOracleAddress, {
+    from: deployAddress
+  });
 
   logging ? console.log('DPI Oracle Wrapper deployed to: ', chainlinkDpiUsdOracleWrapper.address) : undefined;
 
@@ -36,7 +39,12 @@ async function deploy(deployAddress, addresses, logging = false) {
     { from: deployAddress }
   );
 
-  logging ? console.log('DPI Index Coop Fuse Pool ERC20CompoundPCVDeposit deployed to: ', indexCoopFusePoolDpiPCVDeposit.address) : undefined;
+  logging
+    ? console.log(
+        'DPI Index Coop Fuse Pool ERC20CompoundPCVDeposit deployed to: ',
+        indexCoopFusePoolDpiPCVDeposit.address
+      )
+    : undefined;
 
   const dpiUniswapPCVDeposit = await UniswapPCVDeposit.new(
     coreAddress,
@@ -69,7 +77,7 @@ async function deploy(deployAddress, addresses, logging = false) {
     chainlinkDpiUsdOracleWrapper,
     indexCoopFusePoolDpiPCVDeposit,
     dpiUniswapPCVDeposit,
-    dpiBondingCurve,
+    dpiBondingCurve
   };
 }
 

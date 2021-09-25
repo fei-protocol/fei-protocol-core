@@ -17,13 +17,13 @@ const CErc20Delegator = artifacts.require('CErc20Delegator');
 
 // The steps that don't form part of the proposal but need to be mocked up
 async function setup(addresses, oldContracts, contracts, logging) {
-  const { 
+  const {
     timelockAddress,
     rariPool8ComptrollerAddress,
     rariPool8FeiAddress,
     rariPool8TribeAddress,
     rariPool8EthAddress,
-    rariPool8DaiAddress,
+    rariPool8DaiAddress
   } = addresses;
 
   const accounts = await web3.eth.getAccounts();
@@ -59,11 +59,11 @@ async function setup(addresses, oldContracts, contracts, logging) {
     method: 'hardhat_impersonateAccount',
     params: [currentPoolDaiAdmin]
   });
-  await web3.eth.sendTransaction({from: accounts[0], to: currentPoolComptrollerAdmin, value: '10000000000000000'});
-  await web3.eth.sendTransaction({from: accounts[0], to: currentPoolFeiAdmin, value: '10000000000000000'});
-  await web3.eth.sendTransaction({from: accounts[0], to: currentPoolTribeAdmin, value: '10000000000000000'});
-  await web3.eth.sendTransaction({from: accounts[0], to: currentPoolEthAdmin, value: '10000000000000000'});
-  await web3.eth.sendTransaction({from: accounts[0], to: currentPoolDaiAdmin, value: '10000000000000000'});
+  await web3.eth.sendTransaction({ from: accounts[0], to: currentPoolComptrollerAdmin, value: '10000000000000000' });
+  await web3.eth.sendTransaction({ from: accounts[0], to: currentPoolFeiAdmin, value: '10000000000000000' });
+  await web3.eth.sendTransaction({ from: accounts[0], to: currentPoolTribeAdmin, value: '10000000000000000' });
+  await web3.eth.sendTransaction({ from: accounts[0], to: currentPoolEthAdmin, value: '10000000000000000' });
+  await web3.eth.sendTransaction({ from: accounts[0], to: currentPoolDaiAdmin, value: '10000000000000000' });
 
   // Initiate transfer of admins over to our timelock
   await rariPool8Comptroller._setPendingAdmin(timelockAddress, {
@@ -87,18 +87,18 @@ async function setup(addresses, oldContracts, contracts, logging) {
     method: 'hardhat_impersonateAccount',
     params: [timelockAddress]
   });
-  await web3.eth.sendTransaction({from: accounts[0], to: timelockAddress, value: '10000000000000000'});
+  await web3.eth.sendTransaction({ from: accounts[0], to: timelockAddress, value: '10000000000000000' });
 }
 
 // The actual steps in the proposal
 async function run(addresses, oldContracts, contracts, logging = false) {
-  const { 
+  const {
     timelockAddress,
     rariPool8ComptrollerAddress,
     rariPool8FeiAddress,
     rariPool8TribeAddress,
     rariPool8EthAddress,
-    rariPool8DaiAddress,
+    rariPool8DaiAddress
   } = addresses;
 
   const rariPool8Comptroller = await CErc20Delegator.at(rariPool8ComptrollerAddress);
@@ -106,40 +106,40 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   const rariPool8Tribe = await CErc20Delegator.at(rariPool8TribeAddress);
   const rariPool8Eth = await CErc20Delegator.at(rariPool8EthAddress);
   const rariPool8Dai = await CErc20Delegator.at(rariPool8DaiAddress);
-  const { fei } = contracts;    
+  const { fei } = contracts;
 
   // 1. Accept admin transfer from Tetranode for Comptroller
   await rariPool8Comptroller._acceptAdmin({
-    from: timelockAddress,
+    from: timelockAddress
   });
   // 2. Accept admin transfer from Tetranode for FEI
   await rariPool8Fei._acceptAdmin({
-    from: timelockAddress,
+    from: timelockAddress
   });
   // 3. Accept admin transfer from Tetranode for TRIBE
   await rariPool8Tribe._acceptAdmin({
-    from: timelockAddress,
+    from: timelockAddress
   });
   // 4. Accept admin transfer from Tetranode for ETH
   await rariPool8Eth._acceptAdmin({
-    from: timelockAddress,
+    from: timelockAddress
   });
   // 5. Accept admin transfer from Tetranode for DAI
   await rariPool8Dai._acceptAdmin({
-    from: timelockAddress,
+    from: timelockAddress
   });
   // 6. Mint 10M FEI into Timelock
   const tenMillion = '10000000000000000000000000';
   await fei.mint(timelockAddress, tenMillion, {
-    from: timelockAddress,
+    from: timelockAddress
   });
   // 6. Approve 10M FEI transfer
   await fei.approve(rariPool8Fei.address, tenMillion, {
-    from: timelockAddress,
+    from: timelockAddress
   });
   // 7. Mint cTokens by depositing FEI into Rari pool
   await rariPool8Fei.mint(tenMillion, {
-    from: timelockAddress,
+    from: timelockAddress
   });
 }
 

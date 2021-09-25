@@ -19,28 +19,26 @@ async function deploy(deployAddress, addresses, logging = false) {
   } = addresses;
 
   if (
-    !coreAddress 
-    || !chainlinkRaiEthOracleAddress 
-    || !chainlinkEthUsdOracleWrapperAddress 
-    || !raiAddress 
-    || !reflexerStableAssetFusePoolRaiAddress 
-    || !aaveLendingPool
-    || !aRaiAddress
-    || !aaveIncentivesController
+    !coreAddress ||
+    !chainlinkRaiEthOracleAddress ||
+    !chainlinkEthUsdOracleWrapperAddress ||
+    !raiAddress ||
+    !reflexerStableAssetFusePoolRaiAddress ||
+    !aaveLendingPool ||
+    !aRaiAddress ||
+    !aaveIncentivesController
   ) {
     throw new Error('An environment variable contract address is not set');
   }
 
-  const chainlinkRaiEthOracleWrapper = await ChainlinkOracleWrapper.new(
-    coreAddress, 
-    chainlinkRaiEthOracleAddress,
-    { from: deployAddress }
-  );
+  const chainlinkRaiEthOracleWrapper = await ChainlinkOracleWrapper.new(coreAddress, chainlinkRaiEthOracleAddress, {
+    from: deployAddress
+  });
 
   logging ? console.log('RAI/ETH Oracle Wrapper deployed to: ', chainlinkRaiEthOracleWrapper.address) : undefined;
 
   const chainlinkRaiUsdCompositOracle = await ChainlinkCompositOracle.new(
-    coreAddress, 
+    coreAddress,
     chainlinkRaiEthOracleWrapper.address,
     chainlinkEthUsdOracleWrapperAddress,
     { from: deployAddress }
@@ -55,8 +53,13 @@ async function deploy(deployAddress, addresses, logging = false) {
     { from: deployAddress }
   );
 
-  logging ? console.log('RAI Reflexer stable asset ERC20CompoundPCVDeposit deployed to: ', reflexerStableAssetFusePoolRaiPCVDeposit.address) : undefined;
-  
+  logging
+    ? console.log(
+        'RAI Reflexer stable asset ERC20CompoundPCVDeposit deployed to: ',
+        reflexerStableAssetFusePoolRaiPCVDeposit.address
+      )
+    : undefined;
+
   const aaveRaiPCVDeposit = await AavePCVDeposit.new(
     coreAddress,
     aaveLendingPool,
@@ -88,7 +91,7 @@ async function deploy(deployAddress, addresses, logging = false) {
     chainlinkRaiUsdCompositOracle,
     reflexerStableAssetFusePoolRaiPCVDeposit,
     aaveRaiPCVDeposit,
-    raiBondingCurve,
+    raiBondingCurve
   };
 }
 

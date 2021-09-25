@@ -17,16 +17,9 @@ const fourDays = 4 * 24 * 60 * 60;
 const dripAmount = new BN(4000000).mul(new BN(10).pow(new BN(18)));
 
 async function deploy(deployAddress, addresses, logging = false) {
-  const { 
-    coreAddress, 
-    tribeAddress,
-    timelockAddress, 
-    tribalChiefOptimisticMultisigAddress 
-  } = addresses;
+  const { coreAddress, tribeAddress, timelockAddress, tribalChiefOptimisticMultisigAddress } = addresses;
 
-  const tribalChiefImpl = await TribalChief.new(
-    coreAddress,
-  );
+  const tribalChiefImpl = await TribalChief.new(coreAddress);
   logging && console.log('TribalChief impl deployed to: ', tribalChiefImpl.address);
 
   // Create a new Proxy admin
@@ -39,26 +32,30 @@ async function deploy(deployAddress, addresses, logging = false) {
 
   logging && console.log('Transferred ownership of proxy to the DAO');
 
-  // This initialize calldata gets atomically executed against the impl logic 
+  // This initialize calldata gets atomically executed against the impl logic
   // upon construction of the proxy
-  const calldata = await web3.eth.abi.encodeFunctionCall({
-    name: 'initialize',
-    type: 'function',
-    inputs: [{
-      type: 'address',
-      name: 'core'
-    }, {
-      type: 'address',
-      name: 'tribe'
-    }]
-  }, [coreAddress, tribeAddress]);
+  const calldata = await web3.eth.abi.encodeFunctionCall(
+    {
+      name: 'initialize',
+      type: 'function',
+      inputs: [
+        {
+          type: 'address',
+          name: 'core'
+        },
+        {
+          type: 'address',
+          name: 'tribe'
+        }
+      ]
+    },
+    [coreAddress, tribeAddress]
+  );
 
   const tribalChief = await TribalChief.at(
-    (await TransparentUpgradeableProxy.new(
-      tribalChiefImpl.address, 
-      proxyAdmin.address, 
-      calldata
-    )).address
+    (
+      await TransparentUpgradeableProxy.new(tribalChiefImpl.address, proxyAdmin.address, calldata)
+    ).address
   );
 
   logging && console.log('TribalChief deployed to: ', tribalChief.address);

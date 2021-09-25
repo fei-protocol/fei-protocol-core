@@ -10,10 +10,7 @@ async function setup(addresses, oldContracts, contracts, logging) {}
    Make RAI bonding curve a minter and set its mint cap to 10m FEI 
 */
 async function run(addresses, oldContracts, contracts, logging = false) {
-  const {
-    core,
-    raiBondingCurve
-  } = contracts;
+  const { core, raiBondingCurve } = contracts;
 
   await core.grantMinter(raiBondingCurve.address);
   await raiBondingCurve.setMintCap(tenMillions);
@@ -29,5 +26,8 @@ async function validate(addresses, oldContracts, contracts) {
 }
 
 module.exports = {
-  setup, run, teardown, validate
+  setup,
+  run,
+  teardown,
+  validate
 };

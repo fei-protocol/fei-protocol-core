@@ -5,33 +5,21 @@ const BondingCurve = artifacts.readArtifactSync('BondingCurve');
 const e18 = '000000000000000000';
 
 async function deploy(deployAddress, addresses, logging = false) {
-  const {
-    coreAddress,
-    chainlinkDaiUsdOracleAddress,
-    daiAddress,
-    compoundDaiAddress,
-  } = addresses;
+  const { coreAddress, chainlinkDaiUsdOracleAddress, daiAddress, compoundDaiAddress } = addresses;
 
-  if (
-    !coreAddress || !chainlinkDaiUsdOracleAddress || !daiAddress || !compoundDaiAddress
-  ) {
+  if (!coreAddress || !chainlinkDaiUsdOracleAddress || !daiAddress || !compoundDaiAddress) {
     throw new Error('An environment variable contract address is not set');
   }
 
-  const chainlinkDaiUsdOracleWrapper = await ChainlinkOracleWrapper.new(
-    coreAddress, 
-    chainlinkDaiUsdOracleAddress,
-    { from: deployAddress }
-  );
+  const chainlinkDaiUsdOracleWrapper = await ChainlinkOracleWrapper.new(coreAddress, chainlinkDaiUsdOracleAddress, {
+    from: deployAddress
+  });
 
   logging ? console.log('DAI Oracle Wrapper deployed to: ', chainlinkDaiUsdOracleWrapper.address) : undefined;
 
-  const compoundDaiPCVDeposit = await ERC20CompoundPCVDeposit.new(
-    coreAddress,
-    compoundDaiAddress,
-    daiAddress,
-    { from: deployAddress }
-  );
+  const compoundDaiPCVDeposit = await ERC20CompoundPCVDeposit.new(coreAddress, compoundDaiAddress, daiAddress, {
+    from: deployAddress
+  });
 
   logging ? console.log('DAI ERC20CompoundPCVDeposit deployed to: ', compoundDaiPCVDeposit.address) : undefined;
 
@@ -53,7 +41,7 @@ async function deploy(deployAddress, addresses, logging = false) {
   return {
     chainlinkDaiUsdOracleWrapper,
     compoundDaiPCVDeposit,
-    daiBondingCurve,
+    daiBondingCurve
   };
 }
 

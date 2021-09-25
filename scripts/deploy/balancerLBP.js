@@ -18,29 +18,25 @@ async function deploy(deployAddress, addresses, logging = false) {
     timelockAddress // TODO use better address
   } = addresses;
 
-  if (
-    !coreAddress
-  ) {
+  if (!coreAddress) {
     throw new Error('An environment variable contract address is not set');
   }
 
-  const chainlinkTribeEthOracleWrapper = await ChainlinkOracleWrapper.new(
-    coreAddress, 
-    chainlinkTribeEthOracleAddress,
-    { from: deployAddress }
-  );
+  const chainlinkTribeEthOracleWrapper = await ChainlinkOracleWrapper.new(coreAddress, chainlinkTribeEthOracleAddress, {
+    from: deployAddress
+  });
 
   logging ? console.log('TRIBE/ETH Oracle Wrapper deployed to: ', chainlinkTribeEthOracleWrapper.address) : undefined;
 
   const chainlinkTribeUsdCompositeOracle = await ChainlinkCompositOracle.new(
-    coreAddress, 
+    coreAddress,
     chainlinkTribeEthOracleWrapper.address,
     chainlinkEthUsdOracleWrapperAddress,
     { from: deployAddress }
   );
 
   logging ? console.log('TRIBE Composite oracle deployed to: ', chainlinkTribeUsdCompositeOracle.address) : undefined;
-  
+
   const balancerLBPSwapper = await BalancerLBPSwapper.new(
     coreAddress,
     {
@@ -54,7 +50,7 @@ async function deploy(deployAddress, addresses, logging = false) {
     tribeAddress,
     timelockAddress,
     `100000${e16}` // 1000 FEI min
-  );    
+  );
 
   logging && console.log('Balance LBP Pool Swapper deployed to: ', balancerLBPSwapper.address);
 

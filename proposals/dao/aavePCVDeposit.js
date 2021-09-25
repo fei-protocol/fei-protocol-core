@@ -4,10 +4,7 @@ async function setup(addresses, oldContracts, contracts, logging) {}
 
 // The DAO steps for creating an Aave ETH PCV deposit
 async function run(addresses, oldContracts, contracts, logging = false) {
-  const {
-    aaveEthPCVDeposit,
-    ethPCVDripper
-  } = contracts;
+  const { aaveEthPCVDeposit, ethPCVDripper } = contracts;
 
   await ethPCVDripper.withdrawETH(aaveEthPCVDeposit.address, `1000${e18}`);
   await aaveEthPCVDeposit.deposit();
