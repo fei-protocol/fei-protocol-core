@@ -118,7 +118,7 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts)
 
   const core = contracts.core;
 
-  const  { uniswapPCVControllerAddress } = addresses;
+  const  { uniswapPCVController } = addresses;
   const {
     uniswapPCVDeposit,
     dpiUniswapPCVDeposit,
@@ -127,13 +127,13 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts)
   } = oldContracts;
 
   // Revoke controller permissions
-  await core.revokeMinter(uniswapPCVControllerAddress);
+  await core.revokeMinter(uniswapPCVController);
   await core.revokeMinter(uniswapPCVDeposit.address);
   await core.revokeMinter(dpiUniswapPCVDeposit.address);
   await core.revokeMinter(bondingCurve.address);
 
   await core.revokePCVController(ratioPCVController.address);
-  await core.revokePCVController(uniswapPCVControllerAddress);
+  await core.revokePCVController(uniswapPCVController);
 
   // Deposit Uni and DPI
   await contracts.dpiUniswapPCVDeposit.deposit();
