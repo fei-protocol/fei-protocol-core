@@ -18,6 +18,7 @@ const privateKey = process.env.ETH_PRIVATE_KEY;
 const runE2ETests = process.env.RUN_E2E_TESTS;
 const enableMainnetForking = process.env.ENABLE_MAINNET_FORKING;
 const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
+const runAllTests = process.env.RUN_ALL_TESTS;
 
 if (!(process.env.NODE_OPTIONS && process.env.NODE_OPTIONS.includes('max-old-space-size'))) {
   throw new Error(
@@ -97,7 +98,7 @@ export default {
   },
 
   paths: {
-    tests: runE2ETests ? './test/integration/' : './test/unit/'
+    tests: runAllTests ? './test/' : runE2ETests ? './test/integration/' : './test/unit/'
   },
 
   mocha: {
