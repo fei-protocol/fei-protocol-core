@@ -3,8 +3,6 @@ import { getAllContractAddresses, getAllContracts } from './loadContracts';
 import {
   Config,
   ContractAccessRights,
-  MainnetContractAddresses,
-  MainnetContracts,
   TestCoordinator,
   Env,
   ProposalConfig,
@@ -14,8 +12,6 @@ import {
 import { sudo } from '../../../scripts/utils/sudo';
 import constructProposal from '../../../scripts/utils/constructProposal';
 import '@nomiclabs/hardhat-ethers';
-import { artifacts } from 'hardhat';
-import { ethers } from 'ethers';
 
 import {
   NamedContracts,
@@ -152,8 +148,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * Set the addresses of the contracts used in the test environment
    */
   async setLocalTestContractAddresses(contracts: NamedContracts) {
-    // @ts-ignore
-    this.afterUpgradeAddresses = { ...this.mainnetAddresses };
+    this.afterUpgradeAddresses = { ...(contracts as unknown as NamedAddresses) };
   }
 
   /**
@@ -183,7 +178,6 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       accessControlRoles[role] = addresses;
     });
 
-    // @ts-ignore
-    return accessControlRoles;
+    return accessControlRoles as ContractAccessRights;
   }
 }

@@ -1,6 +1,3 @@
-const {
-  constants: { MAX_UINT256 }
-} = require('@openzeppelin/test-helpers');
 import '@nomiclabs/hardhat-ethers';
 import hre, { ethers } from 'hardhat';
 import {

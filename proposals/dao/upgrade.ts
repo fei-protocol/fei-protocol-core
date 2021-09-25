@@ -1,7 +1,9 @@
 import hre, { ethers } from 'hardhat';
 import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc } from '../../test/integration/setup/types';
 
-const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
+const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  console.log('No actions to complete in setup.');
+};
 
 const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
   const timelockAddress = addresses.timelockAddress;

@@ -4,9 +4,13 @@ import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc } from '../../tes
 
 const e18 = ethers.constants.WeiPerEther;
 
-const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
+const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  console.log('No actions to complete in setup.');
+};
 
-const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {};
+const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
+  console.log('No actions to complete in run.');
+};
 
 const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   const { optimisticTimelock } = addresses;

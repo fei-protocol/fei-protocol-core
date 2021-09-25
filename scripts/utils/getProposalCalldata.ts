@@ -1,7 +1,8 @@
 import constructProposal from './constructProposal';
+import { web3 } from 'hardhat';
+import * as dotenv from 'dotenv';
 
-const { web3 } = require('hardhat');
-require('dotenv').config();
+dotenv.config();
 
 /**
  * Take in a hardhat proposal object and output the proposal calldatas

@@ -1,7 +1,5 @@
 import { DeployUpgradeFunc } from '../../test/integration/setup/types';
-import hre, { ethers, artifacts } from 'hardhat';
-
-const OptimisticTimelock = artifacts.readArtifactSync('OptimisticTimelock');
+import { ethers } from 'hardhat';
 
 const fourDays = 4 * 24 * 60 * 60;
 

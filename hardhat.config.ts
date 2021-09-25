@@ -8,7 +8,8 @@ import 'hardhat-contract-sizer';
 import 'solidity-coverage';
 import { HardhatUserConfig } from 'hardhat/config';
 
-require('dotenv').config();
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 const rinkebyAlchemyApiKey = process.env.RINKEBY_ALCHEMY_API_KEY;
 const testnetPrivateKey = process.env.TESTNET_PRIVATE_KEY;

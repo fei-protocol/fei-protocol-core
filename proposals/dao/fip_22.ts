@@ -7,7 +7,9 @@ const e18 = '000000000000000000';
 const END_TIMESTAMP = '1647993600'; // 3-23-22
 const TRIBE_PER_SECOND = '250000000000000000'; // .25 TRIBE/s
 
-async function setup(addresses, oldContracts, contracts, logging) {}
+async function setup(addresses, oldContracts, contracts, logging) {
+  console.log('Nothing to see here, move along.');
+}
 
 /*
  1. Mint 25M FEI to Aave FEI PCV Deposit
@@ -54,7 +56,9 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   await incentivesController.setDistributionEnd(END_TIMESTAMP);
 }
 
-const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
+const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  console.log('Nothing to do in teardown function.');
+};
 
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
   const { tribe, aaveFeiPCVDeposit, proxyAdmin, fei, aFei, tribalChief } = contracts;

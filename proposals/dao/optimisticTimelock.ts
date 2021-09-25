@@ -8,7 +8,9 @@ import {
   ValidateUpgradeFunc
 } from '../../test/integration/setup/types';
 
-const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
+const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  console.log('No actions to complete in setup.');
+};
 
 /*
  1. Revoke TribalChief role from old timelock

@@ -11,11 +11,17 @@ const DAI_DISCOUNT = '0';
 const DPI_CAP = e18.mul(50_000_000).toString();
 const RAI_CAP = e18.mul(20_000_000).toString();
 
-async function setup(addresses, oldContracts, contracts, logging) {}
+async function setup(addresses, oldContracts, contracts, logging) {
+  console.log('No actions to complete in setup.');
+}
 
-async function run(addresses, oldContracts, contracts, logging = false) {}
+async function run(addresses, oldContracts, contracts, logging = false) {
+  console.log('No actions to complete in run.');
+}
 
-async function teardown(addresses, oldContracts, contracts, logging) {}
+async function teardown(addresses, oldContracts, contracts, logging) {
+  console.log('No actions to complete in teardown.');
+}
 
 async function validate(addresses, oldContracts, contracts) {
   const { ethReserveStabilizer, bondingCurve, daiBondingCurve, dpiBondingCurve, raiBondingCurve } = contracts;

@@ -24,7 +24,9 @@ import { web3, ethers } from 'hardhat';
 //    fip execution on chain
 //    for example in `indexOTC` the counterparty needed to approve INDEX before the DAO vote could execute
 // 2. Any mocks needed to call run() (like impersonateAccount)
-async function setup(addresses, oldContracts, contracts, logging) {}
+async function setup(addresses, oldContracts, contracts, logging) {
+  console.log('Nothing to see here, move along.');
+}
 
 // Runs the DAO proposal steps listed above
 // Note that these mock the on-chain proposal, but the actual execution will be handled by the governor
@@ -43,7 +45,9 @@ async function run(addresses, oldContracts, contracts, logging) {
 
 // Tears down any changes made in setup() that need to be cleaned up before doing
 // further post-fip checks
-async function teardown(addresses, oldContracts, contracts, logging) {}
+async function teardown(addresses, oldContracts, contracts, logging) {
+  console.log('Nothing to see here, move along.');
+}
 
 // Run any validations required on the fip using mocha or console logging
 async function validate(addresses, oldContracts, contracts) {

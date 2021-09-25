@@ -1,8 +1,6 @@
 import { getAllContracts } from '../../test/integration/setup/loadContracts';
-
-const fs = require('fs');
-
-const { proposals } = require('hardhat');
+import fs from 'fs';
+import { proposals } from 'hardhat';
 
 /**
  * Constucts a hardhat proposal object
