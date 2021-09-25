@@ -19,13 +19,8 @@ async function setup(addresses, oldContracts, contracts, logging) {}
 async function run(addresses, oldContracts, contracts, logging = false) {
   const { timelockAddress } = addresses;
 
-  const {
-    rariPool9FeiPCVDeposit,
-    rariPool25FeiPCVDeposit,
-    rariPool26FeiPCVDeposit,
-    rariPool27FeiPCVDeposit,
-    fei,
-  } = contracts;
+  const { rariPool9FeiPCVDeposit, rariPool25FeiPCVDeposit, rariPool26FeiPCVDeposit, rariPool27FeiPCVDeposit, fei } =
+    contracts;
 
   // 1. Mint 4M FEI
   const totalFei = `4000000${e18}`;
@@ -61,20 +56,11 @@ async function run(addresses, oldContracts, contracts, logging = false) {
 async function teardown(addresses, oldContracts, contracts, logging) {}
 
 async function validate(addresses, oldContracts, contracts) {
-  const {
-    rariPool9FeiPCVDeposit,
-    rariPool25FeiPCVDeposit,
-    rariPool26FeiPCVDeposit,
-    rariPool27FeiPCVDeposit
-  } = contracts;
+  const { rariPool9FeiPCVDeposit, rariPool25FeiPCVDeposit, rariPool26FeiPCVDeposit, rariPool27FeiPCVDeposit } =
+    contracts;
 
-  const {
-    feiAddress,
-    rariPool9FeiAddress,
-    rariPool25FeiAddress,
-    rariPool26FeiAddress,
-    rariPool27FeiAddress,
-  } = addresses;
+  const { feiAddress, rariPool9FeiAddress, rariPool25FeiAddress, rariPool26FeiAddress, rariPool27FeiAddress } =
+    addresses;
 
   const millionFei = new BN(`1000000${e18}`);
   expectApprox(await rariPool9FeiPCVDeposit.balance(), millionFei);
@@ -94,5 +80,8 @@ async function validate(addresses, oldContracts, contracts) {
 }
 
 module.exports = {
-  setup, run, teardown, validate
+  setup,
+  run,
+  teardown,
+  validate
 };

@@ -1,17 +1,9 @@
-const AavePCVDeposit = artifacts.require('AavePCVDeposit');
+const AavePCVDeposit = artifacts.readArtifactSync('AavePCVDeposit');
 
 async function deploy(deployAddress, addresses, logging = false) {
-  const {
-    coreAddress,
-    wethAddress,
-    aaveLendingPool,
-    aWETHAddress,
-    aaveIncentivesController
-  } = addresses;
+  const { coreAddress, wethAddress, aaveLendingPool, aWETHAddress, aaveIncentivesController } = addresses;
 
-  if (
-    !coreAddress || !wethAddress || !aaveLendingPool || !aWETHAddress || !aaveIncentivesController
-  ) {
+  if (!coreAddress || !wethAddress || !aaveLendingPool || !aWETHAddress || !aaveIncentivesController) {
     throw new Error('An environment variable contract address is not set');
   }
 
@@ -24,7 +16,7 @@ async function deploy(deployAddress, addresses, logging = false) {
     { from: deployAddress }
   );
   logging && console.log('Aave ETH PCV Deposit deployed to: ', aaveEthPCVDeposit.address);
-  
+
   return {
     aaveEthPCVDeposit
   };

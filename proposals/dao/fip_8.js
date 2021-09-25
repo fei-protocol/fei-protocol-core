@@ -10,13 +10,8 @@
 async function setup(addresses, oldContracts, contracts, logging) {}
 
 // The actual steps in the proposal
-async function run(addresses, oldContracts, contracts, logging = false)  {
-  const { 
-    bondingCurve,
-    ethReserveStabilizer,
-    uniswapPCVDeposit,
-    uniswapPCVController
-  } = contracts;
+async function run(addresses, oldContracts, contracts, logging = false) {
+  const { bondingCurve, ethReserveStabilizer, uniswapPCVDeposit, uniswapPCVController } = contracts;
 
   const { chainlinkEthUsdOracleWrapperAddress } = addresses;
 

@@ -7,7 +7,7 @@ const GovernorAlpha = artifacts.require('GovernorAlpha');
 const { web3 } = hre;
 // This script fully executes an on-chain DAO proposal with pre-supplied calldata
 
-// txData = The calldata for the DAO transaction to execute. 
+// txData = The calldata for the DAO transaction to execute.
 // The address at MAINNET_PROPOSER will submit this tx to the GovernorAlpha
 async function exec(txData, totalValue, addresses) {
   const { proposerAddress, voterAddress, governorAlphaAddress } = addresses;
@@ -27,7 +27,10 @@ async function exec(txData, totalValue, addresses) {
   if (txData) {
     console.log('Submitting Proposal');
     await web3.eth.sendTransaction({
-      from: proposerAddress, to: governorAlphaAddress, data: txData, gas: 6000000
+      from: proposerAddress,
+      to: governorAlphaAddress,
+      data: txData,
+      gas: 6000000
     });
   }
 
@@ -38,10 +41,10 @@ async function exec(txData, totalValue, addresses) {
   console.log(`Proposal Number: ${proposalNo}`);
 
   let proposal = await governor.proposals(proposalNo);
-  const {startBlock} = proposal;
+  const { startBlock } = proposal;
 
   // Advance to vote start
-  if (await time.latestBlock() < startBlock) {
+  if ((await time.latestBlock()) < startBlock) {
     console.log(`Advancing To: ${startBlock}`);
     await time.advanceBlockTo(startBlock);
   } else {
@@ -49,17 +52,17 @@ async function exec(txData, totalValue, addresses) {
   }
 
   try {
-    await governor.castVote(proposalNo, true, {from: voterAddress});
+    await governor.castVote(proposalNo, true, { from: voterAddress });
     console.log('Casted vote');
   } catch {
     console.log('Already voted');
   }
 
   proposal = await governor.proposals(proposalNo);
-  const {endBlock} = proposal;
+  const { endBlock } = proposal;
 
   // Advance to after vote completes and queue the transaction
-  if (await time.latestBlock() < endBlock) {
+  if ((await time.latestBlock()) < endBlock) {
     console.log(`Advancing To: ${endBlock}`);
     await time.advanceBlockTo(endBlock);
 
@@ -74,7 +77,7 @@ async function exec(txData, totalValue, addresses) {
   await time.increase(86400); // 1 day in seconds
 
   console.log('Executing');
-  await governor.execute(proposalNo, {value: totalValue});
+  await governor.execute(proposalNo, { value: totalValue });
   console.log('Success');
 }
 

@@ -1,16 +1,12 @@
 const { web3 } = require('hardhat');
 
-const Timelock = artifacts.require('Timelock');
-const GovernorAlpha = artifacts.require('GovernorAlpha');
+const Timelock = artifacts.readArtifactSync('Timelock');
+const GovernorAlpha = artifacts.readArtifactSync('GovernorAlpha');
 
 async function deploy(deployAddress, addresses, logging = false) {
-  const {
-    tribeAddress,
-  } = addresses;
+  const { tribeAddress } = addresses;
 
-  if (
-    !tribeAddress
-  ) {
+  if (!tribeAddress) {
     throw new Error('An environment variable contract address is not set');
   }
 
@@ -24,8 +20,12 @@ async function deploy(deployAddress, addresses, logging = false) {
   const block = await web3.eth.getBlock('pending');
 
   const encoded = await web3.eth.abi.encodeParameter('address', governorAlpha.address);
-  await timelock.queueTransaction(timelock.address, 0, 'setPendingAdmin(address)', encoded, block.timestamp, {from: deployAddress});
-  await timelock.executeTransaction(timelock.address, 0, 'setPendingAdmin(address)', encoded, block.timestamp, {from: deployAddress});
+  await timelock.queueTransaction(timelock.address, 0, 'setPendingAdmin(address)', encoded, block.timestamp, {
+    from: deployAddress
+  });
+  await timelock.executeTransaction(timelock.address, 0, 'setPendingAdmin(address)', encoded, block.timestamp, {
+    from: deployAddress
+  });
 
   await governorAlpha.__acceptAdmin();
 

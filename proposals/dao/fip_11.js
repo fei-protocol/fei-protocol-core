@@ -46,39 +46,39 @@ async function run(addresses, oldContracts, contracts, logging = false) {
 
   // 1. Reduce close factor from 50% to 33.33%
   await rariPoolEightComptroller._setCloseFactor('333333333333333333', {
-    from: timelockAddress,
+    from: timelockAddress
   });
   // 2. Reduce liquidation incentive from 10% to 8%
   await rariPoolEightComptroller._setLiquidationIncentive('1080000000000000000', {
-    from: timelockAddress,
+    from: timelockAddress
   });
   // 3. Increase FEI collateral factor from 75% to 80%
   await rariPoolEightComptroller._setCollateralFactor(rariPool8FeiAddress, '800000000000000000', {
-    from: timelockAddress,
+    from: timelockAddress
   });
   // 4. Increase DAI collateral factor from 75% to 80%
   await rariPoolEightComptroller._setCollateralFactor(rariPool8DaiAddress, '800000000000000000', {
-    from: timelockAddress,
+    from: timelockAddress
   });
   // 5. Increase ETH collateral factor from 75% to 80%
   await rariPoolEightComptroller._setCollateralFactor(rariPool8EthAddress, '800000000000000000', {
-    from: timelockAddress,
+    from: timelockAddress
   });
   // 6. Set new FEI IRM: 0% Base Rate, 7% Slope Mult., 400% Jump Mult., 80% Kink
   await rariPoolEightFei._setInterestRateModel(rariPool8FeiIrmAddress, {
-    from: timelockAddress,
+    from: timelockAddress
   });
   // 7. Set new TRIBE IRM: 0% Base Rate, 20% Slope Mult., 400% Jump Mult., 80% Kink
   await rariPoolEightTribe._setInterestRateModel(rariPool8TribeIrmAddress, {
-    from: timelockAddress,
+    from: timelockAddress
   });
   // 8. Set new DAI IRM: 0% Base Rate, 10% Slope Mult., 400% Jump Mult., 80% Kink
   await rariPoolEightDai._setInterestRateModel(rariPool8DaiIrmAddress, {
-    from: timelockAddress,
+    from: timelockAddress
   });
   // 9. Set new ETH IRM: 0% Base Rate, 8% Slope Mult., 400% Jump Mult., 80% Kink
   await rariPoolEightEth._setInterestRateModel(rariPool8EthIrmAddress, {
-    from: timelockAddress,
+    from: timelockAddress
   });
 }
 
@@ -94,7 +94,7 @@ async function validate(addresses, oldContracts, contracts) {
     rariPool8FeiIrmAddress,
     rariPool8TribeIrmAddress,
     rariPool8EthIrmAddress,
-    rariPool8DaiIrmAddress,
+    rariPool8DaiIrmAddress
   } = addresses;
 
   const rariPoolEightComptroller = await Unitroller.at(rariPool8ComptrollerAddress);
@@ -114,47 +114,66 @@ async function validate(addresses, oldContracts, contracts) {
   const liquidationIncentiveMantissa = await rariPoolEightComptroller.liquidationIncentiveMantissa();
   console.log('LIQ. INCENTIVE MANTISSA', liquidationIncentiveMantissa.toString());
   // Check the collateral factors
-  const {collateralFactorMantissa: feiCollateralFactorMantissa} = await rariPoolEightComptroller.markets(rariPool8FeiAddress);
-  const {collateralFactorMantissa: tribeCollateralFactorMantissa} = await rariPoolEightComptroller.markets(rariPool8TribeAddress);
-  const {collateralFactorMantissa: daiCollateralFactorMantissa} = await rariPoolEightComptroller.markets(rariPool8DaiAddress);
-  const {collateralFactorMantissa: ethCollateralFactorMantissa} = await rariPoolEightComptroller.markets(rariPool8EthAddress);
-  console.log('COLLATERAL FACTOR MANTISSAS', JSON.stringify({
-    FEI: feiCollateralFactorMantissa.toString(),
-    TRIBE: tribeCollateralFactorMantissa.toString(),
-    DAI: daiCollateralFactorMantissa.toString(),
-    ETH: ethCollateralFactorMantissa.toString(),
-  }, null, 2));
+  const { collateralFactorMantissa: feiCollateralFactorMantissa } = await rariPoolEightComptroller.markets(
+    rariPool8FeiAddress
+  );
+  const { collateralFactorMantissa: tribeCollateralFactorMantissa } = await rariPoolEightComptroller.markets(
+    rariPool8TribeAddress
+  );
+  const { collateralFactorMantissa: daiCollateralFactorMantissa } = await rariPoolEightComptroller.markets(
+    rariPool8DaiAddress
+  );
+  const { collateralFactorMantissa: ethCollateralFactorMantissa } = await rariPoolEightComptroller.markets(
+    rariPool8EthAddress
+  );
+  console.log(
+    'COLLATERAL FACTOR MANTISSAS',
+    JSON.stringify(
+      {
+        FEI: feiCollateralFactorMantissa.toString(),
+        TRIBE: tribeCollateralFactorMantissa.toString(),
+        DAI: daiCollateralFactorMantissa.toString(),
+        ETH: ethCollateralFactorMantissa.toString()
+      },
+      null,
+      2
+    )
+  );
   // Check that all the IRMs are set to the new addresses
-  console.log('NEW IRM ADDRESSES', JSON.stringify({
-    FEI: await rariPoolEightFei.interestRateModel(),
-    TRIBE: await rariPoolEightTribe.interestRateModel(),
-    DAI: await rariPoolEightDai.interestRateModel(),
-    ETH: await rariPoolEightEth.interestRateModel(),
-  }, null, 2));
+  console.log(
+    'NEW IRM ADDRESSES',
+    JSON.stringify(
+      {
+        FEI: await rariPoolEightFei.interestRateModel(),
+        TRIBE: await rariPoolEightTribe.interestRateModel(),
+        DAI: await rariPoolEightDai.interestRateModel(),
+        ETH: await rariPoolEightEth.interestRateModel()
+      },
+      null,
+      2
+    )
+  );
   // Check that the parameters of all the IRMs are correctly set
   const pools = [
     {
       contract: rariFeiIrm,
-      name: 'FEI',
+      name: 'FEI'
     },
     {
       contract: rariTribeIrm,
-      name: 'TRIBE',
+      name: 'TRIBE'
     },
     {
       contract: rariDaiIrm,
-      name: 'DAI',
+      name: 'DAI'
     },
     {
       contract: rariEthIrm,
-      name: 'ETH',
+      name: 'ETH'
     }
   ];
   for (let i = 0; i < pools.length; i += 1) {
-    const {
-      contract,
-      name
-    } = pools[i];
+    const { contract, name } = pools[i];
     const kink = await contract.kink();
     const jumpMultiplierPerBlock = await contract.jumpMultiplierPerBlock();
     const multiplierPerBlock = await contract.multiplierPerBlock();
@@ -165,11 +184,14 @@ async function validate(addresses, oldContracts, contracts) {
       // multiplierPerBlock: multiplierPerBlock.toString(),
       kink: kink.toString(),
       multiplierPercent: multiplierPerBlock.mul(blocksPerYear).toString(),
-      jumpMultiplierPercent: jumpMultiplierPerBlock.mul(blocksPerYear).toString(),
+      jumpMultiplierPercent: jumpMultiplierPerBlock.mul(blocksPerYear).toString()
     });
   }
 }
 
 module.exports = {
-  setup, run, teardown, validate 
+  setup,
+  run,
+  teardown,
+  validate
 };

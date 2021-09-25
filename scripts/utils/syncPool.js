@@ -7,7 +7,7 @@ const IUniswapV2Pair = artifacts.require('IUniswapV2Pair');
 const UniswapPCVDeposit = artifacts.require('UniswapPCVDeposit');
 
 // Syncs the uniswap FEI-ETH pair to a price relative to oracle price
-// targetBPs would be multiplied by the peg and divided by 10000 and 
+// targetBPs would be multiplied by the peg and divided by 10000 and
 // the pair would sync to that price
 async function syncPool(targetBPs, addresses, sendingAddress, logging = false) {
   const { feiAddress, ethUniswapPCVDepositAddress, ethPairAddress } = addresses;
@@ -33,8 +33,8 @@ async function syncPool(targetBPs, addresses, sendingAddress, logging = false) {
   const currentFei = await fei.balanceOf(ethPair.address);
 
   // Burn current FEI and mint in the target, then sync the pair
-  await fei.burnFrom(ethPair.address, currentFei, {from: sendingAddress});
-  await fei.mint(ethPair.address, targetFei, {from: sendingAddress});
+  await fei.burnFrom(ethPair.address, currentFei, { from: sendingAddress });
+  await fei.mint(ethPair.address, targetFei, { from: sendingAddress });
   await ethPair.sync();
 }
 

@@ -22,12 +22,7 @@ async function setup(addresses, oldContracts, contracts, logging) {}
  10. Transfer 1M Kashi fei/DPI
 */
 async function run(addresses, oldContracts, contracts, logging = false) {
-  const { 
-    ethPCVDripperAddress, 
-    timelockAddress, 
-    bentoBoxAddress, 
-    masterKashiAddress 
-  } = addresses;
+  const { ethPCVDripperAddress, timelockAddress, bentoBoxAddress, masterKashiAddress } = addresses;
   const {
     bentoBox,
     rariPool8Fei,
@@ -61,7 +56,7 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     indexCoopFusePoolFeiPCVDeposit.address,
     rariPool6FeiPCVDeposit.address,
     rariPool7FeiPCVDeposit.address,
-    rariPool24FeiPCVDeposit.address,
+    rariPool24FeiPCVDeposit.address
   ];
   const multisendAmounts = [
     `5000000${e18}`,
@@ -71,17 +66,13 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     `1000000${e18}`,
     `1000000${e18}`
   ];
-  await multisend.transfer(
-    fei.address, 
-    ethPCVDripperAddress, 
-    multisendAddresses,
-    multisendAmounts,
-    {value: multisendFee}
-  );
+  await multisend.transfer(fei.address, ethPCVDripperAddress, multisendAddresses, multisendAmounts, {
+    value: multisendFee
+  });
 
   // 4. Transfer fFEI from FeiRari to a custom deposit
   const pool8Fei = await rariPool8Fei.balanceOf(timelockAddress);
-  await rariPool8Fei.transfer(rariPool8FeiPCVDeposit.address, pool8Fei, {from: timelockAddress});  
+  await rariPool8Fei.transfer(rariPool8FeiPCVDeposit.address, pool8Fei, { from: timelockAddress });
 
   // Kashi deployments
   const accounts = await web3.eth.getAccounts();
@@ -90,11 +81,18 @@ async function run(addresses, oldContracts, contracts, logging = false) {
   // 5. Approve BentoBox FEI
   await fei.approve(bentoBoxAddress, `8500000${e18}`);
   // 6. Approve Master Kashi contract BentoBox
-  await bentoBox.setMasterContractApproval(accounts[0], masterKashiAddress, true, 0, '0x0000000000000000000000000000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000000000000000000000000000');
+  await bentoBox.setMasterContractApproval(
+    accounts[0],
+    masterKashiAddress,
+    true,
+    0,
+    '0x0000000000000000000000000000000000000000000000000000000000000000',
+    '0x0000000000000000000000000000000000000000000000000000000000000000'
+  );
 
   // Construct calldata for cook transactions
   let datas = [
-    '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 
+    '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
     `0x000000000000000000000000956f47f50a910163d8bf957cf5846d573e7f87ca000000000000000000000000${sender}00000000000000000000000000000000000000000002116545850052128000000000000000000000000000000000000000000000000000000000000000000000`,
     `0x0000000000000000000000000000000000000000000211654585005212800000000000000000000000000000${sender}0000000000000000000000000000000000000000000000000000000000000000`
   ];
@@ -110,11 +108,11 @@ async function run(addresses, oldContracts, contracts, logging = false) {
 
   // Change the calldata to 1M instead of 2.5M
   datas = [
-    '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 
+    '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
     `0x000000000000000000000000956f47f50a910163d8bf957cf5846d573e7f87ca000000000000000000000000${sender}00000000000000000000000000000000000000000000D3C21BCECCEDA10000000000000000000000000000000000000000000000000000000000000000000000`,
     `0x00000000000000000000000000000000000000000000D3C21BCECCEDA1000000000000000000000000000000${sender}0000000000000000000000000000000000000000000000000000000000000000`
   ];
-  
+
   // 10. Cook FEI-DPI Kashi deposit
   await kashiFeiDPI.cook([11, 20, 1], [0, 0, 0], datas);
 }
@@ -127,7 +125,7 @@ async function teardown(addresses, oldContracts, contracts, logging) {
     poolPartyFeiPCVDeposit,
     rariPool6FeiPCVDeposit,
     rariPool7FeiPCVDeposit,
-    rariPool24FeiPCVDeposit,
+    rariPool24FeiPCVDeposit
   } = contracts;
 
   rariPool6FeiPCVDeposit.deposit();
@@ -139,9 +137,7 @@ async function teardown(addresses, oldContracts, contracts, logging) {
 }
 
 async function validate(addresses, oldContracts, contracts) {
-  const { 
-    timelockAddress
-  } = addresses;
+  const { timelockAddress } = addresses;
 
   const {
     rariPool8FeiPCVDeposit,
@@ -156,7 +152,7 @@ async function validate(addresses, oldContracts, contracts) {
     poolPartyFeiPCVDeposit,
     indexCoopFusePoolFeiPCVDeposit
   } = contracts;
-  
+
   const balances = {
     kashiFeiEth: (await kashiFeiEth.balanceOf(timelockAddress)).toString() === `2500000${e18}`,
     kashiFeiTribe: (await kashiFeiTribe.balanceOf(timelockAddress)).toString() === `2500000${e18}`,
@@ -170,10 +166,13 @@ async function validate(addresses, oldContracts, contracts) {
     rariPool7FeiPCVDeposit: (await rariPool7FeiPCVDeposit.balance()).toString() === `1000000${e18}`,
     rariPool24FeiPCVDeposit: (await rariPool24FeiPCVDeposit.balance()).toString() === `1000000${e18}`
   };
-  
+
   console.log(balances);
 }
 
 module.exports = {
-  setup, run, teardown, validate
+  setup,
+  run,
+  teardown,
+  validate
 };

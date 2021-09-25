@@ -9,11 +9,7 @@ async function setup(addresses, oldContracts, contracts, logging) {}
  2. Make DPI Uniswap PCV deposit a minter
 */
 async function run(addresses, oldContracts, contracts, logging = false) {
-  const {
-    core,
-    dpiUniswapPCVDeposit,
-    dpiBondingCurve
-  } = contracts;
+  const { core, dpiUniswapPCVDeposit, dpiBondingCurve } = contracts;
 
   core.grantMinter(dpiBondingCurve.address);
   core.grantMinter(dpiUniswapPCVDeposit.address);
@@ -24,5 +20,8 @@ async function teardown(addresses, oldContracts, contracts, logging) {}
 async function validate(addresses, oldContracts, contracts) {}
 
 module.exports = {
-  setup, run, teardown, validate
+  setup,
+  run,
+  teardown,
+  validate
 };

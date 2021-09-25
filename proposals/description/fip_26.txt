@@ -1,0 +1,23 @@
+
+This proposal introduces a number of changes related to the FEI redemption spread and bonding curve parameters.
+
+Tightening FEI redemption spread to 0.5%:
+1. Set Bonding Curve Buffer to 0.5% (from 1%)
+2. Set Reserve Stabilzier price to $0.995 (from $0.99)
+
+Increasing Bonding Curve capacity:
+1. Set DAI Mint Cap to 150M (from 50M)
+2. Set DAI Scale to 100M (from 50M)
+3. Set DAI Pre-Scale Discount to 0
+4. Set DPI Mint Cap to 50M (from 10M)
+5. Set RAI Mint Cap to 20M (from 10M)
+
+This proposal would further tighten the FEI peg and allow for additional diverisification through increased bonding curve caps.
+
+Forum Discussions:
+https://tribe.fei.money/t/fip-26-raise-reserve-stabilizer-backstop-to-0-995/3508
+and
+https://tribe.fei.money/t/fip-27-revamp-fei-bonding-curves/3509
+
+Code:
+https://github.com/fei-protocol/fei-protocol-core/pull/183

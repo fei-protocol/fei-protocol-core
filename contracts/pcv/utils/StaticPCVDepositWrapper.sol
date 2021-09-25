@@ -29,14 +29,14 @@ contract StaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
     }
 
     /// @notice set the PCV balance
-    function setBalance(uint256 newBalance) external onlyGovernor {
+    function setBalance(uint256 newBalance) external onlyGovernorOrAdmin {
         uint256 oldBalance = balance;
         balance = newBalance;
         emit BalanceUpdate(oldBalance, newBalance);
     }
 
     /// @notice set the protocol owned FEI amount
-    function setFeiReportBalance(uint256 newFeiBalance) external onlyGovernor {
+    function setFeiReportBalance(uint256 newFeiBalance) external onlyGovernorOrAdmin {
         uint256 oldFeiBalance = feiReportBalance;
         feiReportBalance = newFeiBalance;
         emit BalanceUpdate(oldFeiBalance, newFeiBalance);
