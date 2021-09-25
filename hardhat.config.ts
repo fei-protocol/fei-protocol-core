@@ -1,3 +1,4 @@
+import { HardhatUserConfig } from 'hardhat/config';
 import '@nomiclabs/hardhat-waffle';
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-web3';
@@ -6,9 +7,9 @@ import '@idle-finance/hardhat-proposals-plugin';
 import 'hardhat-gas-reporter';
 import 'hardhat-contract-sizer';
 import 'solidity-coverage';
-import { HardhatUserConfig } from 'hardhat/config';
 
 import * as dotenv from 'dotenv';
+
 dotenv.config();
 
 const rinkebyAlchemyApiKey = process.env.RINKEBY_ALCHEMY_API_KEY;
@@ -40,7 +41,7 @@ if (enableMainnetForking) {
   console.log('Mainnet forking disabled.');
 }
 
-const config: HardhatUserConfig = {
+export default {
   gasReporter: {
     enabled: !!process.env.REPORT_GAS
   },
@@ -71,6 +72,7 @@ const config: HardhatUserConfig = {
       accounts: privateKey ? [privateKey] : []
     }
   },
+
   solidity: {
     compilers: [
       {
@@ -103,7 +105,7 @@ const config: HardhatUserConfig = {
   },
 
   typechain: {
-    outDir: 'types',
+    outDir: './types',
     target: 'ethers-v5',
     alwaysGenerateOverloads: false // should overloads with full signatures like deposit(uint256) be generated always, even if there are no overloads?
   },
@@ -112,6 +114,4 @@ const config: HardhatUserConfig = {
     governor: '0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B',
     votingToken: '0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B'
   }
-};
-
-export default config;
+} as HardhatUserConfig;

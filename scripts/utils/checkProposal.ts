@@ -4,6 +4,7 @@ import { time } from '@openzeppelin/test-helpers';
 import { NamedContracts, UpgradeFuncs } from '../../test/integration/setup/types';
 
 import * as dotenv from 'dotenv';
+
 dotenv.config();
 
 // Multisig

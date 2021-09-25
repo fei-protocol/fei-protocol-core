@@ -15,6 +15,7 @@
     "test/*", "test/**/*",
     "scripts/*", "scripts/**/*",
     "proposals/*", "proposals/**/*",
+    "./typechain"
   ],
-  "files": ["hardhat.config.ts"]
+  "files": ["./hardhat.config.ts"]
 }
