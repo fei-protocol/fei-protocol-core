@@ -3,10 +3,10 @@ import hre from 'hardhat';
 import { time } from '@openzeppelin/test-helpers';
 import { NamedContracts, UpgradeFuncs } from '../../test/integration/setup/types';
 
+require('dotenv').config();
+
 // Multisig
 const voterAddress = '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775';
-
-require('dotenv').config();
 
 /**
  * Take in a hardhat proposal object and output the proposal calldatas

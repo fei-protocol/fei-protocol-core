@@ -759,7 +759,9 @@ describe('e2e', function () {
 
       try {
         await aaveEthPCVDeposit.deposit();
-      } catch (e) {}
+      } catch (e) {
+        console.log('Doing nothing.');
+      }
 
       const signer = (await ethers.getSigners())[0];
       await signer.sendTransaction({ to: aaveEthPCVDeposit.address, value: amount });
@@ -1032,8 +1034,6 @@ describe('e2e', function () {
         tribe = contracts.tribe;
         await forceEth(feiTribeLPTokenOwner);
       });
-
-      afterEach(async function () {});
 
       it('find uni fei/tribe LP balances', async function () {
         expect(await uniFeiTribe.balanceOf(feiTribeLPTokenOwner)).to.be.gt(toBN(0));
