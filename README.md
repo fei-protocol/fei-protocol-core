@@ -5,7 +5,7 @@ Smart contract code for Fei Protocol and the FEI stablecoin
 ## Dependencies
  Note that this has only been tested on Linux; you may encounter issues running on other operating systems.
  
- - Node v12 or v16 (you can manage Node versions easily with [NVM]([https://github.com/nvm-sh/nvm]))
+ - Node v12 or v16 (you can manage Node versions easily with [NVM](https://github.com/nvm-sh/nvm))
 
 ## Installation
  - run `npm install` in the root directory
@@ -13,6 +13,7 @@ Smart contract code for Fei Protocol and the FEI stablecoin
 ## Usage
  - run `npm run test` to run unit tests
  - run `npm run test:e2e` to run end-to-end/integration tests
+ - run `npm run test:all` to run all tests
  - run `npm run lint` to lint ts files; run `npm lint:all` to lint ts AND js files
  - run `npm run lint:fix` to fix linting errors, if fixable automatically
  - run `npm run prettier-format` to run prettier and automatically format all ts files
