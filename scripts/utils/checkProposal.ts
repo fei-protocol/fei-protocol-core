@@ -1,7 +1,7 @@
-import { getMainnetContracts, getContractAddresses } from '../../test/integration/setup/loadContracts.ts';
-
-const hre = require('hardhat');
-const { time } = require('@openzeppelin/test-helpers');
+import { getAllContracts, getAllContractAddresses } from '../../test/integration/setup/loadContracts';
+import hre from 'hardhat';
+import { time } from '@openzeppelin/test-helpers';
+import { NamedContracts, UpgradeFuncs } from '../../test/integration/setup/types';
 
 // Multisig
 const voterAddress = '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775';
@@ -19,7 +19,8 @@ async function checkProposal() {
     throw new Error('DEPLOY_FILE env variable not set');
   }
 
-  const contracts = await getMainnetContracts();
+  const contracts = await getAllContracts()
+  
   const { governorAlpha } = contracts;
 
   const proposalNo = process.env.PROPOSAL_NUMBER ? process.env.PROPOSAL_NUMBER : await governorAlpha.proposalCount();
@@ -37,7 +38,7 @@ async function checkProposal() {
   // Advance to vote start
   if (await time.latestBlock() < startBlock) {
     console.log(`Advancing To: ${startBlock}`);
-    await time.advanceBlockTo(startBlock);
+    await time.advanceBlockTo(Number(startBlock.toString()));
   } else {
     console.log('Vote already began');
   }
@@ -55,7 +56,7 @@ async function checkProposal() {
   // Advance to after vote completes and queue the transaction
   if (await time.latestBlock() < endBlock) {
     console.log(`Advancing To: ${endBlock}`);
-    await time.advanceBlockTo(endBlock);
+    await time.advanceBlockTo(Number(endBlock.toString()));
 
     console.log('Queuing');
     await governorAlpha.queue(proposalNo);
@@ -72,15 +73,15 @@ async function checkProposal() {
   console.log('Success');
       
   // Get the upgrade setup, run and teardown scripts
-  const { teardown, validate } = await import(`../../proposals/dao/${proposalName}`);
+  const proposalFuncs: UpgradeFuncs = await import(`../../proposals/proposals/${proposalName}`);
 
-  const contractAddresses = await getContractAddresses(contracts);
+  const contractAddresses = getAllContractAddresses();
   
   console.log('Teardown');
-  await teardown(contractAddresses, contracts, contracts);
+  await proposalFuncs.teardownUpgrade(contractAddresses, contracts as unknown as NamedContracts, contracts as unknown as NamedContracts, true);
   
   console.log('Validate');
-  await validate(contractAddresses, contracts, contracts);
+  await proposalFuncs.validateUpgrade(contractAddresses, contracts as unknown as NamedContracts, contracts as unknown as NamedContracts, true);
 }
 
 checkProposal()

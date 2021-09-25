@@ -23,8 +23,8 @@
     "deploy:ropsten": "npx hardhat run --network ropsten scripts/deploy/migrations.js",
     "deploy:rinkeby": "npx hardhat run --network rinkeby scripts/deploy/migrations.js",
     "abis": "node scripts/abis.js",
-    "calldata": "npx hardhat run scripts/utils/getProposalCalldata.js",
-    "check-proposal": "npx hardhat run scripts/utils/checkProposal.js"
+    "calldata": "npx hardhat run scripts/utils/getProposalCalldata.ts",
+    "check-proposal": "npx hardhat run scripts/utils/checkProposal.ts"
   },
   "author": "joeysantoro",
   "license": "AGPL-3.0-only",
@@ -44,10 +44,12 @@
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "chai": "^4.3.4",
     "dotenv": "^8.2.0",
+    "fullname": "^4.0.1",
     "hardhat": "^2.6.0",
     "hardhat-contract-sizer": "^2.0.3",
     "hardhat-gas-reporter": "^1.0.4",
-    "hardhat-typechain": "^0.3.5"
+    "hardhat-typechain": "^0.3.5",
+    "username": "^6.0.0"
   },
   "devDependencies": {
     "@idle-finance/hardhat-proposals-plugin": "^0.2.3",

@@ -17,7 +17,7 @@ import '@nomiclabs/hardhat-ethers'
 import { artifacts } from 'hardhat'
 import { ethers } from 'ethers'
 
-import { NamedContracts, DeployFunc, SetupUpgradeFunc, RunUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from './types';
+import { NamedContracts, DeployUpgradeFunc, SetupUpgradeFunc, RunUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from './types';
 
 /**
  * Coordinate initialising an end-to-end testing environment
@@ -80,7 +80,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     if (config["deploy"]) {
       console.log(`Applying upgrade for proposal: ${proposalName}`)
       const { deploy } = await import('../../../scripts/deploy/' + proposalName);
-      const deployTyped = deploy as DeployFunc;
+      const deployTyped = deploy as DeployUpgradeFunc;
       deployedUpgradedContracts = await deployTyped(this.config.deployAddress, this.mainnetContracts, this.config.logging)
     }
 

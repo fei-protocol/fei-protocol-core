@@ -1,11 +1,10 @@
-import hre from 'hardhat';
+import hre, { ethers } from 'hardhat';
+import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc } from '../../test/integration/setup/types';
 
-async function setup(addresses, oldContracts, contracts, logging) {}
+const setup: SetupUpgradeFunc = async(addresses, oldContracts, contracts, logging) => {}
 
-async function run(addresses, oldContracts, contracts, logging = false) {
-  const {
-    timelockAddress
-  } = addresses;
+const run: RunUpgradeFunc = async(addresses, oldContracts, contracts, logging = false) => {
+  const timelockAddress = addresses.timelockAddress
 
   const { 
     uniswapPCVDeposit,
@@ -41,14 +40,14 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     params: [timelockAddress]
   });
 
-  const timelockSigner = await ethers.getSigner(timelock.address)
+  const timelockSigner = await ethers.getSigner(timelockAddress)
 
   logging ? console.log('Transferring TRIBE Minter role to TribeReserveStabilizer') : undefined;
   await tribe.connect(timelockSigner).setMinter(tribeReserveStabilizer.address);
 
   await hre.network.provider.request({
     method: "hardhat_stopImpersonatingAccount",
-    params: [timelock.address],
+    params: [timelockAddress],
   });
 
   logging ? console.log('Granting PCVController to new RatioPCVController') : undefined;
@@ -58,8 +57,8 @@ async function run(addresses, oldContracts, contracts, logging = false) {
 }
 
 /// /  --------------------- NOT RUN ON CHAIN ----------------------
-async function teardown(addresses, oldContracts, contracts) {
-  const core = await contracts.core;
+const teardown: TeardownUpgradeFunc = async(addresses, oldContracts, contracts) => {
+  const core = contracts.core;
 
   const {
     uniswapPCVDeposit,
@@ -72,9 +71,7 @@ async function teardown(addresses, oldContracts, contracts) {
   await core.revokeMinter(uniswapPCVController.address);
   await core.revokeMinter(uniswapPCVDeposit.address);
   await core.revokeMinter(bondingCurve.address);
-
   await core.revokeBurner(uniswapPCVController.address);
-
   await core.revokePCVController(ratioPCVController.address);
   await core.revokePCVController(uniswapPCVController.address);
 }

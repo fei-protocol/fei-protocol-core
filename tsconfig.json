@@ -2,6 +2,7 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "allowJs": true,
+    "checkJs": true,
     "noImplicitAny": false,
     "noImplicitThis": false,
     "target": "es2018",

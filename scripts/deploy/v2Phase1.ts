@@ -2,7 +2,7 @@ import { TransactionResponse } from '@ethersproject/abstract-provider';
 import testHelpers, { BN, ether } from '@openzeppelin/test-helpers';
 import hre, { artifacts, ethers, web3 } from 'hardhat';
 import { getAllContractAddresses } from '../../test/integration/setup/loadContracts';
-import { DeployFunc, NamedContracts } from '../../test/integration/setup/types';
+import { DeployUpgradeFunc, NamedContracts } from '../../test/integration/setup/types';
 const { constants: { ZERO_ADDRESS } } = testHelpers;
 
 const UniswapPCVDeposit = artifacts.readArtifactSync('UniswapPCVDeposit');
@@ -63,7 +63,7 @@ const BC_INCENTIVE = `500${e18}`;
 
 const USD_ADDRESS = '0x1111111111111111111111111111111111111111';
 
-const deploy: DeployFunc = async (deployAddress, addresses, logging = false) => {
+const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
   const {
     core,
     fei,

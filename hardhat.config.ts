@@ -41,6 +41,7 @@ const config: HardhatUserConfig = {
   gasReporter: {
     enabled: !!process.env.REPORT_GAS,
   },
+
   networks: {
     hardhat: {
       gas: 12e6,
@@ -50,13 +51,16 @@ const config: HardhatUserConfig = {
         blockNumber: 13285992
       }: undefined
     },
+
     localhost: {
       url: 'http://127.0.0.1:8545'
     },
+
     rinkeby: {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${rinkebyAlchemyApiKey}`,
       accounts: testnetPrivateKey ? [testnetPrivateKey] : []
     },
+
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
       accounts: privateKey ? [privateKey] : []
@@ -84,17 +88,21 @@ const config: HardhatUserConfig = {
       }
     ]
   },
+
   paths: {
     tests: runE2ETests ? './test/integration/' : './test/unit/',
   },
+
   mocha: {
     timeout: 1000000,
   },
+
   typechain: {
     outDir: 'types',
-    target: 'web3-v1',
+    target: 'ethers-v5',
     alwaysGenerateOverloads: false, // should overloads with full signatures like deposit(uint256) be generated always, even if there are no overloads?
   },
+
   proposals: {
     governor: "0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B",
     votingToken: "0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B"

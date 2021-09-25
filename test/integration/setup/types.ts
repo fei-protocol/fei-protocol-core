@@ -21,11 +21,19 @@ export function namedContractsToNamedAddresses(contracts: NamedContracts): Named
 
 export type NamedContracts = { [key: string]: ethers.Contract }
 export type NamedAddresses = { [key: string]: string }
-export type DeployFunc = (deployAddress: string, contracts: NamedContracts, logging: boolean) => Promise<NamedContracts>
+export type DeployUpgradeFunc = (deployAddress: string, contracts: NamedContracts, logging: boolean) => Promise<NamedContracts>
 export type SetupUpgradeFunc = (addresses: NamedAddresses, oldContracts: NamedContracts, contracts: NamedContracts, logging: boolean) => Promise<void>
 export type RunUpgradeFunc = (addresses: NamedAddresses, oldContracts: NamedContracts, contracts: NamedContracts, logging: boolean) => Promise<void>
 export type TeardownUpgradeFunc = (addresses: NamedAddresses, oldContracts: NamedContracts, contracts: NamedContracts, logging: boolean) => Promise<void>
 export type ValidateUpgradeFunc = (addresses: NamedAddresses, oldContracts: NamedContracts, contracts: NamedContracts, logging: boolean) => Promise<void>
+
+export type UpgradeFuncs = {
+  deployUpgrade: DeployUpgradeFunc,
+  setupUpgrade: SetupUpgradeFunc,
+  runUpgrade: RunUpgradeFunc,
+  teardownUpgrade: TeardownUpgradeFunc,
+  validateUpgrade: ValidateUpgradeFunc,
+}
 
 export type Config = {
   version: number;

@@ -223,10 +223,11 @@ describe('e2e', function () {
 
       await aaveEthPCVDeposit.withdrawERC20(await aaveEthPCVDeposit.aToken(), deployAddress, tenPow18.mul(toBN(10000)));
 
-      const borrowAmount = tenPow18.mul(toBN(1000000));
-      const balanceBefore = await fei.balanceOf(deployAddress);
+      const borrowAmount = tenPow18.mul(toBN(1000000)).toString();
+      const balanceBefore = (await fei.balanceOf(deployAddress)).toString();
 
       // 1. Borrow
+      console.log(`Borrowing ${borrowAmount}`)
       await aaveLendingPool.borrow(
         fei.address,
         borrowAmount,
@@ -235,16 +236,15 @@ describe('e2e', function () {
         deployAddress
       );
 
-      expect(await fei.balanceOf(deployAddress)).to.be.equal(balanceBefore.add(borrowAmount));
+      expect(toBN((await fei.balanceOf(deployAddress)).toString())).to.be.equal(toBN(balanceBefore).add(toBN(borrowAmount)));
     
-      const {
-        variableDebtTokenAddress,
-      } = await aaveLendingPool.getReserveData(fei.address);
+      console.log('Getting reserve data...')
+      const variableDebtTokenAddress = await aaveLendingPool.getReserveData(fei.address);
     
       // 2. Fast forward time
-      await time.increase('100000');
+      await time.increase(100000);
       // 3. Get reward amount
-      const rewardAmount = await aaveTribeIncentivesController.getRewardsBalance([variableDebtTokenAddress], deployAddress);
+      const rewardAmount: string = (await aaveTribeIncentivesController.getRewardsBalance([variableDebtTokenAddress], deployAddress)).toString();
       expectApprox(rewardAmount, tenPow18.mul(toBN(25000)));
       // 4. Claim reward amount
       await aaveTribeIncentivesController.claimRewards([variableDebtTokenAddress], rewardAmount, deployAddress);
@@ -331,6 +331,7 @@ describe('e2e', function () {
           method: 'hardhat_impersonateAccount',
           params: [contractAddresses.indexCoopFusePoolDpi]
         });
+        
         const dpiSeedAmount = tenPow18.mul(toBN(10))
 
         await forceEth(contractAddresses.indexCoopFusePoolDpi);
@@ -385,7 +386,7 @@ describe('e2e', function () {
         const pcvAllocations = await bondingCurve.getAllocation()
         expect(pcvAllocations[0].length).to.be.equal(2)
 
-        await uniswapPCVDeposit.deposit();
+        //await uniswapPCVDeposit.deposit();
 
         const pcvDepositBefore = await uniswapPCVDeposit.balance();
         const fuseBalanceBefore = await fusePCVDeposit.balance();
@@ -621,18 +622,18 @@ describe('e2e', function () {
 
       const signer = (await ethers.getSigners())[0]
 
-      await (await ethers.getSigner(timelock)).sendTransaction({to: tribalChiefOptimisticMultisig, value: '40000000000000000'});
+      await (await ethers.getSigner(timelock)).sendTransaction({to: tribalChiefOptimisticMultisig, value: toBN('40000000000000000')});
 
     });
 
     it('governor can assume timelock admin', async () => {
-      const { timelockAddress } = contractAddresses;
+      const { timelock } = contractAddresses;
       const { optimisticTimelock } = contracts;
 
-      await optimisticTimelock.becomeAdmin({from: timelockAddress});
+      await optimisticTimelock.connect(await ethers.getSigner(timelock)).becomeAdmin();
       
       const admin = await optimisticTimelock.TIMELOCK_ADMIN_ROLE();
-      expect(await optimisticTimelock.hasRole(admin, timelockAddress)).to.be.true;
+      expect(await optimisticTimelock.hasRole(admin, timelock)).to.be.true;
     });
 
     it('proposal can execute on tribalChief', async () => {

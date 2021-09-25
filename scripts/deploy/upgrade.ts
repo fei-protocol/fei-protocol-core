@@ -1,10 +1,9 @@
-const { BN, ether } = require('@openzeppelin/test-helpers');
-const { constants: { ZERO_ADDRESS } } = require('@openzeppelin/test-helpers');
+import hre, { ethers, artifacts } from 'hardhat';
+import { BN, ether } from '@openzeppelin/test-helpers';
 
 const UniswapPCVDeposit = artifacts.readArtifactSync('UniswapPCVDeposit');
 const UniswapPCVController = artifacts.readArtifactSync('UniswapPCVController');
 const EthBondingCurve = artifacts.readArtifactSync('EthBondingCurve');
-
 const TribeReserveStabilizer = artifacts.readArtifactSync('TribeReserveStabilizer');
 const PCVDripController = artifacts.readArtifactSync('PCVDripController');
 const RatioPCVController = artifacts.readArtifactSync('RatioPCVController');
@@ -28,19 +27,23 @@ async function deploy(deployAddress, addresses, logging = false) {
     throw new Error('An environment variable contract address is not set');
   }
 
-  const uniswapPCVDeposit = await UniswapPCVDeposit.new(
+  await hre.network.provider.request({ method: 'hardhat_impersonateAccount', params: [deployAddress] });
+  const deploySigner = await ethers.getSigner(deployAddress);
+
+  const uniswapPCVDeposit = await (await ethers.getContractFactory('UniswapPCVDeposit', deploySigner)).deploy(
     coreAddress,
     feiEthPairAddress,
     uniswapRouterAddress, 
     chainlinkEthUsdOracleWrapperAddress,
     ZERO_ADDRESS,
-    '100',
-    { from: deployAddress }
+    '100'
   );
+
   logging ? console.log('UniswapPCVDeposit deployed to: ', uniswapPCVDeposit.address) : undefined;
   
   const tenPow18 = ether('1');
-  const uniswapPCVController = await UniswapPCVController.new(
+
+  const uniswapPCVController = await (await ethers.getContractFactory('UniswapPCVController', deploySigner)).deploy(
     coreAddress,
     uniswapPCVDeposit.address,
     chainlinkEthUsdOracleWrapperAddress,
@@ -48,12 +51,12 @@ async function deploy(deployAddress, addresses, logging = false) {
     tenPow18.mul(new BN('500')),
     new BN('100'),
     feiEthPairAddress,
-    14400,
-    { from: deployAddress }
+    14400
   );
+
   logging ? console.log('Uniswap PCV controller deployed to: ', uniswapPCVController.address) : undefined;
     
-  const bondingCurve = await EthBondingCurve.new(      
+  const bondingCurve = await (await ethers.getContractFactory('EthBondingCurve', deploySigner)).deploy(      
     coreAddress,
     chainlinkEthUsdOracleWrapperAddress,
     ZERO_ADDRESS,
@@ -65,12 +68,12 @@ async function deploy(deployAddress, addresses, logging = false) {
       ratios: [5000, 5000], 
       duration: '86400', 
       incentive: tenPow18.mul(new BN('100')).toString()
-    },
-    { from: deployAddress }
+    }
   );
+
   logging ? console.log('Bonding curve deployed to: ', bondingCurve.address) : undefined;
   
-  const tribeReserveStabilizer = await TribeReserveStabilizer.new(
+  const tribeReserveStabilizer = await (await ethers.getContractFactory('TribeReserveStabilizer')).deploy(
     coreAddress, 
     chainlinkEthUsdOracleWrapperAddress,
     ZERO_ADDRESS,
@@ -81,7 +84,7 @@ async function deploy(deployAddress, addresses, logging = false) {
   
   logging ? console.log('TRIBE Reserve Stabilizer: ', tribeReserveStabilizer.address) : undefined;
    
-  const ratioPCVController = await RatioPCVController.new(
+  const ratioPCVController = await (await ethers.getContractFactory('RatioPCVController')).deploy(
     coreAddress
   );
   
