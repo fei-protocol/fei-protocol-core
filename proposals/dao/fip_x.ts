@@ -15,7 +15,7 @@ Steps:
 
 */
 
-const fipNumber = '9001' // Change me!
+const fipNumber = '9001'; // Change me!
 
 // Do any setup necessary for running the test.
 // This could include setting up Hardhat to impersonate accounts,
@@ -30,11 +30,11 @@ const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging =
   console.log(`No actions to complete in run for fip${fipNumber}`);
 };
 
-// Tears down any changes made in setup() that need to be 
+// Tears down any changes made in setup() that need to be
 // cleaned up before doing any validation checks.
 const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   console.log(`No actions to complete in teardown for fip${fipNumber}`);
-}
+};
 
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
