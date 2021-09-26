@@ -16,7 +16,7 @@ async function getProposalCalldata() {
   }
   const proposal = await constructProposal(proposalName);
 
-  const calldata = await web3.eth.abi.encodeFunctionCall(
+  const calldata = web3.eth.abi.encodeFunctionCall(
     {
       name: 'propose',
       type: 'function',

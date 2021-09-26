@@ -1,10 +1,12 @@
-require('dotenv').config();
-const { time } = require('@openzeppelin/test-helpers');
-const hre = require('hardhat');
+import hre, { ethers, artifacts } from 'hardhat';
+import { time } from '@openzeppelin/test-helpers';
 
-const GovernorAlpha = artifacts.require('GovernorAlpha');
+import * as dotenv from 'dotenv';
 
-const { web3 } = hre;
+dotenv.config();
+
+const GovernorAlpha = artifacts.readArtifactSync('GovernorAlpha');
+
 // This script fully executes an on-chain DAO proposal with pre-supplied calldata
 
 // txData = The calldata for the DAO transaction to execute.
@@ -13,28 +15,22 @@ async function exec(txData, totalValue, addresses) {
   const { proposerAddress, voterAddress, governorAlphaAddress } = addresses;
 
   // Impersonate the proposer and voter with sufficient TRIBE for execution
-  await hre.network.provider.request({
-    method: 'hardhat_impersonateAccount',
-    params: [proposerAddress]
-  });
-
-  await hre.network.provider.request({
-    method: 'hardhat_impersonateAccount',
-    params: [voterAddress]
-  });
+  await hre.network.provider.request({ method: 'hardhat_impersonateAccount', params: [proposerAddress] });
+  await hre.network.provider.request({ method: 'hardhat_impersonateAccount', params: [voterAddress] });
 
   // Submit proposal to the DAO
   if (txData) {
     console.log('Submitting Proposal');
-    await web3.eth.sendTransaction({
-      from: proposerAddress,
+    await (
+      await ethers.getSigner(proposerAddress)
+    ).sendTransaction({
       to: governorAlphaAddress,
       data: txData,
-      gas: 6000000
+      gasLimit: 6000000
     });
   }
 
-  const governor = await GovernorAlpha.at(governorAlphaAddress);
+  const governor = await ethers.getContractAt('GovernorAlpha.', governorAlphaAddress);
 
   const proposalNo = await governor.latestProposalIds(proposerAddress);
 
