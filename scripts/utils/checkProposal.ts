@@ -1,9 +1,10 @@
 import { getAllContracts, getAllContractAddresses } from '../../test/integration/setup/loadContracts';
-import hre from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { time } from '@openzeppelin/test-helpers';
 import { NamedContracts, UpgradeFuncs } from '../../test/integration/setup/types';
 
 import * as dotenv from 'dotenv';
+
 
 dotenv.config();
 
@@ -32,6 +33,8 @@ async function checkProposal() {
     params: [voterAddress]
   });
 
+  const voterSigner = await ethers.getSigner(voterAddress);
+
   console.log(`Proposal Number: ${proposalNo}`);
 
   let proposal = await governorAlpha.proposals(proposalNo);
@@ -45,12 +48,12 @@ async function checkProposal() {
     console.log('Vote already began');
   }
 
-  try {
-    await governorAlpha.castVote(proposalNo, true, { from: voterAddress });
-    console.log('Casted vote');
-  } catch {
-    console.log('Already voted');
-  }
+  /*try {*/
+    await governorAlpha.connect(voterSigner).castVote(proposalNo, true);
+    console.log('Casted vote.');
+  /*} catch {
+    console.log('Already voted, ror some terrible error has occured.');
+  }*/
 
   proposal = await governorAlpha.proposals(proposalNo);
   const { endBlock } = proposal;
@@ -75,12 +78,12 @@ async function checkProposal() {
   console.log('Success');
 
   // Get the upgrade setup, run and teardown scripts
-  const proposalFuncs: UpgradeFuncs = await import(`../../proposals/proposals/${proposalName}`);
+  const proposalFuncs: UpgradeFuncs = await import(`../../proposals/dao/${proposalName}`);
 
   const contractAddresses = getAllContractAddresses();
 
   console.log('Teardown');
-  await proposalFuncs.teardownUpgrade(
+  await proposalFuncs.teardown(
     contractAddresses,
     contracts as unknown as NamedContracts,
     contracts as unknown as NamedContracts,
@@ -88,7 +91,7 @@ async function checkProposal() {
   );
 
   console.log('Validate');
-  await proposalFuncs.validateUpgrade(
+  await proposalFuncs.validate(
     contractAddresses,
     contracts as unknown as NamedContracts,
     contracts as unknown as NamedContracts,
