@@ -52,11 +52,11 @@ export type ValidateUpgradeFunc = (
 ) => Promise<void>;
 
 export type UpgradeFuncs = {
-  deployUpgrade: DeployUpgradeFunc;
-  setupUpgrade: SetupUpgradeFunc;
-  runUpgrade: RunUpgradeFunc;
-  teardownUpgrade: TeardownUpgradeFunc;
-  validateUpgrade: ValidateUpgradeFunc;
+  deploy: DeployUpgradeFunc;
+  setup: SetupUpgradeFunc;
+  run: RunUpgradeFunc;
+  teardown: TeardownUpgradeFunc;
+  validate: ValidateUpgradeFunc;
 };
 
 export type Config = {
