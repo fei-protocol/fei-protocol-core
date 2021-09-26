@@ -4,7 +4,6 @@ import * as dotenv from 'dotenv';
 import { BigNumber } from 'ethers';
 import { Interface } from '@ethersproject/abi';
 
-
 dotenv.config();
 
 type ExtendedAlphaProposal = {
@@ -13,7 +12,7 @@ type ExtendedAlphaProposal = {
   signatures: string[];
   calldatas: string[];
   description: string;
-}
+};
 
 /**
  * Take in a hardhat proposal object and output the proposal calldatas
@@ -26,12 +25,18 @@ async function getProposalCalldata() {
     throw new Error('DEPLOY_FILE env variable not set');
   }
 
-  const proposal = await constructProposal(proposalName) as ExtendedAlphaProposal;
+  const proposal = (await constructProposal(proposalName)) as ExtendedAlphaProposal;
 
-  const governorAlphaArtifact = await hre.artifacts.readArtifactSync('GovernorAlpha')
-  const governorAlphaInterface = new Interface(governorAlphaArtifact.abi)
+  const governorAlphaArtifact = await hre.artifacts.readArtifactSync('GovernorAlpha');
+  const governorAlphaInterface = new Interface(governorAlphaArtifact.abi);
 
-  const calldata = governorAlphaInterface.encodeFunctionData('propose', [proposal.targets, proposal.values, proposal.signatures, proposal.calldatas, proposal.description])
+  const calldata = governorAlphaInterface.encodeFunctionData('propose', [
+    proposal.targets,
+    proposal.values,
+    proposal.signatures,
+    proposal.calldatas,
+    proposal.description
+  ]);
 
   console.log(calldata);
 }

@@ -5,7 +5,6 @@ import { NamedContracts, UpgradeFuncs } from '../../test/integration/setup/types
 
 import * as dotenv from 'dotenv';
 
-
 dotenv.config();
 
 // Multisig
@@ -49,8 +48,8 @@ async function checkProposal() {
   }
 
   /*try {*/
-    await governorAlpha.connect(voterSigner).castVote(proposalNo, true);
-    console.log('Casted vote.');
+  await governorAlpha.connect(voterSigner).castVote(proposalNo, true);
+  console.log('Casted vote.');
   /*} catch {
     console.log('Already voted, ror some terrible error has occured.');
   }*/

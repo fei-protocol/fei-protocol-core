@@ -18,7 +18,7 @@
     "test:all": "RUN_ALL_TESTS=true npx hardhat test",
     "lint": "eslint --config ./.eslintrc --ignore-path ./.eslintignore --ext .ts,.tsx .",
     "lint-all": "eslint --config ./.eslintrc --ignore-path ./.eslintignore --ext .js,.jsx,.ts,.tsx .",
-    "lint:fix": "npm run lint --fix",
+    "lint:fix": "eslint --fix --config ./.eslintrc --ignore-path ./.eslintignore --ext .ts,.tsx .",
     "size-contracts": "npx hardhat size-contracts",
     "deploy:localhost": "npx hardhat run --network localhost scripts/deploy/migrations.js",
     "deploy:main": "npx hardhat run --network mainnet scripts/deploy/migrations.js",
