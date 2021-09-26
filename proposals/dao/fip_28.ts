@@ -14,8 +14,7 @@ const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging =
 
 const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   const { optimisticTimelock } = addresses;
-
-  const { rariPool8Comptroller, rariPool8Dai, rariPool8Tribe, rariPool8Eth, rariPool8Fei } = contracts;
+  const { rariPool8Comptroller, rariPool8Dai, rariPool8Tribe, rariPool8Eth, rariPool8Fei, rariPool22FeiPCVDeposit } = contracts;
 
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
@@ -36,6 +35,8 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
   await rariPool8Tribe.connect(optimisticTimelockSigner)._acceptAdmin();
   await rariPool8Eth.connect(optimisticTimelockSigner)._acceptAdmin();
   await rariPool8Fei.connect(optimisticTimelockSigner)._acceptAdmin();
+
+  await rariPool22FeiPCVDeposit.deposit();
 };
 
 const validate = async (addresses, oldContracts, contracts) => {
@@ -46,26 +47,31 @@ const validate = async (addresses, oldContracts, contracts) => {
     rariPool8Tribe,
     rariPool8Eth,
     rariPool8Fei,
-    rariPool22FeiPCVDeposit
+    rariPool22FeiPCVDeposit,
+    tribalChief
   } = contracts;
 
-  const { optimisticTimelock } = addresses;
+  const { optimisticTimelock, tribalChiefOptimisticTimelock } = addresses;
 
   // Borrow disabled
   expect(await rariPool8Comptroller.borrowGuardianPaused(rariPool8Tribe.address)).to.be.equal(true);
 
   // minted FEI
   // 1M from before, 50M from proposal
-  expect((await fei.balanceOf(optimisticTimelock)).toString()).to.be.equal(e18.mul(51_000_000).toString());
+  expect((await fei.balanceOf(optimisticTimelock)).toString()).to.be.equal(e18.mul(50_000_000).toString());
 
   expect((await rariPool22FeiPCVDeposit.balance()).toString()).to.be.equal(e18.mul(1_000_000).toString());
 
-  // admin transfer
+  // FeiRari admin transfer
   expect(await rariPool8Comptroller.admin()).to.be.equal(optimisticTimelock);
   expect(await rariPool8Dai.admin()).to.be.equal(optimisticTimelock);
   expect(await rariPool8Tribe.admin()).to.be.equal(optimisticTimelock);
   expect(await rariPool8Eth.admin()).to.be.equal(optimisticTimelock);
   expect(await rariPool8Fei.admin()).to.be.equal(optimisticTimelock);
+
+  // TribalChief admin transfer
+  expect(await tribalChief.isContractAdmin(optimisticTimelock)).to.be.true;
+  expect(await tribalChief.isContractAdmin(tribalChiefOptimisticTimelock)).to.be.false;
 };
 
 module.exports = {
