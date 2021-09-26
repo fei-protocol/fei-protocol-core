@@ -13,7 +13,7 @@
     "console:ropsten": "npx hardhat console --network ropsten",
     "clean": "rm -rf build",
     "test": "npx hardhat test",
-    "test:e2e": "RUN_E2E_TESTS=true npx hardhat test",
+    "test:e2e": "ENABLE_MAINNET_FORKING=true RUN_E2E_TESTS=true npx hardhat test",
     "test:gas": "REPORT_GAS=true npx hardhat test",
     "test:all": "RUN_ALL_TESTS=true npx hardhat test",
     "lint": "eslint --config ./.eslintrc --ignore-path ./.eslintignore --ext .ts,.tsx .",

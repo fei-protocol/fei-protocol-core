@@ -46,10 +46,11 @@ const validate = async (addresses, oldContracts, contracts) => {
     rariPool8Tribe,
     rariPool8Eth,
     rariPool8Fei,
-    rariPool22FeiPCVDeposit
+    rariPool22FeiPCVDeposit,
+    tribalChief
   } = contracts;
 
-  const { optimisticTimelock } = addresses;
+  const { optimisticTimelock, tribalChiefOptimisticTimelock } = addresses;
 
   // Borrow disabled
   expect(await rariPool8Comptroller.borrowGuardianPaused(rariPool8Tribe.address)).to.be.equal(true);
@@ -60,12 +61,16 @@ const validate = async (addresses, oldContracts, contracts) => {
 
   expect((await rariPool22FeiPCVDeposit.balance()).toString()).to.be.equal(e18.mul(1_000_000).toString());
 
-  // admin transfer
+  // FeiRari admin transfer
   expect(await rariPool8Comptroller.admin()).to.be.equal(optimisticTimelock);
   expect(await rariPool8Dai.admin()).to.be.equal(optimisticTimelock);
   expect(await rariPool8Tribe.admin()).to.be.equal(optimisticTimelock);
   expect(await rariPool8Eth.admin()).to.be.equal(optimisticTimelock);
   expect(await rariPool8Fei.admin()).to.be.equal(optimisticTimelock);
+
+  // TribalChief admin transfer
+  expect(await tribalChief.isContractAdmin(optimisticTimelock)).to.be.true;
+  expect(await tribalChief.isContractAdmin(tribalChiefOptimisticTimelock)).to.be.true;
 };
 
 module.exports = {
