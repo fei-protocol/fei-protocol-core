@@ -5,6 +5,7 @@ jobs:
     working_directory: ~/repo
     docker:
       - image: circleci/node:12
+    resource_class: xlarge
     steps:
       - checkout
       - run:
@@ -45,6 +46,7 @@ jobs:
     working_directory: ~/repo
     docker:
       - image: circleci/node:12
+    resource_class: xlarge
     steps:
       - restore_cache:
           keys:
@@ -57,6 +59,7 @@ jobs:
     working_directory: ~/repo
     docker:
       - image: circleci/node:12
+    resource_class: xlarge
     steps:
       - restore_cache:
           keys:
