@@ -1,8 +1,18 @@
 import constructProposal from './constructProposal';
-import { web3 } from 'hardhat';
+import hre, { web3, ethers } from 'hardhat';
 import * as dotenv from 'dotenv';
+import { BigNumber } from 'ethers';
+import { Interface } from '@ethersproject/abi';
 
 dotenv.config();
+
+type ExtendedAlphaProposal = {
+  targets: string[];
+  values: BigNumber[];
+  signatures: string[];
+  calldatas: string[];
+  description: string;
+};
 
 /**
  * Take in a hardhat proposal object and output the proposal calldatas
@@ -14,37 +24,19 @@ async function getProposalCalldata() {
   if (!proposalName) {
     throw new Error('DEPLOY_FILE env variable not set');
   }
-  const proposal = await constructProposal(proposalName);
 
-  const calldata = await web3.eth.abi.encodeFunctionCall(
-    {
-      name: 'propose',
-      type: 'function',
-      inputs: [
-        {
-          type: 'address[]',
-          name: 'targets'
-        },
-        {
-          type: 'uint256[]',
-          name: 'values'
-        },
-        {
-          type: 'string[]',
-          name: 'signatures'
-        },
-        {
-          type: 'bytes[]',
-          name: 'calldatas'
-        },
-        {
-          type: 'string',
-          name: 'description'
-        }
-      ]
-    },
-    [proposal.targets, proposal.values, proposal.signatures, proposal.calldatas, proposal.description]
-  );
+  const proposal = (await constructProposal(proposalName)) as ExtendedAlphaProposal;
+
+  const governorAlphaArtifact = await hre.artifacts.readArtifactSync('GovernorAlpha');
+  const governorAlphaInterface = new Interface(governorAlphaArtifact.abi);
+
+  const calldata = governorAlphaInterface.encodeFunctionData('propose', [
+    proposal.targets,
+    proposal.values,
+    proposal.signatures,
+    proposal.calldatas,
+    proposal.description
+  ]);
 
   console.log(calldata);
 }

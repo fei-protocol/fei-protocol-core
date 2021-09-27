@@ -77,11 +77,24 @@
             "description": "Mint 1m FEI to Fuse Pool 22"
         },
         {
-            "target": "rariPool22FeiPCVDeposit",
+            "target": "core",
             "values": "0",
-            "method": "deposit()",
-            "arguments": [],
-            "description": "Deposit pool 22 FEI"
+            "method": "grantRole(bytes32,address)",
+            "arguments": [
+                "0x23970cab3799b6876df4319661e6c03cc45bd59628799d92e988dd8cbdc90e31",
+                "0xbC9C084a12678ef5B516561df902fdc426d95483"
+            ],
+            "description": "Grant TribalChief admin to new OA timelock"
+        },
+        {
+            "target": "core",
+            "values": "0",
+            "method": "revokeRole(bytes32,address)",
+            "arguments": [
+                "0x23970cab3799b6876df4319661e6c03cc45bd59628799d92e988dd8cbdc90e31",
+                "0x27Fae9E49AD955A24bB578B66Cdc962b5029fbA9"
+            ],
+            "description": "Revoke TribalChief admin from old OA timelock"
         }
     ]
 }

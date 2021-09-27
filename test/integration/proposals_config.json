@@ -1,22 +1,12 @@
 {
-    "optimisticTimelock" : {
-        "deploy" : false,
-        "exec" : false,
-        "proposerAddress" : "0xe0ac4559739bD36f0913FB0A3f5bFC19BCBaCD52"
-    },
     "fip_28" : {
         "deploy" : false,
         "exec" : true,
-        "proposerAddress" : "0xe0ac4559739bD36f0913FB0A3f5bFC19BCBaCD52"
+        "proposerAddress" : "0xb81cf4981Ef648aaA73F07a18B03970f04d5D8bF"
     },
     "v2Phase1": {
         "deploy" : true,
         "exec" : false,
-        "proposerAddress" : "0xe0ac4559739bD36f0913FB0A3f5bFC19BCBaCD52"
-    },
-    "fip_26": {
-        "deploy" : false,
-        "exec" : true,
-        "proposerAddress" : "0xe0ac4559739bD36f0913FB0A3f5bFC19BCBaCD52"
+        "proposerAddress" : "0xb81cf4981Ef648aaA73F07a18B03970f04d5D8bF"
     }
 }
