@@ -23,7 +23,7 @@ export type NamedContracts = { [key: string]: ethers.Contract };
 export type NamedAddresses = { [key: string]: string };
 export type DeployUpgradeFunc = (
   deployAddress: string,
-  contracts: NamedContracts,
+  address: NamedAddresses,
   logging: boolean
 ) => Promise<NamedContracts>;
 export type SetupUpgradeFunc = (
@@ -52,11 +52,11 @@ export type ValidateUpgradeFunc = (
 ) => Promise<void>;
 
 export type UpgradeFuncs = {
-  deployUpgrade: DeployUpgradeFunc;
-  setupUpgrade: SetupUpgradeFunc;
-  runUpgrade: RunUpgradeFunc;
-  teardownUpgrade: TeardownUpgradeFunc;
-  validateUpgrade: ValidateUpgradeFunc;
+  deploy: DeployUpgradeFunc;
+  setup: SetupUpgradeFunc;
+  run: RunUpgradeFunc;
+  teardown: TeardownUpgradeFunc;
+  validate: ValidateUpgradeFunc;
 };
 
 export type Config = {

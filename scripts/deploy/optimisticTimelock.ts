@@ -12,7 +12,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
 
   const optimisticTimelock = await (
     await ethers.getContractFactory('OptimisticTimelock')
-  ).deploy(core.address, fourDays, [tribalChiefOptimisticMultisig.address], [tribalChiefOptimisticMultisig.address]);
+  ).deploy(core, fourDays, [tribalChiefOptimisticMultisig], [tribalChiefOptimisticMultisig]);
 
   logging && console.log('Optimistic Timelock deployed to: ', optimisticTimelock.address);
   return {
