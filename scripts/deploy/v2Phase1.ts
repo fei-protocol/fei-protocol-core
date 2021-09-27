@@ -116,12 +116,12 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
   } = getAllContractAddresses();
 
   if (!core || !feiEthPair || !weth || !uniswapRouterAddress || !chainlinkEthUsdOracleWrapper || !compositeOracle) {
-    console.log(`core: ${core.address}`);
-    console.log(`feiEtiPair: ${feiEthPair.address}`);
-    console.log(`weth: ${weth.address}`);
+    console.log(`core: ${core}`);
+    console.log(`feiEtiPair: ${feiEthPair}`);
+    console.log(`weth: ${weth}`);
     console.log(`uniswapRouter: ${uniswapRouterAddress}`);
-    console.log(`chainlinkEthUsdOracleWrapper: ${chainlinkEthUsdOracleWrapper.address}`);
-    console.log(`compositeOracle: ${compositeOracle.address}`);
+    console.log(`chainlinkEthUsdOracleWrapper: ${chainlinkEthUsdOracleWrapper}`);
+    console.log(`compositeOracle: ${compositeOracle}`);
 
     throw new Error('An environment variable contract address is not set');
   }
@@ -129,10 +129,10 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
   // ----------- Replacement Contracts ---------------
   const uniswapPCVDepositFactory = await ethers.getContractFactory(UniswapPCVDeposit.abi, UniswapPCVDeposit.bytecode);
   const uniswapPCVDeposit = await uniswapPCVDepositFactory.deploy(
-    core.address,
-    feiEthPair.address,
+    core,
+    feiEthPair,
     uniswapRouterAddress,
-    chainlinkEthUsdOracleWrapper.address,
+    chainlinkEthUsdOracleWrapper,
     ZERO_ADDRESS,
     '100'
   );
@@ -144,10 +144,10 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     UniswapPCVDeposit.bytecode
   );
   const dpiUniswapPCVDeposit = await dpiUniswapPCVDepositFactory.deploy(
-    core.address,
-    sushiswapDpiFei.address,
+    core,
+    sushiswapDpiFei,
     sushiswapRouterAddress,
-    chainlinkDpiUsdOracleWrapper.address,
+    chainlinkDpiUsdOracleWrapper,
     ZERO_ADDRESS,
     '100'
   );
@@ -155,14 +155,14 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
 
   const bondingCurveFactory = await ethers.getContractFactory(EthBondingCurve.abi, EthBondingCurve.bytecode);
   const bondingCurve = await bondingCurveFactory.deploy(
-    core.address,
-    chainlinkEthUsdOracleWrapper.address,
+    core,
+    chainlinkEthUsdOracleWrapper,
     ZERO_ADDRESS,
     {
       scale: SCALE,
       buffer: BUFFER,
       discount: DISCOUNT,
-      pcvDeposits: [aaveEthPCVDeposit.address, compoundEthPCVDeposit.address],
+      pcvDeposits: [aaveEthPCVDeposit, compoundEthPCVDeposit],
       ratios: [5000, 5000],
       duration: BC_DURATION,
       incentive: BC_INCENTIVE
@@ -174,7 +174,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     RatioPCVController.abi,
     RatioPCVController.bytecode
   );
-  const ratioPCVController = await ratioPCVControllerFactory.deploy(core.address);
+  const ratioPCVController = await ratioPCVControllerFactory.deploy(core);
 
   logging && console.log('Ratio PCV controller', ratioPCVController.address);
 
@@ -185,8 +185,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const daiBondingCurveWrapper = await daiBondingCurveWrapperFactory.deploy(
-    daiBondingCurve.address,
-    dai.address,
+    daiBondingCurve,
+    dai,
     false
   );
 
@@ -197,8 +197,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const compoundDaiPCVDepositWrapper = await compoundDaiPCVDepositWrapperFactory.deploy(
-    compoundDaiPCVDeposit.address,
-    dai.address,
+    compoundDaiPCVDeposit,
+    dai,
     false
   );
 
@@ -209,8 +209,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const raiBondingCurveWrapper = await raiBondingCurveWrapperFactory.deploy(
-    raiBondingCurve.address,
-    rai.address,
+    raiBondingCurve,
+    rai,
     false
   );
 
@@ -221,8 +221,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const aaveRaiPCVDepositWrapper = await aaveRaiPCVDepositWrapperFactory.deploy(
-    aaveRaiPCVDeposit.address,
-    rai.address,
+    aaveRaiPCVDeposit,
+    rai,
     false
   );
 
@@ -233,8 +233,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const rariPool9RaiPCVDepositWrapper = await rariPool9RaiPCVDepositWrapperFactory.deploy(
-    rariPool9RaiPCVDeposit.address,
-    rai.address,
+    rariPool9RaiPCVDeposit,
+    rai,
     false
   );
 
@@ -245,8 +245,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const dpiBondingCurveWrapper = await dpiBondingCurveWrapperFactory.deploy(
-    dpiBondingCurve.address,
-    dpi.address,
+    dpiBondingCurve,
+    dpi,
     false
   );
 
@@ -257,8 +257,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const rariPool19DpiPCVDepositWrapper = await rariPool19DpiPCVDepositWrapperFactory.deploy(
-    rariPool19DpiPCVDeposit.address,
-    dpi.address,
+    rariPool19DpiPCVDeposit,
+    dpi,
     false
   );
 
@@ -269,8 +269,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const ethReserveStabilizerWrapper = await ethReserveStabilizerWrapperFactory.deploy(
-    ethReserveStabilizer.address,
-    weth.address,
+    ethReserveStabilizer,
+    weth,
     false
   );
 
@@ -281,8 +281,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const ethLidoPCVDepositWrapper = await ethLidoPCVDepositWrapperFactory.deploy(
-    ethLidoPCVDeposit.address,
-    weth.address,
+    ethLidoPCVDeposit,
+    weth,
     false
   );
 
@@ -293,8 +293,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const aaveEthPCVDepositWrapper = await aaveEthPCVDepositWrapperFactory.deploy(
-    aaveEthPCVDeposit.address,
-    weth.address,
+    aaveEthPCVDeposit,
+    weth,
     false
   );
 
@@ -305,8 +305,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const compoundEthPCVDepositWrapper = await compoundEthPCVDepositWrapperFactory.deploy(
-    compoundEthPCVDeposit.address,
-    weth.address,
+    compoundEthPCVDeposit,
+    weth,
     false
   );
 
@@ -319,8 +319,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const rariPool8FeiPCVDepositWrapper = await rariPool8FeiPCVDepositWrapperFactory.deploy(
-    rariPool8FeiPCVDeposit.address,
-    fei.address,
+    rariPool8FeiPCVDeposit,
+    fei,
     true
   );
 
@@ -331,8 +331,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const rariPool9FeiPCVDepositWrapper = await rariPool9FeiPCVDepositWrapperFactory.deploy(
-    rariPool9FeiPCVDeposit.address,
-    fei.address,
+    rariPool9FeiPCVDeposit,
+    fei,
     true
   );
 
@@ -343,8 +343,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const rariPool7FeiPCVDepositWrapper = await rariPool7FeiPCVDepositWrapperFactory.deploy(
-    rariPool7FeiPCVDeposit.address,
-    fei.address,
+    rariPool7FeiPCVDeposit,
+    fei,
     true
   );
 
@@ -355,8 +355,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const rariPool6FeiPCVDepositWrapper = await rariPool6FeiPCVDepositWrapperFactory.deploy(
-    rariPool6FeiPCVDeposit.address,
-    fei.address,
+    rariPool6FeiPCVDeposit,
+    fei,
     true
   );
 
@@ -367,8 +367,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const rariPool19FeiPCVDepositWrapper = await rariPool19FeiPCVDepositWrapperFactory.deploy(
-    rariPool19FeiPCVDeposit.address,
-    fei.address,
+    rariPool19FeiPCVDeposit,
+    fei,
     true
   );
 
@@ -379,8 +379,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const rariPool24FeiPCVDepositWrapper = await rariPool24FeiPCVDepositWrapperFactory.deploy(
-    rariPool24FeiPCVDeposit.address,
-    fei.address,
+    rariPool24FeiPCVDeposit,
+    fei,
     true
   );
 
@@ -391,8 +391,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const rariPool25FeiPCVDepositWrapper = await rariPool25FeiPCVDepositWrapperFactory.deploy(
-    rariPool25FeiPCVDeposit.address,
-    fei.address,
+    rariPool25FeiPCVDeposit,
+    fei,
     true
   );
 
@@ -403,8 +403,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const rariPool26FeiPCVDepositWrapper = await rariPool26FeiPCVDepositWrapperFactory.deploy(
-    rariPool26FeiPCVDeposit.address,
-    fei.address,
+    rariPool26FeiPCVDeposit,
+    fei,
     true
   );
 
@@ -415,8 +415,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const rariPool27FeiPCVDepositWrapper = await rariPool27FeiPCVDepositWrapperFactory.deploy(
-    rariPool27FeiPCVDeposit.address,
-    fei.address,
+    rariPool27FeiPCVDeposit,
+    fei,
     true
   );
 
@@ -427,8 +427,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const rariPool18FeiPCVDepositWrapper = await rariPool18FeiPCVDepositWrapperFactory.deploy(
-    rariPool18FeiPCVDeposit.address,
-    fei.address,
+    rariPool18FeiPCVDeposit,
+    fei,
     true
   );
 
@@ -439,8 +439,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.bytecode
   );
   const creamFeiPCVDepositWrapper = await creamFeiPCVDepositWrapperFactory.deploy(
-    creamFeiPCVDeposit.address,
-    fei.address,
+    creamFeiPCVDeposit,
+    fei,
     true
   );
 
@@ -451,7 +451,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     StaticPCVDepositWrapper.bytecode
   );
   const staticPcvDepositWrapper = await staticPcvDepositWrapperFactory.deploy(
-    core.address,
+    core,
     `4000000${e18}`, // 4M PCV for 100k INDEX @ ~$40
     `8500000${e18}` // 8.5M FEI in Kashi
   );
@@ -462,10 +462,10 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
 
   const constantOracleFactory = await ethers.getContractFactory(ConstantOracle.abi, ConstantOracle.bytecode);
 
-  const zeroConstantOracle = await constantOracleFactory.deploy(core.address, 0);
+  const zeroConstantOracle = await constantOracleFactory.deploy(core, 0);
   logging && console.log('zeroConstantOracle: ', zeroConstantOracle.address);
 
-  const oneConstantOracle = await constantOracleFactory.deploy(core.address, 10000);
+  const oneConstantOracle = await constantOracleFactory.deploy(core, 10000);
   logging && console.log('oneConstantOracle: ', oneConstantOracle.address);
 
   const collateralizationOracleFactory = await ethers.getContractFactory(
@@ -473,7 +473,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     CollateralizationOracle.bytecode
   );
   const collateralizationOracle = await collateralizationOracleFactory.deploy(
-    core.address,
+    core,
     [
       rariPool19DpiPCVDepositWrapper.address,
       dpiBondingCurveWrapper.address,
@@ -502,12 +502,12 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
       creamFeiPCVDepositWrapper.address,
       staticPcvDepositWrapper.address
     ],
-    [dai.address, dpi.address, weth.address, rai.address, fei.address, USD_ADDRESS],
+    [dai, dpi, weth, rai, fei, USD_ADDRESS],
     [
-      chainlinkDaiUsdOracleWrapper.address,
-      chainlinkDpiUsdOracleWrapper.address,
-      chainlinkEthUsdOracleWrapper.address,
-      chainlinkRaiUsdCompositOracle.address,
+      chainlinkDaiUsdOracleWrapper,
+      chainlinkDpiUsdOracleWrapper,
+      chainlinkEthUsdOracleWrapper,
+      chainlinkRaiUsdCompositOracle,
       zeroConstantOracle.address,
       oneConstantOracle.address
     ]
@@ -520,7 +520,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     CollateralizationOracleWrapper.bytecode
   );
   const collateralizationOracleWrapperImpl = await collateralizationOracleWrapperImplFactory.deploy(
-    core.address,
+    core,
     1 // not used
   );
 
@@ -551,14 +551,14 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
         }
       ]
     },
-    [core.address, collateralizationOracle.address, CR_WRAPPER_DURATION, CR_WRAPPER_DEVIATION_BPS]
+    [core, collateralizationOracle.address, CR_WRAPPER_DURATION, CR_WRAPPER_DEVIATION_BPS]
   );
 
   const ProxyFactory = await ethers.getContractFactory(
     TransparentUpgradeableProxy.abi,
     TransparentUpgradeableProxy.bytecode
   );
-  const proxy = await ProxyFactory.deploy(collateralizationOracleWrapperImpl.address, proxyAdmin.address, calldata);
+  const proxy = await ProxyFactory.deploy(collateralizationOracleWrapperImpl.address, proxyAdmin, calldata);
 
   const collateralizationOracleWrapper = await ethers.getContractAt(CollateralizationOracleWrapper.abi, proxy.address);
 
@@ -569,7 +569,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     CollateralizationOracleKeeper.bytecode
   );
   const collateralizationOracleKeeper = await collateralizationOracleKeeperFactory.deploy(
-    core.address,
+    core,
     CR_KEEPER_INCENTIVE,
     collateralizationOracleWrapper.address
   );
@@ -583,7 +583,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     ChainlinkOracleWrapper.bytecode
   );
   const chainlinkTribeEthOracleWrapper = await chainlinkTribeEthOracleWrapperFactory.deploy(
-    core.address,
+    core,
     chainlinkTribeEthOracleAddress
   );
 
@@ -594,9 +594,9 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     CompositeOracle.bytecode
   );
   const chainlinkTribeUsdCompositeOracle = await chainlinkTribeUsdCompositeOracleFactory.deploy(
-    core.address,
+    core,
     chainlinkTribeEthOracleWrapper.address,
-    chainlinkEthUsdOracleWrapper.address
+    chainlinkEthUsdOracleWrapper
   );
 
   logging && console.log('TRIBE/USD Composite Oracle deployed to: ', chainlinkTribeUsdCompositeOracle.address);
@@ -606,7 +606,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     TribeReserveStabilizer.bytecode
   );
   const tribeReserveStabilizer = await tribeReserveStabilizerFactory.deploy(
-    core.address,
+    core,
     chainlinkTribeUsdCompositeOracle.address,
     ZERO_ADDRESS,
     USD_PER_FEI_BPS,
@@ -622,9 +622,9 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
   // ERC20Splitter
   const tribeSplitterFactory = await ethers.getContractFactory(ERC20Splitter.abi, ERC20Splitter.bytecode);
   const tribeSplitter = await tribeSplitterFactory.deploy(
-    core.address,
-    tribe.address,
-    [tribeReserveStabilizer.address, core.address, erc20Dripper.address],
+    core,
+    tribe,
+    [tribeReserveStabilizer.address, core, erc20Dripper],
     [SPLIT_BURN_BPS, SPLIT_DAO_BPS, SPLIT_LM_BPS]
   );
   logging && console.log('TRIBE Splitter: ', tribeSplitter.address);
@@ -634,7 +634,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     BalancerLBPSwapper.bytecode
   );
   const feiTribeLBPSwapper = await feiTribeLBPSwapperFactory.deploy(
-    core.address,
+    core,
     {
       _oracle: chainlinkTribeUsdCompositeOracle.address,
       _backupOracle: ZERO_ADDRESS,
@@ -642,19 +642,19 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
       _decimalsNormalizer: 0
     },
     LBP_FREQUENCY,
-    fei.address,
-    tribe.address,
+    fei,
+    tribe,
     tribeSplitter.address,
     MIN_LBP_SIZE
   );
   logging && console.log('FEI->TRIBE LBP Swapper: ', feiTribeLBPSwapper.address);
 
-  const lbpFactory = await ethers.getContractAt(ILiquidityBootstrappingPoolFactory.abi, balancerLBPoolFactory.address);
+  const lbpFactory = await ethers.getContractAt(ILiquidityBootstrappingPoolFactory.abi, balancerLBPoolFactory);
 
   const tx: TransactionResponse = await lbpFactory.create(
     'FEI->TRIBE Auction Pool',
     'apFEI-TRIBE',
-    [fei.address, tribe.address],
+    [fei, tribe],
     [`99${e16}`, `1${e16}`],
     `30${e14}`,
     feiTribeLBPSwapper.address,
@@ -671,7 +671,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
 
   const pcvEquityMinterFactory = await ethers.getContractFactory(PCVEquityMinter.abi, PCVEquityMinter.bytecode);
   const pcvEquityMinter = await pcvEquityMinterFactory.deploy(
-    core.address,
+    core,
     feiTribeLBPSwapper.address,
     PCV_EQUITY_MINTER_INCENTIVE,
     PCV_EQUITY_MINTER_FREQUENCY,

@@ -23,7 +23,7 @@ export type NamedContracts = { [key: string]: ethers.Contract };
 export type NamedAddresses = { [key: string]: string };
 export type DeployUpgradeFunc = (
   deployAddress: string,
-  contracts: NamedContracts,
+  address: NamedAddresses,
   logging: boolean
 ) => Promise<NamedContracts>;
 export type SetupUpgradeFunc = (
