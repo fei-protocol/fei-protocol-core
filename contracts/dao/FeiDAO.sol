@@ -40,13 +40,12 @@ contract FeiDAO is
         return _votingPeriod;
     }
 
-    function quorum(uint256 blockNumber)
+    function quorum(uint256)
         public
         view
         override
         returns (uint256)
     {
-        require(blockNumber < block.number, "FeiDAO: block not yet mined");
         return _quorum;
     }
 
