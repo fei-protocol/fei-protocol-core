@@ -5,8 +5,6 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const GovernorAlpha = artifacts.readArtifactSync('GovernorAlpha');
-
 // This script fully executes an on-chain DAO proposal with pre-supplied calldata
 
 // txData = The calldata for the DAO transaction to execute.
@@ -30,7 +28,7 @@ async function exec(txData, totalValue, addresses) {
     });
   }
 
-  const governor = await ethers.getContractAt('GovernorAlpha.', governorAlphaAddress);
+  const governor = await ethers.getContractAt('GovernorAlpha', governorAlphaAddress);
 
   const proposalNo = await governor.latestProposalIds(proposerAddress);
 
