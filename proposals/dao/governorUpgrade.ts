@@ -15,7 +15,9 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     params: [timelock.address]
   });
 
-  await timelock.setPendingAdmin(feiDAO.address, {from: timelock.address});
+  const timelockSigner = await ethers.getSigner(timelock.address);
+
+  await (await timelock.connect(timelockSigner)).setPendingAdmin(feiDAO.address);
 
   await feiDAO.__acceptAdmin();
 }

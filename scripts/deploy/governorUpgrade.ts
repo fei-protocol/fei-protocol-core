@@ -14,9 +14,6 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     throw new Error('An environment variable contract address is not set');
   }
 
-  console.log(tribe);
-  console.log(timelock);
-
   const feiDAO = await (
     await ethers.getContractFactory('FeiDAO')
   ).deploy(tribe, timelock);
