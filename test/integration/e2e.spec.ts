@@ -213,7 +213,7 @@ describe('e2e', function () {
     });
   });
 
-  describe('Aave borrowing', async () => {
+  describe.skip('Aave borrowing', async () => {
     it('grants rewards', async function () {
       const { aaveEthPCVDeposit, aaveLendingPool, aaveTribeIncentivesController, fei, tribe } = contracts;
 
