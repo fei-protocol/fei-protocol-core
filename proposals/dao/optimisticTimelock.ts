@@ -1,12 +1,7 @@
 import hre, { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { time } from '../../test/helpers';
-import {
-  RunUpgradeFunc,
-  SetupUpgradeFunc,
-  TeardownUpgradeFunc,
-  ValidateUpgradeFunc
-} from '../../types/types';
+import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '../../types/types';
 
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   console.log('No actions to complete in setup.');
