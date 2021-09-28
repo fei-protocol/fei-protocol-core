@@ -1,6 +1,6 @@
 import hre, { network, ethers } from 'hardhat';
 import { forceEth } from '../../test/integration/setup/utils';
-import { NamedContracts } from '../../test/integration/setup/types';
+import { NamedContracts } from '../../types/types';
 
 import * as dotenv from 'dotenv';
 

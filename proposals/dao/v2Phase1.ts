@@ -6,7 +6,7 @@ import {
   ValidateUpgradeFunc,
   RunUpgradeFunc,
   TeardownUpgradeFunc
-} from '../../test/integration/setup/types';
+} from '../../types/types';
 
 import chai from 'chai';
 import { expect } from 'chai';

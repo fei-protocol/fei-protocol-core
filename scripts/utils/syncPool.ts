@@ -1,6 +1,6 @@
 import hre, { ethers, artifacts } from 'hardhat';
 import * as dotenv from 'dotenv';
-import { NamedAddresses } from '../../test/integration/setup/types';
+import { NamedAddresses } from '../../types/types';
 
 dotenv.config();
 
