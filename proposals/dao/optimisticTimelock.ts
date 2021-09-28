@@ -6,7 +6,7 @@ import {
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
-} from '../../test/integration/setup/types';
+} from '../../types/types';
 
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   console.log('No actions to complete in setup.');

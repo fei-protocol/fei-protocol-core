@@ -1,7 +1,7 @@
 import hre, { ethers } from 'hardhat';
 import { time } from '@openzeppelin/test-helpers';
 import { TestEndtoEndCoordinator } from './setup';
-import { NamedAddresses, NamedContracts } from './setup/types';
+import { NamedAddresses, NamedContracts } from '../../types/types';
 import { forceEth } from './setup/utils';
 import { expectApprox } from '../../test/helpers';
 import proposals from './proposals_config.json';

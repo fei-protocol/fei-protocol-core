@@ -40,10 +40,10 @@ If your proposal requires new code additions to succeed, these need to be develo
 ## Step 3: Proposal Mocking and Integration Test
 Write a script following the template of `proposals/dao/fip_x.js`. The script should use the injected `addresses`, `contracts`, and `oldContracts` parameters to trigger the appropriate governor functions with the intended inputs.
 
-* `addresses` contains a flat mapping of address names to addresses found in `contract-addresses/mainnetAddresses.json`
-* `contracts` contains a flat mapping of contract names to contract objects using the specified artifact and contract from `contract-addresses/mainnetAddresses.json` AFTER all of the deploy and upgrade steps have taken place
+* `addresses` contains a flat mapping of address names to addresses found in `contract-addresses/mainnetAddresses`
+* `contracts` contains a flat mapping of contract names to contract objects using the specified artifact and contract from `contract-addresses/mainnetAddresses` AFTER all of the deploy and upgrade steps have taken place
 
-* `oldContracts` contains a flat mapping of contract names to contract objects using the specified artifact and contract from `contract-addresses/mainnetAddresses.json` from BEFORE all of the deploy and upgrade steps have taken place, in case actions need to be taken on the prior versions of upgraded contracts
+* `oldContracts` contains a flat mapping of contract names to contract objects using the specified artifact and contract from `contract-addresses/mainnetAddresses` from BEFORE all of the deploy and upgrade steps have taken place, in case actions need to be taken on the prior versions of upgraded contracts
 
 The setup, teardown, and validation hooks are used to compare the output of the dao script to the actual on-chain calldata proposed to the governor.
 

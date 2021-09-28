@@ -2,7 +2,7 @@ import { TransactionResponse } from '@ethersproject/abstract-provider';
 import testHelpers, { BN, ether } from '@openzeppelin/test-helpers';
 import hre, { artifacts, ethers, web3 } from 'hardhat';
 import { getAllContractAddresses } from '../../test/integration/setup/loadContracts';
-import { DeployUpgradeFunc, NamedContracts } from '../../test/integration/setup/types';
+import { DeployUpgradeFunc, NamedContracts } from '../../types/types';
 const {
   constants: { ZERO_ADDRESS }
 } = testHelpers;

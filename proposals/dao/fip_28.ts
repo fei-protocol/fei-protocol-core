@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
-import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc } from '../../test/integration/setup/types';
+import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc } from '../../types/types';
 
 const e18 = ethers.constants.WeiPerEther;
 

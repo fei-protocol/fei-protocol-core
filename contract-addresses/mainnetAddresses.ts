@@ -1,5 +1,5 @@
 
-{
+const MainnetAddresses = {
     "aave" : {"artifactName" : "IERC20", "address" : "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9"},
     "aaveEthPCVDeposit": { "artifactName": "AavePCVDeposit", "address":  "0x5B86887e171bAE0C2C826e87E34Df8D558C079B9"},
     "aaveEthPCVDripController": { "artifactName": "PCVDripController", "address":  "0xb3D63876d95d3a5e591D4DE536dC410b97244086"},
@@ -144,3 +144,5 @@
     "weth": { "artifactName": "IWETH", "address":  "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"},
     "wethERC20": { "artifactName": "IERC20", "address":  "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"}
 }
+
+export default MainnetAddresses
