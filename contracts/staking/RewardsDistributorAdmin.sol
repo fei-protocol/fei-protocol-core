@@ -5,6 +5,7 @@ import "../refs/CoreRef.sol";
 import "../external/rari/IRewardsDistributor.sol";
 
 contract RewardsDistributorAdmin is IRewardsDistributor, CoreRef {
+    /// rewards distributor contract address
     IRewardsDistributor public rewardsDistributorContract;
 
     constructor(
@@ -12,6 +13,9 @@ contract RewardsDistributorAdmin is IRewardsDistributor, CoreRef {
         IRewardsDistributor _rewardsDistributorContract
     ) CoreRef(coreAddress) {
         rewardsDistributorContract = _rewardsDistributorContract;
+        // Create new admin role for this contract
+        // grant this role to all AutoRewardsDistributors so that they can call 
+        _setContractAdminRole(keccak256("REWARDS_DISTRIBUTOR_ADMIN_ROLE"));
     }
 
     /**
