@@ -53,7 +53,7 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef {
      * @notice Set COMP speed for a single market
      * @param cToken The market whose COMP speed to update
      */
-    function _setCompSupplySpeed(address cToken, uint256 compSpeed) external override onlyGovernorOrAdmin {
+    function _setCompSupplySpeed(address cToken, uint256 compSpeed) external override onlyGovernorOrAdmin whenNotPaused {
         rewardsDistributorContract._setCompSupplySpeed(cToken, compSpeed);
     }
 
@@ -61,7 +61,7 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef {
      * @notice Set COMP speed for a single market
      * @param cToken The market whose COMP speed to update
      */
-    function _setCompBorrowSpeed(address cToken, uint256 compSpeed) external override onlyGovernorOrAdmin {
+    function _setCompBorrowSpeed(address cToken, uint256 compSpeed) external override onlyGovernorOrAdmin whenNotPaused {
         rewardsDistributorContract._setCompBorrowSpeed(cToken, compSpeed);
     }
 
