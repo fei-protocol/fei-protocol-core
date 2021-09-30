@@ -8,4 +8,4 @@ coverage/
 tenderly.yaml
 artifacts
 cache
-types
+types/contracts

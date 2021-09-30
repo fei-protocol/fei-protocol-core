@@ -1,7 +1,10 @@
-import { BN } from '@openzeppelin/test-helpers/src/setup';
 import hre, { network, ethers } from 'hardhat';
 import { forceEth } from '../../test/integration/setup/utils';
-import { MainnetContracts, NamedContracts } from '../../test/integration/setup/types';
+import { NamedContracts } from '../../types/types';
+
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 // Grants Governor, Minter, Burner, and PCVController access to accounts[0]
 // Also mints a large amount of FEI to accounts[0]

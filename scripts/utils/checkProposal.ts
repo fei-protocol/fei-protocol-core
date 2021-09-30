@@ -1,7 +1,7 @@
 import { getAllContracts, getAllContractAddresses } from '../../test/integration/setup/loadContracts';
 import hre, { ethers } from 'hardhat';
 import { time } from '@openzeppelin/test-helpers';
-import { NamedContracts, UpgradeFuncs } from '../../test/integration/setup/types';
+import { NamedContracts, UpgradeFuncs } from '../../types/types';
 
 import * as dotenv from 'dotenv';
 

@@ -8,7 +8,7 @@ import {
   ProposalConfig,
   namedContractsToNamedAddresses,
   NamedAddresses
-} from './types';
+} from '../../../types/types';
 import { sudo } from '../../../scripts/utils/sudo';
 import constructProposal from '../../../scripts/utils/constructProposal';
 import '@nomiclabs/hardhat-ethers';
@@ -20,7 +20,7 @@ import {
   RunUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
-} from './types';
+} from '../../../types/types';
 
 /**
  * Coordinate initialising an end-to-end testing environment

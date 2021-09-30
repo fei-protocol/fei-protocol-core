@@ -2,7 +2,7 @@ import { TransactionResponse } from '@ethersproject/abstract-provider';
 import testHelpers, { BN, ether } from '@openzeppelin/test-helpers';
 import hre, { artifacts, ethers, web3 } from 'hardhat';
 import { getAllContractAddresses } from '../../test/integration/setup/loadContracts';
-import { DeployUpgradeFunc, NamedContracts } from '../../test/integration/setup/types';
+import { DeployUpgradeFunc, NamedContracts } from '../../types/types';
 const {
   constants: { ZERO_ADDRESS }
 } = testHelpers;
@@ -154,20 +154,15 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
   logging && console.log('DPI UniswapPCVDeposit deployed to: ', dpiUniswapPCVDeposit.address);
 
   const bondingCurveFactory = await ethers.getContractFactory(EthBondingCurve.abi, EthBondingCurve.bytecode);
-  const bondingCurve = await bondingCurveFactory.deploy(
-    core,
-    chainlinkEthUsdOracleWrapper,
-    ZERO_ADDRESS,
-    {
-      scale: SCALE,
-      buffer: BUFFER,
-      discount: DISCOUNT,
-      pcvDeposits: [aaveEthPCVDeposit, compoundEthPCVDeposit],
-      ratios: [5000, 5000],
-      duration: BC_DURATION,
-      incentive: BC_INCENTIVE
-    }
-  );
+  const bondingCurve = await bondingCurveFactory.deploy(core, chainlinkEthUsdOracleWrapper, ZERO_ADDRESS, {
+    scale: SCALE,
+    buffer: BUFFER,
+    discount: DISCOUNT,
+    pcvDeposits: [aaveEthPCVDeposit, compoundEthPCVDeposit],
+    ratios: [5000, 5000],
+    duration: BC_DURATION,
+    incentive: BC_INCENTIVE
+  });
   logging && console.log('Bonding curve deployed to: ', bondingCurve.address);
 
   const ratioPCVControllerFactory = await ethers.getContractFactory(
@@ -184,11 +179,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.abi,
     PCVDepositWrapper.bytecode
   );
-  const daiBondingCurveWrapper = await daiBondingCurveWrapperFactory.deploy(
-    daiBondingCurve,
-    dai,
-    false
-  );
+  const daiBondingCurveWrapper = await daiBondingCurveWrapperFactory.deploy(daiBondingCurve, dai, false);
 
   logging && console.log('daiBondingCurveWrapper: ', daiBondingCurveWrapper.address);
 
@@ -208,11 +199,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.abi,
     PCVDepositWrapper.bytecode
   );
-  const raiBondingCurveWrapper = await raiBondingCurveWrapperFactory.deploy(
-    raiBondingCurve,
-    rai,
-    false
-  );
+  const raiBondingCurveWrapper = await raiBondingCurveWrapperFactory.deploy(raiBondingCurve, rai, false);
 
   logging && console.log('raiBondingCurveWrapper: ', raiBondingCurveWrapper.address);
 
@@ -220,11 +207,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.abi,
     PCVDepositWrapper.bytecode
   );
-  const aaveRaiPCVDepositWrapper = await aaveRaiPCVDepositWrapperFactory.deploy(
-    aaveRaiPCVDeposit,
-    rai,
-    false
-  );
+  const aaveRaiPCVDepositWrapper = await aaveRaiPCVDepositWrapperFactory.deploy(aaveRaiPCVDeposit, rai, false);
 
   logging && console.log('aaveRaiPCVDeposit: ', aaveRaiPCVDepositWrapper.address);
 
@@ -244,11 +227,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.abi,
     PCVDepositWrapper.bytecode
   );
-  const dpiBondingCurveWrapper = await dpiBondingCurveWrapperFactory.deploy(
-    dpiBondingCurve,
-    dpi,
-    false
-  );
+  const dpiBondingCurveWrapper = await dpiBondingCurveWrapperFactory.deploy(dpiBondingCurve, dpi, false);
 
   logging && console.log('dpiBondingCurveWrapper: ', dpiBondingCurveWrapper.address);
 
@@ -280,11 +259,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.abi,
     PCVDepositWrapper.bytecode
   );
-  const ethLidoPCVDepositWrapper = await ethLidoPCVDepositWrapperFactory.deploy(
-    ethLidoPCVDeposit,
-    weth,
-    false
-  );
+  const ethLidoPCVDepositWrapper = await ethLidoPCVDepositWrapperFactory.deploy(ethLidoPCVDeposit, weth, false);
 
   logging && console.log('ethLidoPCVDepositWrapper: ', ethLidoPCVDepositWrapper.address);
 
@@ -292,11 +267,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.abi,
     PCVDepositWrapper.bytecode
   );
-  const aaveEthPCVDepositWrapper = await aaveEthPCVDepositWrapperFactory.deploy(
-    aaveEthPCVDeposit,
-    weth,
-    false
-  );
+  const aaveEthPCVDepositWrapper = await aaveEthPCVDepositWrapperFactory.deploy(aaveEthPCVDeposit, weth, false);
 
   logging && console.log('aaveEthPCVDepositWrapper: ', aaveEthPCVDepositWrapper.address);
 
@@ -438,11 +409,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     PCVDepositWrapper.abi,
     PCVDepositWrapper.bytecode
   );
-  const creamFeiPCVDepositWrapper = await creamFeiPCVDepositWrapperFactory.deploy(
-    creamFeiPCVDeposit,
-    fei,
-    true
-  );
+  const creamFeiPCVDepositWrapper = await creamFeiPCVDepositWrapperFactory.deploy(creamFeiPCVDeposit, fei, true);
 
   logging && console.log('creamFeiPCVDepositWrapper: ', creamFeiPCVDepositWrapper.address);
 
