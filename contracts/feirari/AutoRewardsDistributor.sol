@@ -52,7 +52,7 @@ contract AutoRewardsDistributor is CoreRef {
 
         /// @notice if tribe per block, total allocation points or this pools allocation points are equal to 0,
         /// then set compSpeed to 0
-        if (tribePerBlock == 0 || totalAllocPoints == 0 || allocPoints == 0) {
+        if (totalAllocPoints == 0) {
             compSpeed = 0;
         } else {
             /// @notice calculate the amount per block that the Rari rewards distributor is receiving from the TribalChief

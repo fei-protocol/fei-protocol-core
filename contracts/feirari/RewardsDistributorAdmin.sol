@@ -4,7 +4,7 @@ import "../refs/CoreRef.sol";
 import "./IRewardsDistributorAdmin.sol";
 
 contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef {
-    /// @notice rewards distributor contract address
+    /// @notice rewards distributor contract
     IRewardsDistributorAdmin public rewardsDistributorContract;
 
     /// @param coreAddress address of core contract

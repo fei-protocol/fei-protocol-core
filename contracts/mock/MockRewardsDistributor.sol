@@ -6,9 +6,9 @@ import "../feirari/IRewardsDistributorAdmin.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
-    event SuccessSetAdmin(bool set);
-    event SuccessAcceptPendingAdmin(bool set);
-    event SuccessGrantComp(bool set);
+    event SuccessSetAdmin(bool set, address pendingAdmin);
+    event SuccessAcceptPendingAdmin(bool set, address newlyAppointedAdmin);
+    event SuccessGrantComp(bool set, address compGrantee, uint256 compAmount);
     event SuccessSetCompSupplySpeed(bool set);
     event SuccessSetCompBorrowSpeed(bool set);
     event SuccessSetCompContributorSpeed(bool set);
@@ -17,15 +17,19 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
     uint256 public compSupplySpeed;
     uint256 public compBorrowSpeed;
 
+    address public pendingNewAdmin;
+    address public newAdmin;
+
     constructor() Ownable() {}
 
     /**
       * @notice Begins transfer of admin rights. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
       * @dev Admin function to begin change of admin. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
-      * @param newPendingAdmin New pending admin.
+      * @param _newPendingAdmin New pending admin.
       */
-    function _setPendingAdmin(address newPendingAdmin) external override onlyOwner {
-        emit SuccessSetAdmin(true);
+    function _setPendingAdmin(address _newPendingAdmin) external override onlyOwner {
+        pendingNewAdmin = _newPendingAdmin;
+        emit SuccessSetAdmin(true, pendingNewAdmin);
     }
 
     /**
@@ -33,7 +37,9 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
       * @dev Admin function for pending admin to accept role and update admin
       */
     function _acceptAdmin() external override onlyOwner {
-        emit SuccessAcceptPendingAdmin(true);
+        newAdmin = pendingNewAdmin;
+        pendingNewAdmin = address(0);
+        emit SuccessAcceptPendingAdmin(true, newAdmin);
     }
 
     /*** Comp Distribution ***/
@@ -46,7 +52,7 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @param amount The amount of COMP to (possibly) transfer
      */
     function _grantComp(address recipient, uint amount) external override onlyOwner {
-        emit SuccessGrantComp(true);
+        emit SuccessGrantComp(true, recipient, amount);
     }
 
     /**

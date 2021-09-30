@@ -112,10 +112,8 @@ describe('AutoRewardsDistributor', function () {
   describe('setAutoRewardsDistribution', function () {
     describe('Paused', function () {
       it('reverts', async function () {
-        let governor = await ethers.getSigner(governorAddress);
-
         expect(await this.autoRewardsDistributor.paused()).to.be.false;
-        await this.autoRewardsDistributor.connect(governor).pause();
+        await this.autoRewardsDistributor.connect(impersonatedSigners[governorAddress]).pause();
         expect(await this.autoRewardsDistributor.paused()).to.be.true;
         await expectRevert(this.autoRewardsDistributor.setAutoRewardsDistribution(), 'Pausable: paused');
       });
@@ -233,9 +231,8 @@ describe('AutoRewardsDistributor', function () {
       });
         
       it('succeeds when caller is governor', async function () {
-        let governor = await ethers.getSigner(governorAddress);
-
-        await this.autoRewardsDistributor.connect(governor).setRewardsDistributorAdmin(this.tribe.address);
+        await this.autoRewardsDistributor.connect(impersonatedSigners[governorAddress])
+          .setRewardsDistributorAdmin(this.tribe.address);
         expect(await this.autoRewardsDistributor.rewardsDistributorAdmin()).to.be.equal(this.tribe.address);
       });
     });
