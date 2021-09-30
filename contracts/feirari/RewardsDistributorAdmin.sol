@@ -8,7 +8,7 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef {
     IRewardsDistributorAdmin public rewardsDistributorContract;
 
     /// @param coreAddress address of core contract
-    /// @param _rewardsDistributorContract address of the admin rewards distributor contract
+    /// @param _rewardsDistributorContract admin rewards distributor contract
     constructor(
         address coreAddress,
         IRewardsDistributorAdmin _rewardsDistributorContract
