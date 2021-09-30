@@ -1,20 +1,21 @@
 pragma solidity ^0.8.0;
 
-import "./TribalChief.sol";
 import "../refs/CoreRef.sol";
-import "../external/rari/IRewardsDistributor.sol";
+import "./IRewardsDistributorAdmin.sol";
 
-contract RewardsDistributorAdmin is IRewardsDistributor, CoreRef {
-    /// rewards distributor contract address
-    IRewardsDistributor public rewardsDistributorContract;
+contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef {
+    /// @notice rewards distributor contract address
+    IRewardsDistributorAdmin public rewardsDistributorContract;
 
+    /// @param coreAddress address of core contract
+    /// @param _rewardsDistributorContract address of the admin rewards distributor contract
     constructor(
         address coreAddress,
-        IRewardsDistributor _rewardsDistributorContract
+        IRewardsDistributorAdmin _rewardsDistributorContract
     ) CoreRef(coreAddress) {
         rewardsDistributorContract = _rewardsDistributorContract;
-        // Create new admin role for this contract
-        // grant this role to all AutoRewardsDistributors so that they can call 
+        /// @notice Create new admin role for this contract
+        /// grant this role to all AutoRewardsDistributors so that they can call 
         _setContractAdminRole(keccak256("REWARDS_DISTRIBUTOR_ADMIN_ROLE"));
     }
 
@@ -23,7 +24,7 @@ contract RewardsDistributorAdmin is IRewardsDistributor, CoreRef {
       * @dev Admin function to begin change of admin. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
       * @param newPendingAdmin New pending admin.
       */
-    function _setPendingAdmin(address newPendingAdmin) external override onlyGovernorOrAdmin {
+    function _setPendingAdmin(address newPendingAdmin) external override onlyGovernor {
         rewardsDistributorContract._setPendingAdmin(newPendingAdmin);
     }
 
@@ -31,7 +32,7 @@ contract RewardsDistributorAdmin is IRewardsDistributor, CoreRef {
       * @notice Accepts transfer of admin rights. msg.sender must be pendingAdmin
       * @dev Admin function for pending admin to accept role and update admin
       */
-    function _acceptAdmin() external override onlyGovernorOrAdmin {
+    function _acceptAdmin() public override onlyGovernorOrAdmin {
         rewardsDistributorContract._acceptAdmin();
     }
 
@@ -44,7 +45,7 @@ contract RewardsDistributorAdmin is IRewardsDistributor, CoreRef {
      * @param recipient The address of the recipient to transfer COMP to
      * @param amount The amount of COMP to (possibly) transfer
      */
-    function _grantComp(address recipient, uint amount) external override onlyGovernorOrAdmin {
+    function _grantComp(address recipient, uint amount) external override onlyGovernor {
         rewardsDistributorContract._grantComp(recipient, amount);
     }
 
@@ -52,7 +53,7 @@ contract RewardsDistributorAdmin is IRewardsDistributor, CoreRef {
      * @notice Set COMP speed for a single market
      * @param cToken The market whose COMP speed to update
      */
-    function _setCompSupplySpeed(address cToken, uint256 compSpeed) external override {
+    function _setCompSupplySpeed(address cToken, uint256 compSpeed) external override onlyGovernorOrAdmin {
         rewardsDistributorContract._setCompSupplySpeed(cToken, compSpeed);
     }
 
@@ -79,5 +80,21 @@ contract RewardsDistributorAdmin is IRewardsDistributor, CoreRef {
      */
     function _addMarket(address cToken) external override onlyGovernorOrAdmin {
         rewardsDistributorContract._addMarket(cToken);
+    }
+
+    /**
+     * @notice view function to get the comp supply speeds from the rewards distributor contract
+     * @param cToken The market to view
+     */
+    function compSupplySpeeds(address cToken) external view override returns(uint256) {
+        return rewardsDistributorContract.compSupplySpeeds(cToken);
+    }
+
+    /**
+     * @notice view function to get the comp borrow speeds from the rewards distributor contract
+     * @param cToken The market to view
+     */
+    function compBorrowSpeeds(address cToken) external view override returns(uint256) {
+        return rewardsDistributorContract.compBorrowSpeeds(cToken);
     }
 }

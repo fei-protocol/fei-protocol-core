@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 
-interface IRewardsDistributor {
+interface IRewardsDistributorAdmin {
     /*** Set Admin ***/
 
     /**
@@ -53,4 +53,10 @@ interface IRewardsDistributor {
      * @param cToken The market to add
      */
     function _addMarket(address cToken) external;
+
+    /// @notice The portion of compRate that each market currently receives
+    function compSupplySpeeds(address) external view returns(uint256);
+
+    /// @notice The portion of compRate that each market currently receives
+    function compBorrowSpeeds(address) external view returns(uint256);
 }
