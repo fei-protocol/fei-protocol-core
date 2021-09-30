@@ -10,6 +10,7 @@ import chai from 'chai';
 import { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
+import { TransactionResponse } from '@ethersproject/providers';
 
 before(() => {
   chai.use(CBN(ethers.BigNumber));
@@ -52,6 +53,65 @@ describe('e2e', function () {
     console.log(`Environment loaded.`);
   });
 
+  describe('OZ Gov', function () {
+    it('proposal succeeds', async function () {
+      const feiDAO = contracts.feiDAO;
+
+      const targets = [feiDAO.address, contractAddresses.daiBondingCurve];
+      const values = [0, 0];
+      const calldatas = [
+        '0x70b0f660000000000000000000000000000000000000000000000000000000000000000a', // set voting delay 10
+        '0xe1d92bf8000000000000000000000000000000000000000000000000000000000000000b' // set bonding curve duration 11
+      ];
+      const description = [];
+
+      await hre.network.provider.request({
+        method: 'hardhat_impersonateAccount',
+        params: [contractAddresses.multisig]
+      });
+
+      const signer = await ethers.getSigner(contractAddresses.multisig);
+
+      // Propose
+      // note ethers.js requires using this notation when two overloaded methods exist)
+      // https://docs.ethers.io/v5/migration/web3/#migration-from-web3-js--contracts--overloaded-functions
+      await feiDAO
+        .connect(signer)
+        ['propose(address[],uint256[],bytes[],string)'](targets, values, calldatas, description);
+
+      const pid = await feiDAO.hashProposal(targets, values, calldatas, ethers.utils.keccak256(description));
+
+      await time.advanceBlock();
+
+      // vote
+      await feiDAO.connect(signer).castVote(pid, 1);
+
+      // advance to end of voting period
+      const endBlock = (await feiDAO.proposals(pid)).endBlock;
+      await time.advanceBlockTo(endBlock.toString());
+
+      // queue
+      await feiDAO['queue(address[],uint256[],bytes[],bytes32)'](
+        targets,
+        values,
+        calldatas,
+        ethers.utils.keccak256(description)
+      );
+
+      await time.increase('1000000');
+
+      // execute
+      await feiDAO['execute(address[],uint256[],bytes[],bytes32)'](
+        targets,
+        values,
+        calldatas,
+        ethers.utils.keccak256(description)
+      );
+
+      expect((await feiDAO.votingDelay()).toString()).to.be.equal('10');
+      expect((await contracts.daiBondingCurve.duration()).toString()).to.be.equal('11');
+    });
+  });
   describe('PCV Equity Minter + LBP', async function () {
     it('mints appropriate amount and swaps', async function () {
       const {
