@@ -84,9 +84,6 @@ describe('AutoRewardsDistributor', function () {
     });
   });
 
-  describe('getRewardSpeedDifference', function () {
-  });
-
   describe('ACL', function () {
     describe('_setPendingAdmin', function () {
       it('fails when caller is not governor', async function () {
