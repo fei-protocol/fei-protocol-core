@@ -16,16 +16,15 @@ const voterAddress = '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775';
  */
 async function checkProposal() {
   const proposalName = process.env.DEPLOY_FILE;
+  const proposalNo = process.env.PROPOSAL_NUMBER;
 
-  if (!proposalName) {
-    throw new Error('DEPLOY_FILE env variable not set');
+  if (!proposalName || !proposalNo) {
+    throw new Error('DEPLOY_FILE or PROPOSAL_NUMBER env variable not set');
   }
 
   const contracts = await getAllContracts();
 
-  const { governorAlpha } = contracts;
-
-  const proposalNo = process.env.PROPOSAL_NUMBER ? process.env.PROPOSAL_NUMBER : await governorAlpha.proposalCount();
+  const { feiDAO } = contracts;
 
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
@@ -36,7 +35,7 @@ async function checkProposal() {
 
   console.log(`Proposal Number: ${proposalNo}`);
 
-  let proposal = await governorAlpha.proposals(proposalNo);
+  let proposal = await feiDAO.proposals(proposalNo);
   const { startBlock } = proposal;
 
   // Advance to vote start
@@ -48,13 +47,13 @@ async function checkProposal() {
   }
 
   /*try {*/
-  await governorAlpha.connect(voterSigner).castVote(proposalNo, true);
+  await feiDAO.connect(voterSigner).castVote(proposalNo, 1);
   console.log('Casted vote.');
   /*} catch {
     console.log('Already voted, ror some terrible error has occured.');
   }*/
 
-  proposal = await governorAlpha.proposals(proposalNo);
+  proposal = await feiDAO.proposals(proposalNo);
   const { endBlock } = proposal;
 
   // Advance to after vote completes and queue the transaction
@@ -63,7 +62,7 @@ async function checkProposal() {
     await time.advanceBlockTo(Number(endBlock.toString()));
 
     console.log('Queuing');
-    await governorAlpha.queue(proposalNo);
+    await feiDAO.queue(proposalNo);
   } else {
     console.log('Already queued');
   }
@@ -73,7 +72,7 @@ async function checkProposal() {
   await time.increase(86400); // 1 day in seconds
 
   console.log('Executing');
-  await governorAlpha.execute(proposalNo);
+  await feiDAO.execute(proposalNo);
   console.log('Success');
 
   // Get the upgrade setup, run and teardown scripts
