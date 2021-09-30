@@ -14,8 +14,8 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef {
         IRewardsDistributorAdmin _rewardsDistributorContract
     ) CoreRef(coreAddress) {
         rewardsDistributorContract = _rewardsDistributorContract;
-        /// @notice Create new admin role for this contract
-        /// grant this role to all AutoRewardsDistributors so that they can call 
+        /// @notice Governance should create new admin role for this contract
+        /// and then grant this role to all AutoRewardsDistributors so that they can call this contract
         _setContractAdminRole(keccak256("REWARDS_DISTRIBUTOR_ADMIN_ROLE"));
     }
 
@@ -32,7 +32,7 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef {
       * @notice Accepts transfer of admin rights. msg.sender must be pendingAdmin
       * @dev Admin function for pending admin to accept role and update admin
       */
-    function _acceptAdmin() public override onlyGovernorOrAdmin {
+    function _acceptAdmin() external override {
         rewardsDistributorContract._acceptAdmin();
     }
 

@@ -49,7 +49,7 @@ contract MockTribalChief {
     }
 
     /// @notice set the tribe per block
-    function setPoolAllocPoints(uint256 newTribePerBlock) external {
+    function setTribePerBlock(uint256 newTribePerBlock) external {
         tribalChiefTribePerBlock = newTribePerBlock;
     }
 }
