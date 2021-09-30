@@ -6,13 +6,13 @@ import "../feirari/IRewardsDistributorAdmin.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
-    event SuccessSetAdmin(bool set, address pendingAdmin);
-    event SuccessAcceptPendingAdmin(bool set, address newlyAppointedAdmin);
-    event SuccessGrantComp(bool set, address compGrantee, uint256 compAmount);
-    event SuccessSetCompSupplySpeed(bool set);
-    event SuccessSetCompBorrowSpeed(bool set);
-    event SuccessSetCompContributorSpeed(bool set);
-    event SuccessAddMarket(bool set);
+    event successSetAdmin(address pendingAdmin);
+    event successAcceptPendingAdmin(address newlyAppointedAdmin);
+    event successGrantComp(address compGrantee, uint256 compAmount);
+    event successSetCompSupplySpeed();
+    event successSetCompBorrowSpeed();
+    event successSetCompContributorSpeed();
+    event successAddMarket();
 
     uint256 public compSupplySpeed;
     uint256 public compBorrowSpeed;
@@ -29,7 +29,7 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
       */
     function _setPendingAdmin(address _newPendingAdmin) external override onlyOwner {
         pendingNewAdmin = _newPendingAdmin;
-        emit SuccessSetAdmin(true, pendingNewAdmin);
+        emit successSetAdmin(pendingNewAdmin);
     }
 
     /**
@@ -39,7 +39,7 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
     function _acceptAdmin() external override onlyOwner {
         newAdmin = pendingNewAdmin;
         pendingNewAdmin = address(0);
-        emit SuccessAcceptPendingAdmin(true, newAdmin);
+        emit successAcceptPendingAdmin(newAdmin);
     }
 
     /*** Comp Distribution ***/
@@ -52,7 +52,7 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @param amount The amount of COMP to (possibly) transfer
      */
     function _grantComp(address recipient, uint amount) external override onlyOwner {
-        emit SuccessGrantComp(true, recipient, amount);
+        emit successGrantComp(recipient, amount);
     }
 
     /**
@@ -61,7 +61,7 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      */
     function _setCompSupplySpeed(address cToken, uint256 compSpeed) external override onlyOwner {
         compSupplySpeed = compSpeed;
-        emit SuccessSetCompSupplySpeed(true);
+        emit successSetCompSupplySpeed();
     }
 
     /**
@@ -70,7 +70,7 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      */
     function _setCompBorrowSpeed(address cToken, uint256 compSpeed) external override onlyOwner {
         compBorrowSpeed = compSpeed;
-        emit SuccessSetCompBorrowSpeed(true);
+        emit successSetCompBorrowSpeed();
     }
 
     /**
@@ -79,7 +79,7 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @param compSpeed New COMP speed for contributor
      */
     function _setContributorCompSpeed(address contributor, uint compSpeed) external override onlyOwner {
-        emit SuccessSetCompContributorSpeed(true);
+        emit successSetCompContributorSpeed();
     }
 
     /**
@@ -87,7 +87,7 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @param cToken The market to add
      */
     function _addMarket(address cToken) external override onlyOwner {
-        emit SuccessAddMarket(true);
+        emit successAddMarket();
     }
 
     /**

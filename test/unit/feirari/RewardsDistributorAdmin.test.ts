@@ -16,8 +16,6 @@ describe('AutoRewardsDistributor', function () {
   let governorAddress: string;
   let pcvControllerAddress: string;
 
-  const e18 = '000000000000000000';
-
   const impersonatedSigners: { [key: string]: Signer } = {};
 
   before(async () => {
@@ -96,12 +94,12 @@ describe('AutoRewardsDistributor', function () {
       it('succeeds when caller is governor', async function () {
         await expect(
             await this.rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress])._setPendingAdmin(pcvControllerAddress)
-        ).to.emit(this.rewardsDistributor, 'SuccessSetAdmin').withArgs(true, pcvControllerAddress);
+        ).to.emit(this.rewardsDistributor, 'successSetAdmin').withArgs(pcvControllerAddress);
         expect(await this.rewardsDistributor.pendingNewAdmin()).to.be.equal(pcvControllerAddress);
 
         await expect(
             await this.rewardsDistributorAdmin._acceptAdmin()
-        ).to.emit(this.rewardsDistributor, 'SuccessAcceptPendingAdmin').withArgs(true, pcvControllerAddress);
+        ).to.emit(this.rewardsDistributor, 'successAcceptPendingAdmin').withArgs(pcvControllerAddress);
 
         expect(await this.rewardsDistributor.pendingNewAdmin()).to.be.equal(ZERO_ADDRESS);
         expect(await this.rewardsDistributor.newAdmin()).to.be.equal(pcvControllerAddress);

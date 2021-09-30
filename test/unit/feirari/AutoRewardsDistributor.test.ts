@@ -11,7 +11,7 @@ const AutoRewardsDistributor = artifacts.readArtifactSync('AutoRewardsDistributo
 
 describe('AutoRewardsDistributor', function () {
   let governorAddress: string;
-  const e18 = '000000000000000000';
+  const e18 = ethers.constants.WeiPerEther;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
 
@@ -40,7 +40,7 @@ describe('AutoRewardsDistributor', function () {
     this.poolIndex = 1000;
     this.poolAllocPoints = 1000;
     this.totalAllocPoint = 10000;
-    this.tribePerBlock = `75${e18}`;
+    this.tribePerBlock = toBN('75').mul(toBN(e18));
     this.isBorrowIncentivized = false;
 
     this.core = await getCore();
@@ -85,28 +85,6 @@ describe('AutoRewardsDistributor', function () {
     it('tribalChiefRewardIndex', async function () {
       expect(await this.autoRewardsDistributor.tribalChiefRewardIndex()).to.be.equal(toBN(this.poolIndex));
     });
-
-    it('supplySpeeds', async function () {
-      expect(await this.rewardsDistributor.compSupplySpeed()).to.be.equal(toBN('0'));
-      expect(await this.rewardsDistributor.compSupplySpeeds(this.tribe.address)).to.be.equal(toBN('0'));
-    });
-    
-    it('borrowSpeeds', async function () {
-      expect(await this.rewardsDistributor.compBorrowSpeed()).to.be.equal(toBN('0'));
-      expect(await this.rewardsDistributor.compBorrowSpeeds(this.tribe.address)).to.be.equal(toBN('0'));
-    });
-    
-    it('tribePerBlock', async function () {
-      expect(await this.tribalChief.tribePerBlock()).to.be.equal(toBN(this.tribePerBlock));
-    });
-    
-    it('totalAllocPoint', async function () {
-      expect(await this.tribalChief.totalAllocPoint()).to.be.equal(toBN(this.totalAllocPoint));
-    });
-    
-    it('poolAllocPoints', async function () {
-      expect(await this.tribalChief.poolAllocPoints()).to.be.equal(toBN(this.poolAllocPoints));
-    });
   });
 
   describe('setAutoRewardsDistribution', function () {
@@ -124,7 +102,7 @@ describe('AutoRewardsDistributor', function () {
         expect(await this.rewardsDistributor.compSupplySpeed()).to.be.equal(toBN('0'));
         
         let [newCompSpeed, updateNeeded] = await this.autoRewardsDistributor.getRewardSpeedDifference();
-        const expectedNewCompSpeed = toBN(`75${e18}`).mul(toBN(this.poolAllocPoints)).div(toBN(this.totalAllocPoint));
+        const expectedNewCompSpeed = toBN('75').mul(toBN(e18)).mul(toBN(this.poolAllocPoints)).div(toBN(this.totalAllocPoint));
         expect(newCompSpeed).to.be.equal(expectedNewCompSpeed);
         expect(updateNeeded).to.be.true;
         await this.autoRewardsDistributor.setAutoRewardsDistribution();
@@ -132,7 +110,7 @@ describe('AutoRewardsDistributor', function () {
       });
 
       it('fails when update is not needed', async function () {
-        const expectedNewCompSpeed = toBN(`75${e18}`).mul(toBN(this.poolAllocPoints)).div(toBN(this.totalAllocPoint));
+        const expectedNewCompSpeed = toBN('75').mul(toBN(e18)).mul(toBN(this.poolAllocPoints)).div(toBN(this.totalAllocPoint));
         await this.rewardsDistributor.setCompSupplySpeed(expectedNewCompSpeed);
         let [compSpeed, updateNeeded] = await this.autoRewardsDistributor.getRewardSpeedDifference();
         expect(updateNeeded).to.be.false;
@@ -175,7 +153,7 @@ describe('AutoRewardsDistributor', function () {
         expect(await this.rewardsDistributor.compBorrowSpeed()).to.be.equal(toBN('0'));
         
         let [newCompSpeed, updateNeeded] = await this.autoRewardsDistributor.getRewardSpeedDifference();
-        const expectedNewCompSpeed = toBN(`75${e18}`).mul(toBN(this.poolAllocPoints)).div(toBN(this.totalAllocPoint));
+        const expectedNewCompSpeed = toBN('75').mul(toBN(e18)).mul(toBN(this.poolAllocPoints)).div(toBN(this.totalAllocPoint));
         expect(newCompSpeed).to.be.equal(expectedNewCompSpeed);
         expect(updateNeeded).to.be.true;
         await this.autoRewardsDistributor.setAutoRewardsDistribution();
@@ -183,7 +161,7 @@ describe('AutoRewardsDistributor', function () {
       });
 
       it('fails when update is not needed', async function () {
-        const expectedNewCompSpeed = toBN(`75${e18}`).mul(toBN(this.poolAllocPoints)).div(toBN(this.totalAllocPoint));
+        const expectedNewCompSpeed = toBN('75').mul(toBN(e18)).mul(toBN(this.poolAllocPoints)).div(toBN(this.totalAllocPoint));
         await this.rewardsDistributor.setCompBorrowSpeed(expectedNewCompSpeed);
 
         let [compSpeed, updateNeeded] = await this.autoRewardsDistributor.getRewardSpeedDifference();
@@ -199,6 +177,24 @@ describe('AutoRewardsDistributor', function () {
   });
 
   describe('getRewardSpeedDifference', function () {
+    it('returns true and new compspeed when an update is needed', async function () {
+      const expectedNewCompSpeed = toBN('75').mul(toBN(e18)).mul(toBN(this.poolAllocPoints)).div(toBN(this.totalAllocPoint));
+      let [compSpeed, updateNeeded] = await this.autoRewardsDistributor.getRewardSpeedDifference();
+
+      expect(updateNeeded).to.be.true;
+      expect(compSpeed).to.be.equal(expectedNewCompSpeed);
+    });
+
+    it('returns true and new compspeed when an update is needed', async function () {
+      await this.tribalChief.setTribePerBlock(toBN('100').mul(toBN(e18)));
+
+      const expectedNewCompSpeed = toBN('100').mul(toBN(e18)).mul(toBN(this.poolAllocPoints)).div(toBN(this.totalAllocPoint));
+      let [compSpeed, updateNeeded] = await this.autoRewardsDistributor.getRewardSpeedDifference();
+
+      expect(updateNeeded).to.be.true;
+      expect(compSpeed).to.be.equal(expectedNewCompSpeed);
+    });
+
     it('returns 0 and does not revert when tribe per block is 0', async function () {
       await this.tribalChief.setTribePerBlock(0);
       let [newCompSpeed, updateNeeded] = await this.autoRewardsDistributor.getRewardSpeedDifference();
