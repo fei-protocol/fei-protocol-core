@@ -1,8 +1,8 @@
-import { expectRevert, balance, getAddresses, getCore } from '../../helpers';
+import { expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
 import hre, { ethers, artifacts } from 'hardhat';
 import { Signer, utils } from 'ethers';
-import testHelpers, { BN, ether } from '@openzeppelin/test-helpers';
+import testHelpers from '@openzeppelin/test-helpers';
 import { Core } from '../../../types/contracts/Core'
 import { RewardsDistributorAdmin } from '../../../types/contracts/RewardsDistributorAdmin'
 import { MockRewardsDistributor } from '../../../types/contracts/MockRewardsDistributor'
@@ -18,6 +18,7 @@ describe('RewardsDistributorAdmin', function () {
   let pcvControllerAddress: string;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
+  let impersonatedAddresses: Array<string>;
   let core: Core;
   let rewardsDistributor: MockRewardsDistributor;
   let rewardsDistributorAdmin: RewardsDistributorAdmin;
@@ -27,7 +28,7 @@ describe('RewardsDistributorAdmin', function () {
     const addresses = await getAddresses();
 
     // add any addresses you want to impersonate here
-    const impersonatedAddresses = [
+    impersonatedAddresses = [
       addresses.governorAddress,
       addresses.pcvControllerAddress,
     ];
@@ -48,12 +49,24 @@ describe('RewardsDistributorAdmin', function () {
     core = await getCore() as Core;
     rewardsDistributor = await (await ethers.getContractFactory('MockRewardsDistributor')).deploy();
     rewardsDistributorAdmin = await (await ethers.getContractFactory('RewardsDistributorAdmin'))
-        .deploy(core.address, rewardsDistributor.address, []);
+      .deploy(core.address, rewardsDistributor.address, []);
 
     await rewardsDistributor.transferOwnership(rewardsDistributorAdmin.address);
   });
 
   describe('Init', function () {
+    beforeEach(async function() {
+      rewardsDistributorAdmin = await (await ethers.getContractFactory('RewardsDistributorAdmin'))
+        .deploy(core.address, rewardsDistributor.address, impersonatedAddresses);
+    });
+
+    it('hasRole', async function () {
+      for (let i = 0; i < impersonatedAddresses.length; i++) {
+        /// assert that all users that were setup in constructor were given ARD role
+        expect(await rewardsDistributorAdmin.hasRole(AUTO_REWARDS_DISTRIBUTOR, impersonatedAddresses[i])).to.be.true;
+      }
+    });
+
     it('rewardsDistributorContract', async function () {
       expect(await rewardsDistributorAdmin.rewardsDistributorContract()).to.be.equal(rewardsDistributor.address);
     });

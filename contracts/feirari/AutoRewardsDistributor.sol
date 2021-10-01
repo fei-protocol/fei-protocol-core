@@ -1,7 +1,6 @@
 pragma solidity ^0.8.0;
 
 import "./../staking/ITribalChief.sol";
-import "./RewardsDistributorAdmin.sol";
 import "../refs/CoreRef.sol";
 import "./IRewardsDistributorAdmin.sol";
 
@@ -96,7 +95,7 @@ contract AutoRewardsDistributor is CoreRef {
     /// @notice API to point to a new rewards distributor admin contract
     /// @param _rewardsDistributorAdmin the address of the new RewardsDistributorAdmin contract
     function setRewardsDistributorAdmin(
-        RewardsDistributorAdmin _rewardsDistributorAdmin
+        IRewardsDistributorAdmin _rewardsDistributorAdmin
     ) external onlyGovernorOrAdmin {
         rewardsDistributorAdmin = _rewardsDistributorAdmin;
     }
