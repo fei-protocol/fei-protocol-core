@@ -7,7 +7,7 @@ import { Core, Timelock, Timelock__factory } from '@custom-types/contracts';
 // Import if needed, just a helper.
 // const toBN = ethers.BigNumber.from;
 
-describe('Core', async () => {
+describe.skip('example', async () => {
   // variable decs for vars that you want to use in multiple tests
   // typeing contracts specifically to what kind they are will catch before you run them!
   let core: Core;
