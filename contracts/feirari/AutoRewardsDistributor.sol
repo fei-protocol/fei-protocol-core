@@ -9,15 +9,16 @@ contract AutoRewardsDistributor is CoreRef {
     /// @notice rewards distributor admin contract
     IRewardsDistributorAdmin public rewardsDistributorAdmin;
     /// @notice tribal chief contract
-    ITribalChief public tribalChief;
+    ITribalChief public immutable tribalChief;
     /// @notice address of the CToken this contract controls rewards for
-    address public cTokenAddress;
+    address public immutable cTokenAddress;
     /// @notice boolean which decides the action to incentivize
-    bool public isBorrowIncentivized;
+    bool public immutable isBorrowIncentivized;
     /// @notice reward index on tribal chief to grab this staked token wrapper's index
-    uint256 public tribalChiefRewardIndex;
+    uint256 public immutable tribalChiefRewardIndex;
 
-    event SpeedChanged(bool borrowSpeedChanged, uint256 newSpeed, address cToken);
+    event SpeedChanged(uint256 newSpeed, address cToken);
+    event RewardsDistributorAdminChanged(IRewardsDistributorAdmin oldRewardsDistributorAdmin, IRewardsDistributorAdmin newRewardsDistributorAdmin);
 
     /// @notice constructor function
     /// @param coreAddress address of core contract
@@ -83,20 +84,21 @@ contract AutoRewardsDistributor is CoreRef {
         require(updateNeeded, "AutoRewardsDistributor: update not needed");
 
         /// @notice call out to the rewards distributor admin and set the comp supply/borrow speed to the current value
-        /// if the contract is borrow incentivized, set that speed, else, set the supply speed
         if (isBorrowIncentivized) {
             rewardsDistributorAdmin._setCompBorrowSpeed(cTokenAddress, compSpeed);
         } else {
             rewardsDistributorAdmin._setCompSupplySpeed(cTokenAddress, compSpeed);
         }
-        emit SpeedChanged(isBorrowIncentivized, compSpeed, cTokenAddress);
+        emit SpeedChanged(compSpeed, cTokenAddress);
     }
 
     /// @notice API to point to a new rewards distributor admin contract
-    /// @param _rewardsDistributorAdmin the address of the new RewardsDistributorAdmin contract
+    /// @param _newRewardsDistributorAdmin the address of the new RewardsDistributorAdmin contract
     function setRewardsDistributorAdmin(
-        IRewardsDistributorAdmin _rewardsDistributorAdmin
+        IRewardsDistributorAdmin _newRewardsDistributorAdmin
     ) external onlyGovernorOrAdmin {
-        rewardsDistributorAdmin = _rewardsDistributorAdmin;
+        IRewardsDistributorAdmin oldRewardsDistributorAdmin = rewardsDistributorAdmin;
+        rewardsDistributorAdmin = _newRewardsDistributorAdmin;
+        emit RewardsDistributorAdminChanged(oldRewardsDistributorAdmin, _newRewardsDistributorAdmin);
     }
 }

@@ -48,7 +48,6 @@ describe('AutoRewardsDistributor', function () {
   beforeEach(async function () {
     ({ governorAddress } = await getAddresses());
 
-
     poolIndex = 1000;
     poolAllocPoints = 1000;
     totalAllocPoint = 10000;
@@ -237,10 +236,12 @@ describe('AutoRewardsDistributor', function () {
           "CoreRef: Caller is not a governor or contract admin"
         );
       });
-        
+
       it('succeeds when caller is governor', async function () {
-        await autoRewardsDistributor.connect(impersonatedSigners[governorAddress])
-          .setRewardsDistributorAdmin(tribe.address);
+        await expect(
+          await autoRewardsDistributor.connect(impersonatedSigners[governorAddress]).setRewardsDistributorAdmin(tribe.address)
+        )
+        .to.emit(autoRewardsDistributor, 'RewardsDistributorAdminChanged').withArgs(rewardsDistributor.address, tribe.address);
         expect(await autoRewardsDistributor.rewardsDistributorAdmin()).to.be.equal(tribe.address);
       });
     });

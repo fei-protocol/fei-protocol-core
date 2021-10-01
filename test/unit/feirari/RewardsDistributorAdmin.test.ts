@@ -22,7 +22,7 @@ describe('RewardsDistributorAdmin', function () {
   let core: Core;
   let rewardsDistributor: MockRewardsDistributor;
   let rewardsDistributorAdmin: RewardsDistributorAdmin;
-  let AUTO_REWARDS_DISTRIBUTOR = keccak256(utils.toUtf8Bytes("AUTO_REWARDS_DISTRIBUTOR"));
+  let AUTO_REWARDS_DISTRIBUTOR_ROLE = keccak256(utils.toUtf8Bytes("AUTO_REWARDS_DISTRIBUTOR_ROLE"));
 
   before(async () => {
     const addresses = await getAddresses();
@@ -63,7 +63,7 @@ describe('RewardsDistributorAdmin', function () {
     it('hasRole', async function () {
       for (let i = 0; i < impersonatedAddresses.length; i++) {
         /// assert that all users that were setup in constructor were given ARD role
-        expect(await rewardsDistributorAdmin.hasRole(AUTO_REWARDS_DISTRIBUTOR, impersonatedAddresses[i])).to.be.true;
+        expect(await rewardsDistributorAdmin.hasRole(AUTO_REWARDS_DISTRIBUTOR_ROLE, impersonatedAddresses[i])).to.be.true;
       }
     });
 
@@ -82,9 +82,9 @@ describe('RewardsDistributorAdmin', function () {
         await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).pause();
         /// become admin
         await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).becomeAdmin();
-        /// now give yourself the AUTO_REWARDS_DISTRIBUTOR role so that we can hit the _setCompSupplySpeed
+        /// now give yourself the AUTO_REWARDS_DISTRIBUTOR_ROLE role so that we can hit the _setCompSupplySpeed
         /// function without running into access errors
-        await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).grantRole(AUTO_REWARDS_DISTRIBUTOR, governorAddress);
+        await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).grantRole(AUTO_REWARDS_DISTRIBUTOR_ROLE, governorAddress);
 
         await expectRevert(
             rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress])._setCompSupplySpeed(pcvControllerAddress, 0),
@@ -99,7 +99,7 @@ describe('RewardsDistributorAdmin', function () {
       it('reverts', async function () {
         await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).pause();
         await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).becomeAdmin();
-        await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).grantRole(AUTO_REWARDS_DISTRIBUTOR, governorAddress);
+        await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).grantRole(AUTO_REWARDS_DISTRIBUTOR_ROLE, governorAddress);
         await expectRevert(
             rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress])._setCompBorrowSpeed(pcvControllerAddress, 0),
             'Pausable: paused'
@@ -111,7 +111,7 @@ describe('RewardsDistributorAdmin', function () {
   describe('ACL', function () {
     describe('_setCompSupplySpeed', function () {
       it('fails when caller does not have correct role', async function () {
-        const expectedError = `AccessControl: account ${governorAddress.toLowerCase()} is missing role ${AUTO_REWARDS_DISTRIBUTOR}`;
+        const expectedError = `AccessControl: account ${governorAddress.toLowerCase()} is missing role ${AUTO_REWARDS_DISTRIBUTOR_ROLE}`;
         await expectRevert(
           rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress])._setCompSupplySpeed(pcvControllerAddress, 0),
           expectedError
@@ -121,7 +121,7 @@ describe('RewardsDistributorAdmin', function () {
       it('succeeds when caller has correct role', async function () {
         const newCompSupplySpeed = 1000;
         await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).becomeAdmin();
-        await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).grantRole(AUTO_REWARDS_DISTRIBUTOR, governorAddress);
+        await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).grantRole(AUTO_REWARDS_DISTRIBUTOR_ROLE, governorAddress);
         await expect(
           await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress])._setCompSupplySpeed(pcvControllerAddress, newCompSupplySpeed)
         ).to.emit(rewardsDistributor, 'successSetCompSupplySpeed').withArgs();
@@ -131,7 +131,7 @@ describe('RewardsDistributorAdmin', function () {
 
     describe('_setCompBorrowSpeed', function () {
       it('fails when caller does not have correct role', async function () {
-        const expectedError = `AccessControl: account ${governorAddress.toLowerCase()} is missing role ${AUTO_REWARDS_DISTRIBUTOR}`;
+        const expectedError = `AccessControl: account ${governorAddress.toLowerCase()} is missing role ${AUTO_REWARDS_DISTRIBUTOR_ROLE}`;
         await expectRevert(
           rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress])._setCompBorrowSpeed(pcvControllerAddress, 0),
           expectedError
@@ -141,7 +141,7 @@ describe('RewardsDistributorAdmin', function () {
       it('succeeds when caller has correct role', async function () {
         const newCompBorrowSpeed = 1000;
         await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).becomeAdmin();
-        await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).grantRole(AUTO_REWARDS_DISTRIBUTOR, governorAddress);
+        await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).grantRole(AUTO_REWARDS_DISTRIBUTOR_ROLE, governorAddress);
         await expect(
           await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress])._setCompBorrowSpeed(pcvControllerAddress, newCompBorrowSpeed)
         ).to.emit(rewardsDistributor, 'successSetCompBorrowSpeed').withArgs();

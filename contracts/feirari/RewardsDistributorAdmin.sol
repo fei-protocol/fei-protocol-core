@@ -4,15 +4,20 @@ import "../refs/CoreRef.sol";
 import "./IRewardsDistributorAdmin.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
+/// @notice this contract has its own internal RBAC. The reason for doing this
+/// and not leveraging core is twofold. One, it simplifies devops operations around adding
+/// and removing users, and two, by being self contained, it is more efficient as it does not need
+/// to make external calls to figure out who has a particular role.
 contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessControlEnumerable {
 
-    bytes32 public constant override AUTO_REWARDS_DISTRIBUTOR = keccak256("AUTO_REWARDS_DISTRIBUTOR");
+    bytes32 public constant override AUTO_REWARDS_DISTRIBUTOR_ROLE = keccak256("AUTO_REWARDS_DISTRIBUTOR_ROLE");
 
     /// @notice rewards distributor contract
     IRewardsDistributorAdmin public rewardsDistributorContract;
 
     /// @param coreAddress address of core contract
     /// @param _rewardsDistributorContract admin rewards distributor contract
+    /// @param _autoRewardDistributors list of auto rewards distributor contracts that can call this contract
     constructor(
         address coreAddress,
         IRewardsDistributorAdmin _rewardsDistributorContract,
@@ -21,13 +26,14 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
         rewardsDistributorContract = _rewardsDistributorContract;
         /// @notice Governance should create new admin role for this contract
         /// and then grant this role to all AutoRewardsDistributors so that they can call this contract
+        /// The reason we are reusing the tribal chief admin role is it consolidates control, access
+        /// and means we don't have to create another OA timelock or multisig contract
         _setContractAdminRole(keccak256("TRIBAL_CHIEF_ADMIN_ROLE"));
-        /// assign the admin role of AUTO_REWARDS_DISTRIBUTOR to DEFAULT_ADMIN_ROLE
-        _setRoleAdmin(AUTO_REWARDS_DISTRIBUTOR, DEFAULT_ADMIN_ROLE);
+        _setRoleAdmin(AUTO_REWARDS_DISTRIBUTOR_ROLE, DEFAULT_ADMIN_ROLE);
 
         /// give all AutoRewardsDistributor contracts the proper role so that they can set borrow and supply speeds
         for (uint256 i = 0; i < _autoRewardDistributors.length; i++) {
-            _setupRole(AUTO_REWARDS_DISTRIBUTOR, _autoRewardDistributors[i]);
+            _setupRole(AUTO_REWARDS_DISTRIBUTOR_ROLE, _autoRewardDistributors[i]);
         }
     }
 
@@ -66,7 +72,7 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
      * Callable only by users with auto rewards distributor role
      * @param cToken The market whose COMP speed to update
      */
-    function _setCompSupplySpeed(address cToken, uint256 compSpeed) external override onlyRole(AUTO_REWARDS_DISTRIBUTOR) whenNotPaused {
+    function _setCompSupplySpeed(address cToken, uint256 compSpeed) external override onlyRole(AUTO_REWARDS_DISTRIBUTOR_ROLE) whenNotPaused {
         rewardsDistributorContract._setCompSupplySpeed(cToken, compSpeed);
     }
 
@@ -75,7 +81,7 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
      * Callable only by users with auto rewards distributor role
      * @param cToken The market whose COMP speed to update
      */
-    function _setCompBorrowSpeed(address cToken, uint256 compSpeed) external override onlyRole(AUTO_REWARDS_DISTRIBUTOR) whenNotPaused {
+    function _setCompBorrowSpeed(address cToken, uint256 compSpeed) external override onlyRole(AUTO_REWARDS_DISTRIBUTOR_ROLE) whenNotPaused {
         rewardsDistributorContract._setCompBorrowSpeed(cToken, compSpeed);
     }
 

@@ -64,5 +64,5 @@ interface IRewardsDistributorAdmin {
     function _setImplementation(address implementation_) external;
 
     /// @notice Role for AutoRewardsDistributor contracts
-    function AUTO_REWARDS_DISTRIBUTOR() external view returns (bytes32);
+    function AUTO_REWARDS_DISTRIBUTOR_ROLE() external view returns (bytes32);
 }

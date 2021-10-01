@@ -14,7 +14,7 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
     event successSetCompContributorSpeed();
     event successAddMarket();
 
-    bytes32 public constant override AUTO_REWARDS_DISTRIBUTOR = keccak256("AUTO_REWARDS_DISTRIBUTOR");
+    bytes32 public constant override AUTO_REWARDS_DISTRIBUTOR_ROLE = keccak256("AUTO_REWARDS_DISTRIBUTOR_ROLE");
 
     uint256 public compSupplySpeed;
     uint256 public compBorrowSpeed;
