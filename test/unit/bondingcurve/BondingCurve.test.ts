@@ -11,7 +11,7 @@ const MockOracle = artifacts.readArtifactSync('MockOracle');
 
 const toBN = ethers.BigNumber.from;
 
-chai.config.includeStack = true
+chai.config.includeStack = true;
 
 describe('BondingCurve', function () {
   let userAddress: string;
@@ -45,10 +45,10 @@ describe('BondingCurve', function () {
   });
 
   beforeEach(async function () {
-    console.log(`Getting addresses...`)
+    console.log(`Getting addresses...`);
     const { userAddress, governorAddress, secondUserAddress, keeperAddress, beneficiaryAddress1, beneficiaryAddress2 } =
       await getAddresses();
-    console.log(`Got addresses...`)
+    console.log(`Got addresses...`);
 
     await network.provider.request({
       method: 'hardhat_reset',

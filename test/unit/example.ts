@@ -4,6 +4,9 @@ import { Signer } from 'ethers';
 import hre, { ethers } from 'hardhat';
 import { Core, Timelock, Timelock__factory } from '@custom-types/contracts';
 
+// This will theoretically make the error stack actually print!
+chai.config.includeStack = true
+
 // Import if needed, just a helper.
 // const toBN = ethers.BigNumber.from;
 
