@@ -2,8 +2,12 @@ pragma solidity ^0.8.0;
 
 import "../refs/CoreRef.sol";
 import "./IRewardsDistributorAdmin.sol";
+import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
-contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef {
+contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessControlEnumerable {
+
+    bytes32 public constant override AUTO_REWARDS_DISTRIBUTOR = keccak256("AUTO_REWARDS_DISTRIBUTOR");
+
     /// @notice rewards distributor contract
     IRewardsDistributorAdmin public rewardsDistributorContract;
 
@@ -11,12 +15,20 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef {
     /// @param _rewardsDistributorContract admin rewards distributor contract
     constructor(
         address coreAddress,
-        IRewardsDistributorAdmin _rewardsDistributorContract
+        IRewardsDistributorAdmin _rewardsDistributorContract,
+        address[] memory _autoRewardDistributors
     ) CoreRef(coreAddress) {
         rewardsDistributorContract = _rewardsDistributorContract;
         /// @notice Governance should create new admin role for this contract
         /// and then grant this role to all AutoRewardsDistributors so that they can call this contract
-        _setContractAdminRole(keccak256("REWARDS_DISTRIBUTOR_ADMIN_ROLE"));
+        _setContractAdminRole(keccak256("TRIBAL_CHIEF_ADMIN_ROLE"));
+        /// assign the admin role of AUTO_REWARDS_DISTRIBUTOR to DEFAULT_ADMIN_ROLE
+        _setRoleAdmin(AUTO_REWARDS_DISTRIBUTOR, DEFAULT_ADMIN_ROLE);
+
+        /// give all AutoRewardsDistributor contracts the proper role so that they can set borrow and supply speeds
+        for (uint256 i = 0; i < _autoRewardDistributors.length; i++) {
+            _setupRole(AUTO_REWARDS_DISTRIBUTOR, _autoRewardDistributors[i]);
+        }
     }
 
     /**
@@ -50,18 +62,20 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef {
     }
 
     /**
-     * @notice Set COMP speed for a single market
+     * @notice Set COMP speed for a single market.
+     * Callable only by users with auto rewards distributor role
      * @param cToken The market whose COMP speed to update
      */
-    function _setCompSupplySpeed(address cToken, uint256 compSpeed) external override onlyGovernorOrAdmin whenNotPaused {
+    function _setCompSupplySpeed(address cToken, uint256 compSpeed) external override onlyRole(AUTO_REWARDS_DISTRIBUTOR) whenNotPaused {
         rewardsDistributorContract._setCompSupplySpeed(cToken, compSpeed);
     }
 
     /**
      * @notice Set COMP speed for a single market
+     * Callable only by users with auto rewards distributor role
      * @param cToken The market whose COMP speed to update
      */
-    function _setCompBorrowSpeed(address cToken, uint256 compSpeed) external override onlyGovernorOrAdmin whenNotPaused {
+    function _setCompBorrowSpeed(address cToken, uint256 compSpeed) external override onlyRole(AUTO_REWARDS_DISTRIBUTOR) whenNotPaused {
         rewardsDistributorContract._setCompBorrowSpeed(cToken, compSpeed);
     }
 
@@ -83,6 +97,14 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef {
     }
 
     /**
+     * @notice Set the implementation contract the RewardsDistributorDelegator delegate calls
+     * @param implementation_ the logic contract address
+     */
+    function _setImplementation(address implementation_) external override onlyGovernor {
+        rewardsDistributorContract._setImplementation(implementation_);
+    }
+
+    /**
      * @notice view function to get the comp supply speeds from the rewards distributor contract
      * @param cToken The market to view
      */
@@ -96,5 +118,12 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef {
      */
     function compBorrowSpeeds(address cToken) external view override returns(uint256) {
         return rewardsDistributorContract.compBorrowSpeeds(cToken);
+    }
+
+    /**
+     * @notice allow admin or governor to assume auto reward distributor admin role
+     */
+    function becomeAdmin() public onlyGovernorOrAdmin {
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 }

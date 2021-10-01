@@ -59,4 +59,10 @@ interface IRewardsDistributorAdmin {
 
     /// @notice The portion of compRate that each market currently receives
     function compBorrowSpeeds(address) external view returns(uint256);
+
+    /// @notice Set logic contract address
+    function _setImplementation(address implementation_) external;
+
+    /// @notice Role for AutoRewardsDistributor contracts
+    function AUTO_REWARDS_DISTRIBUTOR() external view returns (bytes32);
 }

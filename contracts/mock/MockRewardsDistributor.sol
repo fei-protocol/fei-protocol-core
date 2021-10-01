@@ -14,11 +14,15 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
     event successSetCompContributorSpeed();
     event successAddMarket();
 
+    bytes32 public constant override AUTO_REWARDS_DISTRIBUTOR = keccak256("AUTO_REWARDS_DISTRIBUTOR");
+
     uint256 public compSupplySpeed;
     uint256 public compBorrowSpeed;
 
     address public pendingNewAdmin;
     address public newAdmin;
+
+    address public implementation;
 
     constructor() Ownable() {}
 
@@ -113,5 +117,13 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
 
     function setCompBorrowSpeed(uint256 newSpeed) external {
         compBorrowSpeed = newSpeed;
+    }
+
+    /**
+     * @notice Set the implementation contract the RewardsDistributorDelegator delegate calls
+     * @param implementation_ the logic contract address
+     */
+    function _setImplementation(address implementation_) external override onlyOwner {
+        implementation = implementation_;
     }
 }

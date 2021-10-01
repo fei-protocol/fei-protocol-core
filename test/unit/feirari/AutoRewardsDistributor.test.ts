@@ -101,7 +101,6 @@ describe('AutoRewardsDistributor', function () {
 
   describe('setAutoRewardsDistribution', function () {
     describe('Paused', function () {
-      console.log("typeof", )
       it('reverts', async function () {
         expect(await autoRewardsDistributor.paused()).to.be.false;
         await autoRewardsDistributor.connect(impersonatedSigners[governorAddress]).pause();
