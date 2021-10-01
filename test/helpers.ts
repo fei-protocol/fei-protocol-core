@@ -3,7 +3,7 @@ import hre, { web3, ethers, artifacts, network } from 'hardhat';
 import { expectRevert, balance, time } from '@openzeppelin/test-helpers';
 import chai from 'chai';
 import CBN from 'chai-bn';
-import { Core, Core__factory } from "@custom-types/contracts"
+import { Core, Core__factory } from '@custom-types/contracts';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
