@@ -21,8 +21,7 @@ describe('RewardsDistributorAdmin', function () {
   let core: Core;
   let rewardsDistributor: MockRewardsDistributor;
   let rewardsDistributorAdmin: RewardsDistributorAdmin;
-  let AUTO_REWARDS_DISTRIBUTOR = utils.keccak256(utils.toUtf8Bytes("AUTO_REWARDS_DISTRIBUTOR"));
-  let ADMIN_ROLE = '0x0000000000000000000000000000000000000000000000000000000000000000';
+  let AUTO_REWARDS_DISTRIBUTOR = keccak256(utils.toUtf8Bytes("AUTO_REWARDS_DISTRIBUTOR"));
 
   before(async () => {
     const addresses = await getAddresses();
@@ -87,7 +86,7 @@ describe('RewardsDistributorAdmin', function () {
       it('reverts', async function () {
         await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).pause();
         await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).becomeAdmin();
-        await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).grantRole(AUTO_REWARDS_DISTRIBUTOR, governorAddress);        await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).grantRole(AUTO_REWARDS_DISTRIBUTOR, governorAddress);
+        await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).grantRole(AUTO_REWARDS_DISTRIBUTOR, governorAddress);
         await expectRevert(
             rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress])._setCompBorrowSpeed(pcvControllerAddress, 0),
             'Pausable: paused'
@@ -97,6 +96,47 @@ describe('RewardsDistributorAdmin', function () {
   });
 
   describe('ACL', function () {
+    describe('_setCompSupplySpeed', function () {
+      it('fails when caller does not have correct role', async function () {
+        const expectedError = `AccessControl: account ${governorAddress.toLowerCase()} is missing role ${AUTO_REWARDS_DISTRIBUTOR}`;
+        await expectRevert(
+          rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress])._setCompSupplySpeed(pcvControllerAddress, 0),
+          expectedError
+        );
+      });
+
+      it('succeeds when caller has correct role', async function () {
+        const newCompSupplySpeed = 1000;
+        await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).becomeAdmin();
+        await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).grantRole(AUTO_REWARDS_DISTRIBUTOR, governorAddress);
+        await expect(
+          await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress])._setCompSupplySpeed(pcvControllerAddress, newCompSupplySpeed)
+        ).to.emit(rewardsDistributor, 'successSetCompSupplySpeed').withArgs();
+        expect(await rewardsDistributor.compSupplySpeed()).to.be.equal(toBN(newCompSupplySpeed));
+      });
+    });
+
+    describe('_setCompBorrowSpeed', function () {
+      it('fails when caller does not have correct role', async function () {
+        const expectedError = `AccessControl: account ${governorAddress.toLowerCase()} is missing role ${AUTO_REWARDS_DISTRIBUTOR}`;
+        await expectRevert(
+          rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress])._setCompBorrowSpeed(pcvControllerAddress, 0),
+          expectedError
+        );
+      });
+
+      it('succeeds when caller has correct role', async function () {
+        const newCompBorrowSpeed = 1000;
+        await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).becomeAdmin();
+        await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).grantRole(AUTO_REWARDS_DISTRIBUTOR, governorAddress);
+        await expect(
+          await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress])._setCompBorrowSpeed(pcvControllerAddress, newCompBorrowSpeed)
+        ).to.emit(rewardsDistributor, 'successSetCompBorrowSpeed').withArgs();
+
+        expect(await rewardsDistributor.compBorrowSpeed()).to.be.equal(toBN(newCompBorrowSpeed));
+      });
+    });
+
     describe('_setPendingAdmin', function () {
       it('fails when caller is not governor', async function () {
         await expectRevert(
