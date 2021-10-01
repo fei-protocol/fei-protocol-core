@@ -12,12 +12,12 @@ interface IPCVDepositAggregator is IPCVDeposit {
     function rebalance() external;
 
     // ----------- Governor only state changing api -----------
-    function addPCVDeposit() external;
+    function addPCVDeposit(address newPCVDeposit) external;
 
     function setNewAggregator(IPCVDepositAggregator newAggregator) external;
 
     // ----------- Governor or Guardian only state changing api -----------
-    function removePCVDeposit() external;
+    function removePCVDeposit(address pcvDeposit) external;
 
     // ----------- Read-only api -----------
     function rewardsAssetManager() external returns(address);

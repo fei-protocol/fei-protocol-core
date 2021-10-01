@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 interface IRiskCurve {
     struct CurveParams {
         address[] assets;
+        uint256[] baseWeights;
+        uint256[] slopes;
     }
 
     // ----------- public state changing API -----------
@@ -17,6 +19,8 @@ interface IRiskCurve {
 
     function getCurrentLeverage() external view returns(uint256);
 
+    function getAssetWeight(address asset, uint256 leverage) external view returns(uint256);
+    
     function getWeights(uint256 leverage) external view returns(uint256[] memory);
 
     function getWeightChangeTime(uint256[] memory oldWeights, uint256[] memory newWeights) external view returns(uint256);
