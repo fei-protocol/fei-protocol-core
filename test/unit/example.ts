@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import { Signer } from 'ethers';
 import hre, { ethers } from 'hardhat';
 import { Core, Timelock, Timelock__factory } from '@custom-types/contracts';
+import chai from 'chai';
 
 // This will theoretically make the error stack actually print!
 chai.config.includeStack = true
