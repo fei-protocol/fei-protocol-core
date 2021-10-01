@@ -5,7 +5,7 @@ interface IRiskCurve {
     struct CurveParams {
         address[] assets;
         uint256[] baseWeights;
-        uint256[] slopes;
+        int256[] slopes;
     }
 
     // ----------- public state changing API -----------
@@ -17,11 +17,17 @@ interface IRiskCurve {
     // ----------- Read-only API -----------
     function isWeightChangeEligible() external view returns(bool);
 
+    function getCurveParams() external view returns(CurveParams memory);
+ 
     function getCurrentLeverage() external view returns(uint256);
 
     function getAssetWeight(address asset, uint256 leverage) external view returns(uint256);
     
     function getWeights(uint256 leverage) external view returns(uint256[] memory);
+
+    function getCurrentTargetAssetWeight(address asset) external view returns(uint256);
+
+    function getCurrentTargetWeights() external view returns(uint256[] memory);
 
     function getWeightChangeTime(uint256[] memory oldWeights, uint256[] memory newWeights) external view returns(uint256);
 }   
