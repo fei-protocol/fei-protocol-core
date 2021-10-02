@@ -1,5 +1,5 @@
 import { expectRevert, time, getCore, getAddresses } from '../../helpers';
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
 import hre, { artifacts, ethers, network } from 'hardhat';
 import { BigNumber, Signer } from 'ethers';
 
@@ -10,6 +10,8 @@ const MockERC20 = artifacts.readArtifactSync('MockERC20');
 const MockOracle = artifacts.readArtifactSync('MockOracle');
 
 const toBN = ethers.BigNumber.from;
+
+chai.config.includeStack = true;
 
 describe('BondingCurve', function () {
   let userAddress: string;
@@ -65,6 +67,7 @@ describe('BondingCurve', function () {
       MockERC20PCVDeposit.abi,
       MockERC20PCVDeposit.bytecode
     );
+
     this.pcvDeposit1 = await mockERC20PCVDepositFactory.deploy(beneficiaryAddress1, this.token.address);
     this.pcvDeposit2 = await mockERC20PCVDepositFactory.deploy(beneficiaryAddress2, this.token.address);
 
@@ -90,7 +93,6 @@ describe('BondingCurve', function () {
 
     await this.token.mint(userAddress, '1000000000000000000000000');
     await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.bondingCurve.address);
-
     await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setMintCap(this.scale.mul(toBN('10')));
   });
 

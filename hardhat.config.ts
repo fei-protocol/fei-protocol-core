@@ -7,6 +7,7 @@ import '@idle-finance/hardhat-proposals-plugin';
 import 'hardhat-gas-reporter';
 import 'hardhat-contract-sizer';
 import 'solidity-coverage';
+import 'tsconfig-paths/register';
 
 import * as dotenv from 'dotenv';
 

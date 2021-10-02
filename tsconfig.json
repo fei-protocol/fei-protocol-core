@@ -10,6 +10,15 @@
     "esModuleInterop": true,
     "outDir": "dist",
     "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@contracts/*" : ["contracts/*"],
+      "@custom-types/*" : ["types/*"], // @types is reserved
+      "@scripts/*" : ["scripts/*"],
+      "@test/*" : ["test/*"],
+      "@proposals/*" : ["proposals/*"],
+      "@addresses/*" : ["contract-addresses/*"],
+    }
   },
   "include": [
     "test/*", "test/**/*",
@@ -17,5 +26,5 @@
     "proposals/*", "proposals/**/*",
     "./types/contracts/*", "./types/contracts/**/*",
   ],
-  "files": ["./hardhat.config.ts"]
+  "files": ["./hardhat.config.ts"],
 }

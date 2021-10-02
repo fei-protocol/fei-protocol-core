@@ -74,6 +74,7 @@
     "prettier": "^2.4.1",
     "solidity-coverage": "^0.7.17",
     "ts-node": "^10.0.0",
+    "tsconfig-paths": "^3.11.0",
     "typechain": "^5.1.2",
     "typescript": "^4.4.3",
     "web3": "^1.3.6"

@@ -3,13 +3,13 @@ import hre, { web3, ethers, artifacts, network } from 'hardhat';
 import { expectRevert, balance, time } from '@openzeppelin/test-helpers';
 import chai from 'chai';
 import CBN from 'chai-bn';
+import { Core, Core__factory } from '@custom-types/contracts';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
 
 const toBN = ethers.BigNumber.from;
 const { expect } = chai;
-const Core = artifacts.readArtifactSync('Core');
 const WETH9 = artifacts.readArtifactSync('WETH9');
 
 async function deployDevelopmentWeth(): Promise<void> {
@@ -52,7 +52,7 @@ async function getAddresses() {
   };
 }
 
-async function getCore() {
+async function getCore(): Promise<Core> {
   const { governorAddress, pcvControllerAddress, minterAddress, burnerAddress, guardianAddress } = await getAddresses();
 
   await hre.network.provider.request({
@@ -62,20 +62,14 @@ async function getCore() {
 
   const governorSigner = await ethers.getSigner(governorAddress);
 
-  const coreFactory = await ethers.getContractFactory(Core.abi, Core.bytecode, governorSigner);
+  const coreFactory = new Core__factory(governorSigner);
   const core = await coreFactory.deploy();
 
   await core.init();
-
   await core.grantMinter(minterAddress);
   await core.grantBurner(burnerAddress);
   await core.grantPCVController(pcvControllerAddress);
   await core.grantGuardian(guardianAddress);
-
-  await hre.network.provider.request({
-    method: 'hardhat_stopImpersonatingAccount',
-    params: [governorAddress]
-  });
 
   return core;
 }
