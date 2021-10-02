@@ -3,15 +3,17 @@ import { expect } from 'chai';
 import hre, { artifacts, ethers, network } from 'hardhat';
 import { Signer } from 'ethers';
 import { TransactionResponse } from '@ethersproject/providers';
+import { FeiDAO, Timelock } from '../../../types/contracts';
 
-const FeiDAO = artifacts.readArtifactSync('FeiDAO');
-const Timelock = artifacts.readArtifactSync('Timelock');
 const Tribe = artifacts.readArtifactSync('Tribe');
 
 const toBN = ethers.BigNumber.from;
 
 describe('FeiDAO', function () {
   let userAddress: string;
+  let feiDAO: FeiDAO;
+  let core: any;
+  let timelock: Timelock;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
 
@@ -39,30 +41,30 @@ describe('FeiDAO', function () {
       params: []
     });
 
-    this.core = await getCore();
-    const tribeAddress = await this.core.tribe();
+    core = await getCore();
+    const tribeAddress = await core.tribe();
 
     // Deploy timelock with vanilla user admin
-    const timelockDeployer = await ethers.getContractFactory(Timelock.abi, Timelock.bytecode);
-    this.timelock = await timelockDeployer.deploy(userAddress, 1, 1); // delay and min delay 1s
+    const timelockDeployer = await ethers.getContractFactory('Timelock');
+    timelock = await timelockDeployer.deploy(userAddress, 1, 1); // delay and min delay 1s
 
     // Deploy new Fei DAO
-    const feiDAODeployer = await ethers.getContractFactory(FeiDAO.abi, FeiDAO.bytecode);
-    this.feiDAO = await feiDAODeployer.deploy(tribeAddress, this.timelock.address);
+    const feiDAODeployer = await ethers.getContractFactory('FeiDAO');
+    feiDAO = await feiDAODeployer.deploy(tribeAddress, timelock.address);
 
     // Update timelock admin to Fei DAO
     await hre.network.provider.request({
       method: 'hardhat_impersonateAccount',
-      params: [this.timelock.address]
+      params: [timelock.address]
     });
     await (
       await ethers.getSigner(userAddress)
-    ).sendTransaction({ to: this.timelock.address, value: toBN('10000000000000000000') });
-    await this.timelock.connect(await ethers.getSigner(this.timelock.address)).setPendingAdmin(this.feiDAO.address);
-    await this.feiDAO.__acceptAdmin();
+    ).sendTransaction({ to: timelock.address, value: toBN('10000000000000000000') });
+    await timelock.connect(await ethers.getSigner(timelock.address)).setPendingAdmin(feiDAO.address);
+    await feiDAO.__acceptAdmin();
 
     // Send > quorum TRIBE to user
-    await this.core.allocateTribe(userAddress, ethers.constants.WeiPerEther.mul(26_000_000).toString());
+    await core.allocateTribe(userAddress, ethers.constants.WeiPerEther.mul(26_000_000).toString());
 
     // Self delegate user TRIBE
     const tribe = await ethers.getContractAt(Tribe.abi, tribeAddress);
@@ -71,31 +73,31 @@ describe('FeiDAO', function () {
 
   describe('Init', function () {
     it('votingDelay', async function () {
-      expect((await this.feiDAO.votingDelay()).toString()).to.be.equal('1');
+      expect((await feiDAO.votingDelay()).toString()).to.be.equal('1');
     });
 
     it('votingPeriod', async function () {
-      expect((await this.feiDAO.votingPeriod()).toString()).to.be.equal('13000');
+      expect((await feiDAO.votingPeriod()).toString()).to.be.equal('13000');
     });
 
     it('quorum', async function () {
-      expect((await this.feiDAO.quorum(1)).toString()).to.be.equal(
+      expect((await feiDAO.quorum(1)).toString()).to.be.equal(
         ethers.constants.WeiPerEther.mul(25_000_000).toString()
       );
     });
 
     it('proposalThreshold', async function () {
-      expect((await this.feiDAO.proposalThreshold()).toString()).to.be.equal(
+      expect((await feiDAO.proposalThreshold()).toString()).to.be.equal(
         ethers.constants.WeiPerEther.mul(2_500_000).toString()
       );
     });
 
     it('token', async function () {
-      expect(await this.feiDAO.token()).to.be.equal(await this.core.tribe());
+      expect(await feiDAO.token()).to.be.equal(await core.tribe());
     });
 
     it('timelock', async function () {
-      expect(await this.feiDAO.timelock()).to.be.equal(this.timelock.address);
+      expect(await feiDAO.timelock()).to.be.equal(timelock.address);
     });
   });
 
@@ -103,7 +105,7 @@ describe('FeiDAO', function () {
     describe('Proposal', function () {
       // Testing a DAO proposal end-to-end which resets all governance params
       beforeEach(async function () {
-        const targets = [this.feiDAO.address, this.feiDAO.address, this.feiDAO.address, this.feiDAO.address];
+        const targets = [feiDAO.address, feiDAO.address, feiDAO.address, feiDAO.address];
         const values = [0, 0, 0, 0];
         const calldatas = [
           '0x70b0f660000000000000000000000000000000000000000000000000000000000000000a', // set voting delay 10
@@ -111,78 +113,68 @@ describe('FeiDAO', function () {
           '0xc1ba4e59000000000000000000000000000000000000000000000000000000000000000c', // set quorum 12
           '0xece40cc1000000000000000000000000000000000000000000000000000000000000000d' // set proposal threshold 13
         ];
-        const description = [];
+        const description = '';
 
         // Propose
         // note ethers.js requires using this notation when two overloaded methods exist)
         // https://docs.ethers.io/v5/migration/web3/#migration-from-web3-js--contracts--overloaded-functions
-        await this.feiDAO
+        await feiDAO
           .connect(impersonatedSigners[userAddress])
           ['propose(address[],uint256[],bytes[],string)'](targets, values, calldatas, description);
 
-        const pid = await this.feiDAO.hashProposal(targets, values, calldatas, ethers.utils.keccak256(description));
+        const pid = await feiDAO.hashProposal(targets, values, calldatas, ethers.utils.keccak256([]));
 
         await time.advanceBlock();
 
         // vote
-        await this.feiDAO.connect(impersonatedSigners[userAddress]).castVote(pid, 1);
+        await feiDAO.connect(impersonatedSigners[userAddress]).castVote(pid, 1);
 
         // advance to end of voting period
-        const endBlock = (await this.feiDAO.proposals(pid)).endBlock;
+        const endBlock = (await feiDAO.proposals(pid)).endBlock;
         await time.advanceBlockTo(endBlock.toString());
 
         // queue
-        await this.feiDAO['queue(address[],uint256[],bytes[],bytes32)'](
-          targets,
-          values,
-          calldatas,
-          ethers.utils.keccak256(description)
-        );
+        await feiDAO['queue(uint256)'](pid);
 
         // execute
-        const response: TransactionResponse = await this.feiDAO['execute(address[],uint256[],bytes[],bytes32)'](
-          targets,
-          values,
-          calldatas,
-          ethers.utils.keccak256(description)
-        );
+        const response: TransactionResponse = await feiDAO['execute(uint256)'](pid);
 
-        expect(response).to.emit(this.feiDAO, 'VotingDelayUpdated').withArgs('1', '10');
-        expect(response).to.emit(this.feiDAO, 'VotingPeriodUpdated').withArgs('13000', '11');
+        expect(response).to.emit(feiDAO, 'VotingDelayUpdated').withArgs('1', '10');
+        expect(response).to.emit(feiDAO, 'VotingPeriodUpdated').withArgs('13000', '11');
         expect(response)
-          .to.emit(this.feiDAO, 'QuorumUpdated')
+          .to.emit(feiDAO, 'QuorumUpdated')
           .withArgs(ethers.constants.WeiPerEther.mul(25_000_000).toString(), '12');
         expect(response)
-          .to.emit(this.feiDAO, 'ProposalThresholdUpdated')
+          .to.emit(feiDAO, 'ProposalThresholdUpdated')
           .withArgs(ethers.constants.WeiPerEther.mul(2_500_000).toString(), '13');
       });
 
       it('succeeds', async function () {
-        expect((await this.feiDAO.votingDelay()).toString()).to.be.equal('10');
-        expect((await this.feiDAO.votingPeriod()).toString()).to.be.equal('11');
+        expect((await feiDAO.votingDelay()).toString()).to.be.equal('10');
+        expect((await feiDAO.votingPeriod()).toString()).to.be.equal('11');
         // quorum takes in an unused blockNo param set to 1 here
-        expect((await this.feiDAO.quorum(1)).toString()).to.be.equal('12');
-        expect((await this.feiDAO.proposalThreshold()).toString()).to.be.equal('13');
+        expect((await feiDAO.quorum(1)).toString()).to.be.equal('12');
+        expect((await feiDAO.proposalThreshold()).toString()).to.be.equal('13');
       });
     });
 
     // EOA calls to change governance params should revert
     describe('EOA', function () {
       it('voting delay reverts', async function () {
-        await expectRevert(this.feiDAO.setVotingDelay(1), 'Governor: onlyGovernance');
+        await expectRevert(feiDAO.setVotingDelay(1), 'Governor: onlyGovernance');
       });
 
       it('voting period reverts', async function () {
-        await expectRevert(this.feiDAO.setVotingPeriod(1), 'Governor: onlyGovernance');
+        await expectRevert(feiDAO.setVotingPeriod(1), 'Governor: onlyGovernance');
       });
 
       it('quorum reverts', async function () {
         // quorum takes in an unused blockNo param set to 1 here
-        await expectRevert(this.feiDAO.setQuorum(1), 'Governor: onlyGovernance');
+        await expectRevert(feiDAO.setQuorum(1), 'Governor: onlyGovernance');
       });
 
       it('proposal threshold reverts', async function () {
-        await expectRevert(this.feiDAO.setProposalThreshold(1), 'Governor: onlyGovernance');
+        await expectRevert(feiDAO.setProposalThreshold(1), 'Governor: onlyGovernance');
       });
     });
   });

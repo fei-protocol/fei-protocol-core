@@ -1,4 +1,4 @@
-import { DeployUpgradeFunc } from '../../test/integration/setup/types';
+import { DeployUpgradeFunc } from '../../types/types';
 import { ethers } from 'hardhat';
 
 const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
