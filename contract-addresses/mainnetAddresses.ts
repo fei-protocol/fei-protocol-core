@@ -228,6 +228,10 @@ const MainnetAddresses = {
     artifactName: 'unknown',
     address: '0x73F16f0c0Cd1A078A54894974C5C054D8dC1A3d7'
   },
+  rariRewardsDistributorDelegate: {
+    artifactName: 'unknown',
+    address: '0x220f93183a69d1598e8405310cB361CFF504146F'
+  },
   ratioPCVController: { artifactName: 'RatioPCVController', address: '0xfC1aD6eb84351597cD3b9B65179633697d65B920' },
   reflexerStableAssetFusePoolRai: {
     artifactName: 'CErc20Delegator',
