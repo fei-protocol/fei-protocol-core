@@ -239,6 +239,10 @@ const MainnetAddresses = {
   },
   snapshotDelegateRegistry: { artifactName: 'DelegateRegistry', address: '0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446' },
   fAAVE: { artifactName: 'IERC20', address: '0x4da27a545c0c5b758a6ba100e3a049001de870f5' },
+  stakingTokenWrapperRari: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0xd81Be1B9A7895C996704A8DDa794BbA4454EeB90'
+  },
   stAAVE: { artifactName: 'IERC20', address: '0x4da27a545c0c5b758a6ba100e3a049001de870f5' },
   steth: { artifactName: 'IERC20', address: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84' },
   sushiswapDpiFei: { artifactName: 'IUniswapV2Pair', address: '0x8775aE5e83BC5D926b6277579c2B0d40c7D9b528' },
