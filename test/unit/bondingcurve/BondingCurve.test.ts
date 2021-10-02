@@ -45,10 +45,8 @@ describe('BondingCurve', function () {
   });
 
   beforeEach(async function () {
-    console.log(`Getting addresses...`);
-    const { userAddress, governorAddress, secondUserAddress, keeperAddress, beneficiaryAddress1, beneficiaryAddress2 } =
-      await getAddresses();
-    console.log(`Got addresses...`);
+    ({ userAddress, governorAddress, secondUserAddress, keeperAddress, beneficiaryAddress1, beneficiaryAddress2 } =
+      await getAddresses());
 
     await network.provider.request({
       method: 'hardhat_reset',
@@ -95,7 +93,6 @@ describe('BondingCurve', function () {
 
     await this.token.mint(userAddress, '1000000000000000000000000');
     await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.bondingCurve.address);
-
     await this.bondingCurve.connect(impersonatedSigners[governorAddress]).setMintCap(this.scale.mul(toBN('10')));
   });
 
