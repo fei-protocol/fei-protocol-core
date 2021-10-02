@@ -224,6 +224,10 @@ const MainnetAddresses = {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x9aAdFfe00eAe6d8e59bB4F7787C6b99388A6960D'
   },
+  rariRewardsDistributorDelegator: {
+    artifactName: 'unknown',
+    address: '0x73F16f0c0Cd1A078A54894974C5C054D8dC1A3d7'
+  },
   ratioPCVController: { artifactName: 'RatioPCVController', address: '0xfC1aD6eb84351597cD3b9B65179633697d65B920' },
   reflexerStableAssetFusePoolRai: {
     artifactName: 'CErc20Delegator',
