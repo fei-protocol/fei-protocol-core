@@ -28,15 +28,17 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
 };
 
 /*
+
 V2 Phase 1 Upgrade Steps
-1. Grant Minter new ETH BondingCurve
-2. Grant Minter new ETH Uni PCV Deposit
-3. Grant Minter new DPI Uni PCV Deposit
-4. Grant Burner new TribeReserveStabilizer
-5. Grant PCV Controller new RatioPCVController
-6. Grant Minter PCV Equity Minter
-7. Grant Minter Collateralization Oracle Keeper
-8. Grant Tribe Minter to Tribe Reserve Stabilizer
+
+1. Grant Minter role to new ETH BondingCurve
+2. Grant Minter role to new ETH Uni PCV Deposit
+3. Grant Minter role to new DPI Uni PCV Deposit
+4. Grant Burner role to new TribeReserveStabilizer
+5. Grant PCV Controller role to new RatioPCVController
+6. Grant Minter role to PCV Equity Minter
+7. Grant Minter role to Collateralization Oracle Keeper
+8. Grant Tribe Minter role to Tribe Reserve Stabilizer
 9. Set ETH Bonding Curve Minting Cap Max
 10. Move PCV from old ETH Uni PCV Deposit to new
 11. Move PCV from old DPI Uni PCV Deposit to new
