@@ -81,9 +81,7 @@ describe('FeiDAO', function () {
     });
 
     it('quorum', async function () {
-      expect((await feiDAO.quorum(1)).toString()).to.be.equal(
-        ethers.constants.WeiPerEther.mul(25_000_000).toString()
-      );
+      expect((await feiDAO.quorum(1)).toString()).to.be.equal(ethers.constants.WeiPerEther.mul(25_000_000).toString());
     });
 
     it('proposalThreshold', async function () {

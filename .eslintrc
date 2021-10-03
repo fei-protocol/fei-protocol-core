@@ -4,7 +4,8 @@
   "plugins": ["@typescript-eslint", "prettier"],
   "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
   "rules": {
-    "prettier/prettier": 2
+    "prettier/prettier": 2,
+    "@typescript-eslint/no-empty-function": "off"
   }
 }
 

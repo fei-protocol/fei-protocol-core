@@ -1,5 +1,5 @@
-import hre, { ethers } from "hardhat";
-import { expect } from "chai";
+import hre, { ethers } from 'hardhat';
+import { expect } from 'chai';
 
 async function setup(addresses, oldContracts, contracts, logging) {}
 
@@ -31,5 +31,8 @@ async function validate(addresses, oldContracts, contracts) {
 }
 
 module.exports = {
-  setup, run, teardown, validate
+  setup,
+  run,
+  teardown,
+  validate
 };
