@@ -278,7 +278,6 @@ contract GovernorAlpha {
     }
 
     function __acceptAdmin() public {
-        require(msg.sender == guardian, "GovernorAlpha: sender must be gov guardian");
         timelock.acceptAdmin();
     }
 

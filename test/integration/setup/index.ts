@@ -90,7 +90,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       const deployTyped = deploy as DeployUpgradeFunc;
       deployedUpgradedContracts = await deployTyped(
         this.config.deployAddress,
-        namedContractsToNamedAddresses(this.mainnetContracts),
+        getAllContractAddresses(),
         this.config.logging
       );
     }

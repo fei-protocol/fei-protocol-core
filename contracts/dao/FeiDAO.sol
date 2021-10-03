@@ -18,21 +18,21 @@ contract FeiDAO is
     uint256 private _quorum = 25_000_000e18;
     uint256 private _proposalThreshold = 2_500_000e18;
 
-    address private _admin;
+    address private _guardian;
     uint256 private _eta;
-    address public constant OLD_GOVERNOR = 0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B;
+    address public constant OLD_GOVERNOR = 0xD8a5a9b31c3C0232E196d518E89Fd8bF83AcAd43;
     uint256 public constant ROLLBACK_DEADLINE = 1635724800; // Nov 1, 2021 midnight UTC
 
     constructor(
         ERC20VotesComp tribe, 
         ICompoundTimelock timelock,
-        address admin
+        address guardian
     )
         GovernorVotesComp(tribe)
         GovernorTimelockCompound(timelock)
         Governor("Fei DAO")
     {
-        _admin = admin;
+        _guardian = guardian;
     }
 
     /*
@@ -92,11 +92,11 @@ contract FeiDAO is
     }
 
     /// @notice one-time option to roll back the DAO to old GovernorAlpha
-    /// @dev admin-only, and expires after the deadline. This function is here as a fallback in case something goes wrong.
+    /// @dev guardian-only, and expires after the deadline. This function is here as a fallback in case something goes wrong.
     function __rollback(uint256 eta) external {
-        require(msg.sender == _admin, "FeiDAO: caller not admin");
-        // Deleting admin prevents multiple triggers of this function
-        _admin = address(0);
+        require(msg.sender == _guardian, "FeiDAO: caller not guardian");
+        // Deleting guardian prevents multiple triggers of this function
+        _guardian = address(0);
 
         require(eta <= ROLLBACK_DEADLINE, "FeiDAO: rollback expired");
         _eta = eta;
@@ -110,7 +110,7 @@ contract FeiDAO is
     /// @notice complete the rollback
     function __executeRollback() external {
         require(_eta <= block.timestamp, "FeiDAO: too soon");
-        require(_admin == address(0), "FeiDAO: no queue");
+        require(_guardian == address(0), "FeiDAO: no queue");
 
         ICompoundTimelock _timelock = ICompoundTimelock(payable(timelock()));
         _timelock.executeTransaction(timelock(), 0, "setPendingAdmin(address)", abi.encode(OLD_GOVERNOR), _eta);
