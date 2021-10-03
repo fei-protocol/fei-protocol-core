@@ -98,7 +98,7 @@ describe('CollateralizationOracle', function () {
         [this.oracle1.address, this.oracle2.address]
       );
     });
-  
+
     it('tokenToOracle(address) => address', async function () {
       expect(await this.oracle.tokenToOracle(this.token1.address)).to.be.equal(this.oracle1.address);
     });
