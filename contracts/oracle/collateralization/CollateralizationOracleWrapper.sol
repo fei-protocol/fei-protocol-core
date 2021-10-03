@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "./IOracle.sol";
+import "../IOracle.sol";
 import "./ICollateralizationOracleWrapper.sol";
-import "../Constants.sol";
-import "../utils/Timed.sol";
-import "../refs/CoreRef.sol";
+import "../../Constants.sol";
+import "../../utils/Timed.sol";
+import "../../refs/CoreRef.sol";
 
 interface IPausable {
     function paused() external view returns (bool);
