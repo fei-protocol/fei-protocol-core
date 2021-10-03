@@ -85,7 +85,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     let deployedUpgradedContracts = {};
 
     if (config['deploy']) {
-      console.log(`Applying upgrade for proposal: ${proposalName}`);
+      this.config.logging && console.log(`Applying upgrade for proposal: ${proposalName}`);
       const { deploy } = await import('../../../scripts/deploy/' + proposalName);
       const deployTyped = deploy as DeployUpgradeFunc;
       deployedUpgradedContracts = await deployTyped(
@@ -118,19 +118,19 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     // Simulate the DAO proposal
     if (config.exec) {
       const proposal = await constructProposal(proposalName, this.config.logging);
-      console.log(`Simulating proposal...`);
+      this.config.logging && console.log(`Simulating proposal...`);
       await proposal.simulate();
     } else {
-      console.log(`Running proposal...`);
+      this.config.logging && console.log(`Running proposal...`);
       await run(contractAddresses, existingContracts, contracts, this.config.logging);
     }
 
     // teardown the DAO proposal
-    console.log(`Running proposal teardown...`);
+    this.config.logging && console.log(`Running proposal teardown...`);
     await teardown(contractAddresses, existingContracts, contracts);
 
     if (validate) {
-      console.log(`Running proposal validation...`);
+      this.config.logging && console.log(`Running proposal validation...`);
       await validate(contractAddresses, existingContracts, contracts);
     }
 
