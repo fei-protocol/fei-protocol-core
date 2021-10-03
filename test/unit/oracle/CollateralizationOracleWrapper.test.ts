@@ -166,22 +166,15 @@ describe('CollateralizationOracleWrapper', function () {
 
   describe.only('setCache()', function () {
     it('should emit CachedValueUpdate', async function () {
-      await expect(
-        await this.oracleWrapper
-          .connect(impersonatedSigners[governorAddress])
-          .setCache('1', '2', '3')
-      )
+      await expect(await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setCache('1', '2', '3'))
         .to.emit(this.oracleWrapper, 'CachedValueUpdate')
         .withArgs(governorAddress, '1', '2', '3');
     });
     it('should update maps & array properties', async function () {
-      await this.oracleWrapper
-        .connect(impersonatedSigners[governorAddress])
-        .setCache('1', '2', '3')
+      await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setCache('1', '2', '3');
       expect((await this.oracleWrapper.cachedProtocolControlledValue()).toString()).to.be.equal('1');
       expect((await this.oracleWrapper.cachedUserCirculatingFei()).toString()).to.be.equal('2');
       expect((await this.oracleWrapper.cachedProtocolEquity()).toString()).to.be.equal('3');
-
     });
     it('should revert if not governor or admin', async function () {
       await expectRevert(
