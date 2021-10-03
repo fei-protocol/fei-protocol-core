@@ -4,6 +4,7 @@ import { expectRevert, balance, time } from '@openzeppelin/test-helpers';
 import chai from 'chai';
 import CBN from 'chai-bn';
 import { Core, Core__factory } from '@custom-types/contracts';
+import { Signer } from 'ethers';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
@@ -50,6 +51,17 @@ async function getAddresses() {
     burnerAddress,
     guardianAddress
   };
+}
+
+async function getImpersonatedSigner(address: string): Promise<Signer> {
+  await hre.network.provider.request({
+    method: 'hardhat_impersonateAccount',
+    params: [address]
+  });
+
+  const signer = await ethers.getSigner(address);
+
+  return signer;
 }
 
 async function getCore(): Promise<Core> {
