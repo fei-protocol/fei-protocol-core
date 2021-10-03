@@ -112,5 +112,6 @@ export {
   getCore,
   getAddresses,
   expectApprox,
-  deployDevelopmentWeth
+  deployDevelopmentWeth,
+  getImpersonatedSigner
 };
