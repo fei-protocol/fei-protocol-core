@@ -46,11 +46,11 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
     address public override collateralizationOracle;
 
     /// @notice cached value of the Protocol Controlled Value
-    uint256 public cachedProtocolControlledValue;
+    uint256 public override cachedProtocolControlledValue;
     /// @notice cached value of the User Circulating FEI
-    uint256 public cachedUserCirculatingFei;
+    uint256 public override cachedUserCirculatingFei;
     /// @notice cached value of the Protocol Equity
-    int256 public cachedProtocolEquity;
+    int256 public override cachedProtocolEquity;
 
     /// @notice deviation threshold to consider cached values outdated, in basis
     ///         points (base 10_000)
@@ -135,7 +135,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
         uint256 _cachedProtocolControlledValue,
         uint256 _cachedUserCirculatingFei,
         int256 _cachedProtocolEquity
-    ) external onlyGovernorOrAdmin {
+    ) external override onlyGovernorOrAdmin {
         _setCache(_cachedProtocolControlledValue, _cachedUserCirculatingFei, _cachedProtocolEquity);
     }
 
