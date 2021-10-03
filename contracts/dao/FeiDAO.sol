@@ -18,11 +18,22 @@ contract FeiDAO is
     uint256 private _quorum = 25_000_000e18;
     uint256 private _proposalThreshold = 2_500_000e18;
 
-    constructor(ERC20VotesComp tribe, ICompoundTimelock timelock)
+    address private _admin;
+    uint256 private _eta;
+    address public constant OLD_GOVERNOR = 0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B;
+    uint256 public constant ROLLBACK_DEADLINE = 1635724800; // Nov 1, 2021 midnight UTC
+
+    constructor(
+        ERC20VotesComp tribe, 
+        ICompoundTimelock timelock,
+        address admin
+    )
         GovernorVotesComp(tribe)
         GovernorTimelockCompound(timelock)
         Governor("Fei DAO")
-    {}
+    {
+        _admin = admin;
+    }
 
     /*
      * Events to track params changes
@@ -31,6 +42,8 @@ contract FeiDAO is
     event VotingDelayUpdated(uint256 oldVotingDelay, uint256 newVotingDelay);
     event VotingPeriodUpdated(uint256 oldVotingPeriod, uint256 newVotingPeriod);
     event ProposalThresholdUpdated(uint256 oldProposalThreshold, uint256 newProposalThreshold);
+    event RollbackQueued(uint256 eta);
+    event Rollback();
 
     function votingDelay() public view override returns (uint256) {
         return _votingDelay;
@@ -76,6 +89,33 @@ contract FeiDAO is
         uint256 oldProposalThreshold = _proposalThreshold;
         _proposalThreshold = newProposalThreshold;
         emit ProposalThresholdUpdated(oldProposalThreshold, newProposalThreshold);
+    }
+
+    /// @notice one-time option to roll back the DAO to old GovernorAlpha
+    /// @dev admin-only, and expires after the deadline. This function is here as a fallback in case something goes wrong.
+    function __rollback(uint256 eta) external {
+        require(msg.sender == _admin, "FeiDAO: caller not admin");
+        // Deleting admin prevents multiple triggers of this function
+        _admin = address(0);
+
+        require(eta <= ROLLBACK_DEADLINE, "FeiDAO: rollback expired");
+        _eta = eta;
+
+        ICompoundTimelock _timelock = ICompoundTimelock(payable(timelock()));
+        _timelock.queueTransaction(timelock(), 0, "setPendingAdmin(address)", abi.encode(OLD_GOVERNOR), eta);
+
+        emit RollbackQueued(eta);
+    }
+
+    /// @notice complete the rollback
+    function __executeRollback() external {
+        require(_eta <= block.timestamp, "FeiDAO: too soon");
+        require(_admin == address(0), "FeiDAO: no queue");
+
+        ICompoundTimelock _timelock = ICompoundTimelock(payable(timelock()));
+        _timelock.executeTransaction(timelock(), 0, "setPendingAdmin(address)", abi.encode(OLD_GOVERNOR), _eta);
+
+        emit Rollback();
     }
 
     // The following functions are overrides required by Solidity.
