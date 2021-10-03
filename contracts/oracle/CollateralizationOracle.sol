@@ -59,6 +59,9 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     ) CoreRef(_core) {
         _setOracles(_tokens, _oracles);
         _addDeposits(_deposits);
+
+        // Shared admin with other oracles
+        _setContractAdminRole(keccak256("ORACLE_ADMIN_ROLE"));
     }
 
     // ----------- Convenience getters -----------
