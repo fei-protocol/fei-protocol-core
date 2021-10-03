@@ -127,7 +127,6 @@ const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging =
  deposit eth and dpi Uni PCV deposits
 */
 const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts) => {
-
   const core = contracts.core;
   const { uniswapPCVController } = addresses;
   const { uniswapPCVDeposit, dpiUniswapPCVDeposit, ratioPCVController, bondingCurve } = oldContracts;
@@ -147,7 +146,6 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts)
 };
 
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
-
   const { dai: daiAddress, dpi: dpiAddress, rai: raiAddress, fei: feiAddress, weth: wethAddress } = addresses;
   const {
     collateralizationOracle,

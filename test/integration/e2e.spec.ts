@@ -42,7 +42,7 @@ describe('e2e', function () {
     if (!deployAddress) throw new Error(`No deploy address!`);
 
     doLogging = Boolean(process.env.LOGGING);
-    
+
     const config = {
       logging: doLogging,
       deployAddress: deployAddress,
