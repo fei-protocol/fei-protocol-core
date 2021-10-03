@@ -31,6 +31,7 @@ describe('e2e', function () {
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
+  let doLogging: boolean;
 
   const tenPow18 = toBN('1000000000000000000');
 
@@ -40,17 +41,19 @@ describe('e2e', function () {
     deployAddress = (await ethers.getSigners())[0].address;
     if (!deployAddress) throw new Error(`No deploy address!`);
 
+    doLogging = Boolean(process.env.LOGGING);
+    
     const config = {
-      logging: Boolean(process.env.LOGGING),
+      logging: doLogging,
       deployAddress: deployAddress,
       version: version
     };
 
     e2eCoord = new TestEndtoEndCoordinator(config, proposals);
 
-    console.log(`Loading environment...`);
+    doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
-    console.log(`Environment loaded.`);
+    doLogging && console.log(`Environment loaded.`);
   });
 
   describe('OZ Gov', function () {
@@ -273,7 +276,7 @@ describe('e2e', function () {
     });
   });
 
-  describe.skip('Aave borrowing', async () => {
+  describe('Aave borrowing', async () => {
     it('grants rewards', async function () {
       const { aaveEthPCVDeposit, aaveLendingPool, aaveTribeIncentivesController, fei, tribe } = contracts;
 
@@ -288,15 +291,15 @@ describe('e2e', function () {
       const balanceBefore = (await fei.balanceOf(deployAddress)).toString();
 
       // 1. Borrow
-      console.log(`Borrowing ${borrowAmount}`);
+      doLogging && console.log(`Borrowing ${borrowAmount}`);
       await aaveLendingPool.borrow(fei.address, borrowAmount, 2, 0, deployAddress);
 
       expect(toBN((await fei.balanceOf(deployAddress)).toString())).to.be.equal(
         toBN(balanceBefore).add(toBN(borrowAmount))
       );
 
-      console.log('Getting reserve data...');
-      const variableDebtTokenAddress = await aaveLendingPool.getReserveData(fei.address);
+      doLogging && console.log('Getting reserve data...');
+      const { variableDebtTokenAddress } = await aaveLendingPool.getReserveData(fei.address);
 
       // 2. Fast forward time
       await time.increase(100000);
@@ -444,8 +447,6 @@ describe('e2e', function () {
 
         const pcvAllocations = await bondingCurve.getAllocation();
         expect(pcvAllocations[0].length).to.be.equal(2);
-
-        //await uniswapPCVDeposit.deposit();
 
         const pcvDepositBefore = await uniswapPCVDeposit.balance();
         const fuseBalanceBefore = await fusePCVDeposit.balance();
@@ -618,31 +619,32 @@ describe('e2e', function () {
     });
   });
 
+  // This test is skipped because the stableSwapOperator is not used in production
   describe.skip('StableSwapOperatorV1', async function () {
     it('should properly withdraw ~1M DAI to self', async function () {
       const daiBalanceBefore = await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address);
-      //console.log('daiBalanceBefore', daiBalanceBefore / 1e18);
+      //doLogging && console.log('daiBalanceBefore', daiBalanceBefore / 1e18);
       await contracts.curveMetapoolDeposit.withdraw(contracts.curveMetapoolDeposit.address, tenPow18.mul(toBN(1e6)));
       const daiBalanceAfter = await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address);
-      //console.log('daiBalanceAfter', daiBalanceAfter / 1e18);
+      //doLogging && console.log('daiBalanceAfter', daiBalanceAfter / 1e18);
       const daiBalanceWithdrawn = daiBalanceAfter.sub(daiBalanceBefore);
-      //console.log('daiBalanceWithdrawn', daiBalanceWithdrawn / 1e18);
+      //doLogging && console.log('daiBalanceWithdrawn', daiBalanceWithdrawn / 1e18);
       await expectApprox(daiBalanceWithdrawn, tenPow18.mul(toBN(1e6)), '1000');
     });
     it('should properly re-deposit ~1M DAI just withdrawn', async function () {
       const daiBalanceBefore = await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address);
       const balanceBefore = await contracts.curveMetapoolDeposit.balance();
-      //console.log('daiBalanceBefore', daiBalanceBefore / 1e18);
-      //console.log('balanceBefore', balanceBefore / 1e18);
+      //doLogging && console.log('daiBalanceBefore', daiBalanceBefore / 1e18);
+      //doLogging && console.log('balanceBefore', balanceBefore / 1e18);
       await expectApprox(daiBalanceBefore, tenPow18.mul(toBN(1e6)), '1000');
       await contracts.curveMetapoolDeposit.deposit();
       const daiBalanceAfter = await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address);
       expect(daiBalanceAfter.eq(toBN('0'))).to.be.true;
-      //console.log('daiBalanceAfter', daiBalanceAfter / 1e18);
+      //doLogging && console.log('daiBalanceAfter', daiBalanceAfter / 1e18);
       const balanceAfter = await contracts.curveMetapoolDeposit.balance();
       const balanceChange = balanceAfter.sub(balanceBefore);
-      //console.log('balanceChange', balanceChange / 1e18);
-      //console.log('balanceAfter', balanceAfter / 1e18);
+      //doLogging && console.log('balanceChange', balanceChange / 1e18);
+      //doLogging && console.log('balanceAfter', balanceAfter / 1e18);
       await expectApprox(balanceChange, tenPow18.mul(toBN(1e6)), '1000');
     });
   });
@@ -820,7 +822,7 @@ describe('e2e', function () {
       try {
         await aaveEthPCVDeposit.deposit();
       } catch (e) {
-        console.log('Doing nothing.');
+        doLogging && console.log('Doing nothing.');
       }
 
       const signer = (await ethers.getSigners())[0];
@@ -888,43 +890,43 @@ describe('e2e', function () {
       const core = contracts.core;
       const accessControl = e2eCoord.getAccessControlMapping();
 
-      console.log(`Testing minter role...`);
+      doLogging && console.log(`Testing minter role...`);
       for (let i = 0; i < accessControl.minter.length; i++) {
         const contractAddress = accessControl.minter[i];
-        console.log(`Minter contract address: ${contractAddress}`);
+        doLogging && console.log(`Minter contract address: ${contractAddress}`);
         const isMinter = await core.isMinter(contractAddress);
         expect(isMinter).to.be.true;
       }
 
-      console.log(`Testing burner role...`);
+      doLogging && console.log(`Testing burner role...`);
       for (let i = 0; i < accessControl.burner.length; i += 1) {
         const contractAddress = accessControl.burner[i];
         const isBurner = await core.isBurner(contractAddress);
         expect(isBurner).to.be.equal(true);
       }
 
-      console.log(`Testing pcv controller role...`);
+      doLogging && console.log(`Testing pcv controller role...`);
       for (let i = 0; i < accessControl.pcvController.length; i += 1) {
         const contractAddress = accessControl.pcvController[i];
         const isPCVController = await core.isPCVController(contractAddress);
         expect(isPCVController).to.be.equal(true);
       }
 
-      console.log(`Testing guardian role...`);
+      doLogging && console.log(`Testing guardian role...`);
       for (let i = 0; i < accessControl.guardian.length; i += 1) {
         const contractAddress = accessControl.guardian[i];
         const isGuardian = await core.isGuardian(contractAddress);
         expect(isGuardian).to.be.equal(true);
       }
 
-      console.log(`Testing governor role...`);
+      doLogging && console.log(`Testing governor role...`);
       for (let i = 0; i < accessControl.governor.length; i += 1) {
         const contractAddress = accessControl.governor[i];
         const isGovernor = await core.isGovernor(contractAddress);
         expect(isGovernor).to.be.equal(true);
       }
 
-      console.log(`Testing tribe minter address...`);
+      doLogging && console.log(`Testing tribe minter address...`);
       const tribe = contracts.tribe;
       const tribeMinter = await tribe.minter();
       expect(tribeMinter).to.equal(contractAddresses.tribeReserveStabilizer);

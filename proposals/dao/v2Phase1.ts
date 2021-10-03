@@ -127,10 +127,8 @@ const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging =
  deposit eth and dpi Uni PCV deposits
 */
 const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts) => {
-  console.log(`Beginning teardown phase...`);
 
   const core = contracts.core;
-
   const { uniswapPCVController } = addresses;
   const { uniswapPCVDeposit, dpiUniswapPCVDeposit, ratioPCVController, bondingCurve } = oldContracts;
 
@@ -146,12 +144,9 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts)
   // Deposit Uni and DPI
   await contracts.dpiUniswapPCVDeposit.deposit();
   await contracts.uniswapPCVDeposit.deposit();
-
-  console.log(`Teardown phase complete.`);
 };
 
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
-  console.log(`Beginning validation phase...`);
 
   const { dai: daiAddress, dpi: dpiAddress, rai: raiAddress, fei: feiAddress, weth: wethAddress } = addresses;
   const {
@@ -163,7 +158,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts)
     feiTribeLBPSwapper
   } = contracts;
 
-  console.log(`Getting pcv stats...`);
   const pcvStatsCurrent = await collateralizationOracleWrapper.pcvStatsCurrent();
   const pcvStats = await collateralizationOracle.pcvStats();
 
@@ -172,10 +166,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts)
   expect(pcvStatsCurrent[2].toString()).to.be.equal(pcvStats[2].toString());
   expect(pcvStatsCurrent[3].toString()).to.be.equal(pcvStats[3].toString());
 
-  console.log(`Updating collateralization oracle...`);
   const updateTx = await collateralizationOracleWrapper.update();
-
-  //console.log(`Update gas: ${update.receipt.gasUsed}`);
 
   expect((await collateralizationOracle.getTokensInPcv()).length).to.be.equal(6);
   expect((await collateralizationOracle.getDepositsForToken(daiAddress)).length).to.be.equal(2);
@@ -190,8 +181,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts)
     collateralizationOracleWrapperImpl.address
   );
   expect(await proxyAdmin.getProxyAdmin(collateralizationOracleWrapper.address)).to.be.equal(proxyAdmin.address);
-
-  console.log(`Validation phase complete.`);
 };
 
 module.exports = {
