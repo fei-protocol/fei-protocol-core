@@ -165,14 +165,16 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
             bool _validityStatus
         ) = ICollateralizationOracle(collateralizationOracle).pcvStats();
 
+        outdated = outdated 
+            || _isExceededDeviationThreshold(cachedProtocolControlledValue, _protocolControlledValue)
+            || _isExceededDeviationThreshold(cachedUserCirculatingFei, _userCirculatingFei);
+        
         // only update if valid
         require(_validityStatus, "CollateralizationOracleWrapper: CollateralizationOracle is invalid");
 
         _setCache(_protocolControlledValue, _userCirculatingFei, _protocolEquity);
 
-        return outdated 
-            || _isExceededDeviationThreshold(cachedProtocolControlledValue, _protocolControlledValue)
-            || _isExceededDeviationThreshold(cachedUserCirculatingFei, _userCirculatingFei);
+        return outdated;
     }
 
     function _setCache(
