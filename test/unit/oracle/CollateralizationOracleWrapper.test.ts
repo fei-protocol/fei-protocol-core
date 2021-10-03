@@ -1,11 +1,7 @@
 import { ZERO_ADDRESS, time, getCore, getAddresses, expectRevert } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-
-const CollateralizationOracleWrapper = artifacts.readArtifactSync('CollateralizationOracleWrapper');
-const MockCollateralizationOracle = artifacts.readArtifactSync('MockCollateralizationOracle');
-const Proxy = artifacts.readArtifactSync('TransparentUpgradeableProxy');
 
 const e18 = '000000000000000000';
 
@@ -164,6 +160,33 @@ describe('CollateralizationOracleWrapper', function () {
       await expectRevert(
         this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setDeviationThresholdBasisPoints('10001', {}),
         'CollateralizationOracleWrapper: invalid basis points'
+      );
+    });
+  });
+
+  describe.only('setCache()', function () {
+    it('should emit CachedValueUpdate', async function () {
+      await expect(
+        await this.oracleWrapper
+          .connect(impersonatedSigners[governorAddress])
+          .setCache('1', '2', '3')
+      )
+        .to.emit(this.oracleWrapper, 'CachedValueUpdate')
+        .withArgs(governorAddress, '1', '2', '3');
+    });
+    it('should update maps & array properties', async function () {
+      await this.oracleWrapper
+        .connect(impersonatedSigners[governorAddress])
+        .setCache('1', '2', '3')
+      expect((await this.oracleWrapper.cachedProtocolControlledValue()).toString()).to.be.equal('1');
+      expect((await this.oracleWrapper.cachedUserCirculatingFei()).toString()).to.be.equal('2');
+      expect((await this.oracleWrapper.cachedProtocolEquity()).toString()).to.be.equal('3');
+
+    });
+    it('should revert if not governor or admin', async function () {
+      await expectRevert(
+        this.oracleWrapper.connect(impersonatedSigners[userAddress]).setCache('1', '2', '3'),
+        'CoreRef: Caller is not a governor or contract admin'
       );
     });
   });

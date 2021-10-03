@@ -5,7 +5,7 @@ import { Signer } from 'ethers';
 
 const e18 = '000000000000000000';
 
-describe.only('CollateralizationOracle', function () {
+describe('CollateralizationOracle', function () {
   let userAddress: string;
   let guardianAddress: string;
   let governorAddress: string;
