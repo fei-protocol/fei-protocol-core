@@ -1,0 +1,19 @@
+
+Summary:
+Upgrade DAO to OZ Governor
+Reduce voting delay from 3333 blocks to 1 block
+Increase voting period from 10000 blocks to 13000 (~48h)
+
+Motivation:
+Fei is currently using the GovernorAlpha as our DAO contract (developed by Compound). 
+
+OpenZeppelin developed a modular governance library that is compatible with the Compound GovernorBravo interface known as the “OZ Governor”.
+
+This proposal upgrades the DAO to the OZ Governor. It includes a "rollback" provision which allows the guardian to revert back to a GovernorAlpha in the event the upgrade is not successful. This feature expires if not used by November 1.
+
+The code has been reviewed by the core team and OZ, with mainnet fork integration tests.
+
+The proposal also removes the voting delay. To compensate for the removal of the voting delay, it expands the voting period to 48h to maintain a 72h DAO cycle.
+
+Forum Discussion: https://tribe.fei.money/t/fip-30-upgrade-dao-to-oz-governor/3532
+Code: https://github.com/fei-protocol/fei-protocol-core/pull/187 and https://github.com/fei-protocol/fei-protocol-core/pull/212
