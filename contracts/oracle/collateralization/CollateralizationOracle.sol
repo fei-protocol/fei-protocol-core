@@ -273,8 +273,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     /// @return protocolControlledValue : the total USD value of all assets held
     ///         by the protocol.
     /// @return userCirculatingFei : the number of FEI not owned by the protocol.
-    /// @return protocolEquity : the difference between PCV and user circulating FEI.
-    ///         If there are more circulating FEI than $ in the PCV, equity is 0.
+    /// @return protocolEquity : the signed difference between PCV and user circulating FEI.
     /// @return validityStatus : the current oracle validity status (false if any
     ///         of the oracles for tokens held in the PCV are invalid, or if
     ///         this contract is paused).
@@ -321,7 +320,6 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     ///         is defined as the protocol having more assets in its PCV (Protocol
     ///         Controlled Value) than the circulating (user-owned) FEI, i.e.
     ///         a positive Protocol Equity.
-    ///         Note: the validity status is ignored in this function.
     function isOvercollateralized() external override view whenNotPaused returns (bool) {
         (,, int256 _protocolEquity, bool _valid) = pcvStats();
         require(_valid, "CollateralizationOracle: reading is invalid");
