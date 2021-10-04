@@ -44,10 +44,6 @@ contract AutoRewardsDistributor is CoreRef {
 
     /// @notice helper function that gets all needed state from the TribalChief contract
     /// based on this state, it then calculates what the compSpeed should be.
-    /// Call the TribalChief and grab the current allocation points for the stakedTokenWrapper,
-    /// get the total allocation points in the TribalChief,
-    /// get the amount of tribe being distributed on a per block basis in the TribalChief.
-    /// With those variables we can calculate what the compspeed should be.
     function _deriveRequiredCompSpeed() internal view returns (uint256 compSpeed) {
         (,,, uint120 allocPoints,) = tribalChief.poolInfo(tribalChiefRewardIndex);
         uint256 totalAllocPoints = tribalChief.totalAllocPoint();
