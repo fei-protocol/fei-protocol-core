@@ -115,7 +115,7 @@ describe('e2e', function () {
       expect((await contracts.daiBondingCurve.duration()).toString()).to.be.equal('11');
     });
 
-    it('rollback succeeds', async function() {
+    it('rollback succeeds', async function () {
       const { feiDAO, timelock, governorAlphaBackup } = contracts;
       const { multisig } = contractAddresses;
 
@@ -129,8 +129,8 @@ describe('e2e', function () {
       await feiDAO.connect(signer).__rollback(deadline);
 
       await time.increaseTo(deadline.toString());
-      
-      await feiDAO.__executeRollback()
+
+      await feiDAO.__executeRollback();
 
       expect(await timelock.pendingAdmin()).to.be.equal(governorAlphaBackup.address);
 
