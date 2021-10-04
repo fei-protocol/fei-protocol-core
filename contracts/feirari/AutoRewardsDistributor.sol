@@ -22,11 +22,11 @@ contract AutoRewardsDistributor is CoreRef {
 
     /// @notice constructor function
     /// @param coreAddress address of core contract
-    /// @param _rewardsDistributorAdmin address rewards distributor admin contract
-    /// @param _isBorrowIncentivized boolean to incentivize borrow or supply, but not both
-    /// @param _tribalChiefRewardIndex uint of index for this contract's rewards in tribalchief
-    /// @param _cTokenAddress address of ctoken contract
+    /// @param _rewardsDistributorAdmin address of rewards distributor admin contract
     /// @param _tribalChief address of tribalchief contract
+    /// @param _tribalChiefRewardIndex index for this contract's rewards in tribalchief
+    /// @param _cTokenAddress address of ctoken contract to incentivize
+    /// @param _isBorrowIncentivized boolean that incentivizes borrow or supply
     constructor(
         address coreAddress,
         IRewardsDistributorAdmin _rewardsDistributorAdmin,
@@ -45,21 +45,20 @@ contract AutoRewardsDistributor is CoreRef {
     /// @notice helper function that gets all needed state from the TribalChief contract
     /// based on this state, it then calculates what the compSpeed should be.
     function _deriveRequiredCompSpeed() internal view returns (uint256 compSpeed) {
-        (,,, uint120 allocPoints,) = tribalChief.poolInfo(tribalChiefRewardIndex);
+        (,,, uint120 poolAllocPoints,) = tribalChief.poolInfo(tribalChiefRewardIndex);
         uint256 totalAllocPoints = tribalChief.totalAllocPoint();
         uint256 tribePerBlock = tribalChief.tribePerBlock();
 
         if (totalAllocPoints == 0) {
             compSpeed = 0;
         } else {
-            compSpeed = (tribePerBlock * allocPoints) / totalAllocPoints;
+            compSpeed = (tribePerBlock * poolAllocPoints) / totalAllocPoints;
         }
     }
 
     /// @notice function to get the new comp speed and figure out if an update is needed
-    /// @return newCompSpeed the newly calculated compspeed based on comp borrow/supply speed
-    /// and allocation points in the TribalChief
-    /// @return updateNeeded boolean indicating whether the new compSpeed is equal to the existing compSpeed
+    /// @return newCompSpeed the newly calculated compSpeed based on allocation points in the TribalChief
+    /// @return updateNeeded boolean indicating whether the new compSpeed is not equal to the existing compSpeed
     function getNewRewardSpeed() public view returns (uint256 newCompSpeed, bool updateNeeded) {
         newCompSpeed = _deriveRequiredCompSpeed();
         uint256 actualCompSpeed;
