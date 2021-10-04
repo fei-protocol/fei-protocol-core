@@ -18,7 +18,19 @@ interface ICollateralizationOracleWrapper is ICollateralizationOracle {
 
     function setCollateralizationOracle(address _newCollateralizationOracle) external;
 
+    function setCache(
+        uint256 protocolControlledValue,
+        uint256 userCirculatingFei,
+        int256 protocolEquity
+    ) external;
+
     // ----------- Getters -----------
+    
+    function cachedProtocolControlledValue() external view returns (uint256);
+    
+    function cachedUserCirculatingFei() external view returns (uint256);
+
+    function cachedProtocolEquity() external view returns (int256);
 
     function deviationThresholdBasisPoints() external view returns (uint256);
 

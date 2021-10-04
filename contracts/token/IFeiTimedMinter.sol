@@ -2,8 +2,6 @@
 
 pragma solidity ^0.8.0;
 
-import "../oracle/ICollateralizationOracle.sol";
-
 /// @title a Fei Timed Minter
 /// @author Fei Protocol
 interface IFeiTimedMinter {

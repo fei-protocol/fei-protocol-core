@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "./IOracle.sol";
+import "../IOracle.sol";
 import "./ICollateralizationOracle.sol";
-import "../refs/CoreRef.sol";
-import "../pcv/IPCVDepositBalances.sol";
+import "../../refs/CoreRef.sol";
+import "../../pcv/IPCVDepositBalances.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 interface IPausable {
