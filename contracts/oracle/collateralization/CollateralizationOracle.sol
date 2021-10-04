@@ -6,6 +6,7 @@ import "./ICollateralizationOracle.sol";
 import "../../refs/CoreRef.sol";
 import "../../pcv/IPCVDepositBalances.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 interface IPausable {
     function paused() external view returns (bool);
@@ -18,6 +19,7 @@ interface IPausable {
 ///         protocol-wide collateralization ratio.
 contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     using Decimal for Decimal.D256;
+    using SafeCast for uint256;
     using EnumerableSet for EnumerableSet.AddressSet;
 
     // ----------- Events -----------
@@ -312,7 +314,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
         }
 
         userCirculatingFei = fei().totalSupply() - _protocolControlledFei;
-        protocolEquity = int256(protocolControlledValue) - int256(userCirculatingFei);
+        protocolEquity = protocolControlledValue.toInt256() - userCirculatingFei.toInt256();
     }
 
     /// @notice returns true if the protocol is overcollateralized. Overcollateralization
