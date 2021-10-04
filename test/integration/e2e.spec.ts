@@ -56,7 +56,7 @@ describe('e2e', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe('OZ Gov', function () {
+  describe('Fei DAO', function () {
     it('proposal succeeds', async function () {
       const feiDAO = contracts.feiDAO;
 
@@ -113,6 +113,30 @@ describe('e2e', function () {
 
       expect((await feiDAO.votingDelay()).toString()).to.be.equal('10');
       expect((await contracts.daiBondingCurve.duration()).toString()).to.be.equal('11');
+    });
+
+    it('rollback succeeds', async function () {
+      const { feiDAO, timelock, governorAlphaBackup } = contracts;
+      const { multisig } = contractAddresses;
+
+      const signer = await ethers.getSigner(multisig);
+      await hre.network.provider.request({
+        method: 'hardhat_impersonateAccount',
+        params: [multisig]
+      });
+
+      const deadline = await feiDAO.ROLLBACK_DEADLINE();
+      await feiDAO.connect(signer).__rollback(deadline);
+
+      await time.increaseTo(deadline.toString());
+
+      await feiDAO.__executeRollback();
+
+      expect(await timelock.pendingAdmin()).to.be.equal(governorAlphaBackup.address);
+
+      await governorAlphaBackup.connect(signer).__acceptAdmin();
+
+      expect(await timelock.admin()).to.be.equal(governorAlphaBackup.address);
     });
   });
   describe('PCV Equity Minter + LBP', async function () {

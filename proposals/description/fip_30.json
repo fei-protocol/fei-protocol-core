@@ -1,0 +1,21 @@
+{
+    "proposal_title": "FIP-30 Upgrade to OZ Governor",
+    "proposal_commands": [
+        {
+            "target": "timelock",
+            "values": "0",
+            "method": "setPendingAdmin(address)",
+            "arguments": [
+                "0x0BEF27FEB58e857046d630B2c03dFb7bae567494"
+            ],
+            "description": "Set Pending timelock admin to FeiDAO"
+        },
+        {
+            "target": "feiDAO",
+            "values": "0",
+            "method": "__acceptAdmin()",
+            "arguments": [],
+            "description": "Accept admin as Fei DAO"
+        }
+    ]
+}
