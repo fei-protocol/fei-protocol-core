@@ -57,7 +57,6 @@ describe('e2e', function () {
   });
 
   describe('Fei DAO', function () {
-
     it.skip('rollback succeeds', async function () {
       const { feiDAO, timelock, governorAlphaBackup } = contracts;
       const { multisig } = contractAddresses;
@@ -139,7 +138,6 @@ describe('e2e', function () {
       expect((await feiDAO.votingDelay()).toString()).to.be.equal('10');
       expect((await contracts.daiBondingCurve.duration()).toString()).to.be.equal('11');
     });
-
   });
   describe('PCV Equity Minter + LBP', async function () {
     it('mints appropriate amount and swaps', async function () {

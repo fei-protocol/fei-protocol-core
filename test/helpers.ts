@@ -87,7 +87,7 @@ async function setNextBlockTimestamp(time: number) {
 
 async function mine() {
   await hre.network.provider.request({
-    method: 'evm_mine',
+    method: 'evm_mine'
   });
 }
 
