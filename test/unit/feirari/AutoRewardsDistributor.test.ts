@@ -124,9 +124,9 @@ describe('AutoRewardsDistributor', function () {
         const expectedNewCompSpeed = toBN('75').mul(toBN(e18)).mul(toBN(poolAllocPoints)).div(toBN(totalAllocPoint));
         await rewardsDistributor.setCompSupplySpeed(expectedNewCompSpeed);
         const [compSpeed, updateNeeded] = await autoRewardsDistributor.getNewRewardSpeed();
+
         expect(updateNeeded).to.be.false;
         expect(compSpeed).to.be.equal(expectedNewCompSpeed);
-
         await expectRevert(
           autoRewardsDistributor.setAutoRewardsDistribution(),
           'AutoRewardsDistributor: update not needed'
@@ -164,6 +164,58 @@ describe('AutoRewardsDistributor', function () {
 
         const [newCompSpeed, updateNeeded] = await autoRewardsDistributor.getNewRewardSpeed();
         const expectedNewCompSpeed = toBN('75').mul(toBN(e18)).mul(toBN(poolAllocPoints)).div(toBN(totalAllocPoint));
+
+        expect(newCompSpeed).to.be.equal(expectedNewCompSpeed);
+        expect(updateNeeded).to.be.true;
+        await autoRewardsDistributor.setAutoRewardsDistribution();
+        expect(await rewardsDistributor.compBorrowSpeed()).to.be.equal(toBN(newCompSpeed));
+      });
+
+      it('succeeds and sets correct borrow speed with 1/2 totalAllocPoints', async function () {
+        const newTotalAllocPoints = 2;
+        const newPoolAllocPoints = 1;
+
+        await tribalChief.setTotalAllocPoint(newTotalAllocPoints);
+        await tribalChief.setPoolAllocPoints(newPoolAllocPoints);
+        expect(await rewardsDistributor.compBorrowSpeed()).to.be.equal(toBN('0'));
+
+        const [newCompSpeed, updateNeeded] = await autoRewardsDistributor.getNewRewardSpeed();
+        const expectedNewCompSpeed = toBN('75').mul(toBN(e18)).mul(toBN(newPoolAllocPoints)).div(toBN(newTotalAllocPoints));
+
+        expect(newCompSpeed).to.be.equal(expectedNewCompSpeed);
+        expect(updateNeeded).to.be.true;
+        await autoRewardsDistributor.setAutoRewardsDistribution();
+        expect(await rewardsDistributor.compBorrowSpeed()).to.be.equal(toBN(newCompSpeed));
+      });
+
+      it('succeeds and sets correct borrow speed with 1/100 totalAllocPoints', async function () {
+        const newTotalAllocPoints = 100;
+        const newPoolAllocPoints = 1;
+
+        await tribalChief.setTotalAllocPoint(newTotalAllocPoints);
+        await tribalChief.setPoolAllocPoints(newPoolAllocPoints);
+        expect(await rewardsDistributor.compBorrowSpeed()).to.be.equal(toBN('0'));
+
+        const [newCompSpeed, updateNeeded] = await autoRewardsDistributor.getNewRewardSpeed();
+        const expectedNewCompSpeed = toBN('75').mul(toBN(e18)).mul(toBN(newPoolAllocPoints)).div(toBN(newTotalAllocPoints));
+
+        expect(newCompSpeed).to.be.equal(expectedNewCompSpeed);
+        expect(updateNeeded).to.be.true;        
+        await autoRewardsDistributor.setAutoRewardsDistribution();
+        expect(await rewardsDistributor.compBorrowSpeed()).to.be.equal(toBN(newCompSpeed));
+      });
+
+      it('succeeds and sets correct borrow speed with 1/1000 totalAllocPoints', async function () {
+        const newTotalAllocPoints = 1000;
+        const newPoolAllocPoints = 1;
+
+        await tribalChief.setTotalAllocPoint(newTotalAllocPoints);
+        await tribalChief.setPoolAllocPoints(newPoolAllocPoints);
+        expect(await rewardsDistributor.compBorrowSpeed()).to.be.equal(toBN('0'));
+
+        const [newCompSpeed, updateNeeded] = await autoRewardsDistributor.getNewRewardSpeed();
+        const expectedNewCompSpeed = toBN('75').mul(toBN(e18)).mul(toBN(newPoolAllocPoints)).div(toBN(newTotalAllocPoints));
+
         expect(newCompSpeed).to.be.equal(expectedNewCompSpeed);
         expect(updateNeeded).to.be.true;
         await autoRewardsDistributor.setAutoRewardsDistribution();
@@ -208,6 +260,7 @@ describe('AutoRewardsDistributor', function () {
     it('returns 0 and does not revert when tribe per block is 0', async function () {
       await tribalChief.setTribePerBlock(0);
       const [newCompSpeed, updateNeeded] = await autoRewardsDistributor.getNewRewardSpeed();
+
       expect(updateNeeded).to.be.false;
       expect(newCompSpeed).to.be.equal(toBN('0'));
     });
@@ -215,6 +268,7 @@ describe('AutoRewardsDistributor', function () {
     it('returns 0 and does not revert when total alloc points are 0', async function () {
       await tribalChief.setTotalAllocPoint(0);
       const [newCompSpeed, updateNeeded] = await autoRewardsDistributor.getNewRewardSpeed();
+
       expect(updateNeeded).to.be.false;
       expect(newCompSpeed).to.be.equal(toBN('0'));
     });
@@ -222,6 +276,7 @@ describe('AutoRewardsDistributor', function () {
     it('returns 0 and does not revert when pool alloc points are 0', async function () {
       await tribalChief.setPoolAllocPoints(0);
       const [newCompSpeed, updateNeeded] = await autoRewardsDistributor.getNewRewardSpeed();
+
       expect(updateNeeded).to.be.false;
       expect(newCompSpeed).to.be.equal(toBN('0'));
     });
@@ -237,6 +292,7 @@ describe('AutoRewardsDistributor', function () {
       });
 
       it('succeeds when caller is governor', async function () {
+        expect(await autoRewardsDistributor.rewardsDistributorAdmin()).to.be.equal(rewardsDistributor.address);
         await expect(
           await autoRewardsDistributor
             .connect(impersonatedSigners[governorAddress])
