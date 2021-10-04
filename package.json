@@ -26,7 +26,7 @@
     "deploy:rinkeby": "npx hardhat run --network rinkeby scripts/deploy/migrations.js",
     "abis": "node scripts/abis.js",
     "calldata": "npx hardhat run scripts/utils/getProposalCalldata.ts",
-    "check-proposal": "npx hardhat run scripts/utils/checkProposal.ts",
+    "check-proposal": "ENABLE_MAINNET_FORKING=true npx hardhat run scripts/utils/checkProposal.ts",
     "prettier-format": "prettier --config .prettierrc './**/*.ts' --write"
   },
   "author": "joeysantoro",
