@@ -186,8 +186,8 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     /// @param _oldDeposit : the PCVDeposit to remove from the list.
     /// @param _newDeposit : the PCVDeposit to add to the list.
     function swapDeposit(address _oldDeposit, address _newDeposit) external onlyGovernorOrAdmin {
-        removeDeposit(_oldDeposit);
-        addDeposit(_newDeposit);
+        _removeDeposit(_oldDeposit);
+        _addDeposit(_newDeposit);
     }
 
     /// @notice Set the price feed oracle (in USD) for a given asset.
