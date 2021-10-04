@@ -49,7 +49,6 @@ contract AutoRewardsDistributor is CoreRef {
         uint256 totalAllocPoints = tribalChief.totalAllocPoint();
         uint256 tribePerBlock = tribalChief.tribePerBlock();
 
-        /// @notice if total allocation points are equal to 0, then set compSpeed to 0
         if (totalAllocPoints == 0) {
             compSpeed = 0;
         } else {
@@ -71,8 +70,6 @@ contract AutoRewardsDistributor is CoreRef {
             actualCompSpeed = rewardsDistributorAdmin.compSupplySpeeds(cTokenAddress);
         }
 
-        /// if actual comp speed is not equal to the newly calculated comp speed,
-        /// then an update is needed
         if (actualCompSpeed != newCompSpeed) {
             updateNeeded = true;
         }
@@ -84,7 +81,6 @@ contract AutoRewardsDistributor is CoreRef {
         (uint256 compSpeed, bool updateNeeded) = getNewRewardSpeed();
         require(updateNeeded, "AutoRewardsDistributor: update not needed");
 
-        /// @notice call out to the rewards distributor admin and set the comp supply/borrow speed to the current value
         if (isBorrowIncentivized) {
             rewardsDistributorAdmin._setCompBorrowSpeed(cTokenAddress, compSpeed);
         } else {
