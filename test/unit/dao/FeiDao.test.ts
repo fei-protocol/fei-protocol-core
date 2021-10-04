@@ -105,8 +105,8 @@ describe('FeiDAO', function () {
       );
     });
 
-    it('old governor', async function () {
-      expect(await feiDAO.OLD_GOVERNOR()).to.be.equal('0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B');
+    it('backup governor correct address', async function () {
+      expect(await feiDAO.BACKUP_GOVERNOR()).to.be.equal('0x4C895973334Af8E06fd6dA4f723Ac24A5f259e6B');
     });
   });
 
@@ -137,7 +137,7 @@ describe('FeiDAO', function () {
         expect(await feiDAO.connect(impersonatedSigners[userAddress]).__executeRollback())
         .to.emit(feiDAO, 'Rollback');
 
-        expect(await timelock.pendingAdmin()).to.be.equal('0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B');
+        expect(await timelock.pendingAdmin()).to.be.equal('0x4C895973334Af8E06fd6dA4f723Ac24A5f259e6B');
       });
 
       it('no rollback reverts', async function() {

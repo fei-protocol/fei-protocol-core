@@ -107,6 +107,7 @@ const MainnetAddresses = {
   ethPCVDripper: { artifactName: 'IPCVDeposit', address: '0xDa079A280FC3e33Eb11A78708B369D5Ca2da54fE' },
   ethReserveStabilizer: { artifactName: 'EthReserveStabilizer', address: '0x17305f0e18318994a57b494078CAC866A857F7b6' },
   fei: { artifactName: 'Fei', address: '0x956F47F50A910163D8BF957Cf5846D573E7f87CA' },
+  feiDAO: { artifactName: 'FeiDAO', address: '0x0BEF27FEB58e857046d630B2c03dFb7bae567494' },
   feiEthPair: { artifactName: 'IUniswapV2Pair', address: '0x94B0A3d511b6EcDb17eBF877278Ab030acb0A878' },
   feiOTCEscrow: { artifactName: 'OtcEscrow', address: '0x9B9fE1b732839a53948B02E5164c0A50fdf11e06' },
   feiRewardsDistributor: {
@@ -115,6 +116,7 @@ const MainnetAddresses = {
   },
   feiTribePair: { artifactName: 'IUniswapV2Pair', address: '0x9928e4046d7c6513326cCeA028cD3e7a91c7590A' },
   governorAlpha: { artifactName: 'GovernorAlpha', address: '0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B' },
+  governorAlphaBackup: { artifactName: 'GovernorAlpha', address: '0x4C895973334Af8E06fd6dA4f723Ac24A5f259e6B' },
   gUniFeiDaiLP: { artifactName: 'unknown', address: '0x3D1556e84783672f2a3bd187a592520291442539' },
   index: { artifactName: 'IERC20', address: '0x0954906da0Bf32d5479e25f46056d22f08464cab' },
   indexCoopFusePoolDpi: { artifactName: 'CErc20Delegator', address: '0xf06f65a6b7d2c401fcb8b3273d036d21fe2a5963' },

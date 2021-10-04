@@ -20,7 +20,7 @@ contract FeiDAO is
 
     address private _guardian;
     uint256 private _eta;
-    address public constant OLD_GOVERNOR = 0xD8a5a9b31c3C0232E196d518E89Fd8bF83AcAd43;
+    address public constant BACKUP_GOVERNOR = 0x4C895973334Af8E06fd6dA4f723Ac24A5f259e6B;
     uint256 public constant ROLLBACK_DEADLINE = 1635724800; // Nov 1, 2021 midnight UTC
 
     constructor(
@@ -102,7 +102,7 @@ contract FeiDAO is
         _eta = eta;
 
         ICompoundTimelock _timelock = ICompoundTimelock(payable(timelock()));
-        _timelock.queueTransaction(timelock(), 0, "setPendingAdmin(address)", abi.encode(OLD_GOVERNOR), eta);
+        _timelock.queueTransaction(timelock(), 0, "setPendingAdmin(address)", abi.encode(BACKUP_GOVERNOR), eta);
 
         emit RollbackQueued(eta);
     }
@@ -113,7 +113,7 @@ contract FeiDAO is
         require(_guardian == address(0), "FeiDAO: no queue");
 
         ICompoundTimelock _timelock = ICompoundTimelock(payable(timelock()));
-        _timelock.executeTransaction(timelock(), 0, "setPendingAdmin(address)", abi.encode(OLD_GOVERNOR), _eta);
+        _timelock.executeTransaction(timelock(), 0, "setPendingAdmin(address)", abi.encode(BACKUP_GOVERNOR), _eta);
 
         emit Rollback();
     }

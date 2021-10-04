@@ -116,7 +116,7 @@ describe('e2e', function () {
     });
 
     it('rollback succeeds', async function() {
-      const { feiDAO, timelock, governorAlpha } = contracts;
+      const { feiDAO, timelock, governorAlphaBackup } = contracts;
       const { multisig } = contractAddresses;
 
       const signer = await ethers.getSigner(multisig);
@@ -132,11 +132,11 @@ describe('e2e', function () {
       
       await feiDAO.__executeRollback()
 
-      expect(await timelock.pendingAdmin()).to.be.equal(governorAlpha.address);
+      expect(await timelock.pendingAdmin()).to.be.equal(governorAlphaBackup.address);
 
-      await governorAlpha.connect(signer).__acceptAdmin();
+      await governorAlphaBackup.connect(signer).__acceptAdmin();
 
-      expect(await timelock.admin()).to.be.equal(governorAlpha.address);
+      expect(await timelock.admin()).to.be.equal(governorAlphaBackup.address);
     });
   });
   describe('PCV Equity Minter + LBP', async function () {
