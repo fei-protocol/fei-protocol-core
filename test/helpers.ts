@@ -71,6 +71,26 @@ async function increaseTime(amount: number) {
   });
 }
 
+async function resetTime() {
+  await hre.network.provider.request({
+    method: 'hardhat_reset',
+    params: []
+  });
+}
+
+async function setNextBlockTimestamp(time: number) {
+  await hre.network.provider.request({
+    method: 'evm_setNextBlockTimestamp',
+    params: [time]
+  });
+}
+
+async function mine() {
+  await hre.network.provider.request({
+    method: 'evm_mine',
+  });
+}
+
 async function getCore(): Promise<Core> {
   const { governorAddress, pcvControllerAddress, minterAddress, burnerAddress, guardianAddress } = await getAddresses();
 
@@ -116,10 +136,13 @@ export {
   balance,
   time,
   // functions
+  mine,
   getCore,
   getAddresses,
   increaseTime,
   expectApprox,
   deployDevelopmentWeth,
-  getImpersonatedSigner
+  getImpersonatedSigner,
+  setNextBlockTimestamp,
+  resetTime
 };
