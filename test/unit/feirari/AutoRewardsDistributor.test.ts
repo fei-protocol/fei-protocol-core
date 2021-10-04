@@ -180,7 +180,10 @@ describe('AutoRewardsDistributor', function () {
         expect(await rewardsDistributor.compBorrowSpeed()).to.be.equal(toBN('0'));
 
         const [newCompSpeed, updateNeeded] = await autoRewardsDistributor.getNewRewardSpeed();
-        const expectedNewCompSpeed = toBN('75').mul(toBN(e18)).mul(toBN(newPoolAllocPoints)).div(toBN(newTotalAllocPoints));
+        const expectedNewCompSpeed = toBN('75')
+          .mul(toBN(e18))
+          .mul(toBN(newPoolAllocPoints))
+          .div(toBN(newTotalAllocPoints));
 
         expect(newCompSpeed).to.be.equal(expectedNewCompSpeed);
         expect(updateNeeded).to.be.true;
@@ -197,10 +200,13 @@ describe('AutoRewardsDistributor', function () {
         expect(await rewardsDistributor.compBorrowSpeed()).to.be.equal(toBN('0'));
 
         const [newCompSpeed, updateNeeded] = await autoRewardsDistributor.getNewRewardSpeed();
-        const expectedNewCompSpeed = toBN('75').mul(toBN(e18)).mul(toBN(newPoolAllocPoints)).div(toBN(newTotalAllocPoints));
+        const expectedNewCompSpeed = toBN('75')
+          .mul(toBN(e18))
+          .mul(toBN(newPoolAllocPoints))
+          .div(toBN(newTotalAllocPoints));
 
         expect(newCompSpeed).to.be.equal(expectedNewCompSpeed);
-        expect(updateNeeded).to.be.true;        
+        expect(updateNeeded).to.be.true;
         await autoRewardsDistributor.setAutoRewardsDistribution();
         expect(await rewardsDistributor.compBorrowSpeed()).to.be.equal(toBN(newCompSpeed));
       });
@@ -214,7 +220,10 @@ describe('AutoRewardsDistributor', function () {
         expect(await rewardsDistributor.compBorrowSpeed()).to.be.equal(toBN('0'));
 
         const [newCompSpeed, updateNeeded] = await autoRewardsDistributor.getNewRewardSpeed();
-        const expectedNewCompSpeed = toBN('75').mul(toBN(e18)).mul(toBN(newPoolAllocPoints)).div(toBN(newTotalAllocPoints));
+        const expectedNewCompSpeed = toBN('75')
+          .mul(toBN(e18))
+          .mul(toBN(newPoolAllocPoints))
+          .div(toBN(newTotalAllocPoints));
 
         expect(newCompSpeed).to.be.equal(expectedNewCompSpeed);
         expect(updateNeeded).to.be.true;

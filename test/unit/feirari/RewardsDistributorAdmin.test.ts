@@ -13,10 +13,6 @@ const {
   constants: { ZERO_ADDRESS }
 } = testHelpers;
 
-/// TODO
-///
-/// _grantComp
-
 describe('RewardsDistributorAdmin', function () {
   let governorAddress: string;
   let guardianAddress: string;
