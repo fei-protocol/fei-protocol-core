@@ -17,7 +17,7 @@ contract AutoRewardsDistributor is CoreRef {
     /// @notice reward index on tribal chief to grab this staked token wrapper's index
     uint256 public immutable tribalChiefRewardIndex;
 
-    event SpeedChanged(uint256 newSpeed, address cToken);
+    event SpeedChanged(uint256 newSpeed);
     event RewardsDistributorAdminChanged(IRewardsDistributorAdmin oldRewardsDistributorAdmin, IRewardsDistributorAdmin newRewardsDistributorAdmin);
 
     /// @notice constructor function
@@ -42,26 +42,30 @@ contract AutoRewardsDistributor is CoreRef {
         tribalChief = _tribalChief;
     }
 
+    /// @notice helper function that gets all needed state from the TribalChief contract
+    /// based on this state, it then calculates what the compSpeed should be.
+    /// Call the TribalChief and grab the current allocation points for the stakedTokenWrapper,
+    /// get the total allocation points in the TribalChief,
+    /// get the amount of tribe being distributed on a per block basis in the TribalChief.
+    /// With those variables we can calculate what the compspeed should be.
     function _deriveRequiredCompSpeed() internal view returns (uint256 compSpeed) {
-        /// @notice call the TribalChief and grab the current allocation points for the stakedTokenWrapper
         (,,, uint120 allocPoints,) = tribalChief.poolInfo(tribalChiefRewardIndex);
-        /// @notice get the total allocation points in the TribalChief
         uint256 totalAllocPoints = tribalChief.totalAllocPoint();
-        /// @notice get the amount of tribe being distributed on a per block basis in the TribalChief
         uint256 tribePerBlock = tribalChief.tribePerBlock();
 
-        /// @notice if tribe per block, total allocation points or this pools allocation points are equal to 0,
-        /// then set compSpeed to 0
+        /// @notice if total allocation points are equal to 0, then set compSpeed to 0
         if (totalAllocPoints == 0) {
             compSpeed = 0;
         } else {
-            /// @notice calculate the amount per block that the Rari rewards distributor is receiving from the TribalChief
             compSpeed = (tribePerBlock * allocPoints) / totalAllocPoints;
         }
     }
 
     /// @notice function to get the new comp speed and figure out if an update is needed
-    function getRewardSpeedDifference() public view returns (uint256 newCompSpeed, bool updateNeeded) {
+    /// @return newCompSpeed the newly calculated compspeed based on comp borrow/supply speed
+    /// and allocation points in the TribalChief
+    /// @return updateNeeded boolean indicating whether the new compSpeed is equal to the existing compSpeed
+    function getNewRewardSpeed() public view returns (uint256 newCompSpeed, bool updateNeeded) {
         newCompSpeed = _deriveRequiredCompSpeed();
         uint256 actualCompSpeed;
 
@@ -71,7 +75,8 @@ contract AutoRewardsDistributor is CoreRef {
             actualCompSpeed = rewardsDistributorAdmin.compSupplySpeeds(cTokenAddress);
         }
 
-        /// if actual comp speed is not equal to required comp speed, then an update is needed
+        /// if actual comp speed is not equal to the newly calculated comp speed,
+        /// then an update is needed
         if (actualCompSpeed != newCompSpeed) {
             updateNeeded = true;
         }
@@ -80,7 +85,7 @@ contract AutoRewardsDistributor is CoreRef {
     /// @notice function to automatically set the rewards speed on the RewardsDistributor contract
     /// through the RewardsDistributorAdmin
     function setAutoRewardsDistribution() external whenNotPaused {
-        (uint256 compSpeed, bool updateNeeded) = getRewardSpeedDifference();
+        (uint256 compSpeed, bool updateNeeded) = getNewRewardSpeed();
         require(updateNeeded, "AutoRewardsDistributor: update not needed");
 
         /// @notice call out to the rewards distributor admin and set the comp supply/borrow speed to the current value
@@ -89,7 +94,7 @@ contract AutoRewardsDistributor is CoreRef {
         } else {
             rewardsDistributorAdmin._setCompSupplySpeed(cTokenAddress, compSpeed);
         }
-        emit SpeedChanged(compSpeed, cTokenAddress);
+        emit SpeedChanged(compSpeed);
     }
 
     /// @notice API to point to a new rewards distributor admin contract
