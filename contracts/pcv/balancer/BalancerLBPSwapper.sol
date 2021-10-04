@@ -38,10 +38,10 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     // ------------- Swapper State -------------
 
     /// @notice the token to be auctioned
-    address public override tokenSpent;
+    address public immutable override tokenSpent;
 
     /// @notice the token to buy
-    address public override tokenReceived;
+    address public immutable override tokenReceived;
 
     /// @notice the address to send `tokenReceived`
     address public override tokenReceivingAddress;
