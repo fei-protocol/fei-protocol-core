@@ -28,9 +28,6 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
 
     // ----------- Properties -----------
 
-    /// @notice List of PCVDeposits to exclude from calculations
-    mapping(address => bool) public excludedDeposits;
-
     /// @notice Map of oracles to use to get USD values of assets held in
     ///         PCV deposits. This map is used to get the oracle address from
     ///         and ERC20 address.
@@ -102,15 +99,6 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     }
 
     // ----------- State-changing methods -----------
-
-    /// @notice Guardians can exclude & re-include some PCVDeposits from the list,
-    ///         because a faulty deposit or a paused oracle that prevents reading
-    ///         from certain deposits could be problematic.
-    /// @param _deposit : the deposit to exclude or re-enable.
-    /// @param _excluded : the new exclusion flag for this deposit.
-    function setDepositExclusion(address _deposit, bool _excluded) external onlyGuardianOrGovernor {
-        excludedDeposits[_deposit] = _excluded;
-    }
 
     /// @notice Add a PCVDeposit to the list of deposits inspected by the
     ///         collateralization ratio oracle.
@@ -303,13 +291,10 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
             for (uint256 j = 0; j < tokenToDeposits[_token].length(); j++) {
                 address _deposit = tokenToDeposits[_token].at(j);
 
-                // ignore deposits that are excluded by the Guardian
-                if (!excludedDeposits[_deposit]) {
-                    // read the deposit, and increment token balance/protocol fei
-                    (uint256 _depositBalance, uint256 _depositFei) = IPCVDepositBalances(_deposit).resistantBalanceAndFei();
-                    _totalTokenBalance += _depositBalance;
-                    _protocolControlledFei += _depositFei;
-                }
+                // read the deposit, and increment token balance/protocol fei
+                (uint256 _depositBalance, uint256 _depositFei) = IPCVDepositBalances(_deposit).resistantBalanceAndFei();
+                _totalTokenBalance += _depositBalance;
+                _protocolControlledFei += _depositFei;
             }
 
             // If the protocol holds non-zero balance of tokens, fetch the oracle price to
