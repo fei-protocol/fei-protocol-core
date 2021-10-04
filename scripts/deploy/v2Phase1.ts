@@ -1,45 +1,46 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider';
-import { artifacts, ethers, web3 } from 'hardhat';
+import { ethers } from 'hardhat';
 import { getAllContractAddresses } from '@test/integration/setup/loadContracts';
 import { DeployUpgradeFunc, NamedContracts } from '@custom-types/types';
 
+const toBN = ethers.BigNumber.from;
+
 // Constants
-const e18 = '000000000000000000';
-const e16 = '0000000000000000';
-const e14 = '00000000000000';
+const e16: string = '0000000000000000';
+const e14: string = '00000000000000';
 
 // CR oracle wrapper
-const CR_WRAPPER_DURATION = '60'; // 1 minute
-const CR_WRAPPER_DEVIATION_BPS = '500'; // 5%
-const CR_KEEPER_INCENTIVE = `1000${e18}`; // 1000 FEI
+const CR_WRAPPER_DURATION: string = '60'; // 1 minute
+const CR_WRAPPER_DEVIATION_BPS: string = '500'; // 5%
+const CR_KEEPER_INCENTIVE: string = toBN(1000).mul(ethers.constants.WeiPerEther).toString(); // 1000 FEI
 
 // Tribe reserve stabilizer
-const USD_PER_FEI_BPS = '10000'; // $1 FEI
-const CR_THRESHOLD_BPS = '10000'; // 100% CR
-const MAX_RESERVE_STABILIZER_MINT_RATE = `1000${e18}`; // 1000 TRIBE/s
-const RESERVE_STABILIZER_MINT_RATE = `100${e18}`; // 100 TRIBE/s
-const TRIBE_BUFFER_CAP = `5000000${e18}`; // 5M TRIBE
+const USD_PER_FEI_BPS: string = '10000'; // $1 FEI
+const CR_THRESHOLD_BPS: string = '10000'; // 100% CR
+const MAX_RESERVE_STABILIZER_MINT_RATE: string = toBN(1000).mul(ethers.constants.WeiPerEther).toString(); // 1000 TRIBE/s
+const RESERVE_STABILIZER_MINT_RATE: string = toBN(100).mul(ethers.constants.WeiPerEther).toString(); // 100 TRIBE/s
+const TRIBE_BUFFER_CAP: string = toBN(5000000).mul(ethers.constants.WeiPerEther).toString(); // 5M TRIBE
 
 // LBP swapper
-const LBP_FREQUENCY = '604800'; // weekly
-const MIN_LBP_SIZE = `100000${e18}`; // 100k FEI
+const LBP_FREQUENCY: string = '604800'; // weekly
+const MIN_LBP_SIZE: string = toBN(100000).mul(ethers.constants.WeiPerEther).toString(); // 100k FEI
 
 // PCV Equity Minter
-const PCV_EQUITY_MINTER_INCENTIVE = `1000${e18}`; // 1000 FEI
-const PCV_EQUITY_MINTER_FREQUENCY = '604800'; // weekly
-const PCV_EQUITY_MINTER_APR_BPS = '1000'; // 10%
+const PCV_EQUITY_MINTER_INCENTIVE: string = toBN(1000).mul(ethers.constants.WeiPerEther).toString(); // 1000 FEI
+const PCV_EQUITY_MINTER_FREQUENCY: string = '604800'; // weekly
+const PCV_EQUITY_MINTER_APR_BPS: string = '1000'; // 10%
 
 // ERC20Splitter
-const SPLIT_DAO_BPS = '2000'; // 20%
-const SPLIT_LM_BPS = '2000'; // 20%
-const SPLIT_BURN_BPS = '6000'; // 60%
+const SPLIT_DAO_BPS: string = '2000'; // 20%
+const SPLIT_LM_BPS: string = '2000'; // 20%
+const SPLIT_BURN_BPS: string = '6000'; // 60%
 
 // ETH Bonding Curve
-const SCALE = `1${e18}`; // 1 FEI
-const BUFFER = '50'; // 0.5%
-const DISCOUNT = '0'; // 0%
-const BC_DURATION = '86400'; // 1w
-const BC_INCENTIVE = `500${e18}`;
+const SCALE: string = toBN(1).mul(ethers.constants.WeiPerEther).toString(); // 1 FEI
+const BUFFER: string = '50'; // 0.5%
+const DISCOUNT: string = '0'; // 0%
+const BC_DURATION: string = '86400'; // 1w
+const BC_INCENTIVE: string = toBN(500).mul(ethers.constants.WeiPerEther).toString();
 
 const USD_ADDRESS = '0x1111111111111111111111111111111111111111';
 
@@ -130,7 +131,6 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   logging && console.log('DPI UniswapPCVDeposit deployed to: ', dpiUniswapPCVDeposit.address);
 
   const bondingCurveFactory = await ethers.getContractFactory('EthBondingCurve');
-
   const bondingCurve = await bondingCurveFactory.deploy(core, chainlinkEthUsdOracleWrapper, ethers.constants.AddressZero, {
     scale: SCALE,
     buffer: BUFFER,
@@ -326,8 +326,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   const staticPcvDepositWrapperFactory = await ethers.getContractFactory('StaticPCVDepositWrapper');
   const staticPcvDepositWrapper = await staticPcvDepositWrapperFactory.deploy(
     core,
-    `4000000${e18}`, // 4M PCV for 100k INDEX @ ~$40
-    `8500000${e18}` // 8.5M FEI in Kashi
+    toBN(4000000).mul(ethers.constants.WeiPerEther).toString(), // 4M PCV for 100k INDEX @ ~$40
+    toBN(8500000).mul(ethers.constants.WeiPerEther).toString() // 8.5M FEI in Kashi
   );
 
   logging && console.log('staticPcvDepositWrapper: ', staticPcvDepositWrapper.address);
