@@ -236,10 +236,7 @@ describe('TribalChief', () => {
       this.tribe = await (await ethers.getContractFactory('MockTribe')).deploy();
       this.coreRef = await (await ethers.getContractFactory('MockCoreRef')).deploy(this.core.address);
 
-      /// we can and probably should do this with a framework,
-      // but for now I'm going to write it out by hand.
-
-      // spin up the logic contract by hand
+      // spin up the logic contract
       const tribalChief = await (await ethers.getContractFactory('TribalChief')).deploy(this.core.address);
       // create a new proxy contract
       const proxyContract = await (
@@ -249,7 +246,7 @@ describe('TribalChief', () => {
       // instantiate the tribalchief pointed at the proxy contract
       this.tribalChief = await ethers.getContractAt('TribalChief', proxyContract.address);
 
-      // initialize the tribalchief by hand
+      // initialize the tribalchief
       await this.tribalChief.connect((await ethers.getSigners())[0]).initialize(this.core.address, this.tribe.address);
       await this.tribalChief.connect(await ethers.getSigner(governorAddress)).updateBlockReward(blockReward);
 
@@ -2003,10 +2000,7 @@ describe('TribalChief', () => {
       this.tribe = await (await ethers.getContractFactory('MockTribe')).deploy();
       this.coreRef = await (await ethers.getContractFactory('MockCoreRef')).deploy(this.core.address);
 
-      /// we can and probably should do this with a framework,
-      // but for now I'm going to write it out by hand.
-
-      // spin up the logic contract by hand
+      // spin up the logic contract
       const tribalChief = await (await ethers.getContractFactory('TribalChief')).deploy(this.core.address);
       // create a new proxy contract
       const proxyContract = await (
@@ -2016,7 +2010,7 @@ describe('TribalChief', () => {
       // instantiate the tribalchief pointed at the proxy contract
       this.tribalChief = await ethers.getContractAt('TribalChief', proxyContract.address);
 
-      // initialize the tribalchief by hand
+      // initialize the tribalchief
       await this.tribalChief.initialize(this.core.address, this.tribe.address);
 
       await this.tribalChief.connect(impersonatedSigners[governorAddress]).updateBlockReward(blockReward, {});
@@ -2370,10 +2364,7 @@ describe('TribalChief', () => {
       this.tribe = await (await ethers.getContractFactory('MockTribe')).deploy();
       this.coreRef = await (await ethers.getContractFactory('MockCoreRef')).deploy(this.core.address);
 
-      /// we can and probably should do this with a framework,
-      // but for now I'm going to write it out by hand.
-
-      // spin up the logic contract by hand
+      // spin up the logic contract
       const tribalChief = await (await ethers.getContractFactory('TribalChief')).deploy(this.core.address);
       // create a new proxy contract
       const proxyContract = await (
@@ -2383,7 +2374,7 @@ describe('TribalChief', () => {
       // instantiate the tribalchief pointed at the proxy contract
       this.tribalChief = await ethers.getContractAt('TribalChief', proxyContract.address);
 
-      // initialize the tribalchief by hand
+      // initialize the tribalchief
       await this.tribalChief.initialize(this.core.address, this.tribe.address);
 
       await this.tribalChief.connect(impersonatedSigners[governorAddress]).updateBlockReward(blockReward, {});
