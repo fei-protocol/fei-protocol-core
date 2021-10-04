@@ -4,8 +4,8 @@ import "../refs/CoreRef.sol";
 import "./IRewardsDistributorAdmin.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
-/// @notice this contract has its own internal ACL. The reason for doing this
-/// and not leveraging core is twofold. One, it simplifies devops operations around adding
+/// @notice this contract has its own internal ACL. The reasons for doing this
+/// and not leveraging core are twofold. One, it simplifies devops operations around adding
 /// and removing users, and two, by being self contained, it is more efficient as it does not need
 /// to make external calls to figure out who has a particular role.
 contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessControlEnumerable {
@@ -26,10 +26,8 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
         address[] memory _autoRewardDistributors
     ) CoreRef(coreAddress) {
         rewardsDistributorContract = _rewardsDistributorContract;
-        /// @notice Governance should create new admin role for this contract
-        /// and then grant this role to all AutoRewardsDistributors so that they can call this contract
-        /// The reason we are reusing the tribal chief admin role is it consolidates control, access
-        /// and means we don't have to create another OA timelock or multisig contract
+        /// @notice The reason we are reusing the tribal chief admin role is it consolidates control in the OA,
+        /// and means we don't have to do another governance action to create this role in core
         _setContractAdminRole(keccak256("TRIBAL_CHIEF_ADMIN_ROLE"));
         _setRoleAdmin(AUTO_REWARDS_DISTRIBUTOR_ROLE, DEFAULT_ADMIN_ROLE);
 
