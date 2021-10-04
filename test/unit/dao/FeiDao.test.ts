@@ -120,7 +120,7 @@ describe('FeiDAO', function () {
       it('not from admin reverts', async function () {
         await expectRevert(
           feiDAO.connect(impersonatedSigners[governorAddress]).__rollback('10'),
-          'FeiDAO: caller not admin'
+          'FeiDAO: caller not guardian'
         );
       });
 
