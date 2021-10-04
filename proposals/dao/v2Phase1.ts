@@ -1,24 +1,22 @@
 import '@nomiclabs/hardhat-ethers';
 import hre, { ethers } from 'hardhat';
 import {
-  DeployUpgradeFunc,
   SetupUpgradeFunc,
   ValidateUpgradeFunc,
   RunUpgradeFunc,
   TeardownUpgradeFunc
-} from '../../types/types';
+} from '@custom-types/types';
 
-import chai from 'chai';
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
+
+const toBN = ethers.BigNumber.from;
 
 before(() => {
   chai.use(CBN(ethers.BigNumber));
 });
 
-const e18 = '000000000000000000';
-
-const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   const { timelock } = addresses;
 
   await hre.network.provider.request({
@@ -45,7 +43,7 @@ V2 Phase 1 Upgrade Steps
 12. Seed TRIBE to LBP Swapper
 13. Update DPI Bonding Curve allocation
 */
-const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
+export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
   const { timelock: timelockAddress, rariPool19DpiPCVDeposit: rariPool19DpiPCVDepositAddress } = addresses;
 
   const {
@@ -116,7 +114,7 @@ const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging =
   ); // move 100% of PCV from old -> new
 
   logging && console.log(`Allocating Tribe...`);
-  await core.allocateTribe(feiTribeLBPSwapper.address, `1000000${e18}`);
+  await core.allocateTribe(feiTribeLBPSwapper.address, toBN('1000000').mul(ethers.constants.WeiPerEther));
 
   logging && console.log(`Setting allocation...`);
   await dpiBondingCurve.setAllocation([dpiUniswapPCVDeposit.address, rariPool19DpiPCVDepositAddress], ['9000', '1000']);
@@ -128,7 +126,7 @@ const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging =
  revoke pcv controller from uni pcv controller, ratioPCVController
  deposit eth and dpi Uni PCV deposits
 */
-const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts) => {
+export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts) => {
   const core = contracts.core;
   const { uniswapPCVController } = addresses;
   const { uniswapPCVDeposit, dpiUniswapPCVDeposit, ratioPCVController, bondingCurve } = oldContracts;
@@ -147,7 +145,7 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts)
   await contracts.uniswapPCVDeposit.deposit();
 };
 
-const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
+export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
   const { dai: daiAddress, dpi: dpiAddress, rai: raiAddress, fei: feiAddress, weth: wethAddress } = addresses;
   const {
     collateralizationOracle,
@@ -181,11 +179,4 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts)
     collateralizationOracleWrapperImpl.address
   );
   expect(await proxyAdmin.getProxyAdmin(collateralizationOracleWrapper.address)).to.be.equal(proxyAdmin.address);
-};
-
-module.exports = {
-  setup,
-  run,
-  teardown,
-  validate
 };
