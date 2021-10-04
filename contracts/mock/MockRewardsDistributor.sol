@@ -23,6 +23,13 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
     address public newAdmin;
 
     address public implementation;
+    address public newMarket;
+
+    address public newContributor;
+    uint256 public newCompSpeed;
+
+    address public newCompGrantee;
+    uint256 public newCompGranteeAmount;
 
     constructor() Ownable() {}
 
@@ -56,6 +63,8 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @param amount The amount of COMP to (possibly) transfer
      */
     function _grantComp(address recipient, uint amount) external override onlyOwner {
+        newCompGrantee = recipient;
+        newCompGranteeAmount = amount;
         emit successGrantComp(recipient, amount);
     }
 
@@ -83,6 +92,8 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @param compSpeed New COMP speed for contributor
      */
     function _setContributorCompSpeed(address contributor, uint compSpeed) external override onlyOwner {
+        newContributor = contributor;
+        newCompSpeed = compSpeed;
         emit successSetCompContributorSpeed();
     }
 
@@ -91,6 +102,7 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @param cToken The market to add
      */
     function _addMarket(address cToken) external override onlyOwner {
+        newMarket = cToken;
         emit successAddMarket();
     }
 

@@ -13,8 +13,13 @@ const {
     constants: { ZERO_ADDRESS }
 } = testHelpers;
 
+/// TODO
+///
+/// _grantComp
+
 describe('RewardsDistributorAdmin', function () {
   let governorAddress: string;
+  let guardianAddress: string;
   let pcvControllerAddress: string;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
@@ -31,6 +36,7 @@ describe('RewardsDistributorAdmin', function () {
     impersonatedAddresses = [
       addresses.governorAddress,
       addresses.pcvControllerAddress,
+      addresses.guardianAddress,
     ];
 
     for (const address of impersonatedAddresses) {
@@ -44,7 +50,7 @@ describe('RewardsDistributorAdmin', function () {
   });
 
   beforeEach(async function () {
-    ({ pcvControllerAddress, governorAddress } = await getAddresses());
+    ({ pcvControllerAddress, governorAddress, guardianAddress } = await getAddresses());
 
     core = await getCore() as Core;
     rewardsDistributor = await (await ethers.getContractFactory('MockRewardsDistributor')).deploy();
@@ -80,10 +86,7 @@ describe('RewardsDistributorAdmin', function () {
     describe('Paused', function () {
       it('reverts', async function () {
         await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).pause();
-        /// become admin
         await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).becomeAdmin();
-        /// now give yourself the AUTO_REWARDS_DISTRIBUTOR_ROLE role so that we can hit the _setCompSupplySpeed
-        /// function without running into access errors
         await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress]).grantRole(AUTO_REWARDS_DISTRIBUTOR_ROLE, governorAddress);
 
         await expectRevert(
@@ -147,6 +150,92 @@ describe('RewardsDistributorAdmin', function () {
         ).to.emit(rewardsDistributor, 'successSetCompBorrowSpeed').withArgs();
 
         expect(await rewardsDistributor.compBorrowSpeed()).to.be.equal(toBN(newCompBorrowSpeed));
+      });
+    });
+
+    describe('guardianDisableSupplySpeed', function () {
+      it('fails when caller does not have correct role', async function () {
+        await expectRevert(
+          rewardsDistributorAdmin.connect(impersonatedSigners[pcvControllerAddress]).guardianDisableSupplySpeed(pcvControllerAddress),
+          "CoreRef: Caller is not a guardian or governor"
+        );
+      });
+
+      it('succeeds when caller has correct role', async function () {
+        const newCompBorrowSpeed = 0;
+        await expect(
+          await rewardsDistributorAdmin.connect(impersonatedSigners[guardianAddress]).guardianDisableSupplySpeed(pcvControllerAddress)
+        ).to.emit(rewardsDistributor, 'successSetCompSupplySpeed').withArgs();
+
+        expect(await rewardsDistributor.compBorrowSpeed()).to.be.equal(toBN(newCompBorrowSpeed));
+      });
+    });
+
+    describe('guardianDisableBorrowSpeed', function () {
+      it('fails when caller does not have correct role', async function () {
+        await expectRevert(
+          rewardsDistributorAdmin.connect(impersonatedSigners[pcvControllerAddress]).guardianDisableBorrowSpeed(pcvControllerAddress),
+          "CoreRef: Caller is not a guardian or governor"
+        );
+      });
+
+      it('succeeds when caller has correct role', async function () {
+        const newCompBorrowSpeed = 0;
+        await expect(
+          await rewardsDistributorAdmin.connect(impersonatedSigners[guardianAddress]).guardianDisableBorrowSpeed(pcvControllerAddress)
+        ).to.emit(rewardsDistributor, 'successSetCompBorrowSpeed').withArgs();
+
+        expect(await rewardsDistributor.compBorrowSpeed()).to.be.equal(toBN(newCompBorrowSpeed));
+        expect(await rewardsDistributor.compBorrowSpeeds(pcvControllerAddress)).to.be.equal(toBN(newCompBorrowSpeed));
+      });
+    });
+
+    describe('_addMarket', function () {
+      it('fails when caller does not have correct role', async function () {
+        await expectRevert(
+          rewardsDistributorAdmin.connect(impersonatedSigners[pcvControllerAddress])._addMarket(pcvControllerAddress),
+          "CoreRef: Caller is not a governor"
+        );
+      });
+
+      it('succeeds when caller has correct role', async function () {
+        await expect(
+          await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress])._addMarket(pcvControllerAddress)
+        ).to.emit(rewardsDistributor, 'successAddMarket').withArgs();
+        expect(await rewardsDistributor.newMarket()).to.be.equal(pcvControllerAddress);
+      });
+    });
+
+    describe('_setImplementation', function () {
+      it('fails when caller does not have correct role', async function () {
+        await expectRevert(
+          rewardsDistributorAdmin.connect(impersonatedSigners[pcvControllerAddress])._setImplementation(pcvControllerAddress),
+          "CoreRef: Caller is not a governor"
+        );
+      });
+
+      it('succeeds when caller has correct role', async function () {
+        await rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress])._setImplementation(pcvControllerAddress);
+        expect(await rewardsDistributor.implementation()).to.be.equal(pcvControllerAddress);
+      });
+    });
+
+    describe('_grantComp', function () {
+      it('fails when caller does not have correct role', async function () {
+        const compGrantAmount = 1000;
+        await expectRevert(
+          rewardsDistributorAdmin.connect(impersonatedSigners[pcvControllerAddress])._grantComp(pcvControllerAddress, compGrantAmount),
+          "CoreRef: Caller is not a governor"
+        );
+      });
+
+      it('succeeds when caller has correct role', async function () {
+        const compGrantAmount = 1000;
+        await expect(
+          rewardsDistributorAdmin.connect(impersonatedSigners[governorAddress])._grantComp(pcvControllerAddress, compGrantAmount)
+        ).to.emit(rewardsDistributor, 'successGrantComp').withArgs(pcvControllerAddress, compGrantAmount);
+        expect(await rewardsDistributor.newCompGrantee()).to.be.equal(pcvControllerAddress);
+        expect(await rewardsDistributor.newCompGranteeAmount()).to.be.equal(toBN(compGrantAmount));
       });
     });
 

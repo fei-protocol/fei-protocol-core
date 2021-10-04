@@ -4,12 +4,14 @@ import "../refs/CoreRef.sol";
 import "./IRewardsDistributorAdmin.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
-/// @notice this contract has its own internal RBAC. The reason for doing this
+/// @notice this contract has its own internal ACL. The reason for doing this
 /// and not leveraging core is twofold. One, it simplifies devops operations around adding
 /// and removing users, and two, by being self contained, it is more efficient as it does not need
 /// to make external calls to figure out who has a particular role.
 contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessControlEnumerable {
 
+    /// @notice auto rewards distributor controller role.
+    /// This role will be given to auto rewards distributor controller smart contracts
     bytes32 public constant override AUTO_REWARDS_DISTRIBUTOR_ROLE = keccak256("AUTO_REWARDS_DISTRIBUTOR_ROLE");
 
     /// @notice rewards distributor contract
@@ -83,6 +85,25 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
      */
     function _setCompBorrowSpeed(address cToken, uint256 compSpeed) external override onlyRole(AUTO_REWARDS_DISTRIBUTOR_ROLE) whenNotPaused {
         rewardsDistributorContract._setCompBorrowSpeed(cToken, compSpeed);
+    }
+
+
+    /**
+     * @notice Set COMP supply speed for a single market to 0
+     * Callable only by the guardian or governor
+     * @param cToken The market whose COMP speed to set to 0
+     */
+    function guardianDisableSupplySpeed(address cToken) external onlyGuardianOrGovernor {
+        rewardsDistributorContract._setCompSupplySpeed(cToken, 0);
+    }
+
+    /**
+     * @notice Set COMP borrow speed for a single market to 0
+     * Callable only by the guardian or governor
+     * @param cToken The market whose COMP speed to set to 0
+     */
+    function guardianDisableBorrowSpeed(address cToken) external onlyGuardianOrGovernor {
+        rewardsDistributorContract._setCompBorrowSpeed(cToken, 0);
     }
 
     /**
