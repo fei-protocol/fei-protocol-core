@@ -83,6 +83,9 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
         _setDuration(_validityDuration);
         collateralizationOracle = _collateralizationOracle;
         deviationThresholdBasisPoints = _deviationThresholdBasisPoints;
+
+        // Shared admin with other oracles
+        _setContractAdminRole(keccak256("ORACLE_ADMIN_ROLE"));    
     }
 
     // ----------- Setter methods ----------------------------------------------
@@ -126,6 +129,16 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
         _setDuration(_validityDuration);
     }
 
+    /// @notice governor or admin override to directly write to the cache
+    /// @dev used in emergencies where the underlying oracle is compromised or failing
+    function setCache(
+        uint256 _cachedProtocolControlledValue,
+        uint256 _cachedUserCirculatingFei,
+        int256 _cachedProtocolEquity
+    ) external onlyGovernorOrAdmin {
+        _setCache(_cachedProtocolControlledValue, _cachedUserCirculatingFei, _cachedProtocolEquity);
+    }
+
     // ----------- IOracle override methods ------------------------------------
     /// @notice update reading of the CollateralizationOracle
     function update() external override whenNotPaused {
@@ -152,13 +165,27 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
             bool _validityStatus
         ) = ICollateralizationOracle(collateralizationOracle).pcvStats();
 
+        outdated = outdated 
+            || _isExceededDeviationThreshold(cachedProtocolControlledValue, _protocolControlledValue)
+            || _isExceededDeviationThreshold(cachedUserCirculatingFei, _userCirculatingFei);
+        
         // only update if valid
         require(_validityStatus, "CollateralizationOracleWrapper: CollateralizationOracle is invalid");
 
+        _setCache(_protocolControlledValue, _userCirculatingFei, _protocolEquity);
+
+        return outdated;
+    }
+
+    function _setCache(
+        uint256 _cachedProtocolControlledValue,
+        uint256 _cachedUserCirculatingFei,
+        int256 _cachedProtocolEquity
+    ) internal {
         // set cache variables
-        cachedProtocolControlledValue = _protocolControlledValue;
-        cachedUserCirculatingFei = _userCirculatingFei;
-        cachedProtocolEquity = _protocolEquity;
+        cachedProtocolControlledValue = _cachedProtocolControlledValue;
+        cachedUserCirculatingFei = _cachedUserCirculatingFei;
+        cachedProtocolEquity = _cachedProtocolEquity;
 
         // reset time
         _initTimed();
@@ -170,10 +197,6 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
             cachedUserCirculatingFei,
             cachedProtocolEquity
         );
-
-        return outdated 
-            || _isExceededDeviationThreshold(cachedProtocolControlledValue, _protocolControlledValue)
-            || _isExceededDeviationThreshold(cachedUserCirculatingFei, _userCirculatingFei);
     }
 
     // @notice returns true if the cached values are outdated.

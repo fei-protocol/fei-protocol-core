@@ -5,7 +5,7 @@ import { Signer } from 'ethers';
 
 const e18 = '000000000000000000';
 
-describe.only('CollateralizationOracle', function () {
+describe('CollateralizationOracle', function () {
   let userAddress: string;
   let guardianAddress: string;
   let governorAddress: string;
@@ -98,7 +98,7 @@ describe.only('CollateralizationOracle', function () {
         [this.oracle1.address, this.oracle2.address]
       );
     });
-  
+
     it('tokenToOracle(address) => address', async function () {
       expect(await this.oracle.tokenToOracle(this.token1.address)).to.be.equal(this.oracle1.address);
     });
