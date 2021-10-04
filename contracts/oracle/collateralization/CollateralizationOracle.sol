@@ -110,12 +110,12 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     ///         note : this function reverts if the deposit is already in the list.
     ///         note : this function reverts if the deposit's token has no oracle.
     /// @param _deposit : the PCVDeposit to add to the list.
-    function addDeposit(address _deposit) public onlyGovernorOrAdmin {
+    function addDeposit(address _deposit) external onlyGovernorOrAdmin {
         _addDeposit(_deposit);
     }
 
     /// @notice adds a list of multiple PCV deposits. See addDeposit.
-    function addDeposits(address[] memory _deposits) public onlyGovernorOrAdmin {
+    function addDeposits(address[] memory _deposits) external onlyGovernorOrAdmin {
         _addDeposits(_deposits);
     }
 
@@ -148,12 +148,12 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     ///         the collateralization ratio oracle.
     ///         note : this function reverts if the input deposit is not found.
     /// @param _deposit : the PCVDeposit address to remove from the list.
-    function removeDeposit(address _deposit) public onlyGovernorOrAdmin {
+    function removeDeposit(address _deposit) external onlyGovernorOrAdmin {
         _removeDeposit(_deposit);
     }
 
     /// @notice removes a list of multiple PCV deposits. See removeDeposit.
-    function removeDeposits(address[] memory _deposits) public onlyGovernorOrAdmin {
+    function removeDeposits(address[] memory _deposits) external onlyGovernorOrAdmin {
         for (uint256 i = 0; i < _deposits.length; i++) {
             _removeDeposit(_deposits[i]);
         }
