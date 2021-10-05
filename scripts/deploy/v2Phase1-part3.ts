@@ -10,8 +10,7 @@ const e16 = '0000000000000000';
 const e14 = '00000000000000';
 
 // CR oracle wrapper
-const CR_WRAPPER_DURATION = '60'; // 1 minute
-const CR_WRAPPER_DEVIATION_BPS = '500'; // 5%
+
 const CR_KEEPER_INCENTIVE: string = toBN(1000).mul(ethers.constants.WeiPerEther).toString(); // 1000 FEI
 
 // Tribe reserve stabilizer
@@ -35,7 +34,7 @@ const SPLIT_DAO_BPS = '2000'; // 20%
 const SPLIT_LM_BPS = '2000'; // 20%
 const SPLIT_BURN_BPS = '6000'; // 60%
 
-const USD_ADDRESS = '0x1111111111111111111111111111111111111111';
+
 
 /*
 
@@ -94,32 +93,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     proxyAdmin,
     erc20Dripper,
     balancerLBPoolFactory,
-    rariPool19DpiPCVDepositWrapper,
-    dpiBondingCurveWrapper,
-    ethReserveStabilizerWrapper,
-    aaveRaiPCVDepositWrapper,
-    compoundDaiPCVDepositWrapper,
-    ethLidoPCVDepositWrapper,
-    rariPool9RaiPCVDepositWrapper,
-    raiBondingCurveWrapper,
-    daiBondingCurveWrapper,
-    bondingCurve,
-    dpiUniswapPCVDeposit,
-    uniswapPCVDeposit,
-    compoundEthPCVDepositWrapper,
-    aaveEthPCVDepositWrapper,
-    rariPool8FeiPCVDepositWrapper,
-    rariPool7FeiPCVDepositWrapper,
-    rariPool6FeiPCVDepositWrapper,
-    rariPool9FeiPCVDepositWrapper,
-    rariPool19FeiPCVDepositWrapper,
-    rariPool18FeiPCVDepositWrapper,
-    rariPool24FeiPCVDepositWrapper,
-    rariPool25FeiPCVDepositWrapper,
-    rariPool26FeiPCVDepositWrapper,
-    rariPool27FeiPCVDepositWrapper,
-    creamFeiPCVDepositWrapper,
-    staticPcvDepositWrapper
+    collateralizationOracleWrapper
   } = addresses;
 
   const {
@@ -139,90 +113,13 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     throw new Error('An environment variable contract address is not set');
   }
 
-  // ----------- Collateralization Contracts ---------------
 
-  const constantOracleFactory = await ethers.getContractFactory('ConstantOracle');
-
-  const zeroConstantOracle = await constantOracleFactory.deploy(core, 0);
-  logging && console.log('zeroConstantOracle: ', zeroConstantOracle.address);
-
-  const oneConstantOracle = await constantOracleFactory.deploy(core, 10000);
-  logging && console.log('oneConstantOracle: ', oneConstantOracle.address);
-
-  const collateralizationOracleFactory = await ethers.getContractFactory('CollateralizationOracle');
-  const collateralizationOracle = await collateralizationOracleFactory.deploy(
-    core,
-    [
-      rariPool19DpiPCVDepositWrapper,
-      dpiBondingCurveWrapper,
-      ethReserveStabilizerWrapper,
-      aaveRaiPCVDepositWrapper,
-      compoundDaiPCVDepositWrapper,
-      ethLidoPCVDepositWrapper,
-      rariPool9RaiPCVDepositWrapper,
-      raiBondingCurveWrapper,
-      daiBondingCurveWrapper,
-      bondingCurve,
-      dpiUniswapPCVDeposit,
-      uniswapPCVDeposit,
-      compoundEthPCVDepositWrapper,
-      aaveEthPCVDepositWrapper,
-      rariPool8FeiPCVDepositWrapper,
-      rariPool7FeiPCVDepositWrapper,
-      rariPool6FeiPCVDepositWrapper,
-      rariPool9FeiPCVDepositWrapper,
-      rariPool19FeiPCVDepositWrapper,
-      rariPool18FeiPCVDepositWrapper,
-      rariPool24FeiPCVDepositWrapper,
-      rariPool25FeiPCVDepositWrapper,
-      rariPool26FeiPCVDepositWrapper,
-      rariPool27FeiPCVDepositWrapper,
-      creamFeiPCVDepositWrapper,
-      staticPcvDepositWrapper
-    ],
-    [dai, dpi, weth, rai, fei, USD_ADDRESS],
-    [
-      chainlinkDaiUsdOracleWrapper,
-      chainlinkDpiUsdOracleWrapper,
-      chainlinkEthUsdOracleWrapper,
-      chainlinkRaiUsdCompositOracle,
-      zeroConstantOracle.address,
-      oneConstantOracle.address
-    ]
-  );
-
-  logging && console.log('Collateralization Oracle: ', collateralizationOracle.address);
-
-  const collateralizationOracleWrapperImplFactory = await ethers.getContractFactory('CollateralizationOracleWrapper');
-  const collateralizationOracleWrapperImpl = await collateralizationOracleWrapperImplFactory.deploy(
-    core,
-    1 // not used
-  );
-
-  logging && console.log('Collateralization Oracle Wrapper Impl: ', collateralizationOracleWrapperImpl.address);
-
-  // This initialize calldata gets atomically executed against the impl logic
-  // upon construction of the proxy
-  const collateralizationOracleWrapperInterface = collateralizationOracleWrapperImpl.interface;
-  const calldata = collateralizationOracleWrapperInterface.encodeFunctionData('initialize', [
-    core,
-    collateralizationOracle.address,
-    CR_WRAPPER_DURATION,
-    CR_WRAPPER_DEVIATION_BPS
-  ]);
-
-  const ProxyFactory = await ethers.getContractFactory('TransparentUpgradeableProxy');
-  const proxy = await ProxyFactory.deploy(collateralizationOracleWrapperImpl.address, proxyAdmin, calldata);
-
-  const collateralizationOracleWrapper = await ethers.getContractAt('CollateralizationOracleWrapper', proxy.address);
-
-  logging && console.log('Collateralization Oracle Wrapper Proxy: ', collateralizationOracleWrapper.address);
 
   const collateralizationOracleKeeperFactory = await ethers.getContractFactory('CollateralizationOracleKeeper');
   const collateralizationOracleKeeper = await collateralizationOracleKeeperFactory.deploy(
     core,
     CR_KEEPER_INCENTIVE,
-    collateralizationOracleWrapper.address
+    collateralizationOracleWrapper
   );
 
   logging && console.log('Collateralization Oracle Keeper: ', collateralizationOracleKeeper.address);
@@ -252,7 +149,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     chainlinkTribeUsdCompositeOracle.address,
     ethers.constants.AddressZero,
     USD_PER_FEI_BPS,
-    collateralizationOracleWrapper.address,
+    collateralizationOracleWrapper,
     CR_THRESHOLD_BPS,
     MAX_RESERVE_STABILIZER_MINT_RATE,
     RESERVE_STABILIZER_MINT_RATE,
@@ -316,16 +213,13 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     feiTribeLBPSwapper.address,
     PCV_EQUITY_MINTER_INCENTIVE,
     PCV_EQUITY_MINTER_FREQUENCY,
-    collateralizationOracleWrapper.address,
+    collateralizationOracleWrapper,
     PCV_EQUITY_MINTER_APR_BPS
   );
 
   logging && console.log('PCV Equity Minter: ', pcvEquityMinter.address);
 
   return {
-    collateralizationOracle,
-    collateralizationOracleWrapperImpl,
-    collateralizationOracleWrapper,
     collateralizationOracleKeeper,
     chainlinkTribeEthOracleWrapper,
     chainlinkTribeUsdCompositeOracle,
