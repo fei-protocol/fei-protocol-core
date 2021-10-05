@@ -1,17 +1,15 @@
 import {
-    BondingCurve,
-    CollateralizationOracleKeeper,
-    Core,
-    ERC20CompoundPCVDeposit,
-    EthBondingCurve,
-    PCVEquityMinter,
-    RatioPCVController,
-    TribeReserveStabilizer,
-    UniswapPCVDeposit
+  BondingCurve,
+  CollateralizationOracleKeeper,
+  Core,
+  ERC20CompoundPCVDeposit,
+  EthBondingCurve,
+  PCVEquityMinter,
+  RatioPCVController,
+  TribeReserveStabilizer,
+  UniswapPCVDeposit
 } from '@custom-types/contracts';
-import {
-    RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc
-} from '@custom-types/types';
+import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '@custom-types/types';
 import '@nomiclabs/hardhat-ethers';
 import chai from 'chai';
 import CBN from 'chai-bn';
@@ -138,9 +136,9 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-  logging && console.log(`Nothing to do in teardown function of v2Phase1-part1.`)
+  logging && console.log(`Nothing to do in teardown function of v2Phase1-part1.`);
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-  // todo  
+  // todo
 };
