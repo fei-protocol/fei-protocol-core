@@ -1,11 +1,28 @@
 import { expect } from 'chai';
 import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '../../types/types';
 import { ethers } from 'hardhat';
+import { getImpersonatedSigner } from '@test/helpers';
+import testHelpers, { BN, ether } from '@openzeppelin/test-helpers';
+
+const {
+  constants: { ZERO_ADDRESS }
+} = testHelpers;
 
 const toBN = ethers.BigNumber.from;
 const e18 = ethers.constants.WeiPerEther;
 
-const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
+const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  const { multisig, rariRewardsDistributorDelegator } = addresses;
+  const { rewardsDistributorAdmin } = contracts;
+
+  const guardian = await getImpersonatedSigner(multisig);
+  const rewardsDistributorDelegator = await ethers.getContractAt('IRewardsAdmin', rariRewardsDistributorDelegator);
+
+  await rewardsDistributorDelegator.connect(guardian)._setPendingAdmin(rewardsDistributorAdmin.address);
+  expect(await rewardsDistributorDelegator.pendingAdmin()).to.be.equal(rewardsDistributorAdmin.address);
+  await rewardsDistributorAdmin._acceptAdmin();
+};
+
 const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {};
 const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
 
@@ -18,8 +35,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts)
   const { rariRewardsDistributorDelegator } = addresses;
 
   const AUTO_REWARDS_DISTRIBUTOR_ROLE = await rewardsDistributorAdmin.AUTO_REWARDS_DISTRIBUTOR_ROLE();
+  const rewardsDistributorDelegator = await ethers.getContractAt('IRewardsAdmin', rariRewardsDistributorDelegator);
 
   /// check that the contracts were wired together properly
+  expect(await rewardsDistributorDelegator.pendingAdmin()).to.be.equal(ZERO_ADDRESS);
+  expect(await rewardsDistributorDelegator.admin()).to.be.equal(rewardsDistributorAdmin.address);
   expect(await rewardsDistributorAdmin.hasRole(AUTO_REWARDS_DISTRIBUTOR_ROLE, autoRewardsDistributor.address)).to.be
     .true;
   expect(await autoRewardsDistributor.rewardsDistributorAdmin()).to.be.equal(rewardsDistributorAdmin.address);
