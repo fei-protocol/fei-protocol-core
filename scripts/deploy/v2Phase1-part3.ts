@@ -35,13 +35,6 @@ const SPLIT_DAO_BPS = '2000'; // 20%
 const SPLIT_LM_BPS = '2000'; // 20%
 const SPLIT_BURN_BPS = '6000'; // 60%
 
-// ETH Bonding Curve
-const SCALE: string = toBN(1).mul(ethers.constants.WeiPerEther).toString(); // 1 FEI
-const BUFFER = '50'; // 0.5%
-const DISCOUNT = '0'; // 0%
-const BC_DURATION = '86400'; // 1w
-const BC_INCENTIVE: string = toBN(500).mul(ethers.constants.WeiPerEther).toString();
-
 const USD_ADDRESS = '0x1111111111111111111111111111111111111111';
 
 /*
