@@ -103,15 +103,39 @@ describe.only('CollateralizationOracleGuardian', function () {
       );
     });
 
-    it('within deviation succeeds', async function () {
-      await increaseTime(100);
+    describe('within deviation', async function () {
+      beforeEach(async function() {
+        await increaseTime(100);
+        await oracleGuardian.connect(impersonatedSigners[governorAddress]).setCache('2900', '950');
+      });
 
-      await oracleGuardian.connect(impersonatedSigners[governorAddress]).setCache('2900', '950');
-      expect((await oracleWrapper.cachedUserCirculatingFei()).toString()).to.be.equal('950');
-      expect((await oracleWrapper.cachedProtocolControlledValue()).toString()).to.be.equal('2900');
-      expect((await oracleWrapper.cachedProtocolEquity()).toString()).to.be.equal('1950');
+      it('succeeds', async function () {
+        expect((await oracleWrapper.cachedUserCirculatingFei()).toString()).to.be.equal('950');
+        expect((await oracleWrapper.cachedProtocolControlledValue()).toString()).to.be.equal('2900');
+        expect((await oracleWrapper.cachedProtocolEquity()).toString()).to.be.equal('1950');
+  
+        expect(await oracleGuardian.isTimeEnded()).to.be.false;
+      });
 
-      expect(await oracleGuardian.isTimeEnded()).to.be.false;
+      it('second set inside window fails', async function () {
+        expect(await oracleGuardian.isTimeEnded()).to.be.false;
+
+        await expectRevert(
+          oracleGuardian.connect(impersonatedSigners[governorAddress]).setCache('300', '400'),
+          'Timed: time not ended'
+        );
+      });
+
+      it('second set after time succeeds', async function () {
+        await increaseTime(100);
+        await oracleGuardian.connect(impersonatedSigners[governorAddress]).setCache('2750', '900');
+
+        expect((await oracleWrapper.cachedUserCirculatingFei()).toString()).to.be.equal('900');
+        expect((await oracleWrapper.cachedProtocolControlledValue()).toString()).to.be.equal('2750');
+        expect((await oracleWrapper.cachedProtocolEquity()).toString()).to.be.equal('1850');
+  
+        expect(await oracleGuardian.isTimeEnded()).to.be.false;
+      });
     });
 
     it('pcv outside deviation reverts', async function () {
