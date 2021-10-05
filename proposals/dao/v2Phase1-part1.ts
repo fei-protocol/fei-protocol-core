@@ -90,3 +90,17 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
     logging && console.log('Granting Minter to new CollateralizationOracleKeeper');
     await core.grantMinter(collateralizationOracleKeeper.address);
 }
+
+export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
+    const core = contracts.core;
+    const { uniswapPCVDeposit, dpiUniswapPCVDeposit, bondingCurve } = oldContracts;
+  
+    // Revoke controller permissions
+    await core.revokeMinter(uniswapPCVDeposit.address);
+    await core.revokeMinter(dpiUniswapPCVDeposit.address);
+    await core.revokeMinter(bondingCurve.address);
+}
+
+export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
+
+}
