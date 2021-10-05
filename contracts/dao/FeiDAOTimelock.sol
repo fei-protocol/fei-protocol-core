@@ -12,6 +12,9 @@ import "../refs/CoreRef.sol";
 */
 contract FeiDAOTimelock is Timelock, CoreRef {
 
+    address public constant OLD_TIMELOCK = 0x639572471f2f318464dc01066a56867130e45E25;
+    uint256 public constant ROLLBACK_DEADLINE = 1635724800; // Nov 1, 2021 midnight UTC
+
     constructor(address core_, address admin_, uint delay_, uint minDelay_) 
         Timelock(admin_, delay_, minDelay_)
         CoreRef(core_)
@@ -39,4 +42,16 @@ contract FeiDAOTimelock is Timelock, CoreRef {
         pendingAdmin = newAdmin;
         emit NewPendingAdmin(newAdmin);
     }
+
+    /// @notice one-time option to roll back the Timelock to old timelock
+    /// @dev guardian-only, and expires after the deadline. This function is here as a fallback in case something goes wrong.
+    function rollback() external onlyGuardianOrGovernor {
+        require(block.timestamp <= ROLLBACK_DEADLINE, "FeiDAOTimelock: rollback expired");
+        
+        IFeiDAO(admin).updateTimelock(OLD_TIMELOCK);
+    }
+}
+
+interface IFeiDAO {
+    function updateTimelock(address newTimelock) external;
 }
