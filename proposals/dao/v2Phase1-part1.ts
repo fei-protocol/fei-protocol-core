@@ -47,7 +47,6 @@ DAO ACTIONS:
 6. Update DPI Bonding Curve allocation
 7. Move PCV from old ETH Uni PCV Deposit to new
 8. Move PCV from old DPI Uni PCV Deposit to new
-
 */
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
@@ -72,31 +71,31 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
   const dpiBondingCurve = contracts.dpiBondingCurve as BondingCurve;
   const core = contracts.core as Core;
 
-  logging && console.log('Granting Minter to new BondingCurve');
+  logging && console.log('Granting Minter role to new BondingCurve');
   await core.grantMinter(bondingCurve.address);
 
-  logging && console.log('Granting Minter to new DPI UniswapPCVDeposit');
+  logging && console.log('Granting Minter role to new DPI UniswapPCVDeposit');
   await core.grantMinter(dpiUniswapPCVDeposit.address);
 
-  logging && console.log('Granting Minter to new UniswapPCVDeposit');
+  logging && console.log('Granting Minter role to new UniswapPCVDeposit');
   await core.grantMinter(uniswapPCVDeposit.address);
 
-  logging && console.log('Granting Burner to new TribeReserveStabilizer');
+  logging && console.log('Granting Burner role to new TribeReserveStabilizer');
   await core.grantBurner(tribeReserveStabilizer.address);
 
-  logging && console.log('Granting PCVController to new RatioPCVController');
+  logging && console.log('Granting PCVController role to new RatioPCVController');
   await core.grantPCVController(ratioPCVController.address);
 
-  logging && console.log('Granting Minter to new PCVEquityMinter');
+  logging && console.log('Granting Minter role to new PCVEquityMinter');
   await core.grantMinter(pcvEquityMinter.address);
 
-  logging && console.log('Granting Minter to new CollateralizationOracleKeeper');
+  logging && console.log('Granting Minter role to new CollateralizationOracleKeeper');
   await core.grantMinter(collateralizationOracleKeeper.address);
 
-  logging && console.log(`Withdrawing ratio from old uniswap pcv deposit to new.`);
+  logging && console.log(`Withdrawing 100% ratio from old uniswap pcv deposit to new.`);
   await oldRatioPCVController.withdrawRatio(oldContracts.uniswapPCVDeposit.address, uniswapPCVDeposit.address, '10000'); // move 100% of PCV from old -> new
 
-  logging && console.log(`Withdrawing ratio from old dpi uniswap pcv deposit to new.`);
+  logging && console.log(`Withdrawing 100% ratio from old dpi uniswap pcv deposit to new.`);
   await ratioPCVController.withdrawRatio(
     oldContracts.dpiUniswapPCVDeposit.address,
     dpiUniswapPCVDeposit.address,

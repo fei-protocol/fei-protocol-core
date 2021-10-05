@@ -19,13 +19,6 @@ Part 3 - Deploys collateralization oracle keeper, collateralization oracle guard
          burner role[remove] to the tribe reserve stabilizer, and minter roles to the pvc equity minter & collateralization oracle keeper.
          Also grants tribe-minter role to the tribe reserve stabilizer, and seeds tribe to the liquidity bootstrapping pool swapper.
 
-        // todo: move pcv-transfer to p1
-        // todo: pr to change ALL reserve stabilizers to transfer to dumpster contract (make this too) which actually burns it
-        // todo: move keeper deployment to p3
-        // todo: deploy collateralization-oracle guardian in p3
-        // todo: add oracle-admin-role-grant to collateralizationoracle guardian
-
-
 ----- PART 3 -----
 
 DEPLOY ACTIONS:

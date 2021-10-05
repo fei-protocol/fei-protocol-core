@@ -50,7 +50,6 @@ DEPLOY ACTIONS:
 27. Collateralization Ratio Oracle Wrapper Implementation
 28. Collateralization Ratio Oracle Wrapper Proxy
 
-
 DAO ACTIONS:
 (no actions by the dao)
 
