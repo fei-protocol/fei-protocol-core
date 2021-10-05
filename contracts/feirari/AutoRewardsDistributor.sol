@@ -40,6 +40,8 @@ contract AutoRewardsDistributor is CoreRef {
         tribalChiefRewardIndex = _tribalChiefRewardIndex;
         rewardsDistributorAdmin = _rewardsDistributorAdmin;
         tribalChief = _tribalChief;
+
+        _setContractAdminRole(keccak256("TRIBAL_CHIEF_ADMIN_ROLE"));
     }
 
     /// @notice helper function that gets all needed state from the TribalChief contract

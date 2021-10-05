@@ -161,6 +161,8 @@ export interface MainnetContractAddresses {
   rariPool8Tribe: string;
   curve3Metapool: string;
   tribalChiefOptimisticMultisig: string;
+  stakingTokenWrapperRari: string;
+  rariRewardsDistributorDelegator: string;
 }
 
 export type ProposalConfig = {
