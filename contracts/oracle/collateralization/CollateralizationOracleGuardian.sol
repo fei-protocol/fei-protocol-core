@@ -30,7 +30,7 @@ contract CollateralizationOracleGuardian is CoreRef, Timed {
         @notice The constructor for CollateralizationOracleGuardian
         @param _core the core address to reference
         @param _oracleWrapper the instance of CollateralizationOracleWrapper
-        @param _frequency the minimum frequency a guardian can update the cache
+        @param _frequency the maximum frequency a guardian can update the cache
         @param _deviationThresholdBasisPoints the maximum percent change in a cache value for a given update
      */
     constructor(
@@ -83,7 +83,7 @@ contract CollateralizationOracleGuardian is CoreRef, Timed {
         return delta * Constants.BASIS_POINTS_GRANULARITY / a;
     }
 
-    /// @notice governance setter for minimum deviation the guardian can change per update
+    /// @notice governance setter for maximum deviation the guardian can change per update
     function setDeviationThresholdBasisPoints(uint256 newDeviationThresholdBasisPoints) external onlyGovernor {
         _setDeviationThresholdBasisPoints(newDeviationThresholdBasisPoints);
     }
