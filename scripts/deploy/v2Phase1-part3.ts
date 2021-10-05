@@ -6,40 +6,40 @@ import { DeployUpgradeFunc, NamedContracts } from '@custom-types/types';
 const toBN = ethers.BigNumber.from;
 
 // Constants
-const e16: string = '0000000000000000';
-const e14: string = '00000000000000';
+const e16 = '0000000000000000';
+const e14 = '00000000000000';
 
 // CR oracle wrapper
-const CR_WRAPPER_DURATION: string = '60'; // 1 minute
-const CR_WRAPPER_DEVIATION_BPS: string = '500'; // 5%
+const CR_WRAPPER_DURATION = '60'; // 1 minute
+const CR_WRAPPER_DEVIATION_BPS = '500'; // 5%
 const CR_KEEPER_INCENTIVE: string = toBN(1000).mul(ethers.constants.WeiPerEther).toString(); // 1000 FEI
 
 // Tribe reserve stabilizer
-const USD_PER_FEI_BPS: string = '10000'; // $1 FEI
-const CR_THRESHOLD_BPS: string = '10000'; // 100% CR
+const USD_PER_FEI_BPS = '10000'; // $1 FEI
+const CR_THRESHOLD_BPS = '10000'; // 100% CR
 const MAX_RESERVE_STABILIZER_MINT_RATE: string = toBN(1000).mul(ethers.constants.WeiPerEther).toString(); // 1000 TRIBE/s
 const RESERVE_STABILIZER_MINT_RATE: string = toBN(100).mul(ethers.constants.WeiPerEther).toString(); // 100 TRIBE/s
 const TRIBE_BUFFER_CAP: string = toBN(5000000).mul(ethers.constants.WeiPerEther).toString(); // 5M TRIBE
 
 // LBP swapper
-const LBP_FREQUENCY: string = '604800'; // weekly
+const LBP_FREQUENCY = '604800'; // weekly
 const MIN_LBP_SIZE: string = toBN(100000).mul(ethers.constants.WeiPerEther).toString(); // 100k FEI
 
 // PCV Equity Minter
 const PCV_EQUITY_MINTER_INCENTIVE: string = toBN(1000).mul(ethers.constants.WeiPerEther).toString(); // 1000 FEI
-const PCV_EQUITY_MINTER_FREQUENCY: string = '604800'; // weekly
-const PCV_EQUITY_MINTER_APR_BPS: string = '1000'; // 10%
+const PCV_EQUITY_MINTER_FREQUENCY = '604800'; // weekly
+const PCV_EQUITY_MINTER_APR_BPS = '1000'; // 10%
 
 // ERC20Splitter
-const SPLIT_DAO_BPS: string = '2000'; // 20%
-const SPLIT_LM_BPS: string = '2000'; // 20%
-const SPLIT_BURN_BPS: string = '6000'; // 60%
+const SPLIT_DAO_BPS = '2000'; // 20%
+const SPLIT_LM_BPS = '2000'; // 20%
+const SPLIT_BURN_BPS = '6000'; // 60%
 
 // ETH Bonding Curve
 const SCALE: string = toBN(1).mul(ethers.constants.WeiPerEther).toString(); // 1 FEI
-const BUFFER: string = '50'; // 0.5%
-const DISCOUNT: string = '0'; // 0%
-const BC_DURATION: string = '86400'; // 1w
+const BUFFER = '50'; // 0.5%
+const DISCOUNT = '0'; // 0%
+const BC_DURATION = '86400'; // 1w
 const BC_INCENTIVE: string = toBN(500).mul(ethers.constants.WeiPerEther).toString();
 
 const USD_ADDRESS = '0x1111111111111111111111111111111111111111';
@@ -211,7 +211,12 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   // This initialize calldata gets atomically executed against the impl logic
   // upon construction of the proxy
   const collateralizationOracleWrapperInterface = collateralizationOracleWrapperImpl.interface;
-  const calldata = collateralizationOracleWrapperInterface.encodeFunctionData('initialize', [core, collateralizationOracle.address, CR_WRAPPER_DURATION, CR_WRAPPER_DEVIATION_BPS]);
+  const calldata = collateralizationOracleWrapperInterface.encodeFunctionData('initialize', [
+    core,
+    collateralizationOracle.address,
+    CR_WRAPPER_DURATION,
+    CR_WRAPPER_DEVIATION_BPS
+  ]);
 
   const ProxyFactory = await ethers.getContractFactory('TransparentUpgradeableProxy');
   const proxy = await ProxyFactory.deploy(collateralizationOracleWrapperImpl.address, proxyAdmin, calldata);
@@ -336,4 +341,4 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     feiTribeLBPSwapper,
     pcvEquityMinter
   } as NamedContracts;
-}
+};

@@ -1,11 +1,6 @@
 import '@nomiclabs/hardhat-ethers';
 import hre, { ethers } from 'hardhat';
-import {
-  SetupUpgradeFunc,
-  ValidateUpgradeFunc,
-  RunUpgradeFunc,
-  TeardownUpgradeFunc
-} from '@custom-types/types';
+import { SetupUpgradeFunc, ValidateUpgradeFunc, RunUpgradeFunc, TeardownUpgradeFunc } from '@custom-types/types';
 
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -56,83 +51,83 @@ DAO ACTIONS:
 */
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-    const { timelock } = addresses;
-  
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [timelock]
-    });
+  const { timelock } = addresses;
+
+  await hre.network.provider.request({
+    method: 'hardhat_impersonateAccount',
+    params: [timelock]
+  });
 };
-  
+
 export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-    const { timelock: timelockAddress, rariPool19DpiPCVDeposit: rariPool19DpiPCVDepositAddress } = addresses;
-  
-    const {
-      dpiUniswapPCVDeposit,
-      uniswapPCVDeposit,
-      bondingCurve,
-      dpiBondingCurve,
-      tribeReserveStabilizer,
-      ratioPCVController,
-      feiTribeLBPSwapper,
-      core,
-      tribe
-    } = contracts;
-  
-    const oldRatioPCVController = oldContracts.ratioPCVController;
+  const { timelock: timelockAddress, rariPool19DpiPCVDeposit: rariPool19DpiPCVDepositAddress } = addresses;
 
-    // special role
-    // check via tribe contract
-    logging && console.log('Transferring TRIBE Minter role to TribeReserveStabilizer');
+  const {
+    dpiUniswapPCVDeposit,
+    uniswapPCVDeposit,
+    bondingCurve,
+    dpiBondingCurve,
+    tribeReserveStabilizer,
+    ratioPCVController,
+    feiTribeLBPSwapper,
+    core,
+    tribe
+  } = contracts;
 
-    await hre.network.provider.request({
-        method: 'hardhat_impersonateAccount',
-        params: [timelockAddress]
-    });
+  const oldRatioPCVController = oldContracts.ratioPCVController;
 
-    await tribe.setMinter(tribeReserveStabilizer.address);
+  // special role
+  // check via tribe contract
+  logging && console.log('Transferring TRIBE Minter role to TribeReserveStabilizer');
 
-    logging && console.log(`Allocating Tribe...`);
-    await core.allocateTribe(feiTribeLBPSwapper.address, toBN('1000000').mul(ethers.constants.WeiPerEther));
-}
+  await hre.network.provider.request({
+    method: 'hardhat_impersonateAccount',
+    params: [timelockAddress]
+  });
+
+  await tribe.setMinter(tribeReserveStabilizer.address);
+
+  logging && console.log(`Allocating Tribe...`);
+  await core.allocateTribe(feiTribeLBPSwapper.address, toBN('1000000').mul(ethers.constants.WeiPerEther));
+};
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-    logging && console.log(`Nothing to run in teardown function for v2Phase1 part 3.`)
-}
+  logging && console.log(`Nothing to run in teardown function for v2Phase1 part 3.`);
+};
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-    const { dai: daiAddress, dpi: dpiAddress, rai: raiAddress, fei: feiAddress, weth: wethAddress } = addresses;
-    const {
-      collateralizationOracle,
-      collateralizationOracleWrapperImpl,
-      collateralizationOracleWrapper,
-      core,
-      proxyAdmin,
-      feiTribeLBPSwapper
-    } = contracts;
+  const { dai: daiAddress, dpi: dpiAddress, rai: raiAddress, fei: feiAddress, weth: wethAddress } = addresses;
+  const {
+    collateralizationOracle,
+    collateralizationOracleWrapperImpl,
+    collateralizationOracleWrapper,
+    core,
+    proxyAdmin,
+    feiTribeLBPSwapper
+  } = contracts;
 
-    const pcvStatsCurrent = await collateralizationOracleWrapper.pcvStatsCurrent();
-    const pcvStats = await collateralizationOracle.pcvStats();
-  
-    expect(pcvStatsCurrent[0].toString()).to.be.equal(pcvStats[0].toString());
-    expect(pcvStatsCurrent[1].toString()).to.be.equal(pcvStats[1].toString());
-    expect(pcvStatsCurrent[2].toString()).to.be.equal(pcvStats[2].toString());
-    expect(pcvStatsCurrent[3].toString()).to.be.equal(pcvStats[3].toString());
-  
-    await collateralizationOracleWrapper.update();
-  
-    expect((await collateralizationOracle.getTokensInPcv()).length).to.be.equal(6);
-    expect((await collateralizationOracle.getDepositsForToken(daiAddress)).length).to.be.equal(2);
-    expect((await collateralizationOracle.getDepositsForToken(dpiAddress)).length).to.be.equal(3);
-    expect((await collateralizationOracle.getDepositsForToken(raiAddress)).length).to.be.equal(3);
-    expect((await collateralizationOracle.getDepositsForToken(wethAddress)).length).to.be.equal(6);
-    expect((await collateralizationOracle.getDepositsForToken(feiAddress)).length).to.be.equal(11);
-  
-    expect(await feiTribeLBPSwapper.CONTRACT_ADMIN_ROLE()).to.be.not.equal(await core.GOVERN_ROLE());
-  
-    expect(await proxyAdmin.getProxyImplementation(collateralizationOracleWrapper.address)).to.be.equal(
-      collateralizationOracleWrapperImpl.address
-    );
-    
-    expect(await proxyAdmin.getProxyAdmin(collateralizationOracleWrapper.address)).to.be.equal(proxyAdmin.address);
-}
+  const pcvStatsCurrent = await collateralizationOracleWrapper.pcvStatsCurrent();
+  const pcvStats = await collateralizationOracle.pcvStats();
+
+  expect(pcvStatsCurrent[0].toString()).to.be.equal(pcvStats[0].toString());
+  expect(pcvStatsCurrent[1].toString()).to.be.equal(pcvStats[1].toString());
+  expect(pcvStatsCurrent[2].toString()).to.be.equal(pcvStats[2].toString());
+  expect(pcvStatsCurrent[3].toString()).to.be.equal(pcvStats[3].toString());
+
+  await collateralizationOracleWrapper.update();
+
+  expect((await collateralizationOracle.getTokensInPcv()).length).to.be.equal(6);
+  expect((await collateralizationOracle.getDepositsForToken(daiAddress)).length).to.be.equal(2);
+  expect((await collateralizationOracle.getDepositsForToken(dpiAddress)).length).to.be.equal(3);
+  expect((await collateralizationOracle.getDepositsForToken(raiAddress)).length).to.be.equal(3);
+  expect((await collateralizationOracle.getDepositsForToken(wethAddress)).length).to.be.equal(6);
+  expect((await collateralizationOracle.getDepositsForToken(feiAddress)).length).to.be.equal(11);
+
+  expect(await feiTribeLBPSwapper.CONTRACT_ADMIN_ROLE()).to.be.not.equal(await core.GOVERN_ROLE());
+
+  expect(await proxyAdmin.getProxyImplementation(collateralizationOracleWrapper.address)).to.be.equal(
+    collateralizationOracleWrapperImpl.address
+  );
+
+  expect(await proxyAdmin.getProxyAdmin(collateralizationOracleWrapper.address)).to.be.equal(proxyAdmin.address);
+};

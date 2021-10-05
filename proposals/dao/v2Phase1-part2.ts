@@ -10,8 +10,16 @@ import {
 
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
-import { CollateralizationOracleKeeper, Core, EthBondingCurve, PCVEquityMinter, RatioPCVController, TribeReserveStabilizer, UniswapPCVDeposit } from '@custom-types/contracts';
-import { getImpersonatedSigner } from "@test/helpers";
+import {
+  CollateralizationOracleKeeper,
+  Core,
+  EthBondingCurve,
+  PCVEquityMinter,
+  RatioPCVController,
+  TribeReserveStabilizer,
+  UniswapPCVDeposit
+} from '@custom-types/contracts';
+import { getImpersonatedSigner } from '@test/helpers';
 
 const toBN = ethers.BigNumber.from;
 
@@ -66,17 +74,17 @@ DAO ACTIONS:
 */
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-    logging && console.log(`V2-Phase1 part 2 has no DAO setup actions.`)
+  logging && console.log(`V2-Phase1 part 2 has no DAO setup actions.`);
 };
-  
+
 export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-    logging && console.log(`V2-Phase1 part 2 has no DAO run actions.`)
+  logging && console.log(`V2-Phase1 part 2 has no DAO run actions.`);
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-    logging && console.log(`V2-Phase1 part 2 has no DAO teardown actions.`)
-}
+  logging && console.log(`V2-Phase1 part 2 has no DAO teardown actions.`);
+};
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-    logging && console.log(`V2-Phase1 part 2 has no DAO validate actions.`)
-}
+  logging && console.log(`V2-Phase1 part 2 has no DAO validate actions.`);
+};
