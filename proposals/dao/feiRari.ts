@@ -15,6 +15,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts)
   const seventyFiveTribe = toBN('75').mul(toBN(e18));
 
   const { autoRewardsDistributor, rewardsDistributorAdmin } = contracts;
+  const { rariRewardsDistributorDelegator } = addresses;
+
   const AUTO_REWARDS_DISTRIBUTOR_ROLE = await rewardsDistributorAdmin.AUTO_REWARDS_DISTRIBUTOR_ROLE();
 
   /// check that the contracts were wired together properly
@@ -22,6 +24,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts)
     .true;
   expect(await autoRewardsDistributor.rewardsDistributorAdmin()).to.be.equal(rewardsDistributorAdmin.address);
   expect(await rewardsDistributorAdmin.isContractAdmin(contracts.optimisticTimelock.address)).to.be.true;
+  expect(await rewardsDistributorAdmin.rewardsDistributorContract()).to.be.equal(rariRewardsDistributorDelegator);
 
   const expectedTribePerBlock = seventyFiveTribe.mul(toBN(poolAllocPoints)).div(toBN(totalAllocPoint));
   const [actualTribePerBlock, updateNeeded] = await autoRewardsDistributor.getNewRewardSpeed();
