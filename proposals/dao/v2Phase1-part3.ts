@@ -1,9 +1,8 @@
+import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '@custom-types/types';
 import '@nomiclabs/hardhat-ethers';
-import hre, { ethers } from 'hardhat';
-import { SetupUpgradeFunc, ValidateUpgradeFunc, RunUpgradeFunc, TeardownUpgradeFunc } from '@custom-types/types';
-
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
+import hre, { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 
@@ -63,18 +62,11 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
   const { timelock: timelockAddress, rariPool19DpiPCVDeposit: rariPool19DpiPCVDepositAddress } = addresses;
 
   const {
-    dpiUniswapPCVDeposit,
-    uniswapPCVDeposit,
-    bondingCurve,
-    dpiBondingCurve,
     tribeReserveStabilizer,
-    ratioPCVController,
     feiTribeLBPSwapper,
     core,
     tribe
   } = contracts;
-
-  const oldRatioPCVController = oldContracts.ratioPCVController;
 
   // special role
   // check via tribe contract
