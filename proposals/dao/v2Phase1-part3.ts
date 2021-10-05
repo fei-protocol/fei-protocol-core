@@ -90,43 +90,14 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
         params: [timelockAddress]
     });
 
-    const timelockSigner = await ethers.getSigner(timelockAddress);
-
-    await tribe.connect(timelockSigner).setMinter(tribeReserveStabilizer.address);
-
-    logging && console.log('Setting mint cap.');
-    await bondingCurve.setMintCap(ethers.constants.MaxUint256);
-
-    logging && console.log(`Withdrawing ratio from old uniswap pcv deposit to new.`);
-    await oldRatioPCVController.withdrawRatio(oldContracts.uniswapPCVDeposit.address, uniswapPCVDeposit.address, '10000'); // move 100% of PCV from old -> new
-
-    logging && console.log(`Withdrawing ratio from old dpi uniswap pcv deposit to new.`)
-    
-    await ratioPCVController.withdrawRatio(
-        oldContracts.dpiUniswapPCVDeposit.address,
-        dpiUniswapPCVDeposit.address,
-        '10000'
-    ); // move 100% of PCV from old -> new
+    await tribe.setMinter(tribeReserveStabilizer.address);
 
     logging && console.log(`Allocating Tribe...`);
     await core.allocateTribe(feiTribeLBPSwapper.address, toBN('1000000').mul(ethers.constants.WeiPerEther));
-
-    logging && console.log(`Setting allocation...`);
-    await dpiBondingCurve.setAllocation([dpiUniswapPCVDeposit.address, rariPool19DpiPCVDepositAddress], ['9000', '1000']);
 }
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-    const core = contracts.core;
-    const { uniswapPCVController } = addresses;
-    const { ratioPCVController } = oldContracts;
-  
-    await core.revokePCVController(ratioPCVController.address);
-    await core.revokePCVController(uniswapPCVController);
-    await core.revokeMinter(uniswapPCVController);
-  
-    // Deposit Uni and DPI
-    await contracts.dpiUniswapPCVDeposit.deposit();
-    await contracts.uniswapPCVDeposit.deposit();
+    logging && console.log(`Nothing to run in teardown function for v2Phase1 part 3.`)
 }
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {

@@ -10,8 +10,7 @@ import {
 
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
-import { CollateralizationOracleKeeper, Core, EthBondingCurve, PCVEquityMinter, RatioPCVController, TribeReserveStabilizer, UniswapPCVDeposit } from '@custom-types/contracts';
-import { getImpersonatedSigner } from "@test/helpers";
+import { BondingCurve, CollateralizationOracleKeeper, Core, ERC20CompoundPCVDeposit, EthBondingCurve, PCVEquityMinter, RatioPCVController, TribeReserveStabilizer, UniswapPCVDeposit } from '@custom-types/contracts';
 
 const toBN = ethers.BigNumber.from;
 
@@ -58,8 +57,9 @@ export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts
 };
 
 export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-    const timelockSigner = await getImpersonatedSigner(addresses.timelock)
 
+    const rariPool19DpiPCVDeposit = contracts.rariPool19DpiPCVDeposit as ERC20CompoundPCVDeposit
+    const oldRatioPCVController = contracts.ratioPCVController as RatioPCVController;
     const dpiUniswapPCVDeposit = contracts.dpiUniswapPCVDeposit as UniswapPCVDeposit;
     const uniswapPCVDeposit = contracts.uniswapPCVDeposit as UniswapPCVDeposit;
     const bondingCurve = contracts.bondingCurve as EthBondingCurve;
@@ -67,7 +67,8 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
     const ratioPCVController = contracts.ratioPCVController as RatioPCVController;
     const pcvEquityMinter = contracts.pcvEquityMinter as PCVEquityMinter;
     const collateralizationOracleKeeper = contracts.collateralizationOracleKeeper as CollateralizationOracleKeeper;
-    const core = contracts.core.connect(timelockSigner) as Core;
+    const dpiBondingCurve = contracts.dpiBondingCurve as BondingCurve
+    const core = contracts.core as Core;
   
     logging && console.log('Granting Minter to new BondingCurve');
     await core.grantMinter(bondingCurve.address);
@@ -89,16 +90,41 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
   
     logging && console.log('Granting Minter to new CollateralizationOracleKeeper');
     await core.grantMinter(collateralizationOracleKeeper.address);
+
+    logging && console.log(`Withdrawing ratio from old uniswap pcv deposit to new.`);
+    await oldRatioPCVController.withdrawRatio(oldContracts.uniswapPCVDeposit.address, uniswapPCVDeposit.address, '10000'); // move 100% of PCV from old -> new
+
+    logging && console.log(`Withdrawing ratio from old dpi uniswap pcv deposit to new.`)
+    await ratioPCVController.withdrawRatio(
+        oldContracts.dpiUniswapPCVDeposit.address,
+        dpiUniswapPCVDeposit.address,
+        '10000'
+    ); // move 100% of PCV from old -> new
+
+    logging && console.log(`Setting allocation...`);
+    await dpiBondingCurve.setAllocation([dpiUniswapPCVDeposit.address, rariPool19DpiPCVDeposit.address], ['9000', '1000']);
+
+    logging && console.log('Setting mint cap.');
+    await bondingCurve.setMintCap(ethers.constants.MaxUint256);
 }
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
     const core = contracts.core;
-    const { uniswapPCVDeposit, dpiUniswapPCVDeposit, bondingCurve } = oldContracts;
+    const { uniswapPCVDeposit, dpiUniswapPCVDeposit, bondingCurve, ratioPCVController, uniswapPCVController} = oldContracts;
   
     // Revoke controller permissions
     await core.revokeMinter(uniswapPCVDeposit.address);
     await core.revokeMinter(dpiUniswapPCVDeposit.address);
     await core.revokeMinter(bondingCurve.address);
+
+    // Deposit Uni and DPI
+    await contracts.dpiUniswapPCVDeposit.deposit();
+    await contracts.uniswapPCVDeposit.deposit();
+
+    // Revoke roles on old pcv controllers
+    await core.revokePCVController(ratioPCVController.address);
+    await core.revokePCVController(uniswapPCVController);
+    await core.revokeMinter(uniswapPCVController);
 }
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
