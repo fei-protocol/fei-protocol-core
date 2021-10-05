@@ -1,7 +1,7 @@
 pragma solidity ^0.8.0;
 
-import "./../staking/ITribalChief.sol";
-import "../refs/CoreRef.sol";
+import "./../ITribalChief.sol";
+import "../../refs/CoreRef.sol";
 import "./IRewardsDistributorAdmin.sol";
 
 /// @notice Controller Contract to set tribe per block in Rewards Distributor Admin on Rari
