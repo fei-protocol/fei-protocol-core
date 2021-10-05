@@ -127,6 +127,8 @@ export interface MainnetContracts {
   aaveTribeIncentivesController: ethers.Contract;
   optimisticTimelock: ethers.Contract;
   feiDAO: ethers.Contract;
+  autoRewardsDistributor: ethers.Contract;
+  rewardsDistributorAdmin: ethers.Contract;
 }
 
 export interface MainnetContractAddresses {
