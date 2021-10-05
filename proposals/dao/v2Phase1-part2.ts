@@ -1,27 +1,10 @@
-import '@nomiclabs/hardhat-ethers';
-import hre, { ethers } from 'hardhat';
 import {
-  SetupUpgradeFunc,
-  ValidateUpgradeFunc,
-  RunUpgradeFunc,
-  TeardownUpgradeFunc,
-  NamedContracts
+    RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc
 } from '@custom-types/types';
-
-import chai, { expect } from 'chai';
+import '@nomiclabs/hardhat-ethers';
+import chai from 'chai';
 import CBN from 'chai-bn';
-import {
-  CollateralizationOracleKeeper,
-  Core,
-  EthBondingCurve,
-  PCVEquityMinter,
-  RatioPCVController,
-  TribeReserveStabilizer,
-  UniswapPCVDeposit
-} from '@custom-types/contracts';
-import { getImpersonatedSigner } from '@test/helpers';
-
-const toBN = ethers.BigNumber.from;
+import { ethers } from 'hardhat';
 
 before(() => {
   chai.use(CBN(ethers.BigNumber));
