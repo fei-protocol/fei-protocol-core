@@ -20,11 +20,7 @@ describe.only('CollateralizationOracleGuardian', function () {
     const addresses = await getAddresses();
 
     // add any addresses you want to impersonate here
-    const impersonatedAddresses = [
-      addresses.userAddress,
-      addresses.guardianAddress,
-      addresses.governorAddress,
-    ];
+    const impersonatedAddresses = [addresses.userAddress, addresses.guardianAddress, addresses.governorAddress];
 
     for (const address of impersonatedAddresses) {
       impersonatedSigners[address] = await getImpersonatedSigner(address);
@@ -46,12 +42,7 @@ describe.only('CollateralizationOracleGuardian', function () {
 
     const proxyContract = await (
       await ethers.getContractFactory('TransparentUpgradeableProxy')
-    ).deploy(
-      oracleWrapper.connect(impersonatedSigners[userAddress]).address,
-      oracleWrapper.address,
-      '0x',
-      {}
-    );
+    ).deploy(oracleWrapper.connect(impersonatedSigners[userAddress]).address, oracleWrapper.address, '0x', {});
 
     // instantiate the tribalchief pointed at the proxy contract
     oracleWrapper = await ethers.getContractAt('CollateralizationOracleWrapper', proxyContract.address);
@@ -64,14 +55,14 @@ describe.only('CollateralizationOracleGuardian', function () {
     );
 
     oracleGuardian = await (
-        await ethers.getContractFactory('CollateralizationOracleGuardian')
-      ).deploy(
-        core.address,
-        oracleWrapper.address,
-        '60', // 1 min setter frequency
-        '1000' // 10% deviation allowed
-      );
-    
+      await ethers.getContractFactory('CollateralizationOracleGuardian')
+    ).deploy(
+      core.address,
+      oracleWrapper.address,
+      '60', // 1 min setter frequency
+      '1000' // 10% deviation allowed
+    );
+
     await oracleWrapper.update();
 
     // Create and grant the admin role
@@ -98,7 +89,7 @@ describe.only('CollateralizationOracleGuardian', function () {
   });
 
   describe('setCache', function () {
-    it('before time reverts', async function() {
+    it('before time reverts', async function () {
       await expectRevert(
         oracleGuardian.connect(impersonatedSigners[governorAddress]).setCache('300', '400'),
         'Timed: time not ended'
@@ -119,7 +110,7 @@ describe.only('CollateralizationOracleGuardian', function () {
       expect((await oracleWrapper.cachedUserCirculatingFei()).toString()).to.be.equal('950');
       expect((await oracleWrapper.cachedProtocolControlledValue()).toString()).to.be.equal('2900');
       expect((await oracleWrapper.cachedProtocolEquity()).toString()).to.be.equal('1950');
-    
+
       expect(await oracleGuardian.isTimeEnded()).to.be.false;
     });
 
@@ -127,7 +118,7 @@ describe.only('CollateralizationOracleGuardian', function () {
       await increaseTime(100);
 
       await expectRevert(
-        oracleGuardian.connect(impersonatedSigners[governorAddress]).setCache('2500', '950'), 
+        oracleGuardian.connect(impersonatedSigners[governorAddress]).setCache('2500', '950'),
         'CollateralizationOracleGuardian: Cached PCV exceeds deviation'
       );
     });
@@ -136,7 +127,7 @@ describe.only('CollateralizationOracleGuardian', function () {
       await increaseTime(100);
 
       await expectRevert(
-        oracleGuardian.connect(impersonatedSigners[governorAddress]).setCache('2900', '1950'), 
+        oracleGuardian.connect(impersonatedSigners[governorAddress]).setCache('2900', '1950'),
         'CollateralizationOracleGuardian: Cached User FEI exceeds deviation'
       );
     });
@@ -144,27 +135,27 @@ describe.only('CollateralizationOracleGuardian', function () {
 
   describe('calculateDeviationThresholdBasisPoints()', function () {
     it('100% difference', async function () {
-      await expect(
-        (await oracleGuardian.calculateDeviationThresholdBasisPoints('100', '0')).toString()
-      ).to.be.equal('10000');
+      await expect((await oracleGuardian.calculateDeviationThresholdBasisPoints('100', '0')).toString()).to.be.equal(
+        '10000'
+      );
     });
 
     it('50% difference', async function () {
-      await expect(
-        (await oracleGuardian.calculateDeviationThresholdBasisPoints('1000', '500')).toString()
-      ).to.be.equal('5000');
+      await expect((await oracleGuardian.calculateDeviationThresholdBasisPoints('1000', '500')).toString()).to.be.equal(
+        '5000'
+      );
     });
 
     it('33% difference', async function () {
-      await expect(
-        (await oracleGuardian.calculateDeviationThresholdBasisPoints('750', '1000')).toString()
-      ).to.be.equal('3333');
+      await expect((await oracleGuardian.calculateDeviationThresholdBasisPoints('750', '1000')).toString()).to.be.equal(
+        '3333'
+      );
     });
 
     it('0% difference', async function () {
-      await expect(
-        (await oracleGuardian.calculateDeviationThresholdBasisPoints('200', '200')).toString()
-      ).to.be.equal('0');
+      await expect((await oracleGuardian.calculateDeviationThresholdBasisPoints('200', '200')).toString()).to.be.equal(
+        '0'
+      );
     });
   });
 
