@@ -1,11 +1,11 @@
-import { expectRevert, getAddresses, getCore } from '../../helpers';
+import { expectRevert, getAddresses, getCore } from '../../../helpers';
 import { expect } from 'chai';
 import hre, { ethers, artifacts } from 'hardhat';
 import { Signer, utils } from 'ethers';
 import testHelpers from '@openzeppelin/test-helpers';
-import { Core } from '../../../types/contracts/Core';
-import { RewardsDistributorAdmin } from '../../../types/contracts/RewardsDistributorAdmin';
-import { MockRewardsDistributor } from '../../../types/contracts/MockRewardsDistributor';
+import { Core } from '../../../../types/contracts/Core';
+import { RewardsDistributorAdmin } from '../../../../types/contracts/RewardsDistributorAdmin';
+import { MockRewardsDistributor } from '../../../../types/contracts/MockRewardsDistributor';
 import { keccak256 } from 'ethers/lib/utils';
 
 const toBN = ethers.BigNumber.from;

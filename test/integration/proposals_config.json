@@ -13,5 +13,10 @@
         "deploy" : true,
         "exec" : false,
         "proposerAddress" : "0xb81cf4981Ef648aaA73F07a18B03970f04d5D8bF"
+    },
+    "feiRari": {
+        "deploy" : true,
+        "exec" : false,
+        "proposerAddress" : "0xb81cf4981Ef648aaA73F07a18B03970f04d5D8bF"
     }
 }

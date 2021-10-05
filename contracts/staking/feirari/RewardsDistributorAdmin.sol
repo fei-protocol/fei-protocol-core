@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 
-import "../refs/CoreRef.sol";
+import "../../refs/CoreRef.sol";
 import "./IRewardsDistributorAdmin.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
