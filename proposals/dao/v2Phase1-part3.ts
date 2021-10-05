@@ -1,9 +1,9 @@
-import { BalancerLBPSwapper, Core, Tribe, TribeReserveStabilizer } from '@custom-types/contracts';
+import { BalancerLBPSwapper, CollateralizationOracle, CollateralizationOracleKeeper, Core, Tribe, TribeReserveStabilizer } from '@custom-types/contracts';
 import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '@custom-types/types';
 import '@nomiclabs/hardhat-ethers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
-import hre, { ethers } from 'hardhat';
+import { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 
@@ -34,7 +34,6 @@ DEPLOY ACTIONS:
 9. PCV Equity Minter
 
 DAO ACTIONS:
-1. Grant Burner role to new TribeReserveStabilizer
 2. Grant Minter role to PCV Equity Minter
 3. Grant Minter role to Collateralization Oracle Keeper
 4. Grant Tribe Minter role to Tribe Reserve Stabilizer
@@ -43,32 +42,21 @@ DAO ACTIONS:
 
 */
 
-export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const { timelock } = addresses;
-
-  await hre.network.provider.request({
-    method: 'hardhat_impersonateAccount',
-    params: [timelock]
-  });
-};
+export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => { };
 
 export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-  const { timelock: timelockAddress, rariPool19DpiPCVDeposit: rariPool19DpiPCVDepositAddress } = addresses;
-
   const core = contracts.core as Core;
   const tribe = contracts.tribe as Tribe;
   const tribeReserveStabilizer = contracts.tribeReserveStabilizer as TribeReserveStabilizer;
   const feiTribeLBPSwapper = contracts.feiTribeLBPSwapper as BalancerLBPSwapper;
+  const collateralizationOracleKeeper = contracts.collateralizationOracleKeepr as CollateralizationOracleKeeper;
+
+  logging && console.log('Granting Minter role to new CollateralizationOracleKeeper');
+  await core.grantMinter(collateralizationOracleKeeper.address);
 
   // special role
   // check via tribe contract
   logging && console.log('Transferring TRIBE Minter role to TribeReserveStabilizer');
-
-  await hre.network.provider.request({
-    method: 'hardhat_impersonateAccount',
-    params: [timelockAddress]
-  });
-
   await tribe.setMinter(tribeReserveStabilizer.address);
 
   logging && console.log(`Allocating Tribe...`);

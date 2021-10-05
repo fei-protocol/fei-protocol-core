@@ -34,8 +34,6 @@ const SPLIT_DAO_BPS = '2000'; // 20%
 const SPLIT_LM_BPS = '2000'; // 20%
 const SPLIT_BURN_BPS = '6000'; // 60%
 
-
-
 /*
 
 V2 Phase 1 Upgrade
@@ -83,14 +81,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     feiEthPair,
     weth,
     chainlinkEthUsdOracleWrapper,
-    chainlinkRaiUsdCompositOracle,
-    chainlinkDaiUsdOracleWrapper,
     compositeOracle,
-    chainlinkDpiUsdOracleWrapper,
-    dai,
-    dpi,
-    rai,
-    proxyAdmin,
     erc20Dripper,
     balancerLBPoolFactory,
     collateralizationOracleWrapper
@@ -112,8 +103,6 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
     throw new Error('An environment variable contract address is not set');
   }
-
-
 
   const collateralizationOracleKeeperFactory = await ethers.getContractFactory('CollateralizationOracleKeeper');
   const collateralizationOracleKeeper = await collateralizationOracleKeeperFactory.deploy(
