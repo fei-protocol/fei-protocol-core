@@ -1,3 +1,24 @@
+import '@nomiclabs/hardhat-ethers';
+import hre, { ethers } from 'hardhat';
+import {
+  SetupUpgradeFunc,
+  ValidateUpgradeFunc,
+  RunUpgradeFunc,
+  TeardownUpgradeFunc,
+  NamedContracts
+} from '@custom-types/types';
+
+import chai, { expect } from 'chai';
+import CBN from 'chai-bn';
+import { CollateralizationOracleKeeper, Core, EthBondingCurve, PCVEquityMinter, RatioPCVController, TribeReserveStabilizer, UniswapPCVDeposit } from '@custom-types/contracts';
+import { getImpersonatedSigner } from "@test/helpers";
+
+const toBN = ethers.BigNumber.from;
+
+before(() => {
+  chai.use(CBN(ethers.BigNumber));
+});
+
 /*
 
 V2 Phase 1 Upgrade
@@ -26,3 +47,46 @@ DAO ACTIONS:
 8. Move PCV from old DPI Uni PCV Deposit to new
 
 */
+
+export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  const { timelock } = addresses;
+
+  await hre.network.provider.request({
+    method: 'hardhat_impersonateAccount',
+    params: [timelock]
+  });
+};
+
+export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
+    const timelockSigner = await getImpersonatedSigner(addresses.timelock)
+
+    const dpiUniswapPCVDeposit = contracts.dpiUniswapPCVDeposit as UniswapPCVDeposit;
+    const uniswapPCVDeposit = contracts.uniswapPCVDeposit as UniswapPCVDeposit;
+    const bondingCurve = contracts.bondingCurve as EthBondingCurve;
+    const tribeReserveStabilizer = contracts.tribeReserveStabilizer as TribeReserveStabilizer;
+    const ratioPCVController = contracts.ratioPCVController as RatioPCVController;
+    const pcvEquityMinter = contracts.pcvEquityMinter as PCVEquityMinter;
+    const collateralizationOracleKeeper = contracts.collateralizationOracleKeeper as CollateralizationOracleKeeper;
+    const core = contracts.core.connect(timelockSigner) as Core;
+  
+    logging && console.log('Granting Minter to new BondingCurve');
+    await core.grantMinter(bondingCurve.address);
+  
+    logging && console.log('Granting Minter to new DPI UniswapPCVDeposit');
+    await core.grantMinter(dpiUniswapPCVDeposit.address);
+  
+    logging && console.log('Granting Minter to new UniswapPCVDeposit');
+    await core.grantMinter(uniswapPCVDeposit.address);
+  
+    logging && console.log('Granting Burner to new TribeReserveStabilizer');
+    await core.grantBurner(tribeReserveStabilizer.address);
+  
+    logging && console.log('Granting PCVController to new RatioPCVController');
+    await core.grantPCVController(ratioPCVController.address);
+  
+    logging && console.log('Granting Minter to new PCVEquityMinter');
+    await core.grantMinter(pcvEquityMinter.address);
+  
+    logging && console.log('Granting Minter to new CollateralizationOracleKeeper');
+    await core.grantMinter(collateralizationOracleKeeper.address);
+}

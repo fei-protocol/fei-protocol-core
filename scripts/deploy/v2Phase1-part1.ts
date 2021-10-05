@@ -1,93 +1,157 @@
-
-
-import '@nomiclabs/hardhat-ethers';
-import hre, { ethers } from 'hardhat';
-import {
-  SetupUpgradeFunc,
-  ValidateUpgradeFunc,
-  RunUpgradeFunc,
-  TeardownUpgradeFunc
-} from '@custom-types/types';
-
-import chai, { expect } from 'chai';
-import CBN from 'chai-bn';
-import { CollateralizationOracleKeeper, Core, EthBondingCurve, PCVEquityMinter, RatioPCVController, TribeReserveStabilizer, UniswapPCVDeposit } from '@custom-types/contracts';
-import { getImpersonatedSigner } from "@test/helpers";
+import { TransactionResponse } from '@ethersproject/abstract-provider';
+import { ethers } from 'hardhat';
+import { getAllContractAddresses } from '@test/integration/setup/loadContracts';
+import { DeployUpgradeFunc, NamedContracts } from '@custom-types/types';
 
 const toBN = ethers.BigNumber.from;
 
-before(() => {
-  chai.use(CBN(ethers.BigNumber));
-});
+// Constants
+const e16: string = '0000000000000000';
+const e14: string = '00000000000000';
 
-/*
+// CR oracle wrapper
+const CR_WRAPPER_DURATION: string = '60'; // 1 minute
+const CR_WRAPPER_DEVIATION_BPS: string = '500'; // 5%
+const CR_KEEPER_INCENTIVE: string = toBN(1000).mul(ethers.constants.WeiPerEther).toString(); // 1000 FEI
 
-V2 Phase 1 Upgrade
+// Tribe reserve stabilizer
+const USD_PER_FEI_BPS: string = '10000'; // $1 FEI
+const CR_THRESHOLD_BPS: string = '10000'; // 100% CR
+const MAX_RESERVE_STABILIZER_MINT_RATE: string = toBN(1000).mul(ethers.constants.WeiPerEther).toString(); // 1000 TRIBE/s
+const RESERVE_STABILIZER_MINT_RATE: string = toBN(100).mul(ethers.constants.WeiPerEther).toString(); // 100 TRIBE/s
+const TRIBE_BUFFER_CAP: string = toBN(5000000).mul(ethers.constants.WeiPerEther).toString(); // 5M TRIBE
 
-Part 1 - Deploys the PCV deposits we have to swap out, the new ETH bonding curve, and the ratio PCV controller.
-         Grants minter roles to the pcv deposits & the bonding curve, and pcv controller role to the ratio pcv controller.
-         Sets bonding curve minting cap maximum for eth bonding curve, and updates the dpi bonding curve allocation. Finally,
-         moves pcv from the old eth & dpi uni pcv deposits into the new ones.
+// LBP swapper
+const LBP_FREQUENCY: string = '604800'; // weekly
+const MIN_LBP_SIZE: string = toBN(100000).mul(ethers.constants.WeiPerEther).toString(); // 100k FEI
 
------ PART 1 -----
+// PCV Equity Minter
+const PCV_EQUITY_MINTER_INCENTIVE: string = toBN(1000).mul(ethers.constants.WeiPerEther).toString(); // 1000 FEI
+const PCV_EQUITY_MINTER_FREQUENCY: string = '604800'; // weekly
+const PCV_EQUITY_MINTER_APR_BPS: string = '1000'; // 10%
 
-DEPLOY ACTIONS:
-1. ETH Uni PCV Deposit
-2. DPI Uni PCV Deposit
-3. ETH Bonding Curve
-4. Ratio PCV Controller
+// ERC20Splitter
+const SPLIT_DAO_BPS: string = '2000'; // 20%
+const SPLIT_LM_BPS: string = '2000'; // 20%
+const SPLIT_BURN_BPS: string = '6000'; // 60%
 
-DAO ACTIONS:
-1. Grant Minter role to new ETH BondingCurve
-2. Grant Minter role to new ETH Uni PCV Deposit
-3. Grant Minter role to new DPI Uni PCV Deposit
-4. Grant PCV Controller role to new RatioPCVController
-5. Set ETH Bonding Curve Minting Cap Max
-6. Update DPI Bonding Curve allocation
-7. Move PCV from old ETH Uni PCV Deposit to new
-8. Move PCV from old DPI Uni PCV Deposit to new
+// ETH Bonding Curve
+const SCALE: string = toBN(1).mul(ethers.constants.WeiPerEther).toString(); // 1 FEI
+const BUFFER: string = '50'; // 0.5%
+const DISCOUNT: string = '0'; // 0%
+const BC_DURATION: string = '86400'; // 1w
+const BC_INCENTIVE: string = toBN(500).mul(ethers.constants.WeiPerEther).toString();
 
-*/
+const USD_ADDRESS = '0x1111111111111111111111111111111111111111';
 
-export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const { timelock } = addresses;
+export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
+  const {
+    core,
+    fei,
+    tribe,
+    feiEthPair,
+    sushiswapDpiFei,
+    weth,
+    chainlinkEthUsdOracleWrapper,
+    chainlinkRaiUsdCompositOracle,
+    chainlinkDaiUsdOracleWrapper,
+    compositeOracle,
+    aaveEthPCVDeposit,
+    compoundEthPCVDeposit,
+    chainlinkDpiUsdOracleWrapper,
+    daiBondingCurve,
+    dpiBondingCurve,
+    raiBondingCurve,
+    ethReserveStabilizer,
+    rariPool8FeiPCVDeposit,
+    rariPool7FeiPCVDeposit,
+    rariPool6FeiPCVDeposit,
+    rariPool9FeiPCVDeposit,
+    rariPool19DpiPCVDeposit,
+    rariPool19FeiPCVDeposit,
+    rariPool18FeiPCVDeposit,
+    rariPool24FeiPCVDeposit,
+    rariPool25FeiPCVDeposit,
+    rariPool26FeiPCVDeposit,
+    rariPool27FeiPCVDeposit,
+    rariPool9RaiPCVDeposit,
+    creamFeiPCVDeposit,
+    compoundDaiPCVDeposit,
+    aaveRaiPCVDeposit,
+    ethLidoPCVDeposit,
+    dai,
+    dpi,
+    rai,
+    proxyAdmin,
+    erc20Dripper,
+    balancerLBPoolFactory
+  } = addresses;
 
-  await hre.network.provider.request({
-    method: 'hardhat_impersonateAccount',
-    params: [timelock]
+  const {
+    uniswapRouter: uniswapRouterAddress,
+    sushiswapRouter: sushiswapRouterAddress,
+    chainlinkTribeEthOracle: chainlinkTribeEthOracleAddress
+  } = getAllContractAddresses();
+
+  if (!core || !feiEthPair || !weth || !uniswapRouterAddress || !chainlinkEthUsdOracleWrapper || !compositeOracle) {
+    console.log(`core: ${core}`);
+    console.log(`feiEtiPair: ${feiEthPair}`);
+    console.log(`weth: ${weth}`);
+    console.log(`uniswapRouter: ${uniswapRouterAddress}`);
+    console.log(`chainlinkEthUsdOracleWrapper: ${chainlinkEthUsdOracleWrapper}`);
+    console.log(`compositeOracle: ${compositeOracle}`);
+
+    throw new Error('An environment variable contract address is not set');
+  }
+
+  // ----------- Replacement Contracts ---------------
+  const uniswapPCVDepositFactory = await ethers.getContractFactory('UniswapPCVDeposit');
+  const uniswapPCVDeposit = await uniswapPCVDepositFactory.deploy(
+    core,
+    feiEthPair,
+    uniswapRouterAddress,
+    chainlinkEthUsdOracleWrapper,
+    ethers.constants.AddressZero,
+    '100'
+  );
+
+  logging && console.log('ETH UniswapPCVDeposit deployed to: ', uniswapPCVDeposit.address);
+
+  const dpiUniswapPCVDepositFactory = await ethers.getContractFactory('UniswapPCVDeposit')
+  
+  const dpiUniswapPCVDeposit = await dpiUniswapPCVDepositFactory.deploy(
+    core,
+    sushiswapDpiFei,
+    sushiswapRouterAddress,
+    chainlinkDpiUsdOracleWrapper,
+    ethers.constants.AddressZero,
+    '100'
+  );
+
+  logging && console.log('DPI UniswapPCVDeposit deployed to: ', dpiUniswapPCVDeposit.address);
+
+  const bondingCurveFactory = await ethers.getContractFactory('EthBondingCurve');
+  const bondingCurve = await bondingCurveFactory.deploy(core, chainlinkEthUsdOracleWrapper, ethers.constants.AddressZero, {
+    scale: SCALE,
+    buffer: BUFFER,
+    discount: DISCOUNT,
+    pcvDeposits: [aaveEthPCVDeposit, compoundEthPCVDeposit],
+    ratios: [5000, 5000],
+    duration: BC_DURATION,
+    incentive: BC_INCENTIVE
   });
-};
 
-export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-    getImpersonatedSigner(addresses.timelock)
+  logging && console.log('Bonding curve deployed to: ', bondingCurve.address);
 
-    const dpiUniswapPCVDeposit = contracts.dpiUniswapPCVDeposit as UniswapPCVDeposit;
-    const uniswapPCVDeposit = contracts.uniswapPCVDeposit as UniswapPCVDeposit;
-    const bondingCurve = contracts.bondingCurve as EthBondingCurve;
-    const tribeReserveStabilizer = contracts.tribeReserveStabilizer as TribeReserveStabilizer;
-    const ratioPCVController = contracts.ratioPCVController as RatioPCVController;
-    const pcvEquityMinter = contracts.pcvEquityMinter as PCVEquityMinter;
-    const collateralizationOracleKeeper = contracts.collateralizationOracleKeeper as CollateralizationOracleKeeper;
-    const core = contracts.core.connect(timelockSigner) as Core;
-  
-    logging && console.log('Granting Minter to new BondingCurve');
-    await core.grantMinter(bondingCurve.address);
-  
-    logging && console.log('Granting Minter to new DPI UniswapPCVDeposit');
-    await core.grantMinter(dpiUniswapPCVDeposit.address);
-  
-    logging && console.log('Granting Minter to new UniswapPCVDeposit');
-    await core.grantMinter(uniswapPCVDeposit.address);
-  
-    logging && console.log('Granting Burner to new TribeReserveStabilizer');
-    await core.grantBurner(tribeReserveStabilizer.address);
-  
-    logging && console.log('Granting PCVController to new RatioPCVController');
-    await core.grantPCVController(ratioPCVController.address);
-  
-    logging && console.log('Granting Minter to new PCVEquityMinter');
-    await core.grantMinter(pcvEquityMinter.address);
-  
-    logging && console.log('Granting Minter to new CollateralizationOracleKeeper');
-    await core.grantMinter(collateralizationOracleKeeper.address);
+  const ratioPCVControllerFactory = await ethers.getContractFactory('RatioPCVController');
+  const ratioPCVController = await ratioPCVControllerFactory.deploy(core);
+
+  logging && console.log('Ratio PCV controller', ratioPCVController.address);
+
+  return {
+    uniswapPCVDeposit,
+    dpiUniswapPCVDeposit,
+    bondingCurve,
+    ratioPCVController
+  } as NamedContracts
 }
