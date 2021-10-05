@@ -1,0 +1,19 @@
+{
+    "proposal_title": "FIP-X: V2 Phase 3",
+    "proposal_commands": [
+        {
+            "address": "",
+            "values": "",
+            "method": "",
+            "arguments": [],
+            "description": "Grants minter role to the tribe reserve stabilizer."
+        },
+        {
+            "address": "",
+            "values": "",
+            "method": "",
+            "arguments": [],
+            "description": "Allocates trbe to the fei tribe lbp swapper."
+        }
+    ]
+}
