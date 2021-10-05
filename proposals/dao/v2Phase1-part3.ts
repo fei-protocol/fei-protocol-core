@@ -1,3 +1,4 @@
+import { BalancerLBPSwapper, Core, Tribe, TribeReserveStabilizer } from '@custom-types/contracts';
 import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '@custom-types/types';
 import '@nomiclabs/hardhat-ethers';
 import chai, { expect } from 'chai';
@@ -54,12 +55,10 @@ export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts
 export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
   const { timelock: timelockAddress, rariPool19DpiPCVDeposit: rariPool19DpiPCVDepositAddress } = addresses;
 
-  const {
-    tribeReserveStabilizer,
-    feiTribeLBPSwapper,
-    core,
-    tribe
-  } = contracts;
+  const core = contracts.core as Core;
+  const tribe = contracts.tribe as Tribe;
+  const tribeReserveStabilizer = contracts.tribeReserveStabilizer as TribeReserveStabilizer
+  const feiTribeLBPSwapper = contracts.feiTribeLBPSwapper as BalancerLBPSwapper
 
   // special role
   // check via tribe contract

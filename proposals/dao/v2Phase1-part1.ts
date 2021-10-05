@@ -47,6 +47,17 @@ DAO ACTIONS:
 6. Update DPI Bonding Curve allocation
 7. Move PCV from old ETH Uni PCV Deposit to new
 8. Move PCV from old DPI Uni PCV Deposit to new
+9. Sets allocation on the DPI bonding curve.
+10. Sets mint cap on the new eth bonding curve.
+11. Revokes the minter role from the old uniswap pcv deposit.
+12. Revokes the minter role from the old dpi uniswap pcv dpeosit.
+13. Revokes the minter role from the old eth bonding curve.
+14. Calls deposit() on the dpi uniswap pcv deposit.
+15. Calls deposit() on the old uniswap pcv deposit.
+16. Revokes the pcv controller role from the old ratio pcv controller.
+17. Revokes the pcv controller role from the old uniswap pcv controller.
+18. Revokes the minter role from the old uniswap pcv controller.
+
 */
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
@@ -108,28 +119,28 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
     ['9000', '1000']
   );
 
-  logging && console.log('Setting mint cap.');
+  logging && console.log('Setting mint cap on new eth bonding curve.');
   await bondingCurve.setMintCap(ethers.constants.MaxUint256);
-};
-
-export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-  const core = contracts.core;
-  const { uniswapPCVDeposit, dpiUniswapPCVDeposit, bondingCurve, ratioPCVController, uniswapPCVController } =
-    oldContracts;
 
   // Revoke controller permissions
-  await core.revokeMinter(uniswapPCVDeposit.address);
-  await core.revokeMinter(dpiUniswapPCVDeposit.address);
-  await core.revokeMinter(bondingCurve.address);
+  await core.revokeMinter(oldContracts.uniswapPCVDeposit.address);
+  await core.revokeMinter(oldContracts.dpiUniswapPCVDeposit.address);
+  await core.revokeMinter(oldContracts.bondingCurve.address);
 
   // Deposit Uni and DPI
   await contracts.dpiUniswapPCVDeposit.deposit();
   await contracts.uniswapPCVDeposit.deposit();
 
   // Revoke roles on old pcv controllers
-  await core.revokePCVController(ratioPCVController.address);
-  await core.revokePCVController(uniswapPCVController);
-  await core.revokeMinter(uniswapPCVController);
+  await core.revokePCVController(oldContracts.ratioPCVController.address);
+  await core.revokePCVController(oldContracts.uniswapPCVController.address);
+  await core.revokeMinter(oldContracts.uniswapPCVController.address);
 };
 
-export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {};
+export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
+  logging && console.log(`Nothing to do in teardown function of v2Phase1-part1.`)
+};
+
+export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
+  // todo  
+};
