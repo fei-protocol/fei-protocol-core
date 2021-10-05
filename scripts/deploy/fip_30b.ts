@@ -1,7 +1,7 @@
 import { DeployUpgradeFunc } from '../../types/types';
 import { ethers } from 'hardhat';
 
-const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
+export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
   const { core, feiDAO } = addresses;
 
   if (!core || !feiDAO) {
@@ -21,5 +21,3 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     feiDAOTimelock
   };
 };
-
-module.exports = { deploy };
