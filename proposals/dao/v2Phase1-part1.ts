@@ -1,12 +1,10 @@
 import {
   BondingCurve,
-  CollateralizationOracleKeeper,
   Core,
   ERC20CompoundPCVDeposit,
   EthBondingCurve,
   PCVEquityMinter,
   RatioPCVController,
-  TribeReserveStabilizer,
   UniswapPCVDeposit
 } from '@custom-types/contracts';
 import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '@custom-types/types';
@@ -45,12 +43,10 @@ DAO ACTIONS:
 6. Update DPI Bonding Curve allocation
 7. Move PCV from old ETH Uni PCV Deposit to new
 8. Move PCV from old DPI Uni PCV Deposit to new
-9. Sets allocation on the DPI bonding curve.
+9. Sets allocation on the DPI bonding curve
 11. Revokes the minter role from the old uniswap pcv deposit.
 12. Revokes the minter role from the old dpi uniswap pcv dpeosit.
 13. Revokes the minter role from the old eth bonding curve.
-14. Calls deposit() on the dpi uniswap pcv deposit.
-15. Calls deposit() on the old uniswap pcv deposit.
 16. Revokes the pcv controller role from the old ratio pcv controller.
 17. Revokes the pcv controller role from the old uniswap pcv controller.
 18. Revokes the minter role from the old uniswap pcv controller.
@@ -72,10 +68,8 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
   const dpiUniswapPCVDeposit = contracts.dpiUniswapPCVDeposit as UniswapPCVDeposit;
   const uniswapPCVDeposit = contracts.uniswapPCVDeposit as UniswapPCVDeposit;
   const bondingCurve = contracts.bondingCurve as EthBondingCurve;
-  const tribeReserveStabilizer = contracts.tribeReserveStabilizer as TribeReserveStabilizer;
   const ratioPCVController = contracts.ratioPCVController as RatioPCVController;
   const pcvEquityMinter = contracts.pcvEquityMinter as PCVEquityMinter;
-  const collateralizationOracleKeeper = contracts.collateralizationOracleKeeper as CollateralizationOracleKeeper;
   const dpiBondingCurve = contracts.dpiBondingCurve as BondingCurve;
   const core = contracts.core as Core;
 
@@ -88,17 +82,11 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
   logging && console.log('Granting Minter role to new UniswapPCVDeposit');
   await core.grantMinter(uniswapPCVDeposit.address);
 
-  logging && console.log('Granting Burner role to new TribeReserveStabilizer');
-  await core.grantBurner(tribeReserveStabilizer.address);
-
   logging && console.log('Granting PCVController role to new RatioPCVController');
   await core.grantPCVController(ratioPCVController.address);
 
   logging && console.log('Granting Minter role to new PCVEquityMinter');
   await core.grantMinter(pcvEquityMinter.address);
-
-  logging && console.log('Granting Minter role to new CollateralizationOracleKeeper');
-  await core.grantMinter(collateralizationOracleKeeper.address);
 
   logging && console.log(`Withdrawing 100% ratio from old uniswap pcv deposit to new.`);
   await oldRatioPCVController.withdrawRatio(oldContracts.uniswapPCVDeposit.address, uniswapPCVDeposit.address, '10000'); // move 100% of PCV from old -> new
@@ -110,7 +98,7 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
     '10000'
   ); // move 100% of PCV from old -> new
 
-  logging && console.log(`Setting allocation...`);
+  logging && console.log(`Setting allocation for dpi bonding curve......`);
   await dpiBondingCurve.setAllocation(
     [dpiUniswapPCVDeposit.address, rariPool19DpiPCVDeposit.address],
     ['9000', '1000']
@@ -123,10 +111,6 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
   await core.revokeMinter(oldContracts.uniswapPCVDeposit.address);
   await core.revokeMinter(oldContracts.dpiUniswapPCVDeposit.address);
   await core.revokeMinter(oldContracts.bondingCurve.address);
-
-  // Deposit Uni and DPI
-  await contracts.dpiUniswapPCVDeposit.deposit();
-  await contracts.uniswapPCVDeposit.deposit();
 
   // Revoke roles on old pcv controllers
   await core.revokePCVController(oldContracts.ratioPCVController.address);

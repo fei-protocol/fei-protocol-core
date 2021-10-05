@@ -11,6 +11,7 @@ const BUFFER = '50'; // 0.5%
 const DISCOUNT = '0'; // 0%
 const BC_DURATION = '86400'; // 1w
 const BC_INCENTIVE: string = toBN(500).mul(ethers.constants.WeiPerEther).toString();
+const MAX_BASIS_POINTS_FROM_PEG_LP = '100'; // used for dpi uniswap pcv deposit
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
   const {
@@ -63,7 +64,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     sushiswapRouterAddress,
     chainlinkDpiUsdOracleWrapper,
     ethers.constants.AddressZero,
-    '100'
+    MAX_BASIS_POINTS_FROM_PEG_LP
   );
 
   logging && console.log('DPI UniswapPCVDeposit deployed to: ', dpiUniswapPCVDeposit.address);
