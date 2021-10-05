@@ -4,14 +4,14 @@
         {
             "address": "",
             "values": "",
-            "method": "",
+            "method": "setMinter(address)",
             "arguments": [],
             "description": "Grants minter role to the tribe reserve stabilizer."
         },
         {
             "address": "",
             "values": "",
-            "method": "",
+            "method": "allocateTribe(address,uint256)",
             "arguments": [],
             "description": "Allocates trbe to the fei tribe lbp swapper."
         }
