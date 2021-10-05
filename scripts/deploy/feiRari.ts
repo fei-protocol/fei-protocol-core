@@ -1,6 +1,3 @@
-import { expect } from 'chai';
-import { utils } from 'ethers';
-import { keccak256 } from 'ethers/lib/utils';
 import hre, { ethers } from 'hardhat';
 
 async function deploy(deployAddress, addresses, logging = false) {
