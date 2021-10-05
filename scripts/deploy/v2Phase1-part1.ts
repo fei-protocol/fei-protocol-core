@@ -1,4 +1,3 @@
-import { TransactionResponse } from '@ethersproject/abstract-provider';
 import { ethers } from 'hardhat';
 import { getAllContractAddresses } from '@test/integration/setup/loadContracts';
 import { DeployUpgradeFunc, NamedContracts } from '@custom-types/types';
@@ -12,6 +11,25 @@ const DISCOUNT = '0'; // 0%
 const BC_DURATION = '86400'; // 1w
 const BC_INCENTIVE: string = toBN(500).mul(ethers.constants.WeiPerEther).toString();
 const MAX_BASIS_POINTS_FROM_PEG_LP = '100'; // used for dpi uniswap pcv deposit
+
+/*
+
+V2 Phase 1 Upgrade
+
+Part 1 - Deploys the PCV deposits we have to swap out, the new ETH bonding curve, and the ratio PCV controller.
+         Grants minter roles to the pcv deposits & the bonding curve, and pcv controller role to the ratio pcv controller.
+         Sets bonding curve minting cap maximum for eth bonding curve, and updates the dpi bonding curve allocation. Finally,
+         moves pcv from the old eth & dpi uni pcv deposits into the new ones.
+
+----- PART 1 -----
+
+DEPLOY ACTIONS:
+1. ETH Uni PCV Deposit
+2. DPI Uni PCV Deposit
+3. ETH Bonding Curve
+4. Ratio PCV Controller
+
+*/
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
   const {
@@ -28,8 +46,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   const {
     uniswapRouter: uniswapRouterAddress,
-    sushiswapRouter: sushiswapRouterAddress,
-    chainlinkTribeEthOracle: chainlinkTribeEthOracleAddress
+    sushiswapRouter: sushiswapRouterAddress
   } = getAllContractAddresses();
 
   if (!core || !feiEthPair || !weth || !uniswapRouterAddress || !chainlinkEthUsdOracleWrapper || !compositeOracle) {
@@ -44,6 +61,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   }
 
   // ----------- Replacement Contracts ---------------
+
+  logging && console.log(`0/4 Deploying ETH UniswapPCVDeposit...`)
   const uniswapPCVDepositFactory = await ethers.getContractFactory('UniswapPCVDeposit');
   const uniswapPCVDeposit = await uniswapPCVDepositFactory.deploy(
     core,
@@ -51,13 +70,13 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     uniswapRouterAddress,
     chainlinkEthUsdOracleWrapper,
     ethers.constants.AddressZero,
-    '100'
+    MAX_BASIS_POINTS_FROM_PEG_LP
   );
 
-  logging && console.log('ETH UniswapPCVDeposit deployed to: ', uniswapPCVDeposit.address);
+  logging && console.log(`1/4 ETH UniswapPCVDeposit deployed to: ${uniswapPCVDeposit.address}`);
+  logging && console.log(`Deploying DPI UniswapPCVDeposit...`)
 
   const dpiUniswapPCVDepositFactory = await ethers.getContractFactory('UniswapPCVDeposit');
-
   const dpiUniswapPCVDeposit = await dpiUniswapPCVDepositFactory.deploy(
     core,
     sushiswapDpiFei,
@@ -67,7 +86,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     MAX_BASIS_POINTS_FROM_PEG_LP
   );
 
-  logging && console.log('DPI UniswapPCVDeposit deployed to: ', dpiUniswapPCVDeposit.address);
+  logging && console.log(`2/4 DPI UniswapPCVDeposit deployed to: ${dpiUniswapPCVDeposit.address}`);
+  logging && console.log(`Deploying new ETH Bonding curve...`)
 
   const bondingCurveFactory = await ethers.getContractFactory('EthBondingCurve');
   const bondingCurve = await bondingCurveFactory.deploy(
@@ -85,12 +105,13 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     }
   );
 
-  logging && console.log('Bonding curve deployed to: ', bondingCurve.address);
+  logging && console.log(`3/4 Bonding curve deployed to: ${bondingCurve.address}`);
+  logging && console.log(`Deploying RatioPCVController...`);
 
   const ratioPCVControllerFactory = await ethers.getContractFactory('RatioPCVController');
   const ratioPCVController = await ratioPCVControllerFactory.deploy(core);
 
-  logging && console.log('Ratio PCV controller', ratioPCVController.address);
+  logging && console.log(`4/4 Ratio PCV controller deployed to ${ratioPCVController.address}`);
 
   return {
     uniswapPCVDeposit,

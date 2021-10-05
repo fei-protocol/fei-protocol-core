@@ -28,12 +28,6 @@ Part 1 - Deploys the PCV deposits we have to swap out, the new ETH bonding curve
 
 ----- PART 1 -----
 
-DEPLOY ACTIONS:
-1. ETH Uni PCV Deposit
-2. DPI Uni PCV Deposit
-3. ETH Bonding Curve
-4. Ratio PCV Controller
-
 DAO ACTIONS:
 1. Grant Minter role to new ETH BondingCurve
 2. Grant Minter role to new ETH Uni PCV Deposit
