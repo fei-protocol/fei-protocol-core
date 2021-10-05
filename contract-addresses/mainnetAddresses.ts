@@ -12,6 +12,7 @@ const MainnetAddresses = {
     address: '0xd784927ff2f95ba542bfc824c8a8a98f3495f6b5'
   },
   aaveLendingPool: { artifactName: 'ILendingPool', address: '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9' },
+  aavePassthroughETH: { artifactName: 'AavePassthroughETH', address: '0x126AD2B5341A30D8115C443B3158E7661e4faD26' },
   aaveRaiPCVDeposit: { artifactName: 'AavePCVDeposit', address: '0xd2174d78637a40448112aa6B30F9B19e6CF9d1F9' },
   aaveTribeIncentivesController: {
     artifactName: 'IAaveIncentivesController',
@@ -84,6 +85,10 @@ const MainnetAddresses = {
   compoundEthPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0xa84C8be28f3d560059339f06C6b6c5B23f53C58C'
+  },
+  compoundPassthroughETH: {
+    artifactName: 'CompoundPassthroughETH',
+    address: '0xF56B0B80ea6E986364c50177d396b988C3e41094'
   },
   core: { artifactName: 'Core', address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9' },
   creamFei: { artifactName: 'CErc20Delegator', address: '0x8C3B7a4320ba70f8239F83770c4015B5bc4e6F91' },
