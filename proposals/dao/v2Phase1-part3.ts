@@ -57,8 +57,8 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
 
   const core = contracts.core as Core;
   const tribe = contracts.tribe as Tribe;
-  const tribeReserveStabilizer = contracts.tribeReserveStabilizer as TribeReserveStabilizer
-  const feiTribeLBPSwapper = contracts.feiTribeLBPSwapper as BalancerLBPSwapper
+  const tribeReserveStabilizer = contracts.tribeReserveStabilizer as TribeReserveStabilizer;
+  const feiTribeLBPSwapper = contracts.feiTribeLBPSwapper as BalancerLBPSwapper;
 
   // special role
   // check via tribe contract

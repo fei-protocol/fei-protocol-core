@@ -1,6 +1,4 @@
-import {
-    RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc
-} from '@custom-types/types';
+import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '@custom-types/types';
 import '@nomiclabs/hardhat-ethers';
 import chai from 'chai';
 import CBN from 'chai-bn';
