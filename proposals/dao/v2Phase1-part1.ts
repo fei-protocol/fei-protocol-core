@@ -46,7 +46,6 @@ DAO ACTIONS:
 7. Move PCV from old ETH Uni PCV Deposit to new
 8. Move PCV from old DPI Uni PCV Deposit to new
 9. Sets allocation on the DPI bonding curve.
-10. Sets mint cap on the new eth bonding curve.
 11. Revokes the minter role from the old uniswap pcv deposit.
 12. Revokes the minter role from the old dpi uniswap pcv dpeosit.
 13. Revokes the minter role from the old eth bonding curve.
