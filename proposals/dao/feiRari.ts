@@ -2,11 +2,8 @@ import { expect } from 'chai';
 import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '../../types/types';
 import { ethers } from 'hardhat';
 import { getImpersonatedSigner } from '@test/helpers';
-import testHelpers, { BN, ether } from '@openzeppelin/test-helpers';
 
-const {
-  constants: { ZERO_ADDRESS }
-} = testHelpers;
+const ZERO_ADDRESS = ethers.constants.AddressZero;
 
 const toBN = ethers.BigNumber.from;
 const e18 = ethers.constants.WeiPerEther;
