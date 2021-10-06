@@ -73,11 +73,20 @@ describe('e2e', function () {
     });
 
     it('rollback succeeds', async function () {
-      const { feiDAO, feiDAOTimelock, timelock } = contracts;
+      const { feiDAO, feiDAOTimelock, timelock, aaveEthPCVDeposit } = contracts;
 
       expect(await feiDAO.timelock()).to.be.equal(feiDAOTimelock.address);
       await feiDAOTimelock.connect(await getImpersonatedSigner(contractAddresses.multisig)).rollback();
       expect(await feiDAO.timelock()).to.be.equal(timelock.address);
+
+      // Run some governance actions as timelock to make sure it still works
+      const timelockSigner = await getImpersonatedSigner(timelock.address);
+      await feiDAO.connect(timelockSigner).setProposalThreshold(11);
+      expect((await feiDAO.proposalThreshold()).toString()).to.be.equal('11');
+
+      await aaveEthPCVDeposit.connect(timelockSigner).pause();
+      expect(await aaveEthPCVDeposit.paused()).to.be.true;
+      await aaveEthPCVDeposit.connect(timelockSigner).unpause();
     });
   });
 
