@@ -1,4 +1,12 @@
-import { BalancerLBPSwapper, CollateralizationOracle, CollateralizationOracleKeeper, Core, Tribe, TribeReserveStabilizer } from '@custom-types/contracts';
+import {
+  BalancerLBPSwapper,
+  CollateralizationOracle,
+  CollateralizationOracleKeeper,
+  Core,
+  PCVEquityMinter,
+  Tribe,
+  TribeReserveStabilizer
+} from '@custom-types/contracts';
 import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '@custom-types/types';
 import '@nomiclabs/hardhat-ethers';
 import chai, { expect } from 'chai';
@@ -42,7 +50,7 @@ DAO ACTIONS:
 
 */
 
-export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => { };
+export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
 
 export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
   const core = contracts.core as Core;
@@ -50,9 +58,13 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
   const tribeReserveStabilizer = contracts.tribeReserveStabilizer as TribeReserveStabilizer;
   const feiTribeLBPSwapper = contracts.feiTribeLBPSwapper as BalancerLBPSwapper;
   const collateralizationOracleKeeper = contracts.collateralizationOracleKeepr as CollateralizationOracleKeeper;
+  const pcvEquityMinter = contracts.pcvEquityMinter as PCVEquityMinter;
 
   logging && console.log('Granting Minter role to new CollateralizationOracleKeeper');
   await core.grantMinter(collateralizationOracleKeeper.address);
+
+  logging && console.log(`Granting Minter role to new PCVEquityMinter`);
+  await core.grantMinter(pcvEquityMinter.address);
 
   // special role
   // check via tribe contract

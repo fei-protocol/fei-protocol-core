@@ -97,9 +97,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     proxyAdmin
   } = addresses;
 
-  const {
-    uniswapRouter: uniswapRouterAddress,
-  } = getAllContractAddresses();
+  const { uniswapRouter: uniswapRouterAddress } = getAllContractAddresses();
 
   if (!core || !feiEthPair || !weth || !uniswapRouterAddress || !chainlinkEthUsdOracleWrapper || !compositeOracle) {
     console.log(`core: ${core}`);
@@ -296,84 +294,84 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('staticPcvDepositWrapper: ', staticPcvDepositWrapper.address);
 
-    // ----------- Collateralization Contracts ---------------
+  // ----------- Collateralization Contracts ---------------
 
-    const constantOracleFactory = await ethers.getContractFactory('ConstantOracle');
+  const constantOracleFactory = await ethers.getContractFactory('ConstantOracle');
 
-    const zeroConstantOracle = await constantOracleFactory.deploy(core, 0);
-    logging && console.log('zeroConstantOracle: ', zeroConstantOracle.address);
-  
-    const oneConstantOracle = await constantOracleFactory.deploy(core, 10000);
-    logging && console.log('oneConstantOracle: ', oneConstantOracle.address);
-  
-    const collateralizationOracleFactory = await ethers.getContractFactory('CollateralizationOracle');
-    const collateralizationOracle = await collateralizationOracleFactory.deploy(
-      core,
-      [
-        rariPool19DpiPCVDepositWrapper.address,
-        dpiBondingCurveWrapper.address,
-        ethReserveStabilizerWrapper.address,
-        aaveRaiPCVDepositWrapper.address,
-        compoundDaiPCVDepositWrapper.address,
-        ethLidoPCVDepositWrapper.address,
-        rariPool9RaiPCVDepositWrapper.address,
-        raiBondingCurveWrapper.address,
-        daiBondingCurveWrapper.address,
-        bondingCurve,
-        dpiUniswapPCVDeposit,
-        uniswapPCVDeposit,
-        compoundEthPCVDepositWrapper.address,
-        aaveEthPCVDepositWrapper.address,
-        rariPool8FeiPCVDepositWrapper.address,
-        rariPool7FeiPCVDepositWrapper.address,
-        rariPool6FeiPCVDepositWrapper.address,
-        rariPool9FeiPCVDepositWrapper.address,
-        rariPool19FeiPCVDepositWrapper.address,
-        rariPool18FeiPCVDepositWrapper.address,
-        rariPool24FeiPCVDepositWrapper.address,
-        rariPool25FeiPCVDepositWrapper.address,
-        rariPool26FeiPCVDepositWrapper.address,
-        rariPool27FeiPCVDepositWrapper.address,
-        creamFeiPCVDepositWrapper.address,
-        staticPcvDepositWrapper.address
-      ],
-      [dai, dpi, weth, rai, fei, USD_ADDRESS],
-      [
-        chainlinkDaiUsdOracleWrapper,
-        chainlinkDpiUsdOracleWrapper,
-        chainlinkEthUsdOracleWrapper,
-        chainlinkRaiUsdCompositOracle,
-        zeroConstantOracle.address,
-        oneConstantOracle.address
-      ]
-    );
-  
-    logging && console.log('Collateralization Oracle: ', collateralizationOracle.address);
-  
-    const collateralizationOracleWrapperImplFactory = await ethers.getContractFactory('CollateralizationOracleWrapper');
-    const collateralizationOracleWrapperImpl = await collateralizationOracleWrapperImplFactory.deploy(
-      core,
-      1 // not used
-    );
-  
-    logging && console.log('Collateralization Oracle Wrapper Impl: ', collateralizationOracleWrapperImpl.address);
-  
-    // This initialize calldata gets atomically executed against the impl logic
-    // upon construction of the proxy
-    const collateralizationOracleWrapperInterface = collateralizationOracleWrapperImpl.interface;
-    const calldata = collateralizationOracleWrapperInterface.encodeFunctionData('initialize', [
-      core,
-      collateralizationOracle.address,
-      CR_WRAPPER_DURATION,
-      CR_WRAPPER_DEVIATION_BPS
-    ]);
-  
-    const ProxyFactory = await ethers.getContractFactory('TransparentUpgradeableProxy');
-    const proxy = await ProxyFactory.deploy(collateralizationOracleWrapperImpl.address, proxyAdmin, calldata);
-  
-    const collateralizationOracleWrapper = await ethers.getContractAt('CollateralizationOracleWrapper', proxy.address);
-  
-    logging && console.log('Collateralization Oracle Wrapper Proxy: ', collateralizationOracleWrapper.address);
+  const zeroConstantOracle = await constantOracleFactory.deploy(core, 0);
+  logging && console.log('zeroConstantOracle: ', zeroConstantOracle.address);
+
+  const oneConstantOracle = await constantOracleFactory.deploy(core, 10000);
+  logging && console.log('oneConstantOracle: ', oneConstantOracle.address);
+
+  const collateralizationOracleFactory = await ethers.getContractFactory('CollateralizationOracle');
+  const collateralizationOracle = await collateralizationOracleFactory.deploy(
+    core,
+    [
+      rariPool19DpiPCVDepositWrapper.address,
+      dpiBondingCurveWrapper.address,
+      ethReserveStabilizerWrapper.address,
+      aaveRaiPCVDepositWrapper.address,
+      compoundDaiPCVDepositWrapper.address,
+      ethLidoPCVDepositWrapper.address,
+      rariPool9RaiPCVDepositWrapper.address,
+      raiBondingCurveWrapper.address,
+      daiBondingCurveWrapper.address,
+      bondingCurve,
+      dpiUniswapPCVDeposit,
+      uniswapPCVDeposit,
+      compoundEthPCVDepositWrapper.address,
+      aaveEthPCVDepositWrapper.address,
+      rariPool8FeiPCVDepositWrapper.address,
+      rariPool7FeiPCVDepositWrapper.address,
+      rariPool6FeiPCVDepositWrapper.address,
+      rariPool9FeiPCVDepositWrapper.address,
+      rariPool19FeiPCVDepositWrapper.address,
+      rariPool18FeiPCVDepositWrapper.address,
+      rariPool24FeiPCVDepositWrapper.address,
+      rariPool25FeiPCVDepositWrapper.address,
+      rariPool26FeiPCVDepositWrapper.address,
+      rariPool27FeiPCVDepositWrapper.address,
+      creamFeiPCVDepositWrapper.address,
+      staticPcvDepositWrapper.address
+    ],
+    [dai, dpi, weth, rai, fei, USD_ADDRESS],
+    [
+      chainlinkDaiUsdOracleWrapper,
+      chainlinkDpiUsdOracleWrapper,
+      chainlinkEthUsdOracleWrapper,
+      chainlinkRaiUsdCompositOracle,
+      zeroConstantOracle.address,
+      oneConstantOracle.address
+    ]
+  );
+
+  logging && console.log('Collateralization Oracle: ', collateralizationOracle.address);
+
+  const collateralizationOracleWrapperImplFactory = await ethers.getContractFactory('CollateralizationOracleWrapper');
+  const collateralizationOracleWrapperImpl = await collateralizationOracleWrapperImplFactory.deploy(
+    core,
+    1 // not used
+  );
+
+  logging && console.log('Collateralization Oracle Wrapper Impl: ', collateralizationOracleWrapperImpl.address);
+
+  // This initialize calldata gets atomically executed against the impl logic
+  // upon construction of the proxy
+  const collateralizationOracleWrapperInterface = collateralizationOracleWrapperImpl.interface;
+  const calldata = collateralizationOracleWrapperInterface.encodeFunctionData('initialize', [
+    core,
+    collateralizationOracle.address,
+    CR_WRAPPER_DURATION,
+    CR_WRAPPER_DEVIATION_BPS
+  ]);
+
+  const ProxyFactory = await ethers.getContractFactory('TransparentUpgradeableProxy');
+  const proxy = await ProxyFactory.deploy(collateralizationOracleWrapperImpl.address, proxyAdmin, calldata);
+
+  const collateralizationOracleWrapper = await ethers.getContractAt('CollateralizationOracleWrapper', proxy.address);
+
+  logging && console.log('Collateralization Oracle Wrapper Proxy: ', collateralizationOracleWrapper.address);
 
   return {
     daiBondingCurveWrapper,

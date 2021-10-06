@@ -44,10 +44,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     chainlinkDpiUsdOracleWrapper
   } = addresses;
 
-  const {
-    uniswapRouter: uniswapRouterAddress,
-    sushiswapRouter: sushiswapRouterAddress
-  } = getAllContractAddresses();
+  const { uniswapRouter: uniswapRouterAddress, sushiswapRouter: sushiswapRouterAddress } = getAllContractAddresses();
 
   if (!core || !feiEthPair || !weth || !uniswapRouterAddress || !chainlinkEthUsdOracleWrapper || !compositeOracle) {
     console.log(`core: ${core}`);
@@ -62,7 +59,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   // ----------- Replacement Contracts ---------------
 
-  logging && console.log(`0/4 Deploying ETH UniswapPCVDeposit...`)
+  logging && console.log(`0/4 Deploying ETH UniswapPCVDeposit...`);
   const uniswapPCVDepositFactory = await ethers.getContractFactory('UniswapPCVDeposit');
   const uniswapPCVDeposit = await uniswapPCVDepositFactory.deploy(
     core,
@@ -74,7 +71,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   );
 
   logging && console.log(`1/4 ETH UniswapPCVDeposit deployed to: ${uniswapPCVDeposit.address}`);
-  logging && console.log(`Deploying DPI UniswapPCVDeposit...`)
+  logging && console.log(`Deploying DPI UniswapPCVDeposit...`);
 
   const dpiUniswapPCVDepositFactory = await ethers.getContractFactory('UniswapPCVDeposit');
   const dpiUniswapPCVDeposit = await dpiUniswapPCVDepositFactory.deploy(
@@ -87,7 +84,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   );
 
   logging && console.log(`2/4 DPI UniswapPCVDeposit deployed to: ${dpiUniswapPCVDeposit.address}`);
-  logging && console.log(`Deploying new ETH Bonding curve...`)
+  logging && console.log(`Deploying new ETH Bonding curve...`);
 
   const bondingCurveFactory = await ethers.getContractFactory('EthBondingCurve');
   const bondingCurve = await bondingCurveFactory.deploy(
@@ -114,11 +111,11 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   logging && console.log(`4/4 Ratio PCV controller deployed to ${ratioPCVController.address}`);
 
   // debug: deploy pcv passthroughs
-  logging && console.log(`Deploying aavePCVPassthroughFactory`)
+  logging && console.log(`Deploying aavePCVPassthroughFactory`);
   const aavePCVPassthroughFactory = await ethers.getContractFactory('AavePassthroughETH');
   const aavePassthroughETH = await aavePCVPassthroughFactory.deploy();
 
-  logging && console.log(`Deploying compoundPCVPassthroughFactory`)
+  logging && console.log(`Deploying compoundPCVPassthroughFactory`);
   const compoundPCVPassthroughFactory = await ethers.getContractFactory('CompoundPassthroughETH');
   const compoundPassthroughETH = await compoundPCVPassthroughFactory.deploy();
 
