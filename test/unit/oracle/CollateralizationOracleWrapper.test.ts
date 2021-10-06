@@ -164,7 +164,7 @@ describe('CollateralizationOracleWrapper', function () {
     });
   });
 
-  describe.only('setCache()', function () {
+  describe('setCache()', function () {
     it('should emit CachedValueUpdate', async function () {
       await expect(await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setCache('1', '2', '3'))
         .to.emit(this.oracleWrapper, 'CachedValueUpdate')
