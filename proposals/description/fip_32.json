@@ -1,0 +1,132 @@
+{
+    "proposal_title": "FIP-32: V2 - Phase 1 - Part 1",
+    "proposal_commands": [
+        {
+            "address": "core",
+            "values": "0",
+            "method": "setGenesisGroup(address)",
+            "arguments": ["0x639572471f2f318464dc01066a56867130e45E25"],
+            "description": "1/18 Call setGenesisGroup(timelockAddress) on core so that we can allocate from the timelock"
+        },
+        {
+            "address": "0xe1578B4a32Eaefcd563a9E6d0dc02a4213f673B7",
+            "values": "0",
+            "method": "setAllocation(address[],uint256[])",
+            "arguments": [["0x126AD2B5341A30D8115C443B3158E7661e4faD26","0xF56B0B80ea6E986364c50177d396b988C3e41094"],[5000,5000]],
+            "description": "2/18 Call setAllocation on the old eth bonding curve, with parameters [aavePassthroughETH, compoundPassthroughETH] and [5000, 5000]"
+        },
+        {
+            "address": "0xe1578B4a32Eaefcd563a9E6d0dc02a4213f673B7",
+            "values": "0",
+            "method": "allocate()",
+            "arguments": [],
+            "description": "3/18 Call allocate() on the old eth bonding curve"
+        },
+        {
+            "address": "core",
+            "values": "0",
+            "method": "setGenesisGroup(address)",
+            "arguments": ["0xBFfB152b9392e38CdDc275D818a3Db7FE364596b"],
+            "description": "4/18 Reset the genesis group back to the actual genesis contract."
+        },
+        {
+            "address": "core",
+            "values": "0",
+            "method": "grantMinter(address)",
+            "arguments": [],
+            "description": "5/18 Grants minter role to new eth bonding curve."
+        },
+
+        {
+            "address": "core",
+            "values": "0",
+            "method": "grantMinter(address)",
+            "arguments": [],
+            "description": "6/18 Grants minter role to new eth uniswap pcv deposit."
+        },
+        {
+            "address": "core",
+            "values": "0",
+            "method": "grantMinter(address)",
+            "arguments": [],
+            "description": "7/18 Grants minter role to new dpi uniswap pcv deposit."
+        },
+        {
+            "address": "core",
+            "values": "0",
+            "method": "grantBurner(address)",
+            "arguments": [],
+            "description": "8/18 Grants pcv controller role to the new ratio pcv controller."
+        },
+        {
+            "address": "bondingCurve",
+            "values": "0",
+            "method": "setMintCap(uint256)",
+            "arguments": [],
+            "description": "9/18 Sets ETH Bonding Curve Minting Cap Max"
+        },
+        {
+            "address": "dpibondingCurve",
+            "values": "0",
+            "method": "setAllocation(address[],uint256[])",
+            "arguments": [],
+            "description": "10/18 Set DPI Bonding Curve allocation to [dpiUniswapPCVDeposit.address, rariPool19DpiPCVDeposit.address] and ['9000', '1000']"
+        },
+        {
+            "address": "0x5d6446880fcd004c851ea8920a628c70ca101117",
+            "values": "0",
+            "method": "withdrawRatio(address,address,uint256)",
+            "arguments": [],
+            "description": "11/18 Withdraws all pcv from old eth uniswap pcv deposit and into new."
+        },
+        {
+            "address": "0x90fA375B75A58bB3A4842603f712DB285CC82Bf6",
+            "values": "0",
+            "method": "withdrawRatio(address,address,uint256)",
+            "arguments": [],
+            "description": "12/18 Withdraws all pcv from old dpi uniswap pcv dpeosit and into new."
+        },
+        {
+            "address": "core",
+            "values": "0",
+            "method": "revokeMinter(address)",
+            "arguments": [],
+            "description": "13/18 Revokes the minter role from the old eth uniswap pcv deposit."
+        },
+        {
+            "address": "core",
+            "values": "0",
+            "method": "revokeMinter(address)",
+            "arguments": [],
+            "description": "14/18 Revokes the minter role from the old dpi uniswap pcv deposit."
+        },
+        {
+            "address": "core",
+            "values": "0",
+            "method": "revokeMinter(address)",
+            "arguments": [],
+            "description": "15/18 Revokes the minter role from the old eth bonding curve."
+        },
+        {
+            "address": "core",
+            "values": "0",
+            "method": "revokePCVController(address)",
+            "arguments": [],
+            "description": "16/18 Revokes the pcv controller role from the old ratio pcv controller."
+        },
+        {
+            "address": "core",
+            "values": "0",
+            "method": "revokePCVController(address)",
+            "arguments": [],
+            "description": "17/18 Revokes the pcv controller role from the old uniswap pcv controller."
+        },
+        {
+            "address": "core",
+            "values": "0",
+            "method": "revokeMinter(address)",
+            "arguments": [],
+            "description": "18/18 Revokes the minter role from the old uniswap pcv controller."
+        }
+    ]
+}

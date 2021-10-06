@@ -381,10 +381,11 @@ const OriginalCoreABI = [
 
 V2 Phase 1 Upgrade
 
-Part 1 - Deploys the PCV deposits we have to swap out, the new ETH bonding curve, and the ratio PCV controller.
-         Grants minter roles to the pcv deposits & the bonding curve, and pcv controller role to the ratio pcv controller.
-         Sets bonding curve minting cap maximum for eth bonding curve, and updates the dpi bonding curve allocation. Finally,
-         moves pcv from the old eth & dpi uni pcv deposits into the new ones.
+Part 1 - Rescues ETH from ETH Bonding Curve, deploys the PCV deposits we have to swap out, the new ETH bonding curve, 
+         and the ratio PCV controller. Grants minter roles to the pcv deposits & the bonding curve, and pcv controller role 
+         to the ratio pcv controller. Sets bonding curve minting cap maximum for eth bonding curve, and updates the dpi bonding 
+         curve allocation. Finally, moves pcv from the old eth & dpi uni pcv deposits into the new ones, and revokes roles from
+         replaced contracts.
 
 ----- PART 1 -----
 
@@ -402,14 +403,14 @@ DAO ACTIONS:
 7. Grant Minter role to new DPI Uni PCV Deposit
 8. Grant PCV Controller role to new RatioPCVController
 
--- actions 10-13 do misc stuff -- 
+-- actions 10-12 do misc stuff -- 
 9. Set ETH Bonding Curve Minting Cap Max
-10. Set DPI Bonding Curve allocation
+10. Set DPI Bonding Curve allocation to [dpiUniswapPCVDeposit.address, rariPool19DpiPCVDeposit.address] and ['9000', '1000']
 11. Move PCV from old ETH Uni PCV Deposit to new
 12. Move PCV from old DPI Uni PCV Deposit to new
 
--- actions 14-19 revoke roles on old contracts --
-13. Revokes the minter role from the old uniswap pcv deposit.
+-- actions 13-18 revoke roles on old contracts --
+13. Revokes the minter role from the old eth uniswap pcv deposit.
 14. Revokes the minter role from the old dpi uniswap pcv deposit
 15. Revokes the minter role from the old eth bonding curve.
 16. Revokes the pcv controller role from the old ratio pcv controller.
