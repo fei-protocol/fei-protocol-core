@@ -1396,7 +1396,7 @@ describe('e2e', function () {
     });
   });
 
-  describe('AutoRewardsDistributor & RewardsDistributorAdmin', async () => {
+  describe.only('AutoRewardsDistributor & RewardsDistributorAdmin', async () => {
     let tribe: Contract;
     let tribalChief: Contract;
     let timelockAddress: string;
@@ -1445,31 +1445,39 @@ describe('e2e', function () {
         for (let i = 0; i < blocksToAdvance; i++) {
           await time.advanceBlock();
         }
-        
+
         /// add 1 as calling the harvest is another block where rewards are received
-        const pendingTribe = toBN(blocksToAdvance + 1).mul(tribePerBlock).mul(toBN(poolAllocPoints)).div(totalAllocPoint);
+        const pendingTribe = toBN(blocksToAdvance + 1)
+          .mul(tribePerBlock)
+          .mul(toBN(poolAllocPoints))
+          .div(totalAllocPoint);
 
         await expect(await stakingTokenWrapper.harvest())
           .to.emit(tribalChief, 'Harvest')
           .withArgs(stakingTokenWrapper.address, pid, pendingTribe);
 
-        expect((await tribe.balanceOf(rariRewardsDistributorDelegator)).sub(startingTribeBalance)).to.be.equal(pendingTribe);
+        expect((await tribe.balanceOf(rariRewardsDistributorDelegator)).sub(startingTribeBalance)).to.be.equal(
+          pendingTribe
+        );
       });
 
       describe('AutoRewardsDistributor', async () => {
         it('should be able to properly set rewards on the rewards distributor', async function () {
           const { rariRewardsDistributorDelegator, rariPool8Tribe } = contractAddresses;
           const seventyFiveTribe = toBN('75').mul(toBN(e18));
-          const rewardsDistributorDelegator = await ethers.getContractAt('IRewardsAdmin', rariRewardsDistributorDelegator);
+          const rewardsDistributorDelegator = await ethers.getContractAt(
+            'IRewardsAdmin',
+            rariRewardsDistributorDelegator
+          );
 
           const expectedNewCompSpeed = seventyFiveTribe.mul(toBN(poolAllocPoints)).div(toBN(totalAllocPoint));
           const [newCompSpeed, updateNeeded] = await autoRewardsDistributor.getNewRewardSpeed();
           expect(newCompSpeed).to.be.equal(expectedNewCompSpeed);
           expect(updateNeeded).to.be.true;
 
-          await expect(
-            await autoRewardsDistributor.setAutoRewardsDistribution()
-          ).to.emit(autoRewardsDistributor, 'SpeedChanged').withArgs(expectedNewCompSpeed);
+          await expect(await autoRewardsDistributor.setAutoRewardsDistribution())
+            .to.emit(autoRewardsDistributor, 'SpeedChanged')
+            .withArgs(expectedNewCompSpeed);
 
           const actualNewCompSpeed = await rewardsDistributorDelegator.compSupplySpeeds(rariPool8Tribe);
           expect(actualNewCompSpeed).to.be.equal(expectedNewCompSpeed);
@@ -1480,10 +1488,64 @@ describe('e2e', function () {
       });
 
       describe('Supply and Claim', async () => {
-        it('succeeds when users supplies tribe and then claims')
+        it('succeeds when user supplies tribe and then claims', async () => {
+          const { erc20Dripper, rariRewardsDistributorDelegator } = contractAddresses;
+          const rewardsDistributorDelegator = await ethers.getContractAt(
+            'IRewardsAdmin',
+            rariRewardsDistributorDelegator
+          );
+
+          const signer = await ethers.getSigner(erc20Dripper);
+          await hre.network.provider.request({
+            method: 'hardhat_impersonateAccount',
+            params: [erc20Dripper]
+          });
+          await forceEth(erc20Dripper);
+
+          const { rariPool8Tribe } = contracts;
+          const mintAmount = await tribe.balanceOf(erc20Dripper);
+          await tribe.connect(signer).approve(rariPool8Tribe.address, mintAmount);
+
+          await rariPool8Tribe.connect(signer).mint(mintAmount);
+
+          const blocksToAdvance = 10;
+          for (let i = 0; i < blocksToAdvance; i++) {
+            await time.advanceBlock();
+          }
+          await stakingTokenWrapper.harvest();
+
+          const startingTribeBalance = await tribe.balanceOf(erc20Dripper);
+          await rewardsDistributorDelegator.claimRewards(erc20Dripper);
+          const endingTribeBalance = await tribe.balanceOf(erc20Dripper);
+          expect(endingTribeBalance).to.be.gt(startingTribeBalance);
+        });
       });
 
-      describe('Guardian Disables Supply Rewards', async () => {});
+      describe('Guardian Disables Supply Rewards', async () => {
+        it('does not receive reward when supply incentives are moved to zero', async () => {
+          const { erc20Dripper, multisig, rariRewardsDistributorDelegator } = contractAddresses;
+          const signer = await ethers.getSigner(multisig);
+          const { rariPool8Tribe } = contracts;
+          const rewardsDistributorDelegator = await ethers.getContractAt(
+            'IRewardsAdmin',
+            rariRewardsDistributorDelegator
+          );
+
+          await rewardsDistributorAdmin.connect(signer).guardianDisableSupplySpeed(rariPool8Tribe.address);
+          expect(await rewardsDistributorDelegator.compSupplySpeeds(rariPool8Tribe.address)).to.be.equal(toBN(0));
+          await rewardsDistributorDelegator.claimRewards(erc20Dripper);
+
+          const blocksToAdvance = 10;
+          for (let i = 0; i < blocksToAdvance; i++) {
+            await time.advanceBlock();
+          }
+
+          const startingTribeBalance = await tribe.balanceOf(erc20Dripper);
+          await rewardsDistributorDelegator.claimRewards(erc20Dripper);
+          const endingTribeBalance = await tribe.balanceOf(erc20Dripper);
+          expect(endingTribeBalance).to.be.equal(startingTribeBalance);
+        });
+      });
     });
   });
 });
