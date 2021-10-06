@@ -17,7 +17,7 @@ export default async function constructProposal(proposalName: string, logging = 
   const contracts = await getAllContracts();
   const proposalBuilder = proposals.builders.alpha();
 
-  if (proposalName === 'fip_30b') {
+  if (proposalName === 'fip_31') {
     proposalBuilder.setGovernor('0x0BEF27FEB58e857046d630B2c03dFb7bae567494');
   }
 
