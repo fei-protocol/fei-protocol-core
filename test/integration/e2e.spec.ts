@@ -3,7 +3,7 @@ import { time } from '@openzeppelin/test-helpers';
 import { TestEndtoEndCoordinator } from './setup';
 import { NamedAddresses, NamedContracts } from '../../types/types';
 import { forceEth } from './setup/utils';
-import { expectApprox } from '../../test/helpers';
+import { expectApprox, getImpersonatedSigner, latestTime } from '../../test/helpers';
 import proposals from './proposals_config.json';
 import { BigNumber, Contract } from 'ethers';
 import chai from 'chai';
@@ -56,6 +56,32 @@ describe('e2e', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
+  });
+
+  describe('FeiDAOTimelock', async function () {
+    it('veto succeeds', async function () {
+      const { feiDAO, feiDAOTimelock, timelock } = contracts;
+
+      const eta = (await latestTime()) + 100000;
+      const timelockSigner = await getImpersonatedSigner(feiDAO.address);
+      const q = await feiDAOTimelock.connect(timelockSigner).queueTransaction(deployAddress, 100, '', '0x', eta);
+
+      const txHash = (await q.wait()).events[0].args[0];
+      expect(await feiDAOTimelock.queuedTransactions(txHash)).to.be.equal(true);
+
+      await feiDAOTimelock
+        .connect(await getImpersonatedSigner(deployAddress))
+        .vetoTransactions([deployAddress], [100], [''], ['0x'], [eta]);
+      expect(await feiDAOTimelock.queuedTransactions(txHash)).to.be.equal(false);
+    });
+
+    it('rollback succeeds', async function () {
+      const { feiDAO, feiDAOTimelock, timelock } = contracts;
+
+      expect(await feiDAO.timelock()).to.be.equal(feiDAOTimelock.address);
+      await feiDAOTimelock.connect(await getImpersonatedSigner(contractAddresses.multisig)).rollback();
+      expect(await feiDAO.timelock()).to.be.equal(timelock.address);
+    });
   });
 
   describe('Fei DAO', function () {
