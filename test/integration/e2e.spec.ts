@@ -1396,7 +1396,7 @@ describe('e2e', function () {
     });
   });
 
-  describe.only('AutoRewardsDistributor & RewardsDistributorAdmin', async () => {
+  describe('AutoRewardsDistributor & RewardsDistributorAdmin', async () => {
     let tribe: Contract;
     let tribalChief: Contract;
     let timelockAddress: string;
