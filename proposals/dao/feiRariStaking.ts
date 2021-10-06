@@ -19,7 +19,7 @@ Steps:
 */
 
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  await increaseTime(5000000);
+  await increaseTime(500000);
 };
 
 const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {

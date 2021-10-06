@@ -2,6 +2,15 @@
     "proposal_title": "FIP-30b Upgrade Governance Timelock",
     "proposal_commands": [
         {
+            "target": "feiDAO",
+            "values": "0",
+            "method": "updateTimelock(address)",
+            "arguments": [
+                "0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c"
+            ],
+            "description": "Update timelock to FeiDAOTimelock"            
+        },
+        {
             "target": "core",
             "values": "0",
             "method": "grantGovernor(address)",
