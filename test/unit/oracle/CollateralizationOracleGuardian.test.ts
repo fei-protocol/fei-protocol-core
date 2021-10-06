@@ -1,16 +1,15 @@
 import { getCore, getAddresses, expectRevert, increaseTime, getImpersonatedSigner } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
+import { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-import { CollateralizationOracleWrapper, MockCollateralizationOracle } from '@custom-types/contracts';
+import { CollateralizationOracleWrapper, Core, MockCollateralizationOracle } from '@custom-types/contracts';
 import { CollateralizationOracleGuardian } from '@custom-types/contracts/CollateralizationOracleGuardian';
 
-describe.only('CollateralizationOracleGuardian', function () {
+describe('CollateralizationOracleGuardian', function () {
   let userAddress: string;
-  let guardianAddress: string;
   let governorAddress: string;
   let oracleWrapper: CollateralizationOracleWrapper;
-  let core: any;
+  let core: Core;
   let oracle: MockCollateralizationOracle;
   let oracleGuardian: CollateralizationOracleGuardian;
 
@@ -28,7 +27,7 @@ describe.only('CollateralizationOracleGuardian', function () {
   });
 
   beforeEach(async function () {
-    ({ userAddress, guardianAddress, governorAddress } = await getAddresses());
+    ({ userAddress, governorAddress } = await getAddresses());
     core = await getCore();
     oracle = await (await ethers.getContractFactory('MockCollateralizationOracle')).deploy(core.address, 2);
     await oracle.set('1000', '3000');
