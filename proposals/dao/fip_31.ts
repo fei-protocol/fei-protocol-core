@@ -1,6 +1,6 @@
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
-import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc } from '../../types/types';
+import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '../../types/types';
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
 
@@ -20,7 +20,7 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
 
-export async function validate(addresses, oldContracts, contracts) {
+export const validate: ValidateUpgradeFunc= async (addresses, oldContracts, contracts) => {
   const { feiDAO, core, kashiFeiDPI, kashiFeiEth, kashiFeiTribe, kashiFeiXSushi } = contracts;
   const { timelock, feiDAOTimelock, optimisticTimelock } = addresses;
 
@@ -43,6 +43,6 @@ export async function validate(addresses, oldContracts, contracts) {
     ethers.constants.WeiPerEther.mul(2_500_000).toString()
   );
   expect((await kashiFeiXSushi.balanceOf(optimisticTimelock)).toString()).to.be.equal(
-    ethers.constants.WeiPerEther.mul(2_502_900).toString()
+    ethers.constants.WeiPerEther.mul(2_500_000).toString()
   );
 }

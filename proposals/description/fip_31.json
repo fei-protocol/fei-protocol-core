@@ -91,7 +91,7 @@
             "method": "transfer(address,uint256)",
             "arguments": [
                 "0xbC9C084a12678ef5B516561df902fdc426d95483",
-                "2502900000000000000000000"
+                "2500000000000000000000000"
             ],
             "description": "Transfer 2.5M kashi xSUSHI LP tokens to OA Timelock"
         }
