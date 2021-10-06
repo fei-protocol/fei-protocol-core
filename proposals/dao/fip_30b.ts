@@ -43,6 +43,6 @@ export async function validate(addresses, oldContracts, contracts) {
     ethers.constants.WeiPerEther.mul(2_500_000).toString()
   );
   expect((await kashiFeiXSushi.balanceOf(optimisticTimelock)).toString()).to.be.equal(
-    ethers.constants.WeiPerEther.mul(2_500_000).toString()
+    ethers.constants.WeiPerEther.mul(2_502_900).toString()
   );
 }
