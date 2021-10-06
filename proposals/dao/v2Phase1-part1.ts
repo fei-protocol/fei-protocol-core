@@ -10,6 +10,7 @@ import {
 } from '@custom-types/contracts';
 import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '@custom-types/types';
 import '@nomiclabs/hardhat-ethers';
+import { getImpersonatedSigner } from '@test/helpers';
 import chai from 'chai';
 import CBN from 'chai-bn';
 import hre, { ethers } from 'hardhat';
@@ -79,7 +80,7 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
   const dpiUniswapPCVDeposit = contracts.dpiUniswapPCVDeposit as UniswapPCVDeposit;
   const uniswapPCVDeposit = contracts.uniswapPCVDeposit as UniswapPCVDeposit;
   const newEthBondingCurve = contracts.bondingCurve as EthBondingCurve;
-  const oldEthBondingCurve = oldContracts.bondingCurve as EthBondingCurve;
+  const oldEthBondingCurve = oldContracts.bondingCurve
   const ratioPCVController = contracts.ratioPCVController as RatioPCVController;
   const pcvEquityMinter = contracts.pcvEquityMinter as PCVEquityMinter;
   const dpiBondingCurve = contracts.dpiBondingCurve as BondingCurve;
@@ -92,13 +93,25 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
   await core.setGenesisGroup(timelock.address);
 
   logging && console.log(`2/19 Setting allocation on old eth bonding curve.`)
+  logging && console.log(`aavePassthroughETH: ${addresses.aavePassthroughETH}, compoundPassthroughETH: ${addresses.compoundPassthroughETH}`)
   await oldEthBondingCurve.setAllocation(
-    [addresses.aavePassthroughETH, addresses.compoundPassthroughETH],
-    [5000, 5000]
+    [addresses.compoundPassthroughETH],
+    [10000]
   )
 
+  logging && console.log(`Sending ETH to timelock...`)
+  await (
+    await ethers.getSigners()
+  )[0].sendTransaction({value: ethers.utils.parseEther('5.0'), to: timelock.address})
+
+  // debug:
+  console.log(`Old eth bonding curve allocation: ${await oldEthBondingCurve.getAllocation()}`)
+  console.log(`Timelock is currently: ${timelock.address}`)
+  console.log(`Genesis group is currently: ${await core.genesisGroup()}`)
+  console.log(`Old eth bonding curve eth balance: ${await ethers.provider.getBalance(oldEthBondingCurve.address)}`)
+
   logging && console.log(`3/19 Calling allocate() on old eth bonding curve.`)
-  await oldEthBondingCurve.allocate();
+  await oldEthBondingCurve.connect(await getImpersonatedSigner(timelock.address)).allocate();
 
   logging && console.log(`4/19 Resetting geneisis group to actual genesis group contract.`)
   await core.setGenesisGroup(addresses.genesisGroup);
