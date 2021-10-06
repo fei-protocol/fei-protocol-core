@@ -1,8 +1,8 @@
-import hre, { ethers } from 'hardhat';
+import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc } from '../../types/types';
 
-const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {}
+export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
 
 /*
  0. Update timelock to FeiDAOTimelock
@@ -16,11 +16,11 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
  8. Transfer 2.5M kashi TRIBE LP tokens to OA Timelock
  9. Transfer 2.5M kashi xSUSHI LP tokens to OA Timelock
 */
-const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {}
+export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {};
 
-const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {}
+export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
 
-async function validate(addresses, oldContracts, contracts) {
+export async function validate(addresses, oldContracts, contracts) {
   const { feiDAO, core, kashiFeiDPI, kashiFeiEth, kashiFeiTribe, kashiFeiXSushi } = contracts;
   const { timelock, feiDAOTimelock, optimisticTimelock } = addresses;
 
@@ -46,10 +46,3 @@ async function validate(addresses, oldContracts, contracts) {
     ethers.constants.WeiPerEther.mul(2_500_000).toString()
   );
 }
-
-module.exports = {
-  setup,
-  run,
-  teardown,
-  validate
-};
