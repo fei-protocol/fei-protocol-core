@@ -113,6 +113,7 @@ const MainnetAddresses = {
   ethReserveStabilizer: { artifactName: 'EthReserveStabilizer', address: '0x17305f0e18318994a57b494078CAC866A857F7b6' },
   fei: { artifactName: 'Fei', address: '0x956F47F50A910163D8BF957Cf5846D573E7f87CA' },
   feiDAO: { artifactName: 'FeiDAO', address: '0x0BEF27FEB58e857046d630B2c03dFb7bae567494' },
+  feiDAOTimelock: { artifactName: 'FeiDAOTimelock', address: '0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c' },
   feiEthPair: { artifactName: 'IUniswapV2Pair', address: '0x94B0A3d511b6EcDb17eBF877278Ab030acb0A878' },
   feiOTCEscrow: { artifactName: 'OtcEscrow', address: '0x9B9fE1b732839a53948B02E5164c0A50fdf11e06' },
   feiRewardsDistributor: {

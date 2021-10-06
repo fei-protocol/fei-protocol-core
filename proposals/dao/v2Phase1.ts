@@ -141,7 +141,9 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts)
   await core.revokePCVController(uniswapPCVController);
 
   // Deposit Uni and DPI
+  await contracts.dpiUniswapPCVDeposit.setMaxBasisPointsFromPegLP(10000);
   await contracts.dpiUniswapPCVDeposit.deposit();
+  await contracts.uniswapPCVDeposit.setMaxBasisPointsFromPegLP(10000);
   await contracts.uniswapPCVDeposit.deposit();
 };
 

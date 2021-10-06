@@ -2,7 +2,7 @@
   "minter": [
     "bondingCurve",
     "uniswapPCVDeposit",
-    "timelock",
+    "feiDAOTimelock",
     "dpiBondingCurve",
     "daiBondingCurve",
     "dpiUniswapPCVDeposit",
@@ -16,10 +16,11 @@
   ],
   "governor": [
     "core",
-    "timelock"
+    "timelock",
+    "feiDAOTimelock"
   ],
   "pcvController": [
-    "timelock",
+    "feiDAOTimelock",
     "ratioPCVController",
     "aaveEthPCVDripController",
     "compoundEthPCVDripController"
