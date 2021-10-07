@@ -1,5 +1,5 @@
 {
-    "proposal_title": "FIP-30b Upgrade Governance Timelock",
+    "proposal_title": "FIP-31 Upgrade Governance Timelock",
     "proposal_commands": [
         {
             "target": "feiDAO",

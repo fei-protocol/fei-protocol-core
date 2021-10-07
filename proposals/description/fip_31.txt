@@ -1,9 +1,6 @@
 Summary:
 
-FEI DAO Timelock Upgrade
-
 Upgrades the FEI DAO Timelock and grants the guardian the power to veto proposals.
-Adds in functionality to roll back to the old timelock via DAO vote with a deadline of November 1st, 2021.
 
 Motivation:
 
