@@ -22,9 +22,9 @@ async function checkProposal() {
     throw new Error('DEPLOY_FILE or PROPOSAL_NUMBER env variable not set');
   }
 
-  const contracts = await getAllContracts() as NamedContracts;
+  const contracts = (await getAllContracts()) as NamedContracts;
 
-  let { feiDAO } = contracts;
+  const { feiDAO } = contracts;
 
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',

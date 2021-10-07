@@ -123,7 +123,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     uniswapPCVDeposit,
     dpiUniswapPCVDeposit,
     bondingCurve,
-    ratioPCVController,
+    ratioPCVController
     // aavePassthroughETH,
     // compoundPassthroughETH
   } as NamedContracts;

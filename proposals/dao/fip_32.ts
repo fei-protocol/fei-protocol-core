@@ -488,8 +488,11 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
     ['9000', '1000']
   );
 
-  logging && console.log(`10.5/18 DEBUG STEP ONLY IN SIMULATION: Setting max basis points from peg lp to 10k on dpiUniswapPCVDeposit`)
-  await dpiUniswapPCVDeposit.setMaxBasisPointsFromPegLP(10000)
+  logging &&
+    console.log(
+      `10.5/18 DEBUG STEP ONLY IN SIMULATION: Setting max basis points from peg lp to 10k on dpiUniswapPCVDeposit`
+    );
+  await dpiUniswapPCVDeposit.setMaxBasisPointsFromPegLP(10000);
 
   logging && console.log(`11/18 Withdrawing 100% ratio from old uniswap pcv deposit to new.`);
   logging && console.log(`OldRatioController: ${oldRatioPCVController.address}`);
@@ -530,8 +533,8 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-  const uniswapPCVDeposit: UniswapPCVDeposit = contracts.uniswapPCVDeposit as UniswapPCVDeposit; 
-  const dpiUniswapPCVDeposit: UniswapPCVDeposit = contracts.dpiUniswapPCVDeposit as UniswapPCVDeposit; 
+  const uniswapPCVDeposit: UniswapPCVDeposit = contracts.uniswapPCVDeposit as UniswapPCVDeposit;
+  const dpiUniswapPCVDeposit: UniswapPCVDeposit = contracts.dpiUniswapPCVDeposit as UniswapPCVDeposit;
 
   const timelock = addresses.timelock;
 
@@ -540,21 +543,20 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
   await forceEth(timelock);
 
   await uniswapPCVDeposit.connect(signer).setMaxBasisPointsFromPegLP(10000);
-  await uniswapPCVDeposit.deposit()
+  await uniswapPCVDeposit.deposit();
   await dpiUniswapPCVDeposit.connect(signer).setMaxBasisPointsFromPegLP(10000);
   await dpiUniswapPCVDeposit.deposit();
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-  const {oldEthBondingCurve, compoundEthPCVDeposit, aaveEthPCVDeposit, uniswapPCVDeposit, dpiUniswapPCVDeposit} = contracts; 
+  const { oldEthBondingCurve, compoundEthPCVDeposit, aaveEthPCVDeposit, uniswapPCVDeposit, dpiUniswapPCVDeposit } =
+    contracts;
 
   expect((await ethers.provider.getBalance(oldEthBondingCurve.address)).toString()).to.be.equal('0');
-  console.log(
-    {
-      compoundEthPCVDeposit: (await compoundEthPCVDeposit.balance()).toString(),
-      aaveEthPCVDeposit: (await aaveEthPCVDeposit.balance()).toString(),
-      uniswapPCVDeposit: (await uniswapPCVDeposit.balance()).toString(),
-      dpiUniswapPCVDeposit: (await dpiUniswapPCVDeposit.balance()).toString(),
-    }
-  )
+  console.log({
+    compoundEthPCVDeposit: (await compoundEthPCVDeposit.balance()).toString(),
+    aaveEthPCVDeposit: (await aaveEthPCVDeposit.balance()).toString(),
+    uniswapPCVDeposit: (await uniswapPCVDeposit.balance()).toString(),
+    dpiUniswapPCVDeposit: (await dpiUniswapPCVDeposit.balance()).toString()
+  });
 };

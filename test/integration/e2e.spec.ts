@@ -139,7 +139,8 @@ describe('e2e', function () {
       expect((await contracts.daiBondingCurve.duration()).toString()).to.be.equal('11');
     });
   });
-  describe.skip('PCV Equity Minter + LBP', async function () { // re-enable this once the pcv equity minter is actually being deployed
+  describe.skip('PCV Equity Minter + LBP', async function () {
+    // re-enable this once the pcv equity minter is actually being deployed
     it('mints appropriate amount and swaps', async function () {
       const {
         pcvEquityMinter,
@@ -179,7 +180,8 @@ describe('e2e', function () {
     });
   });
 
-  describe.skip('Collateralization Oracle', async function () { // re-enable this once the collateralization oracle is actually being deployed
+  describe.skip('Collateralization Oracle', async function () {
+    // re-enable this once the collateralization oracle is actually being deployed
     it('exempting an address removes from PCV stats', async function () {
       const { collateralizationOracle, compoundEthPCVDeposit } = contracts;
 
@@ -195,7 +197,8 @@ describe('e2e', function () {
     });
   });
 
-  describe.skip('Collateralization Oracle Keeper', async function () { // re-enable this once the collateralization oracle keeper is actually deployed
+  describe.skip('Collateralization Oracle Keeper', async function () {
+    // re-enable this once the collateralization oracle keeper is actually deployed
     it('can only call when deviation or time met', async function () {
       const { staticPcvDepositWrapper, collateralizationOracleWrapper, collateralizationOracleKeeper, fei } = contracts;
 
@@ -237,7 +240,8 @@ describe('e2e', function () {
     });
   });
 
-  describe.skip('TribeReserveStabilizer', async function () { // re-enable once the tribe reserve stabilizer is deployed
+  describe.skip('TribeReserveStabilizer', async function () {
+    // re-enable once the tribe reserve stabilizer is deployed
     it('mint TRIBE', async function () {
       const { tribeReserveStabilizer, tribe } = contracts;
       const tribeSupply = await tribe.totalSupply();
@@ -276,7 +280,8 @@ describe('e2e', function () {
     });
   });
 
-  describe.skip('TRIBE Splitter', async function () { // re-enable once the tribe splitter is deployed
+  describe.skip('TRIBE Splitter', async function () {
+    // re-enable once the tribe splitter is deployed
     it('splits TRIBE 3 ways', async function () {
       const { tribeSplitter, tribeReserveStabilizer, tribe, erc20Dripper, core } = contracts;
 
@@ -476,23 +481,23 @@ describe('e2e', function () {
         const fuseBalanceBefore = await fusePCVDeposit.balance();
         const allocatedDpi = await bondingCurve.balance();
 
-        console.log(`DPI to Allocate: ${(Number(allocatedDpi)/1e18).toFixed(0)}`)
-        console.log(`DPI Uniswap PCV Deposit Balance Before: ${(Number(pcvDepositBefore)/1e18).toFixed(0)}`)
-        console.log(`Fuse Balance Before ${(Number(fuseBalanceBefore)/1e18).toFixed(0)}`)
+        console.log(`DPI to Allocate: ${(Number(allocatedDpi) / 1e18).toFixed(0)}`);
+        console.log(`DPI Uniswap PCV Deposit Balance Before: ${(Number(pcvDepositBefore) / 1e18).toFixed(0)}`);
+        console.log(`Fuse Balance Before ${(Number(fuseBalanceBefore) / 1e18).toFixed(0)}`);
 
-        console.log(`DPI Bonding curve: ${bondingCurve.address}`)
+        console.log(`DPI Bonding curve: ${bondingCurve.address}`);
         await bondingCurve.allocate();
 
         const curveBalanceAfter = await bondingCurve.balance();
-        console.log(`DPI Bonding Curve Balance After: ${(Number(curveBalanceAfter)/1e18).toFixed(0)}`)
+        console.log(`DPI Bonding Curve Balance After: ${(Number(curveBalanceAfter) / 1e18).toFixed(0)}`);
         await expectApprox(curveBalanceAfter, toBN(0), '100');
 
         const pcvDepositAfter = await uniswapPCVDeposit.balance();
-        console.log(`DPI Uniswap PCV Deposit Balance After: ${(Number(pcvDepositAfter)/1e18).toFixed(0)}`)
+        console.log(`DPI Uniswap PCV Deposit Balance After: ${(Number(pcvDepositAfter) / 1e18).toFixed(0)}`);
         await expectApprox(pcvDepositAfter.sub(pcvDepositBefore), allocatedDpi.mul(toBN(9)).div(toBN(10)), '10000');
 
         const fuseBalanceAfter = await fusePCVDeposit.balance();
-        console.log(`Fuse Balance After: ${(Number(fuseBalanceAfter)/1e18).toFixed(0)}`)
+        console.log(`Fuse Balance After: ${(Number(fuseBalanceAfter) / 1e18).toFixed(0)}`);
         await expectApprox(fuseBalanceAfter.sub(fuseBalanceBefore), allocatedDpi.div(toBN(10)), '10000');
       });
     });
