@@ -16,5 +16,5 @@ Finally, moves pcv from the old eth & dpi uni pcv deposits into the�
 
 Uses some adapter contracts to move the PCV from the old ETH BondingCurve into Aave and Compound
 
-Forum Discussion: 
+Forum Discussion: https://tribe.fei.money/t/fip-32-pre-v2-contract-upgrades/3538
 Code: https://github.com/fei-protocol/fei-protocol-core/pull/219
