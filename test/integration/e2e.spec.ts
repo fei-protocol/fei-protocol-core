@@ -396,7 +396,7 @@ describe('e2e', function () {
         const currentPrice = toBN((await bondingCurve.getCurrentPrice())[0]);
 
         // expected = amountIn * oracle * price (Note: there is an edge case when crossing scale where this is not true)
-        const expected = ethAmount.mul(oraclePrice).mul(currentPrice).div(tenPow18).div(tenPow18);        
+        const expected = ethAmount.mul(oraclePrice).mul(currentPrice).div(tenPow18).div(tenPow18);
         await bondingCurve.purchase(deployAddress, ethAmount, { value: ethAmount });
         const feiBalanceAfter = await fei.balanceOf(deployAddress);
         const expectedFinalBalance = feiBalanceBefore.add(expected);

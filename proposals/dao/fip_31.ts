@@ -20,7 +20,7 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
 
-export const validate: ValidateUpgradeFunc= async (addresses, oldContracts, contracts) => {
+export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
   const { feiDAO, core, kashiFeiDPI, kashiFeiEth, kashiFeiTribe, kashiFeiXSushi } = contracts;
   const { timelock, feiDAOTimelock, optimisticTimelock } = addresses;
 
@@ -45,4 +45,4 @@ export const validate: ValidateUpgradeFunc= async (addresses, oldContracts, cont
   expect((await kashiFeiXSushi.balanceOf(optimisticTimelock)).toString()).to.be.equal(
     ethers.constants.WeiPerEther.mul(2_500_000).toString()
   );
-}
+};
