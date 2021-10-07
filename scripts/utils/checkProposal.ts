@@ -24,7 +24,7 @@ async function checkProposal() {
 
   const contracts = await getAllContracts();
 
-  const { feiDAO } = contracts;
+  let { feiDAO } = contracts;
 
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
@@ -62,7 +62,8 @@ async function checkProposal() {
     await time.advanceBlockTo(Number(endBlock.toString()));
 
     console.log('Queuing');
-    await feiDAO.queue(proposalNo);
+
+    await feiDAO['queue(uint256)'](proposalNo);
   } else {
     console.log('Already queued');
   }
@@ -72,12 +73,13 @@ async function checkProposal() {
   await time.increase(86400); // 1 day in seconds
 
   console.log('Executing');
-  await feiDAO.execute(proposalNo);
+  await feiDAO['execute(uint256)'](proposalNo);
   console.log('Success');
 
   // Get the upgrade setup, run and teardown scripts
-  const proposalFuncs: UpgradeFuncs = await import(`../../proposals/dao/${proposalName}`);
+  //const proposalFuncs: UpgradeFuncs = await import(`../../proposals/dao/${proposalName}`);
 
+  /*
   const contractAddresses = getAllContractAddresses();
 
   console.log('Teardown');
@@ -95,6 +97,7 @@ async function checkProposal() {
     contracts as unknown as NamedContracts,
     true
   );
+  */
 }
 
 checkProposal()
