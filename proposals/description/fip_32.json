@@ -1,5 +1,5 @@
 {
-    "proposal_title": "FIP-32: V2 - Phase 1 - Part 1",
+    "proposal_title": "FIP-32: Pre-V2 Contract Upgrades",
     "proposal_commands": [
         {
             "target": "coreV1",
