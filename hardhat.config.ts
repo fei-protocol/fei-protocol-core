@@ -55,7 +55,7 @@ export default {
       forking: enableMainnetForking
         ? {
             url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-            blockNumber: 13354217
+            blockNumber: 13370300
           }
         : undefined
     },
@@ -113,7 +113,7 @@ export default {
   },
 
   proposals: {
-    governor: '0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B',
+    governor: '0x0BEF27FEB58e857046d630B2c03dFb7bae567494',
     votingToken: '0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B'
   }
 } as HardhatUserConfig;
