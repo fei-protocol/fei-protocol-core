@@ -8,17 +8,7 @@ const ZERO_ADDRESS = ethers.constants.AddressZero;
 const toBN = ethers.BigNumber.from;
 const e18 = ethers.constants.WeiPerEther;
 
-const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const { multisig, rariRewardsDistributorDelegator } = addresses;
-  const { rewardsDistributorAdmin } = contracts;
-
-  const guardian = await getImpersonatedSigner(multisig);
-  const rewardsDistributorDelegator = await ethers.getContractAt('IRewardsAdmin', rariRewardsDistributorDelegator);
-
-  await rewardsDistributorDelegator.connect(guardian)._setPendingAdmin(rewardsDistributorAdmin.address);
-  expect(await rewardsDistributorDelegator.pendingAdmin()).to.be.equal(rewardsDistributorAdmin.address);
-  await rewardsDistributorAdmin._acceptAdmin();
-};
+const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
 
 const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {};
 const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
