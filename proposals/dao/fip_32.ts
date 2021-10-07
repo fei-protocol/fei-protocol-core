@@ -9,13 +9,12 @@ import {
 import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '@custom-types/types';
 import '@nomiclabs/hardhat-ethers';
 import { getImpersonatedSigner } from '@test/helpers';
-import chai from 'chai';
+import { forceEth } from '@test/integration/setup/utils';
+import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import hre, { ethers } from 'hardhat';
 
-before(() => {
-  chai.use(CBN(ethers.BigNumber));
-});
+chai.use(CBN(ethers.BigNumber));
 
 // Genesis functionality (among other stuff) was removed in commit 195415, but obviously not removed from the on-chain core
 // Thus we need the original ABI
@@ -489,8 +488,11 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
     ['9000', '1000']
   );
 
-  logging && console.log(`10.5/18 DEBUG STEP ONLY IN SIMULATION: Setting max basis points from peg lp to 10k on dpiUniswapPCVDeposit`)
-  await dpiUniswapPCVDeposit.setMaxBasisPointsFromPegLP(10000)
+  logging &&
+    console.log(
+      `10.5/18 DEBUG STEP ONLY IN SIMULATION: Setting max basis points from peg lp to 10k on dpiUniswapPCVDeposit`
+    );
+  await dpiUniswapPCVDeposit.setMaxBasisPointsFromPegLP(10000);
 
   logging && console.log(`11/18 Withdrawing 100% ratio from old uniswap pcv deposit to new.`);
   logging && console.log(`OldRatioController: ${oldRatioPCVController.address}`);
@@ -531,9 +533,30 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-  logging && console.log(`Nothing to do in teardown function of v2Phase1-part1.`);
+  const uniswapPCVDeposit: UniswapPCVDeposit = contracts.uniswapPCVDeposit as UniswapPCVDeposit;
+  const dpiUniswapPCVDeposit: UniswapPCVDeposit = contracts.dpiUniswapPCVDeposit as UniswapPCVDeposit;
+
+  const timelock = addresses.timelock;
+
+  const signer = await getImpersonatedSigner(timelock);
+
+  await forceEth(timelock);
+
+  await uniswapPCVDeposit.connect(signer).setMaxBasisPointsFromPegLP(10000);
+  await uniswapPCVDeposit.deposit();
+  await dpiUniswapPCVDeposit.connect(signer).setMaxBasisPointsFromPegLP(10000);
+  await dpiUniswapPCVDeposit.deposit();
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-  // todo
+  const { oldEthBondingCurve, compoundEthPCVDeposit, aaveEthPCVDeposit, uniswapPCVDeposit, dpiUniswapPCVDeposit } =
+    contracts;
+
+  expect((await ethers.provider.getBalance(oldEthBondingCurve.address)).toString()).to.be.equal('0');
+  console.log({
+    compoundEthPCVDeposit: (await compoundEthPCVDeposit.balance()).toString(),
+    aaveEthPCVDeposit: (await aaveEthPCVDeposit.balance()).toString(),
+    uniswapPCVDeposit: (await uniswapPCVDeposit.balance()).toString(),
+    dpiUniswapPCVDeposit: (await dpiUniswapPCVDeposit.balance()).toString()
+  });
 };
