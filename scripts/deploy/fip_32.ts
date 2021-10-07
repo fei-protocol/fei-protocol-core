@@ -111,6 +111,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   logging && console.log(`4/4 Ratio PCV controller deployed to ${ratioPCVController.address}`);
 
   // debug: deploy pcv passthroughs
+  /*
   logging && console.log(`Deploying aavePCVPassthroughFactory`);
   const aavePCVPassthroughFactory = await ethers.getContractFactory('AavePassthroughETH');
   const aavePassthroughETH = await aavePCVPassthroughFactory.deploy();
@@ -118,13 +119,12 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   logging && console.log(`Deploying compoundPCVPassthroughFactory`);
   const compoundPCVPassthroughFactory = await ethers.getContractFactory('CompoundPassthroughETH');
   const compoundPassthroughETH = await compoundPCVPassthroughFactory.deploy();
+  */
 
   return {
     uniswapPCVDeposit,
     dpiUniswapPCVDeposit,
     bondingCurve,
-    ratioPCVController,
-    aavePassthroughETH,
-    compoundPassthroughETH
+    ratioPCVController
   } as NamedContracts;
 };

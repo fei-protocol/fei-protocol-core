@@ -489,6 +489,9 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
     ['9000', '1000']
   );
 
+  logging && console.log(`10.5/18 DEBUG STEP ONLY IN SIMULATION: Setting max basis points from peg lp to 10k on dpiUniswapPCVDeposit`)
+  await dpiUniswapPCVDeposit.setMaxBasisPointsFromPegLP(10000)
+
   logging && console.log(`11/18 Withdrawing 100% ratio from old uniswap pcv deposit to new.`);
   logging && console.log(`OldRatioController: ${oldRatioPCVController.address}`);
   logging && console.log(`NewRatioController: ${ratioPCVController.address}`);

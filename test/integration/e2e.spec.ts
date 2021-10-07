@@ -464,7 +464,7 @@ describe('e2e', function () {
         expect(feiBalanceAfter.eq(expectedFinalBalance)).to.be.true;
       });
 
-      it.skip('should transfer allocation from dpi bonding curve to the uniswap deposit and Fuse', async function () {
+      it('should transfer allocation from dpi bonding curve to the uniswap deposit and Fuse', async function () {
         const bondingCurve = contracts.dpiBondingCurve;
         const uniswapPCVDeposit = contracts.dpiUniswapPCVDeposit;
         const fusePCVDeposit = contracts.indexCoopFusePoolDpiPCVDeposit;
@@ -474,21 +474,26 @@ describe('e2e', function () {
 
         const pcvDepositBefore = await uniswapPCVDeposit.balance();
         const fuseBalanceBefore = await fusePCVDeposit.balance();
-
         const allocatedDpi = await bondingCurve.balance();
 
-        console.log(`DPI to Allocate: ${allocatedDpi}`)
+        console.log(`DPI to Allocate: ${(Number(allocatedDpi)/1e18).toFixed(0)}`)
+        console.log(`DPI Uniswap PCV Deposit Balance Before: ${(Number(pcvDepositBefore)/1e18).toFixed(0)}`)
+        console.log(`Fuse Balance Before ${(Number(fuseBalanceBefore)/1e18).toFixed(0)}`)
 
+        console.log(`DPI Bonding curve: ${bondingCurve.address}`)
         await bondingCurve.allocate();
 
         const curveBalanceAfter = await bondingCurve.balance();
+        console.log(`DPI Bonding Curve Balance After: ${(Number(curveBalanceAfter)/1e18).toFixed(0)}`)
         await expectApprox(curveBalanceAfter, toBN(0), '100');
 
         const pcvDepositAfter = await uniswapPCVDeposit.balance();
-        await expectApprox(pcvDepositAfter.sub(pcvDepositBefore), allocatedDpi.mul(toBN(9)).div(toBN(10)), '10');
+        console.log(`DPI Uniswap PCV Deposit Balance After: ${(Number(pcvDepositAfter)/1e18).toFixed(0)}`)
+        await expectApprox(pcvDepositAfter.sub(pcvDepositBefore), allocatedDpi.mul(toBN(9)).div(toBN(10)), '10000');
 
         const fuseBalanceAfter = await fusePCVDeposit.balance();
-        await expectApprox(fuseBalanceAfter.sub(fuseBalanceBefore), allocatedDpi.div(toBN(10)), '100');
+        console.log(`Fuse Balance After: ${(Number(fuseBalanceAfter)/1e18).toFixed(0)}`)
+        await expectApprox(fuseBalanceAfter.sub(fuseBalanceBefore), allocatedDpi.div(toBN(10)), '10000');
       });
     });
 
