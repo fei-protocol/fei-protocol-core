@@ -6,13 +6,10 @@
     "dpiBondingCurve",
     "daiBondingCurve",
     "dpiUniswapPCVDeposit",
-    "raiBondingCurve",
-    "pcvEquityMinter",
-    "collateralizationOracleKeeper"
+    "raiBondingCurve"
   ],
   "burner": [
-    "ethReserveStabilizer",
-    "tribeReserveStabilizer"
+    "ethReserveStabilizer"
   ],
   "governor": [
     "core",

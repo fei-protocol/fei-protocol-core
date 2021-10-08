@@ -1,12 +1,12 @@
 {
-    "feiRariStaking" : {
-        "deploy" : false,
-        "exec" : false,
+    "fip_30": {
+        "deploy": false,
+        "exec": true,
         "proposerAddress" : "0xb81cf4981Ef648aaA73F07a18B03970f04d5D8bF"
     },
-    "v2Phase1": {
-        "deploy" : true,
-        "exec" : false,
+    "fip_32": {
+        "deploy" : false,
+        "exec" : true,
         "proposerAddress" : "0xb81cf4981Ef648aaA73F07a18B03970f04d5D8bF"
     },
     "feiRari": {

@@ -16,6 +16,7 @@ export default async function constructProposal(proposalName: string, logging = 
 
   const contracts = await getAllContracts();
   const proposalBuilder = proposals.builders.alpha();
+  proposalBuilder.maxActions = 40;
 
   for (let i = 0; i < proposalInfo.proposal_commands.length; i += 1) {
     const command = proposalInfo.proposal_commands[i];
