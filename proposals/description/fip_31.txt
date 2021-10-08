@@ -1,0 +1,16 @@
+Summary:
+
+Upgrades the FEI DAO Timelock and grants the guardian the power to veto proposals.
+
+Motivation:
+
+Given the scope of Fei V2, an upgraded security model seems advisable to protect the DAO
+and its assets. Giving the guardian the ability to veto proposals is a good way to protect
+against unintended consequences, whether by malicious actors or good-faith accidents.
+
+An optional rollback to the old timelock is added if needed, with a deadline of November 1st, 2021.
+This rollback can be activated by either the guardian or the DAO itself.
+
+Forum Discussion: https://tribe.fei.money/t/fip-31-fei-dao-timelock-upgrade/3537
+
+Code: https://github.com/fei-protocol/fei-protocol-core/tree/feat/FIP-30b

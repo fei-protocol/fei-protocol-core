@@ -4,7 +4,7 @@ import { ethers } from 'hardhat';
 import { Core, FeiDAOTimelock } from '@custom-types/contracts';
 import { Signer } from '@ethersproject/abstract-signer';
 
-describe.only('FeiDAOTimelock', function () {
+describe('FeiDAOTimelock', function () {
   let userAddress: string;
   let guardianAddress: string;
   let governorAddress: string;
