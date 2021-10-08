@@ -227,6 +227,14 @@ const MainnetAddresses = {
     address: '0x37349d9cc523D28e6aBFC03fc5F44879bC8BfFD9'
   },
   rariPool8Tribe: { artifactName: 'CErc20Delegator', address: '0xFd3300A9a74b3250F1b2AbC12B47611171910b07' },
+  rewardsDistributorAdmin: {
+    artifactName: 'RewardsDistributorAdmin',
+    address: '0x4e979E8b136Cd7BdEBB83ea50a599C3BED1e15c0'
+  },
+  autoRewardsDistributor: {
+    artifactName: 'AutoRewardsDistributor',
+    address: '0x61be49dfbd869a601fea076e1a1379903e61a895'
+  },
   rariPool8TribeIrm: { artifactName: 'unknown', address: '0x075538650a9c69ac8019507a7dd1bd879b12c1d7' },
   rariPool9Fei: { artifactName: 'CErc20Delegator', address: '0x11A9F6ae6B36B4b820777D05B90Cd6CCCB1CDa31' },
   rariPool9FeiPCVDeposit: {
