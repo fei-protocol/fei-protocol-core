@@ -2,15 +2,6 @@
     "proposal_title": "FIP-31 Upgrade Governance Timelock",
     "proposal_commands": [
         {
-            "target": "feiDAO",
-            "values": "0",
-            "method": "updateTimelock(address)",
-            "arguments": [
-                "0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c"
-            ],
-            "description": "Update timelock to FeiDAOTimelock"            
-        },
-        {
             "target": "core",
             "values": "0",
             "method": "grantGovernor(address)",
@@ -94,6 +85,15 @@
                 "2500000000000000000000000"
             ],
             "description": "Transfer 2.5M kashi xSUSHI LP tokens to OA Timelock"
+        },
+        {
+            "target": "feiDAO",
+            "values": "0",
+            "method": "updateTimelock(address)",
+            "arguments": [
+                "0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c"
+            ],
+            "description": "Update timelock to FeiDAOTimelock"            
         }
     ]
 }

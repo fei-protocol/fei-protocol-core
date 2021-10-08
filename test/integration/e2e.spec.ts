@@ -3,7 +3,7 @@ import { time } from '@openzeppelin/test-helpers';
 import { TestEndtoEndCoordinator } from './setup';
 import { NamedAddresses, NamedContracts } from '../../types/types';
 import { forceEth } from './setup/utils';
-import { expectApprox, getImpersonatedSigner, latestTime } from '../../test/helpers';
+import { expectApprox, getImpersonatedSigner, increaseTime, latestTime } from '../../test/helpers';
 import proposals from './proposals_config.json';
 import { BigNumber, Contract } from 'ethers';
 import chai from 'chai';
@@ -382,7 +382,7 @@ describe('e2e', function () {
   });
 
   describe('BondingCurve', async () => {
-    describe.skip('ETH', async function () {
+    describe('ETH', async function () {
       beforeEach(async function () {
         // Seed bonding curve with eth and update oracle
         const bondingCurve = contracts.bondingCurve;
@@ -799,7 +799,7 @@ describe('e2e', function () {
       );
       expect(await optimisticTimelock.isOperationPending(hash)).to.be.true;
 
-      await time.increase('500000');
+      await increaseTime(500000);
       await optimisticTimelock
         .connect(await ethers.getSigner(tribalChiefOptimisticMultisig))
         .execute(
@@ -810,7 +810,7 @@ describe('e2e', function () {
           '0x0000000000000000000000000000000000000000000000000000000000000001'
         );
 
-      expect(await tribalChief.tribePerBlock()).to.be.bignumber.equal('1');
+      expect(await tribalChief.tribePerBlock()).to.be.bignumber.equal(toBN('1'));
       expect(await optimisticTimelock.isOperationDone(hash)).to.be.true;
 
       await tribalChief.updateBlockReward(oldBlockReward);
