@@ -85,6 +85,12 @@ async function setNextBlockTimestamp(time: number) {
   });
 }
 
+async function latestTime(): Promise<number> {
+  const { timestamp } = await ethers.provider.getBlock(await ethers.provider.getBlockNumber());
+
+  return timestamp as number;
+}
+
 async function mine() {
   await hre.network.provider.request({
     method: 'evm_mine'
@@ -140,6 +146,7 @@ export {
   getCore,
   getAddresses,
   increaseTime,
+  latestTime,
   expectApprox,
   deployDevelopmentWeth,
   getImpersonatedSigner,
