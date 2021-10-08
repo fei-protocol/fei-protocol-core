@@ -66,7 +66,7 @@ export type Config = {
 };
 
 export interface MainnetContracts {
-  core: ethers.Contract;
+  [core: string]: ethers.Contract;
   tribe: ethers.Contract;
   fei: ethers.Contract;
   uniswapPCVDeposit: ethers.Contract;
