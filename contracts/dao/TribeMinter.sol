@@ -102,7 +102,7 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
     }
 
     /// @notice remove an address from the lockedTribe excluded list
-    function removeLockedTribeAddress(address lockedTribeAddress) external onlyGovernorOrAdmin {
+    function removeLockedTribeAddress(address lockedTribeAddress) external override onlyGovernorOrAdmin {
         _lockedTribeAddresses.remove(lockedTribeAddress);
         emit RemoveLockedTribeAddress(lockedTribeAddress);
     }
