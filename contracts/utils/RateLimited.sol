@@ -26,6 +26,7 @@ abstract contract RateLimited is CoreRef {
     /// @notice the buffer at the timestamp of lastBufferUsedTime
     uint256 private _bufferStored;
 
+    event BufferUsed(uint256 amountUsed, uint256 bufferRemaining);
     event BufferCapUpdate(uint256 oldBufferCap, uint256 newBufferCap);
     event RateLimitPerSecondUpdate(uint256 oldRateLimitPerSecond, uint256 newRateLimitPerSecond);
 
@@ -43,13 +44,13 @@ abstract contract RateLimited is CoreRef {
     }
 
     /// @notice set the rate limit per second
-    function setRateLimitPerSecond(uint256 newRateLimitPerSecond) external onlyGovernorOrAdmin {
+    function setRateLimitPerSecond(uint256 newRateLimitPerSecond) external virtual onlyGovernorOrAdmin {
         require(newRateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND, "RateLimited: rateLimitPerSecond too high");
         _setRateLimitPerSecond(newRateLimitPerSecond);
     }
 
     /// @notice set the buffer cap
-    function setbufferCap(uint256 newBufferCap) external onlyGovernorOrAdmin {
+    function setBufferCap(uint256 newBufferCap) external virtual onlyGovernorOrAdmin {
         _setBufferCap(newBufferCap);
     }
 
@@ -82,6 +83,8 @@ abstract contract RateLimited is CoreRef {
 
         lastBufferUsedTime = block.timestamp;
 
+        emit BufferUsed(usedAmount, _bufferStored);
+
         return usedAmount;
     }
 
@@ -103,9 +106,13 @@ abstract contract RateLimited is CoreRef {
 
         // Cap the existing stored buffer
         if (_bufferStored > newBufferCap) {
-            _bufferStored = newBufferCap;
+            _resetBuffer();
         }
 
         emit BufferCapUpdate(oldBufferCap, newBufferCap);
+    }
+
+    function _resetBuffer() internal {
+        _bufferStored = bufferCap;
     }
 }
