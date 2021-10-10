@@ -9,8 +9,6 @@ library Constants {
 
     uint256 public constant ONE_YEAR = 365.25 days;
 
-    bytes32 public constant NULL = 0x0;
-    
     /// @notice WETH9 address
     IWETH public constant WETH = IWETH(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 
