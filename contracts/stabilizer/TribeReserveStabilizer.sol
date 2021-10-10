@@ -3,12 +3,9 @@ pragma solidity ^0.8.4;
 
 import "./ReserveStabilizer.sol";
 import "./ITribeReserveStabilizer.sol";
+import "../dao/ITribeMinter.sol";
 import "../utils/RateLimited.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
-
-interface ITribeMinter {
-    function mint(address to, uint256 amount) external;
-}
 
 /// @title implementation for a TRIBE Reserve Stabilizer
 /// @author Fei Protocol
