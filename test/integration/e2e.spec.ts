@@ -516,23 +516,23 @@ describe('e2e', function () {
         const fuseBalanceBefore = await fusePCVDeposit.balance();
         const allocatedDpi = await bondingCurve.balance();
 
-        console.log(`DPI to Allocate: ${(Number(allocatedDpi) / 1e18).toFixed(0)}`);
-        console.log(`DPI Uniswap PCV Deposit Balance Before: ${(Number(pcvDepositBefore) / 1e18).toFixed(0)}`);
-        console.log(`Fuse Balance Before ${(Number(fuseBalanceBefore) / 1e18).toFixed(0)}`);
+        doLogging && console.log(`DPI to Allocate: ${(Number(allocatedDpi) / 1e18).toFixed(0)}`);
+        doLogging && console.log(`DPI Uniswap PCV Deposit Balance Before: ${(Number(pcvDepositBefore) / 1e18).toFixed(0)}`);
+        doLogging && console.log(`Fuse Balance Before ${(Number(fuseBalanceBefore) / 1e18).toFixed(0)}`);
 
-        console.log(`DPI Bonding curve: ${bondingCurve.address}`);
+        doLogging && console.log(`DPI Bonding curve: ${bondingCurve.address}`);
         await bondingCurve.allocate();
 
         const curveBalanceAfter = await bondingCurve.balance();
-        console.log(`DPI Bonding Curve Balance After: ${(Number(curveBalanceAfter) / 1e18).toFixed(0)}`);
+        doLogging && console.log(`DPI Bonding Curve Balance After: ${(Number(curveBalanceAfter) / 1e18).toFixed(0)}`);
         await expectApprox(curveBalanceAfter, toBN(0), '100');
 
         const pcvDepositAfter = await uniswapPCVDeposit.balance();
-        console.log(`DPI Uniswap PCV Deposit Balance After: ${(Number(pcvDepositAfter) / 1e18).toFixed(0)}`);
+        doLogging && console.log(`DPI Uniswap PCV Deposit Balance After: ${(Number(pcvDepositAfter) / 1e18).toFixed(0)}`);
         await expectApprox(pcvDepositAfter.sub(pcvDepositBefore), allocatedDpi.mul(toBN(9)).div(toBN(10)), '10000');
 
         const fuseBalanceAfter = await fusePCVDeposit.balance();
-        console.log(`Fuse Balance After: ${(Number(fuseBalanceAfter) / 1e18).toFixed(0)}`);
+        doLogging && console.log(`Fuse Balance After: ${(Number(fuseBalanceAfter) / 1e18).toFixed(0)}`);
         await expectApprox(fuseBalanceAfter.sub(fuseBalanceBefore), allocatedDpi.div(toBN(10)), '10000');
       });
     });
@@ -745,7 +745,6 @@ describe('e2e', function () {
   describe('Optimistic Approval', async () => {
     beforeEach(async function () {
       const { tribalChiefOptimisticMultisig, timelock } = contractAddresses;
-      const { tribalChiefOptimisticTimelock } = contracts;
 
       await hre.network.provider.request({
         method: 'hardhat_impersonateAccount',
@@ -756,8 +755,6 @@ describe('e2e', function () {
         method: 'hardhat_impersonateAccount',
         params: [timelock]
       });
-
-      const signer = (await ethers.getSigners())[0];
 
       await (
         await ethers.getSigner(timelock)
@@ -1059,15 +1056,7 @@ describe('e2e', function () {
 
         const userSigner = await ethers.getSigner(userAddresses[i]);
 
-        /*expectEvent(*/
-        await tribalChief.connect(userSigner).deposit(pid, totalStaked, lockBlockAmount); /*,
-          'Deposit', {
-            user: userAddresses[i],
-            pid: toBN(pid.toString()),
-            amount: toBN(totalStaked),
-            depositID: currentIndex,
-          },
-        );*/
+        await tribalChief.connect(userSigner).deposit(pid, totalStaked, lockBlockAmount);
 
         await hre.network.provider.request({
           method: 'hardhat_stopImpersonatingAccount',
@@ -1165,7 +1154,6 @@ describe('e2e', function () {
           params: [feiTribeLPTokenOwnerNumberFive]
         });
 
-        // const { feiTribePairAddress }  = contractAddresses;
         uniFeiTribe = contracts.feiTribePair;
         tribalChief = contracts.tribalChief;
         tribePerBlock = await tribalChief.tribePerBlock();
@@ -1367,7 +1355,6 @@ describe('e2e', function () {
 
   describe('ERC20Dripper', async () => {
     let tribalChief: Contract;
-    let tribePerBlock: any;
     let tribe: Contract;
     let dripper: Contract;
     let timelockAddress: string;
@@ -1376,7 +1363,6 @@ describe('e2e', function () {
     before(async function () {
       dripper = contracts.erc20Dripper;
       tribalChief = contracts.tribalChief;
-      tribePerBlock = await tribalChief.tribePerBlock();
       tribe = contracts.tribe;
       timelockAddress = contractAddresses.feiDAOTimelock;
       await forceEth(timelockAddress);
@@ -1453,7 +1439,6 @@ describe('e2e', function () {
   describe('FeiRari Tribe Staking Rewards', async () => {
     let tribe: Contract;
     let tribalChief: Contract;
-    let timelockAddress: string;
     let tribePerBlock: BigNumber;
     let autoRewardsDistributor: Contract;
     let rewardsDistributorAdmin: Contract;
@@ -1518,13 +1503,19 @@ describe('e2e', function () {
     describe('AutoRewardsDistributor', async () => {
       it('should be able to properly set rewards on the rewards distributor', async function () {
         const { rariRewardsDistributorDelegator, rariPool8Tribe } = contractAddresses;
-        const seventyFiveTribe = toBN('75').mul(toBN(e18));
+        const tribalChief = await contracts.tribalChief;
+
+        const elevenTribe = toBN('11').mul(toBN(e18));
+        
+        const tribeReward = await tribalChief.tribePerBlock();
+        await tribalChief.updateBlockReward(elevenTribe);
+
         const rewardsDistributorDelegator = await ethers.getContractAt(
           'IRewardsAdmin',
           rariRewardsDistributorDelegator
         );
 
-        const expectedNewCompSpeed = seventyFiveTribe.mul(toBN(poolAllocPoints)).div(toBN(totalAllocPoint));
+        const expectedNewCompSpeed = elevenTribe.mul(toBN(poolAllocPoints)).div(toBN(totalAllocPoint));
         const [newCompSpeed, updateNeeded] = await autoRewardsDistributor.getNewRewardSpeed();
         expect(newCompSpeed).to.be.equal(expectedNewCompSpeed);
         expect(updateNeeded).to.be.true;
@@ -1538,6 +1529,9 @@ describe('e2e', function () {
 
         const actualNewCompSpeedRDA = await rewardsDistributorAdmin.compSupplySpeeds(rariPool8Tribe);
         expect(actualNewCompSpeedRDA).to.be.equal(expectedNewCompSpeed);
+
+        // reset
+        await tribalChief.updateBlockReward(tribeReward);
       });
     });
 
@@ -1578,7 +1572,7 @@ describe('e2e', function () {
     describe('Guardian Disables Supply Rewards', async () => {
       it('does not receive reward when supply incentives are moved to zero', async () => {
         const { erc20Dripper, multisig, rariRewardsDistributorDelegator } = contractAddresses;
-        const signer = await ethers.getSigner(multisig);
+        const signer = await getImpersonatedSigner(multisig);
         const { rariPool8Tribe } = contracts;
         const rewardsDistributorDelegator = await ethers.getContractAt(
           'IRewardsAdmin',
