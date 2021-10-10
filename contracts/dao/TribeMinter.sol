@@ -34,12 +34,16 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 contract TribeMinter is ITribeMinter, RateLimited, Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
 
+    /// @notice the max inflation in TRIBE circulating supply per year in basis points (1/10000)
     uint256 public override annualMaxInflationBasisPoints;
 
     EnumerableSet.AddressSet internal _lockedTribeAddresses;
 
     /// @notice Tribe Reserve Stabilizer constructor
     /// @param _core Fei Core to reference
+    /// @param _annualMaxInflationBasisPoints the max inflation in TRIBE circulating supply per year in basis points (1/10000)
+    /// @param _owner the owner, capable of changing the tribe minter address.
+    /// @param _lockedTribeAddressList the initial list of locked TRIBE holding contract addresses
     constructor(
         address _core,
         uint256 _annualMaxInflationBasisPoints,
