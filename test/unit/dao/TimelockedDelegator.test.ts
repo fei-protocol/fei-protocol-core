@@ -131,7 +131,9 @@ describe('TimelockedDelegator', function () {
         const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1);
         await expect(
           await this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, this.quarterAmount)
-        ).to.emit(this.delegator, 'Release').withArgs(beneficiaryAddress1, beneficiaryAddress1, this.quarterAmount);
+        )
+          .to.emit(this.delegator, 'Release')
+          .withArgs(beneficiaryAddress1, beneficiaryAddress1, this.quarterAmount);
       });
 
       it('releases tokens', async function () {

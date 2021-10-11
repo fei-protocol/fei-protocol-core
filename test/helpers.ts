@@ -144,44 +144,45 @@ const ZERO_ADDRESS = ethers.constants.AddressZero;
 const MAX_UINT256 = ethers.constants.MaxUint256;
 
 const balance = {
-  current : async (address: string) => {
+  current: async (address: string) => {
     const balance = await ethers.provider.getBalance(address);
     return balance;
   }
-}
+};
 
 const time = {
-  latest : async () => latestTime(),
+  latest: async () => latestTime(),
 
   latestBlock: async () => await ethers.provider.getBlockNumber(),
 
-  increase : async (duration: number | string | BigNumberish) => {
-    const durationBN = ethers.BigNumber.from(duration)
-  
+  increase: async (duration: number | string | BigNumberish) => {
+    const durationBN = ethers.BigNumber.from(duration);
+
     if (durationBN.lt(ethers.constants.Zero)) throw Error(`Cannot increase time by a negative amount (${duration})`);
-  
+
     await hre.network.provider.send('evm_increaseTime', [durationBN.toNumber()]);
-  
-    await hre.network.provider.send("evm_mine")
+
+    await hre.network.provider.send('evm_mine');
   },
 
   increaseTo: async (target: number | string | BigNumberish) => {
     const targetBN = ethers.BigNumber.from(target);
-  
+
     const now = ethers.BigNumber.from(await time.latest());
-  
+
     if (targetBN.lt(now)) throw Error(`Cannot increase current time (${now}) to a moment in the past (${target})`);
     const diff = targetBN.sub(now);
     return time.increase(diff);
   },
 
-  advanceBlockTo: async(target: number | string | BigNumberish) => {
+  advanceBlockTo: async (target: number | string | BigNumberish) => {
     target = ethers.BigNumber.from(target);
-  
-    const currentBlock = (await time.latestBlock());
+
+    const currentBlock = await time.latestBlock();
     const start = Date.now();
     let notified;
-    if (target.lt(currentBlock)) throw Error(`Target block #(${target}) is lower than current block #(${currentBlock})`);
+    if (target.lt(currentBlock))
+      throw Error(`Target block #(${target}) is lower than current block #(${currentBlock})`);
     while (ethers.BigNumber.from(await time.latestBlock()).lt(target)) {
       if (!notified && Date.now() - start >= 5000) {
         notified = true;
@@ -192,10 +193,10 @@ const time = {
   },
 
   advanceBlock: async () => {
-    await hre.network.provider.send("evm_setNextBlockTimestamp", [Date.now()])
-    await hre.network.provider.send("evm_mine")
+    await hre.network.provider.send('evm_setNextBlockTimestamp', [Date.now()]);
+    await hre.network.provider.send('evm_mine');
   }
-}
+};
 
 export {
   // utils

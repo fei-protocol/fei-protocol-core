@@ -504,9 +504,7 @@ describe('BondingCurve', function () {
 
     describe('No Purchase', function () {
       it('reverts', async function () {
-        await expect(
-          this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate()
-        ).to.be.revertedWith(
+        await expect(this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate()).to.be.revertedWith(
           'BondingCurve: Not enough PCV held'
         );
       });
