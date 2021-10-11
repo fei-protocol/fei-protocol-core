@@ -4,7 +4,7 @@ import { balance, time } from '@openzeppelin/test-helpers';
 import chai from 'chai';
 import CBN from 'chai-bn';
 import { Core, Core__factory } from '@custom-types/contracts';
-import { Signer, } from 'ethers';
+import { Signer } from 'ethers';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
@@ -36,7 +36,7 @@ async function getAddresses() {
     minterAddress,
     burnerAddress,
     guardianAddress
-  ] = (await ethers.getSigners()).map(signer => signer.address);
+  ] = (await ethers.getSigners()).map((signer) => signer.address);
 
   return {
     userAddress,

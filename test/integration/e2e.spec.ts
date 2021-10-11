@@ -517,7 +517,8 @@ describe('e2e', function () {
         const allocatedDpi = await bondingCurve.balance();
 
         doLogging && console.log(`DPI to Allocate: ${(Number(allocatedDpi) / 1e18).toFixed(0)}`);
-        doLogging && console.log(`DPI Uniswap PCV Deposit Balance Before: ${(Number(pcvDepositBefore) / 1e18).toFixed(0)}`);
+        doLogging &&
+          console.log(`DPI Uniswap PCV Deposit Balance Before: ${(Number(pcvDepositBefore) / 1e18).toFixed(0)}`);
         doLogging && console.log(`Fuse Balance Before ${(Number(fuseBalanceBefore) / 1e18).toFixed(0)}`);
 
         doLogging && console.log(`DPI Bonding curve: ${bondingCurve.address}`);
@@ -528,7 +529,8 @@ describe('e2e', function () {
         await expectApprox(curveBalanceAfter, toBN(0), '100');
 
         const pcvDepositAfter = await uniswapPCVDeposit.balance();
-        doLogging && console.log(`DPI Uniswap PCV Deposit Balance After: ${(Number(pcvDepositAfter) / 1e18).toFixed(0)}`);
+        doLogging &&
+          console.log(`DPI Uniswap PCV Deposit Balance After: ${(Number(pcvDepositAfter) / 1e18).toFixed(0)}`);
         await expectApprox(pcvDepositAfter.sub(pcvDepositBefore), allocatedDpi.mul(toBN(9)).div(toBN(10)), '10000');
 
         const fuseBalanceAfter = await fusePCVDeposit.balance();
@@ -1506,7 +1508,7 @@ describe('e2e', function () {
         const tribalChief = await contracts.tribalChief;
 
         const elevenTribe = toBN('11').mul(toBN(e18));
-        
+
         const tribeReward = await tribalChief.tribePerBlock();
         await tribalChief.updateBlockReward(elevenTribe);
 

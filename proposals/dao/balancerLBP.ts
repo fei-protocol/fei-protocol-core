@@ -1,6 +1,6 @@
 import { ethers } from 'hardhat';
 import { time, expectApprox } from '../../test/helpers';
-import { expect } from 'chai'
+import { expect } from 'chai';
 
 const e18 = '000000000000000000';
 
@@ -18,7 +18,7 @@ async function run(addresses, oldContracts, contracts, logging = false) {
     balancerLBPSwapper
   } = contracts;
 
-  const accounts = await ethers.getSigners()
+  const accounts = await ethers.getSigners();
   const { timelockAddress } = addresses;
 
   const role = await balancerLBPSwapper.CONTRACT_ADMIN_ROLE();

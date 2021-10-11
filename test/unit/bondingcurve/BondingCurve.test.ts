@@ -140,7 +140,7 @@ describe('BondingCurve', function () {
           .approve(this.bondingCurve.address, this.purchaseAmount);
         await expect(
           this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount)
-        ).to.be.revertedWith('Pausable: paused')
+        ).to.be.revertedWith('Pausable: paused');
       });
     });
 
@@ -496,9 +496,9 @@ describe('BondingCurve', function () {
     describe('Paused', function () {
       it('reverts', async function () {
         await this.bondingCurve.connect(impersonatedSigners[governorAddress]).pause();
-        await expect(
-          this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate()
-        ).to.be.revertedWith('Pausable: paused');
+        await expect(this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate()).to.be.revertedWith(
+          'Pausable: paused'
+        );
       });
     });
 
@@ -518,7 +518,9 @@ describe('BondingCurve', function () {
           .connect(impersonatedSigners[userAddress])
           .approve(this.bondingCurve.address, this.purchaseAmount);
         await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount);
-        await expect(this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate()).to.be.revertedWith('BondingCurve: Not enough PCV held');
+        await expect(this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate()).to.be.revertedWith(
+          'BondingCurve: Not enough PCV held'
+        );
       });
     });
 
@@ -557,9 +559,9 @@ describe('BondingCurve', function () {
       describe('Second Allocate', async function () {
         describe('No Purchase', function () {
           it('reverts', async function () {
-            await expect(
-              this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate()
-            ).to.be.revertedWith('BondingCurve: Not enough PCV held');
+            await expect(this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate()).to.be.revertedWith(
+              'BondingCurve: Not enough PCV held'
+            );
           });
         });
 
@@ -669,9 +671,9 @@ describe('BondingCurve', function () {
 
   describe('PCV Allocation', function () {
     it('Mismatched lengths revert', async function () {
-      await expect(
-        this.bondingCurve.checkAllocation([this.pcvDeposit1.address], [9000, 1000])
-      ).to.be.revertedWith('PCVSplitter: PCV Deposits and ratios are different lengths');
+      await expect(this.bondingCurve.checkAllocation([this.pcvDeposit1.address], [9000, 1000])).to.be.revertedWith(
+        'PCVSplitter: PCV Deposits and ratios are different lengths'
+      );
     });
 
     it('Incomplete allocation rule reverts', async function () {
@@ -731,9 +733,9 @@ describe('BondingCurve', function () {
     });
 
     it('Non-governor set reverts', async function () {
-      await expect(
-        this.bondingCurve.connect(impersonatedSigners[userAddress]).setScale(100)
-      ).to.be.revertedWith('CoreRef: Caller is not a governor');
+      await expect(this.bondingCurve.connect(impersonatedSigners[userAddress]).setScale(100)).to.be.revertedWith(
+        'CoreRef: Caller is not a governor'
+      );
     });
   });
 
@@ -747,15 +749,15 @@ describe('BondingCurve', function () {
     });
 
     it('Governor set outside range reverts', async function () {
-      await expect(
-        this.bondingCurve.connect(impersonatedSigners[governorAddress]).setBuffer(10000)
-      ).to.be.revertedWith('BondingCurve: Buffer exceeds or matches granularity');
+      await expect(this.bondingCurve.connect(impersonatedSigners[governorAddress]).setBuffer(10000)).to.be.revertedWith(
+        'BondingCurve: Buffer exceeds or matches granularity'
+      );
     });
 
     it('Non-governor set reverts', async function () {
-      await expect(
-        this.bondingCurve.connect(impersonatedSigners[userAddress]).setBuffer(1000)
-      ).to.be.revertedWith('CoreRef: Caller is not a governor');
+      await expect(this.bondingCurve.connect(impersonatedSigners[userAddress]).setBuffer(1000)).to.be.revertedWith(
+        'CoreRef: Caller is not a governor'
+      );
     });
   });
 
@@ -775,9 +777,9 @@ describe('BondingCurve', function () {
     });
 
     it('Non-governor set reverts', async function () {
-      await expect(
-        this.bondingCurve.connect(impersonatedSigners[userAddress]).setDiscount(1000)
-      ).to.be.revertedWith('CoreRef: Caller is not a governor');
+      await expect(this.bondingCurve.connect(impersonatedSigners[userAddress]).setDiscount(1000)).to.be.revertedWith(
+        'CoreRef: Caller is not a governor'
+      );
     });
   });
 
@@ -791,9 +793,9 @@ describe('BondingCurve', function () {
     });
 
     it('Non-governor set reverts', async function () {
-      await expect(
-        this.bondingCurve.connect(impersonatedSigners[userAddress]).setCore(userAddress)
-      ).to.be.revertedWith('CoreRef: Caller is not a governor');
+      await expect(this.bondingCurve.connect(impersonatedSigners[userAddress]).setCore(userAddress)).to.be.revertedWith(
+        'CoreRef: Caller is not a governor'
+      );
     });
   });
 
@@ -849,9 +851,9 @@ describe('BondingCurve', function () {
       });
 
       it('Non-governor reverts', async function () {
-        await expect(
-          this.bondingCurve.connect(impersonatedSigners[userAddress]).pause()
-        ).to.be.revertedWith('CoreRef: Caller is not a guardian or governor');
+        await expect(this.bondingCurve.connect(impersonatedSigners[userAddress]).pause()).to.be.revertedWith(
+          'CoreRef: Caller is not a guardian or governor'
+        );
       });
     });
 
@@ -867,9 +869,9 @@ describe('BondingCurve', function () {
       });
 
       it('Non-governor reverts', async function () {
-        await expect(
-          this.bondingCurve.connect(impersonatedSigners[userAddress]).unpause()
-        ).to.be.revertedWith('CoreRef: Caller is not a guardian or governor');
+        await expect(this.bondingCurve.connect(impersonatedSigners[userAddress]).unpause()).to.be.revertedWith(
+          'CoreRef: Caller is not a guardian or governor'
+        );
       });
     });
   });

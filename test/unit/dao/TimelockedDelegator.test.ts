@@ -324,9 +324,9 @@ describe('TimelockedDelegator', function () {
           params: [beneficiaryAddress1]
         });
         const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1);
-        await expect(
-          this.delegator.connect(beneficiaryAddress1Signer).delegate(userAddress, 10001)
-        ).to.be.revertedWith('TimelockedDelegator: Not enough Tribe');
+        await expect(this.delegator.connect(beneficiaryAddress1Signer).delegate(userAddress, 10001)).to.be.revertedWith(
+          'TimelockedDelegator: Not enough Tribe'
+        );
         await hre.network.provider.request({
           method: 'hardhat_stopImpersonatingAccount',
           params: [beneficiaryAddress1]
@@ -439,9 +439,9 @@ describe('TimelockedDelegator', function () {
               params: [beneficiaryAddress1]
             });
             const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1);
-            await expect(
-              this.delegator.connect(beneficiaryAddress1Signer).undelegate(userAddress)
-            ).to.be.revertedWith('TimelockedDelegator: Delegate contract nonexistent');
+            await expect(this.delegator.connect(beneficiaryAddress1Signer).undelegate(userAddress)).to.be.revertedWith(
+              'TimelockedDelegator: Delegate contract nonexistent'
+            );
             await hre.network.provider.request({
               method: 'hardhat_stopImpersonatingAccount',
               params: [beneficiaryAddress1]
