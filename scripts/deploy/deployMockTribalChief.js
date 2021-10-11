@@ -1,3 +1,5 @@
+const { ethers } = require("hardhat");
+
 /* eslint-disable no-undef */
 const Fei = artifacts.readArtifactSync('Fei');
 const TribalChief = artifacts.readArtifactSync('TribalChief');
@@ -60,7 +62,7 @@ async function main() {
   if (!governorAlphaAddress || governorAlphaAddress.length !== 42) {
     throw new Error('must specify governor alpha address');
   }
-  const accounts = await web3.eth.getAccounts();
+  const accounts = await ethers.getSigners()
 
   const core = await MockCore.new({ from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 });
   await core.init({ from: accounts[0], gasPrice: 2000000008, gasLimit: 20000000 });

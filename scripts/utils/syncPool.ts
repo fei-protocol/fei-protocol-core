@@ -9,6 +9,7 @@ const toBN = ethers.BigNumber.from;
 // Syncs the uniswap FEI-ETH pair to a price relative to oracle price
 // targetBPs would be multiplied by the peg and divided by 10000 and
 // the pair would sync to that price
+/*
 export async function syncPool(targetBPs: number, addresses: NamedAddresses, sendingAddress: string, logging = false) {
   const feiAddress = addresses.feiAddress;
   const ethUniswapPCVDepositAddress = addresses.ethUniswapPCVDepositAddress;
@@ -41,3 +42,4 @@ export async function syncPool(targetBPs: number, addresses: NamedAddresses, sen
   await fei.connect(sendingAddressSigner).mint(ethPair.address, targetFei);
   await ethPair.sync();
 }
+*/

@@ -13,6 +13,7 @@ export function check(flag, message) {
 
 // The current version of the contracts in the repo uses readOracle as the api
 // The old api was peg(), so the currently deployed contracts need manual calling until the upgrade
+/*
 export async function readOracle(oracleRef, web3) {
   const data = await ethers.provider.call({
     to: oracleRef.address,
@@ -20,3 +21,4 @@ export async function readOracle(oracleRef, web3) {
   });
   return web3.eth.abi.decodeParameter({ Decimal: { value: 'uint256' } }, data)[0];
 }
+*/
