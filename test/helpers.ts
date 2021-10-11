@@ -1,10 +1,8 @@
-import { ZERO_ADDRESS, MAX_UINT256 } from '@openzeppelin/test-helpers/src/constants';
 import hre, { ethers, artifacts, network } from 'hardhat';
-import { balance, time } from '@openzeppelin/test-helpers';
 import chai from 'chai';
 import CBN from 'chai-bn';
 import { Core, Core__factory } from '@custom-types/contracts';
-import { Signer } from 'ethers';
+import { BigNumberish, Signer } from 'ethers';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
@@ -142,12 +140,69 @@ async function expectUnspecifiedRevert(tx) {
   await expect(tx).to.be.reverted;
 }
 
+const ZERO_ADDRESS = ethers.constants.AddressZero;
+const MAX_UINT256 = ethers.constants.MaxUint256;
+
+const balance = {
+  current : async (address: string) => {
+    const balance = await ethers.provider.getBalance(address);
+    return balance;
+  }
+}
+
+const time = {
+  latest : async () => latestTime(),
+
+  latestBlock: async () => await ethers.provider.getBlockNumber(),
+
+  increase : async (duration: number | string | BigNumberish) => {
+    const durationBN = ethers.BigNumber.from(duration)
+  
+    if (durationBN.lt(ethers.constants.Zero)) throw Error(`Cannot increase time by a negative amount (${duration})`);
+  
+    await hre.network.provider.send('evm_increaseTime', [durationBN.toNumber()]);
+  
+    await hre.network.provider.send("evm_mine")
+  },
+
+  increaseTo: async (target: number | string | BigNumberish) => {
+    const targetBN = ethers.BigNumber.from(target);
+  
+    const now = ethers.BigNumber.from(await time.latest());
+  
+    if (targetBN.lt(now)) throw Error(`Cannot increase current time (${now}) to a moment in the past (${target})`);
+    const diff = targetBN.sub(now);
+    return time.increase(diff);
+  },
+
+  advanceBlockTo: async(target: number | string | BigNumberish) => {
+    target = ethers.BigNumber.from(target);
+  
+    const currentBlock = (await time.latestBlock());
+    const start = Date.now();
+    let notified;
+    if (target.lt(currentBlock)) throw Error(`Target block #(${target}) is lower than current block #(${currentBlock})`);
+    while (ethers.BigNumber.from(await time.latestBlock()).lt(target)) {
+      if (!notified && Date.now() - start >= 5000) {
+        notified = true;
+        console.warn(`You're advancing many blocks; this test may be slow.`);
+      }
+      await time.advanceBlock();
+    }
+  },
+
+  advanceBlock: async () => {
+    await hre.network.provider.send("evm_setNextBlockTimestamp", [Date.now()])
+    await hre.network.provider.send("evm_mine")
+  }
+}
+
 export {
   // utils
   ZERO_ADDRESS,
   MAX_UINT256,
-  balance,
   time,
+  balance,
   expectRevert,
   expectUnspecifiedRevert,
   // functions

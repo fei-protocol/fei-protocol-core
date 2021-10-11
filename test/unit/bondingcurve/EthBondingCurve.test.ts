@@ -167,7 +167,7 @@ describe('EthBondingCurve', function () {
     describe('Correct ETH sent', function () {
       describe('Invalid Oracle', function () {
         it('reverts', async function () {
-          this.oracle.setValid(false);
+          await this.oracle.setValid(false);
           await expectRevert(
             this.bondingCurve.purchase(userAddress, this.purchaseAmount, { value: this.purchaseAmount }),
             'OracleRef: oracle invalid'
