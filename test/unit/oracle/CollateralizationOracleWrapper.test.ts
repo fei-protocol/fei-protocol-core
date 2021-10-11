@@ -112,7 +112,7 @@ describe('CollateralizationOracleWrapper', function () {
     });
   });
 
-  describe.only('Read Pause', function() {
+  describe('Read Pause', function() {
     describe('setReadPauseOverride', function() {
       it('governor succeeds', async function() {
         await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setReadPauseOverride(true);

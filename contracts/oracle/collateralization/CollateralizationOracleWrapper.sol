@@ -19,27 +19,6 @@ interface IPausable {
 contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrapper, CoreRef {
     using Decimal for Decimal.D256;
 
-    // ----------- Events ------------------------------------------------------
-
-    event CachedValueUpdate(
-        address from,
-        uint256 indexed protocolControlledValue,
-        uint256 indexed userCirculatingFei,
-        int256 indexed protocolEquity
-    );
-
-    event CollateralizationOracleUpdate(
-        address from,
-        address indexed oldOracleAddress,
-        address indexed newOracleAddress
-    );
-
-    event DeviationThresholdUpdate(
-        address from,
-        uint256 indexed oldThreshold,
-        uint256 indexed newThreshold
-    );
-
     // ----------- Properties --------------------------------------------------
 
     /// @notice address of the CollateralizationOracle to memoize
@@ -57,7 +36,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
     uint256 public override deviationThresholdBasisPoints;
 
     /// @notice a flag to override pause behavior for reads
-    bool public readPauseOverride;
+    bool public override readPauseOverride;
 
     // ----------- Constructor -------------------------------------------------
 
@@ -134,8 +113,9 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
 
     /// @notice set the readPauseOverride flag
     /// @param _readPauseOverride the new flag for readPauseOverride
-    function setReadPauseOverride(bool _readPauseOverride) external onlyGuardianOrGovernor {
+    function setReadPauseOverride(bool _readPauseOverride) external override onlyGuardianOrGovernor {
         readPauseOverride = _readPauseOverride;
+        emit ReadPauseOverrideUpdate(_readPauseOverride);
     }
 
     /// @notice governor or admin override to directly write to the cache
