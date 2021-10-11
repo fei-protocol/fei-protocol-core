@@ -1,7 +1,7 @@
-import { getAllContracts, getAllContractAddresses } from '../../test/integration/setup/loadContracts';
+import { getAllContracts } from '../../test/integration/setup/loadContracts';
 import hre, { ethers } from 'hardhat';
 import { time } from '@openzeppelin/test-helpers';
-import { NamedContracts, UpgradeFuncs } from '../../types/types';
+import { NamedContracts, namedContractsToNamedAddresses, UpgradeFuncs } from '../../types/types';
 
 import * as dotenv from 'dotenv';
 
@@ -22,7 +22,7 @@ async function checkProposal() {
     throw new Error('DEPLOY_FILE or PROPOSAL_NUMBER env variable not set');
   }
 
-  const contracts = await getAllContracts();
+  const contracts = (await getAllContracts()) as NamedContracts;
 
   const { feiDAO } = contracts;
 
@@ -62,7 +62,8 @@ async function checkProposal() {
     await time.advanceBlockTo(Number(endBlock.toString()));
 
     console.log('Queuing');
-    await feiDAO.queue(proposalNo);
+
+    await feiDAO['queue(uint256)'](proposalNo);
   } else {
     console.log('Already queued');
   }
@@ -72,13 +73,13 @@ async function checkProposal() {
   await time.increase(86400); // 1 day in seconds
 
   console.log('Executing');
-  await feiDAO.execute(proposalNo);
+  await feiDAO['execute(uint256)'](proposalNo);
   console.log('Success');
 
   // Get the upgrade setup, run and teardown scripts
   const proposalFuncs: UpgradeFuncs = await import(`../../proposals/dao/${proposalName}`);
 
-  const contractAddresses = getAllContractAddresses();
+  const contractAddresses = namedContractsToNamedAddresses(contracts);
 
   console.log('Teardown');
   await proposalFuncs.teardown(

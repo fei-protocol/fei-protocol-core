@@ -1,6 +1,6 @@
 import mainnetAddresses from '../../../contract-addresses/mainnetAddresses';
-import hre, { artifacts, ethers } from 'hardhat';
-import { MainnetContracts, NamedAddresses, NamedContracts } from '../../../types/types';
+import { artifacts, ethers } from 'hardhat';
+import { MainnetContracts, NamedAddresses } from '../../../types/types';
 
 const contractArtifacts = {};
 
