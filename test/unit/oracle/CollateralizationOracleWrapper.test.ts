@@ -112,6 +112,35 @@ describe('CollateralizationOracleWrapper', function () {
     });
   });
 
+  describe('Read Pause', function () {
+    describe('setReadPauseOverride', function () {
+      it('governor succeeds', async function () {
+        await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setReadPauseOverride(true);
+        expect(await this.oracleWrapper.readPauseOverride()).to.be.true;
+      });
+
+      it('non-governor reverts', async function () {
+        await expectRevert(
+          this.oracleWrapper.connect(impersonatedSigners[userAddress]).setReadPauseOverride(true),
+          'CoreRef: Caller is not a guardian or governor'
+        );
+      });
+    });
+
+    describe('ReadPause overrides pause', async function () {
+      beforeEach(async function () {
+        await this.oracleWrapper.update();
+        await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).pause();
+      });
+
+      it('succeeds', async function () {
+        expect((await this.oracleWrapper.read())[1]).to.be.false;
+        await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setReadPauseOverride(true);
+        expect((await this.oracleWrapper.read())[1]).to.be.true;
+      });
+    });
+  });
+
   describe('setCollateralizationOracle()', function () {
     it('should emit CollateralizationOracleUpdate', async function () {
       await expect(
