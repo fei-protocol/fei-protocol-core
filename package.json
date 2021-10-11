@@ -22,6 +22,7 @@
     "size-contracts": "npx hardhat size-contracts",
     "deploy:localhost": "npx hardhat run --network localhost scripts/deploy/migrations.js",
     "deploy:main": "npx hardhat run --network mainnet scripts/deploy/migrations.js",
+    "deploy:fuse": "DEPLOY_FILE=compoundPCVDeposit npx hardhat run --network mainnet scripts/deploy/migrations.js",
     "deploy:ropsten": "npx hardhat run --network ropsten scripts/deploy/migrations.js",
     "deploy:rinkeby": "npx hardhat run --network rinkeby scripts/deploy/migrations.js",
     "abis": "node scripts/abis.js",
