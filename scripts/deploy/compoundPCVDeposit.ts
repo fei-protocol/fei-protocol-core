@@ -1,6 +1,7 @@
+import { DeployUpgradeFunc } from '@custom-types/types';
 import { ethers } from 'hardhat';
 
-export async function deploy(deployAddress, addresses, logging = false) {
+export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses, logging = false) => {
   const { core, fei } = addresses;
 
   const CTOKEN = process.env.CTOKEN;
@@ -21,4 +22,6 @@ export async function deploy(deployAddress, addresses, logging = false) {
   );
   
   logging && console.log('EthCompoundPCVDeposit deployed to: ', erc20CompoundPCVDeposit.address);
+  
+  return { erc20CompoundPCVDeposit }
 }
