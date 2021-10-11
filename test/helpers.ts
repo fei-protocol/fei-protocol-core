@@ -1,5 +1,5 @@
 import { ZERO_ADDRESS, MAX_UINT256 } from '@openzeppelin/test-helpers/src/constants';
-import hre, { web3, ethers, artifacts, network } from 'hardhat';
+import hre, { ethers, artifacts, network } from 'hardhat';
 import { expectRevert, balance, time } from '@openzeppelin/test-helpers';
 import chai from 'chai';
 import CBN from 'chai-bn';
@@ -36,7 +36,7 @@ async function getAddresses() {
     minterAddress,
     burnerAddress,
     guardianAddress
-  ] = await web3.eth.getAccounts();
+  ] = (await ethers.getSigners()).map(signer => signer.address);
 
   return {
     userAddress,

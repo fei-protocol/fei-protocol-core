@@ -1,6 +1,6 @@
 import { expectRevert, getAddresses, time } from '../../helpers';
 import { expect } from 'chai';
-import hre, { web3, ethers, artifacts } from 'hardhat';
+import hre, { ethers, artifacts } from 'hardhat';
 import { Signer } from 'ethers';
 
 const TimelockedDelegator = artifacts.readArtifactSync('TimelockedDelegator');
@@ -398,7 +398,7 @@ describe('TimelockedDelegator', function () {
         });
 
         it('original delegatee is deleted', async function () {
-          expect(await web3.eth.getCode(this.originalDelegatee)).to.be.equal('0x');
+          expect(await ethers.provider.getCode(this.originalDelegatee)).to.be.equal('0x');
         });
       });
 
@@ -433,7 +433,7 @@ describe('TimelockedDelegator', function () {
         });
 
         it('delegatee is deleted', async function () {
-          expect(await web3.eth.getCode(this.delegatee)).to.be.equal('0x');
+          expect(await ethers.provider.getCode(this.delegatee)).to.be.equal('0x');
         });
 
         describe('Double Undelegation', function () {

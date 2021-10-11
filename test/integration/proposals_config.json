@@ -1,22 +1,3 @@
 {
-    "fip_32": {
-        "deploy" : false,
-        "exec" : true,
-        "proposerAddress" : "0xb81cf4981Ef648aaA73F07a18B03970f04d5D8bF"
-    },
-    "fip_31" : {
-        "deploy" : false,
-        "exec" : true,
-        "proposerAddress" : "0xb81cf4981Ef648aaA73F07a18B03970f04d5D8bF"
-    },
-    "feiRariStaking" : {
-        "deploy" : false,
-        "exec" : false,
-        "proposerAddress" : "0xb81cf4981Ef648aaA73F07a18B03970f04d5D8bF"
-    },        
-    "feiRari": {
-        "deploy" : false,
-        "exec" : false,
-        "proposerAddress" : "0xb81cf4981Ef648aaA73F07a18B03970f04d5D8bF"
-    }
+
 }
