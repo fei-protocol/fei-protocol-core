@@ -1,10 +1,10 @@
 import { ZERO_ADDRESS, MAX_UINT256 } from '@openzeppelin/test-helpers/src/constants';
 import hre, { ethers, artifacts, network } from 'hardhat';
-import { expectRevert, balance, time } from '@openzeppelin/test-helpers';
+import { balance, time } from '@openzeppelin/test-helpers';
 import chai from 'chai';
 import CBN from 'chai-bn';
 import { Core, Core__factory } from '@custom-types/contracts';
-import { Signer } from 'ethers';
+import { Signer, } from 'ethers';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
@@ -134,13 +134,22 @@ async function expectApprox(actual, expected, magnitude = '1000') {
   }
 }
 
+async function expectRevert(tx, errorMessage: string) {
+  await expect(tx).to.be.revertedWith(errorMessage);
+}
+
+async function expectUnspecifiedRevert(tx) {
+  await expect(tx).to.be.reverted;
+}
+
 export {
   // utils
   ZERO_ADDRESS,
   MAX_UINT256,
-  expectRevert,
   balance,
   time,
+  expectRevert,
+  expectUnspecifiedRevert,
   // functions
   mine,
   getCore,

@@ -1,7 +1,7 @@
-import { expectRevert, time, getCore, getAddresses } from '../../helpers';
+import { time, getCore, getAddresses } from '../../helpers';
 import chai, { expect } from 'chai';
 import hre, { artifacts, ethers, network } from 'hardhat';
-import { BigNumber, Signer } from 'ethers';
+import { Signer } from 'ethers';
 
 const BondingCurve = artifacts.readArtifactSync('BondingCurve');
 const Fei = artifacts.readArtifactSync('Fei');
@@ -138,10 +138,9 @@ describe('BondingCurve', function () {
         await this.token
           .connect(impersonatedSigners[userAddress])
           .approve(this.bondingCurve.address, this.purchaseAmount);
-        await expectRevert(
-          this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
-          'Pausable: paused'
-        );
+        await expect(
+          this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount)
+        ).to.be.revertedWith('Pausable: paused')
       });
     });
 
@@ -152,10 +151,9 @@ describe('BondingCurve', function () {
           await this.token
             .connect(impersonatedSigners[userAddress])
             .approve(this.bondingCurve.address, this.purchaseAmount);
-          await expectRevert(
-            this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
-            'OracleRef: oracle invalid'
-          );
+          await expect(
+            this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount)
+          ).to.be.revertedWith('OracleRef: oracle invalid');
         });
       });
 
@@ -316,10 +314,9 @@ describe('BondingCurve', function () {
           await this.token
             .connect(impersonatedSigners[userAddress])
             .approve(this.bondingCurve.address, this.purchaseAmount);
-          await expectRevert(
-            this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount),
-            'BondingCurve: exceeds mint cap'
-          );
+          await expect(
+            this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount)
+          ).to.be.revertedWith('BondingCurve: exceeds mint cap');
         });
       });
       describe('Crossing Scale', function () {
@@ -499,16 +496,15 @@ describe('BondingCurve', function () {
     describe('Paused', function () {
       it('reverts', async function () {
         await this.bondingCurve.connect(impersonatedSigners[governorAddress]).pause();
-        await expectRevert(
-          this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate(),
-          'Pausable: paused'
-        );
+        await expect(
+          this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate()
+        ).to.be.revertedWith('Pausable: paused');
       });
     });
 
     describe('No Purchase', function () {
       it('reverts', async function () {
-        await expectRevert(
+        await expect(
           this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate(),
           'BondingCurve: Not enough PCV held'
         );
@@ -522,10 +518,7 @@ describe('BondingCurve', function () {
           .connect(impersonatedSigners[userAddress])
           .approve(this.bondingCurve.address, this.purchaseAmount);
         await this.bondingCurve.connect(impersonatedSigners[userAddress]).purchase(userAddress, this.purchaseAmount);
-        await expectRevert(
-          this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate(),
-          'BondingCurve: Not enough PCV held'
-        );
+        await expect(this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate()).to.be.revertedWith('BondingCurve: Not enough PCV held');
       });
     });
 
@@ -564,10 +557,9 @@ describe('BondingCurve', function () {
       describe('Second Allocate', async function () {
         describe('No Purchase', function () {
           it('reverts', async function () {
-            await expectRevert(
-              this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate(),
-              'BondingCurve: Not enough PCV held'
-            );
+            await expect(
+              this.bondingCurve.connect(impersonatedSigners[keeperAddress]).allocate()
+            ).to.be.revertedWith('BondingCurve: Not enough PCV held');
           });
         });
 
@@ -677,17 +669,15 @@ describe('BondingCurve', function () {
 
   describe('PCV Allocation', function () {
     it('Mismatched lengths revert', async function () {
-      await expectRevert(
-        this.bondingCurve.checkAllocation([this.pcvDeposit1.address], [9000, 1000]),
-        'PCVSplitter: PCV Deposits and ratios are different lengths'
-      );
+      await expect(
+        this.bondingCurve.checkAllocation([this.pcvDeposit1.address], [9000, 1000])
+      ).to.be.revertedWith('PCVSplitter: PCV Deposits and ratios are different lengths');
     });
 
     it('Incomplete allocation rule reverts', async function () {
-      await expectRevert(
-        this.bondingCurve.checkAllocation([this.pcvDeposit1.address, this.pcvDeposit2.address], [9000, 2000]),
-        'PCVSplitter: ratios do not total 100%'
-      );
+      await expect(
+        this.bondingCurve.checkAllocation([this.pcvDeposit1.address, this.pcvDeposit2.address], [9000, 2000])
+      ).to.be.revertedWith('PCVSplitter: ratios do not total 100%');
     });
 
     it('Correct allocation rule succeeds', async function () {
@@ -709,10 +699,9 @@ describe('BondingCurve', function () {
     });
 
     it('Non-governor set reverts', async function () {
-      await expectRevert(
-        this.bondingCurve.connect(impersonatedSigners[userAddress]).setAllocation([this.pcvDeposit1.address], [10000]),
-        'CoreRef: Caller is not a governor'
-      );
+      await expect(
+        this.bondingCurve.connect(impersonatedSigners[userAddress]).setAllocation([this.pcvDeposit1.address], [10000])
+      ).to.be.revertedWith('CoreRef: Caller is not a governor');
     });
   });
 
@@ -726,10 +715,9 @@ describe('BondingCurve', function () {
     });
 
     it('Non-governor set reverts', async function () {
-      await expectRevert(
-        this.bondingCurve.connect(impersonatedSigners[userAddress]).setOracle(userAddress),
-        'CoreRef: Caller is not a governor'
-      );
+      await expect(
+        this.bondingCurve.connect(impersonatedSigners[userAddress]).setOracle(userAddress)
+      ).to.be.revertedWith('CoreRef: Caller is not a governor');
     });
   });
 
@@ -743,10 +731,9 @@ describe('BondingCurve', function () {
     });
 
     it('Non-governor set reverts', async function () {
-      await expectRevert(
-        this.bondingCurve.connect(impersonatedSigners[userAddress]).setScale(100),
-        'CoreRef: Caller is not a governor'
-      );
+      await expect(
+        this.bondingCurve.connect(impersonatedSigners[userAddress]).setScale(100)
+      ).to.be.revertedWith('CoreRef: Caller is not a governor');
     });
   });
 
@@ -760,17 +747,15 @@ describe('BondingCurve', function () {
     });
 
     it('Governor set outside range reverts', async function () {
-      await expectRevert(
-        this.bondingCurve.connect(impersonatedSigners[governorAddress]).setBuffer(10000),
-        'BondingCurve: Buffer exceeds or matches granularity'
-      );
+      await expect(
+        this.bondingCurve.connect(impersonatedSigners[governorAddress]).setBuffer(10000)
+      ).to.be.revertedWith('BondingCurve: Buffer exceeds or matches granularity');
     });
 
     it('Non-governor set reverts', async function () {
-      await expectRevert(
-        this.bondingCurve.connect(impersonatedSigners[userAddress]).setBuffer(1000),
-        'CoreRef: Caller is not a governor'
-      );
+      await expect(
+        this.bondingCurve.connect(impersonatedSigners[userAddress]).setBuffer(1000)
+      ).to.be.revertedWith('CoreRef: Caller is not a governor');
     });
   });
 
@@ -784,17 +769,15 @@ describe('BondingCurve', function () {
     });
 
     it('Governor set outside range reverts', async function () {
-      await expectRevert(
-        this.bondingCurve.connect(impersonatedSigners[governorAddress]).setDiscount(10000),
-        'BondingCurve: Buffer exceeds or matches granularity'
-      );
+      await expect(
+        this.bondingCurve.connect(impersonatedSigners[governorAddress]).setDiscount(10000)
+      ).to.be.revertedWith('BondingCurve: Buffer exceeds or matches granularity');
     });
 
     it('Non-governor set reverts', async function () {
-      await expectRevert(
-        this.bondingCurve.connect(impersonatedSigners[userAddress]).setDiscount(1000),
-        'CoreRef: Caller is not a governor'
-      );
+      await expect(
+        this.bondingCurve.connect(impersonatedSigners[userAddress]).setDiscount(1000)
+      ).to.be.revertedWith('CoreRef: Caller is not a governor');
     });
   });
 
@@ -808,10 +791,9 @@ describe('BondingCurve', function () {
     });
 
     it('Non-governor set reverts', async function () {
-      await expectRevert(
-        this.bondingCurve.connect(impersonatedSigners[userAddress]).setCore(userAddress),
-        'CoreRef: Caller is not a governor'
-      );
+      await expect(
+        this.bondingCurve.connect(impersonatedSigners[userAddress]).setCore(userAddress)
+      ).to.be.revertedWith('CoreRef: Caller is not a governor');
     });
   });
 
@@ -828,10 +810,9 @@ describe('BondingCurve', function () {
     });
 
     it('Non-governor set reverts', async function () {
-      await expectRevert(
-        this.bondingCurve.connect(impersonatedSigners[userAddress]).setIncentiveAmount(toBN('10')),
-        'CoreRef: Caller is not a governor'
-      );
+      await expect(
+        this.bondingCurve.connect(impersonatedSigners[userAddress]).setIncentiveAmount(toBN('10'))
+      ).to.be.revertedWith('CoreRef: Caller is not a governor');
     });
   });
 
@@ -850,10 +831,9 @@ describe('BondingCurve', function () {
     });
 
     it('Non-governor set reverts', async function () {
-      await expectRevert(
-        this.bondingCurve.connect(impersonatedSigners[userAddress]).setIncentiveFrequency(toBN('10')),
-        'CoreRef: Caller is not a governor'
-      );
+      await expect(
+        this.bondingCurve.connect(impersonatedSigners[userAddress]).setIncentiveFrequency(toBN('10'))
+      ).to.be.revertedWith('CoreRef: Caller is not a governor');
     });
   });
 
@@ -869,10 +849,9 @@ describe('BondingCurve', function () {
       });
 
       it('Non-governor reverts', async function () {
-        await expectRevert(
-          this.bondingCurve.connect(impersonatedSigners[userAddress]).pause(),
-          'CoreRef: Caller is not a guardian or governor'
-        );
+        await expect(
+          this.bondingCurve.connect(impersonatedSigners[userAddress]).pause()
+        ).to.be.revertedWith('CoreRef: Caller is not a guardian or governor');
       });
     });
 
@@ -888,10 +867,9 @@ describe('BondingCurve', function () {
       });
 
       it('Non-governor reverts', async function () {
-        await expectRevert(
-          this.bondingCurve.connect(impersonatedSigners[userAddress]).unpause(),
-          'CoreRef: Caller is not a guardian or governor'
-        );
+        await expect(
+          this.bondingCurve.connect(impersonatedSigners[userAddress]).unpause()
+        ).to.be.revertedWith('CoreRef: Caller is not a guardian or governor');
       });
     });
   });

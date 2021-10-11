@@ -6,7 +6,7 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 import { time } from '@openzeppelin/test-helpers';
-import { expectRevert, getCore, getAddresses, expectApprox } from '../../helpers';
+import { expectRevert, expectUnspecifiedRevert, getCore, getAddresses, expectApprox } from '../../helpers';
 import { expect } from 'chai';
 import hre, { ethers, artifacts } from 'hardhat';
 import { Signer } from 'ethers';
@@ -2578,7 +2578,7 @@ describe('TribalChief', () => {
         pid
       );
 
-      await expectRevert.unspecified(
+      await expectUnspecifiedRevert(
         this.tribalChief
           .connect(impersonatedSigners[userAddress])
           .withdrawFromDeposit(pid, toBN(totalStaked).mul(toBN('20')), userAddress, 0)
