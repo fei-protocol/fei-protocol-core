@@ -15,13 +15,9 @@ export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses
   }
 
   const erc20CompoundPCVDepositFactory = await ethers.getContractFactory('ERC20CompoundPCVDeposit');
-  const erc20CompoundPCVDeposit = await erc20CompoundPCVDepositFactory.deploy(
-    core, 
-    CTOKEN, 
-    fei
-  );
-  
+  const erc20CompoundPCVDeposit = await erc20CompoundPCVDepositFactory.deploy(core, CTOKEN, fei);
+
   logging && console.log('EthCompoundPCVDeposit deployed to: ', erc20CompoundPCVDeposit.address);
-  
-  return { erc20CompoundPCVDeposit }
-}
+
+  return { erc20CompoundPCVDeposit };
+};
