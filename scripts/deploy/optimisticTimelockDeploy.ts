@@ -4,7 +4,7 @@ import { ethers } from 'hardhat';
 const fourDays = 4 * 24 * 60 * 60;
 
 const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
-  const { tribalChiefOptimisticMultisig, core } = addresses;
+  const { core } = addresses;
 
   const adminAddress = process.env.ADMIN_ADDRESS;
 
@@ -12,7 +12,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
     throw new Error('ADMIN_ADDRESS environment variable contract address is not set');
   }
 
-  if (!tribalChiefOptimisticMultisig || !core) {
+  if (!core) {
     throw new Error('An environment variable contract address is not set');
   }
 
