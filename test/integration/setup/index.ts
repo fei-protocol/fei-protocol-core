@@ -53,6 +53,8 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     await this.initMainnetContracts();
     let existingContracts = this.mainnetContracts;
 
+    this.setLocalTestContracts(existingContracts);
+
     // Grant privileges to deploy address
     await sudo(existingContracts, this.config.logging);
 
