@@ -193,7 +193,6 @@ const time = {
   },
 
   advanceBlock: async () => {
-    await hre.network.provider.send('evm_setNextBlockTimestamp', [Date.now()]);
     await hre.network.provider.send('evm_mine');
   }
 };
