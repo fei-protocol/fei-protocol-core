@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '../../../types/types';
+import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '@types/types';
 import { ethers } from 'hardhat';
 import { getImpersonatedSigner } from '@test/helpers';
 
