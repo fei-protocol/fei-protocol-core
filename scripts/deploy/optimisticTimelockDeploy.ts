@@ -1,4 +1,4 @@
-import { DeployUpgradeFunc } from '../../types/types';
+import { DeployUpgradeFunc } from '@custom-types/types';
 import { ethers } from 'hardhat';
 
 const fourDays = 4 * 24 * 60 * 60;
@@ -13,7 +13,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
   }
 
   if (!core) {
-    throw new Error('An environment variable contract address is not set');
+    throw new Error('Core contract address is not set');
   }
 
   const optimisticTimelock = await (

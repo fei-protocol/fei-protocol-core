@@ -1,5 +1,5 @@
 import { ethers } from 'hardhat';
-import { DeployUpgradeFunc } from '../../types/types';
+import { DeployUpgradeFunc } from '@custom-types/types';
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
   const { tribalChief } = addresses;
@@ -11,7 +11,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   }
 
   if (!tribalChief) {
-    throw new Error('TribalChief environment variable contract address is not set');
+    throw new Error('TribalChief contract address is not set');
   }
 
   const stakingTokenWrapperFactory = await ethers.getContractFactory('StakingTokenWrapper');
