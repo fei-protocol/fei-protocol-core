@@ -20,10 +20,12 @@
     "lint-all": "eslint --config ./.eslintrc --ignore-path ./.eslintignore --ext .js,.jsx,.ts,.tsx .",
     "lint:fix": "eslint --fix --config ./.eslintrc --ignore-path ./.eslintignore --ext .ts,.tsx .",
     "size-contracts": "npx hardhat size-contracts",
-    "deploy:localhost": "npx hardhat run --network localhost scripts/deploy/migrations.js",
-    "deploy:main": "npx hardhat run --network mainnet scripts/deploy/migrations.js",
-    "deploy:ropsten": "npx hardhat run --network ropsten scripts/deploy/migrations.js",
-    "deploy:rinkeby": "npx hardhat run --network rinkeby scripts/deploy/migrations.js",
+    "deploy:localhost": "npx hardhat run --network localhost scripts/deploy/migrations.ts",
+    "deploy:main": "npx hardhat run --network mainnet scripts/deploy/migrations.ts",
+    "deploy:fip": "IS_FIP=true npm run deploy:main",
+    "deploy:fuse": "DEPLOY_FILE=compoundPCVDeposit npx hardhat run --network mainnet scripts/deploy/migrations.ts",
+    "deploy:ropsten": "npx hardhat run --network ropsten scripts/deploy/migrations.ts",
+    "deploy:rinkeby": "npx hardhat run --network rinkeby scripts/deploy/migrations.ts",
     "abis": "node scripts/abis.js",
     "calldata": "npx hardhat run scripts/utils/getProposalCalldata.ts",
     "check-proposal": "ENABLE_MAINNET_FORKING=true npx hardhat run scripts/utils/checkProposal.ts",
@@ -45,7 +47,8 @@
     "dotenv": "^8.2.0",
     "hardhat": "^2.6.0",
     "hardhat-contract-sizer": "^2.0.3",
-    "hardhat-gas-reporter": "^1.0.4"
+    "hardhat-gas-reporter": "^1.0.4",
+    "string-template": "^1.0.0"
   },
   "devDependencies": {
     "@idle-finance/hardhat-proposals-plugin": "^0.2.3",

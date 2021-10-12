@@ -13,39 +13,15 @@ These files will be used to programatically generate the proposal calldata for s
 
 Make sure these files are up to date and approved by the Fei Core smart contracts team before continuing development.
 
-### Updating Permissions
+## Step 2 (Optional): Updating Permissions
 If your proposal updates the access control permissions of a contract, you need to list/remove the address key in the appropriate sections of `/contract-addresses/permissions.json`
 
 The key names are the same as the ones in `/contract-addresses/mainnet-addresses.json`
 
 These permissiones are validated against on-chain state in the last e2e test
 
-
-## Optional Step 2: Does Proposal Require New Contract Deployments?
-
-Whether a deployment of a new instance of a pre-exisiting or new contract, if your proposal requires a new contract deployment you'll need to write a deploy script.
-
-See examples in the `deploy` folder, name your file `fip_x.js`
-
-The deploy script is automatically run before any e2e tests if it is present in the `end-to-end/proposals_config.json`. The contract objects will be present in the setup, run, teardown and validate hooks as keys in the `contracts` parameter.
-
-This is useful for fully testing the deploy script against a mainnet fork before deploying to mainnet.
-
-To execute the deployment run:
-* mainnet - `DEPLOY_FILE=fip_x npm run deploy:main`
-* local - `DEPLOY_FILE=fip_x npm run deploy:localhost`
-
-If your proposal requires new code additions to succeed, these need to be developed and reviewed. It should first be reviewed by the Fei Core smart contracts team and the team of any relevant integrations before sending to audit.
-
 ## Step 3: Proposal Mocking and Integration Test
-Write a script following the template of `proposals/dao/fip_x.js`. The script should use the injected `addresses`, `contracts`, and `oldContracts` parameters to trigger the appropriate governor functions with the intended inputs.
-
-* `addresses` contains a flat mapping of address names to addresses found in `contract-addresses/mainnetAddresses`
-* `contracts` contains a flat mapping of contract names to contract objects using the specified artifact and contract from `contract-addresses/mainnetAddresses` AFTER all of the deploy and upgrade steps have taken place
-
-* `oldContracts` contains a flat mapping of contract names to contract objects using the specified artifact and contract from `contract-addresses/mainnetAddresses` from BEFORE all of the deploy and upgrade steps have taken place, in case actions need to be taken on the prior versions of upgraded contracts
-
-The setup, teardown, and validation hooks are used to compare the output of the dao script to the actual on-chain calldata proposed to the governor.
+Write a script following the template of `proposals/dao/fip_x.js`. See below for descriptions of each of the `deploy`, `setup`,`teardown`, and `validate` functions. Only `validate` is required.
 
 Add an object with the key `fip_x` to `end-to-end/proposals_config.json`, 
 
@@ -53,8 +29,39 @@ Your proposal will be run before any integration tests via `npm run test:e2e`. F
 * deploy - set to true only if you added a deploy script for your proposal in the optional step, otherwise false. This will run your deploy script before the integration tests and add the contract objects as keys in `contracts` parameter of each of the hooks.
 * exec - When true, the e2e tests will run the actual proposal through the dao instead of the `run` hook which mocks the behavior. It imports the proposal steps from the `proposals/description/fip_x.json` file
 
+### Step 3a (Optional): deploy() - Contract Deployments:
+Whether a deployment of a new instance of a pre-exisiting or new contract, if your proposal requires a new contract deployment you'll need to write a deploy script.
+
+The deploy script is automatically run before any e2e tests if the deploy flag is set to true in the `end-to-end/proposals_config.json`. The contract objects will be present in the setup, run, teardown and validate hooks as keys in the `contracts` parameter.
+
+This is useful for fully testing the deploy script against a mainnet fork before deploying to mainnet.
+
+If your proposal requires new code additions to succeed, these need to be developed and reviewed. It should first be reviewed by the Fei Core smart contracts team and the team of any relevant integrations before sending to audit.
+
+### Step 3b (Optional): setup() - Pre-DAO steps
+The setup hook should contain operational actions from third parties including any address impersonation that occur BEFORE the DAO proposal executes. See `test/helpers.ts#getImpersonatedSigner` and `test/helpers.ts#forceETH`.
+
+The script should use the injected `addresses`, `contracts`, and `oldContracts` parameters to trigger the appropriate governor functions with the intended inputs.
+
+* `addresses` contains a flat mapping of address names to addresses found in `contract-addresses/mainnetAddresses`
+* `contracts` contains a flat mapping of contract names to contract objects using the specified artifact and contract from `contract-addresses/mainnetAddresses` AFTER all of the deploy and upgrade steps have taken place
+
+* `oldContracts` contains a flat mapping of contract names to contract objects using the specified artifact and contract from `contract-addresses/mainnetAddresses` from BEFORE all of the deploy and upgrade steps have taken place, in case actions need to be taken on the prior versions of upgraded contracts
+
+### Step 3c (Optional): teardown() - Post-DAO steps
+The teardown hook should contain operational actions from third parties including any address impersonation that occur AFTER the DAO proposal executes. 
+
+Uses the same `addresses`, `contracts`, and `oldContracts` parameters as `setup()`.
+
+### Step 3d: validate() - Post-DAO invariant checks
+The validate hook should contain any invariant checks that all parameters, roles, and funds are as expected post-DAO and teardown.
+
+Use the mocha testing assertions such as `expect()` to make sure errors fail loudly.
+
 ## Optional Step 4: Deploying and Updating Addresses
 If your contract has an optional deployment step from above, you need to deploy your new contracts to mainnet before moving on to Step 5.
+
+Run `DEPLOY_FILE=fip_x npm run deploy:fip`
 
 Run your deploy script if you had one from step 2. Update `/contract-addresses/mainnet-addresses.json` with the new contract addresses. 
 
@@ -62,19 +69,9 @@ Update the fork block inside the hardhat config and set the deploy flag to false
 
 Finally rerun `npm run test:e2e` and make sure everything passes as expected.
 
-## Step 5: Testing Exact Proposal
-
-This script does a full end-to-end DAO proposal, vote, queue, and execution on the exact proposal to be submitted to the DAO.
-
-The goal of this step is to compare the execution results of the calldata to the mock script from step 3. Any setup and teardown calls in the `proposals/dao/fip_x.js` file will still execute, but the run step is replaced by the execution of the proposal steps in `proposals/description/fip_x.json`.
-
-Set the exec flag to true into the config entry for `fip_x` in `end-to-end/proposals_config.json`
-
-Then run `npm run test:e2e`
-
-## Step 6: Propose on-chain
+## Step 5: Propose on-chain
 Construct the calldata by running `DEPLOY_FILE=fip_x npm run calldata`
 
-Send a transaction to the Fei DAO (0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B) using the calldata
+Send a transaction to the Fei DAO [0x0BEF27FEB58e857046d630B2c03dFb7bae567494](https://etherscan.io/address/0x0bef27feb58e857046d630b2c03dfb7bae567494) using the calldata
 
 Verify on https://www.withtally.com/governance/fei/ that your proposal submitted and everything looks as expected

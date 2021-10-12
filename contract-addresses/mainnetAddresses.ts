@@ -206,6 +206,18 @@ const MainnetAddresses = {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x91f50E3183a8CC30D2A981C3aFA85A2Bf6691c67'
   },
+  rariPool28FeiPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0xb0D5eBA35E1cecE568096064Ed68A49C6A24d961'
+  },
+  rariPool31FeiPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x81DCB06eA4db474D1506Ca6275Ff7D870bA3A1Be'
+  },
+  rariPool54FeiPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x9d28B8Cb17c3E25b6Cce17f88B259f75174b69f4'
+  },
   rariPool6Fei: { artifactName: 'CErc20Delegator', address: '0x185Ab80A77D362447415a5B347D7CD86ecaCC87C' },
   rariPool6FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
