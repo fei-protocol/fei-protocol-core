@@ -1427,10 +1427,10 @@ describe('e2e', function () {
         const { rariRewardsDistributorDelegator, rariPool8Tribe } = contractAddresses;
         const tribalChief = contracts.tribalChief as TribalChief;
 
-        const elevenTribe = ethers.constants.WeiPerEther.mul('11')
+        const elevenTribe = ethers.constants.WeiPerEther.mul('11');
         const tribeReward = await tribalChief.tribePerBlock();
 
-        let contractTx = await tribalChief.updateBlockReward(elevenTribe);
+        const contractTx = await tribalChief.updateBlockReward(elevenTribe);
         await contractTx.wait();
 
         const rewardsDistributorDelegator = await ethers.getContractAt(
@@ -1443,7 +1443,7 @@ describe('e2e', function () {
         expect(toBN(newCompSpeed)).to.be.equal(expectedNewCompSpeed);
         expect(updateNeeded).to.be.true;
 
-        console.log('Setting auto rewards distribution')
+        console.log('Setting auto rewards distribution');
         await expect(await autoRewardsDistributor.setAutoRewardsDistribution())
           .to.emit(autoRewardsDistributor, 'SpeedChanged')
           .withArgs(expectedNewCompSpeed);
@@ -1526,38 +1526,38 @@ describe('e2e', function () {
       // contribute to num governor roles etc
       await e2eCoord.revokeDeployAddressPermission();
     });
-  
+
     it.skip('should have granted correct role cardinality', async function () {
       const core = contracts.core;
       const accessRights = e2eCoord.getAccessControlMapping();
-  
+
       /* re-enable after fip_32
       const minterId = await core.MINTER_ROLE();
       const numMinterRoles = await core.getRoleMemberCount(minterId);
       expect(numMinterRoles.toNumber()).to.be.equal(accessRights.minter.length);
       */
-  
+
       const burnerId = await core.BURNER_ROLE();
       const numBurnerRoles = await core.getRoleMemberCount(burnerId);
       expect(numBurnerRoles.toNumber()).to.be.equal(accessRights.burner.length);
-  
+
       const pcvControllerId = await core.PCV_CONTROLLER_ROLE();
       const numPCVControllerRoles = await core.getRoleMemberCount(pcvControllerId);
       expect(numPCVControllerRoles.toNumber()).to.be.equal(accessRights.pcvController.length);
-  
+
       const governorId = await core.GOVERN_ROLE();
       const numGovernorRoles = await core.getRoleMemberCount(governorId);
       expect(numGovernorRoles.toNumber()).to.be.equal(accessRights.governor.length);
-  
+
       const guardianId = await core.GUARDIAN_ROLE();
       const numGuaridanRoles = await core.getRoleMemberCount(guardianId);
       expect(numGuaridanRoles.toNumber()).to.be.equal(accessRights.guardian.length);
     });
-  
+
     it.skip('should have granted contracts correct roles', async function () {
       const core = contracts.core;
       const accessControl = e2eCoord.getAccessControlMapping();
-  
+
       doLogging && console.log(`Testing minter role...`);
       for (let i = 0; i < accessControl.minter.length; i++) {
         const contractAddress = accessControl.minter[i];
@@ -1565,35 +1565,35 @@ describe('e2e', function () {
         const isMinter = await core.isMinter(contractAddress);
         expect(isMinter).to.be.true;
       }
-  
+
       doLogging && console.log(`Testing burner role...`);
       for (let i = 0; i < accessControl.burner.length; i += 1) {
         const contractAddress = accessControl.burner[i];
         const isBurner = await core.isBurner(contractAddress);
         expect(isBurner).to.be.equal(true);
       }
-  
+
       doLogging && console.log(`Testing pcv controller role...`);
       for (let i = 0; i < accessControl.pcvController.length; i += 1) {
         const contractAddress = accessControl.pcvController[i];
         const isPCVController = await core.isPCVController(contractAddress);
         expect(isPCVController).to.be.equal(true);
       }
-  
+
       doLogging && console.log(`Testing guardian role...`);
       for (let i = 0; i < accessControl.guardian.length; i += 1) {
         const contractAddress = accessControl.guardian[i];
         const isGuardian = await core.isGuardian(contractAddress);
         expect(isGuardian).to.be.equal(true);
       }
-  
+
       doLogging && console.log(`Testing governor role...`);
       for (let i = 0; i < accessControl.governor.length; i += 1) {
         const contractAddress = accessControl.governor[i];
         const isGovernor = await core.isGovernor(contractAddress);
         expect(isGovernor).to.be.equal(true);
       }
-  
+
       /*
       doLogging && console.log(`Testing tribe minter address...`);
       const tribe = contracts.tribe;
