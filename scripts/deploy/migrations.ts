@@ -1,3 +1,4 @@
+import { DeployUpgradeFunc } from '@custom-types/types';
 import mainnetAddressesV1 from '../../contract-addresses/mainnetAddresses';
 
 const { ethers } = require('hardhat');
@@ -18,7 +19,13 @@ async function main() {
     return true;
   });
 
-  const { deploy } = await import(`./${proposalName}`);
+  let deploy: DeployUpgradeFunc;
+  if (process.env.IS_FIP) {
+    ({ deploy } = await import(`@proposals/dao/${proposalName}`));
+  } else {
+    ({ deploy } = await import(`./${proposalName}`));
+  }
+
   await deploy(deployAddress, mainnetAddresses, true);
 }
 

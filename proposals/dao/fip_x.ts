@@ -1,6 +1,6 @@
 import hre, { ethers, artifacts } from 'hardhat';
 import { expect } from 'chai';
-import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc } from '../../types/types';
+import { DeployUpgradeFunc, NamedAddresses, RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '../../types/types';
 
 /*
 
@@ -16,6 +16,19 @@ Steps:
 */
 
 const fipNumber = '9001'; // Change me!
+
+// Do any deployments
+// This should exclusively include new contract deployments
+const deploy: DeployUpgradeFunc = async (
+  deployAddress: string,
+  address: NamedAddresses,
+  logging: boolean
+) => {
+  console.log(`No deploy actions for fip${fipNumber}`);
+  return {
+    // put returned contract objects here
+  }
+};
 
 // Do any setup necessary for running the test.
 // This could include setting up Hardhat to impersonate accounts,
@@ -38,8 +51,8 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
-const validate = async (addresses, oldContracts, contracts) => {
+const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
   console.log(`No actions to complete in validate for fip${fipNumber}`);
 };
 
-export { setup, run, teardown, validate };
+export { deploy, setup, run, teardown, validate };
