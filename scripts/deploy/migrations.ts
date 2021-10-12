@@ -1,7 +1,6 @@
 import { DeployUpgradeFunc } from '@custom-types/types';
 import mainnetAddressesV1 from '../../contract-addresses/mainnetAddresses';
-
-const { ethers } = require('hardhat');
+import { ethers } from 'hardhat';
 
 // Run the deployment for DEPLOY_FILE
 async function main() {

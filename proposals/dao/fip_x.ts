@@ -1,6 +1,13 @@
 import hre, { ethers, artifacts } from 'hardhat';
 import { expect } from 'chai';
-import { DeployUpgradeFunc, NamedAddresses, RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '../../types/types';
+import {
+  DeployUpgradeFunc,
+  NamedAddresses,
+  RunUpgradeFunc,
+  SetupUpgradeFunc,
+  TeardownUpgradeFunc,
+  ValidateUpgradeFunc
+} from '../../types/types';
 
 /*
 
@@ -19,15 +26,11 @@ const fipNumber = '9001'; // Change me!
 
 // Do any deployments
 // This should exclusively include new contract deployments
-const deploy: DeployUpgradeFunc = async (
-  deployAddress: string,
-  address: NamedAddresses,
-  logging: boolean
-) => {
+const deploy: DeployUpgradeFunc = async (deployAddress: string, address: NamedAddresses, logging: boolean) => {
   console.log(`No deploy actions for fip${fipNumber}`);
   return {
     // put returned contract objects here
-  }
+  };
 };
 
 // Do any setup necessary for running the test.
