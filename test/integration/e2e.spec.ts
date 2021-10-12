@@ -726,7 +726,7 @@ describe('e2e', function () {
     });
   });
 
-  it('should be able to redeem Fei from stabiliser', async function () {
+  it.skip('should be able to redeem Fei from stabiliser', async function () {
     const fei = contracts.fei;
     const reserveStabilizer = contracts.ethReserveStabilizer;
     const signer = (await ethers.getSigners())[0];
