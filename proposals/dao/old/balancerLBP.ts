@@ -1,5 +1,5 @@
 import { ethers } from 'hardhat';
-import { time, expectApprox } from '../../test/helpers';
+import { time, expectApprox } from '@test/helpers';
 import { expect } from 'chai';
 
 const e18 = '000000000000000000';
