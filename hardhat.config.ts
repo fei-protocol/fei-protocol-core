@@ -9,6 +9,7 @@ import 'solidity-coverage';
 import 'tsconfig-paths/register';
 
 import * as dotenv from 'dotenv';
+import { ethers } from 'ethers';
 
 dotenv.config();
 
@@ -54,7 +55,7 @@ export default {
       forking: enableMainnetForking
         ? {
             url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-            blockNumber: 13398685
+            //blockNumber: <set>
           }
         : undefined
     },
