@@ -51,7 +51,8 @@
     "fullname": "^4.0.1",
     "hardhat": "^2.6.0",
     "hardhat-contract-sizer": "^2.0.3",
-    "hardhat-gas-reporter": "^1.0.4"
+    "hardhat-gas-reporter": "^1.0.4",
+    "string-template": "^1.0.0"
   },
   "devDependencies": {
     "@idle-finance/hardhat-proposals-plugin": "^0.2.3",
