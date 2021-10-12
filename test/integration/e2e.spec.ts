@@ -1443,7 +1443,6 @@ describe('e2e', function () {
         expect(toBN(newCompSpeed)).to.be.equal(expectedNewCompSpeed);
         expect(updateNeeded).to.be.true;
 
-        console.log('Setting auto rewards distribution');
         await expect(await autoRewardsDistributor.setAutoRewardsDistribution())
           .to.emit(autoRewardsDistributor, 'SpeedChanged')
           .withArgs(expectedNewCompSpeed);
@@ -1531,11 +1530,9 @@ describe('e2e', function () {
       const core = contracts.core;
       const accessRights = e2eCoord.getAccessControlMapping();
 
-      /* re-enable after fip_32
       const minterId = await core.MINTER_ROLE();
       const numMinterRoles = await core.getRoleMemberCount(minterId);
       expect(numMinterRoles.toNumber()).to.be.equal(accessRights.minter.length);
-      */
 
       const burnerId = await core.BURNER_ROLE();
       const numBurnerRoles = await core.getRoleMemberCount(burnerId);
