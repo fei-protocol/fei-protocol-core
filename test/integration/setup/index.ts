@@ -17,7 +17,6 @@ import {
   NamedContracts,
   DeployUpgradeFunc,
   SetupUpgradeFunc,
-  RunUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '../../../types/types';
@@ -84,9 +83,11 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   ): Promise<NamedContracts> {
     let deployedUpgradedContracts = {};
 
+    // Get the upgrade setup and teardown scripts
+    const { deploy, setup, teardown, validate } = await import('@proposals/dao/' + proposalName);
+
     if (config['deploy']) {
       this.config.logging && console.log(`Applying upgrade for proposal: ${proposalName}`);
-      const { deploy } = await import('../../../scripts/deploy/' + proposalName);
       const deployTyped = deploy as DeployUpgradeFunc;
       deployedUpgradedContracts = await deployTyped(
         this.config.deployAddress,
@@ -109,29 +110,24 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       ...getAllContractAddresses()
     };
 
-    // Get the upgrade setup, run and teardown scripts
-    const { setup, run, teardown, validate } = await import('../../../proposals/dao/' + proposalName);
-
     // setup the DAO proposal
-    await setup(contractAddresses, existingContracts, contracts, this.config.logging);
+    const setupTyped = setup as SetupUpgradeFunc;
+    await setupTyped(contractAddresses, existingContracts, contracts, this.config.logging);
 
     // Simulate the DAO proposal
-    if (config.exec) {
-      const proposal = await constructProposal(proposalName, this.config.logging);
-      this.config.logging && console.log(`Simulating proposal...`);
-      await proposal.simulate();
-    } else {
-      this.config.logging && console.log(`Running proposal...`);
-      await run(contractAddresses, existingContracts, contracts, this.config.logging);
-    }
+    const proposal = await constructProposal(proposalName, this.config.logging);
+    this.config.logging && console.log(`Simulating proposal...`);
+    await proposal.simulate();
 
     // teardown the DAO proposal
     this.config.logging && console.log(`Running proposal teardown...`);
-    await teardown(contractAddresses, existingContracts, contracts);
+    const teardownTyped = teardown as TeardownUpgradeFunc;
+    await teardownTyped(contractAddresses, existingContracts, contracts, this.config.logging);
 
     if (validate) {
       this.config.logging && console.log(`Running proposal validation...`);
-      await validate(contractAddresses, existingContracts, contracts);
+      const validateTyped = validate as ValidateUpgradeFunc;
+      await validateTyped(contractAddresses, existingContracts, contracts, this.config.logging);
     }
 
     return contracts;

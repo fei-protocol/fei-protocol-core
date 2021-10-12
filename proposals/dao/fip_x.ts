@@ -3,7 +3,6 @@ import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
   NamedAddresses,
-  RunUpgradeFunc,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
@@ -40,12 +39,6 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   console.log(`No actions to complete in setup for fip${fipNumber}`);
 };
 
-// Here we'll mock the DAO proposal steps (in simulation).
-// We don't need to do any checks here, as those will be in validate.
-const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {
-  console.log(`No actions to complete in run for fip${fipNumber}`);
-};
-
 // Tears down any changes made in setup() that need to be
 // cleaned up before doing any validation checks.
 const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
@@ -54,8 +47,8 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
-const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
+const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   console.log(`No actions to complete in validate for fip${fipNumber}`);
 };
 
-export { deploy, setup, run, teardown, validate };
+export { deploy, setup, teardown, validate };
