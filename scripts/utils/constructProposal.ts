@@ -54,4 +54,4 @@ const replaceArgs = (args: any[], contractNames: NamedAddresses) => {
     }
   }
   return result;
-}
+};
