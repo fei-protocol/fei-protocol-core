@@ -1,8 +1,6 @@
-import hre, { ethers, artifacts } from 'hardhat';
 import { expect } from 'chai';
-import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc } from '../../types/types';
+import { RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc } from '@custom-types/types';
 import { getImpersonatedSigner, increaseTime } from '@test/helpers';
-import { Tribe } from '@custom-types/contracts';
 
 /*
 

@@ -1,4 +1,4 @@
-import { ZERO_ADDRESS, getCore, getAddresses, expectRevert } from '../../helpers';
+import { ZERO_ADDRESS, getCore, getAddresses, expectRevert, expectUnspecifiedRevert } from '../../helpers';
 import { expect } from 'chai';
 import hre, { ethers, artifacts } from 'hardhat';
 import { Signer } from 'ethers';
@@ -304,9 +304,9 @@ describe('CollateralizationOracle', function () {
       // remove deposit
       await this.oracle.connect(impersonatedSigners[governorAddress]).removeDeposit(this.deposit1.address);
       // after remove
-      await expectRevert.unspecified(this.oracle.getDepositForToken(this.token1.address, '0'));
+      await expectUnspecifiedRevert(this.oracle.getDepositForToken(this.token1.address, '0'));
       expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(ZERO_ADDRESS);
-      await expectRevert.unspecified(this.oracle.getTokenInPcv('0'));
+      await expectUnspecifiedRevert(this.oracle.getTokenInPcv('0'));
       expect(await this.oracle.isTokenInPcv(this.token1.address)).to.be.equal(false);
     });
     it('should revert if not governor', async function () {
@@ -368,7 +368,7 @@ describe('CollateralizationOracle', function () {
         .swapDeposit(this.deposit1.address, this.deposit1bis.address);
       // after swap
       expect(await this.oracle.getDepositForToken(this.token1.address, '0')).to.be.equal(this.deposit1bis.address);
-      await expectRevert.unspecified(this.oracle.getDepositForToken(this.token1.address, '1'));
+      await expectUnspecifiedRevert(this.oracle.getDepositForToken(this.token1.address, '1'));
       expect(await this.oracle.depositToToken(this.deposit1bis.address)).to.be.equal(this.token1.address);
       expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(ZERO_ADDRESS);
       expect(await this.oracle.getTokenInPcv('0')).to.be.equal(this.token1.address);

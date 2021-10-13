@@ -1,7 +1,6 @@
 import { HardhatUserConfig } from 'hardhat/config';
 import '@nomiclabs/hardhat-waffle';
 import '@nomiclabs/hardhat-ethers';
-import '@nomiclabs/hardhat-web3';
 import '@typechain/hardhat';
 import '@idle-finance/hardhat-proposals-plugin';
 import 'hardhat-gas-reporter';
@@ -55,7 +54,7 @@ export default {
       forking: enableMainnetForking
         ? {
             url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-            blockNumber: 13375357
+            blockNumber: 13398685
           }
         : undefined
     },
