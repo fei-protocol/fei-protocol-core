@@ -79,9 +79,9 @@ async function resetFork() {
     method: 'hardhat_reset',
     params: [
       {
-        forking: {
+        forking: hre.config.networks.hardhat.forking ? {
           jsonRpcUrl: hre.config.networks.hardhat.forking.url
-        }
+        } : undefined
       }
     ]
   });
