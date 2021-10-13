@@ -3,6 +3,7 @@ import chai from 'chai';
 import CBN from 'chai-bn';
 import { Core, Core__factory } from '@custom-types/contracts';
 import { BigNumberish, Signer } from 'ethers';
+import { env } from 'process';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
@@ -70,9 +71,19 @@ async function increaseTime(amount: number) {
 }
 
 async function resetTime() {
+  await resetFork();
+}
+
+async function resetFork() {
   await hre.network.provider.request({
     method: 'hardhat_reset',
-    params: []
+    params: [
+      {
+        forking: {
+          jsonRpcUrl: hre.config.networks.hardhat.forking.url
+        }
+      }
+    ]
   });
 }
 
@@ -215,5 +226,6 @@ export {
   deployDevelopmentWeth,
   getImpersonatedSigner,
   setNextBlockTimestamp,
-  resetTime
+  resetTime,
+  resetFork
 };
