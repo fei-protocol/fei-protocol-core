@@ -24,6 +24,8 @@
     "deploy:main": "npx hardhat run --network mainnet scripts/deploy/migrations.ts",
     "deploy:fip": "IS_FIP=true npm run deploy:main",
     "deploy:fuse": "DEPLOY_FILE=compoundPCVDeposit npx hardhat run --network mainnet scripts/deploy/migrations.ts",
+    "deploy:timelock": "DEPLOY_FILE=optimisticTimelockDeploy npx hardhat run --network mainnet scripts/deploy/migrations.ts",
+    "deploy:stw": "DEPLOY_FILE=deployStakedTokenWrapper npx hardhat run --network mainnet scripts/deploy/migrations.ts",
     "deploy:ropsten": "npx hardhat run --network ropsten scripts/deploy/migrations.ts",
     "deploy:rinkeby": "npx hardhat run --network rinkeby scripts/deploy/migrations.ts",
     "abis": "node scripts/abis.js",

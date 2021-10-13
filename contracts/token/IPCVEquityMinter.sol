@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../oracle/ICollateralizationOracle.sol";
+import "../oracle/collateralization/ICollateralizationOracle.sol";
 
 /// @title a PCV Equity Minter Interface
 /// @author Fei Protocol

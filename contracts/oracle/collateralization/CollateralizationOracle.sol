@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "./IOracle.sol";
+import "../IOracle.sol";
 import "./ICollateralizationOracle.sol";
-import "../refs/CoreRef.sol";
-import "../pcv/IPCVDepositBalances.sol";
+import "../../refs/CoreRef.sol";
+import "../../pcv/IPCVDepositBalances.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 interface IPausable {
     function paused() external view returns (bool);
@@ -18,6 +19,7 @@ interface IPausable {
 ///         protocol-wide collateralization ratio.
 contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     using Decimal for Decimal.D256;
+    using SafeCast for uint256;
     using EnumerableSet for EnumerableSet.AddressSet;
 
     // ----------- Events -----------
@@ -27,9 +29,6 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     event OracleUpdate(address from, address indexed token, address indexed oldOracle, address indexed newOracle);
 
     // ----------- Properties -----------
-
-    /// @notice List of PCVDeposits to exclude from calculations
-    mapping(address => bool) public excludedDeposits;
 
     /// @notice Map of oracles to use to get USD values of assets held in
     ///         PCV deposits. This map is used to get the oracle address from
@@ -62,6 +61,9 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     ) CoreRef(_core) {
         _setOracles(_tokens, _oracles);
         _addDeposits(_deposits);
+
+        // Shared admin with other oracles
+        _setContractAdminRole(keccak256("ORACLE_ADMIN_ROLE"));
     }
 
     // ----------- Convenience getters -----------
@@ -103,26 +105,17 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
 
     // ----------- State-changing methods -----------
 
-    /// @notice Guardians can exclude & re-include some PCVDeposits from the list,
-    ///         because a faulty deposit or a paused oracle that prevents reading
-    ///         from certain deposits could be problematic.
-    /// @param _deposit : the deposit to exclude or re-enable.
-    /// @param _excluded : the new exclusion flag for this deposit.
-    function setDepositExclusion(address _deposit, bool _excluded) external onlyGuardianOrGovernor {
-        excludedDeposits[_deposit] = _excluded;
-    }
-
     /// @notice Add a PCVDeposit to the list of deposits inspected by the
     ///         collateralization ratio oracle.
     ///         note : this function reverts if the deposit is already in the list.
     ///         note : this function reverts if the deposit's token has no oracle.
     /// @param _deposit : the PCVDeposit to add to the list.
-    function addDeposit(address _deposit) public onlyGovernorOrAdmin {
+    function addDeposit(address _deposit) external onlyGovernorOrAdmin {
         _addDeposit(_deposit);
     }
 
     /// @notice adds a list of multiple PCV deposits. See addDeposit.
-    function addDeposits(address[] memory _deposits) public onlyGovernorOrAdmin {
+    function addDeposits(address[] memory _deposits) external onlyGovernorOrAdmin {
         _addDeposits(_deposits);
     }
 
@@ -155,12 +148,12 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     ///         the collateralization ratio oracle.
     ///         note : this function reverts if the input deposit is not found.
     /// @param _deposit : the PCVDeposit address to remove from the list.
-    function removeDeposit(address _deposit) public onlyGovernorOrAdmin {
+    function removeDeposit(address _deposit) external onlyGovernorOrAdmin {
         _removeDeposit(_deposit);
     }
 
     /// @notice removes a list of multiple PCV deposits. See removeDeposit.
-    function removeDeposits(address[] memory _deposits) public onlyGovernorOrAdmin {
+    function removeDeposits(address[] memory _deposits) external onlyGovernorOrAdmin {
         for (uint256 i = 0; i < _deposits.length; i++) {
             _removeDeposit(_deposits[i]);
         }
@@ -193,8 +186,8 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     /// @param _oldDeposit : the PCVDeposit to remove from the list.
     /// @param _newDeposit : the PCVDeposit to add to the list.
     function swapDeposit(address _oldDeposit, address _newDeposit) external onlyGovernorOrAdmin {
-        removeDeposit(_oldDeposit);
-        addDeposit(_newDeposit);
+        _removeDeposit(_oldDeposit);
+        _addDeposit(_newDeposit);
     }
 
     /// @notice Set the price feed oracle (in USD) for a given asset.
@@ -280,8 +273,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
     /// @return protocolControlledValue : the total USD value of all assets held
     ///         by the protocol.
     /// @return userCirculatingFei : the number of FEI not owned by the protocol.
-    /// @return protocolEquity : the difference between PCV and user circulating FEI.
-    ///         If there are more circulating FEI than $ in the PCV, equity is 0.
+    /// @return protocolEquity : the signed difference between PCV and user circulating FEI.
     /// @return validityStatus : the current oracle validity status (false if any
     ///         of the oracles for tokens held in the PCV are invalid, or if
     ///         this contract is paused).
@@ -303,13 +295,10 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
             for (uint256 j = 0; j < tokenToDeposits[_token].length(); j++) {
                 address _deposit = tokenToDeposits[_token].at(j);
 
-                // ignore deposits that are excluded by the Guardian
-                if (!excludedDeposits[_deposit]) {
-                    // read the deposit, and increment token balance/protocol fei
-                    (uint256 _depositBalance, uint256 _depositFei) = IPCVDepositBalances(_deposit).resistantBalanceAndFei();
-                    _totalTokenBalance += _depositBalance;
-                    _protocolControlledFei += _depositFei;
-                }
+                // read the deposit, and increment token balance/protocol fei
+                (uint256 _depositBalance, uint256 _depositFei) = IPCVDepositBalances(_deposit).resistantBalanceAndFei();
+                _totalTokenBalance += _depositBalance;
+                _protocolControlledFei += _depositFei;
             }
 
             // If the protocol holds non-zero balance of tokens, fetch the oracle price to
@@ -324,14 +313,13 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
         }
 
         userCirculatingFei = fei().totalSupply() - _protocolControlledFei;
-        protocolEquity = int256(protocolControlledValue) - int256(userCirculatingFei);
+        protocolEquity = protocolControlledValue.toInt256() - userCirculatingFei.toInt256();
     }
 
     /// @notice returns true if the protocol is overcollateralized. Overcollateralization
     ///         is defined as the protocol having more assets in its PCV (Protocol
     ///         Controlled Value) than the circulating (user-owned) FEI, i.e.
     ///         a positive Protocol Equity.
-    ///         Note: the validity status is ignored in this function.
     function isOvercollateralized() external override view whenNotPaused returns (bool) {
         (,, int256 _protocolEquity, bool _valid) = pcvStats();
         require(_valid, "CollateralizationOracle: reading is invalid");
