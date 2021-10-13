@@ -38,10 +38,10 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     // ------------- Swapper State -------------
 
     /// @notice the token to be auctioned
-    address public override tokenSpent;
+    address public immutable override tokenSpent;
 
     /// @notice the token to buy
-    address public override tokenReceived;
+    address public immutable override tokenReceived;
 
     /// @notice the address to send `tokenReceived`
     address public override tokenReceivingAddress;
@@ -95,6 +95,8 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
 
         _setReceivingAddress(_tokenReceivingAddress);
         _setMinTokenSpent(_minTokenSpentBalance);
+
+        _setContractAdminRole(keccak256("SWAP_ADMIN_ROLE"));
     }
 
     /** 
@@ -169,22 +171,14 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         5. Transfer remaining tokenReceived to tokenReceivingAddress
         @dev assumes tokenSpent balance of contract exceeds minTokenSpentBalance to kick off a new auction
     */
-    function swap() external override afterTime whenNotPaused {
-        (
-            uint256 spentReserves, 
-            uint256 receivedReserves, 
-            uint256 lastChangeBlock
-        ) = getReserves();
+    function swap() external override afterTime whenNotPaused onlyGovernorOrAdmin {
+        (,, uint256 lastChangeBlock) = vault.getPoolTokens(pid);
 
         // Ensures no actor can change the pool contents earlier in the block
         require(lastChangeBlock < block.number, "BalancerLBPSwapper: pool changed this block");
 
-        (
-            uint256 bptTotal,
-            uint256 bptBalance, 
-            uint256 spentBalance, 
-            uint256 receivedBalance
-        ) = getPoolBalances(spentReserves, receivedReserves);
+        uint256 bptTotal = pool.totalSupply();
+        uint256 bptBalance = pool.balanceOf(address(this));
 
         // Balancer locks a small amount of bptTotal after init, so 0 bpt means pool needs initializing
         if (bptTotal == 0) {
@@ -259,31 +253,6 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     function swapEndTime() public view returns(uint256 endTime) { 
         (,endTime,) = pool.getGradualWeightUpdateParams();
     }
-
-    /// @notice returns the token reserves of `pool` and the last block they updated
-    function getReserves() public view returns(uint256 spentReserves, uint256 receivedReserves, uint256 lastChangeBlock) {
-        (IERC20[] memory tokens, uint256[] memory balances, uint256 _lastChangeBlock ) = vault.getPoolTokens(pid);
-        if (address(tokens[0]) == tokenSpent) {
-            return (balances[0], balances[1], _lastChangeBlock);
-        }
-        return (balances[1], balances[0], _lastChangeBlock);
-    }
-
-    /// @notice given token reserves, returns the held balances of the contract based on the ratio of BPT held to total
-    function getPoolBalances(uint256 spentReserves, uint256 receivedReserves) public view returns (
-        uint256 bptTotal, 
-        uint256 bptBalance, 
-        uint256 spentBalance, 
-        uint256 receivedBalance
-    ) {
-        bptTotal = pool.totalSupply();
-        bptBalance = pool.balanceOf(address(this));
-
-        if (bptTotal != 0) {
-            spentBalance = spentReserves * bptBalance / bptTotal;
-            receivedBalance = receivedReserves * bptBalance / bptTotal;
-        }
-    } 
 
     /// @notice sets the minimum time between swaps
 	/// @param _frequency minimum time between swaps in seconds
