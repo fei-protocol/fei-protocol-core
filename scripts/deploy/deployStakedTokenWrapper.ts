@@ -4,10 +4,10 @@ import { DeployUpgradeFunc } from '@custom-types/types';
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
   const { tribalChief } = addresses;
 
-  const BENEFICIARY = process.env.BENEFICIARY;
+  const STAKED_TOKEN_BENEFICIARY = process.env.STAKED_TOKEN_BENEFICIARY;
 
-  if (!BENEFICIARY) {
-    throw new Error('BENEFICIARY environment variable contract address is not set');
+  if (!STAKED_TOKEN_BENEFICIARY) {
+    throw new Error('STAKED_TOKEN_BENEFICIARY environment variable contract address is not set');
   }
 
   if (!tribalChief) {
@@ -15,7 +15,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   }
 
   const stakingTokenWrapperFactory = await ethers.getContractFactory('StakingTokenWrapper');
-  const stakingTokenWrapper = await stakingTokenWrapperFactory.deploy(tribalChief, BENEFICIARY);
+  const stakingTokenWrapper = await stakingTokenWrapperFactory.deploy(tribalChief, STAKED_TOKEN_BENEFICIARY);
 
   logging && console.log('StakingTokenWrapper impl deployed to: ', stakingTokenWrapper.address);
 

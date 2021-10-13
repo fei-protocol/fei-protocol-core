@@ -6,10 +6,10 @@ const fourDays = 4 * 24 * 60 * 60;
 const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
   const { core } = addresses;
 
-  const adminAddress = process.env.ADMIN_ADDRESS;
+  const TIMELOCK_ADMIN_ADDRESS = process.env.TIMELOCK_ADMIN_ADDRESS;
 
-  if (!adminAddress) {
-    throw new Error('ADMIN_ADDRESS environment variable contract address is not set');
+  if (!TIMELOCK_ADMIN_ADDRESS) {
+    throw new Error('TIMELOCK_ADMIN_ADDRESS environment variable contract address is not set');
   }
 
   if (!core) {
@@ -18,7 +18,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = fal
 
   const optimisticTimelock = await (
     await ethers.getContractFactory('OptimisticTimelock')
-  ).deploy(core, fourDays, [adminAddress], [adminAddress]);
+  ).deploy(core, fourDays, [TIMELOCK_ADMIN_ADDRESS], [TIMELOCK_ADMIN_ADDRESS]);
 
   logging && console.log('Optimistic Timelock deployed to: ', optimisticTimelock.address);
 
