@@ -97,9 +97,9 @@ const MainnetAddresses = {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x243C601CC5DaA3Ac250B14509804188347bd2aFB'
   },
-  curve3crv: { artifactName: 'IStableSwap3', address: '0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490' },
-  curve3pool: { artifactName: 'IStableSwap3', address: '0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7' },
-  curveMetapool: { artifactName: 'IStableSwap2', address: '0x06cb22615ba53e60d67bf6c341a0fd5e718e1655' },
+  curve3crv: { artifactName: 'unknown', address: '0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490' },
+  curve3pool: { artifactName: 'unknown', address: '0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7' },
+  curveMetapool: { artifactName: 'unknown', address: '0x06cb22615ba53e60d67bf6c341a0fd5e718e1655' },
   curve3Metapool: { artifactName: 'IERC20', address: '0x06cb22615BA53E60D67Bf6C341a0fD5E718E1655' },
   dai: { artifactName: 'IERC20', address: '0x6B175474E89094C44Da98b954EedeAC495271d0F' },
   daiBondingCurve: { artifactName: 'BondingCurve', address: '0xC0afe0E649e32528666F993ce63822c3840e941a' },
@@ -205,6 +205,18 @@ const MainnetAddresses = {
   rariPool27FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x91f50E3183a8CC30D2A981C3aFA85A2Bf6691c67'
+  },
+  rariPool28FeiPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0xb0D5eBA35E1cecE568096064Ed68A49C6A24d961'
+  },
+  rariPool31FeiPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x81DCB06eA4db474D1506Ca6275Ff7D870bA3A1Be'
+  },
+  rariPool54FeiPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x9d28B8Cb17c3E25b6Cce17f88B259f75174b69f4'
   },
   rariPool6Fei: { artifactName: 'CErc20Delegator', address: '0x185Ab80A77D362447415a5B347D7CD86ecaCC87C' },
   rariPool6FeiPCVDeposit: {
