@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "./IOracle.sol";
+import "../IOracle.sol";
 import "./ICollateralizationOracleWrapper.sol";
-import "../Constants.sol";
-import "../utils/Timed.sol";
-import "../refs/CoreRef.sol";
+import "../../Constants.sol";
+import "../../utils/Timed.sol";
+import "../../refs/CoreRef.sol";
 
 interface IPausable {
     function paused() external view returns (bool);
@@ -19,42 +19,24 @@ interface IPausable {
 contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrapper, CoreRef {
     using Decimal for Decimal.D256;
 
-    // ----------- Events ------------------------------------------------------
-
-    event CachedValueUpdate(
-        address from,
-        uint256 indexed protocolControlledValue,
-        uint256 indexed userCirculatingFei,
-        int256 indexed protocolEquity
-    );
-
-    event CollateralizationOracleUpdate(
-        address from,
-        address indexed oldOracleAddress,
-        address indexed newOracleAddress
-    );
-
-    event DeviationThresholdUpdate(
-        address from,
-        uint256 indexed oldThreshold,
-        uint256 indexed newThreshold
-    );
-
     // ----------- Properties --------------------------------------------------
 
     /// @notice address of the CollateralizationOracle to memoize
     address public override collateralizationOracle;
 
     /// @notice cached value of the Protocol Controlled Value
-    uint256 public cachedProtocolControlledValue;
+    uint256 public override cachedProtocolControlledValue;
     /// @notice cached value of the User Circulating FEI
-    uint256 public cachedUserCirculatingFei;
+    uint256 public override cachedUserCirculatingFei;
     /// @notice cached value of the Protocol Equity
-    int256 public cachedProtocolEquity;
+    int256 public override cachedProtocolEquity;
 
     /// @notice deviation threshold to consider cached values outdated, in basis
     ///         points (base 10_000)
     uint256 public override deviationThresholdBasisPoints;
+
+    /// @notice a flag to override pause behavior for reads
+    bool public override readPauseOverride;
 
     // ----------- Constructor -------------------------------------------------
 
@@ -83,6 +65,9 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
         _setDuration(_validityDuration);
         collateralizationOracle = _collateralizationOracle;
         deviationThresholdBasisPoints = _deviationThresholdBasisPoints;
+
+        // Shared admin with other oracles
+        _setContractAdminRole(keccak256("ORACLE_ADMIN_ROLE"));    
     }
 
     // ----------- Setter methods ----------------------------------------------
@@ -126,6 +111,23 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
         _setDuration(_validityDuration);
     }
 
+    /// @notice set the readPauseOverride flag
+    /// @param _readPauseOverride the new flag for readPauseOverride
+    function setReadPauseOverride(bool _readPauseOverride) external override onlyGuardianOrGovernor {
+        readPauseOverride = _readPauseOverride;
+        emit ReadPauseOverrideUpdate(_readPauseOverride);
+    }
+
+    /// @notice governor or admin override to directly write to the cache
+    /// @dev used in emergencies where the underlying oracle is compromised or failing
+    function setCache(
+        uint256 _cachedProtocolControlledValue,
+        uint256 _cachedUserCirculatingFei,
+        int256 _cachedProtocolEquity
+    ) external override onlyGovernorOrAdmin {
+        _setCache(_cachedProtocolControlledValue, _cachedUserCirculatingFei, _cachedProtocolEquity);
+    }
+
     // ----------- IOracle override methods ------------------------------------
     /// @notice update reading of the CollateralizationOracle
     function update() external override whenNotPaused {
@@ -152,13 +154,27 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
             bool _validityStatus
         ) = ICollateralizationOracle(collateralizationOracle).pcvStats();
 
+        outdated = outdated 
+            || _isExceededDeviationThreshold(cachedProtocolControlledValue, _protocolControlledValue)
+            || _isExceededDeviationThreshold(cachedUserCirculatingFei, _userCirculatingFei);
+        
         // only update if valid
         require(_validityStatus, "CollateralizationOracleWrapper: CollateralizationOracle is invalid");
 
+        _setCache(_protocolControlledValue, _userCirculatingFei, _protocolEquity);
+
+        return outdated;
+    }
+
+    function _setCache(
+        uint256 _cachedProtocolControlledValue,
+        uint256 _cachedUserCirculatingFei,
+        int256 _cachedProtocolEquity
+    ) internal {
         // set cache variables
-        cachedProtocolControlledValue = _protocolControlledValue;
-        cachedUserCirculatingFei = _userCirculatingFei;
-        cachedProtocolEquity = _protocolEquity;
+        cachedProtocolControlledValue = _cachedProtocolControlledValue;
+        cachedUserCirculatingFei = _cachedUserCirculatingFei;
+        cachedProtocolEquity = _cachedProtocolEquity;
 
         // reset time
         _initTimed();
@@ -170,10 +186,6 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
             cachedUserCirculatingFei,
             cachedProtocolEquity
         );
-
-        return outdated 
-            || _isExceededDeviationThreshold(cachedProtocolControlledValue, _protocolControlledValue)
-            || _isExceededDeviationThreshold(cachedUserCirculatingFei, _userCirculatingFei);
     }
 
     // @notice returns true if the cached values are outdated.
@@ -189,7 +201,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
     ///         this contract is paused).
     function read() external view override returns (Decimal.D256 memory collateralRatio, bool validityStatus) {
         collateralRatio = Decimal.ratio(cachedProtocolControlledValue, cachedUserCirculatingFei);
-        validityStatus = !paused() && !isOutdated();
+        validityStatus = _readNotPaused() && !isOutdated();
     }
 
     // ----------- Wrapper-specific methods ------------------------------------
@@ -248,7 +260,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
         int256 protocolEquity,
         bool validityStatus
     ) {
-        validityStatus = !paused() && !isOutdated();
+        validityStatus = _readNotPaused() && !isOutdated();
         protocolControlledValue = cachedProtocolControlledValue;
         userCirculatingFei = cachedUserCirculatingFei;
         protocolEquity = cachedProtocolEquity;
@@ -289,6 +301,10 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
           fetchedValidityStatus
       ) = ICollateralizationOracle(collateralizationOracle).pcvStats();
 
-      validityStatus = fetchedValidityStatus && !paused();
+      validityStatus = fetchedValidityStatus && _readNotPaused();
+    }
+
+    function _readNotPaused() internal view returns(bool) {
+        return readPauseOverride || !paused();
     }
 }
