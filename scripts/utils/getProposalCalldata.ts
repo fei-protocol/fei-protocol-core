@@ -1,5 +1,5 @@
 import constructProposal from './constructProposal';
-import hre, { web3, ethers } from 'hardhat';
+import hre from 'hardhat';
 import * as dotenv from 'dotenv';
 import { BigNumber } from 'ethers';
 import { AbiCoder, FunctionFragment, Interface } from '@ethersproject/abi';

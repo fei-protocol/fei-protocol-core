@@ -1,6 +1,6 @@
-import { expectRevert, getAddresses, time } from '../../helpers';
+import { getAddresses, time } from '../../helpers';
 import { expect } from 'chai';
-import hre, { web3, ethers, artifacts } from 'hardhat';
+import hre, { ethers, artifacts } from 'hardhat';
 import { Signer } from 'ethers';
 
 const TimelockedDelegator = artifacts.readArtifactSync('TimelockedDelegator');
@@ -92,10 +92,9 @@ describe('TimelockedDelegator', function () {
           params: [beneficiaryAddress1]
         });
         const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1);
-        await expectRevert(
-          this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, '100'),
-          'LinearTokenTimelock: not enough released tokens'
-        );
+        await expect(
+          this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, '100')
+        ).to.be.revertedWith('LinearTokenTimelock: not enough released tokens');
         await hre.network.provider.request({
           method: 'hardhat_stopImpersonatingAccount',
           params: [beneficiaryAddress1]
@@ -110,10 +109,9 @@ describe('TimelockedDelegator', function () {
           params: [beneficiaryAddress1]
         });
         const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1);
-        await expectRevert(
-          this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, '0'),
-          'LinearTokenTimelock: no amount desired'
-        );
+        await expect(
+          this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, '0')
+        ).to.be.revertedWith('LinearTokenTimelock: no amount desired');
         await hre.network.provider.request({
           method: 'hardhat_stopImpersonatingAccount',
           params: [beneficiaryAddress1]
@@ -136,12 +134,8 @@ describe('TimelockedDelegator', function () {
         )
           .to.emit(this.delegator, 'Release')
           .withArgs(beneficiaryAddress1, beneficiaryAddress1, this.quarterAmount);
-
-        await hre.network.provider.request({
-          method: 'hardhat_stopImpersonatingAccount',
-          params: [beneficiaryAddress1]
-        });
       });
+
       it('releases tokens', async function () {
         expect(await this.delegator.totalToken()).to.be.equal(this.quarterAmount.mul(toBN(3)));
         expect(await this.tribe.balanceOf(beneficiaryAddress1)).to.be.equal(this.quarterAmount);
@@ -210,10 +204,9 @@ describe('TimelockedDelegator', function () {
             params: [beneficiaryAddress1]
           });
           const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1);
-          await expectRevert(
-            this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, this.totalTribe),
-            'LinearTokenTimelock: not enough released tokens'
-          );
+          await expect(
+            this.delegator.connect(beneficiaryAddress1Signer).release(beneficiaryAddress1, this.totalTribe)
+          ).to.be.revertedWith('LinearTokenTimelock: not enough released tokens');
           await hre.network.provider.request({
             method: 'hardhat_stopImpersonatingAccount',
             params: [beneficiaryAddress1]
@@ -327,8 +320,7 @@ describe('TimelockedDelegator', function () {
           params: [beneficiaryAddress1]
         });
         const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1);
-        await expectRevert(
-          this.delegator.connect(beneficiaryAddress1Signer).delegate(userAddress, 10001),
+        await expect(this.delegator.connect(beneficiaryAddress1Signer).delegate(userAddress, 10001)).to.be.revertedWith(
           'TimelockedDelegator: Not enough Tribe'
         );
         await hre.network.provider.request({
@@ -398,7 +390,7 @@ describe('TimelockedDelegator', function () {
         });
 
         it('original delegatee is deleted', async function () {
-          expect(await web3.eth.getCode(this.originalDelegatee)).to.be.equal('0x');
+          expect(await ethers.provider.getCode(this.originalDelegatee)).to.be.equal('0x');
         });
       });
 
@@ -433,7 +425,7 @@ describe('TimelockedDelegator', function () {
         });
 
         it('delegatee is deleted', async function () {
-          expect(await web3.eth.getCode(this.delegatee)).to.be.equal('0x');
+          expect(await ethers.provider.getCode(this.delegatee)).to.be.equal('0x');
         });
 
         describe('Double Undelegation', function () {
@@ -443,8 +435,7 @@ describe('TimelockedDelegator', function () {
               params: [beneficiaryAddress1]
             });
             const beneficiaryAddress1Signer = await ethers.getSigner(beneficiaryAddress1);
-            await expectRevert(
-              this.delegator.connect(beneficiaryAddress1Signer).undelegate(userAddress),
+            await expect(this.delegator.connect(beneficiaryAddress1Signer).undelegate(userAddress)).to.be.revertedWith(
               'TimelockedDelegator: Delegate contract nonexistent'
             );
             await hre.network.provider.request({
@@ -470,18 +461,16 @@ describe('TimelockedDelegator', function () {
   describe('Access', function () {
     describe('Delegate', function () {
       it('Non-beneficiary set reverts', async function () {
-        await expectRevert(
-          this.delegator.connect(impersonatedSigners[userAddress]).delegate(userAddress, toBN(100), {}),
-          'LinearTokenTimelock: Caller is not a beneficiary'
-        );
+        await expect(
+          this.delegator.connect(impersonatedSigners[userAddress]).delegate(userAddress, toBN(100), {})
+        ).to.be.revertedWith('LinearTokenTimelock: Caller is not a beneficiary');
       });
     });
     describe('Undelegate', function () {
       it('Non-beneficiary set reverts', async function () {
-        await expectRevert(
-          this.delegator.connect(impersonatedSigners[userAddress]).undelegate(userAddress, {}),
-          'LinearTokenTimelock: Caller is not a beneficiary'
-        );
+        await expect(
+          this.delegator.connect(impersonatedSigners[userAddress]).undelegate(userAddress, {})
+        ).to.be.revertedWith('LinearTokenTimelock: Caller is not a beneficiary');
       });
     });
     describe('Set Pending Beneficiary', function () {
@@ -503,10 +492,9 @@ describe('TimelockedDelegator', function () {
       });
 
       it('Non-beneficiary set reverts', async function () {
-        await expectRevert(
-          this.delegator.connect(impersonatedSigners[userAddress]).setPendingBeneficiary(userAddress, {}),
-          'LinearTokenTimelock: Caller is not a beneficiary'
-        );
+        await expect(
+          this.delegator.connect(impersonatedSigners[userAddress]).setPendingBeneficiary(userAddress, {})
+        ).to.be.revertedWith('LinearTokenTimelock: Caller is not a beneficiary');
       });
     });
 
@@ -531,19 +519,17 @@ describe('TimelockedDelegator', function () {
       });
 
       it('Non pending beneficiary reverts', async function () {
-        await expectRevert(
-          this.delegator.connect(impersonatedSigners[secondUserAddress]).acceptBeneficiary({}),
-          'LinearTokenTimelock: Caller is not pending beneficiary'
-        );
+        await expect(
+          this.delegator.connect(impersonatedSigners[secondUserAddress]).acceptBeneficiary({})
+        ).to.be.revertedWith('LinearTokenTimelock: Caller is not pending beneficiary');
       });
     });
 
     describe('Release', function () {
       it('Non-beneficiary set reverts', async function () {
-        await expectRevert(
-          this.delegator.connect(impersonatedSigners[userAddress]).release(userAddress, '100', {}),
-          'LinearTokenTimelock: Caller is not a beneficiary'
-        );
+        await expect(
+          this.delegator.connect(impersonatedSigners[userAddress]).release(userAddress, '100', {})
+        ).to.be.revertedWith('LinearTokenTimelock: Caller is not a beneficiary');
       });
     });
   });

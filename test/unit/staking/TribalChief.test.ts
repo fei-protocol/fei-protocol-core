@@ -5,8 +5,8 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
-import { time } from '@openzeppelin/test-helpers';
-import { expectRevert, getCore, getAddresses, expectApprox } from '../../helpers';
+import { time } from '../../helpers';
+import { expectRevert, expectUnspecifiedRevert, getCore, getAddresses, expectApprox } from '../../helpers';
 import { expect } from 'chai';
 import hre, { ethers, artifacts } from 'hardhat';
 import { Signer } from 'ethers';
@@ -14,12 +14,6 @@ import { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract
 
 const toBN = ethers.BigNumber.from;
 
-const MockCore = artifacts.readArtifactSync('MockCore');
-const Tribe = artifacts.readArtifactSync('MockTribe');
-const MockCoreRef = artifacts.readArtifactSync('MockCoreRef');
-const TribalChief = artifacts.readArtifactSync('TribalChief');
-const MockERC20 = artifacts.readArtifactSync('MockERC20');
-const Proxy = artifacts.readArtifactSync('TransparentUpgradeableProxy');
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const uintMax = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
 const ACC_TRIBE_PRECISION = toBN('100000000000000000000000');
@@ -2578,7 +2572,7 @@ describe('TribalChief', () => {
         pid
       );
 
-      await expectRevert.unspecified(
+      await expectUnspecifiedRevert(
         this.tribalChief
           .connect(impersonatedSigners[userAddress])
           .withdrawFromDeposit(pid, toBN(totalStaked).mul(toBN('20')), userAddress, 0)

@@ -26,5 +26,9 @@
     "proposals/*", "proposals/**/*",
     "./types/contracts/*", "./types/contracts/**/*",
   ],
+  "exclude": [
+    "scripts/deploy/old/*",
+    "proposals/dao/old/*"
+  ],
   "files": ["./hardhat.config.ts"],
 }
