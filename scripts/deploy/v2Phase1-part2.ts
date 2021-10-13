@@ -6,7 +6,7 @@ const toBN = ethers.BigNumber.from;
 
 const USD_ADDRESS = '0x1111111111111111111111111111111111111111';
 
-const CR_WRAPPER_DURATION = '60'; // 1 minute
+const CR_WRAPPER_DURATION = 60 * 60 * 24; // 1 day
 const CR_WRAPPER_DEVIATION_BPS = '500'; // 5%
 
 /*
@@ -374,14 +374,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   logging && console.log('Collateralization Oracle Wrapper Proxy: ', collateralizationOracleWrapper.address);
 
   return {
-    daiBondingCurveWrapper,
-    compoundDaiPCVDepositWrapper,
-    raiBondingCurveWrapper,
-    aaveRaiPCVDepositWrapper,
-    rariPool9RaiPCVDepositWrapper,
-    dpiBondingCurveWrapper,
-    rariPool19DpiPCVDepositWrapper,
-    ethReserveStabilizerWrapper,
-    staticPcvDepositWrapper
+    staticPcvDepositWrapper,
+    collateralizationOracle,
+    collateralizationOracleWrapper
   } as NamedContracts;
 };
