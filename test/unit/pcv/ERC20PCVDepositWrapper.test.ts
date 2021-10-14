@@ -17,9 +17,7 @@ describe.only('ERC20PCVDepositWrapper', function () {
     userAddress = addresses.userAddress;
 
     // add any addresses you want to impersonate here
-    const impersonatedAddresses = [
-      addresses.userAddress,
-    ];
+    const impersonatedAddresses = [addresses.userAddress];
 
     for (const address of impersonatedAddresses) {
       await hre.network.provider.request({
