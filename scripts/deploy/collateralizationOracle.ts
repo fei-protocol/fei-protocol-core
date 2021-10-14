@@ -4,6 +4,7 @@ import { DeployUpgradeFunc, NamedContracts } from '@custom-types/types';
 
 const toBN = ethers.BigNumber.from;
 
+// The address representing USD, abstractly (not an ERC-20 of course) used in contracts/Constants.sol 
 const USD_ADDRESS = '0x1111111111111111111111111111111111111111';
 
 const CR_WRAPPER_DURATION = 60 * 60 * 24; // 1 day
@@ -25,14 +26,14 @@ DEPLOY ACTIONS:
 3. Dai bonding curve wrapper
 4. Rai bonding curve wrapper
 5. Dpi bonding curve wrapper
-6. Eth Lido PCV Deposit Wrapper
-7. Cream Fei PCV Deposit Wrapper
+6. Rari Pool 19 Dpi PCV Deposit Wrapper
+7. Eth Lido PCV Deposit Wrapper
 8. Compound dai PCV Deposit Wrapper
 9. Compound Eth PCV Deposit Wrapper
 10. Aave Rai PCV Deposit Wrapper
 11. Aave Eth PCV Deposit Wrapper
 12. Rari Pool 9 Rai PCV Deposit Wrapper
-13. Rari Pool 19 Dpi PCV Deposit Wrapper
+13. Cream Fei PCV Deposit Wrapper
 14. Rari Pool 8 Fei PCV Deposit Wrapper
 15. Rari Pool 9 Fei PCV Deposit Wrapper
 16. Rari Pool 7 Fei PCV Deposit Wrapper
@@ -43,11 +44,14 @@ DEPLOY ACTIONS:
 21. Rari Pool 26 Fei PCV Deposit Wrapper
 22. Rari Pool 27 Fei PCV Deposit Wrapper
 23. Rari Pool 18 Fei PCV Deposit Wrapper
-24. Zero Constant Oracle
-25. One Constant Oracle
-26. Collateralization Ratio Oracle
-27. Collateralization Ratio Oracle Wrapper Implementation
-28. Collateralization Ratio Oracle Wrapper Proxy
+24. Rari Pool 28 Fei PCV Deposit Wrapper
+25. Rari Pool 31 Fei PCV Deposit Wrapper
+26. FEI ERC20 PCV Deposit Wrapper
+27. One Constant Oracle
+28. Zero Constant Oracle
+29. Collateralization Ratio Oracle
+30. Collateralization Ratio Oracle Wrapper Implementation
+31. Collateralization Ratio Oracle Wrapper Proxy
 
 
 DAO ACTIONS:
@@ -80,6 +84,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     rariPool25FeiPCVDeposit,
     rariPool26FeiPCVDeposit,
     rariPool27FeiPCVDeposit,
+    rariPool28FeiPCVDeposit,
+    rariPool31FeiPCVDeposit,
     rariPool9RaiPCVDeposit,
     creamFeiPCVDeposit,
     compoundDaiPCVDeposit,
@@ -112,11 +118,61 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   // ----------- PCV Deposit Wrapper Contracts ---------------
 
+  // 1. Static Pcv Deposit Wrapper
+  const staticPcvDepositWrapperFactory = await ethers.getContractFactory('StaticPCVDepositWrapper');
+  const staticPcvDepositWrapper = await staticPcvDepositWrapperFactory.deploy(
+    core,
+    toBN(4000000).mul(ethers.constants.WeiPerEther).toString(), // 4M PCV for 100k INDEX @ ~$40
+    toBN(11500000).mul(ethers.constants.WeiPerEther).toString() // 8.5M FEI in Kashi + 2.5M in Idle + .5M in BarnBridge
+  );
+
+  logging && console.log('staticPcvDepositWrapper: ', staticPcvDepositWrapper.address);
+
+  // 2. Eth Reserve Stabilizer Wrapper
+  const ethReserveStabilizerWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
+  const ethReserveStabilizerWrapper = await ethReserveStabilizerWrapperFactory.deploy(
+    ethReserveStabilizer,
+    weth,
+    false
+  );
+
+  logging && console.log('ethReserveStabilizerWrapper: ', ethReserveStabilizerWrapper.address);
+
+  // 3. Dai bonding curve wrapper
   const daiBondingCurveWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
   const daiBondingCurveWrapper = await daiBondingCurveWrapperFactory.deploy(daiBondingCurve, dai, false);
 
   logging && console.log('daiBondingCurveWrapper: ', daiBondingCurveWrapper.address);
 
+  // 4. Rai bonding curve wrapper
+  const raiBondingCurveWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
+  const raiBondingCurveWrapper = await raiBondingCurveWrapperFactory.deploy(raiBondingCurve, rai, false);
+
+  logging && console.log('raiBondingCurveWrapper: ', raiBondingCurveWrapper.address);
+  
+  // 5. Dpi bonding curve wrapper
+  const dpiBondingCurveWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
+  const dpiBondingCurveWrapper = await dpiBondingCurveWrapperFactory.deploy(dpiBondingCurve, dpi, false);
+
+  logging && console.log('dpiBondingCurveWrapper: ', dpiBondingCurveWrapper.address);
+
+  // 6. Rari Pool 19 Dpi PCV Deposit Wrapper
+  const rariPool19DpiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
+  const rariPool19DpiPCVDepositWrapper = await rariPool19DpiPCVDepositWrapperFactory.deploy(
+    rariPool19DpiPCVDeposit,
+    dpi,
+    false
+  );
+  
+  logging && console.log('rariPool19DpiPCVDepositWrapper: ', rariPool19DpiPCVDepositWrapper.address);
+  
+  // 7. Eth Lido PCV Deposit Wrapper
+  const ethLidoPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
+  const ethLidoPCVDepositWrapper = await ethLidoPCVDepositWrapperFactory.deploy(ethLidoPCVDeposit, weth, false);
+
+  logging && console.log('ethLidoPCVDepositWrapper: ', ethLidoPCVDepositWrapper.address);
+
+  // 8. Compound dai PCV Deposit Wrapper
   const compoundDaiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
 
   const compoundDaiPCVDepositWrapper = await compoundDaiPCVDepositWrapperFactory.deploy(
@@ -127,58 +183,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('compoundDaiPCVDepositWrapper: ', compoundDaiPCVDepositWrapper.address);
 
-  const raiBondingCurveWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
-  const raiBondingCurveWrapper = await raiBondingCurveWrapperFactory.deploy(raiBondingCurve, rai, false);
-
-  logging && console.log('raiBondingCurveWrapper: ', raiBondingCurveWrapper.address);
-
-  const aaveRaiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
-  const aaveRaiPCVDepositWrapper = await aaveRaiPCVDepositWrapperFactory.deploy(aaveRaiPCVDeposit, rai, false);
-
-  logging && console.log('aaveRaiPCVDeposit: ', aaveRaiPCVDepositWrapper.address);
-
-  const rariPool9RaiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
-  const rariPool9RaiPCVDepositWrapper = await rariPool9RaiPCVDepositWrapperFactory.deploy(
-    rariPool9RaiPCVDeposit,
-    rai,
-    false
-  );
-
-  logging && console.log('rariPool9RaiPCVDepositWrapper: ', rariPool9RaiPCVDepositWrapper.address);
-
-  const dpiBondingCurveWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
-  const dpiBondingCurveWrapper = await dpiBondingCurveWrapperFactory.deploy(dpiBondingCurve, dpi, false);
-
-  logging && console.log('dpiBondingCurveWrapper: ', dpiBondingCurveWrapper.address);
-
-  const rariPool19DpiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
-  const rariPool19DpiPCVDepositWrapper = await rariPool19DpiPCVDepositWrapperFactory.deploy(
-    rariPool19DpiPCVDeposit,
-    dpi,
-    false
-  );
-
-  logging && console.log('rariPool19DpiPCVDepositWrapper: ', rariPool19DpiPCVDepositWrapper.address);
-
-  const ethReserveStabilizerWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
-  const ethReserveStabilizerWrapper = await ethReserveStabilizerWrapperFactory.deploy(
-    ethReserveStabilizer,
-    weth,
-    false
-  );
-
-  logging && console.log('ethReserveStabilizerWrapper: ', ethReserveStabilizerWrapper.address);
-
-  const ethLidoPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
-  const ethLidoPCVDepositWrapper = await ethLidoPCVDepositWrapperFactory.deploy(ethLidoPCVDeposit, weth, false);
-
-  logging && console.log('ethLidoPCVDepositWrapper: ', ethLidoPCVDepositWrapper.address);
-
-  const aaveEthPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
-  const aaveEthPCVDepositWrapper = await aaveEthPCVDepositWrapperFactory.deploy(aaveEthPCVDeposit, weth, false);
-
-  logging && console.log('aaveEthPCVDepositWrapper: ', aaveEthPCVDepositWrapper.address);
-
+  // 9. Compound Eth PCV Deposit Wrapper
   const compoundEthPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
   const compoundEthPCVDepositWrapper = await compoundEthPCVDepositWrapperFactory.deploy(
     compoundEthPCVDeposit,
@@ -188,8 +193,37 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('compoundEthPCVDepositWrapper: ', compoundEthPCVDepositWrapper.address);
 
+  // 10. Aave Rai PCV Deposit Wrapper
+  const aaveRaiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
+  const aaveRaiPCVDepositWrapper = await aaveRaiPCVDepositWrapperFactory.deploy(aaveRaiPCVDeposit, rai, false);
+
+  logging && console.log('aaveRaiPCVDeposit: ', aaveRaiPCVDepositWrapper.address);
+
+  // 11. Aave Eth PCV Deposit Wrapper
+  const aaveEthPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
+  const aaveEthPCVDepositWrapper = await aaveEthPCVDepositWrapperFactory.deploy(aaveEthPCVDeposit, weth, false);
+
+  logging && console.log('aaveEthPCVDepositWrapper: ', aaveEthPCVDepositWrapper.address);
+
+  // 12. Rari Pool 9 Rai PCV Deposit Wrapper
+  const rariPool9RaiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
+  const rariPool9RaiPCVDepositWrapper = await rariPool9RaiPCVDepositWrapperFactory.deploy(
+    rariPool9RaiPCVDeposit,
+    rai,
+    false
+  );
+
+  logging && console.log('rariPool9RaiPCVDepositWrapper: ', rariPool9RaiPCVDepositWrapper.address);
+
   // ----------- FEI PCV Deposit Wrapper Contracts ---------------
 
+  // 13. Cream Fei PCV Deposit Wrapper
+  const creamFeiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
+  const creamFeiPCVDepositWrapper = await creamFeiPCVDepositWrapperFactory.deploy(creamFeiPCVDeposit, fei, true);
+
+  logging && console.log('creamFeiPCVDepositWrapper: ', creamFeiPCVDepositWrapper.address);
+
+  // 14. Rari Pool 8 Fei PCV Deposit Wrapper
   const rariPool8FeiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
   const rariPool8FeiPCVDepositWrapper = await rariPool8FeiPCVDepositWrapperFactory.deploy(
     rariPool8FeiPCVDeposit,
@@ -199,6 +233,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('rariPool8FeiPCVDepositWrapper: ', rariPool8FeiPCVDepositWrapper.address);
 
+  // 15. Rari Pool 9 Fei PCV Deposit Wrapper
   const rariPool9FeiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
   const rariPool9FeiPCVDepositWrapper = await rariPool9FeiPCVDepositWrapperFactory.deploy(
     rariPool9FeiPCVDeposit,
@@ -208,6 +243,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('rariPool9FeiPCVDepositWrapper: ', rariPool9FeiPCVDepositWrapper.address);
 
+  // 16. Rari Pool 7 Fei PCV Deposit Wrapper
   const rariPool7FeiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
   const rariPool7FeiPCVDepositWrapper = await rariPool7FeiPCVDepositWrapperFactory.deploy(
     rariPool7FeiPCVDeposit,
@@ -216,7 +252,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   );
 
   logging && console.log('rariPool7FeiPCVDepositWrapper: ', rariPool7FeiPCVDepositWrapper.address);
-
+  
+  // 17. Rari Pool 6 Fei PCV Deposit Wrapper
   const rariPool6FeiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
   const rariPool6FeiPCVDepositWrapper = await rariPool6FeiPCVDepositWrapperFactory.deploy(
     rariPool6FeiPCVDeposit,
@@ -226,6 +263,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('rariPool6FeiPCVDepositWrapper: ', rariPool6FeiPCVDepositWrapper.address);
 
+  // 18. Rari Pool 19 Fei PCV Deposit Wrapper
   const rariPool19FeiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
   const rariPool19FeiPCVDepositWrapper = await rariPool19FeiPCVDepositWrapperFactory.deploy(
     rariPool19FeiPCVDeposit,
@@ -235,6 +273,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('rariPool19FeiPCVDepositWrapper: ', rariPool19FeiPCVDepositWrapper.address);
 
+  // 19. Rari Pool 24 Fei PCV Deposit Wrapper
   const rariPool24FeiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
   const rariPool24FeiPCVDepositWrapper = await rariPool24FeiPCVDepositWrapperFactory.deploy(
     rariPool24FeiPCVDeposit,
@@ -244,6 +283,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('rariPool24FeiPCVDepositWrapper: ', rariPool24FeiPCVDepositWrapper.address);
 
+  // 20. Rari Pool 25 Fei PCV Deposit Wrapper
   const rariPool25FeiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
   const rariPool25FeiPCVDepositWrapper = await rariPool25FeiPCVDepositWrapperFactory.deploy(
     rariPool25FeiPCVDeposit,
@@ -253,6 +293,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('rariPool25FeiPCVDepositWrapper: ', rariPool25FeiPCVDepositWrapper.address);
 
+  // 21. Rari Pool 26 Fei PCV Deposit Wrapper
   const rariPool26FeiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
   const rariPool26FeiPCVDepositWrapper = await rariPool26FeiPCVDepositWrapperFactory.deploy(
     rariPool26FeiPCVDeposit,
@@ -262,6 +303,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('rariPool26FeiPCVDepositWrapper: ', rariPool26FeiPCVDepositWrapper.address);
 
+  // 22. Rari Pool 27 Fei PCV Deposit Wrapper
   const rariPool27FeiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
   const rariPool27FeiPCVDepositWrapper = await rariPool27FeiPCVDepositWrapperFactory.deploy(
     rariPool27FeiPCVDeposit,
@@ -271,69 +313,83 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('rariPool27FeiPCVDepositWrapper: ', rariPool27FeiPCVDepositWrapper.address);
 
+  // 23. Rari Pool 18 Fei PCV Deposit Wrapper
   const rariPool18FeiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
   const rariPool18FeiPCVDepositWrapper = await rariPool18FeiPCVDepositWrapperFactory.deploy(
     rariPool18FeiPCVDeposit,
     fei,
     true
   );
-
+  
   logging && console.log('rariPool18FeiPCVDepositWrapper: ', rariPool18FeiPCVDepositWrapper.address);
 
-  const creamFeiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
-  const creamFeiPCVDepositWrapper = await creamFeiPCVDepositWrapperFactory.deploy(creamFeiPCVDeposit, fei, true);
-
-  logging && console.log('creamFeiPCVDepositWrapper: ', creamFeiPCVDepositWrapper.address);
-
-  const staticPcvDepositWrapperFactory = await ethers.getContractFactory('StaticPCVDepositWrapper');
-  const staticPcvDepositWrapper = await staticPcvDepositWrapperFactory.deploy(
-    core,
-    toBN(4000000).mul(ethers.constants.WeiPerEther).toString(), // 4M PCV for 100k INDEX @ ~$40
-    toBN(8500000).mul(ethers.constants.WeiPerEther).toString() // 8.5M FEI in Kashi
+  // 24. Rari Pool 28 Fei PCV Deposit Wrapper
+  const rariPool28FeiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
+  const rariPool28FeiPCVDepositWrapper = await rariPool28FeiPCVDepositWrapperFactory.deploy(
+    rariPool28FeiPCVDeposit,
+    fei,
+    true
   );
 
-  logging && console.log('staticPcvDepositWrapper: ', staticPcvDepositWrapper.address);
+  logging && console.log('rariPool28FeiPCVDepositWrapper: ', rariPool28FeiPCVDepositWrapper.address);
+  
+  // 25. Rari Pool 31 Fei PCV Deposit Wrapper
+  const rariPool31FeiPCVDepositWrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
+  const rariPool31FeiPCVDepositWrapper = await rariPool31FeiPCVDepositWrapperFactory.deploy(
+    rariPool31FeiPCVDeposit,
+    fei,
+    true
+  );
+
+  logging && console.log('rariPool31FeiPCVDepositWrapper: ', rariPool31FeiPCVDepositWrapper.address);
+
+  // 26. TODO ERC20 PCV Deposit Wrapper
 
   // ----------- Collateralization Contracts ---------------
 
+  // 27. One Constant Oracle
   const constantOracleFactory = await ethers.getContractFactory('ConstantOracle');
-
-  const zeroConstantOracle = await constantOracleFactory.deploy(core, 0);
-  logging && console.log('zeroConstantOracle: ', zeroConstantOracle.address);
-
+  
   const oneConstantOracle = await constantOracleFactory.deploy(core, 10000);
   logging && console.log('oneConstantOracle: ', oneConstantOracle.address);
 
+  // 28. Zero Constant Oracle
+  const zeroConstantOracle = await constantOracleFactory.deploy(core, 0);
+  logging && console.log('zeroConstantOracle: ', zeroConstantOracle.address);
+
+  // 29. Collateralization Ratio Oracle
   const collateralizationOracleFactory = await ethers.getContractFactory('CollateralizationOracle');
   const collateralizationOracle = await collateralizationOracleFactory.deploy(
     core,
-    [
-      rariPool19DpiPCVDepositWrapper.address,
-      dpiBondingCurveWrapper.address,
-      ethReserveStabilizerWrapper.address,
-      aaveRaiPCVDepositWrapper.address,
-      compoundDaiPCVDepositWrapper.address,
-      ethLidoPCVDepositWrapper.address,
-      rariPool9RaiPCVDepositWrapper.address,
-      raiBondingCurveWrapper.address,
-      daiBondingCurveWrapper.address,
+    [      
+      staticPcvDepositWrapper.address, // 1
+      ethReserveStabilizerWrapper.address, // 2
+      daiBondingCurveWrapper.address, // 3
+      raiBondingCurveWrapper.address, // 4
+      dpiBondingCurveWrapper.address, // 5
+      rariPool19DpiPCVDepositWrapper.address, // 6
+      ethLidoPCVDepositWrapper.address, // 7
+      compoundDaiPCVDepositWrapper.address, // 8
+      compoundEthPCVDepositWrapper.address, // 9
+      aaveRaiPCVDepositWrapper.address, // 10
+      aaveEthPCVDepositWrapper.address, // 11
+      rariPool9RaiPCVDepositWrapper.address, // 12
+      creamFeiPCVDepositWrapper.address, // 13
+      rariPool8FeiPCVDepositWrapper.address, // 14
+      rariPool9FeiPCVDepositWrapper.address, // 15
+      rariPool7FeiPCVDepositWrapper.address, // 16
+      rariPool6FeiPCVDepositWrapper.address, // 17
+      rariPool19FeiPCVDepositWrapper.address, // 18
+      rariPool24FeiPCVDepositWrapper.address, // 19
+      rariPool25FeiPCVDepositWrapper.address, // 20
+      rariPool26FeiPCVDepositWrapper.address, // 21
+      rariPool27FeiPCVDepositWrapper.address, // 22
+      rariPool18FeiPCVDepositWrapper.address, //23
+      rariPool28FeiPCVDepositWrapper.address, // 24 
+      rariPool31FeiPCVDepositWrapper.address, // 25
       bondingCurve,
       dpiUniswapPCVDeposit,
       uniswapPCVDeposit,
-      compoundEthPCVDepositWrapper.address,
-      aaveEthPCVDepositWrapper.address,
-      rariPool8FeiPCVDepositWrapper.address,
-      rariPool7FeiPCVDepositWrapper.address,
-      rariPool6FeiPCVDepositWrapper.address,
-      rariPool9FeiPCVDepositWrapper.address,
-      rariPool19FeiPCVDepositWrapper.address,
-      rariPool18FeiPCVDepositWrapper.address,
-      rariPool24FeiPCVDepositWrapper.address,
-      rariPool25FeiPCVDepositWrapper.address,
-      rariPool26FeiPCVDepositWrapper.address,
-      rariPool27FeiPCVDepositWrapper.address,
-      creamFeiPCVDepositWrapper.address,
-      staticPcvDepositWrapper.address
     ],
     [dai, dpi, weth, rai, fei, USD_ADDRESS],
     [
@@ -348,6 +404,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('Collateralization Oracle: ', collateralizationOracle.address);
 
+  // 30. Collateralization Ratio Oracle Wrapper Implementation
   const collateralizationOracleWrapperImplFactory = await ethers.getContractFactory('CollateralizationOracleWrapper');
   const collateralizationOracleWrapperImpl = await collateralizationOracleWrapperImplFactory.deploy(
     core,
@@ -356,6 +413,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('Collateralization Oracle Wrapper Impl: ', collateralizationOracleWrapperImpl.address);
 
+
+  // 31. Collateralization Ratio Oracle Wrapper Proxy
   // This initialize calldata gets atomically executed against the impl logic
   // upon construction of the proxy
   const collateralizationOracleWrapperInterface = collateralizationOracleWrapperImpl.interface;
