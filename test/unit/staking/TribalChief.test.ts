@@ -5,8 +5,8 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
-import { time } from '@openzeppelin/test-helpers';
-import { expectRevert, getCore, getAddresses, expectApprox } from '../../helpers';
+import { time } from '../../helpers';
+import { expectRevert, expectUnspecifiedRevert, getCore, getAddresses, expectApprox } from '../../helpers';
 import { expect } from 'chai';
 import hre, { ethers, artifacts } from 'hardhat';
 import { Signer } from 'ethers';
@@ -14,12 +14,6 @@ import { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract
 
 const toBN = ethers.BigNumber.from;
 
-const MockCore = artifacts.readArtifactSync('MockCore');
-const Tribe = artifacts.readArtifactSync('MockTribe');
-const MockCoreRef = artifacts.readArtifactSync('MockCoreRef');
-const TribalChief = artifacts.readArtifactSync('TribalChief');
-const MockERC20 = artifacts.readArtifactSync('MockERC20');
-const Proxy = artifacts.readArtifactSync('TransparentUpgradeableProxy');
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const uintMax = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
 const ACC_TRIBE_PRECISION = toBN('100000000000000000000000');
@@ -236,10 +230,7 @@ describe('TribalChief', () => {
       this.tribe = await (await ethers.getContractFactory('MockTribe')).deploy();
       this.coreRef = await (await ethers.getContractFactory('MockCoreRef')).deploy(this.core.address);
 
-      /// we can and probably should do this with a framework,
-      // but for now I'm going to write it out by hand.
-
-      // spin up the logic contract by hand
+      // spin up the logic contract
       const tribalChief = await (await ethers.getContractFactory('TribalChief')).deploy(this.core.address);
       // create a new proxy contract
       const proxyContract = await (
@@ -249,7 +240,7 @@ describe('TribalChief', () => {
       // instantiate the tribalchief pointed at the proxy contract
       this.tribalChief = await ethers.getContractAt('TribalChief', proxyContract.address);
 
-      // initialize the tribalchief by hand
+      // initialize the tribalchief
       await this.tribalChief.connect((await ethers.getSigners())[0]).initialize(this.core.address, this.tribe.address);
       await this.tribalChief.connect(await ethers.getSigner(governorAddress)).updateBlockReward(blockReward);
 
@@ -2003,10 +1994,7 @@ describe('TribalChief', () => {
       this.tribe = await (await ethers.getContractFactory('MockTribe')).deploy();
       this.coreRef = await (await ethers.getContractFactory('MockCoreRef')).deploy(this.core.address);
 
-      /// we can and probably should do this with a framework,
-      // but for now I'm going to write it out by hand.
-
-      // spin up the logic contract by hand
+      // spin up the logic contract
       const tribalChief = await (await ethers.getContractFactory('TribalChief')).deploy(this.core.address);
       // create a new proxy contract
       const proxyContract = await (
@@ -2016,7 +2004,7 @@ describe('TribalChief', () => {
       // instantiate the tribalchief pointed at the proxy contract
       this.tribalChief = await ethers.getContractAt('TribalChief', proxyContract.address);
 
-      // initialize the tribalchief by hand
+      // initialize the tribalchief
       await this.tribalChief.initialize(this.core.address, this.tribe.address);
 
       await this.tribalChief.connect(impersonatedSigners[governorAddress]).updateBlockReward(blockReward, {});
@@ -2370,10 +2358,7 @@ describe('TribalChief', () => {
       this.tribe = await (await ethers.getContractFactory('MockTribe')).deploy();
       this.coreRef = await (await ethers.getContractFactory('MockCoreRef')).deploy(this.core.address);
 
-      /// we can and probably should do this with a framework,
-      // but for now I'm going to write it out by hand.
-
-      // spin up the logic contract by hand
+      // spin up the logic contract
       const tribalChief = await (await ethers.getContractFactory('TribalChief')).deploy(this.core.address);
       // create a new proxy contract
       const proxyContract = await (
@@ -2383,7 +2368,7 @@ describe('TribalChief', () => {
       // instantiate the tribalchief pointed at the proxy contract
       this.tribalChief = await ethers.getContractAt('TribalChief', proxyContract.address);
 
-      // initialize the tribalchief by hand
+      // initialize the tribalchief
       await this.tribalChief.initialize(this.core.address, this.tribe.address);
 
       await this.tribalChief.connect(impersonatedSigners[governorAddress]).updateBlockReward(blockReward, {});
@@ -2587,7 +2572,7 @@ describe('TribalChief', () => {
         pid
       );
 
-      await expectRevert.unspecified(
+      await expectUnspecifiedRevert(
         this.tribalChief
           .connect(impersonatedSigners[userAddress])
           .withdrawFromDeposit(pid, toBN(totalStaked).mul(toBN('20')), userAddress, 0)

@@ -1,0 +1,20 @@
+Summary:
+
+Upgrades a few PCV contracts to be compatible with the V2 Collateralization oldRatioPCVController
+
+Motivation: 
+
+Deploys the contracts we have to swap out:
+* ETH UniswapPCVDeposit
+* DPI UniswapPCVDeposit
+* ETH bonding curve
+* Ratio PCV controller
+
+Grants minter roles to the pcv deposits & the bonding curve, and pcv controller role to the ratio pcv controller. 
+Sets bonding curve minting cap maximum for eth bonding curve, and updates the dpi bonding curve allocation. 
+Finally, moves pcv from the old eth & dpi uni pcv deposits into the new ones.
+
+Uses some adapter contracts to move the PCV from the old ETH BondingCurve into Aave and Compound
+
+Forum Discussion: https://tribe.fei.money/t/fip-32-pre-v2-contract-upgrades/3538
+Code: https://github.com/fei-protocol/fei-protocol-core/pull/219

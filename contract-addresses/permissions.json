@@ -2,24 +2,22 @@
   "minter": [
     "bondingCurve",
     "uniswapPCVDeposit",
-    "timelock",
+    "feiDAOTimelock",
     "dpiBondingCurve",
     "daiBondingCurve",
     "dpiUniswapPCVDeposit",
-    "raiBondingCurve",
-    "pcvEquityMinter",
-    "collateralizationOracleKeeper"
+    "raiBondingCurve"
   ],
   "burner": [
-    "ethReserveStabilizer",
-    "tribeReserveStabilizer"
+    "ethReserveStabilizer"
   ],
   "governor": [
     "core",
-    "timelock"
+    "timelock",
+    "feiDAOTimelock"
   ],
   "pcvController": [
-    "timelock",
+    "feiDAOTimelock",
     "ratioPCVController",
     "aaveEthPCVDripController",
     "compoundEthPCVDripController"

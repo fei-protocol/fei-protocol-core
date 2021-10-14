@@ -1,13 +1,7 @@
-import { ZERO_ADDRESS, getCore, getAddresses, expectRevert } from '../../helpers';
+import { ZERO_ADDRESS, getCore, getAddresses, expectRevert, expectUnspecifiedRevert } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-
-const CollateralizationOracle = artifacts.readArtifactSync('CollateralizationOracle');
-const MockPCVDepositV2 = artifacts.readArtifactSync('MockPCVDepositV2');
-const MockOracleCoreRef = artifacts.readArtifactSync('MockOracleCoreRef');
-const MockERC20 = artifacts.readArtifactSync('MockERC20');
-const IFei = artifacts.readArtifactSync('IFei');
 
 const e18 = '000000000000000000';
 
@@ -104,9 +98,7 @@ describe('CollateralizationOracle', function () {
         [this.oracle1.address, this.oracle2.address]
       );
     });
-    it('excludedDeposits(address) => bool', async function () {
-      expect(await this.oracle.excludedDeposits(this.deposit1.address)).to.be.equal(false);
-    });
+
     it('tokenToOracle(address) => address', async function () {
       expect(await this.oracle.tokenToOracle(this.token1.address)).to.be.equal(this.oracle1.address);
     });
@@ -304,9 +296,9 @@ describe('CollateralizationOracle', function () {
       // remove deposit
       await this.oracle.connect(impersonatedSigners[governorAddress]).removeDeposit(this.deposit1.address);
       // after remove
-      await expectRevert.unspecified(this.oracle.getDepositForToken(this.token1.address, '0'));
+      await expectUnspecifiedRevert(this.oracle.getDepositForToken(this.token1.address, '0'));
       expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(ZERO_ADDRESS);
-      await expectRevert.unspecified(this.oracle.getTokenInPcv('0'));
+      await expectUnspecifiedRevert(this.oracle.getTokenInPcv('0'));
       expect(await this.oracle.isTokenInPcv(this.token1.address)).to.be.equal(false);
     });
     it('should revert if not governor', async function () {
@@ -368,7 +360,7 @@ describe('CollateralizationOracle', function () {
         .swapDeposit(this.deposit1.address, this.deposit1bis.address);
       // after swap
       expect(await this.oracle.getDepositForToken(this.token1.address, '0')).to.be.equal(this.deposit1bis.address);
-      await expectRevert.unspecified(this.oracle.getDepositForToken(this.token1.address, '1'));
+      await expectUnspecifiedRevert(this.oracle.getDepositForToken(this.token1.address, '1'));
       expect(await this.oracle.depositToToken(this.deposit1bis.address)).to.be.equal(this.token1.address);
       expect(await this.oracle.depositToToken(this.deposit1.address)).to.be.equal(ZERO_ADDRESS);
       expect(await this.oracle.getTokenInPcv('0')).to.be.equal(this.token1.address);
@@ -400,30 +392,6 @@ describe('CollateralizationOracle', function () {
           .connect(impersonatedSigners[governorAddress])
           .swapDeposit(this.deposit1.address, this.deposit2.address),
         'CollateralizationOracle: deposit duplicate'
-      );
-    });
-  });
-
-  describe('setDepositExclusion()', function () {
-    it('should allow guardian to exclude a deposit', async function () {
-      await this.oracle
-        .connect(impersonatedSigners[governorAddress])
-        .setOracle(this.token1.address, this.oracle1.address);
-      await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
-      await this.oracle
-        .connect(impersonatedSigners[governorAddress])
-        .setOracle(this.token2.address, this.oracle2.address);
-      await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit2.address);
-
-      expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.equal(`5000${e18}`);
-      await this.oracle.connect(impersonatedSigners[guardianAddress]).setDepositExclusion(this.deposit1.address, true);
-      expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.equal(`3000${e18}`);
-      expect((await this.oracle.pcvStats()).validityStatus).to.be.equal(true);
-    });
-    it('should revert if not guardian', async function () {
-      await expectRevert(
-        this.oracle.connect(impersonatedSigners[userAddress]).setDepositExclusion(this.deposit1.address, true),
-        'CoreRef: Caller is not a guardian or governor'
       );
     });
   });

@@ -1,12 +1,12 @@
 import { HardhatUserConfig } from 'hardhat/config';
 import '@nomiclabs/hardhat-waffle';
 import '@nomiclabs/hardhat-ethers';
-import '@nomiclabs/hardhat-web3';
 import '@typechain/hardhat';
 import '@idle-finance/hardhat-proposals-plugin';
 import 'hardhat-gas-reporter';
 import 'hardhat-contract-sizer';
 import 'solidity-coverage';
+import 'tsconfig-paths/register';
 
 import * as dotenv from 'dotenv';
 
@@ -54,7 +54,7 @@ export default {
       forking: enableMainnetForking
         ? {
             url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-            blockNumber: 13303685
+            blockNumber: 13398685
           }
         : undefined
     },
@@ -112,7 +112,7 @@ export default {
   },
 
   proposals: {
-    governor: '0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B',
+    governor: '0x0BEF27FEB58e857046d630B2c03dFb7bae567494',
     votingToken: '0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B'
   }
 } as HardhatUserConfig;

@@ -4,7 +4,7 @@ jobs:
   build:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:12
+      - image: circleci/node:14
     resource_class: xlarge
     steps:
       - checkout
@@ -34,7 +34,7 @@ jobs:
   lint:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:12
+      - image: circleci/node:14
     steps:
       - restore_cache:
           keys:
@@ -45,7 +45,7 @@ jobs:
   test:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:12
+      - image: circleci/node:14
     resource_class: xlarge
     steps:
       - restore_cache:
@@ -58,7 +58,7 @@ jobs:
   e2e-test:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:12
+      - image: circleci/node:14
     resource_class: xlarge
     steps:
       - restore_cache:
@@ -83,6 +83,3 @@ workflows:
             - build
             - lint
             - test
-          filters:
-            branches:
-              only: master

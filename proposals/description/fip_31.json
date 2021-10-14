@@ -1,0 +1,99 @@
+{
+    "proposal_title": "FIP-31 Upgrade Governance Timelock",
+    "proposal_commands": [
+        {
+            "target": "core",
+            "values": "0",
+            "method": "grantGovernor(address)",
+            "arguments": [
+                "0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c"
+            ],
+            "description": "Grant Governor to FeiDAOTimelock"
+        },
+        {
+            "target": "core",
+            "values": "0",
+            "method": "grantPCVController(address)",
+            "arguments": [
+                "0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c"
+            ],
+            "description": "Grant PCVController to FeiDAOTimelock"
+        },
+        {
+            "target": "core",
+            "values": "0",
+            "method": "revokePCVController(address)",
+            "arguments": [
+                "0x639572471f2f318464dc01066a56867130e45E25"
+            ],
+            "description": "Revoke PCVController from old Timelock"
+        },
+        {
+            "target": "core",
+            "values": "0",
+            "method": "grantMinter(address)",
+            "arguments": [
+                "0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c"
+            ],
+            "description": "Grant Minter to FeiDAOTimelock"
+        },
+        {
+            "target": "core",
+            "values": "0",
+            "method": "revokeMinter(address)",
+            "arguments": [
+                "0x639572471f2f318464dc01066a56867130e45E25"
+            ],
+            "description": "Revoke Minter from old Timelock"
+        },
+        {
+            "target": "kashiFeiDPI",
+            "values": "0",
+            "method": "transfer(address,uint256)",
+            "arguments": [
+                "0xbC9C084a12678ef5B516561df902fdc426d95483",
+                "1000000000000000000000000"
+            ],
+            "description": "Transfer 1M kashi DPI LP tokens to OA Timelock"
+        },
+        {
+            "target": "kashiFeiEth",
+            "values": "0",
+            "method": "transfer(address,uint256)",
+            "arguments": [
+                "0xbC9C084a12678ef5B516561df902fdc426d95483",
+                "2500000000000000000000000"
+            ],
+            "description": "Transfer 2.5M kashi ETH LP tokens to OA Timelock"
+        },
+        {
+            "target": "kashiFeiTribe",
+            "values": "0",
+            "method": "transfer(address,uint256)",
+            "arguments": [
+                "0xbC9C084a12678ef5B516561df902fdc426d95483",
+                "2500000000000000000000000"
+            ],
+            "description": "Transfer 2.5M kashi TRIBE LP tokens to OA Timelock"
+        },
+        {
+            "target": "kashiFeiXSushi",
+            "values": "0",
+            "method": "transfer(address,uint256)",
+            "arguments": [
+                "0xbC9C084a12678ef5B516561df902fdc426d95483",
+                "2500000000000000000000000"
+            ],
+            "description": "Transfer 2.5M kashi xSUSHI LP tokens to OA Timelock"
+        },
+        {
+            "target": "feiDAO",
+            "values": "0",
+            "method": "updateTimelock(address)",
+            "arguments": [
+                "0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c"
+            ],
+            "description": "Update timelock to FeiDAOTimelock"            
+        }
+    ]
+}

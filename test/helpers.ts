@@ -1,15 +1,14 @@
-import { ZERO_ADDRESS, MAX_UINT256 } from '@openzeppelin/test-helpers/src/constants';
-import hre, { web3, ethers, artifacts, network } from 'hardhat';
-import { expectRevert, balance, time } from '@openzeppelin/test-helpers';
+import hre, { ethers, artifacts, network } from 'hardhat';
 import chai from 'chai';
 import CBN from 'chai-bn';
+import { Core, Core__factory } from '@custom-types/contracts';
+import { BigNumberish, Signer } from 'ethers';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
 
 const toBN = ethers.BigNumber.from;
 const { expect } = chai;
-const Core = artifacts.readArtifactSync('Core');
 const WETH9 = artifacts.readArtifactSync('WETH9');
 
 async function deployDevelopmentWeth(): Promise<void> {
@@ -35,7 +34,7 @@ async function getAddresses() {
     minterAddress,
     burnerAddress,
     guardianAddress
-  ] = await web3.eth.getAccounts();
+  ] = (await ethers.getSigners()).map((signer) => signer.address);
 
   return {
     userAddress,
@@ -52,7 +51,51 @@ async function getAddresses() {
   };
 }
 
-async function getCore() {
+async function getImpersonatedSigner(address: string): Promise<Signer> {
+  await hre.network.provider.request({
+    method: 'hardhat_impersonateAccount',
+    params: [address]
+  });
+
+  const signer = await ethers.getSigner(address);
+
+  return signer;
+}
+
+async function increaseTime(amount: number) {
+  await hre.network.provider.request({
+    method: 'evm_increaseTime',
+    params: [amount]
+  });
+}
+
+async function resetTime() {
+  await hre.network.provider.request({
+    method: 'hardhat_reset',
+    params: []
+  });
+}
+
+async function setNextBlockTimestamp(time: number) {
+  await hre.network.provider.request({
+    method: 'evm_setNextBlockTimestamp',
+    params: [time]
+  });
+}
+
+async function latestTime(): Promise<number> {
+  const { timestamp } = await ethers.provider.getBlock(await ethers.provider.getBlockNumber());
+
+  return timestamp as number;
+}
+
+async function mine() {
+  await hre.network.provider.request({
+    method: 'evm_mine'
+  });
+}
+
+async function getCore(): Promise<Core> {
   const { governorAddress, pcvControllerAddress, minterAddress, burnerAddress, guardianAddress } = await getAddresses();
 
   await hre.network.provider.request({
@@ -62,20 +105,14 @@ async function getCore() {
 
   const governorSigner = await ethers.getSigner(governorAddress);
 
-  const coreFactory = await ethers.getContractFactory(Core.abi, Core.bytecode, governorSigner);
+  const coreFactory = new Core__factory(governorSigner);
   const core = await coreFactory.deploy();
 
   await core.init();
-
   await core.grantMinter(minterAddress);
   await core.grantBurner(burnerAddress);
   await core.grantPCVController(pcvControllerAddress);
   await core.grantGuardian(guardianAddress);
-
-  await hre.network.provider.request({
-    method: 'hardhat_stopImpersonatingAccount',
-    params: [governorAddress]
-  });
 
   return core;
 }
@@ -95,16 +132,88 @@ async function expectApprox(actual, expected, magnitude = '1000') {
   }
 }
 
+async function expectRevert(tx, errorMessage: string) {
+  await expect(tx).to.be.revertedWith(errorMessage);
+}
+
+async function expectUnspecifiedRevert(tx) {
+  await expect(tx).to.be.reverted;
+}
+
+const ZERO_ADDRESS = ethers.constants.AddressZero;
+const MAX_UINT256 = ethers.constants.MaxUint256;
+
+const balance = {
+  current: async (address: string) => {
+    const balance = await ethers.provider.getBalance(address);
+    return balance;
+  }
+};
+
+const time = {
+  latest: async () => latestTime(),
+
+  latestBlock: async () => await ethers.provider.getBlockNumber(),
+
+  increase: async (duration: number | string | BigNumberish) => {
+    const durationBN = ethers.BigNumber.from(duration);
+
+    if (durationBN.lt(ethers.constants.Zero)) throw Error(`Cannot increase time by a negative amount (${duration})`);
+
+    await hre.network.provider.send('evm_increaseTime', [durationBN.toNumber()]);
+
+    await hre.network.provider.send('evm_mine');
+  },
+
+  increaseTo: async (target: number | string | BigNumberish) => {
+    const targetBN = ethers.BigNumber.from(target);
+
+    const now = ethers.BigNumber.from(await time.latest());
+
+    if (targetBN.lt(now)) throw Error(`Cannot increase current time (${now}) to a moment in the past (${target})`);
+    const diff = targetBN.sub(now);
+    return time.increase(diff);
+  },
+
+  advanceBlockTo: async (target: number | string | BigNumberish) => {
+    target = ethers.BigNumber.from(target);
+
+    const currentBlock = await time.latestBlock();
+    const start = Date.now();
+    let notified;
+    if (target.lt(currentBlock))
+      throw Error(`Target block #(${target}) is lower than current block #(${currentBlock})`);
+    while (ethers.BigNumber.from(await time.latestBlock()).lt(target)) {
+      if (!notified && Date.now() - start >= 5000) {
+        notified = true;
+        console.warn(`You're advancing many blocks; this test may be slow.`);
+      }
+      await time.advanceBlock();
+    }
+  },
+
+  advanceBlock: async () => {
+    await hre.network.provider.send('evm_mine');
+  }
+};
+
 export {
   // utils
   ZERO_ADDRESS,
   MAX_UINT256,
-  expectRevert,
-  balance,
   time,
+  balance,
+  expectRevert,
+  expectUnspecifiedRevert,
   // functions
+  mine,
   getCore,
   getAddresses,
+  increaseTime,
+  latestTime,
   expectApprox,
-  deployDevelopmentWeth
+  deployDevelopmentWeth,
+  getImpersonatedSigner,
+  setNextBlockTimestamp,
+  resetTime
 };

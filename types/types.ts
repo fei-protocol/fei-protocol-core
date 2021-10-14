@@ -66,7 +66,7 @@ export type Config = {
 };
 
 export interface MainnetContracts {
-  core: ethers.Contract;
+  [core: string]: ethers.Contract;
   tribe: ethers.Contract;
   fei: ethers.Contract;
   uniswapPCVDeposit: ethers.Contract;
@@ -126,6 +126,9 @@ export interface MainnetContracts {
   aaveLendingPool: ethers.Contract;
   aaveTribeIncentivesController: ethers.Contract;
   optimisticTimelock: ethers.Contract;
+  feiDAO: ethers.Contract;
+  autoRewardsDistributor: ethers.Contract;
+  rewardsDistributorAdmin: ethers.Contract;
 }
 
 export interface MainnetContractAddresses {
@@ -158,6 +161,8 @@ export interface MainnetContractAddresses {
   rariPool8Tribe: string;
   curve3Metapool: string;
   tribalChiefOptimisticMultisig: string;
+  stakingTokenWrapperRari: string;
+  rariRewardsDistributorDelegator: string;
 }
 
 export type ProposalConfig = {
