@@ -1,8 +1,7 @@
 import { ethers } from 'hardhat';
-import { getAllContractAddresses } from '@test/integration/setup/loadContracts';
-import { DeployUpgradeFunc, NamedContracts } from '@custom-types/types';
-
-const toBN = ethers.BigNumber.from;
+import { expect } from 'chai';
+import { DeployUpgradeFunc, NamedContracts, RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '../../types/types';
+import { CollateralizationOracle, CollateralizationOracleWrapper, StaticPCVDepositWrapper } from '@custom-types/contracts';
 
 // The address representing USD, abstractly (not an ERC-20 of course) used in contracts/Constants.sol
 const USD_ADDRESS = '0x1111111111111111111111111111111111111111';
@@ -103,13 +102,10 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     proxyAdmin
   } = addresses;
 
-  const { uniswapRouter: uniswapRouterAddress } = getAllContractAddresses();
-
-  if (!core || !feiEthPair || !weth || !uniswapRouterAddress || !chainlinkEthUsdOracleWrapper || !compositeOracle) {
+  if (!core || !feiEthPair || !weth || !chainlinkEthUsdOracleWrapper || !compositeOracle) {
     console.log(`core: ${core}`);
     console.log(`feiEtiPair: ${feiEthPair}`);
     console.log(`weth: ${weth}`);
-    console.log(`uniswapRouter: ${uniswapRouterAddress}`);
     console.log(`chainlinkEthUsdOracleWrapper: ${chainlinkEthUsdOracleWrapper}`);
     console.log(`compositeOracle: ${compositeOracle}`);
 
@@ -122,8 +118,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   const staticPcvDepositWrapperFactory = await ethers.getContractFactory('StaticPCVDepositWrapper');
   const staticPcvDepositWrapper = await staticPcvDepositWrapperFactory.deploy(
     core,
-    toBN(4000000).mul(ethers.constants.WeiPerEther).toString(), // 4M PCV for 100k INDEX @ ~$40
-    toBN(11500000).mul(ethers.constants.WeiPerEther).toString() // 8.5M FEI in Kashi + 2.5M in Idle + .5M in BarnBridge
+    ethers.constants.WeiPerEther.mul(4_000_000), // 4M PCV for 100k INDEX @ ~$40
+    ethers.constants.WeiPerEther.mul(11_500_000) // 8.5M FEI in Kashi + 2.5M in Idle + .5M in BarnBridge
   );
 
   logging && console.log('staticPcvDepositWrapper: ', staticPcvDepositWrapper.address);
@@ -436,4 +432,55 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     collateralizationOracle,
     collateralizationOracleWrapper
   } as NamedContracts;
+};
+
+export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
+
+export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, logging = false) => {};
+
+export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
+
+export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
+  
+  // @ts-ignore
+  const staticPcvDepositWrapper: StaticPCVDepositWrapper = contracts.staticPcvDepositWrapper;
+  // @ts-ignore
+  const collateralizationOracle: CollateralizationOracle = contracts.collateralizationOracle;
+  // @ts-ignore
+  const collateralizationOracleWrapper: CollateralizationOracleWrapper = contracts.collateralizationOracleWrapper;
+
+  const guardian = addresses.multisig;
+
+  const { dai, weth, dpi, rai, fei} = addresses;
+
+  let staticBalances = await staticPcvDepositWrapper.resistantBalanceAndFei();
+  expect(staticBalances[0]).to.be.equal(ethers.constants.WeiPerEther.mul(4_000_000));
+  expect(staticBalances[1]).to.be.equal(ethers.constants.WeiPerEther.mul(11_500_000));
+
+  const tokens = await collateralizationOracle.getTokensInPcv();
+  expect(tokens.length).to.be.equal(6);
+
+  expect(tokens[0]).to.be.equal(USD_ADDRESS);
+  expect((await collateralizationOracle.getDepositsForToken(tokens[0])).length).to.be.equal(1);
+
+  expect(tokens[1]).to.be.equal(weth);
+  expect((await collateralizationOracle.getDepositsForToken(tokens[1])).length).to.be.equal(6);
+
+  expect(tokens[2]).to.be.equal(dai);
+  expect((await collateralizationOracle.getDepositsForToken(tokens[2])).length).to.be.equal(2);
+
+  expect(tokens[3]).to.be.equal(rai);
+  expect((await collateralizationOracle.getDepositsForToken(tokens[3])).length).to.be.equal(3);
+
+  expect(tokens[4]).to.be.equal(dpi);
+  expect((await collateralizationOracle.getDepositsForToken(tokens[4])).length).to.be.equal(3);
+
+  expect(tokens[5]).to.be.equal(fei);
+  expect((await collateralizationOracle.getDepositsForToken(tokens[5])).length).to.be.equal(13);
+
+  expect(await collateralizationOracle.isContractAdmin(guardian)).to.be.true;
+
+  expect(await collateralizationOracleWrapper.collateralizationOracle()).to.be.equal(collateralizationOracle.address);
+  expect(await collateralizationOracleWrapper.deviationThresholdBasisPoints()).to.be.equal(500);
+  expect(await collateralizationOracleWrapper.isContractAdmin(guardian)).to.be.true;
 };
