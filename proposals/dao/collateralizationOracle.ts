@@ -110,7 +110,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     uniswapPCVDeposit,
     chainlinkDpiUsdOracleWrapper,
     chainlinkRaiUsdCompositOracle,
-    proxyAdmin
+    proxyAdmin,
+    optimisticTimelock
   } = addresses;
 
   if (!core || !feiEthPair || !weth || !chainlinkEthUsdOracleWrapper || !compositeOracle) {
@@ -350,7 +351,15 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('rariPool31FeiPCVDepositWrapper: ', rariPool31FeiPCVDepositWrapper.address);
 
-  // 26. TODO ERC20 PCV Deposit Wrapper
+  // 26. ERC20 PCV Deposit Wrapper
+  const erc20PCVDepositWrapperFactory = await ethers.getContractFactory('ERC20PCVDepositWrapper');
+  const feiOATimelockWrapper = await erc20PCVDepositWrapperFactory.deploy(
+    optimisticTimelock,
+    fei,
+    true
+  );
+
+  logging && console.log('feiOATimelockWrapper: ', feiOATimelockWrapper.address);
 
   // ----------- Collateralization Contracts ---------------
 
@@ -394,6 +403,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
       rariPool18FeiPCVDepositWrapper.address, //23
       rariPool28FeiPCVDepositWrapper.address, // 24
       rariPool31FeiPCVDepositWrapper.address, // 25
+      feiOATimelockWrapper.address, // 26
       bondingCurve,
       dpiUniswapPCVDeposit,
       uniswapPCVDeposit
@@ -484,7 +494,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect((await collateralizationOracle.getDepositsForToken(tokens[4])).length).to.be.equal(3);
 
   expect(tokens[5]).to.be.equal(fei);
-  expect((await collateralizationOracle.getDepositsForToken(tokens[5])).length).to.be.equal(13);
+  expect((await collateralizationOracle.getDepositsForToken(tokens[5])).length).to.be.equal(14);
 
   expect(await collateralizationOracle.isContractAdmin(guardianAddress)).to.be.true;
 
