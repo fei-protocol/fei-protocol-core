@@ -72,7 +72,6 @@ export default {
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
       accounts: privateKey ? [privateKey] : [],
-      gasPrice: ethers.utils.parseUnits('150', 'gwei').toString()
     }
   },
 
