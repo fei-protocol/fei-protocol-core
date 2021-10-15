@@ -9,6 +9,7 @@ import 'solidity-coverage';
 import 'tsconfig-paths/register';
 
 import * as dotenv from 'dotenv';
+import { ethers } from 'ethers';
 
 dotenv.config();
 
@@ -70,7 +71,8 @@ export default {
 
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-      accounts: privateKey ? [privateKey] : []
+      accounts: privateKey ? [privateKey] : [],
+      gasPrice: ethers.utils.parseUnits('150', 'gwei').toString()
     }
   },
 
