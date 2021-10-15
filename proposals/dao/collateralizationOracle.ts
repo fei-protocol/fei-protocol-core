@@ -114,6 +114,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     optimisticTimelock
   } = addresses;
 
+//   const { staticPcvDepositWrapper, ethReserveStabilizerWrapper} = addresses;
+
   if (!core || !feiEthPair || !weth || !chainlinkEthUsdOracleWrapper || !compositeOracle) {
     console.log(`core: ${core}`);
     console.log(`feiEtiPair: ${feiEthPair}`);
