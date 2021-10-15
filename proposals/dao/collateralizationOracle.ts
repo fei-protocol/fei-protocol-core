@@ -1,7 +1,18 @@
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
-import { DeployUpgradeFunc, NamedContracts, RunUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '../../types/types';
-import { CollateralizationOracle, CollateralizationOracleWrapper, StaticPCVDepositWrapper } from '@custom-types/contracts';
+import {
+  DeployUpgradeFunc,
+  NamedContracts,
+  RunUpgradeFunc,
+  SetupUpgradeFunc,
+  TeardownUpgradeFunc,
+  ValidateUpgradeFunc
+} from '../../types/types';
+import {
+  CollateralizationOracle,
+  CollateralizationOracleWrapper,
+  StaticPCVDepositWrapper
+} from '@custom-types/contracts';
 
 // The address representing USD, abstractly (not an ERC-20 of course) used in contracts/Constants.sol
 const USD_ADDRESS = '0x1111111111111111111111111111111111111111';
@@ -441,19 +452,16 @@ export const run: RunUpgradeFunc = async (addresses, oldContracts, contracts, lo
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
-  
-  // @ts-ignore
-  const staticPcvDepositWrapper: StaticPCVDepositWrapper = contracts.staticPcvDepositWrapper;
-  // @ts-ignore
-  const collateralizationOracle: CollateralizationOracle = contracts.collateralizationOracle;
-  // @ts-ignore
-  const collateralizationOracleWrapper: CollateralizationOracleWrapper = contracts.collateralizationOracleWrapper;
+  const staticPcvDepositWrapper: StaticPCVDepositWrapper = contracts.staticPcvDepositWrapper as StaticPCVDepositWrapper;
+  const collateralizationOracle: CollateralizationOracle = contracts.collateralizationOracle as CollateralizationOracle;
+  const collateralizationOracleWrapper: CollateralizationOracleWrapper =
+    contracts.collateralizationOracleWrapper as CollateralizationOracleWrapper;
 
-  const guardian = addresses.multisig;
+  const guardianAddress = addresses.multisig;
 
-  const { dai, weth, dpi, rai, fei} = addresses;
+  const { dai, weth, dpi, rai, fei } = addresses;
 
-  let staticBalances = await staticPcvDepositWrapper.resistantBalanceAndFei();
+  const staticBalances = await staticPcvDepositWrapper.resistantBalanceAndFei();
   expect(staticBalances[0]).to.be.equal(ethers.constants.WeiPerEther.mul(4_000_000));
   expect(staticBalances[1]).to.be.equal(ethers.constants.WeiPerEther.mul(11_500_000));
 
@@ -478,9 +486,9 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(tokens[5]).to.be.equal(fei);
   expect((await collateralizationOracle.getDepositsForToken(tokens[5])).length).to.be.equal(13);
 
-  expect(await collateralizationOracle.isContractAdmin(guardian)).to.be.true;
+  expect(await collateralizationOracle.isContractAdmin(guardianAddress)).to.be.true;
 
   expect(await collateralizationOracleWrapper.collateralizationOracle()).to.be.equal(collateralizationOracle.address);
   expect(await collateralizationOracleWrapper.deviationThresholdBasisPoints()).to.be.equal(500);
-  expect(await collateralizationOracleWrapper.isContractAdmin(guardian)).to.be.true;
+  expect(await collateralizationOracleWrapper.isContractAdmin(guardianAddress)).to.be.true;
 };
