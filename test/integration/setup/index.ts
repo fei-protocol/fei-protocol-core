@@ -116,11 +116,12 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     const setupTyped = setup as SetupUpgradeFunc;
     await setupTyped(contractAddresses, existingContracts, contracts, this.config.logging);
 
-    // Simulate the DAO proposal
-    const proposal = await constructProposal(proposalName, this.config.logging);
-    this.config.logging && console.log(`Simulating proposal...`);
-    await proposal.simulate();
-
+    if (!config['skipDAO']) {
+      // Simulate the DAO proposal
+      const proposal = await constructProposal(proposalName, this.config.logging);
+      this.config.logging && console.log(`Simulating proposal...`);
+      await proposal.simulate();
+    }
     // teardown the DAO proposal
     this.config.logging && console.log(`Running proposal teardown...`);
     const teardownTyped = teardown as TeardownUpgradeFunc;

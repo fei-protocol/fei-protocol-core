@@ -1,0 +1,266 @@
+import chai, { expect } from 'chai';
+import CBN from 'chai-bn';
+import { solidity } from 'ethereum-waffle';
+import { ethers } from 'hardhat';
+import { NamedAddresses, NamedContracts } from '../../types/types';
+import { expectApprox, resetFork, time } from '../helpers';
+import proposals from './proposals_config.json';
+import { TestEndtoEndCoordinator } from './setup';
+
+const e18 = ethers.constants.WeiPerEther;
+const uintMax = ethers.constants.MaxUint256;
+const toBN = ethers.BigNumber.from;
+
+before(async () => {
+  chai.use(CBN(ethers.BigNumber));
+  chai.use(solidity);
+  await resetFork()
+});
+
+describe('e2e', function () {
+  let contracts: NamedContracts;
+  let contractAddresses: NamedAddresses;
+  let deployAddress: string;
+  let e2eCoord: TestEndtoEndCoordinator;
+  let doLogging: boolean;
+
+  const tenPow18 = toBN('1000000000000000000');
+
+  before(async function () {
+    // Setup test environment and get contracts
+    const version = 1;
+    deployAddress = (await ethers.getSigners())[0].address;
+    if (!deployAddress) throw new Error(`No deploy address!`);
+
+    doLogging = Boolean(process.env.LOGGING);
+
+    const config = {
+      logging: doLogging,
+      deployAddress: deployAddress,
+      version: version
+    };
+
+    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+
+    doLogging && console.log(`Loading environment...`);
+    ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
+    doLogging && console.log(`Environment loaded.`);
+  });
+
+  describe.skip('PCV Equity Minter + LBP', async function () {
+    // re-enable this once the pcv equity minter is actually being deployed
+    it('mints appropriate amount and swaps', async function () {
+      const {
+        pcvEquityMinter,
+        collateralizationOracleWrapper,
+        staticPcvDepositWrapper,
+        feiTribeLBPSwapper,
+        tribe,
+        tribeSplitter
+      } = contracts;
+
+      await time.increase((await pcvEquityMinter.remainingTime()).toString());
+
+      const pcvStats = await collateralizationOracleWrapper.pcvStats();
+
+      if (pcvStats[2] < 0) {
+        await staticPcvDepositWrapper.setBalance(pcvStats[0]);
+      }
+      await collateralizationOracleWrapper.update();
+
+      const mintAmount = await pcvEquityMinter.mintAmount();
+
+      const balancesBefore = await feiTribeLBPSwapper.getReserves();
+
+      const splitterBalanceBefore = await tribe.balanceOf(tribeSplitter.address);
+
+      await pcvEquityMinter.mint();
+
+      const balancesAfter = await feiTribeLBPSwapper.getReserves();
+
+      expectApprox(balancesBefore[0].add(mintAmount), balancesAfter[0]);
+      expect(await feiTribeLBPSwapper.swapEndTime()).to.be.gt(toBN((await time.latest()).toString()));
+
+      await time.increase((await pcvEquityMinter.duration()).toString());
+      await pcvEquityMinter.mint();
+
+      expect(await tribe.balanceOf(tribeSplitter.address)).to.be.gt(toBN(splitterBalanceBefore));
+    });
+  });
+
+  describe.skip('Collateralization Oracle', async function () {
+    // re-enable this once the collateralization oracle is actually being deployed
+    it('exempting an address removes from PCV stats', async function () {
+      const { collateralizationOracle, compoundEthPCVDeposit } = contracts;
+
+      const beforeBalance = await compoundEthPCVDeposit.balance();
+
+      const beforeStats = await collateralizationOracle.pcvStats();
+      await collateralizationOracle.setDepositExclusion(compoundEthPCVDeposit.address, true);
+      const afterStats = await collateralizationOracle.pcvStats();
+
+      expectApprox(afterStats[0], beforeStats[0].sub(beforeBalance));
+      expectApprox(afterStats[1], afterStats[1]);
+      expectApprox(afterStats[2], beforeStats[2].sub(beforeBalance));
+    });
+  });
+
+  describe.skip('Collateralization Oracle Keeper', async function () {
+    // re-enable this once the collateralization oracle keeper is actually deployed
+    it('can only call when deviation or time met', async function () {
+      const { staticPcvDepositWrapper, collateralizationOracleWrapper, collateralizationOracleKeeper, fei } = contracts;
+
+      const beforeBalance = await fei.balanceOf(deployAddress);
+
+      await collateralizationOracleWrapper.update();
+
+      // After updating everything should be up to date
+      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.false;
+
+      // After time increase, should be outdated
+      await time.increase((await collateralizationOracleWrapper.remainingTime()).toString());
+
+      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.true;
+      expect(await collateralizationOracleWrapper.isOutdated()).to.be.true;
+      expect(await collateralizationOracleWrapper.isExceededDeviationThreshold()).to.be.false;
+
+      // UpdateIfOutdated succeeds
+      await collateralizationOracleWrapper.updateIfOutdated();
+
+      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.false;
+
+      // Increase PCV balance to exceed deviation threshold
+      const pcvStats = await collateralizationOracleWrapper.pcvStats();
+      await staticPcvDepositWrapper.setBalance(pcvStats[0]);
+
+      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.true;
+      expect(await collateralizationOracleWrapper.isOutdated()).to.be.false;
+      expect(await collateralizationOracleWrapper.isExceededDeviationThreshold()).to.be.true;
+
+      // Keeper is incentivized to update oracle
+      await time.increase((await collateralizationOracleKeeper.MIN_MINT_FREQUENCY()).toString());
+      await collateralizationOracleKeeper.mint();
+
+      const incentive = await collateralizationOracleKeeper.incentiveAmount();
+      expect(beforeBalance.add(incentive)).to.be.equal(await fei.balanceOf(deployAddress));
+
+      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.false;
+    });
+  });
+
+  describe.skip('TribeReserveStabilizer', async function () {
+    // re-enable once the tribe reserve stabilizer is deployed
+    it('mint TRIBE', async function () {
+      const { tribeReserveStabilizer, tribe } = contracts;
+      const tribeSupply = await tribe.totalSupply();
+      const balanceBefore = await tribe.balanceOf(deployAddress);
+
+      await tribeReserveStabilizer.mint(deployAddress, '100000');
+
+      // Minting increases total supply and target balance
+      expect(balanceBefore.add(toBN('100000'))).to.be.equal(await tribe.balanceOf(deployAddress));
+      expect(tribeSupply.add(toBN('100000'))).to.be.equal(await tribe.totalSupply());
+    });
+
+    it('exchangeFei', async function () {
+      const { fei, staticPcvDepositWrapper, tribe, tribeReserveStabilizer, collateralizationOracleWrapper } = contracts;
+
+      await fei.mint(deployAddress, tenPow18.mul(tenPow18).mul(toBN(4)));
+      await collateralizationOracleWrapper.update();
+
+      const userFeiBalanceBefore = toBN(await fei.balanceOf(deployAddress));
+      const userTribeBalanceBefore = await tribe.balanceOf(deployAddress);
+
+      const feiTokensExchange = toBN(40000000000000);
+      await tribeReserveStabilizer.updateOracle();
+      const expectedAmountOut = await tribeReserveStabilizer.getAmountOut(feiTokensExchange);
+      await tribeReserveStabilizer.exchangeFei(feiTokensExchange);
+
+      const userFeiBalanceAfter = toBN(await fei.balanceOf(deployAddress));
+      const userTribeBalanceAfter = await tribe.balanceOf(deployAddress);
+
+      expect(userTribeBalanceAfter.sub(toBN(expectedAmountOut))).to.be.equal(userTribeBalanceBefore);
+      expect(userFeiBalanceAfter.eq(userFeiBalanceBefore.sub(feiTokensExchange))).to.be.true;
+
+      await staticPcvDepositWrapper.setBalance(tenPow18.mul(tenPow18).mul(toBN(10)));
+      await collateralizationOracleWrapper.update();
+      expect(await tribeReserveStabilizer.isCollateralizationBelowThreshold()).to.be.false;
+    });
+  });
+
+  describe.skip('TRIBE Splitter', async function () {
+    // re-enable once the tribe splitter is deployed
+    it('splits TRIBE 3 ways', async function () {
+      const { tribeSplitter, tribeReserveStabilizer, tribe, erc20Dripper, core } = contracts;
+
+      await tribeSplitter.allocate();
+
+      await core.allocateTribe(tribeSplitter.address, '1000000');
+
+      const beforeBalanceStabilizer = await tribe.balanceOf(tribeReserveStabilizer.address);
+      const beforeBalanceDripper = await tribe.balanceOf(erc20Dripper.address);
+      const beforeBalanceCore = await tribe.balanceOf(core.address);
+
+      await tribeSplitter.allocate();
+
+      const afterBalanceStabilizer = await tribe.balanceOf(tribeReserveStabilizer.address);
+      const afterBalanceDripper = await tribe.balanceOf(erc20Dripper.address);
+      const afterBalanceCore = await tribe.balanceOf(core.address);
+
+      expectApprox(beforeBalanceStabilizer.add(toBN('600000')), afterBalanceStabilizer);
+      expectApprox(beforeBalanceDripper.add(toBN('200000')), afterBalanceDripper);
+      expectApprox(beforeBalanceCore.add(toBN('200000')), afterBalanceCore);
+    });
+  });
+
+  // This test is skipped because the stableSwapOperator is not used in production
+  describe.skip('StableSwapOperatorV1', async function () {
+    it('should properly withdraw ~1M DAI to self', async function () {
+      const daiBalanceBefore = await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address);
+      //doLogging && console.log('daiBalanceBefore', daiBalanceBefore / 1e18);
+      await contracts.curveMetapoolDeposit.withdraw(contracts.curveMetapoolDeposit.address, tenPow18.mul(toBN(1e6)));
+      const daiBalanceAfter = await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address);
+      //doLogging && console.log('daiBalanceAfter', daiBalanceAfter / 1e18);
+      const daiBalanceWithdrawn = daiBalanceAfter.sub(daiBalanceBefore);
+      //doLogging && console.log('daiBalanceWithdrawn', daiBalanceWithdrawn / 1e18);
+      await expectApprox(daiBalanceWithdrawn, tenPow18.mul(toBN(1e6)), '1000');
+    });
+    it('should properly re-deposit ~1M DAI just withdrawn', async function () {
+      const daiBalanceBefore = await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address);
+      const balanceBefore = await contracts.curveMetapoolDeposit.balance();
+      //doLogging && console.log('daiBalanceBefore', daiBalanceBefore / 1e18);
+      //doLogging && console.log('balanceBefore', balanceBefore / 1e18);
+      await expectApprox(daiBalanceBefore, tenPow18.mul(toBN(1e6)), '1000');
+      await contracts.curveMetapoolDeposit.deposit();
+      const daiBalanceAfter = await contracts.dai.balanceOf(contracts.curveMetapoolDeposit.address);
+      expect(daiBalanceAfter.eq(toBN('0'))).to.be.true;
+      //doLogging && console.log('daiBalanceAfter', daiBalanceAfter / 1e18);
+      const balanceAfter = await contracts.curveMetapoolDeposit.balance();
+      const balanceChange = balanceAfter.sub(balanceBefore);
+      //doLogging && console.log('balanceChange', balanceChange / 1e18);
+      //doLogging && console.log('balanceAfter', balanceAfter / 1e18);
+      await expectApprox(balanceChange, tenPow18.mul(toBN(1e6)), '1000');
+    });
+  });
+
+  it.skip('should be able to redeem Fei from stabiliser', async function () {
+    const fei = contracts.fei;
+    const reserveStabilizer = contracts.ethReserveStabilizer;
+    const signer = (await ethers.getSigners())[0];
+    await signer.sendTransaction({ to: reserveStabilizer.address, value: tenPow18.mul(toBN(200)) });
+
+    const contractEthBalanceBefore = toBN(await ethers.provider.getBalance(reserveStabilizer.address));
+    const userFeiBalanceBefore = toBN(await fei.balanceOf(deployAddress));
+
+    const feiTokensExchange = toBN(40000000000000);
+    await reserveStabilizer.updateOracle();
+    const expectedAmountOut = await reserveStabilizer.getAmountOut(feiTokensExchange);
+    await reserveStabilizer.exchangeFei(feiTokensExchange);
+
+    const contractEthBalanceAfter = toBN(await ethers.provider.getBalance(reserveStabilizer.address));
+    const userFeiBalanceAfter = toBN(await fei.balanceOf(deployAddress));
+
+    expect(contractEthBalanceBefore.sub(toBN(expectedAmountOut))).to.be.equal(contractEthBalanceAfter);
+    expect(userFeiBalanceAfter).to.be.equal(userFeiBalanceBefore.sub(feiTokensExchange));
+  });
+});
