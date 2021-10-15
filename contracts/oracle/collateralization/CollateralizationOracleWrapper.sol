@@ -67,7 +67,8 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
         deviationThresholdBasisPoints = _deviationThresholdBasisPoints;
 
         // Shared admin with other oracles
-        _setContractAdminRole(keccak256("ORACLE_ADMIN_ROLE"));    
+        _setContractAdminRole(keccak256("GUARDIAN_ROLE")); // initialize with Guardian before transitioning to ORACLE_ADMIN via DAO
+        // _setContractAdminRole(keccak256("ORACLE_ADMIN_ROLE"));    
     }
 
     // ----------- Setter methods ----------------------------------------------
