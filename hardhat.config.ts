@@ -9,6 +9,7 @@ import 'solidity-coverage';
 import 'tsconfig-paths/register';
 
 import * as dotenv from 'dotenv';
+import { ethers } from 'ethers';
 
 dotenv.config();
 
