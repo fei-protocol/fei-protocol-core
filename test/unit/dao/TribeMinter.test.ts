@@ -11,7 +11,7 @@ before(() => {
   chai.use(CBN(ethers.BigNumber));
 });
 
-describe.only('TribeMinter', function () {
+describe('TribeMinter', function () {
   let userAddress: string;
   let governorAddress: string;
   let core: Core;
