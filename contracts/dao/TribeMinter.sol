@@ -6,7 +6,6 @@ import "../utils/RateLimited.sol";
 import "../Constants.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 /** 
   @title implementation for a TRIBE Minter Contract
@@ -32,23 +31,28 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
   This keeps the power to transfer or burn TRIBE minting rights isolated.
 */
 contract TribeMinter is ITribeMinter, RateLimited, Ownable {
-    using EnumerableSet for EnumerableSet.AddressSet;
 
     /// @notice the max inflation in TRIBE circulating supply per year in basis points (1/10000)
     uint256 public override annualMaxInflationBasisPoints;
 
-    EnumerableSet.AddressSet internal _lockedTribeAddresses;
+    /// @notice the tribe treasury address used to exclude from circulating supply
+    address public override tribeTreasury;
+
+    /// @notice the tribe rewards dripper address used to exclude from circulating supply
+    address public override tribeRewardsDripper;
 
     /// @notice Tribe Reserve Stabilizer constructor
     /// @param _core Fei Core to reference
     /// @param _annualMaxInflationBasisPoints the max inflation in TRIBE circulating supply per year in basis points (1/10000)
     /// @param _owner the owner, capable of changing the tribe minter address.
-    /// @param _lockedTribeAddressList the initial list of locked TRIBE holding contract addresses
+    /// @param _tribeTreasury the tribe treasury address used to exclude from circulating supply
+    /// @param _tribeRewardsDripper the tribe rewards dripper address used to exclude from circulating supply
     constructor(
         address _core,
         uint256 _annualMaxInflationBasisPoints,
         address _owner,
-        address[] memory _lockedTribeAddressList
+        address _tribeTreasury,
+        address _tribeRewardsDripper
     ) 
       RateLimited(0, 0, 0, false)
       CoreRef(_core)
@@ -61,9 +65,14 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
 
         transferOwnership(_owner);
 
-        _addLockedTribeAddress(address(this));
-        for (uint256 i = 0; i < _lockedTribeAddressList.length; i++) {
-            _addLockedTribeAddress(_lockedTribeAddressList[i]);
+        if (_tribeTreasury != address(0)) {
+            tribeTreasury = _tribeTreasury;
+            emit TribeTreasuryUpdate(address(0), _tribeTreasury);
+        }
+
+        if (_tribeRewardsDripper != address(0)) {
+            tribeRewardsDripper = _tribeRewardsDripper;
+            emit TribeRewardsDripperUpdate(address(0), _tribeRewardsDripper);
         }
     }
 
@@ -100,15 +109,18 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
         _mint(to, amount);
     }
 
-    /// @notice add an address to the lockedTribe excluded list
-    function addLockedTribeAddress(address lockedTribeAddress) external override onlyGovernorOrAdmin {
-        _addLockedTribeAddress(lockedTribeAddress);
+    /// @notice sets the new TRIBE treasury address
+    function setTribeTreasury(address newTribeTreasury) external override onlyGovernorOrAdmin {
+        address oldTribeTreasury = tribeTreasury;
+        tribeTreasury = newTribeTreasury;
+        emit TribeTreasuryUpdate(oldTribeTreasury, newTribeTreasury);
     }
 
-    /// @notice remove an address from the lockedTribe excluded list
-    function removeLockedTribeAddress(address lockedTribeAddress) external override onlyGovernorOrAdmin {
-        _lockedTribeAddresses.remove(lockedTribeAddress);
-        emit RemoveLockedTribeAddress(lockedTribeAddress);
+    /// @notice sets the new TRIBE treasury rewards dripper
+    function setTribeRewardsDripper(address newTribeRewardsDripper) external override onlyGovernorOrAdmin {
+        address oldTribeRewardsDripper = tribeRewardsDripper;
+        tribeRewardsDripper = newTribeRewardsDripper;
+        emit TribeTreasuryUpdate(oldTribeRewardsDripper, newTribeRewardsDripper);
     }
 
     /// @notice changes the TRIBE minter address
@@ -135,9 +147,14 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
         IERC20 _tribe = tribe();
 
         // Remove all locked TRIBE from total supply calculation
-        uint256 lockedTribe;
-        for (uint256 i = 0; i < _lockedTribeAddresses.length(); i++) {
-            lockedTribe += _tribe.balanceOf(_lockedTribeAddresses.at(i));
+        uint256 lockedTribe = _tribe.balanceOf(address(this));
+
+        if (tribeTreasury != address(0)) {
+            lockedTribe += _tribe.balanceOf(tribeTreasury);
+        }
+
+        if (tribeRewardsDripper != address(0)) {
+            lockedTribe += _tribe.balanceOf(tribeRewardsDripper);
         }
 
         return _tribe.totalSupply() - lockedTribe;
@@ -152,16 +169,6 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
     /// @notice return whether a poke is needed or not i.e. is buffer cap != ideal cap
     function isPokeNeeded() external view override returns (bool) {
         return idealBufferCap() != bufferCap;
-    }
-
-    /// @notice return the set of locked TRIBE holding addresses to be excluded from circulating supply
-    function lockedTribeAddresses() external view override returns(address[] memory) {
-        return _lockedTribeAddresses.values();
-    }
-
-    function _addLockedTribeAddress(address lockedTribeAddress) internal {
-        _lockedTribeAddresses.add(lockedTribeAddress);
-        emit AddLockedTribeAddress(lockedTribeAddress);
     }
 
     // Update the buffer cap and rate limit if needed

@@ -13,8 +13,8 @@ interface ITribe is IERC20 {
 interface ITribeMinter {
     // ----------- Events -----------
     event AnnualMaxInflationUpdate(uint256 oldAnnualMaxInflationBasisPoints, uint256 newAnnualMaxInflationBasisPoints);
-    event AddLockedTribeAddress(address indexed lockedTribeAddress);
-    event RemoveLockedTribeAddress(address indexed lockedTribeAddress);
+    event TribeTreasuryUpdate(address indexed oldTribeTreasury, address indexed newTribeTreasury);
+    event TribeRewardsDripperUpdate(address indexed oldTribeRewardsDripper, address indexed newTribeRewardsDripper);
 
     // ----------- Public state changing api -----------
 
@@ -28,9 +28,9 @@ interface ITribeMinter {
 
     function mint(address to, uint256 amount) external;
 
-    function addLockedTribeAddress(address lockedTribeAddress) external;
+    function setTribeTreasury(address newTribeTreasury) external;
 
-    function removeLockedTribeAddress(address lockedTribeAddress) external;
+    function setTribeRewardsDripper(address newTribeRewardsDripper) external;
 
     function setAnnualMaxInflationBasisPoints(uint256 newAnnualMaxInflationBasisPoints) external;
 
@@ -46,5 +46,7 @@ interface ITribeMinter {
 
     function isPokeNeeded() external view returns (bool);
 
-    function lockedTribeAddresses() external view returns (address[] memory);
+    function tribeTreasury() external view returns (address);
+
+    function tribeRewardsDripper() external view returns (address);
 }

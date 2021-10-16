@@ -1,4 +1,4 @@
-import { expectRevert, getAddresses, getCore, getImpersonatedSigner, increaseTime } from '../../helpers';
+import { expectRevert, getAddresses, getCore, getImpersonatedSigner, increaseTime, ZERO_ADDRESS } from '../../helpers';
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
@@ -11,7 +11,7 @@ before(() => {
   chai.use(CBN(ethers.BigNumber));
 });
 
-describe('TribeMinter', function () {
+describe.only('TribeMinter', function () {
   let userAddress: string;
   let governorAddress: string;
   let core: Core;
@@ -43,7 +43,8 @@ describe('TribeMinter', function () {
       core.address,
       '1000', // 10% inflation cap
       governorAddress,
-      [] // no additional lockedTribeAddresses
+      ZERO_ADDRESS, // no treasury
+      ZERO_ADDRESS // no rewards
     );
 
     await tribe.connect(impersonatedSigners[governorAddress]).setMinter(tribeMinter.address);
@@ -78,12 +79,6 @@ describe('TribeMinter', function () {
     it('tribeCirculatingSupply', async function () {
       expect(await tribeMinter.tribeCirculatingSupply()).to.be.bignumber.equal(await tribe.totalSupply());
       expect(await tribeMinter.totalSupply()).to.be.bignumber.equal(await tribe.totalSupply());
-    });
-
-    it('lockedTribeAddresses', async function () {
-      const lockedAddresses = await tribeMinter.lockedTribeAddresses();
-      expect(lockedAddresses.length).to.be.equal(1);
-      expect(lockedAddresses[0]).to.be.equal(tribeMinter.address);
     });
   });
 
@@ -129,9 +124,9 @@ describe('TribeMinter', function () {
 
     describe('Decrease Supply', function () {
       beforeEach(async function () {
-        // Transferring TRIBE to user address and setting it to locked effectively decreases circulating supply
+        // Transferring TRIBE to user address and making it tribe treasury effectively decreases circulating supply
         await core.connect(impersonatedSigners[governorAddress]).allocateTribe(userAddress, mintAmount);
-        await tribeMinter.connect(impersonatedSigners[governorAddress]).addLockedTribeAddress(userAddress);
+        await tribeMinter.connect(impersonatedSigners[governorAddress]).setTribeTreasury(userAddress);
       });
 
       it('decreases rate limit', async function () {
@@ -232,62 +227,29 @@ describe('TribeMinter', function () {
     });
   });
 
-  describe('Add Locked Tribe Address', function () {
+  describe('Set Tribe Treasury', function () {
     it('governor succeeds', async function () {
-      const signer = impersonatedSigners[governorAddress];
-
-      // First mint some TRIBE to check if it is excluded later
-      const mintAmount = ethers.constants.WeiPerEther.mul(10_000);
-      await tribeMinter.connect(signer).mint(userAddress, mintAmount);
-
-      const supplyBefore = await tribeMinter.totalSupply();
-
-      expect(await tribeMinter.connect(signer).addLockedTribeAddress(userAddress))
-        .to.emit(tribeMinter, 'AddLockedTribeAddress')
-        .withArgs(userAddress);
-
-      // Check the new lockedTribeAddresses
-      const lockedAddresses = await tribeMinter.lockedTribeAddresses();
-      expect(lockedAddresses[1]).to.be.equal(userAddress);
-      expect(lockedAddresses.length).to.be.equal(2);
-
-      // Check that the minted TRIBE was excluded
-      expect(await tribeMinter.totalSupply()).to.be.bignumber.equal(supplyBefore.sub(mintAmount));
+      await tribeMinter.connect(impersonatedSigners[governorAddress]).setTribeTreasury(userAddress);
+      expect(await tribeMinter.tribeTreasury()).to.be.equal(userAddress);
     });
 
     it('non-governor reverts', async function () {
       await expectRevert(
-        tribeMinter.connect(impersonatedSigners[userAddress]).addLockedTribeAddress(userAddress),
+        tribeMinter.connect(impersonatedSigners[userAddress]).setTribeTreasury(userAddress),
         'CoreRef: Caller is not a governor or contract admin'
       );
     });
   });
 
-  describe('Remove Locked Tribe Address', function () {
+  describe('Set Tribe Rewards Dripper', function () {
     it('governor succeeds', async function () {
-      const signer = impersonatedSigners[governorAddress];
-
-      // First mint some excluded TRIBE to see if it is re-included after removing
-      const mintAmount = ethers.constants.WeiPerEther.mul(10_000);
-      await tribeMinter.connect(signer).mint(tribeMinter.address, mintAmount);
-
-      const supplyBefore = await tribeMinter.totalSupply();
-
-      expect(await tribeMinter.connect(signer).removeLockedTribeAddress(tribeMinter.address))
-        .to.emit(tribeMinter, 'RemoveLockedTribeAddress')
-        .withArgs(tribeMinter.address);
-
-      // Check lockedTribeAddresses is empty after removing tribeMinter
-      const lockedAddresses = await tribeMinter.lockedTribeAddresses();
-      expect(lockedAddresses.length).to.be.equal(0);
-
-      // Then check the previously excluded balance is now included
-      expect(await tribeMinter.totalSupply()).to.be.bignumber.equal(supplyBefore.add(mintAmount));
+      await tribeMinter.connect(impersonatedSigners[governorAddress]).setTribeRewardsDripper(userAddress);
+      expect(await tribeMinter.tribeRewardsDripper()).to.be.equal(userAddress);
     });
 
     it('non-governor reverts', async function () {
       await expectRevert(
-        tribeMinter.connect(impersonatedSigners[userAddress]).removeLockedTribeAddress(userAddress),
+        tribeMinter.connect(impersonatedSigners[userAddress]).setTribeRewardsDripper(userAddress),
         'CoreRef: Caller is not a governor or contract admin'
       );
     });
