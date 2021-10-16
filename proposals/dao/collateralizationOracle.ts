@@ -353,11 +353,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   // 26. ERC20 PCV Deposit Wrapper
   const erc20PCVDepositWrapperFactory = await ethers.getContractFactory('ERC20PCVDepositWrapper');
-  const feiOATimelockWrapper = await erc20PCVDepositWrapperFactory.deploy(
-    optimisticTimelock,
-    fei,
-    true
-  );
+  const feiOATimelockWrapper = await erc20PCVDepositWrapperFactory.deploy(optimisticTimelock, fei, true);
 
   logging && console.log('feiOATimelockWrapper: ', feiOATimelockWrapper.address);
 
