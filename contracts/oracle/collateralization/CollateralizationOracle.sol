@@ -63,7 +63,8 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
         _addDeposits(_deposits);
 
         // Shared admin with other oracles
-        _setContractAdminRole(keccak256("ORACLE_ADMIN_ROLE"));
+        _setContractAdminRole(keccak256("GUARDIAN_ROLE")); // initialize with Guardian before transitioning to ORACLE_ADMIN via DAO
+        // _setContractAdminRole(keccak256("ORACLE_ADMIN_ROLE"));
     }
 
     // ----------- Convenience getters -----------
@@ -75,12 +76,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
 
     /// @notice returns an array of the addresses of tokens held in the pcv.
     function getTokensInPcv() external view returns(address[] memory) {
-        uint256 _length = tokensInPcv.length();
-        address[] memory tokens = new address[](_length);
-        for (uint256 i = 0; i < _length; i++) {
-            tokens[i] = tokensInPcv.at(i);
-        }
-        return tokens;
+        return tokensInPcv.values();
     }
 
     /// @notice returns token at index i of the array of PCV tokens
@@ -90,12 +86,7 @@ contract CollateralizationOracle is ICollateralizationOracle, CoreRef {
 
     /// @notice returns an array of the deposits holding a given token.
     function getDepositsForToken(address _token) external view returns(address[] memory) {
-        uint256 _length = tokenToDeposits[_token].length();
-        address[] memory deposits = new address[](_length);
-        for (uint256 i = 0; i < _length; i++) {
-            deposits[i] = tokenToDeposits[_token].at(i);
-        }
-        return deposits;
+        return tokenToDeposits[_token].values();
     }
 
     /// @notice returns the address of deposit at index i of token _token
