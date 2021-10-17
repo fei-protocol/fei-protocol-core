@@ -13,9 +13,9 @@ import format from 'string-template';
  */
 export default async function constructProposal(
   proposalName: string,
-  logging = false,
   contracts = undefined,
-  contractAddresses = undefined
+  contractAddresses = undefined,
+  logging = false,
 ) {
   console.log(`Constructing proposal...`);
   const proposalInfo = await import(`../../proposals/description/${proposalName}`);

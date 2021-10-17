@@ -164,7 +164,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('PCV Equity Minter: ', pcvEquityMinter.address);
 
-  // 1.
+  // 8.
   const collateralizationOracleGuardianFactory = await ethers.getContractFactory('CollateralizationOracleGuardian');
   const collateralizationOracleGuardian = await collateralizationOracleGuardianFactory.deploy(
     core,
