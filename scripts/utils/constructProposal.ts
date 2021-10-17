@@ -15,7 +15,7 @@ export default async function constructProposal(
   proposalName: string,
   contracts = undefined,
   contractAddresses = undefined,
-  logging = false,
+  logging = false
 ) {
   console.log(`Constructing proposal...`);
   const proposalInfo = await import(`../../proposals/description/${proposalName}`);
