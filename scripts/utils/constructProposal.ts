@@ -11,13 +11,18 @@ import format from 'string-template';
  * Uses the data in `proposals/description/${proposalName}.json` for the commands
  * Uses the text in `proposals/description/${proposalName}.txt` for the description
  */
-export default async function constructProposal(proposalName: string, logging = false, contracts = undefined, contractAddresses = undefined) {
+export default async function constructProposal(
+  proposalName: string,
+  logging = false,
+  contracts = undefined,
+  contractAddresses = undefined
+) {
   console.log(`Constructing proposal...`);
   const proposalInfo = await import(`../../proposals/description/${proposalName}`);
   const proposalDescription = fs.readFileSync(`${__dirname}/../../proposals/description/${proposalName}.txt`);
 
-  contracts = contracts || await getAllContracts();
-  contractAddresses = contractAddresses || await getAllContractAddresses();
+  contracts = contracts || (await getAllContracts());
+  contractAddresses = contractAddresses || (await getAllContractAddresses());
 
   const proposalBuilder = proposals.builders.alpha();
   proposalBuilder.maxActions = 40;
