@@ -20,6 +20,7 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '../../../types/types';
+import { resetFork } from '@test/helpers';
 
 /**
  * Coordinate initialising an end-to-end testing environment
@@ -50,6 +51,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    *
    */
   public async loadEnvironment(): Promise<Env> {
+    await resetFork();
     await this.initMainnetContracts();
     let existingContracts = this.mainnetContracts;
 
