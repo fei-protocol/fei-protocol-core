@@ -9,6 +9,7 @@ import {
   ValidateUpgradeFunc
 } from '../../types/types';
 import { TransactionResponse } from '@ethersproject/providers';
+import { expectApprox } from '@test/helpers';
 
 before(async () => {
   chai.use(CBN(ethers.BigNumber));
@@ -117,7 +118,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     {
       _oracle: chainlinkTribeUsdCompositeOracle.address,
       _backupOracle: ethers.constants.AddressZero,
-      _invertOraclePrice: false, // TODO check this
+      _invertOraclePrice: true,
       _decimalsNormalizer: 0
     },
     LBP_FREQUENCY,
@@ -215,4 +216,11 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await core.isMinter(pcvEquityMinter.address)).to.be.true;
 
   expect(await tribe.balanceOf(feiTribeLBPSwapper.address)).to.be.bignumber.equal(ethers.BigNumber.from(100));
+
+  const price = (await feiTribeLBPSwapper.readOracle())[0];
+  const response = await feiTribeLBPSwapper.getTokensIn(1000000);
+  const amounts = response[1];
+  expect(amounts[0]).to.be.bignumber.equal(ethers.BigNumber.from(1000000));
+  // TRIBE/FEI price * FEI amount * 1% ~= amount
+  expectApprox(price.mul(1000000).div(ethers.constants.WeiPerEther).div(100), amounts[1]);
 };
