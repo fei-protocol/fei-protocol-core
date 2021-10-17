@@ -119,14 +119,14 @@ describe('RateLimitedMinter', function () {
       await this.rateLimitedMinter
         .connect(impersonatedSigners[governorAddress])
         .connect(impersonatedSigners[governorAddress])
-        .setbufferCap('10000', {});
+        .setBufferCap('10000', {});
       expect(await this.rateLimitedMinter.bufferCap()).to.be.equal(toBN('10000'));
       expect(await this.rateLimitedMinter.buffer()).to.be.equal(toBN('10000'));
     });
 
     it('non-governor reverts', async function () {
       await expectRevert(
-        this.rateLimitedMinter.connect(impersonatedSigners[userAddress]).setbufferCap('10000'),
+        this.rateLimitedMinter.connect(impersonatedSigners[userAddress]).setBufferCap('10000'),
         'CoreRef: Caller is not a governor'
       );
     });

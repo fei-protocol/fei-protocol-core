@@ -1,16 +1,9 @@
-import { MAX_UINT256, expectRevert, getAddresses, getCore } from '../../helpers';
-import hre, { ethers, artifacts } from 'hardhat';
+import { expectRevert, getAddresses, getCore } from '../../helpers';
+import hre, { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
 
 const toBN = ethers.BigNumber.from;
-
-const TribeReserveStabilizer = artifacts.readArtifactSync('TribeReserveStabilizer');
-const Fei = artifacts.readArtifactSync('Fei');
-const Tribe = artifacts.readArtifactSync('Tribe');
-const MockOracle = artifacts.readArtifactSync('MockOracle');
-const MockCollateralizationOracle = artifacts.readArtifactSync('MockCollateralizationOracle');
-const MockPCVDeposit = artifacts.readArtifactSync('MockEthUniswapPCVDeposit');
 
 describe('TribeReserveStabilizer', function () {
   let userAddress;
@@ -57,6 +50,8 @@ describe('TribeReserveStabilizer', function () {
     ).deploy(this.core.address, 1);
     this.pcvDeposit = await (await ethers.getContractFactory('MockEthUniswapPCVDeposit')).deploy(userAddress);
 
+    this.tribeMinter = await (await ethers.getContractFactory('MockTribeMinter')).deploy(this.tribe.address);
+
     this.reserveStabilizer = await (
       await ethers.getContractFactory('TribeReserveStabilizer')
     ).deploy(
@@ -66,14 +61,12 @@ describe('TribeReserveStabilizer', function () {
       '9000', // $.90 exchange rate
       this.collateralizationOracle.address,
       '10000', // 100% CR threshold
-      '10000000', // max rate limit per second
-      '10000000', // rate limit per second
-      '10000000000' // buffer cap
+      this.tribeMinter.address
     );
 
     await this.core.connect(impersonatedSigners[governorAddress]).grantBurner(this.reserveStabilizer.address, {});
 
-    await this.tribe.connect(impersonatedSigners[governorAddress]).setMinter(this.reserveStabilizer.address, {});
+    await this.tribe.connect(impersonatedSigners[governorAddress]).setMinter(this.tribeMinter.address, {});
 
     await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 40000000, {});
   });
@@ -107,50 +100,7 @@ describe('TribeReserveStabilizer', function () {
       });
     });
 
-    describe('No Held TRIBE', function () {
-      it('mints all TRIBE', async function () {
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.equal(toBN('0'));
-        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('0'));
-        await this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei('4444445', {});
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.equal(toBN('0'));
-        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('10000'));
-      });
-    });
-
-    describe('Some Held TRIBE', function () {
-      beforeEach(async function () {
-        this.mintAmount = toBN('10000');
-        await this.reserveStabilizer
-          .connect(impersonatedSigners[governorAddress])
-          .mint(this.reserveStabilizer.address, this.mintAmount, {});
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.equal(this.mintAmount);
-      });
-
-      it('mints some TRIBE', async function () {
-        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('0'));
-        await this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei('8888889', {});
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.equal('0');
-        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('20000'));
-      });
-    });
-
-    describe('Exceed Buffer', function () {
-      beforeEach(async function () {
-        await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, '100000000000000000000000', {});
-        this.buffer = await this.reserveStabilizer.buffer();
-        this.feiAmount = this.buffer.mul(toBN('400')); // mul by oracle price
-        await this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(this.feiAmount, {});
-      });
-
-      it('reverts', async function () {
-        await expectRevert(
-          this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(this.feiAmount, {}),
-          'RateLimited: rate limit hit'
-        );
-      });
-    });
-
-    describe('FEI above threshold', function () {
+    describe('Collateralization ratio above threshold', function () {
       it('reverts', async function () {
         await this.reserveStabilizer
           .connect(impersonatedSigners[governorAddress])
@@ -209,37 +159,6 @@ describe('TribeReserveStabilizer', function () {
     });
   });
 
-  describe('WithdrawERC20', function () {
-    it('tribe token reverts', async function () {
-      await expectRevert(
-        this.reserveStabilizer
-          .connect(impersonatedSigners[pcvControllerAddress])
-          .withdrawERC20(this.tribe.address, userAddress, '1000000000', {}),
-        "TribeReserveStabilizer: can't withdraw"
-      );
-    });
-
-    it('non-tribe token succeeds', async function () {
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.reserveStabilizer.address, 1000, {});
-
-      await this.reserveStabilizer
-        .connect(impersonatedSigners[pcvControllerAddress])
-        .withdrawERC20(this.fei.address, userAddress, '1000', {});
-      expect(await this.fei.balanceOf(userAddress)).to.be.equal('40001000');
-    });
-
-    it('non-pcv controller reverts', async function () {
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.reserveStabilizer.address, 1000, {});
-
-      await expectRevert(
-        this.reserveStabilizer
-          .connect(impersonatedSigners[userAddress])
-          .withdrawERC20(this.fei.address, userAddress, '1000', {}),
-        'CoreRef: Caller is not a PCV controller'
-      );
-    });
-  });
-
   describe('Not Enough FEI', function () {
     it('reverts', async function () {
       await expectRevert(
@@ -255,62 +174,6 @@ describe('TribeReserveStabilizer', function () {
       await expectRevert(
         this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(toBN('400000'), {}),
         'Pausable: paused'
-      );
-    });
-  });
-
-  describe('Mint', function () {
-    describe('Access', function () {
-      it('governor succeeds', async function () {
-        await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).mint(userAddress, '10000', {});
-        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('10000'));
-      });
-
-      it('non-governor reverts', async function () {
-        await expectRevert(
-          this.reserveStabilizer.connect(impersonatedSigners[userAddress]).mint(userAddress, '10000', {}),
-          'CoreRef: Caller is not a governor'
-        );
-      });
-    });
-    describe('No Held TRIBE', function () {
-      it('mints all TRIBE', async function () {
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.equal(toBN('0'));
-        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('0'));
-        await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).mint(userAddress, '10000', {});
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.equal(toBN('0'));
-        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('10000'));
-      });
-    });
-
-    describe('Some Held TRIBE', function () {
-      beforeEach(async function () {
-        this.mintAmount = toBN('10000');
-        await this.reserveStabilizer
-          .connect(impersonatedSigners[governorAddress])
-          .mint(this.reserveStabilizer.address, this.mintAmount, {});
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.equal(this.mintAmount);
-      });
-
-      it('mints all TRIBE', async function () {
-        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('0'));
-        await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).mint(userAddress, '20000', {});
-        expect(await this.tribe.balanceOf(this.reserveStabilizer.address)).to.be.equal(this.mintAmount);
-        expect(await this.tribe.balanceOf(userAddress)).to.be.equal(toBN('20000'));
-      });
-    });
-  });
-
-  describe('Set Minter', function () {
-    it('governor succeeds', async function () {
-      await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).setMinter(userAddress, {});
-      expect(await this.tribe.minter()).to.be.equal(userAddress);
-    });
-
-    it('non-governor reverts', async function () {
-      await expectRevert(
-        this.reserveStabilizer.connect(impersonatedSigners[userAddress]).setMinter(userAddress, {}),
-        'CoreRef: Caller is not a governor'
       );
     });
   });
