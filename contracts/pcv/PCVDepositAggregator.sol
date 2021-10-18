@@ -5,6 +5,7 @@ import "./IPCVDepositAggregator.sol";
 import "./PCVDeposit.sol";
 import "../refs/CoreRef.sol";
 import "../external/Decimal.sol";
+import "./balancer/IRewardsAssetManager.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -177,6 +178,9 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
             address pcvDepositAddress = pcvDepositAddresses.at(i);
             _removePCVDeposit(pcvDepositAddress);
         }
+
+        // Finally, set the new aggregator on the rewards asset manager itself
+        IRewardsAssetManager(rewardsAssetManager).setNewAggregator(address(newAggregator));
     }
 
     // ---------- View Functions ---------------
