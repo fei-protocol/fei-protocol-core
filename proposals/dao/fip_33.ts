@@ -59,7 +59,7 @@ DAO ACTIONS:
 7. Grant Oracle Admin role to Collateralization Oracle Guardian
 8. Create SWAP_ADMIN_ROLE
 9. Grant PCVEquityMinter swap admin
-10. TODO ORACLE admin to OA ??
+10. ORACLE admin to OA
 */
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
@@ -206,7 +206,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
     tribe
   } = contracts;
 
-  const { multisig } = addresses;
+  const { multisig, optimisticTimelock } = addresses;
 
   // keccak256("ORACLE_ADMIN")
   const oracleAdminRole = '0xa8d944a5277d6a203f114d020d26918a390f167b089a46be4fca9da716d23783';
@@ -215,6 +215,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
 
   expect(await collateralizationOracle.isContractAdmin(multisig)).to.be.false;
   expect(await collateralizationOracleWrapper.isContractAdmin(collateralizationOracleGuardian.address)).to.be.true;
+  expect(await collateralizationOracleWrapper.isContractAdmin(optimisticTimelock)).to.be.true;
 
   expect(await core.isMinter(collateralizationOracleKeeper.address)).to.be.true;
   expect(await core.isMinter(pcvEquityMinter.address)).to.be.true;

@@ -6,7 +6,7 @@ import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { expectApprox, increaseTime, latestTime, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config.json';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { BalancerLBPSwapper, CollateralizationOracle, StaticPCVDepositWrapper } from '@custom-types/contracts';
+import { CollateralizationOracle, StaticPCVDepositWrapper } from '@custom-types/contracts';
 const toBN = ethers.BigNumber.from;
 
 before(async () => {
@@ -55,7 +55,6 @@ describe.only('e2e', function () {
         fei,
         tribe,
         core,
-        balancerVault
       } = contracts;
 
       await increaseTime(await pcvEquityMinter.remainingTime());

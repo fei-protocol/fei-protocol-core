@@ -78,6 +78,16 @@
                 "{pcvEquityMinter}"
             ],
             "description": "Grant SWAP_ADMIN_ROLE to PCVEquityMinter"
+        },
+        {
+            "target": "core",
+            "values": "0",
+            "method": "grantRole(bytes32,address)",
+            "arguments": [
+                "0xa8d944a5277d6a203f114d020d26918a390f167b089a46be4fca9da716d23783",
+                "{optimisticTimelock}"
+            ],
+            "description": "Grant ORACLE_ADMIN to OA Timelock"
         }
     ]
 }
