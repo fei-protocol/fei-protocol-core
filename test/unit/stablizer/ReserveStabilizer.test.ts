@@ -5,7 +5,7 @@ import { Signer } from 'ethers';
 
 const toBN = ethers.BigNumber.from;
 
-describe.only('ReserveStabilizer', function () {
+describe('ReserveStabilizer', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;

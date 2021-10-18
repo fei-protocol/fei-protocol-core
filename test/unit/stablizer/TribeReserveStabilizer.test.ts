@@ -12,7 +12,7 @@ const MockOracle = artifacts.readArtifactSync('MockOracle');
 const MockCollateralizationOracle = artifacts.readArtifactSync('MockCollateralizationOracle');
 const MockPCVDeposit = artifacts.readArtifactSync('MockEthUniswapPCVDeposit');
 
-describe.only('TribeReserveStabilizer', function () {
+describe('TribeReserveStabilizer', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
