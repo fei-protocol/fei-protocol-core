@@ -67,6 +67,13 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
         // emit event?
     }
 
+    /**
+     * @notice withdraws the specified amount of tokens from the contract
+     * @dev the implementation is as follows:
+     * 1. check if the contract has enough in the buffer to cover the withdrawal. if so, just use this
+     * 2. if it doesn't, scan through each of the pcv deposits and withdraw from them their overage amounts,
+     *    up to the total amount needed (less the amount already in the buffer)
+     */
     function withdraw(address to, uint256 amount) external onlyPCVController {
         uint totalBalance = getTotalBalance();
 
@@ -74,12 +81,13 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
             revert("Not enough balance to withdraw");
         }
 
+        // If our buffer is full enough, just transfer from that
         if (IERC20(token).balanceOf(address(this)) >= amount) {
             IERC20(token).safeTransfer(to, amount);
         } else {
             // We're going to have to pull from underlying deposits
             // To avoid the need from a rebalance, we should only withdraw overages
-            // Calculate the amounts to withdraw from each underlying (this is basically a rebalance)
+            // Calculate the amounts to withdraw from each underlying (this is basically half of a rebalance)
 
             uint totalAmountNeeded = amount - IERC20(token).balanceOf(address(this));
 
@@ -89,6 +97,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
                 uint actualPcvDepositBalance = IPCVDeposit(pcvDepositAddress).balance();
                 uint idealPcvDepositBalance = pcvDepositWeight * totalBalance / totalWeight;
 
+                // Only withdraw from this underlying if it has an overage 
                 if (actualPcvDepositBalance > idealPcvDepositBalance) {
                     uint pcvDepositOverage = actualPcvDepositBalance - idealPcvDepositBalance;
                     uint amountToWithdraw = totalAmountNeeded;
@@ -100,6 +109,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
                     IPCVDeposit(pcvDepositAddress).withdraw(address(this), amountToWithdraw);
                     totalAmountNeeded -= amountToWithdraw;
 
+                    // If we don't need to withdraw anymore, stop looping over the deposits
                     if (totalAmountNeeded == 0) break;
                 } else {
                     continue;
@@ -116,6 +126,10 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
 
     function withdrawETH(address payable to, uint256 amount) external onlyPCVController {
         to.transfer(amount);
+    }
+
+    function setBufferWeight(uint128 weight) external onlyGuardianOrGovernor {
+        bufferWeight = weight;
     }
 
     function setPCVDepositWeight(address depositAddress, uint weight) external onlyGuardianOrGovernor {
