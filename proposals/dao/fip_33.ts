@@ -32,6 +32,8 @@ const PCV_EQUITY_MINTER_INCENTIVE = ethers.constants.WeiPerEther.mul(1000); // 1
 const PCV_EQUITY_MINTER_FREQUENCY = '604800'; // weekly
 const PCV_EQUITY_MINTER_APR_BPS = '1000'; // 10%
 
+const TRIBE_BUYBACK_AMOUNT = ethers.constants.WeiPerEther.mul(50_000); // 50k TRIBE
+
 /*
 
 TRIBE Buybacks
@@ -55,7 +57,9 @@ DAO ACTIONS:
 5. Set ORACLE_ADMIN role to admin for CR Oracle
 6. Set ORACLE_ADMIN role to admin for CR Oracle Wrapper
 7. Grant Oracle Admin role to Collateralization Oracle Guardian
-8. TODO ORACLE admin to OA ??
+8. Create SWAP_ADMIN_ROLE
+9. Grant PCVEquityMinter swap admin
+10. TODO ORACLE admin to OA ??
 */
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
@@ -215,7 +219,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await core.isMinter(collateralizationOracleKeeper.address)).to.be.true;
   expect(await core.isMinter(pcvEquityMinter.address)).to.be.true;
 
-  expect(await tribe.balanceOf(feiTribeLBPSwapper.address)).to.be.bignumber.equal(ethers.BigNumber.from(100));
+  expect(await tribe.balanceOf(feiTribeLBPSwapper.address)).to.be.bignumber.equal(TRIBE_BUYBACK_AMOUNT);
 
   const price = (await feiTribeLBPSwapper.readOracle())[0];
   const response = await feiTribeLBPSwapper.getTokensIn(1000000);

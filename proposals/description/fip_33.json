@@ -21,9 +21,9 @@
             "method": "allocateTribe(address,uint256)",
             "arguments": [
                 "{feiTribeLBPSwapper}",
-                "100"
+                "50000000000000000000000"
             ],
-            "description": "Seed LBP Swapper with TRIBE"
+            "description": "Seed LBP Swapper with 50k TRIBE"
         },
         {
             "target": "core",
@@ -58,6 +58,26 @@
                 "{collateralizationOracleGuardian}"
             ],
             "description": "Grant Oracle Admin role to Collateralization Oracle Guardian"
+        },
+        {
+            "target": "core",
+            "values": "0",
+            "method": "createRole(bytes32,bytes32)",
+            "arguments": [
+                "0x471cfe1a44bf1b786db7d7104d51e6728ed7b90a35394ad7cc424adf8ed16816",
+                "0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e"
+            ],
+            "description": "Create SWAP_ADMIN_ROLE"
+        },
+        {
+            "target": "core",
+            "values": "0",
+            "method": "grantRole(bytes32,address)",
+            "arguments": [
+                "0x471cfe1a44bf1b786db7d7104d51e6728ed7b90a35394ad7cc424adf8ed16816",
+                "{pcvEquityMinter}"
+            ],
+            "description": "Grant SWAP_ADMIN_ROLE to PCVEquityMinter"
         }
     ]
 }
