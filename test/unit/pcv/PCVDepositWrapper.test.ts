@@ -1,13 +1,7 @@
 import { getCore, getAddresses } from '../../helpers';
 import { expect } from 'chai';
-import hre, { artifacts, ethers } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-
-const PCVDepositWrapper = artifacts.readArtifactSync('PCVDepositWrapper');
-const MockPCVDepositV2 = artifacts.readArtifactSync('MockPCVDepositV2');
-const MockERC20 = artifacts.readArtifactSync('MockERC20');
-
-const toBN = ethers.BigNumber.from;
 
 describe('PCVDepositWrapper', function () {
   const impersonatedSigners: { [key: string]: Signer } = {};

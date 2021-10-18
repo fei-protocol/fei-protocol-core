@@ -1,10 +1,7 @@
 import { expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-
-const CompositeOracle = artifacts.readArtifactSync('CompositeOracle');
-const MockOracle = artifacts.readArtifactSync('MockOracle');
 
 describe('CompositeOracle', function () {
   let governorAddress: string;

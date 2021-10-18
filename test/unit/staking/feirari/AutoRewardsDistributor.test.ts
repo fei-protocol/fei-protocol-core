@@ -1,6 +1,6 @@
-import { expectRevert, balance, getAddresses, getCore } from '../../../helpers';
+import { expectRevert, getAddresses, getCore } from '../../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer, BigNumber } from 'ethers';
 import { AutoRewardsDistributor } from '../../../../types/contracts/AutoRewardsDistributor';
 import { MockRewardsDistributor } from '../../../../types/contracts/MockRewardsDistributor';

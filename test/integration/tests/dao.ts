@@ -46,7 +46,7 @@ describe('e2e-dao', function () {
 
   describe('FeiDAOTimelock', async function () {
     it('veto succeeds', async function () {
-      const { feiDAO, feiDAOTimelock, timelock } = contracts;
+      const { feiDAO, feiDAOTimelock } = contracts;
 
       const eta = (await latestTime()) + 100000;
       const timelockSigner = await getImpersonatedSigner(feiDAO.address);

@@ -7,7 +7,6 @@ const e18 = '000000000000000000';
 
 describe('CollateralizationOracle', function () {
   let userAddress: string;
-  let guardianAddress: string;
   let governorAddress: string;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
@@ -16,17 +15,7 @@ describe('CollateralizationOracle', function () {
     const addresses = await getAddresses();
 
     // add any addresses you want to impersonate here
-    const impersonatedAddresses = [
-      addresses.userAddress,
-      addresses.pcvControllerAddress,
-      addresses.governorAddress,
-      addresses.pcvControllerAddress,
-      addresses.minterAddress,
-      addresses.burnerAddress,
-      addresses.beneficiaryAddress1,
-      addresses.beneficiaryAddress2,
-      addresses.guardianAddress
-    ];
+    const impersonatedAddresses = [addresses.userAddress, addresses.governorAddress];
 
     for (const address of impersonatedAddresses) {
       await hre.network.provider.request({
@@ -39,7 +28,7 @@ describe('CollateralizationOracle', function () {
   });
 
   beforeEach(async function () {
-    ({ userAddress, guardianAddress, governorAddress } = await getAddresses());
+    ({ userAddress, governorAddress } = await getAddresses());
     this.core = await getCore();
     await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(userAddress);
     this.fei = await ethers.getContractAt('IFei', await this.core.fei());

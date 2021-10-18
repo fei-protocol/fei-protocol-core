@@ -141,21 +141,21 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   /**
    * Set the web3 contracts used in the test environment
    */
-  setLocalTestContracts(contracts: NamedContracts) {
+  setLocalTestContracts(contracts: NamedContracts): void {
     this.afterUpgradeContracts = contracts;
   }
 
   /**
    * Set the addresses of the contracts used in the test environment
    */
-  async setLocalTestContractAddresses(contracts: NamedContracts) {
+  async setLocalTestContractAddresses(contracts: NamedContracts): Promise<void> {
     this.afterUpgradeAddresses = { ...(contracts as unknown as NamedAddresses) };
   }
 
   /**
    * Revoke permissions granted to deploy address
    */
-  async revokeDeployAddressPermission() {
+  async revokeDeployAddressPermission(): Promise<void> {
     await this.afterUpgradeContracts.core.revokeMinter(this.config.deployAddress);
     await this.afterUpgradeContracts.core.revokeBurner(this.config.deployAddress);
     await this.afterUpgradeContracts.core.revokePCVController(this.config.deployAddress);

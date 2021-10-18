@@ -1,6 +1,6 @@
 import { expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { artifacts, ethers } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
 
 const toBN = ethers.BigNumber.from;

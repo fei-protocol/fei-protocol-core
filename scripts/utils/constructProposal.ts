@@ -1,8 +1,9 @@
-import { getAllContractAddresses, getAllContracts } from '../../test/integration/setup/loadContracts';
+import { getAllContractAddresses, getAllContracts } from '@test/integration/setup/loadContracts';
 import fs from 'fs';
 import { proposals } from 'hardhat';
-import { MainnetContracts, NamedAddresses } from '@custom-types/types';
+import { NamedAddresses } from '@custom-types/types';
 import format from 'string-template';
+import { AlphaProposal } from '@idle-finance/hardhat-proposals-plugin/dist/src/proposals/compound-alpha';
 
 /**
  * Constucts a hardhat proposal object
@@ -16,9 +17,9 @@ export default async function constructProposal(
   contracts = undefined,
   contractAddresses = undefined,
   logging = false
-) {
+): Promise<AlphaProposal> {
   console.log(`Constructing proposal...`);
-  const proposalInfo = await import(`../../proposals/description/${proposalName}`);
+  const proposalInfo = await import(`@proposals/description/${proposalName}`);
   const proposalDescription = fs.readFileSync(`${__dirname}/../../proposals/description/${proposalName}.txt`);
 
   contracts = contracts || (await getAllContracts());

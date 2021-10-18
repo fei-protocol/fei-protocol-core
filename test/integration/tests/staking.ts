@@ -26,8 +26,6 @@ describe('e2e-staking', function () {
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
 
-  const tenPow18 = toBN('1000000000000000000');
-
   before(async function () {
     // Setup test environment and get contracts
     const version = 1;
@@ -89,8 +87,6 @@ describe('e2e-staking', function () {
             throw new Error('invalid lock length');
           }
         }
-
-        const currentIndex = await tribalChief.openUserDeposits(pid, userAddresses[i]);
 
         await hre.network.provider.request({
           method: 'hardhat_impersonateAccount',
@@ -403,7 +399,6 @@ describe('e2e-staking', function () {
     let autoRewardsDistributor: AutoRewardsDistributor;
     let rewardsDistributorAdmin: Contract;
     let stakingTokenWrapper: Contract;
-    let rewardsDistributorDelegator: Contract;
     const poolAllocPoints = 1000;
     const pid = 3;
     let optimisticTimelock: SignerWithAddress;
@@ -411,7 +406,6 @@ describe('e2e-staking', function () {
 
     before(async () => {
       stakingTokenWrapper = contracts.stakingTokenWrapperRari;
-      rewardsDistributorDelegator = contracts.rariRewardsDistributorDelegator;
       tribePerBlock = toBN('7125').mul(ethers.constants.WeiPerEther).div(100);
       tribalChief = contracts.tribalChief;
       rewardsDistributorAdmin = contracts.rewardsDistributorAdmin;
