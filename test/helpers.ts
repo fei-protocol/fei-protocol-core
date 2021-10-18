@@ -63,11 +63,8 @@ async function getImpersonatedSigner(address: string): Promise<Signer> {
   return signer;
 }
 
-async function increaseTime(amount: number) {
-  await hre.network.provider.request({
-    method: 'evm_increaseTime',
-    params: [amount]
-  });
+async function increaseTime(amount: number | string | BigNumberish) {
+  await time.increase(amount);
 }
 
 async function resetTime() {

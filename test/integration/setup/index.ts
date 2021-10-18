@@ -120,7 +120,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
 
     if (!config['skipDAO']) {
       // Simulate the DAO proposal
-      const proposal = await constructProposal(proposalName, this.config.logging);
+      const proposal = await constructProposal(proposalName, contracts, contractAddresses, this.config.logging);
       this.config.logging && console.log(`Simulating proposal...`);
       await proposal.simulate();
     }
