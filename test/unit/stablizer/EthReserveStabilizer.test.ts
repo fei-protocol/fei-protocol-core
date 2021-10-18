@@ -5,7 +5,7 @@ import { Signer } from 'ethers';
 
 const toBN = ethers.BigNumber.from;
 
-describe('EthReserveStabilizer', function () {
+describe.only('EthReserveStabilizer', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
@@ -63,14 +63,13 @@ describe('EthReserveStabilizer', function () {
 
     this.weth = await ethers.getContractAt('WETH9', '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2');
 
-    await this.core.connect(impersonatedSigners[governorAddress]).grantBurner(this.reserveStabilizer.address, {});
-
     this.initialBalance = toBN('1000000000000000000');
 
     await (
       await ethers.getSigner(userAddress)
     ).sendTransaction({ from: userAddress, to: this.reserveStabilizer.address, value: this.initialBalance });
-
+    
+    await this.fei.connect(impersonatedSigners[userAddress]).approve(this.reserveStabilizer.address, ethers.constants.MaxUint256);
     await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 40000000, {});
   });
 
@@ -131,7 +130,7 @@ describe('EthReserveStabilizer', function () {
       it('reverts', async function () {
         await expectRevert(
           this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(50000000, {}),
-          'ERC20: burn amount exceeds balance'
+          'ERC20: transfer amount exceeds balance'
         );
       });
     });
