@@ -6,7 +6,7 @@ import {
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
-} from '../../types/types';
+} from '@custom-types/types';
 import { AutoRewardsDistributor, OptimisticTimelock, TribalChief } from '@custom-types/contracts';
 import { TribalChiefSync } from '@custom-types/contracts/TribalChiefSync';
 import { increaseTime } from '@test/helpers';
