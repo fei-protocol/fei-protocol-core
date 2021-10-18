@@ -2,7 +2,7 @@ import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import { NamedContracts } from '@custom-types/types';
 import { expectApprox, increaseTime, latestTime, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config.json';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
@@ -17,12 +17,9 @@ before(async () => {
 
 describe('e2e-buybacks', function () {
   let contracts: NamedContracts;
-  let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
-
-  const tenPow18 = toBN('1000000000000000000');
 
   before(async function () {
     // Setup test environment and get contracts
@@ -41,7 +38,7 @@ describe('e2e-buybacks', function () {
     e2eCoord = new TestEndtoEndCoordinator(config, proposals);
 
     doLogging && console.log(`Loading environment...`);
-    ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
+    ({ contracts } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
   });
 

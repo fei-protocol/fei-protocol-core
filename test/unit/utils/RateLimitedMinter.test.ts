@@ -1,12 +1,9 @@
 import { time, expectRevert, expectApprox, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
 
 const toBN = ethers.BigNumber.from;
-
-const RateLimitedMinter = artifacts.readArtifactSync('MockRateLimitedMinter');
-const Fei = artifacts.readArtifactSync('Fei');
 
 describe('RateLimitedMinter', function () {
   let userAddress;

@@ -190,9 +190,13 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   } as NamedContracts;
 };
 
-export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
+export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  logging && console.log('No setup for FIP-33');
+};
 
-export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
+export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  logging && console.log('No teardown for FIP-33');
+};
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
   const {

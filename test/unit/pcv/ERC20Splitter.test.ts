@@ -1,10 +1,7 @@
 import { expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-
-const ERC20Splitter = artifacts.readArtifactSync('ERC20Splitter');
-const Tribe = artifacts.readArtifactSync('Tribe');
 
 describe('ERC20Splitter', function () {
   let userAddress: string;

@@ -1,4 +1,4 @@
-import { getCore, getAddresses } from '../../helpers';
+import { getAddresses } from '../../helpers';
 import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
@@ -8,7 +8,6 @@ describe('ERC20PCVDepositWrapper', function () {
 
   let userAddress;
   let token;
-  let core;
 
   const balance = '2000';
 
@@ -30,7 +29,6 @@ describe('ERC20PCVDepositWrapper', function () {
   });
 
   beforeEach(async function () {
-    core = await getCore();
     token = await (await ethers.getContractFactory('MockERC20')).deploy();
     await token.mint(userAddress, balance);
   });

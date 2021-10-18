@@ -1,6 +1,6 @@
 import { ZERO_ADDRESS, expectRevert, time, getAddresses, getCore, expectApprox } from '../../helpers';
 import chai, { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
 
 import CBN from 'chai-bn';
@@ -8,9 +8,6 @@ import CBN from 'chai-bn';
 before(() => {
   chai.use(CBN(ethers.BigNumber));
 });
-
-const FeiTimedMinter = artifacts.readArtifactSync('FeiTimedMinter');
-const Fei = artifacts.readArtifactSync('Fei');
 
 describe('FeiTimedMinter', function () {
   let userAddress;

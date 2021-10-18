@@ -1,10 +1,7 @@
 import { getCore, getAddresses, expectRevert } from '../../helpers';
 import { expect } from 'chai';
-import hre, { artifacts, ethers } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-
-const StaticPCVDepositWrapper = artifacts.readArtifactSync('StaticPCVDepositWrapper');
-const toBN = ethers.BigNumber.from;
 
 describe('StaticPCVDepositWrapper', function () {
   let governorAddress: string;

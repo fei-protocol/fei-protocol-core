@@ -1,10 +1,8 @@
 import { expectRevert, time, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
 
-const UniswapOracle = artifacts.readArtifactSync('UniswapOracle');
-const MockPairTrade = artifacts.readArtifactSync('MockUniswapV2PairTrade');
 const toBN = ethers.BigNumber.from;
 
 describe.skip('UniswapOracle', function () {

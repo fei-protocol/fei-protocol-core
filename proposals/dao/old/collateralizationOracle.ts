@@ -7,7 +7,7 @@ import {
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
-} from '../../types/types';
+} from '@custom-types/types';
 import {
   CollateralizationOracle,
   CollateralizationOracleWrapper,
