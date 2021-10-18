@@ -398,6 +398,7 @@ const MainnetAddresses = {
   tribalChiefImpl: { artifactName: 'TribalChief', address: '0x2d91362e8bcAA8826b482B531dcb170FC9d17777' },
   tribalChiefOptimisticMultisig: { artifactName: 'unknown', address: '0x35ED000468f397AA943009bD60cc6d2d9a7d32fF' },
   tribalChiefOptimisticTimelock: { artifactName: 'Timelock', address: '0x27Fae9E49AD955A24bB578B66Cdc962b5029fbA9' },
+  tribalChiefSync: { artifactName: 'TribalChiefSync', address: '0x7A883825caA45fcbDcd76991C5972Baf1551aa3d' },
   tribe: { artifactName: 'Tribe', address: '0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B' },
   tribeOTCEscrow: { artifactName: 'OtcEscrow', address: '0xe2fE8041429e4bd51c40F92C6cDb699527171298' },
   tribeReserveStabilizer: {
