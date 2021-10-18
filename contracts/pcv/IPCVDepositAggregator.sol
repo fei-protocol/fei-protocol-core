@@ -43,6 +43,6 @@ interface IPCVDepositAggregator is IPCVDeposit {
     /// @notice the normalized target percent of PCV held by `pcvDeposit` relative to aggregator total
     function targetPercentHeld(IPCVDeposit pcvDeposit) external view returns(Decimal.D256 memory);
 
-    /// @notice the raw amount of PCV off of the target percent held by `pcvDeposit`
+    /// @notice the raw amount of PCV off of the target weight/percent held by `pcvDeposit`
     function amountFromTarget(IPCVDeposit pcvDeposit) external view returns(int256);
 }
