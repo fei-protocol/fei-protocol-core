@@ -208,8 +208,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
 
   const { multisig, optimisticTimelock } = addresses;
 
-  // keccak256("ORACLE_ADMIN")
-  const oracleAdminRole = '0xa8d944a5277d6a203f114d020d26918a390f167b089a46be4fca9da716d23783';
+  const oracleAdminRole = ethers.utils.id('ORACLE_ADMIN_ROLE');
   expect(await collateralizationOracle.CONTRACT_ADMIN_ROLE()).to.be.equal(oracleAdminRole);
   expect(await collateralizationOracleWrapper.CONTRACT_ADMIN_ROLE()).to.be.equal(oracleAdminRole);
 
