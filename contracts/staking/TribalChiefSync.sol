@@ -95,4 +95,46 @@ contract TribalChiefSync {
             salt
         );
     }
+
+    /// @notice Sync a pool set action
+    function setPool(
+        uint256 pid,
+        uint120 allocPoint,
+        IRewarder rewarder,
+        bool overwrite,
+        bytes32 salt
+    ) external update {
+        bytes memory data = abi.encodeWithSelector(
+            tribalChief.set.selector,
+            pid,
+            allocPoint,
+            rewarder,
+            overwrite
+        );
+        timelock.execute(
+            address(tribalChief), 
+            0, 
+            data, 
+            bytes32(0), 
+            salt
+        );
+    }
+
+    /// @notice Sync a pool reset rewards action
+    function resetPool(
+        uint256 pid,
+        bytes32 salt
+    ) external update {
+        bytes memory data = abi.encodeWithSelector(
+            tribalChief.resetRewards.selector,
+            pid
+        );
+        timelock.execute(
+            address(tribalChief), 
+            0, 
+            data, 
+            bytes32(0), 
+            salt
+        );
+    }
 }
