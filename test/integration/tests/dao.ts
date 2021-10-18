@@ -272,7 +272,7 @@ describe('e2e-dao', function () {
           doLogging && console.log(`${element} contract address: ${contractAddress}`);
           const isMinter = await core.hasRole(id, contractAddress);
           expect(isMinter).to.be.true;
-        }      
+        }
       }
 
       /*
