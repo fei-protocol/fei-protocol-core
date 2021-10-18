@@ -55,7 +55,9 @@ describe('ReserveStabilizer', function () {
     this.initialBalance = toBN('1000000000000000000');
     await this.token.mint(this.reserveStabilizer.address, this.initialBalance);
 
-    await this.fei.connect(impersonatedSigners[userAddress]).approve(this.reserveStabilizer.address, ethers.constants.MaxUint256);
+    await this.fei
+      .connect(impersonatedSigners[userAddress])
+      .approve(this.reserveStabilizer.address, ethers.constants.MaxUint256);
     await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 40000000, {});
   });
 

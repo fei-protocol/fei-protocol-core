@@ -73,7 +73,9 @@ describe('TribeReserveStabilizer', function () {
 
     await this.tribe.connect(impersonatedSigners[governorAddress]).setMinter(this.reserveStabilizer.address, {});
 
-    await this.fei.connect(impersonatedSigners[userAddress]).approve(this.reserveStabilizer.address, ethers.constants.MaxUint256);
+    await this.fei
+      .connect(impersonatedSigners[userAddress])
+      .approve(this.reserveStabilizer.address, ethers.constants.MaxUint256);
     await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 40000000, {});
   });
 

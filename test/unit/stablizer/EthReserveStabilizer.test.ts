@@ -68,8 +68,10 @@ describe('EthReserveStabilizer', function () {
     await (
       await ethers.getSigner(userAddress)
     ).sendTransaction({ from: userAddress, to: this.reserveStabilizer.address, value: this.initialBalance });
-    
-    await this.fei.connect(impersonatedSigners[userAddress]).approve(this.reserveStabilizer.address, ethers.constants.MaxUint256);
+
+    await this.fei
+      .connect(impersonatedSigners[userAddress])
+      .approve(this.reserveStabilizer.address, ethers.constants.MaxUint256);
     await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 40000000, {});
   });
 

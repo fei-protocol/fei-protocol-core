@@ -52,18 +52,18 @@ describe('e2e-bondingcurve', function () {
       const reserveStabilizer = contracts.ethReserveStabilizer;
       const signer = (await ethers.getSigners())[0];
       await signer.sendTransaction({ to: reserveStabilizer.address, value: tenPow18.mul(toBN(200)) });
-  
+
       const contractEthBalanceBefore = toBN(await ethers.provider.getBalance(reserveStabilizer.address));
       const userFeiBalanceBefore = toBN(await fei.balanceOf(deployAddress));
-  
+
       const feiTokensExchange = toBN(40000000000000);
       await reserveStabilizer.updateOracle();
       const expectedAmountOut = await reserveStabilizer.getAmountOut(feiTokensExchange);
       await reserveStabilizer.exchangeFei(feiTokensExchange);
-  
+
       const contractEthBalanceAfter = toBN(await ethers.provider.getBalance(reserveStabilizer.address));
       const userFeiBalanceAfter = toBN(await fei.balanceOf(deployAddress));
-  
+
       expect(contractEthBalanceBefore.sub(toBN(expectedAmountOut))).to.be.equal(contractEthBalanceAfter);
       expect(userFeiBalanceAfter).to.be.equal(userFeiBalanceBefore.sub(feiTokensExchange));
     });

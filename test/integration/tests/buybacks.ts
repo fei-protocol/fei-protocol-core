@@ -12,7 +12,7 @@ const toBN = ethers.BigNumber.from;
 before(async () => {
   chai.use(CBN(ethers.BigNumber));
   chai.use(solidity);
-  await resetFork()
+  await resetFork();
 });
 
 describe('e2e', function () {
@@ -54,7 +54,7 @@ describe('e2e', function () {
         feiTribeLBPSwapper,
         fei,
         tribe,
-        core,
+        core
       } = contracts;
 
       await increaseTime(await pcvEquityMinter.remainingTime());
@@ -85,8 +85,10 @@ describe('e2e', function () {
 
   describe('Collateralization Oracle', async function () {
     it('exempting an address removes from PCV stats', async function () {
-      const collateralizationOracle: CollateralizationOracle = contracts.collateralizationOracle as CollateralizationOracle;
-      const staticPcvDepositWrapper: StaticPCVDepositWrapper = contracts.staticPcvDepositWrapper as StaticPCVDepositWrapper;
+      const collateralizationOracle: CollateralizationOracle =
+        contracts.collateralizationOracle as CollateralizationOracle;
+      const staticPcvDepositWrapper: StaticPCVDepositWrapper =
+        contracts.staticPcvDepositWrapper as StaticPCVDepositWrapper;
 
       const beforeBalance = await staticPcvDepositWrapper.balance();
 
