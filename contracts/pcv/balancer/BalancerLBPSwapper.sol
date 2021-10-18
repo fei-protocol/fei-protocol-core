@@ -272,6 +272,15 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         _setReceivingAddress(newTokenReceivingAddress);
     }
 
+    /// @notice return the amount of tokens needed to seed the next auction
+    function getTokensIn(uint256 spentTokenBalance) external view returns(address[] memory tokens, uint256[] memory amountsIn) {
+        tokens = new address[](2);
+        tokens[0] = address(assets[0]);
+        tokens[1] = address(assets[1]);
+
+        return (tokens, _getTokensIn(spentTokenBalance));
+    }
+
     function _setReceivingAddress(address newTokenReceivingAddress) internal {
       require(newTokenReceivingAddress != address(0), "BalancerLBPSwapper: zero address");
       address oldTokenReceivingAddress = tokenReceivingAddress;

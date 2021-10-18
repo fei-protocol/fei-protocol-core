@@ -412,7 +412,7 @@ describe('e2e-staking', function () {
     before(async () => {
       stakingTokenWrapper = contracts.stakingTokenWrapperRari;
       rewardsDistributorDelegator = contracts.rariRewardsDistributorDelegator;
-      tribePerBlock = toBN('75').mul(ethers.constants.WeiPerEther);
+      tribePerBlock = toBN('7125').mul(ethers.constants.WeiPerEther).div(100);
       tribalChief = contracts.tribalChief;
       rewardsDistributorAdmin = contracts.rewardsDistributorAdmin;
       autoRewardsDistributor = contracts.autoRewardsDistributor as AutoRewardsDistributor;
