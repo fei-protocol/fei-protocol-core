@@ -14,7 +14,6 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
     /// @notice The maximum percentage of PCV equity to be minted per year, in basis points 
     uint256 public constant override MAX_APR_BASIS_POINTS = 2000; // Max 20% per year
 
-    uint256 private constant SECONDS_PER_YEAR = 365 days;
     uint256 private constant FEI_MINTING_LIMIT_PER_SECOND = 1000e18; // 1000 FEI/s or ~86m FEI/day
 
     /// @notice the collateralization oracle used to determine PCV equity
@@ -59,7 +58,7 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
         require(valid, "PCVEquityMinter: invalid CR oracle");
 
         // return total equity scaled proportionally by the APR and the ratio of the mint frequency to the entire year
-        return equity.toUint256() * aprBasisPoints / Constants.BASIS_POINTS_GRANULARITY * duration / SECONDS_PER_YEAR;
+        return equity.toUint256() * aprBasisPoints / Constants.BASIS_POINTS_GRANULARITY * duration / Constants.ONE_YEAR;
     }
     
     /// @notice set the collateralization oracle
