@@ -1,28 +1,43 @@
 { 
-  "minter": [
+  "MINTER_ROLE": [
     "bondingCurve",
     "uniswapPCVDeposit",
     "feiDAOTimelock",
     "dpiBondingCurve",
     "daiBondingCurve",
     "dpiUniswapPCVDeposit",
-    "raiBondingCurve"
+    "raiBondingCurve",
+    "pcvEquityMinter",
+    "collateralizationOracleKeeper"
   ],
-  "burner": [
+  "BURNER_ROLE": [
     "ethReserveStabilizer"
   ],
-  "governor": [
+  "GOVERN_ROLE": [
     "core",
     "timelock",
     "feiDAOTimelock"
   ],
-  "pcvController": [
+  "PCV_CONTROLLER_ROLE": [
     "feiDAOTimelock",
     "ratioPCVController",
     "aaveEthPCVDripController",
     "compoundEthPCVDripController"
   ],
-  "guardian": [
+  "GUARDIAN_ROLE": [
     "multisig"
+  ],
+  "ORACLE_ADMIN_ROLE" : [
+    "collateralizationOracleGuardian",
+    "optimisticTimelock"
+  ],
+  "SWAP_ADMIN_ROLE" : [
+    "pcvEquityMinter"
+  ],
+  "BALANCER_MANAGER_ADMIN_ROLE" : [
+
+  ],
+  "TRIBAL_CHIEF_ADMIN_ROLE" : [
+    "optimisticTimelock"
   ]
 }

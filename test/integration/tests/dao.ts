@@ -7,6 +7,7 @@ import { getImpersonatedSigner, increaseTime, latestTime, resetFork, time } from
 import proposals from '@test/integration/proposals_config.json';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '@test/integration/setup/utils';
+import { Core } from '@custom-types/contracts';
 const toBN = ethers.BigNumber.from;
 
 before(async () => {
@@ -242,69 +243,36 @@ describe('e2e-dao', function () {
       await e2eCoord.revokeDeployAddressPermission();
     });
 
-    it.skip('should have granted correct role cardinality', async function () {
+    it('should have granted correct role cardinality', async function () {
       const core = contracts.core;
       const accessRights = e2eCoord.getAccessControlMapping();
 
-      const minterId = await core.MINTER_ROLE();
-      const numMinterRoles = await core.getRoleMemberCount(minterId);
-      expect(numMinterRoles.toNumber()).to.be.equal(accessRights.minter.length);
+      const roles = Object.keys(accessRights);
 
-      const burnerId = await core.BURNER_ROLE();
-      const numBurnerRoles = await core.getRoleMemberCount(burnerId);
-      expect(numBurnerRoles.toNumber()).to.be.equal(accessRights.burner.length);
-
-      const pcvControllerId = await core.PCV_CONTROLLER_ROLE();
-      const numPCVControllerRoles = await core.getRoleMemberCount(pcvControllerId);
-      expect(numPCVControllerRoles.toNumber()).to.be.equal(accessRights.pcvController.length);
-
-      const governorId = await core.GOVERN_ROLE();
-      const numGovernorRoles = await core.getRoleMemberCount(governorId);
-      expect(numGovernorRoles.toNumber()).to.be.equal(accessRights.governor.length);
-
-      const guardianId = await core.GUARDIAN_ROLE();
-      const numGuaridanRoles = await core.getRoleMemberCount(guardianId);
-      expect(numGuaridanRoles.toNumber()).to.be.equal(accessRights.guardian.length);
+      for (let i = 0; i < roles.length; i++) {
+        const element = roles[i];
+        const id = ethers.utils.id(element);
+        const numRoles = await core.getRoleMemberCount(id);
+        doLogging && console.log(`Role count for ${element}: ${numRoles}`);
+        expect(numRoles.toNumber()).to.be.equal(accessRights[element].length);
+      }
     });
 
-    it.skip('should have granted contracts correct roles', async function () {
-      const core = contracts.core;
+    it('should have granted contracts correct roles', async function () {
+      const core: Core = contracts.core as Core;
       const accessControl = e2eCoord.getAccessControlMapping();
 
-      doLogging && console.log(`Testing minter role...`);
-      for (let i = 0; i < accessControl.minter.length; i++) {
-        const contractAddress = accessControl.minter[i];
-        doLogging && console.log(`Minter contract address: ${contractAddress}`);
-        const isMinter = await core.isMinter(contractAddress);
-        expect(isMinter).to.be.true;
-      }
+      const roles = Object.keys(accessControl);
 
-      doLogging && console.log(`Testing burner role...`);
-      for (let i = 0; i < accessControl.burner.length; i += 1) {
-        const contractAddress = accessControl.burner[i];
-        const isBurner = await core.isBurner(contractAddress);
-        expect(isBurner).to.be.equal(true);
-      }
-
-      doLogging && console.log(`Testing pcv controller role...`);
-      for (let i = 0; i < accessControl.pcvController.length; i += 1) {
-        const contractAddress = accessControl.pcvController[i];
-        const isPCVController = await core.isPCVController(contractAddress);
-        expect(isPCVController).to.be.equal(true);
-      }
-
-      doLogging && console.log(`Testing guardian role...`);
-      for (let i = 0; i < accessControl.guardian.length; i += 1) {
-        const contractAddress = accessControl.guardian[i];
-        const isGuardian = await core.isGuardian(contractAddress);
-        expect(isGuardian).to.be.equal(true);
-      }
-
-      doLogging && console.log(`Testing governor role...`);
-      for (let i = 0; i < accessControl.governor.length; i += 1) {
-        const contractAddress = accessControl.governor[i];
-        const isGovernor = await core.isGovernor(contractAddress);
-        expect(isGovernor).to.be.equal(true);
+      for (let i = 0; i < roles.length; i++) {
+        const element = roles[i];
+        const id = ethers.utils.id(element);
+        for (let i = 0; i < accessControl[element].length; i++) {
+          const contractAddress = accessControl[element][i];
+          doLogging && console.log(`${element} contract address: ${contractAddress}`);
+          const isMinter = await core.hasRole(id, contractAddress);
+          expect(isMinter).to.be.true;
+        }      
       }
 
       /*
@@ -312,7 +280,7 @@ describe('e2e-dao', function () {
       const tribe = contracts.tribe;
       const tribeMinter = await tribe.minter();
       expect(tribeMinter).to.equal(contractAddresses.tribeReserveStabilizer);
-      */ // re-enable after tribe reserve stabilizer is deployed
+      */ // TODO re-enable after tribe reserve stabilizer is deployed
     });
   });
 });
