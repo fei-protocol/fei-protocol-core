@@ -1,4 +1,32 @@
 const MainnetAddresses = {
+  collateralizationOracleKeeper: {
+    artifactName: 'CollateralizationOracleKeeper',
+    address: '0x62378C316a6161A613D02E11F65290aED79B3eD5'
+  },
+  chainlinkTribeEthOracleWrapper: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0x061118ccabF0c2c62f05a2e3C2bd4379c0C70079'
+  },
+  tribeUsdCompositeOracle: {
+    artifactName: 'CompositeOracle',
+    address: '0xD7B8207f8644ee5cc60095023a8fcb8BdCF54732'
+  },
+  feiTribeLBPSwapper: {
+    artifactName: 'BalancerLBPSwapper',
+    address: '0x16ef9601076d45e8cc564cDD91E5dF3Ae83dD3B3'
+  },
+  feiTribeLBP: {
+    artifactName: 'IWeightedPool',
+    address: '0xC1382FE6e17bCdBC3d35F73f5317fBF261EbeECD'
+  },
+  pcvEquityMinter: {
+    artifactName: 'PCVEquityMinter',
+    address: '0x5389Bd35DED3D9633E5b4DfEf9B5A1B250d7B884'
+  },
+  collateralizationOracleGuardian: {
+    artifactName: 'CollateralizationOracleGuardian',
+    address: '0x81De6bA8df84A4B679061952E171a27F096F3eAe'
+  },
   staticPcvDepositWrapper: {
     artifactName: 'StaticPCVDepositWrapper',
     address: '0x8B41DcEfAe6064E6bc2A9B3ae20141d23EFD6cbd'
