@@ -42,7 +42,7 @@ describe('e2e-buybacks', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe.only('PCV Equity Minter + LBP', async function () {
+  describe('PCV Equity Minter + LBP', async function () {
     it('mints appropriate amount and swaps', async function () {
       const {
         pcvEquityMinter,
