@@ -51,7 +51,7 @@ describe.skip('example', async () => {
     const rewardsAssetManagerDeployer = new RewardsAssetManager__factory(impersonatedSigners[userAddress]);
 
     timelock = await timelockDeployer.deploy(userAddress, 1, 1);
-    pcvDepositAggregator = await pcvDepositAggregatorDeployer.deploy(core, 
+    pcvDepositAggregator = await pcvDepositAggregatorDeployer.deploy(core.address, core.address, 
   });
 
   // Try and do as much deployment in beforeEach, and as much testing in the actual functions
