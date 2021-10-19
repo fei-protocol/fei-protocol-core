@@ -9,6 +9,7 @@ import "./balancer/IRewardsAssetManager.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "hardhat/console.sol";
 
 contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -78,48 +79,44 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
      * @notice withdraws the specified amount of tokens from the contract
      * @dev the implementation is as follows:
      * 1. check if the contract has enough in the buffer to cover the withdrawal. if so, just use this
-     * 2. if it doesn't, scan through each of the pcv deposits and withdraw from them their overage amounts,
-     *    up to the total amount needed (less the amount already in the buffer)
+     * 2. if not, calculate what the ideal underlying amount should be for each pcv deposit *after* the withdraw
+     * 3. then, cycle through them and withdraw until each has their ideal amount (for the ones that have overages)
      */
     function withdraw(address to, uint256 amount) external virtual override onlyPCVController {
         uint totalBalance = getTotalBalance();
-
-        if (amount > totalBalance) {
-            revert("Not enough balance to withdraw");
-        }
+        
+        require(totalBalance >= amount, "Not enough balance to withdraw");
 
         // If our buffer is full enough, just transfer from that
         if (IERC20(token).balanceOf(address(this)) >= amount) {
             IERC20(token).safeTransfer(to, amount);
         } else {
             // We're going to have to pull from underlying deposits
-            // To avoid the need from a rebalance, we should only withdraw overages
-            // Calculate the amounts to withdraw from each underlying (this is basically half of a rebalance)
+            // To avoid the need from a rebalance, we should withdraw proportionally from each deposit
+            // such that at the end of this loop, each deposit has moved towards a correct weighting
+            uint totalUnderlyingAmountNeeded = amount - IERC20(token).balanceOf(address(this));
+            uint totalUnderlyingBalance = totalBalance - IERC20(token).balanceOf(address(this));
+            uint totalUnderlyingBalanceAfterWithdraw = totalUnderlyingBalance - totalUnderlyingAmountNeeded;
 
-            uint totalAmountNeeded = amount - IERC20(token).balanceOf(address(this));
+            // Now that we have the total underlying balance, we know *exactly* what each underlying's balance should be
+            uint[] memory idealUnderlyingBalancesPostWithdraw = new uint[](pcvDepositAddresses.length());
+            for (uint i=0; i < pcvDepositAddresses.length(); i++) {
+                idealUnderlyingBalancesPostWithdraw[i] = totalUnderlyingBalanceAfterWithdraw * pcvDepositInfos[pcvDepositAddresses.at(i)].weight / totalWeight;
+            }
 
+            // This basically does half of a rebalance.
+            // (pulls from the deposits that have > than their post-withdraw-ideal-underlying-balance)
             for (uint i=0; i < pcvDepositAddresses.length(); i++) {
                 address pcvDepositAddress = pcvDepositAddresses.at(i);
-                uint128 pcvDepositWeight = pcvDepositInfos[pcvDepositAddress].weight;
                 uint actualPcvDepositBalance = IPCVDeposit(pcvDepositAddress).balance();
-                uint idealPcvDepositBalance = pcvDepositWeight * totalBalance / totalWeight;
+                uint idealPcvDepositBalance = idealUnderlyingBalancesPostWithdraw[i];
 
-                // Only withdraw from this underlying if it has an overage 
-                if (actualPcvDepositBalance > idealPcvDepositBalance) {
-                    uint pcvDepositOverage = actualPcvDepositBalance - idealPcvDepositBalance;
-                    uint amountToWithdraw = pcvDepositOverage;
-                    
-                    if (totalAmountNeeded < pcvDepositOverage) {
-                        amountToWithdraw = totalAmountNeeded;
-                    }
-                    
-                    IPCVDeposit(pcvDepositAddress).withdraw(address(this), amountToWithdraw);
-                    totalAmountNeeded -= amountToWithdraw;
-
-                    // If we don't need to withdraw anymore, stop looping over the deposits
-                    if (totalAmountNeeded == 0) break;
-                } else {
+                if (idealPcvDepositBalance >= actualPcvDepositBalance) {
                     continue;
+                } else {
+                    // Has post-withdraw-overage; let's take it
+                    uint amountToWithdraw = actualPcvDepositBalance - idealPcvDepositBalance;
+                    IPCVDeposit(pcvDepositAddress).withdraw(address(this), amountToWithdraw);
                 }
             }
 

@@ -51,6 +51,6 @@ contract MockPCVDepositV2 is IPCVDeposit, CoreRef {
     }
     
     function balance() external override view returns (uint256) {
-        return resistantBalance;
+        return IERC20(balanceReportedIn).balanceOf(address(this));
     }
 }

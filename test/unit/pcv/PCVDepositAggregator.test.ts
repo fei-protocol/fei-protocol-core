@@ -102,7 +102,7 @@ describe('PCV Deposit Aggregator', function () {
 
   describe('when it is deployed with a single deposit', async () => {
     let pcvDepositAggregator: PCVDepositAggregator;
-    let token: ERC20;
+    let token: MockERC20;
     let pcvDeposit: PCVDeposit;
 
     beforeEach(async () => {
@@ -128,6 +128,7 @@ describe('PCV Deposit Aggregator', function () {
     });
 
     it('returns expected values for deposits, weights, balances, and token', async () => {
+      await token.mint(pcvDeposit.address, ethers.utils.parseEther('1000'));
       expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('1000'));
       expect(await pcvDepositAggregator.paused()).to.be.false;
       expect(await pcvDepositAggregator.bufferWeight()).to.be.equal(10);
@@ -412,6 +413,36 @@ describe('PCV Deposit Aggregator', function () {
     it('sets the buffer weight and updates the totalweight accordingly', async() => {
         await pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).setBufferWeight(50);
         expect(await pcvDepositAggregator.totalWeight()).to.equal(140);
-    });    
+    });
+
+    it('withdraws when the buffer is not enough to cover the balasnce', async() => {
+        // Mint 4000, 4000, and 4000 tokens to each pcv deposit, respectively
+        await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
+        await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
+        await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));
+
+        // Call deposit on each pcv deposit so that their balances update
+        await pcvDeposit1.deposit();
+        await pcvDeposit2.deposit();
+        await pcvDeposit3.deposit();
+
+        await pcvDepositAggregator.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, ethers.utils.parseEther('8000'));
+        expect(await token.balanceOf(userAddress)).to.equal(ethers.utils.parseEther('8000'));
+    });
+
+    it('withdraws everything', async() => {
+        // Mint 4000, 4000, and 4000 tokens to each pcv deposit, respectively
+        await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
+        await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
+        await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));
+
+        // Call deposit on each pcv deposit so that their balances update
+        await pcvDeposit1.deposit();
+        await pcvDeposit2.deposit();
+        await pcvDeposit3.deposit();
+
+        await pcvDepositAggregator.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, ethers.utils.parseEther('10000'));
+        expect(await token.balanceOf(userAddress)).to.equal(ethers.utils.parseEther('10000'));
+    });
   });
 })
