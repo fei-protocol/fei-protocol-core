@@ -32,6 +32,12 @@ interface IPCVDepositAggregator is IPCVDeposit {
     /// @notice remove a PCV deposit from the set of deposits
     function removePCVDeposit(address pcvDeposit) external;
 
+    /// @notice set the relative weight of a particular pcv deposit
+    function setPCVDepositWeight(address pcvDeposit, uint256 weight) external;
+
+    /// @notice set the weight for the buffer specifically
+    function setBufferWeight(uint128 weight) external;
+
     // ----------- Read-only api -----------
     /// @notice the upstream rewardsAssetManager funding this contract
     function rewardsAssetManager() external returns(address);

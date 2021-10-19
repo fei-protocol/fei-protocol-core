@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity 0.8.9;
+pragma solidity ^0.8.4;
 
 import "./IPCVDepositAggregator.sol";
 import "./PCVDeposit.sol";
@@ -30,7 +30,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
     uint128 public bufferWeight;
     uint128 public totalWeight; 
     address public token;
-    address public rewardsAssetManager;
+    address public override rewardsAssetManager;
 
     constructor(
         address _core,
@@ -59,17 +59,16 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
 
     // ---------- Public Functions -------------
 
-    function rebalance() external {
+    function rebalance() external virtual override {
         _rebalance();
     }
 
-    function rebalanceSingle(address pcvDeposit) external {
+    function rebalanceSingle(address pcvDeposit) external virtual override {
         _rebalanceSingle(pcvDeposit);
     }
 
-    function deposit() external {
+    function deposit() external virtual override {
         // no-op
-        // emit event?
     }
 
     /**
@@ -79,7 +78,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
      * 2. if it doesn't, scan through each of the pcv deposits and withdraw from them their overage amounts,
      *    up to the total amount needed (less the amount already in the buffer)
      */
-    function withdraw(address to, uint256 amount) external onlyPCVController {
+    function withdraw(address to, uint256 amount) external virtual override onlyPCVController {
         uint totalBalance = getTotalBalance();
 
         if (amount > totalBalance) {
@@ -125,19 +124,19 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
         }
     }
 
-    function withdrawERC20(address _token, address to, uint256 amount) external onlyPCVController {
+    function withdrawERC20(address _token, address to, uint256 amount) external virtual override onlyPCVController {
         IERC20(_token).safeTransfer(to, amount);
     }
 
-    function withdrawETH(address payable to, uint256 amount) external onlyPCVController {
+    function withdrawETH(address payable to, uint256 amount) external virtual override onlyPCVController {
         to.transfer(amount);
     }
 
-    function setBufferWeight(uint128 weight) external onlyGuardianOrGovernor {
+    function setBufferWeight(uint128 weight) external virtual override onlyGuardianOrGovernor {
         bufferWeight = weight;
     }
 
-    function setPCVDepositWeight(address depositAddress, uint weight) external onlyGuardianOrGovernor {
+    function setPCVDepositWeight(address depositAddress, uint weight) external virtual override onlyGuardianOrGovernor {
         if (!pcvDepositAddresses.contains(depositAddress)) {
             revert("Deposit does not exist.");
         }
@@ -145,15 +144,15 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
         pcvDepositInfos[depositAddress].weight = uint128(weight);
     }
 
-    function removePCVDeposit(address pcvDeposit) external onlyGuardianOrGovernor {
+    function removePCVDeposit(address pcvDeposit) external virtual override onlyGuardianOrGovernor {
         _removePCVDeposit(address(pcvDeposit));
     }
 
-    function addPCVDeposit(address newPCVDeposit, uint256 weight) external onlyGovernor {
+    function addPCVDeposit(address newPCVDeposit, uint256 weight) external virtual override onlyGovernor {
         _addPCVDeposit(address(newPCVDeposit), uint128(weight));
     }
 
-    function setNewAggregator(address newAggregator) external onlyGovernor {
+    function setNewAggregator(address newAggregator) external virtual override onlyGovernor {
         // Add each pcvDeposit to the new aggregator
         for (uint i=0; i < pcvDepositAddresses.length(); i++) {
             address pcvDepositAddress = pcvDepositAddresses.at(i);
@@ -188,19 +187,19 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
     }
 
     // ---------- View Functions ---------------
-    function resistantBalanceAndFei() external view returns (uint256, uint256) {
+    function resistantBalanceAndFei() external view virtual override returns (uint256, uint256) {
         return (balance(), 0);
     }
 
-    function balanceReportedIn() external view returns (address) {
+    function balanceReportedIn() external view virtual override returns (address) {
         return token;
     }
 
-    function balance() public view virtual returns (uint256) {
+    function balance() public view virtual override returns (uint256) {
         return getTotalBalance();
     }
 
-    function percentHeld(address pcvDeposit, uint256 depositAmount) external view returns(Decimal.D256 memory) {
+    function percentHeld(address pcvDeposit, uint256 depositAmount) external view virtual override returns(Decimal.D256 memory) {
         uint totalBalanceWithTheoreticalDeposit = getTotalBalance() + depositAmount;
 
         uint targetBalanceWithTheoreticalDeposit = IPCVDeposit(pcvDeposit).balance() + depositAmount;
@@ -208,14 +207,14 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
         return Decimal.ratio(targetBalanceWithTheoreticalDeposit, totalBalanceWithTheoreticalDeposit);
     }
 
-    function targetPercentHeld(address pcvDeposit) external view returns(Decimal.D256 memory) {
+    function targetPercentHeld(address pcvDeposit) external view virtual override returns(Decimal.D256 memory) {
         uint totalBalance = getTotalBalance();
         uint targetBalance = IPCVDeposit(pcvDeposit).balance();
 
         return Decimal.ratio(targetBalance, totalBalance);
     }
 
-    function amountFromTarget(address pcvDeposit) external view returns(int256) {
+    function amountFromTarget(address pcvDeposit) external view virtual override returns(int256) {
         uint totalBalance = getTotalBalance();
 
         uint pcvDepositBalance = IPCVDeposit(pcvDeposit).balance();
@@ -226,7 +225,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
         return int(pcvDepositBalance) - int(idealDepositBalance);
     }
 
-    function pcvDeposits() external view returns(address[] memory deposits, uint256[] memory weights) {
+    function pcvDeposits() external view virtual override returns(address[] memory deposits, uint256[] memory weights) {
         address[] memory _deposits = new address[](pcvDepositAddresses.length());
         uint256[] memory _weights = new uint256[](pcvDepositAddresses.length());
 
@@ -238,7 +237,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
         return (_deposits, _weights);
     }
 
-    function getTotalBalance() public view virtual returns (uint256) {
+    function getTotalBalance() public view virtual override returns (uint256) {
         uint totalBalance = 0;
 
         for (uint i=0; i<pcvDepositAddresses.length(); i++) {
