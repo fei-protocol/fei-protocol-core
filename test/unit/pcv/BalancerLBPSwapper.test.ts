@@ -1,4 +1,12 @@
-import { expectRevert, getAddresses, getCore, getImpersonatedSigner, increaseTime, ZERO_ADDRESS, latestTime } from '@test/helpers';
+import {
+  expectRevert,
+  getAddresses,
+  getCore,
+  getImpersonatedSigner,
+  increaseTime,
+  ZERO_ADDRESS,
+  latestTime
+} from '@test/helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import { Signer } from 'ethers';
@@ -26,7 +34,13 @@ describe('BalancerLBPSwapper', function () {
   before(async () => {
     const addresses = await getAddresses();
 
-    const impersonatedAddresses = [addresses.userAddress, addresses.pcvControllerAddress, addresses.governorAddress, addresses.minterAddress, addresses.burnerAddress];
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress,
+      addresses.minterAddress,
+      addresses.burnerAddress
+    ];
 
     for (const address of impersonatedAddresses) {
       impersonatedSigners[address] = await getImpersonatedSigner(address);
@@ -46,48 +60,45 @@ describe('BalancerLBPSwapper', function () {
 
     const balancerLBPSwapperFactory = await ethers.getContractFactory('BalancerLBPSwapper');
     balancerLBPSwapper = await balancerLBPSwapperFactory.deploy(
-        core.address,
-        {
-            _oracle: oracle.address,
-            _backupOracle: ZERO_ADDRESS,
-            _invertOraclePrice: true,
-            _decimalsNormalizer: 0
-        },
-        600, // 600 seconds frequency
-        fei.address,
-        tribe.address,
-        userAddress,
-        ethers.constants.WeiPerEther // min tokens 1
+      core.address,
+      {
+        _oracle: oracle.address,
+        _backupOracle: ZERO_ADDRESS,
+        _invertOraclePrice: true,
+        _decimalsNormalizer: 0
+      },
+      600, // 600 seconds frequency
+      fei.address,
+      tribe.address,
+      userAddress,
+      ethers.constants.WeiPerEther // min tokens 1
     );
 
     const mockVaultFactory = await ethers.getContractFactory('MockVault');
-    vault = await mockVaultFactory.deploy(
-      [fei.address, tribe.address],
-      balancerLBPSwapper.address
-    );
-    
+    vault = await mockVaultFactory.deploy([fei.address, tribe.address], balancerLBPSwapper.address);
+
     pool = await ethers.getContractAt('MockWeightedPool', await vault._pool());
   });
 
   describe('Init', function () {
     describe('Before Init', function () {
-      it('tokenSpent', async function() {
+      it('tokenSpent', async function () {
         expect(await balancerLBPSwapper.tokenSpent()).to.be.equal(fei.address);
       });
 
-      it('tokenReceived', async function() {
+      it('tokenReceived', async function () {
         expect(await balancerLBPSwapper.tokenReceived()).to.be.equal(tribe.address);
       });
 
-      it('tokenReceivingAddress', async function() {
+      it('tokenReceivingAddress', async function () {
         expect(await balancerLBPSwapper.tokenReceivingAddress()).to.be.equal(userAddress);
       });
 
-      it('minTokenSpentBalance', async function() {
+      it('minTokenSpentBalance', async function () {
         expect(await balancerLBPSwapper.minTokenSpentBalance()).to.be.bignumber.equal(ethers.constants.WeiPerEther);
       });
 
-      it('isTimeStarted', async function() {
+      it('isTimeStarted', async function () {
         expect(await balancerLBPSwapper.isTimeStarted()).to.be.false;
       });
 
@@ -100,28 +111,28 @@ describe('BalancerLBPSwapper', function () {
       });
     });
 
-    describe('After Init', function() {
-      beforeEach(async function() {
+    describe('After Init', function () {
+      beforeEach(async function () {
         await balancerLBPSwapper.init(pool.address);
       });
 
-      it('tokenSpent', async function() {
+      it('tokenSpent', async function () {
         expect(await balancerLBPSwapper.tokenSpent()).to.be.equal(fei.address);
       });
 
-      it('tokenReceived', async function() {
+      it('tokenReceived', async function () {
         expect(await balancerLBPSwapper.tokenReceived()).to.be.equal(tribe.address);
       });
 
-      it('tokenReceivingAddress', async function() {
+      it('tokenReceivingAddress', async function () {
         expect(await balancerLBPSwapper.tokenReceivingAddress()).to.be.equal(userAddress);
       });
 
-      it('minTokenSpentBalance', async function() {
+      it('minTokenSpentBalance', async function () {
         expect(await balancerLBPSwapper.minTokenSpentBalance()).to.be.bignumber.equal(ethers.constants.WeiPerEther);
       });
 
-      it('isTimeStarted', async function() {
+      it('isTimeStarted', async function () {
         expect(await balancerLBPSwapper.isTimeStarted()).to.be.true;
       });
 
@@ -139,8 +150,8 @@ describe('BalancerLBPSwapper', function () {
     });
   });
 
-  describe('getTokensIn', function() {
-    beforeEach(async function() {
+  describe('getTokensIn', function () {
+    beforeEach(async function () {
       await balancerLBPSwapper.init(pool.address);
     });
 
@@ -156,65 +167,84 @@ describe('BalancerLBPSwapper', function () {
       expect(amounts[1]).to.be.bignumber.equal(toBN(505));
     });
   });
-  
-  describe('swap', function() {
+
+  describe('swap', function () {
     beforeEach(async function () {
       await balancerLBPSwapper.init(pool.address);
     });
 
-    describe('before time', function() {
+    describe('before time', function () {
       beforeEach(async function () {
-        await fei.connect(impersonatedSigners[minterAddress]).mint(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
+        await fei
+          .connect(impersonatedSigners[minterAddress])
+          .mint(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
       });
-  
-      it('reverts', async function() {
-        await expectRevert(balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).swap(), 'Timed: time not ended');
+
+      it('reverts', async function () {
+        await expectRevert(
+          balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).swap(),
+          'Timed: time not ended'
+        );
       });
     });
 
-    describe('paused', function() {
+    describe('paused', function () {
       beforeEach(async function () {
-        await fei.connect(impersonatedSigners[minterAddress]).mint(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
+        await fei
+          .connect(impersonatedSigners[minterAddress])
+          .mint(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
         await increaseTime(await balancerLBPSwapper.remainingTime());
         await balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).pause();
       });
-  
-      it('reverts', async function() {
+
+      it('reverts', async function () {
         await expectRevert(balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).swap(), 'Pausable: paused');
       });
     });
 
-    describe('Non-Governor or Admin', function() {
+    describe('Non-Governor or Admin', function () {
       beforeEach(async function () {
-        await fei.connect(impersonatedSigners[minterAddress]).mint(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
+        await fei
+          .connect(impersonatedSigners[minterAddress])
+          .mint(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
         await increaseTime(await balancerLBPSwapper.remainingTime());
       });
-  
-      it('reverts', async function() {
-        await expectRevert(balancerLBPSwapper.connect(impersonatedSigners[userAddress]).swap(), 'CoreRef: Caller is not a governor or contract admin');
+
+      it('reverts', async function () {
+        await expectRevert(
+          balancerLBPSwapper.connect(impersonatedSigners[userAddress]).swap(),
+          'CoreRef: Caller is not a governor or contract admin'
+        );
       });
     });
 
-    describe('Not enough tokenSpent', function() {
+    describe('Not enough tokenSpent', function () {
       beforeEach(async function () {
         await increaseTime(await balancerLBPSwapper.remainingTime());
       });
-  
-      it('reverts', async function() {
-        await expectRevert(balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).swap(), 'BalancerLBPSwapper: not enough tokenSpent to init');
+
+      it('reverts', async function () {
+        await expectRevert(
+          balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).swap(),
+          'BalancerLBPSwapper: not enough tokenSpent to init'
+        );
       });
     });
 
-    describe('Successful', function() {
+    describe('Successful', function () {
       beforeEach(async function () {
-        await fei.connect(impersonatedSigners[minterAddress]).mint(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
-        await core.connect(impersonatedSigners[governorAddress]).allocateTribe(balancerLBPSwapper.address, ethers.constants.WeiPerEther);
+        await fei
+          .connect(impersonatedSigners[minterAddress])
+          .mint(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
+        await core
+          .connect(impersonatedSigners[governorAddress])
+          .allocateTribe(balancerLBPSwapper.address, ethers.constants.WeiPerEther);
 
         await increaseTime(await balancerLBPSwapper.remainingTime());
         await balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).swap();
       });
-  
-      it('succeeds', async function() {
+
+      it('succeeds', async function () {
         expect(await pool.balanceOf(balancerLBPSwapper.address)).to.be.bignumber.equal(await vault.LIQUIDITY_AMOUNT());
         expect(await balancerLBPSwapper.isTimeEnded()).to.be.false; // pool reset
 
@@ -227,45 +257,57 @@ describe('BalancerLBPSwapper', function () {
         expect(weightUpdate[1].toNumber()).to.be.greaterThan(now);
       });
 
-      describe('Subsequent Swaps', function() {
-        describe('Weight update in progress', function() {
+      describe('Subsequent Swaps', function () {
+        describe('Weight update in progress', function () {
           beforeEach(async function () {
-            await fei.connect(impersonatedSigners[minterAddress]).mint(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
+            await fei
+              .connect(impersonatedSigners[minterAddress])
+              .mint(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
             await increaseTime(await balancerLBPSwapper.remainingTime());
-    
+
             const weight = ethers.constants.WeiPerEther.div(10);
             await pool.updateWeightsGradually(0, (await latestTime()) + 1000, [weight, weight]);
           });
-      
-          it('reverts', async function() {
-            await expectRevert(balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).swap(), 'BalancerLBPSwapper: weight update in progress');
+
+          it('reverts', async function () {
+            await expectRevert(
+              balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).swap(),
+              'BalancerLBPSwapper: weight update in progress'
+            );
           });
         });
 
-        describe('Not enough tokenSpent', function() {
+        describe('Not enough tokenSpent', function () {
           beforeEach(async function () {
-            await fei.connect(impersonatedSigners[burnerAddress]).burnFrom(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
+            await fei
+              .connect(impersonatedSigners[burnerAddress])
+              .burnFrom(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
             await increaseTime(await balancerLBPSwapper.remainingTime());
           });
-      
-          it('reverts', async function() {
-            await expectRevert(balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).swap(), 'BalancerLBPSwapper: not enough for new swap');
+
+          it('reverts', async function () {
+            await expectRevert(
+              balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).swap(),
+              'BalancerLBPSwapper: not enough for new swap'
+            );
           });
         });
       });
     });
   });
 
-  describe('exitPool', function() {
+  describe('exitPool', function () {
     beforeEach(async function () {
       await balancerLBPSwapper.init(pool.address);
 
-      await fei.connect(impersonatedSigners[minterAddress]).mint(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
+      await fei
+        .connect(impersonatedSigners[minterAddress])
+        .mint(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
       await increaseTime(await balancerLBPSwapper.remainingTime());
       await balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).swap();
     });
 
-    it('succeeds', async function() {
+    it('succeeds', async function () {
       expect(await pool.balanceOf(balancerLBPSwapper.address)).to.be.bignumber.equal(await vault.LIQUIDITY_AMOUNT());
       await balancerLBPSwapper.connect(impersonatedSigners[pcvControllerAddress]).exitPool(userAddress);
       expect(await pool.balanceOf(balancerLBPSwapper.address)).to.be.bignumber.equal(toBN(0));
@@ -280,13 +322,11 @@ describe('BalancerLBPSwapper', function () {
     });
   });
 
-  describe('setSwapFrequency', function() {
+  describe('setSwapFrequency', function () {
     describe('Not Governor', function () {
       it('reverts', async function () {
         await expectRevert(
-          balancerLBPSwapper
-            .connect(impersonatedSigners[userAddress])
-            .setSwapFrequency(10),
+          balancerLBPSwapper.connect(impersonatedSigners[userAddress]).setSwapFrequency(10),
           'CoreRef: Caller is not a governor or contract admin'
         );
       });
@@ -295,22 +335,17 @@ describe('BalancerLBPSwapper', function () {
     describe('From Governor', function () {
       it('succeeds', async function () {
         expect(await balancerLBPSwapper.duration()).to.be.bignumber.equal(toBN(600));
-        await balancerLBPSwapper
-        .connect(impersonatedSigners[governorAddress])
-        .setSwapFrequency(10),
-
-        expect(await balancerLBPSwapper.duration()).to.be.bignumber.equal(toBN(10));
+        await balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).setSwapFrequency(10),
+          expect(await balancerLBPSwapper.duration()).to.be.bignumber.equal(toBN(10));
       });
     });
   });
 
-  describe('setMinTokenSpent', function() {
+  describe('setMinTokenSpent', function () {
     describe('Not Governor', function () {
       it('reverts', async function () {
         await expectRevert(
-          balancerLBPSwapper
-            .connect(impersonatedSigners[userAddress])
-            .setMinTokenSpent(10),
+          balancerLBPSwapper.connect(impersonatedSigners[userAddress]).setMinTokenSpent(10),
           'CoreRef: Caller is not a governor or contract admin'
         );
       });
@@ -319,22 +354,17 @@ describe('BalancerLBPSwapper', function () {
     describe('From Governor', function () {
       it('succeeds', async function () {
         expect(await balancerLBPSwapper.minTokenSpentBalance()).to.be.bignumber.equal(ethers.constants.WeiPerEther);
-        await balancerLBPSwapper
-        .connect(impersonatedSigners[governorAddress])
-        .setMinTokenSpent(10),
-
-        expect(await balancerLBPSwapper.minTokenSpentBalance()).to.be.bignumber.equal(toBN(10));
+        await balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).setMinTokenSpent(10),
+          expect(await balancerLBPSwapper.minTokenSpentBalance()).to.be.bignumber.equal(toBN(10));
       });
     });
   });
 
-  describe('setReceivingAddress', function() {
+  describe('setReceivingAddress', function () {
     describe('Not Governor', function () {
       it('reverts', async function () {
         await expectRevert(
-          balancerLBPSwapper
-            .connect(impersonatedSigners[userAddress])
-            .setReceivingAddress(governorAddress),
+          balancerLBPSwapper.connect(impersonatedSigners[userAddress]).setReceivingAddress(governorAddress),
           'CoreRef: Caller is not a governor or contract admin'
         );
       });
@@ -343,11 +373,8 @@ describe('BalancerLBPSwapper', function () {
     describe('From Governor', function () {
       it('succeeds', async function () {
         expect(await balancerLBPSwapper.tokenReceivingAddress()).to.be.equal(userAddress);
-        await balancerLBPSwapper
-        .connect(impersonatedSigners[governorAddress])
-        .setReceivingAddress(governorAddress),
-
-        expect(await balancerLBPSwapper.tokenReceivingAddress()).to.be.equal(governorAddress);
+        await balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).setReceivingAddress(governorAddress),
+          expect(await balancerLBPSwapper.tokenReceivingAddress()).to.be.equal(governorAddress);
       });
     });
   });
@@ -356,9 +383,7 @@ describe('BalancerLBPSwapper', function () {
     describe('Not PCVController', function () {
       it('reverts', async function () {
         await expectRevert(
-          balancerLBPSwapper
-            .connect(impersonatedSigners[userAddress])
-            .withdrawERC20(fei.address, userAddress, 100),
+          balancerLBPSwapper.connect(impersonatedSigners[userAddress]).withdrawERC20(fei.address, userAddress, 100),
           'CoreRef: Caller is not a PCV controller'
         );
       });
