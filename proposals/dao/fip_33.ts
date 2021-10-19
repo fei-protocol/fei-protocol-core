@@ -94,6 +94,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     collateralizationOracleWrapper
   );
 
+  await collateralizationOracleKeeper.deployTransaction.wait();
+
   logging && console.log('Collateralization Oracle Keeper: ', collateralizationOracleKeeper.address);
 
   // 2.
@@ -103,6 +105,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     chainlinkTribeEthOracle
   );
 
+  await chainlinkTribeEthOracleWrapper.deployTransaction.wait();
+  
   logging && console.log('TRIBE/ETH Oracle Wrapper deployed to: ', chainlinkTribeEthOracleWrapper.address);
 
   // 3.
@@ -112,6 +116,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     chainlinkTribeEthOracleWrapper.address,
     chainlinkEthUsdOracleWrapper
   );
+
+  await chainlinkTribeUsdCompositeOracle.deployTransaction.wait();
 
   logging && console.log('TRIBE/USD Composite Oracle deployed to: ', chainlinkTribeUsdCompositeOracle.address);
 
@@ -131,6 +137,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     core, // send TRIBE back to treasury
     MIN_LBP_SIZE
   );
+
+  await feiTribeLBPSwapper.deployTransaction.wait();
 
   logging && console.log('FEI->TRIBE LBP Swapper: ', feiTribeLBPSwapper.address);
 
@@ -154,7 +162,9 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   logging && console.log('LBP Pool deployed to: ', feiTribeLBPAddress);
 
   // 6.
-  await feiTribeLBPSwapper.init(feiTribeLBPAddress);
+  const tx2 = await feiTribeLBPSwapper.init(feiTribeLBPAddress);
+
+  await tx2.wait();
 
   // 7.
   const pcvEquityMinterFactory = await ethers.getContractFactory('PCVEquityMinter');
@@ -167,6 +177,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     PCV_EQUITY_MINTER_APR_BPS
   );
 
+  await pcvEquityMinter.deployTransaction.wait();
+
   logging && console.log('PCV Equity Minter: ', pcvEquityMinter.address);
 
   // 8.
@@ -177,6 +189,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     CR_GUARDIAN_FREQUENCY,
     CR_GUARDIAN_DEVIATION_BPS
   );
+
+  await collateralizationOracleGuardian.deployTransaction.wait();
 
   logging && console.log('Collateralization Oracle Guardian: ', collateralizationOracleGuardian.address);
 
