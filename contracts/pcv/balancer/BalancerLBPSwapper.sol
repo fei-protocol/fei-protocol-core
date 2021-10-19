@@ -99,8 +99,6 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         Timed(_frequency) 
         WeightedBalancerPoolManager()
     {
-        _initTimed();
-
         // tokenSpent and tokenReceived are immutable
         tokenSpent = _tokenSpent;
         tokenReceived = _tokenReceived;
@@ -120,6 +118,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     */
     function init(IWeightedPool _pool) external {
         require(address(pool) == address(0), "BalancerLBPSwapper: initialized");
+        _initTimed();
 
         pool = _pool;
         IVault _vault = _pool.getVault();
@@ -347,6 +346,8 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
             endWeights
         );
         _initTimed();
+        
+        _transferAll(tokenReceived, tokenReceivingAddress);
     }
 
     function _getTokensIn(uint256 spentTokenBalance) internal view returns(uint256[] memory amountsIn) {
