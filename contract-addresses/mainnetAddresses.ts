@@ -11,7 +11,7 @@ const MainnetAddresses = {
     artifactName: 'CompositeOracle',
     address: '0xD7B8207f8644ee5cc60095023a8fcb8BdCF54732'
   },
-  feiTribeLBPSwapper : {
+  feiTribeLBPSwapper: {
     artifactName: 'BalancerLBPSwapper',
     address: '0x16ef9601076d45e8cc564cDD91E5dF3Ae83dD3B3'
   },
