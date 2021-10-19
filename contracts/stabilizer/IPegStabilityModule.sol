@@ -88,4 +88,7 @@ interface IPegStabilityModule {
 
     /// @notice the PCV deposit target to send surplus reserves
     function target() external view returns (IPCVDeposit);
+
+    /// @notice the balance of the reserve asset
+    function tokenBalance() external view returns (uint256);
 }
