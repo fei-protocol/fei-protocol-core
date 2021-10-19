@@ -42,7 +42,7 @@ describe('e2e-buybacks', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe('PCV Equity Minter + LBP', async function () {
+  describe.only('PCV Equity Minter + LBP', async function () {
     it('mints appropriate amount and swaps', async function () {
       const {
         pcvEquityMinter,
@@ -73,6 +73,7 @@ describe('e2e-buybacks', function () {
       expect(await feiTribeLBPSwapper.swapEndTime()).to.be.gt(toBN((await latestTime()).toString()));
 
       await increaseTime(await pcvEquityMinter.duration());
+      await core.allocateTribe(feiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(50_000));
 
       await pcvEquityMinter.mint();
 
