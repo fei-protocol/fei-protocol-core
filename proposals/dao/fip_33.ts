@@ -11,9 +11,7 @@ import {
 import { TransactionResponse } from '@ethersproject/providers';
 import { expectApprox } from '@test/helpers';
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-});
+chai.use(CBN(ethers.BigNumber));
 
 // Constants
 // CR oracle wrapper
