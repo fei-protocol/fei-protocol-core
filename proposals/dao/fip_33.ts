@@ -106,7 +106,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   );
 
   await chainlinkTribeEthOracleWrapper.deployTransaction.wait();
-  
+
   logging && console.log('TRIBE/ETH Oracle Wrapper deployed to: ', chainlinkTribeEthOracleWrapper.address);
 
   // 3.
