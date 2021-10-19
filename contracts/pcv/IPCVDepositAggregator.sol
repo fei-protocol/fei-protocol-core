@@ -33,7 +33,7 @@ interface IPCVDepositAggregator is IPCVDeposit {
     function removePCVDeposit(address pcvDeposit) external;
 
     /// @notice set the relative weight of a particular pcv deposit
-    function setPCVDepositWeight(address pcvDeposit, uint256 weight) external;
+    function setPCVDepositWeight(address pcvDeposit, uint128 weight) external;
 
     /// @notice set the weight for the buffer specifically
     function setBufferWeight(uint128 weight) external;

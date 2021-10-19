@@ -251,7 +251,7 @@ describe('PCV Deposit Aggregator', function () {
       expect(await token.balanceOf(pcvDepositAggregator.address)).to.equal(ethers.utils.parseEther('1000'));
     });
 
-    it('successfully rebalances when all some pcv deposits have an overage of tokens and some do not', async () => {
+    it('successfully rebalances when some pcv deposits have an overage of tokens and some do not', async () => {
       // Mint 4000, 4000, and 4000 tokens to each pcv deposit, respectively
       await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
       await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
@@ -279,40 +279,139 @@ describe('PCV Deposit Aggregator', function () {
       expect(await token.balanceOf(pcvDepositAggregator.address)).to.equal(ethers.utils.parseEther('1000'));
     });
 
-    it('rebalances a singhle deposit', async() => {
+    it('rebalances a single deposit', async() => {
+        // Mint 4000, 4000, and 4000 tokens to each pcv deposit, respectively
+        await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
+        await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
+        await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));
+  
+        // Call deposit on each pcv deposit so that their balances update
+        await pcvDeposit1.deposit();
+        await pcvDeposit2.deposit();
+        await pcvDeposit3.deposit();
 
+        expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('10000'));
+        expect(await pcvDepositAggregator.totalWeight()).to.equal(100);
+
+        await pcvDepositAggregator.rebalanceSingle(pcvDeposit1.address);
+
+        expect(await token.balanceOf(pcvDeposit1.address)).to.equal(ethers.utils.parseEther('2000'));
+        expect(await token.balanceOf(pcvDepositAggregator.address)).to.equal(ethers.utils.parseEther('4000'));
     });
 
     it('adds a pcv deposit', async() => {
+        const mockPCVDepositDeployer = new MockPCVDepositV2__factory(impersonatedSigners[userAddress]);
 
+        const pcvDeposit4 = await mockPCVDepositDeployer.deploy(
+          core.address,
+          token.address,
+          0,
+          0
+        );
+        await pcvDeposit4.deployTransaction.wait();
+
+        await pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).addPCVDeposit(pcvDeposit4.address, 10);
+        expect(await pcvDepositAggregator.totalWeight()).to.equal(110);
     });
 
     it('removes a pcv deposit', async() => {
-
+        await pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).removePCVDeposit(pcvDeposit1.address);
+        expect(await pcvDepositAggregator.totalWeight()).to.equal(80);
     });
 
     it('reports accurate targetPercentHeld', async() => {
+      // Mint 4000, 4000, and 4000 tokens to each pcv deposit, respectively
+      await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
+      await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
+      await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));
 
+      // Call deposit on each pcv deposit so that their balances update
+      await pcvDeposit1.deposit();
+      await pcvDeposit2.deposit();
+      await pcvDeposit3.deposit();
+
+      // Rebalance
+      await pcvDepositAggregator.rebalance();
+
+      const pcvDeposit1TargetPercentHeld = await pcvDepositAggregator.targetPercentHeld(pcvDeposit1.address);
+      const pcvDeposit2TargetPercentHeld = await pcvDepositAggregator.targetPercentHeld(pcvDeposit2.address);
+      const pcvDeposit3TargetPercentHeld = await pcvDepositAggregator.targetPercentHeld(pcvDeposit3.address);
+
+      expect(ethers.utils.formatUnits(pcvDeposit1TargetPercentHeld.value)).to.equal('0.2');
+      expect(ethers.utils.formatUnits(pcvDeposit2TargetPercentHeld.value)).to.equal('0.3');
+      expect(ethers.utils.formatUnits(pcvDeposit3TargetPercentHeld.value)).to.equal('0.4');
     });
 
     it('reports accurate amountFromTarget', async() => {
+      // Mint 4000, 4000, and 4000 tokens to each pcv deposit, respectively
+      await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
+      await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
+      await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));
 
+      // Call deposit on each pcv deposit so that their balances update
+      await pcvDeposit1.deposit();
+      await pcvDeposit2.deposit();
+      await pcvDeposit3.deposit();
+
+      // Amount from target should be -4000, 0, 3000, respectively
+      expect(await pcvDepositAggregator.amountFromTarget(pcvDeposit1.address)).to.equal(ethers.utils.parseEther('-4000'));
+      expect(await pcvDepositAggregator.amountFromTarget(pcvDeposit2.address)).to.equal(ethers.utils.parseEther('0'));
+      expect(await pcvDepositAggregator.amountFromTarget(pcvDeposit3.address)).to.equal(ethers.utils.parseEther('3000'));
     });
 
     it('reports accurate percentHeld', async() => {
+      // Mint 4000, 4000, and 4000 tokens to each pcv deposit, respectively
+      await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
+      await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
+      await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));
 
+      // Call deposit on each pcv deposit so that their balances update
+      await pcvDeposit1.deposit();
+      await pcvDeposit2.deposit();
+      await pcvDeposit3.deposit();
+
+      // Rebalance
+      await pcvDepositAggregator.rebalance();
+
+      const pcvDeposit1PercentHeld = (await pcvDepositAggregator.percentHeld(pcvDeposit1.address, ethers.utils.parseEther('10000'))).value
+
+      expect(ethers.utils.formatUnits(pcvDeposit1PercentHeld)).to.equal('0.6');
     });
 
-    it('reports accurate resistanceBalanceAndFei, balanceReportedIn, and balance', async() => {
+    it('reports accurate resistanceBalanceAndFei & balanceReportedIn', async() => {
+        // Mint 4000, 4000, and 4000 tokens to each pcv deposit, respectively
+        await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
+        await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
+        await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));
 
+        // Call deposit on each pcv deposit so that their balances update
+        await pcvDeposit1.deposit();
+        await pcvDeposit2.deposit();
+        await pcvDeposit3.deposit();
+
+        expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('10000'));
+        expect(await pcvDepositAggregator.totalWeight()).to.equal(100);
+
+        const resistantBalanceAndFei = await pcvDepositAggregator.resistantBalanceAndFei();
+        const balanceReportedIn = await pcvDepositAggregator.balanceReportedIn();
+        
+        expect(balanceReportedIn).to.equal(token.address);
+
+        const resistantBalance = resistantBalanceAndFei[0];
+        const fei = resistantBalanceAndFei[1];
+
+        expect(resistantBalance).to.equal(ethers.utils.parseEther('10000'));
+        expect(fei).to.equal(ethers.utils.parseEther('0'));
     });
 
     it('sets the pcv deposit weight and updates the totalweight accordingly', async() => {
-
+        await pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).setPCVDepositWeight(pcvDeposit1.address, 50);
+        expect(await pcvDepositAggregator.totalWeight()).to.equal(130);
     });
 
     it('sets the buffer weight and updates the totalweight accordingly', async() => {
-    
+        await pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).setBufferWeight(50);
+        expect(await pcvDepositAggregator.totalWeight()).to.equal(140);
     });    
   });
 })

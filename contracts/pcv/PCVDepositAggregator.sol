@@ -9,7 +9,6 @@ import "./balancer/IRewardsAssetManager.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "hardhat/console.sol";
 
 contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -139,14 +138,19 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
     function setBufferWeight(uint128 newBufferWeight) external virtual override onlyGuardianOrGovernor {
         int128 difference = int128(newBufferWeight) - int128(bufferWeight);
         bufferWeight = uint128(int128(bufferWeight) + difference);
+
+        totalWeight = uint128(int128(totalWeight) + difference);
     }
 
-    function setPCVDepositWeight(address depositAddress, uint weight) external virtual override onlyGuardianOrGovernor {
+    function setPCVDepositWeight(address depositAddress, uint128 newDepositWeight) external virtual override onlyGuardianOrGovernor {
         if (!pcvDepositAddresses.contains(depositAddress)) {
             revert("Deposit does not exist.");
         }
 
-        pcvDepositInfos[depositAddress].weight = uint128(weight);
+        int128 difference = int128(newDepositWeight) - int128(pcvDepositInfos[depositAddress].weight);
+        pcvDepositInfos[depositAddress].weight = uint128(newDepositWeight);
+
+        totalWeight = uint128(int128(totalWeight) + difference);
     }
 
     function removePCVDeposit(address pcvDeposit) external virtual override onlyGuardianOrGovernor {
@@ -206,7 +210,6 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
 
     function percentHeld(address pcvDeposit, uint256 depositAmount) external view virtual override returns(Decimal.D256 memory) {
         uint totalBalanceWithTheoreticalDeposit = getTotalBalance() + depositAmount;
-
         uint targetBalanceWithTheoreticalDeposit = IPCVDeposit(pcvDeposit).balance() + depositAmount;
 
         return Decimal.ratio(targetBalanceWithTheoreticalDeposit, totalBalanceWithTheoreticalDeposit);
@@ -227,7 +230,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
 
         uint idealDepositBalance = pcvDepositWeight * totalBalance / totalWeight;
         
-        return int(pcvDepositBalance) - int(idealDepositBalance);
+        return int(idealDepositBalance) - int(pcvDepositBalance);
     }
 
     function pcvDeposits() external view virtual override returns(address[] memory deposits, uint256[] memory weights) {
