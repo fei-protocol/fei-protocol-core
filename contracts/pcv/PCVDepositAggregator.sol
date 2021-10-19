@@ -9,6 +9,7 @@ import "./balancer/IRewardsAssetManager.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "hardhat/console.sol";
 
 contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -35,6 +36,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
     constructor(
         address _core,
         address _rewardsAssetManager,
+        address _token,
         address[] memory _initialPCVDepositAddresses,
         uint128[] memory _initialPCVDepositWeights,
         uint128 _bufferWeight
@@ -48,7 +50,9 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
         }
 
         rewardsAssetManager = _rewardsAssetManager;
+        token = _token;
         bufferWeight = _bufferWeight;
+        totalWeight = bufferWeight;
 
         _setContractAdminRole(keccak256("PCV_CONTROLLER_ROLE"));
 
@@ -104,10 +108,10 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
                 // Only withdraw from this underlying if it has an overage 
                 if (actualPcvDepositBalance > idealPcvDepositBalance) {
                     uint pcvDepositOverage = actualPcvDepositBalance - idealPcvDepositBalance;
-                    uint amountToWithdraw = totalAmountNeeded;
+                    uint amountToWithdraw = pcvDepositOverage;
                     
-                    if (amountToWithdraw > pcvDepositOverage) {
-                        amountToWithdraw = pcvDepositOverage;
+                    if (totalAmountNeeded < pcvDepositOverage) {
+                        amountToWithdraw = totalAmountNeeded;
                     }
                     
                     IPCVDeposit(pcvDepositAddress).withdraw(address(this), amountToWithdraw);
@@ -132,8 +136,9 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
         to.transfer(amount);
     }
 
-    function setBufferWeight(uint128 weight) external virtual override onlyGuardianOrGovernor {
-        bufferWeight = weight;
+    function setBufferWeight(uint128 newBufferWeight) external virtual override onlyGuardianOrGovernor {
+        int128 difference = int128(newBufferWeight) - int128(bufferWeight);
+        bufferWeight = uint128(int128(bufferWeight) + difference);
     }
 
     function setPCVDepositWeight(address depositAddress, uint weight) external virtual override onlyGuardianOrGovernor {
@@ -230,8 +235,8 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
         uint256[] memory _weights = new uint256[](pcvDepositAddresses.length());
 
         for (uint i=0; i < pcvDepositAddresses.length(); i++) {
-            deposits[i] = pcvDepositAddresses.at(i);
-            weights[i] = pcvDepositInfos[pcvDepositAddresses.at(i)].weight;
+            _deposits[i] = pcvDepositAddresses.at(i);
+            _weights[i] = pcvDepositInfos[pcvDepositAddresses.at(i)].weight;
         }
 
         return (_deposits, _weights);
@@ -264,12 +269,14 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
 
         if (pcvDepositBalance > idealDepositBalance) {
             // PCV deposit balance is too high. Withdraw from it into the aggregator.
-            IPCVDeposit(pcvDeposit).withdraw(address(this), pcvDepositBalance - idealDepositBalance);
+            uint overage = pcvDepositBalance - idealDepositBalance;
+            IPCVDeposit(pcvDeposit).withdraw(address(this), overage);
         } else if (pcvDepositBalance < idealDepositBalance) {
             // PCV deposit balance is too low. Pull from the aggregator balance if we can.
-            uint256 amountToDeposit = idealDepositBalance - pcvDepositBalance;
-            if (IERC20(token).balanceOf(address(this)) >= amountToDeposit) {
-                IERC20(token).safeTransfer(address(this), amountToDeposit);
+            uint defecit = idealDepositBalance - pcvDepositBalance;
+            if (IERC20(token).balanceOf(address(this)) >= defecit) {
+                IERC20(token).safeTransfer(pcvDeposit, defecit);
+                IPCVDeposit(pcvDeposit).deposit();
             } else {
                 // Emit event so that we know to do a full rebalance
             }
@@ -299,7 +306,8 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
                 IPCVDeposit(pcvDepositAddress).withdraw(address(this), overage);
             } else if (pcvDepositBalance < idealDepositBalance) {
                 // Needs a deposit. Let's write that down.
-                depositAmountsNeeded[i] = idealDepositBalance - pcvDepositBalance;
+                uint needed = idealDepositBalance - pcvDepositBalance;
+                depositAmountsNeeded[i] = needed;
             } else {
                 // Do nothing
                 // This accounts for the rare = case, but is definitely necessary.
@@ -322,6 +330,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
             revert("Deposit already added.");
         }
 
+        pcvDepositAddresses.add(depositAddress);
         pcvDepositInfos[depositAddress] = PCVDepositInfo(
             weight,
             false
