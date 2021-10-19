@@ -17,32 +17,38 @@ interface IPCVDepositAggregator is IPCVDeposit {
     /// @notice rebalance funds of the underlying deposits to the optimal target percents
     function rebalance() external;
 
+    /// @notice same as the rebalance function, but for a single deposit
+    function rebalanceSingle(address pcvDeposit) external;
+
     // ----------- Governor only state changing api -----------
     /// @notice adds a new PCV Deposit to the set of deposits
     /// @param weight a relative (i.e. not normalized) weight of this PCV deposit
-    function addPCVDeposit(IPCVDeposit newPCVDeposit, uint256 weight) external;
+    function addPCVDeposit(address newPCVDeposit, uint256 weight) external;
 
     /// @notice replaces this contract with a new PCV Deposit Aggregator on the rewardsAssetManager
-    function setNewAggregator(IPCVDepositAggregator newAggregator) external;
+    function setNewAggregator(address newAggregator) external;
 
     // ----------- Governor or Guardian only state changing api -----------
     /// @notice remove a PCV deposit from the set of deposits
-    function removePCVDeposit(IPCVDeposit pcvDeposit) external;
+    function removePCVDeposit(address pcvDeposit) external;
 
     // ----------- Read-only api -----------
     /// @notice the upstream rewardsAssetManager funding this contract
     function rewardsAssetManager() external returns(address);
 
     /// @notice the set of PCV deposits and non-normalized weights this contract allocates to
-    function pcvDeposits() external view returns(IPCVDeposit[] memory deposits, uint256[] memory weights);
+    function pcvDeposits() external view returns(address[] memory deposits, uint256[] memory weights);
 
     /// @notice current percent of PCV held by the input `pcvDeposit` relative to the total managed by aggregator.
     /// @param depositAmount a hypothetical deposit amount, to be included in the calculation
-    function percentHeld(IPCVDeposit pcvDeposit, uint256 depositAmount) external view returns(Decimal.D256 memory);
+    function percentHeld(address pcvDeposit, uint256 depositAmount) external view returns(Decimal.D256 memory);
 
     /// @notice the normalized target percent of PCV held by `pcvDeposit` relative to aggregator total
-    function targetPercentHeld(IPCVDeposit pcvDeposit) external view returns(Decimal.D256 memory);
+    function targetPercentHeld(address pcvDeposit) external view returns(Decimal.D256 memory);
 
     /// @notice the raw amount of PCV off of the target weight/percent held by `pcvDeposit`
-    function amountFromTarget(IPCVDeposit pcvDeposit) external view returns(int256);
+    function amountFromTarget(address pcvDeposit) external view returns(int256);
+
+    /// @notice returns the summation of all pcv deposit balances + the aggregator's balance
+    function getTotalBalance() external view returns(uint256);
 }

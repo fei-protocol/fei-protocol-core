@@ -63,6 +63,10 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
         _rebalance();
     }
 
+    function rebalanceSingle(address pcvDeposit) external {
+        _rebalanceSingle(pcvDeposit);
+    }
+
     function deposit() external {
         // no-op
         // emit event?
@@ -141,21 +145,21 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
         pcvDepositInfos[depositAddress].weight = uint128(weight);
     }
 
-    function removePCVDeposit(IPCVDeposit pcvDeposit) external onlyGuardianOrGovernor {
+    function removePCVDeposit(address pcvDeposit) external onlyGuardianOrGovernor {
         _removePCVDeposit(address(pcvDeposit));
     }
 
-    function addPCVDeposit(IPCVDeposit newPCVDeposit, uint256 weight) external onlyGovernor {
+    function addPCVDeposit(address newPCVDeposit, uint256 weight) external onlyGovernor {
         _addPCVDeposit(address(newPCVDeposit), uint128(weight));
     }
 
-    function setNewAggregator(IPCVDepositAggregator newAggregator) external onlyGovernor {
+    function setNewAggregator(address newAggregator) external onlyGovernor {
         // Add each pcvDeposit to the new aggregator
         for (uint i=0; i < pcvDepositAddresses.length(); i++) {
             address pcvDepositAddress = pcvDepositAddresses.at(i);
             uint128 pcvDepositWeight = pcvDepositInfos[pcvDepositAddress].weight;
 
-            IPCVDepositAggregator(newAggregator).addPCVDeposit(IPCVDeposit(pcvDepositAddress), pcvDepositWeight);
+            IPCVDepositAggregator(newAggregator).addPCVDeposit(pcvDepositAddress, pcvDepositWeight);
         }
 
         // Set all weights to zero (except for us)
@@ -196,25 +200,25 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
         return getTotalBalance();
     }
 
-    function percentHeld(IPCVDeposit pcvDeposit, uint256 depositAmount) external view returns(Decimal.D256 memory) {
+    function percentHeld(address pcvDeposit, uint256 depositAmount) external view returns(Decimal.D256 memory) {
         uint totalBalanceWithTheoreticalDeposit = getTotalBalance() + depositAmount;
 
-        uint targetBalanceWithTheoreticalDeposit = pcvDeposit.balance() + depositAmount;
+        uint targetBalanceWithTheoreticalDeposit = IPCVDeposit(pcvDeposit).balance() + depositAmount;
 
         return Decimal.ratio(targetBalanceWithTheoreticalDeposit, totalBalanceWithTheoreticalDeposit);
     }
 
-    function targetPercentHeld(IPCVDeposit pcvDeposit) external view returns(Decimal.D256 memory) {
+    function targetPercentHeld(address pcvDeposit) external view returns(Decimal.D256 memory) {
         uint totalBalance = getTotalBalance();
-        uint targetBalance = pcvDeposit.balance();
+        uint targetBalance = IPCVDeposit(pcvDeposit).balance();
 
         return Decimal.ratio(targetBalance, totalBalance);
     }
 
-    function amountFromTarget(IPCVDeposit pcvDeposit) external view returns(int256) {
+    function amountFromTarget(address pcvDeposit) external view returns(int256) {
         uint totalBalance = getTotalBalance();
 
-        uint pcvDepositBalance = pcvDeposit.balance();
+        uint pcvDepositBalance = IPCVDeposit(pcvDeposit).balance();
         uint pcvDepositWeight = pcvDepositInfos[address(pcvDeposit)].weight;
 
         uint idealDepositBalance = pcvDepositWeight * totalBalance / totalWeight;
@@ -222,12 +226,12 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
         return int(pcvDepositBalance) - int(idealDepositBalance);
     }
 
-    function pcvDeposits() external view returns(IPCVDeposit[] memory deposits, uint256[] memory weights) {
-        IPCVDeposit[] memory _deposits = new IPCVDeposit[](pcvDepositAddresses.length());
+    function pcvDeposits() external view returns(address[] memory deposits, uint256[] memory weights) {
+        address[] memory _deposits = new address[](pcvDepositAddresses.length());
         uint256[] memory _weights = new uint256[](pcvDepositAddresses.length());
 
         for (uint i=0; i < pcvDepositAddresses.length(); i++) {
-            deposits[i] = IPCVDeposit(pcvDepositAddresses.at(i));
+            deposits[i] = pcvDepositAddresses.at(i);
             weights[i] = pcvDepositInfos[pcvDepositAddresses.at(i)].weight;
         }
 
@@ -247,7 +251,34 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
         return totalBalance;
     }
 
-    // ---------- Internal Functions -----------
+    // ---------- Internal Functions ----------- //
+
+    function _rebalanceSingle(address pcvDeposit) internal {
+        if (!pcvDepositAddresses.contains(pcvDeposit)) {
+            revert("Deposit does not exist.");
+        }
+
+        uint totalBalance = getTotalBalance();
+        uint128 pcvDepositWeight = pcvDepositInfos[pcvDeposit].weight;
+        uint idealDepositBalance = pcvDepositWeight * totalBalance / totalWeight;
+        uint pcvDepositBalance = IPCVDeposit(pcvDeposit).balance();
+
+        if (pcvDepositBalance > idealDepositBalance) {
+            // PCV deposit balance is too high. Withdraw from it into the aggregator.
+            IPCVDeposit(pcvDeposit).withdraw(address(this), pcvDepositBalance - idealDepositBalance);
+        } else if (pcvDepositBalance < idealDepositBalance) {
+            // PCV deposit balance is too low. Pull from the aggregator balance if we can.
+            uint256 amountToDeposit = idealDepositBalance - pcvDepositBalance;
+            if (IERC20(token).balanceOf(address(this)) >= amountToDeposit) {
+                IERC20(token).safeTransfer(address(this), amountToDeposit);
+            } else {
+                // Emit event so that we know to do a full rebalance
+            }
+        } else {
+            // PCV deposit balance is exactly where it needs to be. Don't touch it.
+        }
+    }
+
 
     function _rebalance() internal {
         // Get the balances of all pcvDepositInfos
