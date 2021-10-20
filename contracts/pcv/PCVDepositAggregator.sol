@@ -22,9 +22,9 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
 
     // ---------- Properties ------
 
+    // @todo remove this
     struct PCVDepositInfo {
         uint128 weight;
-        bool depositsPaused;
     }
 
     EnumerableSet.AddressSet private pcvDepositAddresses;
@@ -89,7 +89,6 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
         }
         
         uint[] memory underlyingBalances = _getUnderlyingBalances();
-
         uint totalUnderlyingBalance = _sumUnderlyingBalances(underlyingBalances);
         uint totalBalance = totalUnderlyingBalance + aggregatorBalance;
 
@@ -114,6 +113,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
             uint actualPcvDepositBalance = underlyingBalances[i];
             uint idealPcvDepositBalance = idealUnderlyingBalancesPostWithdraw[i];
 
+            // @todo collapse this logic
             if (idealPcvDepositBalance >= actualPcvDepositBalance) {
                 continue;
             } else {
@@ -233,15 +233,15 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
     }
 
     function pcvDeposits() external view virtual override returns(address[] memory deposits, uint256[] memory weights) {
-        address[] memory _deposits = new address[](pcvDepositAddresses.length());
-        uint256[] memory _weights = new uint256[](pcvDepositAddresses.length());
+        deposits = new address[](pcvDepositAddresses.length());
+        weights = new uint256[](pcvDepositAddresses.length());
 
         for (uint i=0; i < pcvDepositAddresses.length(); i++) {
-            _deposits[i] = pcvDepositAddresses.at(i);
-            _weights[i] = pcvDepositInfos[pcvDepositAddresses.at(i)].weight;
+            deposits[i] = pcvDepositAddresses.at(i);
+            weights[i] = pcvDepositInfos[pcvDepositAddresses.at(i)].weight;
         }
 
-        return (_deposits, _weights);
+        return (deposits, weights);
     }
 
     function getTotalBalance() public view virtual override returns (uint256) {
@@ -310,6 +310,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
 
 
     function _rebalance() internal {
+        // @todo don't put this on the stack
         uint[] memory underlyingBalances = _getUnderlyingBalances();
         uint totalUnderlyingBalance = _sumUnderlyingBalances(underlyingBalances);
         uint aggregatorBalance = IERC20(token).balanceOf(address(this));
