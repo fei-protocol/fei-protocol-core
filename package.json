@@ -83,7 +83,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "eslint --cache --fix --config ./.eslintrc --ignore-path ./.eslintignore .",
+      "eslint --cache --fix --config ./.eslintrc --ignore-path ./.eslintignore --ext .ts,.tsx .",
       "prettier --config .prettierrc './**/*.ts' --write"
     ]
   }
