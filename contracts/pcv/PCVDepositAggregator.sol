@@ -44,13 +44,8 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
         uint128[] memory _initialPCVDepositWeights,
         uint128 _bufferWeight
     ) CoreRef(_core) {
-        if (_initialPCVDepositAddresses.length != _initialPCVDepositWeights.length) {
-            revert("Addresses and weights are not the same length!");
-        }
-
-        if (_rewardsAssetManager == address(0x0)) {
-            revert("Rewards asset manager cannot be null");
-        }
+        require(_initialPCVDepositAddresses.length != _initialPCVDepositWeights.length, "Addresses and weights are not the same length!");
+        require(_rewardsAssetManager == address(0x0), "Rewards asset manager cannot be null");
 
         rewardsAssetManager = _rewardsAssetManager;
         token = _token;
@@ -344,9 +339,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
     }
 
     function _addPCVDeposit(address depositAddress, uint128 weight) internal {
-        if (pcvDepositAddresses.contains(depositAddress)) {
-            revert("Deposit already added.");
-        }
+        require(pcvDepositAddresses.contains(depositAddress), "Deposit already added.");
 
         pcvDepositAddresses.add(depositAddress);
         pcvDepositInfos[depositAddress] = PCVDepositInfo(
@@ -358,9 +351,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, CoreRef {
     }
 
     function _removePCVDeposit(address depositAddress) internal {
-        if (!pcvDepositAddresses.contains(depositAddress)) {
-            revert("Deposit does not exist.");
-        }
+        require(!pcvDepositAddresses.contains(depositAddress), "Deposit does not exist.");
 
         // Short-circuit - if the pcv deposit's weight is already zero and the balance is zero, just delete it
         if (pcvDepositInfos[depositAddress].weight == 0 && IPCVDeposit(depositAddress).balance() == 0) {
