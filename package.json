@@ -31,7 +31,8 @@
     "abis": "node scripts/abis.js",
     "calldata": "npx hardhat run scripts/utils/getProposalCalldata.ts",
     "check-proposal": "ENABLE_MAINNET_FORKING=true npx hardhat run scripts/utils/checkProposal.ts",
-    "prettier-format": "prettier --config .prettierrc './**/*.ts' --write"
+    "prettier-format": "prettier --config .prettierrc './**/*.ts' --write",
+    "prepare": "husky install"
   },
   "author": "joeysantoro",
   "license": "AGPL-3.0-only",
@@ -70,6 +71,8 @@
     "eslint-plugin-prettier": "^4.0.0",
     "ethereum-waffle": "^3.3.0",
     "ethers": "^5.4.7",
+    "husky": "^7.0.2",
+    "lint-staged": "^11.2.3",
     "mocha": "^9.1.2",
     "prettier": "^2.4.1",
     "solidity-coverage": "^0.7.17",
@@ -77,5 +80,11 @@
     "tsconfig-paths": "^3.11.0",
     "typechain": "^5.1.2",
     "typescript": "^4.4.3"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --cache --fix --config ./.eslintrc --ignore-path ./.eslintignore .",
+      "prettier --config .prettierrc './**/*.ts' --write"
+    ]
   }
 }
