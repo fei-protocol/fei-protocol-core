@@ -1,5 +1,5 @@
 {
-    "proposal_title": "FIP-33: TRIBE buybacks",
+    "proposal_title": "FIP-35: Optimistic Minter",
     "proposal_commands": [
         {
             "target": "core",
