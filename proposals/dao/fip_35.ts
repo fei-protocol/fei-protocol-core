@@ -29,10 +29,7 @@ DAO ACTIONS:
 */
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
-  const {
-    core,
-    optimisticTimelock,
-  } = addresses;
+  const { core, optimisticTimelock } = addresses;
 
   if (!core || !optimisticTimelock) {
     throw new Error('An environment variable contract address is not set');
@@ -40,12 +37,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   // 1.
   const factory = await ethers.getContractFactory('OwnableTimedMinter');
-  const optimisticMinter = await factory.deploy(
-    core,
-    optimisticTimelock,
-    TIMED_MINTER_FREQUENCY,
-    TIMED_MINTER_AMOUNT
-  );
+  const optimisticMinter = await factory.deploy(core, optimisticTimelock, TIMED_MINTER_FREQUENCY, TIMED_MINTER_AMOUNT);
 
   await optimisticMinter.deployTransaction.wait();
 
@@ -65,12 +57,10 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
-  const {
-    fei,
-    optimisticMinter,
-    optimisticTimelock
-  } = contracts;
-  expect(await fei.balanceOf(optimisticTimelock.address)).to.be.bignumber.greaterThan(ethers.constants.WeiPerEther.mul(100_000_000));
+  const { fei, optimisticMinter, optimisticTimelock } = contracts;
+  expect(await fei.balanceOf(optimisticTimelock.address)).to.be.bignumber.greaterThan(
+    ethers.constants.WeiPerEther.mul(100_000_000)
+  );
   expect(await optimisticMinter.owner()).to.be.equal(optimisticTimelock.address);
   expect(await optimisticMinter.isTimeStarted()).to.be.true;
 };
