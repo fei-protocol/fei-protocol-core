@@ -29,6 +29,7 @@ interface IPegStabilityModule {
     /// @dev see getMintAmountOut() to pre-calculate amount out
     function mint(address to, uint256 amountIn)
         external
+        payable
         returns (uint256 amountFeiOut);
 
     /// @notice redeem `amountFeiIn` FEI for `amountOut` underlying tokens and send to address `to` 
