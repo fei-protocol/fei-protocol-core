@@ -325,13 +325,13 @@ describe('ERC20PegStabilityModule', function () {
       });
 
       it('succeeds when caller is PCVController', async function () {
-        const startingBalance = await psm.balance();
         const amount = 10_000_000;
         await asset.mint(psm.address, amount);
-        await psm.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, amount);
+        await psm.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, await psm.balance());
 
         const endingBalance = await psm.balance();
-        expect(endingBalance.sub(startingBalance)).to.be.equal(amount);
+        expect(endingBalance).to.be.equal(0);
+        expect(await asset.balanceOf(userAddress)).to.be.equal(amount);
       });
     });
 
