@@ -10,6 +10,7 @@ import "../Constants.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "hardhat/console.sol";
 
 abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimitedMinter, OracleRef, ReentrancyGuard, PCVDeposit {
     using Decimal for Decimal.D256;
@@ -67,7 +68,6 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     /// @param _decimalsNormalizer normalize decimals in oracle if tokens have different decimals
     /// @param _doInvert invert oracle price if true
     /// @param _token token to buy and sell against Fei
-    /// @param _target PCV Deposit to reference
     /// @param _FEI Fei token to reference
     constructor(
         address _coreAddress,
@@ -80,7 +80,6 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
         int256 _decimalsNormalizer,
         bool _doInvert,
         IERC20 _token,
-        IPCVDeposit _target,
         IFei _FEI
     )
         OracleRef(_coreAddress, _oracleAddress, address(0), _decimalsNormalizer, _doInvert)
@@ -94,7 +93,7 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
         _setReservesThreshold(_reservesThreshold);
         _setMintFee(_mintFeeBasisPoints);
         _setRedeemFee(_redeemFeeBasisPoints);
-        _setTarget(_target);
+        // _setTarget(_target);
     }
 
     /// @notice set the mint fee vs oracle price in basis point terms
@@ -121,7 +120,7 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     function _setMintFee(uint256 newMintFeeBasisPoints) internal {
         require(newMintFeeBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "PegStabilityModule: Mint fee exceeds bp granularity");
         uint256 _oldMintFee = mintFeeBasisPoints;
-        redeemFeeBasisPoints = newMintFeeBasisPoints;
+        mintFeeBasisPoints = newMintFeeBasisPoints;
 
         emit MintFeeChanged(_oldMintFee, newMintFeeBasisPoints);
     }
@@ -155,8 +154,10 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     /// @notice function to redeem FEI for an underlying asset
     function redeem(address to, uint256 amountFeiIn) external virtual override nonReentrant whenNotPaused returns (uint256 amountOut) {
         updateOracle();
+        Decimal.D256 memory price;
 
-        amountOut = getRedeemAmountOut(amountFeiIn);
+        (amountOut, price) = _getRedeemAmountOutAndPrice(amountFeiIn);
+        require(_validPrice(price), "PegStabilityModule: price out of bounds");
         FEI.transferFrom(msg.sender, address(this), amountFeiIn);
         FEI.burn(amountFeiIn);
 
@@ -166,12 +167,15 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     }
 
     /// @notice function to buy FEI for an underlying asset
-    function mint(address to, uint256 amountIn) external virtual override payable nonReentrant  whenNotPaused returns (uint256 amountFeiOut) {
+    function mint(address to, uint256 amountIn) external virtual override payable nonReentrant whenNotPaused returns (uint256 amountFeiOut) {
         require(msg.value == 0, "PegStabilityModule: cannot send eth to mint");
 
         updateOracle();
+        Decimal.D256 memory price;
 
-        amountFeiOut = getMintAmountOut(amountIn);
+        (amountFeiOut, price) = _getMintAmountOutAndPrice(amountIn);
+        require(_validPrice(price), "PegStabilityModule: price out of bounds");
+
         token.safeTransferFrom(msg.sender, address(this), amountIn);
 
         _mintFei(msg.sender, amountFeiOut);
@@ -179,17 +183,53 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
         emit Mint(to, amountIn);
     }
 
+    /// @notice function to pause the PSM. Only accessible in the ERC20PSM
+    /// should be called whenever the DAI price is above $1.02 or below $0.98 as this will pause the contract
+    /// then a guardian or governor will have to unpause the contract
+    function oracleErrorPause() external virtual whenNotPaused {
+        updateOracle();
+        Decimal.D256 memory price = readOracle();
+
+        require(!_validPrice(price), "PegStabilityModule: price not out of bounds");
+
+        _pause();
+    }
+
+    /// @notice helper function to determine if price is within a valid range
+    /// function is private so that classes that inherit cannot use
+    function _validPrice(Decimal.D256 memory price) private pure returns(bool valid) {
+        Decimal.D256 memory floorPrice = Decimal.D256({ value: 0.98 ether });
+        Decimal.D256 memory ceilingPrice = Decimal.D256({ value: 1.02 ether });
+
+        valid = price.greaterThan(floorPrice) && price.lessThan(ceilingPrice);
+        return valid;
+    }
+
+    function _getMintAmountOutAndPrice(uint256 amountIn) private view returns (uint256 amountFeiOut, Decimal.D256 memory price) {
+        price = readOracle();
+        Decimal.D256 memory feiValueOfAmountIn = price.mul(amountIn);
+
+        amountFeiOut = feiValueOfAmountIn
+            .mul(Constants.BASIS_POINTS_GRANULARITY - mintFeeBasisPoints)
+            .div(Constants.BASIS_POINTS_GRANULARITY)
+            .asUint256();
+    }
+
     /// @notice calculate the amount of FEI out for a given `amountIn` of underlying
     /// First get oracle price of token
     /// Then figure out how many dollars that amount in is worth by multiplying price * amount.
     /// ensure decimals are normalized if on underlying they are not 18
     function getMintAmountOut(uint256 amountIn) public override view returns (uint256 amountFeiOut) {
-        uint256 feiValueOfAmountIn = readOracle().mul(amountIn).asUint256();
+        (amountFeiOut, ) = _getMintAmountOutAndPrice(amountIn);
+    }
 
-        /// the price of FEI is always 1 dollar
-        Decimal.D256 memory price = Decimal.one();
+    function _getRedeemAmountOutAndPrice(uint256 amountFeiIn) private view returns (uint256 amountTokenOut, Decimal.D256 memory price) {
+        price = readOracle();
 
-        amountFeiOut = price.mul(feiValueOfAmountIn).asUint256() * (10_000 - mintFeeBasisPoints) / 10_000;
+        uint256 adjustedAmountIn = amountFeiIn * (Constants.BASIS_POINTS_GRANULARITY - mintFeeBasisPoints)
+            / Constants.BASIS_POINTS_GRANULARITY;
+
+        amountTokenOut = price.mul(adjustedAmountIn).asUint256();
     }
 
     /// @notice calculate the amount of underlying out for a given `amountFeiIn` of FEI
@@ -197,10 +237,7 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     /// Then figure out how many dollars that amount in is worth by multiplying price * amount.
     /// ensure decimals are normalized if on underlying they are not 18
     function getRedeemAmountOut(uint256 amountFeiIn) public override view returns (uint256 amountTokenOut) {
-        /// oracle price of the token is 100
-        /// if they put in 50 fei, we will give then 0.5 tokens minus fees
-        uint256 adjustedAmountIn = amountFeiIn * (10_000 - mintFeeBasisPoints) / Constants.BASIS_POINTS_GRANULARITY;
-        return readOracle().mul(adjustedAmountIn).asUint256();
+        (amountTokenOut, ) = _getRedeemAmountOutAndPrice(amountFeiIn);
     }
 
     /// @notice mint amount of FEI to the specified user on a rate limit

@@ -15,7 +15,7 @@ contract ERC20PegStabilityModule is PegStabilityModule {
         uint256 _mintingBufferCap,
         int256 _decimalsNormalizer,
         bool _doInvert,
-        IPCVDeposit _target,
+        IERC20 _token,
         IFei _FEI
     ) PegStabilityModule(
         _coreAddress,
@@ -27,8 +27,7 @@ contract ERC20PegStabilityModule is PegStabilityModule {
         _mintingBufferCap,
         _decimalsNormalizer,
         _doInvert,
-        IERC20(address(0)), /// since the token for this PSM is eth, the address is 0
-        _target,
+        _token,
         _FEI
     ) {}
 
@@ -44,7 +43,6 @@ contract ERC20PegStabilityModule is PegStabilityModule {
 
     /// @notice withdraw assets from ETH PSM to an external address
     function withdraw(address to, uint256 amount) external override onlyPCVController {
-        (bool success,) = to.call{value: amount, gas: 100000}("");
-        require(success, "EthPegStabillityModule: error sending eth");
+        _withdrawERC20(address(token), to, amount);
     }
 }

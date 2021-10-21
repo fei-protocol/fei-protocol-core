@@ -15,7 +15,6 @@ contract EthPegStabilityModule is PegStabilityModule {
         uint256 _mintingBufferCap,
         int256 _decimalsNormalizer,
         bool _doInvert,
-        IPCVDeposit _target,
         IFei _FEI
     ) PegStabilityModule(
         _coreAddress,
@@ -28,7 +27,6 @@ contract EthPegStabilityModule is PegStabilityModule {
         _decimalsNormalizer,
         _doInvert,
         IERC20(address(0)), /// since the token for this PSM is eth, the address is 0
-        _target,
         _FEI
     ) {}
 
@@ -40,8 +38,7 @@ contract EthPegStabilityModule is PegStabilityModule {
         FEI.transferFrom(msg.sender, address(this), amountFeiIn);
         FEI.burn(amountFeiIn);
 
-        (bool success,) = to.call{value: amountEthOut, gas: 100000}("");
-        require(success, "EthPegStabillityModule: error sending eth");
+        Address.sendValue(payable(to), amountEthOut);
 
         emit Redeem(to, amountFeiIn);
     }
@@ -62,8 +59,13 @@ contract EthPegStabilityModule is PegStabilityModule {
 
     /// @notice withdraw assets from ETH PSM to an external address
     function withdraw(address to, uint256 amount) external override onlyPCVController {
-        (bool success,) = to.call{value: amount, gas: 100000}("");
-        require(success, "EthPegStabillityModule: error sending eth");
+        Address.sendValue(payable(to), amount);
+        emit WithdrawETH(msg.sender, to, amount);
+    }
+
+    /// @notice no-op as the eth PSM is not allowed to have an automatic pause due to oracle price
+    function oracleErrorPause() external override whenNotPaused {
+        revert("no-op");
     }
 
     /// @notice TODO figure out how and if this contract should handle deposits
