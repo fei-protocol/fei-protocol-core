@@ -12,25 +12,13 @@ describe('EthBondingCurve', function () {
 
   const impersonatedSigners: { [key: string]: Signer } = {};
 
-  let core, fei;
-  let oracle, pcvDeposit1, pcvDeposit2;
-  let mockOracleFactory, mockEthPCVDepositFactory;
-  let scale, incentiveAmount, incentiveDuration, bondingCurveFactory, minterAddress, burnerAddress;
-  let governorAddress, beneficiaryAddress1, beneficiaryAddress2, buffer, pcvDepositAddress1, pcvDepositAddress2;
+  let governorAddress, beneficiaryAddress1, beneficiaryAddress2;
 
   before(async () => {
     const addresses = await getAddresses();
 
     // add any addresses you want to impersonate here
-    const impersonatedAddresses = [
-      addresses.userAddress,
-      addresses.pcvControllerAddress,
-      addresses.governorAddress,
-      addresses.keeperAddress,
-      addresses.burnerAddress,
-      addresses.minterAddress,
-      addresses.guardianAddress
-    ];
+    const impersonatedAddresses = [addresses.userAddress, addresses.governorAddress, addresses.keeperAddress];
 
     await hre.network.provider.request({
       method: 'hardhat_reset',
@@ -56,14 +44,6 @@ describe('EthBondingCurve', function () {
     beneficiaryAddress1 = addresses.beneficiaryAddress1;
     beneficiaryAddress2 = addresses.beneficiaryAddress2;
     keeperAddress = addresses.keeperAddress;
-    minterAddress = addresses.minterAddress;
-    burnerAddress = addresses.burnerAddress;
-
-    // We can't use this here because the tests are state-dependent on each other.
-    /* await hre.network.provider.request({
-      method: "hardhat_reset",
-      params: []
-    }) */
 
     await deployDevelopmentWeth();
 

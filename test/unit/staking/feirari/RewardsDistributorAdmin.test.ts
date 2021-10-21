@@ -1,6 +1,6 @@
 import { expectRevert, getAddresses, getCore } from '../../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer, utils } from 'ethers';
 import testHelpers from '@openzeppelin/test-helpers';
 import { Core } from '../../../../types/contracts/Core';

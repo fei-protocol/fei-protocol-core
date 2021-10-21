@@ -1,6 +1,5 @@
 {
-    "collateralizationOracle" : {
-        "deploy" : true,
-        "skipDAO" : true
+    "fip_33" : {
+        "deploy" : false
     }
 }

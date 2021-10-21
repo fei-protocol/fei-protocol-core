@@ -2,8 +2,8 @@ import hre, { ethers, artifacts, network } from 'hardhat';
 import chai from 'chai';
 import CBN from 'chai-bn';
 import { Core, Core__factory } from '@custom-types/contracts';
-import { BigNumberish, Signer } from 'ethers';
-import { env } from 'process';
+import { BigNumber, BigNumberish, Signer } from 'ethers';
+import { NamedAddresses } from '@custom-types/types';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
@@ -22,7 +22,7 @@ async function deployDevelopmentWeth(): Promise<void> {
   await weth.init();
 }
 
-async function getAddresses() {
+async function getAddresses(): Promise<NamedAddresses> {
   const [
     userAddress,
     secondUserAddress,
@@ -63,18 +63,15 @@ async function getImpersonatedSigner(address: string): Promise<Signer> {
   return signer;
 }
 
-async function increaseTime(amount: number) {
-  await hre.network.provider.request({
-    method: 'evm_increaseTime',
-    params: [amount]
-  });
+async function increaseTime(amount: number | string | BigNumberish): Promise<void> {
+  await time.increase(amount);
 }
 
-async function resetTime() {
+async function resetTime(): Promise<void> {
   await resetFork();
 }
 
-async function resetFork() {
+async function resetFork(): Promise<void> {
   await hre.network.provider.request({
     method: 'hardhat_reset',
     params: [
@@ -89,7 +86,7 @@ async function resetFork() {
   });
 }
 
-async function setNextBlockTimestamp(time: number) {
+async function setNextBlockTimestamp(time: number): Promise<void> {
   await hre.network.provider.request({
     method: 'evm_setNextBlockTimestamp',
     params: [time]
@@ -102,7 +99,7 @@ async function latestTime(): Promise<number> {
   return timestamp as number;
 }
 
-async function mine() {
+async function mine(): Promise<void> {
   await hre.network.provider.request({
     method: 'evm_mine'
   });
@@ -130,7 +127,11 @@ async function getCore(): Promise<Core> {
   return core;
 }
 
-async function expectApprox(actual, expected, magnitude = '1000') {
+async function expectApprox(
+  actual: string | number | BigNumberish,
+  expected: string | number | BigNumberish,
+  magnitude = '1000'
+): Promise<void> {
   const actualBN = toBN(actual);
   const expectedBN = toBN(expected);
   const magnitudeBN = toBN(magnitude);
@@ -145,11 +146,11 @@ async function expectApprox(actual, expected, magnitude = '1000') {
   }
 }
 
-async function expectRevert(tx, errorMessage: string) {
+async function expectRevert(tx, errorMessage: string): Promise<void> {
   await expect(tx).to.be.revertedWith(errorMessage);
 }
 
-async function expectUnspecifiedRevert(tx) {
+async function expectUnspecifiedRevert(tx): Promise<void> {
   await expect(tx).to.be.reverted;
 }
 
@@ -157,18 +158,18 @@ const ZERO_ADDRESS = ethers.constants.AddressZero;
 const MAX_UINT256 = ethers.constants.MaxUint256;
 
 const balance = {
-  current: async (address: string) => {
+  current: async (address: string): Promise<BigNumber> => {
     const balance = await ethers.provider.getBalance(address);
     return balance;
   }
 };
 
 const time = {
-  latest: async () => latestTime(),
+  latest: async (): Promise<number> => latestTime(),
 
-  latestBlock: async () => await ethers.provider.getBlockNumber(),
+  latestBlock: async (): Promise<number> => await ethers.provider.getBlockNumber(),
 
-  increase: async (duration: number | string | BigNumberish) => {
+  increase: async (duration: number | string | BigNumberish): Promise<void> => {
     const durationBN = ethers.BigNumber.from(duration);
 
     if (durationBN.lt(ethers.constants.Zero)) throw Error(`Cannot increase time by a negative amount (${duration})`);
@@ -178,7 +179,7 @@ const time = {
     await hre.network.provider.send('evm_mine');
   },
 
-  increaseTo: async (target: number | string | BigNumberish) => {
+  increaseTo: async (target: number | string | BigNumberish): Promise<void> => {
     const targetBN = ethers.BigNumber.from(target);
 
     const now = ethers.BigNumber.from(await time.latest());
@@ -188,7 +189,7 @@ const time = {
     return time.increase(diff);
   },
 
-  advanceBlockTo: async (target: number | string | BigNumberish) => {
+  advanceBlockTo: async (target: number | string | BigNumberish): Promise<void> => {
     target = ethers.BigNumber.from(target);
 
     const currentBlock = await time.latestBlock();
@@ -205,7 +206,7 @@ const time = {
     }
   },
 
-  advanceBlock: async () => {
+  advanceBlock: async (): Promise<void> => {
     await hre.network.provider.send('evm_mine');
   }
 };

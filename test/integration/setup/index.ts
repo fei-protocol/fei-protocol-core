@@ -20,6 +20,7 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '../../../types/types';
+import { resetFork } from '@test/helpers';
 
 /**
  * Coordinate initialising an end-to-end testing environment
@@ -50,6 +51,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    *
    */
   public async loadEnvironment(): Promise<Env> {
+    await resetFork();
     await this.initMainnetContracts();
     let existingContracts = this.mainnetContracts;
 
@@ -118,7 +120,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
 
     if (!config['skipDAO']) {
       // Simulate the DAO proposal
-      const proposal = await constructProposal(proposalName, this.config.logging);
+      const proposal = await constructProposal(proposalName, contracts, contractAddresses, this.config.logging);
       this.config.logging && console.log(`Simulating proposal...`);
       await proposal.simulate();
     }
@@ -139,21 +141,21 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   /**
    * Set the web3 contracts used in the test environment
    */
-  setLocalTestContracts(contracts: NamedContracts) {
+  setLocalTestContracts(contracts: NamedContracts): void {
     this.afterUpgradeContracts = contracts;
   }
 
   /**
    * Set the addresses of the contracts used in the test environment
    */
-  async setLocalTestContractAddresses(contracts: NamedContracts) {
+  async setLocalTestContractAddresses(contracts: NamedContracts): Promise<void> {
     this.afterUpgradeAddresses = { ...(contracts as unknown as NamedAddresses) };
   }
 
   /**
    * Revoke permissions granted to deploy address
    */
-  async revokeDeployAddressPermission() {
+  async revokeDeployAddressPermission(): Promise<void> {
     await this.afterUpgradeContracts.core.revokeMinter(this.config.deployAddress);
     await this.afterUpgradeContracts.core.revokeBurner(this.config.deployAddress);
     await this.afterUpgradeContracts.core.revokePCVController(this.config.deployAddress);

@@ -12,7 +12,7 @@ export interface TestCoordinator {
 export function namedContractsToNamedAddresses(contracts: NamedContracts): NamedAddresses {
   const namedAddresses: NamedAddresses = {};
 
-  Object.keys(contracts).map(function (contractName, index) {
+  Object.keys(contracts).map(function (contractName) {
     namedAddresses[contractName] = contracts[contractName].address;
   });
 

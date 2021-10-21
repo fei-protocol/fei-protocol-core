@@ -64,10 +64,11 @@ describe('TribeReserveStabilizer', function () {
       this.tribeMinter.address
     );
 
-    await this.core.connect(impersonatedSigners[governorAddress]).grantBurner(this.reserveStabilizer.address, {});
+    await this.tribe.connect(impersonatedSigners[governorAddress]).setMinter(this.reserveStabilizer.address, {});
 
-    await this.tribe.connect(impersonatedSigners[governorAddress]).setMinter(this.tribeMinter.address, {});
-
+    await this.fei
+      .connect(impersonatedSigners[userAddress])
+      .approve(this.reserveStabilizer.address, ethers.constants.MaxUint256);
     await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 40000000, {});
   });
 
@@ -163,7 +164,7 @@ describe('TribeReserveStabilizer', function () {
     it('reverts', async function () {
       await expectRevert(
         this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(50000000, {}),
-        'ERC20: burn amount exceeds balance'
+        'ERC20: transfer amount exceeds balance'
       );
     });
   });

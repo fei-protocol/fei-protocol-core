@@ -1,9 +1,9 @@
-import { expectRevert, time, getCore, getAddresses } from '../../helpers';
+import { expectRevert, time, getCore, getAddresses } from '@test/helpers';
 import { expect } from 'chai';
 import hre, { artifacts, ethers, network } from 'hardhat';
 import { Signer } from 'ethers';
 import { TransactionResponse } from '@ethersproject/providers';
-import { FeiDAO, Timelock } from '../../../types/contracts';
+import { Core, FeiDAO, Timelock } from '@custom-types/contracts';
 
 const Tribe = artifacts.readArtifactSync('Tribe');
 
@@ -13,7 +13,7 @@ describe('FeiDAO', function () {
   let userAddress: string;
   let governorAddress: string;
   let feiDAO: FeiDAO;
-  let core: any;
+  let core: Core;
   let timelock: Timelock;
 
   const impersonatedSigners: { [key: string]: Signer } = {};

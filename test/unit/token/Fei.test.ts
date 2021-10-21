@@ -1,12 +1,9 @@
 import { ZERO_ADDRESS, expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
 
 const toBN = ethers.BigNumber.from;
-const Fei = artifacts.readArtifactSync('Fei');
-const MockIncentive = artifacts.readArtifactSync('MockUniswapIncentive');
-const MockIncentivized = artifacts.readArtifactSync('MockIncentivized');
 
 describe('Fei', function () {
   let userAddress;
