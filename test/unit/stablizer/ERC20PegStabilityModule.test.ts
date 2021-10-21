@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import { Signer } from 'ethers';
 import { constants } from 'buffer';
 import { Core, MockERC20, Fei, MockOracle, ERC20PegStabilityModule } from '@custom-types/contracts';
+import { start } from 'repl';
 
 const toBN = ethers.BigNumber.from;
 
@@ -36,7 +37,6 @@ describe('ERC20PegStabilityModule', function () {
       addresses.userAddress,
       addresses.pcvControllerAddress,
       addresses.governorAddress,
-      addresses.pcvControllerAddress,
       addresses.minterAddress,
       addresses.burnerAddress,
       addresses.beneficiaryAddress1,
@@ -65,6 +65,7 @@ describe('ERC20PegStabilityModule', function () {
     userAddress = addresses.userAddress;
     governorAddress = addresses.governorAddress;
     minterAddress = addresses.minterAddress;
+    pcvControllerAddress = addresses.pcvControllerAddress;
 
     core = await getCore();
     fei = await ethers.getContractAt('Fei', await core.fei());
@@ -274,6 +275,69 @@ describe('ERC20PegStabilityModule', function () {
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount),
           'ERC20: transfer amount exceeds balance'
         );
+      });
+    });
+  });
+
+  describe('ACL', function () {
+    describe('setMintFee', function () {
+      it('fails when caller is not governor or admin', async function () {
+        await expectRevert(psm.setMintFee(bpGranularity), 'CoreRef: Caller is not a governor or contract admin');
+      });
+
+      it('succeeds when caller is governor', async function () {
+        const newMintFee = 100;
+        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
+        expect(await psm.mintFeeBasisPoints()).to.be.equal(newMintFee);
+      });
+    });
+
+    describe('setRedeemFee', function () {
+      it('fails when caller is not governor or admin', async function () {
+        await expectRevert(psm.setRedeemFee(bpGranularity), 'CoreRef: Caller is not a governor or contract admin');
+      });
+
+      it('succeeds when caller is governor', async function () {
+        const newRedeemFee = 100;
+        await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(newRedeemFee);
+        expect(await psm.redeemFeeBasisPoints()).to.be.equal(newRedeemFee);
+      });
+    });
+
+    describe('setReservesThreshold', function () {
+      it('fails when caller is not governor or admin', async function () {
+        await expectRevert(
+          psm.setReservesThreshold(reservesThreshold.mul(1000)),
+          'CoreRef: Caller is not a governor or contract admin'
+        );
+      });
+
+      it('succeeds when caller is governor', async function () {
+        const newReserves = reservesThreshold.mul(100);
+        await psm.connect(impersonatedSigners[governorAddress]).setReservesThreshold(newReserves);
+        expect(await psm.reservesThreshold()).to.be.equal(newReserves);
+      });
+    });
+
+    describe('withdraw', function () {
+      it('fails when caller is not PCVController', async function () {
+        await expectRevert(psm.withdraw(userAddress, 100), 'CoreRef: Caller is not a PCV controller');
+      });
+
+      it('succeeds when caller is PCVController', async function () {
+        const startingBalance = await psm.balance();
+        const amount = 10_000_000;
+        await asset.mint(psm.address, amount);
+        await psm.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, amount);
+
+        const endingBalance = await psm.balance();
+        expect(endingBalance.sub(startingBalance)).to.be.equal(amount);
+      });
+    });
+
+    describe('deposit', function () {
+      it('fails when called', async function () {
+        await expectRevert(psm.deposit(), 'no-op');
       });
     });
   });
