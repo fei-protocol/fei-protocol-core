@@ -11,7 +11,7 @@ import "../external/Decimal.sol";
  This contract is a single interface for allocating a specific token to multiple PCV Deposits.
  The aggregator handles new incoming funds and outgoing funds by selecting deposits which are over or under-funded to save for gas and efficiency
 */
-interface IPCVDepositAggregator is IPCVDeposit {
+interface IPCVDepositAggregator {
 
     // ----------- State changing api -----------
     /// @notice rebalance funds of the underlying deposits to the optimal target percents
@@ -23,7 +23,7 @@ interface IPCVDepositAggregator is IPCVDeposit {
     // ----------- Governor only state changing api -----------
     /// @notice adds a new PCV Deposit to the set of deposits
     /// @param weight a relative (i.e. not normalized) weight of this PCV deposit
-    function addPCVDeposit(address newPCVDeposit, uint256 weight) external;
+    function addPCVDeposit(address newPCVDeposit, uint weight) external;
 
     /// @notice replaces this contract with a new PCV Deposit Aggregator on the rewardsAssetManager
     function setNewAggregator(address newAggregator) external;
@@ -33,10 +33,10 @@ interface IPCVDepositAggregator is IPCVDeposit {
     function removePCVDeposit(address pcvDeposit) external;
 
     /// @notice set the relative weight of a particular pcv deposit
-    function setPCVDepositWeight(address pcvDeposit, uint128 weight) external;
+    function setPCVDepositWeight(address depositAddress, uint newDepositWeight) external;
 
     /// @notice set the weight for the buffer specifically
-    function setBufferWeight(uint128 weight) external;
+    function setBufferWeight(uint weight) external;
 
     // ----------- Read-only api -----------
     /// @notice the upstream rewardsAssetManager funding this contract
