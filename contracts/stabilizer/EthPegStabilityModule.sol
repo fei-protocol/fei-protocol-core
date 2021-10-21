@@ -31,7 +31,7 @@ contract EthPegStabilityModule is PegStabilityModule {
     ) {}
 
     /// @notice function to redeem FEI for an underlying asset
-    function redeem(address to, uint256 amountFeiIn) external override nonReentrant returns (uint256 amountEthOut) {
+    function redeem(address to, uint256 amountFeiIn) external override nonReentrant whenNotPaused returns (uint256 amountEthOut) {
         updateOracle();
 
         amountEthOut = getRedeemAmountOut(amountFeiIn);
@@ -44,7 +44,7 @@ contract EthPegStabilityModule is PegStabilityModule {
     }
 
     /// @notice function to mint Fei by sending eth
-    function mint(address to, uint256 amountIn) external payable override nonReentrant returns (uint256 amountFeiOut) {
+    function mint(address to, uint256 amountIn) external payable override nonReentrant whenNotPaused returns (uint256 amountFeiOut) {
         require(msg.value == amountIn, "EthPegStabilityModule: Sent value does not equal input");
 
         updateOracle();

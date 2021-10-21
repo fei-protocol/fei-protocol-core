@@ -2,6 +2,7 @@ pragma solidity ^0.8.4;
 
 import "./PegStabilityModule.sol";
 
+/// @notice contract to create a DAI PSM
 contract ERC20PegStabilityModule is PegStabilityModule {
     using SafeERC20 for IERC20;
 
@@ -41,7 +42,7 @@ contract ERC20PegStabilityModule is PegStabilityModule {
         revert("no-op");
     }
 
-    /// @notice withdraw assets from ETH PSM to an external address
+    /// @notice withdraw assets from ERC20 PSM to an external address
     function withdraw(address to, uint256 amount) external override onlyPCVController {
         _withdrawERC20(address(token), to, amount);
     }
