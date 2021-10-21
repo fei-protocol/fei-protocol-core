@@ -3,12 +3,12 @@ pragma solidity ^0.8.0;
 import "./FeiTimedMinter.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-/// @title OwnedTimedMinter
+/// @title OwnableTimedMinter
 /// @notice A FeiTimedMinter that mints only when called by an owner
-contract OwnedTimedMinter is FeiTimedMinter, Ownable {
+contract OwnableTimedMinter is FeiTimedMinter, Ownable {
 
     /**
-        @notice constructor for OwnedTimedMinter
+        @notice constructor for OwnableTimedMinter
         @param _core the Core address to reference
         @param _owner the minter and target to receive minted FEI
         @param _frequency the frequency buybacks happen
