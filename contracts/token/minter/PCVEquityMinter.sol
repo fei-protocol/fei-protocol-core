@@ -2,8 +2,8 @@ pragma solidity ^0.8.0;
 
 import "./FeiTimedMinter.sol";
 import "./IPCVEquityMinter.sol";
-import "../Constants.sol";
-import "../pcv/IPCVSwapper.sol";
+import "../../Constants.sol";
+import "../../pcv/IPCVSwapper.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @title PCVEquityMinter

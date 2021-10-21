@@ -1,5 +1,8 @@
 {
     "fip_33" : {
         "deploy" : false
+    },
+    "fip_35" : {
+        "deploy" : true
     }
 }
