@@ -57,6 +57,8 @@ jobs:
           command: |
             circleci tests glob "test/unit/**/*.ts" | circleci tests split > /tmp/tests-to-run
             npm run test $(cat /tmp/tests-to-run)
+      - store_test_results:
+          path: /tmp/test-reports
 
   e2e-test:
     working_directory: ~/repo
@@ -84,5 +86,3 @@ workflows:
       - e2e-test:
           requires:
             - build
-            - lint
-            - test
