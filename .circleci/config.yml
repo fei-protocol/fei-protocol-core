@@ -47,7 +47,7 @@ jobs:
     docker:
       - image: circleci/node:14
     parallelism: 16
-    resource_class: xlarge
+    resource_class: large
     steps:
       - restore_cache:
           keys:
