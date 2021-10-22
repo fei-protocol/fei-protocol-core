@@ -8,7 +8,7 @@
 import { time } from '../../helpers';
 import { expectRevert, expectUnspecifiedRevert, getCore, getAddresses, expectApprox } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract-provider';
 
@@ -280,7 +280,7 @@ describe('TribalChief', () => {
           ])
         );
 
-      const txReceipt = await transactionResponse.wait();
+      await transactionResponse.wait();
       // grab PID from the logs
       pid = 0; //txReceipt.logs[1]
       //console.log(`pid: ${pid}`)
@@ -745,7 +745,7 @@ describe('TribalChief', () => {
 
         // adding another PID for curve will cut user rewards
         // in half for users staked in the first pool
-        const addTx = await this.tribalChief
+        await this.tribalChief
           .connect(impersonatedSigners[governorAddress])
           .add(allocationPoints, this.curveLPToken.address, ZERO_ADDRESS, defaultRewardsObject);
 
@@ -1036,7 +1036,7 @@ describe('TribalChief', () => {
         expect(await this.tribalChief.numPools()).to.be.equal(toBN('1'));
         expect(await this.tribalChief.totalAllocPoint()).to.be.equal(toBN('100'));
 
-        let tx = await this.tribalChief
+        await this.tribalChief
           .connect(impersonatedSigners[governorAddress])
           .add(allocationPoints, this.LPToken.address, ZERO_ADDRESS, linearRewardObject);
 
@@ -1044,7 +1044,7 @@ describe('TribalChief', () => {
         expect(await this.tribalChief.numPools()).to.be.equal(toBN('2'));
         expect(await this.tribalChief.totalAllocPoint()).to.be.equal(toBN('200'));
 
-        tx = await this.tribalChief
+        await this.tribalChief
           .connect(impersonatedSigners[governorAddress])
           .add(allocationPoints, this.LPToken.address, ZERO_ADDRESS, linearRewardObject);
         // grab PID from the logs
@@ -2049,7 +2049,7 @@ describe('TribalChief', () => {
           }
         ]);
 
-      const tx = await txResponse.wait();
+      await txResponse.wait();
 
       // grab PID from the logs
       pid = 0; //Number(tx.logs[0].topics[1])
@@ -2413,7 +2413,7 @@ describe('TribalChief', () => {
           }
         ]);
 
-      const txReceipt = await tx.wait();
+      await tx.wait();
 
       // grab PID from the logs
       pid = 0; //Number(txReceipt.logs[0].topics[1]);

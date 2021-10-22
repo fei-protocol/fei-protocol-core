@@ -1,12 +1,7 @@
 import { ZERO_ADDRESS, expectRevert, time, getAddresses, getCore, expectApprox } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-
-const PCVEquityMinter = artifacts.readArtifactSync('PCVEquityMinter');
-const PCVSwapper = artifacts.readArtifactSync('MockPCVSwapper');
-const MockCollateralizationOracle = artifacts.readArtifactSync('MockCollateralizationOracle');
-const Fei = artifacts.readArtifactSync('Fei');
 
 describe('PCVEquityMinter', function () {
   let userAddress: string;

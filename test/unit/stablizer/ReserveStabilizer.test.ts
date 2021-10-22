@@ -1,15 +1,9 @@
 import { expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
 
 const toBN = ethers.BigNumber.from;
-
-const ReserveStabilizer = artifacts.readArtifactSync('ReserveStabilizer');
-const Fei = artifacts.readArtifactSync('Fei');
-const MockOracle = artifacts.readArtifactSync('MockOracle');
-const MockERC20 = artifacts.readArtifactSync('MockERC20');
-const MockPCVDeposit = artifacts.readArtifactSync('MockEthUniswapPCVDeposit');
 
 describe('ReserveStabilizer', function () {
   let userAddress;
@@ -58,11 +52,12 @@ describe('ReserveStabilizer', function () {
       await ethers.getContractFactory('ReserveStabilizer')
     ).deploy(this.core.address, this.oracle.address, this.oracle.address, this.token.address, '9000');
 
-    await this.core.connect(impersonatedSigners[governorAddress]).grantBurner(this.reserveStabilizer.address, {});
-
     this.initialBalance = toBN('1000000000000000000');
     await this.token.mint(this.reserveStabilizer.address, this.initialBalance);
 
+    await this.fei
+      .connect(impersonatedSigners[userAddress])
+      .approve(this.reserveStabilizer.address, ethers.constants.MaxUint256);
     await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 40000000, {});
   });
 
@@ -117,7 +112,7 @@ describe('ReserveStabilizer', function () {
       it('reverts', async function () {
         await expectRevert(
           this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(50000000, {}),
-          'ERC20: burn amount exceeds balance'
+          'ERC20: transfer amount exceeds balance'
         );
       });
     });

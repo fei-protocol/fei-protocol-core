@@ -1,4 +1,139 @@
 const MainnetAddresses = {
+  collateralizationOracleKeeper: {
+    artifactName: 'CollateralizationOracleKeeper',
+    address: '0x62378C316a6161A613D02E11F65290aED79B3eD5'
+  },
+  chainlinkTribeEthOracleWrapper: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0x061118ccabF0c2c62f05a2e3C2bd4379c0C70079'
+  },
+  tribeUsdCompositeOracle: {
+    artifactName: 'CompositeOracle',
+    address: '0xD7B8207f8644ee5cc60095023a8fcb8BdCF54732'
+  },
+  feiTribeLBPSwapper: {
+    artifactName: 'BalancerLBPSwapper',
+    address: '0x16ef9601076d45e8cc564cDD91E5dF3Ae83dD3B3'
+  },
+  feiTribeLBP: {
+    artifactName: 'IWeightedPool',
+    address: '0xC1382FE6e17bCdBC3d35F73f5317fBF261EbeECD'
+  },
+  pcvEquityMinter: {
+    artifactName: 'PCVEquityMinter',
+    address: '0x5389Bd35DED3D9633E5b4DfEf9B5A1B250d7B884'
+  },
+  collateralizationOracleGuardian: {
+    artifactName: 'CollateralizationOracleGuardian',
+    address: '0x81De6bA8df84A4B679061952E171a27F096F3eAe'
+  },
+  staticPcvDepositWrapper: {
+    artifactName: 'StaticPCVDepositWrapper',
+    address: '0x8B41DcEfAe6064E6bc2A9B3ae20141d23EFD6cbd'
+  },
+  ethReserveStabilizerWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0xB24570Bc46efDf97b4Aa7f008B4268005Eb7A27E'
+  },
+  daiBondingCurveWrapper: { artifactName: 'PCVDepositWrapper', address: '0x2547d76E2447E67F29d6bFeE5d46FDd2183c88E4' },
+  raiBondingCurveWrapper: { artifactName: 'PCVDepositWrapper', address: '0xc42e155788f9f599Fd437C7455F63810A395a81f' },
+  dpiBondingCurveWrapper: { artifactName: 'PCVDepositWrapper', address: '0x60B63eF8f461355207fE1d8102dda938bbd8c3fB' },
+  rariPool19DpiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0x9a774a1B1208C323EDeD05E6Daf592E6E59cAa55'
+  },
+  ethLidoPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0xA271fF86426c7fdAaAE72603e6Ce68c892d69ED7'
+  },
+  compoundDaiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0xfDe7077AAEcDaf2C4B85261Aa858c96A7E737a61'
+  },
+  compoundEthPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0x0735e14D28eD395048d5Fa4a8dbe6e6EB9fc0470'
+  },
+  aaveRaiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0x1267B39c93711Dd374DEAB15e0127e4adB259BE0'
+  },
+  aaveEthPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0x43Ef03755991056681F01EE2182234eF6aF1f658'
+  },
+  rariPool9RaiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0xCCe230c087F31032fc17621a2CF5E425A0b80C96'
+  },
+  creamFeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0xFf419Bc27483edb94b7Ad5c97b7FaB5DB323c7E0'
+  },
+  rariPool8FeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0xD6598a23418c7FEf7c0Dc863265515B623B720F9'
+  },
+  rariPool9FeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0x96A657eE40A79A964c6b4eA551c895D98e885a75'
+  },
+  rariPool7FeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0xb13C755107301eBFeD6A93190aCdE09281b2f8A5'
+  },
+  rariPool6FeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0x7aA4b1558C3e219cFFFd6a356421C071F71966e7'
+  },
+  rariPool19FeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0x7e39bBA9D0d967Ee55524fAe9e54900B02d9889a'
+  },
+  rariPool24FeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0x508f6fbd78B6569C29E9D75986a51558dE9E5865'
+  },
+  rariPool25FeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0xB4FFD10C4C290Dc13E8e30BF186F1509001515fD'
+  },
+  rariPool26FeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0x82aebeE64a52180d8541eB601A8381e012A1eD04'
+  },
+  rariPool27FeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0xe2e35097638F0Ff2EeCA2EF70F352Be37431945f'
+  },
+  rariPool18FeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0x07F2DD7E6A78D96c08D0a8212f4097dCC129d629'
+  },
+  rariPool28FeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0x4E119714f625B2E82e5fB5A7E297978f020Ea51E'
+  },
+  rariPool31FeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0x05E2e93CFb0B53D36A3151ee727Bb581D4B918Ce'
+  },
+  feiOATimelockWrapper: { artifactName: 'PCVDepositWrapper', address: '0x7Eb88140af813294aEDce981b6aC08fcd139d408' },
+  oneConstantOracle: { artifactName: 'ConstantOracle', address: '0x2374800337c6BE8B935f96AA6c10b33f9F12Bd40' },
+  zeroConstantOracle: { artifactName: 'ConstantOracle', address: '0x43b99923CF06D6D9101110b595234670f73A4934' },
+  collateralizationOracle: {
+    artifactName: 'CollateralizationOracle',
+    address: '0xFF6f59333cfD8f4Ebc14aD0a0E181a83e655d257'
+  },
+  collateralizationOracleWrapperImpl: {
+    artifactName: 'CollateralizationOracleWrapper',
+    address: '0x656aA9c9875eB089b11869d4730d6963D25E76ad'
+  },
+  collateralizationOracleWrapper: {
+    artifactName: 'CollateralizationOracleWrapper',
+    address: '0xd1866289B4Bd22D453fFF676760961e0898EE9BF'
+  },
+
   aave: { artifactName: 'IERC20', address: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9' },
   aaveEthPCVDeposit: { artifactName: 'AavePCVDeposit', address: '0x5B86887e171bAE0C2C826e87E34Df8D558C079B9' },
   aaveEthPCVDripController: {
@@ -291,6 +426,7 @@ const MainnetAddresses = {
   tribalChiefImpl: { artifactName: 'TribalChief', address: '0x2d91362e8bcAA8826b482B531dcb170FC9d17777' },
   tribalChiefOptimisticMultisig: { artifactName: 'unknown', address: '0x35ED000468f397AA943009bD60cc6d2d9a7d32fF' },
   tribalChiefOptimisticTimelock: { artifactName: 'Timelock', address: '0x27Fae9E49AD955A24bB578B66Cdc962b5029fbA9' },
+  tribalChiefSync: { artifactName: 'TribalChiefSync', address: '0x7A883825caA45fcbDcd76991C5972Baf1551aa3d' },
   tribe: { artifactName: 'Tribe', address: '0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B' },
   tribeOTCEscrow: { artifactName: 'OtcEscrow', address: '0xe2fE8041429e4bd51c40F92C6cDb699527171298' },
   tribeReserveStabilizer: {

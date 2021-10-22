@@ -1,14 +1,6 @@
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable max-len */
-/* eslint-disable no-param-reassign */
-/* eslint-disable no-undef */
-/* eslint-disable no-unused-expressions */
-/* eslint-disable no-plusplus */
-/* eslint-disable no-await-in-loop */
-import { time, getCore, expectRevert, getAddresses, expectApprox } from '../../helpers';
+import { time, getCore, expectRevert, getAddresses, getImpersonatedSigner } from '../../helpers';
 import { expect } from 'chai';
 import hre, { artifacts, ethers } from 'hardhat';
-import { Signer } from 'ethers';
 
 const toBN = ethers.BigNumber.from;
 
@@ -27,47 +19,16 @@ const dripAmount = toBN(4000000).mul(toBN(10).pow(toBN(18)));
 const dripFrequency = 604800;
 
 let userAddress: string;
-let secondUserAddress: string;
-let thirdUserAddress: string;
-let fourthUserAddress: string;
-let fifthUserAddress: string;
-let sixthUserAddress: string;
-let seventhUserAddress: string;
-let eigthUserAddress: string;
-let ninthUserAddress: string;
-let tenthUserAddress: string;
-
-let beneficiaryAddress1: string;
-let beneficiaryAddress2: string;
-let minterAddress: string;
-let burnerAddress: string;
 let pcvControllerAddress: string;
 let governorAddress: string;
-let genesisGroup: string;
-let guardianAddress: string;
 
 describe('ERC20Dripper', () => {
   before(async () => {
     const addresses = await getAddresses();
 
     userAddress = addresses.userAddress;
-    secondUserAddress = addresses.secondUserAddress;
-    thirdUserAddress = addresses.beneficiaryAddress1;
-    fourthUserAddress = addresses.minterAddress;
-    fifthUserAddress = addresses.burnerAddress;
-    sixthUserAddress = addresses.pcvControllerAddress;
-    seventhUserAddress = addresses.governorAddress;
-    eigthUserAddress = addresses.genesisGroup;
-    ninthUserAddress = addresses.guardianAddress;
-    tenthUserAddress = addresses.beneficiaryAddress2;
     pcvControllerAddress = addresses.pcvControllerAddress;
     governorAddress = addresses.governorAddress;
-    beneficiaryAddress1 = addresses.beneficiaryAddress1;
-    beneficiaryAddress2 = addresses.beneficiaryAddress2;
-    minterAddress = addresses.minterAddress;
-    burnerAddress = addresses.burnerAddress;
-    genesisGroup = addresses.genesisGroup;
-    guardianAddress = addresses.guardianAddress;
   });
 
   beforeEach(async function () {
@@ -126,11 +87,9 @@ describe('ERC20Dripper', () => {
     it('should not be able to withdraw as non PCV controller', async function () {
       const totalLockedTribe = await this.dripper.balance();
 
-      await hre.network.provider.request({ method: 'hardhat_impersonateAccount', params: [thirdUserAddress] });
-
       await expectRevert(
         this.dripper
-          .connect(await ethers.getSigner(thirdUserAddress))
+          .connect(await getImpersonatedSigner(userAddress))
           .withdraw(this.tribalChief.address, totalLockedTribe),
         'CoreRef: Caller is not a PCV controller'
       );
