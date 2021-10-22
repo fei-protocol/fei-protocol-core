@@ -55,7 +55,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            circleci tests glob "test/unit/**/*.ts" | circleci tests split > /tmp/tests-to-run
+            circleci tests glob "test/unit/**/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
             npm run test $(cat /tmp/tests-to-run)
 
   e2e-test:
