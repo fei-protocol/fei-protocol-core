@@ -46,7 +46,7 @@ jobs:
     working_directory: ~/repo
     docker:
       - image: circleci/node:14
-    parallelism: 32
+    parallelism: 64
     resource_class: xlarge
     steps:
       - restore_cache:
