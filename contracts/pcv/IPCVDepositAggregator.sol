@@ -62,8 +62,12 @@ interface IPCVDepositAggregator {
     function targetPercentHeld(address pcvDeposit) external view returns(Decimal.D256 memory);
 
     /// @notice the raw amount of PCV off of the target weight/percent held by `pcvDeposit`
+    /// @dev a positive result means the target has "too much" pcv, and a negative result means it needs more pcv
     function amountFromTarget(address pcvDeposit) external view returns(int256);
 
     /// @notice returns the summation of all pcv deposit balances + the aggregator's balance
     function getTotalBalance() external view returns(uint256);
+
+    /// @notice returns the summation of all pcv deposit's resistant balance & fei
+    function getTotalResistantBalanceAndFei() external view returns(uint256, uint256);
 }

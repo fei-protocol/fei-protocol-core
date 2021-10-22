@@ -91,11 +91,11 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
 
     // ---------- Public Functions -------------
 
-    function rebalance() external virtual override {
+    function rebalance() external virtual override whenNotPaused {
         _rebalance();
     }
 
-    function rebalanceSingle(address pcvDeposit) external virtual override {
+    function rebalanceSingle(address pcvDeposit) external virtual override whenNotPaused {
         _rebalanceSingle(pcvDeposit);
     }
 
@@ -107,7 +107,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
      *    distribution of tokens to sub-contracts
      * 3. distribute the tokens according the calcluations in step 2
      */
-    function deposit() external virtual override {
+    function deposit() external virtual override whenNotPaused {
         // First grab the aggregator balance & the pcv deposit balances, and the sum of the pcv deposit balances
         (uint actualAggregatorBalance, uint underlyingSum, uint[] memory underlyingBalances) = _getUnderlyingBalancesAndSum();
         uint totalBalance = underlyingSum + actualAggregatorBalance;
@@ -145,7 +145,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
      * 2. if not, calculate what the ideal underlying amount should be for each pcv deposit *after* the withdraw
      * 3. then, cycle through them and withdraw until each has their ideal amount (for the ones that have overages)
      */
-    function withdraw(address to, uint256 amount) external virtual override onlyPCVController {
+    function withdraw(address to, uint256 amount) external virtual override onlyPCVController whenNotPaused {
         uint aggregatorBalance = balance();
 
         if (aggregatorBalance > amount) {
@@ -265,10 +265,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
     }
 
     function targetPercentHeld(address pcvDeposit) external view virtual override returns(Decimal.D256 memory) {
-        uint totalBalance = getTotalBalance();
-        uint targetBalance = IPCVDeposit(pcvDeposit).balance();
-
-        return Decimal.ratio(targetBalance, totalBalance);
+        return Decimal.ratio(pcvDepositWeights[pcvDeposit], totalWeight);
     }
 
     function amountFromTarget(address pcvDeposit) external view virtual override returns(int256) {
@@ -279,7 +276,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
 
         uint idealDepositBalance = pcvDepositWeight * totalBalance / totalWeight;
         
-        return int(idealDepositBalance) - int(pcvDepositBalance);
+        return int(pcvDepositBalance) - int(idealDepositBalance);
     }
 
     function pcvDeposits() external view virtual override returns(address[] memory deposits, uint256[] memory weights) {
@@ -295,16 +292,26 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
     }
 
     function getTotalBalance() public view virtual override returns (uint256) {
-        uint totalBalance = 0;
+        return _getUnderlyingBalances().sum() + balance();
+    }
+
+    function getTotalResistantBalanceAndFei() external view virtual override returns (uint256, uint256) {
+        uint totalResistantBalance = 0;
+        uint totalResistantFei = 0;
 
         for (uint i=0; i<pcvDepositAddresses.length(); i++) {
-            totalBalance += IPCVDeposit(pcvDepositAddresses.at(i)).balance();
+            (uint resistantBalance, uint resistantFei) = IPCVDeposit(pcvDepositAddresses.at(i)).resistantBalanceAndFei();
+
+            totalResistantBalance += resistantBalance;
+            totalResistantFei += resistantFei;
         }
 
         // Let's not forget to get this balance
-        totalBalance += balance();
+        totalResistantBalance += balance();
 
-        return totalBalance;
+        // There's no Fei to add
+
+        return (totalResistantBalance, totalResistantFei);
     }
 
     // ---------- Internal Functions ----------- //
