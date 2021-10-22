@@ -46,7 +46,7 @@ jobs:
     working_directory: ~/repo
     docker:
       - image: circleci/node:14
-    parallelism: 64
+    parallelism: 16
     resource_class: xlarge
     steps:
       - restore_cache:
@@ -57,8 +57,6 @@ jobs:
           command: |
             circleci tests glob "test/unit/**/*.ts" | circleci tests split > /tmp/tests-to-run
             npm run test $(cat /tmp/tests-to-run)
-      - store_test_results:
-          path: /tmp/test-reports
 
   e2e-test:
     working_directory: ~/repo
