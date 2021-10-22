@@ -1,12 +1,11 @@
 import hre, { ethers } from 'hardhat';
-import { expectRevert, getAddresses, getCore, deployDevelopmentWeth } from '../../helpers';
+import { expectRevert, balance, getAddresses, getCore, deployDevelopmentWeth, ZERO_ADDRESS } from '../../helpers';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
-import { Core, MockERC20, Fei, MockOracle, ERC20PegStabilityModule } from '@custom-types/contracts';
+import { Core, Fei, MockOracle, EthPegStabilityModule } from '@custom-types/contracts';
+import { start } from 'repl';
 
-const toBN = ethers.BigNumber.from;
-
-describe('ERC20PegStabilityModule', function () {
+describe('EthPegStabilityModule', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
@@ -20,12 +19,12 @@ describe('ERC20PegStabilityModule', function () {
   const decimalsNormalizer = 0; // because the oracle price is scaled 1e18, need to divide out by that before testing
   const bpGranularity = 10_000;
   const impersonatedSigners: { [key: string]: Signer } = {};
+  const ethPrice = 4_100;
 
   let core: Core;
-  let asset: MockERC20;
   let fei: Fei;
   let oracle: MockOracle;
-  let psm: ERC20PegStabilityModule;
+  let psm: EthPegStabilityModule;
 
   before(async () => {
     const addresses = await getAddresses();
@@ -67,11 +66,10 @@ describe('ERC20PegStabilityModule', function () {
 
     core = await getCore();
     fei = await ethers.getContractAt('Fei', await core.fei());
-    oracle = await (await ethers.getContractFactory('MockOracle')).deploy(1);
-    asset = await (await ethers.getContractFactory('MockERC20')).deploy();
+    oracle = await (await ethers.getContractFactory('MockOracle')).deploy(ethPrice);
 
     psm = await (
-      await ethers.getContractFactory('ERC20PegStabilityModule')
+      await ethers.getContractFactory('EthPegStabilityModule')
     ).deploy(
       core.address,
       oracle.address,
@@ -82,7 +80,6 @@ describe('ERC20PegStabilityModule', function () {
       bufferCap,
       decimalsNormalizer,
       false,
-      asset.address,
       fei.address
     );
 
@@ -123,88 +120,73 @@ describe('ERC20PegStabilityModule', function () {
     });
 
     it('token address', async function () {
-      expect(await psm.token()).to.be.equal(asset.address);
+      expect(await psm.token()).to.be.equal(ZERO_ADDRESS);
     });
   });
 
   describe('Mint', function () {
-    describe('Sells Token for FEI', function () {
-      it('exchanges 10 DAI for 10 FEI', async function () {
-        const ten = toBN(10);
+    describe('Sells Eth for FEI', function () {
+      it('exchanges 1 ETH for 4100 FEI', async function () {
+        const oneEth = ethers.constants.WeiPerEther;
         const userStartingFeiBalance = await fei.balanceOf(userAddress);
-        const psmStartingAssetBalance = await asset.balanceOf(psm.address);
-        const expectedMintAmountOut = ten.mul(bpGranularity - mintFeeBasisPoints).div(bpGranularity);
+        const psmStartingAssetBalance = await ethers.provider.getBalance(psm.address);
 
-        await asset.mint(userAddress, ten);
-        await asset.connect(impersonatedSigners[userAddress]).approve(psm.address, ten);
+        const expectedMintAmountOut = oneEth
+          .mul(ethPrice)
+          .mul(bpGranularity - mintFeeBasisPoints)
+          .div(bpGranularity);
 
-        const mintAmountOut = await psm.getMintAmountOut(ten);
+        const mintAmountOut = await psm.getMintAmountOut(oneEth);
 
         expect(mintAmountOut).to.be.equal(expectedMintAmountOut);
 
-        await psm.connect(impersonatedSigners[userAddress]).mint(userAddress, ten);
+        await psm.connect(impersonatedSigners[userAddress]).mint(userAddress, oneEth, { value: oneEth });
 
         const userEndingFeiBalance = await fei.balanceOf(userAddress);
-        const psmEndingAssetBalance = await asset.balanceOf(psm.address);
+        const psmEndingAssetBalance = await ethers.provider.getBalance(psm.address);
 
         expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(expectedMintAmountOut);
-        expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(ten);
+        expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(oneEth);
         expect(await psm.buffer()).to.be.equal(bufferCap.sub(mintAmountOut));
       });
 
-      it('exchanges for appropriate amount of tokens when price is 1:1', async function () {
-        const mintAmt = toBN(10_000_000);
+      it('exchanges for appropriate amount of tokens when eth price is $10,000', async function () {
+        await oracle.setExchangeRate(10_000);
+
+        const oneEth = ethers.constants.WeiPerEther;
         const userStartingFeiBalance = await fei.balanceOf(userAddress);
-        const psmStartingAssetBalance = await asset.balanceOf(psm.address);
-        const expectedMintAmountOut = mintAmt.mul(bpGranularity - mintFeeBasisPoints).div(bpGranularity);
+        const psmStartingAssetBalance = await ethers.provider.getBalance(psm.address);
 
-        await asset.mint(userAddress, mintAmt);
-        await asset.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmt);
+        const expectedMintAmountOut = oneEth
+          .mul(10_000)
+          .mul(bpGranularity - mintFeeBasisPoints)
+          .div(bpGranularity);
 
-        const mintAmountOut = await psm.getMintAmountOut(mintAmt);
+        const mintAmountOut = await psm.getMintAmountOut(oneEth);
 
         expect(mintAmountOut).to.be.equal(expectedMintAmountOut);
 
-        await psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmt);
+        await psm.connect(impersonatedSigners[userAddress]).mint(userAddress, oneEth, { value: oneEth });
 
         const userEndingFeiBalance = await fei.balanceOf(userAddress);
-        const psmEndingAssetBalance = await asset.balanceOf(psm.address);
+        const psmEndingAssetBalance = await ethers.provider.getBalance(psm.address);
 
         expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(expectedMintAmountOut);
-        expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(mintAmt);
+        expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(oneEth);
         expect(await psm.buffer()).to.be.equal(bufferCap.sub(mintAmountOut));
       });
 
-      it('fails when eth is sent to ERC20 PSM', async function () {
+      it('fails when eth sent and amount do not match', async function () {
         await expectRevert(
-          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, {
+          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount.sub(10), {
             value: mintAmount
           }),
-          'PegStabilityModule: cannot send eth to mint'
+          'EthPegStabilityModule: Sent value does not equal input'
         );
       });
 
-      it('fails when token is not approved to be spent by the PSM', async function () {
-        await expectRevert(
-          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount),
-          'ERC20: transfer amount exceeds balance'
-        );
-      });
-
-      it('fails to oracle pause when price is within band', async function () {
-        await oracle.setExchangeRate(1);
-        await expectRevert(psm.oracleErrorPause(), 'PegStabilityModule: price not out of bounds');
-      });
-
-      it('can perform oracle pause, mint fails when contract is paused', async function () {
-        await oracle.setExchangeRate(ethers.constants.WeiPerEther);
-        await psm.oracleErrorPause();
-        expect(await psm.paused()).to.be.true;
-
-        await expectRevert(
-          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount),
-          'Pausable: paused'
-        );
+      it('fails to oracle pause', async function () {
+        await expectRevert(psm.oracleErrorPause(), 'no-op');
       });
 
       it('mint fails when contract is paused', async function () {
@@ -212,7 +194,7 @@ describe('ERC20PegStabilityModule', function () {
         expect(await psm.paused()).to.be.true;
 
         await expectRevert(
-          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount),
+          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, { value: mintAmount }),
           'Pausable: paused'
         );
       });
@@ -220,14 +202,44 @@ describe('ERC20PegStabilityModule', function () {
   });
 
   describe('Redeem', function () {
-    describe('Sells FEI for Token', function () {
+    describe('Sells FEI for Eth', function () {
       beforeEach(async () => {
-        await asset.mint(psm.address, mintAmount);
+        await psm
+          .connect(impersonatedSigners[pcvControllerAddress])
+          .mint(pcvControllerAddress, mintAmount, { value: mintAmount });
+      });
+
+      it('redeem succeeds when user has enough FEI', async function () {
+        const amount = ethers.constants.WeiPerEther;
+        await oracle.setExchangeRate(5_000);
+
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, amount);
+        await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, amount);
+
+        const startingUserFeiBalance = await fei.balanceOf(userAddress);
+        const startingEthBalance = await ethers.provider.getBalance(governorAddress);
+
+        const expectedAssetAmount = amount
+          .div(5_000)
+          .mul(bpGranularity - redeemFeeBasisPoints)
+          .div(bpGranularity);
+        const actualAssetAmount = await psm.getRedeemAmountOut(amount);
+
+        expect(expectedAssetAmount).to.be.equal(actualAssetAmount);
+
+        await psm.connect(impersonatedSigners[userAddress]).redeem(governorAddress, amount);
+
+        const endingUserFeiBalance = await fei.balanceOf(userAddress);
+        const endingEthBalance = await ethers.provider.getBalance(governorAddress);
+
+        expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(amount));
+        expect(await fei.balanceOf(psm.address)).to.be.equal(0);
+
+        expect(endingEthBalance.sub(startingEthBalance)).to.be.equal(expectedAssetAmount);
       });
 
       it('redeem fails when contract is paused', async function () {
-        await oracle.setExchangeRate(ethers.constants.WeiPerEther);
-        await psm.oracleErrorPause();
+        await psm.connect(impersonatedSigners[governorAddress]).pause();
         expect(await psm.paused()).to.be.true;
 
         await expectRevert(
@@ -236,39 +248,7 @@ describe('ERC20PegStabilityModule', function () {
         );
       });
 
-      it('redeem succeeds when user has enough funds', async function () {
-        await oracle.setExchangeRate(1);
-        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, mintAmount);
-        await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmount);
-
-        const startingUserFeiBalance = await fei.balanceOf(userAddress);
-        const startingUserAssetBalance = await asset.balanceOf(userAddress);
-
-        const expectedAssetAmount = mintAmount.mul(bpGranularity - redeemFeeBasisPoints).div(bpGranularity);
-        const actualAssetAmount = await psm.getRedeemAmountOut(mintAmount);
-        expect(expectedAssetAmount).to.be.equal(actualAssetAmount);
-
-        await psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount);
-
-        const endingUserFeiBalance = await fei.balanceOf(userAddress);
-        const endingUserAssetBalance = await asset.balanceOf(userAddress);
-
-        expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(mintAmount));
-        expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
-        expect(await fei.balanceOf(psm.address)).to.be.equal(0);
-        expect(await psm.buffer()).to.be.equal(bufferCap);
-      });
-
-      it('redeem fails when oracle price is $2', async function () {
-        await oracle.setExchangeRate(2);
-
-        await expectRevert(
-          psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount),
-          'PegStabilityModule: price out of bounds'
-        );
-      });
-
-      it('fails when token is not approved to be spent by the PSM', async function () {
+      it('fails when there is no eth in the contract', async function () {
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount),
           'ERC20: transfer amount exceeds balance'
@@ -324,12 +304,19 @@ describe('ERC20PegStabilityModule', function () {
 
       it('succeeds when caller is PCVController', async function () {
         const amount = 10_000_000;
-        await asset.mint(psm.address, amount);
+        const startingEthBalance = await ethers.provider.getBalance(userAddress);
+
+        await psm
+          .connect(impersonatedSigners[pcvControllerAddress])
+          .mint(pcvControllerAddress, amount, { value: amount });
+
         await psm.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, await psm.balance());
 
         const endingBalance = await psm.balance();
         expect(endingBalance).to.be.equal(0);
-        expect(await asset.balanceOf(userAddress)).to.be.equal(amount);
+        const endingEthBalance = await ethers.provider.getBalance(userAddress);
+
+        expect(endingEthBalance.sub(startingEthBalance)).to.be.equal(amount);
       });
     });
 

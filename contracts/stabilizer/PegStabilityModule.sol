@@ -226,10 +226,15 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     function _getRedeemAmountOutAndPrice(uint256 amountFeiIn) private view returns (uint256 amountTokenOut, Decimal.D256 memory price) {
         price = readOracle();
 
-        uint256 adjustedAmountIn = amountFeiIn * (Constants.BASIS_POINTS_GRANULARITY - mintFeeBasisPoints)
-            / Constants.BASIS_POINTS_GRANULARITY;
+        /// get amount of dollars being provided
+        Decimal.D256 memory adjustedAmountIn = Decimal.from(
+            amountFeiIn * (Constants.BASIS_POINTS_GRANULARITY - mintFeeBasisPoints) / Constants.BASIS_POINTS_GRANULARITY
+        );
 
-        amountTokenOut = price.mul(adjustedAmountIn).asUint256();
+        /// now turn the dollars into the underlying token amounts
+        /// dollars / price = how much token to pay out
+        /// we cannot set doInvert so we must perform this operation manually
+        amountTokenOut = adjustedAmountIn.div(price).asUint256();
     }
 
     /// @notice calculate the amount of underlying out for a given `amountFeiIn` of FEI

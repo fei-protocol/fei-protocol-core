@@ -50,7 +50,6 @@ contract EthPegStabilityModule is PegStabilityModule {
         updateOracle();
 
         amountFeiOut = getMintAmountOut(amountIn);
-        token.safeTransferFrom(msg.sender, address(this), amountIn);
 
         _mintFei(msg.sender, amountFeiOut);
 
