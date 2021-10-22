@@ -259,6 +259,64 @@ describe('ERC20PegStabilityModule', function () {
         expect(await psm.buffer()).to.be.equal(bufferCap);
       });
 
+      it('redeem succeeds when user has enough funds and DAI is $1.019', async function () {
+        await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.mul(1019).div(1000));
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, mintAmount);
+        await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmount);
+
+        const startingUserFeiBalance = await fei.balanceOf(userAddress);
+        const startingUserAssetBalance = await asset.balanceOf(userAddress);
+
+        const expectedAssetAmount = mintAmount
+          .mul(bpGranularity - redeemFeeBasisPoints)
+          .div(bpGranularity)
+          .mul(ethers.constants.WeiPerEther)
+          .div(ethers.constants.WeiPerEther.mul(1019).div(1000));
+        const actualAssetAmount = await psm.getRedeemAmountOut(mintAmount);
+
+        expect(expectedAssetAmount).to.be.equal(actualAssetAmount);
+
+        await psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount);
+
+        const endingUserFeiBalance = await fei.balanceOf(userAddress);
+        const endingUserAssetBalance = await asset.balanceOf(userAddress);
+
+        expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(mintAmount));
+        expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
+        expect(await fei.balanceOf(psm.address)).to.be.equal(0);
+        expect(await psm.buffer()).to.be.equal(bufferCap);
+      });
+
+      it('redeem succeeds when user has enough funds and DAI is $0.9801', async function () {
+        await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.mul(9801).div(10000));
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, mintAmount);
+        await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmount);
+
+        const startingUserFeiBalance = await fei.balanceOf(userAddress);
+        const startingUserAssetBalance = await asset.balanceOf(userAddress);
+
+        const expectedAssetAmount = mintAmount
+          .mul(bpGranularity - redeemFeeBasisPoints)
+          .div(bpGranularity)
+          .mul(ethers.constants.WeiPerEther)
+          .div(ethers.constants.WeiPerEther.mul(9801).div(10000));
+
+        const actualAssetAmount = await psm.getRedeemAmountOut(mintAmount);
+
+        expect(expectedAssetAmount).to.be.equal(actualAssetAmount);
+        await asset.connect(impersonatedSigners[minterAddress]).mint(psm.address, expectedAssetAmount);
+
+        await psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount);
+
+        const endingUserFeiBalance = await fei.balanceOf(userAddress);
+        const endingUserAssetBalance = await asset.balanceOf(userAddress);
+
+        expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(mintAmount));
+        expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
+        expect(await fei.balanceOf(psm.address)).to.be.equal(0);
+        expect(await psm.buffer()).to.be.equal(bufferCap);
+      });
+
       it('redeem fails when oracle price is $2', async function () {
         await oracle.setExchangeRate(2);
 

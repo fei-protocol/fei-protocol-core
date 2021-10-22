@@ -10,7 +10,6 @@ import "../Constants.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "hardhat/console.sol";
 
 abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimitedMinter, OracleRef, ReentrancyGuard, PCVDeposit {
     using Decimal for Decimal.D256;
