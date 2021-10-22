@@ -12,6 +12,15 @@ import "../external/Decimal.sol";
  The aggregator handles new incoming funds and outgoing funds by selecting deposits which are over or under-funded to save for gas and efficiency
 */
 interface IPCVDepositAggregator {
+    // Events
+    event DepositAdded(address indexed depositAddress, uint weight);
+    event DepositRemvoed(address indexed depositAddress);
+    event Rebalanced(uint indexed totalAssets);
+    event Withdrawal(uint indexed amount);
+    event Deposit();
+    event NewAggregatorSet(address indexed newAggregator);
+    event BufferWeightChanged(uint indexed bufferWeight);
+    event DepositWeightChanged(address indexed depositAddress, uint indexed oldWeight, uint indexed newWeight);
 
     // ----------- State changing api -----------
     /// @notice rebalance funds of the underlying deposits to the optimal target percents

@@ -12,11 +12,48 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "hardhat/console.sol";
 
+library UintArrayOps {
+    function sum(uint[] memory array) internal pure returns (uint _sum) {
+        for (uint i=0; i < array.length; i++) {
+            _sum += array[i];
+        }
+
+        return _sum;
+    }
+
+    function difference(uint[] memory a, uint[] memory b) internal pure returns (int[] memory _difference) {
+        require(a.length == b.length, "Arrays must be the same length");
+
+        _difference = new int[](a.length);
+
+        for (uint i=0; i < a.length; i++) {
+            _difference[i] = int(a[i]) - int(b[i]);
+        }
+
+        return _difference;
+    }
+
+    function positiveDifference(uint[] memory a, uint[] memory b) internal pure returns (uint[] memory _positiveDifference) {
+        require(a.length == b.length,  "Arrays must be the same length");
+
+        _positiveDifference = new uint[](a.length);
+
+        for (uint i=0; i < a.length; i++) {
+            if (a[i] > b[i]) {
+                _positiveDifference[i] = a[i] - b[i];
+            }
+        }
+
+        return _positiveDifference;
+    }
+}
+
 contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
     using SafeCast for uint256;
     using SafeCast for int256;
+    using UintArrayOps for uint[];
 
     // ---------- Events ----------
 
@@ -73,26 +110,24 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
      * 3. distribute the tokens according the calcluations in step 2
      */
     function deposit() external virtual override {
-        uint aggregatorBalance = IERC20(token).balanceOf(address(this));
-        
-        uint[] memory underlyingBalances = _getUnderlyingBalances();
-        
-        uint totalUnderlyingBalance = _sumUnderlyingBalances(underlyingBalances);
-        uint totalBalance = totalUnderlyingBalance + aggregatorBalance;
+        // First grab the aggregator balance & the pcv deposit balances, and the sum of the pcv deposit balances
+        (uint actualAggregatorBalance, uint underlyingSum, uint[] memory underlyingBalances) = _getUnderlyingBalancesAndSum();
+
+        uint totalBalance = underlyingSum + actualAggregatorBalance;
+
+        // Optimal aggregator balance is (bufferWeight/totalWeight) * totalBalance
         uint optimalAggregatorBalance = bufferWeight * totalBalance / totalWeight;
 
         // if actual aggregator balance is below optimal, we shouldn't deposit to underlying - just "fill up the buffer"
-        if (optimalAggregatorBalance >= aggregatorBalance) {
-            return;
-        }
+        if (actualAggregatorBalance <= optimalAggregatorBalance) return;
 
         // we should fill up the buffer before sending out to sub-deposits
-        uint amountAvailableForUnderlyingDeposits = optimalAggregatorBalance - aggregatorBalance;
+        uint amountAvailableForUnderlyingDeposits = optimalAggregatorBalance - actualAggregatorBalance;
 
         // calculate the amount that each pcv deposit needs. if they have an overage this is 0.
         uint[] memory optimalUnderlyingBalances = _getOptimalUnderlyingBalances(totalBalance);
-        uint[] memory amountsNeeded = _computePositiveArrayDifference(optimalUnderlyingBalances, underlyingBalances);
-        uint totalAmountNeeded = _sumArray(amountsNeeded);
+        uint[] memory amountsNeeded = optimalUnderlyingBalances.positiveDifference(underlyingBalances);
+        uint totalAmountNeeded = amountsNeeded.sum();
 
         // calculate a scalar. this will determine how much we *actually* send to each underlying deposit.
         uint scalar = amountAvailableForUnderlyingDeposits / totalAmountNeeded;
@@ -114,7 +149,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
      * 3. then, cycle through them and withdraw until each has their ideal amount (for the ones that have overages)
      */
     function withdraw(address to, uint256 amount) external virtual override onlyPCVController {
-        uint aggregatorBalance = IERC20(token).balanceOf(address(this));
+        uint aggregatorBalance = balance();
 
         if (aggregatorBalance > amount) {
             IERC20(token).safeTransfer(to, amount);
@@ -122,7 +157,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
         }
         
         uint[] memory underlyingBalances = _getUnderlyingBalances();
-        uint totalUnderlyingBalance = _sumUnderlyingBalances(underlyingBalances);
+        uint totalUnderlyingBalance = underlyingBalances.sum();
         uint totalBalance = totalUnderlyingBalance + aggregatorBalance;
 
         require(totalBalance >= amount, "Not enough balance to withdraw");
@@ -276,49 +311,14 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
     }
 
     // ---------- Internal Functions ----------- //
+    function _getUnderlyingBalancesAndSum() internal view returns (uint aggregatorBalance, uint depositSum, uint[] memory depositBalances) {
+        uint[] memory underlyingBalances = _getUnderlyingBalances();
+        return (balance(), underlyingBalances.sum(), underlyingBalances);
+    }
 
     function _depositToUnderlying(address to, uint amount) internal {
         IERC20(token).transfer(to, amount);
         IPCVDeposit(to).deposit();
-    }
-
-    function _sumArray(uint256[] memory array) internal pure returns (uint256) {
-        uint256 sum = 0;
-
-        for (uint i=0; i < array.length; i++) {
-            sum += array[i];
-        }
-
-        return sum;
-    }
-
-    function _computePositiveArrayDifference(uint[] memory a, uint[] memory b) internal pure returns (uint[] memory difference) {
-        require(a.length == b.length,  "Arrays must be the same length");
-
-        difference = new uint[](a.length);
-
-        for (uint i=0; i < a.length; i++) {
-            uint _a = a[i];
-            uint _b = b[i];
-
-            if (_a > _b) {
-                difference[i] = _a - _b;
-            }
-        }
-
-        return difference;
-    }
-
-    function _computeArrayDifference(uint[] memory a, uint[] memory b) internal pure returns (int[] memory difference) {
-        require(a.length == b.length, "Arrays must be the same length");
-
-        difference = new int[](a.length);
-
-        for (uint i=0; i < a.length; i++) {
-            difference[i] = int(a[i]) - int(b[i]);
-        }
-
-        return difference;
     }
 
     function _getOptimalUnderlyingBalances(uint totalBalance) internal view returns (uint[] memory optimalUnderlyingBalances) {
@@ -329,16 +329,6 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
         }
 
         return optimalUnderlyingBalances;
-    }
-
-    function _sumUnderlyingBalances(uint[] memory balances) internal pure returns (uint) {
-        uint sum = 0;
-
-        for (uint i=0; i<balances.length; i++) {
-            sum += balances[i];
-        }
-
-        return sum;
     }
 
     function _getUnderlyingBalances() internal view returns (uint[] memory) {
@@ -355,7 +345,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
         require(!pcvDepositAddresses.contains(pcvDeposit), "Deposit does not exist.");
 
         uint[] memory underlyingBalances = _getUnderlyingBalances();
-        uint totalUnderlyingBalance = _sumUnderlyingBalances(underlyingBalances);
+        uint totalUnderlyingBalance = underlyingBalances.sum();
         uint aggregatorBalance = IERC20(token).balanceOf(address(this));
         uint totalBalance = totalUnderlyingBalance + aggregatorBalance;
 
@@ -381,7 +371,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
     function _rebalance() internal {
         // @todo don't put this on the stack
         uint[] memory underlyingBalances = _getUnderlyingBalances();
-        uint totalUnderlyingBalance = _sumUnderlyingBalances(underlyingBalances);
+        uint totalUnderlyingBalance = underlyingBalances.sum();
         uint aggregatorBalance = IERC20(token).balanceOf(address(this));
         uint totalBalance = totalUnderlyingBalance + aggregatorBalance;
 
@@ -409,7 +399,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
     }
 
     function _addPCVDeposit(address depositAddress, uint128 weight) internal {
-        require(pcvDepositAddresses.contains(depositAddress), "Deposit already added.");
+        require(!pcvDepositAddresses.contains(depositAddress), "Deposit already added.");
 
         pcvDepositAddresses.add(depositAddress);
         pcvDepositWeights[depositAddress] = weight;
