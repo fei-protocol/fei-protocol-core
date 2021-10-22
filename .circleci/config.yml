@@ -71,7 +71,7 @@ jobs:
       - run:
           name: Run end-to-end tests
           command: |
-            circleci tests glob "test/e2e/**/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
+            circleci tests glob "test/integration/**/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
             npm run test:e2e $(cat /tmp/tests-to-run)
 
 workflows:
