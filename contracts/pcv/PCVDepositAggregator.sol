@@ -55,16 +55,14 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
     using SafeCast for int256;
     using UintArrayOps for uint[];
 
-    // ---------- Events ----------
-
     // ---------- Properties ------
 
     EnumerableSet.AddressSet private pcvDepositAddresses;
-    
     mapping(address => uint) public pcvDepositWeights;
     
     uint public bufferWeight;
     uint public totalWeight; 
+
     address public token;
     address public override rewardsAssetManager;
 
@@ -112,7 +110,6 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
     function deposit() external virtual override {
         // First grab the aggregator balance & the pcv deposit balances, and the sum of the pcv deposit balances
         (uint actualAggregatorBalance, uint underlyingSum, uint[] memory underlyingBalances) = _getUnderlyingBalancesAndSum();
-
         uint totalBalance = underlyingSum + actualAggregatorBalance;
 
         // Optimal aggregator balance is (bufferWeight/totalWeight) * totalBalance
