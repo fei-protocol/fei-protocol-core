@@ -8,7 +8,8 @@
     "dpiUniswapPCVDeposit",
     "raiBondingCurve",
     "pcvEquityMinter",
-    "collateralizationOracleKeeper"
+    "collateralizationOracleKeeper",
+    "optimisticMinter"
   ],
   "BURNER_ROLE": [
     "ethReserveStabilizer"
