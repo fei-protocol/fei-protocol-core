@@ -3,6 +3,6 @@
         "deploy" : false
     },
     "fip_35" : {
-        "deploy" : true
+        "deploy" : false
     }
 }
