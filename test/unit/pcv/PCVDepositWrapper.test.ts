@@ -6,7 +6,7 @@ import { Core, MockERC20, MockPCVDepositV2 } from '@custom-types/contracts';
 
 describe('PCVDepositWrapper', function () {
   const impersonatedSigners: { [key: string]: Signer } = {};
-  let balance = '2000';
+  const balance = ethers.utils.parseEther('2000');
   let core: Core;
   let token: MockERC20;
   let deposit: MockPCVDepositV2;
@@ -37,7 +37,6 @@ describe('PCVDepositWrapper', function () {
   });
 
   beforeEach(async function () {
-    balance = '2000';
     core = await getCore();
     token = await (await ethers.getContractFactory('MockERC20')).deploy();
     await token.deployTransaction.wait();
@@ -56,6 +55,9 @@ describe('PCVDepositWrapper', function () {
       await ethers.getContractFactory('PCVDepositWrapper')
     ).deploy(deposit.address, token.address, false);
 
+    await token.mint(deposit.address, ethers.utils.parseEther('2000'));
+    await deposit.deposit();
+
     expect(await pcvDepositWrapper.balanceReportedIn()).to.be.equal(token.address);
     expect(await pcvDepositWrapper.balance()).to.be.equal(balance);
     const resistantBalances = await pcvDepositWrapper.resistantBalanceAndFei();
@@ -68,6 +70,9 @@ describe('PCVDepositWrapper', function () {
     const pcvDepositWrapper = await (
       await ethers.getContractFactory('PCVDepositWrapper')
     ).deploy(deposit.address, token.address, true);
+
+    await token.mint(deposit.address, ethers.utils.parseEther('2000'));
+    await deposit.deposit();
 
     expect(await pcvDepositWrapper.balanceReportedIn()).to.be.equal(token.address);
     expect(await pcvDepositWrapper.balance()).to.be.equal(balance);
