@@ -56,7 +56,7 @@ describe('e2e-collateralization', function () {
       await collateralizationOracleWrapper.update();
 
       const wrapperStats = await collateralizationOracleWrapper.pcvStats();
-      
+
       // Set cache values 1% higher
       await collateralizationOracleGuardian.setCache(
         wrapperStats[0].mul(101).div(100),
