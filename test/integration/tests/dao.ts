@@ -275,12 +275,10 @@ describe('e2e-dao', function () {
         }
       }
 
-      /*
       doLogging && console.log(`Testing tribe minter address...`);
       const tribe = contracts.tribe;
       const tribeMinter = await tribe.minter();
-      expect(tribeMinter).to.equal(contractAddresses.tribeReserveStabilizer);
-      */ // TODO re-enable after tribe reserve stabilizer is deployed
+      expect(tribeMinter).to.equal(contractAddresses.feiDAOTimelock);
     });
   });
 });

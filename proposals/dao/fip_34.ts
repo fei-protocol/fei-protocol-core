@@ -49,18 +49,22 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 };
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  logging && console.log('No setup for FIP-35');
+  await contracts.feiDAOTimelock.rollback();
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  logging && console.log('No teardown for FIP-35');
+  logging && console.log('No teardown for FIP-34');
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
-  const { fei, optimisticMinter, optimisticTimelock } = contracts;
+  const { fei, optimisticMinter, optimisticTimelock, feiDAOTimelock, feiDAO, timelock } = contracts;
   expect(await fei.balanceOf(optimisticTimelock.address)).to.be.bignumber.greaterThan(
     ethers.constants.WeiPerEther.mul(100_000_000)
   );
   expect(await optimisticMinter.owner()).to.be.equal(optimisticTimelock.address);
   expect(await optimisticMinter.isTimeStarted()).to.be.true;
+
+  expect(await timelock.admin()).to.be.equal(feiDAO.address);
+  expect(await feiDAOTimelock.admin()).to.be.equal(feiDAO.address);
+  expect(await feiDAO.timelock()).to.be.equal(feiDAOTimelock.address);
 };
