@@ -14,13 +14,13 @@ import "../external/Decimal.sol";
 interface IPCVDepositAggregator {
     // Events
     event DepositAdded(address indexed depositAddress, uint weight);
-    event DepositRemvoed(address indexed depositAddress);
+    event DepositRemoved(address indexed depositAddress);
     event Rebalanced(uint indexed totalAssets);
     event RebalancedSingle(address indexed pcvDepositAddress);
     event CannotRebalanceSingle(address indexed pcvDeposit, uint256 amountNeeded, uint256 aggregatorBalance);
     event NoRebalanceNeeded(address indexed pcvDeposit);
-    event Withdrawal(uint indexed amount);
-    event Deposit();
+    event AggregatorWithdrawal(uint indexed amount);
+    event AggregatorDeposit();
     event NewAggregatorSet(address indexed newAggregator);
     event BufferWeightChanged(uint indexed bufferWeight);
     event DepositWeightChanged(address indexed depositAddress, uint indexed oldWeight, uint indexed newWeight);

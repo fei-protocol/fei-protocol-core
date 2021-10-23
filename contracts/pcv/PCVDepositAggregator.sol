@@ -73,8 +73,8 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
         uint128[] memory _initialPCVDepositWeights,
         uint128 _bufferWeight
     ) CoreRef(_core) {
-        require(_initialPCVDepositAddresses.length != _initialPCVDepositWeights.length, "Addresses and weights are not the same length!");
-        require(_rewardsAssetManager == address(0x0), "Rewards asset manager cannot be null");
+        require(_initialPCVDepositAddresses.length == _initialPCVDepositWeights.length, "Addresses and weights are not the same length!");
+        require(_rewardsAssetManager != address(0x0), "Rewards asset manager cannot be null");
 
         rewardsAssetManager = _rewardsAssetManager;
         token = _token;
@@ -136,7 +136,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
             }
         }
 
-        emit Deposit();
+        emit AggregatorDeposit();
     }
 
     /**
@@ -191,7 +191,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
 
         IERC20(token).safeTransfer(to, amount);
 
-        emit Withdrawal(amount);
+        emit AggregatorWithdrawal(amount);
     }
 
     function withdrawERC20(address _token, address to, uint256 amount) external virtual override onlyPCVController {
@@ -212,7 +212,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
     }
 
     function setPCVDepositWeight(address depositAddress, uint newDepositWeight) external virtual override onlyGovernorOrAdmin {
-        require(!pcvDepositAddresses.contains(depositAddress), "Deposit does not exist.");
+        require(pcvDepositAddresses.contains(depositAddress), "Deposit does not exist.");
 
         uint oldDepositWeight = pcvDepositWeights[depositAddress];
         int difference = int(newDepositWeight) - int(oldDepositWeight);
@@ -364,7 +364,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
     }
 
     function _rebalanceSingle(address pcvDeposit) internal {
-        require(!pcvDepositAddresses.contains(pcvDeposit), "Deposit does not exist.");
+        require(pcvDepositAddresses.contains(pcvDeposit), "Deposit does not exist.");
 
         int distanceToTarget = amountFromTarget(pcvDeposit);
 
@@ -433,7 +433,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
     }
 
     function _removePCVDeposit(address depositAddress) internal {
-        require(!pcvDepositAddresses.contains(depositAddress), "Deposit does not exist.");
+        require(pcvDepositAddresses.contains(depositAddress), "Deposit does not exist.");
 
         // Short-circuit - if the pcv deposit's weight is already zero and the balance is zero, just delete it
         if (pcvDepositWeights[depositAddress] == 0 && IPCVDeposit(depositAddress).balance() == 0) {
@@ -451,6 +451,6 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
         delete pcvDepositWeights[depositAddress];
         pcvDepositAddresses.remove(depositAddress);
 
-        emit DepositRemvoed(depositAddress);
+        emit DepositRemoved(depositAddress);
     }
 }
