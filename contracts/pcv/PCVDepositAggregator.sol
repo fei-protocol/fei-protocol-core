@@ -7,7 +7,6 @@ import "../refs/CoreRef.sol";
 import "../external/Decimal.sol";
 import "./balancer/IRewardsAssetManager.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "hardhat/console.sol";
@@ -136,6 +135,8 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
                 _depositToUnderlying(pcvDepositAddresses.at(i), amountToSend);
             }
         }
+
+        emit Deposit();
     }
 
     /**
@@ -189,6 +190,8 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
         }
 
         IERC20(token).safeTransfer(to, amount);
+
+        emit Withdrawal(amount);
     }
 
     function withdrawERC20(address _token, address to, uint256 amount) external virtual override onlyPCVController {
@@ -204,15 +207,20 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
         bufferWeight = uint(int(bufferWeight) + difference);
 
         totalWeight = uint(int(totalWeight) + difference);
+
+        emit BufferWeightChanged(newBufferWeight);
     }
 
     function setPCVDepositWeight(address depositAddress, uint newDepositWeight) external virtual override onlyGovernorOrAdmin {
         require(!pcvDepositAddresses.contains(depositAddress), "Deposit does not exist.");
 
-        int difference = int(newDepositWeight) - int(pcvDepositWeights[depositAddress]);
+        uint oldDepositWeight = pcvDepositWeights[depositAddress];
+        int difference = int(newDepositWeight) - int(oldDepositWeight);
         pcvDepositWeights[depositAddress] = uint(newDepositWeight);
 
         totalWeight = uint(int(totalWeight) + difference);
+
+        emit DepositWeightChanged(depositAddress, oldDepositWeight, newDepositWeight);
     }
 
     function removePCVDeposit(address pcvDeposit) external virtual override onlyGovernorOrAdmin {
@@ -224,8 +232,12 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
     }
 
     function setNewAggregator(address newAggregator) external virtual override onlyGovernor {
+        require(PCVDepositAggregator(newAggregator).token() == token, "New aggregator must be for the same token as the existing.");
+
         // Add each pcvDeposit to the new aggregator
         for (uint i=0; i < pcvDepositAddresses.length(); i++) {
+            if (IPCVDepositAggregator(newAggregator).hasPCVDeposit(pcvDepositAddresses.at(i))) continue;
+
             address pcvDepositAddress = pcvDepositAddresses.at(i);
             uint pcvDepositWeight = pcvDepositWeights[pcvDepositAddress];
 
@@ -242,9 +254,15 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
 
         // Finally, set the new aggregator on the rewards asset manager itself
         IRewardsAssetManager(rewardsAssetManager).setNewAggregator(address(newAggregator));
+
+        emit NewAggregatorSet(newAggregator);
     }
 
     // ---------- View Functions ---------------
+    function hasPCVDeposit(address pcvDeposit) public view virtual override returns (bool) {
+        return pcvDepositAddresses.contains(pcvDeposit);
+    }
+
     function resistantBalanceAndFei() external view virtual override returns (uint256, uint256) {
         return (balance(), 0);
     }
@@ -264,11 +282,11 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
         return Decimal.ratio(targetBalanceWithTheoreticalDeposit, totalBalanceWithTheoreticalDeposit);
     }
 
-    function targetPercentHeld(address pcvDeposit) external view virtual override returns(Decimal.D256 memory) {
+    function targetPercentHeld(address pcvDeposit) public view virtual override returns(Decimal.D256 memory) {
         return Decimal.ratio(pcvDepositWeights[pcvDeposit], totalWeight);
     }
 
-    function amountFromTarget(address pcvDeposit) external view virtual override returns(int256) {
+    function amountFromTarget(address pcvDeposit) public view virtual override returns(int256) {
         uint totalBalance = getTotalBalance();
 
         uint pcvDepositBalance = IPCVDeposit(pcvDeposit).balance();
@@ -348,27 +366,26 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
     function _rebalanceSingle(address pcvDeposit) internal {
         require(!pcvDepositAddresses.contains(pcvDeposit), "Deposit does not exist.");
 
-        uint[] memory underlyingBalances = _getUnderlyingBalances();
-        uint totalUnderlyingBalance = underlyingBalances.sum();
-        uint aggregatorBalance = IERC20(token).balanceOf(address(this));
-        uint totalBalance = totalUnderlyingBalance + aggregatorBalance;
+        int distanceToTarget = amountFromTarget(pcvDeposit);
 
-        uint idealDepositBalance = pcvDepositWeights[pcvDeposit] * totalBalance / totalWeight;
-        uint pcvDepositBalance = IPCVDeposit(pcvDeposit).balance();
-
-        if (pcvDepositBalance > idealDepositBalance) {
+        if (distanceToTarget == 0) {
+            // do nothing
+        } else if (distanceToTarget > 0) {
             // PCV deposit balance is too high. Withdraw from it into the aggregator.
-            IPCVDeposit(pcvDeposit).withdraw(address(this), pcvDepositBalance - idealDepositBalance);
-        } else if (pcvDepositBalance < idealDepositBalance) {
+            IPCVDeposit(pcvDeposit).withdraw(address(this), uint(distanceToTarget));
+            emit RebalancedSingle(pcvDeposit);
+        } else if (distanceToTarget < 0) {
             // PCV deposit balance is too low. Pull from the aggregator balance if we can.
-            if (IERC20(token).balanceOf(address(this)) >= idealDepositBalance - pcvDepositBalance) {
-                IERC20(token).safeTransfer(pcvDeposit, idealDepositBalance - pcvDepositBalance);
+            if (balance() >= uint(-distanceToTarget)) {
+                IERC20(token).safeTransfer(pcvDeposit, uint(-distanceToTarget));
                 IPCVDeposit(pcvDeposit).deposit();
+                emit RebalancedSingle(pcvDeposit);
             } else {
-                // Emit event so that we know to do a full rebalance
+                emit CannotRebalanceSingle(pcvDeposit, uint(-distanceToTarget), balance());
             }
         } else {
             // PCV deposit balance is exactly where it needs to be. Don't touch it.
+            emit NoRebalanceNeeded(pcvDeposit);
         }
     }
 
@@ -400,6 +417,8 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
                 IPCVDeposit(pcvDepositAddresses.at(i)).deposit();
             }
         }
+
+        emit Rebalanced(totalBalance);
     }
 
     function _addPCVDeposit(address depositAddress, uint128 weight) internal {
@@ -409,6 +428,8 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
         pcvDepositWeights[depositAddress] = weight;
 
         totalWeight = totalWeight + weight;
+
+        emit DepositAdded(depositAddress, weight);
     }
 
     function _removePCVDeposit(address depositAddress) internal {
@@ -429,5 +450,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
 
         delete pcvDepositWeights[depositAddress];
         pcvDepositAddresses.remove(depositAddress);
+
+        emit DepositRemvoed(depositAddress);
     }
 }

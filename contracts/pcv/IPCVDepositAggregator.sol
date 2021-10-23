@@ -16,6 +16,9 @@ interface IPCVDepositAggregator {
     event DepositAdded(address indexed depositAddress, uint weight);
     event DepositRemvoed(address indexed depositAddress);
     event Rebalanced(uint indexed totalAssets);
+    event RebalancedSingle(address indexed pcvDepositAddress);
+    event CannotRebalanceSingle(address indexed pcvDeposit, uint256 amountNeeded, uint256 aggregatorBalance);
+    event NoRebalanceNeeded(address indexed pcvDeposit);
     event Withdrawal(uint indexed amount);
     event Deposit();
     event NewAggregatorSet(address indexed newAggregator);
@@ -50,6 +53,9 @@ interface IPCVDepositAggregator {
     // ----------- Read-only api -----------
     /// @notice the upstream rewardsAssetManager funding this contract
     function rewardsAssetManager() external returns(address);
+
+    /// @notice returns true if the given address is a PCV Deposit in this aggregator
+    function hasPCVDeposit(address pcvDeposit) external view returns (bool);
 
     /// @notice the set of PCV deposits and non-normalized weights this contract allocates to
     function pcvDeposits() external view returns(address[] memory deposits, uint256[] memory weights);
