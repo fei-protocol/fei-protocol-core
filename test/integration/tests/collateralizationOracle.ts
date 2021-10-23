@@ -18,7 +18,7 @@ before(async () => {
   chai.use(solidity);
 });
 
-describe.only('e2e-collateralization', function () {
+describe('e2e-collateralization', function () {
   let contracts: NamedContracts;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
@@ -56,7 +56,7 @@ describe.only('e2e-collateralization', function () {
       await collateralizationOracleWrapper.update();
 
       const wrapperStats = await collateralizationOracleWrapper.pcvStats();
-      
+
       // Set cache values 1% higher
       await collateralizationOracleGuardian.setCache(
         wrapperStats[0].mul(101).div(100),

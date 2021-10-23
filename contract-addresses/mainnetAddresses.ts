@@ -292,6 +292,10 @@ const MainnetAddresses = {
     address: '0xa08A721dFB595753FFf335636674D76C455B275C'
   },
   oldRatioPCVController: { artifactName: 'RatioPCVController', address: '0xfC1aD6eb84351597cD3b9B65179633697d65B920' },
+  optimisticMinter: {
+    artifactName: 'OwnableTimedMinter',
+    address: '0xE66c4De480Bd317054B5a3CF8E8689649d0728c9'
+  },
   optimisticTimelock: { artifactName: 'OptimisticTimelock', address: '0xbC9C084a12678ef5B516561df902fdc426d95483' },
   poolPartyFei: { artifactName: 'CErc20Delegator', address: '0x17b1A2E012cC4C31f83B90FF11d3942857664efc' },
   poolPartyFeiPCVDeposit: {
