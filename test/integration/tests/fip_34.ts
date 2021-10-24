@@ -1,14 +1,10 @@
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
-import hre, { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, increaseTime, latestTime, resetFork, time } from '@test/helpers';
-import proposals from '@test/integration/proposals_config.json';
-import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { forceEth } from '@test/integration/setup/utils';
+import { ethers } from 'hardhat';
+import { NamedContracts } from '@custom-types/types';
+import { getImpersonatedSigner, resetFork, time } from '@test/helpers';
 import {
-  Core,
   Fei,
   FeiDAO,
   FeiDAOTimelock,
@@ -38,11 +34,11 @@ describe('e2e-fip-34', function () {
 
     doLogging = Boolean(process.env.LOGGING);
 
-    const config = {
-      logging: doLogging,
-      deployAddress: deployAddress,
-      version: version
-    };
+    // const config = {
+    //   logging: doLogging,
+    //   deployAddress: deployAddress,
+    //   version: version
+    // };
 
     contracts = await getAllContracts();
 
