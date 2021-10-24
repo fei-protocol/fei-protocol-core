@@ -8,6 +8,7 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '../../types/types';
+import { FeiDAOTimelock } from '@custom-types/contracts';
 
 chai.use(CBN(ethers.BigNumber));
 
@@ -26,6 +27,7 @@ DEPLOY ACTIONS:
 DAO ACTIONS:
 1. Make OwnableTimedMinter a minter
 2. Mint initial 100M FEI
+
 */
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
@@ -49,7 +51,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 };
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  await contracts.feiDAOTimelock.rollback();
+  await (await (contracts.feiDAOTimelock as FeiDAOTimelock).rollback()).wait();
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
@@ -57,14 +59,16 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
-  const { fei, optimisticMinter, optimisticTimelock, feiDAOTimelock, feiDAO, timelock } = contracts;
+  const { fei, optimisticMinter, optimisticTimelock, feiDAOTimelock, feiDAO, timelock, tribe } = contracts;
+
   expect(await fei.balanceOf(optimisticTimelock.address)).to.be.bignumber.greaterThan(
     ethers.constants.WeiPerEther.mul(100_000_000)
   );
+
   expect(await optimisticMinter.owner()).to.be.equal(optimisticTimelock.address);
   expect(await optimisticMinter.isTimeStarted()).to.be.true;
-
   expect(await timelock.admin()).to.be.equal(feiDAO.address);
   expect(await feiDAOTimelock.admin()).to.be.equal(feiDAO.address);
   expect(await feiDAO.timelock()).to.be.equal(feiDAOTimelock.address);
+  expect(await tribe.minter()).to.be.equal(feiDAOTimelock.address);
 };
