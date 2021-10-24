@@ -6,14 +6,14 @@
             "values": "0",
             "method": "grantMinter(address)",
             "arguments": ["{optimisticMinter}"],
-            "description": "Grant Minter optimistic Minter"
+            "description": "Grant FEI Minter role to optimistic Minter"
         },
         {
             "target": "core",
             "values": "0",
             "method": "grantMinter(address)",
             "arguments": ["{timelock}"],
-            "description": "Grant Minter timelock"
+            "description": "Grant FEI Minter to timelock"
         },
         {
             "target": "fei",
@@ -27,7 +27,7 @@
             "values": "0",
             "method": "revokeMinter(address)",
             "arguments": ["{timelock}"],
-            "description": "Revoke Minter timelock"
+            "description": "Revoke FEI Minter from timelock"
         },
         {
             "target": "tribe",
