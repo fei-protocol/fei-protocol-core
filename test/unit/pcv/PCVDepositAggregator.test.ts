@@ -4,19 +4,15 @@ import { Signer } from 'ethers';
 import hre, { ethers } from 'hardhat';
 import {
   Core,
-  Timelock,
-  Timelock__factory,
   PCVDepositAggregator,
   PCVDepositAggregator__factory,
   MockERC20__factory,
   ERC20,
   MockPCVDepositV2__factory,
-  PCVDeposit__factory,
   PCVDeposit,
   MockERC20
 } from '@custom-types/contracts';
 import chai from 'chai';
-import { isStringObject } from 'util/types';
 
 // This will theoretically make the error stack actually print!
 chai.config.includeStack = true;
