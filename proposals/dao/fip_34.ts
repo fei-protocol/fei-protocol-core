@@ -9,6 +9,7 @@ import {
   ValidateUpgradeFunc
 } from '../../types/types';
 import { FeiDAOTimelock } from '@custom-types/contracts';
+import { getImpersonatedSigner } from '@test/helpers';
 
 chai.use(CBN(ethers.BigNumber));
 
@@ -51,7 +52,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 };
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  await (await (contracts.feiDAOTimelock as FeiDAOTimelock).rollback()).wait();
+  const timelock: FeiDAOTimelock = contracts.feiDAOTimelock as FeiDAOTimelock;
+  await (await timelock.connect(await getImpersonatedSigner(addresses.multisig)).rollback()).wait();
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
