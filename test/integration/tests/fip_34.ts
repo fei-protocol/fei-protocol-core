@@ -22,7 +22,7 @@ before(async () => {
   await resetFork();
 });
 
-describe.only('e2e-fip-34', function () {
+describe('e2e-fip-34', function () {
   let contracts: NamedContracts;
   let deployAddress: string;
   let doLogging: boolean;
