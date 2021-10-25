@@ -1,5 +1,5 @@
 import hre, { ethers } from 'hardhat';
-import { time } from '@openzeppelin/test-helpers';
+import { time } from '@test/helpers';
 
 import * as dotenv from 'dotenv';
 
