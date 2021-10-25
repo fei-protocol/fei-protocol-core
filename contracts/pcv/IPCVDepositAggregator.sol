@@ -14,17 +14,17 @@ import "../external/Decimal.sol";
 
 interface IPCVDepositAggregator {
     // Events
-    event DepositAdded(address indexed depositAddress, uint weight);
+    event DepositAdded(address indexed depositAddress, uint256 weight);
     event DepositRemoved(address indexed depositAddress);
-    event Rebalanced(uint indexed totalAssets);
+    event Rebalanced(uint256 indexed totalAssets);
     event RebalancedSingle(address indexed pcvDepositAddress);
     event CannotRebalanceSingle(address indexed pcvDeposit, uint256 amountNeeded, uint256 aggregatorBalance);
     event NoRebalanceNeeded(address indexed pcvDeposit);
-    event AggregatorWithdrawal(uint indexed amount);
+    event AggregatorWithdrawal(uint256 indexed amount);
     event AggregatorDeposit();
     event NewAggregatorSet(address indexed newAggregator);
-    event BufferWeightChanged(uint indexed bufferWeight);
-    event DepositWeightChanged(address indexed depositAddress, uint indexed oldWeight, uint indexed newWeight);
+    event BufferWeightChanged(uint256 indexed bufferWeight);
+    event DepositWeightChanged(address indexed depositAddress, uint256 indexed oldWeight, uint256 indexed newWeight);
 
     // ----------- State changing api -----------
     /// @notice rebalance funds of the underlying deposits to the optimal target percents
@@ -36,7 +36,7 @@ interface IPCVDepositAggregator {
     // ----------- Governor only state changing api -----------
     /// @notice adds a new PCV Deposit to the set of deposits
     /// @param weight a relative (i.e. not normalized) weight of this PCV deposit
-    function addPCVDeposit(address newPCVDeposit, uint weight) external;
+    function addPCVDeposit(address newPCVDeposit, uint256 weight) external;
 
     /// @notice replaces this contract with a new PCV Deposit Aggregator on the rewardsAssetManager
     function setNewAggregator(address newAggregator) external;
@@ -46,10 +46,10 @@ interface IPCVDepositAggregator {
     function removePCVDeposit(address pcvDeposit) external;
 
     /// @notice set the relative weight of a particular pcv deposit
-    function setPCVDepositWeight(address depositAddress, uint newDepositWeight) external;
+    function setPCVDepositWeight(address depositAddress, uint256 newDepositWeight) external;
 
     /// @notice set the weight for the buffer specifically
-    function setBufferWeight(uint weight) external;
+    function setBufferWeight(uint256 weight) external;
 
     // ----------- Read-only api -----------
     /// @notice the upstream rewardsAssetManager funding this contract
