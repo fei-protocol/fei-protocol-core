@@ -12,6 +12,8 @@ import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "hardhat/console.sol";
 
 library UintArrayOps {
+    using SafeCast for uint256;
+
     function sum(uint[] memory array) internal pure returns (uint256 _sum) {
         for (uint256 i=0; i < array.length; i++) {
             _sum += array[i];
@@ -20,13 +22,13 @@ library UintArrayOps {
         return _sum;
     }
 
-    function difference(uint[] memory a, uint[] memory b) internal pure returns (int[] memory _difference) {
+    function signedDifference(uint[] memory a, uint[] memory b) internal pure returns (int[] memory _difference) {
         require(a.length == b.length, "Arrays must be the same length");
 
         _difference = new int[](a.length);
 
         for (uint256 i=0; i < a.length; i++) {
-            _difference[i] = int(a[i]) - int(b[i]);
+            _difference[i] = a[i].toInt256() - b[i].toInt256();
         }
 
         return _difference;
@@ -47,11 +49,12 @@ library UintArrayOps {
     }
 }
 
-contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
+contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
     using SafeCast for uint256;
     using SafeCast for int256;
+    using Decimal for Decimal.D256;
     using UintArrayOps for uint[];
 
     // ---------- Properties ------
@@ -62,7 +65,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
     uint256 public bufferWeight;
     uint256 public totalWeight; 
 
-    address public token;
+    address public immutable token;
     address public override rewardsAssetManager;
 
     constructor(
@@ -115,7 +118,9 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
         uint256 optimalAggregatorBalance = bufferWeight * totalBalance / totalWeight;
 
         // if actual aggregator balance is below optimal, we shouldn't deposit to underlying - just "fill up the buffer"
-        if (actualAggregatorBalance <= optimalAggregatorBalance) return;
+        if (actualAggregatorBalance <= optimalAggregatorBalance) {
+            return;
+        }
 
         // we should fill up the buffer before sending out to sub-deposits
         uint256 amountAvailableForUnderlyingDeposits = optimalAggregatorBalance - actualAggregatorBalance;
@@ -126,11 +131,11 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
         uint256 totalAmountNeeded = amountsNeeded.sum();
 
         // calculate a scalar. this will determine how much we *actually* send to each underlying deposit.
-        uint256 scalar = amountAvailableForUnderlyingDeposits / totalAmountNeeded;
+        Decimal.D256 memory scalar = Decimal.ratio(amountAvailableForUnderlyingDeposits, totalAmountNeeded);
 
         for (uint256 i=0; i <underlyingBalances.length; i++) {
             // send scalar * the amount the underlying deposit needs
-            uint256 amountToSend = scalar * amountsNeeded[i];
+            uint256 amountToSend = scalar.mul(amountsNeeded[i]).asUint256();
             if (amountToSend > 0) {
                 _depositToUnderlying(pcvDepositAddresses.at(i), amountToSend);
             }
@@ -191,19 +196,11 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
         emit AggregatorWithdrawal(amount);
     }
 
-    function withdrawERC20(address _token, address to, uint256 amount) external virtual override onlyPCVController {
-        IERC20(_token).safeTransfer(to, amount);
-    }
-
-    function withdrawETH(address payable to, uint256 amount) external virtual override onlyPCVController {
-        to.transfer(amount);
-    }
-
     function setBufferWeight(uint256 newBufferWeight) external virtual override onlyGovernorOrAdmin {
-        int256 difference = int(newBufferWeight) - int(bufferWeight);
-        bufferWeight = uint(int(bufferWeight) + difference);
+        int256 difference = newBufferWeight.toInt256() - bufferWeight.toInt256();
+        bufferWeight = newBufferWeight;
 
-        totalWeight = uint(int(totalWeight) + difference);
+        totalWeight = uint(totalWeight.toInt256() + difference);
 
         emit BufferWeightChanged(newBufferWeight);
     }
@@ -212,10 +209,10 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
         require(pcvDepositAddresses.contains(depositAddress), "Deposit does not exist.");
 
         uint256 oldDepositWeight = pcvDepositWeights[depositAddress];
-        int256 difference = int(newDepositWeight) - int(oldDepositWeight);
-        pcvDepositWeights[depositAddress] = uint(newDepositWeight);
+        int256 difference = newDepositWeight.toInt256() - oldDepositWeight.toInt256();
+        pcvDepositWeights[depositAddress] = newDepositWeight;
 
-        totalWeight = uint(int(totalWeight) + difference);
+        totalWeight = (totalWeight.toInt256() + difference).toUint256();
 
         emit DepositWeightChanged(depositAddress, oldDepositWeight, newDepositWeight);
     }
@@ -260,7 +257,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
         return pcvDepositAddresses.contains(pcvDeposit);
     }
 
-    function resistantBalanceAndFei() external view virtual override returns (uint256, uint256) {
+    function resistantBalanceAndFei() public view virtual override returns (uint256, uint256) {
         return (balance(), 0);
     }
 
@@ -279,7 +276,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
         return Decimal.ratio(targetBalanceWithTheoreticalDeposit, totalBalanceWithTheoreticalDeposit);
     }
 
-    function targetPercentHeld(address pcvDeposit) public view virtual override returns(Decimal.D256 memory) {
+    function normalizedTargetWeight(address pcvDeposit) public view virtual override returns(Decimal.D256 memory) {
         return Decimal.ratio(pcvDepositWeights[pcvDeposit], totalWeight);
     }
 
@@ -381,6 +378,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, IPCVDeposit, CoreRef {
 
         require(distanceToTarget != 0, "No rebalance needed.");
 
+        // @todo change to require
         if (distanceToTarget < 0 && balance() < uint(-1 * distanceToTarget)) {
             revert("Cannot rebalance this deposit, please rebalance another one first.");
         }

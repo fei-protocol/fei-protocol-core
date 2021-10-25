@@ -13,18 +13,53 @@ import "../external/Decimal.sol";
 */
 
 interface IPCVDepositAggregator {
-    // Events
-    event DepositAdded(address indexed depositAddress, uint256 weight);
-    event DepositRemoved(address indexed depositAddress);
-    event Rebalanced(uint256 indexed totalAssets);
-    event RebalancedSingle(address indexed pcvDepositAddress);
-    event CannotRebalanceSingle(address indexed pcvDeposit, uint256 amountNeeded, uint256 aggregatorBalance);
-    event NoRebalanceNeeded(address indexed pcvDeposit);
-    event AggregatorWithdrawal(uint256 indexed amount);
+    // ----------- Events -----------
+    event DepositAdded(
+        address indexed depositAddress, 
+        uint256 weight
+    );
+
+    event DepositRemoved(
+        address indexed depositAddress
+    );
+
+    event Rebalanced(
+        uint256 indexed totalAssets
+    );
+
+    event RebalancedSingle(
+        address indexed pcvDepositAddress
+    );
+
+    event CannotRebalanceSingle(
+        address indexed pcvDeposit, 
+        uint256 amountNeeded, 
+        uint256 aggregatorBalance
+        );
+
+    event NoRebalanceNeeded(
+        address indexed pcvDeposit
+        );
+
+    event AggregatorWithdrawal(
+        uint256 indexed amount
+    );
+
     event AggregatorDeposit();
-    event NewAggregatorSet(address indexed newAggregator);
-    event BufferWeightChanged(uint256 indexed bufferWeight);
-    event DepositWeightChanged(address indexed depositAddress, uint256 indexed oldWeight, uint256 indexed newWeight);
+
+    event NewAggregatorSet(
+        address indexed newAggregator
+    );
+
+    event BufferWeightChanged(
+        uint256 indexed bufferWeight
+    );
+
+    event DepositWeightChanged(
+        address indexed depositAddress, 
+        uint256 indexed oldWeight, 
+        uint256 indexed newWeight
+    );
 
     // ----------- State changing api -----------
     /// @notice rebalance funds of the underlying deposits to the optimal target percents
@@ -66,7 +101,7 @@ interface IPCVDepositAggregator {
     function percentHeld(address pcvDeposit, uint256 depositAmount) external view returns(Decimal.D256 memory);
 
     /// @notice the normalized target percent of PCV held by `pcvDeposit` relative to aggregator total
-    function targetPercentHeld(address pcvDeposit) external view returns(Decimal.D256 memory);
+    function normalizedTargetWeight(address pcvDeposit) external view returns(Decimal.D256 memory);
 
     /// @notice the raw amount of PCV off of the target weight/percent held by `pcvDeposit`
     /// @dev a positive result means the target has "too much" pcv, and a negative result means it needs more pcv
