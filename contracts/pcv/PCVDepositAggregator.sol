@@ -189,8 +189,9 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
 
     /// @notice remove a PCV deposit from the set of deposits
     /// @param pcvDeposit the address of the PCV deposit to remove
-    function removePCVDeposit(address pcvDeposit) external override onlyGovernorOrAdmin {
-        _removePCVDeposit(address(pcvDeposit));
+    /// @param shouldRebalance whether or not we want to rebalanceSingle on that deposit address before removing but after setting the weight to zero
+    function removePCVDeposit(address pcvDeposit, bool shouldRebalance) external override onlyGovernorOrAdmin {
+        _removePCVDeposit(address(pcvDeposit), shouldRebalance);
     }
 
     /// @notice adds a new PCV Deposit to the set of deposits
@@ -466,20 +467,17 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
     }
 
     // Removes a pcv deposit if it exists
-    function _removePCVDeposit(address depositAddress) internal {
+    function _removePCVDeposit(address depositAddress, bool shouldRebalance) internal {
         require(pcvDepositAddresses.contains(depositAddress), "Deposit does not exist.");
-
-        // Short-circuit - if the pcv deposit's weight is already zero and the balance is zero, just remove it
-        if (pcvDepositWeights[depositAddress] == 0 && IPCVDeposit(depositAddress).balance() == 0) {
-            pcvDepositAddresses.remove(depositAddress);
-            return;
-        }
 
         // Set the PCV Deposit weight to 0 and rebalance to remove all of the liquidity from this particular deposit
         totalWeight = totalWeight - pcvDepositWeights[depositAddress];
         pcvDepositWeights[depositAddress] = 0;
-        
-        _rebalanceSingle(depositAddress);
+
+        // The amountFromTarget check is required otherwise we might revert
+        if (shouldRebalance && amountFromTarget(depositAddress) != 0) {
+            _rebalanceSingle(depositAddress);
+        }
 
         pcvDepositAddresses.remove(depositAddress);
 

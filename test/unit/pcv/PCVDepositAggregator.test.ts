@@ -10,9 +10,11 @@ import {
   ERC20,
   MockPCVDepositV2__factory,
   PCVDeposit,
-  MockERC20
+  MockERC20,
+  IRewardsAssetManager__factory
 } from '@custom-types/contracts';
 import chai from 'chai';
+import { deployMockContract, MockContract } from '@ethereum-waffle/mock-contract';
 
 // This will theoretically make the error stack actually print!
 chai.config.includeStack = true;
@@ -20,7 +22,7 @@ chai.config.includeStack = true;
 // Import if needed, just a helper.
 // const toBN = ethers.BigNumber.from;
 
-describe('PCV Deposit Aggregator', function () {
+describe.only('PCV Deposit Aggregator', function () {
   // variable decs for vars that you want to use in multiple tests
   // typeing contracts specifically to what kind they are will catch before you run them!
   let core: Core;
@@ -67,6 +69,7 @@ describe('PCV Deposit Aggregator', function () {
   describe('when it is deployed with no deposits', async () => {
     let pcvDepositAggregator: PCVDepositAggregator;
     let token: ERC20;
+    let assetManager: MockContract;
 
     beforeEach(async () => {
       const tokenFactory = new MockERC20__factory(impersonatedSigners[userAddress]);
@@ -75,14 +78,21 @@ describe('PCV Deposit Aggregator', function () {
       token = await tokenFactory.deploy();
       await token.deployTransaction.wait();
 
+      assetManager = await deployMockContract(
+        impersonatedSigners[userAddress],
+        IRewardsAssetManager__factory.createInterface().format('json')
+      );
+      await assetManager.mock.getToken.returns(token.address);
+
       pcvDepositAggregator = await pcvDepositAggregatorDeployer.deploy(
         core.address,
-        core.address,
+        assetManager.address,
         token.address,
         [],
         [],
         10
       );
+
       await pcvDepositAggregator.deployTransaction.wait();
     });
 
@@ -93,13 +103,16 @@ describe('PCV Deposit Aggregator', function () {
       expect(await pcvDepositAggregator.token()).to.equal(token.address);
     });
 
-    it('successfully rebalances', async () => {});
+    it('successfully rebalances', async () => {
+      await (await pcvDepositAggregator.rebalance()).wait();
+    });
   });
 
   describe('when it is deployed with a single deposit', async () => {
     let pcvDepositAggregator: PCVDepositAggregator;
     let token: MockERC20;
     let pcvDeposit: PCVDeposit;
+    let assetManager: MockContract;
 
     beforeEach(async () => {
       const tokenFactory = new MockERC20__factory(impersonatedSigners[userAddress]);
@@ -112,9 +125,15 @@ describe('PCV Deposit Aggregator', function () {
       pcvDeposit = await mockPCVDepositDeployer.deploy(core.address, token.address, ethers.utils.parseEther('1000'), 0);
       await pcvDeposit.deployTransaction.wait();
 
+      assetManager = await deployMockContract(
+        impersonatedSigners[userAddress],
+        IRewardsAssetManager__factory.createInterface().format('json')
+      );
+      await assetManager.mock.getToken.returns(token.address);
+
       pcvDepositAggregator = await pcvDepositAggregatorDeployer.deploy(
         core.address,
-        core.address,
+        assetManager.address,
         token.address,
         [pcvDeposit.address],
         [90],
@@ -131,7 +150,32 @@ describe('PCV Deposit Aggregator', function () {
       expect(await pcvDepositAggregator.token()).to.equal(token.address);
     });
 
-    it('successfully rebalances', async () => {});
+    it('successfully rebalances when the pcv deposit has too much', async () => {
+      await token.mint(pcvDeposit.address, ethers.utils.parseEther('1000'));
+      await pcvDeposit.deposit();
+
+      expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('1000'));
+      expect(await pcvDepositAggregator.totalWeight()).to.equal(100);
+
+      await pcvDepositAggregator.rebalance();
+
+      expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('1000'));
+      expect(await pcvDeposit.balance()).to.equal(ethers.utils.parseEther('900'));
+    });
+
+    it('successfully rebalances when the pcv deposit has too little', async () => {
+      await token.mint(pcvDepositAggregator.address, ethers.utils.parseEther('950'));
+      await token.mint(pcvDeposit.address, ethers.utils.parseEther('50'));
+      await pcvDeposit.deposit();
+
+      expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('1000'));
+      expect(await pcvDepositAggregator.totalWeight()).to.equal(100);
+
+      await pcvDepositAggregator.rebalance();
+
+      expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('1000'));
+      expect(await pcvDeposit.balance()).to.equal(ethers.utils.parseEther('900'));
+    });
   });
 
   describe('when it is deployed with multiple deposits', async () => {
@@ -140,6 +184,7 @@ describe('PCV Deposit Aggregator', function () {
     let pcvDeposit1: PCVDeposit;
     let pcvDeposit2: PCVDeposit;
     let pcvDeposit3: PCVDeposit;
+    let assetManager: MockContract;
 
     beforeEach(async () => {
       const tokenFactory = new MockERC20__factory(impersonatedSigners[userAddress]);
@@ -158,9 +203,15 @@ describe('PCV Deposit Aggregator', function () {
       pcvDeposit3 = await mockPCVDepositDeployer.deploy(core.address, token.address, 0, 0);
       await pcvDeposit3.deployTransaction.wait();
 
+      assetManager = await deployMockContract(
+        impersonatedSigners[userAddress],
+        IRewardsAssetManager__factory.createInterface().format('json')
+      );
+      await assetManager.mock.getToken.returns(token.address);
+
       pcvDepositAggregator = await pcvDepositAggregatorDeployer.deploy(
         core.address,
-        core.address,
+        assetManager.address,
         token.address,
         [pcvDeposit1.address, pcvDeposit2.address, pcvDeposit3.address],
         [20, 30, 40],
@@ -291,8 +342,17 @@ describe('PCV Deposit Aggregator', function () {
       expect(await pcvDepositAggregator.totalWeight()).to.equal(110);
     });
 
-    it('removes a pcv deposit', async () => {
-      await pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).removePCVDeposit(pcvDeposit1.address);
+    it('removes a pcv deposit and rebalances', async () => {
+      await pcvDepositAggregator
+        .connect(impersonatedSigners[governorAddress])
+        .removePCVDeposit(pcvDeposit1.address, true);
+      expect(await pcvDepositAggregator.totalWeight()).to.equal(80);
+    });
+
+    it('removes a pcv deposit and does not rebalance', async () => {
+      await pcvDepositAggregator
+        .connect(impersonatedSigners[governorAddress])
+        .removePCVDeposit(pcvDeposit1.address, false);
       expect(await pcvDepositAggregator.totalWeight()).to.equal(80);
     });
 
@@ -310,9 +370,9 @@ describe('PCV Deposit Aggregator', function () {
       // Rebalance
       await pcvDepositAggregator.rebalance();
 
-      const pcvDeposit1TargetPercentHeld = await pcvDepositAggregator.targetPercentHeld(pcvDeposit1.address);
-      const pcvDeposit2TargetPercentHeld = await pcvDepositAggregator.targetPercentHeld(pcvDeposit2.address);
-      const pcvDeposit3TargetPercentHeld = await pcvDepositAggregator.targetPercentHeld(pcvDeposit3.address);
+      const pcvDeposit1TargetPercentHeld = await pcvDepositAggregator.normalizedTargetWeight(pcvDeposit1.address);
+      const pcvDeposit2TargetPercentHeld = await pcvDepositAggregator.normalizedTargetWeight(pcvDeposit2.address);
+      const pcvDeposit3TargetPercentHeld = await pcvDepositAggregator.normalizedTargetWeight(pcvDeposit3.address);
 
       expect(ethers.utils.formatUnits(pcvDeposit1TargetPercentHeld.value)).to.equal('0.2');
       expect(ethers.utils.formatUnits(pcvDeposit2TargetPercentHeld.value)).to.equal('0.3');

@@ -91,7 +91,8 @@ interface IPCVDepositAggregator {
     // ----------- Governor or Guardian only state changing api -----------
     /// @notice remove a PCV deposit from the set of deposits
     /// @param pcvDeposit the address of the PCV deposit to remove
-    function removePCVDeposit(address pcvDeposit) external;
+    /// @param shouldRebalance whether or not we want to rebalanceSingle on that deposit address before removing but after setting the weight to zero
+    function removePCVDeposit(address pcvDeposit, bool shouldRebalance) external;
 
     /// @notice set the relative weight of a particular pcv deposit
     /// @param depositAddress the address of the PCV deposit to set the weight of
