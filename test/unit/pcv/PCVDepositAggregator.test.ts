@@ -1,4 +1,4 @@
-import { getAddresses, getCore } from '@test/helpers';
+import { expectRevert, getAddresses, getCore } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
 import hre, { ethers } from 'hardhat';
@@ -96,7 +96,7 @@ describe.only('PCV Deposit Aggregator', function () {
       await pcvDepositAggregator.deployTransaction.wait();
     });
 
-    it('returns expected values for deposits, weights, balances, and token', async () => {
+    it('initial values are correct: balance, paused, buffer weight, token', async () => {
       expect(await pcvDepositAggregator.getTotalBalance()).to.equal(0);
       expect(await pcvDepositAggregator.paused()).to.be.false;
       expect(await pcvDepositAggregator.bufferWeight()).to.be.equal(10);
@@ -142,9 +142,8 @@ describe.only('PCV Deposit Aggregator', function () {
       await pcvDepositAggregator.deployTransaction.wait();
     });
 
-    it('returns expected values for deposits, weights, balances, and token', async () => {
-      await token.mint(pcvDeposit.address, ethers.utils.parseEther('1000'));
-      expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('1000'));
+    it('initial values are correct: balance, paused, buffer weight, token', async () => {
+      expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('0'));
       expect(await pcvDepositAggregator.paused()).to.be.false;
       expect(await pcvDepositAggregator.bufferWeight()).to.be.equal(10);
       expect(await pcvDepositAggregator.token()).to.equal(token.address);
@@ -220,7 +219,14 @@ describe.only('PCV Deposit Aggregator', function () {
       await pcvDepositAggregator.deployTransaction.wait();
     });
 
-    it('returns expected values for deposits, weights, balances, and token', async () => {
+    it('initial values are correct: balance, paused, buffer weight, token', async () => {
+      expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('0'));
+      expect(await pcvDepositAggregator.paused()).to.be.false;
+      expect(await pcvDepositAggregator.bufferWeight()).to.be.equal(10);
+      expect(await pcvDepositAggregator.token()).to.equal(token.address);
+    });
+
+    it('returns correct values after calling deposit on each pcv deposit', async () => {
       // Mint 1000, 2000, and 3000 tokens to each pcv deposit, respectively
       await token.mint(pcvDeposit1.address, ethers.utils.parseEther('1000'));
       await token.mint(pcvDeposit2.address, ethers.utils.parseEther('2000'));
@@ -280,8 +286,14 @@ describe.only('PCV Deposit Aggregator', function () {
       expect(await token.balanceOf(pcvDeposit2.address)).to.equal(ethers.utils.parseEther('3000'));
       expect(await token.balanceOf(pcvDeposit3.address)).to.equal(ethers.utils.parseEther('4000'));
 
-      // Also check the aggregator balance
+      // Also check to make sure the pcv deposit balance calls report the same as the token.balanceOf() calls above
+      expect(await pcvDeposit1.balance()).to.equal(ethers.utils.parseEther('2000'));
+      expect(await pcvDeposit2.balance()).to.equal(ethers.utils.parseEther('3000'));
+      expect(await pcvDeposit3.balance()).to.equal(ethers.utils.parseEther('4000'));
+
+      // Also check the aggregator balance & the aggregator balance() call
       expect(await token.balanceOf(pcvDepositAggregator.address)).to.equal(ethers.utils.parseEther('1000'));
+      expect(await pcvDepositAggregator.balance()).to.equal(ethers.utils.parseEther('1000'));
     });
 
     it('successfully rebalances when some pcv deposits have an overage of tokens and some do not', async () => {
@@ -310,6 +322,40 @@ describe.only('PCV Deposit Aggregator', function () {
 
       // Also check the aggregator balance
       expect(await token.balanceOf(pcvDepositAggregator.address)).to.equal(ethers.utils.parseEther('1000'));
+    });
+
+    it('successfully rebalances when all tokens have overages', async () => {
+      // Mint 2300, 3300, and 4400 tokens to each pcv deposit, respectively
+      await token.mint(pcvDeposit1.address, ethers.utils.parseEther('2300'));
+      await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3300'));
+      await token.mint(pcvDeposit3.address, ethers.utils.parseEther('4400'));
+
+      // Call deposit on each pcv deposit so that their balances update
+      await pcvDeposit1.deposit();
+      await pcvDeposit2.deposit();
+      await pcvDeposit3.deposit();
+
+      expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('10000'));
+      expect(await pcvDepositAggregator.totalWeight()).to.equal(100);
+
+      // Call rebalance
+      await pcvDepositAggregator.rebalance();
+
+      // Check pcv deposit balances
+      // Should be 2000, 3000, 4000 in deposits
+      // Should be 1000 in the aggregator
+      expect(await token.balanceOf(pcvDeposit1.address)).to.equal(ethers.utils.parseEther('2000'));
+      expect(await token.balanceOf(pcvDeposit2.address)).to.equal(ethers.utils.parseEther('3000'));
+      expect(await token.balanceOf(pcvDeposit3.address)).to.equal(ethers.utils.parseEther('4000'));
+
+      // Also check pcvdeposit balances
+      expect(await pcvDeposit1.balance()).to.equal(ethers.utils.parseEther('2000'));
+      expect(await pcvDeposit2.balance()).to.equal(ethers.utils.parseEther('3000'));
+      expect(await pcvDeposit3.balance()).to.equal(ethers.utils.parseEther('4000'));
+
+      // Also check the aggregator balance and balance() calls
+      expect(await token.balanceOf(pcvDepositAggregator.address)).to.equal(ethers.utils.parseEther('1000'));
+      expect(await pcvDepositAggregator.balance()).to.equal(ethers.utils.parseEther('1000'));
     });
 
     it('rebalances a single deposit', async () => {
@@ -418,6 +464,9 @@ describe.only('PCV Deposit Aggregator', function () {
         await pcvDepositAggregator.percentHeld(pcvDeposit1.address, ethers.utils.parseEther('10000'))
       ).value;
 
+      // After a rebalance, this deposit, with a weight of 20/100, should have 2000 tokens (since there exist 10000 tokens total)
+      // After adding a theoretical 10,000 tokens to this deposit, it will have 12,000 tokens out of a total of 20,000 tokens
+      // 12,000 / 20,000 = 0.6 or 60%
       expect(ethers.utils.formatUnits(pcvDeposit1PercentHeld)).to.equal('0.6');
     });
 
@@ -467,7 +516,7 @@ describe.only('PCV Deposit Aggregator', function () {
       expect(await pcvDepositAggregator.totalWeight()).to.equal(140);
     });
 
-    it('withdraws when the buffer is not enough to cover the balasnce', async () => {
+    it('withdraws when the buffer is not enough to cover the balances', async () => {
       // Mint 6000, 3000, and 1000 tokens to each pcv deposit, respectively
       await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
       await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
@@ -481,7 +530,83 @@ describe.only('PCV Deposit Aggregator', function () {
       await pcvDepositAggregator
         .connect(impersonatedSigners[pcvControllerAddress])
         .withdraw(userAddress, ethers.utils.parseEther('8000'));
+
+      // Check token balances. After withdrawing 8000 tokens, the total balance will be 2000, with none in the buffer.
+      // Since this withdraw towards the optimal weighting, the post-withdraw balance should be split 20/30/40(/10)
+      // 20/100 * 2000 = 400 (pcv deposit 1)
+      // 30/100 * 2000 = 600 (pcv deposit 2)
+      // 40/100 * 2000 = 800 (pcv deposit 3)
+      // 10/100 * 2000 = 200 (aggregator)
+
+      expect(await token.balanceOf(pcvDeposit1.address)).to.equal(ethers.utils.parseEther('400'));
+      expect(await token.balanceOf(pcvDeposit2.address)).to.equal(ethers.utils.parseEther('600'));
+      expect(await token.balanceOf(pcvDeposit3.address)).to.equal(ethers.utils.parseEther('800'));
+      expect(await token.balanceOf(pcvDepositAggregator.address)).to.equal(ethers.utils.parseEther('200'));
       expect(await token.balanceOf(userAddress)).to.equal(ethers.utils.parseEther('8000'));
+
+      // Check pcv deposit & aggregator balance() calls
+      expect(await pcvDeposit1.balance()).to.equal(ethers.utils.parseEther('400'));
+      expect(await pcvDeposit2.balance()).to.equal(ethers.utils.parseEther('600'));
+      expect(await pcvDeposit3.balance()).to.equal(ethers.utils.parseEther('800'));
+      expect(await pcvDepositAggregator.balance()).to.equal(ethers.utils.parseEther('200'));
+      expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('2000'));
+    });
+
+    // This test covers the special edge case with the following context:
+    // 1. The buffer is not enough to cover the balances
+    // 2. There is (at least one) pcv deposit that has a defecit
+    // 3. Said defecit is *still* a defecit after the withdrawal
+    // This edge case is special because it is the only time when we DONT pull tokens from every pcv deposit to cover the overage,
+    // and where we'll actually end up pulling more tokens than needed into the aggregator - ie the aggregatort will have an overage
+    // after this method is complete. This is because we don't do deposits of tokens on withdraw - only withdrawals.
+    // @todo
+    it('withdraws when the buffer is not enough to cover the balances and there is a pcv deposit that should not be pulled from', async () => {
+      // Mint 6000, 3000, and 1000 tokens to each pcv deposit, respectively
+      await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
+      await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
+      await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));
+
+      // Call deposit on each pcv deposit so that their balances update
+      await pcvDeposit1.deposit();
+      await pcvDeposit2.deposit();
+      await pcvDeposit3.deposit();
+
+      // Only withdraw 100 tokens this time
+      await pcvDepositAggregator
+        .connect(impersonatedSigners[pcvControllerAddress])
+        .withdraw(userAddress, ethers.utils.parseEther('100'));
+
+      // Check token balances. After withdrawing 100 tokens, the total balance will be 9900.
+
+      // The optimal weighting given this total balance is:
+      // 20/100 * 9900 = 1980 (pcv deposit 1)
+      // 30/100 * 9900 = 2970 (pcv deposit 2)
+      // 40/100 * 9900 = 3960 (pcv deposit 3)
+      // 10/100 * 9900 = 990 (aggregator)
+
+      // However, because PCV Deposit 3 has a defecit and will still have it after the withdrawal,
+      // this defecit will actually be accounted for as an overage in the buffer itself. Therefore no
+      // withdrawals should happen on it, and it will still have its original value of 1000 tokens.
+
+      // The actual weighting given this edge case is:
+      // 20/100 * 9900 = 1980 tokens
+      // 30/100 * 9900 = 2970 tokens
+      // 40/100 * 9900 = 3960 - aggregatorOverage = 1000 tokens
+      // 10/100 * 9900 = 990 + aggregatorOverage = 3950 tokens
+      // 1980 + 2970 + 1000 + 3950 = 9900 tokens which is correct after a 100 token withdrawal
+
+      expect(await token.balanceOf(pcvDeposit1.address)).to.equal(ethers.utils.parseEther('1980'));
+      expect(await token.balanceOf(pcvDeposit2.address)).to.equal(ethers.utils.parseEther('2970'));
+      expect(await token.balanceOf(pcvDeposit3.address)).to.equal(ethers.utils.parseEther('1000'));
+      expect(await token.balanceOf(pcvDepositAggregator.address)).to.equal(ethers.utils.parseEther('3950'));
+      expect(await token.balanceOf(userAddress)).to.equal(ethers.utils.parseEther('100'));
+
+      // Check pcv deposit & aggregator balance() calls
+      expect(await pcvDeposit1.balance()).to.equal(ethers.utils.parseEther('1980'));
+      expect(await pcvDeposit2.balance()).to.equal(ethers.utils.parseEther('2970'));
+      expect(await pcvDeposit3.balance()).to.equal(ethers.utils.parseEther('1000'));
+      expect(await pcvDepositAggregator.balance()).to.equal(ethers.utils.parseEther('3950'));
+      expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('9900'));
     });
 
     it('withdraws everything', async () => {
@@ -498,7 +623,19 @@ describe.only('PCV Deposit Aggregator', function () {
       await pcvDepositAggregator
         .connect(impersonatedSigners[pcvControllerAddress])
         .withdraw(userAddress, ethers.utils.parseEther('10000'));
+
+      // Check token balances
+      expect(await token.balanceOf(pcvDeposit1.address)).to.equal(ethers.utils.parseEther('0'));
+      expect(await token.balanceOf(pcvDeposit2.address)).to.equal(ethers.utils.parseEther('0'));
+      expect(await token.balanceOf(pcvDeposit3.address)).to.equal(ethers.utils.parseEther('0'));
+      expect(await token.balanceOf(pcvDepositAggregator.address)).to.equal(ethers.utils.parseEther('0'));
       expect(await token.balanceOf(userAddress)).to.equal(ethers.utils.parseEther('10000'));
+
+      // Check pcv deposit & aggregator balance() calls
+      expect(await pcvDeposit1.balance()).to.equal(ethers.utils.parseEther('0'));
+      expect(await pcvDeposit2.balance()).to.equal(ethers.utils.parseEther('0'));
+      expect(await pcvDeposit3.balance()).to.equal(ethers.utils.parseEther('0'));
+      expect(await pcvDepositAggregator.balance()).to.equal(ethers.utils.parseEther('0'));
     });
   });
 });

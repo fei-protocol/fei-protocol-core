@@ -121,6 +121,9 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
     /// 1. check if the contract has enough in the buffer to cover the withdrawal. if so, just use this
     /// 2. if not, calculate what the ideal underlying amount should be for each pcv deposit *after* the withdraw
     /// 3. then, cycle through them and withdraw until each has their ideal amount (for the ones that have overages)
+    /// Note this function will withdraw all of the overages from each pcv deposit, even if we don't need that much to
+    /// actually cover the transfer! This is intentional because it costs the same to withdraw exactly how much we need
+    /// vs the overage amount; the entire overage amount should be moved if it is the same cost as just as much as we need.
     function withdraw(address to, uint256 amount) external override onlyPCVController whenNotPaused {
         uint256 aggregatorBalance = balance();
 
@@ -261,7 +264,6 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
     function hasPCVDeposit(address pcvDeposit) public view override returns (bool) {
         return pcvDepositAddresses.contains(pcvDeposit);
     }
-
 
     function resistantBalanceAndFei() public view override returns (uint256, uint256) {
         return (balance(), 0);
