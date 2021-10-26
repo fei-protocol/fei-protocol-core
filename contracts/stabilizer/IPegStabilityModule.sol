@@ -70,7 +70,7 @@ interface IPegStabilityModule {
         returns (uint256 amountOut);
 
     /// @notice a flag for whether the current balance is above (true) or below (false) the reservesThreshold
-    function meetsReservesThreshold() external view returns (bool);
+    function hasSurplus() external view returns (bool);
 
     /// @notice an integer representing the positive surplus or negative deficit of contract balance vs reservesThreshold
     function reservesSurplus() external view returns (int256);

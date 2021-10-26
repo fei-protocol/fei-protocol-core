@@ -1,5 +1,5 @@
 import hre, { ethers } from 'hardhat';
-import { expectRevert, getAddresses, getCore, deployDevelopmentWeth } from '../../helpers';
+import { expectRevert, getAddresses, getCore, deployDevelopmentWeth } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
 import { Core, MockERC20, Fei, MockOracle, ERC20PegStabilityModule, MockPCVDepositV2 } from '@custom-types/contracts';
@@ -455,13 +455,18 @@ describe('ERC20PegStabilityModule', function () {
 
     describe('withdraw', function () {
       it('fails when caller is not PCVController', async function () {
-        await expectRevert(psm.withdraw(userAddress, 100), 'CoreRef: Caller is not a PCV controller');
+        await expectRevert(
+          psm.withdrawERC20(asset.address, userAddress, 100),
+          'CoreRef: Caller is not a PCV controller'
+        );
       });
 
       it('succeeds when caller is PCVController', async function () {
         const amount = 10_000_000;
         await asset.mint(psm.address, amount);
-        await psm.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, await psm.balance());
+        await psm
+          .connect(impersonatedSigners[pcvControllerAddress])
+          .withdrawERC20(asset.address, userAddress, await psm.balance());
 
         const endingBalance = await psm.balance();
         expect(endingBalance).to.be.equal(0);
@@ -474,7 +479,7 @@ describe('ERC20PegStabilityModule', function () {
     it('sends surplus to PCVDeposit target when called', async function () {
       const startingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
       await asset.mint(psm.address, reservesThreshold.mul(2));
-      expect(await psm.meetsReservesThreshold()).to.be.true;
+      expect(await psm.hasSurplus()).to.be.true;
       await psm.allocateSurplus();
       const endingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
 
@@ -486,7 +491,7 @@ describe('ERC20PegStabilityModule', function () {
     it('sends surplus to PCVDeposit target when called', async function () {
       const startingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
       await asset.mint(psm.address, reservesThreshold.mul(2));
-      expect(await psm.meetsReservesThreshold()).to.be.true;
+      expect(await psm.hasSurplus()).to.be.true;
       await psm.deposit();
       const endingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
 

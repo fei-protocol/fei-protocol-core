@@ -50,12 +50,6 @@ contract EthPegStabilityModule is PegStabilityModule {
         Address.sendValue(payable(to), amount);
     }
 
-    /// @notice withdraw assets from ETH PSM to an external address
-    function withdraw(address to, uint256 amount) external override onlyPCVController {
-        Address.sendValue(payable(to), amount);
-        emit WithdrawETH(msg.sender, to, amount);
-    }
-
     /// @notice function from PCVDeposit that must be overriden
     function balance() public view override returns(uint256) {
         return address(this).balance;

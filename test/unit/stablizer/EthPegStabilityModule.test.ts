@@ -1,8 +1,8 @@
 import hre, { ethers } from 'hardhat';
-import { expectRevert, balance, getAddresses, getCore, deployDevelopmentWeth, ZERO_ADDRESS } from '../../helpers';
+import { expectRevert, getAddresses, getCore, deployDevelopmentWeth, ZERO_ADDRESS } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
-import { Core, Fei, MockOracle, EthPegStabilityModule, MockEthReceiverPCVDeposit } from '@custom-types/contracts';
+import { Core, Fei, MockOracle, EthPegStabilityModule, MockPCVDepositV2 } from '@custom-types/contracts';
 
 describe('EthPegStabilityModule', function () {
   let userAddress;
@@ -24,7 +24,7 @@ describe('EthPegStabilityModule', function () {
   let fei: Fei;
   let oracle: MockOracle;
   let psm: EthPegStabilityModule;
-  let pcvDeposit: MockEthReceiverPCVDeposit;
+  let pcvDeposit: MockPCVDepositV2;
 
   before(async () => {
     const addresses = await getAddresses();
@@ -67,9 +67,7 @@ describe('EthPegStabilityModule', function () {
     core = await getCore();
     fei = await ethers.getContractAt('Fei', await core.fei());
     oracle = await (await ethers.getContractFactory('MockOracle')).deploy(ethPrice);
-    pcvDeposit = await (
-      await ethers.getContractFactory('MockEthReceiverPCVDeposit')
-    ).deploy(core.address, ZERO_ADDRESS, 0, 0);
+    pcvDeposit = await (await ethers.getContractFactory('MockPCVDepositV2')).deploy(core.address, ZERO_ADDRESS, 0, 0);
 
     psm = await (
       await ethers.getContractFactory('EthPegStabilityModule')
@@ -297,9 +295,9 @@ describe('EthPegStabilityModule', function () {
       });
     });
 
-    describe('withdraw', function () {
+    describe('withdrawETH', function () {
       it('fails when caller is not PCVController', async function () {
-        await expectRevert(psm.withdraw(userAddress, 100), 'CoreRef: Caller is not a PCV controller');
+        await expectRevert(psm.withdrawETH(userAddress, 100), 'CoreRef: Caller is not a PCV controller');
       });
 
       it('succeeds when caller is PCVController', async function () {
@@ -310,7 +308,7 @@ describe('EthPegStabilityModule', function () {
           .connect(impersonatedSigners[pcvControllerAddress])
           .mint(pcvControllerAddress, amount, { value: amount });
 
-        await psm.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, await psm.balance());
+        await psm.connect(impersonatedSigners[pcvControllerAddress]).withdrawETH(userAddress, await psm.balance());
 
         const endingBalance = await psm.balance();
         expect(endingBalance).to.be.equal(0);
@@ -329,7 +327,7 @@ describe('EthPegStabilityModule', function () {
       });
 
       const startingEthBalance = await ethers.provider.getBalance(pcvDeposit.address);
-      expect(await psm.meetsReservesThreshold()).to.be.true;
+      expect(await psm.hasSurplus()).to.be.true;
       await psm.allocateSurplus();
       const endingEthBalance = await ethers.provider.getBalance(pcvDeposit.address);
 
@@ -345,7 +343,7 @@ describe('EthPegStabilityModule', function () {
       });
 
       const startingEthBalance = await ethers.provider.getBalance(pcvDeposit.address);
-      expect(await psm.meetsReservesThreshold()).to.be.true;
+      expect(await psm.hasSurplus()).to.be.true;
       await psm.deposit();
       const endingEthBalance = await ethers.provider.getBalance(pcvDeposit.address);
 

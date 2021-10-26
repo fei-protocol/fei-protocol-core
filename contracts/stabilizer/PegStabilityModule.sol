@@ -29,8 +29,8 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     IPCVDeposit public override target;
 
     /// @notice the token this PSM will exchange for FEI
-    /// This token will be set to address 0 if the bonding curve accepts eth
-    IERC20 public override token;
+    /// This token will be set to WETH9 if the bonding curve accepts eth
+    IERC20 public immutable override token;
 
     /// @notice constructor
     /// @param _coreAddress Fei core to reference
@@ -132,68 +132,50 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
         emit TargetUpdate(oldTarget, newTarget);
     }
 
-    // Allocates a portion of escrowed PCV to a target PCV deposit
-    function _allocateSingle(uint256 amount)
-        internal
-        virtual
-    {
+    /// @notice Allocates a portion of escrowed PCV to a target PCV deposit
+    function _allocate(uint256 amount) internal {
         _transfer(address(target), amount);
         target.deposit();
     }
 
     function allocateSurplus() external override {
-        uint256 currentSurplus = reservesSurplus().toUint256();
+        int256 currentSurplus = reservesSurplus();
         require(currentSurplus > 0, "PegStabilityModule: No surplus to allocate");
 
-        _allocateSingle(currentSurplus);
+        _allocate(currentSurplus.toUint256());
     }
 
     /// @notice function to receive ERC20 tokens from external contracts
     function deposit() external override {
         int256 currentSurplus = reservesSurplus();
-        if (reservesSurplus() > 0 ) {
-            _allocateSingle(currentSurplus.toUint256());
+        if (currentSurplus > 0 ) {
+            _allocate(currentSurplus.toUint256());
         }
     }
 
     /// @notice function to redeem FEI for an underlying asset
     function redeem(address to, uint256 amountFeiIn) external virtual override nonReentrant whenNotPaused returns (uint256 amountOut) {
-        amountOut = _sellFei(to, amountFeiIn);
-
-        _transfer(to, amountOut);
-    }
-
-    /// @notice function to buy FEI for an underlying asset
-    function mint(address to, uint256 amountIn) external virtual override payable nonReentrant whenNotPaused returns (uint256 amountFeiOut) {
-        _checkMsgValue(amountIn);
-
-        _transferFrom(msg.sender, address(this), amountIn);
-
-        amountFeiOut = _purchaseFei(to, amountIn);
-    }
-
-    /// @notice helper function to sell FEI to the PSM
-    function _sellFei(address to, uint256 amountFeiIn) internal returns (uint256 amountOut) {
         updateOracle();
 
-        Decimal.D256 memory price;
-        (amountOut, price) = _getRedeemAmountOutAndPrice(amountFeiIn);
+        amountOut = _getRedeemAmountOutAndPrice(amountFeiIn);
 
-        _validatePriceRange(price);
         fei().transferFrom(msg.sender, address(this), amountFeiIn);
         _burnFeiHeld();
+
+        _transfer(to, amountOut);
 
         emit Redeem(to, amountFeiIn);
     }
 
-    /// @notice helper function to purchase FEI from the PSM
-    function _purchaseFei(address to, uint256 amountIn) internal returns (uint256 amountFeiOut) {
+    /// @notice function to buy FEI for an underlying asset
+    function mint(address to, uint256 amountIn) external virtual override payable nonReentrant whenNotPaused returns (uint256 amountFeiOut) {
         updateOracle();
 
-        Decimal.D256 memory price;
-        (amountFeiOut, price) = _getMintAmountOutAndPrice(amountIn);
+        _checkMsgValue(amountIn);
+        _transferFrom(msg.sender, address(this), amountIn);
 
-        _validatePriceRange(price);
+        amountFeiOut = _getMintAmountOutAndPrice(amountIn);
+
         _mintFei(to, amountFeiOut);
 
         emit Mint(to, amountIn);
@@ -203,10 +185,12 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     function _checkMsgValue(uint256) internal virtual;
     function _transfer(address to, uint256 amount) internal virtual;
     function _transferFrom(address from, address to, uint256 amount) internal virtual;
-    function _validatePriceRange(Decimal.D256 memory price) internal virtual;
+    function _validatePriceRange(Decimal.D256 memory price) internal view virtual;
 
-    function _getMintAmountOutAndPrice(uint256 amountIn) private view returns (uint256 amountFeiOut, Decimal.D256 memory price) {
-        price = readOracle();
+    function _getMintAmountOutAndPrice(uint256 amountIn) private view returns (uint256 amountFeiOut) {
+        Decimal.D256 memory price = readOracle();
+        _validatePriceRange(price);
+
         Decimal.D256 memory adjustedAmountIn = price.mul(amountIn);
 
         amountFeiOut = adjustedAmountIn
@@ -220,11 +204,12 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     /// Then figure out how many dollars that amount in is worth by multiplying price * amount.
     /// ensure decimals are normalized if on underlying they are not 18
     function getMintAmountOut(uint256 amountIn) public override view returns (uint256 amountFeiOut) {
-        (amountFeiOut, ) = _getMintAmountOutAndPrice(amountIn);
+        amountFeiOut = _getMintAmountOutAndPrice(amountIn);
     }
 
-    function _getRedeemAmountOutAndPrice(uint256 amountFeiIn) private view returns (uint256 amountTokenOut, Decimal.D256 memory price) {
-        price = readOracle();
+    function _getRedeemAmountOutAndPrice(uint256 amountFeiIn) private view returns (uint256 amountTokenOut) {
+        Decimal.D256 memory price = readOracle();
+        _validatePriceRange(price);
 
         /// get amount of dollars being provided
         Decimal.D256 memory adjustedAmountIn = Decimal.from(
@@ -241,7 +226,7 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     /// Then figure out how many dollars that amount in is worth by multiplying price * amount.
     /// ensure decimals are normalized if on underlying they are not 18
     function getRedeemAmountOut(uint256 amountFeiIn) public override view returns (uint256 amountTokenOut) {
-        (amountTokenOut, ) = _getRedeemAmountOutAndPrice(amountFeiIn);
+        amountTokenOut = _getRedeemAmountOutAndPrice(amountFeiIn);
     }
 
     /// @notice mint amount of FEI to the specified user on a rate limit
@@ -250,8 +235,8 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     }
 
     /// @notice a flag for whether the current balance is above (true) or below (false) the reservesThreshold
-    function meetsReservesThreshold() external override view returns (bool) {
-        return balance() >= reservesThreshold;
+    function hasSurplus() external override view returns (bool) {
+        return balance() > reservesThreshold;
     }
 
     /// @notice an integer representing the positive surplus or negative deficit of contract balance vs reservesThreshold
