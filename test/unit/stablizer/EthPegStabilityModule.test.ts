@@ -2,8 +2,7 @@ import hre, { ethers } from 'hardhat';
 import { expectRevert, balance, getAddresses, getCore, deployDevelopmentWeth, ZERO_ADDRESS } from '../../helpers';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
-import { Core, Fei, MockOracle, EthPegStabilityModule } from '@custom-types/contracts';
-import { start } from 'repl';
+import { Core, Fei, MockOracle, EthPegStabilityModule, MockEthReceiverPCVDeposit } from '@custom-types/contracts';
 
 describe('EthPegStabilityModule', function () {
   let userAddress;
@@ -12,7 +11,7 @@ describe('EthPegStabilityModule', function () {
   let pcvControllerAddress;
   const mintFeeBasisPoints = 30;
   const redeemFeeBasisPoints = 30;
-  const reservesThreshold = ethers.constants.WeiPerEther.mul(10_000_000);
+  const reservesThreshold = ethers.constants.WeiPerEther.mul(5); // hold onto 5 ether in the contract
   const feiLimitPerSecond = ethers.constants.WeiPerEther.mul(10_000);
   const bufferCap = ethers.constants.WeiPerEther.mul(10_000_000);
   const mintAmount = ethers.constants.WeiPerEther.mul(1_000);
@@ -25,6 +24,7 @@ describe('EthPegStabilityModule', function () {
   let fei: Fei;
   let oracle: MockOracle;
   let psm: EthPegStabilityModule;
+  let pcvDeposit: MockEthReceiverPCVDeposit;
 
   before(async () => {
     const addresses = await getAddresses();
@@ -67,11 +67,15 @@ describe('EthPegStabilityModule', function () {
     core = await getCore();
     fei = await ethers.getContractAt('Fei', await core.fei());
     oracle = await (await ethers.getContractFactory('MockOracle')).deploy(ethPrice);
+    pcvDeposit = await (
+      await ethers.getContractFactory('MockEthReceiverPCVDeposit')
+    ).deploy(core.address, ZERO_ADDRESS, 0, 0);
 
     psm = await (
       await ethers.getContractFactory('EthPegStabilityModule')
     ).deploy(
       core.address,
+      oracle.address,
       oracle.address,
       mintFeeBasisPoints,
       redeemFeeBasisPoints,
@@ -80,7 +84,7 @@ describe('EthPegStabilityModule', function () {
       bufferCap,
       decimalsNormalizer,
       false,
-      fei.address
+      pcvDeposit.address
     );
 
     await core.grantMinter(psm.address);
@@ -183,10 +187,6 @@ describe('EthPegStabilityModule', function () {
           }),
           'EthPegStabilityModule: Sent value does not equal input'
         );
-      });
-
-      it('fails to oracle pause', async function () {
-        await expectRevert(psm.oracleErrorPause(), 'no-op');
       });
 
       it('mint fails when contract is paused', async function () {
@@ -319,11 +319,41 @@ describe('EthPegStabilityModule', function () {
         expect(endingEthBalance.sub(startingEthBalance)).to.be.equal(amount);
       });
     });
+  });
 
-    describe('deposit', function () {
-      it('fails when called', async function () {
-        await expectRevert(psm.deposit(), 'no-op');
+  describe('allocateSurplus', function () {
+    it('sends surplus to PCVDeposit target when called', async function () {
+      await impersonatedSigners[userAddress].sendTransaction({
+        to: psm.address,
+        value: ethers.constants.WeiPerEther.mul(10)
       });
+
+      const startingEthBalance = await ethers.provider.getBalance(pcvDeposit.address);
+      expect(await psm.meetsReservesThreshold()).to.be.true;
+      await psm.allocateSurplus();
+      const endingEthBalance = await ethers.provider.getBalance(pcvDeposit.address);
+
+      expect(endingEthBalance.sub(startingEthBalance)).to.be.equal(reservesThreshold);
+    });
+  });
+
+  describe('deposit', function () {
+    it('sends surplus to PCVDeposit target when called', async function () {
+      await impersonatedSigners[userAddress].sendTransaction({
+        to: psm.address,
+        value: ethers.constants.WeiPerEther.mul(10)
+      });
+
+      const startingEthBalance = await ethers.provider.getBalance(pcvDeposit.address);
+      expect(await psm.meetsReservesThreshold()).to.be.true;
+      await psm.deposit();
+      const endingEthBalance = await ethers.provider.getBalance(pcvDeposit.address);
+
+      expect(endingEthBalance.sub(startingEthBalance)).to.be.equal(reservesThreshold);
+    });
+
+    it('succeeds when called', async function () {
+      await psm.deposit();
     });
   });
 });

@@ -8,6 +8,7 @@ contract EthPegStabilityModule is PegStabilityModule {
     constructor(
         address _coreAddress,
         address _oracleAddress,
+        address _backupOracle,
         uint256 _mintFeeBasisPoints,
         uint256 _redeemFeeBasisPoints,
         uint256 _reservesThreshold,
@@ -15,10 +16,11 @@ contract EthPegStabilityModule is PegStabilityModule {
         uint256 _mintingBufferCap,
         int256 _decimalsNormalizer,
         bool _doInvert,
-        IFei _FEI
+        IPCVDeposit _target
     ) PegStabilityModule(
         _coreAddress,
         _oracleAddress,
+        _backupOracle,
         _mintFeeBasisPoints,
         _redeemFeeBasisPoints,
         _reservesThreshold,
@@ -27,33 +29,25 @@ contract EthPegStabilityModule is PegStabilityModule {
         _decimalsNormalizer,
         _doInvert,
         IERC20(address(0)), /// since the token for this PSM is eth, the address is 0
-        _FEI
+        _target
     ) {}
 
-    /// @notice function to redeem FEI for an underlying asset
-    function redeem(address to, uint256 amountFeiIn) external override nonReentrant whenNotPaused returns (uint256 amountEthOut) {
-        updateOracle();
-
-        amountEthOut = getRedeemAmountOut(amountFeiIn);
-        FEI.transferFrom(msg.sender, address(this), amountFeiIn);
-        FEI.burn(amountFeiIn);
-
-        Address.sendValue(payable(to), amountEthOut);
-
-        emit Redeem(to, amountFeiIn);
-    }
+    receive() external payable {}
 
     /// @notice function to mint Fei by sending eth
-    function mint(address to, uint256 amountIn) external payable override nonReentrant whenNotPaused returns (uint256 amountFeiOut) {
+    function _checkMsgValue(uint256 amountIn) internal override {
         require(msg.value == amountIn, "EthPegStabilityModule: Sent value does not equal input");
+    }
 
-        updateOracle();
+    /// @notice override the _transferFrom method inside of the PSM as eth has already been sent to contract
+    function _transferFrom(address from, address to, uint256 amount) internal override {}
 
-        amountFeiOut = getMintAmountOut(amountIn);
+    /// @notice do nothing as prices will not be validated
+    function _validatePriceRange(Decimal.D256 memory price) internal view override {}
 
-        _mintFei(msg.sender, amountFeiOut);
-
-        emit Mint(to, amountIn);        
+    /// @notice override transfer of PSM class
+    function _transfer(address to, uint256 amount) internal override {
+        Address.sendValue(payable(to), amount);
     }
 
     /// @notice withdraw assets from ETH PSM to an external address
@@ -62,29 +56,8 @@ contract EthPegStabilityModule is PegStabilityModule {
         emit WithdrawETH(msg.sender, to, amount);
     }
 
-    /// @notice no-op as the eth PSM is not allowed to have an automatic pause due to oracle price
-    function oracleErrorPause() external override whenNotPaused {
-        revert("no-op");
-    }
-
-    /// @notice TODO figure out how and if this contract should handle deposits
-    function deposit() external override {
-        revert("no-op");
-    }
-
-    /// @notice returns eth balance of this contract
-    function tokenBalance() public override view returns (uint256) {
-        return address(this).balance;
-    }
-
     /// @notice function from PCVDeposit that must be overriden
     function balance() public view override returns(uint256) {
-        return tokenBalance();
-    }
-
-    /// @notice send any excess reserves to the balancer investment pool
-    function allocateSurplus() external override  whenNotPaused {
-        require(reservesSurplus() > 0, "EthPegStabilityModule: No surplus to allocate");
-        /// @TODO figure out what to do here
+        return address(this).balance;
     }
 }

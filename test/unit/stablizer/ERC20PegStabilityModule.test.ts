@@ -2,7 +2,7 @@ import hre, { ethers } from 'hardhat';
 import { expectRevert, getAddresses, getCore, deployDevelopmentWeth } from '../../helpers';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
-import { Core, MockERC20, Fei, MockOracle, ERC20PegStabilityModule } from '@custom-types/contracts';
+import { Core, MockERC20, Fei, MockOracle, ERC20PegStabilityModule, MockPCVDepositV2 } from '@custom-types/contracts';
 
 const toBN = ethers.BigNumber.from;
 
@@ -26,6 +26,7 @@ describe('ERC20PegStabilityModule', function () {
   let fei: Fei;
   let oracle: MockOracle;
   let psm: ERC20PegStabilityModule;
+  let pcvDeposit: MockPCVDepositV2;
 
   before(async () => {
     const addresses = await getAddresses();
@@ -69,11 +70,13 @@ describe('ERC20PegStabilityModule', function () {
     fei = await ethers.getContractAt('Fei', await core.fei());
     oracle = await (await ethers.getContractFactory('MockOracle')).deploy(1);
     asset = await (await ethers.getContractFactory('MockERC20')).deploy();
+    pcvDeposit = await (await ethers.getContractFactory('MockPCVDepositV2')).deploy(core.address, asset.address, 0, 0);
 
     psm = await (
       await ethers.getContractFactory('ERC20PegStabilityModule')
     ).deploy(
       core.address,
+      oracle.address,
       oracle.address,
       mintFeeBasisPoints,
       redeemFeeBasisPoints,
@@ -83,7 +86,7 @@ describe('ERC20PegStabilityModule', function () {
       decimalsNormalizer,
       false,
       asset.address,
-      fei.address
+      pcvDeposit.address
     );
 
     await core.grantMinter(psm.address);
@@ -191,22 +194,6 @@ describe('ERC20PegStabilityModule', function () {
         );
       });
 
-      it('fails to oracle pause when price is within band', async function () {
-        await oracle.setExchangeRate(1);
-        await expectRevert(psm.oracleErrorPause(), 'PegStabilityModule: price not out of bounds');
-      });
-
-      it('can perform oracle pause, mint fails when contract is paused', async function () {
-        await oracle.setExchangeRate(ethers.constants.WeiPerEther);
-        await psm.oracleErrorPause();
-        expect(await psm.paused()).to.be.true;
-
-        await expectRevert(
-          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount),
-          'Pausable: paused'
-        );
-      });
-
       it('mint fails when contract is paused', async function () {
         await psm.connect(impersonatedSigners[governorAddress]).pause();
         expect(await psm.paused()).to.be.true;
@@ -227,7 +214,7 @@ describe('ERC20PegStabilityModule', function () {
 
       it('redeem fails when contract is paused', async function () {
         await oracle.setExchangeRate(ethers.constants.WeiPerEther);
-        await psm.oracleErrorPause();
+        await psm.connect(impersonatedSigners[governorAddress]).pause();
         expect(await psm.paused()).to.be.true;
 
         await expectRevert(
@@ -287,6 +274,64 @@ describe('ERC20PegStabilityModule', function () {
         expect(await psm.buffer()).to.be.equal(bufferCap);
       });
 
+      it('redeem succeeds when user has enough funds and DAI is $1.019 with .1 FEI', async function () {
+        const pointOneFei = ethers.constants.WeiPerEther.div(10);
+        await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.mul(1019).div(1000));
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, pointOneFei);
+        await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, pointOneFei);
+
+        const startingUserFeiBalance = await fei.balanceOf(userAddress);
+        const startingUserAssetBalance = await asset.balanceOf(userAddress);
+
+        const expectedAssetAmount = pointOneFei
+          .mul(bpGranularity - redeemFeeBasisPoints)
+          .div(bpGranularity)
+          .mul(ethers.constants.WeiPerEther)
+          .div(ethers.constants.WeiPerEther.mul(1019).div(1000));
+        const actualAssetAmount = await psm.getRedeemAmountOut(pointOneFei);
+
+        expect(expectedAssetAmount).to.be.equal(actualAssetAmount);
+
+        await psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, pointOneFei);
+
+        const endingUserFeiBalance = await fei.balanceOf(userAddress);
+        const endingUserAssetBalance = await asset.balanceOf(userAddress);
+
+        expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(pointOneFei));
+        expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
+        expect(await fei.balanceOf(psm.address)).to.be.equal(0);
+        expect(await psm.buffer()).to.be.equal(bufferCap);
+      });
+
+      it('redeem succeeds when user has enough funds and DAI is $1.019 with .01 FEI', async function () {
+        const pointOneFei = ethers.constants.WeiPerEther.div(100);
+        await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.mul(1019).div(1000));
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, pointOneFei);
+        await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, pointOneFei);
+
+        const startingUserFeiBalance = await fei.balanceOf(userAddress);
+        const startingUserAssetBalance = await asset.balanceOf(userAddress);
+
+        const expectedAssetAmount = pointOneFei
+          .mul(bpGranularity - redeemFeeBasisPoints)
+          .div(bpGranularity)
+          .mul(ethers.constants.WeiPerEther)
+          .div(ethers.constants.WeiPerEther.mul(1019).div(1000));
+        const actualAssetAmount = await psm.getRedeemAmountOut(pointOneFei);
+
+        expect(expectedAssetAmount).to.be.equal(actualAssetAmount);
+
+        await psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, pointOneFei);
+
+        const endingUserFeiBalance = await fei.balanceOf(userAddress);
+        const endingUserAssetBalance = await asset.balanceOf(userAddress);
+
+        expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(pointOneFei));
+        expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
+        expect(await fei.balanceOf(psm.address)).to.be.equal(0);
+        expect(await psm.buffer()).to.be.equal(bufferCap);
+      });
+
       it('redeem succeeds when user has enough funds and DAI is $0.9801', async function () {
         await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.mul(9801).div(10000));
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, mintAmount);
@@ -319,7 +364,8 @@ describe('ERC20PegStabilityModule', function () {
 
       it('redeem fails when oracle price is $2', async function () {
         await oracle.setExchangeRate(2);
-
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, mintAmount);
+        await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmount);
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount),
           'PegStabilityModule: price out of bounds'
@@ -375,6 +421,38 @@ describe('ERC20PegStabilityModule', function () {
       });
     });
 
+    describe('setOracleFloor', function () {
+      it('fails when caller is not governor or admin', async function () {
+        await expectRevert(
+          psm.setOracleFloor(reservesThreshold.mul(1000)),
+          'CoreRef: Caller is not a governor or contract admin'
+        );
+      });
+
+      it('succeeds when caller is governor', async function () {
+        const newOracleFloor = 9_900;
+        await psm.connect(impersonatedSigners[governorAddress]).setOracleFloor(newOracleFloor);
+        const expectedNewFloor = ethers.constants.WeiPerEther.mul(99).div(100);
+        expect(await psm.floor()).to.be.equal(expectedNewFloor);
+      });
+    });
+
+    describe('setOracleCeiling', function () {
+      it('fails when caller is not governor or admin', async function () {
+        await expectRevert(
+          psm.setOracleCeiling(reservesThreshold.mul(1000)),
+          'CoreRef: Caller is not a governor or contract admin'
+        );
+      });
+
+      it('succeeds when caller is governor', async function () {
+        const newOraclePriceCeiling = 10_100;
+        await psm.connect(impersonatedSigners[governorAddress]).setOracleCeiling(newOraclePriceCeiling);
+        const expectedNewCeiling = ethers.constants.WeiPerEther.mul(101).div(100);
+        expect(await psm.ceiling()).to.be.equal(expectedNewCeiling);
+      });
+    });
+
     describe('withdraw', function () {
       it('fails when caller is not PCVController', async function () {
         await expectRevert(psm.withdraw(userAddress, 100), 'CoreRef: Caller is not a PCV controller');
@@ -390,11 +468,33 @@ describe('ERC20PegStabilityModule', function () {
         expect(await asset.balanceOf(userAddress)).to.be.equal(amount);
       });
     });
+  });
 
-    describe('deposit', function () {
-      it('fails when called', async function () {
-        await expectRevert(psm.deposit(), 'no-op');
-      });
+  describe('allocateSurplus', function () {
+    it('sends surplus to PCVDeposit target when called', async function () {
+      const startingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
+      await asset.mint(psm.address, reservesThreshold.mul(2));
+      expect(await psm.meetsReservesThreshold()).to.be.true;
+      await psm.allocateSurplus();
+      const endingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
+
+      expect(endingSurplusBalance.sub(startingSurplusBalance)).to.be.equal(reservesThreshold);
+    });
+  });
+
+  describe('deposit', function () {
+    it('sends surplus to PCVDeposit target when called', async function () {
+      const startingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
+      await asset.mint(psm.address, reservesThreshold.mul(2));
+      expect(await psm.meetsReservesThreshold()).to.be.true;
+      await psm.deposit();
+      const endingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
+
+      expect(endingSurplusBalance.sub(startingSurplusBalance)).to.be.equal(reservesThreshold);
+    });
+
+    it('succeeds when called', async function () {
+      await psm.deposit();
     });
   });
 });

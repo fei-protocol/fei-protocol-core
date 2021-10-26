@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimitedMinter, OracleRef, ReentrancyGuard, PCVDeposit {
     using Decimal for Decimal.D256;
-    using SafeCast for uint256;
+    using SafeCast for *;
     using SafeERC20 for IERC20;
 
     /// @notice the fee in basis points for selling asset into FEI
@@ -32,33 +32,10 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     /// This token will be set to address 0 if the bonding curve accepts eth
     IERC20 public override token;
 
-    /// @notice FEI contract
-    IFei public FEI;
-
-
-    // ----------- Events -----------
-
-    /// @notice event emitted when a new mint fee is set
-    event MintFeeChanged(uint256 oldMintFee, uint256 newMintFee);
-
-    /// @notice event emitted when a new redeem fee is set
-    event RedeemFeeChanged(uint256 oldRedeemFee, uint256 newRedeemFee);
-
-    /// @notice event emitted when reservesThreshold is updated
-    event ReservesThresholdChanged(uint256 oldReservesThreshold, uint256 newReservesThreshold);
-
-    /// @notice event emitted when target is updated
-    event TargetChanged(IPCVDeposit oldTarget, IPCVDeposit newTarget);
-
-    /// @notice event emitted upon a redemption
-    event Redeem(address to, uint256 amountFeiIn);
-
-    /// @notice event emitted when fei gets minted
-    event Mint(address to, uint256 amountIn);
-
     /// @notice constructor
     /// @param _coreAddress Fei core to reference
     /// @param _oracleAddress Price oracle to reference
+    /// @param _backupOracle Price oracle to reference
     /// @param _mintFeeBasisPoints fee in basis points to buy Fei
     /// @param _redeemFeeBasisPoints fee in basis points to sell Fei
     /// @param _reservesThreshold amount of tokens to hold in this contract
@@ -67,10 +44,11 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     /// @param _decimalsNormalizer normalize decimals in oracle if tokens have different decimals
     /// @param _doInvert invert oracle price if true
     /// @param _token token to buy and sell against Fei
-    /// @param _FEI Fei token to reference
+    /// @param _target Fei token to reference
     constructor(
         address _coreAddress,
         address _oracleAddress,
+        address _backupOracle,
         uint256 _mintFeeBasisPoints,
         uint256 _redeemFeeBasisPoints,
         uint256 _reservesThreshold,
@@ -79,20 +57,23 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
         int256 _decimalsNormalizer,
         bool _doInvert,
         IERC20 _token,
-        IFei _FEI
+        IPCVDeposit _target
     )
-        OracleRef(_coreAddress, _oracleAddress, address(0), _decimalsNormalizer, _doInvert)
+        OracleRef(_coreAddress, _oracleAddress, _backupOracle, _decimalsNormalizer, _doInvert)
         /// rate limited minter passes false as the last param as there can be no partial mints
         RateLimitedMinter(_feiLimitPerSecond, _mintingBufferCap, false)
     {
-        require(address(_FEI) != address(0), "PegStabilityModule: Invalid FEI contract");
-
         token = _token;
-        FEI = _FEI;
+
         _setReservesThreshold(_reservesThreshold);
         _setMintFee(_mintFeeBasisPoints);
         _setRedeemFee(_redeemFeeBasisPoints);
-        // _setTarget(_target);
+        _setTarget(_target);
+    }
+
+    /// @notice withdraw assets from PSM to an external address
+    function withdraw(address to, uint256 amount) external override virtual onlyPCVController {
+        _withdrawERC20(address(token), to, amount);
     }
 
     /// @notice set the mint fee vs oracle price in basis point terms
@@ -121,7 +102,7 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
         uint256 _oldMintFee = mintFeeBasisPoints;
         mintFeeBasisPoints = newMintFeeBasisPoints;
 
-        emit MintFeeChanged(_oldMintFee, newMintFeeBasisPoints);
+        emit MintFeeUpdate(_oldMintFee, newMintFeeBasisPoints);
     }
 
     /// @notice internal helper function to set the redemption fee
@@ -130,7 +111,7 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
         uint256 _oldRedeemFee = redeemFeeBasisPoints;
         redeemFeeBasisPoints = newRedeemFeeBasisPoints;
 
-        emit RedeemFeeChanged(_oldRedeemFee, newRedeemFeeBasisPoints);
+        emit RedeemFeeUpdate(_oldRedeemFee, newRedeemFeeBasisPoints);
     }
 
     /// @notice helper function to set reserves threshold
@@ -139,76 +120,96 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
         uint256 oldReservesThreshold = reservesThreshold;
         reservesThreshold = newReservesThreshold;
 
-        emit ReservesThresholdChanged(oldReservesThreshold, newReservesThreshold);
+        emit ReservesThresholdUpdate(oldReservesThreshold, newReservesThreshold);
     }
 
     /// @notice helper function to set the target
     function _setTarget(IPCVDeposit newTarget) internal {
         require(address(newTarget) != address(0), "PegStabilityModule: Invalid new target");
         IPCVDeposit oldTarget = target;
+        target = newTarget;
 
-        emit TargetChanged(oldTarget, newTarget);
+        emit TargetUpdate(oldTarget, newTarget);
+    }
+
+    // Allocates a portion of escrowed PCV to a target PCV deposit
+    function _allocateSingle(uint256 amount)
+        internal
+        virtual
+    {
+        _transfer(address(target), amount);
+        target.deposit();
+    }
+
+    function allocateSurplus() external override {
+        uint256 currentSurplus = reservesSurplus().toUint256();
+        require(currentSurplus > 0, "PegStabilityModule: No surplus to allocate");
+
+        _allocateSingle(currentSurplus);
+    }
+
+    /// @notice function to receive ERC20 tokens from external contracts
+    function deposit() external override {
+        int256 currentSurplus = reservesSurplus();
+        if (reservesSurplus() > 0 ) {
+            _allocateSingle(currentSurplus.toUint256());
+        }
     }
 
     /// @notice function to redeem FEI for an underlying asset
     function redeem(address to, uint256 amountFeiIn) external virtual override nonReentrant whenNotPaused returns (uint256 amountOut) {
-        updateOracle();
-        Decimal.D256 memory price;
+        amountOut = _sellFei(to, amountFeiIn);
 
-        (amountOut, price) = _getRedeemAmountOutAndPrice(amountFeiIn);
-        require(_validPrice(price), "PegStabilityModule: price out of bounds");
-        FEI.transferFrom(msg.sender, address(this), amountFeiIn);
-        FEI.burn(amountFeiIn);
-
-        token.safeTransfer(to, amountOut);
-
-        emit Redeem(to, amountFeiIn);
+        _transfer(to, amountOut);
     }
 
     /// @notice function to buy FEI for an underlying asset
     function mint(address to, uint256 amountIn) external virtual override payable nonReentrant whenNotPaused returns (uint256 amountFeiOut) {
-        require(msg.value == 0, "PegStabilityModule: cannot send eth to mint");
+        _checkMsgValue(amountIn);
 
+        _transferFrom(msg.sender, address(this), amountIn);
+
+        amountFeiOut = _purchaseFei(to, amountIn);
+    }
+
+    /// @notice helper function to sell FEI to the PSM
+    function _sellFei(address to, uint256 amountFeiIn) internal returns (uint256 amountOut) {
         updateOracle();
+
         Decimal.D256 memory price;
+        (amountOut, price) = _getRedeemAmountOutAndPrice(amountFeiIn);
 
+        _validatePriceRange(price);
+        fei().transferFrom(msg.sender, address(this), amountFeiIn);
+        _burnFeiHeld();
+
+        emit Redeem(to, amountFeiIn);
+    }
+
+    /// @notice helper function to purchase FEI from the PSM
+    function _purchaseFei(address to, uint256 amountIn) internal returns (uint256 amountFeiOut) {
+        updateOracle();
+
+        Decimal.D256 memory price;
         (amountFeiOut, price) = _getMintAmountOutAndPrice(amountIn);
-        require(_validPrice(price), "PegStabilityModule: price out of bounds");
 
-        token.safeTransferFrom(msg.sender, address(this), amountIn);
-
-        _mintFei(msg.sender, amountFeiOut);
+        _validatePriceRange(price);
+        _mintFei(to, amountFeiOut);
 
         emit Mint(to, amountIn);
     }
 
-    /// @notice function to pause the PSM. Only accessible in the ERC20PSM
-    /// should be called whenever the DAI price is above $1.02 or below $0.98 as this will pause the contract
-    /// then a guardian or governor will have to unpause the contract
-    function oracleErrorPause() external virtual whenNotPaused {
-        updateOracle();
-        Decimal.D256 memory price = readOracle();
-
-        require(!_validPrice(price), "PegStabilityModule: price not out of bounds");
-
-        _pause();
-    }
-
-    /// @notice helper function to determine if price is within a valid range
-    /// function is private so that classes that inherit cannot use
-    function _validPrice(Decimal.D256 memory price) private pure returns(bool valid) {
-        Decimal.D256 memory floorPrice = Decimal.D256({ value: 0.98 ether });
-        Decimal.D256 memory ceilingPrice = Decimal.D256({ value: 1.02 ether });
-
-        valid = price.greaterThan(floorPrice) && price.lessThan(ceilingPrice);
-        return valid;
-    }
+    /// @notice overriden functions in respective ERC20 and ETH PSM classes
+    function _checkMsgValue(uint256) internal virtual;
+    function _transfer(address to, uint256 amount) internal virtual;
+    function _transferFrom(address from, address to, uint256 amount) internal virtual;
+    function _validatePriceRange(Decimal.D256 memory price) internal virtual;
 
     function _getMintAmountOutAndPrice(uint256 amountIn) private view returns (uint256 amountFeiOut, Decimal.D256 memory price) {
         price = readOracle();
-        Decimal.D256 memory feiValueOfAmountIn = price.mul(amountIn);
+        Decimal.D256 memory adjustedAmountIn = price.mul(amountIn);
 
-        amountFeiOut = feiValueOfAmountIn
+        amountFeiOut = adjustedAmountIn
             .mul(Constants.BASIS_POINTS_GRANULARITY - mintFeeBasisPoints)
             .div(Constants.BASIS_POINTS_GRANULARITY)
             .asUint256();
@@ -232,7 +233,6 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
 
         /// now turn the dollars into the underlying token amounts
         /// dollars / price = how much token to pay out
-        /// we cannot set doInvert so we must perform this operation manually
         amountTokenOut = adjustedAmountIn.div(price).asUint256();
     }
 
@@ -246,27 +246,22 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
 
     /// @notice mint amount of FEI to the specified user on a rate limit
     function _mintFei(address to, uint256 amount) internal override(CoreRef, RateLimitedMinter) {
-        RateLimitedMinter._mintFei(to, amount);
+        super._mintFei(to, amount);
     }
 
     /// @notice a flag for whether the current balance is above (true) or below (false) the reservesThreshold
     function meetsReservesThreshold() external override view returns (bool) {
-        return tokenBalance() >= reservesThreshold;
+        return balance() >= reservesThreshold;
     }
 
     /// @notice an integer representing the positive surplus or negative deficit of contract balance vs reservesThreshold
     function reservesSurplus() public override view returns (int256) {
-        return tokenBalance().toInt256() - reservesThreshold.toInt256();
-    }
-
-    /// @notice get the balance of underlying tokens this contract holds
-    function tokenBalance() public virtual override view returns (uint256) {
-        return token.balanceOf(address(this));
+        return balance().toInt256() - reservesThreshold.toInt256();
     }
 
     /// @notice function from PCVDeposit that must be overriden
     function balance() public view override virtual returns(uint256) {
-        return tokenBalance();
+        return token.balanceOf(address(this));
     }
 
     /// @notice returns address of token this contracts balance is reported in

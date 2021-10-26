@@ -90,6 +90,23 @@ interface IPegStabilityModule {
     /// @notice the PCV deposit target to send surplus reserves
     function target() external view returns (IPCVDeposit);
 
-    /// @notice the balance of the reserve asset
-    function tokenBalance() external view returns (uint256);
+    // ----------- Events -----------
+
+    /// @notice event emitted when a new mint fee is set
+    event MintFeeUpdate(uint256 oldMintFee, uint256 newMintFee);
+
+    /// @notice event emitted when a new redeem fee is set
+    event RedeemFeeUpdate(uint256 oldRedeemFee, uint256 newRedeemFee);
+
+    /// @notice event emitted when reservesThreshold is updated
+    event ReservesThresholdUpdate(uint256 oldReservesThreshold, uint256 newReservesThreshold);
+
+    /// @notice event emitted when target is updated
+    event TargetUpdate(IPCVDeposit oldTarget, IPCVDeposit newTarget);
+
+    /// @notice event emitted upon a redemption
+    event Redeem(address to, uint256 amountFeiIn);
+
+    /// @notice event emitted when fei gets minted
+    event Mint(address to, uint256 amountIn);
 }
