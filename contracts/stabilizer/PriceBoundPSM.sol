@@ -4,7 +4,7 @@ import "./PegStabilityModule.sol";
 import "../Constants.sol";
 
 /// @notice contract to create a DAI PSM
-contract ERC20PegStabilityModule is PegStabilityModule {
+contract PriceBoundPSM is PegStabilityModule {
     using Decimal for Decimal.D256;
     using SafeERC20 for IERC20;
     using SafeCast for *;
@@ -42,8 +42,11 @@ contract ERC20PegStabilityModule is PegStabilityModule {
         _token,
         _target
     ) {
-        floor = Decimal.ratio(9800, Constants.BASIS_POINTS_GRANULARITY);
-        ceiling = Decimal.ratio(10200, Constants.BASIS_POINTS_GRANULARITY);
+        {
+            uint256 bpDelta = 200;
+            floor = Decimal.ratio(Constants.BASIS_POINTS_GRANULARITY - bpDelta, Constants.BASIS_POINTS_GRANULARITY);
+            ceiling = Decimal.ratio(Constants.BASIS_POINTS_GRANULARITY + bpDelta, Constants.BASIS_POINTS_GRANULARITY);
+        }
     }
 
     function setOracleFloor(uint256 newFloor) external onlyGovernorOrAdmin {
@@ -61,21 +64,6 @@ contract ERC20PegStabilityModule is PegStabilityModule {
     function _setFloor(uint256 newFloor) internal {
         require(newFloor > 0, "PegStabilityModule: invalid floor");
         floor = Decimal.ratio(newFloor, Constants.BASIS_POINTS_GRANULARITY);
-    }
-
-    /// @notice msg.value should always be 0 as this class only accepts ERC20 tokens as payment
-    function _checkMsgValue(uint256) internal override {
-        require(msg.value == 0, "PegStabilityModule: cannot send eth to mint");
-    }
-
-    /// @notice ERC20 PSM so all transfers require sending tokens
-    function _transfer(address to, uint256 amount) internal override {
-        SafeERC20.safeTransfer(token, to, amount);
-    }
-
-    /// @notice ERC20PSM override the hook and pull tokens to this contract
-    function _transferFrom(address from, address to, uint256 amount) internal override {
-        SafeERC20.safeTransferFrom(IERC20(token), from, to, amount);
     }
 
     /// @notice helper function to determine if price is within a valid range

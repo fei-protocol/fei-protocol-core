@@ -2,11 +2,11 @@ import hre, { ethers } from 'hardhat';
 import { expectRevert, getAddresses, getCore, deployDevelopmentWeth } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
-import { Core, MockERC20, Fei, MockOracle, ERC20PegStabilityModule, MockPCVDepositV2 } from '@custom-types/contracts';
+import { Core, MockERC20, Fei, MockOracle, PriceBoundPSM, MockPCVDepositV2 } from '@custom-types/contracts';
 
 const toBN = ethers.BigNumber.from;
 
-describe('ERC20PegStabilityModule', function () {
+describe('PriceBoundPegStabilityModule', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
@@ -25,7 +25,7 @@ describe('ERC20PegStabilityModule', function () {
   let asset: MockERC20;
   let fei: Fei;
   let oracle: MockOracle;
-  let psm: ERC20PegStabilityModule;
+  let psm: PriceBoundPSM;
   let pcvDeposit: MockPCVDepositV2;
 
   before(async () => {
@@ -73,7 +73,7 @@ describe('ERC20PegStabilityModule', function () {
     pcvDeposit = await (await ethers.getContractFactory('MockPCVDepositV2')).deploy(core.address, asset.address, 0, 0);
 
     psm = await (
-      await ethers.getContractFactory('ERC20PegStabilityModule')
+      await ethers.getContractFactory('PriceBoundPSM')
     ).deploy(
       core.address,
       oracle.address,
@@ -176,15 +176,6 @@ describe('ERC20PegStabilityModule', function () {
         expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(expectedMintAmountOut);
         expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(mintAmt);
         expect(await psm.buffer()).to.be.equal(bufferCap.sub(mintAmountOut));
-      });
-
-      it('fails when eth is sent to ERC20 PSM', async function () {
-        await expectRevert(
-          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, {
-            value: mintAmount
-          }),
-          'PegStabilityModule: cannot send eth to mint'
-        );
       });
 
       it('fails when token is not approved to be spent by the PSM', async function () {

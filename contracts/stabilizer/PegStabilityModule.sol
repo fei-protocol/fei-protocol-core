@@ -168,10 +168,9 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     }
 
     /// @notice function to buy FEI for an underlying asset
-    function mint(address to, uint256 amountIn) external virtual override payable nonReentrant whenNotPaused returns (uint256 amountFeiOut) {
+    function mint(address to, uint256 amountIn) external virtual override nonReentrant whenNotPaused returns (uint256 amountFeiOut) {
         updateOracle();
 
-        _checkMsgValue(amountIn);
         _transferFrom(msg.sender, address(this), amountIn);
 
         amountFeiOut = _getMintAmountOutAndPrice(amountIn);
@@ -181,11 +180,16 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
         emit Mint(to, amountIn);
     }
 
-    /// @notice overriden functions in respective ERC20 and ETH PSM classes
-    function _checkMsgValue(uint256) internal virtual;
-    function _transfer(address to, uint256 amount) internal virtual;
-    function _transferFrom(address from, address to, uint256 amount) internal virtual;
-    function _validatePriceRange(Decimal.D256 memory price) internal view virtual;
+    function _transfer(address to, uint256 amount) internal {
+        SafeERC20.safeTransfer(token, to, amount);
+    }
+
+    function _transferFrom(address from, address to, uint256 amount) internal {
+        SafeERC20.safeTransferFrom(token, from, to, amount);
+    }
+
+    /// @notice overriden function in the bounded PSM
+    function _validatePriceRange(Decimal.D256 memory price) internal view virtual {}
 
     function _getMintAmountOutAndPrice(uint256 amountIn) private view returns (uint256 amountFeiOut) {
         Decimal.D256 memory price = readOracle();
