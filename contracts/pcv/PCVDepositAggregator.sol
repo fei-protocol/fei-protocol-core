@@ -27,7 +27,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
     uint256 public bufferWeight;
     uint256 public totalWeight; 
 
-    address public immutable token;
+    address public immutable override token;
     address public override rewardsAssetManager;
 
     constructor(
@@ -160,11 +160,12 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
 
     function setBufferWeight(uint256 newBufferWeight) external override onlyGovernorOrAdmin {
         int256 difference = newBufferWeight.toInt256() - bufferWeight.toInt256();
+        uint256 oldBufferWeight = bufferWeight;
         bufferWeight = newBufferWeight;
 
         totalWeight = (totalWeight.toInt256() + difference).toUint256();
 
-        emit BufferWeightChanged(newBufferWeight);
+        emit BufferWeightUpdate(oldBufferWeight, newBufferWeight);
     }
 
     function setPCVDepositWeight(address depositAddress, uint256 newDepositWeight) external override onlyGovernorOrAdmin {
@@ -176,7 +177,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
 
         totalWeight = (totalWeight.toInt256() + difference).toUint256();
 
-        emit DepositWeightChanged(depositAddress, oldDepositWeight, newDepositWeight);
+        emit DepositWeightUpdate(depositAddress, oldDepositWeight, newDepositWeight);
     }
 
     function removePCVDeposit(address pcvDeposit) external override onlyGovernorOrAdmin {
@@ -192,12 +193,11 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
 
         // Add each pcvDeposit to the new aggregator
         for (uint256 i=0; i < pcvDepositAddresses.length(); i++) {
-            if (IPCVDepositAggregator(newAggregator).hasPCVDeposit(pcvDepositAddresses.at(i))) continue;
-
             address pcvDepositAddress = pcvDepositAddresses.at(i);
-            uint256 pcvDepositWeight = pcvDepositWeights[pcvDepositAddress];
-
-            IPCVDepositAggregator(newAggregator).addPCVDeposit(pcvDepositAddress, pcvDepositWeight);
+            if (!(IPCVDepositAggregator(newAggregator).hasPCVDeposit(pcvDepositAddress))) {
+                uint256 pcvDepositWeight = pcvDepositWeights[pcvDepositAddress];
+                IPCVDepositAggregator(newAggregator).addPCVDeposit(pcvDepositAddress, pcvDepositWeight);
+            }
         }
 
         // Send old aggregator assets over to the new aggregator
@@ -211,7 +211,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
         // Finally, set the new aggregator on the rewards asset manager itself
         IRewardsAssetManager(rewardsAssetManager).setNewAggregator(newAggregator);
 
-        emit NewAggregatorSet(newAggregator);
+        emit AggregatorUpdate(address(this), newAggregator);
     }
 
     // ---------- View Functions ---------------

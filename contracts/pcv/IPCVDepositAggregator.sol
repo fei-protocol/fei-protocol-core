@@ -14,6 +14,7 @@ import "../external/Decimal.sol";
 
 interface IPCVDepositAggregator {
     // ----------- Events -----------
+    
     event DepositAdded(
         address indexed depositAddress, 
         uint256 weight
@@ -24,7 +25,7 @@ interface IPCVDepositAggregator {
     );
 
     event Rebalanced(
-        uint256 indexed totalAssets
+        uint256 totalAssets
     );
 
     event RebalancedSingle(
@@ -35,33 +36,32 @@ interface IPCVDepositAggregator {
         address indexed pcvDeposit, 
         uint256 amountNeeded, 
         uint256 aggregatorBalance
-        );
-
-    event NoRebalanceNeeded(
-        address indexed pcvDeposit
-        );
+    );
 
     event AggregatorWithdrawal(
-        uint256 indexed amount
+        uint256 amount
     );
 
     event AggregatorDeposit();
 
-    event NewAggregatorSet(
+    event AggregatorUpdate(
+        address indexed oldAggregator,
         address indexed newAggregator
     );
 
-    event BufferWeightChanged(
-        uint256 indexed bufferWeight
+    event BufferWeightUpdate(
+        uint256 oldWeight,
+        uint256 newWeight
     );
 
-    event DepositWeightChanged(
+    event DepositWeightUpdate(
         address indexed depositAddress, 
-        uint256 indexed oldWeight, 
-        uint256 indexed newWeight
+        uint256 oldWeight, 
+        uint256 newWeight
     );
 
     // ----------- State changing api -----------
+
     /// @notice rebalance funds of the underlying deposits to the optimal target percents
     function rebalance() external;
 
@@ -69,6 +69,7 @@ interface IPCVDepositAggregator {
     function rebalanceSingle(address pcvDeposit) external;
 
     // ----------- Governor only state changing api -----------
+
     /// @notice adds a new PCV Deposit to the set of deposits
     /// @param weight a relative (i.e. not normalized) weight of this PCV deposit
     function addPCVDeposit(address newPCVDeposit, uint256 weight) external;
@@ -87,6 +88,10 @@ interface IPCVDepositAggregator {
     function setBufferWeight(uint256 weight) external;
 
     // ----------- Read-only api -----------
+
+    /// @notice the token that the aggregator is managing
+    function token() external returns(address);
+
     /// @notice the upstream rewardsAssetManager funding this contract
     function rewardsAssetManager() external returns(address);
 
