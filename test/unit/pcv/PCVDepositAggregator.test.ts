@@ -285,7 +285,7 @@ describe.only('PCV Deposit Aggregator', function () {
     });
 
     it('successfully rebalances when some pcv deposits have an overage of tokens and some do not', async () => {
-      // Mint 4000, 4000, and 4000 tokens to each pcv deposit, respectively
+      // Mint 6000, 3000, and 1000 tokens to each pcv deposit, respectively
       await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
       await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
       await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));
@@ -313,7 +313,7 @@ describe.only('PCV Deposit Aggregator', function () {
     });
 
     it('rebalances a single deposit', async () => {
-      // Mint 4000, 4000, and 4000 tokens to each pcv deposit, respectively
+      // Mint 6000, 3000, and 1000 tokens to each pcv deposit, respectively
       await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
       await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
       await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));
@@ -357,7 +357,7 @@ describe.only('PCV Deposit Aggregator', function () {
     });
 
     it('reports accurate targetPercentHeld', async () => {
-      // Mint 4000, 4000, and 4000 tokens to each pcv deposit, respectively
+      // Mint 6000, 3000, and 1000 tokens to each pcv deposit, respectively
       await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
       await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
       await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));
@@ -380,7 +380,7 @@ describe.only('PCV Deposit Aggregator', function () {
     });
 
     it('reports accurate amountFromTarget', async () => {
-      // Mint 4000, 4000, and 4000 tokens to each pcv deposit, respectively
+      // Mint 6000, 3000, and 1000 tokens to each pcv deposit, respectively
       await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
       await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
       await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));
@@ -390,7 +390,7 @@ describe.only('PCV Deposit Aggregator', function () {
       await pcvDeposit2.deposit();
       await pcvDeposit3.deposit();
 
-      // Amount from target should be -4000, 0, 3000, respectively
+      // Amount from target should be 4000, 0, -3000, respectively
       expect(await pcvDepositAggregator.amountFromTarget(pcvDeposit1.address)).to.equal(
         ethers.utils.parseEther('4000')
       );
@@ -401,7 +401,7 @@ describe.only('PCV Deposit Aggregator', function () {
     });
 
     it('reports accurate percentHeld', async () => {
-      // Mint 4000, 4000, and 4000 tokens to each pcv deposit, respectively
+      // Mint 6000, 3000, and 1000 tokens to each pcv deposit, respectively
       await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
       await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
       await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));
@@ -422,7 +422,7 @@ describe.only('PCV Deposit Aggregator', function () {
     });
 
     it('reports accurate resistanceBalanceAndFei & balanceReportedIn', async () => {
-      // Mint 4000, 4000, and 4000 tokens to each pcv deposit, respectively
+      // Mint 6000, 3000, and 1000 tokens to each pcv deposit, respectively
       await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
       await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
       await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));
@@ -468,7 +468,7 @@ describe.only('PCV Deposit Aggregator', function () {
     });
 
     it('withdraws when the buffer is not enough to cover the balasnce', async () => {
-      // Mint 4000, 4000, and 4000 tokens to each pcv deposit, respectively
+      // Mint 6000, 3000, and 1000 tokens to each pcv deposit, respectively
       await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
       await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
       await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));
@@ -485,7 +485,7 @@ describe.only('PCV Deposit Aggregator', function () {
     });
 
     it('withdraws everything', async () => {
-      // Mint 4000, 4000, and 4000 tokens to each pcv deposit, respectively
+      // Mint 6000, 3000, and 1000 tokens to each pcv deposit, respectively
       await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
       await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
       await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));

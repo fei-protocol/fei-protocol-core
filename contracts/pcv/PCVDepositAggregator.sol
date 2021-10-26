@@ -187,6 +187,19 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
         emit DepositWeightUpdate(depositAddress, oldDepositWeight, newDepositWeight);
     }
 
+    /// @notice sets the weight of a pcv deposit to zero
+    /// @param depositAddress the address of the pcv deposit to set the weight of to zero
+    function setPCVDepositWeightZero(address depositAddress) external override onlyGuardianOrGovernor {
+        require(pcvDepositAddresses.contains(depositAddress), "Deposit does not exist.");
+
+        uint256 oldDepositWeight = pcvDepositWeights[depositAddress];
+        pcvDepositWeights[depositAddress] = 0;
+
+        totalWeight = (totalWeight.toInt256() - oldDepositWeight.toInt256()).toUint256();
+
+        emit DepositWeightUpdate(depositAddress, oldDepositWeight, 0);
+    }
+
     /// @notice remove a PCV deposit from the set of deposits
     /// @param pcvDeposit the address of the PCV deposit to remove
     /// @param shouldRebalance whether or not we want to rebalanceSingle on that deposit address before removing but after setting the weight to zero
