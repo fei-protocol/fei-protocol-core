@@ -22,42 +22,27 @@ contract PSMRouter is IPSMRouter {
     }
 
     /// @notice fallback function so that users can just send this contract eth and receive Fei in return
-    /// this function takes an address 
-    fallback(bytes calldata) external payable returns (bytes memory) {
-        address to;
-        assembly {
-            to := calldataload(0)
-        }
+    /// this function takes an address and minAmountOut as params from the calldata
+    fallback(bytes calldata data) external payable returns (bytes memory) {
+        (address to, uint256 minAmountOut) = abi.decode(data, (address, uint256));
 
-        _depositWethAndMint(to);
+        _depositWethAndMint(to, minAmountOut);
     }
 
+    /// front running and back running is not possible so minAmountOut is set to msg.value
+    /// this will work as long as the eth price is above, $1 which is a reasonable assumption
     receive() external payable {
-        _depositWethAndMint(msg.sender);
-    }
-
-    function swapExactETHForFei(address to, uint256 deadline) external override payable ensure(deadline) {
-        _depositWethAndMint(to);
+        _depositWethAndMint(msg.sender, msg.value);
     }
 
     function swapExactETHForExactFei(address to, uint256 amountsOutMin, uint256 deadline) external override payable ensure(deadline) {
         require(psm.getMintAmountOut(msg.value) >= amountsOutMin, "PSMRouter: insufficient output amount");
-        _depositWethAndMint(to);
+        _depositWethAndMint(to, amountsOutMin);
     }
 
-    function swapExactFeiForExactTokens(
-        address to,
-        uint256 amountFeiIn,
-        uint256 amountsOutMin,
-        uint256 deadline
-    ) external override payable ensure(deadline) {
-        require(psm.getRedeemAmountOut(amountFeiIn) >= amountsOutMin, "PSMRouter: insufficient output amount");
-        psm.redeem(to, amountFeiIn);
-    }
-
-    function _depositWethAndMint(address to) internal {
+    function _depositWethAndMint(address to, uint256 minAmountOut) internal {
         Constants.WETH.deposit{value: msg.value}();
-        psm.mint(msg.sender, msg.value);
+        psm.mint(msg.sender, msg.value, minAmountOut);
 
         emit EthDepositedForFei(to, msg.value);
     }

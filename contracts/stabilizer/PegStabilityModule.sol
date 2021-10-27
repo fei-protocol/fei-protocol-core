@@ -169,10 +169,15 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     }
 
     /// @notice function to redeem FEI for an underlying asset
-    function redeem(address to, uint256 amountFeiIn) external virtual override nonReentrant whenNotPaused returns (uint256 amountOut) {
+    function redeem(
+        address to,
+        uint256 amountFeiIn,
+        uint256 minAmountOut
+    ) external virtual override nonReentrant whenNotPaused returns (uint256 amountOut) {
         updateOracle();
 
         amountOut = _getRedeemAmountOutAndPrice(amountFeiIn);
+        require(amountOut >= minAmountOut, "PegStabilityModule: Redeem not enough out");
 
         fei().transferFrom(msg.sender, address(this), amountFeiIn);
         _burnFeiHeld();
@@ -183,12 +188,17 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     }
 
     /// @notice function to buy FEI for an underlying asset
-    function mint(address to, uint256 amountIn) external virtual override nonReentrant whenNotPaused returns (uint256 amountFeiOut) {
+    function mint(
+        address to,
+        uint256 amountIn,
+        uint256 minAmountOut
+    ) external virtual override nonReentrant whenNotPaused returns (uint256 amountFeiOut) {
         updateOracle();
 
-        _transferFrom(msg.sender, address(this), amountIn);
-
         amountFeiOut = _getMintAmountOutAndPrice(amountIn);
+        require(amountFeiOut >= minAmountOut, "PegStabilityModule: Mint not enough out");
+
+        _transferFrom(msg.sender, address(this), amountIn);
 
         _mintFei(to, amountFeiOut);
 

@@ -27,13 +27,13 @@ interface IPegStabilityModule {
 
     /// @notice mint `amountFeiOut` FEI to address `to` for `amountIn` underlying tokens
     /// @dev see getMintAmountOut() to pre-calculate amount out
-    function mint(address to, uint256 amountIn)
+    function mint(address to, uint256 amountIn, uint256 minAmountOut)
         external
         returns (uint256 amountFeiOut);
 
     /// @notice redeem `amountFeiIn` FEI for `amountOut` underlying tokens and send to address `to` 
     /// @dev see getRedeemAmountOut() to pre-calculate amount out
-    function redeem(address to, uint256 amountFeiIn)
+    function redeem(address to, uint256 amountFeiIn, uint256 minAmountOut)
         external
         returns (uint256 amountOut);
 
