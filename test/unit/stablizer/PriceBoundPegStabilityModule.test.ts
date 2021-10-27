@@ -156,6 +156,32 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(await psm.buffer()).to.be.equal(bufferCap.sub(mintAmountOut));
       });
 
+      it('exchanges 1000 DAI for 975 FEI as fee is 250 bips and exchange rate is 1:1', async function () {
+        const oneK = toBN(1000);
+        const newMintFee = 250;
+        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
+
+        const userStartingFeiBalance = await fei.balanceOf(userAddress);
+        const psmStartingAssetBalance = await asset.balanceOf(psm.address);
+        const expectedMintAmountOut = 975;
+
+        await asset.mint(userAddress, oneK);
+        await asset.connect(impersonatedSigners[userAddress]).approve(psm.address, oneK);
+
+        const mintAmountOut = await psm.getMintAmountOut(oneK);
+
+        expect(mintAmountOut).to.be.equal(expectedMintAmountOut);
+
+        await psm.connect(impersonatedSigners[userAddress]).mint(userAddress, oneK, expectedMintAmountOut);
+
+        const userEndingFeiBalance = await fei.balanceOf(userAddress);
+        const psmEndingAssetBalance = await asset.balanceOf(psm.address);
+
+        expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(expectedMintAmountOut);
+        expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(oneK);
+        expect(await psm.buffer()).to.be.equal(bufferCap.sub(mintAmountOut));
+      });
+
       it('exchanges for appropriate amount of tokens when price is 1:1', async function () {
         const mintAmt = toBN(10_000_000);
         const userStartingFeiBalance = await fei.balanceOf(userAddress);
@@ -177,6 +203,23 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(expectedMintAmountOut);
         expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(mintAmt);
         expect(await psm.buffer()).to.be.equal(bufferCap.sub(mintAmountOut));
+      });
+
+      it('should not exchange when expected amount out is greater than actual amount out', async function () {
+        const mintAmt = toBN(10_000_000);
+        const expectedMintAmountOut = mintAmt.mul(bpGranularity - mintFeeBasisPoints).div(bpGranularity);
+
+        await asset.mint(userAddress, mintAmt);
+        await asset.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmt);
+
+        const mintAmountOut = await psm.getMintAmountOut(mintAmt);
+
+        expect(mintAmountOut).to.be.equal(expectedMintAmountOut);
+
+        await expectRevert(
+          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmt, expectedMintAmountOut.add(1)),
+          'PegStabilityModule: Mint not enough out'
+        );
       });
 
       it('fails when token is not approved to be spent by the PSM', async function () {
@@ -458,6 +501,13 @@ describe('PriceBoundPegStabilityModule', function () {
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount, 0),
           'PegStabilityModule: price out of bounds'
+        );
+      });
+
+      it('redeem fails when expected amount out is greater than amout actual amount out', async function () {
+        await expectRevert(
+          psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount, mintAmount),
+          'PegStabilityModule: Redeem not enough out'
         );
       });
 
