@@ -58,6 +58,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
         _setContractAdminRole(keccak256("AGGREGATOR_ADMIN_ROLE"));
 
         for (uint256 i=0; i < _initialPCVDepositAddresses.length; i++) {
+            require(IPCVDeposit(_initialPCVDepositAddresses[i]).balanceReportedIn() == _token, "Deposit token must be the same as for this aggregator.");
             _addPCVDeposit(_initialPCVDepositAddresses[i], _initialPCVDepositWeights[i]);
         }
     }
@@ -212,7 +213,10 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
 
     /// @notice adds a new PCV Deposit to the set of deposits
     /// @param weight a relative (i.e. not normalized) weight of this PCV deposit
+    /// @dev the require check here is not in the internal method because the token var (as an immutable var) cannot be read in the constructor
     function addPCVDeposit(address newPCVDeposit, uint256 weight) external override onlyGovernorOrAdmin {
+        require(IPCVDeposit(newPCVDeposit).balanceReportedIn() == token, "Deposit token must be the same as for this aggregator.");
+
         _addPCVDeposit(newPCVDeposit, weight);
     }
 
