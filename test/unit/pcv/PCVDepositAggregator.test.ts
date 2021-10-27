@@ -22,7 +22,7 @@ chai.config.includeStack = true;
 // Import if needed, just a helper.
 // const toBN = ethers.BigNumber.from;
 
-describe.only('PCV Deposit Aggregator', function () {
+describe('PCV Deposit Aggregator', function () {
   // variable decs for vars that you want to use in multiple tests
   // typeing contracts specifically to what kind they are will catch before you run them!
   let core: Core;
@@ -97,10 +97,19 @@ describe.only('PCV Deposit Aggregator', function () {
     });
 
     it('initial values are correct: balance, paused, buffer weight, token', async () => {
+      expect(await pcvDepositAggregator.balance()).to.equal(0);
       expect(await pcvDepositAggregator.getTotalBalance()).to.equal(0);
       expect(await pcvDepositAggregator.paused()).to.be.false;
       expect(await pcvDepositAggregator.bufferWeight()).to.be.equal(10);
       expect(await pcvDepositAggregator.token()).to.equal(token.address);
+
+      const resistantBalanceAndFei = await pcvDepositAggregator.resistantBalanceAndFei();
+      const totalResistantBalanceAndFei = await pcvDepositAggregator.getTotalResistantBalanceAndFei();
+
+      expect(resistantBalanceAndFei[0]).to.equal(0);
+      expect(resistantBalanceAndFei[1]).to.equal(0);
+      expect(totalResistantBalanceAndFei[0]).to.equal(0);
+      expect(totalResistantBalanceAndFei[1]).to.equal(0);
     });
 
     it('successfully rebalances', async () => {
@@ -143,6 +152,7 @@ describe.only('PCV Deposit Aggregator', function () {
     });
 
     it('initial values are correct: balance, paused, buffer weight, token', async () => {
+      expect(await pcvDepositAggregator.balance()).to.equal(0);
       expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('0'));
       expect(await pcvDepositAggregator.paused()).to.be.false;
       expect(await pcvDepositAggregator.bufferWeight()).to.be.equal(10);
@@ -174,6 +184,22 @@ describe.only('PCV Deposit Aggregator', function () {
 
       expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('1000'));
       expect(await pcvDeposit.balance()).to.equal(ethers.utils.parseEther('900'));
+    });
+
+    it('reports accurate percentHeld', async () => {
+      throw new Error('Not yet implemented.');
+    });
+
+    it('reports accurate targetPercentHeld', async () => {
+      throw new Error('Not yet implemented.');
+    });
+
+    it('reports accurate amountFromTarget', async () => {
+      throw new Error('Not yet implemented.');
+    });
+
+    it('reports accurate resistantBalanceAndFei and balanceReportedIn', async () => {
+      throw new Error('Not yet implemented.');
     });
   });
 
@@ -220,6 +246,7 @@ describe.only('PCV Deposit Aggregator', function () {
     });
 
     it('initial values are correct: balance, paused, buffer weight, token', async () => {
+      expect(await pcvDepositAggregator.balance()).to.equal(0);
       expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('0'));
       expect(await pcvDepositAggregator.paused()).to.be.false;
       expect(await pcvDepositAggregator.bufferWeight()).to.be.equal(10);
@@ -552,6 +579,22 @@ describe.only('PCV Deposit Aggregator', function () {
       expect(await pcvDepositAggregator.getTotalBalance()).to.equal(ethers.utils.parseEther('2000'));
     });
 
+    it('reverts when calling rebalance wshen paused', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    it('reverts when calling rebalanceSingle when paused', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    it('reverts when calling deposit when paused', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    it('reverts when calling withdraw when paused', async () => {
+      throw new Error('Method not yet written.');
+    });
+
     // This test covers the special edge case with the following context:
     // 1. The buffer is not enough to cover the balances
     // 2. There is (at least one) pcv deposit that has a defecit
@@ -636,6 +679,234 @@ describe.only('PCV Deposit Aggregator', function () {
       expect(await pcvDeposit2.balance()).to.equal(ethers.utils.parseEther('0'));
       expect(await pcvDeposit3.balance()).to.equal(ethers.utils.parseEther('0'));
       expect(await pcvDepositAggregator.balance()).to.equal(ethers.utils.parseEther('0'));
+    });
+
+    it('withdraws trace amounts', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    it('deposits trace amounts', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    it('correctly sets deposit weight to zero via setDepositWeightZero()', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    it('correctly sets the buffer weight via setBufferWeight()', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    it('correctly sets pcv deposit weights via setPCVDepositWeight()', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    it('reverts upon attempting to remove a non-existent pcv deposit', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    it('reverts upon trying to add a pcv deposit that already exists', async () => {
+      throw new Error('Methot not yet written.');
+    });
+
+    it('reverts when trying to add a pcv deposit with a non-matching token', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    it('returns correctly values from hasPCVDeposit()', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    it('sets a new assetmanager on a non-asset-manager and reverts', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    it('sets a new aggregator on a non-aggregator and reverts', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    it('sets a new aggregator on a an aggregator that has no pcv deposits yet', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    it('sets a new aggregator on a an aggregator that has some pcv deposits', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    it('sets a new aggregator on a an aggregator that has some pcv deposits that already match', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    it('correctly returns all the pcv deposit when pcvDeposits() is called', async () => {
+      throw new Error('Method not yet written.');
+    });
+  });
+
+  describe('when it is deployed with vastly divergent weights', async () => {
+    beforeEach(async () => {
+      throw new Error('Method not yet impelmented.');
+    });
+
+    it('initial values are correct: balance, paused, buffer weight, token', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('rebalances correctly', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('rebalances-single correctly when in optimal order', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('rebalances-single when in worst-optimal order', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('rebalances-single when in mixed-optimal (suboptimal) order', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('withdraws correctly from several deposits', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('deposits correctly from several deposits', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('adds a pcv deposit', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('removes a pcv deposit', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('changes a pcv deposit weight', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('changes the aggregator buffer weight', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+  });
+
+  describe('when it is deployed with very large weights', async () => {
+    beforeEach(async () => {
+      throw new Error('Method not yet impelmented.');
+    });
+
+    it('initial values are correct: balance, paused, buffer weight, token', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('rebalances correctly', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('rebalances-single correctly when in optimal order', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('rebalances-single when in worst-optimal order', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('rebalances-single when in mixed-optimal (suboptimal) order', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('withdraws correctly from several deposits', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('deposits correctly from several deposits', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('adds a pcv deposit', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('removes a pcv deposit', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('changes a pcv deposit weight', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('changes the aggregator buffer weight', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+  });
+
+  describe('when it is deployed with very small weights', async () => {
+    beforeEach(async () => {
+      throw new Error('Method not yet impelmented.');
+    });
+
+    it('initial values are correct: balance, paused, buffer weight, token', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('rebalances correctly', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('rebalances-single correctly when in optimal order', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('rebalances-single when in worst-optimal order', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('rebalances-single when in mixed-optimal (suboptimal) order', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('withdraws correctly from several deposits', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('deposits correctly from several deposits', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('adds a pcv deposit', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('removes a pcv deposit', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('changes a pcv deposit weight', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+
+    it('changes the aggregator buffer weight', async () => {
+      throw new Error('Method not yet implemented.');
+    });
+  });
+
+  describe('access control', async () => {
+    describe('governor-only methods', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    describe('governor-or-guardian-only methods', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    describe('guardian-only methods', async () => {
+      throw new Error('Method not yet written.');
+    });
+
+    describe('governor-or-admin-only methods', async () => {
+      throw new Error('Method not yet written.');
     });
   });
 });

@@ -89,6 +89,7 @@ interface IPCVDepositAggregator {
     function setAssetManager(address newAssetManager) external;
 
     // ----------- Governor or Admin only state changing api -----------
+
     /// @notice remove a PCV deposit from the set of deposits
     /// @param pcvDeposit the address of the PCV deposit to remove
     /// @param shouldRebalance whether or not we want to rebalanceSingle on that deposit address before removing but after setting the weight to zero
@@ -104,6 +105,7 @@ interface IPCVDepositAggregator {
     function setBufferWeight(uint256 weight) external;
 
     // ---------- Guardian only state changing api ----------
+
     /// @notice sets the weight of a pcv deposit to zero
     /// @param depositAddress the address of the pcv deposit to set the weight of to zero
     function setPCVDepositWeightZero(address depositAddress) external;
@@ -112,11 +114,11 @@ interface IPCVDepositAggregator {
 
     /// @notice the token that the aggregator is managing
     /// @return the address of the token that the aggregator is managing
-    function token() external returns(address);
+    function token() external view returns(address);
 
     /// @notice the upstream rewardsAssetManager funding this contract
     /// @return the address of the upstream rewardsAssetManager funding this contract
-    function assetManager() external returns(address);
+    function assetManager() external view returns(address);
 
     /// @notice returns true if the given address is a PCV Deposit in this aggregator
     /// @param pcvDeposit the address of the PCV deposit to check
