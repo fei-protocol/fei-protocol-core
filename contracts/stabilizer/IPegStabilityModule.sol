@@ -68,7 +68,7 @@ interface IPegStabilityModule {
         view
         returns (uint256 amountOut);
 
-    /// @notice a flag for whether the current balance is above (true) or below (false) the reservesThreshold
+    /// @notice a flag for whether the current balance is above (true) or below and equal (false) to the reservesThreshold
     function hasSurplus() external view returns (bool);
 
     /// @notice an integer representing the positive surplus or negative deficit of contract balance vs reservesThreshold
@@ -89,7 +89,16 @@ interface IPegStabilityModule {
     /// @notice the PCV deposit target to send surplus reserves
     function target() external view returns (IPCVDeposit);
 
+    /// @notice the max mint and redeem fee in basis points
+    function MAX_FEE() external view returns (uint256);
+
     // ----------- Events -----------
+
+    /// @notice event emitted when excess PCV is allocated
+    event Allocate(address indexed caller, uint256 amount);
+
+    /// @notice event emitted when a new max fee is set
+    event MaxFeeUpdate(uint256 oldMaxFee, uint256 newMaxFee);
 
     /// @notice event emitted when a new mint fee is set
     event MintFeeUpdate(uint256 oldMintFee, uint256 newMintFee);

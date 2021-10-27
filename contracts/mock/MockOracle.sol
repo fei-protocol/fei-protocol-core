@@ -8,14 +8,12 @@ contract MockOracle is IOracle {
     using Decimal for Decimal.D256;
 
     // fixed exchange ratio
-    uint256 public _usdPerEth;
     bool public updated;
     bool public outdated;
     bool public valid = true;
     Decimal.D256 public price;
 
     constructor(uint256 usdPerEth) {
-        _usdPerEth = usdPerEth;
         price = Decimal.from(usdPerEth);
     }
 
@@ -40,7 +38,6 @@ contract MockOracle is IOracle {
     }
 
     function setExchangeRate(uint256 usdPerEth) public {
-        _usdPerEth = usdPerEth;
         price = Decimal.from(usdPerEth);
     }
 

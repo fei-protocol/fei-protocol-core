@@ -102,7 +102,7 @@ describe('PriceBoundPegStabilityModule', function () {
     });
 
     it('redeemFeeBasisPoints', async function () {
-      expect(await psm.mintFeeBasisPoints()).to.be.equal(mintFeeBasisPoints);
+      expect(await psm.redeemFeeBasisPoints()).to.be.equal(redeemFeeBasisPoints);
     });
 
     it('reservesThreshold', async function () {
@@ -118,7 +118,7 @@ describe('PriceBoundPegStabilityModule', function () {
     });
 
     it('decimalsNormalizer', async function () {
-      expect(await psm.reservesThreshold()).to.be.equal(reservesThreshold);
+      expect(await psm.decimalsNormalizer()).to.be.equal(decimalsNormalizer);
     });
 
     it('doInvert', async function () {
@@ -353,6 +353,37 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(await psm.buffer()).to.be.equal(bufferCap);
       });
 
+      it('redeem succeeds when user has enough funds, DAI is $0.9801 and mint fee has been changed to 100 bips', async function () {
+        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(100);
+        await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.mul(9801).div(10000));
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, mintAmount);
+        await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmount);
+
+        const startingUserFeiBalance = await fei.balanceOf(userAddress);
+        const startingUserAssetBalance = await asset.balanceOf(userAddress);
+
+        const expectedAssetAmount = mintAmount
+          .mul(bpGranularity - 100)
+          .div(bpGranularity)
+          .mul(ethers.constants.WeiPerEther)
+          .div(ethers.constants.WeiPerEther.mul(9801).div(10000));
+
+        const actualAssetAmount = await psm.getRedeemAmountOut(mintAmount);
+
+        expect(expectedAssetAmount).to.be.equal(actualAssetAmount);
+        await asset.connect(impersonatedSigners[minterAddress]).mint(psm.address, expectedAssetAmount);
+
+        await psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount);
+
+        const endingUserFeiBalance = await fei.balanceOf(userAddress);
+        const endingUserAssetBalance = await asset.balanceOf(userAddress);
+
+        expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(mintAmount));
+        expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
+        expect(await fei.balanceOf(psm.address)).to.be.equal(0);
+        expect(await psm.buffer()).to.be.equal(bufferCap);
+      });
+
       it('redeem fails when oracle price is $2', async function () {
         await oracle.setExchangeRate(2);
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, mintAmount);
@@ -420,6 +451,20 @@ describe('PriceBoundPegStabilityModule', function () {
         );
       });
 
+      it('fails when floor is 0', async function () {
+        await expectRevert(
+          psm.connect(impersonatedSigners[governorAddress]).setOracleFloor(0),
+          'PegStabilityModule: invalid floor'
+        );
+      });
+
+      it('fails when floor is greater than ceiling', async function () {
+        await expectRevert(
+          psm.connect(impersonatedSigners[governorAddress]).setOracleFloor(10_300),
+          'PegStabilityModule: floor must be less than ceiling'
+        );
+      });
+
       it('succeeds when caller is governor', async function () {
         const newOracleFloor = 9_900;
         await psm.connect(impersonatedSigners[governorAddress]).setOracleFloor(newOracleFloor);
@@ -433,6 +478,20 @@ describe('PriceBoundPegStabilityModule', function () {
         await expectRevert(
           psm.setOracleCeiling(reservesThreshold.mul(1000)),
           'CoreRef: Caller is not a governor or contract admin'
+        );
+      });
+
+      it('fails when ceiling is less than floor', async function () {
+        await expectRevert(
+          psm.connect(impersonatedSigners[governorAddress]).setOracleCeiling(9_000),
+          'PegStabilityModule: ceiling must be greater than floor'
+        );
+      });
+
+      it('fails when ceiling is zero', async function () {
+        await expectRevert(
+          psm.connect(impersonatedSigners[governorAddress]).setOracleCeiling(0),
+          'PegStabilityModule: invalid ceiling'
         );
       });
 

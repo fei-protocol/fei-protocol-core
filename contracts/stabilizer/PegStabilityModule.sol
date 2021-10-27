@@ -32,6 +32,10 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     /// This token will be set to WETH9 if the bonding curve accepts eth
     IERC20 public immutable override token;
 
+    /// @notice the max mint and redeem fee in basis points
+    /// Governance can change this fee
+    uint256 public override MAX_FEE = 500;
+
     /// @notice constructor
     /// @param _coreAddress Fei core to reference
     /// @param _oracleAddress Price oracle to reference
@@ -76,6 +80,15 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
         _withdrawERC20(address(token), to, amount);
     }
 
+    /// @notice update the fee limit
+    function setMaxFee(uint256 newFeeBasisPoints) external onlyGovernor {
+        require(newFeeBasisPoints < Constants.BASIS_POINTS_GRANULARITY, "PegStabilityModule: invalid fee");
+        uint256 oldMaxFee = MAX_FEE;
+        MAX_FEE = newFeeBasisPoints;
+
+        emit MaxFeeUpdate(oldMaxFee, newFeeBasisPoints);
+    }
+
     /// @notice set the mint fee vs oracle price in basis point terms
     function setMintFee(uint256 newMintFeeBasisPoints) external override onlyGovernorOrAdmin {
         _setMintFee(newMintFeeBasisPoints);
@@ -98,7 +111,7 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
 
     /// @notice set the mint fee vs oracle price in basis point terms
     function _setMintFee(uint256 newMintFeeBasisPoints) internal {
-        require(newMintFeeBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "PegStabilityModule: Mint fee exceeds bp granularity");
+        require(newMintFeeBasisPoints <= MAX_FEE, "PegStabilityModule: Mint fee exceeds max fee");
         uint256 _oldMintFee = mintFeeBasisPoints;
         mintFeeBasisPoints = newMintFeeBasisPoints;
 
@@ -107,7 +120,7 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
 
     /// @notice internal helper function to set the redemption fee
     function _setRedeemFee(uint256 newRedeemFeeBasisPoints) internal {
-        require(newRedeemFeeBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "PegStabilityModule: Redeem fee exceeds bp granularity");
+        require(newRedeemFeeBasisPoints <= MAX_FEE, "PegStabilityModule: Redeem fee exceeds max fee");
         uint256 _oldRedeemFee = redeemFeeBasisPoints;
         redeemFeeBasisPoints = newRedeemFeeBasisPoints;
 
@@ -136,6 +149,8 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
     function _allocate(uint256 amount) internal {
         _transfer(address(target), amount);
         target.deposit();
+
+        emit Allocate(msg.sender, amount);
     }
 
     function allocateSurplus() external override {
