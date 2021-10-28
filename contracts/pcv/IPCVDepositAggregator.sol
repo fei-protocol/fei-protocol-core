@@ -24,20 +24,6 @@ interface IPCVDepositAggregator {
         address indexed depositAddress
     );
 
-    event Rebalanced(
-        uint256 totalAssets
-    );
-
-    event RebalancedSingle(
-        address indexed pcvDepositAddress
-    );
-
-    event CannotRebalanceSingle(
-        address indexed pcvDeposit, 
-        uint256 amountNeeded, 
-        uint256 aggregatorBalance
-    );
-
     event AggregatorWithdrawal(
         uint256 amount
     );
@@ -67,12 +53,10 @@ interface IPCVDepositAggregator {
 
     // ----------- State changing api -----------
 
-    /// @notice rebalance funds of the underlying deposits to the optimal target percents
-    function rebalance() external;
-
-    /// @notice same as the rebalance function, but for a single deposit
-    /// @param pcvDeposit the address of the pcv deposit to attempt to rebalance
-    function rebalanceSingle(address pcvDeposit) external;
+    /// @notice tops up a deposit from the aggregator's balance
+    /// @param pcvDeposit the address of the pcv deposit to top up
+    /// @dev this will only pull from the balance that is left over after the aggregator's buffer fills up
+    function tryTopUpDeposit(address pcvDeposit) external;
 
     // ----------- Governor only state changing api -----------
 
@@ -92,7 +76,7 @@ interface IPCVDepositAggregator {
 
     /// @notice remove a PCV deposit from the set of deposits
     /// @param pcvDeposit the address of the PCV deposit to remove
-    /// @param shouldRebalance whether or not we want to rebalanceSingle on that deposit address before removing but after setting the weight to zero
+    /// @param shouldRebalance whether or not to withdraw from the pcv deposit before removing it
     function removePCVDeposit(address pcvDeposit, bool shouldRebalance) external;
 
     /// @notice set the relative weight of a particular pcv deposit
