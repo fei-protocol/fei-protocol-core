@@ -17,7 +17,7 @@ before(async () => {
   await resetFork();
 });
 
-describe('e2e-bondingcurve', function () {
+describe.only('e2e-bondingcurve', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
@@ -47,7 +47,7 @@ describe('e2e-bondingcurve', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe('Reserve Stabilizer', async () => {
+  describe.skip('Reserve Stabilizer', async () => {
     it('should be able to redeem Fei from stabiliser', async function () {
       const fei = contracts.fei;
       const reserveStabilizer = contracts.ethReserveStabilizer;
