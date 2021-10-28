@@ -51,14 +51,7 @@ interface IPCVDepositAggregator {
         uint256 newWeight
     );
 
-    // ----------- State changing api -----------
-
-    /// @notice tops up a deposit from the aggregator's balance
-    /// @param pcvDeposit the address of the pcv deposit to top up
-    /// @dev this will only pull from the balance that is left over after the aggregator's buffer fills up
-    function tryTopUpDeposit(address pcvDeposit) external;
-
-    // ----------- Governor only state changing api -----------
+    // ----------- Governor Only State Changing API -----------
 
     /// @notice adds a new PCV Deposit to the set of deposits
     /// @param weight a relative (i.e. not normalized) weight of this PCV deposit
@@ -72,7 +65,7 @@ interface IPCVDepositAggregator {
     /// @param newAssetManager the address of the new rewards asset manager
     function setAssetManager(address newAssetManager) external;
 
-    // ----------- Governor or Admin only state changing api -----------
+    // ----------- Governor or Admin Only State Changing API -----------
 
     /// @notice remove a PCV deposit from the set of deposits
     /// @param pcvDeposit the address of the PCV deposit to remove
@@ -88,13 +81,20 @@ interface IPCVDepositAggregator {
     /// @param weight the new weight for the buffer
     function setBufferWeight(uint256 weight) external;
 
-    // ---------- Guardian only state changing api ----------
+    // ---------- Guardian or Admin Only State Changing API ----------
+
+    /// @notice tops up a deposit from the aggregator's balance
+    /// @param pcvDeposit the address of the pcv deposit to top up
+    /// @dev this will only pull from the balance that is left over after the aggregator's buffer fills up
+    function depositSingle(address pcvDeposit) external;
+
+    // ---------- Guardian Only State Changing API ----------
 
     /// @notice sets the weight of a pcv deposit to zero
     /// @param depositAddress the address of the pcv deposit to set the weight of to zero
     function setPCVDepositWeightZero(address depositAddress) external;
 
-    // ----------- Read-only api -----------
+    // ----------- Read-Only API -----------
 
     /// @notice the token that the aggregator is managing
     /// @return the address of the token that the aggregator is managing
