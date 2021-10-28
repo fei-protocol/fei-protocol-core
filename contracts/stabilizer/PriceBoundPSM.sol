@@ -10,11 +10,13 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBoundPSM {
     using SafeERC20 for IERC20;
     using SafeCast for *;
 
-    /// @notice the minimum acceptable oracle price
-    Decimal.D256 public floor;
+    uint256 constant public bpDelta = 200;
 
-    /// @notice the maximum acceptable oracle price
-    Decimal.D256 public ceiling;
+    /// @notice the minimum acceptable oracle price floor is 98 cents
+    uint256 public floor = Constants.BASIS_POINTS_GRANULARITY - bpDelta;
+
+    /// @notice the maximum acceptable oracle price ceiling is $1 and 2 cents
+    uint256 public ceiling = Constants.BASIS_POINTS_GRANULARITY + bpDelta;
 
     constructor(
         address _coreAddress,
@@ -42,14 +44,7 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBoundPSM {
         _doInvert,
         _token,
         _target
-    ) {
-        {
-            /// make the floor and ceiling each 2% away from $1
-            uint256 bpDelta = 200;
-            floor = Decimal.ratio(Constants.BASIS_POINTS_GRANULARITY - bpDelta, Constants.BASIS_POINTS_GRANULARITY);
-            ceiling = Decimal.ratio(Constants.BASIS_POINTS_GRANULARITY + bpDelta, Constants.BASIS_POINTS_GRANULARITY);
-        }
-    }
+    ) {}
 
     function setOracleFloor(uint256 newFloor) external override onlyGovernorOrAdmin {
         _setFloor(newFloor);
@@ -62,30 +57,33 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBoundPSM {
     function _setCeiling(uint256 newCeiling) internal {
         require(newCeiling != 0, "PegStabilityModule: invalid ceiling");
         require(
-            Decimal.ratio(newCeiling, Constants.BASIS_POINTS_GRANULARITY).greaterThan(floor),
+            Decimal.ratio(newCeiling, Constants.BASIS_POINTS_GRANULARITY)
+                .greaterThan(Decimal.ratio(floor, Constants.BASIS_POINTS_GRANULARITY)),
             "PegStabilityModule: ceiling must be greater than floor"
         );
-        uint256 oldCeiling = ceiling.value;
-        ceiling = Decimal.ratio(newCeiling, Constants.BASIS_POINTS_GRANULARITY);
+        uint256 oldCeiling = ceiling;
+        ceiling = newCeiling;
 
-        emit OracleCeilingUpdate(oldCeiling, ceiling.value);
+        emit OracleCeilingUpdate(oldCeiling, ceiling);
     }
 
     function _setFloor(uint256 newFloor) internal {
         require(newFloor != 0, "PegStabilityModule: invalid floor");
         require(
-            Decimal.ratio(newFloor, Constants.BASIS_POINTS_GRANULARITY).lessThan(ceiling),
+            Decimal.ratio(newFloor, Constants.BASIS_POINTS_GRANULARITY)
+                .lessThan(Decimal.ratio(ceiling, Constants.BASIS_POINTS_GRANULARITY)),
             "PegStabilityModule: floor must be less than ceiling"
         );
-        uint256 oldFloor = floor.value;
-        floor = Decimal.ratio(newFloor, Constants.BASIS_POINTS_GRANULARITY);
+        uint256 oldFloor = floor;
+        floor = newFloor;
 
-        emit OracleFloorUpdate(oldFloor, floor.value);
+        emit OracleFloorUpdate(oldFloor, floor);
     }
 
     /// @notice helper function to determine if price is within a valid range
     function _validPrice(Decimal.D256 memory price) internal view returns (bool valid) {
-        valid = price.greaterThan(floor) && price.lessThan(ceiling);
+        valid = price.greaterThan(Decimal.ratio(floor, Constants.BASIS_POINTS_GRANULARITY))
+            && price.lessThan(Decimal.ratio(ceiling, Constants.BASIS_POINTS_GRANULARITY));
     }
 
     function _validatePriceRange(Decimal.D256 memory price) internal view override {

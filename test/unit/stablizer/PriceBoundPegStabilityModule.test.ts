@@ -1,8 +1,9 @@
 import hre, { ethers } from 'hardhat';
-import { expectRevert, getAddresses, getCore, deployDevelopmentWeth } from '@test/helpers';
+import { expectRevert, getAddresses, getCore, deployDevelopmentWeth, ZERO_ADDRESS } from '@test/helpers';
 import { expect } from 'chai';
-import { Signer } from 'ethers';
+import { Signer, utils } from 'ethers';
 import { Core, MockERC20, Fei, MockOracle, PriceBoundPSM, MockPCVDepositV2 } from '@custom-types/contracts';
+import { keccak256 } from 'ethers/lib/utils';
 
 const toBN = ethers.BigNumber.from;
 
@@ -21,6 +22,7 @@ describe('PriceBoundPegStabilityModule', function () {
   const decimalsNormalizer = 0; // because the oracle price is scaled 1e18, need to divide out by that before testing
   const bpGranularity = 10_000;
   const impersonatedSigners: { [key: string]: Signer } = {};
+  const PSM_ADMIN_ROLE = keccak256(utils.toUtf8Bytes('PSM_ADMIN_ROLE'));
 
   let core: Core;
   let asset: MockERC20;
@@ -129,6 +131,34 @@ describe('PriceBoundPegStabilityModule', function () {
     it('token address', async function () {
       expect(await psm.token()).to.be.equal(asset.address);
     });
+
+    it('price floor', async function () {
+      expect(await psm.floor()).to.be.equal(bpGranularity - 200);
+    });
+
+    it('price ceiling', async function () {
+      expect(await psm.ceiling()).to.be.equal(bpGranularity + 200);
+    });
+
+    it('balance', async function () {
+      expect(await psm.balance()).to.be.equal(0);
+    });
+
+    it('reservesSurplus', async function () {
+      expect(await psm.reservesSurplus()).to.be.equal(reservesThreshold.mul(-1));
+    });
+
+    it('balanceReportedIn', async function () {
+      expect(await psm.balanceReportedIn()).to.be.equal(asset.address);
+    });
+
+    it('hasSurplus', async function () {
+      expect(await psm.hasSurplus()).to.be.false;
+    });
+
+    it('CONTRACT_ADMIN_ROLE', async function () {
+      expect(await psm.CONTRACT_ADMIN_ROLE()).to.be.equal(PSM_ADMIN_ROLE);
+    });
   });
 
   describe('Mint', function () {
@@ -182,6 +212,132 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(await psm.buffer()).to.be.equal(bufferCap.sub(mintAmountOut));
       });
 
+      it('exchanges 1000 DAI for 975 FEI as fee is 350 bips and exchange rate is 1:1', async function () {
+        const oneK = toBN(1000);
+        const newMintFee = 350;
+        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
+
+        const userStartingFeiBalance = await fei.balanceOf(userAddress);
+        const psmStartingAssetBalance = await asset.balanceOf(psm.address);
+        const expectedMintAmountOut = 965;
+
+        await asset.mint(userAddress, oneK);
+        await asset.connect(impersonatedSigners[userAddress]).approve(psm.address, oneK);
+
+        const mintAmountOut = await psm.getMintAmountOut(oneK);
+
+        expect(mintAmountOut).to.be.equal(expectedMintAmountOut);
+
+        await psm.connect(impersonatedSigners[userAddress]).mint(userAddress, oneK, expectedMintAmountOut);
+
+        const userEndingFeiBalance = await fei.balanceOf(userAddress);
+        const psmEndingAssetBalance = await asset.balanceOf(psm.address);
+
+        expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(expectedMintAmountOut);
+        expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(oneK);
+        expect(await psm.buffer()).to.be.equal(bufferCap.sub(mintAmountOut));
+      });
+
+      it('exchanges 1000 DAI for 950 FEI as mint fee is 500 bips and exchange rate is 1:1', async function () {
+        const oneK = toBN(1000);
+        const newMintFee = 500;
+        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
+
+        const userStartingFeiBalance = await fei.balanceOf(userAddress);
+        const psmStartingAssetBalance = await asset.balanceOf(psm.address);
+        const expectedMintAmountOut = 950;
+
+        await asset.mint(userAddress, oneK);
+        await asset.connect(impersonatedSigners[userAddress]).approve(psm.address, oneK);
+
+        const mintAmountOut = await psm.getMintAmountOut(oneK);
+
+        expect(mintAmountOut).to.be.equal(expectedMintAmountOut);
+
+        await psm.connect(impersonatedSigners[userAddress]).mint(userAddress, oneK, expectedMintAmountOut);
+
+        const userEndingFeiBalance = await fei.balanceOf(userAddress);
+        const psmEndingAssetBalance = await asset.balanceOf(psm.address);
+
+        expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(expectedMintAmountOut);
+        expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(oneK);
+        expect(await psm.buffer()).to.be.equal(bufferCap.sub(mintAmountOut));
+      });
+
+      it('exchanges 1000 DAI for 950 FEI as mint fee is 500 bips and exchange rate is 1DAI:1.2FEI', async function () {
+        const oneK = toBN(1000);
+        const newMintFee = 500;
+        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
+        await psm.connect(impersonatedSigners[governorAddress]).setOracleCeiling(12_001);
+
+        // set exchange rate to 1 dai to 1.2 fei
+        await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.mul(12).div(10));
+
+        const userStartingFeiBalance = await fei.balanceOf(userAddress);
+        const psmStartingAssetBalance = await asset.balanceOf(psm.address);
+        const expectedMintAmountOut = 1140;
+
+        await asset.mint(userAddress, oneK);
+        await asset.connect(impersonatedSigners[userAddress]).approve(psm.address, oneK);
+
+        const mintAmountOut = await psm.getMintAmountOut(oneK);
+
+        expect(mintAmountOut).to.be.equal(expectedMintAmountOut);
+
+        await psm.connect(impersonatedSigners[userAddress]).mint(userAddress, oneK, expectedMintAmountOut);
+
+        const userEndingFeiBalance = await fei.balanceOf(userAddress);
+        const psmEndingAssetBalance = await asset.balanceOf(psm.address);
+
+        expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(expectedMintAmountOut);
+        expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(oneK);
+        expect(await psm.buffer()).to.be.equal(bufferCap.sub(mintAmountOut));
+      });
+
+      it('exchange and getMintAmountOut fails when new oracle ceiling is equal to the new exchange rate', async function () {
+        const oneK = toBN(1000);
+        const newMintFee = 500;
+        const expectedMintAmountOut = 1140;
+
+        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
+        await psm.connect(impersonatedSigners[governorAddress]).setOracleCeiling(12_000);
+
+        // set exchange rate to 1 dai to 1.2 fei
+        await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.mul(12).div(10));
+
+        await asset.mint(userAddress, oneK);
+        await asset.connect(impersonatedSigners[userAddress]).approve(psm.address, oneK);
+
+        await expectRevert(psm.getMintAmountOut(oneK), 'PegStabilityModule: price out of bounds');
+
+        await expectRevert(
+          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, oneK, expectedMintAmountOut),
+          'PegStabilityModule: price out of bounds'
+        );
+      });
+
+      it('exchange and getMintAmountOut fails when new oracle floor is equal to the new exchange rate', async function () {
+        const oneK = toBN(1000);
+        const newMintFee = 500;
+        const expectedMintAmountOut = 1140;
+
+        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
+        await psm.connect(impersonatedSigners[governorAddress]).setOracleFloor(8_000);
+
+        // set exchange rate to 1 dai to .8 fei
+        await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.mul(8).div(10));
+
+        await asset.mint(userAddress, oneK);
+        await asset.connect(impersonatedSigners[userAddress]).approve(psm.address, oneK);
+
+        await expectRevert(psm.getMintAmountOut(oneK), 'PegStabilityModule: price out of bounds');
+
+        await expectRevert(
+          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, oneK, expectedMintAmountOut),
+          'PegStabilityModule: price out of bounds'
+        );
+      });
+
       it('exchanges for appropriate amount of tokens when price is 1:1', async function () {
         const mintAmt = toBN(10_000_000);
         const userStartingFeiBalance = await fei.balanceOf(userAddress);
@@ -222,6 +378,43 @@ describe('PriceBoundPegStabilityModule', function () {
         );
       });
 
+      it('should not mint when expected amount out is 2x greater than minting buffer cap', async function () {
+        const mintAmt = bufferCap.mul(2);
+        const expectedMintAmountOut = mintAmt.mul(bpGranularity - mintFeeBasisPoints).div(bpGranularity);
+
+        await asset.mint(userAddress, mintAmt);
+        await asset.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmt);
+
+        const mintAmountOut = await psm.getMintAmountOut(mintAmt);
+
+        expect(mintAmountOut).to.be.equal(expectedMintAmountOut);
+
+        await expectRevert(
+          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmt, expectedMintAmountOut),
+          'RateLimited: rate limit hit'
+        );
+      });
+
+      it('should not mint when expected amount out is 1 more than minting buffer cap', async function () {
+        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(0);
+
+        const mintAmt = bufferCap.add(1);
+        /// no calcs to do for expected mint amount as there is no mint fee and exchange rate is 1:1
+        const expectedMintAmountOut = mintAmt;
+
+        await asset.mint(userAddress, mintAmt);
+        await asset.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmt);
+
+        const mintAmountOut = await psm.getMintAmountOut(mintAmt);
+
+        expect(mintAmountOut).to.be.equal(expectedMintAmountOut);
+
+        await expectRevert(
+          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmt, expectedMintAmountOut),
+          'RateLimited: rate limit hit'
+        );
+      });
+
       it('fails when token is not approved to be spent by the PSM', async function () {
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, 0),
@@ -256,6 +449,54 @@ describe('PriceBoundPegStabilityModule', function () {
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount, 0),
           'Pausable: paused'
         );
+      });
+
+      it('exchanges 1000 FEI for 975 DAI as fee is 250 bips and exchange rate is 1:1', async function () {
+        const oneK = toBN(1000);
+        const newRedeemFee = 250;
+        await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(newRedeemFee);
+
+        const userStartingFeiBalance = await fei.balanceOf(userAddress);
+        const psmStartingAssetBalance = await asset.balanceOf(psm.address);
+        const expectedAssetAmount = 975;
+
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, oneK);
+        await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, oneK);
+
+        const redeemAmountOut = await psm.getRedeemAmountOut(oneK);
+        expect(redeemAmountOut).to.be.equal(expectedAssetAmount);
+
+        await psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, oneK, expectedAssetAmount);
+
+        const userEndingFeiBalance = await fei.balanceOf(userAddress);
+        const psmEndingAssetBalance = await asset.balanceOf(psm.address);
+
+        expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(0);
+        expect(psmStartingAssetBalance.sub(psmEndingAssetBalance)).to.be.equal(expectedAssetAmount);
+      });
+
+      it('exchanges 1000 FEI for 965 DAI as fee is 350 bips and exchange rate is 1:1', async function () {
+        const oneK = toBN(1000);
+        const newRedeemFee = 350;
+        await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(newRedeemFee);
+
+        const userStartingFeiBalance = await fei.balanceOf(userAddress);
+        const psmStartingAssetBalance = await asset.balanceOf(psm.address);
+        const expectedAssetAmount = 965;
+
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, oneK);
+        await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, oneK);
+
+        const redeemAmountOut = await psm.getRedeemAmountOut(oneK);
+        expect(redeemAmountOut).to.be.equal(expectedAssetAmount);
+
+        await psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, oneK, expectedAssetAmount);
+
+        const userEndingFeiBalance = await fei.balanceOf(userAddress);
+        const psmEndingAssetBalance = await asset.balanceOf(psm.address);
+
+        expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(0);
+        expect(psmStartingAssetBalance.sub(psmEndingAssetBalance)).to.be.equal(expectedAssetAmount);
       });
 
       it('redeem succeeds when user has enough funds', async function () {
@@ -398,7 +639,7 @@ describe('PriceBoundPegStabilityModule', function () {
       });
 
       it('redeem succeeds when user has enough funds, DAI is $0.9801 and mint fee has been changed to 100 bips', async function () {
-        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(100);
+        await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(100);
         await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.mul(9801).div(10000));
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, mintAmount);
         await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmount);
@@ -432,7 +673,7 @@ describe('PriceBoundPegStabilityModule', function () {
         await psm.connect(impersonatedSigners[governorAddress]).setOracleFloor(4_900);
         await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.div(2));
 
-        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(100);
+        await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(100);
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, mintAmount);
         await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmount);
 
@@ -465,7 +706,7 @@ describe('PriceBoundPegStabilityModule', function () {
         await psm.connect(impersonatedSigners[governorAddress]).setOracleFloor(4_900);
         await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.div(2));
 
-        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(500);
+        await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(500);
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, mintAmount);
         await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmount);
 
@@ -504,7 +745,7 @@ describe('PriceBoundPegStabilityModule', function () {
         );
       });
 
-      it('redeem fails when expected amount out is greater than amout actual amount out', async function () {
+      it('redeem fails when expected amount out is greater than actual amount out', async function () {
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount, mintAmount),
           'PegStabilityModule: Redeem not enough out'
@@ -541,6 +782,31 @@ describe('PriceBoundPegStabilityModule', function () {
       });
     });
 
+    describe('setMaxFee', function () {
+      it('fails when caller is not governor', async function () {
+        await expectRevert(
+          psm.connect(impersonatedSigners[userAddress]).setMaxFee(1_000),
+          'CoreRef: Caller is not a governor'
+        );
+      });
+
+      it('fails when caller is governor and fee is 10_000 bips', async function () {
+        await expectRevert(
+          psm.connect(impersonatedSigners[governorAddress]).setMaxFee(10_000),
+          'PegStabilityModule: invalid fee'
+        );
+      });
+
+      it('succeeds when caller is governor and fee is 1_000 bips', async function () {
+        const oldMaxFee = await psm.MAX_FEE();
+        const newMaxFee = 1_000;
+        await expect(psm.connect(impersonatedSigners[governorAddress]).setMaxFee(1_000))
+          .to.emit(psm, 'MaxFeeUpdate')
+          .withArgs(oldMaxFee, newMaxFee);
+        expect(await psm.MAX_FEE()).to.be.equal(newMaxFee);
+      });
+    });
+
     describe('setRedeemFee', function () {
       it('fails when caller is not governor or admin', async function () {
         await expectRevert(psm.setRedeemFee(bpGranularity), 'CoreRef: Caller is not a governor or contract admin');
@@ -558,6 +824,29 @@ describe('PriceBoundPegStabilityModule', function () {
         const newRedeemFee = 100;
         await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(newRedeemFee);
         expect(await psm.redeemFeeBasisPoints()).to.be.equal(newRedeemFee);
+      });
+    });
+
+    describe('setTarget', function () {
+      it('fails when caller is not governor or admin', async function () {
+        await expectRevert(psm.setTarget(asset.address), 'CoreRef: Caller is not a governor or contract admin');
+      });
+
+      it('fails when target is address 0', async function () {
+        await expectRevert(
+          psm.connect(impersonatedSigners[governorAddress]).setTarget(ZERO_ADDRESS),
+          'PegStabilityModule: Invalid new target'
+        );
+      });
+
+      it('succeeds when caller is governor', async function () {
+        const oldTarget = await psm.target();
+        const newTarget = asset.address;
+        await expect(await psm.connect(impersonatedSigners[governorAddress]).setTarget(newTarget))
+          .to.emit(psm, 'TargetUpdate')
+          .withArgs(oldTarget, newTarget);
+        const updatedTarget = await psm.target();
+        expect(updatedTarget).to.be.equal(newTarget);
       });
     });
 
@@ -601,8 +890,7 @@ describe('PriceBoundPegStabilityModule', function () {
       it('succeeds when caller is governor', async function () {
         const newOracleFloor = 9_900;
         await psm.connect(impersonatedSigners[governorAddress]).setOracleFloor(newOracleFloor);
-        const expectedNewFloor = ethers.constants.WeiPerEther.mul(99).div(100);
-        expect(await psm.floor()).to.be.equal(expectedNewFloor);
+        expect(await psm.floor()).to.be.equal(newOracleFloor);
       });
     });
 
@@ -631,25 +919,19 @@ describe('PriceBoundPegStabilityModule', function () {
       it('succeeds when caller is governor', async function () {
         const newOraclePriceCeiling = 10_100;
         await psm.connect(impersonatedSigners[governorAddress]).setOracleCeiling(newOraclePriceCeiling);
-        const expectedNewCeiling = ethers.constants.WeiPerEther.mul(101).div(100);
-        expect(await psm.ceiling()).to.be.equal(expectedNewCeiling);
+        expect(await psm.ceiling()).to.be.equal(newOraclePriceCeiling);
       });
     });
 
     describe('withdraw', function () {
       it('fails when caller is not PCVController', async function () {
-        await expectRevert(
-          psm.withdrawERC20(asset.address, userAddress, 100),
-          'CoreRef: Caller is not a PCV controller'
-        );
+        await expectRevert(psm.withdraw(userAddress, 100), 'CoreRef: Caller is not a PCV controller');
       });
 
       it('succeeds when caller is PCVController', async function () {
         const amount = 10_000_000;
         await asset.mint(psm.address, amount);
-        await psm
-          .connect(impersonatedSigners[pcvControllerAddress])
-          .withdrawERC20(asset.address, userAddress, await psm.balance());
+        await psm.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, await psm.balance());
 
         const endingBalance = await psm.balance();
         expect(endingBalance).to.be.equal(0);
@@ -664,7 +946,11 @@ describe('PriceBoundPegStabilityModule', function () {
       await asset.mint(psm.address, reservesThreshold.mul(2));
 
       expect(await psm.hasSurplus()).to.be.true;
+      expect(await psm.reservesSurplus()).to.be.equal(reservesThreshold);
+
       await psm.allocateSurplus();
+
+      expect(await psm.reservesSurplus()).to.be.equal(0);
       expect(await psm.hasSurplus()).to.be.false;
 
       const endingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
@@ -681,7 +967,11 @@ describe('PriceBoundPegStabilityModule', function () {
       await asset.mint(psm.address, reservesThreshold.mul(2));
 
       expect(await psm.hasSurplus()).to.be.true;
+      expect(await psm.reservesSurplus()).to.be.equal(reservesThreshold);
+
       await psm.deposit();
+
+      expect(await psm.reservesSurplus()).to.be.equal(0);
       expect(await psm.hasSurplus()).to.be.false;
 
       const endingSurplusBalance = await asset.balanceOf(pcvDeposit.address);

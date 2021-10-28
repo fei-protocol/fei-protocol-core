@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimitedMinter, OracleRef, ReentrancyGuard, PCVDeposit {
+contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimitedMinter, OracleRef, ReentrancyGuard, PCVDeposit {
     using Decimal for Decimal.D256;
     using SafeCast for *;
     using SafeERC20 for IERC20;
@@ -73,7 +73,10 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
         _setMintFee(_mintFeeBasisPoints);
         _setRedeemFee(_redeemFeeBasisPoints);
         _setTarget(_target);
+        _setContractAdminRole(keccak256("PSM_ADMIN_ROLE"));
     }
+
+    // ----------- Governor or admin only state changing api -----------
 
     /// @notice withdraw assets from PSM to an external address
     function withdraw(address to, uint256 amount) external override virtual onlyPCVController {
@@ -145,6 +148,8 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
         emit TargetUpdate(oldTarget, newTarget);
     }
 
+    // ----------- State changing Api -----------
+
     /// @notice Allocates a portion of escrowed PCV to a target PCV deposit
     function _allocate(uint256 amount) internal {
         _transfer(address(target), amount);
@@ -153,6 +158,7 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
         emit Allocate(msg.sender, amount);
     }
 
+    /// @notice send any surplus reserves to the PCV allocation
     function allocateSurplus() external override {
         int256 currentSurplus = reservesSurplus();
         require(currentSurplus > 0, "PegStabilityModule: No surplus to allocate");
@@ -205,17 +211,42 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
         emit Mint(to, amountIn);
     }
 
+    // ----------- ERC20 Helpers -----------
+
+    /// @notice transfer ERC20 token
     function _transfer(address to, uint256 amount) internal {
         SafeERC20.safeTransfer(token, to, amount);
     }
 
+    /// @notice transfer assets from user to this contract
     function _transferFrom(address from, address to, uint256 amount) internal {
         SafeERC20.safeTransferFrom(token, from, to, amount);
     }
 
+    /// @notice mint amount of FEI to the specified user on a rate limit
+    function _mintFei(address to, uint256 amount) internal override(CoreRef, RateLimitedMinter) {
+        super._mintFei(to, amount);
+    }
+
+    // ----------- Hooks -----------
+
     /// @notice overriden function in the bounded PSM
     function _validatePriceRange(Decimal.D256 memory price) internal view virtual {}
 
+
+    // ----------- Getters -----------
+
+
+    /// @notice calculate the amount of FEI out for a given `amountIn` of underlying
+    /// First get oracle price of token
+    /// Then figure out how many dollars that amount in is worth by multiplying price * amount.
+    /// ensure decimals are normalized if on underlying they are not 18
+    function getMintAmountOut(uint256 amountIn) public override view returns (uint256 amountFeiOut) {
+        amountFeiOut = _getMintAmountOutAndPrice(amountIn);
+    }
+
+    /// @notice helper function to get mint amount out based on current market prices
+    /// will revert if price is outside of bounds and bounded PSM is being used
     function _getMintAmountOutAndPrice(uint256 amountIn) private view returns (uint256 amountFeiOut) {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
@@ -228,28 +259,6 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
             .asUint256();
     }
 
-    /// @notice calculate the amount of FEI out for a given `amountIn` of underlying
-    /// First get oracle price of token
-    /// Then figure out how many dollars that amount in is worth by multiplying price * amount.
-    /// ensure decimals are normalized if on underlying they are not 18
-    function getMintAmountOut(uint256 amountIn) public override view returns (uint256 amountFeiOut) {
-        amountFeiOut = _getMintAmountOutAndPrice(amountIn);
-    }
-
-    function _getRedeemAmountOutAndPrice(uint256 amountFeiIn) private view returns (uint256 amountTokenOut) {
-        Decimal.D256 memory price = readOracle();
-        _validatePriceRange(price);
-
-        /// get amount of dollars being provided
-        Decimal.D256 memory adjustedAmountIn = Decimal.from(
-            amountFeiIn * (Constants.BASIS_POINTS_GRANULARITY - mintFeeBasisPoints) / Constants.BASIS_POINTS_GRANULARITY
-        );
-
-        /// now turn the dollars into the underlying token amounts
-        /// dollars / price = how much token to pay out
-        amountTokenOut = adjustedAmountIn.div(price).asUint256();
-    }
-
     /// @notice calculate the amount of underlying out for a given `amountFeiIn` of FEI
     /// First get oracle price of token
     /// Then figure out how many dollars that amount in is worth by multiplying price * amount.
@@ -258,9 +267,20 @@ abstract contract PegStabilityModule is IPegStabilityModule, CoreRef, RateLimite
         amountTokenOut = _getRedeemAmountOutAndPrice(amountFeiIn);
     }
 
-    /// @notice mint amount of FEI to the specified user on a rate limit
-    function _mintFei(address to, uint256 amount) internal override(CoreRef, RateLimitedMinter) {
-        super._mintFei(to, amount);
+    /// @notice helper function to get redeem amount out based on current market prices
+    /// will revert if price is outside of bounds and bounded PSM is being used
+    function _getRedeemAmountOutAndPrice(uint256 amountFeiIn) private view returns (uint256 amountTokenOut) {
+        Decimal.D256 memory price = readOracle();
+        _validatePriceRange(price);
+
+        /// get amount of dollars being provided
+        Decimal.D256 memory adjustedAmountIn = Decimal.from(
+            amountFeiIn * (Constants.BASIS_POINTS_GRANULARITY - redeemFeeBasisPoints) / Constants.BASIS_POINTS_GRANULARITY
+        );
+
+        /// now turn the dollars into the underlying token amounts
+        /// dollars / price = how much token to pay out
+        amountTokenOut = adjustedAmountIn.div(price).asUint256();
     }
 
     /// @notice a flag for whether the current balance is above (true) or below (false) the reservesThreshold
