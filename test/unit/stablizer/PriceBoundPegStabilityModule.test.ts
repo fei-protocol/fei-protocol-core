@@ -12,6 +12,7 @@ describe('PriceBoundPegStabilityModule', function () {
   let governorAddress;
   let minterAddress;
   let pcvControllerAddress;
+  let psmAdminAddress;
 
   const mintFeeBasisPoints = 30;
   const redeemFeeBasisPoints = 30;
@@ -68,6 +69,7 @@ describe('PriceBoundPegStabilityModule', function () {
     governorAddress = addresses.governorAddress;
     minterAddress = addresses.minterAddress;
     pcvControllerAddress = addresses.pcvControllerAddress;
+    psmAdminAddress = addresses.beneficiaryAddress1;
 
     core = await getCore();
     fei = await ethers.getContractAt('Fei', await core.fei());
@@ -93,6 +95,11 @@ describe('PriceBoundPegStabilityModule', function () {
     );
 
     await core.grantMinter(psm.address);
+
+    /// Create PSM admin role
+    await core.createRole(PSM_ADMIN_ROLE, await core.GOVERN_ROLE());
+    // grant PSM admin role
+    await core.grantRole(PSM_ADMIN_ROLE, psmAdminAddress);
   });
 
   describe('Init', function () {
@@ -780,6 +787,12 @@ describe('PriceBoundPegStabilityModule', function () {
         await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
         expect(await psm.mintFeeBasisPoints()).to.be.equal(newMintFee);
       });
+
+      it('succeeds when caller is PSM admin', async function () {
+        const newMintFee = 100;
+        await psm.connect(impersonatedSigners[psmAdminAddress]).setMintFee(newMintFee);
+        expect(await psm.mintFeeBasisPoints()).to.be.equal(newMintFee);
+      });
     });
 
     describe('setMaxFee', function () {
@@ -825,6 +838,12 @@ describe('PriceBoundPegStabilityModule', function () {
         await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(newRedeemFee);
         expect(await psm.redeemFeeBasisPoints()).to.be.equal(newRedeemFee);
       });
+
+      it('succeeds when caller is psm admin', async function () {
+        const newRedeemFee = 100;
+        await psm.connect(impersonatedSigners[psmAdminAddress]).setRedeemFee(newRedeemFee);
+        expect(await psm.redeemFeeBasisPoints()).to.be.equal(newRedeemFee);
+      });
     });
 
     describe('setTarget', function () {
@@ -848,6 +867,16 @@ describe('PriceBoundPegStabilityModule', function () {
         const updatedTarget = await psm.target();
         expect(updatedTarget).to.be.equal(newTarget);
       });
+
+      it('succeeds when caller is governor', async function () {
+        const oldTarget = await psm.target();
+        const newTarget = asset.address;
+        await expect(await psm.connect(impersonatedSigners[psmAdminAddress]).setTarget(newTarget))
+          .to.emit(psm, 'TargetUpdate')
+          .withArgs(oldTarget, newTarget);
+        const updatedTarget = await psm.target();
+        expect(updatedTarget).to.be.equal(newTarget);
+      });
     });
 
     describe('setReservesThreshold', function () {
@@ -858,9 +887,23 @@ describe('PriceBoundPegStabilityModule', function () {
         );
       });
 
+      it('fails when caller is governor and new reserves threshold is 0', async function () {
+        const newReserves = 0;
+        await expectRevert(
+          psm.connect(impersonatedSigners[governorAddress]).setReservesThreshold(newReserves),
+          'PegStabilityModule: Invalid new reserves threshold'
+        );
+      });
+
       it('succeeds when caller is governor', async function () {
         const newReserves = reservesThreshold.mul(100);
         await psm.connect(impersonatedSigners[governorAddress]).setReservesThreshold(newReserves);
+        expect(await psm.reservesThreshold()).to.be.equal(newReserves);
+      });
+
+      it('succeeds when caller is psm admin', async function () {
+        const newReserves = reservesThreshold.mul(100);
+        await psm.connect(impersonatedSigners[psmAdminAddress]).setReservesThreshold(newReserves);
         expect(await psm.reservesThreshold()).to.be.equal(newReserves);
       });
     });
@@ -940,50 +983,68 @@ describe('PriceBoundPegStabilityModule', function () {
     });
   });
 
-  describe('allocateSurplus', function () {
-    it('sends surplus to PCVDeposit target when called', async function () {
-      const startingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
-      await asset.mint(psm.address, reservesThreshold.mul(2));
+  describe('PCV', function () {
+    describe('allocateSurplus', function () {
+      it('sends surplus to PCVDeposit target when called', async function () {
+        const startingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
+        await asset.mint(psm.address, reservesThreshold.mul(2));
 
-      expect(await psm.hasSurplus()).to.be.true;
-      expect(await psm.reservesSurplus()).to.be.equal(reservesThreshold);
+        expect(await psm.hasSurplus()).to.be.true;
+        expect(await psm.reservesSurplus()).to.be.equal(reservesThreshold);
 
-      await psm.allocateSurplus();
+        await psm.allocateSurplus();
 
-      expect(await psm.reservesSurplus()).to.be.equal(0);
-      expect(await psm.hasSurplus()).to.be.false;
+        expect(await psm.reservesSurplus()).to.be.equal(0);
+        expect(await psm.hasSurplus()).to.be.false;
 
-      const endingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
-      const endingPSMBalance = await asset.balanceOf(psm.address);
+        const endingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
+        const endingPSMBalance = await asset.balanceOf(psm.address);
 
-      expect(endingSurplusBalance.sub(startingSurplusBalance)).to.be.equal(reservesThreshold);
-      expect(endingPSMBalance).to.be.equal(reservesThreshold);
-    });
-  });
+        expect(endingSurplusBalance.sub(startingSurplusBalance)).to.be.equal(reservesThreshold);
+        expect(endingPSMBalance).to.be.equal(reservesThreshold);
+      });
 
-  describe('deposit', function () {
-    it('sends surplus to PCVDeposit target when called', async function () {
-      const startingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
-      await asset.mint(psm.address, reservesThreshold.mul(2));
+      it('reverts when there is no surplus to allocate', async function () {
+        await asset.mint(psm.address, reservesThreshold);
 
-      expect(await psm.hasSurplus()).to.be.true;
-      expect(await psm.reservesSurplus()).to.be.equal(reservesThreshold);
+        expect(await psm.hasSurplus()).to.be.false;
+        expect(await psm.reservesSurplus()).to.be.equal(0);
 
-      await psm.deposit();
-
-      expect(await psm.reservesSurplus()).to.be.equal(0);
-      expect(await psm.hasSurplus()).to.be.false;
-
-      const endingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
-      const endingPSMBalance = await asset.balanceOf(psm.address);
-
-      expect(endingSurplusBalance.sub(startingSurplusBalance)).to.be.equal(reservesThreshold);
-      expect(endingPSMBalance).to.be.equal(reservesThreshold);
+        await expectRevert(psm.allocateSurplus(), 'PegStabilityModule: No surplus to allocate');
+      });
     });
 
-    it('succeeds when called', async function () {
-      const tx = await (await psm.deposit()).wait();
-      expect(tx.logs.length).to.be.equal(0);
+    describe('deposit', function () {
+      it('sends surplus to PCVDeposit target when called', async function () {
+        const startingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
+        await asset.mint(psm.address, reservesThreshold.mul(2));
+
+        expect(await psm.hasSurplus()).to.be.true;
+        expect(await psm.reservesSurplus()).to.be.equal(reservesThreshold);
+
+        await psm.deposit();
+
+        expect(await psm.reservesSurplus()).to.be.equal(0);
+        expect(await psm.hasSurplus()).to.be.false;
+
+        const endingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
+        const endingPSMBalance = await asset.balanceOf(psm.address);
+
+        expect(endingSurplusBalance.sub(startingSurplusBalance)).to.be.equal(reservesThreshold);
+        expect(endingPSMBalance).to.be.equal(reservesThreshold);
+      });
+
+      it('succeeds when called and sends no value when reserves are met', async function () {
+        await asset.mint(psm.address, reservesThreshold);
+        expect(await psm.hasSurplus()).to.be.false;
+        expect(await psm.reservesSurplus()).to.be.equal(0);
+
+        const tx = await (await psm.deposit()).wait();
+
+        expect(tx.logs.length).to.be.equal(0);
+        expect(await psm.hasSurplus()).to.be.false;
+        expect(await psm.reservesSurplus()).to.be.equal(0);
+      });
     });
   });
 });
