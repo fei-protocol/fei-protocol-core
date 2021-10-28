@@ -36,7 +36,6 @@ contract PSMRouter is IPSMRouter {
     }
 
     function swapExactETHForExactFei(address to, uint256 amountsOutMin, uint256 deadline) external override payable ensure(deadline) {
-        require(psm.getMintAmountOut(msg.value) >= amountsOutMin, "PSMRouter: insufficient output amount");
         _depositWethAndMint(to, amountsOutMin);
     }
 

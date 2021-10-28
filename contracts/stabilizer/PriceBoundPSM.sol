@@ -10,13 +10,13 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBoundPSM {
     using SafeERC20 for IERC20;
     using SafeCast for *;
 
-    uint256 constant public bpDelta = 200;
+    uint256 constant public override bpDelta = 200;
 
     /// @notice the minimum acceptable oracle price floor is 98 cents
-    uint256 public floor = Constants.BASIS_POINTS_GRANULARITY - bpDelta;
+    uint256 public override floor = Constants.BASIS_POINTS_GRANULARITY - bpDelta;
 
     /// @notice the maximum acceptable oracle price ceiling is $1 and 2 cents
-    uint256 public ceiling = Constants.BASIS_POINTS_GRANULARITY + bpDelta;
+    uint256 public override ceiling = Constants.BASIS_POINTS_GRANULARITY + bpDelta;
 
     constructor(
         address _coreAddress,

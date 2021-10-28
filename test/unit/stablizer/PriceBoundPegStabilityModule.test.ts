@@ -930,6 +930,12 @@ describe('PriceBoundPegStabilityModule', function () {
         );
       });
 
+      it('succeeds when caller is psm admin', async function () {
+        const newOracleFloor = 9_900;
+        await psm.connect(impersonatedSigners[psmAdminAddress]).setOracleFloor(newOracleFloor);
+        expect(await psm.floor()).to.be.equal(newOracleFloor);
+      });
+
       it('succeeds when caller is governor', async function () {
         const newOracleFloor = 9_900;
         await psm.connect(impersonatedSigners[governorAddress]).setOracleFloor(newOracleFloor);
@@ -957,6 +963,12 @@ describe('PriceBoundPegStabilityModule', function () {
           psm.connect(impersonatedSigners[governorAddress]).setOracleCeiling(0),
           'PegStabilityModule: invalid ceiling'
         );
+      });
+
+      it('succeeds when caller is psm admin', async function () {
+        const newOraclePriceCeiling = 10_100;
+        await psm.connect(impersonatedSigners[psmAdminAddress]).setOracleCeiling(newOraclePriceCeiling);
+        expect(await psm.ceiling()).to.be.equal(newOraclePriceCeiling);
       });
 
       it('succeeds when caller is governor', async function () {
