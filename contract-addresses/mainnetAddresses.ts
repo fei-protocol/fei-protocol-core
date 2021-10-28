@@ -367,9 +367,7 @@ const MainnetAddresses = {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x74B235Fef146cDB5BE0D3786a9f3774674b3615E'
   },
-  rariPool72Fei: { artifactName: 'CErc20Delegator', address: '0x4b3d6aD21CB4c02c0f38a131AE2358C2813Af13f' },
   rariPool72FeiPCVDeposit: { artifactName: 'ERC20CompoundPCVDeposit', address: '0x4A5Af5A124E672C156241b76CAd4E41D09dd4883' },
-  rariPool79Fei: { artifactName: 'CErc20Delegator', address: '0x41c7B863FdDa5eb7CF8D8f748B136d10d7AEC631' },
   rariPool79FeiPCVDeposit: { artifactName: 'ERC20CompoundPCVDeposit', address: '0x76dFcf06E7D7B8248094DC319b284fB244f06309' },
   rariPool8Comptroller: { artifactName: 'Unitroller', address: '0xc54172e34046c1653d1920d40333dd358c7a1af4' },
   rariPool8Dai: { artifactName: 'CErc20Delegator', address: '0x7e9cE3CAa9910cc048590801e64174957Ed41d43' },
@@ -402,7 +400,6 @@ const MainnetAddresses = {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x9aAdFfe00eAe6d8e59bB4F7787C6b99388A6960D'
   },
-  rariPool91Fei: { artifactName: 'CErc20Delegator', address: '0xdcC47C746482e4b3abb4aeA22162b1FaDced50E5' },
   rariPool91FeiPCVDeposit: { artifactName: 'ERC20CompoundPCVDeposit', address: '0x2296a2417D1f02d394ab22aF794a0f426eD53436' },
   rariRewardsDistributorDelegator: {
     artifactName: 'unknown',
