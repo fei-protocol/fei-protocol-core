@@ -5,7 +5,7 @@ import "./IPriceBoundPSM.sol";
 import "../Constants.sol";
 
 /// @notice contract to create a price bound DAI PSM
-/// This contract will allow swaps when the price is between 98 cents and 1.02 by default
+/// This contract will allow swaps when the price of DAI is between 98 cents and 1.02 by default
 /// These defaults are changeable by the admin and governance by calling floor and ceiling setters
 /// setOracleFloor and setOracleCeiling
 contract PriceBoundPSM is PegStabilityModule, IPriceBoundPSM {
