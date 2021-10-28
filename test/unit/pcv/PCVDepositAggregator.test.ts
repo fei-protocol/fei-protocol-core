@@ -740,6 +740,10 @@ describe('PCV Deposit Aggregator', function () {
     it('correctly returns all the pcv deposit when pcvDeposits() is called', async () => {
       throw new Error('Method not yet written.');
     });
+
+    it('reverts when attempting to rebalance too fast', async () => {
+      throw new Error('Method not yet written.');
+    });
   });
 
   describe('when it is deployed with vastly divergent weights', async () => {
