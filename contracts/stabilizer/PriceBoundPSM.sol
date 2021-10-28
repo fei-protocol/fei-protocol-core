@@ -25,7 +25,7 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBoundPSM {
     /// @notice constructor
     /// @param _coreAddress Fei core to reference
     /// @param _oracleAddress Price oracle to reference
-    /// @param _backupOracle Price oracle to reference
+    /// @param _backupOracle Backup price oracle to reference
     /// @param _mintFeeBasisPoints fee in basis points to buy Fei
     /// @param _redeemFeeBasisPoints fee in basis points to sell Fei
     /// @param _reservesThreshold amount of tokens to hold in this contract
