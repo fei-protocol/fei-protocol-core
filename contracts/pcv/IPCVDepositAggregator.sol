@@ -110,7 +110,7 @@ interface IPCVDepositAggregator {
     /// @param depositAddress the address of the pcv deposit to set the weight of to zero
     function setPCVDepositWeightZero(address depositAddress) external;
 
-    // ----------- Read-only api -----------
+    // ----------- Read-only API -----------
 
     /// @notice the token that the aggregator is managing
     /// @return the address of the token that the aggregator is managing
