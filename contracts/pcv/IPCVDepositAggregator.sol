@@ -24,20 +24,6 @@ interface IPCVDepositAggregator {
         address indexed depositAddress
     );
 
-    event Rebalanced(
-        uint256 totalAssets
-    );
-
-    event RebalancedSingle(
-        address indexed pcvDepositAddress
-    );
-
-    event CannotRebalanceSingle(
-        address indexed pcvDeposit, 
-        uint256 amountNeeded, 
-        uint256 aggregatorBalance
-    );
-
     event AggregatorWithdrawal(
         uint256 amount
     );
@@ -65,20 +51,14 @@ interface IPCVDepositAggregator {
         uint256 newWeight
     );
 
-    // ----------- State changing api -----------
+    // ----------- Public Functions ----------
 
-    /// @notice rebalance funds of the underlying deposits to the optimal target percents
-    function rebalance() external;
+    /// @notice tops up a deposit from the aggregator's balance
+    /// @param pcvDeposit the address of the pcv deposit to top up
+    /// @dev this will only pull from the balance that is left over after the aggregator's buffer fills up
+    function depositSingle(address pcvDeposit) external;
 
-    /// @notice same as the rebalance function, but for a single deposit
-    /// @param pcvDeposit the address of the pcv deposit to attempt to rebalance
-    function rebalanceSingle(address pcvDeposit) external;
-
-    // ----------- Governor only state changing api -----------
-
-    /// @notice adds a new PCV Deposit to the set of deposits
-    /// @param weight a relative (i.e. not normalized) weight of this PCV deposit
-    function addPCVDeposit(address newPCVDeposit, uint256 weight) external;
+    // ----------- Governor Only State Changing API -----------
 
     /// @notice replaces this contract with a new PCV Deposit Aggregator on the rewardsAssetManager
     /// @param newAggregator the address of the new PCV Deposit Aggregator
@@ -88,11 +68,15 @@ interface IPCVDepositAggregator {
     /// @param newAssetManager the address of the new rewards asset manager
     function setAssetManager(address newAssetManager) external;
 
-    // ----------- Governor or Admin only state changing api -----------
+    // ----------- Governor or Admin Only State Changing API -----------
+
+    /// @notice adds a new PCV Deposit to the set of deposits
+    /// @param weight a relative (i.e. not normalized) weight of this PCV deposit
+    function addPCVDeposit(address newPCVDeposit, uint256 weight) external;
 
     /// @notice remove a PCV deposit from the set of deposits
     /// @param pcvDeposit the address of the PCV deposit to remove
-    /// @param shouldRebalance whether or not we want to rebalanceSingle on that deposit address before removing but after setting the weight to zero
+    /// @param shouldRebalance whether or not to withdraw from the pcv deposit before removing it
     function removePCVDeposit(address pcvDeposit, bool shouldRebalance) external;
 
     /// @notice set the relative weight of a particular pcv deposit
@@ -104,13 +88,13 @@ interface IPCVDepositAggregator {
     /// @param weight the new weight for the buffer
     function setBufferWeight(uint256 weight) external;
 
-    // ---------- Guardian only state changing api ----------
+    // ---------- Guardian or Governor Only State Changing API ----------
 
     /// @notice sets the weight of a pcv deposit to zero
     /// @param depositAddress the address of the pcv deposit to set the weight of to zero
     function setPCVDepositWeightZero(address depositAddress) external;
 
-    // ----------- Read-only API -----------
+    // ----------- Read-Only API -----------
 
     /// @notice the token that the aggregator is managing
     /// @return the address of the token that the aggregator is managing
