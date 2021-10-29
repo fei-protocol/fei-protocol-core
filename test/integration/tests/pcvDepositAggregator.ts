@@ -53,7 +53,7 @@ describe('e2e-pcv', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe('iterated flow of add, remove, deposit, withdraw, rebalance', async () => {
+  describe('iterated flow of add, remove, deposit, withdraw', async () => {
     throw new Error('Method not yet implemented.');
   });
 

@@ -65,18 +65,6 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
 
     // ---------- Public Functions -------------
 
-    /// @notice rebalances all pcv deposits
-    function rebalance() external override whenNotPaused {
-        _rebalance();
-    }
-
-    /// @notice attempts to rebalance a single deposit
-    /// @dev only works if the deposit has an overage, or if it has a defecit that the aggregator can cover
-    /// @param pcvDeposit the address of the pcv Deposit to attempt to rebalance
-    function rebalanceSingle(address pcvDeposit) external override whenNotPaused {
-        _rebalanceSingle(pcvDeposit);
-    }
-
     /// @notice deposits tokens into sub-contracts (if needed)
     /// @dev this is equivalent to half of a rebalance. the implementation is as follows:
     /// 1. fill the buffer to maximum
@@ -115,6 +103,13 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
         }
 
         emit AggregatorDeposit();
+    }
+
+    /// @notice tops up a deposit from the aggregator's balance
+    /// @param pcvDeposit the address of the pcv deposit to top up
+    /// @dev this will only pull from the balance that is left over after the aggregator's buffer fills up
+    function depositSingle(address pcvDeposit) public override whenNotPaused {
+        revert("Method not yet written.");
     }
 
     /// @notice withdraws the specified amount of tokens from the contract
@@ -206,7 +201,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
 
     /// @notice remove a PCV deposit from the set of deposits
     /// @param pcvDeposit the address of the PCV deposit to remove
-    /// @param shouldRebalance whether or not we want to rebalanceSingle on that deposit address before removing but after setting the weight to zero
+    /// @param shouldRebalance whether or not we want to withdraw from the pcv deposit before removing
     function removePCVDeposit(address pcvDeposit, bool shouldRebalance) external override onlyGovernorOrAdmin {
         _removePCVDeposit(address(pcvDeposit), shouldRebalance);
     }
@@ -236,9 +231,6 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
 
         // Send old aggregator assets over to the new aggregator
         IERC20(token).safeTransfer(newAggregator, balance());
-
-        // Call rebalance on the new aggregator
-        IPCVDepositAggregator(newAggregator).rebalance();
 
         // No need to remove all deposits, this is a lot of extra gas.
 
@@ -420,59 +412,6 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
         return balances;
     }
 
-    // Attempts to rebalance a single deposit by withdrawing or depositing from/to it if able
-    function _rebalanceSingle(address pcvDeposit) internal {
-        require(pcvDepositAddresses.contains(pcvDeposit), "Deposit does not exist.");
-
-        int256 distanceToTarget = amountFromTarget(pcvDeposit);
-
-        require(distanceToTarget != 0, "No rebalance needed.");
-
-        // @todo change to require
-        if (distanceToTarget < 0 && balance() < (-1 * distanceToTarget).toUint256()) {
-            revert("Cannot rebalance this deposit, please rebalance another one first.");
-        }
-
-        // Now we know that we can rebalance either way
-        if (distanceToTarget > 0) {
-            // PCV deposit balance is too high. Withdraw from it into the aggregator.
-            IPCVDeposit(pcvDeposit).withdraw(address(this), (distanceToTarget).toUint256());
-        } else {
-            // PCV deposit balance is too low. Pull from the aggregator balance if we can.
-            IERC20(token).safeTransfer(pcvDeposit, (-1 * distanceToTarget).toUint256());
-            IPCVDeposit(pcvDeposit).deposit();
-        }
-
-        emit RebalancedSingle(pcvDeposit);
-    }
-
-    // Rebalances all deposits by withdrawing or depositing from/to them
-    function _rebalance() internal {
-        (uint256 aggregatorBalance, uint256 totalUnderlyingBalance,) = _getUnderlyingBalancesAndSum();
-        uint256 totalBalance = totalUnderlyingBalance + aggregatorBalance;
-
-        // Grab the distance (and direction) each deposit is from its optimal balance
-        // Remember, a positive distance means that the deposit has too much and a negative distance means it has too little
-        int[] memory distancesToTargets = getAllAmountsFromTargets();
-
-        // Do withdraws first
-        for (uint256 i=0; i<distancesToTargets.length; i++) {
-            if (distancesToTargets[i] < 0) {
-                IPCVDeposit(pcvDepositAddresses.at(i)).withdraw(address(this), (-1 * distancesToTargets[i]).toUint256());
-            }
-        }
-
-        // Do deposits next
-        for (uint256 i=0; i<distancesToTargets.length; i++) {
-            if (distancesToTargets[i] > 0) {
-                IERC20(token).safeTransfer(pcvDepositAddresses.at(i), (distancesToTargets[i]).toUint256());
-                IPCVDeposit(pcvDepositAddresses.at(i)).deposit();
-            }
-        }
-
-        emit Rebalanced(totalBalance);
-    }
-
     // Adds a pcv deposit if not already added
     function _addPCVDeposit(address depositAddress, uint256 weight) internal {
         require(!pcvDepositAddresses.contains(depositAddress), "Deposit already added.");
@@ -486,17 +425,12 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
     }
 
     // Removes a pcv deposit if it exists
-    function _removePCVDeposit(address depositAddress, bool shouldRebalance) internal {
+    function _removePCVDeposit(address depositAddress, bool shouldWithdraw) internal {
         require(pcvDepositAddresses.contains(depositAddress), "Deposit does not exist.");
 
         // Set the PCV Deposit weight to 0 and rebalance to remove all of the liquidity from this particular deposit
         totalWeight = totalWeight - pcvDepositWeights[depositAddress];
         pcvDepositWeights[depositAddress] = 0;
-
-        // The amountFromTarget check is required otherwise we might revert
-        if (shouldRebalance && amountFromTarget(depositAddress) != 0) {
-            _rebalanceSingle(depositAddress);
-        }
 
         pcvDepositAddresses.remove(depositAddress);
 
