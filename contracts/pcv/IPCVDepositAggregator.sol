@@ -51,6 +51,13 @@ interface IPCVDepositAggregator {
         uint256 newWeight
     );
 
+    // ----------- Public Functions ----------
+
+    /// @notice tops up a deposit from the aggregator's balance
+    /// @param pcvDeposit the address of the pcv deposit to top up
+    /// @dev this will only pull from the balance that is left over after the aggregator's buffer fills up
+    function depositSingle(address pcvDeposit) external;
+
     // ----------- Governor Only State Changing API -----------
 
     /// @notice replaces this contract with a new PCV Deposit Aggregator on the rewardsAssetManager
@@ -80,11 +87,6 @@ interface IPCVDepositAggregator {
     /// @notice set the weight for the buffer specifically
     /// @param weight the new weight for the buffer
     function setBufferWeight(uint256 weight) external;
-
-    /// @notice tops up a deposit from the aggregator's balance
-    /// @param pcvDeposit the address of the pcv deposit to top up
-    /// @dev this will only pull from the balance that is left over after the aggregator's buffer fills up
-    function depositSingle(address pcvDeposit) external;
 
     // ---------- Guardian or Governor Only State Changing API ----------
 
