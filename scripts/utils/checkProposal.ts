@@ -55,12 +55,12 @@ async function checkProposal() {
     console.log('Vote already began');
   }
 
-  /*try {*/
-  await feiDAO.connect(voterSigner).castVote(proposalNo, 1);
-  console.log('Casted vote.');
-  /*} catch {
-    console.log('Already voted, ror some terrible error has occured.');
-  }*/
+  try {
+    await feiDAO.connect(voterSigner).castVote(proposalNo, 1);
+    console.log('Casted vote.');
+  } catch {
+    console.log('Already voted, or some terrible error has occured.');
+  }
 
   proposal = await feiDAO.proposals(proposalNo);
   const { endBlock } = proposal;
@@ -82,7 +82,11 @@ async function checkProposal() {
   await time.increase(86400); // 1 day in seconds
 
   console.log('Executing');
-  await feiDAO['execute(uint256)'](proposalNo);
+  try {
+    await feiDAO['execute(uint256)'](proposalNo);
+  } catch {
+    console.log('Already executed, or some terrible error has occured.');
+  }
   console.log('Success');
 
   console.log('Teardown');
