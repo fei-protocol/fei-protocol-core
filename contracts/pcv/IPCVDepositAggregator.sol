@@ -53,10 +53,6 @@ interface IPCVDepositAggregator {
 
     // ----------- Governor Only State Changing API -----------
 
-    /// @notice adds a new PCV Deposit to the set of deposits
-    /// @param weight a relative (i.e. not normalized) weight of this PCV deposit
-    function addPCVDeposit(address newPCVDeposit, uint256 weight) external;
-
     /// @notice replaces this contract with a new PCV Deposit Aggregator on the rewardsAssetManager
     /// @param newAggregator the address of the new PCV Deposit Aggregator
     function setNewAggregator(address newAggregator) external;
@@ -66,6 +62,10 @@ interface IPCVDepositAggregator {
     function setAssetManager(address newAssetManager) external;
 
     // ----------- Governor or Admin Only State Changing API -----------
+
+    /// @notice adds a new PCV Deposit to the set of deposits
+    /// @param weight a relative (i.e. not normalized) weight of this PCV deposit
+    function addPCVDeposit(address newPCVDeposit, uint256 weight) external;
 
     /// @notice remove a PCV deposit from the set of deposits
     /// @param pcvDeposit the address of the PCV deposit to remove
