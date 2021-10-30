@@ -1,18 +1,60 @@
 import { DependencyMap } from '@custom-types/types';
 
 const dependencies: DependencyMap = {
-  contract: {
+  core: {
     fips: {
-      fip_10: true
+      fip_37: true
     },
-    contractDependencies: ['contractB'],
+    contractDependencies: [],
     externalDependencies: []
   },
-  contractB: {
+  pcvEquityMinter: {
     fips: {
-      fip_10: true
+      fip_37: true
     },
-    contractDependencies: ['contract'],
+    contractDependencies: [],
+    externalDependencies: []
+  },
+  collateralizationOracleKeeper: {
+    fips: {
+      fip_37: true
+    },
+    contractDependencies: [],
+    externalDependencies: []
+  },
+  feiTribeLBPSwapper: {
+    fips: {
+      fip_37: true
+    },
+    contractDependencies: [],
+    externalDependencies: []
+  },
+  collateralizationOracle: {
+    fips: {
+      fip_37: true
+    },
+    contractDependencies: [],
+    externalDependencies: []
+  },
+  collateralizationOracleWrapper: {
+    fips: {
+      fip_37: true
+    },
+    contractDependencies: [],
+    externalDependencies: []
+  },
+  collateralizationOracleGuardian: {
+    fips: {
+      fip_37: true
+    },
+    contractDependencies: [],
+    externalDependencies: []
+  },
+  optimisticTimelock: {
+    fips: {
+      fip_37: true
+    },
+    contractDependencies: [],
     externalDependencies: []
   }
 };
