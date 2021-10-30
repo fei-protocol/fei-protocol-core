@@ -7,7 +7,7 @@ import { BigNumber, Contract } from 'ethers';
 import hre, { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { expectApprox, getImpersonatedSigner, resetFork, time } from '@test/helpers';
-import proposals from '@test/integration/proposals_config.json';
+import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '@test/integration/setup/utils';
 
