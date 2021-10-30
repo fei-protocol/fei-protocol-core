@@ -21,9 +21,9 @@
             "method": "allocateTribe(address,uint256)",
             "arguments": [
                 "{feiTribeLBPSwapper}",
-                "50000000000000000000000"
+                "5000000000000000000000"
             ],
-            "description": "Seed LBP Swapper with 50k TRIBE"
+            "description": "Seed LBP Swapper with 5k TRIBE"
         },
         {
             "target": "core",
@@ -88,6 +88,23 @@
                 "{optimisticTimelock}"
             ],
             "description": "Grant ORACLE_ADMIN_ROLE to OA Timelock"
+        },
+        {
+            "target": "fei",
+            "values": "0",
+            "method": "mint(address,uint256)",
+            "arguments": [
+                "{feiTribeLBPSwapper}",
+                "100000000000000000000000"
+            ],
+            "description": "Mint 100k FEI to LBP swapper" 
+        },
+        {
+            "target": "feiTribeLBPSwapper",
+            "values": "0",
+            "method": "swap()",
+            "arguments": [],
+            "description": "Trigger trial week lbp swapper" 
         }
     ]
 }
