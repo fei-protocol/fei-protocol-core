@@ -392,7 +392,7 @@ describe('e2e-staking', function () {
     });
   });
 
-  describe.only('FeiRari Tribe Staking Rewards', async () => {
+  describe('FeiRari Tribe Staking Rewards', async () => {
     let tribe: Contract;
     let tribalChief: TribalChief;
     let tribePerBlock: BigNumber;
