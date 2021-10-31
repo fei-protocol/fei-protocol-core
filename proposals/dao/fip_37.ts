@@ -235,7 +235,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await core.isMinter(collateralizationOracleKeeper.address)).to.be.true;
   expect(await core.isMinter(pcvEquityMinter.address)).to.be.true;
 
-  // expect(await tribe.balanceOf(feiTribeLBPSwapper.address)).to.be.bignumber.equal(TRIBE_BUYBACK_AMOUNT);
+  expect(await feiTribeLBPSwapper.isTimeStarted()).to.be.true;
 
   const price = (await feiTribeLBPSwapper.readOracle())[0];
   const response = await feiTribeLBPSwapper.getTokensIn(100000);
