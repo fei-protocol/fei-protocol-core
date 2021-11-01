@@ -156,19 +156,55 @@ describe('PCV Deposit Aggregator', function () {
     });
 
     it('reports accurate percentHeld', async () => {
-      throw new Error('Not yet implemented.');
+      // Mint some tokens into the deposit and the aggregator
+      await token.mint(pcvDeposit.address, ethers.utils.parseEther('1000'));
+      await token.mint(pcvDepositAggregator.address, ethers.utils.parseEther('1000'));
+
+      await pcvDeposit.deposit();
+
+      const percentHeldWithoutDeposit = (await pcvDepositAggregator.percentHeld(pcvDeposit.address, 0)).value;
+      const percentHeldWithDeposit = (await pcvDepositAggregator.percentHeld(pcvDeposit.address, ethers.utils.parseEther('8000'))).value;
+
+      expect(ethers.utils.formatUnits(percentHeldWithoutDeposit)).to.equal('0.5');
+      expect(ethers.utils.formatUnits(percentHeldWithDeposit)).to.equal('0.9');
     });
 
-    it('reports accurate targetPercentHeld', async () => {
-      throw new Error('Not yet implemented.');
+    it('reports accurate normalizedTargetWeight', async () => {
+      expect((await pcvDepositAggregator.normalizedTargetWeight(pcvDeposit.address)).value).to.equal(ethers.utils.parseEther('0.9'));
     });
 
     it('reports accurate amountFromTarget', async () => {
-      throw new Error('Not yet implemented.');
+      // Mint some tokens into the deposit and the aggregator
+      await token.mint(pcvDeposit.address, ethers.utils.parseEther('1000'));
+      await token.mint(pcvDepositAggregator.address, ethers.utils.parseEther('1000'));
+
+      await pcvDeposit.deposit();
+
+      const amountFromTarget = await pcvDepositAggregator.amountFromTarget(pcvDeposit.address);
+      expect(amountFromTarget).to.equal(ethers.utils.parseEther('-800'));
     });
 
     it('reports accurate resistantBalanceAndFei and balanceReportedIn', async () => {
-      throw new Error('Not yet implemented.');
+      // Mint some tokens into the deposit and the aggregator
+      await token.mint(pcvDeposit.address, ethers.utils.parseEther('1000'));
+      await token.mint(pcvDepositAggregator.address, ethers.utils.parseEther('1000'));
+
+      await pcvDeposit.deposit();
+
+      const resistantBalanceAndFei = await pcvDepositAggregator.resistantBalanceAndFei();
+      const totalResistantBalanceAndFei = await pcvDepositAggregator.getTotalResistantBalanceAndFei();
+
+      const resistantBalance = resistantBalanceAndFei[0];
+      const resistantFei = resistantBalanceAndFei[1];
+
+      const totalResistantBalance = totalResistantBalanceAndFei[0];
+      const totalResistantFei = totalResistantBalanceAndFei[1];
+
+      expect(resistantBalance).to.equal(ethers.utils.parseEther('1000'));
+      expect(resistantFei).to.equal(ethers.utils.parseEther('0'));
+
+      expect(totalResistantBalance).to.equal(ethers.utils.parseEther('2000'));
+      expect(totalResistantFei).to.equal(ethers.utils.parseEther('0'));
     });
   });
 
@@ -370,11 +406,13 @@ describe('PCV Deposit Aggregator', function () {
     });
 
     it('reverts when calling deposit when paused', async () => {
-      throw new Error('Method not yet written.');
+      await pcvDepositAggregator.pause();
+      await expect(pcvDepositAggregator.deposit()).to.be.revertedWith('Pausable: paused');
     });
 
     it('reverts when calling withdraw when paused', async () => {
-      throw new Error('Method not yet written.');
+      await pcvDepositAggregator.pause();
+      await expect(pcvDepositAggregator.withdraw(userAddress, ethers.utils.parseEther('1000'))).to.be.revertedWith('Pausable: paused');
     });
 
     // This test covers the special edge case with the following context:
