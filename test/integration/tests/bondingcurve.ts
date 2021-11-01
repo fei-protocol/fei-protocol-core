@@ -7,6 +7,7 @@ import { expectApprox, resetFork, time } from '@test/helpers';
 import proposals from '@test/integration/proposals_config.json';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '@test/integration/setup/utils';
+import { UniswapPCVDeposit } from '@custom-types/contracts';
 
 const toBN = ethers.BigNumber.from;
 
@@ -193,8 +194,10 @@ describe('e2e-bondingcurve', function () {
 
       it('should transfer allocation from dpi bonding curve to the uniswap deposit and Fuse', async function () {
         const bondingCurve = contracts.dpiBondingCurve;
-        const uniswapPCVDeposit = contracts.dpiUniswapPCVDeposit;
+        const uniswapPCVDeposit: UniswapPCVDeposit = contracts.dpiUniswapPCVDeposit as UniswapPCVDeposit;
         const fusePCVDeposit = contracts.indexCoopFusePoolDpiPCVDeposit;
+
+        await uniswapPCVDeposit.setMaxBasisPointsFromPegLP(10_000);
 
         const pcvAllocations = await bondingCurve.getAllocation();
         expect(pcvAllocations[0].length).to.be.equal(2);
