@@ -7,7 +7,7 @@ import {
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
-} from '../../types/types';
+} from '../../../types/types';
 import { FeiDAOTimelock } from '@custom-types/contracts';
 import { getImpersonatedSigner } from '@test/helpers';
 

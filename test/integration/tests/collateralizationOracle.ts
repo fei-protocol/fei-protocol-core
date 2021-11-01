@@ -4,7 +4,7 @@ import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedContracts } from '@custom-types/types';
 import { expectApprox } from '@test/helpers';
-import proposals from '@test/integration/proposals_config.json';
+import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import {
   CollateralizationOracle,
