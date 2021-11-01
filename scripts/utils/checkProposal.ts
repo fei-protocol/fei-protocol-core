@@ -1,7 +1,6 @@
-import { getAllContracts } from '../../test/integration/setup/loadContracts';
-import hre, { ethers } from 'hardhat';
-import { time } from '@openzeppelin/test-helpers';
-import { NamedContracts, namedContractsToNamedAddresses, UpgradeFuncs } from '../../types/types';
+import { getAllContracts, getAllContractAddresses } from '@test/integration/setup/loadContracts';
+import { getImpersonatedSigner, time } from '@test/helpers';
+import { NamedContracts, UpgradeFuncs } from '@custom-types/types';
 
 import * as dotenv from 'dotenv';
 
@@ -22,16 +21,26 @@ async function checkProposal() {
     throw new Error('DEPLOY_FILE or PROPOSAL_NUMBER env variable not set');
   }
 
+  // Get the upgrade setup, run and teardown scripts
+  const proposalFuncs: UpgradeFuncs = await import(`@proposals/dao/${proposalName}`);
+
   const contracts = (await getAllContracts()) as NamedContracts;
+
+  const contractAddresses = await getAllContractAddresses();
+
+  if (process.env.DO_SETUP) {
+    console.log('Setup');
+    await proposalFuncs.setup(
+      contractAddresses,
+      contracts as unknown as NamedContracts,
+      contracts as unknown as NamedContracts,
+      true
+    );
+  }
 
   const { feiDAO } = contracts;
 
-  await hre.network.provider.request({
-    method: 'hardhat_impersonateAccount',
-    params: [voterAddress]
-  });
-
-  const voterSigner = await ethers.getSigner(voterAddress);
+  const voterSigner = await getImpersonatedSigner(voterAddress);
 
   console.log(`Proposal Number: ${proposalNo}`);
 
@@ -46,12 +55,12 @@ async function checkProposal() {
     console.log('Vote already began');
   }
 
-  /*try {*/
-  await feiDAO.connect(voterSigner).castVote(proposalNo, 1);
-  console.log('Casted vote.');
-  /*} catch {
-    console.log('Already voted, ror some terrible error has occured.');
-  }*/
+  try {
+    await feiDAO.connect(voterSigner).castVote(proposalNo, 1);
+    console.log('Casted vote.');
+  } catch {
+    console.log('Already voted, or some terrible error has occured.');
+  }
 
   proposal = await feiDAO.proposals(proposalNo);
   const { endBlock } = proposal;
@@ -73,13 +82,12 @@ async function checkProposal() {
   await time.increase(86400); // 1 day in seconds
 
   console.log('Executing');
-  await feiDAO['execute(uint256)'](proposalNo);
+  try {
+    await feiDAO['execute(uint256)'](proposalNo);
+  } catch {
+    console.log('Already executed, or some terrible error has occured.');
+  }
   console.log('Success');
-
-  // Get the upgrade setup, run and teardown scripts
-  const proposalFuncs: UpgradeFuncs = await import(`../../proposals/dao/${proposalName}`);
-
-  const contractAddresses = namedContractsToNamedAddresses(contracts);
 
   console.log('Teardown');
   await proposalFuncs.teardown(
