@@ -86,8 +86,8 @@ const fip_37: ProposalDescription = {
       target: 'fei',
       values: '0',
       method: 'mint(address,uint256)',
-      arguments: ['{feiTribeLBPSwapper}', '100000000000000000000000'],
-      description: 'Mint 100k FEI to LBP swapper'
+      arguments: ['{feiTribeLBPSwapper}', '111000000000000000000000'],
+      description: 'Mint 111k FEI to LBP swapper'
     },
     {
       target: 'feiTribeLBPSwapper',
