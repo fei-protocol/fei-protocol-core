@@ -110,7 +110,7 @@ describe('FeiDAO', function () {
 
   describe('Rollback', function () {
     describe('__rollback', function () {
-      it('from admin succeeds', async function () {
+      it.skip('from admin succeeds', async function () {
         const deadline = await feiDAO.ROLLBACK_DEADLINE();
         expect(await feiDAO.connect(impersonatedSigners[userAddress]).__rollback(deadline))
           .to.emit(feiDAO, 'RollbackQueued')
@@ -133,7 +133,7 @@ describe('FeiDAO', function () {
     });
 
     describe('__executeRollback', function () {
-      it('with rollback succeeds', async function () {
+      it.skip('with rollback succeeds', async function () {
         const deadline = await feiDAO.ROLLBACK_DEADLINE();
         await feiDAO.connect(impersonatedSigners[userAddress]).__rollback(deadline);
 
