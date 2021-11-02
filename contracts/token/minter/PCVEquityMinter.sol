@@ -14,7 +14,7 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
     /// @notice The maximum percentage of PCV equity to be minted per year, in basis points 
     uint256 public constant override MAX_APR_BASIS_POINTS = 2000; // Max 20% per year
 
-    uint256 private constant FEI_MINTING_LIMIT_PER_SECOND = 1000e18; // 1000 FEI/s or ~86m FEI/day
+    uint256 private constant FEI_MINTING_LIMIT_PER_SECOND = 25e18; // 25 FEI/s or ~2.1m FEI/day
 
     /// @notice the collateralization oracle used to determine PCV equity
     ICollateralizationOracle public override collateralizationOracle;
