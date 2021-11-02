@@ -21,7 +21,7 @@ const MainnetAddresses = {
   },
   pcvEquityMinter: {
     artifactName: 'PCVEquityMinter',
-    address: '0x5389Bd35DED3D9633E5b4DfEf9B5A1B250d7B884'
+    address: '0x904Deb2Dac1EdfCBBb69b9c279aE5F75E57Cf5E9'
   },
   collateralizationOracleGuardian: {
     artifactName: 'CollateralizationOracleGuardian',

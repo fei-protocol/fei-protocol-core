@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
 
-describe('PCVEquityMinter', function () {
+describe.only('PCVEquityMinter', function () {
   let userAddress: string;
   let secondUserAddress: string;
   let governorAddress: string;
@@ -55,7 +55,9 @@ describe('PCVEquityMinter', function () {
       this.incentive,
       this.frequency,
       this.collateralizationOracle.address,
-      this.aprBasisPoints
+      this.aprBasisPoints,
+      '5000', // max APR 50%
+      ethers.constants.WeiPerEther.mul(1000) // 1000 FEI/s max
     );
 
     await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.feiMinter.address);
@@ -157,7 +159,7 @@ describe('PCVEquityMinter', function () {
 
     it('above max reverts', async function () {
       await expectRevert(
-        this.feiMinter.connect(impersonatedSigners[governorAddress]).setAPRBasisPoints('5000'),
+        this.feiMinter.connect(impersonatedSigners[governorAddress]).setAPRBasisPoints('6000'),
         'PCVEquityMinter: APR above max'
       );
     });
