@@ -45,6 +45,9 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
         _setAPRBasisPoints(_aprBasisPoints);
 
         MAX_APR_BASIS_POINTS = _maxAPRBasisPoints;
+
+        // Set flag to allow equity minter to mint some value up to the cap if the cap is reached
+        doPartialAction = true;
     }
 
     /// @notice triggers a minting of FEI based on the PCV equity
@@ -70,12 +73,12 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
 
     /// @notice sets the new APR for determining buyback size from PCV equity
     function setAPRBasisPoints(uint256 newAprBasisPoints) external override onlyGovernorOrAdmin {
+        require(newAprBasisPoints <= MAX_APR_BASIS_POINTS, "PCVEquityMinter: APR above max");
         _setAPRBasisPoints(newAprBasisPoints);
     }
 
     function _setAPRBasisPoints(uint256 newAprBasisPoints) internal {
         require(newAprBasisPoints != 0, "PCVEquityMinter: zero APR");
-        require(newAprBasisPoints <= MAX_APR_BASIS_POINTS, "PCVEquityMinter: APR above max");
 
         uint256 oldAprBasisPoints = aprBasisPoints;
         aprBasisPoints = newAprBasisPoints;
