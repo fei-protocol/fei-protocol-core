@@ -28,9 +28,9 @@ const MIN_LBP_SIZE = ethers.constants.WeiPerEther.mul(100_000); // 100k FEI
 // PCV Equity Minter
 const PCV_EQUITY_MINTER_INCENTIVE = ethers.constants.WeiPerEther.mul(1000); // 1000 FEI
 const PCV_EQUITY_MINTER_FREQUENCY = '604800'; // weekly
-const PCV_EQUITY_MINTER_APR_BPS = '1000'; // 10%
-
-const TRIBE_BUYBACK_AMOUNT = ethers.constants.WeiPerEther.mul(50_000); // 50k TRIBE
+const PCV_EQUITY_MINTER_APR_BPS = '2000'; // 20%
+const MAX_PCV_EQUITY_MINTER_APR_BPS = '5000'; // 50%
+const PCV_EQUITY_MINTER_MAX_FEI_PER_SECOND = ethers.constants.WeiPerEther.mul(25); // 25 FEI/s or about 15m/week max
 
 /*
 
@@ -172,7 +172,9 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     PCV_EQUITY_MINTER_INCENTIVE,
     PCV_EQUITY_MINTER_FREQUENCY,
     collateralizationOracleWrapper,
-    PCV_EQUITY_MINTER_APR_BPS
+    PCV_EQUITY_MINTER_APR_BPS,
+    MAX_PCV_EQUITY_MINTER_APR_BPS,
+    PCV_EQUITY_MINTER_MAX_FEI_PER_SECOND
   );
 
   await pcvEquityMinter.deployTransaction.wait();

@@ -12,9 +12,7 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
     using SafeCast for int256;
 
     /// @notice The maximum percentage of PCV equity to be minted per year, in basis points 
-    uint256 public constant override MAX_APR_BASIS_POINTS = 2000; // Max 20% per year
-
-    uint256 private constant FEI_MINTING_LIMIT_PER_SECOND = 25e18; // 25 FEI/s or ~2.1m FEI/day
+    uint256 public immutable override MAX_APR_BASIS_POINTS;
 
     /// @notice the collateralization oracle used to determine PCV equity
     ICollateralizationOracle public override collateralizationOracle;
@@ -37,12 +35,16 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
         uint256 _incentive,
         uint256 _frequency,
         ICollateralizationOracle _collateralizationOracle,
-        uint256 _aprBasisPoints
+        uint256 _aprBasisPoints,
+        uint256 _maxAPRBasisPoints,
+        uint256 _feiMintingLimitPerSecond
     ) 
-        FeiTimedMinter(_core, _target, _incentive, _frequency, FEI_MINTING_LIMIT_PER_SECOND * _frequency)
+        FeiTimedMinter(_core, _target, _incentive, _frequency, _feiMintingLimitPerSecond * _frequency)
     {
         _setCollateralizationOracle(_collateralizationOracle);
         _setAPRBasisPoints(_aprBasisPoints);
+
+        MAX_APR_BASIS_POINTS = _maxAPRBasisPoints;
     }
 
     /// @notice triggers a minting of FEI based on the PCV equity
