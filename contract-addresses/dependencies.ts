@@ -8,6 +8,13 @@ const dependencies: DependencyMap = {
     contractDependencies: [],
     externalDependencies: []
   },
+  fei: {
+    fips: {
+      fip_37: true
+    },
+    contractDependencies: [],
+    externalDependencies: []
+  },
   pcvEquityMinter: {
     fips: {
       fip_37: true

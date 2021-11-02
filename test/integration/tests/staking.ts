@@ -394,7 +394,7 @@ describe('e2e-staking', function () {
 
   describe('FeiRari Tribe Staking Rewards', async () => {
     let tribe: Contract;
-    let tribalChief: Contract;
+    let tribalChief: TribalChief;
     let tribePerBlock: BigNumber;
     let autoRewardsDistributor: AutoRewardsDistributor;
     let rewardsDistributorAdmin: Contract;
@@ -406,8 +406,9 @@ describe('e2e-staking', function () {
 
     before(async () => {
       stakingTokenWrapper = contracts.stakingTokenWrapperRari;
-      tribePerBlock = toBN('7125').mul(ethers.constants.WeiPerEther).div(100);
-      tribalChief = contracts.tribalChief;
+      tribalChief = contracts.tribalChief as TribalChief;
+      tribePerBlock = await tribalChief.tribePerBlock();
+
       rewardsDistributorAdmin = contracts.rewardsDistributorAdmin;
       autoRewardsDistributor = contracts.autoRewardsDistributor as AutoRewardsDistributor;
       tribe = contracts.tribe;

@@ -21,8 +21,8 @@ const fip_37: ProposalDescription = {
       target: 'core',
       values: '0',
       method: 'allocateTribe(address,uint256)',
-      arguments: ['{feiTribeLBPSwapper}', '50000000000000000000000'],
-      description: 'Seed LBP Swapper with 50k TRIBE'
+      arguments: ['{feiTribeLBPSwapper}', '5000000000000000000000'],
+      description: 'Seed LBP Swapper with 5k TRIBE'
     },
     {
       target: 'core',
@@ -81,9 +81,38 @@ const fip_37: ProposalDescription = {
       method: 'grantRole(bytes32,address)',
       arguments: ['0xc307c44629779eb8fc0b85f224c3d22f5876a6c84de0ee42d481eb7814f0d3a8', '{optimisticTimelock}'],
       description: 'Grant ORACLE_ADMIN_ROLE to OA Timelock'
+    },
+    {
+      target: 'fei',
+      values: '0',
+      method: 'mint(address,uint256)',
+      arguments: ['{feiTribeLBPSwapper}', '111000000000000000000000'],
+      description: 'Mint 111k FEI to LBP swapper'
+    },
+    {
+      target: 'feiTribeLBPSwapper',
+      values: '0',
+      method: 'swap()',
+      arguments: [],
+      description: 'Trigger trial week lbp swapper'
     }
   ],
-  description: 'buybacks!'
+  description: `
+
+Summary:
+Initialize TRIBE buybacks on a continuous weekly basis at 20% APR of protcol equity.
+
+Proposal:
+Utilize new contracts to automatically and cyclically trigger auctions of newly minted FEI for TRIBE.
+The amount of FEI minted is calculated as 20% of protocol equity normalized to the period length of 1 week per year.
+
+The proposal initializes the collateralization oracle keeper and guardian. The former is used to keep the collateralization oracle up to date, and the latter allows for the guardian to pause and semi-manually override the cached values.
+
+It also seeds 111k FEI and 5k TRIBE for the first auction at a lower value as a capped launch.
+
+Forum discussion: https://tribe.fei.money/t/fip-37-fei-v2-tribe-buybacks/3571
+Code: https://github.com/fei-protocol/fei-protocol-core/blob/develop/proposals/description/fip_37.ts
+`
 };
 
 export default fip_37;
