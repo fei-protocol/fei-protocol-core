@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
 
-describe.only('PCVEquityMinter', function () {
+describe('PCVEquityMinter', function () {
   let userAddress: string;
   let secondUserAddress: string;
   let governorAddress: string;
