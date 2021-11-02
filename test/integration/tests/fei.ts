@@ -16,7 +16,7 @@ before(async () => {
   await resetFork();
 });
 
-describe.only('e2e-fei', function () {
+describe('e2e-fei', function () {
   let contracts: NamedContracts;
   let deployAddress: string;
   let deploySigner: Signer;
