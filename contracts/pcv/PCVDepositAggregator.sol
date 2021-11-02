@@ -201,9 +201,9 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
 
     /// @notice remove a PCV deposit from the set of deposits
     /// @param pcvDeposit the address of the PCV deposit to remove
-    /// @param shouldRebalance whether or not we want to withdraw from the pcv deposit before removing
-    function removePCVDeposit(address pcvDeposit, bool shouldRebalance) external override onlyGovernorOrAdmin {
-        _removePCVDeposit(address(pcvDeposit), shouldRebalance);
+    /// @param shouldWithdraw whether or not we want to withdraw from the pcv deposit before removing
+    function removePCVDeposit(address pcvDeposit, bool shouldWithdraw) external override onlyGovernorOrAdmin {
+        _removePCVDeposit(address(pcvDeposit), shouldWithdraw);
     }
 
     /// @notice adds a new PCV Deposit to the set of deposits
@@ -428,11 +428,16 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
     function _removePCVDeposit(address depositAddress, bool shouldWithdraw) internal {
         require(pcvDepositAddresses.contains(depositAddress), "Deposit does not exist.");
 
-        // Set the PCV Deposit weight to 0 and rebalance to remove all of the liquidity from this particular deposit
+        // Set the PCV Deposit weight to 0
         totalWeight = totalWeight - pcvDepositWeights[depositAddress];
         pcvDepositWeights[depositAddress] = 0;
 
         pcvDepositAddresses.remove(depositAddress);
+
+        if (shouldWithdraw) {
+            uint depositBalance = IPCVDeposit(depositAddress).balance();
+            IPCVDeposit(depositAddress).withdraw(address(this), depositBalance);
+        }
 
         emit DepositRemoved(depositAddress);
     }

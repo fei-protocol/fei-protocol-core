@@ -22,7 +22,7 @@ chai.config.includeStack = true;
 // Import if needed, just a helper.
 // const toBN = ethers.BigNumber.from;
 
-describe('PCV Deposit Aggregator', function () {
+describe.only('PCV Deposit Aggregator', function () {
   // variable decs for vars that you want to use in multiple tests
   // typeing contracts specifically to what kind they are will catch before you run them!
   let core: Core;
@@ -30,6 +30,7 @@ describe('PCV Deposit Aggregator', function () {
   let userAddress: string;
   let pcvControllerAddress: string;
   let governorAddress: string;
+  let guardianAddress: string;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
 
@@ -40,9 +41,10 @@ describe('PCV Deposit Aggregator', function () {
     userAddress = addresses.userAddress;
     pcvControllerAddress = addresses.pcvControllerAddress;
     governorAddress = addresses.governorAddress;
+    guardianAddress = addresses.guardianAddress;
 
     // add any addresses you want to impersonate here
-    const impersonatedAddresses = [userAddress, pcvControllerAddress, governorAddress];
+    const impersonatedAddresses = [userAddress, pcvControllerAddress, governorAddress, guardianAddress];
 
     for (const address of impersonatedAddresses) {
       await hre.network.provider.request({
@@ -406,13 +408,13 @@ describe('PCV Deposit Aggregator', function () {
     });
 
     it('reverts when calling deposit when paused', async () => {
-      await pcvDepositAggregator.pause();
+      await pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).pause();
       await expect(pcvDepositAggregator.deposit()).to.be.revertedWith('Pausable: paused');
     });
 
     it('reverts when calling withdraw when paused', async () => {
-      await pcvDepositAggregator.pause();
-      await expect(pcvDepositAggregator.withdraw(userAddress, ethers.utils.parseEther('1000'))).to.be.revertedWith('Pausable: paused');
+      await pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).pause();
+      await expect(pcvDepositAggregator.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, ethers.utils.parseEther('1000'))).to.be.revertedWith('Pausable: paused');
     });
 
     // This test covers the special edge case with the following context:
@@ -502,183 +504,185 @@ describe('PCV Deposit Aggregator', function () {
     });
 
     it('withdraws trace amounts', async () => {
-      throw new Error('Method not yet written.');
+      // Mint 6000, 3000, and 1000 tokens to each pcv deposit, respectively
+      await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
+      await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
+      await token.mint(pcvDeposit3.address, ethers.utils.parseEther('1000'));
+
+      // Call deposit on each pcv deposit so that their balances update
+      await pcvDeposit1.deposit();
+      await pcvDeposit2.deposit();
+      await pcvDeposit3.deposit();
+
+      await pcvDepositAggregator.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, ethers.utils.parseEther('0.000000001'));
+
+      // Check balances after
+      const pcvDeposit1Balance = await token.balanceOf(pcvDeposit1.address);
+      const pcvDeposit2Balance = await token.balanceOf(pcvDeposit2.address);
+      const pcvDeposit3Balance = await token.balanceOf(pcvDeposit3.address);
+
+      const aggregatorBalance = await token.balanceOf(pcvDepositAggregator.address);
+
+      const sum = pcvDeposit1Balance.add(pcvDeposit2Balance).add(pcvDeposit3Balance).add(aggregatorBalance);
+
+      //console.log(`pcv deposit 1 balance: ${ethers.utils.formatUnits(pcvDeposit1Balance)}`);
+      //console.log(`pcv deposit 2 balance: ${ethers.utils.formatUnits(pcvDeposit2Balance)}`);
+      //console.log(`pcv deposit 3 balance: ${ethers.utils.formatUnits(pcvDeposit3Balance)}`);
+      //console.log(`aggregator balance: ${ethers.utils.formatUnits(aggregatorBalance)}`);
+      //console.log(`sum: ${ethers.utils.formatUnits(sum)}`);
+
+      expect(sum).to.equal(ethers.utils.parseEther('10000').sub(ethers.utils.parseEther('0.000000001')));
     });
 
     it('deposits trace amounts', async () => {
-      throw new Error('Method not yet written.');
+      // Mint 1, 1000, 1e10, and 100 wei tokens to each pcv deposit and aggregator respectively
+      await token.mint(pcvDeposit1.address, '1');
+      await token.mint(pcvDeposit2.address, '1000');
+      await token.mint(pcvDeposit3.address, '10000000000');
+      await token.mint(pcvDepositAggregator.address, '100');
+
+      // total: 1 + 1000 + 10000000000 + 100 wei = 10000001101 wei
+
+      await pcvDeposit1.deposit();
+      await pcvDeposit2.deposit();
+      await pcvDeposit3.deposit();
+
+      await pcvDepositAggregator.deposit();
+
+      // Check balances after
+      const pcvDeposit1Balance = await token.balanceOf(pcvDeposit1.address);
+      const pcvDeposit2Balance = await token.balanceOf(pcvDeposit2.address);
+      const pcvDeposit3Balance = await token.balanceOf(pcvDeposit3.address);  
+      const aggregatorBalance = await token.balanceOf(pcvDepositAggregator.address);
+
+      const sum = pcvDeposit1Balance.add(pcvDeposit2Balance).add(pcvDeposit3Balance).add(aggregatorBalance);
+
+      //console.log(`pcv deposit 1 balance: ${ethers.utils.formatUnits(pcvDeposit1Balance)}`);
+      //console.log(`pcv deposit 2 balance: ${ethers.utils.formatUnits(pcvDeposit2Balance)}`);
+      //console.log(`pcv deposit 3 balance: ${ethers.utils.formatUnits(pcvDeposit3Balance)}`);
+      //console.log(`aggregator balance: ${ethers.utils.formatUnits(aggregatorBalance)}`);
+      //console.log(`sum: ${sum.toNumber()}`)
+
+      expect(sum.toNumber()).to.equal(10000001101);
     });
 
     it('correctly sets deposit weight to zero via setDepositWeightZero()', async () => {
-      throw new Error('Method not yet written.');
+      await pcvDepositAggregator.connect(impersonatedSigners[guardianAddress]).setPCVDepositWeightZero(pcvDeposit1.address);
+      expect((await pcvDepositAggregator.normalizedTargetWeight(pcvDeposit1.address)).value).to.equal(0);
     });
 
     it('correctly sets the buffer weight via setBufferWeight()', async () => {
-      throw new Error('Method not yet written.');
+      await pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).setBufferWeight('5000');
+      expect(await pcvDepositAggregator.bufferWeight()).to.equal('5000');
     });
 
     it('correctly sets pcv deposit weights via setPCVDepositWeight()', async () => {
-      throw new Error('Method not yet written.');
+      await pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).setPCVDepositWeight(pcvDeposit1.address, '5000');
+      expect(await pcvDepositAggregator.pcvDepositWeights(pcvDeposit1.address)).to.equal('5000');
     });
 
     it('reverts upon attempting to remove a non-existent pcv deposit', async () => {
-      throw new Error('Method not yet written.');
+      await pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).removePCVDeposit(pcvDeposit1.address, false);
+      await expect(pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).removePCVDeposit(pcvDeposit1.address, true)).to.be.revertedWith('Deposit does not exist.');
     });
 
     it('reverts upon trying to add a pcv deposit that already exists', async () => {
-      throw new Error('Methot not yet written.');
+      await expect(pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).addPCVDeposit(pcvDeposit1.address, '5000')).to.be.revertedWith('Deposit already added.');
     });
 
     it('reverts when trying to add a pcv deposit with a non-matching token', async () => {
-      throw new Error('Method not yet written.');
+      const tokenFactory = new MockERC20__factory(impersonatedSigners[userAddress]);
+      const token2 = await tokenFactory.deploy();
+      await token2.deployTransaction.wait();
+
+      await expect(pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).addPCVDeposit(token2.address, '5000')).to.be.revertedWith("function selector was not recognized and there's no fallback function");
     });
 
-    it('returns correctly values from hasPCVDeposit()', async () => {
-      throw new Error('Method not yet written.');
-    });
+    it('returns correctl values from hasPCVDeposit()', async () => {
+      const tokenFactory = new MockERC20__factory(impersonatedSigners[userAddress]);
+      const token2 = await tokenFactory.deploy();
+      await token2.deployTransaction.wait();
 
-    it('sets a new assetmanager on a non-asset-manager and reverts', async () => {
-      throw new Error('Method not yet written.');
-    });
-
-    it('sets a new aggregator on a non-aggregator and reverts', async () => {
-      throw new Error('Method not yet written.');
-    });
-
-    it('sets a new aggregator on a an aggregator that has no pcv deposits yet', async () => {
-      throw new Error('Method not yet written.');
-    });
-
-    it('sets a new aggregator on a an aggregator that has some pcv deposits', async () => {
-      throw new Error('Method not yet written.');
-    });
-
-    it('sets a new aggregator on a an aggregator that has some pcv deposits that already match', async () => {
-      throw new Error('Method not yet written.');
+      expect(await pcvDepositAggregator.hasPCVDeposit(pcvDeposit1.address)).to.equal(true);
+      expect(await pcvDepositAggregator.hasPCVDeposit(token2.address)).to.equal(false);
     });
 
     it('correctly returns all the pcv deposit when pcvDeposits() is called', async () => {
-      throw new Error('Method not yet written.');
-    });
-  });
+      const deposits = await pcvDepositAggregator.pcvDeposits();
 
-  describe('when it is deployed with vastly divergent weights', async () => {
-    beforeEach(async () => {
-      throw new Error('Method not yet impelmented.');
-    });
+      expect(deposits.deposits.length).to.equal(3);
+      expect(deposits.weights.length).to.equal(3);
 
-    it('initial values are correct: balance, paused, buffer weight, token', async () => {
-      throw new Error('Method not yet implemented.');
-    });
+      expect(deposits.deposits[0]).to.equal(pcvDeposit1.address);
+      expect(deposits.deposits[1]).to.equal(pcvDeposit2.address);
+      expect(deposits.deposits[2]).to.equal(pcvDeposit3.address);
 
-    it('withdraws correctly from several deposits', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('deposits correctly from several deposits', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('adds a pcv deposit', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('removes a pcv deposit', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('changes a pcv deposit weight', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('changes the aggregator buffer weight', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-  });
-
-  describe('when it is deployed with very large weights', async () => {
-    beforeEach(async () => {
-      throw new Error('Method not yet impelmented.');
-    });
-
-    it('initial values are correct: balance, paused, buffer weight, token', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('withdraws correctly from several deposits', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('deposits correctly from several deposits', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('adds a pcv deposit', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('removes a pcv deposit', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('changes a pcv deposit weight', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('changes the aggregator buffer weight', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-  });
-
-  describe('when it is deployed with very small weights', async () => {
-    beforeEach(async () => {
-      throw new Error('Method not yet impelmented.');
-    });
-
-    it('initial values are correct: balance, paused, buffer weight, token', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('withdraws correctly from several deposits', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('deposits correctly from several deposits', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('adds a pcv deposit', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('removes a pcv deposit', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('changes a pcv deposit weight', async () => {
-      throw new Error('Method not yet implemented.');
-    });
-
-    it('changes the aggregator buffer weight', async () => {
-      throw new Error('Method not yet implemented.');
+      expect(deposits.weights[0]).to.equal('20');
+      expect(deposits.weights[1]).to.equal('30');
+      expect(deposits.weights[2]).to.equal('40');
     });
   });
 
   describe('access control', async () => {
-    describe('governor-only methods', async () => {
-      throw new Error('Method not yet written.');
+    let pcvDepositAggregator: PCVDepositAggregator;
+    let token: MockERC20;
+    let pcvDeposit1: PCVDeposit;
+    let pcvDeposit2: PCVDeposit;
+    let pcvDeposit3: PCVDeposit;
+    let assetManager: MockContract;
+
+    beforeEach(async () => {
+      const tokenFactory = new MockERC20__factory(impersonatedSigners[userAddress]);
+      const pcvDepositAggregatorDeployer = new PCVDepositAggregator__factory(impersonatedSigners[userAddress]);
+      const mockPCVDepositDeployer = new MockPCVDepositV2__factory(impersonatedSigners[userAddress]);
+
+      token = await tokenFactory.deploy();
+      await token.deployTransaction.wait();
+
+      pcvDeposit1 = await mockPCVDepositDeployer.deploy(core.address, token.address, 0, 0);
+      await pcvDeposit1.deployTransaction.wait();
+
+      pcvDeposit2 = await mockPCVDepositDeployer.deploy(core.address, token.address, 0, 0);
+      await pcvDeposit2.deployTransaction.wait();
+
+      pcvDeposit3 = await mockPCVDepositDeployer.deploy(core.address, token.address, 0, 0);
+      await pcvDeposit3.deployTransaction.wait();
+
+      assetManager = await deployMockContract(
+        impersonatedSigners[userAddress],
+        IRewardsAssetManager__factory.createInterface().format('json')
+      );
+      await assetManager.mock.getToken.returns(token.address);
+
+      pcvDepositAggregator = await pcvDepositAggregatorDeployer.deploy(
+        core.address,
+        assetManager.address,
+        token.address,
+        [pcvDeposit1.address, pcvDeposit2.address, pcvDeposit3.address],
+        [20, 30, 40],
+        10
+      );
+      await pcvDepositAggregator.deployTransaction.wait();
     });
 
-    describe('governor-or-guardian-only methods', async () => {
-      throw new Error('Method not yet written.');
+
+    it('governor-or-admin-only methods', async () => {
+      // add & remove pcv deposit
+      await expect(pcvDepositAggregator.addPCVDeposit(pcvDeposit1.address, '5000')).to.be.revertedWith('CoreRef: Caller is not a governor or contract admin');
+      await expect(pcvDepositAggregator.removePCVDeposit(pcvDeposit1.address, false)).to.be.revertedWith('CoreRef: Caller is not a governor or contract admin');
+
+      // set pcv deposit weight & set buffer weight
+      await expect(pcvDepositAggregator.setBufferWeight('5000')).to.be.revertedWith('CoreRef: Caller is not a governor or contract admin');
+      await expect(pcvDepositAggregator.setPCVDepositWeight(pcvDeposit1.address, '5000')).to.be.revertedWith('CoreRef: Caller is not a governor or contract admin');
     });
 
-    describe('guardian-only methods', async () => {
-      throw new Error('Method not yet written.');
+    it('reverts when trying to call governor-only methods from non-governor accounts', async () => {
+      await expect(pcvDepositAggregator.setAssetManager(pcvDeposit1.address)).to.be.revertedWith('CoreRef: Caller is not a governor');
+      await expect(pcvDepositAggregator.setNewAggregator(pcvDeposit1.address)).to.be.revertedWith('CoreRef: Caller is not a governor');
     });
 
-    describe('governor-or-admin-only methods', async () => {
-      throw new Error('Method not yet written.');
+    it('reverts when trying to call guardian methods from non guardian accounts', async () => {
+      await expect(pcvDepositAggregator.setPCVDepositWeightZero(pcvDeposit1.address)).to.be.revertedWith('CoreRef: Caller is not a guardian');
     });
   });
 });
