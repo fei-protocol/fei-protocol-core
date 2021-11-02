@@ -165,14 +165,18 @@ describe.only('PCV Deposit Aggregator', function () {
       await pcvDeposit.deposit();
 
       const percentHeldWithoutDeposit = (await pcvDepositAggregator.percentHeld(pcvDeposit.address, 0)).value;
-      const percentHeldWithDeposit = (await pcvDepositAggregator.percentHeld(pcvDeposit.address, ethers.utils.parseEther('8000'))).value;
+      const percentHeldWithDeposit = (
+        await pcvDepositAggregator.percentHeld(pcvDeposit.address, ethers.utils.parseEther('8000'))
+      ).value;
 
       expect(ethers.utils.formatUnits(percentHeldWithoutDeposit)).to.equal('0.5');
       expect(ethers.utils.formatUnits(percentHeldWithDeposit)).to.equal('0.9');
     });
 
     it('reports accurate normalizedTargetWeight', async () => {
-      expect((await pcvDepositAggregator.normalizedTargetWeight(pcvDeposit.address)).value).to.equal(ethers.utils.parseEther('0.9'));
+      expect((await pcvDepositAggregator.normalizedTargetWeight(pcvDeposit.address)).value).to.equal(
+        ethers.utils.parseEther('0.9')
+      );
     });
 
     it('reports accurate amountFromTarget', async () => {
@@ -414,7 +418,11 @@ describe.only('PCV Deposit Aggregator', function () {
 
     it('reverts when calling withdraw when paused', async () => {
       await pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).pause();
-      await expect(pcvDepositAggregator.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, ethers.utils.parseEther('1000'))).to.be.revertedWith('Pausable: paused');
+      await expect(
+        pcvDepositAggregator
+          .connect(impersonatedSigners[pcvControllerAddress])
+          .withdraw(userAddress, ethers.utils.parseEther('1000'))
+      ).to.be.revertedWith('Pausable: paused');
     });
 
     // This test covers the special edge case with the following context:
@@ -514,7 +522,9 @@ describe.only('PCV Deposit Aggregator', function () {
       await pcvDeposit2.deposit();
       await pcvDeposit3.deposit();
 
-      await pcvDepositAggregator.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, ethers.utils.parseEther('0.000000001'));
+      await pcvDepositAggregator
+        .connect(impersonatedSigners[pcvControllerAddress])
+        .withdraw(userAddress, ethers.utils.parseEther('0.000000001'));
 
       // Check balances after
       const pcvDeposit1Balance = await token.balanceOf(pcvDeposit1.address);
@@ -552,7 +562,7 @@ describe.only('PCV Deposit Aggregator', function () {
       // Check balances after
       const pcvDeposit1Balance = await token.balanceOf(pcvDeposit1.address);
       const pcvDeposit2Balance = await token.balanceOf(pcvDeposit2.address);
-      const pcvDeposit3Balance = await token.balanceOf(pcvDeposit3.address);  
+      const pcvDeposit3Balance = await token.balanceOf(pcvDeposit3.address);
       const aggregatorBalance = await token.balanceOf(pcvDepositAggregator.address);
 
       const sum = pcvDeposit1Balance.add(pcvDeposit2Balance).add(pcvDeposit3Balance).add(aggregatorBalance);
@@ -567,7 +577,9 @@ describe.only('PCV Deposit Aggregator', function () {
     });
 
     it('correctly sets deposit weight to zero via setDepositWeightZero()', async () => {
-      await pcvDepositAggregator.connect(impersonatedSigners[guardianAddress]).setPCVDepositWeightZero(pcvDeposit1.address);
+      await pcvDepositAggregator
+        .connect(impersonatedSigners[guardianAddress])
+        .setPCVDepositWeightZero(pcvDeposit1.address);
       expect((await pcvDepositAggregator.normalizedTargetWeight(pcvDeposit1.address)).value).to.equal(0);
     });
 
@@ -577,17 +589,25 @@ describe.only('PCV Deposit Aggregator', function () {
     });
 
     it('correctly sets pcv deposit weights via setPCVDepositWeight()', async () => {
-      await pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).setPCVDepositWeight(pcvDeposit1.address, '5000');
+      await pcvDepositAggregator
+        .connect(impersonatedSigners[governorAddress])
+        .setPCVDepositWeight(pcvDeposit1.address, '5000');
       expect(await pcvDepositAggregator.pcvDepositWeights(pcvDeposit1.address)).to.equal('5000');
     });
 
     it('reverts upon attempting to remove a non-existent pcv deposit', async () => {
-      await pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).removePCVDeposit(pcvDeposit1.address, false);
-      await expect(pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).removePCVDeposit(pcvDeposit1.address, true)).to.be.revertedWith('Deposit does not exist.');
+      await pcvDepositAggregator
+        .connect(impersonatedSigners[governorAddress])
+        .removePCVDeposit(pcvDeposit1.address, false);
+      await expect(
+        pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).removePCVDeposit(pcvDeposit1.address, true)
+      ).to.be.revertedWith('Deposit does not exist.');
     });
 
     it('reverts upon trying to add a pcv deposit that already exists', async () => {
-      await expect(pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).addPCVDeposit(pcvDeposit1.address, '5000')).to.be.revertedWith('Deposit already added.');
+      await expect(
+        pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).addPCVDeposit(pcvDeposit1.address, '5000')
+      ).to.be.revertedWith('Deposit already added.');
     });
 
     it('reverts when trying to add a pcv deposit with a non-matching token', async () => {
@@ -595,7 +615,9 @@ describe.only('PCV Deposit Aggregator', function () {
       const token2 = await tokenFactory.deploy();
       await token2.deployTransaction.wait();
 
-      await expect(pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).addPCVDeposit(token2.address, '5000')).to.be.revertedWith("function selector was not recognized and there's no fallback function");
+      await expect(
+        pcvDepositAggregator.connect(impersonatedSigners[governorAddress]).addPCVDeposit(token2.address, '5000')
+      ).to.be.revertedWith("function selector was not recognized and there's no fallback function");
     });
 
     it('returns correctl values from hasPCVDeposit()', async () => {
@@ -665,24 +687,37 @@ describe.only('PCV Deposit Aggregator', function () {
       await pcvDepositAggregator.deployTransaction.wait();
     });
 
-
     it('governor-or-admin-only methods', async () => {
       // add & remove pcv deposit
-      await expect(pcvDepositAggregator.addPCVDeposit(pcvDeposit1.address, '5000')).to.be.revertedWith('CoreRef: Caller is not a governor or contract admin');
-      await expect(pcvDepositAggregator.removePCVDeposit(pcvDeposit1.address, false)).to.be.revertedWith('CoreRef: Caller is not a governor or contract admin');
+      await expect(pcvDepositAggregator.addPCVDeposit(pcvDeposit1.address, '5000')).to.be.revertedWith(
+        'CoreRef: Caller is not a governor or contract admin'
+      );
+      await expect(pcvDepositAggregator.removePCVDeposit(pcvDeposit1.address, false)).to.be.revertedWith(
+        'CoreRef: Caller is not a governor or contract admin'
+      );
 
       // set pcv deposit weight & set buffer weight
-      await expect(pcvDepositAggregator.setBufferWeight('5000')).to.be.revertedWith('CoreRef: Caller is not a governor or contract admin');
-      await expect(pcvDepositAggregator.setPCVDepositWeight(pcvDeposit1.address, '5000')).to.be.revertedWith('CoreRef: Caller is not a governor or contract admin');
+      await expect(pcvDepositAggregator.setBufferWeight('5000')).to.be.revertedWith(
+        'CoreRef: Caller is not a governor or contract admin'
+      );
+      await expect(pcvDepositAggregator.setPCVDepositWeight(pcvDeposit1.address, '5000')).to.be.revertedWith(
+        'CoreRef: Caller is not a governor or contract admin'
+      );
     });
 
     it('reverts when trying to call governor-only methods from non-governor accounts', async () => {
-      await expect(pcvDepositAggregator.setAssetManager(pcvDeposit1.address)).to.be.revertedWith('CoreRef: Caller is not a governor');
-      await expect(pcvDepositAggregator.setNewAggregator(pcvDeposit1.address)).to.be.revertedWith('CoreRef: Caller is not a governor');
+      await expect(pcvDepositAggregator.setAssetManager(pcvDeposit1.address)).to.be.revertedWith(
+        'CoreRef: Caller is not a governor'
+      );
+      await expect(pcvDepositAggregator.setNewAggregator(pcvDeposit1.address)).to.be.revertedWith(
+        'CoreRef: Caller is not a governor'
+      );
     });
 
     it('reverts when trying to call guardian methods from non guardian accounts', async () => {
-      await expect(pcvDepositAggregator.setPCVDepositWeightZero(pcvDeposit1.address)).to.be.revertedWith('CoreRef: Caller is not a guardian');
+      await expect(pcvDepositAggregator.setPCVDepositWeightZero(pcvDeposit1.address)).to.be.revertedWith(
+        'CoreRef: Caller is not a guardian'
+      );
     });
   });
 });
