@@ -67,11 +67,12 @@ interface IPCVGuardian {
     /// @param amount the amount of tokens to withdraw
     /// @param unpauseBefore if true, the pcv contract will be unpaused before the withdraw
     /// @param pauseAfter if true, the pcv contract will be paused after the withdraw
-    function withdrawETHToSafeAddress(address pcvDeposit, address safeAddress, uint amount, bool unpauseBefore, bool pauseAfter) external;
+    function withdrawETHToSafeAddress(address pcvDeposit, address payable safeAddress, uint amount, bool unpauseBefore, bool pauseAfter) external;
 
     /// @notice governor-or-guardian-only method to withdraw funds from a pcv deposit, by calling the withdraw() method on it
     /// @param pcvDeposit the deposit to pull funds from
     /// @param safeAddress the destination address to withdraw to
+    /// @param token the token to withdraw
     /// @param amount the amount of funds to withdraw
     /// @param unpauseBefore whether to unpause the pcv before withdrawing
     /// @param pauseAfter whether to pause the pcv after withdrawing
