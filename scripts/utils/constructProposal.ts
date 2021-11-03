@@ -1,6 +1,5 @@
-import { getAllContractAddresses, getAllContracts } from '@test/integration/setup/loadContracts';
 import { proposals } from 'hardhat';
-import { NamedAddresses, ProposalDescription } from '@custom-types/types';
+import { MainnetContracts, NamedAddresses, ProposalDescription } from '@custom-types/types';
 import format from 'string-template';
 import { AlphaProposal } from '@idle-finance/hardhat-proposals-plugin/dist/src/proposals/compound-alpha';
 
@@ -11,15 +10,13 @@ import { AlphaProposal } from '@idle-finance/hardhat-proposals-plugin/dist/src/p
  */
 export default async function constructProposal(
   proposalInfo: ProposalDescription,
-  contracts = undefined,
-  contractAddresses = undefined,
+  contracts: MainnetContracts,
+  contractAddresses: NamedAddresses,
   logging = false
 ): Promise<AlphaProposal> {
-  console.log(`Constructing proposal...`);
-  const proposalDescription = proposalInfo.description;
+  logging && console.log(`Constructing proposal...`);
 
-  contracts = contracts || (await getAllContracts());
-  contractAddresses = contractAddresses || (await getAllContractAddresses());
+  const proposalDescription = proposalInfo.description;
 
   const proposalBuilder = proposals.builders.alpha();
   proposalBuilder.maxActions = 40;
