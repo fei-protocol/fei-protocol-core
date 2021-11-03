@@ -11,7 +11,7 @@ dotenv.config();
 export async function sudo(contracts: NamedContracts, logging = false): Promise<void> {
   const core = contracts.core;
   const fei = contracts.fei;
-  const timelock = contracts.timelock;
+  const timelock = contracts.feiDAOTimelock;
 
   // Impersonate the Timelock which has Governor access on-chain
   await network.provider.request({
