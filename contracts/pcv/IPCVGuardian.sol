@@ -38,6 +38,9 @@ interface IPCVGuardian {
     /// @param anAddress the address to check
     function isSafeAddress(address anAddress) external view returns (bool);
 
+    /// @notice returns all safe addresses
+    function getSafeAddresses() external view returns (address[] memory);
+
     // ---------- Governor-Only State-Changing API ----------
 
     /// @notice governor-only method to set an address as "safe" to withdraw funds to
