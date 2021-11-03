@@ -28,7 +28,8 @@ interface IPCVGuardian {
 
     event PCVGuardianERC20Withdrawal(
         address indexed pcvDeposit, 
-        address indexed destination, 
+        address indexed destination,
+        address indexed token,
         uint amount
     );
 
