@@ -65,6 +65,7 @@ describe('TribeReserveStabilizer', function () {
     );
 
     await this.tribe.connect(impersonatedSigners[governorAddress]).setMinter(this.reserveStabilizer.address, {});
+    await this.tribe.connect(impersonatedSigners[governorAddress]).setMinter(this.tribeMinter.address, {});
 
     await this.fei
       .connect(impersonatedSigners[userAddress])
