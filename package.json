@@ -37,7 +37,7 @@
   "author": "joeysantoro",
   "license": "AGPL-3.0-only",
   "dependencies": {
-    "@balancer-labs/v2-pool-weighted": "^1.0.0",
+    "@balancer-labs/v2-pool-weighted": "^2.0.1",
     "@chainlink/contracts": "^0.1.7",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@openzeppelin/contracts": "^4.3.2",
