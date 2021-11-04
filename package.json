@@ -78,7 +78,7 @@
     "solidity-coverage": "^0.7.17",
     "ts-node": "^10.4.0",
     "tsconfig-paths": "^3.11.0",
-    "typechain": "^5.1.2",
+    "typechain": "^5.2.0",
     "typescript": "^4.4.4"
   },
   "lint-staged": {
