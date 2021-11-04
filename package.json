@@ -47,7 +47,7 @@
     "@uniswap/v2-core": "^1.0.1",
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "chai": "^4.3.4",
-    "dotenv": "^8.2.0",
+    "dotenv": "^10.0.0",
     "hardhat": "^2.6.0",
     "hardhat-contract-sizer": "^2.0.3",
     "hardhat-gas-reporter": "^1.0.4",
@@ -76,7 +76,7 @@
     "mocha": "^9.1.2",
     "prettier": "^2.4.1",
     "solidity-coverage": "^0.7.17",
-    "ts-node": "^10.0.0",
+    "ts-node": "^10.4.0",
     "tsconfig-paths": "^3.11.0",
     "typechain": "^5.1.2",
     "typescript": "^4.4.4"
