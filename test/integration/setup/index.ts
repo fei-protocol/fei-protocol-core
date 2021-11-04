@@ -121,7 +121,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       // Simulate the DAO proposal
       const proposal = await constructProposal(
         config.proposal,
-        contracts as MainnetContracts,
+        contracts as unknown as MainnetContracts,
         contractAddresses,
         this.config.logging
       );
