@@ -19,7 +19,7 @@ before(async () => {
   await resetFork();
 });
 
-describe('e2e-staking', function () {
+describe.only('e2e-staking', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;

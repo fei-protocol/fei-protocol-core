@@ -22,7 +22,7 @@ const proposals: ProposalsConfigMap = {
   },
 
   permanently_revoke_burner: {
-    deploy: false,
+    deploy: true,
     skipDAO: false,
     totalValue: 0,
     proposal: permanently_revoke_burner_proposal
