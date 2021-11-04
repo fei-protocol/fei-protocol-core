@@ -13,6 +13,7 @@ import {
   Core,
   ERC20CompoundPCVDeposit,
   ERC20Dripper,
+  ERC20Splitter,
   EthCompoundPCVDeposit,
   EthReserveStabilizer,
   Fei,
@@ -143,8 +144,8 @@ export interface MainnetContracts {
   uniswapPCVDeposit: UniswapPCVDeposit;
   uniswapPCVController: ethers.Contract;
   bondingCurve: BondingCurve;
-  chainlinkEthUsdOracle: ethers.Contract;
-  chainlinkFeiEthOracle: ethers.Contract;
+  chainlinkEthUsdOracle: ChainlinkOracleWrapper;
+  chainlinkFeiEthOracle: ChainlinkOracleWrapper;
   compositeOracle: CompositeOracle;
   ethReserveStabilizer: EthReserveStabilizer;
   ratioPCVController: RatioPCVController;
@@ -153,7 +154,7 @@ export interface MainnetContracts {
   timelock: Timelock;
   feiEthPair: IUniswapV2Pair;
   rariPool8FeiPCVDeposit: ERC20CompoundPCVDeposit;
-  rariPool8EthPCVDeposit: ethers.Contract;
+  rariPool8EthPCVDeposit: EthCompoundPCVDeposit;
   compoundEthPCVDeposit: EthCompoundPCVDeposit;
   compoundDaiPCVDeposit: ERC20CompoundPCVDeposit;
   curveMetapoolDeposit: ethers.Contract;
@@ -185,14 +186,14 @@ export interface MainnetContracts {
   rariPool8Tribe: CErc20Delegator;
   curve3Metapool: IERC20;
   erc20Dripper: ERC20Dripper;
-  tribalChiefOptimisticTimelock: Timelock;
+  tribalChiefOptimisticTimelock: OptimisticTimelock;
   staticPcvDepositWrapper: StaticPCVDepositWrapper;
   collateralizationOracle: CollateralizationOracle;
   collateralizationOracleWrapper: CollateralizationOracleWrapper;
   collateralizationOracleKeeper: CollateralizationOracleKeeper;
   tribeReserveStabilizerAddress: TribeReserveStabilizer;
   pcvEquityMinter: PCVEquityMinter;
-  tribeSplitter: ethers.Contract;
+  tribeSplitter: ERC20Splitter;
   feiTribeLBPSwapper: BalancerLBPSwapper;
   aaveLendingPool: ILendingPool;
   aaveTribeIncentivesController: IAaveIncentivesController;
@@ -207,7 +208,6 @@ export interface MainnetContractAddresses {
   tribe: string;
   fei: string;
   uniswapPCVDeposit: string;
-  uniswapPCVController: string;
   bondingCurve: string;
   chainlinkEthUsdOracle: string;
   chainlinkFeiEthOracle: string;
