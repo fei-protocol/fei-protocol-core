@@ -3,6 +3,7 @@ import { ProposalsConfigMap } from '@custom-types/types';
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
 import fip_37_proposal from '@proposals/description/fip_37';
+import permanently_revoke_burner_proposal from '@proposals/description/permanently_revoke_burner';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -18,6 +19,13 @@ const proposals: ProposalsConfigMap = {
     skipDAO: false,
     totalValue: 0,
     proposal: fip_37_proposal
+  },
+
+  permanently_revoke_burner: {
+    deploy: false,
+    skipDAO: false,
+    totalValue: 0,
+    proposal: permanently_revoke_burner_proposal
   }
 };
 
