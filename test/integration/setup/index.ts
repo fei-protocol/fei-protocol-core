@@ -12,7 +12,8 @@ import {
   DeployUpgradeFunc,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
-  ValidateUpgradeFunc
+  ValidateUpgradeFunc,
+  MainnetContracts
 } from '@custom-types/types';
 import { sudo } from '@scripts/utils/sudo';
 import constructProposal from '@scripts/utils/constructProposal';
@@ -118,7 +119,12 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     // TODO maybe replace skipDAO with existence of config.proposal
     if (!config.skipDAO) {
       // Simulate the DAO proposal
-      const proposal = await constructProposal(config.proposal, contracts, contractAddresses, this.config.logging);
+      const proposal = await constructProposal(
+        config.proposal,
+        contracts as MainnetContracts,
+        contractAddresses,
+        this.config.logging
+      );
       this.config.logging && console.log(`Simulating proposal...`);
       await proposal.simulate();
     }
