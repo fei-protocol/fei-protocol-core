@@ -33,8 +33,6 @@ contract EthTokemakPCVDeposit is TokemakPCVDepositBase {
     {
         uint256 amount = address(this).balance;
 
-        token.approve(pool, amount);
-
         ITokemakEthPool(pool).deposit{value: amount}(amount);
 
         emit Deposit(msg.sender, amount);

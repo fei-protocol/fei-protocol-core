@@ -38,14 +38,23 @@ abstract contract TokemakPCVDepositBase is PCVDeposit {
         uint256 _amount
     );
 
+    /// @notice event generated when a withdrawal is requested
+    event RequestWithdrawal (
+        address indexed _caller,
+        address indexed _to,
+        uint256 _amount
+    );
+
+    address private constant TOKE_TOKEN_ADDRESS = address(0x2e9d63788249371f1DFC918a52f8d799F4a38C94);
+
     /// @notice the tokemak pool to deposit in
-    address public pool;
+    address public immutable pool;
 
     /// @notice the tokemak rewards contract to claim TOKE incentives
-    address public rewards;
+    address public immutable rewards;
 
     /// @notice the token stored in the Tokemak pool
-    IERC20 public token;
+    IERC20 public immutable token;
 
     /// @notice Tokemak PCV Deposit constructor
     /// @param _core Fei Core for reference
@@ -84,6 +93,8 @@ abstract contract TokemakPCVDepositBase is PCVDeposit {
         whenNotPaused
     {
         ITokemakPool(pool).requestWithdrawal(amountUnderlying);
+
+        emit RequestWithdrawal(msg.sender, address(this), amountUnderlying);
     }
 
     /// @notice claim TOKE rewards associated to this PCV Deposit. The TOKE tokens
@@ -99,18 +110,16 @@ abstract contract TokemakPCVDepositBase is PCVDeposit {
     /// For an example of IPFS json file, see :
     //  https://ipfs.tokemaklabs.xyz/ipfs/Qmf5Vuy7x5t3rMCa6u57hF8AE89KLNkjdxSKjL8USALwYo/0x4eff3562075c5d2d9cb608139ec2fe86907005fa.json
     function claimRewards(
-        uint256 chainId,
         uint256 cycle,
-        address wallet,
         uint256 amount,
         uint8 v,
         bytes32 r,
         bytes32 s // bytes calldata signature
     ) external whenNotPaused {
         ITokemakRewards.Recipient memory recipient = ITokemakRewards.Recipient(
-            chainId,
+            1, // chainId
             cycle,
-            wallet,
+            address(this), // wallet
             amount
         );
 
@@ -118,7 +127,7 @@ abstract contract TokemakPCVDepositBase is PCVDeposit {
 
         emit ClaimRewards(
           msg.sender,
-          address(0x2e9d63788249371f1DFC918a52f8d799F4a38C94), // TOKE token
+          address(TOKE_TOKEN_ADDRESS),
           address(this),
           amount
         );
