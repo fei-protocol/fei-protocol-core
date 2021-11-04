@@ -137,6 +137,12 @@ describe('e2e-dao', function () {
         params: [timelock]
       });
 
+      const signer = (await ethers.getSigners())[0];
+      await signer.sendTransaction({
+        to: timelock,
+        value: ethers.utils.parseEther(`1`)
+      });
+
       await (
         await ethers.getSigner(timelock)
       ).sendTransaction({ to: tribalChiefOptimisticMultisig, value: toBN('40000000000000000') });
