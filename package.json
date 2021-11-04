@@ -48,7 +48,7 @@
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "chai": "^4.3.4",
     "dotenv": "^10.0.0",
-    "hardhat": "^2.6.0",
+    "hardhat": "^2.6.7",
     "hardhat-contract-sizer": "^2.0.3",
     "hardhat-gas-reporter": "^1.0.4",
     "string-template": "^1.0.0"
@@ -64,7 +64,7 @@
     "@typescript-eslint/eslint-plugin": "^4.31.2",
     "@typescript-eslint/parser": "^4.31.2",
     "chai-bn": "^0.3.0",
-    "eslint": "^7.32.0",
+    "eslint": "^8.1.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.23.4",
