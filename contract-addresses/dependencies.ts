@@ -73,6 +73,14 @@ const dependencies: DependencyMap = {
     },
     contractDependencies: [],
     externalDependencies: []
+  },
+  restrictedPermissions: {
+    fips: {
+      fip_37: false,
+      permanently_revoke_burner: true
+    },
+    contractDependencies: [],
+    externalDependencies: []
   }
 };
 
