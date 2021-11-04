@@ -28,9 +28,9 @@ const MIN_LBP_SIZE = ethers.constants.WeiPerEther.mul(100_000); // 100k FEI
 // PCV Equity Minter
 const PCV_EQUITY_MINTER_INCENTIVE = ethers.constants.WeiPerEther.mul(1000); // 1000 FEI
 const PCV_EQUITY_MINTER_FREQUENCY = '604800'; // weekly
-const PCV_EQUITY_MINTER_APR_BPS = '1000'; // 10%
-
-const TRIBE_BUYBACK_AMOUNT = ethers.constants.WeiPerEther.mul(50_000); // 50k TRIBE
+const PCV_EQUITY_MINTER_APR_BPS = '2000'; // 20%
+const MAX_PCV_EQUITY_MINTER_APR_BPS = '5000'; // 50%
+const PCV_EQUITY_MINTER_MAX_FEI_PER_SECOND = ethers.constants.WeiPerEther.mul(25); // 25 FEI/s or about 15m/week max
 
 /*
 
@@ -172,7 +172,9 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     PCV_EQUITY_MINTER_INCENTIVE,
     PCV_EQUITY_MINTER_FREQUENCY,
     collateralizationOracleWrapper,
-    PCV_EQUITY_MINTER_APR_BPS
+    PCV_EQUITY_MINTER_APR_BPS,
+    MAX_PCV_EQUITY_MINTER_APR_BPS,
+    PCV_EQUITY_MINTER_MAX_FEI_PER_SECOND
   );
 
   await pcvEquityMinter.deployTransaction.wait();
@@ -235,12 +237,12 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await core.isMinter(collateralizationOracleKeeper.address)).to.be.true;
   expect(await core.isMinter(pcvEquityMinter.address)).to.be.true;
 
-  expect(await tribe.balanceOf(feiTribeLBPSwapper.address)).to.be.bignumber.equal(TRIBE_BUYBACK_AMOUNT);
+  expect(await feiTribeLBPSwapper.isTimeStarted()).to.be.true;
 
   const price = (await feiTribeLBPSwapper.readOracle())[0];
-  const response = await feiTribeLBPSwapper.getTokensIn(1000000);
+  const response = await feiTribeLBPSwapper.getTokensIn(100000);
   const amounts = response[1];
-  expect(amounts[0]).to.be.bignumber.equal(ethers.BigNumber.from(1000000));
+  expect(amounts[0]).to.be.bignumber.equal(ethers.BigNumber.from(100000));
   // TRIBE/FEI price * FEI amount * 1% ~= amount
-  expectApprox(price.mul(1000000).div(ethers.constants.WeiPerEther).div(100), amounts[1]);
+  expectApprox(price.mul(100000).div(ethers.constants.WeiPerEther).div(100), amounts[1]);
 };

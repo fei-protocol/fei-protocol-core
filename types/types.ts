@@ -19,6 +19,38 @@ export function namedContractsToNamedAddresses(contracts: NamedContracts): Named
   return namedAddresses;
 }
 
+export type Dependency = {
+  fips: { [key: string]: boolean };
+  contractDependencies: string[];
+  externalDependencies: string[];
+};
+export type DependencyMap = { [key: string]: Dependency };
+
+export type ProposalConfig = {
+  deploy: boolean;
+  skipDAO: boolean;
+  totalValue: number;
+  proposal: ProposalDescription;
+};
+
+export type ProposalsConfigMap = {
+  [key: string]: ProposalConfig;
+};
+
+export type ProposalDescription = {
+  title: string;
+  commands: ProposalCommand[];
+  description: string;
+};
+
+export type ProposalCommand = {
+  target: string;
+  values: string;
+  method: string;
+  arguments: any[];
+  description: string;
+};
+
 export type NamedContracts = { [key: string]: ethers.Contract };
 export type NamedAddresses = { [key: string]: string };
 export type DeployUpgradeFunc = (
@@ -164,15 +196,6 @@ export interface MainnetContractAddresses {
   stakingTokenWrapperRari: string;
   rariRewardsDistributorDelegator: string;
 }
-
-export type ProposalConfig = {
-  deploy: boolean;
-  exec: boolean;
-  proposerAddress: string;
-  voterAddress: string;
-  proposal_calldata: string;
-  totalValue: number;
-};
 
 export type ContractAccessRights = {
   minter: string[];

@@ -21,7 +21,7 @@ const MainnetAddresses = {
   },
   pcvEquityMinter: {
     artifactName: 'PCVEquityMinter',
-    address: '0x5389Bd35DED3D9633E5b4DfEf9B5A1B250d7B884'
+    address: '0x904Deb2Dac1EdfCBBb69b9c279aE5F75E57Cf5E9'
   },
   collateralizationOracleGuardian: {
     artifactName: 'CollateralizationOracleGuardian',
@@ -367,8 +367,14 @@ const MainnetAddresses = {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x74B235Fef146cDB5BE0D3786a9f3774674b3615E'
   },
-  rariPool72FeiPCVDeposit: { artifactName: 'ERC20CompoundPCVDeposit', address: '0x4A5Af5A124E672C156241b76CAd4E41D09dd4883' },
-  rariPool79FeiPCVDeposit: { artifactName: 'ERC20CompoundPCVDeposit', address: '0x76dFcf06E7D7B8248094DC319b284fB244f06309' },
+  rariPool72FeiPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x4A5Af5A124E672C156241b76CAd4E41D09dd4883'
+  },
+  rariPool79FeiPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x76dFcf06E7D7B8248094DC319b284fB244f06309'
+  },
   rariPool8Comptroller: { artifactName: 'Unitroller', address: '0xc54172e34046c1653d1920d40333dd358c7a1af4' },
   rariPool8Dai: { artifactName: 'CErc20Delegator', address: '0x7e9cE3CAa9910cc048590801e64174957Ed41d43' },
   rariPool8DaiIrm: { artifactName: 'unknown', address: '0xede47399e2aa8f076d40dc52896331cba8bd40f7' },
@@ -400,7 +406,10 @@ const MainnetAddresses = {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x9aAdFfe00eAe6d8e59bB4F7787C6b99388A6960D'
   },
-  rariPool91FeiPCVDeposit: { artifactName: 'ERC20CompoundPCVDeposit', address: '0x2296a2417D1f02d394ab22aF794a0f426eD53436' },
+  rariPool91FeiPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x2296a2417D1f02d394ab22aF794a0f426eD53436'
+  },
   rariRewardsDistributorDelegator: {
     artifactName: 'unknown',
     address: '0x73F16f0c0Cd1A078A54894974C5C054D8dC1A3d7'

@@ -4,7 +4,7 @@ import { solidity } from 'ethereum-waffle';
 import hre, { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { expectApprox, resetFork, time } from '@test/helpers';
-import proposals from '@test/integration/proposals_config.json';
+import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '@test/integration/setup/utils';
 import { UniswapPCVDeposit } from '@custom-types/contracts';
