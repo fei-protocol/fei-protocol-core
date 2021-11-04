@@ -1,43 +1,4 @@
 import { ethers } from 'ethers';
-import {
-  AavePCVDeposit,
-  AutoRewardsDistributor,
-  BalancerLBPSwapper,
-  BondingCurve,
-  CErc20Delegator,
-  ChainlinkOracleWrapper,
-  CollateralizationOracle,
-  CollateralizationOracleKeeper,
-  CollateralizationOracleWrapper,
-  CompositeOracle,
-  Core,
-  ERC20CompoundPCVDeposit,
-  ERC20Dripper,
-  EthCompoundPCVDeposit,
-  EthReserveStabilizer,
-  Fei,
-  FeiDAO,
-  GovernorAlpha,
-  IAaveIncentivesController,
-  IERC20,
-  IFeiRewardsDistributor,
-  IKashiPair,
-  ILendingPool,
-  IMasterContractManager,
-  IUniswapV2Pair,
-  OptimisticTimelock,
-  PCVDripController,
-  PCVEquityMinter,
-  RatioPCVController,
-  RewardsDistributorAdmin,
-  StakingTokenWrapper,
-  StaticPCVDepositWrapper,
-  Timelock,
-  TribalChief,
-  Tribe,
-  TribeReserveStabilizer,
-  UniswapPCVDeposit
-} from './contracts';
 
 export type Env = {
   contracts: NamedContracts;
@@ -137,69 +98,69 @@ export type Config = {
 };
 
 export interface MainnetContracts {
-  core: Core;
-  tribe: Tribe;
-  fei: Fei;
-  uniswapPCVDeposit: UniswapPCVDeposit;
+  [core: string]: ethers.Contract;
+  tribe: ethers.Contract;
+  fei: ethers.Contract;
+  uniswapPCVDeposit: ethers.Contract;
   uniswapPCVController: ethers.Contract;
-  bondingCurve: BondingCurve;
+  bondingCurve: ethers.Contract;
   chainlinkEthUsdOracle: ethers.Contract;
   chainlinkFeiEthOracle: ethers.Contract;
-  compositeOracle: CompositeOracle;
-  ethReserveStabilizer: EthReserveStabilizer;
-  ratioPCVController: RatioPCVController;
-  tribeReserveStabilizer: TribeReserveStabilizer;
-  feiRewardsDistributor: IFeiRewardsDistributor;
-  timelock: Timelock;
-  feiEthPair: IUniswapV2Pair;
-  rariPool8FeiPCVDeposit: ERC20CompoundPCVDeposit;
+  compositeOracle: ethers.Contract;
+  ethReserveStabilizer: ethers.Contract;
+  ratioPCVController: ethers.Contract;
+  tribeReserveStabilizer: ethers.Contract;
+  feiRewardsDistributor: ethers.Contract;
+  timelock: ethers.Contract;
+  feiEthPair: ethers.Contract;
+  rariPool8FeiPCVDeposit: ethers.Contract;
   rariPool8EthPCVDeposit: ethers.Contract;
-  compoundEthPCVDeposit: EthCompoundPCVDeposit;
-  compoundDaiPCVDeposit: ERC20CompoundPCVDeposit;
+  compoundEthPCVDeposit: ethers.Contract;
+  compoundDaiPCVDeposit: ethers.Contract;
   curveMetapoolDeposit: ethers.Contract;
   curveMetapool: ethers.Contract;
   curve3pool: ethers.Contract;
   curve3crv: ethers.Contract;
-  aaveEthPCVDeposit: AavePCVDeposit;
-  aaveRaiPCVDeposit: AavePCVDeposit;
-  stAAVE: IERC20;
-  dpiBondingCurve: BondingCurve;
-  daiBondingCurve: BondingCurve;
-  dpi: IERC20;
-  dai: IERC20;
-  chainlinkDpiUsdOracleWrapper: ChainlinkOracleWrapper;
-  dpiUniswapPCVDeposit: UniswapPCVDeposit;
-  indexCoopFusePoolDpiPCVDeposit: ERC20CompoundPCVDeposit;
-  raiBondingCurve: BondingCurve;
-  rai: IERC20;
-  chainlinkRaiEthOracleWrapper: ChainlinkOracleWrapper;
-  chainlinkRaiUsdCompositOracle: CompositeOracle;
-  reflexerStableAssetFusePoolRaiPCVDeposit: ERC20CompoundPCVDeposit;
-  kashiFeiTribe: IKashiPair;
-  bentoBox: IMasterContractManager;
-  aaveEthPCVDripController: PCVDripController;
-  governorAlpha: GovernorAlpha;
-  tribalChief: TribalChief;
-  stakingTokenWrapper: StakingTokenWrapper;
-  feiTribePair: IUniswapV2Pair;
-  rariPool8Tribe: CErc20Delegator;
-  curve3Metapool: IERC20;
-  erc20Dripper: ERC20Dripper;
-  tribalChiefOptimisticTimelock: Timelock;
-  staticPcvDepositWrapper: StaticPCVDepositWrapper;
-  collateralizationOracle: CollateralizationOracle;
-  collateralizationOracleWrapper: CollateralizationOracleWrapper;
-  collateralizationOracleKeeper: CollateralizationOracleKeeper;
-  tribeReserveStabilizerAddress: TribeReserveStabilizer;
-  pcvEquityMinter: PCVEquityMinter;
+  aaveEthPCVDeposit: ethers.Contract;
+  aaveRaiPCVDeposit: ethers.Contract;
+  stAAVE: ethers.Contract;
+  dpiBondingCurve: ethers.Contract;
+  daiBondingCurve: ethers.Contract;
+  dpi: ethers.Contract;
+  dai: ethers.Contract;
+  chainlinkDpiUsdOracleWrapper: ethers.Contract;
+  dpiUniswapPCVDeposit: ethers.Contract;
+  indexCoopFusePoolDpiPCVDeposit: ethers.Contract;
+  raiBondingCurve: ethers.Contract;
+  rai: ethers.Contract;
+  chainlinkRaiEthOracleWrapper: ethers.Contract;
+  chainlinkRaiUsdCompositOracle: ethers.Contract;
+  reflexerStableAssetFusePoolRaiPCVDeposit: ethers.Contract;
+  kashiFeiTribe: ethers.Contract;
+  bentoBox: ethers.Contract;
+  aaveEthPCVDripController: ethers.Contract;
+  governorAlpha: ethers.Contract;
+  tribalChief: ethers.Contract;
+  stakingTokenWrapper: ethers.Contract;
+  feiTribePair: ethers.Contract;
+  rariPool8Tribe: ethers.Contract;
+  curve3Metapool: ethers.Contract;
+  erc20Dripper: ethers.Contract;
+  tribalChiefOptimisticTimelock: ethers.Contract;
+  staticPcvDepositWrapper: ethers.Contract;
+  collateralizationOracle: ethers.Contract;
+  collateralizationOracleWrapper: ethers.Contract;
+  collateralizationOracleKeeper: ethers.Contract;
+  tribeReserveStabilizerAddress: ethers.Contract;
+  pcvEquityMinter: ethers.Contract;
   tribeSplitter: ethers.Contract;
-  feiTribeLBPSwapper: BalancerLBPSwapper;
-  aaveLendingPool: ILendingPool;
-  aaveTribeIncentivesController: IAaveIncentivesController;
-  optimisticTimelock: OptimisticTimelock;
-  feiDAO: FeiDAO;
-  autoRewardsDistributor: AutoRewardsDistributor;
-  rewardsDistributorAdmin: RewardsDistributorAdmin;
+  feiTribeLBPSwapper: ethers.Contract;
+  aaveLendingPool: ethers.Contract;
+  aaveTribeIncentivesController: ethers.Contract;
+  optimisticTimelock: ethers.Contract;
+  feiDAO: ethers.Contract;
+  autoRewardsDistributor: ethers.Contract;
+  rewardsDistributorAdmin: ethers.Contract;
 }
 
 export interface MainnetContractAddresses {

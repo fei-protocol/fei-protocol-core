@@ -20,7 +20,8 @@ export async function getAllContracts(): Promise<MainnetContracts> {
     const artifactName = mainnetAddressEntry.artifactName;
     const address = mainnetAddressEntry.address;
     if (artifactName == 'unknown') continue;
-    const contract = await ethers.getContractAt(artifactName, address);
+    const artifact = artifacts.readArtifactSync(artifactName);
+    const contract = await ethers.getContractAt(artifact.abi, address);
     contracts[mainnetAddressEntryName] = contract;
   }
 
