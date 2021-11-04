@@ -137,21 +137,20 @@ describe('e2e-dao', function () {
         params: [timelock]
       });
 
+      const signer = (await ethers.getSigners())[0];
+      await signer.sendTransaction({
+        to: timelock,
+        value: ethers.utils.parseEther(`1`)
+      });
+
       await (
         await ethers.getSigner(timelock)
       ).sendTransaction({ to: tribalChiefOptimisticMultisig, value: toBN('40000000000000000') });
     });
 
     it('governor can assume timelock admin', async () => {
-      const { timelock, userAddress } = contractAddresses;
+      const { timelock } = contractAddresses;
       const { optimisticTimelock } = contracts;
-
-      await (
-        await getImpersonatedSigner(userAddress)
-      ).sendTransaction({
-        to: timelock,
-        value: ethers.utils.parseEther(`1`)
-      });
 
       await optimisticTimelock.connect(await ethers.getSigner(timelock)).becomeAdmin();
 
