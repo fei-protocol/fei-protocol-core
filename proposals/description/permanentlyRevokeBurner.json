@@ -1,0 +1,12 @@
+{
+    "proposal_title": "Permanently Revoke Burner",
+    "proposal_commands": [
+        {
+            "target": "fei",
+            "values": "0",
+            "method": "setCore(address)",
+            "arguments": ["{restrictedPermissions}"],
+            "description": "Set restricted permissions to core for Fei contract"
+        }
+    ]
+}

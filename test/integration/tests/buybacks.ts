@@ -4,7 +4,7 @@ import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedContracts } from '@custom-types/types';
 import { expectApprox, increaseTime, latestTime, resetFork } from '@test/helpers';
-import proposals from '@test/integration/proposals_config.json';
+import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { CollateralizationOracle, StaticPCVDepositWrapper } from '@custom-types/contracts';
 const toBN = ethers.BigNumber.from;
@@ -54,7 +54,7 @@ describe('e2e-buybacks', function () {
         core
       } = contracts;
 
-      await increaseTime(await pcvEquityMinter.remainingTime());
+      await increaseTime(await feiTribeLBPSwapper.remainingTime());
 
       const pcvStats = await collateralizationOracleWrapper.pcvStats();
 
@@ -63,8 +63,7 @@ describe('e2e-buybacks', function () {
       }
       await collateralizationOracleWrapper.update();
 
-      const coreBalanceBefore = await tribe.balanceOf(core.address);
-
+      await core.allocateTribe(feiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(50_000));
       const tx = await pcvEquityMinter.mint();
       expect(tx).to.emit(pcvEquityMinter, 'FeiMinting');
       expect(tx).to.emit(fei, 'Transfer');
@@ -76,8 +75,6 @@ describe('e2e-buybacks', function () {
       await core.allocateTribe(feiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(50_000));
 
       await pcvEquityMinter.mint();
-
-      expect(await tribe.balanceOf(core.address)).to.be.gt(toBN(coreBalanceBefore));
     });
   });
 

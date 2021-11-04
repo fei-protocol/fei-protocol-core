@@ -29,6 +29,7 @@ abstract contract RateLimited is CoreRef {
     event BufferUsed(uint256 amountUsed, uint256 bufferRemaining);
     event BufferCapUpdate(uint256 oldBufferCap, uint256 newBufferCap);
     event RateLimitPerSecondUpdate(uint256 oldRateLimitPerSecond, uint256 newRateLimitPerSecond);
+    event BufferUsed(uint256 amountUsed, uint256 bufferRemaining);
 
     constructor(uint256 _maxRateLimitPerSecond, uint256 _rateLimitPerSecond, uint256 _bufferCap, bool _doPartialAction) {
         lastBufferUsedTime = block.timestamp;
