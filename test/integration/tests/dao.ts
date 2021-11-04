@@ -146,7 +146,9 @@ describe('e2e-dao', function () {
       const { timelock, userAddress } = contractAddresses;
       const { optimisticTimelock } = contracts;
 
-      (await getImpersonatedSigner(userAddress)).sendTransaction({
+      await (
+        await getImpersonatedSigner(userAddress)
+      ).sendTransaction({
         to: timelock,
         value: ethers.utils.parseEther(`1`)
       });
