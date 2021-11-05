@@ -2,6 +2,7 @@ import constructProposal from './constructProposal';
 import { BigNumber } from 'ethers';
 import { Interface } from '@ethersproject/abi';
 import { utils } from 'ethers';
+import { getAllContractAddresses, getAllContracts } from '@test/integration/setup/loadContracts';
 
 type ExtendedAlphaProposal = {
   targets: string[];
@@ -16,7 +17,16 @@ type ExtendedAlphaProposal = {
  * See `proposals/utils/getProposalCalldata.js` on how to construct the proposal calldata
  */
 export async function constructProposalCalldata(proposalName: string): Promise<string> {
-  const proposal = (await constructProposal(proposalName)) as ExtendedAlphaProposal;
+  const proposalInfo = await import(`@proposals/description/${proposalName}`);
+
+  const contracts = await getAllContracts();
+  const contractAddresses = await getAllContractAddresses();
+
+  const proposal = (await constructProposal(
+    proposalInfo.default,
+    contracts,
+    contractAddresses
+  )) as ExtendedAlphaProposal;
 
   const proposeFuncFrag = new Interface([
     'function propose(address[] memory targets,uint256[] memory values,bytes[] memory calldatas,string memory description) public returns (uint256)'

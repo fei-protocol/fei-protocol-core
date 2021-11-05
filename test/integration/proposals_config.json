@@ -1,8 +1,0 @@
-{
-    "fip_37" : {
-        "deploy" : false
-    },
-    "permanentlyRevokeBurner" : {
-        "deploy" : true
-    }
-}

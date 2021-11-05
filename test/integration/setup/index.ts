@@ -1,4 +1,4 @@
-import permissions from '../../../contract-addresses/permissions.json';
+import permissions from '@addresses/permissions.json';
 import { getAllContractAddresses, getAllContracts } from './loadContracts';
 import {
   Config,
@@ -7,19 +7,17 @@ import {
   Env,
   ProposalConfig,
   namedContractsToNamedAddresses,
-  NamedAddresses
-} from '../../../types/types';
-import { sudo } from '../../../scripts/utils/sudo';
-import constructProposal from '../../../scripts/utils/constructProposal';
-import '@nomiclabs/hardhat-ethers';
-
-import {
+  NamedAddresses,
   NamedContracts,
   DeployUpgradeFunc,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
-  ValidateUpgradeFunc
-} from '../../../types/types';
+  ValidateUpgradeFunc,
+  MainnetContracts
+} from '@custom-types/types';
+import { sudo } from '@scripts/utils/sudo';
+import constructProposal from '@scripts/utils/constructProposal';
+import '@nomiclabs/hardhat-ethers';
 import { resetFork } from '@test/helpers';
 
 /**
@@ -90,7 +88,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     // Get the upgrade setup and teardown scripts
     const { deploy, setup, teardown, validate } = await import('@proposals/dao/' + proposalName);
 
-    if (config['deploy']) {
+    if (config.deploy) {
       this.config.logging && console.log(`Applying upgrade for proposal: ${proposalName}`);
       const deployTyped = deploy as DeployUpgradeFunc;
       deployedUpgradedContracts = await deployTyped(
@@ -118,9 +116,15 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     const setupTyped = setup as SetupUpgradeFunc;
     await setupTyped(contractAddresses, existingContracts, contracts, this.config.logging);
 
-    if (!config['skipDAO']) {
+    // TODO maybe replace skipDAO with existence of config.proposal
+    if (!config.skipDAO) {
       // Simulate the DAO proposal
-      const proposal = await constructProposal(proposalName, contracts, contractAddresses, this.config.logging);
+      const proposal = await constructProposal(
+        config.proposal,
+        contracts as unknown as MainnetContracts,
+        contractAddresses,
+        this.config.logging
+      );
       this.config.logging && console.log(`Simulating proposal...`);
       await proposal.simulate();
     }
