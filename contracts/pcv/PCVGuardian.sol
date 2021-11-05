@@ -12,6 +12,11 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     // If an address is in this set, it's a safe address to withdraw to
     EnumerableSet.AddressSet private safeAddresses;
 
+    modifier isGovernorOrGuardianOrAdmin() {
+        require(_core.isGovernor(msg.sender) || _core.isGuardian(msg.sender) || isContractAdmin(msg.sender), "Not governor or guardian or admin.");
+        _;
+    }
+    
     constructor(
         address _core,
         address[] calldata _safeAddresses
@@ -38,7 +43,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
 
     // ---------- Governor-or-Admin-Only State-Changing API ----------
 
-        /// @notice governor-only method to set an address as "safe" to withdraw funds to
+    /// @notice governor-only method to set an address as "safe" to withdraw funds to
     /// @param anAddress the address to set as safe
     function setSafeAddress(address pcvDeposit) external override onlyGovernorOrAdmin() {
         _setSafeAddress(pcvDeposit);
@@ -52,17 +57,17 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         }
     }
 
-    // ---------- Governor-or-Guardian-Only State-Changing API ----------
+    // ---------- Governor-or-Admin-Or-Guardian-Only State-Changing API ----------
 
     /// @notice governor-or-guardian-only method to un-set an address as "safe" to withdraw funds to
     /// @param pcvDeposit the address to un-set as safe
-    function unsetSafeAddress(address pcvDeposit) external override onlyGuardianOrGovernor() {
+    function unsetSafeAddress(address pcvDeposit) external override isGovernorOrGuardianOrAdmin() {
         _unsetSafeAddress(pcvDeposit);
     }
 
     /// @notice batch version of unsetSafeAddresses
     /// @param safeAddresses the addresses to un-set as safe
-    function unsetSafeAddresses(address[] calldata safeAddresses) external override onlyGuardianOrGovernor() {
+    function unsetSafeAddresses(address[] calldata safeAddresses) external override isGovernorOrGuardianOrAdmin() {
         for(uint256 i=0; i<safeAddresses.length; i++) {
             _unsetSafeAddress(safeAddresses[i]);
         }
@@ -73,7 +78,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param safeAddress the destination address to withdraw to
     /// @param amount the amount to withdraw
     /// @param pauseAfter if true, the pcv contract will be paused after the withdraw
-    function withdrawToSafeAddress(address pcvDeposit, address safeAddress, uint256 amount, bool pauseAfter) external override onlyGuardianOrGovernor() {
+    function withdrawToSafeAddress(address pcvDeposit, address safeAddress, uint256 amount, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
         if (ICoreRef(pcvDeposii).isPaused()) {
@@ -95,7 +100,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param amount the amount of tokens to withdraw
     /// @param unpauseBefore if true, the pcv contract will be unpaused before the withdraw
     /// @param pauseAfter if true, the pcv contract will be paused after the withdraw
-    function withdrawETHToSafeAddress(address pcvDeposit, address payable safeAddress, uint256 amount, bool pauseAfter) external override onlyGuardianOrGovernor() {
+    function withdrawETHToSafeAddress(address pcvDeposit, address payable safeAddress, uint256 amount, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
         if (ICoreRef(pcvDeposit).isPaused()) {
@@ -117,7 +122,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param amount the amount of funds to withdraw
     /// @param unpauseBefore whether to unpause the pcv before withdrawing
     /// @param pauseAfter whether to pause the pcv after withdrawing
-    function withdrawERC20ToSafeAddress(address pcvDeposit, address safeAddress, address token, uint256 amount, bool unpauseBefore, bool pauseAfter) external override onlyGuardianOrGovernor() {
+    function withdrawERC20ToSafeAddress(address pcvDeposit, address safeAddress, address token, uint256 amount, bool unpauseBefore, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
         if (unpauseBefore) {
