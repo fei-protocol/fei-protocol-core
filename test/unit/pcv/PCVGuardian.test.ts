@@ -1,4 +1,4 @@
-import { getAddresses, getCore } from '@test/helpers';
+import { getAddresses, getCore, getImpersonatedSigner } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
 import hre, { ethers } from 'hardhat';
@@ -20,7 +20,7 @@ chai.config.includeStack = true;
 // Import if needed, just a helper.
 // const toBN = ethers.BigNumber.from;
 
-describe.only('PCV Guardian', function () {
+describe('PCV Guardian', function () {
   // variable decs for vars that you want to use in multiple tests
   // typeing contracts specifically to what kind they are will catch before you run them!
   let core: Core;
@@ -48,12 +48,7 @@ describe.only('PCV Guardian', function () {
     const impersonatedAddresses = [userAddress, pcvControllerAddress, governorAddress, guardianAddress];
 
     for (const address of impersonatedAddresses) {
-      await hre.network.provider.request({
-        method: 'hardhat_impersonateAccount',
-        params: [address]
-      });
-
-      impersonatedSigners[address] = await ethers.getSigner(address);
+      impersonatedSigners[address] = await getImpersonatedSigner(address);
     }
   });
 

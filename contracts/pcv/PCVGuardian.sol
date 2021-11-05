@@ -55,7 +55,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param amount the amount to withdraw
     /// @param unpauseBefore if true, the pcv contract will be unpaused before the withdraw
     /// @param pauseAfter if true, the pcv contract will be paused after the withdraw
-    function withdrawToSafeAddress(address pcvDeposit, address safeAddress, uint amount, bool unpauseBefore, bool pauseAfter) external override onlyGuardianOrGovernor() {
+    function withdrawToSafeAddress(address pcvDeposit, address safeAddress, uint256 amount, bool unpauseBefore, bool pauseAfter) external override onlyGuardianOrGovernor() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
         if (unpauseBefore) {
@@ -77,7 +77,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param amount the amount of tokens to withdraw
     /// @param unpauseBefore if true, the pcv contract will be unpaused before the withdraw
     /// @param pauseAfter if true, the pcv contract will be paused after the withdraw
-    function withdrawETHToSafeAddress(address pcvDeposit, address payable safeAddress, uint amount, bool unpauseBefore, bool pauseAfter) external override onlyGuardianOrGovernor() {
+    function withdrawETHToSafeAddress(address pcvDeposit, address payable safeAddress, uint256 amount, bool unpauseBefore, bool pauseAfter) external override onlyGuardianOrGovernor() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
         if (unpauseBefore) {
@@ -99,7 +99,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param amount the amount of funds to withdraw
     /// @param unpauseBefore whether to unpause the pcv before withdrawing
     /// @param pauseAfter whether to pause the pcv after withdrawing
-    function withdrawERC20ToSafeAddress(address pcvDeposit, address safeAddress, address token, uint amount, bool unpauseBefore, bool pauseAfter) external override onlyGuardianOrGovernor() {
+    function withdrawERC20ToSafeAddress(address pcvDeposit, address safeAddress, address token, uint256 amount, bool unpauseBefore, bool pauseAfter) external override onlyGuardianOrGovernor() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
         if (unpauseBefore) {
