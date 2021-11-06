@@ -76,8 +76,9 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function withdrawToSafeAddress(address pcvDeposit, address safeAddress, uint256 amount, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
-        // There's no way to query the (internal, private) var of paused, but that's okay, since unpausing an already-paused contract doesn't cause any errors
-        ICoreRef(pcvDeposit).unpause();
+        if (ICoreRef(pcvDeposit).paused()) {
+            ICoreRef(pcvDeposit).unpause();
+        }
 
         IPCVDeposit(pcvDeposit).withdraw(safeAddress, amount);
 
@@ -96,8 +97,9 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function withdrawETHToSafeAddress(address pcvDeposit, address payable safeAddress, uint256 amount, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
-        // There's no way to query the (internal, private) var of paused, but that's okay, since unpausing an already-paused contract doesn't cause any errors
-        ICoreRef(pcvDeposit).unpause();
+        if (ICoreRef(pcvDeposit).paused()) {
+            ICoreRef(pcvDeposit).unpause();
+        }
 
         IPCVDeposit(pcvDeposit).withdrawETH(safeAddress, amount);
 
@@ -116,8 +118,9 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function withdrawERC20ToSafeAddress(address pcvDeposit, address safeAddress, address token, uint256 amount, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
-        // There's no way to query the (internal, private) var of paused, but that's okay, since unpausing an already-paused contract doesn't cause any errors
-        ICoreRef(pcvDeposit).unpause();
+        if (ICoreRef(pcvDeposit).paused()) {
+            ICoreRef(pcvDeposit).unpause();
+        }
 
         IPCVDeposit(pcvDeposit).withdrawERC20(token, safeAddress, amount);
 
