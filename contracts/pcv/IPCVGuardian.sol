@@ -48,11 +48,19 @@ interface IPCVGuardian {
     /// @param pcvDeposit the address to set as safe
     function setSafeAddress(address pcvDeposit) external;
 
+    /// @notice batch version of setSafeAddress
+    /// @param safeAddresses the addresses to set as safe, as calldata
+    function setSafeAddresses(address[] calldata safeAddresses) external;
+
     // ---------- Governor-or-Guardian-Only State-Changing API ----------
 
     /// @notice governor-or-guardian-only method to un-set an address as "safe" to withdraw funds to
     /// @param pcvDeposit the address to un-set as safe
     function unsetSafeAddress(address pcvDeposit) external;
+
+    /// @notice batch version of unsetSafeAddresses
+    /// @param safeAddresses the addresses to un-set as safe
+    function unsetSafeAddresses(address[] calldata safeAddresses) external;
 
     /// @notice governor-or-guardian-only method to withdraw funds from a pcv deposit, by calling the withdraw() method on it
     /// @param pcvDeposit the address of the pcv deposit contract

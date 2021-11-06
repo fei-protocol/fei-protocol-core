@@ -14,7 +14,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     
     constructor(
         address _core,
-        address[] calldata _safeAddresses
+        address[] memory _safeAddresses
     ) CoreRef(_core) {
         _setContractAdminRole(keccak256("PCV_GUARDIAN_ADMIN_ROLE"));
 
@@ -26,9 +26,9 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     // ---------- Read-Only API ----------
 
     /// @notice returns true if the the provided address is a valid destination to withdraw funds to
-    /// @param anAddress the address to check
-    function isSafeAddress(address anAddress) public view override returns (bool) {
-        return safeAddresses.contains(anAddress);
+    /// @param pcvDeposit the address to check
+    function isSafeAddress(address pcvDeposit) public view override returns (bool) {
+        return safeAddresses.contains(pcvDeposit);
     }
 
     /// @notice returns all safe addresses
@@ -39,7 +39,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     // ---------- Governor-or-Admin-Only State-Changing API ----------
 
     /// @notice governor-only method to set an address as "safe" to withdraw funds to
-    /// @param anAddress the address to set as safe
+    /// @param pcvDeposit the address to set as safe
     function setSafeAddress(address pcvDeposit) external override onlyGovernorOrAdmin() {
         _setSafeAddress(pcvDeposit);
     }
@@ -76,9 +76,8 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function withdrawToSafeAddress(address pcvDeposit, address safeAddress, uint256 amount, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
-        if (ICoreRef(pcvDeposii).isPaused()) {
-            ICoreRef(pcvDeposit).unpause();
-        }
+        // There's no way to query the (internal, private) var of paused, but that's okay, since unpausing an already-paused contract doesn't cause any errors
+        ICoreRef(pcvDeposit).unpause();
 
         IPCVDeposit(pcvDeposit).withdraw(safeAddress, amount);
 
@@ -93,14 +92,12 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param pcvDeposit the address of the pcv deposit contract
     /// @param safeAddress the destination address to withdraw to
     /// @param amount the amount of tokens to withdraw
-    /// @param unpauseBefore if true, the pcv contract will be unpaused before the withdraw
     /// @param pauseAfter if true, the pcv contract will be paused after the withdraw
     function withdrawETHToSafeAddress(address pcvDeposit, address payable safeAddress, uint256 amount, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
-        if (ICoreRef(pcvDeposit).isPaused()) {
-            ICoreRef(pcvDeposit).unpause();
-        }
+        // There's no way to query the (internal, private) var of paused, but that's okay, since unpausing an already-paused contract doesn't cause any errors
+        ICoreRef(pcvDeposit).unpause();
 
         IPCVDeposit(pcvDeposit).withdrawETH(safeAddress, amount);
 
@@ -115,7 +112,6 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param pcvDeposit the deposit to pull funds from
     /// @param safeAddress the destination address to withdraw to
     /// @param amount the amount of funds to withdraw
-    /// @param unpauseBefore whether to unpause the pcv before withdrawing
     /// @param pauseAfter whether to pause the pcv after withdrawing
     function withdrawERC20ToSafeAddress(address pcvDeposit, address safeAddress, address token, uint256 amount, bool unpauseBefore, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
