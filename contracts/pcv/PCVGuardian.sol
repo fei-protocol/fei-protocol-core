@@ -113,12 +113,11 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param safeAddress the destination address to withdraw to
     /// @param amount the amount of funds to withdraw
     /// @param pauseAfter whether to pause the pcv after withdrawing
-    function withdrawERC20ToSafeAddress(address pcvDeposit, address safeAddress, address token, uint256 amount, bool unpauseBefore, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
+    function withdrawERC20ToSafeAddress(address pcvDeposit, address safeAddress, address token, uint256 amount, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
-        if (unpauseBefore) {
-            ICoreRef(pcvDeposit).unpause();
-        }
+        // There's no way to query the (internal, private) var of paused, but that's okay, since unpausing an already-paused contract doesn't cause any errors
+        ICoreRef(pcvDeposit).unpause();
 
         IPCVDeposit(pcvDeposit).withdrawERC20(token, safeAddress, amount);
 

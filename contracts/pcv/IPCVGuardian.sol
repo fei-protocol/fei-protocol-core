@@ -81,7 +81,6 @@ interface IPCVGuardian {
     /// @param safeAddress the destination address to withdraw to
     /// @param token the token to withdraw
     /// @param amount the amount of funds to withdraw
-    /// @param unpauseBefore whether to unpause the pcv before withdrawing
     /// @param pauseAfter whether to pause the pcv after withdrawing
-    function withdrawERC20ToSafeAddress(address pcvDeposit, address safeAddress, address token, uint256 amount, bool unpauseBefore, bool pauseAfter) external;
+    function withdrawERC20ToSafeAddress(address pcvDeposit, address safeAddress, address token, uint256 amount, bool pauseAfter) external;
 }
