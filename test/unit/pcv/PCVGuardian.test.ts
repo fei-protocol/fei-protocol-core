@@ -117,7 +117,7 @@ describe('PCV Guardian', function () {
     it('should revert when calling withdrawERC20ToSafeAddress from a non-guardian-or-governor-or-admin address', async () => {
       await expect(
         pcvGuardianWithoutStartingAddresses.withdrawERC20ToSafeAddress(userAddress, userAddress, userAddress, 1, false)
-      ).to.be.revertedWith('CoreRef: Caller is not a governor or guardian or admin');
+      ).to.be.revertedWith('CoreRef: Caller is not governor or guardian or admin');
     });
 
     it('should allow the governor to add a safe address', async () => {
