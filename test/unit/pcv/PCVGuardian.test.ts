@@ -20,11 +20,12 @@ chai.config.includeStack = true;
 // Import if needed, just a helper.
 // const toBN = ethers.BigNumber.from;
 
-describe('PCV Guardian', function () {
+describe.only('PCV Guardian', function () {
   // variable decs for vars that you want to use in multiple tests
   // typeing contracts specifically to what kind they are will catch before you run them!
   let core: Core;
-  let pcvGuardian: PCVGuardian;
+  let pcvGuardianWithoutStartingAddresses: PCVGuardian;
+  let pcvGuardianWithStartingAddresses: PCVGuardian;
 
   let userAddress: string;
   let userAddress2: string;
@@ -39,7 +40,7 @@ describe('PCV Guardian', function () {
     const addresses = await getAddresses();
 
     userAddress = addresses.userAddress;
-    userAddress2 = addresses.userAddress2;
+    userAddress2 = addresses.secondUserAddress;
     pcvControllerAddress = addresses.pcvControllerAddress;
     governorAddress = addresses.governorAddress;
     guardianAddress = addresses.guardianAddress;
@@ -59,7 +60,11 @@ describe('PCV Guardian', function () {
     // Do any pre-test setup here
     core = await getCore();
     const pcvGuardianFactory = new PCVGuardian__factory(impersonatedSigners[userAddress]);
-    pcvGuardian = await pcvGuardianFactory.deploy(core.address, []);
+    pcvGuardianWithoutStartingAddresses = await pcvGuardianFactory.deploy(core.address, []);
+    pcvGuardianWithStartingAddresses = await pcvGuardianFactory.deploy(core.address, [userAddress, userAddress2]);
+
+    await pcvGuardianWithoutStartingAddresses.deployTransaction.wait();
+    await pcvGuardianWithStartingAddresses.deployTransaction.wait();
 
     // To deploy a contract, import and use the contract factory specific to that contract
     // note that the signer supplied is optional
@@ -69,51 +74,64 @@ describe('PCV Guardian', function () {
 
   describe('initial conditions', async () => {
     it('should have no safe addresses upon deployment when deployed with no safe addresses', async () => {
-      expect(await pcvGuardian.getSafeAddresses()).to.be.empty;
+      expect(await pcvGuardianWithoutStartingAddresses.getSafeAddresses()).to.be.empty;
     });
 
     it('should have safe addresses upon deployment when deployed with safe addresses', async () => {
-      throw new Error('Not implemented');
+      expect(await pcvGuardianWithStartingAddresses.getSafeAddresses()).not.to.be.empty;
     });
   });
 
   describe('access control', async () => {
-    it('should revert when calling setSafeAddress from a non-governor address', async () => {
-      await expect(pcvGuardian.setSafeAddress(userAddress)).to.be.revertedWith('CoreRef: Caller is not a governor');
-    });
-
-    it('should revert when calling unsetSafeAddress from a non-guardian-or-governor address', async () => {
-      await expect(pcvGuardian.unsetSafeAddress(userAddress)).to.be.revertedWith(
-        'CoreRef: Caller is not a guardian or governor'
+    it('should revert when calling setSafeAddress & setSafeAddresses from a non-governor address', async () => {
+      await expect(pcvGuardianWithoutStartingAddresses.setSafeAddress(userAddress)).to.be.revertedWith(
+        'CoreRef: Caller is not a governor'
       );
-    });
-
-    it('should revert when calling withdrawToSafeAddress from a non-guardian-or-governor address', async () => {
-      await expect(pcvGuardian.withdrawToSafeAddress(userAddress, userAddress, 1, false)).to.be.revertedWith(
-        'CoreRef: Caller is not a guardian or governor'
-      );
-    });
-
-    it('should revert when calling withdrawETHToSafeAddress from a non-guardian-or-governor address', async () => {
-      await expect(pcvGuardian.withdrawETHToSafeAddress(userAddress, userAddress, 1, false)).to.be.revertedWith(
-        'CoreRef: Caller is not a guardian or governor'
-      );
-    });
-
-    it('should revert when calling withdrawERC20ToSafeAddress from a non-guardian-or-governor address', async () => {
       await expect(
-        pcvGuardian.withdrawERC20ToSafeAddress(userAddress, userAddress, userAddress, 1, false)
-      ).to.be.revertedWith('CoreRef: Caller is not a guardian or governor');
+        pcvGuardianWithoutStartingAddresses.setSafeAddresses([userAddress, userAddress2])
+      ).to.be.revertedWith('CoreRef: Caller is not a governor');
+    });
+
+    it('should revert when calling unsetSafeAddress & unsetSafeAddresses from a non-guardian-or-governor-or-admin address', async () => {
+      await expect(pcvGuardianWithoutStartingAddresses.unsetSafeAddress(userAddress)).to.be.revertedWith(
+        'CoreRef: Caller is not governor or guardian or admin'
+      );
+
+      await expect(
+        pcvGuardianWithoutStartingAddresses.unsetSafeAddresses([userAddress, userAddress2])
+      ).to.be.revertedWith('CoreRef: Caller is not governor or guardian or admin');
+    });
+
+    it('should revert when calling withdrawToSafeAddress from a non-guardian-or-governor-or-admin address', async () => {
+      await expect(
+        pcvGuardianWithoutStartingAddresses.withdrawToSafeAddress(userAddress, userAddress, 1, false)
+      ).to.be.revertedWith('CoreRef: Caller is not governor or guardian or admin');
+    });
+
+    it('should revert when calling withdrawETHToSafeAddress from a non-guardian-or-governor-or-admin address', async () => {
+      await expect(
+        pcvGuardianWithoutStartingAddresses.withdrawETHToSafeAddress(userAddress, userAddress, 1, false)
+      ).to.be.revertedWith('CoreRef: Caller is not governor or guardian or admin');
+    });
+
+    it('should revert when calling withdrawERC20ToSafeAddress from a non-guardian-or-governor-or-admin address', async () => {
+      await expect(
+        pcvGuardianWithoutStartingAddresses.withdrawERC20ToSafeAddress(userAddress, userAddress, userAddress, 1, false)
+      ).to.be.revertedWith('CoreRef: Caller is not a governor or guardian or admin');
     });
 
     it('should allow the governor to add a safe address', async () => {
-      await pcvGuardian.connect(impersonatedSigners[governorAddress]).setSafeAddress(userAddress);
-      expect(await pcvGuardian.isSafeAddress(userAddress)).to.be.true;
+      await pcvGuardianWithoutStartingAddresses
+        .connect(impersonatedSigners[governorAddress])
+        .setSafeAddress(userAddress);
+      expect(await pcvGuardianWithoutStartingAddresses.isSafeAddress(userAddress)).to.be.true;
     });
 
     it('should allow the guardian to remove a safe address', async () => {
-      await pcvGuardian.connect(impersonatedSigners[guardianAddress]).unsetSafeAddress(userAddress);
-      expect(await pcvGuardian.isSafeAddress(userAddress)).to.be.false;
+      await pcvGuardianWithoutStartingAddresses
+        .connect(impersonatedSigners[guardianAddress])
+        .unsetSafeAddress(userAddress);
+      expect(await pcvGuardianWithoutStartingAddresses.isSafeAddress(userAddress)).to.be.false;
     });
   });
 
@@ -131,21 +149,27 @@ describe('PCV Guardian', function () {
       await token.mint(tokenPCVDeposit.address, 100);
       await forceEth(tokenPCVDeposit.address);
 
-      await pcvGuardian.connect(impersonatedSigners[governorAddress]).setSafeAddress(userAddress);
-      await core.connect(impersonatedSigners[governorAddress]).grantPCVController(pcvGuardian.address);
-      await core.connect(impersonatedSigners[governorAddress]).grantGuardian(pcvGuardian.address);
+      await pcvGuardianWithoutStartingAddresses
+        .connect(impersonatedSigners[governorAddress])
+        .setSafeAddress(userAddress);
+      await core
+        .connect(impersonatedSigners[governorAddress])
+        .grantPCVController(pcvGuardianWithoutStartingAddresses.address);
+      await core
+        .connect(impersonatedSigners[governorAddress])
+        .grantGuardian(pcvGuardianWithoutStartingAddresses.address);
     });
 
     it('should not be able to withdraw to a non-safe address', async () => {
       await expect(
-        pcvGuardian
+        pcvGuardianWithoutStartingAddresses
           .connect(impersonatedSigners[guardianAddress])
           .withdrawToSafeAddress(token.address, token.address, 1, false)
       ).to.be.revertedWith('Provided address is not a safe address!');
     });
 
     it('should withdraw from a token-pcv deposit when called by the guardian', async () => {
-      await pcvGuardian
+      await pcvGuardianWithoutStartingAddresses
         .connect(impersonatedSigners[guardianAddress])
         .withdrawToSafeAddress(tokenPCVDeposit.address, userAddress, 1, false);
       expect(await token.balanceOf(userAddress)).to.eq(1);
@@ -153,7 +177,7 @@ describe('PCV Guardian', function () {
 
     it('should withdrawETH from a pcv deposit when called by the guardian', async () => {
       const balanceBefore = await ethers.provider.getBalance(userAddress);
-      await pcvGuardian
+      await pcvGuardianWithoutStartingAddresses
         .connect(impersonatedSigners[guardianAddress])
         .withdrawETHToSafeAddress(tokenPCVDeposit.address, userAddress, 1, false);
       const balanceAfter = await ethers.provider.getBalance(userAddress);
@@ -162,7 +186,7 @@ describe('PCV Guardian', function () {
     });
 
     it('should withdrawERC20 from a pcv deposit when called by the guardian', async () => {
-      await pcvGuardian
+      await pcvGuardianWithoutStartingAddresses
         .connect(impersonatedSigners[guardianAddress])
         .withdrawERC20ToSafeAddress(tokenPCVDeposit.address, userAddress, token.address, 1, false);
       expect(await token.balanceOf(userAddress)).to.eq(1);
@@ -170,7 +194,7 @@ describe('PCV Guardian', function () {
 
     it('should withdraw and unpause beforehand', async () => {
       await tokenPCVDeposit.connect(impersonatedSigners[guardianAddress]).pause();
-      await pcvGuardian
+      await pcvGuardianWithoutStartingAddresses
         .connect(impersonatedSigners[guardianAddress])
         .withdrawToSafeAddress(tokenPCVDeposit.address, userAddress, 1, false);
       expect(await token.balanceOf(userAddress)).to.eq(1);
@@ -178,7 +202,7 @@ describe('PCV Guardian', function () {
     });
 
     it('should withdraw and pause after', async () => {
-      await pcvGuardian
+      await pcvGuardianWithoutStartingAddresses
         .connect(impersonatedSigners[guardianAddress])
         .withdrawToSafeAddress(tokenPCVDeposit.address, userAddress, 1, true);
       expect(await token.balanceOf(userAddress)).to.eq(1);
@@ -187,7 +211,7 @@ describe('PCV Guardian', function () {
 
     it('should withdraw, unpause before, and pause after', async () => {
       await tokenPCVDeposit.connect(impersonatedSigners[guardianAddress]).pause();
-      await pcvGuardian
+      await pcvGuardianWithoutStartingAddresses
         .connect(impersonatedSigners[guardianAddress])
         .withdrawToSafeAddress(tokenPCVDeposit.address, userAddress, 1, true);
       expect(await token.balanceOf(userAddress)).to.eq(1);
