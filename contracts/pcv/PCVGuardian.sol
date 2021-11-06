@@ -11,11 +11,6 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
 
     // If an address is in this set, it's a safe address to withdraw to
     EnumerableSet.AddressSet private safeAddresses;
-
-    modifier isGovernorOrGuardianOrAdmin() {
-        require(_core.isGovernor(msg.sender) || _core.isGuardian(msg.sender) || isContractAdmin(msg.sender), "Not governor or guardian or admin.");
-        _;
-    }
     
     constructor(
         address _core,
