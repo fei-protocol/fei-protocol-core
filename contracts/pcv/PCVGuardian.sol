@@ -76,7 +76,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function withdrawToSafeAddress(address pcvDeposit, address safeAddress, uint256 amount, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
-        if (ICoreRef(pcvDeposit).paused()) {
+        if (CoreRef(pcvDeposit).paused()) {
             ICoreRef(pcvDeposit).unpause();
         }
 
@@ -97,7 +97,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function withdrawETHToSafeAddress(address pcvDeposit, address payable safeAddress, uint256 amount, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
-        if (ICoreRef(pcvDeposit).paused()) {
+        if (CoreRef(pcvDeposit).paused()) {
             ICoreRef(pcvDeposit).unpause();
         }
 
@@ -118,7 +118,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function withdrawERC20ToSafeAddress(address pcvDeposit, address safeAddress, address token, uint256 amount, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
-        if (ICoreRef(pcvDeposit).paused()) {
+        if (CoreRef(pcvDeposit).paused()) {
             ICoreRef(pcvDeposit).unpause();
         }
 
