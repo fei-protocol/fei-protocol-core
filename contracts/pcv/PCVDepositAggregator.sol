@@ -50,11 +50,10 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
         require(_assetManager != address(0x0), "Rewards asset manager cannot be null");
         require(IRewardsAssetManager(_assetManager).getToken() == _token, "Rewards asset manager must be for the same token as this.");
 
-        assetManager = _assetManager;
         token = _token;
-        bufferWeight = _bufferWeight;
-        totalWeight = bufferWeight;
 
+        _setAssetManager(_assetManager);
+        _setBufferWeight(_bufferWeight);
         _setContractAdminRole(keccak256("AGGREGATOR_ADMIN_ROLE"));
 
         for (uint256 i=0; i < _initialPCVDepositAddresses.length; i++) {
@@ -66,9 +65,8 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
     // ---------- Public Functions -------------
 
     /// @notice deposits tokens into sub-contracts (if needed)
-    /// @dev this is equivalent to half of a rebalance. the implementation is as follows:
     /// 1. fill the buffer to maximum
-    /// 2. if buffer is full and there are still tokens unallocated, calculate the optimal istribution of tokens to sub-contracts
+    /// 2. if buffer is full and there are still tokens unallocated, calculate the optimal distribution of tokens to sub-contracts
     /// 3. distribute the tokens according the calcluations in step 2
     function deposit() external override whenNotPaused {
         // First grab the aggregator balance & the pcv deposit balances, and the sum of the pcv deposit balances
@@ -93,6 +91,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
 
         // calculate a scalar. this will determine how much we *actually* send to each underlying deposit.
         Decimal.D256 memory scalar = Decimal.ratio(amountAvailableForUnderlyingDeposits, totalAmountNeeded);
+        assert(scalar.asUint256() <= 1, "Scalar should be less than or equal to one.");
 
         for (uint256 i=0; i <underlyingBalances.length; i++) {
             // send scalar * the amount the underlying deposit needs
@@ -123,7 +122,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
     function withdraw(address to, uint256 amount) external override onlyPCVController whenNotPaused {
         uint256 aggregatorBalance = balance();
 
-        if (aggregatorBalance > amount) {
+        if (aggregatorBalance >= amount) {
             IERC20(token).safeTransfer(to, amount);
             return;
         }
@@ -194,7 +193,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
         uint256 oldDepositWeight = pcvDepositWeights[depositAddress];
         pcvDepositWeights[depositAddress] = 0;
 
-        totalWeight = (totalWeight.toInt256() - oldDepositWeight.toInt256()).toUint256();
+        totalWeight = totalWeight - oldDepositWeight;
 
         emit DepositWeightUpdate(depositAddress, oldDepositWeight, 0);
     }
@@ -220,15 +219,6 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
     function setNewAggregator(address newAggregator) external override onlyGovernor {
         require(PCVDepositAggregator(newAggregator).token() == token, "New aggregator must be for the same token as the existing.");
 
-        // Add each pcvDeposit to the new aggregator
-        for (uint256 i=0; i < pcvDepositAddresses.length(); i++) {
-            address pcvDepositAddress = pcvDepositAddresses.at(i);
-            if (!(IPCVDepositAggregator(newAggregator).hasPCVDeposit(pcvDepositAddress))) {
-                uint256 pcvDepositWeight = pcvDepositWeights[pcvDepositAddress];
-                IPCVDepositAggregator(newAggregator).addPCVDeposit(pcvDepositAddress, pcvDepositWeight);
-            }
-        }
-
         // Send old aggregator assets over to the new aggregator
         IERC20(token).safeTransfer(newAggregator, balance());
 
@@ -243,13 +233,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
     /// @notice sets the rewards asset manager
     /// @param newAssetManager the address of the new rewards asset manager
     function setAssetManager(address newAssetManager) external override onlyGovernor {
-        require(newAssetManager != address(0x0), "New asset manager cannot be 0x0");
-        require(IRewardsAssetManager(newAssetManager).getToken() == token, "New asset manager must be for the same token as the existing.");
-
-        address oldAssetManager = assetManager;
-        assetManager = newAssetManager;
-
-        emit AssetManagerUpdate(oldAssetManager, newAssetManager);
+        _setAssetManager(newAssetManager);
     }
 
     // ---------- View Functions ---------------
@@ -261,10 +245,12 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
         return pcvDepositAddresses.contains(pcvDeposit);
     }
 
+    /// @notice returns the contract's resistant balance and fei
     function resistantBalanceAndFei() public view override returns (uint256, uint256) {
         return (balance(), 0);
     }
 
+    /// @notice returns the address of the token that this contract holds
     function balanceReportedIn() external view override returns (address) {
         return token;
     }
@@ -366,6 +352,17 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
     }
 
     // ---------- Internal Functions ----------- //
+
+    // Sets the asset manager
+    function _setAssetManager(address newAssetManager) internal {
+        require(newAssetManager != address(0x0), "New asset manager cannot be 0x0");
+        require(IRewardsAssetManager(newAssetManager).getToken() == token, "New asset manager must be for the same token as the existing.");
+
+        address oldAssetManager = assetManager;
+        assetManager = newAssetManager;
+
+        emit AssetManagerUpdate(oldAssetManager, newAssetManager);
+    }
 
     // Sets the buffer weight and updates the total weight
     function _setBufferWeight(uint256 newBufferWeight) internal {
