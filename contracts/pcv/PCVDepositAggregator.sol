@@ -50,9 +50,10 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
         require(_assetManager != address(0x0), "Rewards asset manager cannot be null");
         require(IRewardsAssetManager(_assetManager).getToken() == _token, "Rewards asset manager must be for the same token as this.");
 
+        // Can't use the internal method here because it reads token(), which is an immutable var - immutable vars cannot be read in the constructor
+        assetManager = _assetManager;
         token = _token;
 
-        _setAssetManager(_assetManager);
         _setBufferWeight(_bufferWeight);
         _setContractAdminRole(keccak256("AGGREGATOR_ADMIN_ROLE"));
 
@@ -91,7 +92,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
 
         // calculate a scalar. this will determine how much we *actually* send to each underlying deposit.
         Decimal.D256 memory scalar = Decimal.ratio(amountAvailableForUnderlyingDeposits, totalAmountNeeded);
-        assert(scalar.asUint256() <= 1, "Scalar should be less than or equal to one.");
+        assert(scalar.asUint256() <= 1);
 
         for (uint256 i=0; i <underlyingBalances.length; i++) {
             // send scalar * the amount the underlying deposit needs
@@ -108,7 +109,33 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
     /// @param pcvDeposit the address of the pcv deposit to top up
     /// @dev this will only pull from the balance that is left over after the aggregator's buffer fills up
     function depositSingle(address pcvDeposit) public override whenNotPaused {
-        revert("Method not yet written.");
+        // First grab the aggregator balance & the pcv deposit balances, and the sum of the pcv deposit balances
+        (uint256 actualAggregatorBalance, uint256 underlyingSum,) = _getUnderlyingBalancesAndSum();
+
+        // Optimal aggregator balance is (bufferWeight/totalWeight) * totalBalance
+        uint256 totalBalance = underlyingSum + actualAggregatorBalance;
+        uint256 optimalAggregatorBalance = bufferWeight * totalBalance / totalWeight;
+
+        require(actualAggregatorBalance < optimalAggregatorBalance, "No overage in aggregator to top up deposit.");
+
+        // Calculate the overage that the aggregator has, and use the total balance to get the optimal balance of the pcv deposit
+        // Then make sure it actually needs to be topped up
+        uint256 aggregatorOverage = actualAggregatorBalance - optimalAggregatorBalance;
+        uint256 optimalDepositBalance = _getOptimalUnderlyingBalance(totalBalance, pcvDeposit);
+        uint256 actualDepositBalance = IPCVDeposit(pcvDeposit).balance();
+
+        require(actualDepositBalance < optimalDepositBalance, "Deposit does not need topping up.");
+
+        uint256 amountToSend = optimalDepositBalance - actualDepositBalance;
+
+        // If we don't have enough overage to send the whole amount, send as much as we can
+        if (amountToSend > aggregatorOverage) {
+            amountToSend = aggregatorOverage;
+        }
+
+        _depositToUnderlying(pcvDeposit, amountToSend);
+
+        emit AggregatorDepositSingle(pcvDeposit, amountToSend);
     }
 
     /// @notice withdraws the specified amount of tokens from the contract
@@ -387,7 +414,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
         IPCVDeposit(to).deposit();
     }
 
-    /// Uses the weights, the total weight, and the total balance to calculate the optimal underlying pcv deposit balances
+    // Uses the weights, the total weight, and the total balance to calculate the optimal underlying pcv deposit balances
     function _getOptimalUnderlyingBalances(uint256 totalBalance) internal view returns (uint[] memory optimalUnderlyingBalances) {
         optimalUnderlyingBalances = new uint[](pcvDepositAddresses.length());
 
@@ -396,6 +423,11 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
         }
 
         return optimalUnderlyingBalances;
+    }
+
+    // Optimized version of _getOptimalUnderlyingBalances for a single deposit
+    function _getOptimalUnderlyingBalance(uint256 totalBalance, address pcvDeposit) internal view returns (uint256 optimalUnderlyingBalance) {
+        return pcvDepositWeights[pcvDeposit] * totalBalance / totalWeight;
     }
 
     // Cycles through the underlying pcv deposits and gets their balances

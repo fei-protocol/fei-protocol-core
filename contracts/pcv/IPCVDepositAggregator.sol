@@ -30,6 +30,11 @@ interface IPCVDepositAggregator {
 
     event AggregatorDeposit();
 
+    event AggregatorDepositSingle(
+        address indexed depositAddress,
+        uint256 amount
+    );
+
     event AggregatorUpdate(
         address indexed oldAggregator,
         address indexed newAggregator

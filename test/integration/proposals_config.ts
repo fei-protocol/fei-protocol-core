@@ -14,13 +14,6 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     } 
     */
-  fip_37: {
-    deploy: false,
-    skipDAO: false,
-    totalValue: 0,
-    proposal: fip_37_proposal
-  },
-
   permanently_revoke_burner: {
     deploy: true,
     skipDAO: false,
