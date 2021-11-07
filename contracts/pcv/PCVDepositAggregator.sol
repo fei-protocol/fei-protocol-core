@@ -116,7 +116,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
         uint256 totalBalance = underlyingSum + actualAggregatorBalance;
         uint256 optimalAggregatorBalance = bufferWeight * totalBalance / totalWeight;
 
-        require(actualAggregatorBalance < optimalAggregatorBalance, "No overage in aggregator to top up deposit.");
+        require(actualAggregatorBalance > optimalAggregatorBalance, "No overage in aggregator to top up deposit.");
 
         // Calculate the overage that the aggregator has, and use the total balance to get the optimal balance of the pcv deposit
         // Then make sure it actually needs to be topped up

@@ -22,7 +22,7 @@ chai.config.includeStack = true;
 // Import if needed, just a helper.
 // const toBN = ethers.BigNumber.from;
 
-describe.only('PCV Deposit Aggregator', function () {
+describe('PCV Deposit Aggregator', function () {
   // variable decs for vars that you want to use in multiple tests
   // typeing contracts specifically to what kind they are will catch before you run them!
   let core: Core;
@@ -574,6 +574,44 @@ describe.only('PCV Deposit Aggregator', function () {
       //console.log(`sum: ${sum.toNumber()}`)
 
       expect(sum.toNumber()).to.equal(10000001101);
+    });
+
+    it('deposit-singles', async () => {
+      // Mint 3000, 3000, and 4000 tokens to each pcv deposit, respectively
+      await token.mint(pcvDeposit1.address, ethers.utils.parseEther('3000'));
+      await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
+      await token.mint(pcvDeposit3.address, ethers.utils.parseEther('4000'));
+
+      // Call deposit on each pcv deposit so that their balances update
+      await pcvDeposit1.deposit();
+      await pcvDeposit2.deposit();
+      await pcvDeposit3.deposit();
+
+      // Call depositSingle on each pcv deposit; they should all revert as the aggregator has no balance
+      await expect(pcvDepositAggregator.depositSingle(pcvDeposit1.address)).to.be.revertedWith(
+        'No overage in aggregator to top up deposit.'
+      );
+      await expect(pcvDepositAggregator.depositSingle(pcvDeposit2.address)).to.be.revertedWith(
+        'No overage in aggregator to top up deposit.'
+      );
+      await expect(pcvDepositAggregator.depositSingle(pcvDeposit3.address)).to.be.revertedWith(
+        'No overage in aggregator to top up deposit.'
+      );
+
+      // Top up the aggregator with a bunch of tokens, and then call deposit single; they should not revert
+      await token.mint(pcvDepositAggregator.address, ethers.utils.parseEther('10000'));
+
+      // Should have 20% after = 20_000 * 0.2 = 4000
+      await pcvDepositAggregator.depositSingle(pcvDeposit1.address);
+      expect(await pcvDeposit1.balance()).to.equal(ethers.utils.parseEther('4000'));
+
+      // Should have 30% after = 30_000 * 0.3 = 6000
+      await pcvDepositAggregator.depositSingle(pcvDeposit2.address);
+      expect(await pcvDeposit2.balance()).to.equal(ethers.utils.parseEther('6000'));
+
+      // Should have 40% after = 40_000 * 0.4 = 8000
+      await pcvDepositAggregator.depositSingle(pcvDeposit3.address);
+      expect(await pcvDeposit3.balance()).to.equal(ethers.utils.parseEther('8000'));
     });
 
     it('correctly sets deposit weight to zero via setDepositWeightZero()', async () => {
