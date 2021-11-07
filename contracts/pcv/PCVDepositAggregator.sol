@@ -147,44 +147,7 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
     /// actually cover the transfer! This is intentional because it costs the same to withdraw exactly how much we need
     /// vs the overage amount; the entire overage amount should be moved if it is the same cost as just as much as we need.
     function withdraw(address to, uint256 amount) external override onlyPCVController whenNotPaused {
-        uint256 aggregatorBalance = balance();
-
-        if (aggregatorBalance >= amount) {
-            IERC20(token).safeTransfer(to, amount);
-            return;
-        }
-        
-        uint256[] memory underlyingBalances = _getUnderlyingBalances();
-        uint256 totalUnderlyingBalance = underlyingBalances.sum();
-        uint256 totalBalance = totalUnderlyingBalance + aggregatorBalance;
-
-        require(totalBalance >= amount, "Not enough balance to withdraw");
-
-        // We're going to have to pull from underlying deposits
-        // To avoid the need from a rebalance, we should withdraw proportionally from each deposit
-        // such that at the end of this loop, each deposit has moved towards a correct weighting
-        uint256 amountNeededFromUnderlying = amount - aggregatorBalance;
-        uint256 totalUnderlyingBalanceAfterWithdraw = totalUnderlyingBalance - amountNeededFromUnderlying;
-
-        // Next, calculate exactly the desired underlying balance after withdraw
-        uint[] memory idealUnderlyingBalancesPostWithdraw = new uint[](pcvDepositAddresses.length());
-        for (uint256 i=0; i < pcvDepositAddresses.length(); i++) {
-            idealUnderlyingBalancesPostWithdraw[i] = totalUnderlyingBalanceAfterWithdraw * pcvDepositWeights[pcvDepositAddresses.at(i)] / totalWeight;
-        }
-
-        // This basically does half of a rebalance.
-        // (pulls from the deposits that have > than their post-withdraw-ideal-underlying-balance)
-        for (uint256 i=0; i < pcvDepositAddresses.length(); i++) {
-            address pcvDepositAddress = pcvDepositAddresses.at(i);
-            uint256 actualPcvDepositBalance = underlyingBalances[i];
-            uint256 idealPcvDepositBalance = idealUnderlyingBalancesPostWithdraw[i];
-
-            if (actualPcvDepositBalance > idealPcvDepositBalance) {
-                // Has post-withdraw-overage; let's take it
-                uint256 amountToWithdraw = actualPcvDepositBalance - idealPcvDepositBalance;
-                IPCVDeposit(pcvDepositAddress).withdraw(address(this), amountToWithdraw);
-            }
-        }
+        _beforeWithdraw(to, amount);
 
         IERC20(token).safeTransfer(to, amount);
 
@@ -379,6 +342,48 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
     }
 
     // ---------- Internal Functions ----------- //
+
+    // Before-withdraw hook
+    function _beforeWithdraw(address to, uint256 amount) internal {
+        uint256 aggregatorBalance = balance();
+
+        if (aggregatorBalance >= amount) {
+            IERC20(token).safeTransfer(to, amount);
+            return;
+        }
+        
+        uint256[] memory underlyingBalances = _getUnderlyingBalances();
+        uint256 totalUnderlyingBalance = underlyingBalances.sum();
+        uint256 totalBalance = totalUnderlyingBalance + aggregatorBalance;
+
+        require(totalBalance >= amount, "Not enough balance to withdraw");
+
+        // We're going to have to pull from underlying deposits
+        // To avoid the need from a rebalance, we should withdraw proportionally from each deposit
+        // such that at the end of this loop, each deposit has moved towards a correct weighting
+        uint256 amountNeededFromUnderlying = amount - aggregatorBalance;
+        uint256 totalUnderlyingBalanceAfterWithdraw = totalUnderlyingBalance - amountNeededFromUnderlying;
+
+        // Next, calculate exactly the desired underlying balance after withdraw
+        uint[] memory idealUnderlyingBalancesPostWithdraw = new uint[](pcvDepositAddresses.length());
+        for (uint256 i=0; i < pcvDepositAddresses.length(); i++) {
+            idealUnderlyingBalancesPostWithdraw[i] = totalUnderlyingBalanceAfterWithdraw * pcvDepositWeights[pcvDepositAddresses.at(i)] / totalWeight;
+        }
+
+        // This basically does half of a rebalance.
+        // (pulls from the deposits that have > than their post-withdraw-ideal-underlying-balance)
+        for (uint256 i=0; i < pcvDepositAddresses.length(); i++) {
+            address pcvDepositAddress = pcvDepositAddresses.at(i);
+            uint256 actualPcvDepositBalance = underlyingBalances[i];
+            uint256 idealPcvDepositBalance = idealUnderlyingBalancesPostWithdraw[i];
+
+            if (actualPcvDepositBalance > idealPcvDepositBalance) {
+                // Has post-withdraw-overage; let's take it
+                uint256 amountToWithdraw = actualPcvDepositBalance - idealPcvDepositBalance;
+                IPCVDeposit(pcvDepositAddress).withdraw(address(this), amountToWithdraw);
+            }
+        }
+    }
 
     // Sets the asset manager
     function _setAssetManager(address newAssetManager) internal {
