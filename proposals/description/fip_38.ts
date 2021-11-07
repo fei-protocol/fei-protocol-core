@@ -14,15 +14,22 @@ const fip_38: ProposalDescription = {
       target: 'aaveEthPCVDeposit',
       values: '0',
       method: 'withdraw(address,uint256)',
+      arguments: ['{aaveEthPCVDeposit}', '5000000000000000000000'],
+      description: 'Withdraw 5000 WETH from Aave to self'
+    },
+    {
+      target: 'aaveEthPCVDeposit',
+      values: '0',
+      method: 'withdrawETH(address,uint256)',
       arguments: ['{ethTokemakPCVDeposit}', '5000000000000000000000'],
-      description: 'Withdraw 5000 ETH from Aave to Tokemak'
+      description: 'Unwrap 5000 WETH from aaveEthPCVDeposit and send 5000 ETH to Tokemak deposit'
     },
     {
       target: 'compoundEthPCVDeposit',
       values: '0',
       method: 'withdraw(address,uint256)',
       arguments: ['{ethTokemakPCVDeposit}', '5000000000000000000000'],
-      description: 'Withdraw 5000 ETH from Compound to Tokemak'
+      description: 'Withdraw 5000 ETH from Compound deposit to Tokemak deposit'
     },
     {
       target: 'ethTokemakPCVDeposit',

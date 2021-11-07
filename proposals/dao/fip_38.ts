@@ -101,8 +101,13 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect((await tribe.balanceOf(optimisticTimelock)).toString()).to.be.equal(ethers.utils.parseEther('6000000'));
 
   // Deposit ETH in Tokemak
-  expect((await tWETH.balanceOf(ethTokemakPCVDeposit)).toString()).to.be.equal(ethers.utils.parseEther('10000'));
-  expect((await tToke.balanceOf(tokeTokemakPCVDeposit)).toString()).to.be.equal(ethers.utils.parseEther('0'));
+  expect((await ethers.provider.getBalance(ethTokemakPCVDeposit.address)).toString()).to.be.equal(
+    ethers.utils.parseEther('0')
+  );
+  expect((await tWETH.balanceOf(ethTokemakPCVDeposit.address)).toString()).to.be.equal(
+    ethers.utils.parseEther('10000')
+  );
+  expect((await tToke.balanceOf(tokeTokemakPCVDeposit.address)).toString()).to.be.equal(ethers.utils.parseEther('0'));
 
   // Role creation & assignment
   const tokemakDepositAdminRole = ethers.utils.id('TOKEMAK_DEPOSIT_ADMIN_ROLE');
