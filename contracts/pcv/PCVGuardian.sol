@@ -5,8 +5,10 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "../refs/CoreRef.sol";
 import "./IPCVGuardian.sol";
 import "./IPCVDeposit.sol";
+import "../utils/PauseableLib.sol";
 
 contract PCVGuardian is IPCVGuardian, CoreRef {
+    using PauseableLib for address;
     using EnumerableSet for EnumerableSet.AddressSet;
 
     // If an address is in this set, it's a safe address to withdraw to
@@ -61,10 +63,10 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     }
 
     /// @notice batch version of unsetSafeAddresses
-    /// @param safeAddresses the addresses to un-set as safe
-    function unsetSafeAddresses(address[] calldata safeAddresses) external override isGovernorOrGuardianOrAdmin() {
-        for(uint256 i=0; i<safeAddresses.length; i++) {
-            _unsetSafeAddress(safeAddresses[i]);
+    /// @param _safeAddresses the addresses to un-set as safe
+    function unsetSafeAddresses(address[] calldata _safeAddresses) external override isGovernorOrGuardianOrAdmin() {
+        for(uint256 i=0; i<_safeAddresses.length; i++) {
+            _unsetSafeAddress(_safeAddresses[i]);
         }
     }
 
@@ -76,14 +78,12 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function withdrawToSafeAddress(address pcvDeposit, address safeAddress, uint256 amount, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
-        if (CoreRef(pcvDeposit).paused()) {
-            ICoreRef(pcvDeposit).unpause();
-        }
+        pcvDeposit._ensureUnpaused();
 
         IPCVDeposit(pcvDeposit).withdraw(safeAddress, amount);
 
         if (pauseAfter) {
-            ICoreRef(pcvDeposit).pause();
+            pcvDeposit._pause();
         }
 
         emit PCVGuardianWithdrawal(pcvDeposit, safeAddress, amount);
@@ -97,14 +97,12 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function withdrawETHToSafeAddress(address pcvDeposit, address payable safeAddress, uint256 amount, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
-        if (CoreRef(pcvDeposit).paused()) {
-            ICoreRef(pcvDeposit).unpause();
-        }
+        pcvDeposit._ensureUnpaused();
 
         IPCVDeposit(pcvDeposit).withdrawETH(safeAddress, amount);
 
         if (pauseAfter) {
-            ICoreRef(pcvDeposit).pause();
+            pcvDeposit._pause();
         }
 
         emit PCVGuardianETHWithdrawal(pcvDeposit, safeAddress, amount);
@@ -118,14 +116,12 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function withdrawERC20ToSafeAddress(address pcvDeposit, address safeAddress, address token, uint256 amount, bool pauseAfter) external override isGovernorOrGuardianOrAdmin() {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
-        if (CoreRef(pcvDeposit).paused()) {
-            ICoreRef(pcvDeposit).unpause();
-        }
+        pcvDeposit._ensureUnpaused();
 
         IPCVDeposit(pcvDeposit).withdrawERC20(token, safeAddress, amount);
 
         if (pauseAfter) {
-            ICoreRef(pcvDeposit).pause();
+            pcvDeposit._pause();
         }
 
         emit PCVGuardianERC20Withdrawal(pcvDeposit, safeAddress, token, amount);
