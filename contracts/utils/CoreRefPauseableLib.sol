@@ -4,7 +4,10 @@ pragma solidity ^0.8.4;
 import "../refs/CoreRef.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
-library PauseableLib {
+/// @title PauseableLib
+/// @notice PauseableLib is a library that can be used to pause and unpause contracts, amont other utilities.
+/// @dev This library should only be used on contracts that implement CoreRef.
+library CoreRefPauseableLib {
     function _requireUnpaused(address _pausableCoreRefAddress) public view {
         require(!CoreRef(_pausableCoreRefAddress).paused(), "PausableLib: Address is paused but required to not be paused.");
     }

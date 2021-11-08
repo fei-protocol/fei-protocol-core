@@ -5,10 +5,10 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "../refs/CoreRef.sol";
 import "./IPCVGuardian.sol";
 import "./IPCVDeposit.sol";
-import "../utils/PauseableLib.sol";
+import "../utils/CoreRefPauseableLib.sol";
 
 contract PCVGuardian is IPCVGuardian, CoreRef {
-    using PauseableLib for address;
+    using CoreRefPauseableLib for address;
     using EnumerableSet for EnumerableSet.AddressSet;
 
     // If an address is in this set, it's a safe address to withdraw to
@@ -47,10 +47,10 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     }
 
     /// @notice batch version of setSafeAddress
-    /// @param safeAddresses the addresses to set as safe, as calldata
-    function setSafeAddresses(address[] calldata safeAddresses) external override onlyGovernorOrAdmin() {
-        for(uint256 i=0; i<safeAddresses.length; i++) {
-            _setSafeAddress(safeAddresses[i]);
+    /// @param _safeAddresses the addresses to set as safe, as calldata
+    function setSafeAddresses(address[] calldata _safeAddresses) external override onlyGovernorOrAdmin() {
+        for(uint256 i=0; i<_safeAddresses.length; i++) {
+            _setSafeAddress(_safeAddresses[i]);
         }
     }
 
