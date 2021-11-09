@@ -61,7 +61,7 @@ describe('PCV Guardian', function () {
     // Do any pre-test setup here
     core = await getCore();
 
-    const coreRefPausableLibFactory = new CoreRefPauseableLib__factory();
+    const coreRefPausableLibFactory = new CoreRefPauseableLib__factory(impersonatedSigners[userAddress]);
     const coreRefPausableLib = await coreRefPausableLibFactory.deploy();
 
     const pcvGuardianFactory = new PCVGuardian__factory(
