@@ -1,4 +1,4 @@
-import { expectRevert, getAddresses, getCore } from '@test/helpers';
+import { expectRevert, getAddresses, getCore, getImpersonatedSigner } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
 import hre, { ethers } from 'hardhat';
@@ -47,12 +47,7 @@ describe('PCV Deposit Aggregator', function () {
     const impersonatedAddresses = [userAddress, pcvControllerAddress, governorAddress, guardianAddress];
 
     for (const address of impersonatedAddresses) {
-      await hre.network.provider.request({
-        method: 'hardhat_impersonateAccount',
-        params: [address]
-      });
-
-      impersonatedSigners[address] = await ethers.getSigner(address);
+      impersonatedSigners[address] = await getImpersonatedSigner(address);
     }
   });
 
@@ -432,7 +427,6 @@ describe('PCV Deposit Aggregator', function () {
     // This edge case is special because it is the only time when we DONT pull tokens from every pcv deposit to cover the overage,
     // and where we'll actually end up pulling more tokens than needed into the aggregator - ie the aggregatort will have an overage
     // after this method is complete. This is because we don't do deposits of tokens on withdraw - only withdrawals.
-    // @todo
     it('withdraws when the buffer is not enough to cover the balances and there is a pcv deposit that should not be pulled from', async () => {
       // Mint 6000, 3000, and 1000 tokens to each pcv deposit, respectively
       await token.mint(pcvDeposit1.address, ethers.utils.parseEther('6000'));
@@ -535,12 +529,6 @@ describe('PCV Deposit Aggregator', function () {
 
       const sum = pcvDeposit1Balance.add(pcvDeposit2Balance).add(pcvDeposit3Balance).add(aggregatorBalance);
 
-      //console.log(`pcv deposit 1 balance: ${ethers.utils.formatUnits(pcvDeposit1Balance)}`);
-      //console.log(`pcv deposit 2 balance: ${ethers.utils.formatUnits(pcvDeposit2Balance)}`);
-      //console.log(`pcv deposit 3 balance: ${ethers.utils.formatUnits(pcvDeposit3Balance)}`);
-      //console.log(`aggregator balance: ${ethers.utils.formatUnits(aggregatorBalance)}`);
-      //console.log(`sum: ${ethers.utils.formatUnits(sum)}`);
-
       expect(sum).to.equal(ethers.utils.parseEther('10000').sub(ethers.utils.parseEther('0.000000001')));
     });
 
@@ -567,16 +555,10 @@ describe('PCV Deposit Aggregator', function () {
 
       const sum = pcvDeposit1Balance.add(pcvDeposit2Balance).add(pcvDeposit3Balance).add(aggregatorBalance);
 
-      //console.log(`pcv deposit 1 balance: ${ethers.utils.formatUnits(pcvDeposit1Balance)}`);
-      //console.log(`pcv deposit 2 balance: ${ethers.utils.formatUnits(pcvDeposit2Balance)}`);
-      //console.log(`pcv deposit 3 balance: ${ethers.utils.formatUnits(pcvDeposit3Balance)}`);
-      //console.log(`aggregator balance: ${ethers.utils.formatUnits(aggregatorBalance)}`);
-      //console.log(`sum: ${sum.toNumber()}`)
-
       expect(sum.toNumber()).to.equal(10000001101);
     });
 
-    it('deposit-singles', async () => {
+    it('deposit-singles with no overage in aggregator< and reverts', async () => {
       // Mint 3000, 3000, and 4000 tokens to each pcv deposit, respectively
       await token.mint(pcvDeposit1.address, ethers.utils.parseEther('3000'));
       await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
@@ -597,6 +579,18 @@ describe('PCV Deposit Aggregator', function () {
       await expect(pcvDepositAggregator.depositSingle(pcvDeposit3.address)).to.be.revertedWith(
         'No overage in aggregator to top up deposit.'
       );
+    });
+
+    it('deposit-singles with overage in the aggregator and succeeds', async () => {
+      // Mint 3000, 3000, and 4000 tokens to each pcv deposit, respectively
+      await token.mint(pcvDeposit1.address, ethers.utils.parseEther('3000'));
+      await token.mint(pcvDeposit2.address, ethers.utils.parseEther('3000'));
+      await token.mint(pcvDeposit3.address, ethers.utils.parseEther('4000'));
+
+      // Call deposit on each pcv deposit so that their balances update
+      await pcvDeposit1.deposit();
+      await pcvDeposit2.deposit();
+      await pcvDeposit3.deposit();
 
       // Top up the aggregator with a bunch of tokens, and then call deposit single; they should not revert
       await token.mint(pcvDepositAggregator.address, ethers.utils.parseEther('10000'));

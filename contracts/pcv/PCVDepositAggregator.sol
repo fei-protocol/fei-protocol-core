@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "../libs/UintArrayOps.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 /// @title PCV Deposit Aggregator
 /// @notice A smart contract that aggregates erc20-based PCV deposits and rebalances them according to set weights 
@@ -126,12 +127,8 @@ contract PCVDepositAggregator is IPCVDepositAggregator, PCVDeposit {
 
         require(actualDepositBalance < optimalDepositBalance, "Deposit does not need topping up.");
 
-        uint256 amountToSend = optimalDepositBalance - actualDepositBalance;
-
         // If we don't have enough overage to send the whole amount, send as much as we can
-        if (amountToSend > aggregatorOverage) {
-            amountToSend = aggregatorOverage;
-        }
+        uint256 amountToSend = Math.min(optimalDepositBalance - actualDepositBalance, aggregatorOverage);
 
         _depositToUnderlying(pcvDeposit, amountToSend);
 
