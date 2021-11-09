@@ -59,9 +59,6 @@ describe('PCV Guardian', function () {
     // Do any pre-test setup here
     core = await getCore();
 
-    // const coreRefPausableLibFactory = new CoreRefPauseableLib__factory(impersonatedSigners[userAddress]);
-    // const coreRefPausableLib = await coreRefPausableLibFactory.deploy();
-
     const pcvGuardianFactory = await ethers.getContractFactory('PCVGuardian');
 
     pcvGuardianWithoutStartingAddresses = await pcvGuardianFactory.deploy(core.address, []);
