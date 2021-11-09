@@ -436,6 +436,11 @@ const MainnetAddresses = {
   tWETH: { artifactName: 'IERC20', address: '0xD3D13a578a53685B4ac36A1Bab31912D2B2A2F36' },
   tToke: { artifactName: 'IERC20', address: '0xa760e26aA76747020171fCF8BdA108dFdE8Eb930' },
   toke: { artifactName: 'IERC20', address: '0x2e9d63788249371f1dfc918a52f8d799f4a38c94' },
+  ethTokemakPCVDeposit: { artifactName: 'EthTokemakPCVDeposit', address: '0x0961d2a545e0c1201B313d14C57023682a546b9D' },
+  tokeTokemakPCVDeposit: {
+    artifactName: 'ERC20TokemakPCVDeposit',
+    address: '0x45C8FaB07B64C78d03006591132Ac51DE82a4B22'
+  },
   stAAVE: { artifactName: 'IERC20', address: '0x4da27a545c0c5b758a6ba100e3a049001de870f5' },
   steth: { artifactName: 'IERC20', address: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84' },
   sushiswapDpiFei: { artifactName: 'IUniswapV2Pair', address: '0x8775aE5e83BC5D926b6277579c2B0d40c7D9b528' },
