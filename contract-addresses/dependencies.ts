@@ -15,6 +15,13 @@ const dependencies: DependencyMap = {
     contractDependencies: [],
     externalDependencies: []
   },
+  optimisticTimelock: {
+    fips: {
+      fip_38: true
+    },
+    contractDependencies: [],
+    externalDependencies: []
+  },
   compoundEthPCVDeposit: {
     fips: {
       fip_38: true
