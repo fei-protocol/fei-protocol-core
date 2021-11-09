@@ -46,7 +46,7 @@ contract MockPCVDepositV2 is IPCVDeposit, CoreRef {
         IERC20(token).transfer(to, amount);
     }
 
-    function withdrawETH(address payable to, uint256 amount) external override {
+    function withdrawETH(address payable to, uint256 amount) external override onlyPCVController() {
         to.transfer(amount);
     }
     
