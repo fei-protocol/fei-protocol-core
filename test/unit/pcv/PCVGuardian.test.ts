@@ -1,18 +1,16 @@
 import { getAddresses, getCore, getImpersonatedSigner } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
-import hre, { ethers } from 'hardhat';
+import { ethers } from 'hardhat';
 import {
   Core,
   MockERC20__factory,
   MockPCVDepositV2__factory,
   PCVDeposit,
   PCVGuardian,
-  MockERC20,
-  CoreRefPauseableLib__factory
+  MockERC20
 } from '@custom-types/contracts';
 import chai from 'chai';
-import { PCVGuardian__factory } from '@custom-types/contracts/factories/PCVGuardian__factory';
 import { forceEth } from '@test/integration/setup/utils';
 
 // This will theoretically make the error stack actually print!
@@ -61,13 +59,7 @@ describe('PCV Guardian', function () {
     // Do any pre-test setup here
     core = await getCore();
 
-    const coreRefPausableLibFactory = new CoreRefPauseableLib__factory(impersonatedSigners[userAddress]);
-    const coreRefPausableLib = await coreRefPausableLibFactory.deploy();
-
-    const pcvGuardianFactory = new PCVGuardian__factory(
-      { 'contracts/utils/CoreRefPauseableLib.sol:CoreRefPauseableLib': coreRefPausableLib.address },
-      impersonatedSigners[userAddress]
-    );
+    const pcvGuardianFactory = await ethers.getContractFactory('PCVGuardian');
 
     pcvGuardianWithoutStartingAddresses = await pcvGuardianFactory.deploy(core.address, []);
     pcvGuardianWithStartingAddresses = await pcvGuardianFactory.deploy(core.address, [userAddress, userAddress2]);
