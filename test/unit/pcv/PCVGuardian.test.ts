@@ -9,7 +9,6 @@ import {
   PCVDeposit,
   PCVGuardian,
   MockERC20,
-  CoreRefPauseableLib__factory,
   CoreRefPauseableLib__factory
 } from '@custom-types/contracts';
 import chai from 'chai';
