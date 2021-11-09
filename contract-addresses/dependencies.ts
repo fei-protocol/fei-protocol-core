@@ -3,63 +3,35 @@ import { DependencyMap } from '@custom-types/types';
 const dependencies: DependencyMap = {
   core: {
     fips: {
-      fip_37: true
+      fip_38: true
     },
     contractDependencies: [],
     externalDependencies: []
   },
-  fei: {
+  aaveEthPCVDeposit: {
     fips: {
-      fip_37: true
+      fip_38: true
     },
     contractDependencies: [],
     externalDependencies: []
   },
-  pcvEquityMinter: {
+  compoundEthPCVDeposit: {
     fips: {
-      fip_37: true
+      fip_38: true
     },
     contractDependencies: [],
     externalDependencies: []
   },
-  collateralizationOracleKeeper: {
+  ethTokemakPCVDeposit: {
     fips: {
-      fip_37: true
+      fip_38: true
     },
     contractDependencies: [],
     externalDependencies: []
   },
-  feiTribeLBPSwapper: {
+  tokeTokemakPCVDeposit: {
     fips: {
-      fip_37: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  collateralizationOracle: {
-    fips: {
-      fip_37: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  collateralizationOracleWrapper: {
-    fips: {
-      fip_37: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  collateralizationOracleGuardian: {
-    fips: {
-      fip_37: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  optimisticTimelock: {
-    fips: {
-      fip_37: true
+      fip_38: true
     },
     contractDependencies: [],
     externalDependencies: []
