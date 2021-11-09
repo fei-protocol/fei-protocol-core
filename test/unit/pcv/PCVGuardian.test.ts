@@ -8,7 +8,9 @@ import {
   MockPCVDepositV2__factory,
   PCVDeposit,
   PCVGuardian,
-  MockERC20
+  MockERC20,
+  CoreRefPauseableLib__factory,
+  CoreRefPauseableLib__factory
 } from '@custom-types/contracts';
 import chai from 'chai';
 import { PCVGuardian__factory } from '@custom-types/contracts/factories/PCVGuardian__factory';
@@ -59,7 +61,15 @@ describe('PCV Guardian', function () {
 
     // Do any pre-test setup here
     core = await getCore();
-    const pcvGuardianFactory = new PCVGuardian__factory(impersonatedSigners[userAddress]);
+
+    const coreRefPausableLibFactory = new CoreRefPauseableLib__factory();
+    const coreRefPausableLib = await coreRefPausableLibFactory.deploy();
+
+    const pcvGuardianFactory = new PCVGuardian__factory(
+      { 'contracts/utils/CoreRefPauseableLib.sol:CoreRefPauseableLib': coreRefPausableLib.address },
+      impersonatedSigners[userAddress]
+    );
+
     pcvGuardianWithoutStartingAddresses = await pcvGuardianFactory.deploy(core.address, []);
     pcvGuardianWithStartingAddresses = await pcvGuardianFactory.deploy(core.address, [userAddress, userAddress2]);
 
