@@ -102,7 +102,7 @@ describe('PriceBoundPegStabilityModule', function () {
     await core.grantRole(PSM_ADMIN_ROLE, psmAdminAddress);
   });
 
-  describe('Init', function () {
+  describe('after contract initialization, parameters are correct:', function () {
     it('oracle address', async function () {
       expect(await psm.oracle()).to.be.equal(oracle.address);
     });
@@ -136,7 +136,7 @@ describe('PriceBoundPegStabilityModule', function () {
     });
 
     it('token address', async function () {
-      expect(await psm.token()).to.be.equal(asset.address);
+      expect(await psm.underlyingToken()).to.be.equal(asset.address);
     });
 
     it('price floor', async function () {
@@ -275,7 +275,7 @@ describe('PriceBoundPegStabilityModule', function () {
         const oneK = toBN(1000);
         const newMintFee = 500;
         await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
-        await psm.connect(impersonatedSigners[governorAddress]).setOracleCeiling(12_001);
+        await psm.connect(impersonatedSigners[governorAddress]).setOracleCeilingBasisPoints(12_001);
 
         // set exchange rate to 1 dai to 1.2 fei
         await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.mul(12).div(10));
@@ -307,7 +307,7 @@ describe('PriceBoundPegStabilityModule', function () {
         const expectedMintAmountOut = 1140;
 
         await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
-        await psm.connect(impersonatedSigners[governorAddress]).setOracleCeiling(12_000);
+        await psm.connect(impersonatedSigners[governorAddress]).setOracleCeilingBasisPoints(12_000);
 
         // set exchange rate to 1 dai to 1.2 fei
         await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.mul(12).div(10));
@@ -329,7 +329,7 @@ describe('PriceBoundPegStabilityModule', function () {
         const expectedMintAmountOut = 1140;
 
         await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
-        await psm.connect(impersonatedSigners[governorAddress]).setOracleFloor(8_000);
+        await psm.connect(impersonatedSigners[governorAddress]).setOracleFloorBasisPoints(8_000);
 
         // set exchange rate to 1 dai to .8 fei
         await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.mul(8).div(10));
@@ -677,7 +677,7 @@ describe('PriceBoundPegStabilityModule', function () {
       });
 
       it('redeem succeeds when user has enough funds, DAI is $0.5 and mint fee has been changed to 100 bips', async function () {
-        await psm.connect(impersonatedSigners[governorAddress]).setOracleFloor(4_900);
+        await psm.connect(impersonatedSigners[governorAddress]).setOracleFloorBasisPoints(4_900);
         await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.div(2));
 
         await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(100);
@@ -710,7 +710,7 @@ describe('PriceBoundPegStabilityModule', function () {
       });
 
       it('redeem succeeds when user has enough funds, DAI is $0.5 and mint fee has been changed to 500 bips', async function () {
-        await psm.connect(impersonatedSigners[governorAddress]).setOracleFloor(4_900);
+        await psm.connect(impersonatedSigners[governorAddress]).setOracleFloorBasisPoints(4_900);
         await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.div(2));
 
         await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(500);
@@ -811,12 +811,12 @@ describe('PriceBoundPegStabilityModule', function () {
       });
 
       it('succeeds when caller is governor and fee is 1_000 bips', async function () {
-        const oldMaxFee = await psm.MAX_FEE();
+        const oldMaxFee = await psm.maxFee();
         const newMaxFee = 1_000;
         await expect(psm.connect(impersonatedSigners[governorAddress]).setMaxFee(1_000))
           .to.emit(psm, 'MaxFeeUpdate')
           .withArgs(oldMaxFee, newMaxFee);
-        expect(await psm.MAX_FEE()).to.be.equal(newMaxFee);
+        expect(await psm.maxFee()).to.be.equal(newMaxFee);
       });
     });
 
@@ -848,33 +848,33 @@ describe('PriceBoundPegStabilityModule', function () {
 
     describe('setTarget', function () {
       it('fails when caller is not governor or admin', async function () {
-        await expectRevert(psm.setTarget(asset.address), 'CoreRef: Caller is not a governor or contract admin');
+        await expectRevert(psm.setSurplusTarget(asset.address), 'CoreRef: Caller is not a governor or contract admin');
       });
 
       it('fails when target is address 0', async function () {
         await expectRevert(
-          psm.connect(impersonatedSigners[governorAddress]).setTarget(ZERO_ADDRESS),
+          psm.connect(impersonatedSigners[governorAddress]).setSurplusTarget(ZERO_ADDRESS),
           'PegStabilityModule: Invalid new target'
         );
       });
 
       it('succeeds when caller is governor', async function () {
-        const oldTarget = await psm.target();
+        const oldTarget = await psm.surplusTarget();
         const newTarget = asset.address;
-        await expect(await psm.connect(impersonatedSigners[governorAddress]).setTarget(newTarget))
-          .to.emit(psm, 'TargetUpdate')
+        await expect(await psm.connect(impersonatedSigners[governorAddress]).setSurplusTarget(newTarget))
+          .to.emit(psm, 'SurplusTargetUpdate')
           .withArgs(oldTarget, newTarget);
-        const updatedTarget = await psm.target();
+        const updatedTarget = await psm.surplusTarget();
         expect(updatedTarget).to.be.equal(newTarget);
       });
 
       it('succeeds when caller is governor', async function () {
-        const oldTarget = await psm.target();
+        const oldTarget = await psm.surplusTarget();
         const newTarget = asset.address;
-        await expect(await psm.connect(impersonatedSigners[psmAdminAddress]).setTarget(newTarget))
-          .to.emit(psm, 'TargetUpdate')
+        await expect(await psm.connect(impersonatedSigners[psmAdminAddress]).setSurplusTarget(newTarget))
+          .to.emit(psm, 'SurplusTargetUpdate')
           .withArgs(oldTarget, newTarget);
-        const updatedTarget = await psm.target();
+        const updatedTarget = await psm.surplusTarget();
         expect(updatedTarget).to.be.equal(newTarget);
       });
     });
@@ -911,34 +911,34 @@ describe('PriceBoundPegStabilityModule', function () {
     describe('setOracleFloor', function () {
       it('fails when caller is not governor or admin', async function () {
         await expectRevert(
-          psm.setOracleFloor(reservesThreshold.mul(1000)),
+          psm.setOracleFloorBasisPoints(reservesThreshold.mul(1000)),
           'CoreRef: Caller is not a governor or contract admin'
         );
       });
 
       it('fails when floor is 0', async function () {
         await expectRevert(
-          psm.connect(impersonatedSigners[governorAddress]).setOracleFloor(0),
+          psm.connect(impersonatedSigners[governorAddress]).setOracleFloorBasisPoints(0),
           'PegStabilityModule: invalid floor'
         );
       });
 
       it('fails when floor is greater than ceiling', async function () {
         await expectRevert(
-          psm.connect(impersonatedSigners[governorAddress]).setOracleFloor(10_300),
+          psm.connect(impersonatedSigners[governorAddress]).setOracleFloorBasisPoints(10_300),
           'PegStabilityModule: floor must be less than ceiling'
         );
       });
 
       it('succeeds when caller is psm admin', async function () {
         const newOracleFloor = 9_900;
-        await psm.connect(impersonatedSigners[psmAdminAddress]).setOracleFloor(newOracleFloor);
+        await psm.connect(impersonatedSigners[psmAdminAddress]).setOracleFloorBasisPoints(newOracleFloor);
         expect(await psm.floor()).to.be.equal(newOracleFloor);
       });
 
       it('succeeds when caller is governor', async function () {
         const newOracleFloor = 9_900;
-        await psm.connect(impersonatedSigners[governorAddress]).setOracleFloor(newOracleFloor);
+        await psm.connect(impersonatedSigners[governorAddress]).setOracleFloorBasisPoints(newOracleFloor);
         expect(await psm.floor()).to.be.equal(newOracleFloor);
       });
     });
@@ -946,34 +946,34 @@ describe('PriceBoundPegStabilityModule', function () {
     describe('setOracleCeiling', function () {
       it('fails when caller is not governor or admin', async function () {
         await expectRevert(
-          psm.setOracleCeiling(reservesThreshold.mul(1000)),
+          psm.setOracleCeilingBasisPoints(reservesThreshold.mul(1000)),
           'CoreRef: Caller is not a governor or contract admin'
         );
       });
 
       it('fails when ceiling is less than floor', async function () {
         await expectRevert(
-          psm.connect(impersonatedSigners[governorAddress]).setOracleCeiling(9_000),
+          psm.connect(impersonatedSigners[governorAddress]).setOracleCeilingBasisPoints(9_000),
           'PegStabilityModule: ceiling must be greater than floor'
         );
       });
 
       it('fails when ceiling is zero', async function () {
         await expectRevert(
-          psm.connect(impersonatedSigners[governorAddress]).setOracleCeiling(0),
+          psm.connect(impersonatedSigners[governorAddress]).setOracleCeilingBasisPoints(0),
           'PegStabilityModule: invalid ceiling'
         );
       });
 
       it('succeeds when caller is psm admin', async function () {
         const newOraclePriceCeiling = 10_100;
-        await psm.connect(impersonatedSigners[psmAdminAddress]).setOracleCeiling(newOraclePriceCeiling);
+        await psm.connect(impersonatedSigners[psmAdminAddress]).setOracleCeilingBasisPoints(newOraclePriceCeiling);
         expect(await psm.ceiling()).to.be.equal(newOraclePriceCeiling);
       });
 
       it('succeeds when caller is governor', async function () {
         const newOraclePriceCeiling = 10_100;
-        await psm.connect(impersonatedSigners[governorAddress]).setOracleCeiling(newOraclePriceCeiling);
+        await psm.connect(impersonatedSigners[governorAddress]).setOracleCeilingBasisPoints(newOraclePriceCeiling);
         expect(await psm.ceiling()).to.be.equal(newOraclePriceCeiling);
       });
     });
