@@ -429,6 +429,7 @@ const MainnetAddresses = {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x9aAdFfe00eAe6d8e59bB4F7787C6b99388A6960D'
   },
+  saddleD4Pool: { artifactName: 'ISaddleSwap', address: '0xC69DDcd4DFeF25D8a793241834d4cc4b3668EAD6' },
   snapshotDelegateRegistry: { artifactName: 'DelegateRegistry', address: '0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446' },
   fAAVE: { artifactName: 'IERC20', address: '0x4da27a545c0c5b758a6ba100e3a049001de870f5' },
   stakingTokenWrapperRari: {

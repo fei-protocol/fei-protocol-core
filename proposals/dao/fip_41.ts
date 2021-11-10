@@ -16,7 +16,7 @@ chai.use(CBN(ethers.BigNumber));
 
 // Constants
 // LBP swapper
-const MIN_LBP_SIZE = ethers.constants.WeiPerEther.mul(1_000); // 1k FEI
+const MIN_LBP_SIZE = ethers.constants.WeiPerEther.mul(50_000); // 50k FEI
 
 /*
 
@@ -24,14 +24,18 @@ TRIBE Buybacks
 
 DEPLOY ACTIONS:
 
-1. Deploy LUSD LBP Swapper
-2. Create LUSD LBP pool
-3. Init LUSD LBP Swapper
+1. Deploy LUSD Fuse deposit
+2. Deploy LUSD LBP Swapper
+3. Create LUSD LBP pool
+4. Init LUSD LBP Swapper
 
 DAO ACTIONS:
-1. Reimburse 1,100,000 FEI to Fei Labs, who seeded the LUSD for auction
-2. Seed LBP Swapper with 100,000,000 FEI
-4. Start auction
+1. Mint 1.1M FEI to Timelock
+2. Approve 1.1M FEI to trade on Saddle's D4 pool
+3. Swap 1.1M FEI for LUSD on Saddle's D4 pool
+4. Transfer LUSD to the LBP Swapper
+5. Mint 100M FEI for LBP Swapper
+6. Start auction
 */
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
@@ -108,14 +112,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 };
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  // impersonate to get some LUSD, on mainnet a normal swap will be done
-  // prior to proposal execution, to seed the swapper.
-  const LUSD_HOLDING_ADDRESS = '0x66017D22b0f8556afDd19FC67041899Eb65a21bb';
-  await forceEth(LUSD_HOLDING_ADDRESS);
-  const lusdSigner = await getImpersonatedSigner(LUSD_HOLDING_ADDRESS);
-  await contracts.lusd
-    .connect(lusdSigner)
-    .transfer(addresses.feiLusdLBPSwapper, ethers.constants.WeiPerEther.mul(1_011_000));
+  logging && console.log('No setup for FIP-41');
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
