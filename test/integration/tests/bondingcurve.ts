@@ -4,9 +4,10 @@ import { solidity } from 'ethereum-waffle';
 import hre, { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { expectApprox, resetFork, time } from '@test/helpers';
-import proposals from '@test/integration/proposals_config.json';
+import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '@test/integration/setup/utils';
+import { UniswapPCVDeposit } from '@custom-types/contracts';
 
 const toBN = ethers.BigNumber.from;
 
@@ -46,6 +47,28 @@ describe('e2e-bondingcurve', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
+  describe.skip('Reserve Stabilizer', async () => {
+    it('should be able to redeem Fei from stabiliser', async function () {
+      const fei = contracts.fei;
+      const reserveStabilizer = contracts.ethReserveStabilizer;
+      const signer = (await ethers.getSigners())[0];
+      await signer.sendTransaction({ to: reserveStabilizer.address, value: tenPow18.mul(toBN(200)) });
+
+      const contractEthBalanceBefore = toBN(await ethers.provider.getBalance(reserveStabilizer.address));
+      const userFeiBalanceBefore = toBN(await fei.balanceOf(deployAddress));
+
+      const feiTokensExchange = toBN(40000000000000);
+      await reserveStabilizer.updateOracle();
+      const expectedAmountOut = await reserveStabilizer.getAmountOut(feiTokensExchange);
+      await reserveStabilizer.exchangeFei(feiTokensExchange);
+
+      const contractEthBalanceAfter = toBN(await ethers.provider.getBalance(reserveStabilizer.address));
+      const userFeiBalanceAfter = toBN(await fei.balanceOf(deployAddress));
+
+      expect(contractEthBalanceBefore.sub(toBN(expectedAmountOut))).to.be.equal(contractEthBalanceAfter);
+      expect(userFeiBalanceAfter).to.be.equal(userFeiBalanceBefore.sub(feiTokensExchange));
+    });
+  });
   describe('BondingCurve', async () => {
     describe('ETH', async function () {
       beforeEach(async function () {
@@ -169,11 +192,12 @@ describe('e2e-bondingcurve', function () {
         expect(feiBalanceAfter.eq(expectedFinalBalance)).to.be.true;
       });
 
-      // This test is skipped because it relies on oracles (?)
-      it.skip('should transfer allocation from dpi bonding curve to the uniswap deposit and Fuse', async function () {
+      it('should transfer allocation from dpi bonding curve to the uniswap deposit and Fuse', async function () {
         const bondingCurve = contracts.dpiBondingCurve;
-        const uniswapPCVDeposit = contracts.dpiUniswapPCVDeposit;
+        const uniswapPCVDeposit: UniswapPCVDeposit = contracts.dpiUniswapPCVDeposit as UniswapPCVDeposit;
         const fusePCVDeposit = contracts.indexCoopFusePoolDpiPCVDeposit;
+
+        await uniswapPCVDeposit.setMaxBasisPointsFromPegLP(10_000);
 
         const pcvAllocations = await bondingCurve.getAllocation();
         expect(pcvAllocations[0].length).to.be.equal(2);

@@ -2,8 +2,8 @@ pragma solidity ^0.8.0;
 
 import "./FeiTimedMinter.sol";
 import "./IPCVEquityMinter.sol";
-import "../Constants.sol";
-import "../pcv/IPCVSwapper.sol";
+import "../../Constants.sol";
+import "../../pcv/IPCVSwapper.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @title PCVEquityMinter
@@ -12,10 +12,7 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
     using SafeCast for int256;
 
     /// @notice The maximum percentage of PCV equity to be minted per year, in basis points 
-    uint256 public constant override MAX_APR_BASIS_POINTS = 2000; // Max 20% per year
-
-    uint256 private constant SECONDS_PER_YEAR = 365 days;
-    uint256 private constant FEI_MINTING_LIMIT_PER_SECOND = 1000e18; // 1000 FEI/s or ~86m FEI/day
+    uint256 public immutable override MAX_APR_BASIS_POINTS;
 
     /// @notice the collateralization oracle used to determine PCV equity
     ICollateralizationOracle public override collateralizationOracle;
@@ -38,12 +35,19 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
         uint256 _incentive,
         uint256 _frequency,
         ICollateralizationOracle _collateralizationOracle,
-        uint256 _aprBasisPoints
+        uint256 _aprBasisPoints,
+        uint256 _maxAPRBasisPoints,
+        uint256 _feiMintingLimitPerSecond
     ) 
-        FeiTimedMinter(_core, _target, _incentive, _frequency, FEI_MINTING_LIMIT_PER_SECOND * _frequency)
+        FeiTimedMinter(_core, _target, _incentive, _frequency, _feiMintingLimitPerSecond * _frequency)
     {
         _setCollateralizationOracle(_collateralizationOracle);
         _setAPRBasisPoints(_aprBasisPoints);
+
+        MAX_APR_BASIS_POINTS = _maxAPRBasisPoints;
+
+        // Set flag to allow equity minter to mint some value up to the cap if the cap is reached
+        doPartialAction = true;
     }
 
     /// @notice triggers a minting of FEI based on the PCV equity
@@ -59,7 +63,7 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
         require(valid, "PCVEquityMinter: invalid CR oracle");
 
         // return total equity scaled proportionally by the APR and the ratio of the mint frequency to the entire year
-        return equity.toUint256() * aprBasisPoints / Constants.BASIS_POINTS_GRANULARITY * duration / SECONDS_PER_YEAR;
+        return equity.toUint256() * aprBasisPoints / Constants.BASIS_POINTS_GRANULARITY * duration / Constants.ONE_YEAR;
     }
     
     /// @notice set the collateralization oracle
@@ -69,12 +73,12 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
 
     /// @notice sets the new APR for determining buyback size from PCV equity
     function setAPRBasisPoints(uint256 newAprBasisPoints) external override onlyGovernorOrAdmin {
+        require(newAprBasisPoints <= MAX_APR_BASIS_POINTS, "PCVEquityMinter: APR above max");
         _setAPRBasisPoints(newAprBasisPoints);
     }
 
     function _setAPRBasisPoints(uint256 newAprBasisPoints) internal {
         require(newAprBasisPoints != 0, "PCVEquityMinter: zero APR");
-        require(newAprBasisPoints <= MAX_APR_BASIS_POINTS, "PCVEquityMinter: APR above max");
 
         uint256 oldAprBasisPoints = aprBasisPoints;
         aprBasisPoints = newAprBasisPoints;

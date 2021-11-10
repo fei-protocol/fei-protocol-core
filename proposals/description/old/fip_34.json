@@ -1,0 +1,47 @@
+{
+    "proposal_title": "FIP-34: Optimistic Minter",
+    "proposal_commands": [
+        {
+            "target": "core",
+            "values": "0",
+            "method": "grantMinter(address)",
+            "arguments": ["{optimisticMinter}"],
+            "description": "Grant FEI Minter role to optimistic Minter"
+        },
+        {
+            "target": "core",
+            "values": "0",
+            "method": "grantMinter(address)",
+            "arguments": ["{timelock}"],
+            "description": "Grant FEI Minter to timelock"
+        },
+        {
+            "target": "fei",
+            "values": "0",
+            "method": "mint(address,uint256)",
+            "arguments": ["{optimisticTimelock}", "100000000000000000000000000"],
+            "description": "Mint 100M FEI to OA timelock"
+        },
+        {
+            "target": "core",
+            "values": "0",
+            "method": "revokeMinter(address)",
+            "arguments": ["{timelock}"],
+            "description": "Revoke FEI Minter from timelock"
+        },
+        {
+            "target": "tribe",
+            "values": "0",
+            "method": "setMinter(address)",
+            "arguments": ["{feiDAOTimelock}"],
+            "description": "Set TRIBE minter to FEI DAO timelock"
+        },
+        {
+            "target": "feiDAO",
+            "values": "0",
+            "method": "updateTimelock(address)",
+            "arguments": ["{feiDAOTimelock}"],
+            "description": "Restore FEI DAO timelock"
+        } 
+    ]
+}

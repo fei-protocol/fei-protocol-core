@@ -1,14 +1,8 @@
-import ether from '@openzeppelin/test-helpers/src/ether';
 import { expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { artifacts, ethers } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-import { forceEth, forceSpecificEth } from '../../integration/setup/utils';
-
-const EthLidoPCVDeposit = artifacts.readArtifactSync('EthLidoPCVDeposit');
-const Fei = artifacts.readArtifactSync('Fei');
-const MockStEthStableSwap = artifacts.readArtifactSync('MockStEthStableSwap');
-const MockStEthToken = artifacts.readArtifactSync('MockStEthToken');
+import { forceSpecificEth } from '../../integration/setup/utils';
 
 const e18 = '000000000000000000';
 

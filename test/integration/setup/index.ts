@@ -1,4 +1,4 @@
-import permissions from '../../../contract-addresses/permissions.json';
+import permissions from '@addresses/permissions.json';
 import { getAllContractAddresses, getAllContracts } from './loadContracts';
 import {
   Config,
@@ -7,19 +7,18 @@ import {
   Env,
   ProposalConfig,
   namedContractsToNamedAddresses,
-  NamedAddresses
-} from '../../../types/types';
-import { sudo } from '../../../scripts/utils/sudo';
-import constructProposal from '../../../scripts/utils/constructProposal';
-import '@nomiclabs/hardhat-ethers';
-
-import {
+  NamedAddresses,
   NamedContracts,
   DeployUpgradeFunc,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
-  ValidateUpgradeFunc
-} from '../../../types/types';
+  ValidateUpgradeFunc,
+  MainnetContracts
+} from '@custom-types/types';
+import { sudo } from '@scripts/utils/sudo';
+import constructProposal from '@scripts/utils/constructProposal';
+import '@nomiclabs/hardhat-ethers';
+import { resetFork } from '@test/helpers';
 
 /**
  * Coordinate initialising an end-to-end testing environment
@@ -50,6 +49,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    *
    */
   public async loadEnvironment(): Promise<Env> {
+    await resetFork();
     await this.initMainnetContracts();
     let existingContracts = this.mainnetContracts;
 
@@ -88,7 +88,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     // Get the upgrade setup and teardown scripts
     const { deploy, setup, teardown, validate } = await import('@proposals/dao/' + proposalName);
 
-    if (config['deploy']) {
+    if (config.deploy) {
       this.config.logging && console.log(`Applying upgrade for proposal: ${proposalName}`);
       const deployTyped = deploy as DeployUpgradeFunc;
       deployedUpgradedContracts = await deployTyped(
@@ -116,9 +116,15 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     const setupTyped = setup as SetupUpgradeFunc;
     await setupTyped(contractAddresses, existingContracts, contracts, this.config.logging);
 
-    if (!config['skipDAO']) {
+    // TODO maybe replace skipDAO with existence of config.proposal
+    if (!config.skipDAO) {
       // Simulate the DAO proposal
-      const proposal = await constructProposal(proposalName, this.config.logging);
+      const proposal = await constructProposal(
+        config.proposal,
+        contracts as unknown as MainnetContracts,
+        contractAddresses,
+        this.config.logging
+      );
       this.config.logging && console.log(`Simulating proposal...`);
       await proposal.simulate();
     }
@@ -139,21 +145,21 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   /**
    * Set the web3 contracts used in the test environment
    */
-  setLocalTestContracts(contracts: NamedContracts) {
+  setLocalTestContracts(contracts: NamedContracts): void {
     this.afterUpgradeContracts = contracts;
   }
 
   /**
    * Set the addresses of the contracts used in the test environment
    */
-  async setLocalTestContractAddresses(contracts: NamedContracts) {
+  async setLocalTestContractAddresses(contracts: NamedContracts): Promise<void> {
     this.afterUpgradeAddresses = { ...(contracts as unknown as NamedAddresses) };
   }
 
   /**
    * Revoke permissions granted to deploy address
    */
-  async revokeDeployAddressPermission() {
+  async revokeDeployAddressPermission(): Promise<void> {
     await this.afterUpgradeContracts.core.revokeMinter(this.config.deployAddress);
     await this.afterUpgradeContracts.core.revokeBurner(this.config.deployAddress);
     await this.afterUpgradeContracts.core.revokePCVController(this.config.deployAddress);

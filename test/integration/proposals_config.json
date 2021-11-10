@@ -1,6 +1,0 @@
-{
-    "collateralizationOracle" : {
-        "deploy" : true,
-        "skipDAO" : true
-    }
-}

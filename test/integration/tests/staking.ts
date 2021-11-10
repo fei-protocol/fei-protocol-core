@@ -7,7 +7,7 @@ import { BigNumber, Contract } from 'ethers';
 import hre, { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { expectApprox, getImpersonatedSigner, resetFork, time } from '@test/helpers';
-import proposals from '@test/integration/proposals_config.json';
+import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '@test/integration/setup/utils';
 
@@ -25,8 +25,6 @@ describe('e2e-staking', function () {
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
-
-  const tenPow18 = toBN('1000000000000000000');
 
   before(async function () {
     // Setup test environment and get contracts
@@ -89,8 +87,6 @@ describe('e2e-staking', function () {
             throw new Error('invalid lock length');
           }
         }
-
-        const currentIndex = await tribalChief.openUserDeposits(pid, userAddresses[i]);
 
         await hre.network.provider.request({
           method: 'hardhat_impersonateAccount',
@@ -398,12 +394,11 @@ describe('e2e-staking', function () {
 
   describe('FeiRari Tribe Staking Rewards', async () => {
     let tribe: Contract;
-    let tribalChief: Contract;
+    let tribalChief: TribalChief;
     let tribePerBlock: BigNumber;
     let autoRewardsDistributor: AutoRewardsDistributor;
     let rewardsDistributorAdmin: Contract;
     let stakingTokenWrapper: Contract;
-    let rewardsDistributorDelegator: Contract;
     const poolAllocPoints = 1000;
     const pid = 3;
     let optimisticTimelock: SignerWithAddress;
@@ -411,9 +406,9 @@ describe('e2e-staking', function () {
 
     before(async () => {
       stakingTokenWrapper = contracts.stakingTokenWrapperRari;
-      rewardsDistributorDelegator = contracts.rariRewardsDistributorDelegator;
-      tribePerBlock = toBN('75').mul(ethers.constants.WeiPerEther);
-      tribalChief = contracts.tribalChief;
+      tribalChief = contracts.tribalChief as TribalChief;
+      tribePerBlock = await tribalChief.tribePerBlock();
+
       rewardsDistributorAdmin = contracts.rewardsDistributorAdmin;
       autoRewardsDistributor = contracts.autoRewardsDistributor as AutoRewardsDistributor;
       tribe = contracts.tribe;

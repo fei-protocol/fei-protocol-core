@@ -19,4 +19,5 @@ interface IRewardsAssetManager {
 
     // ----------- Read-only api -----------
     function pcvDepositAggregator() external returns(address);
+    function getToken() external returns (address);
 }

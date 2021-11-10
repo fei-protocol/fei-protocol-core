@@ -1,11 +1,7 @@
 import { expectRevert, time, balance, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { artifacts, ethers } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-
-const PCVDripController = artifacts.readArtifactSync('PCVDripController');
-const MockPCVDeposit = artifacts.readArtifactSync('MockEthUniswapPCVDeposit');
-const Fei = artifacts.readArtifactSync('Fei');
 
 const toBN = ethers.BigNumber.from;
 

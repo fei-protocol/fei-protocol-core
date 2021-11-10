@@ -16,6 +16,8 @@ contract MockCoreRef is CoreRef {
 
 	function testGovernor() public view onlyGovernor {}
 
+	function testGuardian() public view onlyGuardianOrGovernor {}
+
 	function testOnlyGovernorOrAdmin() public view onlyGovernorOrAdmin {}
 }
 

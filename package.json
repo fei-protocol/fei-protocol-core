@@ -31,23 +31,24 @@
     "abis": "node scripts/abis.js",
     "calldata": "npx hardhat run scripts/utils/getProposalCalldata.ts",
     "check-proposal": "ENABLE_MAINNET_FORKING=true npx hardhat run scripts/utils/checkProposal.ts",
-    "prettier-format": "prettier --config .prettierrc './**/*.ts' --write"
+    "prettier-format": "prettier --config .prettierrc './**/*.ts' --write",
+    "prepare": "husky install"
   },
   "author": "joeysantoro",
   "license": "AGPL-3.0-only",
   "dependencies": {
-    "@balancer-labs/v2-pool-weighted": "^1.0.0",
+    "@balancer-labs/v2-pool-weighted": "^2.0.1",
     "@chainlink/contracts": "^0.1.7",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@openzeppelin/contracts": "^4.3.2",
     "@openzeppelin/test-environment": "^0.1.7",
-    "@openzeppelin/test-helpers": "^0.5.4",
+    "@openzeppelin/test-helpers": "^0.5.15",
     "@uniswap/lib": "^1.1.2",
     "@uniswap/v2-core": "^1.0.1",
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "chai": "^4.3.4",
-    "dotenv": "^8.2.0",
-    "hardhat": "^2.6.0",
+    "dotenv": "^10.0.0",
+    "hardhat": "^2.6.8",
     "hardhat-contract-sizer": "^2.0.3",
     "hardhat-gas-reporter": "^1.0.4",
     "string-template": "^1.0.0"
@@ -58,24 +59,32 @@
     "@typechain/ethers-v5": "^7.1.2",
     "@typechain/hardhat": "^2.3.0",
     "@types/chai": "^4.2.18",
-    "@types/mocha": "^8.2.2",
-    "@types/node": "^15.12.2",
-    "@typescript-eslint/eslint-plugin": "^4.31.2",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^16.11.6",
     "@typescript-eslint/parser": "^4.31.2",
+    "@typescript-eslint/eslint-plugin": "^4.31.2",
     "chai-bn": "^0.3.0",
     "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-prettier": "^4.0.0",
     "ethereum-waffle": "^3.3.0",
-    "ethers": "^5.4.7",
-    "mocha": "^9.1.2",
+    "ethers": "^5.5.1",
+    "husky": "^7.0.4",
+    "lint-staged": "^11.2.6",
+    "mocha": "^9.1.3",
     "prettier": "^2.4.1",
     "solidity-coverage": "^0.7.17",
-    "ts-node": "^10.0.0",
+    "ts-node": "^10.4.0",
     "tsconfig-paths": "^3.11.0",
-    "typechain": "^5.1.2",
-    "typescript": "^4.4.3"
+    "typechain": "^5.2.0",
+    "typescript": "^4.4.4"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --cache --fix --config ./.eslintrc --ignore-path ./.eslintignore --ext .ts,.tsx .",
+      "prettier --config .prettierrc './**/*.ts' --write"
+    ]
   }
 }
