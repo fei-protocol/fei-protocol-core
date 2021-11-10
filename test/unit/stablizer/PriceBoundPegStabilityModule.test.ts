@@ -7,7 +7,7 @@ import { keccak256 } from 'ethers/lib/utils';
 
 const toBN = ethers.BigNumber.from;
 
-describe('PriceBoundPegStabilityModule', function () {
+describe.only('PriceBoundPegStabilityModule', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
@@ -520,7 +520,7 @@ describe('PriceBoundPegStabilityModule', function () {
 
         expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(mintAmount));
         expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
-        expect(await fei.balanceOf(psm.address)).to.be.equal(0);
+        expect(await fei.balanceOf(psm.address)).to.be.equal(mintAmount);
         expect(await psm.buffer()).to.be.equal(bufferCap);
       });
 
@@ -548,7 +548,7 @@ describe('PriceBoundPegStabilityModule', function () {
 
         expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(mintAmount));
         expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
-        expect(await fei.balanceOf(psm.address)).to.be.equal(0);
+        expect(await fei.balanceOf(psm.address)).to.be.equal(mintAmount);
         expect(await psm.buffer()).to.be.equal(bufferCap);
       });
 
@@ -577,7 +577,7 @@ describe('PriceBoundPegStabilityModule', function () {
 
         expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(pointOneFei));
         expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
-        expect(await fei.balanceOf(psm.address)).to.be.equal(0);
+        expect(await fei.balanceOf(psm.address)).to.be.equal(pointOneFei);
         expect(await psm.buffer()).to.be.equal(bufferCap);
       });
 
@@ -606,7 +606,7 @@ describe('PriceBoundPegStabilityModule', function () {
 
         expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(pointOneFei));
         expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
-        expect(await fei.balanceOf(psm.address)).to.be.equal(0);
+        expect(await fei.balanceOf(psm.address)).to.be.equal(pointOneFei);
         expect(await psm.buffer()).to.be.equal(bufferCap);
       });
 
@@ -636,7 +636,7 @@ describe('PriceBoundPegStabilityModule', function () {
 
         expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(mintAmount));
         expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
-        expect(await fei.balanceOf(psm.address)).to.be.equal(0);
+        expect(await fei.balanceOf(psm.address)).to.be.equal(mintAmount);
         expect(await psm.buffer()).to.be.equal(bufferCap);
       });
 
@@ -667,7 +667,7 @@ describe('PriceBoundPegStabilityModule', function () {
 
         expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(mintAmount));
         expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
-        expect(await fei.balanceOf(psm.address)).to.be.equal(0);
+        expect(await fei.balanceOf(psm.address)).to.be.equal(mintAmount);
         expect(await psm.buffer()).to.be.equal(bufferCap);
       });
 
@@ -700,7 +700,7 @@ describe('PriceBoundPegStabilityModule', function () {
 
         expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(mintAmount));
         expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
-        expect(await fei.balanceOf(psm.address)).to.be.equal(0);
+        expect(await fei.balanceOf(psm.address)).to.be.equal(mintAmount);
         expect(await psm.buffer()).to.be.equal(bufferCap);
       });
 
@@ -733,7 +733,7 @@ describe('PriceBoundPegStabilityModule', function () {
 
         expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(mintAmount));
         expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
-        expect(await fei.balanceOf(psm.address)).to.be.equal(0);
+        expect(await fei.balanceOf(psm.address)).to.be.equal(mintAmount);
         expect(await psm.buffer()).to.be.equal(bufferCap);
       });
 
@@ -801,7 +801,7 @@ describe('PriceBoundPegStabilityModule', function () {
       it('fails when caller is governor and fee is 10_000 bips', async() => {
         await expectRevert(
           psm.connect(impersonatedSigners[governorAddress]).setMaxFee(10_000),
-          'PegStabilityModule: invalid fee'
+          'PegStabilityModule: Invalid Fee'
         );
       });
 
@@ -849,7 +849,7 @@ describe('PriceBoundPegStabilityModule', function () {
       it('fails when target is address 0', async() => {
         await expectRevert(
           psm.connect(impersonatedSigners[governorAddress]).setSurplusTarget(ZERO_ADDRESS),
-          'PegStabilityModule: Invalid new target'
+          'PegStabilityModule: Invalid new surplus target'
         );
       });
 
@@ -1048,7 +1048,7 @@ describe('PriceBoundPegStabilityModule', function () {
 
         const tx = await (await psm.deposit()).wait();
 
-        expect(tx.logs.length).to.be.equal(0);
+        expect(tx.logs.length).to.be.equal(1);
         expect(await psm.hasSurplus()).to.be.false;
         expect(await psm.reservesSurplus()).to.be.equal(0);
       });
