@@ -183,54 +183,16 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         @dev assumes tokenSpent balance of contract exceeds minTokenSpentBalance to kick off a new auction
     */
     function swap() external override afterTime whenNotPaused onlyGovernorOrAdmin {
-        (,, uint256 lastChangeBlock) = vault.getPoolTokens(pid);
+        _swap();
+    }
 
-        // Ensures no actor can change the pool contents earlier in the block
-        require(lastChangeBlock < block.number, "BalancerLBPSwapper: pool changed this block");
-
-        uint256 bptTotal = pool.totalSupply();
-
-        // Balancer locks a small amount of bptTotal after init, so 0 bpt means pool needs initializing
-        if (bptTotal == 0) {
-            _initializePool();
-            return;
-        }
-        require(swapEndTime() < block.timestamp, "BalancerLBPSwapper: weight update in progress");
-
-        // 1. Withdraw existing LP tokens (if currently held)
-        _exitPool();
-
-        // 2. Reset weights to 99:1
-        // Using current block time triggers immediate weight reset
-        _updateWeightsGradually(
-            pool,
-            block.timestamp, 
-            block.timestamp, 
-            initialWeights
-        );
-
-        // 3. Provide new liquidity
-        uint256 spentTokenBalance = IERC20(tokenSpent).balanceOf(address(this));
-        require(spentTokenBalance > minTokenSpentBalance, "BalancerLBPSwapper: not enough for new swap");
-
-        // uses exact tokens in encoding for deposit, supplying both tokens
-        // will use some of the previously withdrawn tokenReceived to seed the 1% required for new auction
-        uint256[] memory amountsIn = _getTokensIn(spentTokenBalance);
-        bytes memory userData = abi.encode(IWeightedPool.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT, amountsIn, 0);
-
-        IVault.JoinPoolRequest memory joinRequest;
-        joinRequest.assets = assets;
-        joinRequest.maxAmountsIn = amountsIn;
-        joinRequest.userData = userData;
-        joinRequest.fromInternalBalance = false; // uses external balances because tokens are held by contract
-
-        vault.joinPool(pid, address(this), payable(address(this)), joinRequest);
-
-        // 4. Kick off new auction ending after `duration` seconds
-        _updateWeightsGradually(pool, block.timestamp, block.timestamp + duration, endWeights);
-        _initTimed(); // reset timer
-        // 5. Send remaining tokenReceived to target
-        _transferAll(tokenReceived, tokenReceivingAddress);
+    /**
+        @notice Force a swap() call, without waiting afterTime.
+        Use with extreme caution, this could cancel an ongoing auction and
+        start a new one.
+    */
+    function forceSwap() external whenNotPaused onlyGovernor {
+        _swap();
     }
 
     /// @notice redeeem all assets from LP pool
@@ -286,6 +248,65 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         return (tokens, _getTokensIn(spentTokenBalance));
     }
 
+    /**
+        @notice Swap algorithm
+        1. Withdraw existing LP tokens
+        2. Reset weights
+        3. Provide new liquidity
+        4. Trigger gradual weight change
+        5. Transfer remaining tokenReceived to tokenReceivingAddress
+        @dev assumes tokenSpent balance of contract exceeds minTokenSpentBalance to kick off a new auction
+    */
+    function _swap() internal {
+        (,, uint256 lastChangeBlock) = vault.getPoolTokens(pid);
+
+        // Ensures no actor can change the pool contents earlier in the block
+        require(lastChangeBlock < block.number, "BalancerLBPSwapper: pool changed this block");
+
+        uint256 bptTotal = pool.totalSupply();
+
+        // Balancer locks a small amount of bptTotal after init, so 0 bpt means pool needs initializing
+        if (bptTotal == 0) {
+            _initializePool();
+            return;
+        }
+        require(swapEndTime() < block.timestamp, "BalancerLBPSwapper: weight update in progress");
+
+        // 1. Withdraw existing LP tokens (if currently held)
+        _exitPool();
+
+        // 2. Reset weights to 99:1
+        // Using current block time triggers immediate weight reset
+        _updateWeightsGradually(
+            pool,
+            block.timestamp,
+            block.timestamp,
+            initialWeights
+        );
+
+        // 3. Provide new liquidity
+        uint256 spentTokenBalance = IERC20(tokenSpent).balanceOf(address(this));
+        require(spentTokenBalance > minTokenSpentBalance, "BalancerLBPSwapper: not enough for new swap");
+
+        // uses exact tokens in encoding for deposit, supplying both tokens
+        // will use some of the previously withdrawn tokenReceived to seed the 1% required for new auction
+        uint256[] memory amountsIn = _getTokensIn(spentTokenBalance);
+        bytes memory userData = abi.encode(IWeightedPool.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT, amountsIn, 0);
+
+        IVault.JoinPoolRequest memory joinRequest;
+        joinRequest.assets = assets;
+        joinRequest.maxAmountsIn = amountsIn;
+        joinRequest.userData = userData;
+        joinRequest.fromInternalBalance = false; // uses external balances because tokens are held by contract
+
+        vault.joinPool(pid, address(this), payable(address(this)), joinRequest);
+
+        // 4. Kick off new auction ending after `duration` seconds
+        _updateWeightsGradually(pool, block.timestamp, block.timestamp + duration, endWeights);
+        _initTimed(); // reset timer
+        // 5. Send remaining tokenReceived to target
+        _transferAll(tokenReceived, tokenReceivingAddress);
+    }
 
     function _exitPool() internal {
         uint256 bptBalance = pool.balanceOf(address(this));
