@@ -1,26 +1,26 @@
 pragma solidity ^0.8.4;
 
 import "./PegStabilityModule.sol";
-import "./IPriceBoundPSM.sol";
+import "./IPriceBound.sol";
 import "../Constants.sol";
 
 /// @notice contract to create a price bound DAI PSM
 /// This contract will allow swaps when the price of DAI is between 98 cents and 1.02 by default
 /// These defaults are changeable by the admin and governance by calling floor and ceiling setters
 /// setOracleFloor and setOracleCeiling
-contract PriceBoundPSM is PegStabilityModule, IPriceBoundPSM {
+contract PriceBoundPSM is PegStabilityModule, IPriceBound {
     using Decimal for Decimal.D256;
     using SafeERC20 for IERC20;
     using SafeCast for *;
 
     /// @notice get the basis points delta
-    uint256 constant public override bpDelta = 200;
+    uint256 constant public override BP_DELTA = 200;
 
     /// @notice the default minimum acceptable oracle price floor is 98 cents
-    uint256 public override floor = Constants.BASIS_POINTS_GRANULARITY - bpDelta;
+    uint256 public override floor = Constants.BASIS_POINTS_GRANULARITY - BP_DELTA;
 
     /// @notice the default maximum acceptable oracle price ceiling is $1.02
-    uint256 public override ceiling = Constants.BASIS_POINTS_GRANULARITY + bpDelta;
+    uint256 public override ceiling = Constants.BASIS_POINTS_GRANULARITY + BP_DELTA;
 
     /// @notice constructor
     /// @param _coreAddress Fei core to reference
@@ -33,8 +33,8 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBoundPSM {
     /// @param _mintingBufferCap cap of buffer that can be used at once
     /// @param _decimalsNormalizer normalize decimals in oracle if tokens have different decimals
     /// @param _doInvert invert oracle price if true
-    /// @param _token token to buy and sell against Fei
-    /// @param _target Fei token to reference
+    /// @param _underlyingToken token to buy and sell against Fei
+    /// @param _surplusTarget pcv deposit to send surplus reserves to
     constructor(
         address _coreAddress,
         address _oracleAddress,
@@ -46,8 +46,8 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBoundPSM {
         uint256 _mintingBufferCap,
         int256 _decimalsNormalizer,
         bool _doInvert,
-        IERC20 _token,
-        IPCVDeposit _target
+        IERC20 _underlyingToken,
+        IPCVDeposit _surplusTarget
     ) PegStabilityModule(
         _coreAddress,
         _oracleAddress,
@@ -59,22 +59,22 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBoundPSM {
         _mintingBufferCap,
         _decimalsNormalizer,
         _doInvert,
-        _token,
-        _target
+        _underlyingToken,
+        _surplusTarget
     ) {}
 
     /// @notice sets the floor price in BP
-    function setOracleFloor(uint256 newFloorBasisPoints) external override onlyGovernorOrAdmin {
-        _setFloor(newFloorBasisPoints);
+    function setOracleFloorBasisPoints(uint256 newFloorBasisPoints) external override onlyGovernorOrAdmin {
+        _setFloorBasisPoints(newFloorBasisPoints);
     }
 
     /// @notice sets the ceiling price in BP
-    function setOracleCeiling(uint256 newCeilingBasisPoints) external override onlyGovernorOrAdmin {
-        _setCeiling(newCeilingBasisPoints);
+    function setOracleCeilingBasisPoints(uint256 newCeilingBasisPoints) external override onlyGovernorOrAdmin {
+        _setCeilingBasisPoints(newCeilingBasisPoints);
     }
 
     /// @notice helper function to set the ceiling in basis points
-    function _setCeiling(uint256 newCeilingBasisPoints) internal {
+    function _setCeilingBasisPoints(uint256 newCeilingBasisPoints) internal {
         require(newCeilingBasisPoints != 0, "PegStabilityModule: invalid ceiling");
         require(
             Decimal.ratio(newCeilingBasisPoints, Constants.BASIS_POINTS_GRANULARITY)
@@ -88,7 +88,7 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBoundPSM {
     }
 
     /// @notice helper function to set the floor in basis points
-    function _setFloor(uint256 newFloorBasisPoints) internal {
+    function _setFloorBasisPoints(uint256 newFloorBasisPoints) internal {
         require(newFloorBasisPoints != 0, "PegStabilityModule: invalid floor");
         require(
             Decimal.ratio(newFloorBasisPoints, Constants.BASIS_POINTS_GRANULARITY)

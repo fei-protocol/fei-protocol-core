@@ -1,6 +1,11 @@
 pragma solidity ^0.8.4;
 
 interface IPSMRouter {
+    // ---------- View-Only API ----------
+
+    function psm() external returns (address);
+
+    // ---------- State-Changing API ----------
 
     /// @notice Default mint if no calldata supplied
     /// @dev we don't use fallback here because fallback is only called if the function selector doesn't exist,

@@ -6,18 +6,20 @@ import "../Constants.sol";
 
 contract PSMRouter is IPSMRouter {
 
-    address public immutable psm;
+    address public immutable override psm;
 
     constructor(address _psm) {
         psm = _psm;
         IERC20(address(Constants.WETH)).approve(_psm, type(uint256).max);
     }
 
+    // ---------- Public State-Changing API ----------
+
     /// @notice Default mint if no calldata supplied
     /// @dev we don't use fallback here because fallback is only called if the function selector doesn't exist,
     /// and we actually want to revert in case someone made a mistake. Note that receive() cannot return values.
     receive() external payable override {
-        mint(msg.sender, 0);
+        _mint(msg.sender, 0);
     }
 
     /// @notice Mints fei to the given address, with a minimum amount required
