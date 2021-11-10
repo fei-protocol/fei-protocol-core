@@ -2,7 +2,7 @@ import { ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
-import fip_37_proposal from '@proposals/description/fip_37';
+import fip_41_proposal from '@proposals/description/fip_41';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -11,8 +11,14 @@ const proposals: ProposalsConfigMap = {
         skipDAO: false, // whether or not to simulate proposal in DAO
         totalValue: 0, // amount of ETH to send to DAO execution
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
-    } 
+    }
     */
+  fip_41: {
+    deploy: true,
+    skipDAO: false,
+    totalValue: 0,
+    proposal: fip_41_proposal
+  }
 };
 
 export default proposals;

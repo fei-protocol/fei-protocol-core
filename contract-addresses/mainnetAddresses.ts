@@ -276,6 +276,8 @@ const MainnetAddresses = {
     artifactName: 'SnapshotDelegatorPCVDeposit',
     address: '0x0ee81df08B20e4f9E0F534e50da437D24491c4ee'
   },
+  liquityFusePoolLusd: { artifactName: 'CErc20Delegator', address: '0x5052BfbB7972E702179f3Eeed43B9213819b681a' },
+  lusd: { artifactName: 'IERC20', address: '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0' },
   kashiFeiDPI: { artifactName: 'IKashiPair', address: '0xf352773f1d4d69deb4de8d0578e43b993ee76e5d' },
   kashiFeiEth: { artifactName: 'IKashiPair', address: '0x329efec40f58054fc2f2cd4fd65809f2be3e11c8' },
   kashiFeiTribe: { artifactName: 'IKashiPair', address: '0x18c9584d9ce56a0f62f73f630f180d5278c873b7' },
