@@ -180,7 +180,9 @@ contract PegStabilityModule is RateLimitedMinter, IPegStabilityModule, Reentranc
 
         fei().transferFrom(msg.sender, address(this), amountFeiIn);
         
-        _burnFeiHeld();
+        // We do not burn Fei; this allows the contract's balance of Fei to be used before the buffer is used
+        // In practice, this helps prevent artificial cycling of mint-burn cycles and prevents a griefing vector.
+
         _transfer(to, amountOut);
 
         emit Redeem(to, amountFeiIn);
@@ -199,8 +201,16 @@ contract PegStabilityModule is RateLimitedMinter, IPegStabilityModule, Reentranc
 
         _transferFrom(msg.sender, address(this), amountIn);
 
-        _mintFei(to, amountFeiOut);
+        // We first transfer any contract-owned fei, then mint the remaining if necessary
+        uint256 amountFeiToTransfer = Math.min(fei().balanceOf(address(this)), amountFeiOut);
+        uint256 amountFeiToMint = amountFeiOut - amountFeiToTransfer;
 
+        _transfer(to, amountFeiToTransfer);
+
+        if (amountFeiToMint > 0) {
+            _mintFei(to, amountFeiOut);
+        }
+        
         emit Mint(to, amountIn);
     }
 
