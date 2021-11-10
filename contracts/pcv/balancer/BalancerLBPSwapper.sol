@@ -188,8 +188,9 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
 
     /**
         @notice Force a swap() call, without waiting afterTime.
-        Use with extreme caution, this could cancel an ongoing auction and
-        start a new one.
+        This should only be callable after init() call, when no
+        other swap is happening (call reverts if weight change
+        is in progress).
     */
     function forceSwap() external whenNotPaused onlyGovernor {
         _swap();
