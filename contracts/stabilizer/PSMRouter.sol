@@ -6,43 +6,32 @@ import "../Constants.sol";
 
 contract PSMRouter is IPSMRouter {
 
-    IPegStabilityModule public immutable psm;
+    address public immutable psm;
 
-    constructor(IPegStabilityModule _psm) {
+    constructor(address _psm) {
         psm = _psm;
-        /// allow the PSM to spend all of our WETH
-        /// this contract should never have eth, but in case someone self destructs and sends us some eth
-        /// to try and grief us, that will not matter as we do not reference the contract balance
-        IERC20(address(Constants.WETH)).approve(address(_psm), type(uint256).max);
+        IERC20(address(Constants.WETH)).approve(_psm, type(uint256).max);
     }
 
-    modifier ensure(uint256 deadline) {
-        require(deadline >= block.timestamp, "PSMRouter: order expired");
-        _;
+    /// @notice Default mint if no calldata supplied
+    /// @dev we don't use fallback here because fallback is only called if the function selector doesn't exist,
+    /// and we actually want to revert in case someone made a mistake. Note that receive() cannot return values.
+    receive() external payable override {
+        mint(msg.sender, 0);
     }
 
-    /// @notice fallback function so that users can just send this contract eth and receive Fei in return
-    /// this function takes an address and minAmountOut as params from the calldata
-    fallback(bytes calldata data) external payable returns (bytes memory) {
-        (address to, uint256 minAmountOut) = abi.decode(data, (address, uint256));
-
-        _depositWethAndMint(to, minAmountOut);
+    /// @notice Mints fei to the given address, with a minimum amount required
+    /// @dev This wraps ETH and then calls into the PSM to mint the fei. We return the amount of fei minted.
+    /// @param _to The address to mint fei to
+    /// @param _minAmountOut The minimum amount of fei to mint
+    function mint(address _to, uint256 _minAmountOut) public payable override returns (uint256) {
+        return _mint(_to, _minAmountOut);
     }
 
-    /// front running and back running is not possible so minAmountOut is set to msg.value
-    /// this will work as long as the eth price is above, $1 which is a reasonable assumption
-    receive() external payable {
-        _depositWethAndMint(msg.sender, msg.value);
-    }
-
-    function swapExactETHForExactFei(address to, uint256 amountsOutMin, uint256 deadline) external override payable ensure(deadline) {
-        _depositWethAndMint(to, amountsOutMin);
-    }
-
-    function _depositWethAndMint(address to, uint256 minAmountOut) internal {
+    // ---------- Internal Methods ----------
+    
+    function _mint(address _to, uint256 _minAmountOut) internal returns (uint256) {
         Constants.WETH.deposit{value: msg.value}();
-        psm.mint(msg.sender, msg.value, minAmountOut);
-
-        emit EthDepositedForFei(to, msg.value);
+        return IPegStabilityModule(psm).mint(_to, msg.value, _minAmountOut);
     }
 }

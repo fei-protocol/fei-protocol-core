@@ -9,3 +9,4 @@ tenderly.yaml
 artifacts
 cache
 types/contracts
+.eslintcache
