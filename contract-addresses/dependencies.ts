@@ -14,6 +14,27 @@ const dependencies: DependencyMap = {
     },
     contractDependencies: [],
     externalDependencies: []
+  },
+  feiDAOTimelock: {
+    fips: {
+      fip_41: true
+    },
+    contractDependencies: [],
+    externalDependencies: []
+  },
+  saddleD4Pool: {
+    fips: {
+      fip_41: true
+    },
+    contractDependencies: [],
+    externalDependencies: []
+  },
+  lusd: {
+    fips: {
+      fip_41: true
+    },
+    contractDependencies: [],
+    externalDependencies: []
   }
 };
 
