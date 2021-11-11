@@ -15,12 +15,11 @@ Peg Stability Module
 Description: This module is used to manage the stability of the peg.
 
 Steps:
-  1 - Deploy PSM Router, (w)eth Peg Stability Module, and DAI PriceBoundPegStabilityModule
-  2 - Grant Minter Role to Eth PSM
-  3 - Grant Minter Role to DAI PSM
-  4 - Create PSM_ADMIN_ROLE
-  5 - Grant PSM_ADMIN_ROLE to Eth PSM
-  6 - Grant PSM_ADMIN_ROLE to DAI PSM
+  0 - Deploy PSM Router, (w)eth Peg Stability Module, and DAI PriceBoundPegStabilityModule
+  1 - Grant Minter Role to Eth PSM
+  2 - Grant Minter Role to DAI PSM
+  3 - Create PSM_ADMIN_ROLE
+  4 - Grant PSM_ADMIN_ROLE to Timelock
 */
 
 const fipNumber = '9001'; // Change me!
