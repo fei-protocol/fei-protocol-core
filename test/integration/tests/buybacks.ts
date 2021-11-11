@@ -85,7 +85,7 @@ describe('e2e-buybacks', function () {
     });
   });
 
-  describe('LUSD LBP', async function () {
+  describe.only('LUSD LBP', async function () {
     it('mints appropriate amount and swaps', async function () {
       const feiLusdLBPSwapper: BalancerLBPSwapper = contracts.feiLusdLBPSwapper as BalancerLBPSwapper;
       const feiLusdLBP: IWeightedPool = contracts.feiLusdLBP as IWeightedPool;
@@ -117,9 +117,16 @@ describe('e2e-buybacks', function () {
       );
       await increaseTime(24 * 3600);
 
+      // get pool info
+      const poolId = await feiLusdLBP.getPoolId();
+      const poolTokens = await contracts.balancerVault.getPoolTokens(poolId);
+      // there should be 1.01M LUSD in the pool
+      expect(poolTokens.tokens[0]).to.be.equal(contracts.lusd.address);
+      expect(poolTokens.balances[0]).to.be.equal('1310101010101010101010101');
+
       await balancerVault.connect(lusdSigner).swap(
         {
-          poolId: await feiLusdLBP.getPoolId(),
+          poolId: poolId,
           kind: 0, // given in
           assetIn: contracts.lusd.address,
           assetOut: contracts.fei.address,
