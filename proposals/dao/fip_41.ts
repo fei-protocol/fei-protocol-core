@@ -9,18 +9,16 @@ import {
   ValidateUpgradeFunc
 } from '../../types/types';
 import { TransactionResponse } from '@ethersproject/providers';
-import { expectApprox, getImpersonatedSigner } from '@test/helpers';
-import { forceEth } from '@test/integration/setup/utils';
+import { expectApprox } from '@test/helpers';
 
 chai.use(CBN(ethers.BigNumber));
 
 // Constants
-// LBP swapper
 const MIN_LBP_SIZE = ethers.constants.WeiPerEther.mul(50_000); // 50k FEI
 
 /*
 
-TRIBE Buybacks
+// LBP swapper
 
 DEPLOY ACTIONS:
 
