@@ -253,6 +253,7 @@ const MainnetAddresses = {
   feiDAOTimelock: { artifactName: 'FeiDAOTimelock', address: '0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c' },
   feiEthPair: { artifactName: 'IUniswapV2Pair', address: '0x94B0A3d511b6EcDb17eBF877278Ab030acb0A878' },
   feiOTCEscrow: { artifactName: 'OtcEscrow', address: '0x9B9fE1b732839a53948B02E5164c0A50fdf11e06' },
+  feiBalOtcEscrow: { artifactName: 'OtcEscrow', address: '0x7fB1f6Cb94f01Ba03d2af5cC13c4c1E74b9b9Ecc' },
   feiRewardsDistributor: {
     artifactName: 'IFeiRewardsDistributor',
     address: '0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5'
@@ -455,6 +456,7 @@ const MainnetAddresses = {
   tribalChiefSync: { artifactName: 'TribalChiefSync', address: '0x7A883825caA45fcbDcd76991C5972Baf1551aa3d' },
   tribe: { artifactName: 'Tribe', address: '0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B' },
   tribeOTCEscrow: { artifactName: 'OtcEscrow', address: '0xe2fE8041429e4bd51c40F92C6cDb699527171298' },
+  tribeBalOtcEscrow: { artifactName: 'OtcEscrow', address: '0xfFdEe6b0261d70278f5A3093A375c282eF8266Db' },
   tribeReserveStabilizer: {
     artifactName: 'TribeReserveStabilizer',
     address: '0xa08A721dFB595753FFf335636674D76C455B275C'
