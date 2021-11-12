@@ -1,65 +1,37 @@
 import { DependencyMap } from '@custom-types/types';
 
 const dependencies: DependencyMap = {
-  core: {
+  feiLusdLBPSwapper: {
     fips: {
-      fip_37: true
+      fip_41: true
     },
     contractDependencies: [],
     externalDependencies: []
   },
   fei: {
     fips: {
-      fip_37: true
+      fip_41: true
     },
     contractDependencies: [],
     externalDependencies: []
   },
-  pcvEquityMinter: {
+  feiDAOTimelock: {
     fips: {
-      fip_37: true
+      fip_41: true
     },
     contractDependencies: [],
     externalDependencies: []
   },
-  collateralizationOracleKeeper: {
+  saddleD4Pool: {
     fips: {
-      fip_37: true
+      fip_41: true
     },
     contractDependencies: [],
     externalDependencies: []
   },
-  feiTribeLBPSwapper: {
+  lusd: {
     fips: {
-      fip_37: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  collateralizationOracle: {
-    fips: {
-      fip_37: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  collateralizationOracleWrapper: {
-    fips: {
-      fip_37: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  collateralizationOracleGuardian: {
-    fips: {
-      fip_37: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  optimisticTimelock: {
-    fips: {
-      fip_37: true
+      fip_41: true
     },
     contractDependencies: [],
     externalDependencies: []
