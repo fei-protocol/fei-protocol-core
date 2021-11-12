@@ -173,6 +173,7 @@ const MainnetAddresses = {
     address: '0x751A0bC0e3f75b38e01Cf25bFCE7fF36DE1C87DE'
   },
   balancerVault: { artifactName: 'IVault', address: '0xBA12222222228d8Ba445958a75a0704d566BF2C8' },
+  bal: { artifactName: 'IERC20', address: '0xba100000625a3754423978a60c9317c58a424e3D' },
   bentoBox: { artifactName: 'IMasterContractManager', address: '0xF5BCE5077908a1b7370B9ae04AdC565EBd643966' },
   bondingCurve: { artifactName: 'EthBondingCurve', address: '0xB783c0E21763bEf9F2d04E6499abFbe23AdB7e1F' },
   chainlinkDaiUsdOracle: { artifactName: 'unknown', address: '0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9' },
