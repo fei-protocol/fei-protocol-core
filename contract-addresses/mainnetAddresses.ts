@@ -276,7 +276,11 @@ const MainnetAddresses = {
     artifactName: 'SnapshotDelegatorPCVDeposit',
     address: '0x0ee81df08B20e4f9E0F534e50da437D24491c4ee'
   },
-  liquityFusePoolLusd: { artifactName: 'CErc20Delegator', address: '0x5052BfbB7972E702179f3Eeed43B9213819b681a' },
+  liquityFusePoolLusd: { artifactName: 'ICLusdDelegate', address: '0x5052BfbB7972E702179f3Eeed43B9213819b681a' },
+  liquityFusePoolLusdImpl: { artifactName: 'ICLusdDelegate', address: '0x4ee6ecad1c2dae9f525404de8555724e3c35d07b' },
+  rariDAOTimelock: { artifactName: 'unknown', address: '0x8ace03Fc45139fDDba944c6A4082b604041d19FC' },
+  rariFuseAdmin: { artifactName: 'IFuseAdmin', address: '0xa731585ab05fC9f83555cf9Bff8F58ee94e18F85' },
+  bamm: { artifactName: 'unknown', address: '0x0d3AbAA7E088C2c82f54B2f47613DA438ea8C598' },
   liquityFusePoolLusdPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x8C51E4532CC745cF3DFec5CEBd835D07E7BA1002'
