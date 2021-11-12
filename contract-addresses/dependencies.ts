@@ -8,7 +8,7 @@ const dependencies: DependencyMap = {
     contractDependencies: [],
     externalDependencies: []
   },
-  fei: {
+  aaveEthPCVDeposit: {
     fips: {
       fip_41: true
     },
