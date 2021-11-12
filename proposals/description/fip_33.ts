@@ -30,6 +30,13 @@ const fip_33: ProposalDescription = {
       method: 'swap()',
       arguments: [],
       description: 'Swap FEI OTC'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposit(address)',
+      arguments: ['{ethTokemakPCVDeposit}'],
+      description: 'Add ETH Tokemak PCV Deposit'
     }
   ],
   description: `
@@ -43,6 +50,8 @@ Motivation:
 Given the upcoming Fei v2 launch on Balancer v2, both communities voted to align incentives by performing a treasury swap.
 
 For details on the community discussions, see the below forums.
+
+Proposal also updates collateralization oracle with new deposits.
 
 Tribe: https://tribe.fei.money/t/fip-33-swap-between-balancer-dao-and-fei-dao/3555
 Balancer: https://forum.balancer.fi/t/proposal-treasury-swap-balancer-dao-fei-dao/2254
