@@ -8,6 +8,8 @@ import "./IBasePool.sol";
 interface IWeightedPool is IBasePool {
     function getSwapEnabled() external view returns (bool);
 
+    function getNormalizedWeights() external view returns (uint256[] memory);
+
     function getGradualWeightUpdateParams()
         external
         view

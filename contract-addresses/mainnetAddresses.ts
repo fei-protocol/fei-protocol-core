@@ -276,6 +276,14 @@ const MainnetAddresses = {
     artifactName: 'SnapshotDelegatorPCVDeposit',
     address: '0x0ee81df08B20e4f9E0F534e50da437D24491c4ee'
   },
+  liquityFusePoolLusd: { artifactName: 'CErc20Delegator', address: '0x5052BfbB7972E702179f3Eeed43B9213819b681a' },
+  liquityFusePoolLusdPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x8C51E4532CC745cF3DFec5CEBd835D07E7BA1002'
+  },
+  feiLusdLBPSwapper: { artifactName: 'BalancerLBPSwapper', address: '0x5fc76F8Fc3AF2b19D45AC841252dcE711ed448ff' },
+  feiLusdLBP: { artifactName: 'IWeightedPool', address: '0xede4efcc5492cf41ed3f0109d60bc0543cfad23a' },
+  lusd: { artifactName: 'IERC20', address: '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0' },
   kashiFeiDPI: { artifactName: 'IKashiPair', address: '0xf352773f1d4d69deb4de8d0578e43b993ee76e5d' },
   kashiFeiEth: { artifactName: 'IKashiPair', address: '0x329efec40f58054fc2f2cd4fd65809f2be3e11c8' },
   kashiFeiTribe: { artifactName: 'IKashiPair', address: '0x18c9584d9ce56a0f62f73f630f180d5278c873b7' },
@@ -427,6 +435,7 @@ const MainnetAddresses = {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x9aAdFfe00eAe6d8e59bB4F7787C6b99388A6960D'
   },
+  saddleD4Pool: { artifactName: 'ISaddleSwap', address: '0xC69DDcd4DFeF25D8a793241834d4cc4b3668EAD6' },
   snapshotDelegateRegistry: { artifactName: 'DelegateRegistry', address: '0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446' },
   fAAVE: { artifactName: 'IERC20', address: '0x4da27a545c0c5b758a6ba100e3a049001de870f5' },
   stakingTokenWrapperRari: {
