@@ -6,34 +6,41 @@ import "../Constants.sol";
 
 contract PSMRouter is IPSMRouter {
 
-    address public immutable override psm;
+    IPegStabilityModule public immutable override psm;
 
-    constructor(address _psm) {
+    constructor(IPegStabilityModule _psm) {
         psm = _psm;
-        IERC20(address(Constants.WETH)).approve(_psm, type(uint256).max);
+        IERC20(address(Constants.WETH)).approve(address(_psm), type(uint256).max);
+    }
+
+    modifier ensure(uint256 deadline) {
+        require(deadline >= block.timestamp, "PSMRouter: order expired");
+        _;
     }
 
     // ---------- Public State-Changing API ----------
 
-    /// @notice Default mint if no calldata supplied
-    /// @dev we don't use fallback here because fallback is only called if the function selector doesn't exist,
-    /// and we actually want to revert in case someone made a mistake. Note that receive() cannot return values.
-    receive() external payable override {
-        _mint(msg.sender, 0);
-    }
-
     /// @notice Mints fei to the given address, with a minimum amount required
     /// @dev This wraps ETH and then calls into the PSM to mint the fei. We return the amount of fei minted.
-    /// @param _to The address to mint fei to
-    /// @param _minAmountOut The minimum amount of fei to mint
-    function mint(address _to, uint256 _minAmountOut) public payable override returns (uint256) {
-        return _mint(_to, _minAmountOut);
+    /// @param to The address to mint fei to
+    /// @param minAmountOut The minimum amount of fei to mint
+    function mint(address to, uint256 minAmountOut) external payable override returns (uint256) {
+        return _mint(to, minAmountOut);
+    }
+
+    /// @notice Mints fei to the given address, with a minimum amount required and a deadline
+    /// @dev This wraps ETH and then calls into the PSM to mint the fei. We return the amount of fei minted.
+    /// @param to The address to mint fei to
+    /// @param minAmountOut The minimum amount of fei to mint
+    /// @param deadline The minimum amount of fei to mint
+    function mint(address to, uint256 minAmountOut, uint256 deadline) external payable ensure(deadline) returns (uint256) {
+        return _mint(to, minAmountOut);
     }
 
     // ---------- Internal Methods ----------
     
     function _mint(address _to, uint256 _minAmountOut) internal returns (uint256) {
         Constants.WETH.deposit{value: msg.value}();
-        return IPegStabilityModule(psm).mint(_to, msg.value, _minAmountOut);
+        return psm.mint(_to, msg.value, _minAmountOut);
     }
 }

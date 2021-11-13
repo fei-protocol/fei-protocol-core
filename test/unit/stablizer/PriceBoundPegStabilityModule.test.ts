@@ -32,6 +32,9 @@ describe('PriceBoundPegStabilityModule', function () {
   const impersonatedSigners: { [key: string]: Signer } = {};
   const PSM_ADMIN_ROLE = keccak256(utils.toUtf8Bytes('PSM_ADMIN_ROLE'));
 
+  const floorPrice = 9_800;
+  const ceilingPrice = 10_200;
+
   let core: Core;
   let asset: MockERC20;
   let fei: Fei;
@@ -81,20 +84,20 @@ describe('PriceBoundPegStabilityModule', function () {
 
     psm = await (
       await ethers.getContractFactory('PriceBoundPSM')
-    ).deploy(
-      core.address,
-      oracle.address,
-      oracle.address,
+    ).deploy(floorPrice, ceilingPrice, {
+      coreAddress: core.address,
+      oracleAddress: oracle.address,
+      backupOracle: oracle.address,
       mintFeeBasisPoints,
       redeemFeeBasisPoints,
       reservesThreshold,
       feiLimitPerSecond,
-      bufferCap,
+      mintingBufferCap: bufferCap,
       decimalsNormalizer,
-      false,
-      asset.address,
-      pcvDeposit.address
-    );
+      doInvert: false,
+      underlyingToken: asset.address,
+      surplusTarget: pcvDeposit.address
+    });
 
     await core.grantMinter(psm.address);
 
@@ -142,11 +145,11 @@ describe('PriceBoundPegStabilityModule', function () {
     });
 
     it('price floor', async () => {
-      expect(await psm.floor()).to.be.equal(bpGranularity - 200);
+      expect(await psm.floor()).to.be.equal(floorPrice);
     });
 
     it('price ceiling', async () => {
-      expect(await psm.ceiling()).to.be.equal(bpGranularity + 200);
+      expect(await psm.ceiling()).to.be.equal(ceilingPrice);
     });
 
     it('balance', async () => {
@@ -221,14 +224,14 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(await psm.buffer()).to.be.equal(bufferCap.sub(mintAmountOut));
       });
 
-      it('exchanges 1000 DAI for 975 FEI as fee is 350 bips and exchange rate is 1:1', async () => {
+      it('exchanges 1000 DAI for 975 FEI as fee is 300 bips and exchange rate is 1:1', async () => {
         const oneK = toBN(1000);
-        const newMintFee = 350;
+        const newMintFee = 300;
         await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
 
         const userStartingFeiBalance = await fei.balanceOf(userAddress);
         const psmStartingAssetBalance = await asset.balanceOf(psm.address);
-        const expectedMintAmountOut = 965;
+        const expectedMintAmountOut = 970;
 
         await asset.mint(userAddress, oneK);
         await asset.connect(impersonatedSigners[userAddress]).approve(psm.address, oneK);
@@ -247,14 +250,14 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(await psm.buffer()).to.be.equal(bufferCap.sub(mintAmountOut));
       });
 
-      it('exchanges 1000 DAI for 950 FEI as mint fee is 500 bips and exchange rate is 1:1', async () => {
+      it('exchanges 1000 DAI for 975 FEI as mint fee is 250 bips and exchange rate is 1:1', async () => {
         const oneK = toBN(1000);
-        const newMintFee = 500;
+        const newMintFee = 250;
         await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
 
         const userStartingFeiBalance = await fei.balanceOf(userAddress);
         const psmStartingAssetBalance = await asset.balanceOf(psm.address);
-        const expectedMintAmountOut = 950;
+        const expectedMintAmountOut = 975;
 
         await asset.mint(userAddress, oneK);
         await asset.connect(impersonatedSigners[userAddress]).approve(psm.address, oneK);
@@ -273,9 +276,9 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(await psm.buffer()).to.be.equal(bufferCap.sub(mintAmountOut));
       });
 
-      it('exchanges 1000 DAI for 950 FEI as mint fee is 500 bips and exchange rate is 1DAI:1.2FEI', async () => {
+      it('exchanges 1000 DAI for 950 FEI as mint fee is 50 bips and exchange rate is 1DAI:1.2FEI', async () => {
         const oneK = toBN(1000);
-        const newMintFee = 500;
+        const newMintFee = 50;
         await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
         await psm.connect(impersonatedSigners[governorAddress]).setOracleCeilingBasisPoints(12_001);
 
@@ -284,7 +287,7 @@ describe('PriceBoundPegStabilityModule', function () {
 
         const userStartingFeiBalance = await fei.balanceOf(userAddress);
         const psmStartingAssetBalance = await asset.balanceOf(psm.address);
-        const expectedMintAmountOut = 1140;
+        const expectedMintAmountOut = 1194;
 
         await asset.mint(userAddress, oneK);
         await asset.connect(impersonatedSigners[userAddress]).approve(psm.address, oneK);
@@ -305,8 +308,8 @@ describe('PriceBoundPegStabilityModule', function () {
 
       it('exchange and getMintAmountOut fails when new oracle ceiling is equal to the new exchange rate', async () => {
         const oneK = toBN(1000);
-        const newMintFee = 500;
-        const expectedMintAmountOut = 1140;
+        const newMintFee = 300;
+        const expectedMintAmountOut = 1196;
 
         await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
         await psm.connect(impersonatedSigners[governorAddress]).setOracleCeilingBasisPoints(12_000);
@@ -327,8 +330,8 @@ describe('PriceBoundPegStabilityModule', function () {
 
       it('exchange and getMintAmountOut fails when new oracle floor is equal to the new exchange rate', async () => {
         const oneK = toBN(1000);
-        const newMintFee = 500;
-        const expectedMintAmountOut = 1140;
+        const newMintFee = 300;
+        const expectedMintAmountOut = 1164;
 
         await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
         await psm.connect(impersonatedSigners[governorAddress]).setOracleFloorBasisPoints(8_000);
@@ -484,14 +487,14 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(psmStartingAssetBalance.sub(psmEndingAssetBalance)).to.be.equal(expectedAssetAmount);
       });
 
-      it('exchanges 1000 FEI for 965 DAI as fee is 350 bips and exchange rate is 1:1', async () => {
+      it('exchanges 1000 FEI for 975 DAI as fee is 250 bips and exchange rate is 1:1', async () => {
         const oneK = toBN(1000);
-        const newRedeemFee = 350;
+        const newRedeemFee = 250;
         await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(newRedeemFee);
 
         const userStartingFeiBalance = await fei.balanceOf(userAddress);
         const psmStartingAssetBalance = await asset.balanceOf(psm.address);
-        const expectedAssetAmount = 965;
+        const expectedAssetAmount = 975;
 
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, oneK);
         await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, oneK);
@@ -715,7 +718,7 @@ describe('PriceBoundPegStabilityModule', function () {
         await psm.connect(impersonatedSigners[governorAddress]).setOracleFloorBasisPoints(4_900);
         await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther.div(2));
 
-        await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(500);
+        await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(300);
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, mintAmount);
         await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmount);
 
@@ -723,7 +726,7 @@ describe('PriceBoundPegStabilityModule', function () {
         const startingUserAssetBalance = await asset.balanceOf(userAddress);
 
         const expectedAssetAmount = mintAmount
-          .mul(bpGranularity - 500)
+          .mul(bpGranularity - 300)
           .div(bpGranularity)
           .mul(ethers.constants.WeiPerEther)
           .div(ethers.constants.WeiPerEther.div(2));
@@ -794,31 +797,6 @@ describe('PriceBoundPegStabilityModule', function () {
         const newMintFee = 100;
         await psm.connect(impersonatedSigners[psmAdminAddress]).setMintFee(newMintFee);
         expect(await psm.mintFeeBasisPoints()).to.be.equal(newMintFee);
-      });
-    });
-
-    describe('setMaxFee', function () {
-      it('fails when caller is not governor', async () => {
-        await expectRevert(
-          psm.connect(impersonatedSigners[userAddress]).setMaxFee(1_000),
-          'CoreRef: Caller is not a governor'
-        );
-      });
-
-      it('fails when caller is governor and fee is 10_000 bips', async () => {
-        await expectRevert(
-          psm.connect(impersonatedSigners[governorAddress]).setMaxFee(10_000),
-          'PegStabilityModule: Invalid Fee'
-        );
-      });
-
-      it('succeeds when caller is governor and fee is 1_000 bips', async () => {
-        const oldMaxFee = await psm.maxFee();
-        const newMaxFee = 1_000;
-        await expect(psm.connect(impersonatedSigners[governorAddress]).setMaxFee(1_000))
-          .to.emit(psm, 'MaxFeeUpdate')
-          .withArgs(oldMaxFee, newMaxFee);
-        expect(await psm.maxFee()).to.be.equal(newMaxFee);
       });
     });
 
@@ -1053,9 +1031,8 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(await psm.hasSurplus()).to.be.false;
         expect(await psm.reservesSurplus()).to.be.equal(0);
 
-        const tx = await (await psm.deposit()).wait();
+        await psm.deposit();
 
-        expect(tx.logs.length).to.be.equal(1);
         expect(await psm.hasSurplus()).to.be.false;
         expect(await psm.reservesSurplus()).to.be.equal(0);
       });

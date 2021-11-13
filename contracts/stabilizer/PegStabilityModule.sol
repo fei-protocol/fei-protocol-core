@@ -34,45 +34,21 @@ contract PegStabilityModule is RateLimitedMinter, IPegStabilityModule, Reentranc
 
     /// @notice the max mint and redeem fee in basis points
     /// Governance can change this fee
-    uint256 public override maxFee = 500;
+    uint256 public override MAX_FEE = 300;
 
     /// @notice constructor
-    /// @param _coreAddress Fei core to reference
-    /// @param _oracleAddress Price oracle to reference
-    /// @param _backupOracle Backup price oracle to reference
-    /// @param _mintFeeBasisPoints fee in basis points to buy Fei
-    /// @param _redeemFeeBasisPoints fee in basis points to sell Fei
-    /// @param _reservesThreshold amount of tokens to hold in this contract
-    /// @param _feiLimitPerSecond must be less than or equal to 10,000 fei per second; the rate that the buffer grows
-    /// @param _mintingBufferCap cap of buffer that can be used at once
-    /// @param _decimalsNormalizer normalize decimals in oracle if tokens have different decimals
-    /// @param _doInvert invert oracle price if true
-    /// @param _underlyingToken token to buy and sell against Fei
-    /// @param _surplusTarget pcv deposit to send surplus reserves to
-    constructor(
-        address _coreAddress,
-        address _oracleAddress,
-        address _backupOracle,
-        uint256 _mintFeeBasisPoints,
-        uint256 _redeemFeeBasisPoints,
-        uint256 _reservesThreshold,
-        uint256 _feiLimitPerSecond,
-        uint256 _mintingBufferCap,
-        int256 _decimalsNormalizer,
-        bool _doInvert,
-        IERC20 _underlyingToken,
-        IPCVDeposit _surplusTarget
-    )
-        OracleRef(_coreAddress, _oracleAddress, _backupOracle, _decimalsNormalizer, _doInvert)
+    /// @param params PSM constructor parameter struct
+    constructor(ConstructorParams memory params)
+        OracleRef(params.coreAddress, params.oracleAddress, params.backupOracle, params.decimalsNormalizer, params.doInvert)
         /// rate limited minter passes false as the last param as there can be no partial mints
-        RateLimitedMinter(_feiLimitPerSecond, _mintingBufferCap, false)
+        RateLimitedMinter(params.feiLimitPerSecond, params.mintingBufferCap, false)
     {
-        underlyingToken = _underlyingToken;
+        underlyingToken = params.underlyingToken;
 
-        _setReservesThreshold(_reservesThreshold);
-        _setMintFee(_mintFeeBasisPoints);
-        _setRedeemFee(_redeemFeeBasisPoints);
-        _setSurplusTarget(_surplusTarget);
+        _setReservesThreshold(params.reservesThreshold);
+        _setMintFee(params.mintFeeBasisPoints);
+        _setRedeemFee(params.redeemFeeBasisPoints);
+        _setSurplusTarget(params.surplusTarget);
         _setContractAdminRole(keccak256("PSM_ADMIN_ROLE"));
     }
 
@@ -81,15 +57,6 @@ contract PegStabilityModule is RateLimitedMinter, IPegStabilityModule, Reentranc
     /// @notice withdraw assets from PSM to an external address
     function withdraw(address to, uint256 amount) external override virtual onlyPCVController {
         _withdrawERC20(address(underlyingToken), to, amount);
-    }
-
-    /// @notice update the fee limit
-    function setMaxFee(uint256 newMaxFeeBasisPoints) external onlyGovernor {
-        require(newMaxFeeBasisPoints < Constants.BASIS_POINTS_GRANULARITY, "PegStabilityModule: Invalid Fee");
-        uint256 oldMaxFee = maxFee;
-        maxFee = newMaxFeeBasisPoints;
-
-        emit MaxFeeUpdate(oldMaxFee, newMaxFeeBasisPoints);
     }
 
     /// @notice set the mint fee vs oracle price in basis point terms
@@ -114,7 +81,7 @@ contract PegStabilityModule is RateLimitedMinter, IPegStabilityModule, Reentranc
 
     /// @notice set the mint fee vs oracle price in basis point terms
     function _setMintFee(uint256 newMintFeeBasisPoints) internal {
-        require(newMintFeeBasisPoints <= maxFee, "PegStabilityModule: Mint fee exceeds max fee");
+        require(newMintFeeBasisPoints <= MAX_FEE, "PegStabilityModule: Mint fee exceeds max fee");
         uint256 _oldMintFee = mintFeeBasisPoints;
         mintFeeBasisPoints = newMintFeeBasisPoints;
 
@@ -123,7 +90,7 @@ contract PegStabilityModule is RateLimitedMinter, IPegStabilityModule, Reentranc
 
     /// @notice internal helper function to set the redemption fee
     function _setRedeemFee(uint256 newRedeemFeeBasisPoints) internal {
-        require(newRedeemFeeBasisPoints <= maxFee, "PegStabilityModule: Redeem fee exceeds max fee");
+        require(newRedeemFeeBasisPoints <= MAX_FEE, "PegStabilityModule: Redeem fee exceeds max fee");
         uint256 _oldRedeemFee = redeemFeeBasisPoints;
         redeemFeeBasisPoints = newRedeemFeeBasisPoints;
 
@@ -164,10 +131,11 @@ contract PegStabilityModule is RateLimitedMinter, IPegStabilityModule, Reentranc
         if (currentSurplus > 0 ) {
             _allocate(currentSurplus.toUint256());
         }
-        emit PSMDeposit(msg.sender);
     }
 
-    /// @notice function to redeem FEI for an underlying asset
+    /// @notice function to redeem FEI for an underlying asset 
+    /// We do not burn Fei; this allows the contract's balance of Fei to be used before the buffer is used
+    /// In practice, this helps prevent artificial cycling of mint-burn cycles and prevents a griefing vector.
     function redeem(
         address to,
         uint256 amountFeiIn,
@@ -179,9 +147,6 @@ contract PegStabilityModule is RateLimitedMinter, IPegStabilityModule, Reentranc
         require(amountOut >= minAmountOut, "PegStabilityModule: Redeem not enough out");
 
         fei().transferFrom(msg.sender, address(this), amountFeiIn);
-        
-        // We do not burn Fei; this allows the contract's balance of Fei to be used before the buffer is used
-        // In practice, this helps prevent artificial cycling of mint-burn cycles and prevents a griefing vector.
 
         _transfer(to, amountOut);
 
@@ -189,6 +154,7 @@ contract PegStabilityModule is RateLimitedMinter, IPegStabilityModule, Reentranc
     }
 
     /// @notice function to buy FEI for an underlying asset
+    /// We first transfer any contract-owned fei, then mint the remaining if necessary
     function mint(
         address to,
         uint256 amountIn,
@@ -201,7 +167,6 @@ contract PegStabilityModule is RateLimitedMinter, IPegStabilityModule, Reentranc
 
         _transferFrom(msg.sender, address(this), amountIn);
 
-        // We first transfer any contract-owned fei, then mint the remaining if necessary
         uint256 amountFeiToTransfer = Math.min(fei().balanceOf(address(this)), amountFeiOut);
         uint256 amountFeiToMint = amountFeiOut - amountFeiToTransfer;
 

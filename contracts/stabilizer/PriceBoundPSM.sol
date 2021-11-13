@@ -13,55 +13,24 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBound {
     using SafeERC20 for IERC20;
     using SafeCast for *;
 
-    /// @notice get the basis points delta
-    uint256 constant public override BP_DELTA = 200;
-
     /// @notice the default minimum acceptable oracle price floor is 98 cents
-    uint256 public override floor = Constants.BASIS_POINTS_GRANULARITY - BP_DELTA;
+    uint256 public override floor;
 
     /// @notice the default maximum acceptable oracle price ceiling is $1.02
-    uint256 public override ceiling = Constants.BASIS_POINTS_GRANULARITY + BP_DELTA;
+    uint256 public override ceiling;
 
     /// @notice constructor
-    /// @param _coreAddress Fei core to reference
-    /// @param _oracleAddress Price oracle to reference
-    /// @param _backupOracle Backup price oracle to reference
-    /// @param _mintFeeBasisPoints fee in basis points to buy Fei
-    /// @param _redeemFeeBasisPoints fee in basis points to sell Fei
-    /// @param _reservesThreshold amount of tokens to hold in this contract
-    /// @param _feiLimitPerSecond must be less than or equal to 10,000 fei per second
-    /// @param _mintingBufferCap cap of buffer that can be used at once
-    /// @param _decimalsNormalizer normalize decimals in oracle if tokens have different decimals
-    /// @param _doInvert invert oracle price if true
-    /// @param _underlyingToken token to buy and sell against Fei
-    /// @param _surplusTarget pcv deposit to send surplus reserves to
+    /// @param _floor minimum acceptable oracle price
+    /// @param _ceiling maximum  acceptable oracle price
+    /// @param _params PSM construction params
     constructor(
-        address _coreAddress,
-        address _oracleAddress,
-        address _backupOracle,
-        uint256 _mintFeeBasisPoints,
-        uint256 _redeemFeeBasisPoints,
-        uint256 _reservesThreshold,
-        uint256 _feiLimitPerSecond,
-        uint256 _mintingBufferCap,
-        int256 _decimalsNormalizer,
-        bool _doInvert,
-        IERC20 _underlyingToken,
-        IPCVDeposit _surplusTarget
-    ) PegStabilityModule(
-        _coreAddress,
-        _oracleAddress,
-        _backupOracle,
-        _mintFeeBasisPoints,
-        _redeemFeeBasisPoints,
-        _reservesThreshold,
-        _feiLimitPerSecond,
-        _mintingBufferCap,
-        _decimalsNormalizer,
-        _doInvert,
-        _underlyingToken,
-        _surplusTarget
-    ) {}
+        uint256 _floor,
+        uint256 _ceiling,
+        ConstructorParams memory _params
+    ) PegStabilityModule(_params) {
+        _setCeilingBasisPoints(_ceiling);
+        _setFloorBasisPoints(_floor);
+    }
 
     /// @notice sets the floor price in BP
     function setOracleFloorBasisPoints(uint256 newFloorBasisPoints) external override onlyGovernorOrAdmin {

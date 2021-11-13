@@ -19,9 +19,6 @@ interface IPriceBound {
 
     // ----------- Getters -----------
 
-    /// @notice get the basis points delta
-    function BP_DELTA() external view returns(uint256);
-
     /// @notice get the floor price in basis points
     function floor() external view returns(uint256);
 

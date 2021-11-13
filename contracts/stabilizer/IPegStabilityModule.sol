@@ -22,6 +22,22 @@ import "../refs/OracleRef.sol";
 /// Inspired by MakerDAO PSM, code written without reference
 abstract contract IPegStabilityModule is PCVDeposit, OracleRef {
     
+    /// @notice struct for passing constructor parameters
+    struct ConstructorParams {
+        address coreAddress;
+        address oracleAddress;
+        address backupOracle;
+        uint256 mintFeeBasisPoints;
+        uint256 redeemFeeBasisPoints;
+        uint256 reservesThreshold;
+        uint256 feiLimitPerSecond;
+        uint256 mintingBufferCap;
+        int256 decimalsNormalizer;
+        bool doInvert;
+        IERC20 underlyingToken;
+        IPCVDeposit surplusTarget;
+    }
+
     // ----------- Public State Changing API -----------
 
     /// @notice mint `amountFeiOut` FEI to address `to` for `amountIn` underlying tokens
@@ -79,7 +95,7 @@ abstract contract IPegStabilityModule is PCVDeposit, OracleRef {
     function surplusTarget() external view virtual returns (IPCVDeposit);
 
     /// @notice the max mint and redeem fee in basis points
-    function maxFee() external view virtual returns (uint256);
+    function MAX_FEE() external view virtual returns (uint256);
 
     // ----------- Events -----------
 
@@ -106,7 +122,4 @@ abstract contract IPegStabilityModule is PCVDeposit, OracleRef {
 
     /// @notice event emitted when fei gets minted
     event Mint(address to, uint256 amountIn);
-
-    /// @notice event emitted when deposit is called
-    event PSMDeposit(address indexed caller);
 }
