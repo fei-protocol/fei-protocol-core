@@ -58,6 +58,10 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBound {
         _setCeilingBasisPoints(newCeilingBasisPoints);
     }
 
+    function isPriceValid() external override view returns (bool) {
+        return _validPrice(readOracle());
+    }
+
     /// @notice helper function to set the ceiling in basis points
     function _setCeilingBasisPoints(uint256 newCeilingBasisPoints) internal {
         require(newCeilingBasisPoints != 0, "PegStabilityModule: invalid ceiling");

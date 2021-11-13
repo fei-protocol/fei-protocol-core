@@ -24,4 +24,7 @@ interface IPriceBound {
 
     /// @notice get the ceiling price in basis points
     function ceiling() external view returns(uint256);
+
+    /// @notice return wether the current oracle price is valid or not
+    function isPriceValid() external view returns(bool);
 }
