@@ -85,7 +85,7 @@ describe('e2e-buybacks', function () {
     });
   });
 
-  describe.only('LUSD LBP', async function () {
+  describe('LUSD LBP', async function () {
     it('mints appropriate amount and swaps', async function () {
       const feiLusdLBPSwapper: BalancerLBPSwapper = contracts.feiLusdLBPSwapper as BalancerLBPSwapper;
       const feiLusdLBP: IWeightedPool = contracts.feiLusdLBP as IWeightedPool;
