@@ -14,7 +14,7 @@ import { keccak256 } from 'ethers/lib/utils';
 
 const toBN = ethers.BigNumber.from;
 
-describe('PriceBoundPegStabilityModule', function () {
+describe.only('PriceBoundPegStabilityModule', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
@@ -84,20 +84,24 @@ describe('PriceBoundPegStabilityModule', function () {
 
     psm = await (
       await ethers.getContractFactory('PriceBoundPSM')
-    ).deploy(floorPrice, ceilingPrice, {
-      coreAddress: core.address,
-      oracleAddress: oracle.address,
-      backupOracle: oracle.address,
+    ).deploy(
+      floorPrice,
+      ceilingPrice,
+      {
+        coreAddress: core.address,
+        oracleAddress: oracle.address,
+        backupOracle: oracle.address,
+        decimalsNormalizer,
+        doInvert: false
+      },
       mintFeeBasisPoints,
       redeemFeeBasisPoints,
       reservesThreshold,
       feiLimitPerSecond,
-      mintingBufferCap: bufferCap,
-      decimalsNormalizer,
-      doInvert: false,
-      underlyingToken: asset.address,
-      surplusTarget: pcvDeposit.address
-    });
+      bufferCap,
+      asset.address,
+      pcvDeposit.address
+    );
 
     await core.grantMinter(psm.address);
 
