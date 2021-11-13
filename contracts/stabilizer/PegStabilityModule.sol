@@ -70,8 +70,6 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         _setContractAdminRole(keccak256("PSM_ADMIN_ROLE"));
     }
 
-    // ----------- Governor or Admin Only State Changing API -----------
-
     /// @notice withdraw assets from PSM to an external address
     function withdraw(address to, uint256 amount) external override virtual onlyPCVController {
         _withdrawERC20(address(underlyingToken), to, amount);
@@ -146,7 +144,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     /// @notice function to receive ERC20 tokens from external contracts
     function deposit() external override {
         int256 currentSurplus = reservesSurplus();
-        if (currentSurplus > 0 ) {
+        if (currentSurplus > 0) {
             _allocate(currentSurplus.toUint256());
         }
     }
@@ -161,7 +159,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     ) external virtual override nonReentrant whenNotPaused returns (uint256 amountOut) {
         updateOracle();
 
-        amountOut = _getRedeemAmountOutAndPrice(amountFeiIn);
+        amountOut = _getRedeemAmountOut(amountFeiIn);
         require(amountOut >= minAmountOut, "PegStabilityModule: Redeem not enough out");
 
         fei().transferFrom(msg.sender, address(this), amountFeiIn);
@@ -180,7 +178,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     ) external virtual override nonReentrant whenNotPaused returns (uint256 amountFeiOut) {
         updateOracle();
 
-        amountFeiOut = _getMintAmountOutAndPrice(amountIn);
+        amountFeiOut = _getMintAmountOut(amountIn);
         require(amountFeiOut >= minAmountOut, "PegStabilityModule: Mint not enough out");
 
         _transferFrom(msg.sender, address(this), amountIn);
@@ -204,7 +202,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     /// Then figure out how many dollars that amount in is worth by multiplying price * amount.
     /// ensure decimals are normalized if on underlying they are not 18
     function getMintAmountOut(uint256 amountIn) public override view returns (uint256 amountFeiOut) {
-        amountFeiOut = _getMintAmountOutAndPrice(amountIn);
+        amountFeiOut = _getMintAmountOut(amountIn);
     }
 
     /// @notice calculate the amount of underlying out for a given `amountFeiIn` of FEI
@@ -212,7 +210,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     /// Then figure out how many dollars that amount in is worth by multiplying price * amount.
     /// ensure decimals are normalized if on underlying they are not 18
     function getRedeemAmountOut(uint256 amountFeiIn) public override view returns (uint256 amountTokenOut) {
-        amountTokenOut = _getRedeemAmountOutAndPrice(amountFeiIn);
+        amountTokenOut = _getRedeemAmountOut(amountFeiIn);
     }
 
     /// @notice a flag for whether the current balance is above (true) or below (false) the reservesThreshold
@@ -238,8 +236,8 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     // ----------- Internal Methods -----------
 
     /// @notice helper function to get mint amount out based on current market prices
-    /// will revert if price is outside of bounds and bounded PSM is being used
-    function _getMintAmountOutAndPrice(uint256 amountIn) private view returns (uint256 amountFeiOut) {
+    /// @dev will revert if price is outside of bounds and bounded PSM is being used
+    function _getMintAmountOut(uint256 amountIn) private view returns (uint256 amountFeiOut) {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 
@@ -252,8 +250,8 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     }
 
     /// @notice helper function to get redeem amount out based on current market prices
-    /// will revert if price is outside of bounds and bounded PSM is being used
-    function _getRedeemAmountOutAndPrice(uint256 amountFeiIn) private view returns (uint256 amountTokenOut) {
+    /// @dev will revert if price is outside of bounds and bounded PSM is being used
+    function _getRedeemAmountOut(uint256 amountFeiIn) private view returns (uint256 amountTokenOut) {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 
