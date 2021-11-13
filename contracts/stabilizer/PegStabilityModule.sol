@@ -36,35 +36,37 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     /// Governance can change this fee
     uint256 public override MAX_FEE = 300;
 
-    /// @notice struct for passing constructor parameters
-    struct ConstructorParams {
+    /// @notice struct for passing constructor parameters related to OracleRef
+    struct OracleParams {
         address coreAddress;
         address oracleAddress;
         address backupOracle;
-        uint256 mintFeeBasisPoints;
-        uint256 redeemFeeBasisPoints;
-        uint256 reservesThreshold;
-        uint256 feiLimitPerSecond;
-        uint256 mintingBufferCap;
         int256 decimalsNormalizer;
         bool doInvert;
-        IERC20 underlyingToken;
-        IPCVDeposit surplusTarget;
     }
 
     /// @notice constructor
     /// @param params PSM constructor parameter struct
-    constructor(ConstructorParams memory params)
+    constructor(
+        OracleParams memory params,
+        uint256 _mintFeeBasisPoints,
+        uint256 _redeemFeeBasisPoints,
+        uint256 _reservesThreshold,
+        uint256 _feiLimitPerSecond,
+        uint256 _mintingBufferCap,
+        IERC20 _underlyingToken,
+        IPCVDeposit _surplusTarget
+    )
         OracleRef(params.coreAddress, params.oracleAddress, params.backupOracle, params.decimalsNormalizer, params.doInvert)
         /// rate limited minter passes false as the last param as there can be no partial mints
-        RateLimitedMinter(params.feiLimitPerSecond, params.mintingBufferCap, false)
+        RateLimitedMinter(_feiLimitPerSecond, _mintingBufferCap, false)
     {
-        underlyingToken = params.underlyingToken;
+        underlyingToken = _underlyingToken;
 
-        _setReservesThreshold(params.reservesThreshold);
-        _setMintFee(params.mintFeeBasisPoints);
-        _setRedeemFee(params.redeemFeeBasisPoints);
-        _setSurplusTarget(params.surplusTarget);
+        _setReservesThreshold(_reservesThreshold);
+        _setMintFee(_mintFeeBasisPoints);
+        _setRedeemFee(_redeemFeeBasisPoints);
+        _setSurplusTarget(_surplusTarget);
         _setContractAdminRole(keccak256("PSM_ADMIN_ROLE"));
     }
 

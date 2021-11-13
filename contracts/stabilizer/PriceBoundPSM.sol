@@ -26,8 +26,24 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBound {
     constructor(
         uint256 _floor,
         uint256 _ceiling,
-        ConstructorParams memory _params
-    ) PegStabilityModule(_params) {
+        OracleParams memory _params,
+        uint256 _mintFeeBasisPoints,
+        uint256 _redeemFeeBasisPoints,
+        uint256 _reservesThreshold,
+        uint256 _feiLimitPerSecond,
+        uint256 _mintingBufferCap,
+        IERC20 _underlyingToken,
+        IPCVDeposit _surplusTarget
+    ) PegStabilityModule(
+        _params,
+        _mintFeeBasisPoints,
+        _redeemFeeBasisPoints,
+        _reservesThreshold,
+        _feiLimitPerSecond,
+        _mintingBufferCap,
+        _underlyingToken,
+        _surplusTarget
+    ) {
         _setCeilingBasisPoints(_ceiling);
         _setFloorBasisPoints(_floor);
     }
