@@ -2,100 +2,84 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../pcv/PCVDeposit.sol";
-import "../utils/RateLimitedMinter.sol";
-import "../refs/OracleRef.sol";
+import "../pcv/IPCVDeposit.sol";
 
-/// @title Fei Peg Stability Module 
-/// @author Fei Protocol
-/// @notice  The Fei PSM is a contract which holds a reserve of assets in order to exchange FEI at $1 of underlying assets with a fee.
-/// * `mint()` - buy FEI for $1 of underlying tokens
-/// * `redeem()` - sell FEI back for $1 of the same
-///
-/// The contract has a reservesThreshold() of underlying meant to stand ready for redemptions. Any surplus reserves can be sent into the PCV using `allocateSurplus()`
-///
-/// The contract is a 
-/// * PCVDeposit - to track reserves
-/// * OracleRef - to determine price of underlying, and 
-/// * RateLimitedMinter - to stop infinite mints and related issues (but this is in the implementation due to inheritance-linearization difficulties)
-///
-/// Inspired by MakerDAO PSM, code written without reference
-abstract contract IPegStabilityModule is PCVDeposit, OracleRef {
-    
-    /// @notice struct for passing constructor parameters
-    struct ConstructorParams {
-        address coreAddress;
-        address oracleAddress;
-        address backupOracle;
-        uint256 mintFeeBasisPoints;
-        uint256 redeemFeeBasisPoints;
-        uint256 reservesThreshold;
-        uint256 feiLimitPerSecond;
-        uint256 mintingBufferCap;
-        int256 decimalsNormalizer;
-        bool doInvert;
-        IERC20 underlyingToken;
-        IPCVDeposit surplusTarget;
-    }
+/**
+ * @title Fei Peg Stability Module 
+ * @author Fei Protocol
+ * @notice  The Fei PSM is a contract which holds a reserve of assets in order to exchange FEI at $1 of underlying assets with a fee.
+ * `mint()` - buy FEI for $1 of underlying tokens
+ * `redeem()` - sell FEI back for $1 of the same
+ *
+ * The contract has a reservesThreshold() of underlying meant to stand ready for redemptions. Any surplus reserves can be sent into the PCV using `allocateSurplus()`
+ * 
+ * The contract is a 
+ * PCVDeposit - to track reserves
+ * OracleRef - to determine price of underlying, and 
+ * RateLimitedMinter - to stop infinite mints and related issues (but this is in the implementation due to inheritance-linearization difficulties)
+ * 
+ * Inspired by MakerDAO PSM, code written without reference
+ */
+interface IPegStabilityModule {
 
     // ----------- Public State Changing API -----------
 
     /// @notice mint `amountFeiOut` FEI to address `to` for `amountIn` underlying tokens
     /// @dev see getMintAmountOut() to pre-calculate amount out
-    function mint(address to, uint256 amountIn, uint256 minAmountOut) external virtual returns (uint256 amountFeiOut);
+    function mint(address to, uint256 amountIn, uint256 minAmountOut) external returns (uint256 amountFeiOut);
 
     /// @notice redeem `amountFeiIn` FEI for `amountOut` underlying tokens and send to address `to` 
     /// @dev see getRedeemAmountOut() to pre-calculate amount out
-    function redeem(address to, uint256 amountFeiIn, uint256 minAmountOut) external virtual returns (uint256 amountOut);
+    function redeem(address to, uint256 amountFeiIn, uint256 minAmountOut) external returns (uint256 amountOut);
 
     /// @notice send any surplus reserves to the PCV allocation
-    function allocateSurplus() external virtual;
+    function allocateSurplus() external;
 
     // ----------- Governor or Admin Only State Changing API -----------
 
     /// @notice set the mint fee vs oracle price in basis point terms
-    function setMintFee(uint256 newMintFeeBasisPoints) external virtual;
+    function setMintFee(uint256 newMintFeeBasisPoints) external;
 
     /// @notice set the redemption fee vs oracle price in basis point terms
-    function setRedeemFee(uint256 newRedeemFeeBasisPoints) external virtual;
+    function setRedeemFee(uint256 newRedeemFeeBasisPoints) external;
 
     /// @notice set the ideal amount of reserves for the contract to hold for redemptions
-    function setReservesThreshold(uint256 newReservesThreshold) external virtual;
+    function setReservesThreshold(uint256 newReservesThreshold) external;
 
     /// @notice set the target for sending surplus reserves
-    function setSurplusTarget(IPCVDeposit newTarget) external virtual;
+    function setSurplusTarget(IPCVDeposit newTarget) external;
 
     // ----------- Getters -----------
 
     /// @notice calculate the amount of FEI out for a given `amountIn` of underlying
-    function getMintAmountOut(uint256 amountIn) external view virtual returns (uint256 amountFeiOut);
+    function getMintAmountOut(uint256 amountIn) external view returns (uint256 amountFeiOut);
 
     /// @notice calculate the amount of underlying out for a given `amountFeiIn` of FEI
-    function getRedeemAmountOut(uint256 amountFeiIn) external view virtual returns (uint256 amountOut);
+    function getRedeemAmountOut(uint256 amountFeiIn) external view returns (uint256 amountOut);
 
     /// @notice a flag for whether the current balance is above (true) or below and equal (false) to the reservesThreshold
-    function hasSurplus() external view virtual returns (bool);
+    function hasSurplus() external view returns (bool);
 
     /// @notice an integer representing the positive surplus or negative deficit of contract balance vs reservesThreshold
-    function reservesSurplus() external view virtual returns (int256);
+    function reservesSurplus() external view returns (int256);
 
     /// @notice the ideal amount of reserves for the contract to hold for redemptions
-    function reservesThreshold() external view virtual returns (uint256);
+    function reservesThreshold() external view returns (uint256);
 
     /// @notice the mint fee vs oracle price in basis point terms
-    function mintFeeBasisPoints() external view virtual returns (uint256);
+    function mintFeeBasisPoints() external view returns (uint256);
 
     /// @notice the redemption fee vs oracle price in basis point terms
-    function redeemFeeBasisPoints() external view virtual returns (uint256);
+    function redeemFeeBasisPoints() external view returns (uint256);
 
     /// @notice the underlying token exchanged for FEI
-    function underlyingToken() external view virtual returns (IERC20);
+    function underlyingToken() external view returns (IERC20);
 
     /// @notice the PCV deposit target to send surplus reserves
-    function surplusTarget() external view virtual returns (IPCVDeposit);
+    function surplusTarget() external view returns (IPCVDeposit);
 
     /// @notice the max mint and redeem fee in basis points
-    function MAX_FEE() external view virtual returns (uint256);
+    function MAX_FEE() external view returns (uint256);
 
     // ----------- Events -----------
 

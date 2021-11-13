@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract PegStabilityModule is RateLimitedMinter, IPegStabilityModule, ReentrancyGuard {
+contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef, PCVDeposit, ReentrancyGuard {
     using Decimal for Decimal.D256;
     using SafeCast for *;
     using SafeERC20 for IERC20;
@@ -35,6 +35,22 @@ contract PegStabilityModule is RateLimitedMinter, IPegStabilityModule, Reentranc
     /// @notice the max mint and redeem fee in basis points
     /// Governance can change this fee
     uint256 public override MAX_FEE = 300;
+
+    /// @notice struct for passing constructor parameters
+    struct ConstructorParams {
+        address coreAddress;
+        address oracleAddress;
+        address backupOracle;
+        uint256 mintFeeBasisPoints;
+        uint256 redeemFeeBasisPoints;
+        uint256 reservesThreshold;
+        uint256 feiLimitPerSecond;
+        uint256 mintingBufferCap;
+        int256 decimalsNormalizer;
+        bool doInvert;
+        IERC20 underlyingToken;
+        IPCVDeposit surplusTarget;
+    }
 
     /// @notice constructor
     /// @param params PSM constructor parameter struct
