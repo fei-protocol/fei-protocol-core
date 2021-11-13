@@ -72,13 +72,19 @@ export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts
   const signer = await getImpersonatedSigner(admin.address);
   await forceEth(admin.address);
 
-  await fLUSD
-    .connect(signer)
-    ._setImplementationSafe(
-      addresses.liquityFusePoolLusdImpl,
-      false,
-      await ethers.utils.defaultAbiCoder.encode(['address', 'address'], [addresses.bamm, addresses.lusdSwapper])
-    );
+  await fLUSD.connect(signer)._setImplementationSafe(
+    addresses.liquityFusePoolLusdImpl,
+    false,
+    await ethers.utils.defaultAbiCoder.encode(
+      ['address', 'address', 'uint256', 'uint256'],
+      [
+        addresses.bamm,
+        addresses.lusdSwapper,
+        ethers.constants.WeiPerEther.div(50), // 2% buffer
+        ethers.constants.WeiPerEther.div(4) // 0.25 ETH minimum swap
+      ]
+    )
+  );
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
