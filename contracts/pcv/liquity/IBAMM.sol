@@ -18,7 +18,6 @@ interface IBAMM {
 
     function totalSupply() external view returns (uint256);
 
-    // Reward token
     function bonus() external view returns (address);
 
     // Mutative Functions

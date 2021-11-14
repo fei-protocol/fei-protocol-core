@@ -83,6 +83,16 @@ contract BAMMPlugin is IPlugin {
 
     event LusdSwap(address indexed lusdSwapper, uint256 lusdAmount, uint256 minEthAmount);
 
+    event TransferPlugin(address indexed newPlugin);
+
+    event ToggleBAMM(bool newToggle, bool doWithdraw);
+
+    event BufferUpdate(uint256 newBuffer);
+
+    event LUSDSwapperUpdate(address newLusdSwapper);
+
+    event EthSwapMinUpdate(uint256 ethSwapMin);
+
     /**
      * @notice Liquity Stability Pool address
      */
@@ -157,35 +167,56 @@ contract BAMMPlugin is IPlugin {
         transferLQTY();
         BAMM.transfer(newPlugin, BAMM.balanceOf(address(this)));
         lusd.transfer(newPlugin, lusd.balanceOf(address(this)));
+        emit TransferPlugin(newPlugin);
     }
 
+    /// @notice toggle whether to enable the BAMM logic
+    /// @param enabled flag to enable/disable the BAMM logic
+    /// @param doWithdraw flag to trigger a full withdrawal on BAMM if disabled
     function toggleBAMM(bool enabled, bool doWithdraw) external onlyFuseAdmin {
         enableBAMM = enabled;
         if (!enabled && doWithdraw) {
             BAMM.withdraw(BAMM.balanceOf(address(this)));
         }
+        emit ToggleBAMM(enabled, doWithdraw);
     }
 
+    /// @notice set new LusdSwapper
     function setLUSDSwapper(address newLusdSwapper) external onlyFuseAdmin {
+        require(newLusdSwapper != address(0), "zero");
+
         lusdSwapper = ILUSDSwapper(newLusdSwapper);
+        emit LUSDSwapperUpdate(newLusdSwapper);
     }
 
+    /// @notice set new EthSwapMin
     function setEthSwapMin(uint256 newEthSwapMin) external onlyFuseAdmin {
+        require(newEthSwapMin > 0, "zero");
+
         ethSwapMin = newEthSwapMin;
+        emit EthSwapMinUpdate(ethSwapMin);
     }
 
+    /// @notice set new buffer
     function setBuffer(uint256 newBuffer) external onlyFuseAdmin {
+        require(newBuffer != 0, "zero");
         buffer = newBuffer;
+
+        emit BufferUpdate(newBuffer);
     }
 
     /*** IPlugin View methods ***/
 
+    /// @notice return cumulative LUSD belonging to this contract
+    /// @dev this is an underestimate due to the ETH also held by BAMM
     function getCash() external view override returns (uint256) {
         uint256 heldSupply = lusd.balanceOf(address(this));
 
         return heldSupply + depositedSupply();
     }
 
+    /// @notice return the reward token (for compatibility with IPlugin)
+    /// @dev alias for lqty
     function rewardToken() external view override returns (address) {
         return lqty;
     }
@@ -193,8 +224,8 @@ contract BAMMPlugin is IPlugin {
     /*** IPlugin State changing methods ***/
 
     /**
-     * @notice Transfer the underlying to this contract and sweep into rewards contract
-     * @param amount Amount of underlying to transfer
+     * @notice Deposit excess held tokens to BAMM if enabled
+     * @param amount Amount of underlying expected to be held by this contract. Unrelated to BAMM deposit amount
      */
     function deposit(
         uint256 amount
@@ -204,20 +235,20 @@ contract BAMMPlugin is IPlugin {
         }
 
         uint256 heldBalance = lusd.balanceOf(address(this));
-        require(heldBalance >= amount, "no transfer");
+        require(heldBalance >= amount, "no transfer"); // Make sure at least amount tokens were transferred from cToken
 
         uint256 depositedBalance = depositedSupply();
 
         uint256 targetHeld = (depositedBalance + heldBalance) * buffer / PRECISION;
 
         if (heldBalance > targetHeld) {
-            // Deposit to BAMM
+            // Deposit excess tokens to BAMM
             BAMM.deposit(heldBalance - targetHeld);
         }
     }
 
     /**
-     * @notice Transfer the underlying from this contract
+     * @notice Send tokens to recipient, withdrawing from BAMM if needed and enabled
      * @param amount Amount of underlying to transfer
      */
     function withdraw(
@@ -235,13 +266,14 @@ contract BAMMPlugin is IPlugin {
             // Swap surplus BAMM ETH out for LUSD
             handleETH();
 
-            // Withdraw the LUSD from BAMM
+            // Withdraw the LUSD from BAMM (also withdraws LQTY and dust ETH)
             BAMM.withdraw(shares);
             transferLQTY();
 
             // Send all held ETH to lusd swapper. Intentionally no failure check, because failure should not block withdrawal
             address(lusdSwapper).call{value: address(this).balance}("");
         } else {
+            // Claim LQTY rewards even if no withdrawal
             claim();
         }
         require(lusd.transfer(to, amount), "send fail");
