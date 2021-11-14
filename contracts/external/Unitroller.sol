@@ -25,4 +25,8 @@ abstract contract Unitroller {
     function borrowGuardianPaused(address cToken) external view virtual returns(bool);
     function comptrollerImplementation() external view virtual returns(address);
     function rewardsDistributors(uint256 index) external view virtual returns(address);
+
+    function fuseAdminHasRights() external view virtual returns(bool);
+    function adminHasRights() external view virtual returns(bool);
+
 }

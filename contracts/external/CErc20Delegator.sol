@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./InterestRateModel.sol";
+import "./Unitroller.sol";
 
 interface CErc20Delegator is IERC20 {
     function _setPendingAdmin(address payable newPendingAdmin) external returns (uint);
@@ -18,4 +19,5 @@ interface CErc20Delegator is IERC20 {
     function admin() external view returns (address);
     function pendingAdmin() external view returns (address);
     function interestRateModel() external view returns (address);
+    function comptroller() external view returns (Unitroller);
 }
