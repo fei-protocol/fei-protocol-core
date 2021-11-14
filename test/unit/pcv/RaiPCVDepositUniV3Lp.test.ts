@@ -2,6 +2,16 @@ import { expectRevert, expectApprox, getAddresses, getCore, getUniswapV3Mock, ge
 import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
+import {
+  UniswapV3Pool,
+  NonfungiblePositionManager,
+  SwapRouter,
+  MockSAFEEngine,
+  MockGebSafeManager,
+  CoinJoin,
+  RaiPCVDepositUniV3Lp,
+  MockGeneralUnderlyingMaxUniswapV3SafeSaviour
+} from '../../../types/contracts';
 import UniswapV3PoolArtifacts from '@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json';
 import { encodePriceSqrt, getMaxTick, getMinTick, sortAddress } from '../utils/uniswapV3';
 const toBN = ethers.BigNumber.from;
@@ -48,6 +58,18 @@ describe('RaiPCVDepositUniV3Lp', function () {
       impersonatedSigners[address] = await ethers.getSigner(address);
     }
   });
+  let positionManager: NonfungiblePositionManager;
+  let pool: UniswapV3Pool;
+  let factory;
+  let router: SwapRouter;
+  let safeEngine: MockSAFEEngine;
+  let coinJoin: CoinJoin;
+  let safeManager: MockGebSafeManager;
+  let collateralJoin;
+  let rai;
+  let saviour: MockGeneralUnderlyingMaxUniswapV3SafeSaviour;
+  let pcvDeposit: RaiPCVDepositUniV3Lp;
+  let liquidationEngine;
   beforeEach(async function () {
     ({ userAddress, governorAddress, minterAddress, beneficiaryAddress1, pcvControllerAddress } = await getAddresses());
     this.core = await getCore();
@@ -56,14 +78,14 @@ describe('RaiPCVDepositUniV3Lp', function () {
     this.weth = await (await ethers.getContractFactory('MockWeth')).deploy();
     this.oracle = await (await ethers.getContractFactory('MockOracle')).deploy(400); // 400:1 ETH/USD oracle price
 
-    const {
+    ({
       safeEngine,
       coin: rai,
       coinJoin,
       collateralJoin,
       safeManager,
       liquidationEngine
-    } = await getRaiMock(this.weth.address);
+    } = await getRaiMock(this.weth.address));
     this.rai = rai;
     this.safeEngine = safeEngine;
     this.collateralJoin = collateralJoin;
@@ -75,19 +97,19 @@ describe('RaiPCVDepositUniV3Lp', function () {
       sortAddress(this.fei.address, this.rai.address)[0] == this.fei.address
         ? [toWei('4'), toWei('1')]
         : [toWei('1'), toWei('4')];
-    const { positionManager, factory, pool, router } = await getUniswapV3Mock(
+    ({ positionManager, factory, pool, router } = await getUniswapV3Mock(
       this.rai.address,
       this.fei.address,
       this.weth.address,
       500,
       reserves[0],
       reserves[1]
-    );
+    ));
     this.positionManager = positionManager;
     this.factory = factory;
     this.pool = pool;
     this.router = router;
-    this.saviour = await (
+    saviour = (await (
       await ethers.getContractFactory(
         'MockGeneralUnderlyingMaxUniswapV3SafeSaviour',
         impersonatedSigners[governorAddress]
@@ -101,10 +123,11 @@ describe('RaiPCVDepositUniV3Lp', function () {
       this.positionManager.address,
       this.liquidationEngine.address,
       0
-    );
+    )) as MockGeneralUnderlyingMaxUniswapV3SafeSaviour;
+    this.saviour = saviour;
     await liquidationEngine.connect(impersonatedSigners[governorAddress]).connectSAFESaviour(this.saviour.address);
 
-    this.pcvDeposit = await (
+    pcvDeposit = await (
       await ethers.getContractFactory('RaiPCVDepositUniV3Lp')
     ).deploy(
       this.core.address,
@@ -117,13 +140,14 @@ describe('RaiPCVDepositUniV3Lp', function () {
       this.safeManager.address,
       this.router.address
     );
+    this.pcvDeposit = pcvDeposit;
     /* Setup */
     //  Mint RAI to create uniswapv3 pair
     await this.weth.mint(minterAddress, toWei('100'));
     await this.weth.connect(impersonatedSigners[minterAddress]).approve(this.collateralJoin.address, toWei('100'));
-    await this.collateralJoin.connect(impersonatedSigners[minterAddress]).join(minterAddress, toWei('100'));
-    await this.safeEngine.connect(impersonatedSigners[minterAddress]).approveSAFEModification(coinJoin.address);
-    await this.safeEngine.connect(impersonatedSigners[minterAddress]).modifySAFECollateralization(
+    await collateralJoin.connect(impersonatedSigners[minterAddress]).join(minterAddress, toWei('100'));
+    await safeEngine.connect(impersonatedSigners[minterAddress]).approveSAFEModification(coinJoin.address);
+    await safeEngine.connect(impersonatedSigners[minterAddress]).modifySAFECollateralization(
       toBytes32('ETH-A'), // 0x4554482d41000000000000000000000000000000000000000000000000000000
       minterAddress,
       minterAddress,
@@ -142,7 +166,7 @@ describe('RaiPCVDepositUniV3Lp', function () {
       .approve(this.positionManager.address, ethers.constants.MaxUint256);
     const tokens = sortAddress(this.fei.address, this.rai.address);
     // Add Liquidity 1:1 FEI/RAI
-    await this.positionManager.connect(impersonatedSigners[minterAddress]).mint({
+    await positionManager.connect(impersonatedSigners[minterAddress]).mint({
       token0: tokens[0],
       token1: tokens[1],
       fee: 500,
@@ -157,12 +181,10 @@ describe('RaiPCVDepositUniV3Lp', function () {
     });
     /* Set initial PCVDeposit parameters */
     await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.pcvDeposit.address, {});
-    await this.pcvDeposit
-      .connect(impersonatedSigners[governorAddress])
-      .setPositionTicks(getMinTick(10), getMaxTick(10));
-    await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setTargetCollateralRatio(targetCRatio); // 200%
-    await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxBasisPointsFromPegLP(1000);
-    await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxSlipageBasisPoints(1000);
+    await pcvDeposit.connect(impersonatedSigners[governorAddress]).setPositionTicks(getMinTick(10), getMaxTick(10));
+    await pcvDeposit.connect(impersonatedSigners[governorAddress]).setTargetCollateralRatio(targetCRatio); // 200%
+    await pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxBasisPointsFromPegLP(1000);
+    await pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxSlipageBasisPoints(1000);
   });
 
   function getDebtDesired(collateral, raiPerEth, cRatio) {
@@ -171,20 +193,20 @@ describe('RaiPCVDepositUniV3Lp', function () {
 
   describe('Initialize', function () {
     it('succeeds', async function () {
-      expect(await this.pcvDeposit.core()).to.be.equal(this.core.address);
-      expect(await this.pcvDeposit.positionManager()).to.be.equal(this.positionManager.address);
-      expect(await this.pcvDeposit.oracle()).to.be.equal(this.oracle.address);
-      expect(await this.pcvDeposit.collateralJoin()).to.be.equal(this.collateralJoin.address);
-      expect(await this.pcvDeposit.coinJoin()).to.be.equal(this.coinJoin.address);
-      expect(await this.pcvDeposit.safeSaviour()).to.be.equal(this.saviour.address);
-      expect(await this.pcvDeposit.safeManager()).to.be.equal(this.safeManager.address);
-      expect(await this.pcvDeposit.router()).to.be.equal(this.router.address);
+      expect(await pcvDeposit.core()).to.be.equal(this.core.address);
+      expect(await pcvDeposit.positionManager()).to.be.equal(this.positionManager.address);
+      expect(await pcvDeposit.oracle()).to.be.equal(this.oracle.address);
+      expect(await pcvDeposit.collateralJoin()).to.be.equal(this.collateralJoin.address);
+      expect(await pcvDeposit.coinJoin()).to.be.equal(this.coinJoin.address);
+      expect(await pcvDeposit.safeSaviour()).to.be.equal(this.saviour.address);
+      expect(await pcvDeposit.safeManager()).to.be.equal(this.safeManager.address);
+      expect(await pcvDeposit.router()).to.be.equal(this.router.address);
       expect(await this.pcvDeposit.balanceReportedIn()).to.be.equal(this.rai.address);
       expect(await this.pcvDeposit.maxBasisPointsFromPegLP()).to.be.equal(1000);
       expect(await this.pcvDeposit.maxSlippageBasisPoints()).to.be.equal(1000);
       expect(await this.pcvDeposit.maximumAvailableETH()).to.be.equal(toWei('100'));
       expect(await this.pcvDeposit.targetCRatio()).to.be.equal(targetCRatio);
-      expect(await this.hpcvDeposit.tokenId()).to.be.equal(0);
+      expect(await pcvDeposit.tokenId()).to.be.equal(0);
     });
   });
 
@@ -206,12 +228,12 @@ describe('RaiPCVDepositUniV3Lp', function () {
         await expect(this.pcvDeposit.position()).to.be.reverted;
       });
       it('liquidityOwned', async function () {
-        expect(await this.pcvDeposit.liquidityOwned()).to.be.equal(0);
+        expect(await pcvDeposit.liquidityOwned()).to.be.equal(0);
       });
       it('pair reserves', async function () {
         expect(await this.fei.balanceOf(this.pool.address)).to.be.equal(toWei('4'));
         expect(await this.rai.balanceOf(this.pool.address)).to.be.equal(toWei('1'));
-        const result = await this.pcvDeposit.getPositionAmounts();
+        const result = await pcvDeposit.getPositionAmounts();
         expect(result[0]).to.be.equal(0);
         expect(result[1]).to.be.equal(0);
       });
@@ -223,7 +245,7 @@ describe('RaiPCVDepositUniV3Lp', function () {
     describe('Post deposit values', function () {
       const safeDebt = getDebtDesired(collateral, raiPerEth, targetCRatio);
       beforeEach(async function () {
-        await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxBasisPointsFromPegLP(10000);
+        await pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxBasisPointsFromPegLP(10000);
         await impersonatedSigners[userAddress].sendTransaction({
           from: userAddress,
           to: this.pcvDeposit.address,
@@ -233,11 +255,10 @@ describe('RaiPCVDepositUniV3Lp', function () {
       });
       describe('No existing liquidity', function () {
         it('position', async function () {
-          expect(await this.pcvDeposit.positionTickLower()).to.be.equal(getMinTick(10));
-          expect(await this.pcvDeposit.positionTickUpper()).to.be.equal(getMaxTick(10));
+          expect(await pcvDeposit.positionTickLower()).to.be.equal(getMinTick(10));
+          expect(await pcvDeposit.positionTickUpper()).to.be.equal(getMaxTick(10));
           expect(await this.pcvDeposit.tokenId()).to.be.equal(2);
-          const { operator, token0, token1, fee, tickLower, tickUpper, liquidity } =
-            await this.positionManager.positions(2);
+          const { operator, token0, token1, fee, tickLower, tickUpper, liquidity } = await positionManager.positions(2);
           const tokens = sortAddress(this.fei.address, this.rai.address);
           expect(operator).to.be.equal(ethers.constants.AddressZero);
           expect(token0).to.be.equal(tokens[0]);
@@ -266,18 +287,18 @@ describe('RaiPCVDepositUniV3Lp', function () {
           expect(await this.fei.balanceOf(this.pcvDeposit.address)).to.be.equal(0);
         });
         it('safe Balance', async function () {
-          const { lockedCollateral, generatedDebt } = await this.safeEngine.safes(
+          const { lockedCollateral, generatedDebt } = await safeEngine.safes(
             toBytes32('ETH-A'),
-            await this.pcvDeposit.safeHandler()
+            await pcvDeposit.safeHandler()
           );
           expect(lockedCollateral).to.be.equal(collateral);
           expect(generatedDebt).to.be.equal(safeDebt);
         });
         it('safe saviour', async function () {
           expect(
-            await this.this.liquidationEngine.chosenSAFESaviour(toBytes32('ETH-A'), await this.pcvDeposit.safeHandler())
+            await liquidationEngine.chosenSAFESaviour(toBytes32('ETH-A'), await pcvDeposit.safeHandler())
           ).to.be.equal(this.saviour.address);
-          expect(await this.positionManager.ownerOf(await this.pcvDeposit.tokenId())).to.be.equal(this.saviour.address);
+          expect(await positionManager.ownerOf(await pcvDeposit.tokenId())).to.be.equal(this.saviour.address);
         });
       });
       describe('Existing liquidity', function () {
@@ -293,11 +314,10 @@ describe('RaiPCVDepositUniV3Lp', function () {
           await this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({});
         });
         it('position', async function () {
-          expect(await this.pcvDeposit.positionTickLower()).to.be.equal(getMinTick(10));
-          expect(await this.pcvDeposit.positionTickUpper()).to.be.equal(getMaxTick(10));
+          expect(await pcvDeposit.positionTickLower()).to.be.equal(getMinTick(10));
+          expect(await pcvDeposit.positionTickUpper()).to.be.equal(getMaxTick(10));
           expect(await this.pcvDeposit.tokenId()).to.be.equal(2);
-          const { operator, token0, token1, fee, tickLower, tickUpper, liquidity } =
-            await this.positionManager.positions(2);
+          const { operator, token0, token1, fee, tickLower, tickUpper, liquidity } = await positionManager.positions(2);
           const tokens = sortAddress(this.fei.address, this.rai.address);
           expect(operator).to.be.equal(ethers.constants.AddressZero);
           expect(token0).to.be.equal(tokens[0]);
@@ -323,18 +343,18 @@ describe('RaiPCVDepositUniV3Lp', function () {
           expect(await this.fei.balanceOf(this.pcvDeposit.address)).to.be.equal(0);
         });
         it('safe Balance', async function () {
-          const { lockedCollateral, generatedDebt } = await this.safeEngine.safes(
+          const { lockedCollateral, generatedDebt } = await safeEngine.safes(
             toBytes32('ETH-A'),
-            await this.pcvDeposit.safeHandler()
+            await pcvDeposit.safeHandler()
           );
           expect(lockedCollateral).to.be.equal(collateral.add(toWei('1')));
           expect(generatedDebt).to.be.equal(safeDebt.add(toWei('50')));
         });
         it('safe saviour', async function () {
           expect(
-            await this.liquidationEngine.chosenSAFESaviour(toBytes32('ETH-A'), await this.pcvDeposit.safeHandler())
+            await liquidationEngine.chosenSAFESaviour(toBytes32('ETH-A'), await pcvDeposit.safeHandler())
           ).to.be.equal(this.saviour.address);
-          expect(await this.positionManager.ownerOf(await this.pcvDeposit.tokenId())).to.be.equal(this.saviour.address);
+          expect(await positionManager.ownerOf(await pcvDeposit.tokenId())).to.be.equal(this.saviour.address);
         });
       });
     });
@@ -385,7 +405,7 @@ describe('RaiPCVDepositUniV3Lp', function () {
           this.feiPoolBalBefore = await this.fei.balanceOf(this.pool.address);
           this.raiPoolBalBefore = await this.rai.balanceOf(this.pool.address);
           // Set target cRatio 160%
-          await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setTargetCollateralRatio(toWei('1.6'));
+          await pcvDeposit.connect(impersonatedSigners[governorAddress]).setTargetCollateralRatio(toWei('1.6'));
           // Withdrawing 1 ether results in cRatio 180%
           await expect(
             await this.pcvDeposit
@@ -399,7 +419,7 @@ describe('RaiPCVDepositUniV3Lp', function () {
         it('position', async function () {
           const tokenId = await this.pcvDeposit.tokenId();
           expect(tokenId).to.be.gt(0);
-          const { token0, token1, liquidity } = await this.this.positionManager.positions(tokenId);
+          const { token0, token1, liquidity } = await positionManager.positions(tokenId);
           const tokens = sortAddress(this.fei.address, this.rai.address);
           expect(token0).to.be.equal(tokens[0]);
           expect(token1).to.be.equal(tokens[1]);
@@ -424,9 +444,9 @@ describe('RaiPCVDepositUniV3Lp', function () {
         });
 
         it('safe balance', async function () {
-          const { lockedCollateral, generatedDebt } = await this.safeEngine.safes(
+          const { lockedCollateral, generatedDebt } = await safeEngine.safes(
             toBytes32('ETH-A'),
-            await this.pcvDeposit.safeHandler()
+            await pcvDeposit.safeHandler()
           );
           expect(lockedCollateral).to.be.equal(collateral.sub(amountWithdrawn));
           expect(generatedDebt).to.be.equal(safeDebt);
@@ -448,7 +468,7 @@ describe('RaiPCVDepositUniV3Lp', function () {
 
         it('position', async function () {
           expect(await this.pcvDeposit.tokenId()).to.be.equal(0);
-          const { token0, token1, liquidity } = await this.positionManager.positions(this.tokenId);
+          const { token0, token1, liquidity } = await positionManager.positions(this.tokenId);
           const tokens = sortAddress(this.fei.address, this.rai.address);
           expect(token0).to.be.equal(tokens[0]);
           expect(token1).to.be.equal(tokens[1]);
@@ -472,9 +492,9 @@ describe('RaiPCVDepositUniV3Lp', function () {
 
         it('safe balance', async function () {
           const expectedDebt = getDebtDesired(collateral.sub(amountWithdrawn), raiPerEth, targetCRatio);
-          const { lockedCollateral, generatedDebt } = await this.safeEngine.safes(
+          const { lockedCollateral, generatedDebt } = await safeEngine.safes(
             toBytes32('ETH-A'),
-            await this.pcvDeposit.safeHandler()
+            await pcvDeposit.safeHandler()
           );
           expect(lockedCollateral).to.be.equal(collateral.sub(amountWithdrawn));
           expect(generatedDebt).to.be.equal(expectedDebt);
@@ -487,18 +507,18 @@ describe('RaiPCVDepositUniV3Lp', function () {
           // Deploy ETH/RAI pool
           const tokens = sortAddress(this.weth.address, this.rai.address);
           const reserves = tokens[0] == this.weth.address ? [toWei('20'), toWei('2000')] : [toWei('2000'), toWei('20')];
-          await this.positionManager.createAndInitializePoolIfNecessary(
+          await positionManager.createAndInitializePoolIfNecessary(
             tokens[0],
             tokens[1],
             3000,
             encodePriceSqrt(reserves[1], reserves[0])
           );
           this.pool2 = new ethers.Contract(
-            await this.factory.getPool(tokens[0], tokens[1], 3000),
+            await factory.getPool(tokens[0], tokens[1], 3000),
             UniswapV3PoolArtifacts.abi
           );
           // Set Liquidity ETH/RAI pool
-          await this.positionManager.connect(impersonatedSigners[minterAddress]).mint(
+          await positionManager.connect(impersonatedSigners[minterAddress]).mint(
             {
               token0: tokens[0],
               token1: tokens[1],
@@ -526,7 +546,7 @@ describe('RaiPCVDepositUniV3Lp', function () {
           });
 
           // Governor sets token data to swap PCV asset for RAI in order to repay debt
-          await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setSwapTokenApproval(
+          await pcvDeposit.connect(impersonatedSigners[governorAddress]).setSwapTokenApproval(
             [this.weth.address],
             [
               {
@@ -536,7 +556,7 @@ describe('RaiPCVDepositUniV3Lp', function () {
               }
             ]
           );
-          await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxSlipageBasisPoints(1000);
+          await pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxSlipageBasisPoints(1000);
           // To keep cRatio 200% with collateral 9 ETH, repay 50 RAI.
           await expect(
             await this.pcvDeposit
@@ -565,9 +585,9 @@ describe('RaiPCVDepositUniV3Lp', function () {
 
         it('safe balance', async function () {
           const expectedDebt = getDebtDesired(collateral.sub(amountWithdrawn), raiPerEth, targetCRatio);
-          const { lockedCollateral, generatedDebt } = await this.safeEngine.safes(
+          const { lockedCollateral, generatedDebt } = await safeEngine.safes(
             toBytes32('ETH-A'),
-            await this.pcvDeposit.safeHandler()
+            await pcvDeposit.safeHandler()
           );
           expect(lockedCollateral).to.be.equal(collateral.sub(amountWithdrawn));
           expect(generatedDebt).to.be.equal(expectedDebt);
@@ -604,7 +624,7 @@ describe('RaiPCVDepositUniV3Lp', function () {
         });
         describe('setMaxBasisPointsFromPegLP', function () {
           it('Governor set succeeds', async function () {
-            const oldMaxBasisPointsFromPegLP = await this.pcvDeposit.maxBasisPointsFromPegLP();
+            const oldMaxBasisPointsFromPegLP = await pcvDeposit.maxBasisPointsFromPegLP();
             await expect(
               await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxBasisPointsFromPegLP(300)
             )
@@ -630,14 +650,14 @@ describe('RaiPCVDepositUniV3Lp', function () {
         });
         describe('setMaxSlipageBasisPoints', function () {
           it('Governor set succeeds', async function () {
-            const oldSlipage = await this.pcvDeposit.maxSlippageBasisPoints();
+            const oldSlipage = await pcvDeposit.maxSlippageBasisPoints();
             await expect(
               await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxSlipageBasisPoints(300)
             )
               .to.emit(this.pcvDeposit, 'MaxSlippageUpdate')
               .withArgs(oldSlipage, '300');
 
-            expect(await this.pcvDeposit.maxSlippageBasisPoints()).to.be.equal('300');
+            expect(await pcvDeposit.maxSlippageBasisPoints()).to.be.equal('300');
           });
 
           it('Non-governor set reverts', async function () {
@@ -662,7 +682,7 @@ describe('RaiPCVDepositUniV3Lp', function () {
               .to.emit(this.pcvDeposit, 'MaximumAvailableETHUpdate')
               .withArgs(toWei('100'), toWei('200'));
 
-            expect(await this.pcvDeposit.maximumAvailableETH()).to.be.equal(toWei('200'));
+            expect(await pcvDeposit.maximumAvailableETH()).to.be.equal(toWei('200'));
           });
 
           it('Non-governor set reverts', async function () {
@@ -689,7 +709,7 @@ describe('RaiPCVDepositUniV3Lp', function () {
               .to.emit(this.pcvDeposit, 'SwapTokenApprovalUpdate')
               .withArgs(this.weth.address);
             const { oracle, poolFee, minimumAmountIn } = await this.pcvDeposit.tokenSwapParams(this.weth.address);
-            expect(await this.pcvDeposit.tokenSpents(0)).to.be.equal(this.weth.address);
+            expect(await pcvDeposit.tokenSpents(0)).to.be.equal(this.weth.address);
             expect(oracle).to.be.equal(this.oracle.address);
             expect(poolFee).to.be.equal(3000);
             expect(minimumAmountIn).to.be.equal(1000);
@@ -750,8 +770,8 @@ describe('RaiPCVDepositUniV3Lp', function () {
               .to.emit(this.pcvDeposit, 'PositionTicksUpdate')
               .withArgs(getMinTick(10), getMaxTick(10), 0, 3000);
 
-            expect(await this.pcvDeposit.positionTickLower()).to.be.equal(0);
-            expect(await this.pcvDeposit.positionTickUpper()).to.be.equal(3000);
+            expect(await pcvDeposit.positionTickLower()).to.be.equal(0);
+            expect(await pcvDeposit.positionTickUpper()).to.be.equal(3000);
           });
 
           it('Non-governor set reverts', async function () {
