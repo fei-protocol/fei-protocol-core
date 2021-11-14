@@ -21,8 +21,6 @@ import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import "hardhat/console.sol";
-
 contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
     using Decimal for Decimal.D256;
 
@@ -95,10 +93,6 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
 
         uint256 debtDesired = _getDebtDesired(deltaCollateral + safeCollateral, targetCRatio);
         uint256 debtToGenerate = debtDesired > safeDebt ? debtDesired - safeDebt : 0;
-        console.log("safeCollateral :>>", safeCollateral);
-        console.log("safeDebt :>>", safeDebt);
-        console.log("debtDesired :>>", debtDesired);
-        console.log("debtToGenerate :>>", debtToGenerate);
         _wrap(deltaCollateral);
         _lockETHAndGenerateDebt(safeId, deltaCollateral, debtToGenerate);
 
@@ -107,7 +101,6 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
             // safetyPrice means rai per eth token [ray]
             (, , uint256 safetyPrice, , , ) = safeEngine().collateralTypes(COLLATERAL_TYPE);
             uint256 feiAmount = readOracle().mul(RAY).div(safetyPrice).mul(debtToGenerate).asUint256();
-            console.log("feiAmount :>>", feiAmount);
             address owner;
             uint128 liquidity;
             uint256 _tokenId = tokenId;
@@ -143,8 +136,6 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
         (uint256 safeCollateral, uint256 safeDebt) = safeData();
         require(safeCollateral >= amount, "RaiPCVDepositUniV3Lp: exceed withdrawable collateral");
         uint256 safeCollateralRequired = _getCollateralRequired(safeDebt, targetCRatio);
-        console.log("safeCollateral :>>", safeCollateral);
-        console.log("safeDeb :>>", safeDebt);
 
         // If there is room in target collateral rate and current one, there’s no need to repay debt.
         if (safeCollateral >= safeCollateralRequired && (safeCollateral - safeCollateralRequired) >= amount) {
@@ -152,8 +143,6 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
         } else {
             uint256 debtRepaid = safeDebt - _getDebtDesired(safeCollateral - amount, targetCRatio);
             uint256 raiBalance = IERC20(systemCoin).balanceOf(address(this));
-            console.log("debtRepaid :>>", debtRepaid);
-            console.log("raiBalance :>>", raiBalance);
             // Remove LP position if there is not enough RAI to repay in this contract
             if (raiBalance < debtRepaid) {
                 uint256 _tokenId = tokenId;
@@ -175,7 +164,6 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
 
                     raiBalance = IERC20(systemCoin).balanceOf(address(this));
                 }
-                console.log("raiBalance after removing liq:>>", raiBalance);
             }
             // Swap PCV assets if there is not enough RAI to repay by simply removing LP due to IL.
             if (raiBalance < debtRepaid) {
@@ -203,7 +191,6 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
                             })
                         );
                         raiBalance += amountOut;
-                        console.log("raiBalance :>>", raiBalance);
                         if (raiBalance >= debtRepaid) break;
                     }
                 }
@@ -576,13 +563,6 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
             Constants.BASIS_POINTS_GRANULARITY
         );
         Decimal.D256 memory acceptableAmountOut = maxSlippage.mul(amountOut);
-        console.log("_amountIn :>>", _amountIn);
-        console.log("_safetyPrice :>>", _safetyPrice);
-        console.log("readOracle().asUint256() :>>", readOracle().asUint256());
-        console.log("oraclePrice.asUint256() :>>", oraclePrice.asUint256());
-        console.log("raiPerToken.asUint256() :>>", raiPerToken.asUint256());
-        console.log("amountOut.asUint256() :>>", amountOut.asUint256());
-        console.log("acceptableAmountOut.asUint256() :>>", acceptableAmountOut.asUint256());
         return acceptableAmountOut.asUint256();
     }
 
