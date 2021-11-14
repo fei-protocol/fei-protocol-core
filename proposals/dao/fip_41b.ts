@@ -30,7 +30,7 @@ DAO ACTIONS:
 */
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
-  const { core, bamm, liquityFusePoolLusdPCVDeposit, compoundEthPCVDeposit } = addresses;
+  const { core, bamm, liquityFusePoolLusdPCVDeposit, compoundEthPCVDeposit, lusd, rariPool7Lusd } = addresses;
 
   if (!core) {
     console.log(`core: ${core}`);
@@ -38,15 +38,23 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     throw new Error('An environment variable contract address is not set');
   }
 
+  // Create LUSD Fuse Pool 7 Deposit
+  const depositFactory = await ethers.getContractFactory('ERC20CompoundPCVDeposit');
+  const rariPool7LusdPCVDeposit = await depositFactory.deploy(core, rariPool7Lusd, lusd);
+  await rariPool7LusdPCVDeposit.deployTransaction.wait();
+
+  logging && console.log('LUSD Pool 7 PCV Deposit deployed to:', rariPool7LusdPCVDeposit.address);
+
   // Create LUSD swapper factory
   const factory = await ethers.getContractFactory('LUSDSwapper');
-  const lusdSwapper = await factory.deploy(core, bamm, liquityFusePoolLusdPCVDeposit, compoundEthPCVDeposit);
+  const lusdSwapper = await factory.deploy(core, bamm, rariPool7LusdPCVDeposit.address, compoundEthPCVDeposit);
   await lusdSwapper.deployTransaction.wait();
 
   logging && console.log('LUSD Swapper deployed to:', lusdSwapper.address);
 
   return {
-    lusdSwapper
+    lusdSwapper,
+    rariPool7LusdPCVDeposit
   } as NamedContracts;
 };
 
@@ -76,12 +84,13 @@ export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts
     addresses.liquityFusePoolLusdImpl,
     false,
     await ethers.utils.defaultAbiCoder.encode(
-      ['address', 'address', 'uint256', 'uint256'],
+      ['address', 'address', 'uint256', 'uint256', 'address'],
       [
         addresses.bamm,
         addresses.lusdSwapper,
         ethers.constants.WeiPerEther.div(50), // 2% buffer
-        ethers.constants.WeiPerEther.div(4) // 0.25 ETH minimum swap
+        ethers.constants.WeiPerEther.div(4), // 0.25 ETH minimum swap
+        admin.address // use deploy address as LQTY admin
       ]
     )
   );
@@ -98,4 +107,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await fLUSD.lusdSwapper()).to.be.equal(addresses.lusdSwapper);
   expect(await fLUSD.lqty()).to.be.equal('0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D');
   expect(await fLUSD.stabilityPool()).to.be.equal('0x66017D22b0f8556afDd19FC67041899Eb65a21bb');
+
+  expect(await fLUSD.buffer()).to.be.bignumber.equal(ethers.constants.WeiPerEther.div(50));
+  expect(await fLUSD.ethSwapMin()).to.be.bignumber.equal(ethers.constants.WeiPerEther.div(4));
 };

@@ -22,4 +22,8 @@ interface ICLusdDelegate is CErc20Delegator {
     function BAMM() external view returns(address);
 
     function lqty() external view returns(address);
+
+    function buffer() external view returns(uint256);
+
+    function ethSwapMin() external view returns(uint256);
 }
