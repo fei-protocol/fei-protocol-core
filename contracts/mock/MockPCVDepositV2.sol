@@ -22,6 +22,8 @@ contract MockPCVDepositV2 is IPCVDeposit, CoreRef {
         resistantProtocolOwnedFei = _resistantProtocolOwnedFei;
     }
 
+    receive() external payable {}
+
     function set(uint256 _resistantBalance, uint256 _resistantProtocolOwnedFei) public {
         resistantBalance = _resistantBalance;
         resistantProtocolOwnedFei = _resistantProtocolOwnedFei;

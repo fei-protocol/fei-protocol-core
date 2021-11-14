@@ -2,7 +2,6 @@ import { ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
-import fip_37_proposal from '@proposals/description/fip_37';
 import permanently_revoke_burner_proposal from '@proposals/description/permanently_revoke_burner';
 
 const proposals: ProposalsConfigMap = {
