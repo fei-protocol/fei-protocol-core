@@ -44,7 +44,7 @@ describe('e2e-fuse', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe.only('CLusdDelegate', function () {
+  describe('CLusdDelegate', function () {
     beforeEach(async function () {
       const bamm: IBAMM = contracts.bamm as IBAMM;
       const stabilityPool = await bamm.SP();
@@ -76,10 +76,13 @@ describe('e2e-fuse', function () {
 
       const signer = await getImpersonatedSigner(deployAddress);
 
+      doLogging && console.log('Seeding LUSD');
       await lusd.connect(spSigner).transfer(deployAddress, ethers.constants.WeiPerEther.mul(10_000_000));
 
+      doLogging && console.log('Approving LUSD');
       await lusd.connect(signer).approve(fLUSD.address, ethers.constants.MaxUint256);
 
+      doLogging && console.log('Minting fLUSD');
       await fLUSD.connect(signer).mint(ethers.constants.WeiPerEther.mul(10_000_000));
 
       const bammSupplyAfter = await bamm.totalSupply();
@@ -87,6 +90,7 @@ describe('e2e-fuse', function () {
       expectApprox(await lusd.balanceOf(bammPlugin.address), ethers.constants.WeiPerEther.mul(200_000));
       expect(await spContract.getCompoundedLUSDDeposit(bamm.address)).to.be.bignumber.greaterThan(bammLUSDBefore);
 
+      doLogging && console.log('Redeeming Underlying');
       await fLUSD.connect(signer).redeemUnderlying(ethers.constants.WeiPerEther.mul(100_000));
 
       expect(await bamm.totalSupply()).to.be.bignumber.equal(bammSupplyAfter);
@@ -110,10 +114,13 @@ describe('e2e-fuse', function () {
 
       const signer = await getImpersonatedSigner(deployAddress);
 
+      doLogging && console.log('Seeding LUSD');
       await lusd.connect(spSigner).transfer(deployAddress, ethers.constants.WeiPerEther.mul(10_000_000));
 
+      doLogging && console.log('Approving LUSD');
       await lusd.connect(signer).approve(fLUSD.address, ethers.constants.MaxUint256);
 
+      doLogging && console.log('Minting fLUSD');
       await fLUSD.connect(signer).mint(ethers.constants.WeiPerEther.mul(10_000_000));
 
       const bammSupplyAfter = await bamm.totalSupply();
@@ -121,10 +128,11 @@ describe('e2e-fuse', function () {
       expectApprox(await lusd.balanceOf(bammPlugin.address), ethers.constants.WeiPerEther.mul(200_000));
       expect(await spContract.getCompoundedLUSDDeposit(bamm.address)).to.be.bignumber.greaterThan(bammLUSDBefore);
 
+      doLogging && console.log('Redeeming Underlying');
       await fLUSD.connect(signer).redeemUnderlying(ethers.constants.WeiPerEther.mul(1_000_000));
 
       expect(await bamm.totalSupply()).to.be.bignumber.lessThan(bammSupplyAfter);
-      expect(await lusd.balanceOf(bammPlugin.address)).to.be.bignumber.equal(toBN(0));
+      expectApprox(await lusd.balanceOf(bammPlugin.address), toBN(0));
     });
   });
 });

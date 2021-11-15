@@ -216,20 +216,16 @@ contract BAMMPlugin is IPlugin {
             uint256 lusdNeeded = amount - heldBalance;
             uint256 totalSupply = BAMM.totalSupply();
             uint256 lusdValue = stabilityPool.getCompoundedLUSDDeposit(address(BAMM));
-            uint256 shares = lusdNeeded * totalSupply / lusdValue;
+            uint256 shares = (lusdNeeded * totalSupply / lusdValue) + 1; // extra unit to prevent truncation errors
 
             // Swap surplus BAMM ETH out for LUSD
             handleETH();
 
             // Withdraw the LUSD from BAMM (also withdraws LQTY and dust ETH)
             BAMM.withdraw(shares);
-            transferLQTY();
 
             // Send all held ETH to lusd swapper. Intentionally no failure check, because failure should not block withdrawal
             address(lusdSwapper).call{value: address(this).balance}("");
-        } else {
-            // Claim LQTY rewards even if no withdrawal
-            claim();
         }
         require(lusd.transfer(to, amount), "send fail");
     }
