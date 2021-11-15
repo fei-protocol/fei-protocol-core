@@ -2,22 +2,25 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "./MockERC20.sol";
 
 interface IPoolManager {
     function token() external returns (address);
 }
 
-interface IMockERC20 is IERC20 {
-    function mint(address account, uint256 amount) external returns (bool);
-    function burn(address account, uint256 amount) external returns (bool);
-}
-
 contract MockAngleStableMaster {
-    IMockERC20 public agToken;
+    MockERC20 public agToken;
+    uint256 public usdPerAgToken;
+    uint256 public feeBp = 30; // 0.3% fee
 
-	constructor(IMockERC20 _agToken) {
-		agToken = _agToken;
-	}
+    constructor(MockERC20 _agToken, uint256 _usdPerAgToken) {
+        agToken = _agToken;
+        usdPerAgToken = _usdPerAgToken;
+    }
+
+    function setFee(uint256 _fee) public {
+        feeBp = _fee;
+    }
 
     function mint(
         uint256 amount,
@@ -25,17 +28,20 @@ contract MockAngleStableMaster {
         IPoolManager poolManager,
         uint256
     ) external {
+        uint256 amountAfterFee = (amount * (10_000 - feeBp)) / (usdPerAgToken * 10_000);
         SafeERC20.safeTransferFrom(IERC20(poolManager.token()), msg.sender, address(this), amount);
-        agToken.mint(user, amount);
+        agToken.mint(user, amountAfterFee);
     }
 
     function burn(
         uint256 amount,
-        address,
+        address burner,
         address dest,
         IPoolManager poolManager,
         uint256
     ) external {
-        SafeERC20.safeTransfer(IERC20(poolManager.token()), dest, amount);
+        uint256 amountAfterFee = (amount * usdPerAgToken * (10_000 - feeBp)) / 10_000;
+        SafeERC20.safeTransfer(IERC20(poolManager.token()), dest, amountAfterFee);
+        agToken.mockBurn(burner, amount);
     }
 }

@@ -124,7 +124,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     /// @notice set the new pair contract
     /// @param _pair the new pair
     /// @dev also approves the router for the new pair token and underlying token
-    function setPair(address _pair) external override onlyGovernor {
+    function setPair(address _pair) public virtual override onlyGovernor {
         _setupPair(_pair);
 
         _approveToken(token);
@@ -150,10 +150,10 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
         Derivation rETH, rFEI = resistant (ideal) ETH and FEI reserves, P = price of ETH in FEI:
         1. rETH * rFEI = k
         2. rETH = k / rFEI
-        3. rETH = (k * rETH) / (rFEI * rETH) 
+        3. rETH = (k * rETH) / (rFEI * rETH)
         4. rETH ^ 2 = k / P
         5. rETH = sqrt(k / P)
-        
+
         and rFEI = k / rETH by 1.
 
         Finally scale the resistant reserves by the ratio owned by the contract
@@ -172,18 +172,18 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
 
         Decimal.D256 memory ratioOwned = _ratioOwned();
         return (
-            ratioOwned.mul(resistantOtherInPool).asUint256(), 
+            ratioOwned.mul(resistantOtherInPool).asUint256(),
             ratioOwned.mul(resistantFeiInPool).asUint256()
         );
     }
 
     /// @notice amount of pair liquidity owned by this contract
     /// @return amount of LP tokens
-    function liquidityOwned() public view override returns (uint256) {
+    function liquidityOwned() public view virtual override returns (uint256) {
         return pair.balanceOf(address(this));
     }
 
-    function _removeLiquidity(uint256 liquidity) internal returns (uint256) {
+    function _removeLiquidity(uint256 liquidity) internal virtual returns (uint256) {
         uint256 endOfTime = type(uint256).max;
         // No restrictions on withdrawal price
         (, uint256 amountWithdrawn) =
@@ -199,7 +199,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
         return amountWithdrawn;
     }
 
-    function _addLiquidity(uint256 tokenAmount, uint256 feiAmount) internal {
+    function _addLiquidity(uint256 tokenAmount, uint256 feiAmount) internal virtual {
         _mintFei(address(this), feiAmount);
 
         uint256 endOfTime = type(uint256).max;

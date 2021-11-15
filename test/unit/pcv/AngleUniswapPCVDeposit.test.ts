@@ -1,44 +1,16 @@
-import { expectRevert, expectApprox, getAddresses, getCore } from '../../helpers';
+import { expectRevert, expectApprox, getAddresses, getCore, getImpersonatedSigner } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
-import { Signer } from 'ethers';
+import { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 
-describe('EthUniswapPCVDeposit', function () {
+describe('AngleUniswapPCVDeposit', function () {
   const LIQUIDITY_INCREMENT = 10000; // amount of liquidity created by mock for each deposit
-  let userAddress;
-  let governorAddress;
-  let minterAddress;
-  let beneficiaryAddress1;
-  let pcvControllerAddress;
-
-  const impersonatedSigners: { [key: string]: Signer } = {};
-
-  before(async () => {
-    const addresses = await getAddresses();
-
-    // add any addresses you want to impersonate here
-    const impersonatedAddresses = [
-      addresses.userAddress,
-      addresses.pcvControllerAddress,
-      addresses.governorAddress,
-      addresses.pcvControllerAddress,
-      addresses.minterAddress,
-      addresses.burnerAddress,
-      addresses.beneficiaryAddress1,
-      addresses.beneficiaryAddress2
-    ];
-
-    for (const address of impersonatedAddresses) {
-      await hre.network.provider.request({
-        method: 'hardhat_impersonateAccount',
-        params: [address]
-      });
-
-      impersonatedSigners[address] = await ethers.getSigner(address);
-    }
-  });
+  let userAddress: string;
+  let governorAddress: string;
+  let minterAddress: string;
+  let beneficiaryAddress1: string;
+  let pcvControllerAddress: string;
 
   beforeEach(async function () {
     ({ userAddress, governorAddress, minterAddress, beneficiaryAddress1, pcvControllerAddress } = await getAddresses());
@@ -52,12 +24,12 @@ describe('EthUniswapPCVDeposit', function () {
     this.pair = await (
       await ethers.getContractFactory('MockUniswapV2PairLiquidity')
     ).deploy(this.fei.address, this.agEUR.address);
-    this.oracle = await (await ethers.getContractFactory('MockOracle')).deploy(400); // 400:1 oracle price
+    this.oracle = await (await ethers.getContractFactory('MockOracle')).deploy(2); // 2:1 oracle price
     this.router = await (await ethers.getContractFactory('MockRouter')).deploy(this.pair.address);
     this.router.setWETH(this.weth.address);
 
     // Mock Angle Contracts
-    this.stableMaster = await (await ethers.getContractFactory('MockAngleStableMaster')).deploy(this.agEUR.address);
+    this.stableMaster = await (await ethers.getContractFactory('MockAngleStableMaster')).deploy(this.agEUR.address, 2); // 2:1 oracle price
     this.poolManager = await (await ethers.getContractFactory('MockAnglePoolManager')).deploy(this.fei.address);
     this.stakingRewards = await (
       await ethers.getContractFactory('MockAngleStakingRewards')
@@ -77,43 +49,39 @@ describe('EthUniswapPCVDeposit', function () {
       this.stakingRewards.address
     );
 
-    await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.pcvDeposit.address, {});
+    await this.core.connect(await getImpersonatedSigner(governorAddress)).grantMinter(this.pcvDeposit.address);
 
-    await this.pair
-      .connect(impersonatedSigners[userAddress])
-      .set(50000000, 100000, LIQUIDITY_INCREMENT, { value: 100000 }); // 500:1 FEI/ETH with 10k liquidity
+    await this.pair.connect(await getImpersonatedSigner(userAddress)).set(200000, 100000, LIQUIDITY_INCREMENT); // 2:1 FEI/agEUR with 10k liquidity
 
-    await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pair.address, 50000000, {});
-    1;
+    await this.fei.connect(await getImpersonatedSigner(minterAddress)).mint(this.pair.address, 200000);
     await this.agEUR.mint(this.pair.address, 100000);
   });
 
   describe('Resistant Balance', function () {
     it('succeeds', async function () {
       await this.pair
-        .connect(impersonatedSigners[userAddress])
-        .transfer(this.pcvDeposit.address, LIQUIDITY_INCREMENT, {});
+        .connect(await getImpersonatedSigner(userAddress))
+        .transfer(this.pcvDeposit.address, LIQUIDITY_INCREMENT);
       const resistantBalances = await this.pcvDeposit.resistantBalanceAndFei();
 
       // Resistant balances should multiply to k and have price of 400
       // PCV deposit owns half of the LP
-      expect(resistantBalances[0]).to.be.equal(toBN(111803));
-      expect(resistantBalances[1]).to.be.equal(toBN(44721519));
-      expectApprox(resistantBalances[0].mul(resistantBalances[1]), '5000000000000');
-      expectApprox(resistantBalances[1].div(resistantBalances[0]), '400', '10');
+      expect(resistantBalances[0]).to.be.equal(toBN(100000));
+      expect(resistantBalances[1]).to.be.equal(toBN(200000));
+      expectApprox(resistantBalances[0].mul(resistantBalances[1]), '20000000000');
+      expectApprox(resistantBalances[1].div(resistantBalances[0]), '2');
     });
   });
 
   describe('Deposit', function () {
     describe('Paused', function () {
       it('reverts', async function () {
-        await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).pause({});
-        await impersonatedSigners[userAddress].sendTransaction({
-          from: userAddress,
-          to: this.pcvDeposit.address,
-          value: 100000
-        });
-        await expectRevert(this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({}), 'Pausable: paused');
+        await this.pcvDeposit.connect(await getImpersonatedSigner(governorAddress)).pause();
+        await this.agEUR.mint(this.pcvDeposit.address, 100000);
+        await expectRevert(
+          this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).deposit(),
+          'Pausable: paused'
+        );
       });
     });
 
@@ -124,9 +92,9 @@ describe('EthUniswapPCVDeposit', function () {
 
       it('pair reserves', async function () {
         expect(await this.agEUR.balanceOf(this.pair.address)).to.be.equal(toBN(100000));
-        expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(50000000));
+        expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(200000));
         const result = await this.pcvDeposit.getReserves();
-        expect(result[0]).to.be.equal(toBN(50000000));
+        expect(result[0]).to.be.equal(toBN(200000));
         expect(result[1]).to.be.equal(toBN(100000));
       });
       it('balance', async function () {
@@ -137,21 +105,20 @@ describe('EthUniswapPCVDeposit', function () {
     describe('Post deposit values', function () {
       beforeEach(async function () {
         await this.agEUR.mint(this.pcvDeposit.address, 100000);
-        await this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({});
+        await this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).deposit();
       });
 
       describe('No existing liquidity', function () {
         it('liquidityOwned', async function () {
-          // The contract has no liquidity as everything is staked
           expect(await this.pcvDeposit.liquidityOwned()).to.be.equal(toBN(LIQUIDITY_INCREMENT));
           expect(await this.stakingRewards.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN(LIQUIDITY_INCREMENT));
         });
 
         it('pair reserves', async function () {
           expect(await this.agEUR.balanceOf(this.pair.address)).to.be.equal(toBN(200000));
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(90000000)); // deposits at oracle price
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(400000)); // deposits at oracle price
           const result = await this.pcvDeposit.getReserves();
-          expect(result[0]).to.be.equal(toBN(90000000));
+          expect(result[0]).to.be.equal(toBN(400000));
           expect(result[1]).to.be.equal(toBN(200000));
         });
 
@@ -163,7 +130,7 @@ describe('EthUniswapPCVDeposit', function () {
           expect(await this.fei.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN(0));
         });
 
-        it('no agEUR held', async function () {
+        it('no token held', async function () {
           expect(await this.agEUR.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN(0));
         });
       });
@@ -171,7 +138,7 @@ describe('EthUniswapPCVDeposit', function () {
       describe('With existing liquidity', function () {
         beforeEach(async function () {
           await this.agEUR.mint(this.pcvDeposit.address, 100000);
-          await this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({});
+          await this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).deposit();
         });
 
         it('liquidityOwned', async function () {
@@ -183,9 +150,9 @@ describe('EthUniswapPCVDeposit', function () {
 
         it('pair reserves', async function () {
           expect(await this.agEUR.balanceOf(this.pair.address)).to.be.equal(toBN(300000));
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(130000000)); // deposits at oracle price
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(600000)); // deposits at oracle price
           const result = await this.pcvDeposit.getReserves();
-          expect(result[0]).to.be.equal(toBN(130000000));
+          expect(result[0]).to.be.equal(toBN(600000));
           expect(result[1]).to.be.equal(toBN(300000));
         });
 
@@ -204,20 +171,20 @@ describe('EthUniswapPCVDeposit', function () {
 
       describe('Pool price changes under threshold', function () {
         it('reverts', async function () {
-          await this.router.setAmountMin(39000000);
+          await this.router.setAmountMin(195000);
           await this.agEUR.mint(this.pcvDeposit.address, 100000);
           await expectRevert(
-            this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({}),
+            this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).deposit(),
             'amount liquidity revert'
           );
         });
 
         describe('after threshold update', function () {
           beforeEach(async function () {
-            await this.router.setAmountMin(39000000);
-            await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxBasisPointsFromPegLP(300, {});
+            await this.router.setAmountMin(195000);
+            await this.pcvDeposit.connect(await getImpersonatedSigner(governorAddress)).setMaxBasisPointsFromPegLP(300);
             await this.agEUR.mint(this.pcvDeposit.address, 100000);
-            await this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({});
+            await this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).deposit();
           });
 
           it('liquidityOwned', async function () {
@@ -229,9 +196,9 @@ describe('EthUniswapPCVDeposit', function () {
 
           it('pair reserves', async function () {
             expect(await this.agEUR.balanceOf(this.pair.address)).to.be.equal(toBN(300000));
-            expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(130000000)); // deposits at oracle price
+            expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(600000)); // deposits at oracle price
             const result = await this.pcvDeposit.getReserves();
-            expect(result[0]).to.be.equal(toBN(130000000));
+            expect(result[0]).to.be.equal(toBN(600000));
             expect(result[1]).to.be.equal(toBN(300000));
           });
 
@@ -253,7 +220,7 @@ describe('EthUniswapPCVDeposit', function () {
         beforeEach(async function () {
           await this.router.setAmountMin(41000000);
           await this.agEUR.mint(this.pcvDeposit.address, 100000);
-          await this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({});
+          await this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).deposit();
         });
 
         it('liquidityOwned', async function () {
@@ -265,9 +232,9 @@ describe('EthUniswapPCVDeposit', function () {
 
         it('pair reserves', async function () {
           expect(await this.agEUR.balanceOf(this.pair.address)).to.be.equal(toBN(300000));
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(130000000)); // deposits at oracle price
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(600000)); // deposits at oracle price
           const result = await this.pcvDeposit.getReserves();
-          expect(result[0]).to.be.equal(toBN(130000000));
+          expect(result[0]).to.be.equal(toBN(600000));
           expect(result[1]).to.be.equal(toBN(300000));
         });
 
@@ -287,8 +254,8 @@ describe('EthUniswapPCVDeposit', function () {
       describe('Burns FEI', function () {
         beforeEach(async function () {
           await this.agEUR.mint(this.pcvDeposit.address, '200000');
-          await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pcvDeposit.address, '1000', {});
-          await this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({});
+          await this.fei.connect(await getImpersonatedSigner(minterAddress)).mint(this.pcvDeposit.address, '1000');
+          await this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).deposit();
         });
 
         it('liquidityOwned', async function () {
@@ -300,9 +267,9 @@ describe('EthUniswapPCVDeposit', function () {
 
         it('pair reserves', async function () {
           expect(await this.agEUR.balanceOf(this.pair.address)).to.be.equal(toBN(400000));
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(170000000)); // deposits at oracle price
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(800000)); // deposits at oracle price
           const result = await this.pcvDeposit.getReserves();
-          expect(result[0]).to.be.equal(toBN(170000000));
+          expect(result[0]).to.be.equal(toBN(800000));
           expect(result[1]).to.be.equal(toBN(400000));
         });
 
@@ -321,10 +288,10 @@ describe('EthUniswapPCVDeposit', function () {
 
       describe('After oracle price move', function () {
         beforeEach(async function () {
-          await this.oracle.setExchangeRate(600); // 600:1 oracle price
+          await this.oracle.setExchangeRate(3); // 3:1 oracle price
           // Then deposit
           await this.agEUR.mint(this.pcvDeposit.address, '100000');
-          await this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({});
+          await this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).deposit();
         });
 
         it('liquidityOwned', async function () {
@@ -336,9 +303,9 @@ describe('EthUniswapPCVDeposit', function () {
 
         it('pair reserves', async function () {
           expect(await this.agEUR.balanceOf(this.pair.address)).to.be.equal(toBN(300000));
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(150000000));
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(700000));
           const result = await this.pcvDeposit.getReserves();
-          expect(result[0]).to.be.equal(toBN(150000000));
+          expect(result[0]).to.be.equal(toBN(700000));
           expect(result[1]).to.be.equal(toBN(300000));
         });
 
@@ -360,11 +327,11 @@ describe('EthUniswapPCVDeposit', function () {
   describe('Withdraw', function () {
     describe('Paused', function () {
       it('reverts', async function () {
-        await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).pause({});
+        await this.pcvDeposit.connect(await getImpersonatedSigner(governorAddress)).pause();
         await expectRevert(
           this.pcvDeposit
-            .connect(impersonatedSigners[pcvControllerAddress])
-            .withdraw(beneficiaryAddress1, '100000', {}),
+            .connect(await getImpersonatedSigner(pcvControllerAddress))
+            .withdraw(beneficiaryAddress1, '100000'),
           'Pausable: paused'
         );
       });
@@ -373,15 +340,15 @@ describe('EthUniswapPCVDeposit', function () {
     describe('Reverts', function () {
       it('not pcv controller', async function () {
         await expectRevert(
-          this.pcvDeposit.connect(impersonatedSigners[userAddress]).withdraw(beneficiaryAddress1, '100000', {}),
+          this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).withdraw(beneficiaryAddress1, '100000'),
           'CoreRef: Caller is not a PCV controller'
         );
       });
 
       it('no balance', async function () {
-        await this.core.connect(impersonatedSigners[governorAddress]).grantPCVController(userAddress, {});
+        await this.core.connect(await getImpersonatedSigner(governorAddress)).grantPCVController(userAddress);
         await expectRevert(
-          this.pcvDeposit.connect(impersonatedSigners[userAddress]).withdraw(beneficiaryAddress1, '100000', {}),
+          this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).withdraw(beneficiaryAddress1, '100000'),
           'UniswapPCVDeposit: Insufficient underlying'
         );
       });
@@ -389,7 +356,7 @@ describe('EthUniswapPCVDeposit', function () {
     describe('With Balance', function () {
       beforeEach(async function () {
         await this.agEUR.mint(this.pcvDeposit.address, '100000');
-        await this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({});
+        await this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).deposit();
         this.beneficiaryBalance = await this.agEUR.balanceOf(beneficiaryAddress1);
       });
 
@@ -399,14 +366,14 @@ describe('EthUniswapPCVDeposit', function () {
       });
 
       it('balance', async function () {
-        expect(await this.pcvDeposit.balance()).to.be.equal(toBN(100000)); // rounding error
+        expect(await this.pcvDeposit.balance()).to.be.equal(toBN(100000));
       });
 
       describe('Partial', function () {
         beforeEach(async function () {
           await expect(
             await this.pcvDeposit
-              .connect(impersonatedSigners[pcvControllerAddress])
+              .connect(await getImpersonatedSigner(pcvControllerAddress))
               .withdraw(beneficiaryAddress1, '50000')
           )
             .to.emit(this.pcvDeposit, 'Withdrawal')
@@ -423,9 +390,9 @@ describe('EthUniswapPCVDeposit', function () {
 
         it('pair balances update', async function () {
           expect(await this.agEUR.balanceOf(this.pair.address)).to.be.equal(toBN(150000));
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(67500000));
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(300000));
           const result = await this.pcvDeposit.getReserves();
-          expect(result[0]).to.be.equal(toBN(67500000));
+          expect(result[0]).to.be.equal(toBN(300000));
           expect(result[1]).to.be.equal(toBN(150000));
         });
 
@@ -437,8 +404,8 @@ describe('EthUniswapPCVDeposit', function () {
       describe('Total', function () {
         beforeEach(async function () {
           await this.pcvDeposit
-            .connect(impersonatedSigners[pcvControllerAddress])
-            .withdraw(beneficiaryAddress1, '100000', {});
+            .connect(await getImpersonatedSigner(pcvControllerAddress))
+            .withdraw(beneficiaryAddress1, '100000');
         });
 
         it('user balance updates', async function () {
@@ -457,9 +424,9 @@ describe('EthUniswapPCVDeposit', function () {
 
         it('pair balances update', async function () {
           expect(await this.agEUR.balanceOf(this.pair.address)).to.be.equal(toBN(100000));
-          expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(45000000));
+          expect(await this.fei.balanceOf(this.pair.address)).to.be.equal(toBN(200000));
           const result = await this.pcvDeposit.getReserves();
-          expect(result[0]).to.be.equal(toBN(45000000));
+          expect(result[0]).to.be.equal(toBN(200000));
           expect(result[1]).to.be.equal(toBN(100000));
         });
       });
@@ -470,7 +437,7 @@ describe('EthUniswapPCVDeposit', function () {
     describe('setMaxBasisPointsFromPegLP', function () {
       it('Governor set succeeds', async function () {
         await expect(
-          await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxBasisPointsFromPegLP(300)
+          await this.pcvDeposit.connect(await getImpersonatedSigner(governorAddress)).setMaxBasisPointsFromPegLP(300)
         )
           .to.emit(this.pcvDeposit, 'MaxBasisPointsFromPegLPUpdate')
           .withArgs('100', '300');
@@ -480,14 +447,14 @@ describe('EthUniswapPCVDeposit', function () {
 
       it('Non-governor set reverts', async function () {
         await expectRevert(
-          this.pcvDeposit.connect(impersonatedSigners[userAddress]).setMaxBasisPointsFromPegLP(300, {}),
+          this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).setMaxBasisPointsFromPegLP(300),
           'CoreRef: Caller is not a governor'
         );
       });
 
       it('over 100%', async function () {
         await expectRevert(
-          this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxBasisPointsFromPegLP(10001, {}),
+          this.pcvDeposit.connect(await getImpersonatedSigner(governorAddress)).setMaxBasisPointsFromPegLP(10001),
           'UniswapPCVDeposit: basis points from peg too high'
         );
       });
@@ -498,7 +465,7 @@ describe('EthUniswapPCVDeposit', function () {
         this.agEUR.mint(this.pcvDeposit.address, toBN('1000'));
         await expect(
           await this.pcvDeposit
-            .connect(impersonatedSigners[pcvControllerAddress])
+            .connect(await getImpersonatedSigner(pcvControllerAddress))
             .withdrawERC20(this.agEUR.address, userAddress, toBN('1000'))
         )
           .to.emit(this.pcvDeposit, 'WithdrawERC20')
@@ -510,8 +477,8 @@ describe('EthUniswapPCVDeposit', function () {
       it('Non-PCVController fails', async function () {
         await expectRevert(
           this.pcvDeposit
-            .connect(impersonatedSigners[userAddress])
-            .withdrawERC20(this.agEUR.address, userAddress, toBN('1000'), {}),
+            .connect(await getImpersonatedSigner(userAddress))
+            .withdrawERC20(this.agEUR.address, userAddress, toBN('1000')),
           'CoreRef: Caller is not a PCV controller'
         );
       });
@@ -522,7 +489,7 @@ describe('EthUniswapPCVDeposit', function () {
         const pair2 = await (
           await ethers.getContractFactory('MockUniswapV2PairLiquidity')
         ).deploy(this.agEUR.address, this.fei.address);
-        await expect(await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setPair(pair2.address))
+        await expect(await this.pcvDeposit.connect(await getImpersonatedSigner(governorAddress)).setPair(pair2.address))
           .to.emit(this.pcvDeposit, 'PairUpdate')
           .withArgs(this.pair.address, pair2.address);
 
@@ -531,37 +498,81 @@ describe('EthUniswapPCVDeposit', function () {
 
       it('Non-governor set reverts', async function () {
         await expectRevert(
-          this.pcvDeposit.connect(impersonatedSigners[userAddress]).setPair(userAddress, {}),
+          this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).setPair(userAddress),
           'CoreRef: Caller is not a governor'
         );
       });
     });
   });
 
-  describe('mintAgToken', function () {
-    beforeEach(async function () {
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pcvDeposit.address, '100000');
-      await this.pcvDeposit.connect(impersonatedSigners[pcvControllerAddress]).mintAgToken();
+  describe('agToken minting', function () {
+    it('minted agEUR with all FEI', async function () {
+      await this.fei.connect(await getImpersonatedSigner(minterAddress)).mint(this.pcvDeposit.address, '100000');
+      await this.pcvDeposit.connect(await getImpersonatedSigner(pcvControllerAddress)).mintAgTokenAll();
+      expect(await this.fei.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN('0'));
+      expect(await this.agEUR.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN('49850'));
     });
 
-    it('no fei held', async function () {
-      expect(await this.fei.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN(0));
+    it('minted agEUR with some FEI', async function () {
+      await this.fei.connect(await getImpersonatedSigner(minterAddress)).mint(this.pcvDeposit.address, '100000');
+      await this.pcvDeposit.connect(await getImpersonatedSigner(pcvControllerAddress)).mintAgToken('50000');
+      expect(await this.fei.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN('50000'));
+      expect(await this.agEUR.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN('24925'));
     });
 
-    it('minted agEUR', async function () {
-      expect(await this.agEUR.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN(100000));
+    it('should revert if fee/slippage is too high', async function () {
+      await this.fei.connect(await getImpersonatedSigner(minterAddress)).mint(this.pcvDeposit.address, '100000');
+      await this.stableMaster.setFee(150); // set fee to 1.5%
+      await expectRevert(
+        this.pcvDeposit.connect(await getImpersonatedSigner(pcvControllerAddress)).mintAgTokenAll(),
+        'AngleUniswapPCVDeposit: slippage on mint'
+      );
+    });
+
+    it('should revert if not PCVController', async function () {
+      await this.fei.connect(await getImpersonatedSigner(minterAddress)).mint(this.pcvDeposit.address, '100000');
+      await expectRevert(
+        this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).mintAgTokenAll(),
+        'CoreRef: Caller is not a PCV controller'
+      );
     });
   });
 
-  describe('burnAgToken', function () {
-    beforeEach(async function () {
-      await this.agEUR.mint(this.pcvDeposit.address, '100000');
-      await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.stableMaster.address, '100000');
-      await this.pcvDeposit.connect(impersonatedSigners[pcvControllerAddress]).burnAgToken();
+  describe('agToken burning', function () {
+    it('burn all agEUR for FEI', async function () {
+      await this.agEUR.mint(this.pcvDeposit.address, '50000');
+      await this.fei.connect(await getImpersonatedSigner(minterAddress)).mint(this.stableMaster.address, '100000');
+      await this.pcvDeposit.connect(await getImpersonatedSigner(pcvControllerAddress)).burnAgTokenAll();
+      expect(await this.fei.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN('0')); // not 99700, because burnt
+      expect(await this.agEUR.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN('0'));
     });
 
-    it('received fei', async function () {
-      expect(await this.fei.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN(100000));
+    it('burn some agEUR for FEI', async function () {
+      await this.agEUR.mint(this.pcvDeposit.address, '50000');
+      await this.fei.connect(await getImpersonatedSigner(minterAddress)).mint(this.stableMaster.address, '100000');
+      await this.pcvDeposit.connect(await getImpersonatedSigner(pcvControllerAddress)).burnAgToken('25000');
+      expect(await this.fei.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN('0')); // not 49850, because burnt
+      expect(await this.fei.balanceOf(this.stableMaster.address)).to.be.equal(toBN('50150'));
+      expect(await this.agEUR.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN('25000'));
+    });
+
+    it('should revert if fee/slippage is too high', async function () {
+      await this.agEUR.mint(this.pcvDeposit.address, '50000');
+      await this.fei.connect(await getImpersonatedSigner(minterAddress)).mint(this.stableMaster.address, '100000');
+      await this.stableMaster.setFee(150); // set fee to 1.5%
+      await expectRevert(
+        this.pcvDeposit.connect(await getImpersonatedSigner(pcvControllerAddress)).burnAgTokenAll(),
+        'AngleUniswapPCVDeposit: slippage on burn'
+      );
+    });
+
+    it('should revert if not PCVController', async function () {
+      await this.agEUR.mint(this.pcvDeposit.address, '50000');
+      await this.fei.connect(await getImpersonatedSigner(minterAddress)).mint(this.stableMaster.address, '100000');
+      await expectRevert(
+        this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).burnAgTokenAll(),
+        'CoreRef: Caller is not a PCV controller'
+      );
     });
   });
 });
