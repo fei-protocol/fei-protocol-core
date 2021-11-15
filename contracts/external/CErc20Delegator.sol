@@ -9,7 +9,8 @@ interface CErc20Delegator is IERC20 {
     function _setPendingAdmin(address payable newPendingAdmin) external returns (uint);
     function _setInterestRateModel(InterestRateModel newInterestRateModel) external returns (uint);
     function _setImplementationSafe(address implementation_, bool allowResign, bytes calldata becomeImplementationData) external;
-    
+    function _becomeImplementation(bytes calldata data) external;
+
     function _acceptAdmin() external returns (uint);
     function mint(uint mintAmount) external returns (uint);
     function redeemUnderlying(uint underlying) external;

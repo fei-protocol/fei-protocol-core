@@ -1,64 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../../external/rari/IPlugin.sol";
 import "../../external/CErc20Delegator.sol";
 
+import "./ILUSDSwapper.sol";
+import "./IBAMM.sol";
 
-// Ref: https://github.com/backstop-protocol/dev/blob/main/packages/contracts/contracts/B.Protocol/BAMM.sol
-interface IBAMM {
-
-    // Views
-
-    /// @notice returns ETH price scaled by 1e18
-    function fetchPrice() external view returns (uint256);
-
-    /// @notice returns amount of ETH received for an LUSD swap
-    function getSwapEthAmount(uint256 lusdQty) external view returns (uint256 ethAmount, uint256 feeEthAmount);
-
-    /// @notice LUSD token address
-    function LUSD() external view returns (IERC20);
-
-    /// @notice Liquity Stability Pool Address
-    function SP() external view returns (IStabilityPool);
-
-    /// @notice BAMM shares held by user
-    function balanceOf(address account) external view returns (uint256);
-
-    /// @notice total BAMM shares
-    function totalSupply() external view returns (uint256);
-
-    /// @notice Reward token
-    function bonus() external view returns (address);
-
-    // Mutative Functions
-
-    /// @notice deposit LUSD for shares in BAMM
-    function deposit(uint256 lusdAmount) external;
-
-    /// @notice withdraw shares  in BAMM for LUSD + ETH
-    function withdraw(uint256 numShares) external;
-
-    /// @notice transfer shares
-    function transfer(address to, uint256 amount) external;
-
-    /// @notice swap LUSD to ETH in BAMM
-    function swap(uint256 lusdAmount, uint256 minEthReturn, address dest) external returns(uint256);
-}
-
-// Ref: https://github.com/backstop-protocol/dev/blob/main/packages/contracts/contracts/StabilityPool.sol
-interface IStabilityPool {
-    function getCompoundedLUSDDeposit(address holder) external view returns(uint256 lusdValue);
-    
-    function getDepositorETHGain(address holder) external view returns(uint256 ethValue);
-}
-
-interface ILUSDSwapper {
-    function swapLUSD(uint256 lusdAmount, uint256 minEthReturn) external;
-}
-
-interface ICErc20Plugin {
+interface ICErc20Plugin is CErc20Delegator {
     function plugin() external view returns(address);
 }
 
@@ -96,13 +45,8 @@ contract BAMMPlugin is IPlugin {
     /**
      * @notice Liquity Stability Pool address
      */
-    IStabilityPool public stabilityPool;
-
-    /**
-     * @notice LUSD swapper address
-     */
-    ILUSDSwapper public lusdSwapper;
-
+    IStabilityPool public immutable stabilityPool;
+    
     /**
      * @notice B. Protocol BAMM address
      */
@@ -111,21 +55,26 @@ contract BAMMPlugin is IPlugin {
     /**
      * @notice Lqty token address
      */
-    address public lqty;
+    address public immutable lqty;
 
-    IERC20 public lusd;
+    IERC20 public immutable lusd;
 
     address public immutable cToken;
 
+    /**
+     * @notice LUSD swapper address
+     */
+    ILUSDSwapper public lusdSwapper;
+
     /// @notice buffer is the target percentage of LUSD deposits to remaing outside stability pool
     uint256 public buffer;
-
-    uint256 constant public PRECISION = 1e18;
 
     /// @notice minimum swap amount for the lusdSwapper to perform a swap
     uint256 public ethSwapMin;
 
     bool public enableBAMM = true;
+
+    uint256 constant public PRECISION = 1e18;
 
     address internal constant fuseAdmin = address(0xa731585ab05fC9f83555cf9Bff8F58ee94e18F85);
 
@@ -135,7 +84,7 @@ contract BAMMPlugin is IPlugin {
     }
 
     modifier onlyFuseAdmin {
-        Unitroller comptroller = CErc20Delegator(cToken).comptroller();
+        Unitroller comptroller = ICErc20Plugin(cToken).comptroller();
         require(
             (msg.sender == comptroller.admin() && comptroller.adminHasRights()) || 
             (msg.sender == address(fuseAdmin) && comptroller.fuseAdminHasRights()), 
@@ -152,23 +101,19 @@ contract BAMMPlugin is IPlugin {
         ethSwapMin = _ethSwapMin;
         buffer = _buffer;
 
+        IERC20 _lusd = _bamm.LUSD();
+
+        lusd = _lusd;
+        lqty = _bamm.bonus();
+        stabilityPool = _bamm.SP();
+        
         // Approve moving our LUSD into the BAMM rewards contract.
-        lusd.approve(address(_bamm), type(uint256).max);
+        _lusd.approve(address(_bamm), type(uint256).max);
     }
 
     receive () external payable {} // contract should be able to receive ETH
 
     /*** Fuse Admin methods ***/
-
-    /// @notice transfer out all assets to a new plugin
-    function transferPlugin(address newPlugin) external onlyFuseAdmin {
-        require(ICErc20Plugin(cToken).plugin() == newPlugin, "plugin");
-
-        transferLQTY();
-        BAMM.transfer(newPlugin, BAMM.balanceOf(address(this)));
-        lusd.transfer(newPlugin, lusd.balanceOf(address(this)));
-        emit TransferPlugin(newPlugin);
-    }
 
     /// @notice toggle whether to enable the BAMM logic
     /// @param enabled flag to enable/disable the BAMM logic
@@ -222,6 +167,16 @@ contract BAMMPlugin is IPlugin {
     }
 
     /*** IPlugin State changing methods ***/
+
+    /// @notice transfer out all assets to a new plugin
+    function transferPlugin(address newPlugin) external onlyCToken {
+        require(ICErc20Plugin(cToken).plugin() == newPlugin, "plugin");
+
+        transferLQTY();
+        BAMM.transfer(newPlugin, BAMM.balanceOf(address(this)));
+        lusd.transfer(newPlugin, lusd.balanceOf(address(this)));
+        emit TransferPlugin(newPlugin);
+    }
 
     /**
      * @notice Deposit excess held tokens to BAMM if enabled
@@ -312,9 +267,16 @@ contract BAMMPlugin is IPlugin {
         }
     }
 
-    // proportional amount of BAMM LUSD held by this contract
+    // proportional amount of BAMM USD value held by this contract
     function depositedSupply() internal view returns (uint256) {
+        uint256 ethBalance  = stabilityPool.getDepositorETHGain(address(BAMM));
+
+        uint256 eth2usdPrice = BAMM.fetchPrice();
+        require(eth2usdPrice != 0, "chainlink is down");
+
+        uint256 ethUsdValue = ethBalance * eth2usdPrice / PRECISION;
+
         uint256 bammLusdValue = stabilityPool.getCompoundedLUSDDeposit(address(BAMM));
-        return bammLusdValue * BAMM.balanceOf(address(this)) / BAMM.totalSupply();
+        return (bammLusdValue + ethUsdValue) * BAMM.balanceOf(address(this)) / BAMM.totalSupply();
     }
 }
