@@ -1,4 +1,28 @@
 const MainnetAddresses = {
+  agEUR: {
+    artifactName: 'IERC20',
+    address: '0x1a7e4e63778b4f12a199c062f3efdd288afcbce8'
+  },
+  angle: {
+    artifactName: 'IERC20',
+    address: '0x31429d1856ad1377a8a0079410b297e1a9e214c2'
+  },
+  angleAgEurFeiPool: {
+    artifactName: 'IUniswapV2Pair',
+    address: '0xF89CE5eD65737dA8440411544b0499c9FaD323B2'
+  },
+  angleStableMaster: {
+    artifactName: 'IStableMaster',
+    address: '0x5adDc89785D75C86aB939E9e15bfBBb7Fc086A87'
+  },
+  anglePoolManager: {
+    artifactName: 'IPoolManager',
+    address: '0x53b981389Cfc5dCDA2DC2e903147B5DD0E985F44'
+  },
+  angleStakingRewards: {
+    artifactName: 'IStakingRewards',
+    address: '0xBcb307F590972B1C3188b7916d2969Cf75309dc6'
+  },
   collateralizationOracleKeeper: {
     artifactName: 'CollateralizationOracleKeeper',
     address: '0x62378C316a6161A613D02E11F65290aED79B3eD5'
@@ -190,6 +214,7 @@ const MainnetAddresses = {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0xCd3c40AE1256922BA16C7872229385E20Bc8351e'
   },
+  chainlinkEurUsdOracle: { artifactName: 'unknown', address: '0xb49f677943bc038e9857d61e7d053caa2c1734c1' },
   chainlinkFeiEthOracle: { artifactName: 'unknown', address: '0x7F0D2c2838c6AC24443d13e23d99490017bDe370' },
   chainlinkFeiEthOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
