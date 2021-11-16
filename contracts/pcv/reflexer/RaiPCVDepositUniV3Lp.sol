@@ -28,7 +28,7 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
     ISwapRouter public router;
 
     /// @notice PCV assets address approved to swap those for RAI
-    address[] public tokenSpents;
+    address[10] public tokenSpents;
 
     /// @notice mapping PCV assets address to params
     mapping(address => SwapParams) public tokenSwapParams;
@@ -226,9 +226,8 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
 
     /// @param tokens token addresses to swap for RAI.
     /// @param newSwapParamsData data that include its oracle and mimimum input amount
-    function setSwapTokenApproval(address[] memory tokens, SwapParams[] memory newSwapParamsData)
+    function setSwapTokenApproval(address[10] memory tokens, SwapParams[] memory newSwapParamsData)
         external
-        override
         onlyGovernor
     {
         require(tokens.length == newSwapParamsData.length, "RaiPCVDepositUniV3Lp: not same length");

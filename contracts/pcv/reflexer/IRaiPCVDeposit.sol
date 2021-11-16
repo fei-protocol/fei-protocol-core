@@ -28,8 +28,6 @@ interface IRaiPCVDeposit {
 
     function setTargetCollateralRatio(uint256 ratio) external;
 
-    function setSwapTokenApproval(address[] memory tokens, SwapParams[] memory newSwapParamsData) external;
-
     // ----------- Getters -----------
 
     function maxBasisPointsFromPegLP() external view returns (uint256);
