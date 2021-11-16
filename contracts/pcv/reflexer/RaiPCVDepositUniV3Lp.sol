@@ -138,10 +138,9 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
         uint256 safeCollateralRequired = _getCollateralRequired(safeDebt, targetCRatio);
 
         // If there is room in target collateral rate and current one, there’s no need to repay debt.
-        if (safeCollateral >= safeCollateralRequired && (safeCollateral - safeCollateralRequired) >= amount) {
-            _freeETH(safeId, amount);
-        } else {
-            uint256 debtRepaid = safeDebt - _getDebtDesired(safeCollateral - amount, targetCRatio);
+        uint256 debtRepaid;
+        if (!(safeCollateral >= safeCollateralRequired && (safeCollateral - safeCollateralRequired) >= amount)) {
+            debtRepaid = safeDebt - _getDebtDesired(safeCollateral - amount, targetCRatio);
             uint256 raiBalance = IERC20(systemCoin).balanceOf(address(this));
             // Remove LP position if there is not enough RAI to repay in this contract
             if (raiBalance < debtRepaid) {
@@ -196,9 +195,9 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
                 }
                 require(raiBalance >= debtRepaid, "RaiPCVDepositUniV3Lp: insufficient balance to repay");
             }
-            _freeETHAndRepayDebt(safeId, amount, debtRepaid);
         }
 
+        _freeETHAndRepayDebt(safeId, amount, debtRepaid);
         _unwrap(amount);
         _burnFeiHeld();
         Address.sendValue(payable(to), amount);
@@ -336,7 +335,7 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
     function resistantBalanceAndFei() public view override returns (uint256 amount0, uint256 amount1) {
         (amount0, amount1) = getPositionAmounts();
         amount0 += IERC20(systemCoin).balanceOf(address(this));
-        amount1 += IERC20(address(fei())).balanceOf(address(this));
+        amount1 += fei().balanceOf(address(this));
     }
 
     /// @dev Wrapper around `INonfungiblePositionManager.positions()`
@@ -459,14 +458,8 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
     /// @dev Wrapper around `INonfungiblePositionManager.decreaseLiquidity` and `INonfungiblePositionManager.collect`
     function _removeLiquidityAndCollect(uint256 _tokenId, uint128 _liquidity)
         internal
-        returns (
-            uint256 amount0,
-            uint256 amount1,
-            uint256 collectedFee0,
-            uint256 collectedFee1
-        )
     {
-        (amount0, amount1) = _amountsForLiquidity(
+        (uint256 amount0, uint256 amount1) = _amountsForLiquidity(
             PoolAddress.computeAddress(
                 positionManager.factory(),
                 PoolAddress.getPoolKey(systemCoin, address(fei()), POOL_FEE)
@@ -484,7 +477,7 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
                 deadline: block.timestamp
             })
         );
-        (collectedFee0, collectedFee1) = positionManager.collect(
+        positionManager.collect(
             INonfungiblePositionManager.CollectParams({
                 tokenId: _tokenId,
                 recipient: address(this),

@@ -4,12 +4,7 @@ pragma solidity ^0.8.4;
 import "../pcv/reflexer/IGebSafeManager.sol";
 import "../pcv/reflexer/GeneralUnderlyingMaxUniswapV3SafeSaviourLike.sol";
 
-import "./CoreRef.sol";
-
-import "@openzeppelin/contracts/utils/math/SafeCast.sol";
-
 abstract contract RaiRef {
-    using SafeCast for uint256;
 
     uint256 public constant WAD = 10**18;
     uint256 public constant RAY = 10**27;
@@ -46,7 +41,7 @@ abstract contract RaiRef {
         // Join collateral to safeHandler
         if (_collateralToLock > 0) collateralJoin.join(safeHandler(), _collateralToLock);
         // Modify SAFE
-        safeManager.modifySAFECollateralization(_safeId, _collateralToLock.toInt256(), _debtToGen.toInt256());
+        safeManager.modifySAFECollateralization(_safeId, int256(_collateralToLock), int256(_debtToGen));
         // Transfer internal balances and exit COIN
         if (_debtToGen > 0) {
             safeManager.transferInternalCoins(_safeId, address(this), _debtToGen * RAY);
@@ -65,20 +60,12 @@ abstract contract RaiRef {
         // Join coin
         if (_debtToRepay > 0) coinJoin.join(safeHandler(), _debtToRepay);
         // Modify SAFE
-        safeManager.modifySAFECollateralization(_safeId, -(_collateralToFree.toInt256()), -(_debtToRepay.toInt256()));
+        safeManager.modifySAFECollateralization(_safeId, -int256(_collateralToFree), -int256(_debtToRepay));
         // Transfer internal blanaces and exit collateral
         if (_collateralToFree > 0) {
             safeManager.transferCollateral(_safeId, address(this), _collateralToFree);
             collateralJoin.exit(address(this), _collateralToFree);
         }
-    }
-
-    function _freeETH(uint256 _safeId, uint256 _collateralToFree) internal {
-        // Modify SAFE
-        safeManager.modifySAFECollateralization(_safeId, -(_collateralToFree.toInt256()), 0);
-        // Transfer internal blanaces and exit collateral
-        safeManager.transferCollateral(_safeId, address(this), _collateralToFree);
-        collateralJoin.exit(address(this), _collateralToFree);
     }
 
     function _getDebtDesired(uint256 _collateral, uint256 _cRatio) internal view returns (uint256) {

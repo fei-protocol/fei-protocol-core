@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-abstract contract LiquidationEngineLike {
+interface LiquidationEngineLike {
     function protectSAFE(
         bytes32,
         address,
         address
-    ) external virtual;
+    ) external;
 }
 
 interface ISafeSaviour {
