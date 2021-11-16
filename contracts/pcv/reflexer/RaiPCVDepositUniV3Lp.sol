@@ -326,46 +326,6 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
         amount1 += IERC20(token1).balanceOf(address(this));
     }
 
-    // /// @dev Wrapper around `INonfungiblePositionManager.positions()`
-    // function position()
-    //     external
-    //     view
-    //     override
-    //     returns (
-    //         uint96,
-    //         address,
-    //         address,
-    //         address,
-    //         uint24,
-    //         int24,
-    //         int24,
-    //         uint128,
-    //         uint256,
-    //         uint256,
-    //         uint128,
-    //         uint128
-    //     )
-    // {
-    //     return _position(tokenId);
-    // }
-
-    // @note This function can be replaced with position() function
-    // function getPositionTicks() external view returns(int24, int24){
-    //     return (_positionTickLower, _positionTickUpper);
-    // }
-
-    // @note This function is replaced with position() function
-    // /// @notice Return liquidity owned
-    // /// @dev If liquidity is not provided, return 0
-    // function liquidityOwned() public view override returns (uint256) {
-    //     uint256 _tokenId = tokenId;
-    //     if (_tokenId == 0) {
-    //         return 0;
-    //     }
-    //     (, , , , , , , uint128 liquidity, , , , ) = _position(tokenId);
-    //     return uint256(liquidity);
-    // }
-
     // ----------- Internal functions -----------
 
     function _removeProtection(uint _safeId, uint _tokenId) internal {

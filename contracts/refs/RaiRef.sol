@@ -24,18 +24,14 @@ abstract contract RaiRef {
         _coinJoin = ICoinJoin(coinJoin_);
         _collateralJoin = ICollateralJoin1(collateralJoin_);
         _systemCoin = address(_coinJoin.systemCoin());
-
         safeManager = IGebSafeManager(safeManager_);
+
         safeId = safeManager.openSAFE(COLLATERAL_TYPE, address(this));
         _safeEngine().approveSAFEModification(coinJoin_);
-        // ICoinJoin coinJoin = ICoinJoin(coinJoin_);
-        // _coinJoin = coinJoin;
-        // _collateralJoin = ICollateralJoin1(collateralJoin_);
-        // _systemCoin = address(coinJoin.systemCoin());
+    }
 
-        // IGebSafeManager _safeManager = IGebSafeManager(safeManager_);
-        // safeManager = _safeManager;
-        // safeId = _safeManager.openSAFE(COLLATERAL_TYPE, address(this));
+    function safeData() public view returns (uint256 safeCollateral, uint256 safeDebt) {
+        (safeCollateral, safeDebt) = _safeEngine().safes(COLLATERAL_TYPE, _safeHandler());
     }
 
     //// @notice deposit ETH in SAFE and generates debt (or RAI)
@@ -90,22 +86,11 @@ abstract contract RaiRef {
         return (((((_safeDebt * accumulatedRate) / RAY) * _cRatio) / WAD) * RAY) / safetyPrice;
     }
 
-    function safeData() public view returns (uint256 safeCollateral, uint256 safeDebt) {
-        (safeCollateral, safeDebt) = _safeEngine().safes(COLLATERAL_TYPE, _safeHandler());
+    function _safeEngine() internal view returns (SAFEEngineLike) {
+        return SAFEEngineLike(safeManager.safeEngine());
     }
 
     function _safeHandler() private view returns (address) {
         return safeManager.safes(safeId);
     }
-
-    function _safeEngine() internal view returns (SAFEEngineLike) {
-        return SAFEEngineLike(safeManager.safeEngine());
-    }
-
-    // function getCRatio() public view returns (uint256) {
-    //     (uint256 safeCollateral, uint256 safeDebt) = _safeEngine().safes(COLLATERAL_TYPE, _safeHandler());
-    //     (, uint256 accumulatedRate, uint256 safetyPrice, , , ) = _safeEngine().collateralTypes(COLLATERAL_TYPE);
-    //     // wad * ray * wad / (wad * ray)
-    //     return (safeCollateral * safetyPrice * WAD) / (safeDebt * accumulatedRate);
-    // }
 }
