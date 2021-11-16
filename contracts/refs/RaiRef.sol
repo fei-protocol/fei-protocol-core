@@ -2,31 +2,40 @@
 pragma solidity ^0.8.4;
 
 import "../pcv/reflexer/IGebSafeManager.sol";
-import "../pcv/reflexer/GeneralUnderlyingMaxUniswapV3SafeSaviourLike.sol";
 
 abstract contract RaiRef {
 
-    uint256 public constant WAD = 10**18;
-    uint256 public constant RAY = 10**27;
-    bytes32 public constant COLLATERAL_TYPE = "ETH-A";
+    uint256 internal constant WAD = 10**18;
+    uint256 internal constant RAY = 10**27;
+    bytes32 internal constant COLLATERAL_TYPE = "ETH-A";
 
+    address internal _systemCoin;
+    ICollateralJoin1 internal _collateralJoin;
+    ICoinJoin internal _coinJoin;
     IGebSafeManager public safeManager;
 
-    ICollateralJoin1 public collateralJoin;
-    ICoinJoin public coinJoin;
-    address public systemCoin;
     uint256 public safeId;
 
     constructor(
-        address _collateralJoin,
-        address _coinJoin,
-        address _safeManager
+        address collateralJoin_,
+        address coinJoin_,
+        address safeManager_
     ) {
-        collateralJoin = ICollateralJoin1(_collateralJoin);
-        coinJoin = ICoinJoin(_coinJoin);
-        safeManager = IGebSafeManager(_safeManager);
-        systemCoin = address(coinJoin.systemCoin());
+        _coinJoin = ICoinJoin(coinJoin_);
+        _collateralJoin = ICollateralJoin1(collateralJoin_);
+        _systemCoin = address(_coinJoin.systemCoin());
+
+        safeManager = IGebSafeManager(safeManager_);
         safeId = safeManager.openSAFE(COLLATERAL_TYPE, address(this));
+        _safeEngine().approveSAFEModification(coinJoin_);
+        // ICoinJoin coinJoin = ICoinJoin(coinJoin_);
+        // _coinJoin = coinJoin;
+        // _collateralJoin = ICollateralJoin1(collateralJoin_);
+        // _systemCoin = address(coinJoin.systemCoin());
+
+        // IGebSafeManager _safeManager = IGebSafeManager(safeManager_);
+        // safeManager = _safeManager;
+        // safeId = _safeManager.openSAFE(COLLATERAL_TYPE, address(this));
     }
 
     //// @notice deposit ETH in SAFE and generates debt (or RAI)
@@ -39,13 +48,13 @@ abstract contract RaiRef {
         uint256 _debtToGen
     ) internal {
         // Join collateral to safeHandler
-        if (_collateralToLock > 0) collateralJoin.join(safeHandler(), _collateralToLock);
+        if (_collateralToLock > 0) _collateralJoin.join(_safeHandler(), _collateralToLock);
         // Modify SAFE
         safeManager.modifySAFECollateralization(_safeId, int256(_collateralToLock), int256(_debtToGen));
         // Transfer internal balances and exit COIN
         if (_debtToGen > 0) {
             safeManager.transferInternalCoins(_safeId, address(this), _debtToGen * RAY);
-            coinJoin.exit(address(this), _debtToGen);
+            _coinJoin.exit(address(this), _debtToGen);
         }
     }
 
@@ -58,47 +67,45 @@ abstract contract RaiRef {
         uint256 _debtToRepay
     ) internal {
         // Join coin
-        if (_debtToRepay > 0) coinJoin.join(safeHandler(), _debtToRepay);
+        if (_debtToRepay > 0) _coinJoin.join(_safeHandler(), _debtToRepay);
         // Modify SAFE
         safeManager.modifySAFECollateralization(_safeId, -int256(_collateralToFree), -int256(_debtToRepay));
         // Transfer internal blanaces and exit collateral
         if (_collateralToFree > 0) {
             safeManager.transferCollateral(_safeId, address(this), _collateralToFree);
-            collateralJoin.exit(address(this), _collateralToFree);
+            _collateralJoin.exit(address(this), _collateralToFree);
         }
     }
 
     function _getDebtDesired(uint256 _collateral, uint256 _cRatio) internal view returns (uint256) {
         require(_cRatio != 0, "RaiRef: cratio zero");
-        (, , uint256 safetyPrice, , , ) = safeEngine().collateralTypes(COLLATERAL_TYPE);
+        (, , uint256 safetyPrice, , , ) = _safeEngine().collateralTypes(COLLATERAL_TYPE);
         // (((wad  *  ray) / ray) * wad) / wad
         return (((_collateral * safetyPrice) / RAY) * WAD) / _cRatio;
     }
 
     function _getCollateralRequired(uint256 _safeDebt, uint256 _cRatio) internal view returns (uint256) {
-        (, uint256 accumulatedRate, uint256 safetyPrice, , , ) = safeEngine().collateralTypes(COLLATERAL_TYPE);
+        (, uint256 accumulatedRate, uint256 safetyPrice, , , ) = _safeEngine().collateralTypes(COLLATERAL_TYPE);
         // wad = (wad * ray / ray) * wad / wad * ray / ray
         return (((((_safeDebt * accumulatedRate) / RAY) * _cRatio) / WAD) * RAY) / safetyPrice;
     }
 
     function safeData() public view returns (uint256 safeCollateral, uint256 safeDebt) {
-        (safeCollateral, safeDebt) = safeEngine().safes(COLLATERAL_TYPE, safeHandler());
+        (safeCollateral, safeDebt) = _safeEngine().safes(COLLATERAL_TYPE, _safeHandler());
     }
 
-    function getCRatio() public view returns (uint256) {
-        SAFEEngineLike _safeEngine = safeEngine();
-
-        (uint256 safeCollateral, uint256 safeDebt) = _safeEngine.safes(COLLATERAL_TYPE, safeHandler());
-        (, uint256 accumulatedRate, uint256 safetyPrice, , , ) = _safeEngine.collateralTypes(COLLATERAL_TYPE);
-        // wad * ray * wad / (wad * ray)
-        return (safeCollateral * safetyPrice * WAD) / (safeDebt * accumulatedRate);
-    }
-
-    function safeHandler() public view returns (address) {
+    function _safeHandler() private view returns (address) {
         return safeManager.safes(safeId);
     }
 
-    function safeEngine() public view returns (SAFEEngineLike) {
+    function _safeEngine() internal view returns (SAFEEngineLike) {
         return SAFEEngineLike(safeManager.safeEngine());
     }
+
+    // function getCRatio() public view returns (uint256) {
+    //     (uint256 safeCollateral, uint256 safeDebt) = _safeEngine().safes(COLLATERAL_TYPE, _safeHandler());
+    //     (, uint256 accumulatedRate, uint256 safetyPrice, , , ) = _safeEngine().collateralTypes(COLLATERAL_TYPE);
+    //     // wad * ray * wad / (wad * ray)
+    //     return (safeCollateral * safetyPrice * WAD) / (safeDebt * accumulatedRate);
+    // }
 }

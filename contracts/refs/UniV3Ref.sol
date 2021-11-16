@@ -35,11 +35,11 @@ abstract contract UniV3Ref is IUniV3Ref, OracleRef {
         _setDecimalsNormalizerFromToken(_token);
     }
 
-    /// @notice set the new position manager contract
-    /// @param newPositionManager the new position manager
-    function setPositionManager(address newPositionManager) external virtual override onlyGovernor {
-        _setupPositionManager(newPositionManager);
-    }
+    // /// @notice set the new position manager contract
+    // /// @param newPositionManager the new position manager
+    // function setPositionManager(address newPositionManager) external virtual override onlyGovernor {
+    //     _setupPositionManager(newPositionManager);
+    // }
 
     function _setupPositionManager(address newPositionManager) internal {
         require(newPositionManager != address(0), "UniV3Ref: zero address");

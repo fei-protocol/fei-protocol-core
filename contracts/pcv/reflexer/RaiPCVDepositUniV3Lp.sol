@@ -7,8 +7,7 @@ import "../../refs/RaiRef.sol";
 import "../PCVDeposit.sol";
 import "./IRaiPCVDeposit.sol";
 
-import "./IGebSafeManager.sol";
-import "./GeneralUnderlyingMaxUniswapV3SafeSaviourLike.sol";
+import { GeneralUnderlyingMaxUniswapV3SafeSaviourLike } from "./GeneralUnderlyingMaxUniswapV3SafeSaviourLike.sol";
 
 import "./uni-v3/ISwapRouter.sol";
 import "./uni-v3/IUniswapV3PoolState.sol";
@@ -36,11 +35,11 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
     mapping(address => SwapParams) public tokenSwapParams;
 
     /// @dev SAFE saviour https://docs.reflexer.finance/liquidation-protection/safe-protection
-    address public safeSaviour;
+    address private _safeSaviour;
 
-    // @dev position range
-    int24 public positionTickLower;
-    int24 public positionTickUpper;
+    /// @notice position range
+    int24 private _positionTickLower;
+    int24 private _positionTickUpper;
 
     uint256 public override maxBasisPointsFromPegLP = 100;
     uint256 public override maxSlippageBasisPoints = 100;
@@ -49,35 +48,33 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
     uint256 public targetCRatio = 2 * WAD;
 
     constructor(
-        address _core,
-        address _positionManager,
-        address _oracle,
-        address _backupOracle,
-        address _collateralJoin,
-        address _coinJoin,
-        address _safeSaviour,
-        address _safeManager,
-        address _router
+        address core_,
+        address positionManager_,
+        address oracle_,
+        address backupOracle_,
+        address collateralJoin_,
+        address coinJoin_,
+        address safeSaviour_,
+        address safeManager_,
+        address router_
     )
-        RaiRef(_collateralJoin, _coinJoin, _safeManager)
-        UniV3Ref(_core, _positionManager, address(ICoinJoin(_coinJoin).systemCoin()), _oracle, _backupOracle)
+        RaiRef(collateralJoin_, coinJoin_, safeManager_)
+        UniV3Ref(core_, positionManager_, address(ICoinJoin(coinJoin_).systemCoin()), oracle_, backupOracle_)
     {
-        safeSaviour = _safeSaviour;
-        router = ISwapRouter(_router);
+        _safeSaviour = safeSaviour_;
+        router = ISwapRouter(router_);
 
         // Approve position manager using RAI
-        _approveToken(systemCoin, _positionManager);
+        _approveToken(_systemCoin, positionManager_);
 
         // Approve position manager using FEI
-        _approveToken(address(fei()), _positionManager);
+        _approveToken(address(fei()), positionManager_);
 
         // Approve CollateralJoin using WETH for join()/exit()
-        _approveToken(positionManager.WETH9(), _collateralJoin);
+        _approveToken(positionManager.WETH9(), collateralJoin_);
 
         // Approve coinJoin using RAI
-        _approveToken(systemCoin, _coinJoin);
-
-        safeEngine().approveSAFEModification(_coinJoin);
+        _approveToken(_systemCoin, coinJoin_);
     }
 
     receive() external payable {}
@@ -99,8 +96,9 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
         // LP threshold: 150 RAI (about 500$)
         if (debtToGenerate > 150 * WAD) {
             // safetyPrice means rai per eth token [ray]
-            (, , uint256 safetyPrice, , , ) = safeEngine().collateralTypes(COLLATERAL_TYPE);
+            (, , uint256 safetyPrice, , , ) = _safeEngine().collateralTypes(COLLATERAL_TYPE);
             uint256 feiAmount = readOracle().mul(RAY).div(safetyPrice).mul(debtToGenerate).asUint256();
+
             address owner;
             uint128 liquidity;
             uint256 _tokenId = tokenId;
@@ -110,16 +108,16 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
             }
             if (liquidity == 0) {
                 // If protection was exercised, withdraw left tokens
-                if (owner == safeSaviour) {
+                if (owner == _safeSaviour) {
                     _withdrawDusts(safeId);
                 }
                 // Add liquidity and protect SAFE
-                (_tokenId, , , ) = _mintLiquidity(positionTickLower, positionTickUpper, debtToGenerate, feiAmount);
+                (_tokenId, , , ) = _mintLiquidity(_positionTickLower, _positionTickUpper, debtToGenerate, feiAmount);
                 tokenId = _tokenId;
-                positionManager.approve(safeSaviour, _tokenId);
+                positionManager.approve(_safeSaviour, _tokenId);
                 _protectSAFE(safeId, _tokenId);
-            } else if (owner == safeSaviour) {
-                // GeneralUnderlyingMaxUniswapV3SafeSaviourLike(safeSaviour).withdraw(safeId, _tokenId, address(this));
+            } else if (owner == _safeSaviour) {
+                // GeneralUnderlyingMaxUniswapV3SafeSaviourLike(_safeSaviour).withdraw(safeId, _tokenId, address(this));
                 _increaseLiquidity(_tokenId, debtToGenerate, feiAmount);
             }
 
@@ -131,7 +129,7 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
 
     // ----------- PCV Controller only state changing api -----------
 
-    function withdraw(address to, uint256 amount) public override onlyPCVController whenNotPaused {
+    function withdraw(address to, uint256 amount) external override onlyPCVController whenNotPaused {
         require(to != address(0), "RaiPCVDepositUniV3Lp: to address zero");
         (uint256 safeCollateral, uint256 safeDebt) = safeData();
         require(safeCollateral >= amount, "RaiPCVDepositUniV3Lp: exceed withdrawable collateral");
@@ -141,27 +139,14 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
         uint256 debtRepaid;
         if (!(safeCollateral >= safeCollateralRequired && (safeCollateral - safeCollateralRequired) >= amount)) {
             debtRepaid = safeDebt - _getDebtDesired(safeCollateral - amount, targetCRatio);
-            uint256 raiBalance = IERC20(systemCoin).balanceOf(address(this));
+            uint256 raiBalance = IERC20(_systemCoin).balanceOf(address(this));
             // Remove LP position if there is not enough RAI to repay in this contract
             if (raiBalance < debtRepaid) {
                 uint256 _tokenId = tokenId;
-                if (_tokenId != 0 && positionManager.ownerOf(_tokenId) == safeSaviour) {
+                if (_tokenId != 0 && positionManager.ownerOf(_tokenId) == _safeSaviour) {
                     tokenId = 0; // Effect
-                    (, , , , , , , uint128 liquidity, , , , ) = _position(_tokenId);
-                    // if liquidity equals 0, protection was exercised
-                    if (liquidity == 0) {
-                        _withdrawDusts(safeId); // withdraw left tokens in saviour
-                    } else {
-                        // Protection was not exercised, withdraw NFT LP and remove liquidity
-                        GeneralUnderlyingMaxUniswapV3SafeSaviourLike(safeSaviour).withdraw(
-                            safeId,
-                            _tokenId,
-                            address(this)
-                        );
-                        _removeLiquidityAndCollect(_tokenId, liquidity);
-                    }
-
-                    raiBalance = IERC20(systemCoin).balanceOf(address(this));
+                    _removeProtection(safeId, _tokenId);
+                    raiBalance = IERC20(_systemCoin).balanceOf(address(this));
                 }
             }
             // Swap PCV assets if there is not enough RAI to repay by simply removing LP due to IL.
@@ -170,7 +155,7 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
                 bool native;
                 uint256 amountIn;
                 uint256 amountOut;
-                (, , uint256 safetyPrice, , , ) = safeEngine().collateralTypes(COLLATERAL_TYPE);
+                (, , uint256 safetyPrice, , , ) = _safeEngine().collateralTypes(COLLATERAL_TYPE);
                 for (uint256 i; i < tokenSpents.length; i++) {
                     token = tokenSpents[i];
                     native = token == positionManager.WETH9();
@@ -180,7 +165,7 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
                         amountOut = router.exactInputSingle{value: native ? amountIn : 0}(
                             ISwapRouter.ExactInputSingleParams({
                                 tokenIn: token,
-                                tokenOut: systemCoin,
+                                tokenOut: _systemCoin,
                                 fee: tokenSwapParams[token].poolFee,
                                 recipient: address(this),
                                 deadline: block.timestamp,
@@ -207,14 +192,9 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
 
     // ----------- Governor only state changing api -----------
 
-    function closeSAFE(address to) public onlyGovernor {
-        (uint256 safeCollateral, ) = safeData();
-        withdraw(to, safeCollateral);
-    }
-
     /// @notice sets the new slippage parameter for depositing liquidity
     /// @param _maxBasisPointsFromPegLP the new distance in basis points (1/10000) from peg beyond which a liquidity provision will fail
-    function setMaxBasisPointsFromPegLP(uint256 _maxBasisPointsFromPegLP) public override onlyGovernorOrAdmin {
+    function setMaxBasisPointsFromPegLP(uint256 _maxBasisPointsFromPegLP) external override onlyGovernorOrAdmin {
         require(
             _maxBasisPointsFromPegLP <= Constants.BASIS_POINTS_GRANULARITY,
             "RaiPCVDepositUniV3Lp: basis points from peg too high"
@@ -244,41 +224,47 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
         override
         onlyGovernor
     {
-        _setSwapTokenApproval(tokens, newSwapParamsData);
+        require(tokens.length == newSwapParamsData.length, "RaiPCVDepositUniV3Lp: not same length");
+        address token;
+        tokenSpents = tokens;
+        for (uint256 i; i < newSwapParamsData.length; i++) {
+            token = tokens[i];
+            require(token != address(0), "RaiPCVDepositUniV3Lp: token address zero");
+            require(address(newSwapParamsData[i].oracle) != address(0), "RaiPCVDepositUniV3Lp: oracle address zero");
+
+            tokenSwapParams[token] = newSwapParamsData[i];
+            emit SwapTokenApprovalUpdate(token);
+
+            _approveToken(token, address(router));
+        }
     }
 
     /// @param _tickLower Position tick lower
     /// @param _tickUpper Position tick upper
     function setPositionTicks(int24 _tickLower, int24 _tickUpper) external onlyGovernor {
-        require(_tickUpper > _tickLower, "RaiPCVDepositUniV3Lp: tick reversed order");
+        require(_tickUpper > _tickLower, "RaiPCVDepositUniV3Lp:reversed order");
         require(
             _tickLower >= TickMath.MIN_TICK && TickMath.MAX_TICK >= _tickUpper,
-            "RaiPCVDepositUniV3Lp: out of max/min tick range"
+            "RaiPCVDepositUniV3Lp: max/min tick range"
         );
 
-        int24 oldTickLower = positionTickLower;
-        int24 oldTickUpper = positionTickUpper;
-        positionTickLower = _tickLower;
-        positionTickUpper = _tickUpper;
+        int24 oldTickLower = _positionTickLower;
+        int24 oldTickUpper = _positionTickUpper;
+        _positionTickLower = _tickLower;
+        _positionTickUpper = _tickUpper;
 
-        emit PositionTicksUpdate(oldTickLower, oldTickUpper, positionTickLower, positionTickUpper);
+        emit PositionTicksUpdate(oldTickLower, oldTickUpper, _positionTickLower, _positionTickUpper);
 
         uint256 _tokenId = tokenId;
-        if (_tokenId != 0 && positionManager.ownerOf(_tokenId) == safeSaviour) {
+        if (_tokenId != 0 && positionManager.ownerOf(_tokenId) == _safeSaviour) {
             tokenId = 0;
-            (, , , , , , , uint128 liquidity, , , , ) = _position(_tokenId);
-            if (liquidity == 0) {
-                _withdrawDusts(safeId);
-            } else {
-                GeneralUnderlyingMaxUniswapV3SafeSaviourLike(safeSaviour).withdraw(safeId, _tokenId, address(this));
-                _removeLiquidityAndCollect(_tokenId, liquidity);
-            }
+            _removeProtection(safeId, _tokenId);
         }
     }
 
     /// @param _maximumAvailableETH eth collateral ceiling that this contract can use
     function setMaxAvailableETH(uint256 _maximumAvailableETH) external override onlyGovernor {
-        require(_maximumAvailableETH > WAD, "RaiPCVDepositUniV3Lp: invalid maximum available ETH");
+        require(_maximumAvailableETH > WAD, "RaiPCVDepositUniV3Lp: too small");
 
         uint256 oldMaximumAvailableETH = maximumAvailableETH;
         maximumAvailableETH = _maximumAvailableETH;
@@ -288,7 +274,7 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
 
     /// @param _targetCRatio target collateral ratio, e.g. cRatio 100% => 1e18
     function setTargetCollateralRatio(uint256 _targetCRatio) external override onlyGovernor {
-        require(_targetCRatio > WAD, "RaiPCVDepositUniV3Lp: target collateral ratio too low");
+        require(_targetCRatio > WAD, "RaiPCVDepositUniV3Lp: target ratio too low");
 
         uint256 oldTargetCRatio = targetCRatio;
         targetCRatio = _targetCRatio;
@@ -306,10 +292,10 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
                 (amount0, amount1) = _amountsForLiquidity(
                     PoolAddress.computeAddress(
                         positionManager.factory(),
-                        PoolAddress.getPoolKey(systemCoin, address(fei()), POOL_FEE)
+                        PoolAddress.getPoolKey(_systemCoin, address(fei()), POOL_FEE)
                     ),
-                    positionTickLower,
-                    positionTickUpper,
+                    _positionTickLower,
+                    _positionTickUpper,
                     liquidity
                 );
             }
@@ -320,13 +306,13 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
 
     /// @notice gets the token address in which this deposit returns its balance
     function balanceReportedIn() external view override returns (address) {
-        return systemCoin;
+        return _systemCoin;
     }
 
     /// @notice gets the effective balance of "balanceReportedIn" token if the deposit were fully withdrawn
     function balance() public view override returns (uint256) {
         (uint256 amount0, uint256 amount1) = getPositionAmounts();
-        return address(fei()) < systemCoin ? amount1 : amount0;
+        return address(fei()) < _systemCoin ? amount1 : amount0;
     }
 
     /// @notice gets the resistant token balance and protocol owned fei of this deposit
@@ -334,60 +320,67 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
     /// @return amount1 number of FEI in pool
     function resistantBalanceAndFei() public view override returns (uint256 amount0, uint256 amount1) {
         (amount0, amount1) = getPositionAmounts();
-        (address token0, address token1) = address(fei()) < systemCoin ? (address(fei()), systemCoin) : (systemCoin, address(fei()));
+        // (address token0, address token1) = AddressOrder.sortAddress(address(fei()), _systemCoin);
+        (address token0, address token1) = address(fei()) < _systemCoin ? (address(fei()), _systemCoin) : (_systemCoin, address(fei()));
         amount0 += IERC20(token0).balanceOf(address(this));
         amount1 += IERC20(token1).balanceOf(address(this));
     }
 
-    /// @dev Wrapper around `INonfungiblePositionManager.positions()`
-    function position()
-        external
-        view
-        override
-        returns (
-            uint96,
-            address,
-            address,
-            address,
-            uint24,
-            int24,
-            int24,
-            uint128,
-            uint256,
-            uint256,
-            uint128,
-            uint128
-        )
-    {
-        return _position(tokenId);
-    }
+    // /// @dev Wrapper around `INonfungiblePositionManager.positions()`
+    // function position()
+    //     external
+    //     view
+    //     override
+    //     returns (
+    //         uint96,
+    //         address,
+    //         address,
+    //         address,
+    //         uint24,
+    //         int24,
+    //         int24,
+    //         uint128,
+    //         uint256,
+    //         uint256,
+    //         uint128,
+    //         uint128
+    //     )
+    // {
+    //     return _position(tokenId);
+    // }
 
-    /// @notice Return liquidity owned
-    /// @dev If liquidity is not provided, return 0
-    function liquidityOwned() public view override returns (uint256) {
-        uint256 _tokenId = tokenId;
-        if (_tokenId == 0) {
-            return 0;
-        }
-        (, , , , , , , uint128 liquidity, , , , ) = _position(tokenId);
-        return uint256(liquidity);
-    }
+    // @note This function can be replaced with position() function
+    // function getPositionTicks() external view returns(int24, int24){
+    //     return (_positionTickLower, _positionTickUpper);
+    // }
+
+    // @note This function is replaced with position() function
+    // /// @notice Return liquidity owned
+    // /// @dev If liquidity is not provided, return 0
+    // function liquidityOwned() public view override returns (uint256) {
+    //     uint256 _tokenId = tokenId;
+    //     if (_tokenId == 0) {
+    //         return 0;
+    //     }
+    //     (, , , , , , , uint128 liquidity, , , , ) = _position(tokenId);
+    //     return uint256(liquidity);
+    // }
 
     // ----------- Internal functions -----------
 
-    function _setSwapTokenApproval(address[] memory _tokens, SwapParams[] memory _swapParamsData) internal {
-        require(_tokens.length == _swapParamsData.length, "RaiPCVDepositUniV3Lp: not same length");
-        address token;
-        tokenSpents = _tokens;
-        for (uint256 i; i < _swapParamsData.length; i++) {
-            token = _tokens[i];
-            require(token != address(0), "RaiPCVDepositUniV3Lp: token address zero");
-            require(address(_swapParamsData[i].oracle) != address(0), "RaiPCVDepositUniV3Lp: oracle address zero");
-
-            tokenSwapParams[token] = _swapParamsData[i];
-            emit SwapTokenApprovalUpdate(token);
-
-            _approveToken(token, address(router));
+    function _removeProtection(uint _safeId, uint _tokenId) internal {
+        (, , , , , , , uint128 liquidity, , , , ) = _position(_tokenId);
+        // if liquidity equals 0, protection was exercised
+        if (liquidity == 0) {
+            _withdrawDusts(_safeId); // withdraw left tokens in saviour
+        } else {
+            // Protection was not exercised, withdraw NFT LP and remove liquidity
+            GeneralUnderlyingMaxUniswapV3SafeSaviourLike(_safeSaviour).withdraw(
+                _safeId,
+                _tokenId,
+                address(this)
+            );
+            _removeLiquidityAndCollect(_tokenId, liquidity);
         }
     }
 
@@ -408,9 +401,10 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
             uint256
         )
     {
-        (address token0, address token1, uint256 amount0, uint256 amount1) = address(fei()) < systemCoin
-            ? (address(fei()), systemCoin, _feiAmount, _tokenAmount)
-            : (systemCoin, address(fei()), _tokenAmount, _feiAmount);
+        // (address token0, address token1, uint256 amount0, uint256 amount1) = AddressOrder.sort(address(fei()), _systemCoin, _feiAmount, _tokenAmount);
+        (address token0, address token1, uint256 amount0, uint256 amount1) = address(fei()) < _systemCoin
+            ? (address(fei()), _systemCoin, _feiAmount, _tokenAmount)
+            : (_systemCoin, address(fei()), _tokenAmount, _feiAmount);
 
         _mintFei(address(this), _feiAmount);
 
@@ -440,7 +434,8 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
     ) internal {
         _mintFei(address(this), _feiAmount);
 
-        (uint256 amount0, uint256 amount1) = address(fei()) < systemCoin
+        // ( , , uint256 amount0, uint256 amount1) = AddressOrder.sort(address(fei()), _systemCoin, _feiAmount, _tokenAmount);
+        (uint256 amount0, uint256 amount1) = address(fei()) < _systemCoin
             ? (_feiAmount, _tokenAmount)
             : (_tokenAmount, _feiAmount);
         positionManager.increaseLiquidity(
@@ -463,10 +458,10 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
         (uint256 amount0, uint256 amount1) = _amountsForLiquidity(
             PoolAddress.computeAddress(
                 positionManager.factory(),
-                PoolAddress.getPoolKey(systemCoin, address(fei()), POOL_FEE)
+                PoolAddress.getPoolKey(_systemCoin, address(fei()), POOL_FEE)
             ),
-            positionTickLower,
-            positionTickUpper,
+            _positionTickLower,
+            _positionTickUpper,
             _liquidity
         );
         positionManager.decreaseLiquidity(
@@ -568,19 +563,19 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
     function _protectSAFE(uint256 _safeId, uint256 _tokenId) internal {
         safeManager.protectSAFE(
             _safeId,
-            address(GeneralUnderlyingMaxUniswapV3SafeSaviourLike(safeSaviour).liquidationEngine()),
-            safeSaviour
+            address(GeneralUnderlyingMaxUniswapV3SafeSaviourLike(_safeSaviour).liquidationEngine()),
+            _safeSaviour
         );
-        GeneralUnderlyingMaxUniswapV3SafeSaviourLike(safeSaviour).deposit(_safeId, _tokenId);
+        GeneralUnderlyingMaxUniswapV3SafeSaviourLike(_safeSaviour).deposit(_safeId, _tokenId);
     }
 
     /// @notice Withdraw left tokens from saviour because LP position is removed when saviour exercises the protectin
     /// @param _safeId safeId that given by SAFEManager
     function _withdrawDusts(uint256 _safeId) internal {
         address[] memory tokens = new address[](2);
-        tokens[0] = systemCoin;
+        tokens[0] = _systemCoin;
         tokens[1] = address(fei());
-        GeneralUnderlyingMaxUniswapV3SafeSaviourLike(safeSaviour).getReserves(_safeId, tokens, address(this));
+        GeneralUnderlyingMaxUniswapV3SafeSaviourLike(_safeSaviour).getReserves(_safeId, tokens, address(this));
     }
 
     // #### WETH ####

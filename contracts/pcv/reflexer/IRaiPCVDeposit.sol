@@ -32,8 +32,6 @@ interface IRaiPCVDeposit {
 
     // ----------- Getters -----------
 
-    function liquidityOwned() external view returns (uint256);
-
     function maxBasisPointsFromPegLP() external view returns (uint256);
 
     function maxSlippageBasisPoints() external view returns (uint256);
