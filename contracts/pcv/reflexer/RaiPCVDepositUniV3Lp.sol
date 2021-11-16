@@ -334,8 +334,9 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
     /// @return amount1 number of FEI in pool
     function resistantBalanceAndFei() public view override returns (uint256 amount0, uint256 amount1) {
         (amount0, amount1) = getPositionAmounts();
-        amount0 += IERC20(systemCoin).balanceOf(address(this));
-        amount1 += fei().balanceOf(address(this));
+        (address token0, address token1) = address(fei()) < systemCoin ? (address(fei()), systemCoin) : (systemCoin, address(fei()));
+        amount0 += IERC20(token0).balanceOf(address(this));
+        amount1 += IERC20(token1).balanceOf(address(this));
     }
 
     /// @dev Wrapper around `INonfungiblePositionManager.positions()`
