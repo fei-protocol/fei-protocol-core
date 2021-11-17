@@ -56,8 +56,7 @@ export default {
             url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`
             //blockNumber: <set>
           }
-        : undefined,
-      allowUnlimitedContractSize: true
+        : undefined
     },
 
     localhost: {

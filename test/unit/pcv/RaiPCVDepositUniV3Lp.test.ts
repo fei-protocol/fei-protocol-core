@@ -161,8 +161,7 @@ describe('RaiPCVDepositUniV3Lp', function () {
       .connect(impersonatedSigners[governorAddress])
       .setPositionTicks(getMinTick(10), getMaxTick(10));
     await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setTargetCollateralRatio(targetCRatio); // 200%
-    await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxBasisPointsFromPegLP(1000);
-    await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxSlipageBasisPoints(1000);
+    await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxSlippageBasisPoints(1000);
   });
 
   function getDebtDesired(collateral, raiPerEth, cRatio) {
@@ -177,7 +176,6 @@ describe('RaiPCVDepositUniV3Lp', function () {
       expect(await this.pcvDeposit.safeManager()).to.be.equal(this.safeManager.address);
       expect(await this.pcvDeposit.router()).to.be.equal(this.router.address);
       expect(await this.pcvDeposit.balanceReportedIn()).to.be.equal(this.rai.address);
-      expect(await this.pcvDeposit.maxBasisPointsFromPegLP()).to.be.equal(1000);
       expect(await this.pcvDeposit.maxSlippageBasisPoints()).to.be.equal(1000);
       expect(await this.pcvDeposit.maximumAvailableETH()).to.be.equal(toWei('100'));
       expect(await this.pcvDeposit.targetCRatio()).to.be.equal(targetCRatio);
@@ -218,7 +216,7 @@ describe('RaiPCVDepositUniV3Lp', function () {
     describe('Post deposit values', function () {
       const safeDebt = getDebtDesired(collateral, raiPerEth, targetCRatio);
       beforeEach(async function () {
-        await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxBasisPointsFromPegLP(10000);
+        await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxSlippageBasisPoints(10000);
         await impersonatedSigners[userAddress].sendTransaction({
           from: userAddress,
           to: this.pcvDeposit.address,
@@ -521,18 +519,25 @@ describe('RaiPCVDepositUniV3Lp', function () {
             value: toWei('1')
           });
 
+          this.oracle2 = await (await ethers.getContractFactory('MockOracle')).deploy(100); // 100:1 ETH/RAI oracle price
+
+          const tokenSpents = Array(10).fill(ethers.constants.AddressZero);
+          tokenSpents[0] = this.weth.address;
+          const tokenSwapParams = Array(10).fill({
+            oracle: ethers.constants.AddressZero,
+            poolFee: 0,
+            minimumAmountIn: 0
+          });
+          tokenSwapParams[0] = {
+            oracle: this.oracle2.address,
+            poolFee: 3000,
+            minimumAmountIn: 0
+          };
           // Governor sets token data to swap PCV asset for RAI in order to repay debt
-          await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setSwapTokenApproval(
-            [this.weth.address],
-            [
-              {
-                oracle: this.oracle.address,
-                poolFee: 3000,
-                minimumAmountIn: 0
-              }
-            ]
-          );
-          await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxSlipageBasisPoints(1000);
+          await this.pcvDeposit
+            .connect(impersonatedSigners[governorAddress])
+            .setSwapTokenApproval(tokenSpents, tokenSwapParams);
+          await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxSlippageBasisPoints(1000);
           // To keep cRatio 200% with collateral 9 ETH, repay 50 RAI.
           await expect(
             await this.pcvDeposit
@@ -598,37 +603,11 @@ describe('RaiPCVDepositUniV3Lp', function () {
             );
           });
         });
-        describe('setMaxBasisPointsFromPegLP', function () {
-          it('Governor set succeeds', async function () {
-            const oldMaxBasisPointsFromPegLP = await this.pcvDeposit.maxBasisPointsFromPegLP();
-            await expect(
-              await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxBasisPointsFromPegLP(300)
-            )
-              .to.emit(this.pcvDeposit, 'MaxBasisPointsFromPegLPUpdate')
-              .withArgs(oldMaxBasisPointsFromPegLP, '300');
-
-            expect(await this.pcvDeposit.maxBasisPointsFromPegLP()).to.be.equal('300');
-          });
-
-          it('Non-governor set reverts', async function () {
-            await expectRevert(
-              this.pcvDeposit.connect(impersonatedSigners[userAddress]).setMaxBasisPointsFromPegLP(300, {}),
-              'CoreRef: Caller is not a governor or contract admin'
-            );
-          });
-
-          it('over 100%', async function () {
-            await expectRevert(
-              this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxBasisPointsFromPegLP(10001, {}),
-              'RaiPCVDepositUniV3Lp: basis points from peg too high'
-            );
-          });
-        });
-        describe('setMaxSlipageBasisPoints', function () {
+        describe('setMaxSlippageBasisPoints', function () {
           it('Governor set succeeds', async function () {
             const oldSlipage = await this.pcvDeposit.maxSlippageBasisPoints();
             await expect(
-              await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxSlipageBasisPoints(300)
+              await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxSlippageBasisPoints(300)
             )
               .to.emit(this.pcvDeposit, 'MaxSlippageUpdate')
               .withArgs(oldSlipage, '300');
@@ -638,14 +617,14 @@ describe('RaiPCVDepositUniV3Lp', function () {
 
           it('Non-governor set reverts', async function () {
             await expectRevert(
-              this.pcvDeposit.connect(impersonatedSigners[userAddress]).setMaxSlipageBasisPoints(300, {}),
+              this.pcvDeposit.connect(impersonatedSigners[userAddress]).setMaxSlippageBasisPoints(300, {}),
               'CoreRef: Caller is not a governor or contract admin'
             );
           });
 
           it('over 100%', async function () {
             await expectRevert(
-              this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxSlipageBasisPoints(10001, {}),
+              this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxSlippageBasisPoints(10001, {}),
               'RaiPCVDepositUniV3Lp: slipage too high'
             );
           });
@@ -669,74 +648,77 @@ describe('RaiPCVDepositUniV3Lp', function () {
           });
         });
         describe('setSwapTokenApproval', function () {
+          const tokenSpents = Array(10).fill(ethers.constants.AddressZero);
+          const tokenSwapParams = Array(10).fill({
+            oracle: ethers.constants.AddressZero,
+            poolFee: 0,
+            minimumAmountIn: 0
+          });
           it('Governor set succeeds', async function () {
+            tokenSpents[0] = this.weth.address;
+            tokenSwapParams[0] = {
+              oracle: this.oracle.address,
+              poolFee: 3000,
+              minimumAmountIn: 1000
+            };
             await expect(
-              await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setSwapTokenApproval(
-                [this.weth.address],
-                [
-                  {
-                    oracle: this.oracle.address,
-                    poolFee: 3000,
-                    minimumAmountIn: 1000
-                  }
-                ]
-              )
+              await this.pcvDeposit
+                .connect(impersonatedSigners[governorAddress])
+                .setSwapTokenApproval(tokenSpents, tokenSwapParams)
             )
               .to.emit(this.pcvDeposit, 'SwapTokenApprovalUpdate')
               .withArgs(this.weth.address);
             const { oracle, poolFee, minimumAmountIn } = await this.pcvDeposit.tokenSwapParams(this.weth.address);
             expect(await this.pcvDeposit.tokenSpents(0)).to.be.equal(this.weth.address);
-            expect(oracle).to.be.equal(this.oracle.address);
-            expect(poolFee).to.be.equal(3000);
-            expect(minimumAmountIn).to.be.equal(1000);
+            expect(oracle).to.be.equal(tokenSwapParams[0].oracle);
+            expect(poolFee).to.be.equal(tokenSwapParams[0].poolFee);
+            expect(minimumAmountIn).to.be.equal(tokenSwapParams[0].minimumAmountIn);
           });
 
           it('Non-governor set reverts', async function () {
+            tokenSpents[0] = this.weth.address;
+            tokenSwapParams[0] = {
+              oracle: this.oracle.address,
+              poolFee: 3000,
+              minimumAmountIn: 0
+            };
             await expectRevert(
-              this.pcvDeposit.connect(impersonatedSigners[userAddress]).setSwapTokenApproval(
-                [this.weth.address],
-                [
-                  {
-                    oracle: this.oracle.address,
-                    poolFee: 3000,
-                    minimumAmountIn: 1000
-                  }
-                ],
-                {}
-              ),
+              this.pcvDeposit
+                .connect(impersonatedSigners[userAddress])
+                .setSwapTokenApproval(tokenSpents, tokenSwapParams, {}),
               'CoreRef: Caller is not a governor'
             );
           });
-          it('toekn address zero', async function () {
+          it('oracle address zero', async function () {
+            tokenSpents[0] = this.weth.address;
+            tokenSwapParams.fill({
+              oracle: ethers.constants.AddressZero,
+              poolFee: 0,
+              minimumAmountIn: 0
+            });
             await expectRevert(
-              this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setSwapTokenApproval(
-                [ethers.constants.AddressZero],
-                [
-                  {
-                    oracle: this.oracle.address,
-                    poolFee: 3000,
-                    minimumAmountIn: 1000
-                  }
-                ],
-                {}
-              ),
-              'RaiPCVDepositUniV3Lp: token address zero'
+              this.pcvDeposit
+                .connect(impersonatedSigners[governorAddress])
+                .setSwapTokenApproval(tokenSpents, tokenSwapParams, {}),
+              'RaiPCVDepositUniV3Lp: oracle address zero'
             );
           });
-          it('not same length', async function () {
+          it('inconsistent input', async function () {
+            tokenSpents[0] = this.weth.address;
+            tokenSwapParams.fill(
+              {
+                oracle: this.oracle.address,
+                poolFee: 3000,
+                minimumAmountIn: 0
+              },
+              0,
+              2
+            );
             await expectRevert(
-              this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setSwapTokenApproval(
-                [this.weth.address, this.rai.address],
-                [
-                  {
-                    oracle: this.oracle.address,
-                    poolFee: 3000,
-                    minimumAmountIn: 1000
-                  }
-                ],
-                {}
-              ),
-              'RaiPCVDepositUniV3Lp: not same length'
+              this.pcvDeposit
+                .connect(impersonatedSigners[governorAddress])
+                .setSwapTokenApproval(tokenSpents, tokenSwapParams, {}),
+              'RaiPCVDepositUniV3Lp: inconsistent input'
             );
           });
         });
