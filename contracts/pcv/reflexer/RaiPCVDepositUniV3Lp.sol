@@ -23,10 +23,11 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
 
     struct SwapParams {
         uint256 minimumAmountIn;
-        IOracle oracle;
-        uint24 poolFee;
+        IOracle oracle; // it sholud return rai amount per token
+        uint24 poolFee; // Uniswap V3 pool fee
     }
 
+    /// @notice fee of Uiswap V3 RAI/FEI pool to provide liquidity
     uint24 private constant POOL_FEE = 500;
 
     /// @notice position range
@@ -36,18 +37,23 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
     /// @dev SAFE saviour https://docs.reflexer.finance/liquidation-protection/safe-protection
     address private _safeSaviour;
 
-    /// @dev V3 router
+    /// @notice V3 router
     ISwapRouter public router;
 
+    /// @notice used as slippage protection when adding liquidity to the pool and swapping token
     uint256 public maxSlippageBasisPoints = 1000;
 
-    /// @notice PCV assets address approved to swap those for RAI
+    /// @notice PCV assets approved to swap for RAI. max 10 assets can be registered.
+    /// @dev fixed-size array is used because it is cheaper than dynamic size array
     address[10] public tokenSpents;
 
-    /// @notice mapping PCV assets address to params
+    /// @notice mapping PCV assets to params
     mapping(address => SwapParams) public tokenSwapParams;
 
+    /// @notice max collateral amount deposited in SAFE
     uint256 public maximumAvailableETH = 100 ether;
+
+    /// @notice target SAFE collateralization ratio. initial ratio is 200%
     uint256 public targetCRatio = 2 * WAD;
 
     event MaxSlippageUpdate(uint256 oldMaxSlippage, uint256 newMaximumSlippageBasisPoints);
@@ -56,6 +62,16 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
     event TargetCollateralRatioUpdate(uint256 oldCRatio, uint256 newCRatio);
     event SwapTokenApprovalUpdate(address token);
 
+    /// @notice RAi PCV Deposit UniV3Lp constructor
+    /// @param core_ Fei Core for reference
+    /// @param positionManager_ UniV3 position manager
+    /// @param oracle_ oracle for reference. ETH/USD oracle
+    /// @param backupOracle_ the backup oracle to reference
+    /// @param collateralJoin_  gateway of internal and external collateral balances
+    /// @param coinJoin_ gateway of internal and external rai balances
+    /// @param safeSaviour_ SAFE saviour
+    /// @param safeManager_ Official SAFEEngine helper
+    /// @param router_ UniV3 router
     constructor(
         address core_,
         address positionManager_,
@@ -88,6 +104,7 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
 
     receive() external payable {}
 
+    /// @notice deposit ETH into the PCV allocation
     function deposit() external override whenNotPaused {
         updateOracle();
         uint256 deltaCollateral = address(this).balance;
@@ -98,6 +115,7 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
         );
 
         uint256 debtDesired = _getDebtDesired(deltaCollateral + safeCollateral, targetCRatio);
+        // If there is not any room in target collateral rate and current one, extra debt is not generated.
         uint256 debtToGenerate = debtDesired > safeDebt ? debtDesired - safeDebt : 0;
         _wrap(deltaCollateral);
         _lockETHAndGenerateDebt(safeId, deltaCollateral, debtToGenerate);
@@ -115,6 +133,7 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
                 owner = positionManager.ownerOf(_tokenId);
                 (, , , , , , , liquidity, , , , ) = _position(_tokenId);
             }
+            // If provided liqudity is 0, new position should be minted
             if (liquidity == 0) {
                 uint256 _safeId = safeId;
 
@@ -146,6 +165,13 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
 
     // ----------- PCV Controller only state changing api -----------
 
+    /// @notice withdraw ETH from the PCV allocation
+    ///         If the collateralization ratio after the specified amount of ETH is withdrawn is larger than the target one, 
+    ///         simply withdraw collateral ETH from SAFE. Otherwise repay some RAI to satisfy the target collateralization ratio in the following way.
+    ///             - Remove SAFE protection and remove all RAI/FEI liquidity
+    ///             - Swap PCV assets specified by governor for RAI
+    /// @param to the address to send PCV to
+    /// @param amount of ETH withdrawn
     function withdraw(address to, uint256 amount) external override onlyPCVController whenNotPaused {
         require(to != address(0), "RaiPCVDepositUniV3Lp: to address zero");
         (uint256 safeCollateral, uint256 safeDebt) = safeData();
@@ -220,6 +246,8 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
         emit MaxSlippageUpdate(oldMaxSlipageBasisPoints, _maxSlipageBasisPoints);
     }
 
+    /// @notice sets pcv assets to swap for RAI to repay debt
+    /// @dev each parameter is fixed-size array because fixed-size array is cheaper than dynamic size array
     /// @param _tokens token addresses to swap for RAI.
     /// @param _swapParamsData data that include its oracle and mimimum input amount
     function setSwapTokenApproval(address[10] memory _tokens, SwapParams[10] memory _swapParamsData)
@@ -289,26 +317,6 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
 
     // ----------- Getters -----------
 
-    function getPositionAmounts() public view returns (uint256 amount0, uint256 amount1) {
-        uint256 _tokenId = tokenId;
-        if (_tokenId != 0) {
-            (, , , , , , , uint128 liquidity, , , uint128 tokensOwed0, uint128 tokensOwed1) = _position(_tokenId);
-            if (liquidity > 0) {
-                (amount0, amount1) = _amountsForLiquidity(
-                    PoolAddress.computeAddress(
-                        positionManager.factory(),
-                        PoolAddress.getPoolKey(_systemCoin, address(fei()), POOL_FEE)
-                    ),
-                    _positionTickLower,
-                    _positionTickUpper,
-                    liquidity
-                );
-            }
-            amount0 += tokensOwed0;
-            amount1 += tokensOwed1;
-        }
-    }
-
     /// @notice gets the token address in which this deposit returns its balance
     function balanceReportedIn() external view override returns (address) {
         return _systemCoin;
@@ -328,6 +336,26 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
         uint256 feiAmount = fei().balanceOf(address(this));
         uint256 tokenAmount = _balanceSystemCoin();
         (amount0, amount1)  = _inverse() ? (amount0 + feiAmount, amount1 + tokenAmount) : (amount0 + tokenAmount, amount1 + feiAmount);
+    }
+
+    function getPositionAmounts() public view returns (uint256 amount0, uint256 amount1) {
+        uint256 _tokenId = tokenId;
+        if (_tokenId != 0) {
+            (, , , , , , , uint128 liquidity, , , uint128 tokensOwed0, uint128 tokensOwed1) = _position(_tokenId);
+            if (liquidity > 0) {
+                (amount0, amount1) = _amountsForLiquidity(
+                    PoolAddress.computeAddress(
+                        positionManager.factory(),
+                        PoolAddress.getPoolKey(_systemCoin, address(fei()), POOL_FEE)
+                    ),
+                    _positionTickLower,
+                    _positionTickUpper,
+                    liquidity
+                );
+            }
+            amount0 += tokensOwed0;
+            amount1 += tokensOwed1;
+        }
     }
 
     // ----------- Internal functions -----------
@@ -534,6 +562,7 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
     }
 
     /// @dev This function is gas optimized to avoid a redundant extcodesize check in addition to the returndatasize
+    /// ref: UniswapV3Pool
     function _balanceSystemCoin() private view returns (uint256) {
          (bool success, bytes memory data) = _systemCoin.staticcall(abi.encodeWithSelector(IERC20.balanceOf.selector, address(this)));
          require(success && data.length >= 32);
