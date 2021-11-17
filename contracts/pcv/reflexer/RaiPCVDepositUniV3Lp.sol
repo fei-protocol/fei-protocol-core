@@ -188,7 +188,7 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
                 uint256 _tokenId = tokenId;
                 if (_tokenId != 0 && positionManager.ownerOf(_tokenId) == _safeSaviour) {
                     tokenId = 0; // Effect
-                    _removeProtection(safeId, _tokenId);
+                    _removeProtectionAndLiquidity(safeId, _tokenId);
                     raiBalance = _balanceSystemCoin();
                 }
             }
@@ -291,7 +291,7 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
         uint256 _tokenId = tokenId;
         if (_tokenId != 0 && positionManager.ownerOf(_tokenId) == _safeSaviour) {
             tokenId = 0;
-            _removeProtection(safeId, _tokenId);
+            _removeProtectionAndLiquidity(safeId, _tokenId);
         }
     }
 
@@ -329,13 +329,19 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
     }
 
     /// @notice gets the resistant token balance and protocol owned fei of this deposit
-    /// @return amount0 number of other token in pool
-    /// @return amount1 number of FEI in pool
-    function resistantBalanceAndFei() public view override returns (uint256 amount0, uint256 amount1) {
-        (amount0, amount1) = getPositionAmounts();
-        uint256 feiAmount = fei().balanceOf(address(this));
-        uint256 tokenAmount = _balanceSystemCoin();
-        (amount0, amount1)  = _inverse() ? (amount0 + feiAmount, amount1 + tokenAmount) : (amount0 + tokenAmount, amount1 + feiAmount);
+    /// @return tokenAmount number of other token in pool
+    /// @return feiAmount number of FEI in pool
+    function resistantBalanceAndFei() public view override returns (uint256 tokenAmount, uint256 feiAmount) {
+        (uint256 amount0,uint256 amount1) = getPositionAmounts();
+        tokenAmount = _balanceSystemCoin();
+        feiAmount = fei().balanceOf(address(this));
+        if (_inverse()) {
+            tokenAmount +=amount1;
+            feiAmount +=amount0;
+        } else {
+            tokenAmount +=amount0;
+            feiAmount +=amount1;
+        }
     }
 
     function getPositionAmounts() public view returns (uint256 amount0, uint256 amount1) {
@@ -360,7 +366,9 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
 
     // ----------- Internal functions -----------
 
-    function _removeProtection(uint _safeId, uint _tokenId) internal {
+    /// @notice Remove SAFE protection
+    /// @dev If protection was exercised, withdraw dusts
+    function _removeProtectionAndLiquidity(uint _safeId, uint _tokenId) internal {
         (, , , , , , , uint128 liquidity, , , , ) = _position(_tokenId);
         // if liquidity equals 0, protection was exercised
         if (liquidity == 0) {
@@ -521,7 +529,7 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
 
     /// @notice used as slippage protection when swap pcv asset for RAI
     /// @param _token ChainLink oråacle wrapper that Fei is managing.
-    ///     this oracle is expected to return 0 decimals price denominated in USD. for example DPI/USD oracle sholud return "400"
+    ///     this oracle is expected to return 0 decimals price. for example if ETH price is 300$ and RAI price is 3$, ETH/RAI oracle sholud return "100"
     /// @param _amountIn amount of token to swap for RAI
     function _getMinAmountOut(
         address _token,
@@ -562,7 +570,7 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
     }
 
     /// @dev This function is gas optimized to avoid a redundant extcodesize check in addition to the returndatasize
-    /// ref: UniswapV3Pool
+    ///      ref: UniswapV3Pool
     function _balanceSystemCoin() private view returns (uint256) {
          (bool success, bytes memory data) = _systemCoin.staticcall(abi.encodeWithSelector(IERC20.balanceOf.selector, address(this)));
          require(success && data.length >= 32);

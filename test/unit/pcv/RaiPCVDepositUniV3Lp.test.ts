@@ -241,9 +241,6 @@ describe('RaiPCVDepositUniV3Lp', function () {
           await expectApprox(await this.fei.balanceOf(this.pool.address), toWei('4').add(toWei('2000')), '1');
           await expectApprox(await this.rai.balanceOf(this.pool.address), toWei('1').add(safeDebt), '1');
         });
-        // it('liquidityOwned', async function () {
-        //   expect(await this.pcvDeposit.liquidityOwned()).to.be.gt(0);
-        // });
         it('pair reserves', async function () {
           // Liquidity calculation
           const tokens = sortAddress(this.fei.address, this.rai.address);
@@ -306,6 +303,13 @@ describe('RaiPCVDepositUniV3Lp', function () {
           const result = await this.pcvDeposit.getPositionAmounts();
           await expectApprox(result[0], tokens[0] == this.fei.address ? toWei('2200') : safeDebt.add(toWei('50')));
           await expectApprox(result[1], tokens[0] == this.fei.address ? toWei('2200') : safeDebt.add(toWei('50')));
+        });
+        it('resistantBalanceAndFei', async function () {
+          const raiBal = await this.rai.balanceOf(this.pcvDeposit.address);
+          const feiBal = await this.fei.balanceOf(this.pcvDeposit.address);
+          const resistantBalances = await this.pcvDeposit.resistantBalanceAndFei();
+          await expectApprox(resistantBalances[0], safeDebt.add(toWei('50')).add(raiBal)); // Rai
+          await expectApprox(resistantBalances[1], toWei('2200').add(feiBal)); // Fei
         });
         it('balance', async function () {
           await expectApprox(await this.pcvDeposit.balance(), safeDebt.add(toWei('50')), '1');
