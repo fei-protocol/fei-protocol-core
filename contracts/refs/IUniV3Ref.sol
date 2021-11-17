@@ -156,11 +156,7 @@ interface IUniV3Ref {
 
     // ----------- Governor only state changing api -----------
 
-    // function setPositionManager(address newManager) external;
-
     // ----------- Getters -----------
 
     function positionManager() external view returns (INonfungiblePositionManager);
-
-    function tokenId() external view returns (uint256);
 }

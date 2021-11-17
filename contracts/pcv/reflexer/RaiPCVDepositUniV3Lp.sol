@@ -5,7 +5,6 @@ import "../../Constants.sol";
 import "../../refs/UniV3Ref.sol";
 import "../../refs/RaiRef.sol";
 import "../PCVDeposit.sol";
-import "./IRaiPCVDeposit.sol";
 
 import { GeneralUnderlyingMaxUniswapV3SafeSaviourLike } from "./GeneralUnderlyingMaxUniswapV3SafeSaviourLike.sol";
 
@@ -19,13 +18,28 @@ import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
+contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
     using Decimal for Decimal.D256;
+
+    struct SwapParams {
+        uint256 minimumAmountIn;
+        IOracle oracle;
+        uint24 poolFee;
+    }
 
     uint24 private constant POOL_FEE = 500;
 
+    /// @notice position range
+    int24 private _positionTickLower = -887272;
+    int24 private _positionTickUpper = 887272;
+
+    /// @dev SAFE saviour https://docs.reflexer.finance/liquidation-protection/safe-protection
+    address private _safeSaviour;
+
     /// @dev V3 router
     ISwapRouter public router;
+
+    uint256 public maxSlippageBasisPoints = 1000;
 
     /// @notice PCV assets address approved to swap those for RAI
     address[10] public tokenSpents;
@@ -33,18 +47,14 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
     /// @notice mapping PCV assets address to params
     mapping(address => SwapParams) public tokenSwapParams;
 
-    /// @dev SAFE saviour https://docs.reflexer.finance/liquidation-protection/safe-protection
-    address private _safeSaviour;
-
-    /// @notice position range
-    int24 private _positionTickLower;
-    int24 private _positionTickUpper;
-
-    uint256 public override maxBasisPointsFromPegLP = 100;
-    uint256 public override maxSlippageBasisPoints = 100;
-
     uint256 public maximumAvailableETH = 100 ether;
     uint256 public targetCRatio = 2 * WAD;
+
+    event MaxSlippageUpdate(uint256 oldMaxSlippage, uint256 newMaximumSlippageBasisPoints);
+    event PositionTicksUpdate(int24 oldTickLower, int24 oldTickUpper, int24 newTickLower, int24 newTickUpper);
+    event MaximumAvailableETHUpdate(uint256 oldMaximumAvailableETH, uint256 newMaximumAvailableETH);
+    event TargetCollateralRatioUpdate(uint256 oldCRatio, uint256 newCRatio);
+    event SwapTokenApprovalUpdate(address token);
 
     constructor(
         address core_,
@@ -162,9 +172,9 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
                 bool native;
                 uint256 amountIn;
                 uint256 amountOut;
-                // (, , uint256 safetyPrice, , , ) = _safeEngine().collateralTypes(COLLATERAL_TYPE);
-                for (uint256 i; i < tokenSpents.length; i++) {
+                for (uint256 i; i < 10; i++) {
                     token = tokenSpents[i];
+                    if (tokenSpents[i] == address(0)) break;
                     native = token == positionManager.WETH9();
                     amountIn = native ? address(this).balance : IERC20(token).balanceOf(address(this));
 
@@ -199,23 +209,9 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
 
     // ----------- Governor only state changing api -----------
 
-    /// @notice sets the new slippage parameter for depositing liquidity
-    /// @param _maxBasisPointsFromPegLP the new distance in basis points (1/10000) from peg beyond which a liquidity provision will fail
-    function setMaxBasisPointsFromPegLP(uint256 _maxBasisPointsFromPegLP) external override onlyGovernorOrAdmin {
-        require(
-            _maxBasisPointsFromPegLP <= Constants.BASIS_POINTS_GRANULARITY,
-            "RaiPCVDepositUniV3Lp: basis points from peg too high"
-        );
-
-        uint256 oldMaxBasisPointsFromPegLP = maxBasisPointsFromPegLP;
-        maxBasisPointsFromPegLP = _maxBasisPointsFromPegLP;
-
-        emit MaxBasisPointsFromPegLPUpdate(oldMaxBasisPointsFromPegLP, _maxBasisPointsFromPegLP);
-    }
-
     /// @notice sets the new slippage parameter for swaping
     /// @param _maxSlipageBasisPoints the new slipage
-    function setMaxSlipageBasisPoints(uint256 _maxSlipageBasisPoints) external override onlyGovernorOrAdmin {
+    function setMaxSlippageBasisPoints(uint256 _maxSlipageBasisPoints) external onlyGovernorOrAdmin {
         require(_maxSlipageBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "RaiPCVDepositUniV3Lp: slipage too high");
 
         uint256 oldMaxSlipageBasisPoints = maxSlippageBasisPoints;
@@ -224,21 +220,24 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
         emit MaxSlippageUpdate(oldMaxSlipageBasisPoints, _maxSlipageBasisPoints);
     }
 
-    /// @param tokens token addresses to swap for RAI.
-    /// @param newSwapParamsData data that include its oracle and mimimum input amount
-    function setSwapTokenApproval(address[10] memory tokens, SwapParams[] memory newSwapParamsData)
+    /// @param _tokens token addresses to swap for RAI.
+    /// @param _swapParamsData data that include its oracle and mimimum input amount
+    function setSwapTokenApproval(address[10] memory _tokens, SwapParams[10] memory _swapParamsData)
         external
         onlyGovernor
     {
-        require(tokens.length == newSwapParamsData.length, "RaiPCVDepositUniV3Lp: not same length");
         address token;
-        tokenSpents = tokens;
-        for (uint256 i; i < newSwapParamsData.length; i++) {
-            token = tokens[i];
-            require(token != address(0), "RaiPCVDepositUniV3Lp: token address zero");
-            require(address(newSwapParamsData[i].oracle) != address(0), "RaiPCVDepositUniV3Lp: oracle address zero");
+        for (uint256 i; i < 10; i++) {
+            token = _tokens[i];
+            if (token == address(0)) {
+                // check
+                require(address(_swapParamsData[i].oracle) == address(0), "RaiPCVDepositUniV3Lp: inconsistent input");
+                return;
+            }
+            tokenSpents[i] = token;
+            require(address(_swapParamsData[i].oracle) != address(0), "RaiPCVDepositUniV3Lp: oracle address zero");
 
-            tokenSwapParams[token] = newSwapParamsData[i];
+            tokenSwapParams[token] = _swapParamsData[i];
             emit SwapTokenApprovalUpdate(token);
 
             _approveToken(token, address(router));
@@ -259,7 +258,7 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
         _positionTickLower = _tickLower;
         _positionTickUpper = _tickUpper;
 
-        emit PositionTicksUpdate(oldTickLower, oldTickUpper, _positionTickLower, _positionTickUpper);
+        emit PositionTicksUpdate(oldTickLower, oldTickUpper, _tickLower, _tickUpper);
 
         uint256 _tokenId = tokenId;
         if (_tokenId != 0 && positionManager.ownerOf(_tokenId) == _safeSaviour) {
@@ -269,23 +268,23 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
     }
 
     /// @param _maximumAvailableETH eth collateral ceiling that this contract can use
-    function setMaxAvailableETH(uint256 _maximumAvailableETH) external override onlyGovernor {
+    function setMaxAvailableETH(uint256 _maximumAvailableETH) external onlyGovernor {
         require(_maximumAvailableETH > WAD, "RaiPCVDepositUniV3Lp: too small");
 
         uint256 oldMaximumAvailableETH = maximumAvailableETH;
         maximumAvailableETH = _maximumAvailableETH;
 
-        emit MaximumAvailableETHUpdate(oldMaximumAvailableETH, maximumAvailableETH);
+        emit MaximumAvailableETHUpdate(oldMaximumAvailableETH, _maximumAvailableETH);
     }
 
     /// @param _targetCRatio target collateral ratio, e.g. cRatio 100% => 1e18
-    function setTargetCollateralRatio(uint256 _targetCRatio) external override onlyGovernor {
+    function setTargetCollateralRatio(uint256 _targetCRatio) external onlyGovernor {
         require(_targetCRatio > WAD, "RaiPCVDepositUniV3Lp: target ratio too low");
 
         uint256 oldTargetCRatio = targetCRatio;
         targetCRatio = _targetCRatio;
 
-        emit TargetCollateralRatioUpdate(oldTargetCRatio, targetCRatio);
+        emit TargetCollateralRatioUpdate(oldTargetCRatio, _targetCRatio);
     }
 
     // ----------- Getters -----------
@@ -381,8 +380,8 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
                     tickUpper: _positionTickUpper,
                     amount0Desired: amount0,
                     amount1Desired: amount1,
-                    amount0Min: _getMinAcceptableAmount(amount0, maxBasisPointsFromPegLP),
-                    amount1Min: _getMinAcceptableAmount(amount1, maxBasisPointsFromPegLP),
+                    amount0Min: _getMinAcceptableAmount(amount0),
+                    amount1Min: _getMinAcceptableAmount(amount1),
                     recipient: address(this),
                     deadline: block.timestamp
                 })
@@ -406,8 +405,8 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
                 tokenId: _tokenId,
                 amount0Desired: amount0,
                 amount1Desired: amount1,
-                amount0Min: _getMinAcceptableAmount(amount0, maxBasisPointsFromPegLP),
-                amount1Min: _getMinAcceptableAmount(amount1, maxBasisPointsFromPegLP),
+                amount0Min: _getMinAcceptableAmount(amount0),
+                amount1Min: _getMinAcceptableAmount(amount1),
                 deadline: block.timestamp
             })
         );
@@ -486,14 +485,14 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
     }
 
     /// @notice used as slippage protection when adding liquidity to the pool
-    function _getMinAcceptableAmount(uint256 _amount, uint256 _slipageBps) internal view returns (uint256) {
+    function _getMinAcceptableAmount(uint256 _amount) internal view returns (uint256) {
         return
-            (_amount * (Constants.BASIS_POINTS_GRANULARITY - _slipageBps)) /
+            (_amount * (Constants.BASIS_POINTS_GRANULARITY - maxSlippageBasisPoints)) /
             Constants.BASIS_POINTS_GRANULARITY;
     }
 
     /// @notice used as slippage protection when swap pcv asset for RAI
-    /// @param _token ChainLink oracle wrapper that Fei is managing.
+    /// @param _token ChainLink oråacle wrapper that Fei is managing.
     ///     this oracle is expected to return 0 decimals price denominated in USD. for example DPI/USD oracle sholud return "400"
     /// @param _amountIn amount of token to swap for RAI
     function _getMinAmountOut(
@@ -502,13 +501,9 @@ contract RaiPCVDepositUniV3Lp is IRaiPCVDeposit, PCVDeposit, RaiRef, UniV3Ref {
     ) internal view returns (uint256) {
         (Decimal.D256 memory oraclePrice, bool valid) = tokenSwapParams[_token].oracle.read();
         require(valid, "RaiPCVDepositUniV3Lp: oracle returned invalid price");
-        // uint amountOut = oraclePrice.mul(_amountIn).mul(WAD).div(10**IERC20Metadata(_token).decimals()).asUint256(); // 18 decimals
 
-        // (usdPerToken [0] * safeyPrice [ray]) * wad / usdPerEth [wad]
-        // Decimal.D256 memory raiPerToken = oraclePrice.mul(_safetyPrice).div(readOracle()); // [ray]
-        // uint256 amountOut = raiPerToken.mul(_amountIn).div(10**9).div(10**IERC20Metadata(_token).decimals()).asUint256(); // 18 decimals
-        uint256 amountOut = oraclePrice.mul(WAD).mul(_amountIn).mul(WAD).div(10**IERC20Metadata(_token).decimals()).asUint256(); // 18 decimals
-        return _getMinAcceptableAmount(amountOut , maxSlippageBasisPoints);
+        uint256 amountOut = oraclePrice.mul(_amountIn).mul(WAD).div(10**IERC20Metadata(_token).decimals()).asUint256(); // 18 decimals
+        return _getMinAcceptableAmount(amountOut);
     }
 
     // #### Reflexer ####

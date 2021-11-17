@@ -16,7 +16,7 @@ abstract contract UniV3Ref is IUniV3Ref, OracleRef {
     /// @notice the referenced Uniswap position manager
     INonfungiblePositionManager public override positionManager;
 
-    uint256 public override tokenId;
+    uint256 public tokenId;
 
     /// @notice UniRef constructor
     /// @param _core Fei Core to reference
@@ -31,7 +31,7 @@ abstract contract UniV3Ref is IUniV3Ref, OracleRef {
         address _oracle,
         address _backupOracle
     ) OracleRef(_core, _oracle, _backupOracle, 0, false) {
-        _setupPositionManager(_positionManager);
+        positionManager = INonfungiblePositionManager(_positionManager);
         _setDecimalsNormalizerFromToken(_token);
     }
 
