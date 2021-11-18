@@ -1,7 +1,7 @@
 const MainnetAddresses = {
   agEUR: {
     artifactName: 'IERC20',
-    address: '0x1a7e4e63778b4f12a199c062f3efdd288afcbce8'
+    address: '0x1a7e4e63778B4f12a199C062f3eFdD288afCBce8'
   },
   angle: {
     artifactName: 'IERC20',

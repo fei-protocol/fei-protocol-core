@@ -8,8 +8,8 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '../../types/types';
-import { TransactionResponse } from '@ethersproject/providers';
-import { expectApprox } from '@test/helpers';
+import { expectApprox, getImpersonatedSigner } from '@test/helpers';
+import { forceEth } from '@test/integration/setup/utils';
 
 chai.use(CBN(ethers.BigNumber));
 
@@ -70,7 +70,34 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 };
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  logging && console.log('No setup for FIP-45');
+  // Unpause the FEI-agEUR contract
+  const ANGLE_MULTISIG_ADDRESS = '0x0C2553e4B9dFA9f83b1A6D3EAB96c4bAaB42d430';
+  await forceEth(ANGLE_MULTISIG_ADDRESS);
+  const angleMultisigSigner = await getImpersonatedSigner(ANGLE_MULTISIG_ADDRESS);
+  await contracts.angleStableMaster
+    .connect(angleMultisigSigner)
+    .unpause(ethers.utils.keccak256(ethers.utils.toUtf8Bytes('STABLE')), contracts.anglePoolManager.address);
+
+  /*console.log('simulated first run');
+  console.log('  mint');
+  await contracts.fei.mint(contracts.agEurAngleUniswapPCVDeposit.address, '10000000000000000000000000');
+  console.log('    balance() after fei mint', await contracts.agEurAngleUniswapPCVDeposit.balance() / 1e18);
+  console.log('  mintAgToken');
+  await contracts.agEurAngleUniswapPCVDeposit.mintAgToken('10000000000000000000000000');
+  console.log('    agEUR balance after mintAgToken', await contracts.agEUR.balanceOf(contracts.agEurAngleUniswapPCVDeposit.address) / 1e18);
+  console.log('    balance() after mintAgToken', await contracts.agEurAngleUniswapPCVDeposit.balance() / 1e18);
+  console.log('  grantMinter');
+  await contracts.core.grantMinter(contracts.agEurAngleUniswapPCVDeposit.address);
+  console.log('  deposit');
+  console.log('    pool totalSupply() before deposit()', await contracts.angleAgEurFeiPool.totalSupply() / 1e18);
+  await contracts.agEurAngleUniswapPCVDeposit.deposit();
+  console.log('    balance()', await contracts.agEurAngleUniswapPCVDeposit.balance() / 1e18);
+  console.log('    pool totalSupply() after deposit()', await contracts.angleAgEurFeiPool.totalSupply() / 1e18);
+  console.log('  setOracle');
+  await contracts.collateralizationOracle.setOracle(contracts.agEUR.address, contracts.chainlinkEurUsdOracleWrapper.address);
+  console.log('  addDeposit');
+  await contracts.collateralizationOracle.addDeposit(contracts.agEurAngleUniswapPCVDeposit.address);
+  console.log('  done');*/
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
@@ -80,19 +107,21 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
   const { chainlinkEurUsdOracleWrapper, agEurAngleUniswapPCVDeposit, collateralizationOracle } = contracts;
 
-  const price = (await chainlinkEurUsdOracleWrapper.readOracle())[0];
-  //expect(price).to.be.equal(ethers.constants.WeiPerEther.mul(1));
-  console.log('oracle price', price.toString());
+  const price = (await chainlinkEurUsdOracleWrapper.read())[0];
+  // expect USDEUR price ~1.11-1.15
+  expectApprox(price.toString(), '1130000000000000000', '20000000000000000');
 
   // deposit balance & fei held
   const balanceAndFei = await agEurAngleUniswapPCVDeposit.resistantBalanceAndFei();
-  console.log('balanceAndFei[0].toString()', balanceAndFei[0].toString());
-  console.log('balanceAndFei[1].toString()', balanceAndFei[1].toString());
+  // expect 8.7-9.0M agEUR to be minted
+  expectApprox(balanceAndFei[0].toString(), '8850000000000000000000000', '150000000000000000000000');
+  // expect 9.8M+ FEI held by the contract
+  expectApprox(balanceAndFei[0].toString(), '10000000000000000000000000', '200000000000000000000000');
 
   // farming staking rewards
   await agEurAngleUniswapPCVDeposit.claimRewards();
   const angleBalance = await contracts.angle.balanceOf(contracts.agEurAngleUniswapPCVDeposit.address);
-  console.log('angleBalance.toString()', angleBalance.toString());
+  expect(angleBalance.toString() > 0).to.be.true;
 
   // CR Oracle updates
   expect(await collateralizationOracle.tokenToOracle(addresses.agEUR)).to.be.equal(
@@ -101,7 +130,4 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await collateralizationOracle.depositToToken(contracts.agEurAngleUniswapPCVDeposit.address)).to.be.equal(
     addresses.agEUR
   );
-
-  // TODO, implement proper invariant checks
-  expect(false).to.equal(true);
 };
