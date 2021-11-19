@@ -85,7 +85,8 @@ describe('e2e-buybacks', function () {
     });
   });
 
-  describe('LUSD LBP', async function () {
+  // Skipped because the buybacks are now in-progress
+  describe.skip('LUSD LBP', async function () {
     it('mints appropriate amount and swaps', async function () {
       const feiLusdLBPSwapper: BalancerLBPSwapper = contracts.feiLusdLBPSwapper as BalancerLBPSwapper;
       const feiLusdLBP: IWeightedPool = contracts.feiLusdLBP as IWeightedPool;
