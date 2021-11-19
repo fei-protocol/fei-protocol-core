@@ -14,20 +14,6 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-
-  fip_33: {
-    deploy: false,
-    skipDAO: false,
-    totalValue: 0,
-    proposal: fip_33_proposal
-  },
-
-  fip_41: {
-    deploy: false,
-    skipDAO: false,
-    totalValue: 0,
-    proposal: fip_41_proposal
-  }
 };
 
 export default proposals;
