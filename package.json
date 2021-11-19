@@ -40,7 +40,7 @@
     "@balancer-labs/v2-pool-weighted": "^2.0.1",
     "@chainlink/contracts": "^0.1.7",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
-    "@openzeppelin/contracts": "^4.3.2",
+    "@openzeppelin/contracts": "^4.3.3",
     "@openzeppelin/test-environment": "^0.1.7",
     "@openzeppelin/test-helpers": "^0.5.15",
     "@uniswap/lib": "^1.1.2",
