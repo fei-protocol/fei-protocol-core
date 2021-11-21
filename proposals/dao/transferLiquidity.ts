@@ -32,10 +32,20 @@ const fipNumber = '9001'; // Change me!
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  const governanceTimelockFactory;
+  if (!addresses.core || !addresses.fei || !addresses.tribe || !addresses.guardian) {
+    throw new Error('An address was not set! (require: core, fei, tribe, guardian)');
+  }
+
+  const governanceTimelockFactory = await ethers.getContractFactory('GovernanceTimelock');
+
+  const feiGovernanceTimelock = await governanceTimelockFactory.deploy(addresses.core, addresses.fei);
+  const tribeGovernanceTimelock = await governanceTimelockFactory.deploy(addresses.core, addresses.tribe);
+
+  await Promise.all([feiGovernanceTimelock.deployTransaction.wait(), tribeGovernanceTimelock.deployTransaction.wait()]);
 
   return {
-    // put returned contract objects here
+    feiGovernanceTimelock,
+    tribeGovernanceTimelock
   };
 };
 
