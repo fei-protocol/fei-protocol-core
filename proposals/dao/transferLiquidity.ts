@@ -15,9 +15,16 @@ DAO Proposal #9001
 Description: Remove FEI Labs IDO Liquidity from Uniswap
 
 Steps:
-  1 - 
-  2 -
-  3 - 
+  0 - deploy new contracts:
+      - tribe timelock
+      - fei timelock
+      - helper contract
+  1 - accept beneficiary for old timelock
+  2 - call releaseMax to Fei Labs multisig
+  3 - call unlockLiquidity on old time lock
+  4 - call releaseMax to helper contract
+  5 - call doLiquidityTransfer on helper contract
+  6 - update collateralization oracle?
 */
 
 const fipNumber = '9001'; // Change me!
@@ -25,7 +32,8 @@ const fipNumber = '9001'; // Change me!
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  console.log(`No deploy actions for fip${fipNumber}`);
+  const governanceTimelockFactory;
+
   return {
     // put returned contract objects here
   };
