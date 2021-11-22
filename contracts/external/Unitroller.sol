@@ -22,6 +22,7 @@ abstract contract Unitroller {
     function _setCollateralFactor(CToken cToken, uint newCollateralFactorMantissa) public virtual returns (uint256);
     function _setBorrowPaused(CToken cToken, bool borrowPaused) external virtual;
     function _acceptAdmin() external virtual returns (uint);
+    function _addRewardsDistributor(address distributor) external virtual;
     function borrowGuardianPaused(address cToken) external view virtual returns(bool);
     function comptrollerImplementation() external view virtual returns(address);
     function rewardsDistributors(uint256 index) external view virtual returns(address);

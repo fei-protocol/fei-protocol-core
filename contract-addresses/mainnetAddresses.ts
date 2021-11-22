@@ -287,6 +287,18 @@ const MainnetAddresses = {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x8C51E4532CC745cF3DFec5CEBd835D07E7BA1002'
   },
+  liquityFusePoolUnitroller: {
+    artifactName: 'Unitroller',
+    address: '0xA9Ea472ad9Ef9339202e789c69BD2bE98436046e'
+  },
+  liquityFusePoolRewardsDistributor: {
+    artifactName: 'IRewardsDistributor',
+    address: '0xD84379CEae14AA33C123Af12424A37803F885889'
+  },
+  lqty: {
+    artifactName: 'IERC20',
+    address: '0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D'
+  },
   feiLusdLBPSwapper: { artifactName: 'BalancerLBPSwapper', address: '0x5fc76F8Fc3AF2b19D45AC841252dcE711ed448ff' },
   feiLusdLBP: { artifactName: 'IWeightedPool', address: '0xede4efcc5492cf41ed3f0109d60bc0543cfad23a' },
   lusd: { artifactName: 'IERC20', address: '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0' },

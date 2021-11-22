@@ -1,10 +1,18 @@
-import { IBAMM, CErc20Delegator, IERC20, BAMMPlugin } from '@custom-types/contracts';
+import {
+  IBAMM,
+  CErc20Delegator,
+  IERC20,
+  BAMMPlugin,
+  Unitroller,
+  IFuseAdmin,
+  IRewardsDistributor
+} from '@custom-types/contracts';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { expectApprox, getImpersonatedSigner, resetFork } from '@test/helpers';
+import { expectApprox, getImpersonatedSigner, increaseTime, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 
@@ -16,7 +24,7 @@ before(async () => {
   await resetFork();
 });
 
-describe('e2e-fuse', function () {
+describe.only('e2e-fuse', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
@@ -44,7 +52,7 @@ describe('e2e-fuse', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe('CLusdDelegate', function () {
+  describe('Liquity Fuse Plugin', function () {
     beforeEach(async function () {
       const bamm: IBAMM = contracts.bamm as IBAMM;
       const stabilityPool = await bamm.SP();
@@ -95,6 +103,18 @@ describe('e2e-fuse', function () {
 
       expect(await bamm.totalSupply()).to.be.bignumber.equal(bammSupplyAfter);
       expectApprox(await lusd.balanceOf(bammPlugin.address), ethers.constants.WeiPerEther.mul(100_000));
+
+      const distributor: IRewardsDistributor = contracts.liquityFusePoolRewardsDistributor as IRewardsDistributor;
+
+      await increaseTime(100_000);
+      doLogging && console.log('Claim');
+      await bammPlugin.claim();
+      await distributor.claimRewards(deployAddress);
+
+      // TODO: figure out why all of these are 0
+      console.log(await contracts.lqty.balanceOf(fLUSD.address));
+      console.log(await contracts.lqty.balanceOf(bammPlugin.address));
+      console.log(await contracts.lqty.balanceOf(deployAddress));
     });
 
     it('deposit, then withdraw over target', async function () {

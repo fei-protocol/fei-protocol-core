@@ -10,7 +10,15 @@ import {
 } from '../../types/types';
 import { TransactionResponse } from '@ethersproject/providers';
 import { getImpersonatedSigner } from '@test/helpers';
-import { BAMMPlugin, CErc20Delegator, ICErc20Plugin, IFuseAdmin, IPlugin } from '@custom-types/contracts';
+import {
+  BAMMPlugin,
+  CErc20Delegator,
+  ICErc20Plugin,
+  IFuseAdmin,
+  IPlugin,
+  IRewardsDistributor,
+  Unitroller
+} from '@custom-types/contracts';
 import { forceEth } from '@test/integration/setup/utils';
 
 chai.use(CBN(ethers.BigNumber));
@@ -92,17 +100,24 @@ export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts
   const signer = await getImpersonatedSigner(admin.address);
   await forceEth(admin.address);
 
-  await fLUSD.connect(signer)._setImplementationSafe(
-    addresses.liquityFusePoolLusdImpl,
-    false,
-    await ethers.utils.defaultAbiCoder.encode(
-      ['address', 'address'],
-      [
-        addresses.bammPlugin,
-        ethers.constants.AddressZero // TODO add rewards plugin logic
-      ]
-    )
-  );
+  await fLUSD
+    .connect(signer)
+    ._setImplementationSafe(
+      addresses.liquityFusePoolLusdImpl,
+      false,
+      await ethers.utils.defaultAbiCoder.encode(
+        ['address', 'address'],
+        [addresses.bammPlugin, addresses.liquityFusePoolRewardsDistributor]
+      )
+    );
+
+  const unitroller: Unitroller = contracts.liquityFusePoolUnitroller as Unitroller;
+
+  await unitroller.connect(signer)._addRewardsDistributor(addresses.liquityFusePoolRewardsDistributor);
+
+  const distributor: IRewardsDistributor = contracts.liquityFusePoolRewardsDistributor as IRewardsDistributor;
+
+  await distributor.connect(signer)._addMarketForRewards(fLUSD.address);
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
@@ -122,4 +137,12 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
 
   expect(await bammPlugin.buffer()).to.be.bignumber.equal(ethers.constants.WeiPerEther.div(50));
   expect(await bammPlugin.ethSwapMin()).to.be.bignumber.equal(ethers.constants.WeiPerEther.div(4));
+
+  const unitroller: Unitroller = contracts.liquityFusePoolUnitroller as Unitroller;
+
+  expect(await unitroller.rewardsDistributors(0)).to.be.equal(addresses.liquityFusePoolRewardsDistributor);
+
+  const distributor: IRewardsDistributor = contracts.liquityFusePoolRewardsDistributor as IRewardsDistributor;
+
+  expect((await distributor.getAllMarkets())[0]).to.be.equal(fLUSD.address);
 };
