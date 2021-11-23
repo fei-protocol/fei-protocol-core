@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 contract MockAnglePoolManager {
     address public token;
 
-	constructor(address _token) {
-		token = _token;
-	}
+    constructor(address _token) {
+        token = _token;
+    }
 }

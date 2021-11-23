@@ -26,6 +26,8 @@ interface IStableMaster {
         IPoolManager poolManager,
         uint256 minCollatAmount
     ) external;
+
+    function unpause(bytes32 agent, IPoolManager poolManager) external;
 }
 
 // Angle StakingRewards contract

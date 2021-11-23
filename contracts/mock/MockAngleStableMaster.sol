@@ -3,8 +3,11 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./MockERC20.sol";
+import "./MockAnglePoolManager.sol";
 
 contract MockAngleStableMaster {
+    using SafeERC20 for IERC20;
+
     MockERC20 public agToken;
     uint256 public usdPerAgToken;
     uint256 public feeBp = 30; // 0.3% fee
@@ -25,7 +28,9 @@ contract MockAngleStableMaster {
         uint256
     ) external {
         uint256 amountAfterFee = (amount * (10_000 - feeBp)) / (usdPerAgToken * 10_000);
-        SafeERC20.safeTransferFrom(agToken, msg.sender, address(this), amount);
+        // in reality, assets should go to the poolManager, but for this mock purpose, tokens
+        // are held on the stablemaster
+        IERC20(MockAnglePoolManager(poolManager).token()).safeTransferFrom(msg.sender, address(this), amount);
         agToken.mint(user, amountAfterFee);
     }
 
@@ -37,7 +42,7 @@ contract MockAngleStableMaster {
         uint256
     ) external {
         uint256 amountAfterFee = (amount * usdPerAgToken * (10_000 - feeBp)) / 10_000;
-        SafeERC20.safeTransfer(agToken, dest, amountAfterFee);
+        IERC20(MockAnglePoolManager(poolManager).token()).transfer(dest, amountAfterFee);
         agToken.mockBurn(burner, amount);
     }
 }
