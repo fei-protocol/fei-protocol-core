@@ -137,7 +137,8 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
           .div(Constants.BASIS_POINTS_GRANULARITY)
           .asUint256();
 
-        uint256 feiBalanceBefore = fei().balanceOf(address(this));
+        IFei _fei = fei();
+        uint256 feiBalanceBefore = _fei.balanceOf(address(this));
         stableMaster.burn(
             amountAgToken,
             address(this),
@@ -145,7 +146,7 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
             poolManager,
             0
         );
-        uint256 feiBalanceAfter = fei().balanceOf(address(this));
+        uint256 feiBalanceAfter = _fei.balanceOf(address(this));
         require(feiBalanceAfter - feiBalanceBefore > minFeiOut, "AngleUniswapPCVDeposit: slippage on burn");
 
         _burnFeiHeld(); // burn FEI held (after redeeming agTokens, we have some)
@@ -206,9 +207,8 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
     }
 
     function _addLiquidity(uint256 tokenAmount, uint256 feiAmount) internal override {
-        uint256 balanceBefore = pair.balanceOf(address(this));
         super._addLiquidity(tokenAmount, feiAmount);
-        uint256 balanceAfter = pair.balanceOf(address(this));
-        stakingRewards.stake(balanceAfter - balanceBefore);
+        uint256 lpBalanceAfter = pair.balanceOf(address(this));
+        stakingRewards.stake(lpBalanceAfter);
     }
 }
