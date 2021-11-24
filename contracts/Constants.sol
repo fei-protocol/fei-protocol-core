@@ -14,4 +14,9 @@ library Constants {
 
     /// @notice USD stand-in address
     address public constant USD = 0x1111111111111111111111111111111111111111;
+
+    uint256 public constant ETH_GRANULARITY = 1e18;
+    
+    uint256 public constant ETH_DECIMALS = 18;
+
 }

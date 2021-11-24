@@ -25,11 +25,11 @@ Deploy:
 8. CREAM Deposit Wrapper
 9. BAL Deposit Wrapper
 10. Static Deposit Wrapper
-11. TODO Tribe-fei LBP Lens
+11. fei buyback LBP Lens
 
 DAO:
 1. Add new oracles LUSD, CREAM, BAL
-2. Add new PCV Deposits TODO add in 2 more and TRIBE-FEI LBP Lens
+2. Add new PCV Deposits TODO add in 2 more
 3. Remove PCV Deposit duplicates
 */
 export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses, logging = false) => {
@@ -44,7 +44,9 @@ export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses
     chainlinkEthUsdOracleWrapper,
     feiDAOTimelock,
     bal,
-    cream
+    cream,
+    feiTribeLBP,
+    tribeUsdCompositeOracle
   } = addresses;
 
   if (!tribe || !fei || !feiLusdLBP) {
@@ -140,6 +142,17 @@ export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses
   await staticPcvDepositWrapper2.deployed();
   logging && console.log('Static PCV wrapper deployed to: ', staticPcvDepositWrapper2.address);
 
+  // 11. fei buyback LBP Lens
+  const feiBuybackLens = await factory.deploy(
+    fei,
+    feiTribeLBP,
+    oneConstantOracle, // constant oracle for FEI
+    tribeUsdCompositeOracle
+  );
+
+  await feiBuybackLens.deployed();
+
+  logging && console.log('FEI/TRIBE Buyback Lens deployed to: ', feiBuybackLens.address);
   return {
     chainlinkLUSDOracle,
     chainlinkCREAMEthOracle,
@@ -150,27 +163,31 @@ export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses
     aaveFeiPCVDepositWrapper,
     creamDepositWrapper,
     balDepositWrapper,
-    staticPcvDepositWrapper2
+    staticPcvDepositWrapper2,
+    feiBuybackLens
   };
 };
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  logging && console.log('No Setup for FIP-33');
+  logging && console.log('No Setup for CR-FIX');
 
   const crOracle = contracts.collateralizationOracle;
   console.log(await crOracle.tokenToOracle('0x1111111111111111111111111111111111111111'));
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  logging && console.log('No teardown for FIP-33');
+  logging && console.log('No teardown for CR-FIX');
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
   const lens: BPTLens = contracts.feiLusdLens as BPTLens;
+  const buybackLens: BPTLens = contracts.feiBuybackLens as BPTLens;
+
   const staticWrapper: StaticPCVDepositWrapper = contracts.staticPcvDepositWrapper2 as StaticPCVDepositWrapper;
   const collateralizationOracle: CollateralizationOracle = contracts.collateralizationOracle as CollateralizationOracle;
 
   console.log(await lens.resistantBalanceAndFei());
+  console.log(await buybackLens.resistantBalanceAndFei());
 
   // Check final PCV balances
   const stats = await collateralizationOracle.pcvStats();
@@ -191,6 +208,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await collateralizationOracle.depositToToken(addresses.feiLusdLens)).to.be.equal(addresses.lusd);
   expect(await collateralizationOracle.depositToToken(addresses.rariPool7LusdPCVDeposit)).to.be.equal(addresses.lusd);
   expect(await collateralizationOracle.depositToToken(addresses.aaveFeiPCVDepositWrapper)).to.be.equal(addresses.fei);
+  expect(await collateralizationOracle.depositToToken(addresses.feiBuybackLens)).to.be.equal(addresses.fei);
   expect(await collateralizationOracle.depositToToken(addresses.creamDepositWrapper)).to.be.equal(addresses.cream);
   expect(await collateralizationOracle.depositToToken(addresses.balDepositWrapper)).to.be.equal(addresses.bal);
   expect(await collateralizationOracle.depositToToken(addresses.staticPcvDepositWrapper2)).to.be.equal(

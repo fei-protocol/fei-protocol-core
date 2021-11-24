@@ -6,8 +6,7 @@ import "./IWeightedPool.sol";
 import "../../external/gyro/ExtendedMath.sol";
 import "../IPCVDepositBalances.sol";
 import "../../oracle/IOracle.sol";
-
-import "hardhat/console.sol";
+import "../../Constants.sol";
 
 /// @title BPTLens
 /// @author Fei Protocol
@@ -15,16 +14,34 @@ import "hardhat/console.sol";
 contract BPTLens is IPCVDepositBalances {
     using ExtendedMath for uint256;
 
+    /// @notice the token the lens reports balances in
     address public immutable override balanceReportedIn;
+
+    /// @notice the balancer pool to look at
     IWeightedPool public immutable pool;
+
+    /// @notice the Balancer V2 Vault
     IVault public constant VAULT = IVault(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
+    
+    /// @notice the FEI token
     address public constant FEI = 0x956F47F50A910163D8BF957Cf5846D573E7f87CA;
-    bytes32 public immutable id;
+    
+    // the pool id on balancer
+    bytes32 internal immutable id;
+
+    // the index of balanceReportedIn on the pool
     uint256 internal immutable index;
+
+    /// @notice true if FEI is in the pair
     bool public immutable feiInPair;
+
+    /// @notice true if FEI is the reported balance
     bool public immutable feiIsReportedIn;
 
+    /// @notice the oracle for balanceReportedIn token
     IOracle public immutable reportedOracle;
+        
+    /// @notice the oracle for the other token in the pair (not balanceReportedIn)
     IOracle public immutable otherOracle;
 
     constructor(
@@ -42,6 +59,7 @@ contract BPTLens is IPCVDepositBalances {
             uint256[] memory balances,
         ) = VAULT.getPoolTokens(_id); 
 
+        // Check the token is in the BPT and its only a 2 token pool
         require(address(tokens[0]) == _token || address(tokens[1]) == _token);
         require(tokens.length == 2);
         balanceReportedIn = _token;
@@ -64,18 +82,16 @@ contract BPTLens is IPCVDepositBalances {
         return balances[index];
     }
 
-   /*
-     * Calculates the value of Balancer pool tokens using the logic described here:
+   /**
+     * @notice Calculates the manipulation resistant balances of Balancer pool tokens using the logic described here:
      * https://docs.gyro.finance/learn/oracles/bpt-oracle
      * This is robust to price manipulations within the Balancer pool.
-     * @param pool = address of Balancer pool
-     * @param prices = array of prices for underlying assets in the pool, in the same
-     * order as pool.getFinalTokens() will return
      */
     function resistantBalanceAndFei() public view override returns(uint256, uint256) {
         uint256[] memory prices = new uint256[](2);
         uint256 j = index == 0 ? 1 : 0;
 
+        // Check oracles and fill in prices
         (Decimal.D256 memory reportedPrice, bool reportedValid) = reportedOracle.read();
         prices[index] = reportedPrice.value;
 
@@ -91,47 +107,52 @@ contract BPTLens is IPCVDepositBalances {
 
         uint256[] memory weights = pool.getNormalizedWeights();
 
-        uint256[] memory reserves = getIdealReserves(balances, prices, weights);
-        uint256 i = index;
+        // uses balances, weights, and prices to calculate manipulation resistant reserves
+        uint256 reserves = _getIdealReserves(balances, prices, weights, index);
 
         if (feiIsReportedIn) {
-            return (reserves[index], reserves[index]);
+            return (reserves, reserves);
         } 
         if (feiInPair) {
-           return (reserves[index], reserves[j]);
+           uint256 otherReserves = _getIdealReserves(balances, prices, weights, j);
+           return (reserves, otherReserves);
         }
-        return (reserves[index], 0);
+        return (reserves, 0);
     }
 
-    // TODO optimize gas for case without FEI
-    function getIdealReserves(
+    /*
+        let r represent reserves and r' be ideal reserves (derived from manipulation resistant variables)
+        p are resistant oracle prices of the tokens
+        w are the balancer weights
+        k is the balancer invariant
+
+        BPTPrice = (p0/w0)^w0 * (p1/w1)^w1 * k
+        r0' = BPTPrice * w0/p0
+        r0' = ((w0*p1)/(p0*w1))^w1 * k
+
+        Now including k allows for further simplification
+        k = r0^w0 * r1^w1
+
+        r0' = r0^w0 * r1^w1 * ((w0*p1)/(p0*w1))^w1
+        r0' = r0^w0 * ((w0*p1*r1)/(p0*w1))^w1
+    */
+    function _getIdealReserves(
         uint256[] memory balances,
         uint256[] memory prices,
-        uint256[] memory weights
+        uint256[] memory weights,
+        uint256 i
     )
-        public
-        view
-        returns (uint256[] memory reserves)
+        internal
+        pure
+        returns (uint256 reserves)
     {
-        /*
-            BPTPrice = (p0/w0)^w0 * (p1/w1)^w1 * k
-            r0' = BPTPrice * w0/p0
-            r0' = ((w0*p1)/(p0*w1))^w1 * k
-        */
+        uint256 j = i == 0 ? 1 : 0;
 
-        uint256 one = uint256(1e18);
+        uint256 one = Constants.ETH_GRANULARITY;
 
-        uint256 r0Scaled = one.mulPow(balances[0], weights[0], 18);
-        uint256 r1Scaled = one.mulPow(balances[1], weights[1], 18);
+        uint256 reservesScaled = one.mulPow(balances[i], weights[i], Constants.ETH_DECIMALS);
+        uint256 multiplier = (weights[i] * prices[j] * balances[j]) / (prices[i] * weights[j]);
 
-        uint256 r0Multiplier = (weights[1] * prices[0] * balances[0]) / (prices[1] * weights[0]);
-        uint256 r1Multiplier = (weights[0] * prices[1] * balances[1]) / (prices[0] * weights[1]);
-        
-        reserves = new uint256[](2);
-
-        reserves[0] = r0Scaled.mulPow(r1Multiplier, weights[1], 18);
-        reserves[1] = r1Scaled.mulPow(r0Multiplier, weights[0], 18);
-
-        console.log(reserves[0], reserves[1]);
+        reserves = reservesScaled.mulPow(multiplier, weights[j], Constants.ETH_DECIMALS);
     }
 }

@@ -24,7 +24,8 @@ const cr_fix: ProposalDescription = {
           '{creamDepositWrapper}',
           '{balDepositWrapper}',
           '{rariPool7LusdPCVDeposit}',
-          '{staticPcvDepositWrapper2}'
+          '{staticPcvDepositWrapper2}',
+          '{feiBuybackLens}'
           // TODO rariPool 91 LUSD PCV Deposit
           // TODO rariPool 90 FEI PCV Deposit
         ]
