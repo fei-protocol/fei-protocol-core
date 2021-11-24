@@ -1,37 +1,44 @@
 import { DependencyMap } from '@custom-types/types';
 
 const dependencies: DependencyMap = {
-  feiLusdLBPSwapper: {
+  aaveEthPCVDeposit: {
     fips: {
-      fip_41: true
+      fip_999: true
     },
     contractDependencies: [],
     externalDependencies: []
   },
-  aaveEthPCVDeposit: {
+  bal: {
     fips: {
-      fip_41: true
+      fip_999: true
+    },
+    contractDependencies: [],
+    externalDependencies: []
+  },
+  balancerDepositBalEth: {
+    fips: {
+      fip_999: true
+    },
+    contractDependencies: [],
+    externalDependencies: []
+  },
+  collateralizationOracle: {
+    fips: {
+      fip_999: true
+    },
+    contractDependencies: [],
+    externalDependencies: []
+  },
+  compositeOracleBalUsd: {
+    fips: {
+      fip_999: true
     },
     contractDependencies: [],
     externalDependencies: []
   },
   feiDAOTimelock: {
     fips: {
-      fip_41: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  saddleD4Pool: {
-    fips: {
-      fip_41: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  lusd: {
-    fips: {
-      fip_41: true
+      fip_999: true
     },
     contractDependencies: [],
     externalDependencies: []
