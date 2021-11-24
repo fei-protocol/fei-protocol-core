@@ -33,6 +33,10 @@ contract MockCToken is MockERC20 {
         return true;
     }
 
+    function underlying() external view returns(address) {
+        return address(token);
+    }
+
     function mint() external payable {
         _mint(msg.sender, msg.value / effectiveExchangeRate);
     }
