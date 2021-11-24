@@ -1,4 +1,8 @@
 const MainnetAddresses = {
+  cream: {
+    artifactName: 'IERC20',
+    address: '0x2ba592F78dB6436527729929AAf6c908497cB200'
+  },
   collateralizationOracleKeeper: {
     artifactName: 'CollateralizationOracleKeeper',
     address: '0x62378C316a6161A613D02E11F65290aED79B3eD5'
@@ -376,6 +380,10 @@ const MainnetAddresses = {
   rariPool7FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x74B235Fef146cDB5BE0D3786a9f3774674b3615E'
+  },
+  rariPool7LusdPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x6026a1559CDd44a63C5CA9A078CC996a9eb68ABB'
   },
   rariPool72FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',

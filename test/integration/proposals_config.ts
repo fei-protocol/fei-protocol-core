@@ -2,8 +2,7 @@ import { ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
-import fip_41_proposal from '@proposals/description/fip_41';
-import fip_33_proposal from '@proposals/description/fip_33';
+import cr_fix_proposal from '@proposals/description/cr_fix';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -14,6 +13,12 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
+  cr_fix: {
+    deploy: true,
+    skipDAO: false,
+    totalValue: 0,
+    proposal: cr_fix_proposal
+  }
 };
 
 export default proposals;
