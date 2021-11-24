@@ -433,6 +433,18 @@ const MainnetAddresses = {
     artifactName: 'StakingTokenWrapper',
     address: '0xd81Be1B9A7895C996704A8DDa794BbA4454EeB90'
   },
+  stakingTokenWrapperGROLaaS: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0x508629e8E0B96986Df4D0F1F60aadeF1d0FbaE96'
+  },
+  stakingTokenWrapperFOXLaaS: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0x3CD384ff1Fa1cbA8f06DF326AF4cbDA634aF94e8'
+  },
+  stakingTokenWrapperUMALaaS: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0x90B336dFF819b9e4b3D9A32cabdcAB0E92836065'
+  },
   stAAVE: { artifactName: 'IERC20', address: '0x4da27a545c0c5b758a6ba100e3a049001de870f5' },
   steth: { artifactName: 'IERC20', address: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84' },
   sushiswapDpiFei: { artifactName: 'IUniswapV2Pair', address: '0x8775aE5e83BC5D926b6277579c2B0d40c7D9b528' },
