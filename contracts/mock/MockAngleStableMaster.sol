@@ -25,9 +25,10 @@ contract MockAngleStableMaster {
         uint256 amount,
         address user,
         address poolManager,
-        uint256
+        uint256 minStableAmount
     ) external {
         uint256 amountAfterFee = (amount * (10_000 - feeBp)) / (usdPerAgToken * 10_000);
+        require(amountAfterFee >= minStableAmount, "15");
         // in reality, assets should go to the poolManager, but for this mock purpose, tokens
         // are held on the stablemaster
         IERC20(MockAnglePoolManager(poolManager).token()).safeTransferFrom(msg.sender, address(this), amount);
@@ -39,9 +40,10 @@ contract MockAngleStableMaster {
         address burner,
         address dest,
         address poolManager,
-        uint256
+        uint256 minCollatAmount
     ) external {
         uint256 amountAfterFee = (amount * usdPerAgToken * (10_000 - feeBp)) / 10_000;
+        require(amountAfterFee >= minCollatAmount, "15");
         IERC20(MockAnglePoolManager(poolManager).token()).transfer(dest, amountAfterFee);
         agToken.mockBurn(burner, amount);
     }

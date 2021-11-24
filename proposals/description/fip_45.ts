@@ -4,11 +4,11 @@ const fip_45: ProposalDescription = {
   title: 'FIP-45: Angle Protocol Partnership',
   commands: [
     {
-      target: 'fei',
+      target: 'core',
       values: '0',
-      method: 'mint(address,uint256)',
-      arguments: ['{agEurAngleUniswapPCVDeposit}', '10000000000000000000000000'],
-      description: 'Seed Angle-Uniswap PCVDeposit with 10M FEI'
+      method: 'grantMinter(address)',
+      arguments: ['{agEurAngleUniswapPCVDeposit}'],
+      description: 'Make Angle-Uniswap PCVDeposit a minter'
     },
     {
       target: 'agEurAngleUniswapPCVDeposit',
@@ -16,13 +16,6 @@ const fip_45: ProposalDescription = {
       method: 'mintAgToken(uint256)',
       arguments: ['10000000000000000000000000'],
       description: 'Use 10M FEI to mint agEUR'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'grantMinter(address)',
-      arguments: ['{agEurAngleUniswapPCVDeposit}'],
-      description: 'Make Angle-Uniswap PCVDeposit a minter'
     },
     {
       target: 'agEurAngleUniswapPCVDeposit',

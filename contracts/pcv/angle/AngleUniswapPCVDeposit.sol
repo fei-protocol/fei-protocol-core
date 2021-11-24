@@ -93,36 +93,29 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
         stakingRewards.getReward();
     }
 
-    /// @notice mint agToken from FEI held on this contract
+    /// @notice mint agToken from FEI
     /// @dev the call will revert if slippage is too high compared to oracle.
     function mintAgToken(uint256 amountFei)
         public
         onlyPCVController
     {
+        // compute minimum amount out
         uint256 minAgTokenOut = Decimal.from(amountFei)
           .div(readOracle())
           .mul(Constants.BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP)
           .div(Constants.BASIS_POINTS_GRANULARITY)
           .asUint256();
 
-        uint256 agTokenBalanceBefore = IERC20(token).balanceOf(address(this));
+        // mint FEI to self
+        _mintFei(address(this), amountFei);
+
+        // mint agToken from FEI
         stableMaster.mint(
             amountFei,
             address(this),
             poolManager,
-            0
+            minAgTokenOut
         );
-        uint256 agTokenBalanceAfter = IERC20(token).balanceOf(address(this));
-        require(agTokenBalanceAfter - agTokenBalanceBefore > minAgTokenOut, "AngleUniswapPCVDeposit: slippage on mint");
-    }
-
-    /// @notice mint agToken from ALL FEI held on this contract
-    /// See mintAgToken(uint256 amount).
-    function mintAgTokenAll()
-        external
-        onlyPCVController
-    {
-        mintAgToken(IERC20(fei()).balanceOf(address(this)));
     }
 
     /// @notice burn agToken for FEI
@@ -131,25 +124,24 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
         public
         onlyPCVController
     {
+        // compute minimum of FEI out for agTokens burnt
         uint256 minFeiOut = readOracle() // FEI per X
           .mul(amountAgToken)
           .mul(Constants.BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP)
           .div(Constants.BASIS_POINTS_GRANULARITY)
           .asUint256();
 
-        IFei _fei = fei();
-        uint256 feiBalanceBefore = _fei.balanceOf(address(this));
+        // burn agTokens for FEI
         stableMaster.burn(
             amountAgToken,
             address(this),
             address(this),
             poolManager,
-            0
+            minFeiOut
         );
-        uint256 feiBalanceAfter = _fei.balanceOf(address(this));
-        require(feiBalanceAfter - feiBalanceBefore > minFeiOut, "AngleUniswapPCVDeposit: slippage on burn");
 
-        _burnFeiHeld(); // burn FEI held (after redeeming agTokens, we have some)
+        // burn FEI held (after redeeming agTokens, we have some)
+        _burnFeiHeld();
     }
 
     /// @notice burn ALL agToken held for FEI

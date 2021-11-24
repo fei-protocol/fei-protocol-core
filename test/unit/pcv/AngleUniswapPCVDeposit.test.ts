@@ -506,33 +506,23 @@ describe('AngleUniswapPCVDeposit', function () {
   });
 
   describe('agToken minting', function () {
-    it('minted agEUR with all FEI', async function () {
-      await this.fei.connect(await getImpersonatedSigner(minterAddress)).mint(this.pcvDeposit.address, '100000');
-      await this.pcvDeposit.connect(await getImpersonatedSigner(pcvControllerAddress)).mintAgTokenAll();
-      expect(await this.fei.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN('0'));
-      expect(await this.agEUR.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN('49850'));
-    });
-
-    it('minted agEUR with some FEI', async function () {
-      await this.fei.connect(await getImpersonatedSigner(minterAddress)).mint(this.pcvDeposit.address, '100000');
+    it('minted agEUR with FEI', async function () {
       await this.pcvDeposit.connect(await getImpersonatedSigner(pcvControllerAddress)).mintAgToken('50000');
-      expect(await this.fei.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN('50000'));
+      expect(await this.fei.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN('0'));
       expect(await this.agEUR.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN('24925'));
     });
 
     it('should revert if fee/slippage is too high', async function () {
-      await this.fei.connect(await getImpersonatedSigner(minterAddress)).mint(this.pcvDeposit.address, '100000');
       await this.stableMaster.setFee(150); // set fee to 1.5%
       await expectRevert(
-        this.pcvDeposit.connect(await getImpersonatedSigner(pcvControllerAddress)).mintAgTokenAll(),
-        'AngleUniswapPCVDeposit: slippage on mint'
+        this.pcvDeposit.connect(await getImpersonatedSigner(pcvControllerAddress)).mintAgToken('50000'),
+        '15' // Angle use integer error code, this one is for slippage check
       );
     });
 
     it('should revert if not PCVController', async function () {
-      await this.fei.connect(await getImpersonatedSigner(minterAddress)).mint(this.pcvDeposit.address, '100000');
       await expectRevert(
-        this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).mintAgTokenAll(),
+        this.pcvDeposit.connect(await getImpersonatedSigner(userAddress)).mintAgToken('50000'),
         'CoreRef: Caller is not a PCV controller'
       );
     });
@@ -547,7 +537,7 @@ describe('AngleUniswapPCVDeposit', function () {
       expect(await this.agEUR.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN('0'));
     });
 
-    it('burn some agEUR for FEI', async function () {
+    it('burn agEUR for FEI', async function () {
       await this.agEUR.mint(this.pcvDeposit.address, '50000');
       await this.fei.connect(await getImpersonatedSigner(minterAddress)).mint(this.stableMaster.address, '100000');
       await this.pcvDeposit.connect(await getImpersonatedSigner(pcvControllerAddress)).burnAgToken('25000');
@@ -562,7 +552,7 @@ describe('AngleUniswapPCVDeposit', function () {
       await this.stableMaster.setFee(150); // set fee to 1.5%
       await expectRevert(
         this.pcvDeposit.connect(await getImpersonatedSigner(pcvControllerAddress)).burnAgTokenAll(),
-        'AngleUniswapPCVDeposit: slippage on burn'
+        '15' // Angle use integer error code, this one is for slippage check
       );
     });
 
