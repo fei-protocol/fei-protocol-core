@@ -9,12 +9,17 @@ import "../../Constants.sol";
 import "../../refs/CoreRef.sol";
 import "../../oracle/IOracle.sol";
 
-import "hardhat/console.sol";
-
 /// @title base class for a Balancer Pool2 PCV Deposit
 /// @author Fei Protocol
 contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
     using Decimal for Decimal.D256;
+
+    event OracleUpdate(
+        address _sender,
+        address indexed _token,
+        address indexed _oldOracle,
+        address indexed _newOracle
+    );
 
     /// @notice the token stored in the Balancer pool, used for accounting
     IERC20 public immutable token;
@@ -34,24 +39,28 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
     /// @notice Balancer PCV Deposit constructor
     /// @param _core Fei Core for reference
     /// @param _poolId Balancer poolId to deposit in
+    /// @param _vault Balancer vault
+    /// @param _rewards Balancer rewards (the MerkleOrchard)
     /// @param _maximumSlippageBasisPoints Maximum slippage basis points when depositing
     /// @param _token Address of the ERC20 to manage / do accounting with
     /// @param _tokenOracle oracle for price feed of the token deposited
     /// @param _otherTokenOracle oracle for price feed of the other token in pool
     constructor(
         address _core,
+        address _vault,
+        address _rewards,
         bytes32 _poolId,
         uint256 _maximumSlippageBasisPoints,
         address _token,
         IOracle _tokenOracle,
         IOracle _otherTokenOracle
-    ) BalancerPCVDepositBase(_core, _poolId, _maximumSlippageBasisPoints) {
+    ) BalancerPCVDepositBase(_core, _vault, _rewards, _poolId, _maximumSlippageBasisPoints) {
         tokenOracle = _tokenOracle;
         otherTokenOracle = _otherTokenOracle;
 
         // check that the balancer pool is a pool with 2 assets
         IVault.PoolSpecialization poolSpec;
-        ( , poolSpec) = vault.getPool(_poolId);
+        ( , poolSpec) = IVault(_vault).getPool(_poolId);
         require(poolSpec == IVault.PoolSpecialization.TWO_TOKEN, "BalancerDepositPoolTwo: not a TWO_TOKEN pool spec.");
 
         tokenIndexInPool = address(poolAssets[0]) == _token ? 0 : 1;
@@ -61,6 +70,26 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
 
         // check that the token is in the pool
         require(address(poolAssets[address(poolAssets[0]) == _token ? 0 : 1]) == _token, "BalancerDepositPoolTwo: token not in pool.");
+    }
+
+    /// @notice sets the oracle for a token in this deposit
+    function setOracle(address _token, address _newOracle) external onlyGovernorOrAdmin {
+        require(_token == address(token) || _token == address(otherToken), "BalancerDepositPoolTwo: invalid token");
+
+        address oldOracle = _token == address(token) ? address(tokenOracle) : address(otherTokenOracle);
+
+        if (_token == address(token)) {
+            tokenOracle = IOracle(_newOracle);
+        } else {
+            otherTokenOracle = IOracle(_newOracle);
+        }
+
+        emit OracleUpdate(
+            msg.sender,
+            _token,
+            oldOracle,
+            _newOracle
+        );
     }
 
     /// @notice returns total balance of PCV in the Deposit excluding the FEI
@@ -74,18 +103,12 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
         // get BPT token price
         uint256[] memory underlyingPrices = new uint256[](2);
         underlyingPrices[tokenIndexInPool] = oracleValue1.mul(1e18).asUint256();
-        console.log("underlyingPrices[tokenIndexInPool]", underlyingPrices[tokenIndexInPool]);
         underlyingPrices[otherTokenIndexInPool] = oracleValue2.mul(1e18).asUint256();
-        console.log("underlyingPrices[otherTokenIndexInPool]", underlyingPrices[otherTokenIndexInPool]);
         uint256 bptPrice = _getBPTPrice(underlyingPrices);
 
         // compute balance in USD value
         uint256 bptBalance = IWeightedPool(poolAddress).balanceOf(address(this));
         Decimal.D256 memory bptValueUSD = Decimal.from(bptBalance).mul(bptPrice).div(1e18);
-
-        console.log("balance() bptPrice", bptPrice);
-        console.log("balance() bptBalance", bptBalance);
-        console.log("balance() bptValueUSD", bptValueUSD.asUint256());
 
         // return balance in "token" value
         return bptValueUSD.mul(1e18).div(underlyingPrices[tokenIndexInPool]).asUint256();
@@ -112,8 +135,6 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
         uint256[] memory amountsIn = new uint256[](2);
         amountsIn[tokenIndexInPool] = tokenBalance;
         amountsIn[otherTokenIndexInPool] = otherTokenBalance;
-        console.log("amountsIn[tokenIndexInPool]", tokenBalance);
-        console.log("amountsIn[otherTokenIndexInPool]", otherTokenBalance);
         bytes memory userData = abi.encode(IWeightedPool.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT, amountsIn, 0);
 
         IVault.JoinPoolRequest memory request = IVault.JoinPoolRequest({
@@ -129,7 +150,6 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
 
         // execute joinPool & transfer tokens to Balancer
         uint256 bptBalanceBefore = IWeightedPool(poolAddress).balanceOf(address(this));
-        console.log("bptBalanceBefore", bptBalanceBefore);
         vault.joinPool(
           poolId, // poolId
           address(this), // sender
@@ -137,29 +157,22 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
           request // join pool request
         );
         uint256 bptBalanceAfter = IWeightedPool(poolAddress).balanceOf(address(this));
-        console.log("bptBalanceAfter", bptBalanceAfter);
 
         // Check for slippage
         {
             // Compute USD value deposited
             uint256 valueIn = oracleValue1.mul(tokenBalance).asUint256() + oracleValue2.mul(otherTokenBalance).asUint256();
-            console.log("valueIn", valueIn);
 
             // Compute USD value out
             uint256[] memory underlyingPrices = new uint256[](2);
             underlyingPrices[tokenIndexInPool] = oracleValue1.mul(1e18).asUint256();
             underlyingPrices[otherTokenIndexInPool] = oracleValue2.mul(1e18).asUint256();
-            console.log("underlyingPrices[tokenIndexInPool]", underlyingPrices[tokenIndexInPool]);
-            console.log("underlyingPrices[otherTokenIndexInPool]", underlyingPrices[otherTokenIndexInPool]);
             uint256 bptPrice = _getBPTPrice(underlyingPrices);
-            console.log("bptPrice", bptPrice);
             uint256 valueOut = Decimal.from(bptPrice).mul(bptBalanceAfter - bptBalanceBefore).div(1e18).asUint256();
-            console.log("valueOut", valueOut);
             uint256 minValueOut = Decimal.from(valueIn)
                 .mul(Constants.BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints)
                 .div(Constants.BASIS_POINTS_GRANULARITY)
                 .asUint256();
-            console.log("minValueOut", minValueOut);
             require(valueOut > minValueOut, "BalancerDepositPoolTwo: slippage too high");
         }
 
@@ -172,7 +185,6 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
     /// @param amount of tokens withdrawn
     function withdraw(address to, uint256 amount) external override onlyPCVController whenNotPaused {
       uint256 bptBalance = IWeightedPool(poolAddress).balanceOf(address(this));
-      console.log("bptBalance", bptBalance);
       if (bptBalance != 0) {
           IVault.ExitPoolRequest memory request;
           request.assets = poolAssets;
@@ -184,9 +196,7 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
           bytes memory userData = abi.encode(IWeightedPool.ExitKind.BPT_IN_FOR_EXACT_TOKENS_OUT, request.minAmountsOut, bptBalance);
           request.userData = userData;
 
-          console.log("withdraw minAmountsOut[tokenIndexInPool]", request.minAmountsOut[tokenIndexInPool]);
-
-          vault.exitPool(poolId, address(this), payable(address(this)), request);
+          vault.exitPool(poolId, address(this), payable(to), request);
 
           emit Withdrawal(msg.sender, to, amount);
       }

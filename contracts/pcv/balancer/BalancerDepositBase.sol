@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./IVault.sol";
+import "./IMerkleOrchard.sol";
 import "./IWeightedPool.sol";
 import "../PCVDeposit.sol";
 import "../../Constants.sol";
@@ -9,23 +10,6 @@ import "../../refs/CoreRef.sol";
 import "./math/ExtendedMath.sol";
 import "./math/ABDKMath64x64.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
-// Interface for Balancer's MerkleOrchard
-interface IBalancerRewards {
-    struct Claim {
-        uint256 distributionId;
-        uint256 balance;
-        address distributor;
-        uint256 tokenIndex;
-        bytes32[] merkleProof;
-    }
-
-    function claimDistributions(
-        address claimer,
-        Claim[] memory claims,
-        IERC20[] memory tokens
-    ) external;
-}
 
 /// @title base class for a Balancer PCV Deposit
 /// @author Fei Protocol
@@ -62,31 +46,34 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
     IAsset[] internal poolAssets;
 
     /// @notice the balancer vault
-    IVault internal constant vault = IVault(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
+    IVault public immutable vault;
 
     /// @notice the balancer rewards contract to claim incentives
-    address private constant rewards = address(0xdAE7e32ADc5d490a43cCba1f0c736033F2b4eFca);
-
-    /// @notice private constant addresses for claiming rewards
-    address private constant BAL_TOKEN_ADDRESS = address(0xba100000625a3754423978a60c9317c58a424e3D);
-    address private constant BAL_TOKEN_DISTRIBUTOR = address(0x35ED000468f397AA943009bD60cc6d2d9a7d32fF);
+    IMerkleOrchard public immutable rewards;
 
     /// @notice Balancer PCV Deposit constructor
     /// @param _core Fei Core for reference
+    /// @param _vault Balancer vault
+    /// @param _rewards Balancer rewards (the MerkleOrchard)
     /// @param _poolId Balancer poolId to deposit in
     /// @param _maximumSlippageBasisPoints Maximum slippage basis points when depositing
     constructor(
         address _core,
+        address _vault,
+        address _rewards,
         bytes32 _poolId,
         uint256 _maximumSlippageBasisPoints
     ) CoreRef(_core) {
+        vault = IVault(_vault);
+        rewards = IMerkleOrchard(_rewards);
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
         poolId = _poolId;
-        (poolAddress, ) = vault.getPool(_poolId);
+
+        (poolAddress, ) = IVault(_vault).getPool(_poolId);
 
         // get the balancer pool tokens
         IERC20[] memory tokens;
-        (tokens, , ) = vault.getPoolTokens(_poolId);
+        (tokens, , ) = IVault(_vault).getPoolTokens(_poolId);
 
         // cache the balancer pool tokens as Assets
         poolAssets = new IAsset[](tokens.length);
@@ -105,7 +92,7 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
 
     /// @notice redeeem all assets from LP pool
     /// @param to destination for withdrawn tokens
-    function exitPool(address to) external onlyPCVController {
+    function exitPool(address to) external whenNotPaused onlyPCVController {
         uint256 bptBalance = IWeightedPool(poolAddress).balanceOf(address(this));
         if (bptBalance != 0) {
             IVault.ExitPoolRequest memory request;
@@ -134,21 +121,24 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
         uint256 distributionId,
         uint256 amount,
         bytes32[] memory merkleProof
-    ) external {
+    ) external whenNotPaused {
+        address BAL_TOKEN_ADDRESS = address(0xba100000625a3754423978a60c9317c58a424e3D);
+        address BAL_TOKEN_DISTRIBUTOR = address(0x35ED000468f397AA943009bD60cc6d2d9a7d32fF);
+
         IERC20[] memory tokens = new IERC20[](1);
         tokens[0] = IERC20(BAL_TOKEN_ADDRESS);
 
-        IBalancerRewards.Claim memory claim = IBalancerRewards.Claim({
+        IMerkleOrchard.Claim memory claim = IMerkleOrchard.Claim({
             distributionId: distributionId,
             balance: amount,
             distributor: BAL_TOKEN_DISTRIBUTOR,
             tokenIndex: 0,
             merkleProof: merkleProof
         });
-        IBalancerRewards.Claim[] memory claims = new IBalancerRewards.Claim[](1);
+        IMerkleOrchard.Claim[] memory claims = new IMerkleOrchard.Claim[](1);
         claims[0] = claim;
 
-        IBalancerRewards(rewards).claimDistributions(address(this), claims, tokens);
+        IMerkleOrchard(rewards).claimDistributions(address(this), claims, tokens);
 
         emit ClaimRewards(
           msg.sender,
@@ -183,6 +173,12 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
             uint256 _decimals = ERC20(address(poolAssets[i])).decimals();
             if (_decimals < 18) {
                 _tokenBalance = _tokenBalance.mul(10**(18 - _decimals));
+            }
+
+            // if one of the tokens in the pool has zero balance, there is a problem
+            // in the pool, so we return zero
+            if (_tokenBalance == 0) {
+                return 0;
             }
 
             _k = _k.mulPow(_tokenBalance, _weights[i], 18);
