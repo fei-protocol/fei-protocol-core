@@ -25,9 +25,9 @@ const cr_fix: ProposalDescription = {
           '{balDepositWrapper}',
           '{rariPool7LusdPCVDeposit}',
           '{staticPcvDepositWrapper2}',
-          '{feiBuybackLens}'
-          // TODO rariPool 91 LUSD PCV Deposit
-          // TODO rariPool 90 FEI PCV Deposit
+          '{feiBuybackLens}',
+          '{liquityFusePoolLusdPCVDeposit}',
+          '{rariPool90FeiPCVDeposit}'
         ]
       ],
       description: 'Add new PCV Deposits'

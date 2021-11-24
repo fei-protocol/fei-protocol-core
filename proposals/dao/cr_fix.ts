@@ -29,7 +29,7 @@ Deploy:
 
 DAO:
 1. Add new oracles LUSD, CREAM, BAL
-2. Add new PCV Deposits TODO add in 2 more
+2. Add new PCV Deposits
 3. Remove PCV Deposit duplicates
 */
 export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses, logging = false) => {
@@ -207,8 +207,12 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   // Check existence of new deposits
   expect(await collateralizationOracle.depositToToken(addresses.feiLusdLens)).to.be.equal(addresses.lusd);
   expect(await collateralizationOracle.depositToToken(addresses.rariPool7LusdPCVDeposit)).to.be.equal(addresses.lusd);
+  expect(await collateralizationOracle.depositToToken(addresses.liquityFusePoolLusdPCVDeposit)).to.be.equal(
+    addresses.lusd
+  );
   expect(await collateralizationOracle.depositToToken(addresses.aaveFeiPCVDepositWrapper)).to.be.equal(addresses.fei);
   expect(await collateralizationOracle.depositToToken(addresses.feiBuybackLens)).to.be.equal(addresses.fei);
+  expect(await collateralizationOracle.depositToToken(addresses.rariPool90FeiPCVDeposit)).to.be.equal(addresses.fei);
   expect(await collateralizationOracle.depositToToken(addresses.creamDepositWrapper)).to.be.equal(addresses.cream);
   expect(await collateralizationOracle.depositToToken(addresses.balDepositWrapper)).to.be.equal(addresses.bal);
   expect(await collateralizationOracle.depositToToken(addresses.staticPcvDepositWrapper2)).to.be.equal(
