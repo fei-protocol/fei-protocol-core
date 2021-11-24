@@ -23,10 +23,10 @@ DEPLOY ACTIONS:
 2. Deploy agEUR Uniswap PCVDeposit
 
 DAO ACTIONS:
-1. Mint 10M FEI to be converted to agEUR
+1. Make the agEUR Uniswap PCVDeposit a Minter
 2. Mint agEUR using the 10M FEI
-3. Make the agEUR Uniswap PCVDeposit a Minter
-4. Deposit agEUR & matching minted FEI on Uniswap
+3. Deposit agEUR & matching minted FEI on Uniswap
+4. and 5. Update Collateralization Oracle with the new token & deposit
 */
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
@@ -78,26 +78,11 @@ export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts
     .connect(angleMultisigSigner)
     .unpause(ethers.utils.keccak256(ethers.utils.toUtf8Bytes('STABLE')), contracts.anglePoolManager.address);
 
-  /*console.log('simulated first run');
-  console.log('  mint');
-  await contracts.fei.mint(contracts.agEurAngleUniswapPCVDeposit.address, '10000000000000000000000000');
-  console.log('    balance() after fei mint', await contracts.agEurAngleUniswapPCVDeposit.balance() / 1e18);
-  console.log('  mintAgToken');
-  await contracts.agEurAngleUniswapPCVDeposit.mintAgToken('10000000000000000000000000');
-  console.log('    agEUR balance after mintAgToken', await contracts.agEUR.balanceOf(contracts.agEurAngleUniswapPCVDeposit.address) / 1e18);
-  console.log('    balance() after mintAgToken', await contracts.agEurAngleUniswapPCVDeposit.balance() / 1e18);
-  console.log('  grantMinter');
-  await contracts.core.grantMinter(contracts.agEurAngleUniswapPCVDeposit.address);
-  console.log('  deposit');
-  console.log('    pool totalSupply() before deposit()', await contracts.angleAgEurFeiPool.totalSupply() / 1e18);
+  /*await contracts.core.grantMinter(contracts.agEurAngleUniswapPCVDeposit.address);
+  await contracts.agEurAngleUniswapPCVDeposit.mintAgToken('10000000000000000000000000'); // 10M FEI
   await contracts.agEurAngleUniswapPCVDeposit.deposit();
-  console.log('    balance()', await contracts.agEurAngleUniswapPCVDeposit.balance() / 1e18);
-  console.log('    pool totalSupply() after deposit()', await contracts.angleAgEurFeiPool.totalSupply() / 1e18);
-  console.log('  setOracle');
   await contracts.collateralizationOracle.setOracle(contracts.agEUR.address, contracts.chainlinkEurUsdOracleWrapper.address);
-  console.log('  addDeposit');
-  await contracts.collateralizationOracle.addDeposit(contracts.agEurAngleUniswapPCVDeposit.address);
-  console.log('  done');*/
+  await contracts.collateralizationOracle.addDeposit(contracts.agEurAngleUniswapPCVDeposit.address);*/
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
