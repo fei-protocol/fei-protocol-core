@@ -186,10 +186,10 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         uint256 amountFeiToTransfer = Math.min(fei().balanceOf(address(this)), amountFeiOut);
         uint256 amountFeiToMint = amountFeiOut - amountFeiToTransfer;
 
-        _transfer(to, amountFeiToTransfer);
+        fei().transfer(to, amountFeiToTransfer);
 
         if (amountFeiToMint > 0) {
-            _mintFei(to, amountFeiOut);
+            _mintFei(to, amountFeiToMint);
         }
         
         emit Mint(to, amountIn);
