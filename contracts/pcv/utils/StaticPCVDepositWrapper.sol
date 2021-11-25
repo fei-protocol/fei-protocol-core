@@ -40,16 +40,16 @@ contract StaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
     }
 
     /// @notice increase or decrease PCV balance
-    function incrementBalance(int256 increment) external onlyGovernorOrAdmin {
+    function shiftBalance(int256 shift) external onlyGovernorOrAdmin {
         uint256 oldBalance = balance;
-        balance = (oldBalance.toInt256() + increment).toUint256();
+        balance = (oldBalance.toInt256() + shift).toUint256();
         emit BalanceUpdate(oldBalance, balance);
     }
 
     /// @notice increase or decrease Protocol Owned Fei balance
-    function incrementFeiReportBalance(int256 increment) external onlyGovernorOrAdmin {
+    function shiftFeiReportBalance(int256 shift) external onlyGovernorOrAdmin {
         uint256 oldFeiBalance = feiReportBalance;
-        feiReportBalance = (oldFeiBalance.toInt256() + increment).toUint256();
+        feiReportBalance = (oldFeiBalance.toInt256() + shift).toUint256();
         emit BalanceUpdate(oldFeiBalance, feiReportBalance);
     }
 
