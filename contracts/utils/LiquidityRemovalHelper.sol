@@ -13,13 +13,16 @@ contract LiquidityTransferHelper is CoreRef {
     address constant public FEI_TRIBE_LP = address(0x9928e4046d7c6513326cCeA028cD3e7a91c7590A);
     address constant public UNI_ROUTER_02 = address(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
-    address immutable public newTimelock;
+    address immutable public feiNewTimelock;
+    address immutable public tribeNewTimelock;
 
     constructor(
         address _core,
-        address _newTimelock
+        address _feiNewTimelock,
+        address _tribeNewTimelock
     ) CoreRef(_core) {
-        newTimelock = _newTimelock;
+        feiNewTimelock = _feiNewTimelock;
+        tribeNewTimelock = _tribeNewTimelock;
     }
 
     /// @notice This is the function that does everything:
@@ -38,7 +41,7 @@ contract LiquidityTransferHelper is CoreRef {
             IERC20(FEI_TRIBE_LP).balanceOf(address(this)), 
             0, 
             0, 
-            newTimelock, 
+            address(this),
             block.timestamp
         );
 
@@ -47,11 +50,11 @@ contract LiquidityTransferHelper is CoreRef {
         require(IERC20(tribe()).balanceOf(address(this)) > 50_000_000 ether, "Not enough Tribe");
 
         // Transfer FEI & Tribe to the new timelock
-        IERC20(address(fei())).safeTransfer(newTimelock, fei().balanceOf(address(this)));
-        IERC20(address(tribe())).safeTransfer(newTimelock, tribe().balanceOf(address(this)));
+        IERC20(address(fei())).safeTransfer(feiNewTimelock, fei().balanceOf(address(this)));
+        IERC20(address(tribe())).safeTransfer(tribeNewTimelock, tribe().balanceOf(address(this)));
 
         // Ensure that the new timelock has the correct amount of FEI & Tribe
-        require(IERC20(fei()).balanceOf(newTimelock) > 50_000_000 ether, "Timelock did not have enough FEI!");
-        require(IERC20(tribe()).balanceOf(newTimelock) > 50_000_000 ether, "Timelock did not have enough Tribe!");
+        require(IERC20(fei()).balanceOf(feiNewTimelock) > 50_000_000 ether, "Timelock did not have enough FEI!");
+        require(IERC20(tribe()).balanceOf(tribeNewTimelock) > 50_000_000 ether, "Timelock did not have enough Tribe!");
     }
 }

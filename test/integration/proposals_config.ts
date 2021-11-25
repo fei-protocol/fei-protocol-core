@@ -2,8 +2,7 @@ import { ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
-import fip_41_proposal from '@proposals/description/fip_41';
-import fip_33_proposal from '@proposals/description/fip_33';
+import ido_liquidity_removal_proposal from '@proposals/description/ido_liquidity_removal';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -14,6 +13,13 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
+
+  fip_liquidity_removal: {
+    deploy: true,
+    skipDAO: false,
+    totalValue: 0,
+    proposal: ido_liquidity_removal_proposal
+  }
 };
 
 export default proposals;

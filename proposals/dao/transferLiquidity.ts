@@ -27,7 +27,7 @@ Steps:
   4 - call releaseMax to helper contract
   5 - call doLiquidityTransfer on helper contract
   6 - set pending beneficary back to guardian for dust collection
-  6 - update collateralization oracle?
+  7 - update collateralization oracle?
 */
 
 const fipNumber = '9001'; // Change me!
