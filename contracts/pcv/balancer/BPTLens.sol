@@ -21,10 +21,7 @@ contract BPTLens is IPCVDepositBalances {
     IWeightedPool public immutable pool;
 
     /// @notice the Balancer V2 Vault
-    IVault public constant VAULT = IVault(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
-    
-    /// @notice the FEI token
-    address public constant FEI = 0x956F47F50A910163D8BF957Cf5846D573E7f87CA;
+    IVault public immutable VAULT;
     
     // the pool id on balancer
     bytes32 internal immutable id;
@@ -48,16 +45,20 @@ contract BPTLens is IPCVDepositBalances {
         address _token, 
         IWeightedPool _pool,
         IOracle _reportedOracle,
-        IOracle _otherOracle
+        IOracle _otherOracle,
+        bool _feiIsReportedIn,
+        bool _feiIsOther
     ) {
         pool = _pool;
+        IVault _vault = _pool.getVault();
+        VAULT = _vault;
 
         bytes32 _id = _pool.getPoolId();
         id = _id;
         (
             IERC20[] memory tokens,
             uint256[] memory balances,
-        ) = VAULT.getPoolTokens(_id); 
+        ) = _vault.getPoolTokens(_id); 
 
         // Check the token is in the BPT and its only a 2 token pool
         require(address(tokens[0]) == _token || address(tokens[1]) == _token);
@@ -66,8 +67,8 @@ contract BPTLens is IPCVDepositBalances {
 
         index = address(tokens[0]) == _token ? 0 : 1;
 
-        feiIsReportedIn = _token == FEI;
-        feiInPair = address(tokens[0]) == FEI || address(tokens[1]) == FEI;
+        feiIsReportedIn = _feiIsReportedIn;
+        feiInPair = _feiIsReportedIn || _feiIsOther;
 
         reportedOracle = _reportedOracle;
         otherOracle = _otherOracle;

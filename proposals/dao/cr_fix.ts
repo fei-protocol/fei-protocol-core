@@ -102,7 +102,9 @@ export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses
     lusd,
     feiLusdLBP,
     chainlinkLUSDOracle.address,
-    oneConstantOracle // constant oracle for FEI
+    oneConstantOracle, // constant oracle for FEI
+    false, // fei not reported in
+    true // fei is other
   );
 
   await feiLusdLens.deployed();
@@ -147,7 +149,9 @@ export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses
     fei,
     feiTribeLBP,
     oneConstantOracle, // constant oracle for FEI
-    tribeUsdCompositeOracle
+    tribeUsdCompositeOracle,
+    true, // fei is reported in
+    false // fei is not other
   );
 
   await feiBuybackLens.deployed();
