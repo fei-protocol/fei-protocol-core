@@ -14,7 +14,7 @@ const proposals: ProposalsConfigMap = {
     }
     */
 
-  fip_liquidity_removal: {
+  ido_liquidity_removal: {
     deploy: true,
     skipDAO: false,
     totalValue: 0,

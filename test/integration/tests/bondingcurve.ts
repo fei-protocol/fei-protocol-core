@@ -17,7 +17,7 @@ before(async () => {
   await resetFork();
 });
 
-describe('e2e-bondingcurve', function () {
+describe.only('e2e-bondingcurve', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;

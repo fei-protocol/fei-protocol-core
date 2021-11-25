@@ -38,8 +38,8 @@ const FEI_TRIBE_LP_ADDRESS = '0x9928e4046d7c6513326cCeA028cD3e7a91c7590A';
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  if (!addresses.core || !addresses.fei || !addresses.tribe || !addresses.guardian) {
-    throw new Error('An address was not set! (require: core, fei, tribe, guardian)');
+  if (!addresses.core || !addresses.fei || !addresses.tribe) {
+    throw new Error('An address was not set! (required: core, fei, tribe)');
   }
 
   const governanceTimelockFactory = await ethers.getContractFactory('GovernanceTimelock');
