@@ -29,6 +29,7 @@ contract StaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         balance = _balance;
         feiReportBalance = _feiBalance;
 
+        // Uses oracle admin to share admin with CR oracle where this contract is used
         _setContractAdminRole(keccak256("ORACLE_ADMIN_ROLE"));
     }
 
