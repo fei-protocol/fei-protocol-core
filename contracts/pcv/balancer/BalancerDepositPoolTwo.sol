@@ -36,6 +36,9 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
     /// @notice cache of the index of the other token in the Balancer pool
     uint8 private immutable otherTokenIndexInPool;
 
+    /// @notice true if FEI is in the pool
+    bool public immutable feiInPool;
+
     /// @notice Balancer PCV Deposit constructor
     /// @param _core Fei Core for reference
     /// @param _poolId Balancer poolId to deposit in
@@ -59,10 +62,9 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
         otherTokenOracle = _otherTokenOracle;
 
         // check that the balancer pool is a pool with 2 assets
-        IVault.PoolSpecialization poolSpec;
-        ( , poolSpec) = IVault(_vault).getPool(_poolId);
-        require(poolSpec == IVault.PoolSpecialization.TWO_TOKEN, "BalancerDepositPoolTwo: not a TWO_TOKEN pool spec.");
+        require(poolAssets.length == 2, "BalancerDepositPoolTwo: not a pool with 2 tokens.");
 
+        // set cached values for token addresses & indexes
         tokenIndexInPool = address(poolAssets[0]) == _token ? 0 : 1;
         otherTokenIndexInPool = address(poolAssets[0]) == _token ? 1 : 0;
         token = IERC20(address(poolAssets[address(poolAssets[0]) == _token ? 0 : 1]));
@@ -70,6 +72,13 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
 
         // check that the token is in the pool
         require(address(poolAssets[address(poolAssets[0]) == _token ? 0 : 1]) == _token, "BalancerDepositPoolTwo: token not in pool.");
+
+        // set cached values for fei management
+        address _fei = address(fei());
+        feiInPool = address(poolAssets[0]) == _fei || address(poolAssets[1]) == _fei;
+
+        // check that token used for account is not FEI
+        require(_token != _fei, "BalancerDepositPoolTwo: token must not be FEI.");
     }
 
     /// @notice sets the oracle for a token in this deposit
@@ -92,7 +101,7 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
         );
     }
 
-    /// @notice returns total balance of PCV in the Deposit excluding the FEI
+    /// @notice returns total balance of PCV in the Deposit, expressed in "token"
     function balance() public view override returns (uint256) {
         // read oracle values
         (Decimal.D256 memory oracleValue1, bool oracleValid1) = tokenOracle.read();
@@ -111,7 +120,33 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
         Decimal.D256 memory bptValueUSD = Decimal.from(bptBalance).mul(bptPrice).div(1e18);
 
         // return balance in "token" value
-        return bptValueUSD.mul(1e18).div(underlyingPrices[tokenIndexInPool]).asUint256();
+        uint256 _balanceInToken = bptValueUSD.mul(1e18).div(underlyingPrices[tokenIndexInPool]).asUint256();
+        // if FEI is in the pair, return only the value of asset, and does not
+        // count the protocol-owned FEI in the balance. For instance, if the pool
+        // is 80% WETH and 20% FEI, balance() will return 80% of the USD value
+        // of the balancer pool tokens held by the contract, denominated in
+        // "token" (and not in USD).
+        if (feiInPool) {
+            uint256[] memory _weights = IWeightedPool(poolAddress).getNormalizedWeights();
+            _balanceInToken = _balanceInToken * _weights[tokenIndexInPool] / 1e18;
+        }
+        return _balanceInToken;
+    }
+
+    // @notice returns the manipulation-resistant balance of tokens & FEI held.
+    function resistantBalanceAndFei() public view override returns (
+        uint256 _resistantBalance,
+        uint256 _resistantFei
+    ) {
+        _resistantBalance = balance();
+        // if FEI is not in pair, just return the balance & 0 FEI
+        if (!feiInPool) {
+            return (_resistantBalance, 0);
+        }
+        // if FEI is in pair, return the balance and compute the protocol-owned FEI
+        uint256[] memory _weights = IWeightedPool(poolAddress).getNormalizedWeights();
+        _resistantFei = _resistantBalance * _weights[otherTokenIndexInPool] / _weights[tokenIndexInPool];
+        return (_resistantBalance, _resistantFei);
     }
 
     /// @notice display the related token of the balance reported
@@ -135,6 +170,14 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
         uint256[] memory amountsIn = new uint256[](2);
         amountsIn[tokenIndexInPool] = tokenBalance;
         amountsIn[otherTokenIndexInPool] = otherTokenBalance;
+        if (feiInPool) {
+            // If FEI is in pool, we mint the good balance of FEI to go with the tokens
+            // we are depositing
+            uint256 _feiToMint = oracleValue1.mul(tokenBalance).asUint256();
+            _mintFei(address(this), _feiToMint);
+            otherTokenBalance = _feiToMint;
+            amountsIn[otherTokenIndexInPool] = _feiToMint;
+        }
         bytes memory userData = abi.encode(IWeightedPool.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT, amountsIn, 0);
 
         IVault.JoinPoolRequest memory request = IVault.JoinPoolRequest({
@@ -192,11 +235,22 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
           request.minAmountsOut[tokenIndexInPool] = amount;
           request.toInternalBalance = false;
 
+          if (feiInPool) {
+              // If FEI is in pool, we also remove an equivalent portion of FEI
+              // from the pool, to conserve balance as much as possible
+              (Decimal.D256 memory oracleValue, bool oracleValid) = tokenOracle.read();
+              require(oracleValid, "BalancerDepositPoolTwo: oracle invalid");
+              uint256 amountFeiToWithdraw = oracleValue.mul(amount).asUint256();
+              request.minAmountsOut[otherTokenIndexInPool] = amountFeiToWithdraw;
+          }
+
           // Uses encoding for exact tokens out, spending at maximum bptBalance
           bytes memory userData = abi.encode(IWeightedPool.ExitKind.BPT_IN_FOR_EXACT_TOKENS_OUT, request.minAmountsOut, bptBalance);
           request.userData = userData;
 
           vault.exitPool(poolId, address(this), payable(to), request);
+
+          _burnFeiHeld();
 
           emit Withdrawal(msg.sender, to, amount);
       }

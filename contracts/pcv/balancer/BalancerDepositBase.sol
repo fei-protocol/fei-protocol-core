@@ -82,6 +82,29 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
         }
     }
 
+    // Accept ETH transfers
+    receive() external payable {}
+
+    /// @notice Wraps all ETH held by the contract to WETH
+    /// Anyone can call it.
+    /// Balancer uses WETH in its pools, and not ETH.
+    function wrapETH() external {
+        uint256 ethBalance = address(this).balance;
+        if (ethBalance != 0) {
+            Constants.WETH.deposit{value: ethBalance}();
+        }
+    }
+
+    /// @notice unwrap WETH on the contract, for instance before
+    /// sending to another PCVDeposit that needs pure ETH.
+    /// Balancer uses WETH in its pools, and not ETH.
+    function unwrapETH() external onlyPCVController {
+        uint256 wethBalance = IERC20(address(Constants.WETH)).balanceOf(address(this));
+        if (wethBalance != 0) {
+            Constants.WETH.withdraw(wethBalance);
+        }
+    }
+
     /// @notice Sets the maximum slippage vs 1:1 price accepted during withdraw.
     /// @param _maximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
     function setMaximumSlippage(uint256 _maximumSlippageBasisPoints) external onlyGovernorOrAdmin {
@@ -105,6 +128,9 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
             request.toInternalBalance = false; // use external balances to be able to transfer out tokenReceived
 
             vault.exitPool(poolId, address(this), payable(to), request);
+
+            _burnFeiHeld();
+
             emit ExitPool();
         }
     }
