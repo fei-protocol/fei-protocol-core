@@ -23,9 +23,17 @@ const MainnetAddresses = {
     artifactName: 'IStakingRewards',
     address: '0xBcb307F590972B1C3188b7916d2969Cf75309dc6'
   },
+  agEurAngleUniswapPCVDeposit: {
+    artifactName: 'AngleUniswapPCVDeposit',
+    address: '0x7AC2Ab8143634419c5bc230A9f9955C3e29f64Ef'
+  },
   collateralizationOracleKeeper: {
     artifactName: 'CollateralizationOracleKeeper',
     address: '0x62378C316a6161A613D02E11F65290aED79B3eD5'
+  },
+  chainlinkEurUsdOracleWrapper: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0xFb3a062236A7E08b572F17bc9Ad2bBc2becB87b1'
   },
   chainlinkTribeEthOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',

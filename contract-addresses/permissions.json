@@ -1,4 +1,4 @@
-{ 
+{
   "MINTER_ROLE": [
     "bondingCurve",
     "uniswapPCVDeposit",
@@ -9,7 +9,8 @@
     "raiBondingCurve",
     "pcvEquityMinter",
     "collateralizationOracleKeeper",
-    "optimisticMinter"
+    "optimisticMinter",
+    "agEurAngleUniswapPCVDeposit"
   ],
   "BURNER_ROLE": [
     "ethReserveStabilizer"
