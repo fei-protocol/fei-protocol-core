@@ -70,19 +70,26 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 };
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  // Unpause the FEI-agEUR contract
+  // Prepare to impersonate for some Angle protocol calls
   const ANGLE_MULTISIG_ADDRESS = '0x0C2553e4B9dFA9f83b1A6D3EAB96c4bAaB42d430';
   await forceEth(ANGLE_MULTISIG_ADDRESS);
   const angleMultisigSigner = await getImpersonatedSigner(ANGLE_MULTISIG_ADDRESS);
+  // Unpause the FEI-agEUR contract
   await contracts.angleStableMaster
     .connect(angleMultisigSigner)
     .unpause(ethers.utils.keccak256(ethers.utils.toUtf8Bytes('STABLE')), contracts.anglePoolManager.address);
-
-  /*await contracts.core.grantMinter(contracts.agEurAngleUniswapPCVDeposit.address);
-  await contracts.agEurAngleUniswapPCVDeposit.mintAgToken('10000000000000000000000000'); // 10M FEI
-  await contracts.agEurAngleUniswapPCVDeposit.deposit();
-  await contracts.collateralizationOracle.setOracle(contracts.agEUR.address, contracts.chainlinkEurUsdOracleWrapper.address);
-  await contracts.collateralizationOracle.addDeposit(contracts.agEurAngleUniswapPCVDeposit.address);*/
+  // Prevent the oracle from being expired
+  // This is because on a local mainnet fork, time is not accurate and Angle Protocol
+  // considers their oracles expired otherwise.
+  const oracleAbi = ['function changeStalePeriod(uint32 _stalePeriod)'];
+  const oracleInterface = new ethers.utils.Interface(oracleAbi);
+  const encodeOracleCall = oracleInterface.encodeFunctionData('changeStalePeriod', ['1000000000']);
+  await (
+    await angleMultisigSigner.sendTransaction({
+      data: encodeOracleCall,
+      to: '0x236D9032d96226b900B0D557Ae6Fd202f3a26b6a'
+    })
+  ).wait();
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
