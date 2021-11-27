@@ -250,21 +250,21 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
     /// @dev each parameter is fixed-size array because fixed-size array is cheaper than dynamic size array
     /// @param _tokens token addresses to swap for RAI.
     /// @param _swapParamsData data that include its oracle and mimimum input amount
-    function setSwapTokenApproval(address[10] memory _tokens, SwapParams[10] memory _swapParamsData)
+    function setSwapTokenApproval(address[10] calldata _tokens, SwapParams[10] calldata _swapParamsData)
         external
         onlyGovernor
     {
         address token;
         for (uint256 i; i < 10; i++) {
             token = _tokens[i];
+            // Both of addresses must be zero addresses or non-zero addresses
             if (token == address(0)) {
-                // check
                 require(address(_swapParamsData[i].oracle) == address(0), "RaiPCVDepositUniV3Lp: inconsistent input");
                 return;
             }
-            tokenSpents[i] = token;
-            require(address(_swapParamsData[i].oracle) != address(0), "RaiPCVDepositUniV3Lp: oracle address zero");
+            else require(address(_swapParamsData[i].oracle) != address(0), "RaiPCVDepositUniV3Lp: oracle address zero");
 
+            tokenSpents[i] = token;
             tokenSwapParams[token] = _swapParamsData[i];
             emit SwapTokenApprovalUpdate(token);
 
@@ -399,7 +399,6 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
             uint256
         )
     {
-        // (address token0, address token1, uint256 amount0, uint256 amount1) = AddressOrder.sort(address(fei()), _systemCoin, _feiAmount, _tokenAmount);
         (address token0, address token1, uint256 amount0, uint256 amount1) = _inverse()
             ? (address(fei()), _systemCoin, _feiAmount, _tokenAmount)
             : (_systemCoin, address(fei()), _tokenAmount, _feiAmount);
