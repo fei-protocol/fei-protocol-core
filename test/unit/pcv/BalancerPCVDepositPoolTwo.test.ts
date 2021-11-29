@@ -19,7 +19,7 @@ import {
   BalancerPCVDepositPoolTwo__factory,
   Core
 } from '@custom-types/contracts';
-import { expectApprox } from '@test/helpers';
+import { expectApproxAbs } from '@test/helpers';
 
 chai.config.includeStack = true;
 const toBN = ethers.BigNumber.from;
@@ -33,12 +33,14 @@ describe('BalancerPCVDepositPoolTwo', function () {
   let userAddress: string;
   let pcvControllerAddress: string;
   let governorAddress: string;
+  let minterAddress: string;
 
   before(async () => {
     const addresses = await getAddresses();
     userAddress = addresses.userAddress;
     pcvControllerAddress = addresses.pcvControllerAddress;
     governorAddress = addresses.governorAddress;
+    minterAddress = addresses.minterAddress;
   });
 
   describe('With 2 ERC20s', function () {
@@ -66,8 +68,7 @@ describe('BalancerPCVDepositPoolTwo', function () {
         '0x5c6ee304399dbdb9c8ef030ab642b10820db8f56000200000000000000000014', // poolId
         '300', // max 3% slippage
         bal.address,
-        oracleBal.address,
-        oracleWeth.address
+        [oracleBal.address, oracleWeth.address]
       );
     });
 
@@ -92,10 +93,10 @@ describe('BalancerPCVDepositPoolTwo', function () {
 
         expect(await deposit.balance()).to.be.equal('0');
         await deposit.deposit();
-        expectApprox(await deposit.balance(), '80000', '10');
+        expectApproxAbs(await deposit.balance(), '80000', '10');
 
         const resistantBalanceAndFei = await deposit.resistantBalanceAndFei();
-        expectApprox(resistantBalanceAndFei[0], '80000', '10');
+        expectApproxAbs(resistantBalanceAndFei[0], '80000', '10');
         expect(resistantBalanceAndFei[1]).to.be.equal('0'); // no FEI
       });
     });
@@ -120,11 +121,11 @@ describe('BalancerPCVDepositPoolTwo', function () {
         await bal.mint(deposit.address, '40000'); // 1M$ of BAL
         await deposit.deposit();
 
-        expectApprox(await deposit.balance(), '80000', '10');
+        expectApproxAbs(await deposit.balance(), '80000', '10');
         expect(await bal.balanceOf(userAddress)).to.be.equal('0');
-        await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).withdraw(userAddress, '1000');
-        expectApprox(await deposit.balance(), '79000', '10');
-        expect(await bal.balanceOf(userAddress)).to.be.equal('1000');
+        await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).withdraw(userAddress, '40000');
+        expect(await deposit.balance()).to.be.equal('0');
+        expectApproxAbs(await bal.balanceOf(userAddress), '40000', '10');
       });
     });
 
@@ -203,18 +204,18 @@ describe('BalancerPCVDepositPoolTwo', function () {
         ).to.be.revertedWith('CoreRef: Caller is not a governor or contract admin');
       });
 
-      it("can update token's oracle", async function () {
-        const newOracle = await new MockOracle__factory(await getImpersonatedSigner(userAddress)).deploy('33');
-        expect(await deposit.tokenOracle()).to.be.equal(oracleBal.address);
-        await deposit.connect(await getImpersonatedSigner(governorAddress)).setOracle(bal.address, newOracle.address);
-        expect(await deposit.tokenOracle()).to.be.equal(newOracle.address);
+      it('reverts if token not in pool', async function () {
+        const newOracle = await new MockOracle__factory(await getImpersonatedSigner(userAddress)).deploy('1');
+        await expect(
+          deposit.connect(await getImpersonatedSigner(governorAddress)).setOracle(userAddress, newOracle.address)
+        ).to.be.revertedWith('BalancerDepositPoolTwo: invalid token');
       });
 
-      it("can update otherToken's oracle", async function () {
+      it("can update a token's oracle", async function () {
         const newOracle = await new MockOracle__factory(await getImpersonatedSigner(userAddress)).deploy('33');
-        expect(await deposit.otherTokenOracle()).to.be.equal(oracleWeth.address);
-        await deposit.connect(await getImpersonatedSigner(governorAddress)).setOracle(weth.address, newOracle.address);
-        expect(await deposit.otherTokenOracle()).to.be.equal(newOracle.address);
+        expect(await deposit.tokenOraclesMapping(bal.address)).to.be.equal(oracleBal.address);
+        await deposit.connect(await getImpersonatedSigner(governorAddress)).setOracle(bal.address, newOracle.address);
+        expect(await deposit.tokenOraclesMapping(bal.address)).to.be.equal(newOracle.address);
       });
     });
   });
@@ -250,8 +251,7 @@ describe('BalancerPCVDepositPoolTwo', function () {
         '0x5c6ee304399dbdb9c8ef030ab642b10820db8f56000200000000000000000014', // poolId
         '300', // max 3% slippage
         weth.address,
-        oracleWeth.address,
-        oracleFei.address
+        [oracleWeth.address, oracleFei.address]
       );
 
       // grant Minter role to be able to manage FEI
@@ -286,12 +286,12 @@ describe('BalancerPCVDepositPoolTwo', function () {
         expect(await fei.balanceOf(poolAddress)).to.be.equal('0');
         expect(await wethERC20.balanceOf(poolAddress)).to.be.equal('0');
         await deposit.deposit();
-        expectApprox(await deposit.balance(), '1000', '1'); // [999, 1001]
-        expectApprox(await fei.balanceOf(poolAddress), '4000000', '1000'); // [3999000, 4001000]
-        expectApprox(await wethERC20.balanceOf(poolAddress), '1000', '1'); // [999, 1001]
+        expectApproxAbs(await deposit.balance(), '1000', '1'); // [999, 1001]
+        expectApproxAbs(await fei.balanceOf(poolAddress), '4000000', '1000'); // [3999000, 4001000]
+        expectApproxAbs(await wethERC20.balanceOf(poolAddress), '1000', '1'); // [999, 1001]
         const resistantBalanceAndFei = await deposit.resistantBalanceAndFei();
-        expectApprox(resistantBalanceAndFei[0], '1000', '1'); // [999, 1001]
-        expectApprox(resistantBalanceAndFei[1], '4000000', '1000'); // [3999000, 4001000]
+        expectApproxAbs(resistantBalanceAndFei[0], '1000', '1'); // [999, 1001]
+        expectApproxAbs(resistantBalanceAndFei[1], '4000000', '10000'); // [3990000, 4010000]
       });
     });
 

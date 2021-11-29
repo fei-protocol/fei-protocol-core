@@ -16,6 +16,13 @@ contract MockVault {
     constructor(IERC20[] memory tokens, address owner) {
         _tokens = tokens;
         _pool = new MockWeightedPool(MockVault(address(this)), owner);
+
+        uint256[] memory weights = new uint256[](tokens.length);
+        uint256 weight = 1e18 / tokens.length;
+        for (uint256 i = 0; i < weights.length; i++) {
+            weights[i] = weight;
+        }
+        _pool.mockSetNormalizedWeights(weights);
     }
 
     function setMockDoTransfers(bool flag) external {
@@ -39,9 +46,10 @@ contract MockVault {
             uint256[] memory balances,
             uint256 lastChangeBlock
         ) {
-            balances = new uint256[](2);
-            balances[0] = _tokens[0].balanceOf(address(_pool));
-            balances[1] = _tokens[1].balanceOf(address(_pool));
+            balances = new uint256[](_tokens.length);
+            for (uint256 i = 0; i < _tokens.length; i++) {
+                balances[i] = _tokens[i].balanceOf(address(_pool));
+            }
             return (_tokens, balances, lastChangeBlock);
         }
 

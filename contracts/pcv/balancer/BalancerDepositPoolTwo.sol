@@ -21,23 +21,21 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
         address indexed _newOracle
     );
 
-    /// @notice the token stored in the Balancer pool, used for accounting
-    IERC20 public immutable token;
-    /// @notice oracle of the token stored in this Balancer pool
-    IOracle public tokenOracle;
-    /// @notice cache of the index of the token in the Balancer pool
-    uint8 private immutable tokenIndexInPool;
+    /// @notice oracle array of the tokens stored in this Balancer pool
+    IOracle[] public tokenOracles;
+    /// @notice mapping of tokens to oracles of the tokens stored in this Balancer pool
+    mapping(IERC20 => IOracle) public tokenOraclesMapping;
 
-    /// @notice the other token stored in the Balancer pool
-    IERC20 public immutable otherToken;
-    /// @notice oracle of the other token in the pool that is in this balancer
-    /// pool, but not the one we deposit/withdraw
-    IOracle public otherTokenOracle;
-    /// @notice cache of the index of the other token in the Balancer pool
-    uint8 private immutable otherTokenIndexInPool;
+    /// @notice the token stored in the Balancer pool, used for accounting
+    IERC20 public token;
+    /// @notice cache of the index of the token in the Balancer pool
+    uint8 private tokenIndexInPool;
 
     /// @notice true if FEI is in the pool
-    bool public immutable feiInPool;
+    bool private feiInPool;
+    /// @notice if feiInPool is true, this is the index of FEI in the pool.
+    /// If feiInPool is false, this is zero.
+    uint8 private feiIndexInPool;
 
     /// @notice Balancer PCV Deposit constructor
     /// @param _core Fei Core for reference
@@ -46,8 +44,7 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
     /// @param _rewards Balancer rewards (the MerkleOrchard)
     /// @param _maximumSlippageBasisPoints Maximum slippage basis points when depositing
     /// @param _token Address of the ERC20 to manage / do accounting with
-    /// @param _tokenOracle oracle for price feed of the token deposited
-    /// @param _otherTokenOracle oracle for price feed of the other token in pool
+    /// @param _tokenOracles oracle for price feeds of the tokens in pool
     constructor(
         address _core,
         address _vault,
@@ -55,27 +52,30 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
         bytes32 _poolId,
         uint256 _maximumSlippageBasisPoints,
         address _token,
-        IOracle _tokenOracle,
-        IOracle _otherTokenOracle
+        IOracle[] memory _tokenOracles
     ) BalancerPCVDepositBase(_core, _vault, _rewards, _poolId, _maximumSlippageBasisPoints) {
-        tokenOracle = _tokenOracle;
-        otherTokenOracle = _otherTokenOracle;
+        // check that we have oracles for all tokens
+        require(poolAssets.length == _tokenOracles.length, "BalancerDepositPoolTwo: wrong number of oracles.");
 
-        // check that the balancer pool is a pool with 2 assets
-        require(poolAssets.length == 2, "BalancerDepositPoolTwo: not a pool with 2 tokens.");
+        tokenOracles = _tokenOracles;
 
         // set cached values for token addresses & indexes
-        tokenIndexInPool = address(poolAssets[0]) == _token ? 0 : 1;
-        otherTokenIndexInPool = address(poolAssets[0]) == _token ? 1 : 0;
-        token = IERC20(address(poolAssets[address(poolAssets[0]) == _token ? 0 : 1]));
-        otherToken = IERC20(address(poolAssets[address(poolAssets[0]) == _token ? 1 : 0]));
-
-        // check that the token is in the pool
-        require(address(poolAssets[address(poolAssets[0]) == _token ? 0 : 1]) == _token, "BalancerDepositPoolTwo: token not in pool.");
-
-        // set cached values for fei management
+        bool tokenFound = false;
         address _fei = address(fei());
-        feiInPool = address(poolAssets[0]) == _fei || address(poolAssets[1]) == _fei;
+        for (uint256 i = 0; i < poolAssets.length; i++) {
+            tokenOraclesMapping[IERC20(address(poolAssets[i]))] = _tokenOracles[i];
+            if (address(poolAssets[i]) == _token) {
+                tokenFound = true;
+                tokenIndexInPool = uint8(i);
+                token = IERC20(address(poolAssets[i]));
+            }
+            if (address(poolAssets[i]) == _fei) {
+                feiInPool = true;
+                feiIndexInPool = uint8(i);
+            }
+        }
+        // check that the token is in the pool
+        require(tokenFound, "BalancerDepositPoolTwo: token not in pool.");
 
         // check that token used for account is not FEI
         require(_token != _fei, "BalancerDepositPoolTwo: token must not be FEI.");
@@ -83,16 +83,14 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
 
     /// @notice sets the oracle for a token in this deposit
     function setOracle(address _token, address _newOracle) external onlyGovernorOrAdmin {
-        require(_token == address(token) || _token == address(otherToken), "BalancerDepositPoolTwo: invalid token");
+        // we must set the oracle for an asset that is in the pool
+        address oldOracle = address(tokenOraclesMapping[IERC20(_token)]);
+        require(oldOracle != address(0), "BalancerDepositPoolTwo: invalid token");
 
-        address oldOracle = _token == address(token) ? address(tokenOracle) : address(otherTokenOracle);
+        // set oracle in the map
+        tokenOraclesMapping[IERC20(_token)] = IOracle(_newOracle);
 
-        if (_token == address(token)) {
-            tokenOracle = IOracle(_newOracle);
-        } else {
-            otherTokenOracle = IOracle(_newOracle);
-        }
-
+        // emit event
         emit OracleUpdate(
             msg.sender,
             _token,
@@ -104,15 +102,9 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
     /// @notice returns total balance of PCV in the Deposit, expressed in "token"
     function balance() public view override returns (uint256) {
         // read oracle values
-        (Decimal.D256 memory oracleValue1, bool oracleValid1) = tokenOracle.read();
-        (Decimal.D256 memory oracleValue2, bool oracleValid2) = otherTokenOracle.read();
-        require(oracleValid1, "BalancerDepositPoolTwo: invalid oracle for token");
-        require(oracleValid2, "BalancerDepositPoolTwo: invalid oracle for otherToken");
+        uint256[] memory underlyingPrices = _readOracles();
 
         // get BPT token price
-        uint256[] memory underlyingPrices = new uint256[](2);
-        underlyingPrices[tokenIndexInPool] = oracleValue1.mul(1e18).asUint256();
-        underlyingPrices[otherTokenIndexInPool] = oracleValue2.mul(1e18).asUint256();
         uint256 bptPrice = _getBPTPrice(underlyingPrices);
 
         // compute balance in USD value
@@ -144,8 +136,14 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
             return (_resistantBalance, 0);
         }
         // if FEI is in pair, return the balance and compute the protocol-owned FEI
+        // e.g. if the pool is 60% ETH 40% FEI, resistantBalance is 60% of the bpt USD value,
+        // and resistantFei is 40/60 * .
         uint256[] memory _weights = IWeightedPool(poolAddress).getNormalizedWeights();
-        _resistantFei = _resistantBalance * _weights[otherTokenIndexInPool] / _weights[tokenIndexInPool];
+        // denominated in "tokens"
+        _resistantFei = _resistantBalance * _weights[feiIndexInPool] / _weights[tokenIndexInPool];
+        // multiply by USD value
+        (Decimal.D256 memory oracleValue, ) = tokenOraclesMapping[token].read();
+        _resistantFei = oracleValue.mul(_resistantFei).asUint256();
         return (_resistantBalance, _resistantFei);
     }
 
@@ -156,40 +154,40 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
 
     // @notice deposit tokens to the Balancer pool
     function deposit() external override whenNotPaused {
-        uint256 tokenBalance = token.balanceOf(address(this));
-        uint256 otherTokenBalance = otherToken.balanceOf(address(this));
-        require(tokenBalance > 0 || otherTokenBalance > 0, "BalancerDepositPoolTwo: no tokens to deposit");
+        uint256[] memory balances = new uint256[](poolAssets.length);
+        uint256 totalbalance = 0;
+        for (uint256 i = 0; i < balances.length; i++) {
+            balances[i] = IERC20(address(poolAssets[i])).balanceOf(address(this));
+            totalbalance += balances[i];
+        }
+        require(totalbalance > 0, "BalancerDepositPoolTwo: no tokens to deposit");
 
         // Read oracles
-        (Decimal.D256 memory oracleValue1, bool oracleValid1) = tokenOracle.read();
-        (Decimal.D256 memory oracleValue2, bool oracleValid2) = otherTokenOracle.read();
-        require(oracleValid1, "BalancerDepositPoolTwo: invalid oracle for token");
-        require(oracleValid2, "BalancerDepositPoolTwo: invalid oracle for otherToken");
+        uint256[] memory underlyingPrices = _readOracles();
 
         // Build joinPool request
-        uint256[] memory amountsIn = new uint256[](2);
-        amountsIn[tokenIndexInPool] = tokenBalance;
-        amountsIn[otherTokenIndexInPool] = otherTokenBalance;
         if (feiInPool) {
             // If FEI is in pool, we mint the good balance of FEI to go with the tokens
             // we are depositing
-            uint256 _feiToMint = oracleValue1.mul(tokenBalance).asUint256();
+            uint256 _feiToMint = underlyingPrices[tokenIndexInPool] * balances[tokenIndexInPool] / 1e18;
             _mintFei(address(this), _feiToMint);
-            otherTokenBalance = _feiToMint;
-            amountsIn[otherTokenIndexInPool] = _feiToMint;
+            balances[feiIndexInPool] = _feiToMint;
         }
-        bytes memory userData = abi.encode(IWeightedPool.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT, amountsIn, 0);
+        bytes memory userData = abi.encode(IWeightedPool.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT, balances, 0);
 
         IVault.JoinPoolRequest memory request = IVault.JoinPoolRequest({
             assets: poolAssets,
-            maxAmountsIn: amountsIn,
+            maxAmountsIn: balances,
             userData: userData,
             fromInternalBalance: false // tokens are held on this contract
         });
 
         // approve spending on balancer's vault
-        token.approve(address(vault), tokenBalance);
-        otherToken.approve(address(vault), otherTokenBalance);
+        for (uint256 i = 0; i < balances.length; i++) {
+            if (balances[i] > 0) {
+                IERC20(address(poolAssets[i])).approve(address(vault), balances[i]);
+            }
+        }
 
         // execute joinPool & transfer tokens to Balancer
         uint256 bptBalanceBefore = IWeightedPool(poolAddress).balanceOf(address(this));
@@ -204,12 +202,12 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
         // Check for slippage
         {
             // Compute USD value deposited
-            uint256 valueIn = oracleValue1.mul(tokenBalance).asUint256() + oracleValue2.mul(otherTokenBalance).asUint256();
+            uint256 valueIn = 0;
+            for (uint256 i = 0; i < balances.length; i++) {
+                valueIn += balances[i] * underlyingPrices[i] / 1e18;
+            }
 
             // Compute USD value out
-            uint256[] memory underlyingPrices = new uint256[](2);
-            underlyingPrices[tokenIndexInPool] = oracleValue1.mul(1e18).asUint256();
-            underlyingPrices[otherTokenIndexInPool] = oracleValue2.mul(1e18).asUint256();
             uint256 bptPrice = _getBPTPrice(underlyingPrices);
             uint256 valueOut = Decimal.from(bptPrice).mul(bptBalanceAfter - bptBalanceBefore).div(1e18).asUint256();
             uint256 minValueOut = Decimal.from(valueIn)
@@ -220,7 +218,7 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
         }
 
         // emit event
-        emit Deposit(msg.sender, tokenBalance);
+        emit Deposit(msg.sender, balances[tokenIndexInPool]);
     }
 
     /// @notice withdraw tokens from the PCV allocation
@@ -231,17 +229,17 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
       if (bptBalance != 0) {
           IVault.ExitPoolRequest memory request;
           request.assets = poolAssets;
-          request.minAmountsOut = new uint256[](2);
+          request.minAmountsOut = new uint256[](poolAssets.length);
           request.minAmountsOut[tokenIndexInPool] = amount;
           request.toInternalBalance = false;
 
           if (feiInPool) {
               // If FEI is in pool, we also remove an equivalent portion of FEI
               // from the pool, to conserve balance as much as possible
-              (Decimal.D256 memory oracleValue, bool oracleValid) = tokenOracle.read();
+              (Decimal.D256 memory oracleValue, bool oracleValid) = tokenOraclesMapping[token].read();
               require(oracleValid, "BalancerDepositPoolTwo: oracle invalid");
               uint256 amountFeiToWithdraw = oracleValue.mul(amount).asUint256();
-              request.minAmountsOut[otherTokenIndexInPool] = amountFeiToWithdraw;
+              request.minAmountsOut[feiIndexInPool] = amountFeiToWithdraw;
           }
 
           // Uses encoding for exact tokens out, spending at maximum bptBalance
@@ -254,5 +252,15 @@ contract BalancerPCVDepositPoolTwo is BalancerPCVDepositBase {
 
           emit Withdrawal(msg.sender, to, amount);
       }
+    }
+
+    /// @notice read token oracles and revert if one of them is invalid
+    function _readOracles() internal view returns (uint256[] memory underlyingPrices) {
+        underlyingPrices = new uint256[](poolAssets.length);
+        for (uint256 i = 0; i < underlyingPrices.length; i++) {
+            (Decimal.D256 memory oracleValue, bool oracleValid) = tokenOraclesMapping[IERC20(address(poolAssets[i]))].read();
+            require(oracleValid, "BalancerDepositPoolTwo: invalid oracle");
+            underlyingPrices[i] = oracleValue.mul(1e18).asUint256();
+        }
     }
 }
