@@ -15,8 +15,8 @@ import {
   MockVault__factory,
   MockMerkleOrchard,
   MockMerkleOrchard__factory,
-  BalancerPCVDepositPoolTwo,
-  BalancerPCVDepositPoolTwo__factory,
+  BalancerPCVDepositWeightedPool,
+  BalancerPCVDepositWeightedPool__factory,
   Core
 } from '@custom-types/contracts';
 import { expectApproxAbs } from '@test/helpers';
@@ -24,11 +24,11 @@ import { expectApproxAbs } from '@test/helpers';
 chai.config.includeStack = true;
 const toBN = ethers.BigNumber.from;
 
-describe('BalancerPCVDepositPoolTwo', function () {
+describe('BalancerPCVDepositWeightedPool', function () {
   let core: Core;
   let vault: MockVault;
   let rewards: MockMerkleOrchard;
-  let deposit: BalancerPCVDepositPoolTwo;
+  let deposit: BalancerPCVDepositWeightedPool;
 
   let userAddress: string;
   let pcvControllerAddress: string;
@@ -61,7 +61,7 @@ describe('BalancerPCVDepositPoolTwo', function () {
       );
       await vault.setMockDoTransfers(true);
       rewards = await new MockMerkleOrchard__factory(await getImpersonatedSigner(userAddress)).deploy(bal.address);
-      deposit = await new BalancerPCVDepositPoolTwo__factory(await getImpersonatedSigner(userAddress)).deploy(
+      deposit = await new BalancerPCVDepositWeightedPool__factory(await getImpersonatedSigner(userAddress)).deploy(
         core.address,
         vault.address,
         rewards.address,
@@ -83,7 +83,7 @@ describe('BalancerPCVDepositPoolTwo', function () {
         await weth.mint(deposit.address, '2500'); // 10M$ of WETH
         await bal.mint(deposit.address, '4'); // 100$ of BAL
 
-        await expect(deposit.deposit()).to.be.revertedWith('BalancerDepositPoolTwo: slippage too high');
+        await expect(deposit.deposit()).to.be.revertedWith('BalancerPCVDepositWeightedPool: slippage too high');
       });
 
       it('succeeds if not paused - updates balance() and resistantBalanceAndFei()', async function () {
@@ -208,7 +208,7 @@ describe('BalancerPCVDepositPoolTwo', function () {
         const newOracle = await new MockOracle__factory(await getImpersonatedSigner(userAddress)).deploy('1');
         await expect(
           deposit.connect(await getImpersonatedSigner(governorAddress)).setOracle(userAddress, newOracle.address)
-        ).to.be.revertedWith('BalancerDepositPoolTwo: invalid token');
+        ).to.be.revertedWith('BalancerPCVDepositWeightedPool: invalid token');
       });
 
       it("can update a token's oracle", async function () {
@@ -244,7 +244,7 @@ describe('BalancerPCVDepositPoolTwo', function () {
       poolAddress = await vault._pool();
       await vault.setMockDoTransfers(true);
       rewards = await new MockMerkleOrchard__factory(await getImpersonatedSigner(userAddress)).deploy(bal.address);
-      deposit = await new BalancerPCVDepositPoolTwo__factory(await getImpersonatedSigner(userAddress)).deploy(
+      deposit = await new BalancerPCVDepositWeightedPool__factory(await getImpersonatedSigner(userAddress)).deploy(
         core.address,
         vault.address,
         rewards.address,
