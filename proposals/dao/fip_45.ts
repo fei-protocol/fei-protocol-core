@@ -8,7 +8,7 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '../../types/types';
-import { expectApprox, getImpersonatedSigner } from '@test/helpers';
+import { expectApproxAbs, getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 
 chai.use(CBN(ethers.BigNumber));
@@ -101,14 +101,14 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
 
   const price = (await chainlinkEurUsdOracleWrapper.read())[0];
   // expect USDEUR price ~1.11-1.15
-  expectApprox(price.toString(), '1130000000000000000', '20000000000000000');
+  expectApproxAbs(price.toString(), '1130000000000000000', '20000000000000000');
 
   // deposit balance & fei held
   const balanceAndFei = await agEurAngleUniswapPCVDeposit.resistantBalanceAndFei();
   // expect 8.7-9.0M agEUR to be minted
-  expectApprox(balanceAndFei[0].toString(), '8850000000000000000000000', '150000000000000000000000');
+  expectApproxAbs(balanceAndFei[0].toString(), '8850000000000000000000000', '150000000000000000000000');
   // expect 9.8M+ FEI held by the contract
-  expectApprox(balanceAndFei[0].toString(), '10000000000000000000000000', '200000000000000000000000');
+  expectApproxAbs(balanceAndFei[0].toString(), '10000000000000000000000000', '200000000000000000000000');
 
   // farming staking rewards
   await agEurAngleUniswapPCVDeposit.claimRewards();
