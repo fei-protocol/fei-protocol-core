@@ -108,7 +108,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   // expect 8.7-9.0M agEUR to be minted
   expectApproxAbs(balanceAndFei[0].toString(), '8850000000000000000000000', '150000000000000000000000');
   // expect 9.8M+ FEI held by the contract
-  expectApproxAbs(balanceAndFei[0].toString(), '10000000000000000000000000', '200000000000000000000000');
+  expectApproxAbs(balanceAndFei[1].toString(), '10000000000000000000000000', '200000000000000000000000');
 
   // farming staking rewards
   await agEurAngleUniswapPCVDeposit.claimRewards();
