@@ -75,9 +75,9 @@ export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts
   await forceEth(ANGLE_MULTISIG_ADDRESS);
   const angleMultisigSigner = await getImpersonatedSigner(ANGLE_MULTISIG_ADDRESS);
   // Unpause the FEI-agEUR contract
-  await contracts.angleStableMaster
+  /*await contracts.angleStableMaster
     .connect(angleMultisigSigner)
-    .unpause(ethers.utils.keccak256(ethers.utils.toUtf8Bytes('STABLE')), contracts.anglePoolManager.address);
+    .unpause(ethers.utils.keccak256(ethers.utils.toUtf8Bytes('STABLE')), contracts.anglePoolManager.address);*/
   // Prevent the oracle from being expired
   // This is because on a local mainnet fork, time is not accurate and Angle Protocol
   // considers their oracles expired otherwise.
