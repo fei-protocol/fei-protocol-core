@@ -84,6 +84,7 @@ contract PSMRouter is IPSMRouter {
         return psm.mint(_to, msg.value, _minAmountOut);
     }
 
+    /// @notice helper function to deposit user FEI, unwrap weth and send eth to the user
     function _redeem(address to, uint256 amountFeiIn, uint256 minAmountOut) internal returns (uint256 amountOut) {
         fei.transferFrom(msg.sender, address(this), amountFeiIn);
         amountOut = psm.redeem(address(this), amountFeiIn, minAmountOut);
