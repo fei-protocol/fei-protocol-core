@@ -233,6 +233,10 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         return address(underlyingToken);
     }
 
+    function resistantBalanceAndFei() public view override returns(uint256, uint256) {
+        return (balance(), fei().balanceOf(address(this)));
+    }
+
     // ----------- Internal Methods -----------
 
     /// @notice helper function to get mint amount out based on current market prices

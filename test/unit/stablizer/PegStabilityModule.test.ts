@@ -167,6 +167,12 @@ describe('PegStabilityModule', function () {
     it('CONTRACT_ADMIN_ROLE', async () => {
       expect(await psm.CONTRACT_ADMIN_ROLE()).to.be.equal(PSM_ADMIN_ROLE);
     });
+
+    it('resistantBalanceAndFei', async () => {
+      const [wethBalance, feiBalance] = await psm.resistantBalanceAndFei();
+      expect(feiBalance).to.be.equal(bufferCap);
+      expect(wethBalance).to.be.equal(0);
+    });
   });
 
   describe('Mint', function () {
@@ -196,6 +202,10 @@ describe('PegStabilityModule', function () {
 
         expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(expectedMintAmountOut);
         expect(psmEndingWETHBalance.sub(psmStartingAssetBalance)).to.be.equal(ten);
+
+        const [wethBalance, x] = await psm.resistantBalanceAndFei();
+        expect(wethBalance).to.be.equal(ten);
+
         // buffer has not been eaten into as the PSM holds FEI
         expect(await psm.buffer()).to.be.equal(bufferCap);
         expect(startingUserAssetBalance.sub(endingUserWETHBalance)).to.be.equal(ten);
