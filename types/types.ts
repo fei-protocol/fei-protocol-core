@@ -91,6 +91,15 @@ export type ProposalCommand = {
   description: string;
 };
 
+export type MainnetAddresses = {
+  [key: string]: AddressConfig;
+};
+export type AddressConfig = {
+  artifactName: string;
+  address: string;
+  type: string; // TODO: enum? [core, peg, pcv, collateralization, oracle, keeper, externalERC20, external, tbd, rewards, deprecated ]
+};
+
 export type NamedContracts = { [key: string]: ethers.Contract };
 export type NamedAddresses = { [key: string]: string };
 export type DeployUpgradeFunc = (
