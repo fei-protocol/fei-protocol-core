@@ -299,7 +299,6 @@ describe('PSM Router', function () {
     describe('Without Deadline', function () {
       it('mint succeeds with 1 wei', async () => {
         const minAmountOut = 4985;
-        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, bufferCap);
         const userStartingFEIBalance = await fei.balanceOf(userAddress);
 
         await psmRouter
