@@ -27,7 +27,6 @@ describe('PegStabilityModule', function () {
   const reservesThreshold = ethers.constants.WeiPerEther.mul(10);
   const feiLimitPerSecond = ethers.constants.WeiPerEther.mul(10_000);
   const bufferCap = ethers.constants.WeiPerEther.mul(10_000_000);
-  const mintAmount = ethers.constants.WeiPerEther.mul(1_000);
   const decimalsNormalizer = 0; // because the oracle price is scaled 1e18, need to divide out by that before testing
   const bpGranularity = 10_000;
   const impersonatedSigners: { [key: string]: Signer } = {};
@@ -109,6 +108,8 @@ describe('PegStabilityModule', function () {
     await core.grantRole(PSM_ADMIN_ROLE, psmAdminAddress);
 
     await fei.connect(impersonatedSigners[minterAddress]).mint(psm.address, bufferCap);
+
+    await hre.network.provider.send('hardhat_setBalance', [userAddress, '0x21E19E0C9BAB2400000']);
   });
 
   describe('after contract initialization, parameters are correct:', function () {
@@ -203,7 +204,7 @@ describe('PegStabilityModule', function () {
         expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(expectedMintAmountOut);
         expect(psmEndingWETHBalance.sub(psmStartingAssetBalance)).to.be.equal(ten);
 
-        const [wethBalance, x] = await psm.resistantBalanceAndFei();
+        const [wethBalance] = await psm.resistantBalanceAndFei();
         expect(wethBalance).to.be.equal(ten);
 
         // buffer has not been eaten into as the PSM holds FEI
@@ -240,63 +241,205 @@ describe('PegStabilityModule', function () {
         expect(await psm.buffer()).to.be.equal(bufferCap);
       });
 
-      it('exchanges 1000 Eth for 975 FEI as fee is 300 bips and exchange rate is 1:5000');
+      it('exchanges 1000 Eth for 4,985,000 FEI as fee is 300 bips and exchange rate is 1:5000', async () => {
+        const oneThousandEth = toBN(1000).mul(ethers.constants.WeiPerEther);
+        const newMintFee = 300;
+        const expectedMintAmountOut = toBN(4_850_000).mul(ethers.constants.WeiPerEther);
+        const userStartingFeiBalance = await fei.balanceOf(userAddress);
+        const startingPSMWETHBalance = await weth.balanceOf(psm.address);
 
-      it('exchanges 1000 Eth for 975 FEI as mint fee is 250 bips and exchange rate is 1:5000');
+        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
+        const mintAmountOut = await psm.getMintAmountOut(oneThousandEth);
 
-      it('exchanges 1000 Eth for 950 FEI as mint fee is 50 bips and exchange rate is 1Eth:5000FEI');
+        await weth.connect(impersonatedSigners[userAddress]).deposit({ value: oneThousandEth });
+        await weth.connect(impersonatedSigners[userAddress]).approve(psm.address, oneThousandEth);
+        const startingUserWETHBalance = await weth.balanceOf(userAddress);
 
-      it('exchange and getMintAmountOut fails when new oracle ceiling is equal to the new exchange rate');
+        expect(mintAmountOut).to.be.equal(expectedMintAmountOut);
 
-      it('exchange and getMintAmountOut fails when new oracle floor is equal to the new exchange rate');
+        await psm.connect(impersonatedSigners[userAddress]).mint(userAddress, oneThousandEth, expectedMintAmountOut);
 
-      it('exchanges for appropriate amount of tokens when price is 1:5000');
+        const userEndingFeiBalance = await fei.balanceOf(userAddress);
+        const psmEndingWETHBalance = await weth.balanceOf(psm.address);
+        const endingUserWETHBalance = await weth.balanceOf(userAddress);
 
-      it('should not exchange when expected amount out is greater than actual amount out');
+        expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(expectedMintAmountOut);
+        expect(psmEndingWETHBalance.sub(startingPSMWETHBalance)).to.be.equal(oneThousandEth);
+        expect(startingUserWETHBalance.sub(endingUserWETHBalance)).to.be.equal(oneThousandEth);
+        // buffer has not been eaten into as the PSM holds FEI to pay out
+        expect(await psm.buffer()).to.be.equal(bufferCap);
+      });
 
-      it('should not mint when expected amount out is 3x greater than minting buffer cap and all psm fei is used');
+      it('exchanges 4000 Eth for 19,400,000 FEI as fee is 300 bips and exchange rate is 1:5000', async () => {
+        const fourThousandEth = toBN(4000).mul(ethers.constants.WeiPerEther);
+        const newMintFee = 300;
+        const expectedMintAmountOut = toBN(19_400_000).mul(ethers.constants.WeiPerEther);
+        const userStartingFeiBalance = await fei.balanceOf(userAddress);
+        const startingPSMWETHBalance = await weth.balanceOf(psm.address);
 
-      it('should not mint when expected amount out is 1 more than minting buffer cap and all psm fei is used');
+        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
+        const mintAmountOut = await psm.getMintAmountOut(fourThousandEth);
 
-      it('fails when token is not approved to be spent by the PSM');
+        await weth.connect(impersonatedSigners[userAddress]).deposit({ value: fourThousandEth });
+        await weth.connect(impersonatedSigners[userAddress]).approve(psm.address, fourThousandEth);
+        const startingUserWETHBalance = await weth.balanceOf(userAddress);
 
-      it('mint fails when contract is paused');
+        expect(mintAmountOut).to.be.equal(expectedMintAmountOut);
+
+        await psm.connect(impersonatedSigners[userAddress]).mint(userAddress, fourThousandEth, expectedMintAmountOut);
+
+        const userEndingFeiBalance = await fei.balanceOf(userAddress);
+        const psmEndingWETHBalance = await weth.balanceOf(psm.address);
+        const endingUserWETHBalance = await weth.balanceOf(userAddress);
+
+        expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(expectedMintAmountOut);
+        expect(psmEndingWETHBalance.sub(startingPSMWETHBalance)).to.be.equal(fourThousandEth);
+        expect(startingUserWETHBalance.sub(endingUserWETHBalance)).to.be.equal(fourThousandEth);
+        expect(await fei.balanceOf(psm.address)).to.be.equal(0);
+        // buffer has been eaten into as the PSM holds FEI 10_000_000 and has a buffer of 10_000_000
+        expect(await psm.buffer()).to.be.equal(toBN(600_000).mul(ethers.constants.WeiPerEther));
+      });
+
+      it('should not exchange when expected amount out is greater than actual amount out', async () => {
+        const fourThousandEth = toBN(4000).mul(ethers.constants.WeiPerEther);
+        const newMintFee = 300;
+        const expectedMintAmountOut = toBN(19_400_000).mul(ethers.constants.WeiPerEther);
+
+        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
+        const mintAmountOut = await psm.getMintAmountOut(fourThousandEth);
+
+        await weth.connect(impersonatedSigners[userAddress]).deposit({ value: fourThousandEth });
+        await weth.connect(impersonatedSigners[userAddress]).approve(psm.address, fourThousandEth);
+
+        expect(mintAmountOut).to.be.equal(expectedMintAmountOut);
+
+        await expectRevert(
+          psm
+            .connect(impersonatedSigners[userAddress])
+            .mint(userAddress, fourThousandEth, expectedMintAmountOut.add(1)),
+          'PegStabilityModule: Mint not enough out'
+        );
+      });
+
+      it('should not mint when expected amount out is greater than minting buffer cap and all psm fei is used', async () => {
+        const fourThousandEth = toBN(5000).mul(ethers.constants.WeiPerEther);
+        const expectedMintAmountOut = toBN(24_925_000).mul(ethers.constants.WeiPerEther);
+
+        const mintAmountOut = await psm.getMintAmountOut(fourThousandEth);
+
+        await weth.connect(impersonatedSigners[userAddress]).deposit({ value: fourThousandEth });
+        await weth.connect(impersonatedSigners[userAddress]).approve(psm.address, fourThousandEth);
+
+        expect(mintAmountOut).to.be.equal(expectedMintAmountOut);
+
+        await expectRevert(
+          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, fourThousandEth, expectedMintAmountOut),
+          'RateLimited: rate limit hit'
+        );
+      });
+
+      it('fails when token is not approved to be spent by the PSM', async () => {
+        const fourThousandEth = toBN(4000).mul(ethers.constants.WeiPerEther);
+        const newMintFee = 300;
+        const expectedMintAmountOut = toBN(19_400_000).mul(ethers.constants.WeiPerEther);
+
+        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(newMintFee);
+        const mintAmountOut = await psm.getMintAmountOut(fourThousandEth);
+
+        await weth.connect(impersonatedSigners[userAddress]).deposit({ value: fourThousandEth });
+
+        expect(mintAmountOut).to.be.equal(expectedMintAmountOut);
+
+        await expectRevert(
+          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, fourThousandEth, expectedMintAmountOut),
+          'SafeERC20: low-level call failed'
+        );
+      });
+
+      it('mint fails when contract is paused', async () => {
+        await psm.connect(impersonatedSigners[governorAddress]).pause();
+        expect(await psm.paused()).to.be.true;
+
+        await expectRevert(
+          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, 10000, 0),
+          'Pausable: paused'
+        );
+      });
     });
   });
 
   describe('Redeem', function () {
     describe('Sells FEI for Eth', function () {
       beforeEach(async () => {
-        // await weth.mint(psm.address, mintAmount);
+        const wethAmount = toBN(5_000).mul(ethers.constants.WeiPerEther);
+        await hre.network.provider.send('hardhat_setBalance', [userAddress, '0x21E19E0C9BAB2400000']);
+        await weth.connect(impersonatedSigners[userAddress]).deposit({ value: wethAmount });
+        await weth.connect(impersonatedSigners[userAddress]).transfer(psm.address, wethAmount);
       });
 
-      it('redeem fails when contract is paused');
+      it('redeem fails when contract is paused', async () => {
+        await psm.connect(impersonatedSigners[governorAddress]).pause();
+        expect(await psm.paused()).to.be.true;
 
-      it('exchanges 1000000 FEI for 97.5 Eth as fee is 250 bips and exchange rate is 1:10000');
+        await expectRevert(
+          psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 10000, 0),
+          'Pausable: paused'
+        );
+      });
 
-      it('exchanges 1000 FEI for 975 Eth as fee is 250 bips and exchange rate is 1:1');
+      it('exchanges 10,000,000 FEI for 97.5 Eth as fee is 250 bips and exchange rate is 1:10000', async () => {
+        await oracle.setExchangeRate(10_000);
+        const tenM = toBN(10_000_000);
+        const newRedeemFee = 250;
+        await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(newRedeemFee);
 
-      it('redeem succeeds when user has enough funds');
+        const userStartingFeiBalance = await fei.balanceOf(userAddress);
+        const psmStartingWETHBalance = await weth.balanceOf(psm.address);
+        const userStartingWETHBalance = await weth.balanceOf(userAddress);
+        const expectedAssetAmount = 975;
 
-      it('redeem succeeds when user has enough funds and Eth is $1.019');
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, tenM);
+        await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, tenM);
 
-      it('redeem succeeds when user has enough funds and Eth is $1.019 with .1 FEI');
+        const redeemAmountOut = await psm.getRedeemAmountOut(tenM);
+        expect(redeemAmountOut).to.be.equal(expectedAssetAmount);
 
-      it('redeem succeeds when user has enough funds and Eth is $1.019 with .01 FEI');
+        await psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, tenM, expectedAssetAmount);
 
-      it('redeem succeeds when user has enough funds and Eth is $0.9801');
+        const userEndingWETHBalance = await weth.balanceOf(userAddress);
+        const userEndingFeiBalance = await fei.balanceOf(userAddress);
+        const psmEndingWETHBalance = await weth.balanceOf(psm.address);
 
-      it('redeem succeeds when user has enough funds, Eth is $0.9801 and mint fee has been changed to 100 bips');
+        expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(0);
+        expect(psmStartingWETHBalance.sub(psmEndingWETHBalance)).to.be.equal(expectedAssetAmount);
+        expect(userEndingWETHBalance.sub(userStartingWETHBalance)).to.be.equal(expectedAssetAmount);
+      });
 
-      it('redeem succeeds when user has enough funds, Eth is $0.5 and mint fee has been changed to 100 bips');
+      it('redeem fails when expected amount out is greater than actual amount out', async () => {
+        await oracle.setExchangeRate(10_000);
+        const oneM = toBN(10_000_000);
 
-      it('redeem succeeds when user has enough funds, Eth is $0.5 and mint fee has been changed to 500 bips');
+        const expectedAssetAmount = 997;
 
-      it('redeem fails when oracle price is $2');
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, oneM);
+        await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, oneM);
 
-      it('redeem fails when expected amount out is greater than actual amount out');
+        const redeemAmountOut = await psm.getRedeemAmountOut(oneM);
+        expect(redeemAmountOut).to.be.equal(expectedAssetAmount);
 
-      it('fails when token is not approved to be spent by the PSM');
+        await expectRevert(
+          psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, oneM, expectedAssetAmount + 1),
+          'PegStabilityModule: Redeem not enough out'
+        );
+      });
+
+      it('redeem fails when token is not approved to be spent by the PSM', async () => {
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 10_000_000);
+        await expectRevert(
+          psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 1, 0),
+          'ERC20: transfer amount exceeds allowance'
+        );
+      });
     });
   });
 
@@ -423,12 +566,13 @@ describe('PegStabilityModule', function () {
       it('succeeds when caller is PCVController', async () => {
         const amount = 10_000_000;
         await weth.connect(impersonatedSigners[userAddress]).deposit({ value: amount });
+        const startingUserBalance = await weth.balanceOf(userAddress);
         await weth.connect(impersonatedSigners[userAddress]).transfer(psm.address, amount);
         await psm.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, await psm.balance());
 
         const endingBalance = await psm.balance();
         expect(endingBalance).to.be.equal(0);
-        expect(await weth.balanceOf(userAddress)).to.be.equal(amount);
+        expect(await weth.balanceOf(userAddress)).to.be.equal(startingUserBalance);
       });
     });
   });

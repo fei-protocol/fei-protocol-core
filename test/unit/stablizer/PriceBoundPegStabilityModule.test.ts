@@ -517,7 +517,6 @@ describe('PriceBoundPegStabilityModule', function () {
       });
 
       it('redeem fails when contract is paused', async () => {
-        await oracle.setExchangeRate(ethers.constants.WeiPerEther);
         await psm.connect(impersonatedSigners[governorAddress]).pause();
         expect(await psm.paused()).to.be.true;
 
@@ -869,9 +868,10 @@ describe('PriceBoundPegStabilityModule', function () {
       });
 
       it('fails when token is not approved to be spent by the PSM', async () => {
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 100);
         await expectRevert(
-          psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount, 0),
-          'ERC20: transfer amount exceeds balance'
+          psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 100, 0),
+          'ERC20: transfer amount exceeds allowance'
         );
       });
     });

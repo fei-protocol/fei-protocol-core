@@ -4,6 +4,8 @@ import "./IPSMRouter.sol";
 import "./PegStabilityModule.sol";
 import "../Constants.sol";
 
+/// @notice the PSM router is an ungoverned, non custodial contract that allows user to seamlessly wrap and unwrap their WETH
+/// for trading against the PegStabilityModule.
 contract PSMRouter is IPSMRouter {
 
     /// @notice reference to the PegStabilityModule that this router interacts with
@@ -85,6 +87,7 @@ contract PSMRouter is IPSMRouter {
     }
 
     /// @notice helper function to deposit user FEI, unwrap weth and send eth to the user
+    /// the PSM router receives the weth, then sends it to the specified recipient.
     function _redeem(address to, uint256 amountFeiIn, uint256 minAmountOut) internal returns (uint256 amountOut) {
         fei.transferFrom(msg.sender, address(this), amountFeiIn);
         amountOut = psm.redeem(address(this), amountFeiIn, minAmountOut);

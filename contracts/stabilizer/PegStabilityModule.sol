@@ -162,7 +162,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         amountOut = _getRedeemAmountOut(amountFeiIn);
         require(amountOut >= minAmountOut, "PegStabilityModule: Redeem not enough out");
 
-        fei().transferFrom(msg.sender, address(this), amountFeiIn);
+        IERC20(fei()).safeTransferFrom(msg.sender, address(this), amountFeiIn);
 
         _transfer(to, amountOut);
 
