@@ -18,6 +18,8 @@ import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
+/// @title Implementation for Rai PCV Deposit that provides liquidity to UniswapV3
+/// @author massun-onibakuchi
 contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
     using Decimal for Decimal.D256;
 
@@ -27,13 +29,14 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
         uint24 poolFee; // Uniswap V3 pool fee
     }
 
-    /// @notice fee of Uiswap V3 RAI/FEI pool to provide liquidity
+    /// @notice fee of Uniswap V3 RAI/FEI pool to provide liquidity on
     uint24 private constant POOL_FEE = 500;
 
     /// @notice position range
     int24 private _positionTickLower = -887272;
     int24 private _positionTickUpper = 887272;
 
+    /// @notice Insurance contract to a SAFE position which provides an protection against liquidation.
     /// @dev SAFE saviour https://docs.reflexer.finance/liquidation-protection/safe-protection
     address private _safeSaviour;
 
@@ -105,17 +108,22 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
     receive() external payable {}
 
     /// @notice deposit ETH into the PCV allocation
+    ///         Eth in this contract are deposited in SAFE and if the collateralization ratio is met, additional debt will be issued.
+    ///         the issued debt (RAI) and minted FEI are provided on Uniswap V3 RAI/FEI pool.
+    ///         the minted position NFT is deposited in SAFE issurance to protect SAFE.
+    ///         note if the issued debt (RAI) is too small, the RAI will not be provided on pool.
+    /// @dev if total collateral to be deposited becomes greater than the maximum available amount, the call will be reverted.   
     function deposit() external override whenNotPaused {
         updateOracle();
         uint256 deltaCollateral = address(this).balance;
-        (uint256 safeCollateral, uint256 safeDebt) = safeData();
+        (uint256 safeCollateral, uint256 safeDebt) = safeData(); // decimals 18
         require(
             maximumAvailableETH > safeCollateral + deltaCollateral,
             "RaiPCVDepositUniV3Lp:exceed maximum available eth"
         );
 
         uint256 debtDesired = _getDebtDesired(deltaCollateral + safeCollateral, targetCRatio);
-        // If there is not any room in target collateral rate and current one, extra debt is not generated.
+        // If there is not any room in target collateralization rate and current one, extra debt is not generated.
         uint256 debtToGenerate = debtDesired > safeDebt ? debtDesired - safeDebt : 0;
         _wrap(deltaCollateral);
         _lockETHAndGenerateDebt(safeId, deltaCollateral, debtToGenerate);
@@ -141,11 +149,12 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
                 if (owner == _safeSaviour) {
                     _withdrawDusts(_safeId);
                 }
-                // Add liquidity and protect SAFE
+
+                // Add liquidity on RAI/FEI pool and mint a new position NFT
                 (_tokenId, , , ) = _mintLiquidity(debtToGenerate, feiAmount);
                 tokenId = _tokenId;
 
-                // Protect SAFE using UniV3 position NFT
+                // Protect SAFE by depositing the position NFT
                 positionManager.approve(_safeSaviour, _tokenId);
                 safeManager.protectSAFE(
                     _safeId,
@@ -181,31 +190,40 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
         // If there is room in target collateral rate and current one, there’s no need to repay debt.
         uint256 debtRepaid;
         if (!(safeCollateral >= safeCollateralRequired && (safeCollateral - safeCollateralRequired) >= amount)) {
+            // Check the debt amount must be repaid
             debtRepaid = safeDebt - _getDebtDesired(safeCollateral - amount, targetCRatio);
-            uint256 raiBalance = _balanceSystemCoin();
+            uint256 raiBalance = _balanceSystemCoin(); // RAI balance in this contract
+
             // Remove LP position if there is not enough RAI to repay in this contract
             if (raiBalance < debtRepaid) {
                 uint256 _tokenId = tokenId;
+                // If the position NFT is deposited in the saviour, withdraw and remove the liquidity
                 if (_tokenId != 0 && positionManager.ownerOf(_tokenId) == _safeSaviour) {
                     tokenId = 0; // Effect
                     _removeProtectionAndLiquidity(safeId, _tokenId);
+
                     raiBalance = _balanceSystemCoin();
                 }
             }
-            // Swap PCV assets if there is not enough RAI to repay by simply removing LP due to IL.
+            // If there is not enough RAI to repay by simply removing liquidity on the pool due to IL,
+            // swap PCV assets for RAI until this contract has enough RAI to pay off its debt.
+            // The tokens swapped should be specified in governance in advance.
             if (raiBalance < debtRepaid) {
                 address token;
                 bool native;
                 uint256 amountIn;
-                uint256 amountOut;
                 for (uint256 i; i < 10; i++) {
+                    // If "token" is zero address, it means that all tokens specified in governance were iterated.
+                    // In this case, sufficient RAI could not be obtained by swaping
                     token = tokenSpents[i];
-                    if (tokenSpents[i] == address(0)) break;
+                    require(token != address(0), "RaiPCVDepositUniV3Lp: insufficient balance to repay");
+
                     native = token == positionManager.WETH9();
                     amountIn = native ? address(this).balance : IERC20(token).balanceOf(address(this));
 
                     if (amountIn >= tokenSwapParams[token].minimumAmountIn) {
-                        amountOut = router.exactInputSingle{value: native ? amountIn : 0}(
+                        // Swap token for RAI on the direct pair.
+                        router.exactInputSingle{value: native ? amountIn : 0}(
                             ISwapRouter.ExactInputSingleParams({
                                 tokenIn: token,
                                 tokenOut: _systemCoin,
@@ -217,17 +235,19 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
                                 sqrtPriceLimitX96: 0 // Set this to zero - which makes this parameter inactive. this value can be used to set the limit for the price the swap will push the pool to, which can help protect against price impact
                             })
                         );
-                        raiBalance += amountOut;
+                        // If RAI balance becomes greater than the debt to repay, there are no need to swap more tokens
+                        raiBalance = _balanceSystemCoin();
                         if (raiBalance >= debtRepaid) break;
                     }
                 }
-                require(raiBalance >= debtRepaid, "RaiPCVDepositUniV3Lp: insufficient balance to repay");
             }
         }
 
         _freeETHAndRepayDebt(safeId, amount, debtRepaid);
         _unwrap(amount);
         _burnFeiHeld();
+
+        // Transfer ETH to destination.
         Address.sendValue(payable(to), amount);
 
         emit Withdrawal(msg.sender, to, amount);
@@ -272,6 +292,8 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
         }
     }
 
+    /// @notice sets position ticks
+    /// @dev if position is already provided, remove the liquidity.
     /// @param _tickLower Position tick lower
     /// @param _tickUpper Position tick upper
     function setPositionTicks(int24 _tickLower, int24 _tickUpper) external onlyGovernor {
@@ -344,6 +366,9 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
         }
     }
 
+    /// @notice gets position amounts in UniswapV3 pool.
+    /// @return amount0 number of token0 in pool
+    /// @return amount1 number of token1 in pool
     function getPositionAmounts() public view returns (uint256 amount0, uint256 amount1) {
         uint256 _tokenId = tokenId;
         if (_tokenId != 0) {
@@ -366,8 +391,8 @@ contract RaiPCVDepositUniV3Lp is PCVDeposit, RaiRef, UniV3Ref {
 
     // ----------- Internal functions -----------
 
-    /// @notice Remove SAFE protection
-    /// @dev If protection was exercised, withdraw dusts
+    /// @notice Remove SAFE protection and then remove the liquidity
+    /// @dev If the protection was exercised, withdraw dusts
     function _removeProtectionAndLiquidity(uint _safeId, uint _tokenId) internal {
         (, , , , , , , uint128 liquidity, , , , ) = _position(_tokenId);
         // if liquidity equals 0, protection was exercised

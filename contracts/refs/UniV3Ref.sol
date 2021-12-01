@@ -9,13 +9,11 @@ import "./IUniV3Ref.sol";
 /// @notice defines some utilities around interacting with Uniswap
 /// @dev the uniswap position manager should be FEI and another asset
 abstract contract UniV3Ref is IUniV3Ref, OracleRef {
-    
-    // /// @notice the referenced Uniswap router
-    // ISwapRouter public override router;
 
     /// @notice the referenced Uniswap position manager
     INonfungiblePositionManager public override positionManager;
 
+    /// @notice Uniswap V3 position id
     uint256 public tokenId;
 
     /// @notice UniRef constructor
@@ -31,7 +29,7 @@ abstract contract UniV3Ref is IUniV3Ref, OracleRef {
         address _oracle,
         address _backupOracle
     ) OracleRef(_core, _oracle, _backupOracle, 0, false) {
-        positionManager = INonfungiblePositionManager(_positionManager);
+        _setupPositionManager(_positionManager);
         _setDecimalsNormalizerFromToken(_token);
     }
 
