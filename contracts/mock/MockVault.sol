@@ -60,8 +60,9 @@ contract MockVault {
         JoinPoolRequest memory request
     ) external payable {
         if (mockDoTransfers) {
-            _tokens[0].safeTransferFrom(msg.sender, address(_pool), request.maxAmountsIn[0]);
-            _tokens[1].safeTransferFrom(msg.sender, address(_pool), request.maxAmountsIn[1]);
+            for (uint256 i = 0; i < _tokens.length; i++) {
+              _tokens[i].safeTransferFrom(msg.sender, address(_pool), request.maxAmountsIn[i]);
+            }
         }
         _pool.mint(recipient, LIQUIDITY_AMOUNT);
     }
@@ -84,11 +85,13 @@ contract MockVault {
             _pool.mockInitApprovals();
             if (request.minAmountsOut[0] == 0 && request.minAmountsOut[1] == 0) {
                 // transfer all
-                _tokens[0].safeTransferFrom(address(_pool), recipient, _tokens[0].balanceOf(address(_pool)));
-                _tokens[1].safeTransferFrom(address(_pool), recipient, _tokens[1].balanceOf(address(_pool)));
+                for (uint256 i = 0; i < _tokens.length; i++) {
+                    _tokens[i].safeTransferFrom(address(_pool), recipient, _tokens[i].balanceOf(address(_pool)));
+                }
             } else {
-                _tokens[0].safeTransferFrom(address(_pool), recipient, request.minAmountsOut[0]);
-                _tokens[1].safeTransferFrom(address(_pool), recipient, request.minAmountsOut[1]);
+                for (uint256 i = 0; i < _tokens.length; i++) {
+                    _tokens[i].safeTransferFrom(address(_pool), recipient, request.minAmountsOut[i]);
+                }
             }
         }
     }

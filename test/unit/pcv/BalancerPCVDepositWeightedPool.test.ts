@@ -33,14 +33,12 @@ describe('BalancerPCVDepositWeightedPool', function () {
   let userAddress: string;
   let pcvControllerAddress: string;
   let governorAddress: string;
-  let minterAddress: string;
 
   before(async () => {
     const addresses = await getAddresses();
     userAddress = addresses.userAddress;
     pcvControllerAddress = addresses.pcvControllerAddress;
     governorAddress = addresses.governorAddress;
-    minterAddress = addresses.minterAddress;
   });
 
   describe('With 2 ERC20s', function () {

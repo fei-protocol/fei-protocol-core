@@ -7,18 +7,11 @@ import "./IWeightedPool.sol";
 import "../PCVDeposit.sol";
 import "../../Constants.sol";
 import "../../refs/CoreRef.sol";
-import "./math/ExtendedMath.sol";
-import "./math/ABDKMath64x64.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 /// @title base class for a Balancer PCV Deposit
 /// @author Fei Protocol
 abstract contract BalancerPCVDepositBase is PCVDeposit {
-    using ExtendedMath for int128;
-    using ExtendedMath for uint256;
-    using ABDKMath64x64 for uint256;
-    using ABDKMath64x64 for int128;
-    using SafeMath for uint256;
 
     // ----------- Events ---------------
     event UpdateMaximumSlippage(uint256 maximumSlippageBasisPoints);
@@ -172,51 +165,5 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
           address(this),
           amount
         );
-    }
-
-    /**
-    * Calculates the value of Balancer pool tokens using the logic described here:
-    * https://docs.gyro.finance/learn/oracles/bpt-oracle
-    * This is robust to price manipulations within the Balancer pool.
-    * Courtesy of Gyroscope protocol, used with permission. See the original file here :
-    * https://github.com/gyrostable/core/blob/master/contracts/GyroPriceOracle.sol#L109-L167
-    * @param underlyingPrices = array of prices for underlying assets in the pool,
-    *   given in USD, on a base of 18 decimals.
-    * @return bptPrice = the price of balancer pool tokens, in USD, on a base
-    *   of 18 decimals.
-    */
-    function _getBPTPrice(uint256[] memory underlyingPrices) internal view returns (uint256 bptPrice) {
-        IWeightedPool pool = IWeightedPool(poolAddress);
-        uint256 _bptSupply = pool.totalSupply();
-        uint256[] memory _weights = pool.getNormalizedWeights();
-        ( , uint256[] memory _balances, ) = vault.getPoolTokens(poolId);
-
-        uint256 _k = uint256(1e18);
-        uint256 _weightedProd = uint256(1e18);
-
-        for (uint256 i = 0; i < poolAssets.length; i++) {
-            uint256 _tokenBalance = _balances[i];
-            uint256 _decimals = ERC20(address(poolAssets[i])).decimals();
-            if (_decimals < 18) {
-                _tokenBalance = _tokenBalance.mul(10**(18 - _decimals));
-            }
-
-            // if one of the tokens in the pool has zero balance, there is a problem
-            // in the pool, so we return zero
-            if (_tokenBalance == 0) {
-                return 0;
-            }
-
-            _k = _k.mulPow(_tokenBalance, _weights[i], 18);
-
-            _weightedProd = _weightedProd.mulPow(
-                underlyingPrices[i].scaledDiv(_weights[i], 18),
-                _weights[i],
-                18
-            );
-        }
-
-        uint256 result = _k.scaledMul(_weightedProd).scaledDiv(_bptSupply);
-        return result;
     }
 }

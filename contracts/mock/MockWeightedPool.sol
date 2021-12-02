@@ -19,6 +19,7 @@ contract MockWeightedPool is MockERC20 {
     bool public getPaused;
     uint256 public getSwapFeePercentage;
     uint256[] public weights; // normalized weights
+    uint256 rate = 1e18; // rate of the LP tokens vs underlying (for stable pools)
 
     constructor(MockVault vault, address owner) {
         getOwner = owner;
@@ -30,14 +31,16 @@ contract MockWeightedPool is MockERC20 {
     }
 
     function mockInitApprovals() external {
-        getVault._tokens(0).approve(address(getVault), type(uint256).max);
-        getVault._tokens(1).approve(address(getVault), type(uint256).max);
+        for (uint256 i = 0; i < weights.length; i++) {
+            getVault._tokens(i).approve(address(getVault), type(uint256).max);
+        }
     }
 
     function mockSetNormalizedWeights(uint256[] memory _weights) external {
         weights = _weights;
     }
 
+    // this method is specific to weighted pool
     function getNormalizedWeights()
         external
         view
@@ -46,6 +49,15 @@ contract MockWeightedPool is MockERC20 {
         ) {
             return weights;
         }
+
+    // this method is specific to stable pool, but for convenience we just need
+    // one mock balancer pool
+    function getRate() external view returns (uint256) {
+        return rate;
+    }
+    function mockSetRate(uint256 _rate) external {
+        rate = _rate;
+    }
 
     function getGradualWeightUpdateParams()
         external
