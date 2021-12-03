@@ -3,6 +3,7 @@ import { ProposalsConfigMap } from '@custom-types/types';
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
 import permanently_revoke_burner_proposal from '@proposals/description/permanently_revoke_burner';
+import lusd_swap_grant_swapper_role from '@proposals/description/lusd_swap_grant_swapper_role';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -18,6 +19,12 @@ const proposals: ProposalsConfigMap = {
     skipDAO: false,
     totalValue: 0,
     proposal: permanently_revoke_burner_proposal
+  },
+  lusd_swap_grant_swapper_role: {
+    deploy: false,
+    skipDAO: false,
+    totalValue: 0,
+    proposal: lusd_swap_grant_swapper_role
   }
 };
 

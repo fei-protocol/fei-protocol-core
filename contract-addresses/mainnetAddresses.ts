@@ -283,6 +283,12 @@ const MainnetAddresses = {
   masterKashi: { artifactName: 'unknown', address: '0x2cba6ab6574646badc84f0544d05059e57a5dc42' },
   multisend: { artifactName: 'IERC20Airdropper', address: '0x0B36b0F351ea8383506F596743a2DA7DCa204cc3' },
   multisig: { artifactName: 'unknown', address: '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775' },
+  feiLusdLBPSwapper: { artifactName: 'BalancerLBPSwapper', address: '0x5fc76F8Fc3AF2b19D45AC841252dcE711ed448ff' },
+  lusd: { artifactName: 'IERC20', address: '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0' },
+  lusdPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x8c51e4532cc745cf3dfec5cebd835d07e7ba1002'
+  },
   oldEthBondingCurve: {
     artifactName: 'EthBondingCurve',
     address: '0xe1578B4a32Eaefcd563a9E6d0dc02a4213f673B7'

@@ -1,9 +1,9 @@
 import { DependencyMap } from '@custom-types/types';
-import permanently_revoke_burner from '@proposals/description/permanently_revoke_burner';
 
 const dependencies: DependencyMap = {
   core: {
     fips: {
+      lusd_swap_grant_swapper_role: true,
       fip_37: true,
       permanently_revoke_burner: false
     },
@@ -12,6 +12,7 @@ const dependencies: DependencyMap = {
   },
   fei: {
     fips: {
+      lusd_swap_grant_swapper_role: false,
       fip_37: true,
       permanently_revoke_burner: false
     },
@@ -20,6 +21,7 @@ const dependencies: DependencyMap = {
   },
   pcvEquityMinter: {
     fips: {
+      lusd_swap_grant_swapper_role: false,
       fip_37: true,
       permanently_revoke_burner: false
     },
@@ -28,6 +30,7 @@ const dependencies: DependencyMap = {
   },
   collateralizationOracleKeeper: {
     fips: {
+      lusd_swap_grant_swapper_role: false,
       fip_37: true,
       permanently_revoke_burner: false
     },
@@ -36,6 +39,7 @@ const dependencies: DependencyMap = {
   },
   feiTribeLBPSwapper: {
     fips: {
+      lusd_swap_grant_swapper_role: false,
       fip_37: true,
       permanently_revoke_burner: false
     },
@@ -44,6 +48,7 @@ const dependencies: DependencyMap = {
   },
   collateralizationOracle: {
     fips: {
+      lusd_swap_grant_swapper_role: false,
       fip_37: true,
       permanently_revoke_burner: false
     },
@@ -52,6 +57,7 @@ const dependencies: DependencyMap = {
   },
   collateralizationOracleWrapper: {
     fips: {
+      lusd_swap_grant_swapper_role: false,
       fip_37: true,
       permanently_revoke_burner: false
     },
@@ -60,6 +66,7 @@ const dependencies: DependencyMap = {
   },
   collateralizationOracleGuardian: {
     fips: {
+      lusd_swap_grant_swapper_role: false,
       fip_37: true,
       permanently_revoke_burner: false
     },
@@ -68,6 +75,7 @@ const dependencies: DependencyMap = {
   },
   optimisticTimelock: {
     fips: {
+      lusd_swap_grant_swapper_role: true,
       fip_37: true,
       permanently_revoke_burner: false
     },
@@ -76,8 +84,18 @@ const dependencies: DependencyMap = {
   },
   restrictedPermissions: {
     fips: {
+      lusd_swap_grant_swapper_role: false,
       fip_37: false,
       permanently_revoke_burner: true
+    },
+    contractDependencies: [],
+    externalDependencies: []
+  },
+  feiLusdLBPSwapper: {
+    fips: {
+      lusd_swap_grant_swapper_role: true,
+      fip_37: false,
+      permanently_revoke_burner: false
     },
     contractDependencies: [],
     externalDependencies: []

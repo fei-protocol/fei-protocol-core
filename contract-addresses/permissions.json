@@ -33,7 +33,8 @@
     "optimisticTimelock"
   ],
   "SWAP_ADMIN_ROLE" : [
-    "pcvEquityMinter"
+    "pcvEquityMinter",
+    "tribalChiefOptimisticTimelock"
   ],
   "BALANCER_MANAGER_ADMIN_ROLE" : [
 
