@@ -26,7 +26,7 @@ const MainnetAddresses = {
   agEurAngleUniswapPCVDeposit: {
     artifactName: 'AngleUniswapPCVDeposit',
     address: '0x7AC2Ab8143634419c5bc230A9f9955C3e29f64Ef'
-  }
+  },
   chainlinkLUSDOracle: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0xe61d11ec732d556A26fb863B192052BEa03eF8B5'
