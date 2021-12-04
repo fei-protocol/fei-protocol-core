@@ -78,14 +78,12 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
 
     /// @notice update the rate limit per second and buffer cap
     function poke() public override {
-        (uint256 oldBufferCap, uint256 newBufferCap) = _poke();
-
-        // Increasing the buffer cap shouldn't also increase capacity atomically
-        // Deplete buffer by the newly increased cap difference
-        if (newBufferCap > oldBufferCap) {
-            uint256 increment = newBufferCap - oldBufferCap;
-            _depleteBuffer(increment);
-        }
+        uint256 newBufferCap = idealBufferCap();
+        uint256 oldBufferCap = bufferCap;
+        require(newBufferCap != oldBufferCap, "TribeMinter: No rate limit change needed");
+        
+        _setBufferCap(newBufferCap);
+        _setRateLimitPerSecond(newBufferCap / Constants.ONE_YEAR);  
     }
 
     /// @dev no-op, reverts. Prevent admin or governor from overwriting ideal rate limit
@@ -169,16 +167,6 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
     /// @notice return whether a poke is needed or not i.e. is buffer cap != ideal cap
     function isPokeNeeded() external view override returns (bool) {
         return idealBufferCap() != bufferCap;
-    }
-
-    // Update the buffer cap and rate limit if needed
-    function _poke() internal returns (uint256 oldBufferCap, uint256 newBufferCap) {
-        newBufferCap = idealBufferCap();
-        oldBufferCap = bufferCap;
-        require(newBufferCap != oldBufferCap, "TribeMinter: No rate limit change needed");
-        
-        _setBufferCap(newBufferCap);
-        _setRateLimitPerSecond(newBufferCap / Constants.ONE_YEAR);
     }
 
     // Transfer held TRIBE first, then mint to cover remainder
