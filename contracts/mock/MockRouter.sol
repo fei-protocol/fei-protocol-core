@@ -17,7 +17,6 @@ contract MockRouter {
         PAIR = IMockUniswapV2PairLiquidity(pair);
     }
 
-    uint256 public totalLiquidity;
     uint256 private constant LIQUIDITY_INCREMENT = 10000;
 
     uint256 private amountMinThreshold;
@@ -39,7 +38,6 @@ contract MockRouter {
         (uint112 reserves0, uint112 reserves1, ) = PAIR.getReserves();
         IERC20(token).transferFrom(to, pair, amountToken);
         PAIR.mintAmount{value: amountETH}(to, LIQUIDITY_INCREMENT);
-        totalLiquidity += LIQUIDITY_INCREMENT;
         uint112 newReserve0 = uint112(reserves0) + uint112(amountETH);
         uint112 newReserve1 = uint112(reserves1) + uint112(amountToken);
         PAIR.setReserves(newReserve0, newReserve1);
@@ -67,7 +65,6 @@ contract MockRouter {
         checkAmountMin(amountToken0Min);
 
         liquidity = LIQUIDITY_INCREMENT;
-        totalLiquidity += LIQUIDITY_INCREMENT;
 
         IERC20(token0).transferFrom(to, pair, amountToken0Desired);
         IERC20(token1).transferFrom(to, pair, amountToken1Desired);
@@ -98,7 +95,7 @@ contract MockRouter {
     ) external returns (uint amountFei, uint amountToken) {
         checkAmountMin(amountToken0Min);
 
-        Decimal.D256 memory percentWithdrawal = Decimal.ratio(liquidity, totalLiquidity);
+        Decimal.D256 memory percentWithdrawal = Decimal.ratio(liquidity, PAIR.balanceOf(to));
         Decimal.D256 memory ratio = ratioOwned(to);
         (amountFei, amountToken) = PAIR.burnToken(to, ratio.mul(percentWithdrawal));
 
