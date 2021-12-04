@@ -2,9 +2,6 @@ import { ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
-import fip_41_proposal from '@proposals/description/fip_41';
-import fip_33_proposal from '@proposals/description/fip_33';
-
 const proposals: ProposalsConfigMap = {
   /*
     fip_xx : {
