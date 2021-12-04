@@ -26,6 +26,54 @@ const MainnetAddresses = {
   agEurAngleUniswapPCVDeposit: {
     artifactName: 'AngleUniswapPCVDeposit',
     address: '0x7AC2Ab8143634419c5bc230A9f9955C3e29f64Ef'
+  }
+  chainlinkLUSDOracle: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0xe61d11ec732d556A26fb863B192052BEa03eF8B5'
+  },
+  chainlinkCREAMEthOracle: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0xDE02522cDc4959117fe839a7326D80F9858f383C'
+  },
+  chainlinkBALEthOracle: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0x7261D245454Daa070C77B2a26eA192E3a4c8F655'
+  },
+  balUsdCompositeOracle: {
+    artifactName: 'CompositeOracle',
+    address: '0xDe0407851AEC6F073A63D27C7D29805CCD59D3e0'
+  },
+  creamUsdCompositeOracle: {
+    artifactName: 'CompositeOracle',
+    address: '0x2BDca027c7f57eD9AC1769Ba3a3D64600578bA49'
+  },
+  feiLusdLens: {
+    artifactName: 'BPTLens',
+    address: '0x1F05b337cB16CeA2a1C638Ba9b9571F0Cf4a5612'
+  },
+  aaveFeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0xFAc571b6054619053ac311dA8112939C9a374A85'
+  },
+  creamDepositWrapper: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x3a1838Ac9EcA864054bebB82C32455Dd7d7Fc89c'
+  },
+  balDepositWrapper: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x7E28BA7a2D52Af88242E588d868E927119BA45dB'
+  },
+  staticPcvDepositWrapper2: {
+    artifactName: 'StaticPCVDepositWrapper',
+    address: '0xe72EB93de743F819fe91277582d7d0Fa9bb9b023'
+  },
+  feiBuybackLens: {
+    artifactName: 'BPTLens',
+    address: '0x107460564896377BA6CdcC7516c7eAb65E32E360'
+  },
+  cream: {
+    artifactName: 'IERC20',
+    address: '0x2ba592F78dB6436527729929AAf6c908497cB200'
   },
   collateralizationOracleKeeper: {
     artifactName: 'CollateralizationOracleKeeper',
@@ -410,6 +458,10 @@ const MainnetAddresses = {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x74B235Fef146cDB5BE0D3786a9f3774674b3615E'
   },
+  rariPool7LusdPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x6026a1559CDd44a63C5CA9A078CC996a9eb68ABB'
+  },
   rariPool72FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x4A5Af5A124E672C156241b76CAd4E41D09dd4883'
@@ -448,6 +500,10 @@ const MainnetAddresses = {
   rariPool9RaiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x9aAdFfe00eAe6d8e59bB4F7787C6b99388A6960D'
+  },
+  rariPool90FeiPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x61d26126D2F8A44b41c1D8E1B1F276551DC8EEc6'
   },
   rariPool91FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
