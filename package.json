@@ -74,7 +74,7 @@
     "husky": "^7.0.4",
     "lint-staged": "^12.1.2",
     "mocha": "^9.1.3",
-    "prettier": "^2.4.1",
+    "prettier": "^2.5.0",
     "solidity-coverage": "^0.7.17",
     "ts-node": "^10.4.0",
     "tsconfig-paths": "^3.12.0",
