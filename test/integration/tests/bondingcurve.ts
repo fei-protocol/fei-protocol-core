@@ -96,7 +96,7 @@ describe('e2e-bondingcurve', function () {
         expect(feiBalanceAfter.eq(expectedFinalBalance)).to.be.true;
       });
 
-      it.only('should transfer allocation from bonding curve to compound and aave', async function () {
+      it('should transfer allocation from bonding curve to compound and aave', async function () {
         const { bondingCurve, aaveEthPCVDeposit, compoundEthPCVDeposit } = contracts;
 
         await compoundEthPCVDeposit.deposit();
