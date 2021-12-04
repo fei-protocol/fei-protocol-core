@@ -146,6 +146,23 @@ async function expectApprox(
   }
 }
 
+// expectApproxAbs(a, b, c) checks if b is between [a-c, a+c]
+async function expectApproxAbs(
+  actual: string | number | BigNumberish,
+  expected: string | number | BigNumberish,
+  diff = '1000000000000000000'
+): Promise<void> {
+  const actualBN = toBN(actual);
+  const expectedBN = toBN(expected);
+  const diffBN = toBN(diff);
+
+  const lowerBound = expectedBN.sub(diffBN);
+  const upperBound = expectedBN.add(diffBN);
+
+  expect(actualBN).to.be.gte(lowerBound);
+  expect(actualBN).to.be.lte(upperBound);
+}
+
 async function expectRevert(tx, errorMessage: string): Promise<void> {
   await expect(tx).to.be.revertedWith(errorMessage);
 }
@@ -226,6 +243,7 @@ export {
   increaseTime,
   latestTime,
   expectApprox,
+  expectApproxAbs,
   deployDevelopmentWeth,
   getImpersonatedSigner,
   setNextBlockTimestamp,
