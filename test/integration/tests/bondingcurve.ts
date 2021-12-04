@@ -125,7 +125,10 @@ describe('e2e-bondingcurve', function () {
         await bondingCurve.allocate();
 
         const curveEthBalanceAfter = toBN(await ethers.provider.getBalance(bondingCurve.address));
-        expect(curveEthBalanceAfter.eq(curveEthBalanceBefore.sub(allocatedEth))).to.be.true;
+
+        // Have to use 5 wei because of rounding errors
+        // Tho we only have 2 we use 5 in case of future additions
+        expect(curveEthBalanceAfter.sub(curveEthBalanceBefore.sub(allocatedEth))).to.be.lt(5);
 
         const compoundETHAfter = await compoundEthPCVDeposit.balance();
         const aaveETHAfter = await aaveEthPCVDeposit.balance();

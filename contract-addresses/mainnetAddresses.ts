@@ -1,4 +1,52 @@
 const MainnetAddresses = {
+  chainlinkLUSDOracle: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0xe61d11ec732d556A26fb863B192052BEa03eF8B5'
+  },
+  chainlinkCREAMEthOracle: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0xDE02522cDc4959117fe839a7326D80F9858f383C'
+  },
+  chainlinkBALEthOracle: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0x7261D245454Daa070C77B2a26eA192E3a4c8F655'
+  },
+  balUsdCompositeOracle: {
+    artifactName: 'CompositeOracle',
+    address: '0xDe0407851AEC6F073A63D27C7D29805CCD59D3e0'
+  },
+  creamUsdCompositeOracle: {
+    artifactName: 'CompositeOracle',
+    address: '0x2BDca027c7f57eD9AC1769Ba3a3D64600578bA49'
+  },
+  feiLusdLens: {
+    artifactName: 'BPTLens',
+    address: '0x1F05b337cB16CeA2a1C638Ba9b9571F0Cf4a5612'
+  },
+  aaveFeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0xFAc571b6054619053ac311dA8112939C9a374A85'
+  },
+  creamDepositWrapper: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x3a1838Ac9EcA864054bebB82C32455Dd7d7Fc89c'
+  },
+  balDepositWrapper: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x7E28BA7a2D52Af88242E588d868E927119BA45dB'
+  },
+  staticPcvDepositWrapper2: {
+    artifactName: 'StaticPCVDepositWrapper',
+    address: '0xe72EB93de743F819fe91277582d7d0Fa9bb9b023'
+  },
+  feiBuybackLens: {
+    artifactName: 'BPTLens',
+    address: '0x107460564896377BA6CdcC7516c7eAb65E32E360'
+  },
+  cream: {
+    artifactName: 'IERC20',
+    address: '0x2ba592F78dB6436527729929AAf6c908497cB200'
+  },
   collateralizationOracleKeeper: {
     artifactName: 'CollateralizationOracleKeeper',
     address: '0x62378C316a6161A613D02E11F65290aED79B3eD5'
@@ -173,6 +221,7 @@ const MainnetAddresses = {
     address: '0x751A0bC0e3f75b38e01Cf25bFCE7fF36DE1C87DE'
   },
   balancerVault: { artifactName: 'IVault', address: '0xBA12222222228d8Ba445958a75a0704d566BF2C8' },
+  bal: { artifactName: 'IERC20', address: '0xba100000625a3754423978a60c9317c58a424e3D' },
   bentoBox: { artifactName: 'IMasterContractManager', address: '0xF5BCE5077908a1b7370B9ae04AdC565EBd643966' },
   bondingCurve: { artifactName: 'EthBondingCurve', address: '0xB783c0E21763bEf9F2d04E6499abFbe23AdB7e1F' },
   chainlinkDaiUsdOracle: { artifactName: 'unknown', address: '0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9' },
@@ -252,6 +301,7 @@ const MainnetAddresses = {
   feiDAOTimelock: { artifactName: 'FeiDAOTimelock', address: '0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c' },
   feiEthPair: { artifactName: 'IUniswapV2Pair', address: '0x94B0A3d511b6EcDb17eBF877278Ab030acb0A878' },
   feiOTCEscrow: { artifactName: 'OtcEscrow', address: '0x9B9fE1b732839a53948B02E5164c0A50fdf11e06' },
+  feiBalOtcEscrow: { artifactName: 'OtcEscrow', address: '0x7fB1f6Cb94f01Ba03d2af5cC13c4c1E74b9b9Ecc' },
   feiRewardsDistributor: {
     artifactName: 'IFeiRewardsDistributor',
     address: '0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5'
@@ -276,6 +326,14 @@ const MainnetAddresses = {
     artifactName: 'SnapshotDelegatorPCVDeposit',
     address: '0x0ee81df08B20e4f9E0F534e50da437D24491c4ee'
   },
+  liquityFusePoolLusd: { artifactName: 'CErc20Delegator', address: '0x5052BfbB7972E702179f3Eeed43B9213819b681a' },
+  liquityFusePoolLusdPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x8C51E4532CC745cF3DFec5CEBd835D07E7BA1002'
+  },
+  feiLusdLBPSwapper: { artifactName: 'BalancerLBPSwapper', address: '0x5fc76F8Fc3AF2b19D45AC841252dcE711ed448ff' },
+  feiLusdLBP: { artifactName: 'IWeightedPool', address: '0xede4efcc5492cf41ed3f0109d60bc0543cfad23a' },
+  lusd: { artifactName: 'IERC20', address: '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0' },
   kashiFeiDPI: { artifactName: 'IKashiPair', address: '0xf352773f1d4d69deb4de8d0578e43b993ee76e5d' },
   kashiFeiEth: { artifactName: 'IKashiPair', address: '0x329efec40f58054fc2f2cd4fd65809f2be3e11c8' },
   kashiFeiTribe: { artifactName: 'IKashiPair', address: '0x18c9584d9ce56a0f62f73f630f180d5278c873b7' },
@@ -367,6 +425,10 @@ const MainnetAddresses = {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x74B235Fef146cDB5BE0D3786a9f3774674b3615E'
   },
+  rariPool7LusdPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x6026a1559CDd44a63C5CA9A078CC996a9eb68ABB'
+  },
   rariPool72FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x4A5Af5A124E672C156241b76CAd4E41D09dd4883'
@@ -406,6 +468,10 @@ const MainnetAddresses = {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x9aAdFfe00eAe6d8e59bB4F7787C6b99388A6960D'
   },
+  rariPool90FeiPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x61d26126D2F8A44b41c1D8E1B1F276551DC8EEc6'
+  },
   rariPool91FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x2296a2417D1f02d394ab22aF794a0f426eD53436'
@@ -427,6 +493,7 @@ const MainnetAddresses = {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x9aAdFfe00eAe6d8e59bB4F7787C6b99388A6960D'
   },
+  saddleD4Pool: { artifactName: 'ISaddleSwap', address: '0xC69DDcd4DFeF25D8a793241834d4cc4b3668EAD6' },
   snapshotDelegateRegistry: { artifactName: 'DelegateRegistry', address: '0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446' },
   fAAVE: { artifactName: 'IERC20', address: '0x4da27a545c0c5b758a6ba100e3a049001de870f5' },
   stakingTokenWrapperRari: {
@@ -449,6 +516,14 @@ const MainnetAddresses = {
     artifactName: 'StakingTokenWrapper',
     address: '0x5Db85e395735Bb42eEB720Fe2EE69627d246e300'
   },
+  tWETH: { artifactName: 'IERC20', address: '0xD3D13a578a53685B4ac36A1Bab31912D2B2A2F36' },
+  tToke: { artifactName: 'IERC20', address: '0xa760e26aA76747020171fCF8BdA108dFdE8Eb930' },
+  toke: { artifactName: 'IERC20', address: '0x2e9d63788249371f1dfc918a52f8d799f4a38c94' },
+  ethTokemakPCVDeposit: { artifactName: 'EthTokemakPCVDeposit', address: '0x0961d2a545e0c1201B313d14C57023682a546b9D' },
+  tokeTokemakPCVDeposit: {
+    artifactName: 'ERC20TokemakPCVDeposit',
+    address: '0x45C8FaB07B64C78d03006591132Ac51DE82a4B22'
+  },
   stAAVE: { artifactName: 'IERC20', address: '0x4da27a545c0c5b758a6ba100e3a049001de870f5' },
   steth: { artifactName: 'IERC20', address: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84' },
   sushiswapDpiFei: { artifactName: 'IUniswapV2Pair', address: '0x8775aE5e83BC5D926b6277579c2B0d40c7D9b528' },
@@ -461,6 +536,7 @@ const MainnetAddresses = {
   tribalChiefSync: { artifactName: 'TribalChiefSync', address: '0x7A883825caA45fcbDcd76991C5972Baf1551aa3d' },
   tribe: { artifactName: 'Tribe', address: '0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B' },
   tribeOTCEscrow: { artifactName: 'OtcEscrow', address: '0xe2fE8041429e4bd51c40F92C6cDb699527171298' },
+  tribeBalOtcEscrow: { artifactName: 'OtcEscrow', address: '0xfFdEe6b0261d70278f5A3093A375c282eF8266Db' },
   tribeReserveStabilizer: {
     artifactName: 'TribeReserveStabilizer',
     address: '0xa08A721dFB595753FFf335636674D76C455B275C'
