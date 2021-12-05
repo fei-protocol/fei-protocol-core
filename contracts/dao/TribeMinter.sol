@@ -58,7 +58,7 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
       CoreRef(_core)
     {
         _setAnnualMaxInflationBasisPoints(_annualMaxInflationBasisPoints);
-        _poke();
+        poke();
 
         // start with a full buffer
         _resetBuffer();
