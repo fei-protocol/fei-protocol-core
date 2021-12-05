@@ -7,7 +7,7 @@ import {
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
-} from '../../types/types';
+} from '@custom-types/types';
 import { Core, Tribe, TribeMinter, TribeReserveStabilizer } from '@custom-types/contracts';
 
 chai.use(CBN(ethers.BigNumber));
