@@ -54,7 +54,6 @@ abstract contract RateLimited is CoreRef {
     /// @notice set the buffer cap
     function setBufferCap(uint256 newBufferCap) external virtual onlyGovernorOrAdmin {
         _setBufferCap(newBufferCap);
-        _updateBufferStored();
     }
 
     /// @notice the amount of action used before hitting limit
@@ -99,6 +98,8 @@ abstract contract RateLimited is CoreRef {
     }
 
     function _setBufferCap(uint256 newBufferCap) internal {
+        _updateBufferStored();
+
         uint256 oldBufferCap = bufferCap;
         bufferCap = newBufferCap;
 
