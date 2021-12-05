@@ -111,7 +111,7 @@ abstract contract RateLimited is CoreRef {
     }
 
     function _updateBufferStored() internal {
-        _bufferStored = Math.min(buffer(), bufferCap);
+        _bufferStored = buffer();
         lastBufferUsedTime = block.timestamp;
     }
 }
