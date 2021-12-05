@@ -33,8 +33,8 @@ abstract contract RateLimited is CoreRef {
     constructor(uint256 _maxRateLimitPerSecond, uint256 _rateLimitPerSecond, uint256 _bufferCap, bool _doPartialAction) {
         lastBufferUsedTime = block.timestamp;
 
-        _bufferStored = _bufferCap;
         _setBufferCap(_bufferCap);
+        _bufferStored = _bufferCap;
 
         require(_rateLimitPerSecond <= _maxRateLimitPerSecond, "RateLimited: rateLimitPerSecond too high");
         _setRateLimitPerSecond(_rateLimitPerSecond);

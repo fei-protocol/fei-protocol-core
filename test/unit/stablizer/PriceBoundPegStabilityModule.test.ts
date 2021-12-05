@@ -14,7 +14,7 @@ import { keccak256 } from 'ethers/lib/utils';
 
 const toBN = ethers.BigNumber.from;
 
-describe('PriceBoundPegStabilityModule', function () {
+describe.only('PriceBoundPegStabilityModule', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
