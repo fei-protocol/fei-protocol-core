@@ -24,10 +24,12 @@
     "feiDAOTimelock",
     "ratioPCVController",
     "aaveEthPCVDripController",
-    "compoundEthPCVDripController"
+    "compoundEthPCVDripController",
+    "pcvGuardian"
   ],
   "GUARDIAN_ROLE": [
-    "multisig"
+    "multisig",
+    "pcvGuardian"
   ],
   "ORACLE_ADMIN_ROLE" : [
     "collateralizationOracleGuardian",
