@@ -233,8 +233,9 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         return address(underlyingToken);
     }
 
+    /// @notice override default behavior of not checking fei balance
     function resistantBalanceAndFei() public view override returns(uint256, uint256) {
-        return (balance(), fei().balanceOf(address(this)));
+      return (balance(), feiBalance());
     }
 
     // ----------- Internal Methods -----------

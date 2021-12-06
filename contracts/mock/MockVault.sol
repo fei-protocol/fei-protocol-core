@@ -8,6 +8,7 @@ contract MockVault {
 
     MockWeightedPool public _pool;
     IERC20[] public _tokens;
+    uint256[] public _balances;
     uint256 public constant LIQUIDITY_AMOUNT = 1e18;
 
     constructor(IERC20[] memory tokens, address owner) {
@@ -23,8 +24,12 @@ contract MockVault {
             uint256[] memory balances,
             uint256 lastChangeBlock
         ) {
-            return (_tokens, balances, lastChangeBlock);
+            return (_tokens, _balances, lastChangeBlock);
         }
+
+    function setBalances(uint256[] memory balances) external {
+        _balances = balances;
+    }
 
     function joinPool(
         bytes32 poolId,

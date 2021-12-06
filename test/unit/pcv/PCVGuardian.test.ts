@@ -1,4 +1,4 @@
-import { getAddresses, getCore, getImpersonatedSigner } from '@test/helpers';
+import { expectRevert, getAddresses, getCore, getImpersonatedSigner } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
 import { ethers } from 'hardhat';
@@ -128,7 +128,31 @@ describe('PCV Guardian', function () {
       expect(await pcvGuardianWithoutStartingAddresses.isSafeAddress(userAddress)).to.be.true;
     });
 
+    it("can't set an already safe address", async () => {
+      await pcvGuardianWithoutStartingAddresses
+        .connect(impersonatedSigners[governorAddress])
+        .setSafeAddress(userAddress);
+      expect(await pcvGuardianWithoutStartingAddresses.isSafeAddress(userAddress)).to.be.true;
+
+      await expectRevert(
+        pcvGuardianWithoutStartingAddresses.connect(impersonatedSigners[governorAddress]).setSafeAddress(userAddress),
+        'set'
+      );
+    });
+
+    it("can't unset an already unsafe address", async () => {
+      await expectRevert(
+        pcvGuardianWithoutStartingAddresses.connect(impersonatedSigners[governorAddress]).unsetSafeAddress(userAddress),
+        'unset'
+      );
+    });
+
     it('should allow the guardian to remove a safe address', async () => {
+      await pcvGuardianWithoutStartingAddresses
+        .connect(impersonatedSigners[governorAddress])
+        .setSafeAddress(userAddress);
+      expect(await pcvGuardianWithoutStartingAddresses.isSafeAddress(userAddress)).to.be.true;
+
       await pcvGuardianWithoutStartingAddresses
         .connect(impersonatedSigners[guardianAddress])
         .unsetSafeAddress(userAddress);
