@@ -25,14 +25,14 @@ Steps:
 const fipNumber = '9001'; // Change me!
 
 // Constants for deploy. Tweak as needed.
-const daiPSMMintFeeBasisPoints = 50;
-const daiPSMRedeemFeeBasisPoints = 50;
+const daiPSMMintFeeBasisPoints = 30;
+const daiPSMRedeemFeeBasisPoints = 30;
 
-const wethPSMMintFeeBasisPoints = 50;
-const wethPSMRedeemFeeBasisPoints = 50;
+const wethPSMMintFeeBasisPoints = 100;
+const wethPSMRedeemFeeBasisPoints = 100;
 
-const daiReservesThreshold = ethers.utils.parseEther('10000000');
-const wethReservesThreshold = ethers.utils.parseEther('1000');
+const daiReservesThreshold = ethers.utils.parseEther('30000000');
+const wethReservesThreshold = ethers.utils.parseEther('7500');
 
 const daiFeiMintLimitPerSecond = ethers.utils.parseEther('10000');
 const wethFeiMintLimitPerSecond = ethers.utils.parseEther('10000');
@@ -43,13 +43,19 @@ const wethPSMBufferCap = ethers.utils.parseEther('10000000');
 const daiDecimalsNormalizer = 18;
 const wethDecimalsNormalizer = 18;
 
-/// TODO where do we want to send excess reserves?
-const excessReservesDestination = 'fixme';
-
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  const { core, fei, dai, weth, chainlinkDaiUsdOracleWrapper, chainlinkEthUsdOracleWrapper } = addresses;
+  const {
+    core,
+    fei,
+    dai,
+    weth,
+    chainlinkDaiUsdOracleWrapper,
+    chainlinkEthUsdOracleWrapper,
+    compoundDaiPCVDeposit,
+    aaveEthPCVDeposit
+  } = addresses;
 
   if (!core) {
     throw new Error('Core address not set.');
@@ -78,7 +84,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     daiFeiMintLimitPerSecond,
     daiPSMBufferCap,
     dai,
-    dai // TODO REPLACE THIS
+    compoundDaiPCVDeposit
   );
 
   // Deploy ETH Peg Stability Module
@@ -96,7 +102,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     wethFeiMintLimitPerSecond,
     wethPSMBufferCap,
     weth,
-    dai // TODO REPLACE THIS
+    aaveEthPCVDeposit
   );
 
   // Deploy PSM Router
@@ -121,6 +127,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   console.log(`No actions to complete in setup for fip${fipNumber}`);
+  const { compoundDaiPCVDeposit, aaveEthPCVDeposit, feiDAOTimelock, daiPSM, wethPSM } = contracts;
+  const timelockSigner = await ethers.getSigner(feiDAOTimelock.address);
+  // fund both PSM's with 30m in assets
+  await compoundDaiPCVDeposit.connect(timelockSigner).withdraw(daiPSM.address, daiReservesThreshold);
+  await aaveEthPCVDeposit.connect(timelockSigner).withdraw(wethPSM.address, wethReservesThreshold);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -132,7 +143,22 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in validate for fip${fipNumber}`);
+  const { psmRouter, wethPSM, daiPSM, weth, dai } = contracts;
+
+  expect(await psmRouter.psm()).to.be.equal(wethPSM.address);
+  expect(await psmRouter.redeemActive()).to.be.false;
+
+  expect(await wethPSM.underlyingToken()).to.be.equal(weth.address);
+  expect(await daiPSM.underlyingToken()).to.be.equal(dai.address);
+
+  expect(await wethPSM.redeemFeeBasisPoints()).to.be.equal(wethPSMRedeemFeeBasisPoints);
+  expect(await daiPSM.redeemFeeBasisPoints()).to.be.equal(daiPSMRedeemFeeBasisPoints);
+
+  expect(await wethPSM.mintFeeBasisPoints()).to.be.equal(wethPSMMintFeeBasisPoints);
+  expect(await daiPSM.mintFeeBasisPoints()).to.be.equal(daiPSMMintFeeBasisPoints);
+
+  expect(await daiPSM.reservesThreshold()).to.be.equal(daiReservesThreshold);
+  expect(await wethPSM.reservesThreshold()).to.be.equal(wethReservesThreshold);
 };
 
 export { deploy, setup, teardown, validate };

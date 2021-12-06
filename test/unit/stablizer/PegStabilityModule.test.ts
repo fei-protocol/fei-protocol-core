@@ -518,7 +518,7 @@ describe('PegStabilityModule', function () {
         expect(updatedTarget).to.be.equal(newTarget);
       });
 
-      it('succeeds when caller is governor', async () => {
+      it('succeeds when caller is psm admin', async () => {
         const oldTarget = await psm.surplusTarget();
         const newTarget = weth.address;
         await expect(await psm.connect(impersonatedSigners[psmAdminAddress]).setSurplusTarget(newTarget))
