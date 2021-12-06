@@ -5,11 +5,12 @@ import "./ReserveStabilizer.sol";
 import "./ITribeReserveStabilizer.sol";
 import "../dao/ITribeMinter.sol";
 import "../utils/RateLimited.sol";
+import "../utils/Timed.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
 /// @title implementation for a TRIBE Reserve Stabilizer
 /// @author Fei Protocol
-contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
+contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, Timed {
     using Decimal for Decimal.D256;
 
     /// @notice a collateralization oracle
@@ -28,6 +29,7 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
     /// @param _collateralizationOracle the collateralization oracle to reference
     /// @param _collateralizationThresholdBasisPoints the collateralization ratio below which the stabilizer becomes active. Reported in basis points (1/10000)
     /// @param _tribeMinter the tribe minter contract
+    /// @param _osmDuration the amount of delay time before the TribeReserveStabilizer begins minting TRIBE
     constructor(
         address _core,
         address _tribeOracle,
@@ -35,9 +37,11 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
         uint256 _usdPerFeiBasisPoints,
         ICollateralizationOracle _collateralizationOracle,
         uint256 _collateralizationThresholdBasisPoints,
-        ITribeMinter _tribeMinter
+        ITribeMinter _tribeMinter,
+        uint256 _osmDuration
     ) 
-      ReserveStabilizer(_core, _tribeOracle, _backupOracle, IERC20(address(0)), _usdPerFeiBasisPoints) 
+      ReserveStabilizer(_core, _tribeOracle, _backupOracle, IERC20(address(0)), _usdPerFeiBasisPoints)
+      Timed(_osmDuration) 
     {
         collateralizationOracle = _collateralizationOracle;
         emit CollateralizationOracleUpdate(address(0), address(_collateralizationOracle));
@@ -55,7 +59,9 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
     /// @notice exchange FEI for minted TRIBE
     /// @dev Collateralization oracle price must be below threshold
     function exchangeFei(uint256 feiAmount) public override returns(uint256) {
-        require(isCollateralizationBelowThreshold(), "TribeReserveStabilizer: Collateralization ratio above threshold");
+        // the timer counts down from first time below threshold
+        // if oracle remains below for entire window, then begin opening exchange
+        require(isTimeEnded(), "TribeReserveStabilizer: Oracle delay");
         return super.exchangeFei(feiAmount);
     }
 
@@ -70,6 +76,20 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer {
         (Decimal.D256 memory ratio, bool valid) = collateralizationOracle.read();
 
         return valid && ratio.lessThanOrEqualTo(_collateralizationThreshold);
+    }
+
+    /// @notice delay the opening of the TribeReserveStabilizer until oracle delay duration is met
+    function startOracleDelayCountdown() external override {
+        require(isCollateralizationBelowThreshold(), "TribeReserveStabilizer: Collateralization ratio above threshold");
+        require(!isTimeStarted(), "TribeReserveStabilizer: timer started");
+        _initTimed();
+    }
+
+    /// @notice reset the opening of the TribeReserveStabilizer oracle delay as soon as above CR target
+    function resetOracleDelayCountdown() external override {
+        require(!isCollateralizationBelowThreshold(), "TribeReserveStabilizer: Collateralization ratio above threshold");
+        require(isTimeStarted(), "TribeReserveStabilizer: timer started");
+        _pauseTimer();
     }
 
     /// @notice set the Collateralization oracle

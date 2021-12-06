@@ -1,15 +1,17 @@
-import { expectRevert, getAddresses, getCore } from '../../helpers';
+import { expectRevert, getAddresses, getCore, increaseTime } from '@test/helpers';
 import hre, { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
+import { TribeReserveStabilizer } from '@custom-types/contracts';
 
 const toBN = ethers.BigNumber.from;
 
-describe('TribeReserveStabilizer', function () {
+describe.only('TribeReserveStabilizer', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
   let pcvControllerAddress;
+  let reserveStabilizer: TribeReserveStabilizer;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
 
@@ -52,7 +54,7 @@ describe('TribeReserveStabilizer', function () {
 
     this.tribeMinter = await (await ethers.getContractFactory('MockTribeMinter')).deploy(this.tribe.address);
 
-    this.reserveStabilizer = await (
+    reserveStabilizer = await (
       await ethers.getContractFactory('TribeReserveStabilizer')
     ).deploy(
       this.core.address,
@@ -61,28 +63,34 @@ describe('TribeReserveStabilizer', function () {
       '9000', // $.90 exchange rate
       this.collateralizationOracle.address,
       '10000', // 100% CR threshold
-      this.tribeMinter.address
+      this.tribeMinter.address,
+      '10' // 10 second window
     );
 
     await this.tribe.connect(impersonatedSigners[governorAddress]).setMinter(this.tribeMinter.address, {});
 
     await this.fei
       .connect(impersonatedSigners[userAddress])
-      .approve(this.reserveStabilizer.address, ethers.constants.MaxUint256);
+      .approve(reserveStabilizer.address, ethers.constants.MaxUint256);
     await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 40000000, {});
   });
 
   describe('Exchange', function () {
+    beforeEach(async function () {
+      await reserveStabilizer.startOracleDelayCountdown();
+      await increaseTime(10);
+    });
+
     describe('Enough FEI', function () {
       it('exchanges for appropriate amount of token', async function () {
         const userBalanceBefore = await this.tribe.balanceOf(userAddress);
-        await this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000, {});
+        await reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000, {});
         const userBalanceAfter = await this.tribe.balanceOf(userAddress);
 
         expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal(toBN('90000'));
 
         expect(await this.fei.balanceOf(userAddress)).to.be.equal(toBN('0'));
-        expect(await this.reserveStabilizer.balance()).to.be.equal(toBN('0'));
+        expect(await reserveStabilizer.balance()).to.be.equal(toBN('0'));
       });
     });
 
@@ -91,34 +99,47 @@ describe('TribeReserveStabilizer', function () {
         await this.oracle.setExchangeRate('800');
 
         const userBalanceBefore = await this.tribe.balanceOf(userAddress);
-        await this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000, {});
+        await reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000, {});
         const userBalanceAfter = await this.tribe.balanceOf(userAddress);
 
         expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal(toBN('45000'));
 
         expect(await this.fei.balanceOf(userAddress)).to.be.equal(toBN('0'));
-        expect(await this.reserveStabilizer.balance()).to.be.equal(toBN('0'));
+        expect(await reserveStabilizer.balance()).to.be.equal(toBN('0'));
       });
     });
 
     describe('Collateralization ratio above threshold', function () {
-      it('reverts', async function () {
-        await this.reserveStabilizer
-          .connect(impersonatedSigners[governorAddress])
-          .setCollateralizationThreshold('9900', {});
+      it('reset reverts', async function () {
+        await reserveStabilizer.connect(impersonatedSigners[governorAddress]).setCollateralizationThreshold('9900', {});
+        await reserveStabilizer.resetOracleDelayCountdown();
+
         await expectRevert(
-          this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000, {}),
-          'TribeReserveStabilizer: Collateralization ratio above threshold'
+          reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000, {}),
+          'TribeReserveStabilizer: Oracle delay'
         );
+      });
+
+      it('no reset succeeds', async function () {
+        await reserveStabilizer.connect(impersonatedSigners[governorAddress]).setCollateralizationThreshold('9900', {});
+        await reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000);
       });
     });
 
     describe('Paused', function () {
       it('reverts', async function () {
-        await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});
+        await reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});
         await expectRevert(
-          this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(toBN('400000'), {}),
+          reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(toBN('400000'), {}),
           'Pausable: paused'
+        );
+      });
+    });
+    describe('Not Enough FEI', function () {
+      it('reverts', async function () {
+        await expectRevert(
+          reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(50000000, {}),
+          'ERC20: transfer amount exceeds balance'
         );
       });
     });
@@ -126,75 +147,50 @@ describe('TribeReserveStabilizer', function () {
 
   describe('isCollateralizationBelowThreshold', function () {
     it('above', async function () {
-      await this.reserveStabilizer
-        .connect(impersonatedSigners[governorAddress])
-        .setCollateralizationThreshold('9900', {});
-      expect(await this.reserveStabilizer.isCollateralizationBelowThreshold()).to.be.equal(false);
+      await reserveStabilizer.connect(impersonatedSigners[governorAddress]).setCollateralizationThreshold('9900', {});
+      expect(await reserveStabilizer.isCollateralizationBelowThreshold()).to.be.equal(false);
     });
 
     it('at', async function () {
-      expect(await this.reserveStabilizer.isCollateralizationBelowThreshold()).to.be.equal(true);
+      expect(await reserveStabilizer.isCollateralizationBelowThreshold()).to.be.equal(true);
     });
 
     it('below', async function () {
-      await this.reserveStabilizer
-        .connect(impersonatedSigners[governorAddress])
-        .setCollateralizationThreshold('10000', {});
-      expect(await this.reserveStabilizer.isCollateralizationBelowThreshold()).to.be.equal(true);
+      await reserveStabilizer.connect(impersonatedSigners[governorAddress]).setCollateralizationThreshold('10000', {});
+      expect(await reserveStabilizer.isCollateralizationBelowThreshold()).to.be.equal(true);
     });
 
     it('invalid oracle', async function () {
       await this.collateralizationOracle.setValid(false);
-      expect(await this.reserveStabilizer.isCollateralizationBelowThreshold()).to.be.equal(false);
+      expect(await reserveStabilizer.isCollateralizationBelowThreshold()).to.be.equal(false);
     });
   });
 
   describe('Withdraw', function () {
     it('reverts', async function () {
       await expectRevert(
-        this.reserveStabilizer
-          .connect(impersonatedSigners[pcvControllerAddress])
-          .withdraw(userAddress, '1000000000', {}),
+        reserveStabilizer.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, '1000000000', {}),
         "TribeReserveStabilizer: can't withdraw"
-      );
-    });
-  });
-
-  describe('Not Enough FEI', function () {
-    it('reverts', async function () {
-      await expectRevert(
-        this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(50000000, {}),
-        'ERC20: transfer amount exceeds balance'
-      );
-    });
-  });
-
-  describe('Paused', function () {
-    it('reverts', async function () {
-      await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).pause({});
-      await expectRevert(
-        this.reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(toBN('400000'), {}),
-        'Pausable: paused'
       );
     });
   });
 
   describe('Set USD per FEI', function () {
     it('governor succeeds', async function () {
-      await this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).setUsdPerFeiRate('10000', {});
-      expect(await this.reserveStabilizer.usdPerFeiBasisPoints()).to.be.equal(toBN('10000'));
+      await reserveStabilizer.connect(impersonatedSigners[governorAddress]).setUsdPerFeiRate('10000', {});
+      expect(await reserveStabilizer.usdPerFeiBasisPoints()).to.be.equal(toBN('10000'));
     });
 
     it('non-governor reverts', async function () {
       await expectRevert(
-        this.reserveStabilizer.connect(impersonatedSigners[userAddress]).setUsdPerFeiRate('10000', {}),
+        reserveStabilizer.connect(impersonatedSigners[userAddress]).setUsdPerFeiRate('10000', {}),
         'CoreRef: Caller is not a governor'
       );
     });
 
     it('too high usd per fei reverts', async function () {
       await expectRevert(
-        this.reserveStabilizer.connect(impersonatedSigners[governorAddress]).setUsdPerFeiRate('10001', {}),
+        reserveStabilizer.connect(impersonatedSigners[governorAddress]).setUsdPerFeiRate('10001', {}),
         'ReserveStabilizer: Exceeds bp granularity'
       );
     });

@@ -63,6 +63,12 @@ abstract contract Timed {
         emit TimerReset(block.timestamp);
     }
 
+    function _pauseTimer() internal {
+        // setting start time to 0 means isTimeStarted is false
+        startTime = 0;
+        emit TimerReset(0);
+    }
+
     function _setDuration(uint256 newDuration) internal {
         require(newDuration != 0, "Timed: zero duration");
 
