@@ -6,7 +6,7 @@ import { TribeReserveStabilizer } from '@custom-types/contracts';
 
 const toBN = ethers.BigNumber.from;
 
-describe.only('TribeReserveStabilizer', function () {
+describe('TribeReserveStabilizer', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
