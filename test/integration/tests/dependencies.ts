@@ -3,7 +3,7 @@ import { ProposalDescription } from '@custom-types/types';
 import proposals from '@test/integration/proposals_config';
 import dependencies from '@addresses/dependencies';
 
-describe('e2e-dependencies', function () {
+describe.skip('e2e-dependencies', function () {
   const doLogging = Boolean(process.env.LOGGING);
   let proposalNames: string[];
 

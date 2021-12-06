@@ -296,6 +296,70 @@ describe('BalancerLBPSwapper', function () {
     });
   });
 
+  describe('forceSwap', function () {
+    beforeEach(async function () {
+      await balancerLBPSwapper.init(pool.address);
+    });
+
+    describe('before time', function () {
+      beforeEach(async function () {
+        await fei
+          .connect(impersonatedSigners[minterAddress])
+          .mint(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
+
+        await core
+          .connect(impersonatedSigners[governorAddress])
+          .allocateTribe(balancerLBPSwapper.address, ethers.constants.WeiPerEther);
+      });
+
+      it('should succeed, no time restriction', async function () {
+        await increaseTime(await balancerLBPSwapper.remainingTime());
+        await balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).swap();
+
+        expect(await pool.balanceOf(balancerLBPSwapper.address)).to.be.bignumber.equal(await vault.LIQUIDITY_AMOUNT());
+        expect(await balancerLBPSwapper.isTimeEnded()).to.be.false; // pool reset
+
+        // Transfers held TRIBE
+        expect(await tribe.balanceOf(userAddress)).to.be.bignumber.equal(ethers.constants.WeiPerEther);
+
+        const weightUpdate = await pool.getGradualWeightUpdateParams();
+        const now = await latestTime();
+        expect(weightUpdate[0].toNumber()).to.be.equal(now);
+        expect(weightUpdate[1].toNumber()).to.be.greaterThan(now);
+      });
+    });
+
+    describe('paused', function () {
+      beforeEach(async function () {
+        await fei
+          .connect(impersonatedSigners[minterAddress])
+          .mint(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
+        await increaseTime(await balancerLBPSwapper.remainingTime());
+        await balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).pause();
+      });
+
+      it('reverts', async function () {
+        await expectRevert(balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).swap(), 'Pausable: paused');
+      });
+    });
+
+    describe('Non-Governor', function () {
+      beforeEach(async function () {
+        await fei
+          .connect(impersonatedSigners[minterAddress])
+          .mint(balancerLBPSwapper.address, ethers.constants.WeiPerEther.mul(2));
+        await increaseTime(await balancerLBPSwapper.remainingTime());
+      });
+
+      it('reverts', async function () {
+        await expectRevert(
+          balancerLBPSwapper.connect(impersonatedSigners[userAddress]).swap(),
+          'CoreRef: Caller is not a governor'
+        );
+      });
+    });
+  });
+
   describe('exitPool', function () {
     beforeEach(async function () {
       await balancerLBPSwapper.init(pool.address);

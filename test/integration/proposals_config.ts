@@ -11,7 +11,7 @@ const proposals: ProposalsConfigMap = {
         skipDAO: false, // whether or not to simulate proposal in DAO
         totalValue: 0, // amount of ETH to send to DAO execution
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
-    } 
+    }
     */
   permanently_revoke_burner: {
     deploy: true,

@@ -38,6 +38,10 @@ contract MockWeightedPool is MockERC20 {
         getSwapEnabled = swapEnabled;
     }
 
+    function getNormalizedWeights() external view returns (uint256[] memory) {
+        return _endWeights;
+    }
+
     function updateWeightsGradually(
         uint256 startTime,
         uint256 endTime,

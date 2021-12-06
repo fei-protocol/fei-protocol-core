@@ -49,6 +49,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @notice batch version of setSafeAddress
     /// @param _safeAddresses the addresses to set as safe, as calldata
     function setSafeAddresses(address[] calldata _safeAddresses) external override onlyGovernorOrAdmin() {
+        require(_safeAddresses.length != 0, "empty");
         for(uint256 i=0; i<_safeAddresses.length; i++) {
             _setSafeAddress(_safeAddresses[i]);
         }
@@ -65,6 +66,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @notice batch version of unsetSafeAddresses
     /// @param _safeAddresses the addresses to un-set as safe
     function unsetSafeAddresses(address[] calldata _safeAddresses) external override isGovernorOrGuardianOrAdmin() {
+        require(_safeAddresses.length != 0, "empty");
         for(uint256 i=0; i<_safeAddresses.length; i++) {
             _unsetSafeAddress(_safeAddresses[i]);
         }
@@ -130,12 +132,12 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     // ---------- Internal Functions ----------
 
     function _setSafeAddress(address anAddress) internal {
-        safeAddresses.add(anAddress);
+        require(safeAddresses.add(anAddress), "set");
         emit SafeAddressAdded(anAddress);
     }
 
     function _unsetSafeAddress(address anAddress) internal {
-        safeAddresses.remove(anAddress);
+        require(safeAddresses.remove(anAddress), "unset");
         emit SafeAddressRemoved(anAddress);
     }
 }

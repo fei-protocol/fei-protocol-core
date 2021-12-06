@@ -33,8 +33,8 @@ abstract contract RateLimited is CoreRef {
     constructor(uint256 _maxRateLimitPerSecond, uint256 _rateLimitPerSecond, uint256 _bufferCap, bool _doPartialAction) {
         lastBufferUsedTime = block.timestamp;
 
-        _bufferStored = _bufferCap;
         _setBufferCap(_bufferCap);
+        _bufferStored = _bufferCap;
 
         require(_rateLimitPerSecond <= _maxRateLimitPerSecond, "RateLimited: rateLimitPerSecond too high");
         _setRateLimitPerSecond(_rateLimitPerSecond);
@@ -46,6 +46,8 @@ abstract contract RateLimited is CoreRef {
     /// @notice set the rate limit per second
     function setRateLimitPerSecond(uint256 newRateLimitPerSecond) external virtual onlyGovernorOrAdmin {
         require(newRateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND, "RateLimited: rateLimitPerSecond too high");
+        _updateBufferStored();
+        
         _setRateLimitPerSecond(newRateLimitPerSecond);
     }
 
@@ -89,11 +91,6 @@ abstract contract RateLimited is CoreRef {
     }
 
     function _setRateLimitPerSecond(uint256 newRateLimitPerSecond) internal {
-
-        // Reset the stored buffer and last buffer used time using the prior RateLimitPerSecond
-        _bufferStored = buffer();
-        lastBufferUsedTime = block.timestamp;
-
         uint256 oldRateLimitPerSecond = rateLimitPerSecond;
         rateLimitPerSecond = newRateLimitPerSecond;
 
@@ -101,18 +98,20 @@ abstract contract RateLimited is CoreRef {
     }
 
     function _setBufferCap(uint256 newBufferCap) internal {
+        _updateBufferStored();
+
         uint256 oldBufferCap = bufferCap;
         bufferCap = newBufferCap;
-
-        // Cap the existing stored buffer
-        if (_bufferStored > newBufferCap) {
-            _resetBuffer();
-        }
 
         emit BufferCapUpdate(oldBufferCap, newBufferCap);
     }
 
     function _resetBuffer() internal {
         _bufferStored = bufferCap;
+    }
+
+    function _updateBufferStored() internal {
+        _bufferStored = buffer();
+        lastBufferUsedTime = block.timestamp;
     }
 }

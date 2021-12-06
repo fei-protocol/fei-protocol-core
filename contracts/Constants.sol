@@ -14,4 +14,11 @@ library Constants {
 
     /// @notice USD stand-in address
     address public constant USD = 0x1111111111111111111111111111111111111111;
+
+    /// @notice Wei per ETH, i.e. 10**18
+    uint256 public constant ETH_GRANULARITY = 1e18;
+    
+    /// @notice number of decimals in ETH, 18
+    uint256 public constant ETH_DECIMALS = 18;
+
 }
