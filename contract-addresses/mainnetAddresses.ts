@@ -553,6 +553,10 @@ const MainnetAddresses = {
     artifactName: 'StakingTokenWrapper',
     address: '0x3b3591a4f7FD386E9987Eb48d898e29b57c30c47'
   },
+  stakingTokenWrapperKYLINLaaS: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0xFe266d143dB42a9835e2B1AB43B64a46278398cc'
+  },
   tWETH: { artifactName: 'IERC20', address: '0xD3D13a578a53685B4ac36A1Bab31912D2B2A2F36' },
   tToke: { artifactName: 'IERC20', address: '0xa760e26aA76747020171fCF8BdA108dFdE8Eb930' },
   toke: { artifactName: 'IERC20', address: '0x2e9d63788249371f1dfc918a52f8d799f4a38c94' },
