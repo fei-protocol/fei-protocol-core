@@ -1,6 +1,13 @@
 import { DependencyMap } from '@custom-types/types';
 
 const dependencies: DependencyMap = {
+  d3poolConvexPCVDeposit: {
+    fips: {
+      fip_53: true
+    },
+    contractDependencies: [],
+    externalDependencies: []
+  },
   fei: {
     fips: {
       fip_45: true

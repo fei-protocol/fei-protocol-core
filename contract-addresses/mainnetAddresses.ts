@@ -1,4 +1,5 @@
 const MainnetAddresses = {
+  alusd: { artifactName: 'IERC20', address: '0xBC6DA0FE9aD5f3b0d58160288917AA56653660E9' },
   agEUR: {
     artifactName: 'IERC20',
     address: '0x1a7e4e63778B4f12a199C062f3eFdD288afCBce8'
@@ -345,6 +346,7 @@ const MainnetAddresses = {
     address: '0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5'
   },
   feiTribePair: { artifactName: 'IUniswapV2Pair', address: '0x9928e4046d7c6513326cCeA028cD3e7a91c7590A' },
+  frax: { artifactName: 'IERC20', address: '0x853d955aCEf822Db058eb8505911ED77F175b99e' },
   genesisGroup: { artifactName: 'unknown', address: '0xBFfB152b9392e38CdDc275D818a3Db7FE364596b' },
   governorAlpha: { artifactName: 'GovernorAlpha', address: '0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B' },
   governorAlphaBackup: { artifactName: 'GovernorAlpha', address: '0x4C895973334Af8E06fd6dA4f723Ac24A5f259e6B' },

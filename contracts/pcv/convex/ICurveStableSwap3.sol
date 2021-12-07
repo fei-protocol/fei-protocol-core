@@ -11,6 +11,7 @@ interface ICurveStableSwap3 {
   // Public property getters
   function coins(uint256 arg0) external view returns (address);
   function balances(uint256 arg0) external view returns (uint256);
+  function get_balances() external view returns (uint256[3] memory);
   function fee() external view returns (uint256);
   function admin_fee() external view returns (uint256);
   function owner() external view returns (address);
