@@ -2,11 +2,13 @@ import { expectEvent, expectRevert, getAddresses, getImpersonatedSigner, time } 
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import { Signer } from 'ethers';
+import { forceEth } from '../../integration/setup/utils';
 
 const toBN = ethers.BigNumber.from;
 
 describe('QuadraticTimelockedDelegator', function () {
   let userAddress;
+  let secondUserAddress;
   let beneficiaryAddress1;
   let delegator;
   let tribe;
@@ -27,7 +29,7 @@ describe('QuadraticTimelockedDelegator', function () {
   });
 
   beforeEach(async function () {
-    ({ userAddress, beneficiaryAddress1 } = await getAddresses());
+    ({ userAddress, secondUserAddress, beneficiaryAddress1 } = await getAddresses());
 
     tribe = await (await ethers.getContractFactory('MockTribe')).deploy();
 
@@ -244,6 +246,41 @@ describe('QuadraticTimelockedDelegator', function () {
           'TokenTimelock: Caller is not a beneficiary'
         );
       });
+
+      describe('Accept Beneficiary', function () {
+        it('Pending Beneficiary succeeds', async function () {
+          await delegator.setPendingBeneficiary(userAddress);
+          expectEvent(
+            await delegator.connect(impersonatedSigners[userAddress]).acceptBeneficiary(),
+            delegator,
+            'BeneficiaryUpdate',
+            [userAddress]
+          );
+          expect(await delegator.beneficiary()).to.be.equal(userAddress);
+        });
+
+        it('should transfer voting power to new beneficiary', async function () {
+          expect(await tribe.getCurrentVotes(secondUserAddress)).to.be.bignumber.equal(toBN('0'));
+
+          await delegator.setPendingBeneficiary(secondUserAddress);
+          expectEvent(
+            await delegator.connect(impersonatedSigners[secondUserAddress]).acceptBeneficiary(),
+            delegator,
+            'BeneficiaryUpdate',
+            [secondUserAddress]
+          );
+          expect(await delegator.beneficiary()).to.be.equal(secondUserAddress);
+
+          expect(await tribe.getCurrentVotes(secondUserAddress)).to.be.bignumber.equal(totalTribe);
+        });
+
+        it('Non pending beneficiary reverts', async function () {
+          await expectRevert(
+            delegator.connect(impersonatedSigners[secondUserAddress]).acceptBeneficiary(),
+            'TokenTimelock: Caller is not pending beneficiary'
+          );
+        });
+      });
     });
 
     describe('Release', function () {
@@ -253,6 +290,33 @@ describe('QuadraticTimelockedDelegator', function () {
           'TokenTimelock: Caller is not a beneficiary'
         );
       });
+    });
+  });
+
+  describe('Clawback', function () {
+    let clawbackAdmin;
+
+    beforeEach(async function () {
+      clawbackAdmin = await delegator.clawbackAdmin();
+      await forceEth(clawbackAdmin);
+    });
+    it('Before cliff gets back all tokens', async function () {
+      const cliffSeconds = await delegator.cliffSeconds();
+      await time.increase(cliffSeconds.sub(toBN(1000)));
+      expect(await tribe.balanceOf(delegator.address)).to.be.bignumber.equal(toBN(10000));
+      await delegator.connect(await getImpersonatedSigner(clawbackAdmin)).clawback();
+      expect(await tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN(0));
+      expect(await tribe.balanceOf(delegator.address)).to.be.bignumber.equal(toBN(0));
+      expect(await tribe.balanceOf(clawbackAdmin)).to.be.bignumber.equal(toBN(10000));
+    });
+    it('after cliff gets back some tokens, release others to beneficiary', async function () {
+      const cliffSeconds = await delegator.cliffSeconds();
+      await time.increase(cliffSeconds.add(toBN(1000)));
+      expect(await tribe.balanceOf(delegator.address)).to.be.bignumber.equal(toBN(10000));
+      await delegator.connect(await getImpersonatedSigner(clawbackAdmin)).clawback();
+      expect(await tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN(38));
+      expect(await tribe.balanceOf(delegator.address)).to.be.bignumber.equal(toBN(0));
+      expect(await tribe.balanceOf(clawbackAdmin)).to.be.bignumber.equal(toBN(9962));
     });
   });
 });
