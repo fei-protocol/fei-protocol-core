@@ -20,16 +20,26 @@ const peg_stability_module: ProposalDescription = {
     {
       target: 'core',
       values: '0',
-      method: 'createRole(bytes32, bytes32)',
-      arguments: [],
-      description: 'Create PSM_ADMIN_ROLE'
+      method: 'grantPCVController(address)',
+      arguments: ['{wethPCVDripController}'],
+      description: 'Give the WETH PCVDripController the PCVController role so that it can withdraw from AAVE'
     },
     {
       target: 'core',
       values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: ['{feiDaoTimelock}'],
-      description: 'Grant PSM_ADMIN_ROLE to Timelock'
+      method: 'grantPCVController(address)',
+      arguments: ['{daiPCVDripController}'],
+      description: 'Give the DAI PCVDripController the PCVController role so that it can withdraw from Compound'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
+        '0x1749ca1ca3564d20da6efea465c2a5ae869a9e4b006da7035e688beb14d704e0',
+        '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e'
+      ],
+      description: 'Create PSM_ADMIN_ROLE'
     },
     {
       target: 'compoundDaiPCVDeposit',
@@ -42,7 +52,7 @@ const peg_stability_module: ProposalDescription = {
       target: 'aaveEthPCVDeposit',
       values: '0',
       method: 'withdraw(address,uint256)',
-      arguments: ['{daiPSM}', '7500000000000000000000'],
+      arguments: ['{wethPSM}', '7500000000000000000000'],
       description: 'Send 7500 WETH to the WETH PSM'
     }
   ],

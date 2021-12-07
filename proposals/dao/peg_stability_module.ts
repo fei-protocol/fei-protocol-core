@@ -7,6 +7,9 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
+import { getImpersonatedSigner } from '@test/helpers';
+import { keccak256 } from 'ethers/lib/utils';
+import { utils } from 'ethers/lib/ethers';
 
 /*
 
@@ -43,6 +46,9 @@ const wethPSMBufferCap = ethers.utils.parseEther('10000000');
 const daiDecimalsNormalizer = 18;
 const wethDecimalsNormalizer = 18;
 
+const daiFloorPrice = 9_500;
+const daiCeilingPrice = 10_500;
+
 // PCVDrip Controller Params
 
 // drips can happen every hour
@@ -53,6 +59,8 @@ const incentiveAmount = 0;
 
 const daiDripAmount = ethers.utils.parseEther('5000000');
 const wethDripAmount = ethers.utils.parseEther('1250');
+
+const toBN = ethers.BigNumber.from;
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -81,8 +89,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   // PSM will trade DAI between 98 cents and 1.02 cents.
   // If price is outside of this band, the PSM will not allow trades
   const daiPSM = await daiPSMFactory.deploy(
-    9_800,
-    10_200,
+    daiFloorPrice,
+    daiCeilingPrice,
     {
       coreAddress: core,
       oracleAddress: chainlinkDaiUsdOracleWrapper,
@@ -146,11 +154,16 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     daiPCVDripController.deployTransaction.wait(),
     wethPCVDripController.deployTransaction.wait()
   ]);
+  // console.log(
+  //   `successfully deployed all contracts, daipsm: ${daiPSM.address}, wethPSM: ${wethPSM.address}, psmRouter: ${psmRouter.address}, daiPCVDripController: ${daiPCVDripController.address}, wethPCVDripController: ${wethPCVDripController.address}`
+  // );
 
   return {
     daiPSM,
     wethPSM,
-    psmRouter
+    psmRouter,
+    daiPCVDripController,
+    wethPCVDripController
   };
 };
 
@@ -158,12 +171,12 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in setup for fip${fipNumber}`);
   const { compoundDaiPCVDeposit, aaveEthPCVDeposit, feiDAOTimelock, daiPSM, wethPSM } = contracts;
-  const timelockSigner = await ethers.getSigner(feiDAOTimelock.address);
+  const timelockSigner = await getImpersonatedSigner(feiDAOTimelock.address);
   // fund both PSM's with 30m in assets
-  await compoundDaiPCVDeposit.connect(timelockSigner).withdraw(daiPSM.address, daiReservesThreshold);
-  await aaveEthPCVDeposit.connect(timelockSigner).withdraw(wethPSM.address, wethReservesThreshold);
+  // await compoundDaiPCVDeposit.connect(timelockSigner).withdraw(daiPSM.address, daiReservesThreshold);
+  // await aaveEthPCVDeposit.connect(timelockSigner).withdraw(wethPSM.address, wethReservesThreshold);
+  console.log('finished setup successfully');
 };
 
 // Tears down any changes made in setup() that need to be
@@ -175,25 +188,58 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const { psmRouter, wethPSM, daiPSM, weth, dai } = contracts;
+  const {
+    feiDAOTimelock,
+    daiPCVDripController,
+    wethPCVDripController,
+    psmRouter,
+    wethPSM,
+    daiPSM,
+    weth,
+    dai,
+    core,
+    compoundDaiPCVDeposit,
+    aaveEthPCVDeposit
+  } = contracts;
 
   expect(await psmRouter.psm()).to.be.equal(wethPSM.address);
   expect(await psmRouter.redeemActive()).to.be.false;
 
-  expect(await wethPSM.underlyingToken()).to.be.equal(weth.address);
   expect(await daiPSM.underlyingToken()).to.be.equal(dai.address);
+  expect(await wethPSM.underlyingToken()).to.be.equal(weth.address);
 
-  expect(await wethPSM.redeemFeeBasisPoints()).to.be.equal(wethPSMRedeemFeeBasisPoints);
   expect(await daiPSM.redeemFeeBasisPoints()).to.be.equal(daiPSMRedeemFeeBasisPoints);
+  expect(await wethPSM.redeemFeeBasisPoints()).to.be.equal(wethPSMRedeemFeeBasisPoints);
 
-  expect(await wethPSM.mintFeeBasisPoints()).to.be.equal(wethPSMMintFeeBasisPoints);
   expect(await daiPSM.mintFeeBasisPoints()).to.be.equal(daiPSMMintFeeBasisPoints);
+  expect(await wethPSM.mintFeeBasisPoints()).to.be.equal(wethPSMMintFeeBasisPoints);
 
   expect(await daiPSM.reservesThreshold()).to.be.equal(daiReservesThreshold);
   expect(await wethPSM.reservesThreshold()).to.be.equal(wethReservesThreshold);
 
   expect(await daiPSM.balance()).to.be.equal(daiReservesThreshold);
   expect(await wethPSM.balance()).to.be.equal(wethReservesThreshold);
+
+  expect(await daiPSM.surplusTarget()).to.be.equal(compoundDaiPCVDeposit.address);
+  expect(await wethPSM.surplusTarget()).to.be.equal(aaveEthPCVDeposit.address);
+
+  expect(await daiPSM.rateLimitPerSecond()).to.be.equal(toBN(10_000).mul(ethers.constants.WeiPerEther));
+  expect(await wethPSM.rateLimitPerSecond()).to.be.equal(toBN(10_000).mul(ethers.constants.WeiPerEther));
+
+  expect(await daiPSM.buffer()).to.be.equal(toBN(10_000_000).mul(ethers.constants.WeiPerEther));
+  expect(await wethPSM.buffer()).to.be.equal(toBN(10_000_000).mul(ethers.constants.WeiPerEther));
+
+  expect(await daiPSM.bufferCap()).to.be.equal(daiPSMBufferCap);
+  expect(await wethPSM.bufferCap()).to.be.equal(wethPSMBufferCap);
+
+  expect(await daiPCVDripController.target()).to.be.equal(daiPSM.address);
+  expect(await wethPCVDripController.target()).to.be.equal(wethPSM.address);
+
+  expect(await core.isMinter(daiPSM.address)).to.be.true;
+  expect(await core.isMinter(wethPSM.address)).to.be.true;
+
+  expect(await core.isPCVController(wethPCVDripController.address)).to.be.true;
+  expect(await core.isPCVController(daiPCVDripController.address)).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };

@@ -19,12 +19,6 @@ const proposals: ProposalsConfigMap = {
     skipDAO: false,
     totalValue: 0,
     proposal: peg_stability_module
-  },
-  fip_54: {
-    deploy: true,
-    skipDAO: false,
-    totalValue: 0,
-    proposal: fip_54_proposal
   }
 };
 
