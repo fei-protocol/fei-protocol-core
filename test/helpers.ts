@@ -163,6 +163,10 @@ async function expectApproxAbs(
   expect(actualBN).to.be.lte(upperBound);
 }
 
+async function expectEvent(tx, contract: any, event: string, args: any[]): Promise<void> {
+  await expect(tx).to.emit(contract, event).withArgs(args);
+}
+
 async function expectRevert(tx, errorMessage: string): Promise<void> {
   await expect(tx).to.be.revertedWith(errorMessage);
 }
@@ -234,6 +238,7 @@ export {
   MAX_UINT256,
   time,
   balance,
+  expectEvent,
   expectRevert,
   expectUnspecifiedRevert,
   // functions
