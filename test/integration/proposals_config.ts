@@ -2,8 +2,8 @@ import { ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
-import permanently_revoke_burner_proposal from '@proposals/description/permanently_revoke_burner';
 import peg_stability_module from '@proposals/description/peg_stability_module';
+import fip_54_proposal from '@proposals/description/fip_54';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -20,11 +20,11 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0,
     proposal: peg_stability_module
   },
-  permanently_revoke_burner: {
+  fip_54: {
     deploy: true,
     skipDAO: false,
     totalValue: 0,
-    proposal: permanently_revoke_burner_proposal
+    proposal: fip_54_proposal
   }
 };
 
