@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 import "./IPSMRouter.sol";
 import "./PegStabilityModule.sol";
 import "../Constants.sol";
+import "../utils/RateLimited.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @notice the PSM router is an ungoverned, non custodial contract that allows user to seamlessly wrap and unwrap their WETH
@@ -40,6 +41,11 @@ contract PSMRouter is IPSMRouter {
     /// @notice view only pass through function to get amount of ETH out with given amount of FEI in
     function getRedeemAmountOut(uint256 amountFeiIn) public override view returns (uint256 amountTokenOut) {
         amountTokenOut = psm.getRedeemAmountOut(amountFeiIn);
+    }
+
+    /// @notice the maximum mint amount out
+    function getMaxMintAmountOut() external view override returns(uint256) {
+        return fei.balanceOf(address(psm)) + RateLimited(address(psm)).buffer();
     }
 
     // ---------- Public State-Changing API ----------

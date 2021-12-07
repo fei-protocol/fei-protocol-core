@@ -140,6 +140,10 @@ describe('PSM Router', function () {
     it('redeemActive', async () => {
       expect(await psmRouter.redeemActive()).to.be.false;
     });
+
+    it('getMaxMintAmountOut', async () => {
+      expect(await psmRouter.getMaxMintAmountOut()).to.be.equal(bufferCap.add(await fei.balanceOf(psm.address)));
+    });
   });
 
   describe('fallback', function () {
