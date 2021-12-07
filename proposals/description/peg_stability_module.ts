@@ -30,6 +30,20 @@ const peg_stability_module: ProposalDescription = {
       method: 'grantRole(bytes32,address)',
       arguments: ['{feiDaoTimelock}'],
       description: 'Grant PSM_ADMIN_ROLE to Timelock'
+    },
+    {
+      target: 'compoundDaiPCVDeposit',
+      values: '0',
+      method: 'withdraw(address,uint256)',
+      arguments: ['{daiPSM}', '30000000000000000000000000'],
+      description: 'Send 30m DAI to the DAI PSM'
+    },
+    {
+      target: 'aaveEthPCVDeposit',
+      values: '0',
+      method: 'withdraw(address,uint256)',
+      arguments: ['{daiPSM}', '7500000000000000000000'],
+      description: 'Send 7500 WETH to the WETH PSM'
     }
   ],
   description: 'This module is used to manage the stability of the peg.'

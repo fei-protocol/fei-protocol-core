@@ -4,6 +4,7 @@ import "./IPSMRouter.sol";
 import "./PegStabilityModule.sol";
 import "../Constants.sol";
 import "../utils/RateLimited.sol";
+import "../pcv/IPCVDepositBalances.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @notice the PSM router is an ungoverned, non custodial contract that allows user to seamlessly wrap and unwrap their WETH
@@ -45,7 +46,12 @@ contract PSMRouter is IPSMRouter {
 
     /// @notice the maximum mint amount out
     function getMaxMintAmountOut() external view override returns(uint256) {
-        return fei.balanceOf(address(psm)) + RateLimited(address(psm)).buffer();
+        return psm.getMaxMintAmountOut();
+    }
+
+    /// @notice the maximum redeem amount out
+    function getMaxRedeemAmountOut() external view override returns(uint256) {
+        return IPCVDepositBalances(address(psm)).balance();
     }
 
     // ---------- Public State-Changing API ----------

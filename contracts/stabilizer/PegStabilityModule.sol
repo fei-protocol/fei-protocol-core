@@ -213,6 +213,11 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         amountTokenOut = _getRedeemAmountOut(amountFeiIn);
     }
 
+    /// @notice the maximum mint amount out
+    function getMaxMintAmountOut() external override view returns (uint256) {
+        return fei().balanceOf(address(this)) + buffer();
+    }
+
     /// @notice a flag for whether the current balance is above (true) or below (false) the reservesThreshold
     function hasSurplus() external override view returns (bool) {
         return balance() > reservesThreshold;

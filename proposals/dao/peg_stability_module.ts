@@ -43,6 +43,17 @@ const wethPSMBufferCap = ethers.utils.parseEther('10000000');
 const daiDecimalsNormalizer = 18;
 const wethDecimalsNormalizer = 18;
 
+// PCVDrip Controller Params
+
+// drips can happen every hour
+const dripFrequency = 3_600;
+
+// do not incentivize these calls
+const incentiveAmount = 0;
+
+const daiDripAmount = ethers.utils.parseEther('5000000');
+const wethDripAmount = ethers.utils.parseEther('1250');
+
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
@@ -64,6 +75,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const daiPSMFactory = await ethers.getContractFactory('PriceBoundPSM');
   const wethPSMFactory = await ethers.getContractFactory('PegStabilityModule');
   const psmRouterFactory = await ethers.getContractFactory('PSMRouter');
+  const PCVDripControllerFactory = await ethers.getContractFactory('PCVDripController');
 
   // Deploy DAI Peg Stability Module
   // PSM will trade DAI between 98 cents and 1.02 cents.
@@ -108,11 +120,31 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   // Deploy PSM Router
   const psmRouter = await psmRouterFactory.deploy(wethPSM.address, fei);
 
-  // Wait for all three to deploy
+  const daiPCVDripController = await PCVDripControllerFactory.deploy(
+    core,
+    compoundDaiPCVDeposit,
+    daiPSM.address,
+    dripFrequency,
+    daiDripAmount,
+    incentiveAmount
+  );
+
+  const wethPCVDripController = await PCVDripControllerFactory.deploy(
+    core,
+    aaveEthPCVDeposit,
+    wethPSM.address,
+    dripFrequency,
+    wethDripAmount,
+    incentiveAmount
+  );
+
+  // Wait for all five contracts to deploy
   await Promise.all([
     daiPSM.deployTransaction.wait(),
     wethPSM.deployTransaction.wait(),
-    psmRouter.deployTransaction.wait()
+    psmRouter.deployTransaction.wait(),
+    daiPCVDripController.deployTransaction.wait(),
+    wethPCVDripController.deployTransaction.wait()
   ]);
 
   return {
@@ -159,6 +191,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   expect(await daiPSM.reservesThreshold()).to.be.equal(daiReservesThreshold);
   expect(await wethPSM.reservesThreshold()).to.be.equal(wethReservesThreshold);
+
+  expect(await daiPSM.balance()).to.be.equal(daiReservesThreshold);
+  expect(await wethPSM.balance()).to.be.equal(wethReservesThreshold);
 };
 
 export { deploy, setup, teardown, validate };

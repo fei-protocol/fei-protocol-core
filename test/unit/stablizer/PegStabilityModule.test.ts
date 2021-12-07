@@ -174,6 +174,18 @@ describe('PegStabilityModule', function () {
       expect(feiBalance).to.be.equal(bufferCap);
       expect(wethBalance).to.be.equal(0);
     });
+
+    it('getMaxMintAmountOut', async () => {
+      expect(await psm.getMaxMintAmountOut()).to.be.equal(bufferCap.add(await fei.balanceOf(psm.address)));
+    });
+  });
+
+  describe('getMaxMintAmountOut', function () {
+    it('getMaxMintAmountOut updates when the PSM receives more FEI', async () => {
+      const startingMaxMintAmountOut = bufferCap.add(await fei.balanceOf(psm.address));
+      await fei.connect(impersonatedSigners[minterAddress]).mint(psm.address, 10);
+      expect(await psm.getMaxMintAmountOut()).to.be.equal(startingMaxMintAmountOut.add(10));
+    });
   });
 
   describe('Mint', function () {
