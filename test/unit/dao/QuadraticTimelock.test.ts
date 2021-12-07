@@ -5,7 +5,7 @@ import { Signer } from 'ethers';
 
 const toBN = ethers.BigNumber.from;
 
-describe.only('QuadraticTimelockedDelegator', function () {
+describe('QuadraticTimelockedDelegator', function () {
   let userAddress;
   let secondUserAddress;
   let beneficiaryAddress1;
