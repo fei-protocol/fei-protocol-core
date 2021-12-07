@@ -15,6 +15,12 @@ interface IPSMRouter {
     /// @notice mutex lock to prevent fallback function from being hit any other time than weth withdraw
     function redeemActive() external returns (bool);
 
+    /// @notice calculate the amount of FEI out for a given `amountIn` of underlying
+    function getMintAmountOut(uint256 amountIn) external view returns (uint256 amountFeiOut);
+
+    /// @notice calculate the amount of underlying out for a given `amountFeiIn` of FEI
+    function getRedeemAmountOut(uint256 amountFeiIn) external view returns (uint256 amountOut);
+
 
     // ---------- State-Changing API ----------
 

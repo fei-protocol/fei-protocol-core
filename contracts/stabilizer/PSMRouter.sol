@@ -30,6 +30,18 @@ contract PSMRouter is IPSMRouter {
         _;
     }
 
+    // ----------- Public View-Only API ----------
+
+    /// @notice view only pass through function to get amount of FEI out with given amount of ETH in
+    function getMintAmountOut(uint256 amountIn) public override view returns (uint256 amountFeiOut) {
+        amountFeiOut = psm.getMintAmountOut(amountIn);
+    }
+
+    /// @notice view only pass through function to get amount of ETH out with given amount of FEI in
+    function getRedeemAmountOut(uint256 amountFeiIn) public override view returns (uint256 amountTokenOut) {
+        amountTokenOut = psm.getRedeemAmountOut(amountFeiIn);
+    }
+
     // ---------- Public State-Changing API ----------
 
     /// @notice Mints fei to the given address, with a minimum amount required

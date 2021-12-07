@@ -162,6 +162,8 @@ describe('PSM Router', function () {
           .connect(impersonatedSigners[userAddress])
           .transfer(psm.address, ethers.constants.WeiPerEther.mul(10));
         const expectedEthAmount = 1994;
+        const actualEthAmount = await psmRouter.getRedeemAmountOut(10_000_000);
+        expect(expectedEthAmount).to.be.equal(actualEthAmount);
         const startingUserEthBalance = await ethers.provider.getBalance(receiver);
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, bufferCap);
         await fei.approve(psmRouter.address, MAX_UINT256);
@@ -300,6 +302,9 @@ describe('PSM Router', function () {
       it('mint succeeds with 1 wei', async () => {
         const minAmountOut = 4985;
         const userStartingFEIBalance = await fei.balanceOf(userAddress);
+        const expectedAmountOut = await psmRouter.getMintAmountOut(1);
+
+        expect(expectedAmountOut).to.be.equal(minAmountOut);
 
         await psmRouter
           .connect(impersonatedSigners[userAddress])
