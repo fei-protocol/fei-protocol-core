@@ -164,7 +164,9 @@ async function expectApproxAbs(
 }
 
 async function expectEvent(tx, contract: any, event: string, args: any[]): Promise<void> {
-  await expect(tx).to.emit(contract, event).withArgs(args);
+  await expect(tx)
+    .to.emit(contract, event)
+    .withArgs(...args);
 }
 
 async function expectRevert(tx, errorMessage: string): Promise<void> {
