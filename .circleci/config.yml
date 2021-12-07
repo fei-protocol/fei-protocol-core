@@ -4,7 +4,8 @@ jobs:
   build:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:12
+      - image: circleci/node:14
+    resource_class: xlarge
     steps:
       - checkout
       - run:
@@ -33,7 +34,7 @@ jobs:
   lint:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:12
+      - image: circleci/node:14
     steps:
       - restore_cache:
           keys:
@@ -44,26 +45,34 @@ jobs:
   test:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:12
+      - image: circleci/node:14
+    parallelism: 16
+    resource_class: large
     steps:
       - restore_cache:
           keys:
             - repo-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Run tests
-          command: npm run test
+          command: |
+            circleci tests glob "test/unit/**/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
+            npm run test $(cat /tmp/tests-to-run)
 
   e2e-test:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:12
+      - image: circleci/node:14
+    parallelism: 5
+    resource_class: xlarge
     steps:
       - restore_cache:
           keys:
             - repo-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Run end-to-end tests
-          command: npm run test:e2e
+          command: |
+            circleci tests glob "test/integration/**/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
+            npm run test:e2e $(cat /tmp/tests-to-run)
 
 workflows:
   main:
@@ -78,8 +87,3 @@ workflows:
       - e2e-test:
           requires:
             - build
-            - lint
-            - test
-          filters:
-            branches:
-              only: master

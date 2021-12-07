@@ -2,20 +2,21 @@
 pragma solidity ^0.8.4;
 
 import "./IUniswapPCVDeposit.sol";
+import "../../Constants.sol";
 import "../PCVDeposit.sol";
 import "../../refs/UniRef.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
+import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title implementation for Uniswap LP PCV Deposit
 /// @author Fei Protocol
 contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     using Decimal for Decimal.D256;
+    using Babylonian for uint256;
 
     /// @notice a slippage protection parameter, deposits revert when spot price is > this % from oracle
     uint256 public override maxBasisPointsFromPegLP;
-
-    uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
     /// @notice the Uniswap router contract
     IUniswapV2Router02 public override router;
@@ -104,10 +105,10 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     function setMaxBasisPointsFromPegLP(uint256 _maxBasisPointsFromPegLP)
         public
         override
-        onlyGovernor
+        onlyGovernorOrAdmin
     {
         require(
-            _maxBasisPointsFromPegLP <= BASIS_POINTS_GRANULARITY,
+            _maxBasisPointsFromPegLP <= Constants.BASIS_POINTS_GRANULARITY,
             "UniswapPCVDeposit: basis points from peg too high"
         );
 
@@ -123,7 +124,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     /// @notice set the new pair contract
     /// @param _pair the new pair
     /// @dev also approves the router for the new pair token and underlying token
-    function setPair(address _pair) external override onlyGovernor {
+    function setPair(address _pair) public virtual override onlyGovernor {
         _setupPair(_pair);
 
         _approveToken(token);
@@ -136,13 +137,53 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
         return _ratioOwned().mul(tokenReserves).asUint256();
     }
 
+    /// @notice display the related token of the balance reported
+    function balanceReportedIn() public view override returns (address) {
+        return token;
+    }
+
+    /**
+        @notice get the manipulation resistant Other(example ETH) and FEI in the Uniswap pool
+        @return number of other token in pool
+        @return number of FEI in pool
+
+        Derivation rETH, rFEI = resistant (ideal) ETH and FEI reserves, P = price of ETH in FEI:
+        1. rETH * rFEI = k
+        2. rETH = k / rFEI
+        3. rETH = (k * rETH) / (rFEI * rETH)
+        4. rETH ^ 2 = k / P
+        5. rETH = sqrt(k / P)
+
+        and rFEI = k / rETH by 1.
+
+        Finally scale the resistant reserves by the ratio owned by the contract
+     */
+    function resistantBalanceAndFei() public view override returns(uint256, uint256) {
+        (uint256 feiInPool, uint256 otherInPool) = getReserves();
+
+        Decimal.D256 memory priceOfToken = readOracle();
+
+        uint256 k = feiInPool * otherInPool;
+
+        // resistant other/fei in pool
+        uint256 resistantOtherInPool = Decimal.one().div(priceOfToken).mul(k).asUint256().sqrt();
+
+        uint256 resistantFeiInPool = Decimal.ratio(k, resistantOtherInPool).asUint256();
+
+        Decimal.D256 memory ratioOwned = _ratioOwned();
+        return (
+            ratioOwned.mul(resistantOtherInPool).asUint256(),
+            ratioOwned.mul(resistantFeiInPool).asUint256()
+        );
+    }
+
     /// @notice amount of pair liquidity owned by this contract
     /// @return amount of LP tokens
-    function liquidityOwned() public view override returns (uint256) {
+    function liquidityOwned() public view virtual override returns (uint256) {
         return pair.balanceOf(address(this));
     }
 
-    function _removeLiquidity(uint256 liquidity) internal returns (uint256) {
+    function _removeLiquidity(uint256 liquidity) internal virtual returns (uint256) {
         uint256 endOfTime = type(uint256).max;
         // No restrictions on withdrawal price
         (, uint256 amountWithdrawn) =
@@ -158,8 +199,8 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
         return amountWithdrawn;
     }
 
-    function _addLiquidity(uint256 tokenAmount, uint256 feiAmount) internal {
-        _mintFei(feiAmount);
+    function _addLiquidity(uint256 tokenAmount, uint256 feiAmount) internal virtual {
+        _mintFei(address(this), feiAmount);
 
         uint256 endOfTime = type(uint256).max;
         // Deposit price gated by slippage parameter
@@ -178,8 +219,8 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     /// @notice used as slippage protection when adding liquidity to the pool
     function _getMinLiquidity(uint256 amount) internal view returns (uint256) {
         return
-            (amount * (BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP)) /
-            BASIS_POINTS_GRANULARITY;
+            (amount * (Constants.BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP)) /
+            Constants.BASIS_POINTS_GRANULARITY;
     }
 
     /// @notice ratio of all pair liquidity owned by this contract

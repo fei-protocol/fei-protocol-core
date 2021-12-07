@@ -1,0 +1,78 @@
+{
+    "proposal_title": "FIP-22: Deploy FEI liquidity and TRIBE incentives to Aave",
+    "proposal_commands": [
+        {
+            "address": "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
+            "target" : "fei",
+            "values": "0",
+            "method": "mint(address,uint256)",
+            "arguments": [
+                "0xaFBd7Bd91B4c1Dd289EE47a4F030FBeDfa7ABc12",
+                "25000000000000000000000000"
+            ],
+            "description": "Mint 25m FEI to Aave PCV Deposit"
+        },
+        {
+            "address": "0xaFBd7Bd91B4c1Dd289EE47a4F030FBeDfa7ABc12",
+            "target" : "aaveFeiPCVDeposit",
+            "values": "0",
+            "method": "deposit()",
+            "arguments": [],
+            "description": "Deposit Aave FEI PCV Deposit"
+        },
+        {
+            "address": "0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9",
+            "target" : "core",
+            "values": "0",
+            "method": "allocateTribe(address,uint256)",
+            "arguments": [
+                "0xDee5c1662bBfF8f80f7c572D8091BF251b3B0dAB",
+                "4000000000000000000000000"
+            ],
+            "description": "Transfer 4M TRIBE from dripper to incentives controller"
+        },
+        {
+            "address": "0xDee5c1662bBfF8f80f7c572D8091BF251b3B0dAB",
+            "target" : "aaveTribeIncentivesControllerProxy",
+            "values": "0",
+            "method": "changeAdmin(address)",
+            "arguments": [
+                "0xf8c2b645988b7658E7748BA637fE25bdD46A704A"
+            ],
+            "description": "Upgrade proxy admin to default proxy admin"
+        },
+        {
+            "address": "0xDee5c1662bBfF8f80f7c572D8091BF251b3B0dAB",
+            "target" : "aaveTribeIncentivesController",
+            "values": "0",
+            "method": "configureAssets(address[],uint256[])",
+            "arguments": [
+                ["0xC2e10006AccAb7B45D9184FcF5b7EC7763f5BaAe"],
+                ["250000000000000000"]
+            ],
+            "description": "Trigger reward rate for aFeiVariableBorrow"
+        },
+        {
+            "address": "0xDee5c1662bBfF8f80f7c572D8091BF251b3B0dAB",
+            "target" : "aaveTribeIncentivesController",
+            "values": "0",
+            "method": "setDistributionEnd(uint256)",
+            "arguments": [
+                "1647993600"
+            ],
+            "description" : "Set distribution end"
+        },
+        {
+            "target": "tribalChief",
+            "values": "0",
+            "method": "add(uint120,address,address,(uint128,uint128)[])",
+            "arguments": [
+                "100",
+                "0x3D1556e84783672f2a3bd187a592520291442539",
+                "0x0000000000000000000000000000000000000000",
+                [[0, 10000]]
+            ],
+            "description": "Add G-UNI FEI-DAI pool to tribalchief"
+        }
+    ]
+}

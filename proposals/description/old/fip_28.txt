@@ -1,0 +1,14 @@
+
+This proposal combines FIP-28 and FIP-29 related to Optimistic Approval and FeiRari TRIBE.
+
+Specifically it:
+* gives the OA timelock admin control of all FeiRari components and parameters
+* gives OA timelock admin of TribalChief and revokes old timelock
+* blocks TRIBE borrowing from the pool in anticipation of single-sided TRIBE staking rewards
+* mints 50M FEI to the OA timelock for future lending deployments
+* mints 1M FEI to seed Fuse pool 22 (BadgerDAO)
+
+FIP-28 forum post: https://tribe.fei.money/t/fip-28-feirari-tribe-updates/3515
+FIP-29 forum post: https://tribe.fei.money/t/fip-29-oa-multisig-updates/3514
+
+Code: https://github.com/fei-protocol/fei-protocol-core/pull/191

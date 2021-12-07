@@ -3,12 +3,12 @@ pragma solidity ^0.8.4;
 
 import "./IPCVDripController.sol"; 
 import "../../utils/Incentivized.sol"; 
-import "../../refs/CoreRef.sol";
+import "../../utils/RateLimitedMinter.sol"; 
 import "../../utils/Timed.sol";
 
 /// @title a PCV dripping controller
 /// @author Fei Protocol
-contract PCVDripController is IPCVDripController, CoreRef, Timed, Incentivized {
+contract PCVDripController is IPCVDripController, Timed, RateLimitedMinter, Incentivized {
  
     /// @notice source PCV deposit to withdraw from
     IPCVDeposit public override source;
@@ -33,7 +33,12 @@ contract PCVDripController is IPCVDripController, CoreRef, Timed, Incentivized {
         uint256 _frequency,
         uint256 _dripAmount,
         uint256 _incentiveAmount
-    ) CoreRef(_core) Timed(_frequency) Incentivized(_incentiveAmount) {
+    ) 
+        CoreRef(_core) 
+        Timed(_frequency) 
+        Incentivized(_incentiveAmount)
+        RateLimitedMinter(_incentiveAmount / _frequency, _incentiveAmount, false) 
+    {
         target = _target;
         emit TargetUpdate(address(0), address(_target));
 
@@ -98,7 +103,7 @@ contract PCVDripController is IPCVDripController, CoreRef, Timed, Incentivized {
     function setDripAmount(uint256 newDripAmount)
         external
         override
-        onlyGovernor
+        onlyGovernorOrAdmin
     {
         require(newDripAmount != 0, "PCVDripController: zero drip amount");
 
@@ -110,5 +115,9 @@ contract PCVDripController is IPCVDripController, CoreRef, Timed, Incentivized {
     /// @notice checks whether the target balance is less than the drip amount
     function dripEligible() public view virtual override returns(bool) {
         return target.balance() < dripAmount;
+    }
+
+    function _mintFei(address to, uint256 amountIn) internal override(CoreRef, RateLimitedMinter) {
+      RateLimitedMinter._mintFei(to, amountIn);
     }
 }

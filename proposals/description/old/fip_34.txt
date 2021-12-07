@@ -1,0 +1,14 @@
+Summary:
+Grant optimistic approval the rate limited ability to mint FEI, to continue to fund DAO operations like FIP-13 lending deployments and potentially Liquidity-as-a-Service.
+Additionally mint an initial 100M FEI to the timelock.
+
+Also transitions remaining roles from FIP-31.
+
+Motivation:
+Instead of continually going back to the DAO to ask for more funding, Fei Protocol can deploy a contract which allows the OA timelock to mint FEI periodically.
+This minter will have a hard rate limit on the amount minted. These mintings will still be subject to the 4 day timelock, but would not require governance intervention.
+
+Unrelated to the main proposal, this proposal also transitions the Tribe minter role from the old DAO timelock to the new DAO timelock.
+
+Forum discussion: https://tribe.fei.money/t/fip-34-fei-minting-for-optimistic-approval/3565 
+Code: https://github.com/fei-protocol/fei-protocol-core/pull/259

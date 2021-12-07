@@ -1,0 +1,100 @@
+{
+    "proposal_title": "FIP-28/29 FeiRari TRIBE and Optimistic Approval",
+    "proposal_commands": [
+        {
+            "target": "rariPool8Comptroller",
+            "values": "0",
+            "method": "_setBorrowPaused(address,bool)",
+            "arguments": [
+                "0xFd3300A9a74b3250F1b2AbC12B47611171910b07",
+                true
+            ],
+            "description": "Make fTRIBE unborrowable"
+        },
+        {
+            "target": "fei",
+            "values": "0",
+            "method": "mint(address,uint256)",
+            "arguments": [
+                "0xbC9C084a12678ef5B516561df902fdc426d95483",
+                "50000000000000000000000000"
+            ],
+            "description": "Mint 50m FEI to Optimistic Timelock"
+        },
+        {
+            "target": "rariPool8Comptroller",
+            "values": "0",
+            "method": "_setPendingAdmin(address)",
+            "arguments": [
+                "0xbC9C084a12678ef5B516561df902fdc426d95483"
+            ],
+            "description": "set admin Comptroller"
+        },
+        {
+            "target": "rariPool8Dai",
+            "values": "0",
+            "method": "_setPendingAdmin(address)",
+            "arguments": [
+                "0xbC9C084a12678ef5B516561df902fdc426d95483"
+            ],
+            "description": "set admin fDAI"
+        },
+        {
+            "target": "rariPool8Tribe",
+            "values": "0",
+            "method": "_setPendingAdmin(address)",
+            "arguments": [
+                "0xbC9C084a12678ef5B516561df902fdc426d95483"
+            ],
+            "description": "set admin fTRIBE"
+        },
+        {
+            "target": "rariPool8Eth",
+            "values": "0",
+            "method": "_setPendingAdmin(address)",
+            "arguments": [
+                "0xbC9C084a12678ef5B516561df902fdc426d95483"
+            ],
+            "description": "set admin fETH"
+        },
+        {
+            "target": "rariPool8Fei",
+            "values": "0",
+            "method": "_setPendingAdmin(address)",
+            "arguments": [
+                "0xbC9C084a12678ef5B516561df902fdc426d95483"
+            ],
+            "description": "set admin fFEI"
+        },
+        {
+            "target": "fei",
+            "values": "0",
+            "method": "mint(address,uint256)",
+            "arguments": [
+                "0x7CeBaB7b4B4399343f6D0D36B550EE097F60d7fE",
+                "1000000000000000000000000"
+            ],
+            "description": "Mint 1m FEI to Fuse Pool 22"
+        },
+        {
+            "target": "core",
+            "values": "0",
+            "method": "grantRole(bytes32,address)",
+            "arguments": [
+                "0x23970cab3799b6876df4319661e6c03cc45bd59628799d92e988dd8cbdc90e31",
+                "0xbC9C084a12678ef5B516561df902fdc426d95483"
+            ],
+            "description": "Grant TribalChief admin to new OA timelock"
+        },
+        {
+            "target": "core",
+            "values": "0",
+            "method": "revokeRole(bytes32,address)",
+            "arguments": [
+                "0x23970cab3799b6876df4319661e6c03cc45bd59628799d92e988dd8cbdc90e31",
+                "0x27Fae9E49AD955A24bB578B66Cdc962b5029fbA9"
+            ],
+            "description": "Revoke TribalChief admin from old OA timelock"
+        }
+    ]
+}

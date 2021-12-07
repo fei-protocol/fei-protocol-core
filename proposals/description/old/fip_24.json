@@ -1,0 +1,39 @@
+{
+    "proposal_title": "FIP-24 Gas Refund for TribalChief Transition",
+    "proposal_description_link": "",
+    "proposal_commands": [
+        {
+            "target": "fei",
+            "address": "0x956F47F50A910163D8BF957Cf5846D573E7f87CA",
+            "values": "0",
+            "method": "mint(address,uint256)",
+            "arguments": [
+                "0x27Fae9E49AD955A24bB578B66Cdc962b5029fbA9",
+                "1000000000000000000000000"
+            ],
+            "description": "Mint 1 million FEI to the optimistic timelock"
+        },
+        {
+            "target": "oldEthReserveStabilizer",
+            "address": "0xa08A721dFB595753FFf335636674D76C455B275C",
+            "values": "0",
+            "method": "withdraw(address,uint256)",
+            "arguments": [
+                "0x35ED000468f397AA943009bD60cc6d2d9a7d32fF",
+                "50000000000000000000"
+            ],
+            "description": "Withdraw 50 ETH from old reserve stabilizer and send to OA multisig"
+        },
+        {
+            "target": "oldEthReserveStabilizer",
+            "address": "0xa08A721dFB595753FFf335636674D76C455B275C",
+            "values": "0",
+            "method": "withdraw(address,uint256)",
+            "arguments": [
+                "0x17305f0e18318994a57b494078CAC866A857F7b6",
+                "3934910050296751636951"
+            ],
+            "description": "Withdraw remaining eth in old reserve stabilizer and send to new reserve stabilizer."
+        }
+    ]
+}
