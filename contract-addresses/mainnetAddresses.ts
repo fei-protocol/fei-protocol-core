@@ -1,4 +1,8 @@
 const MainnetAddresses = {
+  pcvGuardian: {
+    artifactName: 'PCVGuardian',
+    address: '0x2D1b1b509B6432A73e3d798572f0648f6453a5D9'
+  },
   agEUR: {
     artifactName: 'IERC20',
     address: '0x1a7e4e63778B4f12a199C062f3eFdD288afCBce8'
