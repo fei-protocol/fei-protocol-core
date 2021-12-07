@@ -67,6 +67,7 @@ describe('e2e-pcv', function () {
       );
 
       expect(await ethers.provider.getBalance(contractAddresses.aaveEthPCVDeposit)).to.be.bignumber.equal(toBN(0));
+      await contractAddresses.compoundEthPCVDeposit.unpause();
     });
 
     it('can withdraw PCV and pause', async () => {
