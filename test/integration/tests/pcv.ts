@@ -53,6 +53,40 @@ describe('e2e-pcv', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
+  describe('PCV Guardian', async () => {
+    it('can withdraw PCV and pause', async () => {
+      const pcvGuardian = contracts.pcvGuardian;
+
+      const amount = await contracts.compoundEthPCVDeposit.balance();
+      await pcvGuardian.withdrawToSafeAddress(
+        contractAddresses.compoundEthPCVDeposit,
+        contractAddresses.aaveEthPCVDeposit,
+        amount,
+        false,
+        true
+      );
+
+      expect(await ethers.provider.getBalance(contractAddresses.aaveEthPCVDeposit)).to.be.bignumber.equal(toBN(0));
+    });
+
+    it('can withdraw PCV and pause', async () => {
+      const pcvGuardian = contracts.pcvGuardian;
+
+      await pcvGuardian.withdrawToSafeAddress(
+        contractAddresses.rariPool8FeiPCVDeposit,
+        contractAddresses.feiDAOTimelock,
+        ethers.constants.WeiPerEther,
+        true,
+        false
+      );
+
+      expect(await contracts.rariPool8FeiPCVDeposit.paused()).to.be.true;
+      expect(await contracts.fei.balanceOf(contractAddresses.feiDAOTimelock)).to.be.bignumber.equal(
+        ethers.constants.WeiPerEther
+      );
+    });
+  });
+
   describe('Drip Controller', async () => {
     it('drip controller can withdraw from PCV deposit to stabiliser', async function () {
       const ethReserveStabilizer = contracts.ethReserveStabilizer;
