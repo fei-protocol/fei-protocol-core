@@ -67,7 +67,6 @@ describe('e2e-pcv', function () {
       );
 
       expect(await ethers.provider.getBalance(contractAddresses.aaveEthPCVDeposit)).to.be.bignumber.equal(toBN(0));
-      await contracts.compoundEthPCVDeposit.unpause();
     });
 
     it('can withdraw PCV and pause', async () => {
@@ -85,6 +84,7 @@ describe('e2e-pcv', function () {
       expect(await contracts.fei.balanceOf(contractAddresses.feiDAOTimelock)).to.be.bignumber.equal(
         ethers.constants.WeiPerEther
       );
+      await contracts.rariPool8FeiPCVDeposit.unpause();
     });
   });
 
