@@ -116,7 +116,7 @@ describe('TribeReserveStabilizer', function () {
 
         await expectRevert(
           reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000, {}),
-          'TribeReserveStabilizer: Oracle delay'
+          'Timed: time not ended'
         );
       });
 

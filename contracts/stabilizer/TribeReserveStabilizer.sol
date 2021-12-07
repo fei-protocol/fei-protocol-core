@@ -57,11 +57,8 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, T
     }
 
     /// @notice exchange FEI for minted TRIBE
-    /// @dev Collateralization oracle price must be below threshold
-    function exchangeFei(uint256 feiAmount) public override returns(uint256) {
-        // the timer counts down from first time below threshold
-        // if oracle remains below for entire window, then begin opening exchange
-        require(isTimeEnded(), "TribeReserveStabilizer: Oracle delay");
+    /// @dev the timer counts down from first time below threshold and opens after window
+    function exchangeFei(uint256 feiAmount) public override afterTime returns(uint256) {
         return super.exchangeFei(feiAmount);
     }
 
@@ -87,7 +84,7 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, T
 
     /// @notice reset the opening of the TribeReserveStabilizer oracle delay as soon as above CR target
     function resetOracleDelayCountdown() external override {
-        require(!isCollateralizationBelowThreshold(), "TribeReserveStabilizer: Collateralization ratio above threshold");
+        require(!isCollateralizationBelowThreshold(), "TribeReserveStabilizer: Collateralization ratio under threshold");
         require(isTimeStarted(), "TribeReserveStabilizer: timer started");
         _pauseTimer();
     }
