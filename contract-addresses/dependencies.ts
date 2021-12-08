@@ -1,44 +1,16 @@
 import { DependencyMap } from '@custom-types/types';
 
 const dependencies: DependencyMap = {
-  d3poolConvexPCVDeposit: {
+  d3poolCurvePCVDeposit: {
     fips: {
       fip_53: true
     },
     contractDependencies: [],
     externalDependencies: []
   },
-  fei: {
+  d3poolConvexPCVDeposit: {
     fips: {
-      fip_45: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  agEurAngleUniswapPCVDeposit: {
-    fips: {
-      fip_45: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  collateralizationOracle: {
-    fips: {
-      fip_45: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  agEUR: {
-    fips: {
-      fip_45: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  chainlinkEurUsdOracleWrapper: {
-    fips: {
-      fip_45: true
+      fip_53: true
     },
     contractDependencies: [],
     externalDependencies: []

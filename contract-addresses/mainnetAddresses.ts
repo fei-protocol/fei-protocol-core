@@ -1,5 +1,9 @@
 const MainnetAddresses = {
   alusd: { artifactName: 'IERC20', address: '0xBC6DA0FE9aD5f3b0d58160288917AA56653660E9' },
+  pcvGuardian: {
+    artifactName: 'PCVGuardian',
+    address: '0x2D1b1b509B6432A73e3d798572f0648f6453a5D9'
+  },
   agEUR: {
     artifactName: 'IERC20',
     address: '0x1a7e4e63778B4f12a199C062f3eFdD288afCBce8'
@@ -540,6 +544,30 @@ const MainnetAddresses = {
     artifactName: 'StakingTokenWrapper',
     address: '0xd81Be1B9A7895C996704A8DDa794BbA4454EeB90'
   },
+  stakingTokenWrapperGROLaaS: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0x508629e8E0B96986Df4D0F1F60aadeF1d0FbaE96'
+  },
+  stakingTokenWrapperFOXLaaS: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0x3CD384ff1Fa1cbA8f06DF326AF4cbDA634aF94e8'
+  },
+  stakingTokenWrapperUMALaaS: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0x90B336dFF819b9e4b3D9A32cabdcAB0E92836065'
+  },
+  stakingTokenWrapperSYNLaaS: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0x5Db85e395735Bb42eEB720Fe2EE69627d246e300'
+  },
+  stakingTokenWrapperNEARLaaS: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0x3b3591a4f7FD386E9987Eb48d898e29b57c30c47'
+  },
+  stakingTokenWrapperKYLINLaaS: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0xFe266d143dB42a9835e2B1AB43B64a46278398cc'
+  },
   tWETH: { artifactName: 'IERC20', address: '0xD3D13a578a53685B4ac36A1Bab31912D2B2A2F36' },
   tToke: { artifactName: 'IERC20', address: '0xa760e26aA76747020171fCF8BdA108dFdE8Eb930' },
   toke: { artifactName: 'IERC20', address: '0x2e9d63788249371f1dfc918a52f8d799f4a38c94' },
@@ -561,10 +589,6 @@ const MainnetAddresses = {
   tribe: { artifactName: 'Tribe', address: '0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B' },
   tribeOTCEscrow: { artifactName: 'OtcEscrow', address: '0xe2fE8041429e4bd51c40F92C6cDb699527171298' },
   tribeBalOtcEscrow: { artifactName: 'OtcEscrow', address: '0xfFdEe6b0261d70278f5A3093A375c282eF8266Db' },
-  tribeReserveStabilizer: {
-    artifactName: 'TribeReserveStabilizer',
-    address: '0xa08A721dFB595753FFf335636674D76C455B275C'
-  },
   uniswapOracle: { artifactName: 'UniswapOracle', address: '0x087F35bd241e41Fc28E43f0E8C58d283DD55bD65' },
   uniswapPCVController: { artifactName: 'unknown', address: '0x0760dfe09bd6d04d0df9a60c51f01ecedceb5132' },
   uniswapPCVDeposit: { artifactName: 'UniswapPCVDeposit', address: '0x15958381E9E6dc98bD49655e36f524D2203a28bD' },
