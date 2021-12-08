@@ -1,4 +1,4 @@
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
@@ -7,9 +7,6 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { getImpersonatedSigner } from '@test/helpers';
-import { keccak256 } from 'ethers/lib/utils';
-import { utils } from 'ethers/lib/ethers';
 
 /*
 
@@ -43,8 +40,8 @@ const wethFeiMintLimitPerSecond = ethers.utils.parseEther('10000');
 const daiPSMBufferCap = ethers.utils.parseEther('10000000');
 const wethPSMBufferCap = ethers.utils.parseEther('10000000');
 
-const daiDecimalsNormalizer = 18;
-const wethDecimalsNormalizer = 18;
+const daiDecimalsNormalizer = 0;
+const wethDecimalsNormalizer = 0;
 
 const daiFloorPrice = 9_500;
 const daiCeilingPrice = 10_500;
@@ -171,12 +168,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const { compoundDaiPCVDeposit, aaveEthPCVDeposit, feiDAOTimelock, daiPSM, wethPSM } = contracts;
-  const timelockSigner = await getImpersonatedSigner(feiDAOTimelock.address);
-  // fund both PSM's with 30m in assets
-  // await compoundDaiPCVDeposit.connect(timelockSigner).withdraw(daiPSM.address, daiReservesThreshold);
-  // await aaveEthPCVDeposit.connect(timelockSigner).withdraw(wethPSM.address, wethReservesThreshold);
-  console.log('finished setup successfully');
+  /// no setup needed for this proposal
 };
 
 // Tears down any changes made in setup() that need to be
@@ -189,7 +181,6 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   const {
-    feiDAOTimelock,
     daiPCVDripController,
     wethPCVDripController,
     psmRouter,

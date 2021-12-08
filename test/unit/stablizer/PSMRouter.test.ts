@@ -9,27 +9,14 @@ import {
 } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer, utils } from 'ethers';
-import {
-  Core,
-  MockERC20,
-  Fei,
-  MockOracle,
-  MockPCVDepositV2,
-  PegStabilityModule,
-  PSMRouter,
-  WETH9
-} from '@custom-types/contracts';
+import { Core, Fei, MockOracle, MockPCVDepositV2, PegStabilityModule, PSMRouter, WETH9 } from '@custom-types/contracts';
 import { keccak256 } from 'ethers/lib/utils';
-import { provider } from '@openzeppelin/test-environment';
-import { time } from 'console';
 
 const toBN = ethers.BigNumber.from;
 
 describe('PSM Router', function () {
   let userAddress;
-  let governorAddress;
   let minterAddress;
-  let pcvControllerAddress;
   let psmAdminAddress;
   let receiver;
 
@@ -39,7 +26,6 @@ describe('PSM Router', function () {
   const feiLimitPerSecond = ethers.constants.WeiPerEther.mul(10_000);
   const bufferCap = ethers.constants.WeiPerEther.mul(10_000_000);
   const decimalsNormalizer = 0; // because the oracle price is scaled 1e18, need to divide out by that before testing
-  const bpGranularity = 10_000;
   const impersonatedSigners: { [key: string]: Signer } = {};
   const PSM_ADMIN_ROLE = keccak256(utils.toUtf8Bytes('PSM_ADMIN_ROLE'));
 
@@ -81,9 +67,7 @@ describe('PSM Router', function () {
     const addresses = await getAddresses();
 
     userAddress = addresses.userAddress;
-    governorAddress = addresses.governorAddress;
     minterAddress = addresses.minterAddress;
-    pcvControllerAddress = addresses.pcvControllerAddress;
     psmAdminAddress = addresses.beneficiaryAddress1;
     receiver = addresses.beneficiaryAddress2;
 
@@ -163,18 +147,30 @@ describe('PSM Router', function () {
   });
 
   describe('Redeem', function () {
+    beforeEach(async () => {
+      await weth.connect(impersonatedSigners[userAddress]).deposit({ value: ethers.constants.WeiPerEther.mul(10) });
+      await weth.connect(impersonatedSigners[userAddress]).transfer(psm.address, ethers.constants.WeiPerEther.mul(10));
+      await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, bufferCap);
+      await fei.approve(psmRouter.address, MAX_UINT256);
+    });
+
     describe('Sells FEI for ETH without deadline', function () {
-      it('exchanges 10,000,000 FEI for 1.994 ETH', async () => {
-        await weth.connect(impersonatedSigners[userAddress]).deposit({ value: ethers.constants.WeiPerEther.mul(10) });
-        await weth
-          .connect(impersonatedSigners[userAddress])
-          .transfer(psm.address, ethers.constants.WeiPerEther.mul(10));
+      it('getRedeemAmountOut gives exchange rate of 10,000,000 FEI to 1.994 ETH', async () => {
         const expectedEthAmount = 1994;
         const actualEthAmount = await psmRouter.getRedeemAmountOut(10_000_000);
         expect(expectedEthAmount).to.be.equal(actualEthAmount);
+      });
+
+      it('getRedeemAmountOut gives same exchange rate as PSM', async () => {
+        const actualEthAmountRouter = await psmRouter.getRedeemAmountOut(10_000_000);
+        const actualEthAmountPSM = await psm.getRedeemAmountOut(10_000_000);
+
+        expect(actualEthAmountRouter).to.be.equal(actualEthAmountPSM);
+      });
+
+      it('exchanges 10,000,000 FEI for 1.994 ETH', async () => {
+        const expectedEthAmount = 1994;
         const startingUserEthBalance = await ethers.provider.getBalance(receiver);
-        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, bufferCap);
-        await fei.approve(psmRouter.address, MAX_UINT256);
         const startingUserFEIBalance = await fei.balanceOf(userAddress);
 
         await psmRouter
@@ -192,10 +188,6 @@ describe('PSM Router', function () {
 
       it('redeem fails when eth receiver reverts', async () => {
         const ethReceiver = await (await ethers.getContractFactory('RevertReceiver')).deploy();
-        await weth.connect(impersonatedSigners[userAddress]).deposit({ value: ethers.constants.WeiPerEther.mul(10) });
-        await weth
-          .connect(impersonatedSigners[userAddress])
-          .transfer(psm.address, ethers.constants.WeiPerEther.mul(10));
         const expectedEthAmount = 1994;
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, bufferCap);
         await fei.approve(psmRouter.address, MAX_UINT256);
@@ -211,10 +203,6 @@ describe('PSM Router', function () {
 
     describe('Sells FEI for ETH with deadline', function () {
       it('exchanges 10,000,000 FEI for 1.994 ETH when deadline is in the future', async () => {
-        await weth.connect(impersonatedSigners[userAddress]).deposit({ value: ethers.constants.WeiPerEther.mul(10) });
-        await weth
-          .connect(impersonatedSigners[userAddress])
-          .transfer(psm.address, ethers.constants.WeiPerEther.mul(10));
         const expectedEthAmount = 1994;
         const startingUserEthBalance = await ethers.provider.getBalance(receiver);
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, bufferCap);
@@ -236,19 +224,12 @@ describe('PSM Router', function () {
       });
 
       it('exchanges fails when deadline is in the past', async () => {
-        await weth.connect(impersonatedSigners[userAddress]).deposit({ value: ethers.constants.WeiPerEther.mul(10) });
-        await weth
-          .connect(impersonatedSigners[userAddress])
-          .transfer(psm.address, ethers.constants.WeiPerEther.mul(10));
-        const expectedEthAmount = 1994;
-        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, bufferCap);
-        await fei.approve(psmRouter.address, MAX_UINT256);
         const { timestamp } = await hre.ethers.provider.getBlock('latest');
 
         await expectRevert(
           psmRouter
             .connect(impersonatedSigners[userAddress])
-            ['redeem(address,uint256,uint256,uint256)'](receiver, 10_000_000, expectedEthAmount, timestamp - 10),
+            ['redeem(address,uint256,uint256,uint256)'](receiver, 10_000_000, 1000, timestamp - 10),
           'PSMRouter: order expired'
         );
       });
@@ -294,48 +275,57 @@ describe('PSM Router', function () {
 
       it('mint succeeds when deadline is in the future', async () => {
         const minAmountOut = 4985;
-        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, bufferCap);
         const userStartingFEIBalance = await fei.balanceOf(userAddress);
         const { timestamp } = await hre.ethers.provider.getBlock('latest');
 
         await psmRouter
           .connect(impersonatedSigners[userAddress])
           ['mint(address,uint256,uint256)'](userAddress, minAmountOut, timestamp + 10, { value: 1 });
+
         const userEndingFEIBalance = await fei.balanceOf(userAddress);
         expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.equal(minAmountOut);
       });
     });
 
     describe('Without Deadline', function () {
+      it('getMintAmountOut gives correct exchange rate with 1 wei', async () => {
+        const minAmountOut = 4985;
+        const expectedAmountOut = await psmRouter.getMintAmountOut(1);
+        expect(expectedAmountOut).to.be.equal(minAmountOut);
+      });
+
+      it('getMintAmountOut on router and PSM return the same value', async () => {
+        const expectedAmountOutRouter = await psmRouter.getMintAmountOut(1);
+        const expectedAmountOutPSM = await psm.getMintAmountOut(1);
+        expect(expectedAmountOutRouter).to.be.equal(expectedAmountOutPSM);
+      });
+
       it('mint succeeds with 1 wei', async () => {
         const minAmountOut = 4985;
         const userStartingFEIBalance = await fei.balanceOf(userAddress);
-        const expectedAmountOut = await psmRouter.getMintAmountOut(1);
-
-        expect(expectedAmountOut).to.be.equal(minAmountOut);
 
         await psmRouter
           .connect(impersonatedSigners[userAddress])
           ['mint(address,uint256)'](userAddress, minAmountOut, { value: 1 });
+
         const userEndingFEIBalance = await fei.balanceOf(userAddress);
         expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.equal(minAmountOut);
       });
 
       it('mint succeeds with 1 ether', async () => {
         const minAmountOut = toBN(4985).mul(ethers.constants.WeiPerEther);
-        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, bufferCap);
         const userStartingFEIBalance = await fei.balanceOf(userAddress);
 
         await psmRouter
           .connect(impersonatedSigners[userAddress])
           ['mint(address,uint256)'](userAddress, minAmountOut, { value: ethers.constants.WeiPerEther });
+
         const userEndingFEIBalance = await fei.balanceOf(userAddress);
         expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.equal(minAmountOut);
       });
 
       it('mint succeeds with 2 ether', async () => {
         const minAmountOut = toBN(9970).mul(ethers.constants.WeiPerEther);
-        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, bufferCap);
         const userStartingFEIBalance = await fei.balanceOf(userAddress);
 
         await psmRouter
