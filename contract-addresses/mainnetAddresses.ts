@@ -582,10 +582,6 @@ const MainnetAddresses = {
   tribe: { artifactName: 'Tribe', address: '0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B' },
   tribeOTCEscrow: { artifactName: 'OtcEscrow', address: '0xe2fE8041429e4bd51c40F92C6cDb699527171298' },
   tribeBalOtcEscrow: { artifactName: 'OtcEscrow', address: '0xfFdEe6b0261d70278f5A3093A375c282eF8266Db' },
-  tribeReserveStabilizer: {
-    artifactName: 'TribeReserveStabilizer',
-    address: '0xa08A721dFB595753FFf335636674D76C455B275C'
-  },
   uniswapOracle: { artifactName: 'UniswapOracle', address: '0x087F35bd241e41Fc28E43f0E8C58d283DD55bD65' },
   uniswapPCVController: { artifactName: 'unknown', address: '0x0760dfe09bd6d04d0df9a60c51f01ecedceb5132' },
   uniswapPCVDeposit: { artifactName: 'UniswapPCVDeposit', address: '0x15958381E9E6dc98bD49655e36f524D2203a28bD' },
