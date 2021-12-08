@@ -60,6 +60,7 @@ describe('e2e-bondingcurve', function () {
       const feiTokensExchange = toBN(40000000000000);
       await reserveStabilizer.updateOracle();
       const expectedAmountOut = await reserveStabilizer.getAmountOut(feiTokensExchange);
+
       await reserveStabilizer.exchangeFei(feiTokensExchange);
 
       const contractEthBalanceAfter = toBN(await ethers.provider.getBalance(reserveStabilizer.address));
