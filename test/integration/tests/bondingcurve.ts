@@ -47,7 +47,7 @@ describe('e2e-bondingcurve', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe.only('Reserve Stabilizer', async () => {
+  describe('Reserve Stabilizer', async () => {
     it('should be able to redeem Fei from stabiliser', async function () {
       const fei = contracts.fei;
       const reserveStabilizer = contracts.ethReserveStabilizer;
