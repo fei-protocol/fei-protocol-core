@@ -260,8 +260,6 @@ describe.only('e2e-peg-stability-module', function () {
         const startingDAIBalance = await dai.balanceOf(userAddress);
         const expectedDAIAmount = await daiPSM.getRedeemAmountOut(redeemAmount);
 
-        console.log(`expectedDAIAmount: ${expectedDAIAmount}`);
-
         await daiPSM.connect(impersonatedSigners[userAddress]).redeem(userAddress, redeemAmount, expectedDAIAmount);
 
         const endingFEIBalance = await fei.balanceOf(userAddress);
