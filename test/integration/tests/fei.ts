@@ -56,12 +56,14 @@ describe('e2e-fei', function () {
       );
     });
 
+    /* Test disabled until restrictedPermissions is deployed.
+    
     it('burnFrom', async function () {
       expect(await contracts.core.isBurner(deployAddress)).to.be.true;
       expect(fei.connect(deploySigner).burnFrom(ZERO_ADDRESS, 10)).to.be.revertedWith(
         'RestrictedPermissions: Burner deprecated for contract'
       );
-    });
+    });*/
 
     it('burnFrom', async function () {
       const balanceBefore = await fei.balanceOf(deployAddress);
