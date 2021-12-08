@@ -92,7 +92,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
       coreAddress: core,
       oracleAddress: chainlinkDaiUsdOracleWrapper,
       backupOracle: chainlinkDaiUsdOracleWrapper,
-      decimalsNormalizer: daiDecimalsNormalizer, // todo, figure out if normalization is needed
+      decimalsNormalizer: daiDecimalsNormalizer,
       doInvert: false
     },
     daiPSMMintFeeBasisPoints,
@@ -110,7 +110,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
       coreAddress: core,
       oracleAddress: chainlinkEthUsdOracleWrapper,
       backupOracle: chainlinkEthUsdOracleWrapper,
-      decimalsNormalizer: wethDecimalsNormalizer, // todo, figure out if normalization is needed
+      decimalsNormalizer: wethDecimalsNormalizer,
       doInvert: false
     },
     wethPSMMintFeeBasisPoints,
@@ -151,9 +151,6 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     daiPCVDripController.deployTransaction.wait(),
     wethPCVDripController.deployTransaction.wait()
   ]);
-  // console.log(
-  //   `successfully deployed all contracts, daipsm: ${daiPSM.address}, wethPSM: ${wethPSM.address}, psmRouter: ${psmRouter.address}, daiPCVDripController: ${daiPCVDripController.address}, wethPCVDripController: ${wethPCVDripController.address}`
-  // );
 
   return {
     daiPSM,
@@ -174,7 +171,7 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
 // Tears down any changes made in setup() that need to be
 // cleaned up before doing any validation checks.
 const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in teardown for fip${fipNumber}`);
+  // no teardown needed for this proposal
 };
 
 // Run any validations required on the fip using mocha or console logging

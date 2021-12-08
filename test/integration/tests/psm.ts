@@ -3,20 +3,12 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import hre, { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import {
-  expectRevert,
-  getAddresses,
-  getImpersonatedSigner,
-  increaseTime,
-  latestTime,
-  resetFork,
-  time
-} from '@test/helpers';
+import { expectRevert, getAddresses, getImpersonatedSigner, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '@test/integration/setup/utils';
-import { Core, PegStabilityModule, PriceBoundPSM, PSMRouter, WETH9 } from '@custom-types/contracts';
 import { Signer } from 'ethers';
+import { expectApprox } from '@test/helpers';
 
 const toBN = ethers.BigNumber.from;
 
@@ -37,6 +29,7 @@ describe.only('e2e-peg-stability-module', function () {
   let userAddress;
   let minterAddress;
   let weth;
+  let dai;
   let daiPSM;
   let wethPSM;
   let fei;
@@ -73,7 +66,7 @@ describe.only('e2e-peg-stability-module', function () {
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
-    ({ weth, daiPSM, wethPSM, psmRouter, fei, core } = contracts);
+    ({ dai, weth, daiPSM, wethPSM, psmRouter, fei, core } = contracts);
     doLogging && console.log(`Environment loaded.`);
     await core.grantMinter(minterAddress);
 
@@ -184,22 +177,165 @@ describe.only('e2e-peg-stability-module', function () {
       const redeemAmount = 10_000_000;
       beforeEach(async () => {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
-        await fei.connect(impersonatedSigners[userAddress]).approve(psmRouter.address, redeemAmount);
+        await fei.connect(impersonatedSigners[userAddress]).approve(wethPSM.address, redeemAmount);
+      });
+
+      it('exchanges 10,000,000 FEI for WETH', async () => {
+        const startingFEIBalance = await fei.balanceOf(userAddress);
+        const startingWETHBalance = await weth.balanceOf(userAddress);
+        const expectedEthAmount = await wethPSM.getRedeemAmountOut(redeemAmount);
+
+        await wethPSM.connect(impersonatedSigners[userAddress]).redeem(userAddress, redeemAmount, expectedEthAmount);
+
+        const endingFEIBalance = await fei.balanceOf(userAddress);
+        const endingWETHBalance = await weth.balanceOf(userAddress);
+
+        expect(endingWETHBalance.sub(startingWETHBalance)).to.be.equal(expectedEthAmount);
+        expect(startingFEIBalance.sub(endingFEIBalance)).to.be.equal(redeemAmount);
+        expect(expectedEthAmount).to.be.gt(0);
+      });
+
+      it('exchanges 5,000,000 FEI for WETH', async () => {
+        const startingFEIBalance = await fei.balanceOf(userAddress);
+        const startingWETHBalance = await weth.balanceOf(userAddress);
+        const expectedEthAmount = await wethPSM.getRedeemAmountOut(redeemAmount / 2);
+
+        await wethPSM
+          .connect(impersonatedSigners[userAddress])
+          .redeem(userAddress, redeemAmount / 2, expectedEthAmount);
+
+        const endingFEIBalance = await fei.balanceOf(userAddress);
+        const endingWETHBalance = await weth.balanceOf(userAddress);
+
+        expect(endingWETHBalance.sub(startingWETHBalance)).to.be.equal(expectedEthAmount);
+        expect(startingFEIBalance.sub(endingFEIBalance)).to.be.equal(redeemAmount / 2);
+        expect(expectedEthAmount).to.be.gt(0); //if you receive 0 weth, there is an oracle failure or improperly setup oracle
       });
     });
 
     describe('mint', function () {
-      const mintAmount = 2_000;
+      const mintAmount = toBN(2).mul(ethers.constants.WeiPerEther);
+
       beforeEach(async () => {
         await forceEth(userAddress);
-        /// deposit into weth
-        /// approve weth to be spent by the wethPSM
+        await weth.connect(impersonatedSigners[userAddress]).deposit({ value: mintAmount });
+        await weth.connect(impersonatedSigners[userAddress]).approve(wethPSM.address, mintAmount);
+      });
+
+      it('mint succeeds with 1 WETH', async () => {
+        const minAmountOut = await wethPSM.getMintAmountOut(ethers.constants.WeiPerEther);
+        const userStartingFEIBalance = await fei.balanceOf(userAddress);
+
+        await wethPSM.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount.div(2), minAmountOut);
+
+        const userEndingFEIBalance = await fei.balanceOf(userAddress);
+        expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.gte(minAmountOut);
+        expect(minAmountOut).to.be.gt(0);
+      });
+
+      it('mint succeeds with 2 WETH', async () => {
+        const ethAmountIn = toBN(2).mul(ethers.constants.WeiPerEther);
+        const minAmountOut = await psmRouter.getMintAmountOut(ethAmountIn);
+        const userStartingFEIBalance = await fei.balanceOf(userAddress);
+
+        await wethPSM.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, minAmountOut);
+
+        const userEndingFEIBalance = await fei.balanceOf(userAddress);
+        expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.equal(minAmountOut);
+        expect(minAmountOut).to.be.gt(0);
       });
     });
   });
 
   describe('dai_psm', async () => {
-    describe('redeem', function () {});
-    describe('mint', function () {});
+    describe('redeem', function () {
+      const redeemAmount = 10_000_000;
+      beforeEach(async () => {
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
+        await fei.connect(impersonatedSigners[userAddress]).approve(daiPSM.address, redeemAmount);
+      });
+
+      it('exchanges 10,000,000 FEI for DAI', async () => {
+        const startingFEIBalance = await fei.balanceOf(userAddress);
+        const startingDAIBalance = await dai.balanceOf(userAddress);
+        const expectedDAIAmount = await daiPSM.getRedeemAmountOut(redeemAmount);
+
+        console.log(`expectedDAIAmount: ${expectedDAIAmount}`);
+
+        await daiPSM.connect(impersonatedSigners[userAddress]).redeem(userAddress, redeemAmount, expectedDAIAmount);
+
+        const endingFEIBalance = await fei.balanceOf(userAddress);
+        const endingDAIBalance = await dai.balanceOf(userAddress);
+
+        expect(endingDAIBalance.sub(startingDAIBalance)).to.be.equal(expectedDAIAmount);
+        expect(startingFEIBalance.sub(endingFEIBalance)).to.be.equal(redeemAmount);
+        expect(expectedDAIAmount).to.be.gt(0);
+      });
+
+      it('exchanges 5,000,000 FEI for DAI', async () => {
+        const startingFEIBalance = await fei.balanceOf(userAddress);
+        const startingDAIBalance = await dai.balanceOf(userAddress);
+        const expectedDAIAmount = await daiPSM.getRedeemAmountOut(redeemAmount / 2);
+
+        await daiPSM.connect(impersonatedSigners[userAddress]).redeem(userAddress, redeemAmount / 2, expectedDAIAmount);
+
+        const endingFEIBalance = await fei.balanceOf(userAddress);
+        const endingDAIBalance = await dai.balanceOf(userAddress);
+
+        expect(endingDAIBalance.sub(startingDAIBalance)).to.be.equal(expectedDAIAmount);
+        expect(startingFEIBalance.sub(endingFEIBalance)).to.be.equal(redeemAmount / 2);
+        expect(expectedDAIAmount).to.be.gt(0); //if you receive 0 weth, there is an oracle failure or improperly setup oracle
+      });
+
+      it('DAI price sanity check', async () => {
+        const actualDAIAmountOut = await daiPSM.getRedeemAmountOut(redeemAmount);
+        await expectApprox(actualDAIAmountOut, redeemAmount);
+      });
+    });
+
+    describe('mint', function () {
+      const mintAmount = 10_000_000;
+
+      beforeEach(async () => {
+        const daiAccount = '0xbb2e5c2ff298fd96e166f90c8abacaf714df14f8';
+        const daiSigner = await getImpersonatedSigner(daiAccount);
+        await forceEth(daiAccount);
+        await dai.connect(daiSigner).transfer(userAddress, mintAmount);
+        await dai.connect(impersonatedSigners[userAddress]).approve(daiPSM.address, mintAmount);
+      });
+
+      it('mint succeeds with 5_000_000 DAI', async () => {
+        const minAmountOut = await daiPSM.getMintAmountOut(mintAmount / 2);
+        const userStartingFEIBalance = await fei.balanceOf(userAddress);
+        const psmStartingDAIBalance = await dai.balanceOf(daiPSM.address);
+
+        await daiPSM.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount / 2, minAmountOut);
+
+        const psmEndingDAIBalance = await dai.balanceOf(daiPSM.address);
+        const userEndingFEIBalance = await fei.balanceOf(userAddress);
+
+        expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.gte(minAmountOut);
+        expect(psmEndingDAIBalance.sub(psmStartingDAIBalance)).to.be.equal(mintAmount / 2);
+      });
+
+      it('mint succeeds with 10_000_000 DAI', async () => {
+        const minAmountOut = await daiPSM.getMintAmountOut(mintAmount);
+        const userStartingFEIBalance = await fei.balanceOf(userAddress);
+        const psmStartingDAIBalance = await dai.balanceOf(daiPSM.address);
+
+        await daiPSM.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, minAmountOut);
+
+        const psmEndingDAIBalance = await dai.balanceOf(daiPSM.address);
+        const userEndingFEIBalance = await fei.balanceOf(userAddress);
+
+        expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.equal(minAmountOut);
+        expect(psmEndingDAIBalance.sub(psmStartingDAIBalance)).to.be.equal(mintAmount);
+      });
+
+      it('DAI price sanity check', async () => {
+        const actualDAIAmountOut = await daiPSM.getMintAmountOut(mintAmount);
+        await expectApprox(actualDAIAmountOut, mintAmount);
+      });
+    });
   });
 });
