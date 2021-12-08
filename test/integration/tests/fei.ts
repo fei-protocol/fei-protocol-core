@@ -84,7 +84,9 @@ describe('e2e-fei', function () {
   describe('CoreRef Functionality', async function () {
     it('setCore', async function () {
       expect(await contracts.core.isGovernor(deployAddress)).to.be.true;
-      expect(fei.connect(deploySigner).setCore(ZERO_ADDRESS)).to.be.revertedWith('CoreRef: Caller is not a governor');
+      expect(await fei.connect(deploySigner).setCore(ZERO_ADDRESS)).to.be.revertedWith(
+        'CoreRef: Caller is not a governor'
+      );
     });
 
     it('pause/unpause', async function () {
