@@ -47,7 +47,7 @@ describe('e2e-bondingcurve', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe.skip('Reserve Stabilizer', async () => {
+  describe.only('Reserve Stabilizer', async () => {
     it('should be able to redeem Fei from stabiliser', async function () {
       const fei = contracts.fei;
       const reserveStabilizer = contracts.ethReserveStabilizer;
@@ -60,6 +60,7 @@ describe('e2e-bondingcurve', function () {
       const feiTokensExchange = toBN(40000000000000);
       await reserveStabilizer.updateOracle();
       const expectedAmountOut = await reserveStabilizer.getAmountOut(feiTokensExchange);
+
       await reserveStabilizer.exchangeFei(feiTokensExchange);
 
       const contractEthBalanceAfter = toBN(await ethers.provider.getBalance(reserveStabilizer.address));
