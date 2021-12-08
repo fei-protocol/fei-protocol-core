@@ -587,7 +587,18 @@ const MainnetAddresses = {
   uniswapPCVDeposit: { artifactName: 'UniswapPCVDeposit', address: '0x15958381E9E6dc98bD49655e36f524D2203a28bD' },
   uniswapRouter: { artifactName: 'unknown', address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D' },
   weth: { artifactName: 'IWETH', address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' },
-  wethERC20: { artifactName: 'IERC20', address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' }
+  wethERC20: { artifactName: 'IERC20', address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
+  daiPSM: { artifactName: 'PriceBoundPSM', address: '0x86A2EE8FAf9A840F7a2c64CA3d51209F9A02081D' },
+  wethPSM: { artifactName: 'PegStabilityModule', address: '0xA4899D35897033b927acFCf422bc745916139776' },
+  psmRouter: { artifactName: 'PSMRouter', address: '0xf953b3A269d80e3eB0F2947630Da976B896A8C5b' },
+  daiPCVDripController: {
+    artifactName: 'PCVDripController',
+    address: '0xAA292E8611aDF267e563f334Ee42320aC96D0463'
+  },
+  wethPCVDripController: {
+    artifactName: 'PCVDripController',
+    address: '0x5c74c94173F05dA1720953407cbb920F3DF9f887'
+  }
 };
 
 export default MainnetAddresses;
