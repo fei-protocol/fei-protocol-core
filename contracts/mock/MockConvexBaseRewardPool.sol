@@ -19,6 +19,12 @@ contract MockConvexBaseRewardPool is MockERC20 {
         rewardAmountPerClaim = _rewardAmountPerClaim;
     }
 
+    function withdrawAndUnwrap(uint256 amount, bool claim) public returns(bool) {
+        lpTokens.transfer(msg.sender, amount);
+        getReward(msg.sender, claim);
+        return true;
+    }
+
     function withdrawAllAndUnwrap(bool claim) public {
         uint256 _balance = lpTokens.balanceOf(address(this));
         lpTokens.transfer(msg.sender, _balance);

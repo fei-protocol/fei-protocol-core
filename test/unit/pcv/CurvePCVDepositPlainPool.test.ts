@@ -8,26 +8,19 @@ import {
   MockERC20__factory,
   MockCurve3pool,
   MockCurve3pool__factory,
-  MockConvexBooster,
-  MockConvexBooster__factory,
-  MockConvexBaseRewardPool,
-  MockConvexBaseRewardPool__factory,
-  ConvexPCVDeposit,
-  ConvexPCVDeposit__factory
+  CurvePCVDepositPlainPool,
+  CurvePCVDepositPlainPool__factory
 } from '@custom-types/contracts';
 
 chai.config.includeStack = true;
 
-describe('ConvexPCVDeposit', function () {
+describe('CurvePCVDepositPlainPool', function () {
   let core: Core;
   let fei: Fei;
   let stable1: MockERC20;
   let stable2: MockERC20;
-  let cvx: MockERC20;
   let curvePool: MockCurve3pool;
-  let convexBooster: MockConvexBooster;
-  let convexReward: MockConvexBaseRewardPool;
-  let deposit: ConvexPCVDeposit;
+  let deposit: CurvePCVDepositPlainPool;
 
   let userAddress: string;
   let pcvControllerAddress: string;
@@ -47,25 +40,15 @@ describe('ConvexPCVDeposit', function () {
     fei = await ethers.getContractAt('Fei', await core.fei());
     stable1 = await new MockERC20__factory(await getImpersonatedSigner(userAddress)).deploy();
     stable2 = await new MockERC20__factory(await getImpersonatedSigner(userAddress)).deploy();
-    cvx = await new MockERC20__factory(await getImpersonatedSigner(userAddress)).deploy();
     curvePool = await new MockCurve3pool__factory(await getImpersonatedSigner(userAddress)).deploy(
       stable1.address,
       fei.address,
       stable2.address
     );
-    convexReward = await new MockConvexBaseRewardPool__factory(await getImpersonatedSigner(userAddress)).deploy(
-      cvx.address,
-      curvePool.address
-    );
-    convexBooster = await new MockConvexBooster__factory(await getImpersonatedSigner(userAddress)).deploy(
-      convexReward.address,
-      curvePool.address
-    );
-    deposit = await new ConvexPCVDeposit__factory(await getImpersonatedSigner(userAddress)).deploy(
+    deposit = await new CurvePCVDepositPlainPool__factory(await getImpersonatedSigner(userAddress)).deploy(
       core.address,
       curvePool.address,
-      convexBooster.address,
-      convexReward.address
+      '50' // 0.5% slippage
     );
 
     // init the curve pool to be non empty
@@ -84,9 +67,12 @@ describe('ConvexPCVDeposit', function () {
   describe('balance()', function () {
     it('should report the current instantaneous balance in USD', async function () {
       expect(await deposit.balance()).to.be.equal('0');
-      await curvePool.transfer(deposit.address, '10000');
-      await deposit.deposit();
+      // increment with more LP tokens
+      await curvePool.transfer(deposit.address, '5000');
+      expect(await deposit.balance()).to.be.equal('3333');
+      await curvePool.transfer(deposit.address, '5000');
       expect(await deposit.balance()).to.be.equal('6666');
+      // reduce if FEI share of the pool increases
       fei.connect(await getImpersonatedSigner(minterAddress)).mint(curvePool.address, '10000');
       expect(await deposit.balance()).to.be.equal('3333');
     });
@@ -97,7 +83,6 @@ describe('ConvexPCVDeposit', function () {
       expect((await deposit.resistantBalanceAndFei())[0]).to.be.equal('0');
       expect((await deposit.resistantBalanceAndFei())[1]).to.be.equal('0');
       await curvePool.transfer(deposit.address, '10000');
-      await deposit.deposit();
       expect((await deposit.resistantBalanceAndFei())[0]).to.be.equal('6667');
       expect((await deposit.resistantBalanceAndFei())[1]).to.be.equal('3333');
       fei.connect(await getImpersonatedSigner(minterAddress)).mint(deposit.address, '10000');
@@ -114,10 +99,10 @@ describe('ConvexPCVDeposit', function () {
     });
 
     it('succeeds if not paused', async function () {
-      expect(await curvePool.balanceOf(convexReward.address)).to.be.equal('0');
-      await curvePool.transfer(deposit.address, '10000');
+      await stable1.mint(deposit.address, '5000');
+      expect(await deposit.balance()).to.be.equal('0');
       await deposit.deposit();
-      expect(await curvePool.balanceOf(convexReward.address)).to.be.equal('10000');
+      expect(await deposit.balance()).to.be.equal('3889');
     });
   });
 
@@ -135,31 +120,62 @@ describe('ConvexPCVDeposit', function () {
       ).to.be.revertedWith('CoreRef: Caller is not a PCV controller');
     });
 
-    it('should succeed if not paused', async function () {
-      await curvePool.transfer(deposit.address, '10000');
+    it('should send FEI to target', async function () {
+      stable1.mint(deposit.address, '3333333');
+      fei.connect(await getImpersonatedSigner(minterAddress)).mint(deposit.address, '333334');
+      stable2.mint(deposit.address, '3333333');
       await deposit.deposit();
-      expect(await curvePool.balanceOf(convexReward.address)).to.be.equal('10000');
-      await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).withdraw(deposit.address, '5000');
-      expect(await curvePool.balanceOf(convexReward.address)).to.be.equal('5000');
-      await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).withdraw(deposit.address, '5000');
-      expect(await curvePool.balanceOf(convexReward.address)).to.be.equal('0');
+      await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).withdraw(userAddress, '50000');
+      expect(await fei.balanceOf(userAddress)).to.be.equal('50000');
     });
   });
 
-  describe('Claim Rewards', function () {
+  describe('withdrawOneCoin()', function () {
     it('reverts if paused', async function () {
       await deposit.connect(await getImpersonatedSigner(governorAddress)).pause();
-      await expect(deposit.claimRewards()).to.be.revertedWith('Pausable: paused');
+      await expect(
+        deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).withdrawOneCoin('0', userAddress, '1000')
+      ).to.be.revertedWith('Pausable: paused');
     });
 
-    it('should claim rewards & leave them on the deposit', async function () {
-      await convexReward.mockSetRewardAmountPerClaim('12345');
+    it('reverts if not PCVController', async function () {
+      await expect(
+        deposit.connect(await getImpersonatedSigner(userAddress)).withdrawOneCoin('0', userAddress, '1000')
+      ).to.be.revertedWith('CoreRef: Caller is not a PCV controller');
+    });
 
-      const userBalanceBefore = await cvx.balanceOf(deposit.address);
-      await deposit.claimRewards();
-      const userBalanceAfter = await cvx.balanceOf(deposit.address);
+    it('should send Tokens to target', async function () {
+      stable1.mint(deposit.address, '3333333');
+      fei.connect(await getImpersonatedSigner(minterAddress)).mint(deposit.address, '333334');
+      stable2.mint(deposit.address, '3333333');
+      await deposit.deposit();
+      await deposit
+        .connect(await getImpersonatedSigner(pcvControllerAddress))
+        .withdrawOneCoin('0', userAddress, '50000');
+      expect(await stable1.balanceOf(userAddress)).to.be.equal('50000');
+    });
+  });
 
-      expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal('12345');
+  describe('exitPool()', function () {
+    it('reverts if paused', async function () {
+      await deposit.connect(await getImpersonatedSigner(governorAddress)).pause();
+      await expect(deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).exitPool()).to.be.revertedWith(
+        'Pausable: paused'
+      );
+    });
+
+    it('reverts if not PCVController', async function () {
+      await expect(deposit.connect(await getImpersonatedSigner(userAddress)).exitPool()).to.be.revertedWith(
+        'CoreRef: Caller is not a PCV controller'
+      );
+    });
+
+    it('should unpair all underlying tokens', async function () {
+      await curvePool.transfer(deposit.address, '10000');
+      await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).exitPool();
+      expect(await stable1.balanceOf(deposit.address)).to.be.equal('3333');
+      expect(await fei.balanceOf(deposit.address)).to.be.equal('3333'); // rounding error
+      expect(await stable2.balanceOf(deposit.address)).to.be.equal('3333');
     });
   });
 });

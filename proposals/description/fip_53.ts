@@ -7,22 +7,48 @@ const fip_53: ProposalDescription = {
       target: 'fei',
       values: '0',
       method: 'mint(address,uint256)',
-      arguments: ['{d3poolConvexPCVDeposit}', '50000000000000000000000000'],
+      arguments: ['{d3poolCurvePCVDeposit}', '50000000000000000000000000'],
       description: 'Mint 50M FEI for liquidity deposit'
+    },
+    {
+      target: 'd3poolCurvePCVDeposit',
+      values: '0',
+      method: 'deposit()',
+      arguments: [],
+      description: 'Deposit 50M FEI in the d3pool'
+    },
+    {
+      target: 'ratioPCVController',
+      values: '0',
+      method: 'withdrawRatioERC20(address,address,address,uint256)',
+      arguments: [
+        '{d3poolCurvePCVDeposit}', // pcvDeposit : from Curve d3pool deposit
+        '{curveD3pool}', // token : d3pool LP token
+        '{d3poolConvexPCVDeposit}', // to
+        '10000' // basisPoints : 100%
+      ],
+      description: 'Move all d3pool LP tokens to Convex deposit'
     },
     {
       target: 'd3poolConvexPCVDeposit',
       values: '0',
       method: 'deposit()',
       arguments: [],
-      description: 'Deposit 50M FEI in the d3pool and stake on Convex'
+      description: 'Stake ~50M$ of d3pool LP Tokens on Convex'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposit(address)',
+      arguments: ['{d3poolCurvePCVDeposit}'],
+      description: 'Add Curve d3pool PCV Deposit to CR Oracle'
     },
     {
       target: 'collateralizationOracle',
       values: '0',
       method: 'addDeposit(address)',
       arguments: ['{d3poolConvexPCVDeposit}'],
-      description: 'Add Convex PCV Deposit to CR Oracle'
+      description: 'Add Convex d3pool PCV Deposit to CR Oracle'
     }
   ],
   description: `

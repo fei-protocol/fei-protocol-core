@@ -1,17 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-// Forked from FraxFinance's IStableSwap3Pool.sol, with update to the solidity
-// compiler version and addition of the public property getters
-
-interface ICurveStableSwap3 {
-	// Deployment
-	function __init__(address _owner, address[3] memory _coins, address _pool_token, uint256 _A, uint256 _fee, uint256 _admin_fee) external;
-
+interface ICurvePool {
   // Public property getters
   function coins(uint256 arg0) external view returns (address);
   function balances(uint256 arg0) external view returns (uint256);
-  function get_balances() external view returns (uint256[3] memory);
   function fee() external view returns (uint256);
   function admin_fee() external view returns (uint256);
   function owner() external view returns (address);
@@ -28,7 +21,7 @@ interface ICurveStableSwap3 {
 
 	// ERC20 Standard
 	function decimals() external view returns (uint);
-	function transfer(address _to, uint _value) external returns (uint256);
+	function transfer(address _to, uint _value) external returns (bool);
 	function transferFrom(address _from, address _to, uint _value) external returns (bool);
 	function approve(address _spender, uint _value) external returns (bool);
 	function totalSupply() external view returns (uint);
@@ -39,13 +32,9 @@ interface ICurveStableSwap3 {
 	// 3Pool
 	function A() external view returns (uint);
 	function get_virtual_price() external view returns (uint);
-	function calc_token_amount(uint[3] memory amounts, bool deposit) external view returns (uint);
-	function add_liquidity(uint256[3] memory amounts, uint256 min_mint_amount) external;
 	function get_dy(int128 i, int128 j, uint256 dx) external view returns (uint256);
 	function get_dy_underlying(int128 i, int128 j, uint256 dx) external view returns (uint256);
 	function exchange(int128 i, int128 j, uint256 dx, uint256 min_dy) external;
-	function remove_liquidity(uint256 _amount, uint256[3] memory min_amounts) external;
-	function remove_liquidity_imbalance(uint256[3] memory amounts, uint256 max_burn_amount) external;
 	function calc_withdraw_one_coin(uint256 _token_amount, int128 i) external view returns (uint256);
 	function remove_liquidity_one_coin(uint256 _token_amount, int128 i, uint256 min_amount) external;
 
