@@ -1,4 +1,8 @@
 const MainnetAddresses = {
+  pcvGuardian: {
+    artifactName: 'PCVGuardian',
+    address: '0x2D1b1b509B6432A73e3d798572f0648f6453a5D9'
+  },
   agEUR: {
     artifactName: 'IERC20',
     address: '0x1a7e4e63778B4f12a199C062f3eFdD288afCBce8'
@@ -578,27 +582,23 @@ const MainnetAddresses = {
   tribe: { artifactName: 'Tribe', address: '0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B' },
   tribeOTCEscrow: { artifactName: 'OtcEscrow', address: '0xe2fE8041429e4bd51c40F92C6cDb699527171298' },
   tribeBalOtcEscrow: { artifactName: 'OtcEscrow', address: '0xfFdEe6b0261d70278f5A3093A375c282eF8266Db' },
-  tribeReserveStabilizer: {
-    artifactName: 'TribeReserveStabilizer',
-    address: '0xa08A721dFB595753FFf335636674D76C455B275C'
-  },
   uniswapOracle: { artifactName: 'UniswapOracle', address: '0x087F35bd241e41Fc28E43f0E8C58d283DD55bD65' },
   uniswapPCVController: { artifactName: 'unknown', address: '0x0760dfe09bd6d04d0df9a60c51f01ecedceb5132' },
   uniswapPCVDeposit: { artifactName: 'UniswapPCVDeposit', address: '0x15958381E9E6dc98bD49655e36f524D2203a28bD' },
   uniswapRouter: { artifactName: 'unknown', address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D' },
   weth: { artifactName: 'WETH9', address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' },
-  wethERC20: { artifactName: 'IERC20', address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
-  daiPSM: { artifactName: 'PriceBoundPSM', address: '0xA4899D35897033b927acFCf422bc745916139776' },
-  wethPSM: { artifactName: 'PegStabilityModule', address: '0xf953b3A269d80e3eB0F2947630Da976B896A8C5b' },
-  psmRouter: { artifactName: 'PSMRouter', address: '0xAA292E8611aDF267e563f334Ee42320aC96D0463' },
-  daiPCVDripController: {
-    artifactName: 'PCVDripController',
-    address: '0x5c74c94173F05dA1720953407cbb920F3DF9f887'
-  },
-  wethPCVDripController: {
-    artifactName: 'PCVDripController',
-    address: '0x720472c8ce72c2A2D711333e064ABD3E6BbEAdd3'
-  }
+  wethERC20: { artifactName: 'IERC20', address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' }
+  // daiPSM: { artifactName: 'PriceBoundPSM', address: '' },
+  // wethPSM: { artifactName: 'PegStabilityModule', address: '' },
+  // psmRouter: { artifactName: 'PSMRouter', address: '' },
+  // daiPCVDripController: {
+  //   artifactName: 'PCVDripController',
+  //   address: ''
+  // },
+  // wethPCVDripController: {
+  //   artifactName: 'PCVDripController',
+  //   address: ''
+  // }
 };
 
 export default MainnetAddresses;

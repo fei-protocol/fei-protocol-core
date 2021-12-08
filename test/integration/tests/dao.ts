@@ -243,7 +243,7 @@ describe('e2e-dao', function () {
       doLogging && console.log(`Testing tribe minter address...`);
       const tribe = contracts.tribe;
       const tribeMinter = await tribe.minter();
-      expect(tribeMinter).to.equal(contractAddresses.feiDAOTimelock);
+      expect(tribeMinter).to.equal(contractAddresses.tribeMinter);
     });
   });
 });

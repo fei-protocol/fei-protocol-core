@@ -2,12 +2,12 @@ import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import hre, { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import { NamedContracts } from '@custom-types/types';
 import { expectRevert, getAddresses, getImpersonatedSigner, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '@test/integration/setup/utils';
-import { Signer } from 'ethers';
+import { Contract, Signer } from 'ethers';
 import { expectApprox } from '@test/helpers';
 
 const toBN = ethers.BigNumber.from;
@@ -21,19 +21,18 @@ before(async () => {
 describe.only('e2e-peg-stability-module', function () {
   const impersonatedSigners: { [key: string]: Signer } = {};
   let contracts: NamedContracts;
-  let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
-  let psmRouter;
+  let psmRouter: Contract;
   let userAddress;
   let minterAddress;
-  let weth;
-  let dai;
-  let daiPSM;
-  let wethPSM;
-  let fei;
-  let core;
+  let weth: Contract;
+  let dai: Contract;
+  let daiPSM: Contract;
+  let wethPSM: Contract;
+  let fei: Contract;
+  let core: Contract;
   let beneficiaryAddress1;
 
   before(async function () {
@@ -65,7 +64,7 @@ describe.only('e2e-peg-stability-module', function () {
     e2eCoord = new TestEndtoEndCoordinator(config, proposals);
 
     doLogging && console.log(`Loading environment...`);
-    ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
+    ({ contracts } = await e2eCoord.loadEnvironment());
     ({ dai, weth, daiPSM, wethPSM, psmRouter, fei, core } = contracts);
     doLogging && console.log(`Environment loaded.`);
     await core.grantMinter(minterAddress);
