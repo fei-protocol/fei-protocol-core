@@ -56,14 +56,14 @@ describe('e2e-fei', function () {
       );
     });
 
-    /* Test disabled until restrictedPermissions is deployed.
+    /* Tests disabled until restrictedPermissions is deployed.
     
     it('burnFrom', async function () {
       expect(await contracts.core.isBurner(deployAddress)).to.be.true;
       expect(fei.connect(deploySigner).burnFrom(ZERO_ADDRESS, 10)).to.be.revertedWith(
         'RestrictedPermissions: Burner deprecated for contract'
       );
-    });*/
+    });
 
     it('burnFrom', async function () {
       const balanceBefore = await fei.balanceOf(deployAddress);
@@ -79,8 +79,11 @@ describe('e2e-fei', function () {
 
       expect(await fei.balanceOf(contracts.core.address)).to.be.bignumber.equal(toBN(10));
     });
+
+    */
   });
 
+  /* Test disabled until restrictedPermissions is deployed.
   describe('CoreRef Functionality', async function () {
     it('setCore', async function () {
       expect(await contracts.core.isGovernor(deployAddress)).to.be.true;
@@ -99,4 +102,6 @@ describe('e2e-fei', function () {
       expect(await fei.paused()).to.be.false;
     });
   });
+
+  */
 });
