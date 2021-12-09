@@ -6,7 +6,9 @@ import "../dao/Timelock.sol";
 
 /// @title Base contract for merger logic
 /// @author elee
-contract MergerBase {    
+contract MergerBase {   
+    event Accept(address indexed dao);
+    event Enabled(); 
 
     uint256 public constant scalar = 1e9;
 
@@ -17,7 +19,6 @@ contract MergerBase {
 
     bool public rgtAccepted; // rgt timelock accepted
     bool public tribeAccepted; // tribe timelock accepted
-    bool public isTribeRariDAOActive;
 
     IERC20 public constant rgt =
         IERC20(0xD291E7a03283640FDc51b121aC401383A46cC623); // rgt
@@ -25,15 +26,12 @@ contract MergerBase {
         IERC20(0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B); // tribe
 
     address public immutable tribeRariDAO;
+    
+    /// @notice tells whether or not both parties have accepted the deal
+    bool public isEnabled;
 
     constructor(address _tribeRariDAO) {
         tribeRariDAO = _tribeRariDAO;
-    }
-
-    /// @notice tells whether or not both parties have accepted the deal
-    /// @return boolean true if both parties have accepted, else false
-    function isEnabled() public view returns (bool) {
-        return rgtAccepted && tribeAccepted && isTribeRariDAOActive;
     }
 
     /// @notice function for the rari timelock to accept the deal
@@ -43,6 +41,7 @@ contract MergerBase {
             "Only the timelock for party 0 may call this function"
         );
         rgtAccepted = true;
+        emit Accept(rgtTimelock);
     }
 
     /// @notice function for the tribe timelock to accept the deal
@@ -52,11 +51,16 @@ contract MergerBase {
             "Only the timelock for party 1 may call this function"
         );
         tribeAccepted = true;
+        emit Accept(tribeTimelock);
     }
 
     /// @notice make sure Tribe rari timelock is active
     function setTribeRariDAOActive() public {
-        require(!isTribeRariDAOActive, "already set");
-        isTribeRariDAOActive = Timelock(payable(rgtTimelock)).admin() == tribeRariDAO;    
+        require(!isEnabled, "already set");
+        require(Timelock(payable(rgtTimelock)).admin() == tribeRariDAO, "admin not accepted");    
+        require(tribeAccepted, "tribe accept");
+        require(rgtAccepted, "rari accept");
+        isEnabled = true;
+        emit Enabled();
     }
 }   

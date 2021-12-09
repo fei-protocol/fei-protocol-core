@@ -2,15 +2,12 @@
 pragma solidity ^0.8.4;
 
 import "./MergerBase.sol";
-import "../oracle/collateralization/ICollateralizationOracle.sol";
 import "../token/IFei.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @title Contract to exchange TRIBE with FEI post-merger
 /// @author elee
 contract TRIBERagequit is MergerBase {
-    using SafeCast for *;
     using SafeERC20 for IERC20;
 
     address public constant coreAddress = 0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9;
@@ -47,25 +44,24 @@ contract TRIBERagequit is MergerBase {
     function ngmi(
         uint256 amount,
         uint256 key,
-        bytes32[] memory merkleProof
-    ) public {
-        require(isEnabled(), "Proposals are not both passed");
+        bytes32[] calldata merkleProof
+    ) external {
+        require(isEnabled, "Proposals are not both passed");
         require(block.timestamp < rageQuitEnd, "outside ragequit window");
-        address thisSender = msg.sender;
         require(
-            verifyClaim(thisSender, key, merkleProof),
+            verifyClaim(msg.sender, key, merkleProof),
             "invalid proof"
         );
         require(
-            (claimed[thisSender] + amount) <= key,
-            "already ragequit all you tokens"
+            (claimed[msg.sender] + amount) <= key,
+            "exceeds ragequit limit"
         );
-        claimed[thisSender] = claimed[thisSender] + amount;
+        claimed[msg.sender] = claimed[msg.sender] + amount;
         uint256 tribeTokenTakenTotal = amount;
         uint256 token1GivenTotal = amount * intrinsicValueExchangeRateBase / scalar;
-        tribe.safeTransferFrom(thisSender, coreAddress, tribeTokenTakenTotal);
-        fei.mint(thisSender, token1GivenTotal);
-        emit Exchange(thisSender, tribeTokenTakenTotal, token1GivenTotal);
+        tribe.safeTransferFrom(msg.sender, coreAddress, tribeTokenTakenTotal);
+        fei.mint(msg.sender, token1GivenTotal);
+        emit Exchange(msg.sender, tribeTokenTakenTotal, token1GivenTotal);
     }
 
     function getCirculatingTribe() public view returns (uint256) {
@@ -83,7 +79,7 @@ contract TRIBERagequit is MergerBase {
     /// @param protocolEquity the protocol equity
     /// @return the new exchange rate
     /// @dev only callable once by guardian
-    function setExchangeRate(uint256 protocolEquity) public returns (uint256) {
+    function setExchangeRate(uint256 protocolEquity) external returns (uint256) {
         require(intrinsicValueExchangeRateBase == 0, "already set");
         require(msg.sender == guardian, "guardian");
         intrinsicValueExchangeRateBase = exchangeRate(protocolEquity);

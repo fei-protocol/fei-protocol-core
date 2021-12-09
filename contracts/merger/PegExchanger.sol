@@ -15,6 +15,7 @@ contract PegExchanger is MergerBase {
     uint256 public expirationTimestamp = type(uint256).max;
 
     event Exchange(address indexed from, uint256 amountIn, uint256 amountOut);
+    event SetExpiry(uint256 expiry);
 
     /// @notice since all variables are hard coded, the constructor does nothing
     constructor(address tribeRariDAO) MergerBase(tribeRariDAO) {}
@@ -23,7 +24,7 @@ contract PegExchanger is MergerBase {
     /// @param amount the amount to scale the base exchange amounts by
     function exchange(uint256 amount) public {
         require(!isExpired(), "Redemption period is over");
-        require(isEnabled(), "Proposals are not both passed");
+        require(isEnabled, "Proposals are not both passed");
         uint256 tribeOut =  amount * exchangeRate / scalar;
         rgt.safeTransferFrom(msg.sender, address(this), amount);
         tribe.safeTransfer(msg.sender, tribeOut);
@@ -50,9 +51,10 @@ contract PegExchanger is MergerBase {
             "timestamp too low"
         );
         require(
-            isEnabled() == true,
+            isEnabled == true,
             "Contract must be enabled before admin functions called"
         );
         expirationTimestamp = timestamp;
+        emit SetExpiry(timestamp);
     }
 }
