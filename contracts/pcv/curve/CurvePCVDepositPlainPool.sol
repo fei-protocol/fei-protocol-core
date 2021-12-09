@@ -17,7 +17,7 @@ contract CurvePCVDepositPlainPool is PCVDeposit {
     uint256 public maxSlippageBasisPoints;
 
     /// @notice The Curve pool to deposit in
-    address public curvePool;
+    ICurveStableSwap3 public curvePool;
 
     /// @notice number of coins in the Curve pool
     uint256 private constant N_COINS = 3;
@@ -37,7 +37,7 @@ contract CurvePCVDepositPlainPool is PCVDeposit {
         address _curvePool,
         uint256 _maxSlippageBasisPoints
     ) CoreRef(_core) {
-        curvePool = _curvePool;
+        curvePool = ICurveStableSwap3(_curvePool);
         maxSlippageBasisPoints = _maxSlippageBasisPoints;
 
         // cache some values for later gas optimizations
@@ -68,7 +68,7 @@ contract CurvePCVDepositPlainPool is PCVDeposit {
         IERC20[N_COINS] memory tokens;
         uint256 totalBalances = 0;
         for (uint256 i = 0; i < N_COINS; i++) {
-            tokens[i] = IERC20(ICurvePool(curvePool).coins(i));
+            tokens[i] = IERC20(curvePool.coins(i));
             balances[i] = tokens[i].balanceOf(address(this));
             totalBalances += balances[i];
         }
@@ -77,7 +77,7 @@ contract CurvePCVDepositPlainPool is PCVDeposit {
         require(totalBalances > 0, "CurvePCVDepositPlainPool: cannot deposit 0");
 
         // set maximum allowed slippage
-        uint256 virtualPrice = ICurvePool(curvePool).get_virtual_price();
+        uint256 virtualPrice = curvePool.get_virtual_price();
         uint256 minLpOut = totalBalances * 1e18 / virtualPrice;
         uint256 lpSlippageAccepted = minLpOut * maxSlippageBasisPoints / Constants.BASIS_POINTS_GRANULARITY;
         minLpOut -= lpSlippageAccepted;
@@ -86,12 +86,12 @@ contract CurvePCVDepositPlainPool is PCVDeposit {
         for (uint256 i = 0; i < N_COINS; i++) {
             // approve for deposit
             if (balances[i] > 0) {
-                tokens[i].approve(curvePool, balances[i]);
+                tokens[i].approve(address(curvePool), balances[i]);
             }
         }
 
         // deposit in the Curve pool
-        ICurveStableSwap3(curvePool).add_liquidity(balances, minLpOut);
+        curvePool.add_liquidity(balances, minLpOut);
     }
 
     /// @notice Exit the Curve pool by removing liquidity in one token.
@@ -116,14 +116,14 @@ contract CurvePCVDepositPlainPool is PCVDeposit {
         whenNotPaused
     {
         // burn LP tokens to get one token out
-        uint256 virtualPrice = ICurvePool(curvePool).get_virtual_price();
+        uint256 virtualPrice = curvePool.get_virtual_price();
         uint256 maxLpUsed = amountUnderlying * 1e18 / virtualPrice;
         uint256 lpSlippageAccepted = maxLpUsed * maxSlippageBasisPoints / Constants.BASIS_POINTS_GRANULARITY;
         maxLpUsed += lpSlippageAccepted;
-        ICurveStableSwap3(curvePool).remove_liquidity_one_coin(maxLpUsed, int128(int256(coinIndexInPool)), amountUnderlying);
+        curvePool.remove_liquidity_one_coin(maxLpUsed, int128(int256(coinIndexInPool)), amountUnderlying);
 
         // send token to destination
-        IERC20(ICurvePool(curvePool).coins(coinIndexInPool)).transfer(to, amountUnderlying);
+        IERC20(curvePool.coins(coinIndexInPool)).transfer(to, amountUnderlying);
     }
 
     /// @notice Exit the Curve pool by removing liquidity. The contract
@@ -132,15 +132,15 @@ contract CurvePCVDepositPlainPool is PCVDeposit {
     /// has 10M$ of liquidity, it will exit the pool with 2M FRAX, 6M FEI, 2M alUSD.
     function exitPool() public onlyPCVController whenNotPaused {
         // burn all LP tokens to exit pool
-        uint256 lpTokenBalance = ICurvePool(curvePool).balanceOf(address(this));
+        uint256 lpTokenBalance = curvePool.balanceOf(address(this));
         uint256[N_COINS] memory minAmountsOuts;
-        ICurveStableSwap3(curvePool).remove_liquidity(lpTokenBalance, minAmountsOuts);
+        curvePool.remove_liquidity(lpTokenBalance, minAmountsOuts);
     }
 
     /// @notice returns the balance in USD
     function balance() public view override returns (uint256) {
-        uint256 lpTokens = ICurvePool(curvePool).balanceOf(address(this));
-        uint256 virtualPrice = ICurvePool(curvePool).get_virtual_price();
+        uint256 lpTokens = curvePool.balanceOf(address(this));
+        uint256 virtualPrice = curvePool.get_virtual_price();
         uint256 usdBalance = lpTokens * virtualPrice / 1e18;
 
         // if FEI is in the pool, remove the FEI part of the liquidity, e.g. if
@@ -149,7 +149,8 @@ contract CurvePCVDepositPlainPool is PCVDeposit {
             uint256[N_COINS] memory balances;
             uint256 totalBalances = 0;
             for (uint256 i = 0; i < N_COINS; i++) {
-                balances[i] = IERC20(ICurvePool(curvePool).coins(i)).balanceOf(address(curvePool));
+                IERC20 poolToken = IERC20(curvePool.coins(i));
+                balances[i] = poolToken.balanceOf(address(curvePool));
                 totalBalances += balances[i];
             }
             usdBalance -= usdBalance * balances[feiIndexInPool] / totalBalances;
@@ -163,8 +164,8 @@ contract CurvePCVDepositPlainPool is PCVDeposit {
         uint256 resistantBalance,
         uint256 resistantFei
     ) {
-        uint256 lpTokens = ICurvePool(curvePool).balanceOf(address(this));
-        uint256 virtualPrice = ICurvePool(curvePool).get_virtual_price();
+        uint256 lpTokens = curvePool.balanceOf(address(this));
+        uint256 virtualPrice = curvePool.get_virtual_price();
         resistantBalance = lpTokens * virtualPrice / 1e18;
 
         // to have a resistant balance, we assume the pool is balanced, e.g. if

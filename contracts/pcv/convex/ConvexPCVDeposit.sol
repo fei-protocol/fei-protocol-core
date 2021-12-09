@@ -15,11 +15,11 @@ contract ConvexPCVDeposit is PCVDeposit {
     // ------------------ Properties -------------------------------------------
 
     /// @notice The Curve pool to deposit in
-    address public curvePool;
+    ICurvePool public curvePool;
     /// @notice The Convex Booster contract (for deposit/withdraw)
-    address public convexBooster;
+    IConvexBooster public convexBooster;
     /// @notice The Convex Rewards contract (for claiming rewards)
-    address public convexRewards;
+    IConvexBaseRewardPool public convexRewards;
 
     /// @notice number of coins in the Curve pool
     uint256 private constant N_COINS = 3;
@@ -41,16 +41,16 @@ contract ConvexPCVDeposit is PCVDeposit {
         address _convexBooster,
         address _convexRewards
     ) CoreRef(_core) {
-        convexBooster = _convexBooster;
-        convexRewards = _convexRewards;
-        curvePool = _curvePool;
+        convexBooster = IConvexBooster(_convexBooster);
+        convexRewards = IConvexBaseRewardPool(_convexRewards);
+        curvePool = ICurvePool(_curvePool);
 
         // cache some values for later gas optimizations
         address feiAddress = address(fei());
         bool foundFeiInPool = false;
         uint256 feiFoundAtIndex = 0;
         for (uint256 i = 0; i < N_COINS; i++) {
-            address tokenAddress = ICurvePool(curvePool).coins(i);
+            address tokenAddress = curvePool.coins(i);
             if (tokenAddress == feiAddress) {
                 foundFeiInPool = true;
                 feiFoundAtIndex = i;
@@ -70,10 +70,10 @@ contract ConvexPCVDeposit is PCVDeposit {
     /// Note : this call is permissionless, and can be used if LP tokens are
     /// transferred to this contract directly.
     function deposit() public override whenNotPaused {
-        uint256 lpTokenBalance = ICurvePool(curvePool).balanceOf(address(this));
-        uint256 poolId = IConvexBaseRewardPool(convexRewards).pid();
-        ICurvePool(curvePool).approve(convexBooster, lpTokenBalance);
-        IConvexBooster(convexBooster).deposit(poolId, lpTokenBalance, true);
+        uint256 lpTokenBalance = curvePool.balanceOf(address(this));
+        uint256 poolId = convexRewards.pid();
+        curvePool.approve(address(convexBooster), lpTokenBalance);
+        convexBooster.deposit(poolId, lpTokenBalance, true);
     }
 
     /// @notice unstake LP tokens from Convex Rewards, and withdraw Curve
@@ -84,19 +84,19 @@ contract ConvexPCVDeposit is PCVDeposit {
         onlyPCVController
         whenNotPaused
     {
-        IConvexBaseRewardPool(convexRewards).withdrawAndUnwrap(amountLpTokens, true);
-        ICurvePool(curvePool).transfer(to, amountLpTokens);
+        convexRewards.withdrawAndUnwrap(amountLpTokens, true);
+        curvePool.transfer(to, amountLpTokens);
     }
 
     /// @notice claim CRV & CVX rewards earned by the LP tokens staked on this contract.
     function claimRewards() public whenNotPaused {
-        IConvexBaseRewardPool(convexRewards).getReward(address(this), true);
+        convexRewards.getReward(address(this), true);
     }
 
     /// @notice returns the balance in USD
     function balance() public view override returns (uint256) {
-        uint256 lpTokensStaked = IConvexBaseRewardPool(convexRewards).balanceOf(address(this));
-        uint256 virtualPrice = ICurvePool(curvePool).get_virtual_price();
+        uint256 lpTokensStaked = convexRewards.balanceOf(address(this));
+        uint256 virtualPrice = curvePool.get_virtual_price();
         uint256 usdBalance = lpTokensStaked * virtualPrice / 1e18;
 
         // if FEI is in the pool, remove the FEI part of the liquidity, e.g. if
@@ -105,7 +105,8 @@ contract ConvexPCVDeposit is PCVDeposit {
             uint256[N_COINS] memory balances;
             uint256 totalBalances = 0;
             for (uint256 i = 0; i < N_COINS; i++) {
-                balances[i] = IERC20(ICurvePool(curvePool).coins(i)).balanceOf(address(curvePool));
+                IERC20 poolToken = IERC20(curvePool.coins(i));
+                balances[i] = poolToken.balanceOf(address(curvePool));
                 totalBalances += balances[i];
             }
             usdBalance -= usdBalance * balances[feiIndexInPool] / totalBalances;
@@ -119,8 +120,8 @@ contract ConvexPCVDeposit is PCVDeposit {
         uint256 resistantBalance,
         uint256 resistantFei
     ) {
-        uint256 lpTokensStaked = IConvexBaseRewardPool(convexRewards).balanceOf(address(this));
-        uint256 virtualPrice = ICurvePool(curvePool).get_virtual_price();
+        uint256 lpTokensStaked = convexRewards.balanceOf(address(this));
+        uint256 virtualPrice = curvePool.get_virtual_price();
         resistantBalance = lpTokensStaked * virtualPrice / 1e18;
 
         // to have a resistant balance, we assume the pool is balanced, e.g. if
