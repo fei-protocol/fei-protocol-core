@@ -588,17 +588,6 @@ const MainnetAddresses = {
   uniswapRouter: { artifactName: 'unknown', address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D' },
   weth: { artifactName: 'WETH9', address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' },
   wethERC20: { artifactName: 'IERC20', address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' }
-  // daiPSM: { artifactName: 'PriceBoundPSM', address: '' },
-  // wethPSM: { artifactName: 'PegStabilityModule', address: '' },
-  // psmRouter: { artifactName: 'PSMRouter', address: '' },
-  // daiPCVDripController: {
-  //   artifactName: 'PCVDripController',
-  //   address: ''
-  // },
-  // wethPCVDripController: {
-  //   artifactName: 'PCVDripController',
-  //   address: ''
-  // }
 };
 
 export default MainnetAddresses;
