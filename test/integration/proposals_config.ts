@@ -5,6 +5,7 @@ import { ProposalsConfigMap } from '@custom-types/types';
 import backstop_proposal from '@proposals/description/backstop';
 import fip_55_proposal from '@proposals/description/fip_55';
 import fip_54_proposal from '@proposals/description/fip_54';
+import merger_proposal from '@proposals/description/merger';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -15,23 +16,29 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  backstop: {
+  // backstop: {
+  //   deploy: true,
+  //   skipDAO: false,
+  //   totalValue: 0,
+  //   proposal: backstop_proposal
+  // },
+  // fip_55: {
+  //   deploy: false,
+  //   skipDAO: false,
+  //   totalValue: 0,
+  //   proposal: fip_55_proposal
+  // },
+  // fip_54: {
+  //   deploy: true,
+  //   skipDAO: false,
+  //   totalValue: 0,
+  //   proposal: fip_54_proposal
+  // },
+  merger: {
     deploy: true,
     skipDAO: false,
     totalValue: 0,
-    proposal: backstop_proposal
-  },
-  fip_55: {
-    deploy: false,
-    skipDAO: false,
-    totalValue: 0,
-    proposal: fip_55_proposal
-  },
-  fip_54: {
-    deploy: true,
-    skipDAO: false,
-    totalValue: 0,
-    proposal: fip_54_proposal
+    proposal: merger_proposal
   }
 };
 

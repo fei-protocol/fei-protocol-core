@@ -1,4 +1,7 @@
 const MainnetAddresses = {
+  rariTimelock: { artifactName: 'Timelock', address: '0x8ace03Fc45139fDDba944c6A4082b604041d19FC' },
+  gfxAddress: { artifactName: 'unknown', address: '0xA6E8772AF29B29B9202A073F8E36F447689BEEF6' },
+  rgt: { artifactName: 'IERC20', address: '0xD291E7a03283640FDc51b121aC401383A46cC623' },
   pcvGuardian: {
     artifactName: 'PCVGuardian',
     address: '0x2D1b1b509B6432A73e3d798572f0648f6453a5D9'

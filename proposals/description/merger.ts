@@ -35,11 +35,8 @@ const merger: ProposalDescription = {
       target: 'fei',
       values: '0',
       method: 'mint(address,uint256)',
-      arguments: [
-        '{gfxAddress}',
-        '100' // TODO calculate amount
-      ],
-      description: 'Tribe Accept TribeRageQuit'
+      arguments: ['{gfxAddress}', '315909060000000000000000'],
+      description: 'Send 315k FEI to GFX'
     }
   ],
   description: `
