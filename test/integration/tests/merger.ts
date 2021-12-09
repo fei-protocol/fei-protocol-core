@@ -6,8 +6,12 @@ import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { getImpersonatedSigner, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { PegExchanger } from '@custom-types/contracts';
+import { TRIBERagequit, PegExchanger } from '@custom-types/contracts';
 import { expectApprox } from '@test/helpers';
+import { createTree } from '@scripts/utils/merkle';
+import { solidityKeccak256 } from 'ethers/lib/utils';
+
+const toBN = ethers.BigNumber.from;
 
 before(async () => {
   chai.use(CBN(ethers.BigNumber));
@@ -44,8 +48,46 @@ describe('e2e-merger', function () {
   });
 
   describe('TribeRagequit', async function () {
-    it.skip('ngmi', async function () {
-      // TODO
+    const guardianBalance = '18884018000000000000000000';
+
+    it('ngmi', async function () {
+      const tribeRagequit: TRIBERagequit = contracts.tribeRagequit as TRIBERagequit;
+      const { fei, tribe } = contracts;
+
+      // Construct merkle tree and leaf for guardian
+      const tree = createTree();
+      const guardian = contractAddresses.multisig;
+      const leaf = solidityKeccak256(['address', 'uint256'], [guardian, guardianBalance]);
+
+      // Construct proof for guardian
+      const proof = tree.getProof(leaf);
+      const proofArray = [];
+      proof.map(function (key, index) {
+        proofArray.push(key.data);
+      });
+
+      const signer = await getImpersonatedSigner(guardian);
+
+      // Ragequit 1 TRIBE
+      const feiBalanceBefore = await fei.balanceOf(guardian);
+      const tribeBalanceBefore = await tribe.balanceOf(guardian);
+      await tribe.connect(signer).approve(tribeRagequit.address, ethers.constants.MaxUint256);
+
+      await tribeRagequit.connect(signer).ngmi(ethers.constants.WeiPerEther, guardianBalance, proofArray);
+      const feiBalanceAfter = await fei.balanceOf(guardian);
+      const tribeBalanceAfter = await tribe.balanceOf(guardian);
+
+      expect(tribeBalanceBefore.sub(tribeBalanceAfter)).to.be.equal(ethers.constants.WeiPerEther);
+      expect(feiBalanceAfter.sub(feiBalanceBefore)).to.be.bignumber.equal(toBN('1237113801000000000'));
+
+      // Ragequit original TRIBE fails
+      expect(tribeRagequit.connect(signer).ngmi(guardianBalance, guardianBalance, proofArray)).to.be.revertedWith(
+        'exceeds ragequit limit'
+      );
+
+      // Ragequit all held TRIBE succeeds
+      await tribeRagequit.connect(signer).ngmi(await tribe.balanceOf(guardian), guardianBalance, proofArray);
+      expect(await tribe.balanceOf(guardian)).to.be.bignumber.equal(toBN(0));
     });
   });
 
