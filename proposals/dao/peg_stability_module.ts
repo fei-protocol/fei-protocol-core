@@ -104,6 +104,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     compoundDaiPCVDeposit
   );
 
+  logging && console.log('daiPSM: ', daiPSM.address);
+
   // Deploy ETH Peg Stability Module
   const wethPSM = await wethPSMFactory.deploy(
     {
@@ -122,8 +124,12 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     aaveEthPCVDeposit
   );
 
+  logging && console.log('wethPSM: ', wethPSM.address);
+
   // Deploy PSM Router
   const psmRouter = await psmRouterFactory.deploy(wethPSM.address, fei);
+
+  logging && console.log('psmRouter: ', psmRouter.address);
 
   const daiPCVDripController = await PCVDripControllerFactory.deploy(
     core,
@@ -134,6 +140,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     incentiveAmount
   );
 
+  logging && console.log('daiPCVDripController: ', daiPCVDripController.address);
+
   const wethPCVDripController = await PCVDripControllerFactory.deploy(
     core,
     aaveEthPCVDeposit,
@@ -142,6 +150,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     wethDripAmount,
     incentiveAmount
   );
+
+  logging && console.log('wethPCVDripController: ', wethPCVDripController.address);
 
   // Wait for all five contracts to deploy
   await Promise.all([
