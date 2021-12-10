@@ -75,6 +75,12 @@ describe('ConvexPCVDeposit', function () {
     stable2.mint(curvePool.address, '3333');
   });
 
+  it('init', async function () {
+    expect(await deposit.curvePool()).to.be.equal(curvePool.address);
+    expect(await deposit.convexBooster()).to.be.equal(convexBooster.address);
+    expect(await deposit.convexRewards()).to.be.equal(convexReward.address);
+  });
+
   describe('balanceReportedIn()', function () {
     it('should report values in USD', async function () {
       expect(await deposit.balanceReportedIn()).to.be.equal('0x1111111111111111111111111111111111111111');
@@ -146,7 +152,7 @@ describe('ConvexPCVDeposit', function () {
     });
   });
 
-  describe('Claim Rewards', function () {
+  describe('claimRewards()', function () {
     it('reverts if paused', async function () {
       await deposit.connect(await getImpersonatedSigner(governorAddress)).pause();
       await expect(deposit.claimRewards()).to.be.revertedWith('Pausable: paused');

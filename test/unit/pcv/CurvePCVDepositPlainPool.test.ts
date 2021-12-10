@@ -58,6 +58,11 @@ describe('CurvePCVDepositPlainPool', function () {
     stable2.mint(curvePool.address, '3333');
   });
 
+  it('init', async function () {
+    expect(await deposit.maxSlippageBasisPoints()).to.be.equal('50');
+    expect(await deposit.curvePool()).to.be.equal(curvePool.address);
+  });
+
   describe('balanceReportedIn()', function () {
     it('should report values in USD', async function () {
       expect(await deposit.balanceReportedIn()).to.be.equal('0x1111111111111111111111111111111111111111');
