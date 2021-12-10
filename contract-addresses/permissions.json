@@ -10,7 +10,8 @@
     "pcvEquityMinter",
     "collateralizationOracleKeeper",
     "optimisticMinter",
-    "agEurAngleUniswapPCVDeposit"
+    "agEurAngleUniswapPCVDeposit",
+    "pegExchanger"
   ],
   "BURNER_ROLE": [
     "ethReserveStabilizer"

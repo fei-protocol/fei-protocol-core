@@ -8,11 +8,11 @@ import {
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
-} from '../../types/types';
-import { PegExchanger, Timelock, TRIBERagequit } from '../../types/contracts';
+} from '@custom-types/types';
+import { PegExchanger, Timelock, TRIBERagequit } from '@custom-types/contracts';
 import { getImpersonatedSigner } from '@test/helpers';
-import rariMergerProposal from '../description/mergerRari';
-import constructProposal from '../../scripts/utils/constructProposal';
+import rariMergerProposal from '@proposals/description/mergerRari';
+import constructProposal from '@scripts/utils/constructProposal';
 
 chai.use(CBN(ethers.BigNumber));
 
@@ -29,8 +29,10 @@ DEPLOY ACTIONS:
 
 const merkleRoot = '0x417b302928c3bee7e6818f2b06f3fd62dad4676747d87e81a8e25ef81d3cbad3';
 
-const rageQuitDeadline = '100000000000';
+const rageQuitDeadline = '1640480400'; // Dec 26, 1am UTC
 const equity = '792326034963459120910718196';
+
+const toBN = ethers.BigNumber.from;
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
   const { tribe, rariTimelock } = addresses;
@@ -98,8 +100,8 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 
   const tribeRagequit: TRIBERagequit = contracts.tribeRagequit as TRIBERagequit;
   const pegExchanger: PegExchanger = contracts.pegExchanger as PegExchanger;
-  await tribeRagequit.setTribeRariDAOActive();
-  await pegExchanger.setTribeRariDAOActive();
+  await tribeRagequit.setBothPartiesAccepted();
+  await pegExchanger.setBothPartiesAccepted();
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
@@ -113,4 +115,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect((await tribeRagequit.intrinsicValueExchangeRateBase()).toString()).to.be.equal('1237113801');
   expect((await tribe.balanceOf(pegExchanger.address)).toString()).to.be.equal('270000000000000000000000000');
   expect((await fei.balanceOf(addresses.gfxAddress)).toString()).to.be.equal('315909060000000000000000');
+
+  expect(await tribeRagequit.rageQuitEnd()).to.be.bignumber.equal(toBN(rageQuitDeadline));
+  expect(await tribeRagequit.merkleRoot()).to.be.bignumber.equal(toBN(merkleRoot));
 };
