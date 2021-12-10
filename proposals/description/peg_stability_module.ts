@@ -45,15 +45,15 @@ const peg_stability_module: ProposalDescription = {
       target: 'compoundDaiPCVDeposit',
       values: '0',
       method: 'withdraw(address,uint256)',
-      arguments: ['{daiPSM}', '30000000000000000000000000'],
-      description: 'Send 30m DAI to the DAI PSM'
+      arguments: ['{daiPSM}', '10000000000000000000000000'],
+      description: 'Send 10m DAI to the DAI PSM'
     },
     {
       target: 'aaveEthPCVDeposit',
       values: '0',
       method: 'withdraw(address,uint256)',
-      arguments: ['{wethPSM}', '7500000000000000000000'],
-      description: 'Send 7500 WETH to the WETH PSM'
+      arguments: ['{wethPSM}', '2500000000000000000000'],
+      description: 'Send 2500 WETH to the WETH PSM'
     }
   ],
   description: 'This module is used to manage the stability of the peg.'

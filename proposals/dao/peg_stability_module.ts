@@ -31,8 +31,8 @@ const daiPSMRedeemFeeBasisPoints = 30;
 const wethPSMMintFeeBasisPoints = 100;
 const wethPSMRedeemFeeBasisPoints = 100;
 
-const daiReservesThreshold = ethers.utils.parseEther('30000000');
-const wethReservesThreshold = ethers.utils.parseEther('7500');
+const daiReservesThreshold = ethers.utils.parseEther('10000000');
+const wethReservesThreshold = ethers.utils.parseEther('2500');
 
 const daiFeiMintLimitPerSecond = ethers.utils.parseEther('10000');
 const wethFeiMintLimitPerSecond = ethers.utils.parseEther('10000');
@@ -54,8 +54,8 @@ const dripFrequency = 3_600;
 // do not incentivize these calls
 const incentiveAmount = 0;
 
-const daiDripAmount = ethers.utils.parseEther('5000000');
-const wethDripAmount = ethers.utils.parseEther('1250');
+const daiDripAmount = ethers.utils.parseEther('10000000');
+const wethDripAmount = ethers.utils.parseEther('2500');
 
 const toBN = ethers.BigNumber.from;
 
