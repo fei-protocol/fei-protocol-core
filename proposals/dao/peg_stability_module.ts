@@ -191,7 +191,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   } = contracts;
 
   expect(await psmRouter.psm()).to.be.equal(wethPSM.address);
-  expect(await psmRouter.redeemActive()).to.be.false;
 
   expect(await daiPSM.underlyingToken()).to.be.equal(dai.address);
   expect(await wethPSM.underlyingToken()).to.be.equal(weth.address);

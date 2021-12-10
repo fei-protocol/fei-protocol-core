@@ -18,8 +18,6 @@ contract PSMRouter is IPSMRouter {
     /// @notice reference to the FEI contract used. Does not reference core to save on gas
     /// Router can be redeployed if FEI address changes
     IFei public override immutable fei;
-    /// @notice mutex lock to prevent fallback function from being hit any other time than weth withdraw
-    bool public override redeemActive;
 
     constructor(IPegStabilityModule _psm, IFei _fei) {
         psm = _psm;
@@ -61,8 +59,8 @@ contract PSMRouter is IPSMRouter {
     /// @dev This wraps ETH and then calls into the PSM to mint the fei. We return the amount of fei minted.
     /// @param to The address to mint fei to
     /// @param minAmountOut The minimum amount of fei to mint
-    function mint(address to, uint256 minAmountOut) external payable override returns (uint256) {
-        return _mint(to, minAmountOut);
+    function mint(address to, uint256 minAmountOut, uint256 ethAmountIn) external payable override returns (uint256) {
+        return _mint(to, minAmountOut, ethAmountIn);
     }
 
     /// @notice Mints fei to the given address, with a minimum amount required and a deadline
@@ -70,8 +68,8 @@ contract PSMRouter is IPSMRouter {
     /// @param to The address to mint fei to
     /// @param minAmountOut The minimum amount of fei to mint
     /// @param deadline The deadline for this order to be filled
-    function mint(address to, uint256 minAmountOut, uint256 deadline) external payable ensure(deadline) returns (uint256) {
-        return _mint(to, minAmountOut);
+    function mint(address to, uint256 minAmountOut, uint256 deadline, uint256 ethAmountIn) external payable ensure(deadline) returns (uint256) {
+        return _mint(to, minAmountOut, ethAmountIn);
     }
 
     /// @notice Redeems fei for ETH
@@ -102,13 +100,14 @@ contract PSMRouter is IPSMRouter {
     /// @notice function to receive ether from the weth contract when the redeem function is called
     /// will not accept eth unless there is an active redemption.
     fallback() external payable {
-        require(redeemActive, "PSMRouter: redeem not active");
+        require(msg.sender == address(Constants.WETH), "PSMRouter: fallback sender must be WETH contract");
     }
 
     // ---------- Internal Methods ----------
     
     /// @notice helper function to wrap eth and handle mint call to PSM
-    function _mint(address _to, uint256 _minAmountOut) internal returns (uint256) {
+    function _mint(address _to, uint256 _minAmountOut, uint256 _ethAmountIn) internal returns (uint256) {
+        require(_ethAmountIn == msg.value, "PSMRouter: ethAmountIn and msg.value mismatch");
         Constants.WETH.deposit{value: msg.value}();
         return psm.mint(_to, msg.value, _minAmountOut);
     }
@@ -119,9 +118,7 @@ contract PSMRouter is IPSMRouter {
         IERC20(fei).safeTransferFrom(msg.sender, address(this), amountFeiIn);
         amountOut = psm.redeem(address(this), amountFeiIn, minAmountOut);
         
-        redeemActive = true;
         Constants.WETH.withdraw(amountOut);
-        redeemActive = false;
 
         (bool success, ) = to.call{value: amountOut}("");
         require(success, "PSMRouter: eth transfer failed");

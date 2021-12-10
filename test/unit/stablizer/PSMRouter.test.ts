@@ -121,10 +121,6 @@ describe('PSM Router', function () {
       expect(await fei.allowance(psmRouter.address, psm.address)).to.be.equal(MAX_UINT256);
     });
 
-    it('redeemActive', async () => {
-      expect(await psmRouter.redeemActive()).to.be.false;
-    });
-
     it('getMaxMintAmountOut', async () => {
       expect(await psmRouter.getMaxMintAmountOut()).to.be.equal(bufferCap.add(await fei.balanceOf(psm.address)));
     });
@@ -141,7 +137,7 @@ describe('PSM Router', function () {
           to: psmRouter.address,
           value: ethers.utils.parseEther('1.0')
         }),
-        'PSMRouter: redeem not active'
+        'PSMRouter: fallback sender must be WETH contract'
       );
     });
   });
@@ -268,7 +264,7 @@ describe('PSM Router', function () {
         await expectRevert(
           psmRouter
             .connect(impersonatedSigners[userAddress])
-            ['mint(address,uint256,uint256)'](userAddress, minAmountOut, 0, { value: 1 }),
+            ['mint(address,uint256,uint256,uint256)'](userAddress, minAmountOut, 0, 1, { value: 1 }),
           'PSMRouter: order expired'
         );
       });
@@ -280,7 +276,7 @@ describe('PSM Router', function () {
 
         await psmRouter
           .connect(impersonatedSigners[userAddress])
-          ['mint(address,uint256,uint256)'](userAddress, minAmountOut, timestamp + 10, { value: 1 });
+          ['mint(address,uint256,uint256,uint256)'](userAddress, minAmountOut, timestamp + 10, 1, { value: 1 });
 
         const userEndingFEIBalance = await fei.balanceOf(userAddress);
         expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.equal(minAmountOut);
@@ -306,10 +302,19 @@ describe('PSM Router', function () {
 
         await psmRouter
           .connect(impersonatedSigners[userAddress])
-          ['mint(address,uint256)'](userAddress, minAmountOut, { value: 1 });
+          ['mint(address,uint256,uint256)'](userAddress, minAmountOut, 1, { value: 1 });
 
         const userEndingFEIBalance = await fei.balanceOf(userAddress);
         expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.equal(minAmountOut);
+      });
+
+      it('mint fails when msg.value and ethAmountIn mismatch', async () => {
+        await expectRevert(
+          psmRouter
+            .connect(impersonatedSigners[userAddress])
+            ['mint(address,uint256,uint256)'](userAddress, 0, 2, { value: 1 }),
+          'PSMRouter: ethAmountIn and msg.value mismatch'
+        );
       });
 
       it('mint succeeds with 1 ether', async () => {
@@ -318,7 +323,9 @@ describe('PSM Router', function () {
 
         await psmRouter
           .connect(impersonatedSigners[userAddress])
-          ['mint(address,uint256)'](userAddress, minAmountOut, { value: ethers.constants.WeiPerEther });
+          ['mint(address,uint256,uint256)'](userAddress, minAmountOut, ethers.constants.WeiPerEther, {
+            value: ethers.constants.WeiPerEther
+          });
 
         const userEndingFEIBalance = await fei.balanceOf(userAddress);
         expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.equal(minAmountOut);
@@ -330,7 +337,9 @@ describe('PSM Router', function () {
 
         await psmRouter
           .connect(impersonatedSigners[userAddress])
-          ['mint(address,uint256)'](userAddress, minAmountOut, { value: toBN(2).mul(ethers.constants.WeiPerEther) });
+          ['mint(address,uint256,uint256)'](userAddress, minAmountOut, toBN(2).mul(ethers.constants.WeiPerEther), {
+            value: toBN(2).mul(ethers.constants.WeiPerEther)
+          });
         const userEndingFEIBalance = await fei.balanceOf(userAddress);
         expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.equal(minAmountOut);
       });

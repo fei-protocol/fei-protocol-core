@@ -12,9 +12,6 @@ interface IPSMRouter {
     /// @notice reference to the FEI contract used.    
     function fei() external returns (IFei);
 
-    /// @notice mutex lock to prevent fallback function from being hit any other time than weth withdraw
-    function redeemActive() external returns (bool);
-
     /// @notice calculate the amount of FEI out for a given `amountIn` of underlying
     function getMintAmountOut(uint256 amountIn) external view returns (uint256 amountFeiOut);
 
@@ -34,7 +31,7 @@ interface IPSMRouter {
     /// @dev This wraps ETH and then calls into the PSM to mint the fei. We return the amount of fei minted.
     /// @param _to The address to mint fei to
     /// @param _minAmountOut The minimum amount of fei to mint
-    function mint(address _to, uint256 _minAmountOut) external payable returns (uint256);
+    function mint(address _to, uint256 _minAmountOut, uint256 ethAmountIn) external payable returns (uint256);
 
 
     /// @notice Redeems fei for ETH

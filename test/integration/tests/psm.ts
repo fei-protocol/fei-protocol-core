@@ -74,18 +74,6 @@ describe('e2e-peg-stability-module', function () {
     }
   });
 
-  describe('fallback', function () {
-    it('sending eth to the fallback function fails', async () => {
-      await expectRevert(
-        impersonatedSigners[userAddress].sendTransaction({
-          to: psmRouter.address,
-          value: ethers.utils.parseEther('1.0')
-        }),
-        'PSMRouter: redeem not active'
-      );
-    });
-  });
-
   describe('weth-router', async () => {
     describe('redeem', async () => {
       const redeemAmount = 10_000_000;
@@ -144,7 +132,9 @@ describe('e2e-peg-stability-module', function () {
 
         await psmRouter
           .connect(impersonatedSigners[userAddress])
-          ['mint(address,uint256)'](userAddress, minAmountOut, { value: ethers.constants.WeiPerEther });
+          ['mint(address,uint256,uint256)'](userAddress, minAmountOut, ethers.constants.WeiPerEther, {
+            value: ethers.constants.WeiPerEther
+          });
 
         const userEndingFEIBalance = await fei.balanceOf(userAddress);
         expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.gte(minAmountOut);
@@ -157,7 +147,7 @@ describe('e2e-peg-stability-module', function () {
 
         await psmRouter
           .connect(impersonatedSigners[userAddress])
-          ['mint(address,uint256)'](userAddress, minAmountOut, { value: ethAmountIn });
+          ['mint(address,uint256,uint256)'](userAddress, minAmountOut, ethAmountIn, { value: ethAmountIn });
 
         const userEndingFEIBalance = await fei.balanceOf(userAddress);
         expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.equal(minAmountOut);
