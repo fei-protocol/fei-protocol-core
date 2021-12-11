@@ -22,12 +22,6 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0,
     proposal: backstop_proposal
   },
-  fip_54: {
-    deploy: true,
-    skipDAO: false,
-    totalValue: 0,
-    proposal: fip_54_proposal
-  },
   merger: {
     deploy: true,
     skipDAO: false,
