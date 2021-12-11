@@ -20,12 +20,6 @@ const proposals: ProposalsConfigMap = {
     skipDAO: false,
     totalValue: 0,
     proposal: backstop_proposal
-  },
-  fip_55: {
-    deploy: false,
-    skipDAO: false,
-    totalValue: 0,
-    proposal: fip_55_proposal
   }
 };
 
