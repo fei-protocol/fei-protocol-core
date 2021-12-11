@@ -20,7 +20,7 @@ contract ExchangerTimelock is Ownable {
     address public immutable timelock;
 
     /// @notice guardian multisig
-    address public constant guardian = 0xB8f482539F2d3Ae2C9ea6076894df36D1f632775;
+    address public constant guardian = 0x8ace03fc45139fddba944c6a4082b604041d19fc;
 
     IERC20 public constant rgt =
         IERC20(0xD291E7a03283640FDc51b121aC401383A46cC623);
