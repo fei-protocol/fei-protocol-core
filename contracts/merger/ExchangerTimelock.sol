@@ -33,7 +33,7 @@ contract ExchangerTimelock is Ownable {
     }
 
     /// @notice exchange RGT to TRIBE and send to timelock
-    function exchangeToTimelock() public {
+    function exchangeToTimelock() external {
         uint256 rgtBalance = rgt.balanceOf(address(this));
 
         rgt.approve(address(exchanger), rgtBalance);
@@ -41,17 +41,14 @@ contract ExchangerTimelock is Ownable {
 
         assert(rgt.balanceOf(address(this)) == 0);
 
-        uint256 tribeBalance = tribe.balanceOf(address(this));
-
-        tribe.safeTransfer(timelock, tribeBalance);
+        tribe.safeTransfer(timelock, tribe.balanceOf(address(this)));
 
         assert(tribe.balanceOf(address(this)) == 0);
     }
 
     /// @notice guardian sends back RGT
-    function recoverRGT() public {
+    function recoverRGT() external {
         require(msg.sender == guardian);
-        uint256 rgtBalance = rgt.balanceOf(address(this));
-        rgt.transfer(owner(), rgtBalance);
+        rgt.transfer(owner(), rgt.balanceOf(address(this)));
     }
 }   

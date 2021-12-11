@@ -23,8 +23,9 @@ DEPLOY ACTIONS:
 
 */
 
-const beneficiary1 = '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775'; // TODO change to actual address
+const beneficiary1 = '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775'; // TODO change to actual Rari addresses
 const FIVE_YEARS = 60 * 60 * 24 * 365 * 5;
+const TIMELOCK_START = 1630000000; // TODO set to Rari vesting start
 
 const toBN = ethers.BigNumber.from;
 
@@ -43,7 +44,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     beneficiary1,
     FIVE_YEARS,
     0,
-    ethers.constants.AddressZero
+    ethers.constants.AddressZero,
+    TIMELOCK_START
   );
   await rariQuadraticTimelock1.deployTransaction.wait();
 
@@ -62,7 +64,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     beneficiary1,
     FIVE_YEARS,
     0,
-    ethers.constants.AddressZero
+    ethers.constants.AddressZero,
+    TIMELOCK_START
   );
   await rariQuadraticTimelock2.deployTransaction.wait();
 
@@ -81,7 +84,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     beneficiary1,
     FIVE_YEARS,
     0,
-    ethers.constants.AddressZero
+    ethers.constants.AddressZero,
+    TIMELOCK_START
   );
   await rariQuadraticTimelock3.deployTransaction.wait();
 
@@ -126,6 +130,10 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
   const tribe = contracts.tribe;
+
+  expect(await contracts.rariQuadraticTimelock1.startTime()).to.be.bignumber.equal(toBN(TIMELOCK_START));
+  expect(await contracts.rariQuadraticTimelock2.startTime()).to.be.bignumber.equal(toBN(TIMELOCK_START));
+  expect(await contracts.rariQuadraticTimelock3.startTime()).to.be.bignumber.equal(toBN(TIMELOCK_START));
 
   expect(await tribe.balanceOf(addresses.rariQuadraticTimelock1)).to.be.bignumber.equal(toBN('26705673430000000000'));
   expect(await tribe.balanceOf(addresses.rariQuadraticTimelock2)).to.be.bignumber.equal(toBN('53411346860000000000'));
