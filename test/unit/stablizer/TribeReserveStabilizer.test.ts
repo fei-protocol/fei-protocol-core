@@ -1,8 +1,8 @@
-import { expectRevert, getAddresses, getCore, increaseTime } from '@test/helpers';
-import hre, { ethers } from 'hardhat';
+import { expectRevert, getAddresses, getCore, increaseTime, getImpersonatedSigner } from '@test/helpers';
+import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
-import { TribeReserveStabilizer } from '@custom-types/contracts';
+import { Core, Tribe, Fei, TribeReserveStabilizer } from '@custom-types/contracts';
 
 const toBN = ethers.BigNumber.from;
 
@@ -12,6 +12,12 @@ describe('TribeReserveStabilizer', function () {
   let minterAddress;
   let pcvControllerAddress;
   let reserveStabilizer: TribeReserveStabilizer;
+  let core: Core;
+  let fei: Fei;
+  let tribe: Tribe;
+  let tribeMinter;
+  let oracle;
+  let collateralizationOracle;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
 
@@ -23,56 +29,83 @@ describe('TribeReserveStabilizer', function () {
       addresses.userAddress,
       addresses.pcvControllerAddress,
       addresses.governorAddress,
-      addresses.pcvControllerAddress,
-      addresses.minterAddress,
-      addresses.burnerAddress,
-      addresses.beneficiaryAddress1,
-      addresses.beneficiaryAddress2
+      addresses.minterAddress
     ];
 
     for (const address of impersonatedAddresses) {
-      await hre.network.provider.request({
-        method: 'hardhat_impersonateAccount',
-        params: [address]
-      });
-
-      impersonatedSigners[address] = await ethers.getSigner(address);
+      impersonatedSigners[address] = await getImpersonatedSigner(address);
     }
   });
 
   beforeEach(async function () {
     ({ userAddress, governorAddress, minterAddress, pcvControllerAddress } = await getAddresses());
-    this.core = await getCore();
+    core = await getCore();
 
-    this.fei = await ethers.getContractAt('Fei', await this.core.fei());
-    this.tribe = await ethers.getContractAt('Tribe', await this.core.tribe());
-    this.oracle = await (await ethers.getContractFactory('MockOracle')).deploy(400); // 400:1 oracle price
-    this.collateralizationOracle = await (
+    fei = await ethers.getContractAt('Fei', await core.fei());
+    tribe = await ethers.getContractAt('Tribe', await core.tribe());
+    oracle = await (await ethers.getContractFactory('MockOracle')).deploy(400); // 400:1 oracle price
+    collateralizationOracle = await (
       await ethers.getContractFactory('MockCollateralizationOracle')
-    ).deploy(this.core.address, 1);
-    this.pcvDeposit = await (await ethers.getContractFactory('MockEthUniswapPCVDeposit')).deploy(userAddress);
+    ).deploy(core.address, 1);
 
-    this.tribeMinter = await (await ethers.getContractFactory('MockTribeMinter')).deploy(this.tribe.address);
+    tribeMinter = await (await ethers.getContractFactory('MockTribeMinter')).deploy(tribe.address);
 
     reserveStabilizer = await (
       await ethers.getContractFactory('TribeReserveStabilizer')
     ).deploy(
-      this.core.address,
-      this.oracle.address,
-      this.oracle.address,
+      core.address,
+      oracle.address,
+      oracle.address,
       '9000', // $.90 exchange rate
-      this.collateralizationOracle.address,
+      collateralizationOracle.address,
       '10000', // 100% CR threshold
-      this.tribeMinter.address,
+      tribeMinter.address,
       '10' // 10 second window
     );
 
-    await this.tribe.connect(impersonatedSigners[governorAddress]).setMinter(this.tribeMinter.address, {});
+    await tribe.connect(impersonatedSigners[governorAddress]).setMinter(tribeMinter.address, {});
 
-    await this.fei
-      .connect(impersonatedSigners[userAddress])
-      .approve(reserveStabilizer.address, ethers.constants.MaxUint256);
-    await this.fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 40000000, {});
+    await fei.connect(impersonatedSigners[userAddress]).approve(reserveStabilizer.address, ethers.constants.MaxUint256);
+    await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 40000000, {});
+  });
+
+  describe('OracleDelay', function () {
+    it('start during time reverts', async function () {
+      reserveStabilizer.connect(impersonatedSigners[userAddress]).startOracleDelayCountdown();
+
+      await expectRevert(
+        reserveStabilizer.connect(impersonatedSigners[userAddress]).startOracleDelayCountdown(),
+        'TribeReserveStabilizer: timer started'
+      );
+    });
+
+    it('reset above CR reverts', async function () {
+      await expectRevert(
+        reserveStabilizer.connect(impersonatedSigners[userAddress]).resetOracleDelayCountdown(),
+        'TribeReserveStabilizer: Collateralization ratio under threshold'
+      );
+    });
+
+    it('reset before time reverts', async function () {
+      await reserveStabilizer.connect(impersonatedSigners[governorAddress]).setCollateralizationThreshold('9900', {});
+
+      await expectRevert(
+        reserveStabilizer.connect(impersonatedSigners[userAddress]).resetOracleDelayCountdown(),
+        'TribeReserveStabilizer: timer started'
+      );
+    });
+
+    it('startOracleDelayCountdown reverts', async function () {
+      await reserveStabilizer.startOracleDelayCountdown();
+      await increaseTime(10);
+
+      await reserveStabilizer.connect(impersonatedSigners[governorAddress]).setCollateralizationThreshold('9900', {});
+
+      await expectRevert(
+        reserveStabilizer.connect(impersonatedSigners[userAddress]).startOracleDelayCountdown(),
+        'TribeReserveStabilizer: Collateralization ratio above threshold'
+      );
+    });
   });
 
   describe('Exchange', function () {
@@ -83,28 +116,28 @@ describe('TribeReserveStabilizer', function () {
 
     describe('Enough FEI', function () {
       it('exchanges for appropriate amount of token', async function () {
-        const userBalanceBefore = await this.tribe.balanceOf(userAddress);
+        const userBalanceBefore = await tribe.balanceOf(userAddress);
         await reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000, {});
-        const userBalanceAfter = await this.tribe.balanceOf(userAddress);
+        const userBalanceAfter = await tribe.balanceOf(userAddress);
 
         expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal(toBN('90000'));
 
-        expect(await this.fei.balanceOf(userAddress)).to.be.equal(toBN('0'));
+        expect(await fei.balanceOf(userAddress)).to.be.equal(toBN('0'));
         expect(await reserveStabilizer.balance()).to.be.equal(toBN('0'));
       });
     });
 
     describe('Double Oracle price', function () {
       it('exchanges for appropriate amount of token', async function () {
-        await this.oracle.setExchangeRate('800');
+        await oracle.setExchangeRate('800');
 
-        const userBalanceBefore = await this.tribe.balanceOf(userAddress);
+        const userBalanceBefore = await tribe.balanceOf(userAddress);
         await reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000, {});
-        const userBalanceAfter = await this.tribe.balanceOf(userAddress);
+        const userBalanceAfter = await tribe.balanceOf(userAddress);
 
         expect(userBalanceAfter.sub(userBalanceBefore)).to.be.equal(toBN('45000'));
 
-        expect(await this.fei.balanceOf(userAddress)).to.be.equal(toBN('0'));
+        expect(await fei.balanceOf(userAddress)).to.be.equal(toBN('0'));
         expect(await reserveStabilizer.balance()).to.be.equal(toBN('0'));
       });
     });
@@ -161,7 +194,7 @@ describe('TribeReserveStabilizer', function () {
     });
 
     it('invalid oracle', async function () {
-      await this.collateralizationOracle.setValid(false);
+      await collateralizationOracle.setValid(false);
       expect(await reserveStabilizer.isCollateralizationBelowThreshold()).to.be.equal(false);
     });
   });

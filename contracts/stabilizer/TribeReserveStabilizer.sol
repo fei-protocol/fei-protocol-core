@@ -4,7 +4,6 @@ pragma solidity ^0.8.4;
 import "./ReserveStabilizer.sol";
 import "./ITribeReserveStabilizer.sol";
 import "../dao/ITribeMinter.sol";
-import "../utils/RateLimited.sol";
 import "../utils/Timed.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
@@ -112,5 +111,11 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, T
     // Call out to TRIBE minter for transferring
     function _transfer(address to, uint256 amount) internal override {
         tribeMinter.mint(to, amount);
+    }
+
+    function _pauseTimer() internal {
+        // setting start time to 0 means isTimeStarted is false
+        startTime = 0;
+        emit TimerReset(0);
     }
 }
