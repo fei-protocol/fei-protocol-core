@@ -41,7 +41,7 @@ contract MergerBase {
     }
 
     /// @notice function for the rari timelock to accept the deal
-    function rgtAccept() public {
+    function rgtAccept() external {
         require(
             msg.sender == rgtTimelock,
             "Only rari timelock"
@@ -51,7 +51,7 @@ contract MergerBase {
     }
 
     /// @notice function for the tribe timelock to accept the deal
-    function tribeAccept() public {
+    function tribeAccept() external {
         require(
             msg.sender == tribeTimelock,
             "Only tribe timelock"
@@ -61,7 +61,7 @@ contract MergerBase {
     }
 
     /// @notice make sure Tribe rari timelock is active
-    function setBothPartiesAccepted() public {
+    function setBothPartiesAccepted() external {
         require(!bothPartiesAccepted, "already set");
         require(Timelock(payable(rgtTimelock)).admin() == tribeRariDAO, "admin not accepted");    
         require(tribeAccepted, "Tribe DAO not yet accepted");

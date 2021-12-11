@@ -29,6 +29,7 @@ DEPLOY ACTIONS:
 
 const merkleRoot = '0x417b302928c3bee7e6818f2b06f3fd62dad4676747d87e81a8e25ef81d3cbad3';
 
+const rageQuitStart = '1640221200'; // Dec 23, 1am UTC
 const rageQuitDeadline = '1640480400'; // Dec 26, 1am UTC
 const equity = '792326034963459120910718196';
 
@@ -59,7 +60,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   // 3. Deploy TribeRagequit
   const ragequitFactory = await ethers.getContractFactory('TRIBERagequit');
-  const tribeRagequit = await ragequitFactory.deploy(merkleRoot, rageQuitDeadline, tribeRariDAO.address);
+  const tribeRagequit = await ragequitFactory.deploy(merkleRoot, rageQuitStart, rageQuitDeadline, tribeRariDAO.address);
 
   await tribeRagequit.deployTransaction.wait();
 
@@ -116,6 +117,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect((await tribe.balanceOf(pegExchanger.address)).toString()).to.be.equal('270000000000000000000000000');
   expect((await fei.balanceOf(addresses.gfxAddress)).toString()).to.be.equal('315909060000000000000000');
 
+  expect((await tribeRagequit.rageQuitStart()).toString()).to.be.equal(rageQuitStart);
   expect((await tribeRagequit.rageQuitEnd()).toString()).to.be.equal(rageQuitDeadline);
   expect(await tribeRagequit.merkleRoot()).to.be.equal(merkleRoot);
 };

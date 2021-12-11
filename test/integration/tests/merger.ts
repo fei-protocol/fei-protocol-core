@@ -3,7 +3,7 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, resetFork } from '@test/helpers';
+import { getImpersonatedSigner, resetFork, time } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { TRIBERagequit, PegExchanger } from '@custom-types/contracts';
@@ -67,6 +67,8 @@ describe('e2e-merger', function () {
       });
 
       const signer = await getImpersonatedSigner(guardian);
+
+      await time.increaseTo(await tribeRagequit.rageQuitStart());
 
       // Ragequit 1 TRIBE
       const feiBalanceBefore = await fei.balanceOf(guardian);

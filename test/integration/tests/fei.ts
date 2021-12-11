@@ -56,14 +56,16 @@ describe('e2e-fei', function () {
       );
     });
 
-    it('burnFrom', async function () {
+    /* Tests disabled until restrictedPermissions is deployed. */
+
+    it.skip('burnFrom', async function () {
       expect(await contracts.core.isBurner(deployAddress)).to.be.true;
       expect(fei.connect(deploySigner).burnFrom(ZERO_ADDRESS, 10)).to.be.revertedWith(
         'RestrictedPermissions: Burner deprecated for contract'
       );
     });
 
-    it('burnFrom', async function () {
+    it.skip('burnFrom', async function () {
       const balanceBefore = await fei.balanceOf(deployAddress);
       await fei.connect(deploySigner).burn(10);
       const balanceAfter = await fei.balanceOf(deployAddress);
@@ -71,7 +73,7 @@ describe('e2e-fei', function () {
       expect(balanceBefore.sub(balanceAfter)).to.be.bignumber.equal(toBN(10));
     });
 
-    it('mint', async function () {
+    it.skip('mint', async function () {
       expect(await contracts.core.isMinter(deployAddress)).to.be.true;
       await fei.connect(deploySigner).mint(contracts.core.address, 10);
 
@@ -79,10 +81,13 @@ describe('e2e-fei', function () {
     });
   });
 
-  describe('CoreRef Functionality', async function () {
+  /* Test disabled until restrictedPermissions is deployed. */
+  describe.skip('CoreRef Functionality', async function () {
     it('setCore', async function () {
       expect(await contracts.core.isGovernor(deployAddress)).to.be.true;
-      expect(fei.connect(deploySigner).setCore(ZERO_ADDRESS)).to.be.revertedWith('CoreRef: Caller is not a governor');
+      expect(await fei.connect(deploySigner).setCore(ZERO_ADDRESS)).to.be.revertedWith(
+        'CoreRef: Caller is not a governor'
+      );
     });
 
     it('pause/unpause', async function () {
