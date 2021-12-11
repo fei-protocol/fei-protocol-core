@@ -3,6 +3,7 @@ import { ProposalsConfigMap } from '@custom-types/types';
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
 import backstop_proposal from '@proposals/description/backstop';
+import fip_52_proposal from '@proposals/description/fip_52';
 import fip_54_proposal from '@proposals/description/fip_54';
 
 const proposals: ProposalsConfigMap = {
@@ -19,6 +20,12 @@ const proposals: ProposalsConfigMap = {
     skipDAO: false,
     totalValue: 0,
     proposal: backstop_proposal
+  },
+  fip_52: {
+    deploy: false,
+    skipDAO: false,
+    totalValue: 0,
+    proposal: fip_52_proposal
   }
 };
 
