@@ -16,25 +16,19 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  // backstop: {
-  //   deploy: true,
-  //   skipDAO: false,
-  //   totalValue: 0,
-  //   proposal: backstop_proposal
-  // },
-  // fip_54: {
-  //   deploy: true,
-  //   skipDAO: false,
-  //   totalValue: 0,
-  //   proposal: fip_54_proposal
-  // },
-  merger: {
+  rariTimelock: {
     deploy: true,
     skipDAO: false,
     totalValue: 0,
     proposal: merger_proposal
   },
-  rariTimelock: {
+  backstop: {
+    deploy: true,
+    skipDAO: false,
+    totalValue: 0,
+    proposal: backstop_proposal
+  },
+  merger: {
     deploy: true,
     skipDAO: true,
     totalValue: 0,
