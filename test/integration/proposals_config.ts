@@ -15,12 +15,12 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  // backstop: {
-  //   deploy: true,
-  //   skipDAO: false,
-  //   totalValue: 0,
-  //   proposal: backstop_proposal
-  // },
+  backstop: {
+    deploy: true,
+    skipDAO: false,
+    totalValue: 0,
+    proposal: backstop_proposal
+  },
   fip_52: {
     deploy: false,
     skipDAO: false,

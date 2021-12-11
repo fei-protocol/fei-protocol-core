@@ -14,12 +14,14 @@ chai.use(CBN(ethers.BigNumber));
 const toBN = ethers.BigNumber.from;
 
 /*
-Moar DAI
+Increase DAI allocations
 
-DEPLOY ACTIONS:
+No DEPLOY ACTIONS
 
 DAO ACTIONS:
-1. setCore on Fei to restrictedPermissions
+1. Increase Scale to 150m DAI
+2. Increase MintCap to 160m DAI
+3. Decrease Buffer to 20bps
 
 */
 
