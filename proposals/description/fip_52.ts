@@ -29,7 +29,7 @@ const fip_52: ProposalDescription = {
   Raise DAI bonding curve scale by 50M to 150M, raise cap to 160M, change buffer to 0.2%
 
 
-  Code: https://github.com/fei-protocol/fei-protocol-core/pull/
+  Code: https://github.com/fei-protocol/fei-protocol-core/pull/371
   Discussion: https://tribe.fei.money/t/fip-52-increase-dai-pcv-allocation/3733
 `
 };
