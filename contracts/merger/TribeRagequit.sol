@@ -31,6 +31,9 @@ contract TRIBERagequit is MergerBase {
     /// @notice you already know
     IFei public constant fei = IFei(0x956F47F50A910163D8BF957Cf5846D573E7f87CA);
 
+    /// @notice first timestamp for ragequit
+    uint256 public immutable rageQuitStart;
+
     /// @notice last timestamp for ragequit
     uint256 public immutable rageQuitEnd;
 
@@ -42,11 +45,14 @@ contract TRIBERagequit is MergerBase {
 
     constructor(
         bytes32 root, 
+        uint256 _rageQuitStart,
         uint256 _rageQuitEnd,
         address tribeRariDAO
     ) MergerBase(tribeRariDAO) {
         merkleRoot = root;
 
+        require(_rageQuitEnd - _rageQuitStart > 1 days, "need at least 24h ragequit window");
+        rageQuitStart = _rageQuitStart;
         rageQuitEnd = _rageQuitEnd;
     }
 
@@ -61,7 +67,10 @@ contract TRIBERagequit is MergerBase {
         bytes32[] calldata merkleProof
     ) external {
         require(bothPartiesAccepted, "Proposals are not both passed");
-        require(block.timestamp < rageQuitEnd, "outside ragequit window");
+        require(
+            block.timestamp > rageQuitStart && block.timestamp < rageQuitEnd, 
+            "outside ragequit window"
+        );
         require(
             verifyClaim(msg.sender, totalMerkleAmount, merkleProof),
             "invalid proof"
