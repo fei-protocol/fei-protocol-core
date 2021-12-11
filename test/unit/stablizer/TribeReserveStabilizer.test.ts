@@ -6,7 +6,7 @@ import { Core, Tribe, Fei, TribeReserveStabilizer } from '@custom-types/contract
 
 const toBN = ethers.BigNumber.from;
 
-describe('TribeReserveStabilizer', function () {
+describe.only('TribeReserveStabilizer', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
@@ -151,11 +151,6 @@ describe('TribeReserveStabilizer', function () {
           reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000, {}),
           'Timed: time not ended'
         );
-      });
-
-      it('no reset succeeds', async function () {
-        await reserveStabilizer.connect(impersonatedSigners[governorAddress]).setCollateralizationThreshold('9900', {});
-        await reserveStabilizer.connect(impersonatedSigners[userAddress]).exchangeFei(40000000);
       });
     });
 

@@ -58,6 +58,7 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, T
     /// @notice exchange FEI for minted TRIBE
     /// @dev the timer counts down from first time below threshold and opens after window
     function exchangeFei(uint256 feiAmount) public override afterTime returns(uint256) {
+        require(isCollateralizationBelowThreshold(), "TribeReserveStabilizer: Collateralization ratio above threshold");
         return super.exchangeFei(feiAmount);
     }
 
