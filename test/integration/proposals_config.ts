@@ -26,6 +26,7 @@ const proposals: ProposalsConfigMap = {
     deploy: true,
     skipDAO: false,
     totalValue: 0,
+    proposal: merger_proposal
   },
   fip_52: {
     deploy: false,
