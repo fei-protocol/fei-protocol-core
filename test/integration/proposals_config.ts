@@ -2,8 +2,10 @@ import { ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
-import permanently_revoke_burner_proposal from '@proposals/description/permanently_revoke_burner';
 import lusd_swap_grant_swapper_role from '@proposals/description/lusd_swap_grant_swapper_role';
+import backstop_proposal from '@proposals/description/backstop';
+import fip_52_proposal from '@proposals/description/fip_52';
+import fip_54_proposal from '@proposals/description/fip_54';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -12,13 +14,19 @@ const proposals: ProposalsConfigMap = {
         skipDAO: false, // whether or not to simulate proposal in DAO
         totalValue: 0, // amount of ETH to send to DAO execution
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
-    } 
+    }
     */
-  permanently_revoke_burner: {
+  backstop: {
     deploy: true,
     skipDAO: false,
     totalValue: 0,
-    proposal: permanently_revoke_burner_proposal
+    proposal: backstop_proposal
+  },
+  fip_52: {
+    deploy: false,
+    skipDAO: false,
+    totalValue: 0,
+    proposal: fip_52_proposal
   },
   lusd_swap_grant_swapper_role: {
     deploy: false,

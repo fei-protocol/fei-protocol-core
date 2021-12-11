@@ -5,6 +5,8 @@ import "./CompoundPCVDepositBase.sol";
 
 interface CErc20 {
     function mint(uint256 amount) external returns (uint256);
+
+    function underlying() external returns (address);
 }
 
 /// @title ERC-20 implementation for a Compound PCV Deposit
@@ -17,13 +19,11 @@ contract ERC20CompoundPCVDeposit is CompoundPCVDepositBase {
     /// @notice Compound ERC20 PCV Deposit constructor
     /// @param _core Fei Core for reference
     /// @param _cToken Compound cToken to deposit
-    /// @param _token the token underlying the cToken
     constructor(
         address _core,
-        address _cToken,
-        IERC20 _token
+        address _cToken
     ) CompoundPCVDepositBase(_core, _cToken) {
-        token = _token;
+        token = IERC20(CErc20(_cToken).underlying());
     }
 
     /// @notice deposit ERC-20 tokens to Compound

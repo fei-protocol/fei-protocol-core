@@ -186,10 +186,10 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         uint256 amountFeiToTransfer = Math.min(fei().balanceOf(address(this)), amountFeiOut);
         uint256 amountFeiToMint = amountFeiOut - amountFeiToTransfer;
 
-        _transfer(to, amountFeiToTransfer);
+        underlyingToken.safeTransfer(to, amountFeiToTransfer);
 
         if (amountFeiToMint > 0) {
-            _mintFei(to, amountFeiOut);
+            _mintFei(to, amountFeiToMint);
         }
         
         emit Mint(to, amountIn);
@@ -231,6 +231,11 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     /// @notice returns address of token this contracts balance is reported in
     function balanceReportedIn() external view override returns (address) {
         return address(underlyingToken);
+    }
+
+    /// @notice override default behavior of not checking fei balance
+    function resistantBalanceAndFei() public view override returns(uint256, uint256) {
+      return (balance(), feiBalance());
     }
 
     // ----------- Internal Methods -----------

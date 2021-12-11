@@ -47,7 +47,7 @@ describe('e2e-bondingcurve', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe.skip('Reserve Stabilizer', async () => {
+  describe('Reserve Stabilizer', async () => {
     it('should be able to redeem Fei from stabiliser', async function () {
       const fei = contracts.fei;
       const reserveStabilizer = contracts.ethReserveStabilizer;
@@ -60,6 +60,7 @@ describe('e2e-bondingcurve', function () {
       const feiTokensExchange = toBN(40000000000000);
       await reserveStabilizer.updateOracle();
       const expectedAmountOut = await reserveStabilizer.getAmountOut(feiTokensExchange);
+
       await reserveStabilizer.exchangeFei(feiTokensExchange);
 
       const contractEthBalanceAfter = toBN(await ethers.provider.getBalance(reserveStabilizer.address));
@@ -125,7 +126,10 @@ describe('e2e-bondingcurve', function () {
         await bondingCurve.allocate();
 
         const curveEthBalanceAfter = toBN(await ethers.provider.getBalance(bondingCurve.address));
-        expect(curveEthBalanceAfter.eq(curveEthBalanceBefore.sub(allocatedEth))).to.be.true;
+
+        // Have to use 5 wei because of rounding errors
+        // Tho we only have 2 we use 5 in case of future additions
+        expect(curveEthBalanceAfter.sub(curveEthBalanceBefore.sub(allocatedEth))).to.be.lt(5);
 
         const compoundETHAfter = await compoundEthPCVDeposit.balance();
         const aaveETHAfter = await aaveEthPCVDeposit.balance();

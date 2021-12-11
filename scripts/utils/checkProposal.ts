@@ -24,9 +24,9 @@ async function checkProposal() {
   // Get the upgrade setup, run and teardown scripts
   const proposalFuncs: UpgradeFuncs = await import(`@proposals/dao/${proposalName}`);
 
-  const contracts = (await getAllContracts()) as NamedContracts;
+  const contracts = (await getAllContracts()) as unknown as NamedContracts;
 
-  const contractAddresses = await getAllContractAddresses();
+  const contractAddresses = getAllContractAddresses();
 
   if (process.env.DO_SETUP) {
     console.log('Setup');

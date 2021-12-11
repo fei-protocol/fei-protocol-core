@@ -38,7 +38,7 @@ describe('ERC20CompoundPCVDeposit', function () {
 
     this.compoundPCVDeposit = await (
       await ethers.getContractFactory('ERC20CompoundPCVDeposit')
-    ).deploy(this.core.address, this.cToken.address, this.token.address);
+    ).deploy(this.core.address, this.cToken.address);
     this.depositAmount = toBN('1000000000000000000');
   });
 
