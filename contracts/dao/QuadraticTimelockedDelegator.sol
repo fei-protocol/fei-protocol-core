@@ -16,12 +16,18 @@ contract QuadraticTimelockedDelegator is QuadraticTokenTimelock {
     /// @param _token the token address
     /// @param _beneficiary default delegate, admin, and timelock beneficiary
     /// @param _duration duration of the token timelock window
+    /// @param _cliff the seconds before first claim is allowed
+    /// @param _clawbackAdmin the address which can trigger a clawback
     constructor(
         address _token,
         address _beneficiary,
-        uint256 _duration
-    ) QuadraticTokenTimelock(_beneficiary, _duration, _token) {
+        uint256 _duration,
+        uint256 _cliff,
+        address _clawbackAdmin
+    ) QuadraticTokenTimelock(_beneficiary, _duration, _token, _cliff, _clawbackAdmin) {
         IVotingToken(address(_token)).delegate(_beneficiary);
+
+        // TODO reset start date
     }
 
     /// @notice accept beneficiary role over timelocked TRIBE. Delegates all held (non-subdelegated) tribe to beneficiary

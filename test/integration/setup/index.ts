@@ -88,12 +88,18 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     // Get the upgrade setup and teardown scripts
     const { deploy, setup, teardown, validate } = await import('@proposals/dao/' + proposalName);
 
+    const contractAddressesBefore: { [key: string]: string } = {
+      ...namedContractsToNamedAddresses(this.mainnetContracts),
+      ...namedContractsToNamedAddresses(existingContracts),
+      ...getAllContractAddresses()
+    };
+
     if (config.deploy) {
       this.config.logging && console.log(`Applying upgrade for proposal: ${proposalName}`);
       const deployTyped = deploy as DeployUpgradeFunc;
       deployedUpgradedContracts = await deployTyped(
         this.config.deployAddress,
-        getAllContractAddresses(),
+        contractAddressesBefore,
         this.config.logging
       );
     }

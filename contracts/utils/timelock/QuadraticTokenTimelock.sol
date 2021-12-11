@@ -8,13 +8,15 @@ contract QuadraticTokenTimelock is TokenTimelock {
     constructor (
         address _beneficiary,
         uint256 _duration,
-        address _lockedToken
+        address _lockedToken,
+        uint256 _cliffDuration,
+        address _clawbackAdmin
     ) TokenTimelock(
         _beneficiary, 
         _duration, 
-        7776000, // 3 months cliff
+        _cliffDuration,
         _lockedToken, 
-        address(0xB8f482539F2d3Ae2C9ea6076894df36D1f632775) // fei labs multisig
+        _clawbackAdmin
     ) {}
 
     function _proportionAvailable(

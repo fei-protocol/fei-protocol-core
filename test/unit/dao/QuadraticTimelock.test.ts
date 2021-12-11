@@ -36,7 +36,7 @@ describe('QuadraticTimelockedDelegator', function () {
     window = toBN(4 * 365 * 24 * 60 * 60);
     delegator = await (
       await ethers.getContractFactory('QuadraticTimelockedDelegator')
-    ).deploy(tribe.address, userAddress, window);
+    ).deploy(tribe.address, userAddress, window, 60 * 60 * 24 * 30, secondUserAddress);
     totalTribe = toBN('10000');
     await tribe.mint(delegator.address, totalTribe);
   });
@@ -314,9 +314,9 @@ describe('QuadraticTimelockedDelegator', function () {
       await time.increase(cliffSeconds.add(toBN(1000)));
       expect(await tribe.balanceOf(delegator.address)).to.be.bignumber.equal(toBN(10000));
       await delegator.connect(await getImpersonatedSigner(clawbackAdmin)).clawback();
-      expect(await tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN(38));
+      expect(await tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN(4));
       expect(await tribe.balanceOf(delegator.address)).to.be.bignumber.equal(toBN(0));
-      expect(await tribe.balanceOf(clawbackAdmin)).to.be.bignumber.equal(toBN(9962));
+      expect(await tribe.balanceOf(clawbackAdmin)).to.be.bignumber.equal(toBN(9996));
     });
   });
 });

@@ -19,7 +19,7 @@ before(async () => {
   await resetFork();
 });
 
-describe('e2e-merger', function () {
+describe.only('e2e-merger', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;

@@ -109,13 +109,13 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   const pegExchanger: PegExchanger = contracts.pegExchanger as PegExchanger;
   const { tribe, fei } = contracts;
 
-  expect(await tribeRagequit.isEnabled()).to.be.true;
-  expect(await pegExchanger.isEnabled()).to.be.true;
+  expect(await tribeRagequit.bothPartiesAccepted()).to.be.true;
+  expect(await pegExchanger.bothPartiesAccepted()).to.be.true;
 
   expect((await tribeRagequit.intrinsicValueExchangeRateBase()).toString()).to.be.equal('1237113801');
   expect((await tribe.balanceOf(pegExchanger.address)).toString()).to.be.equal('270000000000000000000000000');
   expect((await fei.balanceOf(addresses.gfxAddress)).toString()).to.be.equal('315909060000000000000000');
 
-  expect(await tribeRagequit.rageQuitEnd()).to.be.bignumber.equal(toBN(rageQuitDeadline));
-  expect(await tribeRagequit.merkleRoot()).to.be.bignumber.equal(toBN(merkleRoot));
+  expect((await tribeRagequit.rageQuitEnd()).toString()).to.be.equal(rageQuitDeadline);
+  expect(await tribeRagequit.merkleRoot()).to.be.equal(merkleRoot);
 };
