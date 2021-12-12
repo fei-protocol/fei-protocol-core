@@ -6,7 +6,7 @@ import { Core, Tribe, Fei, TribeReserveStabilizer } from '@custom-types/contract
 
 const toBN = ethers.BigNumber.from;
 
-describe.only('TribeReserveStabilizer', function () {
+describe('TribeReserveStabilizer', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
@@ -67,6 +67,20 @@ describe.only('TribeReserveStabilizer', function () {
 
     await fei.connect(impersonatedSigners[userAddress]).approve(reserveStabilizer.address, ethers.constants.MaxUint256);
     await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 40000000, {});
+  });
+
+  describe('Initial State', function () {
+    it('collateralizationOracle', async function () {
+      expect(await reserveStabilizer.collateralizationOracle()).to.be.equal(collateralizationOracle.address);
+    });
+
+    it('collateralizationThreshold', async function () {
+      expect((await reserveStabilizer.collateralizationThreshold())[0]).to.be.equal('1000000000000000000');
+    });
+
+    it('tribeMinter', async function () {
+      expect(await reserveStabilizer.tribeMinter()).to.be.equal(tribeMinter.address);
+    });
   });
 
   describe('OracleDelay', function () {
@@ -220,6 +234,34 @@ describe.only('TribeReserveStabilizer', function () {
       await expectRevert(
         reserveStabilizer.connect(impersonatedSigners[governorAddress]).setUsdPerFeiRate('10001', {}),
         'ReserveStabilizer: Exceeds bp granularity'
+      );
+    });
+  });
+
+  describe('setCollateralizationOracle', function () {
+    it('governor succeeds', async function () {
+      await reserveStabilizer.connect(impersonatedSigners[governorAddress]).setCollateralizationOracle(userAddress);
+      expect(await reserveStabilizer.collateralizationOracle()).to.be.equal(userAddress);
+    });
+
+    it('non-governor reverts', async function () {
+      await expectRevert(
+        reserveStabilizer.connect(impersonatedSigners[userAddress]).setCollateralizationOracle(userAddress),
+        'CoreRef: Caller is not a governor'
+      );
+    });
+  });
+
+  describe('setCollateralizationThreshold', function () {
+    it('governor succeeds', async function () {
+      await reserveStabilizer.connect(impersonatedSigners[governorAddress]).setCollateralizationThreshold('9000');
+      expect((await reserveStabilizer.collateralizationThreshold())[0]).to.be.equal('900000000000000000');
+    });
+
+    it('non-governor reverts', async function () {
+      await expectRevert(
+        reserveStabilizer.connect(impersonatedSigners[userAddress]).setCollateralizationThreshold('10000'),
+        'CoreRef: Caller is not a governor'
       );
     });
   });
