@@ -16,7 +16,7 @@ before(async () => {
   await resetFork();
 });
 
-describe('e2e-dao', function () {
+describe.only('e2e-dao', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;

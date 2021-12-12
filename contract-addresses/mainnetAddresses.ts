@@ -364,9 +364,14 @@ const MainnetAddresses = {
     address: '0x0ee81df08B20e4f9E0F534e50da437D24491c4ee'
   },
   liquityFusePoolLusd: { artifactName: 'CErc20Delegator', address: '0x5052BfbB7972E702179f3Eeed43B9213819b681a' },
+  bamm: { artifactName: 'IBAMM', address: '0x0d3AbAA7E088C2c82f54B2f47613DA438ea8C598' },
   liquityFusePoolLusdPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x8C51E4532CC745cF3DFec5CEBd835D07E7BA1002'
+  },
+  lqty: {
+    artifactName: 'IERC20',
+    address: '0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D'
   },
   feiLusdLBPSwapper: { artifactName: 'BalancerLBPSwapper', address: '0x5fc76F8Fc3AF2b19D45AC841252dcE711ed448ff' },
   feiLusdLBP: { artifactName: 'IWeightedPool', address: '0xede4efcc5492cf41ed3f0109d60bc0543cfad23a' },
@@ -378,8 +383,6 @@ const MainnetAddresses = {
   masterKashi: { artifactName: 'unknown', address: '0x2cba6ab6574646badc84f0544d05059e57a5dc42' },
   multisend: { artifactName: 'IERC20Airdropper', address: '0x0B36b0F351ea8383506F596743a2DA7DCa204cc3' },
   multisig: { artifactName: 'unknown', address: '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775' },
-  feiLusdLBPSwapper: { artifactName: 'BalancerLBPSwapper', address: '0x5fc76F8Fc3AF2b19D45AC841252dcE711ed448ff' },
-  lusd: { artifactName: 'IERC20', address: '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0' },
   lusdPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x8c51e4532cc745cf3dfec5cebd835d07e7ba1002'
