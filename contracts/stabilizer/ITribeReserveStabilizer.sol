@@ -19,6 +19,10 @@ interface ITribeReserveStabilizer {
 
     function setCollateralizationThreshold(uint256 newCollateralizationThresholdBasisPoints) external;
 
+    function startOracleDelayCountdown() external;
+
+    function resetOracleDelayCountdown() external;
+
     // ----------- Getters -----------
 
     function isCollateralizationBelowThreshold() external view returns (bool);
