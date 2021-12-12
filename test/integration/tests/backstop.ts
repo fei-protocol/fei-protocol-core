@@ -3,12 +3,10 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { expectApprox, resetFork, time } from '@test/helpers';
+import { resetFork, time } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 
-const e18 = ethers.constants.WeiPerEther;
-const uintMax = ethers.constants.MaxUint256;
 const toBN = ethers.BigNumber.from;
 
 before(async () => {
@@ -17,14 +15,14 @@ before(async () => {
   await resetFork();
 });
 
-describe.only('e2e', function () {
+describe('e2e', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
 
-  const tenPow18 = toBN('1000000000000000000');
+  const tenPow18 = ethers.constants.WeiPerEther;
 
   before(async function () {
     // Setup test environment and get contracts

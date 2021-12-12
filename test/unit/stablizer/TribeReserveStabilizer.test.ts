@@ -188,21 +188,21 @@ describe('TribeReserveStabilizer', function () {
   });
 
   describe('isCollateralizationBelowThreshold', function () {
-    it('above', async function () {
+    it('collateralization above threshold', async function () {
       await reserveStabilizer.connect(impersonatedSigners[governorAddress]).setCollateralizationThreshold('9900', {});
       expect(await reserveStabilizer.isCollateralizationBelowThreshold()).to.be.equal(false);
     });
 
-    it('at', async function () {
+    it('collateralization at threshold', async function () {
       expect(await reserveStabilizer.isCollateralizationBelowThreshold()).to.be.equal(true);
     });
 
-    it('below', async function () {
+    it('collateralization below threshold', async function () {
       await reserveStabilizer.connect(impersonatedSigners[governorAddress]).setCollateralizationThreshold('10000', {});
       expect(await reserveStabilizer.isCollateralizationBelowThreshold()).to.be.equal(true);
     });
 
-    it('invalid oracle', async function () {
+    it('reverts invalid reported oracle value', async function () {
       await collateralizationOracle.setValid(false);
       expect(await reserveStabilizer.isCollateralizationBelowThreshold()).to.be.equal(false);
     });
