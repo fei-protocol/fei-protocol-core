@@ -105,7 +105,7 @@ const fip_56: ProposalDescription = {
       values: '0',
       method: 'setUsdPerFeiRate(uint256)',
       arguments: ['9925'],
-      description: 'Add New PCV Deposits to Collateralization Oracle'
+      description: 'Set EthReserveStabilizer exchange rate to $0.9925'
     },
     {
       target: 'pcvGuardian',
@@ -116,7 +116,18 @@ const fip_56: ProposalDescription = {
     }
   ],
   description: `
-  Code: https://github.com/fei-protocol/fei-protocol-core/pull/354
+  Adds the following contracts to PCV:
+  * TribeMinter - mints TRIBE with an annual inflation limit
+  * TribeReserveStabilizer - backstop for when PCV is under reserve ratio
+  * DAI PSM - 1:1 redeemability for FEI and DAI
+  * DAI PCV Drip Controller - refills DAI PSM periodically
+
+  removes minting privileges and CR oracle for DPI and RAI bomding curves
+  Increase ETH spread to 75bps
+  Add DAI PSM to PCV Guardian
+
+  Forum: https://tribe.fei.money/t/fip-56-fei-v2-deployment-proposal/3768
+  Code: https://github.com/fei-protocol/fei-protocol-core/pull/372
 `
 };
 

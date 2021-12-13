@@ -37,7 +37,7 @@ const daiCeilingPrice = 10_500;
 
 // PCVDrip Controller Params
 
-// drips can happen every hour
+// drips can happen every 30 mins
 const dripFrequency = 1_800;
 
 // do not incentivize these calls
@@ -56,12 +56,20 @@ DEPLOY ACTIONS:
 
 DAO ACTIONS:
 1. Create TRIBE_MINTER_ADMIN Role
-2. Set TribeMinter Contract Admin Role
-3. Grant TribeReserveStabilizer Admin Role
+2. Grant TribeReserveStabilizer Admin Role
+3. Set TribeMinter Contract Admin Role
 4. Grant TRIBE_MINTER the Tribe Minter role
-  2 - Grant Minter Role to DAI PSM
-  3 - Create PSM_ADMIN_ROLE
-  4 - Grant PSM_ADMIN_ROLE to Timelock
+5. Grant Minter Role to DAI PSM
+6. Grant PCV Controller to DAI PCVDripController
+7. Create PSM_ADMIN_ROLE
+8. Withdraw 20m DAI to PSM from Compound
+9. Revoke Minter from DPI bonding curve
+10. Revoke Minter from RAI bonding curve
+11. Remove RAI & DPI bonding curve from Collateralization Oracle
+12. Add DAI PSM to Collateralization Oracle
+13. Raise ETH BondingCurve buffer to 75bps
+14. Set EthReserveStabilizer exchange rate to $0.9925
+15. Add DAI PSM to PCV Guardian
 */
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
@@ -109,8 +117,9 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   const daiPSMFactory = await ethers.getContractFactory('PriceBoundPSM');
 
   const PCVDripControllerFactory = await ethers.getContractFactory('PCVDripController');
-  // Deploy DAI Peg Stability Module
-  // PSM will trade DAI between 98 cents and 1.02 cents.
+
+  // 3. Deploy DAI PriceBoundPegStabilityModule
+  // PSM will trade DAI between 95 cents and 1.05 cents.
   // If price is outside of this band, the PSM will not allow trades
   const daiPSM = await daiPSMFactory.deploy(
     daiFloorPrice,
@@ -131,8 +140,11 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     compoundDaiPCVDeposit
   );
 
+  await daiPSM.deployTransaction.wait();
+
   logging && console.log('daiPSM: ', daiPSM.address);
 
+  // 4. Deploy DAI PCV Dripper
   const daiPCVDripController = await PCVDripControllerFactory.deploy(
     core,
     compoundDaiPCVDeposit,
@@ -142,10 +154,9 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     incentiveAmount
   );
 
-  logging && console.log('daiPCVDripController: ', daiPCVDripController.address);
+  await daiPCVDripController.deployTransaction.wait();
 
-  // Wait for all five contracts to deploy
-  await Promise.all([daiPSM.deployTransaction.wait(), daiPCVDripController.deployTransaction.wait()]);
+  logging && console.log('daiPCVDripController: ', daiPCVDripController.address);
 
   return {
     tribeMinter,
