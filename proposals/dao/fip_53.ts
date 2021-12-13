@@ -80,18 +80,4 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   // Convex rewards should have the LP tokens of the deposit staked
   const lpTokensStaked = await contracts.convexD3poolRewards.balanceOf(contracts.d3poolConvexPCVDeposit.address);
   expect(lpTokensStaked).to.be.at.least(e18('49500000'));
-
-  // this call should do nothing (no time passed, so CRV and CVX balance is 0),
-  // but it should at least not revert.
-  await contracts.d3poolConvexPCVDeposit.claimRewards();
-
-  // Check what would happen if we wanted to exit the pool
-  // We should have around ~50M stablecoins (mix of FRAX, FEI, alUSD).
-  await contracts.d3poolConvexPCVDeposit.withdraw(addresses.d3poolCurvePCVDeposit, lpTokensStaked);
-  await contracts.d3poolCurvePCVDeposit.exitPool();
-  const fraxBalance = await contracts.frax.balanceOf(addresses.d3poolCurvePCVDeposit);
-  const feiBalance = await contracts.fei.balanceOf(addresses.d3poolCurvePCVDeposit);
-  const alUsdBalance = await contracts.alusd.balanceOf(addresses.d3poolCurvePCVDeposit);
-  const stablecoinSum = fraxBalance.add(feiBalance).add(alUsdBalance);
-  expect(stablecoinSum).to.be.at.least(e18('49500000'));
 };
