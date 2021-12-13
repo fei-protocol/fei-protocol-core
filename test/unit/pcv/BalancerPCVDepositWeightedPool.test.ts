@@ -124,13 +124,9 @@ describe('BalancerPCVDepositWeightedPool', function () {
 
         expectApproxAbs(await deposit.balance(), '80000', '10');
         expect(await bal.balanceOf(userAddress)).to.be.equal('0');
-        await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).withdraw(userAddress, '40000');
-        // the remaining 250 WETH count as 40k BAL
-        // not that this would not be possible in a real implementation, there
-        // would have been a very large slippage in withdrawing all the BAL tokens
-        // of the pool.
-        expect(await deposit.balance()).to.be.equal('40000');
-        expectApproxAbs(await bal.balanceOf(userAddress), '40000', '10');
+        await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).withdraw(userAddress, '1000');
+        // balance() should be 79000 but is 0 because of mock implementation
+        expectApproxAbs(await bal.balanceOf(userAddress), '1000', '1');
       });
     });
 
@@ -326,6 +322,100 @@ describe('BalancerPCVDepositWeightedPool', function () {
         expect(await wethERC20.balanceOf(poolAddress)).to.be.equal('0');
         expect(await wethERC20.balanceOf(deposit.address)).to.be.equal(toBN('1000'));
         expect(await fei.balanceOf(deposit.address)).to.be.equal('0');
+      });
+    });
+  });
+
+  describe('With 3 tokens and FEI (4 tokens)', function () {
+    let fei: Fei;
+    let token1: MockERC20;
+    let token2: MockERC20;
+    let token3: MockERC20;
+    let bal: MockERC20;
+    let oracleFei: MockOracle;
+    let oracle1: MockOracle;
+    let oracle2: MockOracle;
+    let oracle3: MockOracle;
+    let poolAddress: string;
+
+    beforeEach(async function () {
+      core = await getCore();
+      fei = await ethers.getContractAt('Fei', await core.fei());
+      token1 = await new MockERC20__factory(await getImpersonatedSigner(userAddress)).deploy();
+      token2 = await new MockERC20__factory(await getImpersonatedSigner(userAddress)).deploy();
+      token3 = await new MockERC20__factory(await getImpersonatedSigner(userAddress)).deploy();
+      bal = await new MockERC20__factory(await getImpersonatedSigner(userAddress)).deploy();
+      oracleFei = await new MockOracle__factory(await getImpersonatedSigner(userAddress)).deploy('1');
+      oracle1 = await new MockOracle__factory(await getImpersonatedSigner(userAddress)).deploy('100');
+      oracle2 = await new MockOracle__factory(await getImpersonatedSigner(userAddress)).deploy('200');
+      oracle3 = await new MockOracle__factory(await getImpersonatedSigner(userAddress)).deploy('400');
+      vault = await new MockVault__factory(await getImpersonatedSigner(userAddress)).deploy(
+        [fei.address, token1.address, token2.address, token3.address],
+        userAddress
+      );
+      poolAddress = await vault._pool();
+      await vault.setMockDoTransfers(true);
+      rewards = await new MockMerkleOrchard__factory(await getImpersonatedSigner(userAddress)).deploy(bal.address);
+      deposit = await new BalancerPCVDepositWeightedPool__factory(await getImpersonatedSigner(userAddress)).deploy(
+        core.address,
+        vault.address,
+        rewards.address,
+        '0x5c6ee304399dbdb9c8ef030ab642b10820db8f56000200000000000000000019', // poolId
+        '100', // max 1% slippage
+        token1.address,
+        [oracleFei.address, oracle1.address, oracle2.address, oracle3.address]
+      );
+
+      // grant Minter role to be able to manage FEI
+      await core.grantMinter(deposit.address);
+    });
+
+    describe('Deposit + balance checks', function () {
+      it('Should mint required FEI, and update the balances properly', async function () {
+        expect(await deposit.balance()).to.be.equal('0');
+        expect(await fei.balanceOf(poolAddress)).to.be.equal('0');
+        expect(await token1.balanceOf(poolAddress)).to.be.equal('0');
+        expect(await token2.balanceOf(poolAddress)).to.be.equal('0');
+        expect(await token3.balanceOf(poolAddress)).to.be.equal('0');
+        await token1.mint(deposit.address, '1000'); // 100,000 $
+        await token2.mint(deposit.address, '500'); // 100,000 $
+        await token3.mint(deposit.address, '250'); // 100,000 $
+        await deposit.deposit();
+        expectApproxAbs(await deposit.balance(), '3000', '10'); // 300,000$ expressed in token1 that is worth 100$
+        expectApproxAbs(await fei.balanceOf(poolAddress), '100000', '100'); // [99,900, 100,100]
+        expectApproxAbs(await token1.balanceOf(poolAddress), '1000', '10'); // [990, 1010]
+        expectApproxAbs(await token2.balanceOf(poolAddress), '500', '10'); // [490, 510]
+        expectApproxAbs(await token3.balanceOf(poolAddress), '250', '10'); // [240, 260]
+        expectApproxAbs((await deposit.resistantBalanceAndFei())._resistantBalance, '3000', '10'); // 300,000$ expressed in token1
+        expectApproxAbs((await deposit.resistantBalanceAndFei())._resistantFei, '100000', '100'); // [99,900, 100,100]
+      });
+    });
+
+    describe('Withdraw', function () {
+      it('Should burn the FEI', async function () {
+        await token1.mint(deposit.address, '1000'); // 100,000 $
+        await token2.mint(deposit.address, '500'); // 100,000 $
+        await token3.mint(deposit.address, '250'); // 100,000 $
+        await deposit.deposit();
+        await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).withdraw(userAddress, '1000');
+        expect(await fei.balanceOf(deposit.address)).to.be.equal('0');
+        expect(await fei.balanceOf(userAddress)).to.be.equal('0');
+        expectApproxAbs(await token1.balanceOf(userAddress), '1000', '10'); // [990, 1010]
+      });
+    });
+
+    describe('Exit Pool', function () {
+      it('Should burn the FEI', async function () {
+        await token1.mint(deposit.address, '1000'); // 100,000 $
+        await token2.mint(deposit.address, '500'); // 100,000 $
+        await token3.mint(deposit.address, '250'); // 100,000 $
+        await deposit.deposit();
+        await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).exitPool();
+        expect(await deposit.balance()).to.be.equal('0');
+        expect(await fei.balanceOf(deposit.address)).to.be.equal('0');
+        expectApproxAbs(await token1.balanceOf(deposit.address), '1000', '10'); // [990, 1010]
+        expectApproxAbs(await token2.balanceOf(deposit.address), '500', '10'); // [490, 510]
+        expectApproxAbs(await token3.balanceOf(deposit.address), '250', '10'); // [240, 260]
       });
     });
   });
