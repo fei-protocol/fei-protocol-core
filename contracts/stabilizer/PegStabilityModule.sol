@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
 import "./../token/Fei.sol";
@@ -162,7 +163,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         amountOut = _getRedeemAmountOut(amountFeiIn);
         require(amountOut >= minAmountOut, "PegStabilityModule: Redeem not enough out");
 
-        fei().transferFrom(msg.sender, address(this), amountFeiIn);
+        IERC20(fei()).safeTransferFrom(msg.sender, address(this), amountFeiIn);
 
         _transfer(to, amountOut);
 
@@ -186,7 +187,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         uint256 amountFeiToTransfer = Math.min(fei().balanceOf(address(this)), amountFeiOut);
         uint256 amountFeiToMint = amountFeiOut - amountFeiToTransfer;
 
-        underlyingToken.safeTransfer(to, amountFeiToTransfer);
+        IERC20(fei()).safeTransfer(to, amountFeiToTransfer);
 
         if (amountFeiToMint > 0) {
             _mintFei(to, amountFeiToMint);
@@ -211,6 +212,11 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     /// ensure decimals are normalized if on underlying they are not 18
     function getRedeemAmountOut(uint256 amountFeiIn) public override view returns (uint256 amountTokenOut) {
         amountTokenOut = _getRedeemAmountOut(amountFeiIn);
+    }
+
+    /// @notice the maximum mint amount out
+    function getMaxMintAmountOut() external override view returns (uint256) {
+        return fei().balanceOf(address(this)) + buffer();
     }
 
     /// @notice a flag for whether the current balance is above (true) or below (false) the reservesThreshold
