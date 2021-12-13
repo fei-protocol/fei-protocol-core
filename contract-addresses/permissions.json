@@ -10,7 +10,9 @@
     "pcvEquityMinter",
     "collateralizationOracleKeeper",
     "optimisticMinter",
-    "agEurAngleUniswapPCVDeposit"
+    "agEurAngleUniswapPCVDeposit",
+    "daiPSM",
+    "wethPSM"
   ],
   "BURNER_ROLE": [
     "ethReserveStabilizer"
@@ -25,7 +27,9 @@
     "ratioPCVController",
     "aaveEthPCVDripController",
     "compoundEthPCVDripController",
-    "pcvGuardian"
+    "pcvGuardian",
+    "daiPCVDripController",
+    "wethPCVDripController"
   ],
   "GUARDIAN_ROLE": [
     "multisig",
@@ -40,6 +44,9 @@
     "optimisticTimelock"
   ],
   "BALANCER_MANAGER_ADMIN_ROLE" : [
+
+  ],
+  "PSM_ADMIN_ROLE" : [
 
   ],
   "TRIBAL_CHIEF_ADMIN_ROLE" : [
