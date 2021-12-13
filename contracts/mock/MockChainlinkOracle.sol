@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
+import "hardhat/console.sol";
 
 contract MockChainlinkOracle is AggregatorV3Interface {
 
@@ -25,6 +26,7 @@ contract MockChainlinkOracle is AggregatorV3Interface {
     }
 
     function decimals() external override view returns (uint8) {
+      console.log("decimals");
       return _decimals;
     }
 
@@ -49,7 +51,8 @@ contract MockChainlinkOracle is AggregatorV3Interface {
         uint256 updatedAt,
         uint80 answeredInRound
     ) {
-      return (_roundId, _value, _startedAt, _updatedAt, _answeredInRound);
+      console.log("here");
+      return (_roundId, _value, block.timestamp, block.timestamp, _answeredInRound);
     }
 
     function set(

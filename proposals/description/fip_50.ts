@@ -35,22 +35,29 @@ const fip_50: ProposalDescription = {
       target: 'lusd',
       values: '0',
       method: 'approve(address,uint256)',
-      arguments: ['{bamm}', '90000000000000000000000000'],
-      description: 'Approve 90M LUSD to BAMM'
+      arguments: ['{bamm}', '89272000000000000000000000'],
+      description: 'Approve 89.272M LUSD to BAMM'
     },
     {
       target: 'bamm',
       values: '0',
       method: 'deposit(uint256)',
-      arguments: ['90000000000000000000000000'],
-      description: 'Deposit 90M LUSD to BAMM'
+      arguments: ['89272000000000000000000000'],
+      description: 'Deposit 89.272M LUSD to BAMM'
     },
     {
       target: 'aaveEthPCVDeposit',
       values: '0',
       method: 'withdraw(address,uint256)',
+      arguments: ['{aaveEthPCVDeposit}', '12000000000000000000000'],
+      description: 'Withdraw 12k WETH from Aave to its own PCV Deposit'
+    },
+    {
+      target: 'aaveEthPCVDeposit',
+      values: '0',
+      method: 'withdrawETH(address,uint256)',
       arguments: ['{ethLidoPCVDeposit}', '12000000000000000000000'],
-      description: 'Withdraw 12k ETH from Aave to Lido PCV Deposit'
+      description: 'Withdraw 12k WETH from Aave as ETH to Lido PCV Deposit'
     },
     {
       target: 'compoundEthPCVDeposit',
@@ -58,6 +65,27 @@ const fip_50: ProposalDescription = {
       method: 'withdraw(address,uint256)',
       arguments: ['{ethLidoPCVDeposit}', '12000000000000000000000'],
       description: 'Withdraw 12k ETH from Compound to Lido PCV Deposit'
+    },
+    {
+      target: 'ethLidoPCVDeposit',
+      values: '0',
+      method: 'deposit()',
+      arguments: [],
+      description: 'Deposit to Lido PCV Deposit'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'removeDeposits(address[])',
+      arguments: [['{feiLusdLens}']],
+      description: 'Remove Old PCV Deposits from Collateralization Oracle'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposits(address[])',
+      arguments: [['{bammLens}']],
+      description: 'Add New PCV Deposits to Collateralization Oracle'
     }
   ],
   description: 'Withdraw and deploy LUSD and stETH'
