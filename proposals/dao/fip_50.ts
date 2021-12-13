@@ -7,7 +7,7 @@ import {
   ValidateUpgradeFunc,
   NamedContracts
 } from '@custom-types/types';
-import { overwriteChainlinkAggregator, expectApprox } from '@test/helpers';
+import { overwriteChainlinkAggregator } from '@test/helpers';
 
 const fipNumber = 50;
 
@@ -47,7 +47,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses, loggi
 
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   console.log(`Setup for fip${fipNumber}`);
-  await overwriteChainlinkAggregator(addresses.chainlinkEthUsdOracle);
+  // set Chainlink ETHUSD to a fixed 4,000$ value
+  await overwriteChainlinkAggregator(addresses.chainlinkEthUsdOracle, '400000000000', '8');
 };
 
 const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
@@ -56,12 +57,12 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   // Check BAMM holdings via lens
-  console.log(await contracts.bammLens.balance());
+  expect(await contracts.bammLens.balance()).to.be.at.least(ethers.constants.WeiPerEther.mul(89_000_000));
 
   // Check balancer LBPSwapper balance is near 0 (note these are still reported in wei)
   const remainingBalances = await contracts.feiLusdLens.resistantBalanceAndFei();
-  expectApprox(remainingBalances[0], 99229997);
-  expectApprox(remainingBalances[1], 1009159);
+  expect(remainingBalances[0]).to.be.at.most(ethers.constants.WeiPerEther); // < 1 LUSD left
+  expect(remainingBalances[1]).to.be.at.most(ethers.constants.WeiPerEther); // < 1 FEI left
 
   // check Pool7LUSDDeposit holding 10m
   expect(await contracts.rariPool7LusdPCVDeposit.balance()).to.be.bignumber.equal(
@@ -70,7 +71,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // Check CR Oracle
   // Check stETH sitting on about 48k ETH
-  expectApprox(await contracts.ethLidoPCVDeposit.balance(), ethers.constants.WeiPerEther.mul(48_700));
+  expect(await contracts.ethLidoPCVDeposit.balance()).to.be.at.least(ethers.constants.WeiPerEther.mul(48_000));
+  expect(await contracts.ethLidoPCVDeposit.balance()).to.be.at.most(ethers.constants.WeiPerEther.mul(49_000));
 };
 
 export { deploy, setup, teardown, validate };

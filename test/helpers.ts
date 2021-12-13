@@ -4,7 +4,6 @@ import CBN from 'chai-bn';
 import { Core, Core__factory } from '@custom-types/contracts';
 import { BigNumber, BigNumberish, Signer } from 'ethers';
 import { NamedAddresses } from '@custom-types/types';
-import { sign } from 'crypto';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
@@ -188,10 +187,10 @@ const balance = {
   }
 };
 
-async function overwriteChainlinkAggregator(chainlink) {
+async function overwriteChainlinkAggregator(chainlink, value, decimals) {
   // Deploy new mock aggregator
   const factory = await ethers.getContractFactory('MockChainlinkOracle');
-  const mockAggregator = await factory.deploy('400000000000', '8'); // $4000 price
+  const mockAggregator = await factory.deploy(value, decimals);
 
   await mockAggregator.deployTransaction.wait();
 
