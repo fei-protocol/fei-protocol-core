@@ -9,7 +9,7 @@ import "./IBAMM.sol";
 /// @notice a contract to read manipulation resistant LUSD from BAMM 
 contract BAMMLens is IPCVDepositBalances {
 
-    /// @notice address of reported token for BAMM    
+    /// @notice LUSD, the reported token for BAMM    
     address public constant override balanceReportedIn = address(0x5f98805A4E8be255a32880FDeC7F6728C6568bA0);
 
     /// @notice B. Protocol BAMM address
@@ -25,7 +25,6 @@ contract BAMMLens is IPCVDepositBalances {
 
     constructor(address _target) { target = _target; }
 
-    /// @notice the oracle for the other token in the pair (not balanceReportedIn)
     function balance() public view override returns(uint256) {
         return depositedSupply(target);
     }
