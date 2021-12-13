@@ -47,7 +47,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses, loggi
 
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   console.log(`Setup for fip${fipNumber}`);
-  await overwriteChainlinkAggregator(addresses.chainlinkEthUsdOracle);
+  // set Chainlink ETHUSD to a fixed 4,000$ value
+  await overwriteChainlinkAggregator(addresses.chainlinkEthUsdOracle, '400000000000', '8');
 };
 
 const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {

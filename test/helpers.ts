@@ -187,10 +187,10 @@ const balance = {
   }
 };
 
-async function overwriteChainlinkAggregator(chainlink) {
+async function overwriteChainlinkAggregator(chainlink, value, decimals) {
   // Deploy new mock aggregator
   const factory = await ethers.getContractFactory('MockChainlinkOracle');
-  const mockAggregator = await factory.deploy('400000000000', '8'); // $4000 price
+  const mockAggregator = await factory.deploy(value, decimals);
 
   await mockAggregator.deployTransaction.wait();
 
