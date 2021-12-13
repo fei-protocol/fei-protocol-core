@@ -589,7 +589,7 @@ const MainnetAddresses = {
   uniswapPCVController: { artifactName: 'unknown', address: '0x0760dfe09bd6d04d0df9a60c51f01ecedceb5132' },
   uniswapPCVDeposit: { artifactName: 'UniswapPCVDeposit', address: '0x15958381E9E6dc98bD49655e36f524D2203a28bD' },
   uniswapRouter: { artifactName: 'unknown', address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D' },
-  weth: { artifactName: 'IWETH', address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' },
+  weth: { artifactName: 'WETH9', address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' },
   wethERC20: { artifactName: 'IERC20', address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' }
 };
 
