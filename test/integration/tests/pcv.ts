@@ -72,6 +72,7 @@ describe('e2e-pcv', function () {
     it('can withdraw PCV and pause', async () => {
       const pcvGuardian = contracts.pcvGuardian;
 
+      const feiBalanceBefore = await contracts.fei.balanceOf(contractAddresses.feiDAOTimelock);
       await pcvGuardian.withdrawToSafeAddress(
         contractAddresses.rariPool8FeiPCVDeposit,
         contractAddresses.feiDAOTimelock,
@@ -80,10 +81,10 @@ describe('e2e-pcv', function () {
         false
       );
 
+      const feiBalanceAfter = await contracts.fei.balanceOf(contractAddresses.feiDAOTimelock);
+
       expect(await contracts.rariPool8FeiPCVDeposit.paused()).to.be.true;
-      expect(await contracts.fei.balanceOf(contractAddresses.feiDAOTimelock)).to.be.bignumber.equal(
-        ethers.constants.WeiPerEther
-      );
+      expect(feiBalanceAfter.sub(feiBalanceBefore)).to.be.bignumber.equal(ethers.constants.WeiPerEther);
       await contracts.rariPool8FeiPCVDeposit.unpause();
     });
   });
