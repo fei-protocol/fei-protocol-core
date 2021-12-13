@@ -5,7 +5,7 @@ import { ProposalsConfigMap } from '@custom-types/types';
 import peg_stability_module from '@proposals/description/peg_stability_module';
 import backstop_proposal from '@proposals/description/backstop';
 import fip_52_proposal from '@proposals/description/fip_52';
-import fip_54_proposal from '@proposals/description/fip_54';
+import fip_999 from '@proposals/description/fip_999';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -33,6 +33,12 @@ const proposals: ProposalsConfigMap = {
     skipDAO: false,
     totalValue: 0,
     proposal: fip_52_proposal
+  },
+  fip_999: {
+    deploy: true,
+    skipDAO: false,
+    totalValue: 0,
+    proposal: fip_999
   }
 };
 
