@@ -123,6 +123,11 @@ const MainnetAddresses = {
   convexBooster: { artifactName: 'IConvexBooster', address: '0xF403C135812408BFbE8713b5A23a04b3D48AAE31' },
   convexD3poolRewards: { artifactName: 'IConvexBaseRewardPool', address: '0x329cb014b562d5d42927cfF0dEdF4c13ab0442EF' },
   curveD3pool: { artifactName: 'ICurveStableSwap3', address: '0xBaaa1F5DbA42C3389bDbc2c9D2dE134F5cD0Dc89' },
+  d3poolCurvePCVDeposit: {
+    artifactName: 'CurvePCVDepositPlainPool',
+    address: '0x24F663c69Cd4B263cf5685A49013Ff5f1C898D24'
+  },
+  d3poolConvexPCVDeposit: { artifactName: 'ConvexPCVDeposit', address: '0x5ae217dE26f6Ff5F481C6e10ec48b2cf2fc857C8' },
   daiBondingCurveWrapper: { artifactName: 'PCVDepositWrapper', address: '0x2547d76E2447E67F29d6bFeE5d46FDd2183c88E4' },
   raiBondingCurveWrapper: { artifactName: 'PCVDepositWrapper', address: '0xc42e155788f9f599Fd437C7455F63810A395a81f' },
   dpiBondingCurveWrapper: { artifactName: 'PCVDepositWrapper', address: '0x60B63eF8f461355207fE1d8102dda938bbd8c3fB' },
