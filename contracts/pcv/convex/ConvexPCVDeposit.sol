@@ -84,7 +84,7 @@ contract ConvexPCVDeposit is PCVDeposit {
         onlyPCVController
         whenNotPaused
     {
-        convexRewards.withdrawAndUnwrap(amountLpTokens, true);
+        convexRewards.withdrawAndUnwrap(amountLpTokens, false);
         curvePool.transfer(to, amountLpTokens);
     }
 

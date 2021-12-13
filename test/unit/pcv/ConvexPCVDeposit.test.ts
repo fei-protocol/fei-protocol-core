@@ -145,10 +145,14 @@ describe('ConvexPCVDeposit', function () {
       await curvePool.transfer(deposit.address, '10000');
       await deposit.deposit();
       expect(await curvePool.balanceOf(convexReward.address)).to.be.equal('10000');
+      expect(await curvePool.balanceOf(deposit.address)).to.be.equal('0');
       await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).withdraw(deposit.address, '5000');
       expect(await curvePool.balanceOf(convexReward.address)).to.be.equal('5000');
-      await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).withdraw(deposit.address, '5000');
+      expect(await curvePool.balanceOf(deposit.address)).to.be.equal('5000');
+      await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).withdraw(userAddress, '5000');
       expect(await curvePool.balanceOf(convexReward.address)).to.be.equal('0');
+      expect(await curvePool.balanceOf(deposit.address)).to.be.equal('5000');
+      expect(await curvePool.balanceOf(userAddress)).to.be.equal('5000');
     });
   });
 
