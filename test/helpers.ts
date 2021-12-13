@@ -4,7 +4,6 @@ import CBN from 'chai-bn';
 import { Core, Core__factory } from '@custom-types/contracts';
 import { BigNumber, BigNumberish, Signer } from 'ethers';
 import { NamedAddresses } from '@custom-types/types';
-import { sign } from 'crypto';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
