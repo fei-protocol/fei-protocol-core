@@ -38,13 +38,13 @@ const fip_50: ProposalDescription = {
       arguments: ['{bamm}', '89272000000000000000000000'],
       description: 'Approve 89.272M LUSD to BAMM'
     },
-    {
-      target: 'bamm',
-      values: '0',
-      method: 'deposit(uint256)',
-      arguments: ['89272000000000000000000000'],
-      description: 'Deposit 89.272M LUSD to BAMM'
-    },
+    // {
+    //   target: 'bamm',
+    //   values: '0',
+    //   method: 'deposit(uint256)',
+    //   arguments: ['89272000000000000000000000'],
+    //   description: 'Deposit 89.272M LUSD to BAMM'
+    // },
     {
       target: 'aaveEthPCVDeposit',
       values: '0',
