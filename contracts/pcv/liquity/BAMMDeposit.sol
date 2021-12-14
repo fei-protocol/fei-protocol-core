@@ -25,6 +25,8 @@ contract BAMMDeposit is PCVDeposit {
 
     constructor(address core) CoreRef(core) {}
 
+    receive() external payable {}
+    
     /// @notice deposit into B Protocol BAMM
     function deposit() 
         external
@@ -65,7 +67,7 @@ contract BAMMDeposit is PCVDeposit {
         return (bammLusdValue + ethUsdValue) * BAMM.balanceOf(address(this)) / BAMM.totalSupply();
     }
 
-    function claim() public {
+    function claimRewards() public {
         BAMM.withdraw(0); // Claim LQTY
     }
 }
