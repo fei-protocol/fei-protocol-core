@@ -102,40 +102,67 @@ contract RatioPCVControllerV2 is CoreRef {
     }
 
     /// @notice transfer a specific ERC20 token from the input PCV deposit in basis points terms
-    /// @param token the ERC20 token to withdraw
     /// @param from address to withdraw from
+    /// @param token the ERC20 token to withdraw
     /// @param to the address to send tokens to
     /// @param basisPoints ratio of PCV to withdraw in basis points terms (1/10000)
-    function transferFromRatio(IERC20 token, address from, address to, uint256 basisPoints) 
-        public 
+    function transferFromRatio(address from, IERC20 token, address to, uint256 basisPoints)
+        public
         onlyPCVController
-        whenNotPaused 
+        whenNotPaused
     {
         require(basisPoints <= Constants.BASIS_POINTS_GRANULARITY, "RatioPCVController: basisPoints too high");
         uint256 amount = token.balanceOf(address(from)) * basisPoints / Constants.BASIS_POINTS_GRANULARITY;
-        require(amount != 0, "RatioPCVController: no value to withdraw");
-        
+        require(amount != 0, "RatioPCVController: no value to transfer");
+
+        token.safeTransferFrom(from, to, amount);
+    }
+
+    /// @notice transfer a specific ERC20 token from the input PCV deposit
+    /// @param from address to withdraw from
+    /// @param token the ERC20 token to withdraw
+    /// @param to the address to send tokens to
+    /// @param amount of tokens to transfer
+    function transferFrom(address from, IERC20 token, address to, uint256 amount)
+        public
+        onlyPCVController
+        whenNotPaused
+    {
+        require(amount != 0, "RatioPCVController: no value to transfer");
+
         token.safeTransferFrom(from, to, amount);
     }
 
     /// @notice send ETH as WETH
     /// @param to destination
-    function transferETHAsWETH(address to) 
-        public 
+    function transferETHAsWETH(address to)
+        public
         onlyPCVController
-        whenNotPaused 
+        whenNotPaused
     {
         _transferETHAsWETH(to, address(this).balance);
     }
 
     /// @notice send WETH as ETH
     /// @param to destination
-    function transferWETHAsETH(address payable to) 
-        public 
+    function transferWETHAsETH(address payable to)
+        public
         onlyPCVController
-        whenNotPaused 
+        whenNotPaused
     {
-        _transferWETHAsETH(to, address(this).balance);
+        _transferWETHAsETH(to, IERC20(address(Constants.WETH)).balanceOf(address(this)));
+    }
+
+    /// @notice send away ERC20 held on this contract, to avoid having any stuck.
+    /// @param token sent
+    /// @param to destination
+    function transferERC20(IERC20 token, address to)
+        public
+        onlyPCVController
+        whenNotPaused
+    {
+        uint256 amount = token.balanceOf(address(this));
+        token.safeTransfer(to, amount);
     }
 
     function _withdrawRatio(IPCVDeposit pcvDeposit, address to, uint256 basisPoints) internal returns (uint256) {
