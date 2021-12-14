@@ -9,6 +9,7 @@
     "collateralizationOracleKeeper",
     "optimisticMinter",
     "agEurAngleUniswapPCVDeposit",
+    "tribeRagequit",
     "daiPSM"
   ],
   "BURNER_ROLE": [
