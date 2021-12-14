@@ -13,6 +13,7 @@ import { PegExchanger, Timelock, TRIBERagequit } from '@custom-types/contracts';
 import { getImpersonatedSigner } from '@test/helpers';
 import rariMergerProposal from '@proposals/description/mergerRari';
 import constructProposal from '@scripts/utils/constructProposal';
+import { createTree } from '@scripts/utils/merkle';
 
 chai.use(CBN(ethers.BigNumber));
 
@@ -27,7 +28,10 @@ DEPLOY ACTIONS:
 
 */
 
-const merkleRoot = '0x417b302928c3bee7e6818f2b06f3fd62dad4676747d87e81a8e25ef81d3cbad3';
+const tree = createTree();
+const root = tree.getRoot().toString('hex');
+
+const merkleRoot = '0x8c1f858b87b4e23cb426875833bf8f1aaeb627fe2f47e62385d704c415d652dc';
 
 const rageQuitStart = '1640221200'; // Dec 23, 1am UTC
 const rageQuitDeadline = '1640480400'; // Dec 26, 1am UTC
@@ -113,11 +117,11 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await tribeRagequit.bothPartiesAccepted()).to.be.true;
   expect(await pegExchanger.bothPartiesAccepted()).to.be.true;
 
-  expect((await tribeRagequit.intrinsicValueExchangeRateBase()).toString()).to.be.equal('1242012925');
+  expect((await tribeRagequit.intrinsicValueExchangeRateBase()).toString()).to.be.equal('1234273768');
   expect((await tribe.balanceOf(pegExchanger.address)).toString()).to.be.equal('270000000000000000000000000');
   expect((await fei.balanceOf(addresses.gfxAddress)).toString()).to.be.equal('315909060000000000000000');
 
   expect((await tribeRagequit.rageQuitStart()).toString()).to.be.equal(rageQuitStart);
   expect((await tribeRagequit.rageQuitEnd()).toString()).to.be.equal(rageQuitDeadline);
-  expect(await tribeRagequit.merkleRoot()).to.be.equal(merkleRoot);
+  expect(await tribeRagequit.merkleRoot()).to.be.equal(`0x${root}`);
 };
