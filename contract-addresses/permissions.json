@@ -24,7 +24,7 @@
   ],
   "PCV_CONTROLLER_ROLE": [
     "feiDAOTimelock",
-    "ratioPCVController",
+    "ratioPCVControllerV2",
     "aaveEthPCVDripController",
     "compoundEthPCVDripController",
     "pcvGuardian",

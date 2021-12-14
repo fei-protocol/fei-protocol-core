@@ -6,6 +6,13 @@ const fip_50: ProposalDescription = {
     {
       target: 'core',
       values: '0',
+      method: 'grantPCVController(address)',
+      arguments: ['{ratioPCVControllerV2}'],
+      description: 'Grant PCV Controller to RatioPCVControllerV2'
+    },
+    {
+      target: 'core',
+      values: '0',
       method: 'grantRole(bytes32,address)',
       arguments: ['0x471cfe1a44bf1b786db7d7104d51e6728ed7b90a35394ad7cc424adf8ed16816', '{optimisticTimelock}'],
       description: 'Grant SWAP_ADMIN_ROLE to the OA'
@@ -35,29 +42,22 @@ const fip_50: ProposalDescription = {
       target: 'lusd',
       values: '0',
       method: 'approve(address,uint256)',
-      arguments: ['{bamm}', '89272000000000000000000000'],
-      description: 'Approve 89.272M LUSD to BAMM'
+      arguments: ['{ratioPCVControllerV2}', '1000000000000000000000000000'],
+      description: 'Approve 1bn LUSD to RarioPCVControllerV2'
     },
     {
-      target: 'bamm',
+      target: 'ratioPCVControllerV2',
       values: '0',
-      method: 'deposit(uint256)',
-      arguments: ['89272000000000000000000000'],
-      description: 'Deposit 89.272M LUSD to BAMM'
+      method: 'transferFromRatio(uint256)',
+      arguments: ['{lusd}', '{feiDAOTimelock}', '{bammDeposit}', '10000'],
+      description: 'Withdraw all LUSD to BAMMDeposit'
     },
     {
-      target: 'aaveEthPCVDeposit',
+      target: 'ratioPCVControllerV2',
       values: '0',
-      method: 'withdraw(address,uint256)',
-      arguments: ['{aaveEthPCVDeposit}', '12000000000000000000000'],
-      description: 'Withdraw 12k WETH from Aave to its own PCV Deposit'
-    },
-    {
-      target: 'aaveEthPCVDeposit',
-      values: '0',
-      method: 'withdrawETH(address,uint256)',
-      arguments: ['{ethLidoPCVDeposit}', '12000000000000000000000'],
-      description: 'Withdraw 12k WETH from Aave as ETH to Lido PCV Deposit'
+      method: 'withdrawUnwrapWETH(address,address,uint256)',
+      arguments: ['{aaveEthPCVDeposit}', '{ethLidoPCVDeposit}', '12000000000000000000000'],
+      description: 'Withdraw 12k WETH from Aave and send as ETH to Lido'
     },
     {
       target: 'compoundEthPCVDeposit',
@@ -84,8 +84,15 @@ const fip_50: ProposalDescription = {
       target: 'collateralizationOracle',
       values: '0',
       method: 'addDeposits(address[])',
-      arguments: [['{bammLens}']],
+      arguments: [['{bammDeposit}']],
       description: 'Add New PCV Deposits to Collateralization Oracle'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokePCVController(address)',
+      arguments: ['{ratioPCVController}'],
+      description: 'Revoke PCV Controller from RatioPCVController'
     }
   ],
   description: 'Withdraw and deploy LUSD and stETH'
