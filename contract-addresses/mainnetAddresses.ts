@@ -1,4 +1,5 @@
 const MainnetAddresses = {
+  alusd: { artifactName: 'IERC20', address: '0xBC6DA0FE9aD5f3b0d58160288917AA56653660E9' },
   pcvGuardian: {
     artifactName: 'PCVGuardian',
     address: '0x2D1b1b509B6432A73e3d798572f0648f6453a5D9'
@@ -119,6 +120,14 @@ const MainnetAddresses = {
     artifactName: 'PCVDepositWrapper',
     address: '0xB24570Bc46efDf97b4Aa7f008B4268005Eb7A27E'
   },
+  convexBooster: { artifactName: 'IConvexBooster', address: '0xF403C135812408BFbE8713b5A23a04b3D48AAE31' },
+  convexD3poolRewards: { artifactName: 'IConvexBaseRewardPool', address: '0x329cb014b562d5d42927cfF0dEdF4c13ab0442EF' },
+  curveD3pool: { artifactName: 'ICurveStableSwap3', address: '0xBaaa1F5DbA42C3389bDbc2c9D2dE134F5cD0Dc89' },
+  d3poolCurvePCVDeposit: {
+    artifactName: 'CurvePCVDepositPlainPool',
+    address: '0x24F663c69Cd4B263cf5685A49013Ff5f1C898D24'
+  },
+  d3poolConvexPCVDeposit: { artifactName: 'ConvexPCVDeposit', address: '0x5ae217dE26f6Ff5F481C6e10ec48b2cf2fc857C8' },
   daiBondingCurveWrapper: { artifactName: 'PCVDepositWrapper', address: '0x2547d76E2447E67F29d6bFeE5d46FDd2183c88E4' },
   raiBondingCurveWrapper: { artifactName: 'PCVDepositWrapper', address: '0xc42e155788f9f599Fd437C7455F63810A395a81f' },
   dpiBondingCurveWrapper: { artifactName: 'PCVDepositWrapper', address: '0x60B63eF8f461355207fE1d8102dda938bbd8c3fB' },
@@ -318,6 +327,8 @@ const MainnetAddresses = {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x243C601CC5DaA3Ac250B14509804188347bd2aFB'
   },
+  crv: { artifactName: 'IERC20', address: '0xD533a949740bb3306d119CC777fa900bA034cd52' },
+  cvx: { artifactName: 'IERC20', address: '0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B' },
   curve3crv: { artifactName: 'unknown', address: '0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490' },
   curve3pool: { artifactName: 'unknown', address: '0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7' },
   curveMetapool: { artifactName: 'unknown', address: '0x06cb22615ba53e60d67bf6c341a0fd5e718e1655' },
@@ -344,6 +355,7 @@ const MainnetAddresses = {
     address: '0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5'
   },
   feiTribePair: { artifactName: 'IUniswapV2Pair', address: '0x9928e4046d7c6513326cCeA028cD3e7a91c7590A' },
+  frax: { artifactName: 'IERC20', address: '0x853d955aCEf822Db058eb8505911ED77F175b99e' },
   genesisGroup: { artifactName: 'unknown', address: '0xBFfB152b9392e38CdDc275D818a3Db7FE364596b' },
   governorAlpha: { artifactName: 'GovernorAlpha', address: '0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B' },
   governorAlphaBackup: { artifactName: 'GovernorAlpha', address: '0x4C895973334Af8E06fd6dA4f723Ac24A5f259e6B' },
