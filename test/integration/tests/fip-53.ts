@@ -82,9 +82,14 @@ describe('e2e-fip-53', function () {
     const lpTokensStaked = lpTokensStakedAfter.sub(lpTokensStakedBefore);
     expect(lpTokensStaked).to.be.at.least(BNe18(90_000));
 
-    // this call should do nothing (no time passed, so CRV and CVX balance is 0),
-    // but it should at least not revert.
+    // Advance time, poke rewards on Convex, and then claim rewards for the PCVDeposit
+    await time.increase('1000');
+    await time.advanceBlock();
+    await contracts.convexBooster.earmarkRewards('58');
     await contracts.d3poolConvexPCVDeposit.claimRewards();
+    // Expect non-zero rewards
+    expect(await contracts.crv.balanceOf(contracts.d3poolConvexPCVDeposit.address)).to.be.at.least('1');
+    expect(await contracts.cvx.balanceOf(contracts.d3poolConvexPCVDeposit.address)).to.be.at.least('1');
 
     // Check what would happen if we wanted to exit the pool
     // We should have around ~50M stablecoins (mix of FRAX, FEI, alUSD).
