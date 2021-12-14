@@ -7,7 +7,9 @@ import { Core, Fei, NamedStaticPCVDepositWrapper } from '@custom-types/contracts
 describe('NamedStaticPCVDepositWrapper', function () {
   const impersonatedSigners: { [key: string]: Signer } = {};
 
+  let underlyingTokenAmount: string;
   let governorAddress: string;
+  let newDepositName: string;
   let balance: string;
   let fei: string;
   let core: Core;
@@ -41,17 +43,19 @@ describe('NamedStaticPCVDepositWrapper', function () {
   beforeEach(async function () {
     ({ governorAddress } = await getAddresses());
 
+    newDepositName = 'Visor Finance Deposit';
     balance = '2000';
     fei = '1000';
+    underlyingTokenAmount = '100000';
     core = await getCore();
     deposit = await (
       await ethers.getContractFactory('NamedStaticPCVDepositWrapper')
     ).deploy(core.address, [
       {
-        depositName: 'Visor Finance Deposit',
+        depositName: newDepositName,
         usdAmount: balance, /// USD equivalent in this deposit, not including FEI value
         feiAmount: fei, /// amount of FEI in this deposit
-        underlyingTokenAmount: 1000, /// amount of underlying token in this deposit
+        underlyingTokenAmount: underlyingTokenAmount, /// amount of underlying token in this deposit
         underlying: await core.fei()
       }
     ]);
@@ -60,6 +64,31 @@ describe('NamedStaticPCVDepositWrapper', function () {
   describe('init', function () {
     it('reported in USD', async function () {
       expect(await deposit.balanceReportedIn()).to.be.equal('0x1111111111111111111111111111111111111111');
+    });
+
+    it('depositName', async function () {
+      const { depositName } = await deposit.pcvDeposits(0);
+      expect(depositName).to.be.equal(newDepositName);
+    });
+
+    it('usdAmount', async function () {
+      const { usdAmount } = await deposit.pcvDeposits(0);
+      expect(usdAmount).to.be.equal(balance);
+    });
+
+    it('underlyingTokenAmount', async function () {
+      const { underlyingTokenAmount } = await deposit.pcvDeposits(0);
+      expect(underlyingTokenAmount).to.be.equal(underlyingTokenAmount);
+    });
+
+    it('underlying', async function () {
+      const { underlying } = await deposit.pcvDeposits(0);
+      expect(underlying).to.be.equal(await core.fei());
+    });
+
+    it('feiAmount', async function () {
+      const { feiAmount } = await deposit.pcvDeposits(0);
+      expect(feiAmount).to.be.equal(fei);
     });
 
     it('numDeposits', async function () {
