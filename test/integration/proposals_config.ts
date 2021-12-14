@@ -37,7 +37,7 @@ const proposals: ProposalsConfigMap = {
     proposal: backstop_proposal
   },
   merger: {
-    deploy: true,
+    deploy: false,
     skipDAO: false,
     totalValue: 0,
     proposal: merger_proposal
