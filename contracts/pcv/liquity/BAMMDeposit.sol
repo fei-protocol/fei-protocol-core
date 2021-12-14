@@ -35,7 +35,7 @@ contract BAMMDeposit is PCVDeposit {
     }
 
     /// @notice withdraw LUSD from B Protocol BAMM
-    function withdraw(address to, uint256 amount) external override {
+    function withdraw(address to, uint256 amount) external override onlyPCVController {
         uint256 totalSupply = BAMM.totalSupply();
         uint256 lusdValue = stabilityPool.getCompoundedLUSDDeposit(address(BAMM));
         uint256 shares = (amount * totalSupply / lusdValue) + 1; // extra unit to prevent truncation errors
