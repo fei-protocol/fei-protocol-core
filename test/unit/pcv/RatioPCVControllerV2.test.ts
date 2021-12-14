@@ -6,7 +6,7 @@ import { MockEthUniswapPCVDeposit, Core, RatioPCVControllerV2, MockERC20 } from 
 
 const toBN = ethers.BigNumber.from;
 
-describe.only('RatioPCVControllerV2', function () {
+describe('RatioPCVControllerV2', function () {
   let userAddress: string;
   let governorAddress: string;
   let pcvControllerAddress: string;
