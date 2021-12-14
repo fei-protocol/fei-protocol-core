@@ -1,7 +1,7 @@
 const MainnetAddresses = {
   tribeRariDAO: { artifactName: 'FeiDAO', address: '0x637deEED4e4deb1D222650bD4B64192abf002c00' },
-  tribeRagequit: { artifactName: 'TRIBERagequit', address: '0xc09BB5ECf865e6f69Fe62A43c27f036A426909f7' },
-  pegExchanger: { artifactName: 'PegExchanger', address: '0xE77d572F04904fFea40899FD907F7ADd6Ea5228A' },
+  tribeRagequit: { artifactName: 'TRIBERagequit', address: '0xE77d572F04904fFea40899FD907F7ADd6Ea5228A' },
+  pegExchanger: { artifactName: 'PegExchanger', address: '0xc09BB5ECf865e6f69Fe62A43c27f036A426909f7' },
   rariTimelock: { artifactName: 'Timelock', address: '0x8ace03Fc45139fDDba944c6A4082b604041d19FC' },
   gfxAddress: { artifactName: 'unknown', address: '0xA6E8772AF29B29B9202A073F8E36F447689BEEF6' },
   rgt: { artifactName: 'IERC20', address: '0xD291E7a03283640FDc51b121aC401383A46cC623' },
