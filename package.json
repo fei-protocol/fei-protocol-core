@@ -51,7 +51,7 @@
     "hardhat": "^2.7.1",
     "hardhat-contract-sizer": "^2.0.3",
     "hardhat-gas-reporter": "^1.0.6",
-    "merkletreejs": "^0.2.26",
+    "merkletreejs": "^0.2.27",
     "string-template": "^1.0.0"
   },
   "devDependencies": {
