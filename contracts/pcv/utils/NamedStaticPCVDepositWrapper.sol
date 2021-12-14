@@ -17,7 +17,7 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
     // -------------- Events ---------------
     event BalanceUpdate(uint256 oldBalance, uint256 newBalance, uint256 oldFEIBalance, uint256 newFEIBalance);
 
-    event FeiBalanceUpdate(uint256 oldFeiBalance, uint256 newFeiBalance);
+    event DepositRemoved(uint256 index);
 
     /// @notice struct to store info on each PCV Deposit
     struct PCVDeposit {
@@ -44,13 +44,7 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
         // add all pcv deposits
         for (uint256 i = 0; i < newPCVDeposits.length; i++) {
-            _addDeposit(
-                newPCVDeposits[i].usdAmount,
-                newPCVDeposits[i].feiAmount,
-                newPCVDeposits[i].underlyingTokenAmount,
-                newPCVDeposits[i].depositName,
-                newPCVDeposits[i].underlying
-            );
+            _addDeposit(newPCVDeposits[i]);
         }
     }
 
@@ -66,29 +60,18 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         delete pcvDeposits[index];
 
         emit BalanceUpdate(balance + depositBalance, balance, feiReportBalance + feiDepositBalance, feiReportBalance);
+        emit DepositRemoved(index);
     }
 
     /// @notice helper method to add a PCV deposit
-    function _addDeposit(
-        uint256 usdAmount,
-        uint256 feiAmount,
-        uint256 underlyingTokenAmount,
-        string memory depositName,
-        address underlying
-    ) internal {
-        PCVDeposit memory newPCVDeposit = PCVDeposit({ 
-            usdAmount: usdAmount,
-            feiAmount: feiAmount,
-            underlyingTokenAmount: underlyingTokenAmount,
-            depositName: depositName,
-            underlying: underlying
-        });
+    function _addDeposit(PCVDeposit memory newPCVDeposit) internal {
+        require(newPCVDeposit.feiAmount > 0 || newPCVDeposit.usdAmount > 0, "NamedStaticPCVDepositWrapper: must supply either fei or usd amount");
 
         uint256 oldBalance = balance;
         uint256 oldFEIBalance = feiReportBalance;
 
-        balance += usdAmount;
-        feiReportBalance += feiAmount;
+        balance += newPCVDeposit.usdAmount;
+        feiReportBalance += newPCVDeposit.feiAmount;
         pcvDeposits.push(newPCVDeposit);
 
         emit BalanceUpdate(oldBalance, balance, oldFEIBalance, feiReportBalance);
@@ -109,8 +92,8 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
         unchecked {
             // let this value go negative and not revert so that balance can go down if usdAmount is decreased
-            usdAmountDelta = (usdAmount - updatePCVDeposit.usdAmount).toInt256();
-            feiAmountDelta = (feiAmount - updatePCVDeposit.feiAmount).toInt256();
+            usdAmountDelta = usdAmount.toInt256() - updatePCVDeposit.usdAmount.toInt256();
+            feiAmountDelta = feiAmount.toInt256() - updatePCVDeposit.feiAmount.toInt256();
         }
 
         updatePCVDeposit.usdAmount = usdAmount;
@@ -120,7 +103,9 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
         uint256 oldBalance = balance;
         uint256 oldFEIBalance = feiReportBalance;
+
         balance = (balance.toInt256() + usdAmountDelta).toUint256();
+        feiReportBalance = (feiReportBalance.toInt256() + feiAmountDelta).toUint256();
 
         emit BalanceUpdate(oldBalance, balance, oldFEIBalance, feiReportBalance);
     }
@@ -133,7 +118,15 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         string calldata depositName,
         address underlying
     ) external onlyGovernorOrAdmin {
-        _addDeposit(usdAmount, feiAmount, underlyingTokenAmount, depositName, underlying);
+        _addDeposit(
+            PCVDeposit({
+                usdAmount: usdAmount,
+                feiAmount: feiAmount,
+                underlyingTokenAmount: underlyingTokenAmount,
+                depositName: depositName,
+                underlying: underlying
+            })
+        );
     }
 
     /// @notice function to edit an existing deposit
