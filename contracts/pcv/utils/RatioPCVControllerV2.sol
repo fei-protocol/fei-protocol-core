@@ -41,9 +41,7 @@ contract RatioPCVControllerV2 is CoreRef {
         onlyPCVController
         whenNotPaused
     {
-        require(pcvDeposit.balanceReportedIn() == address(Constants.WETH), "Not WETH");
         uint256 amount = _withdrawRatio(pcvDeposit, address(this), basisPoints);
-        
         _transferWETHAsETH(to, amount);
     }
 
@@ -56,9 +54,7 @@ contract RatioPCVControllerV2 is CoreRef {
         onlyPCVController
         whenNotPaused
     {
-        require(pcvDeposit.balanceReportedIn() == address(Constants.WETH), "Not ETH");
         uint256 amount = _withdrawRatio(pcvDeposit, address(this), basisPoints);
-        
         _transferETHAsWETH(to, amount);
     }
 
@@ -71,9 +67,7 @@ contract RatioPCVControllerV2 is CoreRef {
         onlyPCVController
         whenNotPaused
     {
-        require(pcvDeposit.balanceReportedIn() == address(Constants.WETH), "Not WETH");
         pcvDeposit.withdraw(address(this), amount);
-        
         _transferWETHAsETH(to, amount);
     }
 
@@ -86,9 +80,7 @@ contract RatioPCVControllerV2 is CoreRef {
         onlyPCVController
         whenNotPaused
     {
-        require(pcvDeposit.balanceReportedIn() == address(Constants.WETH), "Not ETH");
         pcvDeposit.withdraw(address(this), amount);
-        
         _transferETHAsWETH(to, amount);
     }
 

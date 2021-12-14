@@ -31,7 +31,11 @@ contract BAMMDeposit is PCVDeposit {
         override
         whenNotPaused
     {
-        BAMM.deposit(IERC20(balanceReportedIn).balanceOf(address(this)));
+        IERC20 lusd = IERC20(balanceReportedIn);
+        uint256 amount = lusd.balanceOf(address(this));
+
+        lusd.safeApprove(address(BAMM), amount);
+        BAMM.deposit(amount);
     }
 
     /// @notice withdraw LUSD from B Protocol BAMM
