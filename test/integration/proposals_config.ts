@@ -17,24 +17,24 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  backstop: {
-    deploy: true,
-    skipDAO: false,
-    totalValue: 0,
-    proposal: backstop_proposal
-  },
-  peg_stability_module: {
-    deploy: true,
-    skipDAO: false,
-    totalValue: 0,
-    proposal: peg_stability_module
-  },
-  fip_52: {
-    deploy: false,
-    skipDAO: false,
-    totalValue: 0,
-    proposal: fip_52_proposal
-  },
+  // backstop: {
+  //   deploy: true,
+  //   skipDAO: false,
+  //   totalValue: 0,
+  //   proposal: backstop_proposal
+  // },
+  // peg_stability_module: {
+  //   deploy: true,
+  //   skipDAO: false,
+  //   totalValue: 0,
+  //   proposal: peg_stability_module
+  // },
+  // fip_52: {
+  //   deploy: false,
+  //   skipDAO: false,
+  //   totalValue: 0,
+  //   proposal: fip_52_proposal
+  // },
   fip_50: {
     deploy: true,
     skipDAO: false,

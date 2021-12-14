@@ -2,13 +2,13 @@ import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
-import { NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, time, resetFork } from '@test/helpers';
+import { NamedContracts, NamedAddresses } from '@custom-types/types';
+import { getImpersonatedSigner, overwriteChainlinkAggregator, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { forceEth } from '@test/integration/setup/utils';
+
 const toBN = ethers.BigNumber.from;
-const e18 = toBN('1000000000000000000');
+const e18 = ethers.constants.WeiPerEther;
 
 before(async () => {
   chai.use(CBN(ethers.BigNumber));
@@ -18,6 +18,7 @@ before(async () => {
 
 describe('e2e-fip-50', function () {
   let contracts: NamedContracts;
+  let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
@@ -39,18 +40,20 @@ describe('e2e-fip-50', function () {
     e2eCoord = new TestEndtoEndCoordinator(config, proposals);
 
     doLogging && console.log(`Loading environment...`);
-    ({ contracts } = await e2eCoord.loadEnvironment());
+    ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
   });
 
   it('should be able to withdraw LUSD from B.AMM', async function () {
-    expect(await contracts.bammLens.balance()).to.be.at.least(toBN(89_000_000).mul(e18));
+    // set Chainlink ETHUSD to a fixed 4,000$ value
+    await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
 
-    const daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
-    const bammShares = await contracts.bamm.balanceOf(contracts.feiDAOTimelock.address);
-    await contracts.bamm.connect(daoSigner).withdraw(bammShares);
+    await contracts.bammDeposit.deposit();
+    expect(await contracts.bammDeposit.balance()).to.be.at.least(toBN(89_000_000).mul(e18));
+
+    await contracts.bammDeposit.withdraw(contractAddresses.feiDAOTimelock, toBN(89_000_000).mul(e18));
 
     const lusdBalanceAfter = await contracts.lusd.balanceOf(contracts.feiDAOTimelock.address);
-    expect(lusdBalanceAfter).to.be.at.least(toBN(89_000_000).mul(e18));
+    expect(lusdBalanceAfter).to.be.bignumber.equal(toBN(89_000_000).mul(e18));
   });
 });

@@ -48,7 +48,7 @@ const fip_50: ProposalDescription = {
     {
       target: 'ratioPCVControllerV2',
       values: '0',
-      method: 'transferFromRatio(uint256)',
+      method: 'transferFromRatio(address,address,address,uint256)',
       arguments: ['{lusd}', '{feiDAOTimelock}', '{bammDeposit}', '10000'],
       description: 'Withdraw all LUSD to BAMMDeposit'
     },

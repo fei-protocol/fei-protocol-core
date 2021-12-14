@@ -8,7 +8,6 @@ import {
   ValidateUpgradeFunc,
   NamedContracts
 } from '@custom-types/types';
-import { overwriteChainlinkAggregator } from '@test/helpers';
 
 chai.use(CBN(ethers.BigNumber));
 
@@ -68,8 +67,6 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses, loggi
 
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   console.log(`No setup for fip${fipNumber}`);
-  // set Chainlink ETHUSD to a fixed 4,000$ value
-  // await overwriteChainlinkAggregator(addresses.chainlinkEthUsdOracle, '400000000000', '8');
 };
 
 const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
