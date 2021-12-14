@@ -1,4 +1,20 @@
 const MainnetAddresses = {
+  daiPCVDripController: {
+    artifactName: 'PCVDripController',
+    address: '0x3e0f66c5687FF917809A3F7fA7096e1Bc409fB03'
+  },
+  tribeReserveStabilizer: {
+    artifactName: 'TribeReserveStabilizer',
+    address: '0xE1A468418f4D8D3F070A06d49b3575A9562b6CfD'
+  },
+  daiPSM: {
+    artifactName: 'PriceBoundPSM',
+    address: '0x210300C158f95E1342fD008aE417ef68311c49C2'
+  },
+  tribeMinter: {
+    artifactName: 'TribeMinter',
+    address: '0xFC3532b443383d9022b1B2c6FD5Fd0895943360A'
+  },
   pcvGuardian: {
     artifactName: 'PCVGuardian',
     address: '0x2D1b1b509B6432A73e3d798572f0648f6453a5D9'
