@@ -11,6 +11,7 @@
     "collateralizationOracleKeeper",
     "optimisticMinter",
     "agEurAngleUniswapPCVDeposit",
+    "tribeRagequit",
     "daiPSM",
     "wethPSM"
   ],
