@@ -119,10 +119,10 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
     /// @notice function to bulk add deposits
     function bulkAddDeposits(
-        PCVDeposit[] calldata newPCVDeposit
+        PCVDeposit[] calldata newPCVDeposits
     ) external onlyGovernorOrAdmin {
-        for (uint256 i = 0; i < newPCVDeposit.length; i++) {
-            _addDeposit(newPCVDeposit[i]);
+        for (uint256 i = 0; i < newPCVDeposits.length; i++) {
+            _addDeposit(newPCVDeposits[i]);
         }
     }
 
