@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
 import { Core, Fei, NamedStaticPCVDepositWrapper } from '@custom-types/contracts';
+const toBN = ethers.BigNumber.from;
 
 describe('NamedStaticPCVDepositWrapper', function () {
   const impersonatedSigners: { [key: string]: Signer } = {};
@@ -118,9 +119,13 @@ describe('NamedStaticPCVDepositWrapper', function () {
       const startingFeiBalance = await deposit.feiReportBalance();
 
       expectEvent(
-        await deposit
-          .connect(impersonatedSigners[governorAddress])
-          .addDeposit(balance, fei, 1000, 'Visor Finance USDC/FEI Deposit', await core.fei()),
+        await deposit.connect(impersonatedSigners[governorAddress]).addDeposit({
+          usdAmount: balance,
+          feiAmount: fei,
+          underlyingTokenAmount: 1000,
+          depositName: 'Visor Finance USDC/FEI Deposit',
+          underlying: await core.fei()
+        }),
         deposit,
         'BalanceUpdate',
         [startingBalance, startingBalance.add(balance), startingFeiBalance, startingFeiBalance.add(fei)]
@@ -136,16 +141,94 @@ describe('NamedStaticPCVDepositWrapper', function () {
 
     it('add new deposit fails when there is 0 fei and usd amount', async function () {
       await expectRevert(
-        deposit
-          .connect(impersonatedSigners[governorAddress])
-          .addDeposit(0, 0, 1000, 'Visor Finance USDC/FEI Deposit', await core.fei()),
+        deposit.connect(impersonatedSigners[governorAddress]).addDeposit({
+          usdAmount: 0,
+          feiAmount: 0,
+          underlyingTokenAmount: 1000,
+          depositName: 'Visor Finance USDC/FEI Deposit',
+          underlying: await core.fei()
+        }),
         'NamedStaticPCVDepositWrapper: must supply either fei or usd amount'
       );
     });
 
     it('addDeposit non-governor-admin reverts', async function () {
       await expectRevert(
-        deposit.addDeposit(balance, fei, 10, 'DPI UniV2 LP Token', await core.fei()),
+        deposit.addDeposit({
+          usdAmount: 0,
+          feiAmount: 0,
+          underlyingTokenAmount: 1000,
+          depositName: 'Visor Finance USDC/FEI Deposit',
+          underlying: await core.fei()
+        }),
+        'CoreRef: Caller is not a governor or contract admin'
+      );
+    });
+  });
+
+  describe('bulkAddDeposits', function () {
+    it('bulk adds 2 new deposits', async function () {
+      const startingBalance = await deposit.balance();
+      const startingFeiBalance = await deposit.feiReportBalance();
+      const startingNumDeposits = await deposit.numDeposits();
+
+      expectEvent(
+        await deposit.connect(impersonatedSigners[governorAddress]).bulkAddDeposits([
+          {
+            usdAmount: balance,
+            feiAmount: fei,
+            underlyingTokenAmount: 1000,
+            depositName: 'Visor Finance USDC/FEI Deposit',
+            underlying: await core.fei()
+          },
+          {
+            usdAmount: balance,
+            feiAmount: fei,
+            underlyingTokenAmount: 1000,
+            depositName: 'Visor Finance USDC/FEI Deposit',
+            underlying: await core.fei()
+          }
+        ]),
+        deposit,
+        'BalanceUpdate',
+        [startingBalance, startingBalance.add(balance), startingFeiBalance, startingFeiBalance.add(fei)]
+      );
+
+      const endingBalance = await deposit.balance();
+      const endingFeiBalance = await deposit.feiReportBalance();
+      const endingNumDeposits = await deposit.numDeposits();
+
+      expect(endingBalance.sub(startingBalance)).to.be.equal(toBN(balance).mul(2));
+      expect(endingFeiBalance.sub(startingFeiBalance)).to.be.equal(toBN(fei).mul(2));
+      expect(endingNumDeposits.sub(startingNumDeposits)).to.be.equal(2);
+    });
+
+    it('add new deposit fails when there is 0 fei and usd amount', async function () {
+      await expectRevert(
+        deposit.connect(impersonatedSigners[governorAddress]).bulkAddDeposits([
+          {
+            usdAmount: 0,
+            feiAmount: 0,
+            underlyingTokenAmount: 1000,
+            depositName: 'Visor Finance USDC/FEI Deposit',
+            underlying: await core.fei()
+          }
+        ]),
+        'NamedStaticPCVDepositWrapper: must supply either fei or usd amount'
+      );
+    });
+
+    it('addDeposit non-governor-admin reverts', async function () {
+      await expectRevert(
+        deposit.bulkAddDeposits([
+          {
+            usdAmount: 0,
+            feiAmount: 0,
+            underlyingTokenAmount: 1000,
+            depositName: 'Visor Finance USDC/FEI Deposit',
+            underlying: await core.fei()
+          }
+        ]),
         'CoreRef: Caller is not a governor or contract admin'
       );
     });

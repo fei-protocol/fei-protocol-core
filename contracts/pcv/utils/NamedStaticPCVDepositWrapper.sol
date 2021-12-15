@@ -112,21 +112,18 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
     /// @notice function to add a deposit
     function addDeposit(
-        uint256 usdAmount,
-        uint256 feiAmount,
-        uint256 underlyingTokenAmount,
-        string calldata depositName,
-        address underlying
+        PCVDeposit calldata newPCVDeposit
     ) external onlyGovernorOrAdmin {
-        _addDeposit(
-            PCVDeposit({
-                usdAmount: usdAmount,
-                feiAmount: feiAmount,
-                underlyingTokenAmount: underlyingTokenAmount,
-                depositName: depositName,
-                underlying: underlying
-            })
-        );
+        _addDeposit(newPCVDeposit);
+    }
+
+    /// @notice function to bulk add deposits
+    function bulkAddDeposits(
+        PCVDeposit[] calldata newPCVDeposit
+    ) external onlyGovernorOrAdmin {
+        for (uint256 i = 0; i < newPCVDeposit.length; i++) {
+            _addDeposit(newPCVDeposit[i]);
+        }
     }
 
     /// @notice function to edit an existing deposit
