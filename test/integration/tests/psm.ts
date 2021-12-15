@@ -36,7 +36,6 @@ describe('e2e-peg-stability-module', function () {
   let core: Contract;
   let feiDAOTimelock: Contract;
   let beneficiaryAddress1;
-  let pcvControllerAddress;
 
   before(async function () {
     // Setup test environment and get contracts
