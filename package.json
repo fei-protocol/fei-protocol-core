@@ -40,7 +40,7 @@
     "@balancer-labs/v2-pool-weighted": "^2.0.1",
     "@chainlink/contracts": "^0.1.7",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
-    "@openzeppelin/contracts": "^4.4.0",
+    "@openzeppelin/contracts": "^4.4.1",
     "@openzeppelin/test-environment": "^0.1.7",
     "@openzeppelin/test-helpers": "^0.5.15",
     "@uniswap/lib": "^1.1.2",
@@ -51,6 +51,7 @@
     "hardhat": "^2.7.1",
     "hardhat-contract-sizer": "^2.0.3",
     "hardhat-gas-reporter": "^1.0.6",
+    "merkletreejs": "^0.2.27",
     "string-template": "^1.0.0"
   },
   "devDependencies": {
@@ -60,9 +61,9 @@
     "@typechain/hardhat": "^2.3.0",
     "@types/chai": "^4.3.0",
     "@types/mocha": "^9.0.0",
-    "@types/node": "^16.11.12",
-    "@typescript-eslint/parser": "^4.31.2",
+    "@types/node": "^16.11.13",
     "@typescript-eslint/eslint-plugin": "^4.31.2",
+    "@typescript-eslint/parser": "^4.31.2",
     "chai-bn": "^0.3.0",
     "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^15.0.0",
