@@ -32,12 +32,8 @@ describe('NamedStaticPCVDepositWrapper', function () {
     ];
 
     for (const address of impersonatedAddresses) {
-      await hre.network.provider.request({
-        method: 'hardhat_impersonateAccount',
-        params: [address]
-      });
 
-      impersonatedSigners[address] = await ethers.getSigner(address);
+      impersonatedSigners[address] = await getImpersonatedSigner(address);
     }
   });
 
