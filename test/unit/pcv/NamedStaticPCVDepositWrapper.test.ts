@@ -21,14 +21,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
 
     // add any addresses you want to impersonate here
     const impersonatedAddresses = [
-      addresses.userAddress,
-      addresses.pcvControllerAddress,
-      addresses.governorAddress,
-      addresses.pcvControllerAddress,
-      addresses.minterAddress,
-      addresses.burnerAddress,
-      addresses.beneficiaryAddress1,
-      addresses.beneficiaryAddress2
+      addresses.governorAddress
     ];
 
     for (const address of impersonatedAddresses) {
