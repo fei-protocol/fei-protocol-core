@@ -4,21 +4,19 @@ pragma solidity ^0.8.0;
 import "./IVault.sol";
 import "./IWeightedPool.sol";
 import "./BalancerPCVDepositBase.sol";
-import "./math/ExtendedMath.sol";
-import "./math/ABDKMath64x64.sol";
 import "../PCVDeposit.sol";
 import "../../Constants.sol";
 import "../../refs/CoreRef.sol";
 import "../../oracle/IOracle.sol";
+import "../../external/gyro/ExtendedMath.sol";
+import "../../external/gyro/abdk/ABDKMath64x64.sol";
 
 /// @title base class for a Balancer WeightedPool PCV Deposit
 /// @author Fei Protocol
 contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
-    using ExtendedMath for int128;
-    using ExtendedMath for uint256;
-    using ABDKMath64x64 for uint256;
-    using ABDKMath64x64 for int128;
-    using SafeMath for uint256;
+    using ExtendedMath for *;
+    using ABDKMath64x64 for *;
+    using SafeMath for *;
     using Decimal for Decimal.D256;
 
     event OracleUpdate(

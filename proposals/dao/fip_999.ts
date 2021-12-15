@@ -1,22 +1,36 @@
-import { ethers } from 'hardhat';
-import chai, { expect } from 'chai';
-import CBN from 'chai-bn';
+import hre, { ethers, artifacts } from 'hardhat';
+import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
+  NamedAddresses,
   NamedContracts,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
-} from '../../types/types';
-import { getImpersonatedSigner } from '@test/helpers';
+} from '@custom-types/types';
 
-chai.use(CBN(ethers.BigNumber));
+/*
 
-export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
+DAO Proposal FIP-999
+
+Description:
+
+Steps:
+  1 -
+  2 -
+  3 -
+
+*/
+
+const fipNumber = '999';
+
+// Do any deployments
+// This should exclusively include new contract deployments
+const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   if (!addresses.core) {
     console.log(`core: ${addresses.core}`);
 
-    throw new Error('An environment variable contract address is not set');
+    throw 'An environment variable contract address is not set';
   }
 
   // Create a new Balancer deposit for the BAL/WETH pool
@@ -39,24 +53,22 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   } as NamedContracts;
 };
 
-export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  /*const signer = await getImpersonatedSigner(addresses.feiDAOTimelock);
-  console.log('Step 1. Withdraw 200 WETH from Aave to the BAL/WETH PCVDeposit');
-  await contracts.aaveEthPCVDeposit.connect(signer).withdraw(addresses.balancerDepositBalWeth, '200000000000000000000');
-  console.log('Step 2. Move 200k BAL from Timelock to the deposit');
-  await contracts.bal.connect(signer).transfer(addresses.balancerDepositBalWeth, '200000000000000000000000');
-  console.log('Step 3. Deposit BAL and WETH in the Balancer pool');
-  await contracts.balancerDepositBalWeth.connect(signer).deposit();
-  console.log('Step 5. Replace BAL Timelock Lens by BAL/WETH deposit in CR Oracle');
-  await contracts.collateralizationOracle.connect(signer).swapDeposit(addresses.balDepositWrapper, addresses.balancerDepositBalWeth);*/
-  logging && console.log('No setup for FIP-999');
+// Do any setup necessary for running the test.
+// This could include setting up Hardhat to impersonate accounts,
+// ensuring contracts have a specific state, etc.
+const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  console.log(`No actions to complete in setup for fip${fipNumber}`);
 };
 
-export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  logging && console.log('No teardown for FIP-999');
+// Tears down any changes made in setup() that need to be
+// cleaned up before doing any validation checks.
+const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  console.log(`No actions to complete in teardown for fip${fipNumber}`);
 };
 
-export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
+// Run any validations required on the fip using mocha or console logging
+// IE check balances, check state of contracts, etc.
+const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   // No more BAL on the timelock
   expect(await contracts.bal.balanceOf(contracts.feiDAOTimelock.address)).to.be.equal('0');
 
@@ -72,3 +84,5 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
     addresses.bal
   );
 };
+
+export { deploy, setup, teardown, validate };
