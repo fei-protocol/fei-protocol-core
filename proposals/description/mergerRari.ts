@@ -33,7 +33,9 @@ const merger: ProposalDescription = {
     }
   ],
   description: `
-  Code: 
+  This proposal represents the Rari half of the FeiRari merger code. It executes the following steps:
+  1. Accept PegExchanger contract for swapping RGT to TRIBE at ~26.7 TRIBE per RGT exchange rate
+  2. 
 `
 };
 
