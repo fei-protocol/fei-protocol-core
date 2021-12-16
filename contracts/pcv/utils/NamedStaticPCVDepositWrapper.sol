@@ -58,32 +58,6 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
     // ----------- Helper methods to change state -----------
 
-    /// @notice helper method to delete a PCV deposit
-    function _removeDeposit(uint256 index) internal {
-        require(index < pcvDeposits.length, "NamedStaticPCVDepositWrapper: cannot remove index out of bounds");
-
-        DepositInfo storage removePCVDeposit = pcvDeposits[index];
-
-        uint256 depositBalance = removePCVDeposit.usdAmount;
-        uint256 feiDepositBalance = removePCVDeposit.feiAmount;
-        uint256 oldBalance = balance;
-        uint256 oldFeiReportBalance = feiReportBalance;
-        uint256 lastIndex = pcvDeposits.length - 1;
-
-        if (lastIndex != index) {
-            DepositInfo storage lastvalue = pcvDeposits[lastIndex];
-
-            pcvDeposits[index] = lastvalue;
-        }
-
-        pcvDeposits.pop();
-        balance -= depositBalance;
-        feiReportBalance -= feiDepositBalance;
-
-        emit BalanceUpdate(oldBalance, balance, oldFeiReportBalance, feiReportBalance);
-        emit DepositRemoved(index);
-    }
-
     /// @notice helper method to add a PCV deposit
     function _addDeposit(DepositInfo memory newPCVDeposit) internal {
         require(newPCVDeposit.feiAmount > 0 || newPCVDeposit.usdAmount > 0, "NamedStaticPCVDepositWrapper: must supply either fei or usd amount");
@@ -127,6 +101,32 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         emit BalanceUpdate(oldBalance, balance, oldFEIBalance, feiReportBalance);
     }
 
+    /// @notice helper method to delete a PCV deposit
+    function _removeDeposit(uint256 index) internal {
+        require(index < pcvDeposits.length, "NamedStaticPCVDepositWrapper: cannot remove index out of bounds");
+
+        DepositInfo storage removePCVDeposit = pcvDeposits[index];
+
+        uint256 depositBalance = removePCVDeposit.usdAmount;
+        uint256 feiDepositBalance = removePCVDeposit.feiAmount;
+        uint256 oldBalance = balance;
+        uint256 oldFeiReportBalance = feiReportBalance;
+        uint256 lastIndex = pcvDeposits.length - 1;
+
+        if (lastIndex != index) {
+            DepositInfo storage lastvalue = pcvDeposits[lastIndex];
+
+            pcvDeposits[index] = lastvalue;
+        }
+
+        pcvDeposits.pop();
+        balance -= depositBalance;
+        feiReportBalance -= feiDepositBalance;
+
+        emit BalanceUpdate(oldBalance, balance, oldFeiReportBalance, feiReportBalance);
+        emit DepositRemoved(index);
+    }
+
     // ----------- Governor only state changing api -----------
 
     /// @notice function to add a deposit
@@ -143,6 +143,12 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         for (uint256 i = 0; i < newPCVDeposits.length; i++) {
             _addDeposit(newPCVDeposits[i]);
         }
+    }
+
+
+    /// @notice function to remove a PCV Deposit
+    function removeDeposit(uint256 index) external onlyGovernorOrAdmin {
+        _removeDeposit(index);
     }
 
     /// @notice function to edit an existing deposit
@@ -162,11 +168,6 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
             underlyingTokenAmount,
             underlying
         );
-    }
-
-    /// @notice function to remove a PCV Deposit
-    function removeDeposit(uint256 index) external onlyGovernorOrAdmin {
-        _removeDeposit(index);
     }
 
     // ----------- Getters -----------
