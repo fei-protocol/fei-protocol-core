@@ -1,4 +1,4 @@
-import { getCore, getAddresses, expectRevert, expectEvent } from '../../helpers';
+import { getCore, getAddresses, expectRevert, expectEvent } from '@test/helpers';
 import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
@@ -21,23 +21,12 @@ describe('NamedStaticPCVDepositWrapper', function () {
 
     // add any addresses you want to impersonate here
     const impersonatedAddresses = [
-      addresses.userAddress,
-      addresses.pcvControllerAddress,
-      addresses.governorAddress,
-      addresses.pcvControllerAddress,
-      addresses.minterAddress,
-      addresses.burnerAddress,
-      addresses.beneficiaryAddress1,
-      addresses.beneficiaryAddress2
+      addresses.governorAddress
     ];
 
     for (const address of impersonatedAddresses) {
-      await hre.network.provider.request({
-        method: 'hardhat_impersonateAccount',
-        params: [address]
-      });
 
-      impersonatedSigners[address] = await ethers.getSigner(address);
+      impersonatedSigners[address] = await getImpersonatedSigner(address);
     }
   });
 
