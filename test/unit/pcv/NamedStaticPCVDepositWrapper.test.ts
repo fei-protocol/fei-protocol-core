@@ -49,46 +49,46 @@ describe('NamedStaticPCVDepositWrapper', function () {
   });
 
   describe('init', function () {
-    it('reported in USD', async function () {
+    it('balance is reported in USD', async function () {
       expect(await deposit.balanceReportedIn()).to.be.equal('0x1111111111111111111111111111111111111111');
     });
 
-    it('depositName', async function () {
+    it('depositName should be correct', async function () {
       const { depositName } = await deposit.pcvDeposits(0);
       expect(depositName).to.be.equal(newDepositName);
     });
 
-    it('usdAmount', async function () {
+    it('usdAmount should be correct', async function () {
       const { usdAmount } = await deposit.pcvDeposits(0);
       expect(usdAmount).to.be.equal(balance);
     });
 
-    it('underlyingTokenAmount', async function () {
+    it('underlyingTokenAmount should be correct', async function () {
       const { underlyingTokenAmount } = await deposit.pcvDeposits(0);
       expect(underlyingTokenAmount).to.be.equal(underlyingTokenAmount);
     });
 
-    it('underlying', async function () {
+    it('underlying token address should be correct', async function () {
       const { underlyingToken } = await deposit.pcvDeposits(0);
       expect(underlyingToken).to.be.equal(await core.fei());
     });
 
-    it('feiAmount', async function () {
+    it('feiAmount should be correct', async function () {
       const { feiAmount } = await deposit.pcvDeposits(0);
       expect(feiAmount).to.be.equal(feiBalance);
     });
 
-    it('numDeposits', async function () {
+    it('numDeposits should be correctly set at 1', async function () {
       expect(await deposit.numDeposits()).to.be.equal(1);
     });
 
-    it('getAllUnderlying', async function () {
+    it('getAllUnderlying should be the correct address', async function () {
       const allUnderlying = await deposit.getAllUnderlying();
       expect(allUnderlying.length).to.be.equal(1);
       expect(allUnderlying[0]).to.be.equal(await core.fei());
     });
 
-    it('returns stored values', async function () {
+    it('should return stored values feiReportBalance and balance', async function () {
       expect(await deposit.balance()).to.be.equal(balance);
       expect(await deposit.feiReportBalance()).to.be.equal(feiBalance);
 
@@ -100,7 +100,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
   });
 
   describe('addDeposit', function () {
-    it('add new deposit', async function () {
+    it('add new deposit successfully as a governor', async function () {
       const startingBalance = await deposit.balance();
       const startingFeiBalance = await deposit.feiReportBalance();
 
@@ -125,7 +125,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
       expect(await deposit.numDeposits()).to.be.equal(2);
     });
 
-    it('add new deposit fails when there is 0 feiBalance and usd amount', async function () {
+    it('add new deposit fails when there is 0 feiBalance and 0 usd amount', async function () {
       await expectRevert(
         deposit.connect(impersonatedSigners[governorAddress]).addDeposit({
           usdAmount: 0,
@@ -138,7 +138,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
       );
     });
 
-    it('addDeposit non-governor-admin reverts', async function () {
+    it('reverts when non-governor-admin calls addDeposit', async function () {
       await expectRevert(
         deposit.addDeposit({
           usdAmount: 0,
@@ -153,7 +153,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
   });
 
   describe('bulkAddDeposits', function () {
-    it('bulk adds 2 new deposits', async function () {
+    it('successfully bulk adds 2 new deposits as a governor', async function () {
       const startingBalance = await deposit.balance();
       const startingFeiBalance = await deposit.feiReportBalance();
       const startingNumDeposits = await deposit.numDeposits();
@@ -189,7 +189,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
       expect(endingNumDeposits.sub(startingNumDeposits)).to.be.equal(2);
     });
 
-    it('add new deposit fails when there is 0 feiBalance and usd amount', async function () {
+    it('add new deposit fails when there is 0 feiBalance and 0 usd amount', async function () {
       await expectRevert(
         deposit.connect(impersonatedSigners[governorAddress]).bulkAddDeposits([
           {
@@ -204,7 +204,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
       );
     });
 
-    it('addDeposit non-governor-admin reverts', async function () {
+    it('reverts when non-governor-admin calls addDeposit', async function () {
       await expectRevert(
         deposit.bulkAddDeposits([
           {
@@ -221,7 +221,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
   });
 
   describe('editDeposit', function () {
-    it('edits existing deposit', async function () {
+    it('should be able to edit existing deposit', async function () {
       const startingBalance = await deposit.balance();
       const startingFeiBalance = await deposit.feiReportBalance();
       const newUnderlyingAmt = 100_000;
@@ -257,7 +257,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
       );
     });
 
-    it('editDeposit non-governor-admin reverts', async function () {
+    it('fails when non-governor-admin calls editDeposit', async function () {
       await expectRevert(
         deposit.editDeposit(0, balance, feiBalance, 10, 'DPI UniV2 LP Token', await core.fei()),
         'CoreRef: Caller is not a governor or contract admin'
@@ -285,7 +285,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
       ]);
     });
 
-    it('remove existing deposit', async function () {
+    it('successfully removes existing deposit when governor calls removeDeposit', async function () {
       const startingNumDeposits = await deposit.numDeposits();
       for (let i = 0; i < parseInt(startingNumDeposits.toString()); i++) {
         expectEvent(
@@ -313,7 +313,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
       );
     });
 
-    it('removeDeposit non-governor-admin reverts', async function () {
+    it('fails when non-governor-admin calls removeDeposit', async function () {
       await expectRevert(deposit.removeDeposit(0), 'CoreRef: Caller is not a governor or contract admin');
     });
   });
