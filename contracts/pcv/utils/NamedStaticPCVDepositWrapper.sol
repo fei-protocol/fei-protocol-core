@@ -105,10 +105,10 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
     function _removeDeposit(uint256 index) internal {
         require(index < pcvDeposits.length, "NamedStaticPCVDepositWrapper: cannot remove index out of bounds");
 
-        DepositInfo storage removePCVDeposit = pcvDeposits[index];
+        DepositInfo storage pcvDepositToRemove = pcvDeposits[index];
 
-        uint256 depositBalance = removePCVDeposit.usdAmount;
-        uint256 feiDepositBalance = removePCVDeposit.feiAmount;
+        uint256 depositBalance = pcvDepositToRemove.usdAmount;
+        uint256 feiDepositBalance = pcvDepositToRemove.feiAmount;
         uint256 oldBalance = balance;
         uint256 oldFeiReportBalance = feiReportBalance;
         uint256 lastIndex = pcvDeposits.length - 1;
