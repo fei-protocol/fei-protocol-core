@@ -20,16 +20,16 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
     event DepositRemoved(uint256 index);
 
     /// @notice struct to store info on each PCV Deposit
-    struct PCVDeposit {
+    struct DepositInfo {
         string depositName;
         uint256 usdAmount; /// USD equivalent in this deposit, not including FEI value
         uint256 feiAmount; /// amount of FEI in this deposit
         uint256 underlyingTokenAmount; /// amount of underlying token in this deposit
-        address underlying; /// address of the underlying token this deposit is reporting
+        address underlyingToken; /// address of the underlying token this deposit is reporting
     }
 
     /// @notice a list of all pcv deposits
-    PCVDeposit[] public pcvDeposits;
+    DepositInfo[] public pcvDeposits;
 
     /// @notice the PCV balance
     uint256 public override balance;
@@ -37,7 +37,7 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
     /// @notice the reported FEI balance
     uint256 public feiReportBalance;
 
-    constructor(address _core, PCVDeposit[] memory newPCVDeposits) CoreRef(_core) {
+    constructor(address _core, DepositInfo[] memory newPCVDeposits) CoreRef(_core) {
 
         // Uses oracle admin to share admin with CR oracle where this contract is used
         _setContractAdminRole(keccak256("ORACLE_ADMIN_ROLE"));
@@ -50,21 +50,36 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
     /// @notice helper method to delete a PCV deposit
     function _removeDeposit(uint256 index) internal {
-        PCVDeposit storage removePCVDeposit = pcvDeposits[index];
+        if (pcvDeposits.length == 0) { return; }
+
+        DepositInfo storage removePCVDeposit = pcvDeposits[index];
 
         uint256 depositBalance = removePCVDeposit.usdAmount;
         uint256 feiDepositBalance = removePCVDeposit.feiAmount;
 
+        uint256 oldBalance = balance;
+        uint256 oldFeiReportBalance = feiReportBalance;
+
+        uint256 lastIndex = pcvDeposits.length - 1;
+
+        if (lastIndex != index) {
+            DepositInfo storage lastvalue = pcvDeposits[lastIndex];
+
+            // Move the last value to the index where the value to delete is
+            pcvDeposits[index] = lastvalue;
+        }
+        // Delete the slot where the moved value was stored
+        pcvDeposits.pop();
+
         balance -= depositBalance;
         feiReportBalance -= feiDepositBalance;
-        delete pcvDeposits[index];
 
-        emit BalanceUpdate(balance + depositBalance, balance, feiReportBalance + feiDepositBalance, feiReportBalance);
+        emit BalanceUpdate(oldBalance, balance, oldFeiReportBalance, feiReportBalance);
         emit DepositRemoved(index);
     }
 
     /// @notice helper method to add a PCV deposit
-    function _addDeposit(PCVDeposit memory newPCVDeposit) internal {
+    function _addDeposit(DepositInfo memory newPCVDeposit) internal {
         require(newPCVDeposit.feiAmount > 0 || newPCVDeposit.usdAmount > 0, "NamedStaticPCVDepositWrapper: must supply either fei or usd amount");
 
         uint256 oldBalance = balance;
@@ -80,13 +95,13 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
     /// @notice helper method to edit a PCV deposit
     function _editDeposit(
         uint256 index,
+        string calldata depositName,
         uint256 usdAmount,
         uint256 feiAmount,
         uint256 underlyingTokenAmount,
-        string calldata depositName,
-        address underlying
+        address underlyingToken
     ) internal {
-        PCVDeposit storage updatePCVDeposit = pcvDeposits[index];
+        DepositInfo storage updatePCVDeposit = pcvDeposits[index];
         int256 usdAmountDelta;
         int256 feiAmountDelta;
 
@@ -99,7 +114,7 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         updatePCVDeposit.usdAmount = usdAmount;
         updatePCVDeposit.depositName = depositName;
         updatePCVDeposit.underlyingTokenAmount = underlyingTokenAmount;
-        updatePCVDeposit.underlying = underlying;
+        updatePCVDeposit.underlyingToken = underlyingToken;
 
         uint256 oldBalance = balance;
         uint256 oldFEIBalance = feiReportBalance;
@@ -112,14 +127,14 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
     /// @notice function to add a deposit
     function addDeposit(
-        PCVDeposit calldata newPCVDeposit
+        DepositInfo calldata newPCVDeposit
     ) external onlyGovernorOrAdmin {
         _addDeposit(newPCVDeposit);
     }
 
     /// @notice function to bulk add deposits
     function bulkAddDeposits(
-        PCVDeposit[] calldata newPCVDeposits
+        DepositInfo[] calldata newPCVDeposits
     ) external onlyGovernorOrAdmin {
         for (uint256 i = 0; i < newPCVDeposits.length; i++) {
             _addDeposit(newPCVDeposits[i]);
@@ -137,15 +152,15 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
     ) external onlyGovernorOrAdmin {
         _editDeposit(
             index,
+            depositName,
             usdAmount,
             feiAmount,
             underlyingTokenAmount,
-            depositName,
             underlying
         );
     }
 
-    /// @notice funciont to remove a PCV Deposit
+    /// @notice function to remove a PCV Deposit
     function removeDeposit(uint256 index) external onlyGovernorOrAdmin {
         _removeDeposit(index);
     }
@@ -172,7 +187,7 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
         address[] memory allUnderlyingTokens = new address[](totalDeposits);
         for (uint256 i = 0; i < totalDeposits; i++) {
-            allUnderlyingTokens[i] = pcvDeposits[i].underlying;
+            allUnderlyingTokens[i] = pcvDeposits[i].underlyingToken;
         }
 
         return allUnderlyingTokens;
