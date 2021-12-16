@@ -48,7 +48,7 @@ describe('e2e-merger', function () {
   });
 
   describe('TribeRagequit', async function () {
-    const guardianBalance = '18884018000000000000000000';
+    const guardianBalance = '18903018000000000000000000';
 
     it('ngmi', async function () {
       const tribeRagequit: TRIBERagequit = contracts.tribeRagequit as TRIBERagequit;
@@ -80,7 +80,7 @@ describe('e2e-merger', function () {
       const tribeBalanceAfter = await tribe.balanceOf(guardian);
 
       expect(tribeBalanceBefore.sub(tribeBalanceAfter)).to.be.equal(ethers.constants.WeiPerEther);
-      expect(feiBalanceAfter.sub(feiBalanceBefore)).to.be.bignumber.equal(toBN('1242012925000000000'));
+      expect(feiBalanceAfter.sub(feiBalanceBefore)).to.be.bignumber.equal(toBN('1234273768000000000'));
 
       // Ragequit original TRIBE fails
       expect(tribeRagequit.connect(signer).ngmi(guardianBalance, guardianBalance, proofArray)).to.be.revertedWith(

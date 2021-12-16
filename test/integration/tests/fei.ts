@@ -49,7 +49,7 @@ describe('e2e-fei', function () {
   });
 
   describe('Fei Functionality', async function () {
-    it('setIncentiveContract', async function () {
+    it.skip('setIncentiveContract', async function () {
       expect(await contracts.core.isGovernor(deployAddress)).to.be.true;
       expect(fei.connect(deploySigner).setIncentiveContract(ZERO_ADDRESS, ZERO_ADDRESS)).to.be.revertedWith(
         'CoreRef: Caller is not a governor'

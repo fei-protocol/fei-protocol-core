@@ -16,6 +16,8 @@ const TRIBE_INFLATION_BPS = 10000;
 
 const ONE_IN_BPS = 10000;
 
+const OSM_DURATION = 60 * 60 * 24; // 24h
+
 /*
 Backstop
 DEPLOY ACTIONS:
@@ -54,7 +56,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     ONE_IN_BPS, // $1 Exchange
     collateralizationOracleWrapper,
     ONE_IN_BPS, // 100% CR threshold
-    tribeMinter.address
+    tribeMinter.address,
+    OSM_DURATION
   );
 
   await tribeReserveStabilizer.deployTransaction.wait();

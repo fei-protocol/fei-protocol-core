@@ -1,8 +1,8 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
 import "./PegStabilityModule.sol";
 import "./IPriceBound.sol";
-import "../Constants.sol";
 
 /// @notice contract to create a price bound DAI PSM
 /// This contract will allow swaps when the price of DAI is between 98 cents and 1.02 by default

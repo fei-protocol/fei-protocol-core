@@ -3,15 +3,14 @@
     "bondingCurve",
     "uniswapPCVDeposit",
     "feiDAOTimelock",
-    "dpiBondingCurve",
     "daiBondingCurve",
     "dpiUniswapPCVDeposit",
-    "raiBondingCurve",
     "pcvEquityMinter",
     "collateralizationOracleKeeper",
     "optimisticMinter",
     "agEurAngleUniswapPCVDeposit",
-    "tribeRagequit"
+    "tribeRagequit",
+    "daiPSM"
   ],
   "BURNER_ROLE": [
     "ethReserveStabilizer"
@@ -26,7 +25,8 @@
     "ratioPCVController",
     "aaveEthPCVDripController",
     "compoundEthPCVDripController",
-    "pcvGuardian"
+    "pcvGuardian",
+    "daiPCVDripController"
   ],
   "GUARDIAN_ROLE": [
     "multisig",
@@ -40,6 +40,9 @@
     "pcvEquityMinter"
   ],
   "BALANCER_MANAGER_ADMIN_ROLE" : [
+
+  ],
+  "PSM_ADMIN_ROLE" : [
 
   ],
   "TRIBAL_CHIEF_ADMIN_ROLE" : [
