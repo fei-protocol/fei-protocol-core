@@ -25,7 +25,7 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
     event DepositAdded(uint256 index, string indexed depositName);
 
     /// @notice event emitted when a deposit is edited
-    event DepositEdited(uint256 index, string indexed depositName);
+    event DepositChanged(uint256 index, string indexed depositName);
 
     /// @notice struct to store info on each PCV Deposit
     struct DepositInfo {
@@ -42,7 +42,7 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
     /// @notice the PCV balance
     uint256 public override balance;
 
-    /// @notice the reported FEI balance
+    /// @notice the reported FEI balance to track protocol controlled FEI in these deposits
     uint256 public feiReportBalance;
 
     constructor(address _core, DepositInfo[] memory newPCVDeposits) CoreRef(_core) {
@@ -60,27 +60,23 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
     /// @notice helper method to delete a PCV deposit
     function _removeDeposit(uint256 index) internal {
-        if (pcvDeposits.length == 0) { return; }
+        require(index < pcvDeposits.length, "NamedStaticPCVDepositWrapper: cannot remove index out of bounds");
 
         DepositInfo storage removePCVDeposit = pcvDeposits[index];
 
         uint256 depositBalance = removePCVDeposit.usdAmount;
         uint256 feiDepositBalance = removePCVDeposit.feiAmount;
-
         uint256 oldBalance = balance;
         uint256 oldFeiReportBalance = feiReportBalance;
-
         uint256 lastIndex = pcvDeposits.length - 1;
 
         if (lastIndex != index) {
             DepositInfo storage lastvalue = pcvDeposits[lastIndex];
 
-            // Move the last value to the index where the value to delete is
             pcvDeposits[index] = lastvalue;
         }
-        // Delete the slot where the moved value was stored
-        pcvDeposits.pop();
 
+        pcvDeposits.pop();
         balance -= depositBalance;
         feiReportBalance -= feiDepositBalance;
 
@@ -112,6 +108,8 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         uint256 underlyingTokenAmount,
         address underlyingToken
     ) internal {
+        require(index < pcvDeposits.length, "NamedStaticPCVDepositWrapper: cannot edit index out of bounds");
+
         DepositInfo storage updatePCVDeposit = pcvDeposits[index];
 
         uint256 oldBalance = balance;
@@ -125,7 +123,7 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         updatePCVDeposit.underlyingTokenAmount = underlyingTokenAmount;
         updatePCVDeposit.underlyingToken = underlyingToken;
 
-        emit DepositEdited(index, depositName);
+        emit DepositChanged(index, depositName);
         emit BalanceUpdate(oldBalance, balance, oldFEIBalance, feiReportBalance);
     }
 

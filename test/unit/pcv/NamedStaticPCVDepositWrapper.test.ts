@@ -247,6 +247,16 @@ describe('NamedStaticPCVDepositWrapper', function () {
       expect(underlyingTokenAmount).to.be.equal(newUnderlyingAmt);
     });
 
+    it('edit existing deposit fails when index is out of bounds', async function () {
+      const invalidIndex = await deposit.numDeposits();
+      await expectRevert(
+        deposit
+          .connect(impersonatedSigners[governorAddress])
+          .editDeposit(invalidIndex, balance, feiBalance, 100_000, 'Visor Finance USDC/FEI Deposit', await core.fei()),
+        'NamedStaticPCVDepositWrapper: cannot edit index out of bounds'
+      );
+    });
+
     it('editDeposit non-governor-admin reverts', async function () {
       await expectRevert(
         deposit.editDeposit(0, balance, feiBalance, 10, 'DPI UniV2 LP Token', await core.fei()),
@@ -293,6 +303,14 @@ describe('NamedStaticPCVDepositWrapper', function () {
       expect(endingBalance).to.be.equal(0);
       expect(endingFeiBalance).to.be.equal(0);
       expect(endingNumDeposits).to.be.equal(0);
+    });
+
+    it('remove existing deposit fails when index is out of bounds', async function () {
+      const invalidIndex = await deposit.numDeposits();
+      await expectRevert(
+        deposit.connect(impersonatedSigners[governorAddress]).removeDeposit(invalidIndex),
+        'NamedStaticPCVDepositWrapper: cannot remove index out of bounds'
+      );
     });
 
     it('removeDeposit non-governor-admin reverts', async function () {
