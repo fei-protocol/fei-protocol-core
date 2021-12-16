@@ -1,4 +1,4 @@
-import { getCore, getAddresses, expectRevert, expectEvent } from '@test/helpers';
+import { getCore, getAddresses, expectRevert, expectEvent, getImpersonatedSigner } from '@test/helpers';
 import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
@@ -20,12 +20,9 @@ describe('NamedStaticPCVDepositWrapper', function () {
     const addresses = await getAddresses();
 
     // add any addresses you want to impersonate here
-    const impersonatedAddresses = [
-      addresses.governorAddress
-    ];
+    const impersonatedAddresses = [addresses.governorAddress];
 
     for (const address of impersonatedAddresses) {
-
       impersonatedSigners[address] = await getImpersonatedSigner(address);
     }
   });
