@@ -15,9 +15,17 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
     using SafeCast for *;
 
     // -------------- Events ---------------
+    /// @notice event to update fei and usd balance
     event BalanceUpdate(uint256 oldBalance, uint256 newBalance, uint256 oldFEIBalance, uint256 newFEIBalance);
 
+    /// @notice event to remove a deposit
     event DepositRemoved(uint256 index);
+    
+    /// @notice event to add a new deposit
+    event DepositAdded(uint256 index, string indexed depositName);
+
+    /// @notice event emitted when a deposit is edited
+    event DepositEdited(uint256 index, string indexed depositName);
 
     /// @notice struct to store info on each PCV Deposit
     struct DepositInfo {
@@ -47,6 +55,8 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
             _addDeposit(newPCVDeposits[i]);
         }
     }
+
+    // ----------- Helper methods to change state -----------
 
     /// @notice helper method to delete a PCV deposit
     function _removeDeposit(uint256 index) internal {
@@ -89,6 +99,7 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         feiReportBalance += newPCVDeposit.feiAmount;
         pcvDeposits.push(newPCVDeposit);
 
+        emit DepositAdded(pcvDeposits.length - 1, newPCVDeposit.depositName);
         emit BalanceUpdate(oldBalance, balance, oldFEIBalance, feiReportBalance);
     }
 
@@ -102,28 +113,23 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         address underlyingToken
     ) internal {
         DepositInfo storage updatePCVDeposit = pcvDeposits[index];
-        int256 usdAmountDelta;
-        int256 feiAmountDelta;
-
-        unchecked {
-            // let this value go negative and not revert so that balance can go down if usdAmount is decreased
-            usdAmountDelta = usdAmount.toInt256() - updatePCVDeposit.usdAmount.toInt256();
-            feiAmountDelta = feiAmount.toInt256() - updatePCVDeposit.feiAmount.toInt256();
-        }
-
-        updatePCVDeposit.usdAmount = usdAmount;
-        updatePCVDeposit.depositName = depositName;
-        updatePCVDeposit.underlyingTokenAmount = underlyingTokenAmount;
-        updatePCVDeposit.underlyingToken = underlyingToken;
 
         uint256 oldBalance = balance;
         uint256 oldFEIBalance = feiReportBalance;
 
-        balance = (balance.toInt256() + usdAmountDelta).toUint256();
-        feiReportBalance = (feiReportBalance.toInt256() + feiAmountDelta).toUint256();
+        balance = balance - updatePCVDeposit.usdAmount + usdAmount;
+        feiReportBalance = feiReportBalance - updatePCVDeposit.feiAmount + feiAmount;
 
+        updatePCVDeposit.usdAmount = usdAmount + updatePCVDeposit.usdAmount;
+        updatePCVDeposit.depositName = depositName;
+        updatePCVDeposit.underlyingTokenAmount = underlyingTokenAmount;
+        updatePCVDeposit.underlyingToken = underlyingToken;
+
+        emit DepositEdited(index, depositName);
         emit BalanceUpdate(oldBalance, balance, oldFEIBalance, feiReportBalance);
     }
+
+    // ----------- Governor only state changing api -----------
 
     /// @notice function to add a deposit
     function addDeposit(
@@ -167,6 +173,7 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
     // ----------- Getters -----------
 
+    /// @notice returns the current number of PCV deposits
     function numDeposits() public view returns (uint256) {
         return pcvDeposits.length;
     }
