@@ -39,6 +39,8 @@ describe('QuadraticTimelockedDelegator', function () {
     ).deploy(tribe.address, userAddress, window, 60 * 60 * 24 * 30, secondUserAddress, '0');
     totalTribe = toBN('10000');
     await tribe.mint(delegator.address, totalTribe);
+
+    await delegator.delegate(userAddress);
   });
 
   describe('Init', function () {
@@ -259,21 +261,6 @@ describe('QuadraticTimelockedDelegator', function () {
           expect(await delegator.beneficiary()).to.be.equal(userAddress);
         });
 
-        it('should transfer voting power to new beneficiary', async function () {
-          expect(await tribe.getCurrentVotes(secondUserAddress)).to.be.bignumber.equal(toBN('0'));
-
-          await delegator.setPendingBeneficiary(secondUserAddress);
-          expectEvent(
-            await delegator.connect(impersonatedSigners[secondUserAddress]).acceptBeneficiary(),
-            delegator,
-            'BeneficiaryUpdate',
-            [secondUserAddress]
-          );
-          expect(await delegator.beneficiary()).to.be.equal(secondUserAddress);
-
-          expect(await tribe.getCurrentVotes(secondUserAddress)).to.be.bignumber.equal(totalTribe);
-        });
-
         it('Non pending beneficiary reverts', async function () {
           await expectRevert(
             delegator.connect(impersonatedSigners[secondUserAddress]).acceptBeneficiary(),
@@ -286,7 +273,16 @@ describe('QuadraticTimelockedDelegator', function () {
     describe('Release', function () {
       it('Non-beneficiary set reverts', async function () {
         await expectRevert(
-          delegator.connect(impersonatedSigners[beneficiaryAddress1]).release(userAddress, '100'),
+          delegator.connect(impersonatedSigners[secondUserAddress]).release(userAddress, '100'),
+          'TokenTimelock: Caller is not a beneficiary'
+        );
+      });
+    });
+
+    describe('Delegate', function () {
+      it('Non-beneficiary delegate reverts', async function () {
+        await expectRevert(
+          delegator.connect(impersonatedSigners[secondUserAddress]).release(userAddress, '100'),
           'TokenTimelock: Caller is not a beneficiary'
         );
       });

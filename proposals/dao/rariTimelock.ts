@@ -41,9 +41,9 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   // 1. QuadraticTimelockedDelegator
   const rariQuadraticTimelock = await timelockFactory.deploy(
+    tribe,
     delegatorBeneficiary,
     FIVE_YEARS,
-    tribe,
     0, // no cliff
     ethers.constants.AddressZero, // no clawback admin
     TIMELOCK_START
@@ -54,9 +54,9 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   // 2. QuadraticTimelockedDelegator
   const rariQuadraticTimelock2 = await timelockFactory.deploy(
+    tribe,
     delegatorBeneficiary2,
     FIVE_YEARS,
-    tribe,
     0, // no cliff
     addresses.feiDAOTimelock, // clawback admin is the DAO
     0 // start upon deploy
@@ -67,9 +67,9 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   // 3. QuadraticTimelockedDelegator
   const rariQuadraticTimelock3 = await timelockFactory.deploy(
+    tribe,
     delegatorBeneficiary2,
     FIVE_YEARS,
-    tribe,
     0, // no cliff
     addresses.feiDAOTimelock, // clawback admin is the DAO
     0 // start upon deploy
@@ -80,9 +80,9 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   // 4. QuadraticTimelockedDelegator
   const rariQuadraticTimelock4 = await timelockFactory.deploy(
+    tribe,
     delegatorBeneficiary2,
     FIVE_YEARS,
-    tribe,
     0, // no cliff
     addresses.feiDAOTimelock, // clawback admin is the DAO
     0 // start upon deploy
