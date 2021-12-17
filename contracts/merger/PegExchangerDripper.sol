@@ -8,8 +8,8 @@ contract PegExchangerDripper {
     address public constant CORE = 0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9;
     address public constant PEG_EXCHANGER = 0xc09BB5ECf865e6f69Fe62A43c27f036A426909f7;
     
-    uint256 public constant THRESHOLD = 5e18; // 5M TRIBE cutoff for dripping
-    uint256 public constant DRIP_AMOUNT = 20e18; // drip 20M TRIBE
+    uint256 public constant THRESHOLD = 5_000_000e18; // 5M TRIBE cutoff for dripping
+    uint256 public constant DRIP_AMOUNT = 20_000_000e18; // drip 20M TRIBE
  
     function drip() external {
         require(!PegExchanger(PEG_EXCHANGER).isExpired(), "expired"); // ensure pegExchanger live
