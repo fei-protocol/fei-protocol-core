@@ -16,7 +16,7 @@ import { MockWeightedPool } from '@custom-types/contracts/MockWeightedPool';
 
 const toBN = ethers.BigNumber.from;
 
-describe('BalancerLBPSwapper', function () {
+describe.only('BalancerLBPSwapper', function () {
   let userAddress: string;
   let burnerAddress: string;
   let pcvControllerAddress: string;
@@ -164,7 +164,7 @@ describe('BalancerLBPSwapper', function () {
       expect(tokens[1]).to.be.equal(tribe.address);
 
       expect(amounts[0]).to.be.equal(toBN(100000));
-      expect(amounts[1]).to.be.bignumber.equal(toBN(505));
+      expect(amounts[1]).to.be.bignumber.equal(toBN(5555));
     });
   });
 
