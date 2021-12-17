@@ -17,14 +17,13 @@ Rari Exchanger Timelocks
 
 DEPLOY ACTIONS:
 
-1. Deploy QuadraticTimelockedDelegator
-2. Deploy QuadtraticTimelockedSubdelegator
-3. Deploy ExchangerTimelock x2
+1-4. Deploy QuadraticTimelockedDelegator x 4
+5-8. Deploy ExchangerTimelock x 4
 
 */
 
 const delegatorBeneficiary = '0xeAd815D7faD76bf587EBbC27CE3c0212c3B256Be';
-const subdelegatorBeneficiary = '0x4bFa2625D50b68D622D1e71c82ba6Db99BA0d17F';
+const delegatorBeneficiary2 = '0x4bFa2625D50b68D622D1e71c82ba6Db99BA0d17F'; // benficiary 2 controls 3 timelocks
 
 const FIVE_YEARS = '157680000';
 const TIMELOCK_START = '1603202400'; // Rari vesting start Tuesday, October 20, 2020 2:00:00 PM GMT
@@ -38,7 +37,6 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     throw new Error('a contract address variable is not set');
   }
   const timelockFactory = await ethers.getContractFactory('QuadraticTimelockedDelegator');
-  const subdelegatorFactory = await ethers.getContractFactory('QuadtraticTimelockedSubdelegator');
   const exchangerFactory = await ethers.getContractFactory('ExchangerTimelock');
 
   // 1. QuadraticTimelockedDelegator
@@ -54,37 +52,78 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('rariQuadraticTimelock: ', rariQuadraticTimelock.address);
 
-  // 2. QuadtraticTimelockedSubdelegator
-  const rariQuadraticSubdelegatorTimelock = await subdelegatorFactory.deploy(
-    subdelegatorBeneficiary,
+  // 2. QuadraticTimelockedDelegator
+  const rariQuadraticTimelock2 = await timelockFactory.deploy(
+    delegatorBeneficiary2,
     FIVE_YEARS,
     tribe,
     0, // no cliff
     addresses.feiDAOTimelock, // clawback admin is the DAO
-    TIMELOCK_START
+    0 // start upon deploy
   );
-  await rariQuadraticSubdelegatorTimelock.deployTransaction.wait();
+  await rariQuadraticTimelock2.deployTransaction.wait();
 
-  logging && console.log('rariQuadraticSubdelegatorTimelock: ', rariQuadraticSubdelegatorTimelock.address);
+  logging && console.log('rariQuadraticTimelock2: ', rariQuadraticTimelock2.address);
 
-  // 3. Deploy ExchangerTimelock x2
+  // 3. QuadraticTimelockedDelegator
+  const rariQuadraticTimelock3 = await timelockFactory.deploy(
+    delegatorBeneficiary2,
+    FIVE_YEARS,
+    tribe,
+    0, // no cliff
+    addresses.feiDAOTimelock, // clawback admin is the DAO
+    0 // start upon deploy
+  );
+  await rariQuadraticTimelock3.deployTransaction.wait();
+
+  logging && console.log('rariQuadraticTimelock3: ', rariQuadraticTimelock3.address);
+
+  // 4. QuadraticTimelockedDelegator
+  const rariQuadraticTimelock4 = await timelockFactory.deploy(
+    delegatorBeneficiary2,
+    FIVE_YEARS,
+    tribe,
+    0, // no cliff
+    addresses.feiDAOTimelock, // clawback admin is the DAO
+    0 // start upon deploy
+  );
+  await rariQuadraticTimelock4.deployTransaction.wait();
+
+  logging && console.log('rariQuadraticTimelock4: ', rariQuadraticTimelock4.address);
+
+  // 5. Deploy ExchangerTimelock x4
   const exchangerTimelock1 = await exchangerFactory.deploy(pegExchanger, rariQuadraticTimelock.address);
 
   await exchangerTimelock1.deployTransaction.wait();
 
   logging && console.log('exchangerTimelock1: ', exchangerTimelock1.address);
 
-  const exchangerTimelock2 = await exchangerFactory.deploy(pegExchanger, rariQuadraticSubdelegatorTimelock.address);
+  const exchangerTimelock2 = await exchangerFactory.deploy(pegExchanger, rariQuadraticTimelock2.address);
 
   await exchangerTimelock2.deployTransaction.wait();
 
   logging && console.log('exchangerTimelock2: ', exchangerTimelock2.address);
 
+  const exchangerTimelock3 = await exchangerFactory.deploy(pegExchanger, rariQuadraticTimelock3.address);
+
+  await exchangerTimelock3.deployTransaction.wait();
+
+  logging && console.log('exchangerTimelock3: ', exchangerTimelock3.address);
+
+  const exchangerTimelock4 = await exchangerFactory.deploy(pegExchanger, rariQuadraticTimelock4.address);
+
+  await exchangerTimelock4.deployTransaction.wait();
+
+  logging && console.log('exchangerTimelock4: ', exchangerTimelock4.address);
   return {
     rariQuadraticTimelock,
-    rariQuadraticSubdelegatorTimelock,
+    rariQuadraticTimelock2,
+    rariQuadraticTimelock3,
+    rariQuadraticTimelock4,
     exchangerTimelock1,
-    exchangerTimelock2
+    exchangerTimelock2,
+    exchangerTimelock3,
+    exchangerTimelock4
   } as NamedContracts;
 };
 

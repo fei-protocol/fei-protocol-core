@@ -49,16 +49,15 @@ contract QuadtraticTimelockedSubdelegator is ITimelockedDelegator, QuadraticToke
     /// @param _duration duration of the token timelock window
     /// @param _tribe the TRIBE token address
     /// @param _cliff the seconds before first claim is allowed
-    /// @param _clawbackAdmin the address which can trigger a clawback
     /// @param _startTime the initial time to use for timelock
+    /// @dev clawback admin needs to be 0 because clawbacks can be bricked by beneficiary
     constructor(
         address _beneficiary,
         uint256 _duration,
         address _tribe,
         uint256 _cliff,
-        address _clawbackAdmin,
         uint256 _startTime
-    ) QuadraticTokenTimelock(_beneficiary, _duration, _tribe, _cliff, _clawbackAdmin, _startTime) {
+    ) QuadraticTokenTimelock(_beneficiary, _duration, _tribe, _cliff, address(0), _startTime) {
         tribe = ITribe(_tribe);
     }
 
