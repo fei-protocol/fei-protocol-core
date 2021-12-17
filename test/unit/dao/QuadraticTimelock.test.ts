@@ -36,7 +36,7 @@ describe('QuadraticTimelockedDelegator', function () {
     window = toBN(4 * 365 * 24 * 60 * 60);
     delegator = await (
       await ethers.getContractFactory('QuadraticTimelockedDelegator')
-    ).deploy(tribe.address, userAddress, window, 60 * 60 * 24 * 30, secondUserAddress);
+    ).deploy(tribe.address, userAddress, window, 60 * 60 * 24 * 30, secondUserAddress, '0');
     totalTribe = toBN('10000');
     await tribe.mint(delegator.address, totalTribe);
   });
