@@ -19,7 +19,7 @@ contract ExchangerTimelock is Ownable {
     IExchanger public immutable exchanger;
     address public immutable timelock;
 
-    /// @notice guardian multisig
+    /// @notice rari DAO timelock can clawback in event of no-deal
     address public constant guardian = 0x8ace03Fc45139fDDba944c6A4082b604041d19FC;
 
     IERC20 public constant rgt =

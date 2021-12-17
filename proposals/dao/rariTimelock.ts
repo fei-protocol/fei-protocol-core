@@ -28,7 +28,7 @@ const delegatorBeneficiary = '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775'; // TO
 const subdelegatorBeneficiary = '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775'; // TODO change to actual Rari addresses
 
 const FIVE_YEARS = '157680000';
-const TIMELOCK_START = '1630000000'; // TODO set to Rari vesting start
+const TIMELOCK_START = '1603202400'; // Rari vesting start Tuesday, October 20, 2020 2:00:00 PM GMT
 
 const toBN = ethers.BigNumber.from;
 
@@ -36,7 +36,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   const { pegExchanger, tribe } = addresses;
 
   if (!pegExchanger || !tribe) {
-    throw new Error('An environment variable contract address is not set');
+    throw new Error('a contract address variable is not set');
   }
   const timelockFactory = await ethers.getContractFactory('QuadraticTimelockedDelegator');
   const subdelegatorFactory = await ethers.getContractFactory('QuadtraticTimelockedSubdelegator');
@@ -92,13 +92,13 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   logging && console.log('Setup');
 
+  // Transfer dummy RGT to the timelocks to test methods
   const rgt = contracts.rgt;
-
   const signer = await getImpersonatedSigner(addresses.rariTimelock);
-
   await rgt.connect(signer).transfer(addresses.exchangerTimelock1, ethers.constants.WeiPerEther);
   await rgt.connect(signer).transfer(addresses.exchangerTimelock2, ethers.constants.WeiPerEther.mul(toBN(2)));
 
+  // Send RGT to TRIBE in Timelock using exchangers
   await contracts.exchangerTimelock1.exchangeToTimelock();
   await contracts.exchangerTimelock2.exchangeToTimelock();
 };
@@ -110,9 +110,11 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
   const tribe = contracts.tribe;
 
+  // Excpect quadratic timelocks initialized correctly
   expect(await contracts.rariQuadraticTimelock.startTime()).to.be.bignumber.equal(toBN(TIMELOCK_START));
   expect(await contracts.rariQuadraticSubdelegatorTimelock.startTime()).to.be.bignumber.equal(toBN(TIMELOCK_START));
 
+  // Check TRIBE balances against dummy inputs x exchange rate of ~26.7
   expect(await tribe.balanceOf(addresses.rariQuadraticTimelock)).to.be.bignumber.equal(toBN('26705673430000000000'));
   expect(await tribe.balanceOf(addresses.rariQuadraticSubdelegatorTimelock)).to.be.bignumber.equal(
     toBN('53411346860000000000')

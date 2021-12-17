@@ -42,7 +42,7 @@ export async function execProposal(voterAddress, governorAlphaAddress, totalValu
   const { startBlock } = proposal;
 
   // Advance to vote start
-  if (toBN(await time.latestBlock()) < toBN(startBlock)) {
+  if (toBN(await time.latestBlock()).isLessThan(toBN(startBlock))) {
     console.log(`Advancing To: ${startBlock}`);
     await time.advanceBlockTo(startBlock);
   } else {
@@ -56,7 +56,7 @@ export async function execProposal(voterAddress, governorAlphaAddress, totalValu
   const { endBlock } = proposal;
 
   // Advance to after vote completes and queue the transaction
-  if (toBN(await time.latestBlock()) < toBN(endBlock)) {
+  if (toBN(await time.latestBlock()).isLessThan(toBN(endBlock))) {
     console.log(`Advancing To: ${endBlock}`);
     await time.advanceBlockTo(endBlock);
 
