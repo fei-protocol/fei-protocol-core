@@ -25,6 +25,7 @@ DEPLOY ACTIONS:
 1. Deploy TribeRariDAO
 2. Deploy PegExchanger
 3. Deploy TribeRagequit
+4. Deploy MergerGate
 
 */
 
@@ -70,10 +71,19 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('tribeRagequit: ', tribeRagequit.address);
 
+  // 4. Deploy MergerGate
+  const gateFactory = await ethers.getContractFactory('MergerGate');
+  const mergerGate = await gateFactory.deploy();
+
+  await mergerGate.deployTransaction.wait();
+
+  logging && console.log('mergerGate: ', mergerGate.address);
+
   return {
     tribeRariDAO,
     pegExchanger,
-    tribeRagequit
+    tribeRagequit,
+    mergerGate
   } as NamedContracts;
 };
 
