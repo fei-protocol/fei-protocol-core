@@ -26,7 +26,7 @@ DEPLOY ACTIONS:
 2. Deploy PegExchanger
 3. Deploy TribeRagequit
 4. Deploy MergerGate
-
+5. Deploy PegExchangerDripper
 */
 
 const tree = createTree();
@@ -79,11 +79,20 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('mergerGate: ', mergerGate.address);
 
+  // 5. Deploy PegExchangerDripper
+  const dripperFactory = await ethers.getContractFactory('PegExchangerDripper');
+  const pegExchangerDripper = await dripperFactory.deploy();
+
+  await pegExchangerDripper.deployTransaction.wait();
+
+  logging && console.log('pegExchangerDripper: ', pegExchangerDripper.address);
+
   return {
     tribeRariDAO,
     pegExchanger,
     tribeRagequit,
-    mergerGate
+    mergerGate,
+    pegExchangerDripper
   } as NamedContracts;
 };
 
@@ -124,8 +133,10 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await pegExchanger.bothPartiesAccepted()).to.be.true;
 
   expect((await tribeRagequit.intrinsicValueExchangeRateBase()).toString()).to.be.equal('1234273768');
-  expect((await tribe.balanceOf(pegExchanger.address)).toString()).to.be.equal('270000000000000000000000000');
+  expect((await tribe.balanceOf(addresses.pegExchangerDripper)).toString()).to.be.equal('270000000000000000000000000');
   expect((await fei.balanceOf(addresses.gfxAddress)).toString()).to.be.equal('315909060000000000000000');
+
+  expect(await contracts.pegExchangerDripper.isEligible()).to.be.true;
 
   expect((await tribeRagequit.rageQuitStart()).toString()).to.be.equal(rageQuitStart);
   expect((await tribeRagequit.rageQuitEnd()).toString()).to.be.equal(rageQuitDeadline);
