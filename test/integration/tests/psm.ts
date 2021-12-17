@@ -3,7 +3,7 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import hre, { ethers } from 'hardhat';
 import { NamedContracts } from '@custom-types/types';
-import { expectRevert, getAddresses, getImpersonatedSigner, resetFork } from '@test/helpers';
+import { expectRevert, getAddresses, getImpersonatedSigner, resetFork, time } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '@test/integration/setup/utils';
@@ -23,6 +23,7 @@ describe('e2e-peg-stability-module', function () {
   let contracts: NamedContracts;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
+  let daiPCVDripController: Contract;
   let doLogging: boolean;
   let psmRouter: Contract;
   let userAddress;
@@ -33,6 +34,7 @@ describe('e2e-peg-stability-module', function () {
   let wethPSM: Contract;
   let fei: Contract;
   let core: Contract;
+  let feiDAOTimelock: Contract;
   let beneficiaryAddress1;
 
   before(async function () {
@@ -51,6 +53,7 @@ describe('e2e-peg-stability-module', function () {
       addresses.beneficiaryAddress1,
       addresses.beneficiaryAddress2
     ];
+
     ({ userAddress, minterAddress, beneficiaryAddress1 } = addresses);
 
     doLogging = Boolean(process.env.LOGGING);
@@ -65,7 +68,7 @@ describe('e2e-peg-stability-module', function () {
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts } = await e2eCoord.loadEnvironment());
-    ({ dai, weth, daiPSM, wethPSM, psmRouter, fei, core } = contracts);
+    ({ dai, weth, daiPSM, wethPSM, psmRouter, fei, core, daiPCVDripController, feiDAOTimelock } = contracts);
     doLogging && console.log(`Environment loaded.`);
     await core.grantMinter(minterAddress);
 
@@ -233,6 +236,28 @@ describe('e2e-peg-stability-module', function () {
         expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.equal(minAmountOut);
         expect(minAmountOut).to.be.gt(0);
       });
+    });
+  });
+
+  describe('dai-psm pcv drip controller', async () => {
+    beforeEach(async () => {
+      await time.increase('2000');
+    });
+
+    it('does not drip when the dai PSM is above the threshold', async () => {
+      expect(await daiPCVDripController.isTimeEnded()).to.be.true;
+      expect(await daiPCVDripController.dripEligible()).to.be.false;
+      await expectRevert(daiPCVDripController.drip(), 'PCVDripController: not eligible');
+    });
+
+    it('does drip when the dai PSM is under the threshold', async () => {
+      const timelock = await getImpersonatedSigner(feiDAOTimelock.address);
+      await daiPSM.connect(timelock).withdrawERC20(dai.address, userAddress, await dai.balanceOf(daiPSM.address));
+      expect(await dai.balanceOf(daiPSM.address)).to.be.equal(0);
+
+      await daiPCVDripController.drip();
+
+      expect(await dai.balanceOf(daiPSM.address)).to.be.equal(await daiPCVDripController.dripAmount());
     });
   });
 
