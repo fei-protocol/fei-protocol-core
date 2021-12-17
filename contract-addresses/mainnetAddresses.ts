@@ -1,4 +1,8 @@
 const MainnetAddresses = {
+  mergerGate: {
+    artifactName: 'MergerGate',
+    address: '0xC2d452A4Feb76B41659cd036D5746149B98453D6'
+  },
   daiPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0x3e0f66c5687FF917809A3F7fA7096e1Bc409fB03'
