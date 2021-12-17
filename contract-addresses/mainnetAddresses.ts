@@ -54,6 +54,10 @@ const MainnetAddresses = {
     artifactName: 'AngleUniswapPCVDeposit',
     address: '0x7AC2Ab8143634419c5bc230A9f9955C3e29f64Ef'
   },
+  comp: {
+    artifactName: 'IERC20',
+    address: '0xc00e94Cb662C3520282E6f5717214004A7f26888'
+  },
   chainlinkLUSDOracle: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0xe61d11ec732d556A26fb863B192052BEa03eF8B5'
@@ -250,6 +254,7 @@ const MainnetAddresses = {
   },
 
   aave: { artifactName: 'IERC20', address: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9' },
+  stkaave: { artifactName: 'IERC20', address: '0x4da27a545c0c5B758a6BA100e3a049001de870f5' },
   aaveEthPCVDeposit: { artifactName: 'AavePCVDeposit', address: '0x5B86887e171bAE0C2C826e87E34Df8D558C079B9' },
   aaveEthPCVDripController: {
     artifactName: 'PCVDripController',
