@@ -90,17 +90,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 };
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  logging && console.log('Setup');
-
-  // Transfer dummy RGT to the timelocks to test methods
-  const rgt = contracts.rgt;
-  const signer = await getImpersonatedSigner(addresses.rariTimelock);
-  await rgt.connect(signer).transfer(addresses.exchangerTimelock1, ethers.constants.WeiPerEther);
-  await rgt.connect(signer).transfer(addresses.exchangerTimelock2, ethers.constants.WeiPerEther.mul(toBN(2)));
-
-  // Send RGT to TRIBE in Timelock using exchangers
-  await contracts.exchangerTimelock1.exchangeToTimelock();
-  await contracts.exchangerTimelock2.exchangeToTimelock();
+  logging && console.log('No Setup');
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
@@ -108,15 +98,7 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
-  const tribe = contracts.tribe;
-
   // Excpect quadratic timelocks initialized correctly
   expect(await contracts.rariQuadraticTimelock.startTime()).to.be.bignumber.equal(toBN(TIMELOCK_START));
   expect(await contracts.rariQuadraticSubdelegatorTimelock.startTime()).to.be.bignumber.equal(toBN(TIMELOCK_START));
-
-  // Check TRIBE balances against dummy inputs x exchange rate of ~26.7
-  expect(await tribe.balanceOf(addresses.rariQuadraticTimelock)).to.be.bignumber.equal(toBN('26705673430000000000'));
-  expect(await tribe.balanceOf(addresses.rariQuadraticSubdelegatorTimelock)).to.be.bignumber.equal(
-    toBN('53411346860000000000')
-  );
 };

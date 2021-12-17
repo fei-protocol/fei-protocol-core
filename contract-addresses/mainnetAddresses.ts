@@ -1,4 +1,8 @@
 const MainnetAddresses = {
+  pegExchangerDripper: {
+    artifactName: 'PegExchangerDripper',
+    address: '0xC416EEe663ECa29cEB726241caDFFe6a77D61E2D'
+  },
   mergerGate: {
     artifactName: 'MergerGate',
     address: '0xC2d452A4Feb76B41659cd036D5746149B98453D6'

@@ -97,27 +97,7 @@ describe('e2e-merger', function () {
   describe('PegExchanger', async () => {
     const RGT_WHALE = '0x20017a30D3156D4005bDA08C40Acda0A6aE209B1';
 
-    it('exchanges RGT for TRIBE', async function () {
-      const pegExchanger: PegExchanger = contracts.pegExchanger as PegExchanger;
-      const { rgt, tribe } = contracts;
-
-      const signer = await getImpersonatedSigner(RGT_WHALE);
-
-      const rgtBalanceBefore = await rgt.balanceOf(RGT_WHALE);
-      const tribeBalanceBefore = await tribe.balanceOf(RGT_WHALE);
-      await rgt.connect(signer).approve(pegExchanger.address, ethers.constants.MaxUint256);
-
-      await pegExchanger.connect(signer).exchange(ethers.constants.WeiPerEther);
-      const rgtBalanceAfter = await rgt.balanceOf(RGT_WHALE);
-      const tribeBalanceAfter = await tribe.balanceOf(RGT_WHALE);
-
-      expect(rgtBalanceBefore.sub(rgtBalanceAfter)).to.be.bignumber.equal(ethers.constants.WeiPerEther);
-      expectApprox(tribeBalanceAfter.sub(tribeBalanceBefore), ethers.constants.WeiPerEther.mul(27));
-    });
-  });
-
-  describe('PegExchangerDripper', async () => {
-    it('before expired', async function () {
+    it('drips correctly before expiration', async function () {
       const pegExchangerDripper: PegExchangerDripper = contracts.pegExchangerDripper as PegExchangerDripper;
       const { tribe } = contracts;
 
@@ -136,7 +116,48 @@ describe('e2e-merger', function () {
       await expectRevert(pegExchangerDripper.drip(), 'over threshold');
     });
 
-    it('after expired', async function () {
+    it('exchanges RGT for TRIBE', async function () {
+      const pegExchanger: PegExchanger = contracts.pegExchanger as PegExchanger;
+      const { rgt, tribe } = contracts;
+
+      const signer = await getImpersonatedSigner(RGT_WHALE);
+
+      const rgtBalanceBefore = await rgt.balanceOf(RGT_WHALE);
+      const tribeBalanceBefore = await tribe.balanceOf(RGT_WHALE);
+      await rgt.connect(signer).approve(pegExchanger.address, ethers.constants.MaxUint256);
+
+      await pegExchanger.connect(signer).exchange(ethers.constants.WeiPerEther);
+      const rgtBalanceAfter = await rgt.balanceOf(RGT_WHALE);
+      const tribeBalanceAfter = await tribe.balanceOf(RGT_WHALE);
+
+      expect(rgtBalanceBefore.sub(rgtBalanceAfter)).to.be.bignumber.equal(ethers.constants.WeiPerEther);
+      expectApprox(tribeBalanceAfter.sub(tribeBalanceBefore), ethers.constants.WeiPerEther.mul(27));
+    });
+
+    it('rari timelocks are able to exchange', async function () {
+      const { rgt, tribe } = contracts;
+
+      // Transfer dummy RGT to the timelocks to test methods
+      const signer = await getImpersonatedSigner(contractAddresses.rariTimelock);
+      await rgt.connect(signer).transfer(contractAddresses.exchangerTimelock1, ethers.constants.WeiPerEther);
+      await rgt
+        .connect(signer)
+        .transfer(contractAddresses.exchangerTimelock2, ethers.constants.WeiPerEther.mul(toBN(2)));
+
+      // Send RGT to TRIBE in Timelock using exchangers
+      await contracts.exchangerTimelock1.exchangeToTimelock();
+      await contracts.exchangerTimelock2.exchangeToTimelock();
+
+      // Check TRIBE balances against dummy inputs x exchange rate of ~26.7
+      expect(await tribe.balanceOf(contractAddresses.rariQuadraticTimelock)).to.be.bignumber.equal(
+        toBN('26705673430000000000')
+      );
+      expect(await tribe.balanceOf(contractAddresses.rariQuadraticSubdelegatorTimelock)).to.be.bignumber.equal(
+        toBN('53411346860000000000')
+      );
+    });
+
+    it('recovers tokens after expiry', async function () {
       const pegExchanger: PegExchanger = contracts.pegExchanger as PegExchanger;
       const pegExchangerDripper: PegExchangerDripper = contracts.pegExchangerDripper as PegExchangerDripper;
       const { tribe } = contracts;
