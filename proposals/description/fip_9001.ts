@@ -14,6 +14,13 @@ const fip_9001: ProposalDescription = {
       description: 'Create METAGOV_ADMIN_ROLE Role'
     },
     {
+      target: 'indexDelegator',
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: ['0x5b5763ebd14d5a5d64e0b90c5e541f0e220ced6d249a6188d33227d6d799380b'],
+      description: 'Set INDEX delegator Contract Admin Role to METAGOV_ADMIN_ROLE'
+    },
+    {
       target: 'core',
       values: '0',
       method: 'grantRole(bytes32,address)',
