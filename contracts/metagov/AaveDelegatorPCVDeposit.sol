@@ -3,19 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./SnapshotDelegatorPCVDeposit.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-interface IAaveIncentivesController {
-    function getRewardsBalance(
-        address[] calldata assets,
-        address user
-    ) external view returns (uint256);
-    function claimRewardsOnBehalf(
-        address[] calldata assets,
-        uint256 amount,
-        address user,
-        address to
-    ) external;
-}
+import "../external/aave/IAaveIncentivesController.sol";
 
 interface IStkAave is IERC20 {
     function stake(address onBehalfOf, uint256 amount) external;
