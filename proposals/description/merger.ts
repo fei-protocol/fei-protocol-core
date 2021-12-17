@@ -40,7 +40,16 @@ const merger: ProposalDescription = {
     }
   ],
   description: `
-  Code: 
+  This proposal represents the Tribe half of the FeiRari merger code. It executes the following steps:
+  1. Accept PegExchanger contract for swapping RGT to TRIBE at ~26.7 TRIBE per RGT exchange rate
+  2. Accept TRIBERagequit contract
+  3. Seed PegExchanger with 270m TRIBE
+  4. Grant FEI minting to TRIBERagequit
+  5. Send 315k FEI to GFX
+
+  Rari forum: https://forums.rari.capital/d/177-feirari-token-merge/56
+  Tribe forum: https://tribe.fei.money/t/fip-51-fei-rari-token-merge/3642/105
+  Code: https://github.com/fei-protocol/fei-protocol-core/tree/develop/contracts/merger
 `
 };
 
