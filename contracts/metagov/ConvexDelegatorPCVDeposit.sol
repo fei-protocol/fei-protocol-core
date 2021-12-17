@@ -38,7 +38,7 @@ interface ICvxCRVReward {
 /// to enter the CRV circuit described above (earn CRV/CVX/3crv). The CVX vote
 /// for gauge weights happen biweekly through Snapshot (vote.convexfinance.com).
 /// @author Fei Protocol
-contract DelegatorPCVDeposit is SnapshotDelegatorPCVDeposit {
+contract ConvexDelegatorPCVDeposit is SnapshotDelegatorPCVDeposit {
 
     /// @notice the CvxLocker contract to lock CVX tokens on Convex and earn
     /// rewards / be eligible for voting in the Convex governance.

@@ -33,7 +33,7 @@ interface IStkAave is IERC20 {
 /// to AAVE after the cooldown period of 10 days. After a cooldown is initiated,
 /// and the 2-day redeem period opens, anyone can unwrap the stkAAVE to AAVE.
 /// @author Fei Protocol
-contract DelegatorPCVDeposit is SnapshotDelegatorPCVDeposit {
+contract AaveDelegatorPCVDeposit is SnapshotDelegatorPCVDeposit {
 
     /// @notice the Aave Incentives Controller.
     IAaveIncentivesController public constant aaveIncentivesController = IAaveIncentivesController(address(0xd784927Ff2f95ba542BfC824c8a8a98F3495f6b5));
