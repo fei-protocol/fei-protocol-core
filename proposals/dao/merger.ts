@@ -11,9 +11,9 @@ import {
 } from '@custom-types/types';
 import { PegExchanger, Timelock, TRIBERagequit } from '@custom-types/contracts';
 import { getImpersonatedSigner } from '@test/helpers';
-import rariMergerProposal from '@proposals/description/mergerRari';
-import constructProposal from '@scripts/utils/constructProposal';
+import { execProposal } from '@scripts/utils/exec';
 import { createTree } from '@scripts/utils/merkle';
+import { forceEth } from '@test/integration/setup/utils';
 
 chai.use(CBN(ethers.BigNumber));
 
@@ -85,23 +85,19 @@ export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts
   const signer = await getImpersonatedSigner(guardian);
 
   await tribeRagequit.connect(signer).setExchangeRate(equity);
+
+  const rgt = contracts.rgt;
+  await forceEth(addresses.rariTimelock);
+
+  const rariSigner = await getImpersonatedSigner(addresses.rariTimelock);
+
+  await rgt.connect(rariSigner).delegate(addresses.rariTimelock);
+
+  await execProposal(addresses.rariTimelock, await contracts.rariTimelock.admin(), '0', '9');
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   logging && console.log('Teardown');
-  const proposal = await constructProposal(
-    rariMergerProposal,
-    contracts as unknown as MainnetContracts,
-    addresses,
-    logging
-  );
-
-  const timelock: Timelock = (await contracts.rariTimelock) as Timelock;
-
-  await proposal.setGovernor(await timelock.admin());
-
-  logging && console.log(`Simulating proposal...`);
-  await proposal.simulate();
 
   const tribeRagequit: TRIBERagequit = contracts.tribeRagequit as TRIBERagequit;
   const pegExchanger: PegExchanger = contracts.pegExchanger as PegExchanger;

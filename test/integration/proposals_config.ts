@@ -21,9 +21,15 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0,
     proposal: merger_proposal
   },
+  rariTimelock: {
+    deploy: true,
+    skipDAO: true,
+    totalValue: 0,
+    proposal: undefined
+  },
   fip_56: {
     deploy: false,
-    skipDAO: true,
+    skipDAO: false,
     totalValue: 0,
     proposal: fip_56_proposal
   }
