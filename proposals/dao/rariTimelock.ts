@@ -9,7 +9,6 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { getImpersonatedSigner } from '@test/helpers';
 
 chai.use(CBN(ethers.BigNumber));
 
@@ -24,8 +23,8 @@ DEPLOY ACTIONS:
 
 */
 
-const delegatorBeneficiary = '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775'; // TODO change to actual Rari addresses
-const subdelegatorBeneficiary = '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775'; // TODO change to actual Rari addresses
+const delegatorBeneficiary = '0xeAd815D7faD76bf587EBbC27CE3c0212c3B256Be';
+const subdelegatorBeneficiary = '0x4bFa2625D50b68D622D1e71c82ba6Db99BA0d17F';
 
 const FIVE_YEARS = '157680000';
 const TIMELOCK_START = '1603202400'; // Rari vesting start Tuesday, October 20, 2020 2:00:00 PM GMT
