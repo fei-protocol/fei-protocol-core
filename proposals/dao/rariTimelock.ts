@@ -41,9 +41,9 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   // 1. QuadraticTimelockedDelegator
   const rariQuadraticTimelock = await timelockFactory.deploy(
-    tribe,
     delegatorBeneficiary,
     FIVE_YEARS,
+    tribe,
     0, // no cliff
     ethers.constants.AddressZero, // no clawback admin
     TIMELOCK_START
