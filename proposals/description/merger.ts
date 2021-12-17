@@ -4,6 +4,13 @@ const merger: ProposalDescription = {
   title: 'FIP-51: FeiRari Merger',
   commands: [
     {
+      target: 'mergerGate',
+      values: '0',
+      method: 'floop()',
+      arguments: [],
+      description: 'Ensure Rari DAO Passed'
+    },
+    {
       target: 'core',
       values: '0',
       method: 'allocateTribe(address,uint256)',
