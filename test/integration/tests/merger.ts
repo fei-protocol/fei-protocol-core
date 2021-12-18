@@ -69,7 +69,15 @@ describe('e2e-merger', function () {
 
       const signer = await getImpersonatedSigner(guardian);
 
-      await time.increaseTo(await tribeRagequit.rageQuitStart());
+      const startTime = await tribeRagequit.rageQuitStart();
+
+      // Advance to vote start
+      if (toBN(await time.latest()).lt(toBN(startTime))) {
+        doLogging && console.log(`Advancing To: ${startTime}`);
+        await time.increaseTo(startTime);
+      } else {
+        doLogging && console.log('Ragequit live');
+      }
 
       // Ragequit 1 TRIBE
       const feiBalanceBefore = await fei.balanceOf(guardian);
@@ -81,7 +89,7 @@ describe('e2e-merger', function () {
       const tribeBalanceAfter = await tribe.balanceOf(guardian);
 
       expect(tribeBalanceBefore.sub(tribeBalanceAfter)).to.be.equal(ethers.constants.WeiPerEther);
-      expect(feiBalanceAfter.sub(feiBalanceBefore)).to.be.bignumber.equal(toBN('1234273768000000000'));
+      expect(feiBalanceAfter.sub(feiBalanceBefore)).to.be.bignumber.equal(toBN('1078903938000000000'));
 
       // Ragequit original TRIBE fails
       expect(tribeRagequit.connect(signer).ngmi(guardianBalance, guardianBalance, proofArray)).to.be.revertedWith(
