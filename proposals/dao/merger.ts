@@ -36,7 +36,7 @@ const merkleRoot = '0x8c1f858b87b4e23cb426875833bf8f1aaeb627fe2f47e62385d704c415
 
 const rageQuitStart = '1640221200'; // Dec 23, 1am UTC
 const rageQuitDeadline = '1640480400'; // Dec 26, 1am UTC
-const equity = '592326034963459120910718196'; // changed to intentionally brick validate. TODO use live value
+const equity = '792326034963459120910718196'; // TODO use live value
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
   const { tribe, rariTimelock } = addresses;
@@ -125,7 +125,9 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
   const tribeRagequit: TRIBERagequit = contracts.tribeRagequit as TRIBERagequit;
   const pegExchanger: PegExchanger = contracts.pegExchanger as PegExchanger;
-  const { tribe, fei } = contracts;
+  const { tribe, fei, rariTimelock } = contracts;
+
+  expect(await rariTimelock.admin()).to.be.equal(addresses.tribeRariDAO);
 
   expect(await tribeRagequit.bothPartiesAccepted()).to.be.true;
   expect(await pegExchanger.bothPartiesAccepted()).to.be.true;
