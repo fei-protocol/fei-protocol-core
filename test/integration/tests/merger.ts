@@ -6,10 +6,11 @@ import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { getImpersonatedSigner, resetFork, time } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { TRIBERagequit, PegExchanger } from '@custom-types/contracts';
-import { expectApprox } from '@test/helpers';
+import { TRIBERagequit, PegExchanger, PegExchangerDripper } from '@custom-types/contracts';
+import { expectApprox, expectRevert } from '@test/helpers';
 import { createTree } from '@scripts/utils/merkle';
 import { solidityKeccak256 } from 'ethers/lib/utils';
+import { forceEth } from '../setup/utils';
 
 const toBN = ethers.BigNumber.from;
 
@@ -96,6 +97,25 @@ describe('e2e-merger', function () {
   describe('PegExchanger', async () => {
     const RGT_WHALE = '0x20017a30D3156D4005bDA08C40Acda0A6aE209B1';
 
+    it('drips correctly before expiration', async function () {
+      const pegExchangerDripper: PegExchangerDripper = contracts.pegExchangerDripper as PegExchangerDripper;
+      const { tribe } = contracts;
+
+      // check drip eligibility and drip
+      expect(await pegExchangerDripper.isEligible()).to.be.true;
+
+      await pegExchangerDripper.drip();
+
+      // ensure tribe dripped
+      const tribeBalance = await tribe.balanceOf(await pegExchangerDripper.PEG_EXCHANGER());
+      expect(tribeBalance).to.be.bignumber.equal(await pegExchangerDripper.DRIP_AMOUNT());
+
+      // ensure ineligible with over threshold revert
+      expect(await pegExchangerDripper.isEligible()).to.be.false;
+
+      await expectRevert(pegExchangerDripper.drip(), 'over threshold');
+    });
+
     it('exchanges RGT for TRIBE', async function () {
       const pegExchanger: PegExchanger = contracts.pegExchanger as PegExchanger;
       const { rgt, tribe } = contracts;
@@ -112,6 +132,29 @@ describe('e2e-merger', function () {
 
       expect(rgtBalanceBefore.sub(rgtBalanceAfter)).to.be.bignumber.equal(ethers.constants.WeiPerEther);
       expectApprox(tribeBalanceAfter.sub(tribeBalanceBefore), ethers.constants.WeiPerEther.mul(27));
+    });
+
+    it('recovers tokens after expiry', async function () {
+      const pegExchanger: PegExchanger = contracts.pegExchanger as PegExchanger;
+      const pegExchangerDripper: PegExchangerDripper = contracts.pegExchangerDripper as PegExchangerDripper;
+      const { tribe } = contracts;
+
+      const signer = await getImpersonatedSigner(contractAddresses.feiDAOTimelock);
+      await forceEth(contractAddresses.feiDAOTimelock);
+
+      await pegExchanger.connect(signer).setExpirationTimestamp('1000000000000');
+
+      await time.increaseTo('1000000000000');
+
+      // ensure ineligible with expired revert
+      expect(await pegExchangerDripper.isEligible()).to.be.false;
+
+      await expectRevert(pegExchangerDripper.drip(), 'expired');
+
+      await pegExchangerDripper.recover();
+
+      const tribeBalance = await tribe.balanceOf(pegExchangerDripper.address);
+      expect(tribeBalance).to.be.bignumber.equal(toBN('0'));
     });
   });
 });

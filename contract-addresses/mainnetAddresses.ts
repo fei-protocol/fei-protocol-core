@@ -1,4 +1,12 @@
 const MainnetAddresses = {
+  pegExchangerDripper: {
+    artifactName: 'PegExchangerDripper',
+    address: '0xC416EEe663ECa29cEB726241caDFFe6a77D61E2D'
+  },
+  mergerGate: {
+    artifactName: 'MergerGate',
+    address: '0xC2d452A4Feb76B41659cd036D5746149B98453D6'
+  },
   daiPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0x3e0f66c5687FF917809A3F7fA7096e1Bc409fB03'
@@ -20,7 +28,7 @@ const MainnetAddresses = {
   pegExchanger: { artifactName: 'PegExchanger', address: '0xc09BB5ECf865e6f69Fe62A43c27f036A426909f7' },
   rariTimelock: { artifactName: 'Timelock', address: '0x8ace03Fc45139fDDba944c6A4082b604041d19FC' },
   gfxAddress: { artifactName: 'unknown', address: '0xA6E8772AF29B29B9202A073F8E36F447689BEEF6' },
-  rgt: { artifactName: 'IERC20', address: '0xD291E7a03283640FDc51b121aC401383A46cC623' },
+  rgt: { artifactName: 'ERC20VotesComp', address: '0xD291E7a03283640FDc51b121aC401383A46cC623' },
   alusd: { artifactName: 'IERC20', address: '0xBC6DA0FE9aD5f3b0d58160288917AA56653660E9' },
   pcvGuardian: {
     artifactName: 'PCVGuardian',
