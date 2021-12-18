@@ -134,29 +134,6 @@ describe('e2e-merger', function () {
       expectApprox(tribeBalanceAfter.sub(tribeBalanceBefore), ethers.constants.WeiPerEther.mul(27));
     });
 
-    it('rari timelocks are able to exchange', async function () {
-      const { rgt, tribe } = contracts;
-
-      // Transfer dummy RGT to the timelocks to test methods
-      const signer = await getImpersonatedSigner(contractAddresses.rariTimelock);
-      await rgt.connect(signer).transfer(contractAddresses.exchangerTimelock1, ethers.constants.WeiPerEther);
-      await rgt
-        .connect(signer)
-        .transfer(contractAddresses.exchangerTimelock2, ethers.constants.WeiPerEther.mul(toBN(2)));
-
-      // Send RGT to TRIBE in Timelock using exchangers
-      await contracts.exchangerTimelock1.exchangeToTimelock();
-      await contracts.exchangerTimelock2.exchangeToTimelock();
-
-      // Check TRIBE balances against dummy inputs x exchange rate of ~26.7
-      expect(await tribe.balanceOf(contractAddresses.rariQuadraticTimelock)).to.be.bignumber.equal(
-        toBN('26705673430000000000')
-      );
-      expect(await tribe.balanceOf(contractAddresses.rariQuadraticSubdelegatorTimelock)).to.be.bignumber.equal(
-        toBN('53411346860000000000')
-      );
-    });
-
     it('recovers tokens after expiry', async function () {
       const pegExchanger: PegExchanger = contracts.pegExchanger as PegExchanger;
       const pegExchangerDripper: PegExchangerDripper = contracts.pegExchangerDripper as PegExchangerDripper;

@@ -135,8 +135,4 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
   logging && console.log('No Teardown');
 };
 
-export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
-  // Excpect quadratic timelocks initialized correctly
-  expect(await contracts.rariQuadraticTimelock.startTime()).to.be.bignumber.equal(toBN(TIMELOCK_START));
-  expect(await contracts.rariQuadraticSubdelegatorTimelock.startTime()).to.be.bignumber.equal(toBN(TIMELOCK_START));
-};
+export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {};
