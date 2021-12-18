@@ -14,8 +14,15 @@ const merger: ProposalDescription = {
       target: 'core',
       values: '0',
       method: 'allocateTribe(address,uint256)',
-      arguments: ['{pegExchangerDripper}', '270000000000000000000000000'],
-      description: 'Seed Peg Exchanger Dripper with 270m TRIBE'
+      arguments: ['{pegExchangerDripper}', '170000000000000000000000000'],
+      description: 'Seed Peg Exchanger Dripper with 170m TRIBE'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'allocateTribe(address,uint256)',
+      arguments: ['{pegExchanger}', '100000000000000000000000000'],
+      description: 'Seed Peg Exchanger with 100m TRIBE'
     },
     {
       target: 'core',
@@ -51,9 +58,10 @@ const merger: ProposalDescription = {
   0. Check Rari vote executed first
   1. Accept PegExchanger contract for swapping RGT to TRIBE at ~26.7 TRIBE per RGT exchange rate
   2. Accept TRIBERagequit contract
-  3. Seed PegExchangerDripper with 270m TRIBE
-  4. Grant FEI minting to TRIBERagequit
-  5. Send 315k FEI to GFX
+  3. Seed PegExchangerDripper with 170m TRIBE
+  4. Seed PegExchanger with 100m TRIBE
+  5. Grant FEI minting to TRIBERagequit
+  6. Send 315k FEI to GFX
 
   Rari forum: https://forums.rari.capital/d/177-feirari-token-merge/56
   Tribe forum: https://tribe.fei.money/t/fip-51-fei-rari-token-merge/3642/105
