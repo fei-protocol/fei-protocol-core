@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.0;
+
+import "./MockERC20.sol";
+import "hardhat/console.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
+interface IIdleToken {
+    function token() external view returns (address underlying);
+
+    function mintIdleToken(
+        uint256 _amount,
+        bool _skipWholeRebalance,
+        address _referral
+    ) external returns (uint256 mintedTokens);
+
+    function redeemIdleToken(uint256 _amount) external returns (uint256 redeemedTokens);
+
+    function tokenPriceWithFee(address user) external view returns (uint256 priceWFee);
+}
+
+contract MockIdleToken is IIdleToken, MockERC20 {
+    uint256 private constant EXCHANGE_RATE_SCALE = 1e18;
+
+    IERC20 private _token;
+
+    uint256 public tokenPrice = 110 * 1e16;
+
+    constructor(IERC20 token_) {
+        _token = token_;
+    }
+
+    function setTokenPrice(uint256 price) external {
+        tokenPrice = price;
+    }
+
+    function mintIdleToken(
+        uint256 amount,
+        bool,
+        address
+    ) external override returns (uint256 mintedTokens) {
+        _token.transferFrom(msg.sender, address(this), amount);
+        mintedTokens = (amount * EXCHANGE_RATE_SCALE) / tokenPrice;
+        _mint(msg.sender, mintedTokens);
+    }
+
+    function redeemIdleToken(uint256 tokens) external override returns (uint256 redeemAmount) {
+        require(tokenPrice > 0, "_token price is zero");
+        redeemAmount = (tokens * tokenPrice) / EXCHANGE_RATE_SCALE;
+        _burn(msg.sender, tokens);
+        _token.transfer(msg.sender, redeemAmount);
+    }
+
+    function token() external view override returns (address) {
+        return address(_token);
+    }
+
+    function tokenPriceWithFee(address user) external view override returns (uint256) {
+        return tokenPrice;
+    }
+}
