@@ -98,8 +98,15 @@ describe('e2e-merger', function () {
     const RGT_WHALE = '0x20017a30D3156D4005bDA08C40Acda0A6aE209B1';
 
     it('drips correctly before expiration', async function () {
+      const pegExchanger: PegExchanger = contracts.pegExchanger as PegExchanger;
       const pegExchangerDripper: PegExchangerDripper = contracts.pegExchangerDripper as PegExchangerDripper;
+
       const { tribe } = contracts;
+
+      const signer = await getImpersonatedSigner(pegExchanger.address);
+      await forceEth(pegExchanger.address);
+
+      await tribe.connect(signer).transfer(RGT_WHALE, await tribe.balanceOf(pegExchanger.address));
 
       // check drip eligibility and drip
       expect(await pegExchangerDripper.isEligible()).to.be.true;
