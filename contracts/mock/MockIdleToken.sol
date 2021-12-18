@@ -24,7 +24,8 @@ contract MockIdleToken is IIdleToken, MockERC20 {
 
     IERC20 private _token;
 
-    uint256 public tokenPrice = 110 * 1e16;
+    /// @notice exchange rate
+    uint256 public tokenPrice = 101 * 1e16; // 1.01 : 1
 
     constructor(IERC20 token_) {
         _token = token_;
@@ -39,13 +40,13 @@ contract MockIdleToken is IIdleToken, MockERC20 {
         bool,
         address
     ) external override returns (uint256 mintedTokens) {
+        require(tokenPrice > 0, "token price is zero");
         _token.transferFrom(msg.sender, address(this), amount);
         mintedTokens = (amount * EXCHANGE_RATE_SCALE) / tokenPrice;
         _mint(msg.sender, mintedTokens);
     }
 
     function redeemIdleToken(uint256 tokens) external override returns (uint256 redeemAmount) {
-        require(tokenPrice > 0, "_token price is zero");
         redeemAmount = (tokens * tokenPrice) / EXCHANGE_RATE_SCALE;
         _burn(msg.sender, tokens);
         _token.transfer(msg.sender, redeemAmount);

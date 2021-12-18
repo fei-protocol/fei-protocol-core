@@ -47,7 +47,7 @@ contract IdlePCVDeposit is PCVDeposit {
         IERC20 _token,
         address _referral
     ) CoreRef(_core) {
-        require(_idleToken.token() == address(_token), "IdlePCVDeposit: Not a same token");
+        require(_idleToken.token() == address(_token), "IdlePCVDeposit: Not the same token");
 
         token = _token;
         idleToken = _idleToken;
@@ -72,7 +72,12 @@ contract IdlePCVDeposit is PCVDeposit {
         require(to != address(0), "IdlePCVDeposit: zero address");
         uint256 priceWithFee = idleToken.tokenPriceWithFee(address(this));
 
+        // Because of rounding, the actual amount of underlying received may differ.
+        // So query the actual amount received.
+        uint256 balanceBefore = token.balanceOf(address(this));
         idleToken.redeemIdleToken((amountUnderlying * EXCHANGE_RATE_SCALE) / priceWithFee);
+
+        amountUnderlying = token.balanceOf(address(this)) - balanceBefore;
 
         SafeERC20.safeTransfer(token, to, amountUnderlying);
         emit Withdrawal(msg.sender, to, amountUnderlying);
