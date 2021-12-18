@@ -101,7 +101,9 @@ export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts
 
   const signer = await getImpersonatedSigner(guardian);
 
-  await tribeRagequit.connect(signer).setExchangeRate(equity);
+  if ((await tribeRagequit.intrinsicValueExchangeRateBase()).toString() === '0') {
+    await tribeRagequit.connect(signer).setExchangeRate(equity);
+  }
 
   const rgt = contracts.rgt;
   await forceEth(addresses.rariTimelock);
