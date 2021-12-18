@@ -36,7 +36,7 @@ const merkleRoot = '0x8c1f858b87b4e23cb426875833bf8f1aaeb627fe2f47e62385d704c415
 
 const rageQuitStart = '1640221200'; // Dec 23, 1am UTC
 const rageQuitDeadline = '1640480400'; // Dec 26, 1am UTC
-const equity = '792326034963459120910718196'; // TODO use live value
+const equity = '692588388367337720822976255';
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
   const { tribe, rariTimelock } = addresses;
@@ -132,7 +132,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await tribeRagequit.bothPartiesAccepted()).to.be.true;
   expect(await pegExchanger.bothPartiesAccepted()).to.be.true;
 
-  expect((await tribeRagequit.intrinsicValueExchangeRateBase()).toString()).to.be.equal('1234273768');
+  expect((await tribeRagequit.intrinsicValueExchangeRateBase()).toString()).to.be.equal('1078903938');
   expect((await tribe.balanceOf(addresses.pegExchangerDripper)).toString()).to.be.equal('170000000000000000000000000');
   expect((await tribe.balanceOf(addresses.pegExchanger)).toString()).to.be.equal('100000000000000000000000000');
 

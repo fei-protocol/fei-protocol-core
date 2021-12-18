@@ -65,7 +65,7 @@ const merger: ProposalDescription = {
 
   Ragequit details:
   - live until unix epoch 1640480400: Dec 26, 1am UTC
-  - Intrinsic Value:  
+  - Intrinsic Value: $1.078903938
 
   Rari forum: https://forums.rari.capital/d/177-feirari-token-merge/56
   Tribe forum: https://tribe.fei.money/t/fip-51-fei-rari-token-merge/3642/105
