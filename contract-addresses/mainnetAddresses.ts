@@ -287,6 +287,10 @@ const MainnetAddresses = {
     artifactName: 'ILiquidityBootstrappingPoolFactory',
     address: '0x751A0bC0e3f75b38e01Cf25bFCE7fF36DE1C87DE'
   },
+  balancerLBPoolFactoryNoFee: {
+    artifactName: 'ILiquidityBootstrappingPoolFactory',
+    address: '0x0F3e0c4218b7b0108a3643cFe9D3ec0d4F57c54e'
+  },
   balancerVault: { artifactName: 'IVault', address: '0xBA12222222228d8Ba445958a75a0704d566BF2C8' },
   bal: { artifactName: 'IERC20', address: '0xba100000625a3754423978a60c9317c58a424e3D' },
   bentoBox: { artifactName: 'IMasterContractManager', address: '0xF5BCE5077908a1b7370B9ae04AdC565EBd643966' },

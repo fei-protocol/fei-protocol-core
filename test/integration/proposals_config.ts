@@ -5,7 +5,7 @@ import { ProposalsConfigMap } from '@custom-types/types';
 import fip_56_proposal from '@proposals/description/fip_56';
 import fip_54_proposal from '@proposals/description/fip_54';
 import merger_proposal from '@proposals/description/merger';
-import fip_53_proposal from '@proposals/description/fip_53';
+import buyback_newpool from '@proposals/description/buyback_newpool';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -16,11 +16,11 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  fip_53: {
-    deploy: false,
+  buyback_newpool: {
+    deploy: true,
     skipDAO: false,
     totalValue: 0,
-    proposal: fip_53_proposal
+    proposal: buyback_newpool
   },
   merger: {
     deploy: false,
