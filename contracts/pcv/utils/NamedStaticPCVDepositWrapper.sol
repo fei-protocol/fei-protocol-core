@@ -88,9 +88,11 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
         uint256 oldBalance = balance;
         uint256 oldFEIBalance = feiReportBalance;
+        uint256 newBalance = balance - updatePCVDeposit.usdAmount + usdAmount;
+        uint256 newFeiReportBalance = feiReportBalance - updatePCVDeposit.feiAmount + feiAmount;
 
-        balance = balance - updatePCVDeposit.usdAmount + usdAmount;
-        feiReportBalance = feiReportBalance - updatePCVDeposit.feiAmount + feiAmount;
+        balance = newBalance;
+        feiReportBalance = newFeiReportBalance;
 
         updatePCVDeposit.usdAmount = usdAmount;
         updatePCVDeposit.feiAmount = feiAmount;
@@ -99,7 +101,7 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         updatePCVDeposit.underlyingToken = underlyingToken;
 
         emit DepositChanged(index, depositName);
-        emit BalanceUpdate(oldBalance, balance, oldFEIBalance, feiReportBalance);
+        emit BalanceUpdate(oldBalance, newBalance, oldFEIBalance, newFeiReportBalance);
     }
 
     /// @notice helper method to delete a PCV deposit
