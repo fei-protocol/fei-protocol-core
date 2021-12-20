@@ -1313,6 +1313,11 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'StakingTokenWrapper',
     address: '0x9B9ad20Cd99Cac3B536b94497A18346d66db0379',
     category: AddressCategory.TBD
+  },
+  stakingTokenWrapperPoolTogetherLaaS: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0x6b018170311F3DA23c3fA62AFe1b2D0638522CCD',
+    category: AddressCategory.TBD
   }
 };
 
