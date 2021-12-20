@@ -10,6 +10,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
 
   let underlyingTokenAmount: string;
   let governorAddress: string;
+  let guardianAddress: string;
   let newDepositName: string;
   let balance: string;
   let feiBalance: string;
@@ -20,7 +21,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
     const addresses = await getAddresses();
 
     // add any addresses you want to impersonate here
-    const impersonatedAddresses = [addresses.governorAddress];
+    const impersonatedAddresses = [addresses.governorAddress, addresses.guardianAddress];
 
     for (const address of impersonatedAddresses) {
       impersonatedSigners[address] = await getImpersonatedSigner(address);
@@ -28,7 +29,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
   });
 
   beforeEach(async function () {
-    ({ governorAddress } = await getAddresses());
+    ({ governorAddress, guardianAddress } = await getAddresses());
 
     newDepositName = 'Visor Finance Deposit';
     balance = '2000';
@@ -298,6 +299,44 @@ describe('NamedStaticPCVDepositWrapper', function () {
 
       const endingBalance = await deposit.balance();
       const endingFeiBalance = await deposit.feiReportBalance();
+      const endingNumDeposits = await deposit.numDeposits();
+
+      expect(endingBalance).to.be.equal(0);
+      expect(endingFeiBalance).to.be.equal(0);
+      expect(endingNumDeposits).to.be.equal(0);
+    });
+
+    it('successfully removes existing deposit when guardian calls removeDeposit', async function () {
+      const startingNumDeposits = await deposit.numDeposits();
+      for (let i = 0; i < parseInt(startingNumDeposits.toString()); i++) {
+        expectEvent(
+          await deposit.connect(impersonatedSigners[guardianAddress]).removeDeposit(0),
+          deposit,
+          'DepositRemoved',
+          [0]
+        );
+      }
+
+      const [endingBalance, endingFeiBalance] = await deposit.resistantBalanceAndFei();
+      const endingNumDeposits = await deposit.numDeposits();
+
+      expect(endingBalance).to.be.equal(0);
+      expect(endingFeiBalance).to.be.equal(0);
+      expect(endingNumDeposits).to.be.equal(0);
+    });
+
+    it('successfully removes existing deposit when governor calls removeDeposit', async function () {
+      const startingNumDeposits = await deposit.numDeposits();
+      for (let i = 0; i < parseInt(startingNumDeposits.toString()); i++) {
+        expectEvent(
+          await deposit.connect(impersonatedSigners[governorAddress]).removeDeposit(0),
+          deposit,
+          'DepositRemoved',
+          [0]
+        );
+      }
+
+      const [endingBalance, endingFeiBalance] = await deposit.resistantBalanceAndFei();
       const endingNumDeposits = await deposit.numDeposits();
 
       expect(endingBalance).to.be.equal(0);
