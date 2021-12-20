@@ -60,6 +60,7 @@ describe('e2e-bondingcurve', function () {
       const feiTokensExchange = toBN(40000000000000);
       await reserveStabilizer.updateOracle();
       const expectedAmountOut = await reserveStabilizer.getAmountOut(feiTokensExchange);
+
       await reserveStabilizer.exchangeFei(feiTokensExchange);
 
       const contractEthBalanceAfter = toBN(await ethers.provider.getBalance(reserveStabilizer.address));
@@ -96,7 +97,7 @@ describe('e2e-bondingcurve', function () {
         expect(feiBalanceAfter.eq(expectedFinalBalance)).to.be.true;
       });
 
-      it.only('should transfer allocation from bonding curve to compound and aave', async function () {
+      it('should transfer allocation from bonding curve to compound and aave', async function () {
         const { bondingCurve, aaveEthPCVDeposit, compoundEthPCVDeposit } = contracts;
 
         await compoundEthPCVDeposit.deposit();
@@ -138,96 +139,6 @@ describe('e2e-bondingcurve', function () {
         const feiIncentive = await bondingCurve.incentiveAmount();
         const callerFeiBalanceAfter = await fei.balanceOf(deployAddress);
         expect(callerFeiBalanceAfter.eq(callerFeiBalanceBefore.add(feiIncentive))).to.be.true;
-      });
-    });
-
-    describe('DPI', async function () {
-      beforeEach(async function () {
-        // Acquire DPI
-        await hre.network.provider.request({
-          method: 'hardhat_impersonateAccount',
-          params: [contractAddresses.indexCoopFusePoolDpi]
-        });
-
-        const dpiSeedAmount = tenPow18.mul(toBN(10));
-
-        await forceEth(contractAddresses.indexCoopFusePoolDpi);
-
-        await hre.network.provider.request({
-          method: 'hardhat_impersonateAccount',
-          params: [contractAddresses.indexCoopFusePoolDpi]
-        });
-
-        const indexCoopFusePoolDpiSigner = await ethers.getSigner(contractAddresses.indexCoopFusePoolDpi);
-
-        await contracts.dpi.connect(indexCoopFusePoolDpiSigner).transfer(deployAddress, dpiSeedAmount.mul(toBN(2)));
-
-        await hre.network.provider.request({
-          method: 'hardhat_stopImpersonatingAccount',
-          params: [contractAddresses.indexCoopFusePoolDpi]
-        });
-
-        // Seed bonding curve with dpi
-        const bondingCurve = contracts.dpiBondingCurve;
-        // increase mint cap
-        await bondingCurve.setMintCap(tenPow18.mul(tenPow18));
-
-        await contracts.dpi.approve(bondingCurve.address, dpiSeedAmount.mul(toBN(2)));
-        await bondingCurve.purchase(deployAddress, dpiSeedAmount);
-      });
-
-      it('should allow purchase of Fei through bonding curve', async function () {
-        const bondingCurve = contracts.dpiBondingCurve;
-        const fei = contracts.fei;
-        const feiBalanceBefore = await fei.balanceOf(deployAddress);
-
-        const dpiAmount = tenPow18; // 1 DPI
-        const oraclePrice = toBN((await bondingCurve.readOracle())[0]);
-        const currentPrice = toBN((await bondingCurve.getCurrentPrice())[0]);
-
-        // expected = amountIn * oracle * price (Note: there is an edge case when crossing scale where this is not true)
-        const expected = dpiAmount.mul(oraclePrice).mul(currentPrice).div(tenPow18).div(tenPow18);
-
-        await bondingCurve.purchase(deployAddress, dpiAmount);
-
-        const feiBalanceAfter = await fei.balanceOf(deployAddress);
-        const expectedFinalBalance = feiBalanceBefore.add(expected);
-        expect(feiBalanceAfter.eq(expectedFinalBalance)).to.be.true;
-      });
-
-      it('should transfer allocation from dpi bonding curve to the uniswap deposit and Fuse', async function () {
-        const bondingCurve = contracts.dpiBondingCurve;
-        const uniswapPCVDeposit: UniswapPCVDeposit = contracts.dpiUniswapPCVDeposit as UniswapPCVDeposit;
-        const fusePCVDeposit = contracts.indexCoopFusePoolDpiPCVDeposit;
-
-        await uniswapPCVDeposit.setMaxBasisPointsFromPegLP(10_000);
-
-        const pcvAllocations = await bondingCurve.getAllocation();
-        expect(pcvAllocations[0].length).to.be.equal(2);
-
-        const pcvDepositBefore = await uniswapPCVDeposit.balance();
-        const fuseBalanceBefore = await fusePCVDeposit.balance();
-        const allocatedDpi = await bondingCurve.balance();
-
-        doLogging && console.log(`DPI to Allocate: ${(Number(allocatedDpi) / 1e18).toFixed(0)}`);
-        doLogging &&
-          console.log(`DPI Uniswap PCV Deposit Balance Before: ${(Number(pcvDepositBefore) / 1e18).toFixed(0)}`);
-        doLogging && console.log(`Fuse Balance Before ${(Number(fuseBalanceBefore) / 1e18).toFixed(0)}`);
-        doLogging && console.log(`DPI Bonding curve: ${bondingCurve.address}`);
-        await bondingCurve.allocate();
-
-        const curveBalanceAfter = await bondingCurve.balance();
-        doLogging && console.log(`DPI Bonding Curve Balance After: ${(Number(curveBalanceAfter) / 1e18).toFixed(0)}`);
-        await expectApprox(curveBalanceAfter, toBN(0), '100');
-
-        const pcvDepositAfter = await uniswapPCVDeposit.balance();
-        doLogging &&
-          console.log(`DPI Uniswap PCV Deposit Balance After: ${(Number(pcvDepositAfter) / 1e18).toFixed(0)}`);
-        await expectApprox(pcvDepositAfter.sub(pcvDepositBefore), allocatedDpi.mul(toBN(9)).div(toBN(10)), '10000');
-
-        const fuseBalanceAfter = await fusePCVDeposit.balance();
-        doLogging && console.log(`Fuse Balance After: ${(Number(fuseBalanceAfter) / 1e18).toFixed(0)}`);
-        await expectApprox(fuseBalanceAfter.sub(fuseBalanceBefore), allocatedDpi.div(toBN(10)), '10000');
       });
     });
 
@@ -299,88 +210,6 @@ describe('e2e-bondingcurve', function () {
 
         const pcvDepositAfter = await compoundPCVDeposit.balance();
         await expectApprox(pcvDepositAfter.sub(pcvDepositBefore), allocatedDai, '100');
-      });
-    });
-
-    describe('RAI', async function () {
-      beforeEach(async function () {
-        // Acquire RAI
-        await hre.network.provider.request({
-          method: 'hardhat_impersonateAccount',
-          params: [contractAddresses.reflexerStableAssetFusePoolRai]
-        });
-
-        const reflexerStableAssetFusePoolRaiSigner = await ethers.getSigner(
-          contractAddresses.reflexerStableAssetFusePoolRai
-        );
-
-        const raiSeedAmount = tenPow18.mul(toBN(10000));
-
-        await forceEth(contractAddresses.reflexerStableAssetFusePoolRai);
-        await contracts.rai
-          .connect(reflexerStableAssetFusePoolRaiSigner)
-          .transfer(deployAddress, raiSeedAmount.mul(toBN(2)));
-
-        await hre.network.provider.request({
-          method: 'hardhat_stopImpersonatingAccount',
-          params: [contractAddresses.reflexerStableAssetFusePoolRai]
-        });
-
-        // Seed bonding curve with rai
-        const bondingCurve = contracts.raiBondingCurve;
-
-        // increase mint cap
-        await bondingCurve.setMintCap(tenPow18.mul(tenPow18));
-
-        await contracts.rai.approve(bondingCurve.address, raiSeedAmount.mul(toBN(2)));
-        await bondingCurve.purchase(deployAddress, raiSeedAmount);
-      });
-
-      it('should allow purchase of Fei through bonding curve', async function () {
-        const bondingCurve = contracts.raiBondingCurve;
-        const fei = contracts.fei;
-        const feiBalanceBefore = await fei.balanceOf(deployAddress);
-
-        const raiAmount = tenPow18; // 1 RAI
-        const oraclePrice = toBN((await bondingCurve.readOracle())[0]);
-        const currentPrice = toBN((await bondingCurve.getCurrentPrice())[0]);
-
-        // expected = amountIn * oracle * price (Note: there is an edge case when crossing scale where this is not true)
-        const expected = raiAmount.mul(oraclePrice).mul(currentPrice).div(tenPow18).div(tenPow18);
-
-        await bondingCurve.purchase(deployAddress, raiAmount);
-
-        const feiBalanceAfter = await fei.balanceOf(deployAddress);
-        const expectedFinalBalance = feiBalanceBefore.add(expected);
-        expect(feiBalanceAfter.eq(expectedFinalBalance)).to.be.true;
-      });
-
-      it('should transfer allocation from bonding curve to Fuse', async function () {
-        const bondingCurve = contracts.raiBondingCurve;
-        const fusePCVDeposit = contracts.reflexerStableAssetFusePoolRaiPCVDeposit;
-        const aaveRaiPCVDeposit = contracts.aaveRaiPCVDeposit;
-
-        await fusePCVDeposit.deposit();
-        const fuseBalanceBefore = await fusePCVDeposit.balance();
-
-        const aaveBalanceBefore = await aaveRaiPCVDeposit.balance();
-
-        const pcvAllocations = await bondingCurve.getAllocation();
-        expect(pcvAllocations[0].length).to.be.equal(2);
-
-        const allocatedRai = await bondingCurve.balance();
-        await bondingCurve.allocate();
-
-        // All RAI were allocated
-        const curveBalanceAfter = await bondingCurve.balance();
-        expect(curveBalanceAfter.eq(toBN(0))).to.be.true;
-
-        const fuseBalanceAfter = await fusePCVDeposit.balance();
-        const aaveBalanceAfter = await aaveRaiPCVDeposit.balance();
-
-        // Half allocated to fuse, half to aave
-        await expectApprox(fuseBalanceAfter.sub(fuseBalanceBefore), allocatedRai.div(toBN(2)), '100');
-        await expectApprox(aaveBalanceAfter.sub(aaveBalanceBefore), allocatedRai.div(toBN(2)), '100');
       });
     });
   });

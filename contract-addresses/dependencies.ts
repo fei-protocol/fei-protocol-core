@@ -1,41 +1,5 @@
 import { DependencyMap } from '@custom-types/types';
 
-const dependencies: DependencyMap = {
-  feiLusdLBPSwapper: {
-    fips: {
-      fip_41: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  aaveEthPCVDeposit: {
-    fips: {
-      fip_41: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  feiDAOTimelock: {
-    fips: {
-      fip_41: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  saddleD4Pool: {
-    fips: {
-      fip_41: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  },
-  lusd: {
-    fips: {
-      fip_41: true
-    },
-    contractDependencies: [],
-    externalDependencies: []
-  }
-};
+const dependencies: DependencyMap = {};
 
 export default dependencies;

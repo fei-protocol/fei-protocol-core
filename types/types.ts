@@ -30,6 +30,7 @@ import {
   PCVDripController,
   PCVEquityMinter,
   RatioPCVController,
+  RestrictedPermissions,
   RewardsDistributorAdmin,
   StakingTokenWrapper,
   StaticPCVDepositWrapper,
@@ -210,6 +211,7 @@ export interface MainnetContracts {
   feiDAO: FeiDAO;
   autoRewardsDistributor: AutoRewardsDistributor;
   rewardsDistributorAdmin: RewardsDistributorAdmin;
+  restrictedPermissions: RestrictedPermissions;
 }
 
 export interface MainnetContractAddresses {
@@ -243,6 +245,7 @@ export interface MainnetContractAddresses {
   tribalChiefOptimisticMultisig: string;
   stakingTokenWrapperRari: string;
   rariRewardsDistributorDelegator: string;
+  restrictedPermissions: string;
 }
 
 export type ContractAccessRights = {

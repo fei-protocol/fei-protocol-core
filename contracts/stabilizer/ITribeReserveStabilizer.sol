@@ -15,13 +15,13 @@ interface ITribeReserveStabilizer {
 
     // ----------- Governor only state changing api -----------
 
-    function setMinter(address newMinter) external;
-
-    function mint(address to, uint256 amount) external;
-
     function setCollateralizationOracle(ICollateralizationOracle newCollateralizationOracle) external;
 
     function setCollateralizationThreshold(uint256 newCollateralizationThresholdBasisPoints) external;
+
+    function startOracleDelayCountdown() external;
+
+    function resetOracleDelayCountdown() external;
 
     // ----------- Getters -----------
 

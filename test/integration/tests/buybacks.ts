@@ -49,7 +49,7 @@ describe('e2e-buybacks', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe('PCV Equity Minter + LBP', async function () {
+  describe.skip('PCV Equity Minter + LBP', async function () {
     it('mints appropriate amount and swaps', async function () {
       const {
         pcvEquityMinter,
@@ -174,7 +174,8 @@ describe('e2e-buybacks', function () {
 
   describe('Collateralization Oracle Keeper', async function () {
     it('can only call when deviation or time met', async function () {
-      const { staticPcvDepositWrapper, collateralizationOracleWrapper, collateralizationOracleKeeper, fei } = contracts;
+      const { staticPcvDepositWrapper2, collateralizationOracleWrapper, collateralizationOracleKeeper, fei } =
+        contracts;
 
       const beforeBalance = await fei.balanceOf(deployAddress);
 
@@ -197,7 +198,7 @@ describe('e2e-buybacks', function () {
 
       // Increase PCV balance to exceed deviation threshold
       const pcvStats = await collateralizationOracleWrapper.pcvStats();
-      await staticPcvDepositWrapper.setBalance(pcvStats[0]);
+      await staticPcvDepositWrapper2.setBalance(pcvStats[0]);
 
       expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.true;
       expect(await collateralizationOracleWrapper.isOutdated()).to.be.false;
