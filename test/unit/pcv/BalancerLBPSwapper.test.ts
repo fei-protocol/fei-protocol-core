@@ -164,7 +164,7 @@ describe('BalancerLBPSwapper', function () {
       expect(tokens[1]).to.be.equal(tribe.address);
 
       expect(amounts[0]).to.be.equal(toBN(100000));
-      expect(amounts[1]).to.be.bignumber.equal(toBN(5555));
+      expect(amounts[1]).to.be.bignumber.equal(toBN(2631));
     });
   });
 

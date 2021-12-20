@@ -38,9 +38,9 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     /// @notice the Balancer V2 Pool id of `pool`
     bytes32 public pid;
 
-    // Balancer constants for the 90:10 -> 10:90 auction
-    uint256 private constant TEN_PERCENT = 0.1e18;
-    uint256 private constant NINETY_PERCENT = 0.9e18;
+    // Balancer constants for the 95:5 -> 5:95 auction
+    uint256 private constant FIVE_PERCENT = 0.05e18;
+    uint256 private constant NINETYFIVE_PERCENT = 0.95e18;
 
     // Balancer constants to memoize the target assets and weights from pool
     IAsset[] private assets;
@@ -154,17 +154,17 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         endWeights = new uint[](2);
 
         if (tokenSpentAtIndex0) {
-            initialWeights[0] = NINETY_PERCENT;
-            initialWeights[1] = TEN_PERCENT;
+            initialWeights[0] = NINETYFIVE_PERCENT;
+            initialWeights[1] = FIVE_PERCENT;
 
-            endWeights[0] = TEN_PERCENT;
-            endWeights[1] = NINETY_PERCENT;
+            endWeights[0] = FIVE_PERCENT;
+            endWeights[1] = NINETYFIVE_PERCENT;
         }  else {
-            initialWeights[0] = TEN_PERCENT;
-            initialWeights[1] = NINETY_PERCENT;
+            initialWeights[0] = FIVE_PERCENT;
+            initialWeights[1] = NINETYFIVE_PERCENT;
 
-            endWeights[0] = NINETY_PERCENT;
-            endWeights[1] = TEN_PERCENT;
+            endWeights[0] = NINETYFIVE_PERCENT;
+            endWeights[1] = FIVE_PERCENT;
         }
 
         // Approve pool tokens for vault
@@ -375,7 +375,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     function _getTokensIn(uint256 spentTokenBalance) internal view returns(uint256[] memory amountsIn) {
         amountsIn = new uint256[](2);
 
-        uint256 receivedTokenBalance = readOracle().mul(spentTokenBalance).mul(TEN_PERCENT).div(NINETY_PERCENT).asUint256();
+        uint256 receivedTokenBalance = readOracle().mul(spentTokenBalance).mul(FIVE_PERCENT).div(NINETYFIVE_PERCENT).asUint256();
 
         if (address(assets[0]) == tokenSpent) {
             amountsIn[0] = spentTokenBalance;
