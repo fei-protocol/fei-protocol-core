@@ -33,6 +33,10 @@ DEPLOY ACTIONS:
 
 DAO ACTIONS:
 1. Set PCVEquityMinter target to new buyback swapper
+2. Exit buyback liquidity from old swapper to new swapper
+3. Mint 4m FEI for missed buybacks and this week's buybacks
+4. Unpause the PCV Equity Minter
+5. Re-start the buybacks
 */
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
