@@ -98,8 +98,22 @@ export type MainnetAddresses = {
 export type AddressConfig = {
   artifactName: string;
   address: string;
-  type: string; // TODO: enum? [core, peg, pcv, collateralization, oracle, keeper, externalERC20, external, tbd, rewards, deprecated ]
+  type: AddressEnum;
 };
+
+export enum AddressEnum {
+  Core_ = 'Core',
+  Peg_ = 'Peg',
+  PCV_ = 'PCV',
+  Collateralization_ = 'Collateralization',
+  Oracle_ = 'Oracle',
+  Keeper_ = 'Keeper',
+  Rewards_ = 'Rewards',
+  FeiRari_ = 'FeiRari',
+  External_ = 'External',
+  Deprecated_ = 'Deprecated',
+  TBD_ = 'TBD'
+}
 
 export type NamedContracts = { [key: string]: ethers.Contract };
 export type NamedAddresses = { [key: string]: string };
