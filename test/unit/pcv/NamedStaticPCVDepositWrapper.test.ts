@@ -314,7 +314,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
     });
 
     it('fails when non-governor-admin calls removeDeposit', async function () {
-      await expectRevert(deposit.removeDeposit(0), 'CoreRef: Caller is not a governor or contract admin');
+      await expectRevert(deposit.removeDeposit(0), 'CoreRef: Caller is not governor or guardian or admin');
     });
   });
 });
