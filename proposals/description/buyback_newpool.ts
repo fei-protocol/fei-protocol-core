@@ -21,8 +21,8 @@ const buyback_newpool: ProposalDescription = {
       target: 'fei',
       values: '0',
       method: 'mint(address,uint256)',
-      arguments: ['{noFeeFeiTribeLBPSwapper}', '2000000000000000000000000'],
-      description: 'Mint 2m FEI for missed buybacks'
+      arguments: ['{noFeeFeiTribeLBPSwapper}', '4000000000000000000000000'],
+      description: "Mint 4m FEI for missed buybacks and this week's buybacks"
     },
     {
       target: 'pcvEquityMinter',
@@ -30,13 +30,6 @@ const buyback_newpool: ProposalDescription = {
       method: 'unpause()',
       arguments: [],
       description: 'Unpause the PCV Equity Minter'
-    },
-    {
-      target: 'pcvEquityMinter',
-      values: '0',
-      method: 'mint()',
-      arguments: [],
-      description: "Mint FEI for this week's buybacks"
     },
     {
       target: 'noFeeFeiTribeLBPSwapper',

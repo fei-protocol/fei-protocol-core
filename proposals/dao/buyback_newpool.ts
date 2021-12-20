@@ -19,6 +19,7 @@ const e18 = ethers.constants.WeiPerEther;
 // LBP swapper
 const LBP_FREQUENCY = '604800'; // weekly
 const MIN_LBP_SIZE = ethers.constants.WeiPerEther.mul(100_000); // 100k FEI
+let noFeeFeiTribeLBPPoolId;
 
 /*
 
@@ -79,8 +80,10 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   const txReceipt = await tx.wait();
   const { logs: rawLogs } = txReceipt;
   const noFeeFeiTribeLBPAddress = `0x${rawLogs[rawLogs.length - 1].topics[1].slice(-40)}`;
+  noFeeFeiTribeLBPPoolId = rawLogs[1].topics[1];
 
   logging && console.log('LBP Pool deployed to: ', noFeeFeiTribeLBPAddress);
+  logging && console.log('LBP Pool pool Id: ', noFeeFeiTribeLBPPoolId);
 
   // 3.
   const tx2 = await noFeeFeiTribeLBPSwapper.init(noFeeFeiTribeLBPAddress);
@@ -92,10 +95,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 };
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  // Fake as if the guardian paused the feiTribeLBPSwapper and pcvEquityMinter
-  const guardianSigner = await getImpersonatedSigner('0xB8f482539F2d3Ae2C9ea6076894df36D1f632775');
-  await contracts.feiTribeLBPSwapper.connect(guardianSigner).pause();
-  await contracts.pcvEquityMinter.connect(guardianSigner).pause();
+  logging && console.log('No setup for FIP-buyback_newpool');
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
@@ -103,6 +103,35 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
+  // pcvEquityMinter should target the new LBPSwapper
+  expect(await contracts.pcvEquityMinter.target()).to.be.equal(addresses.noFeeFeiTribeLBPSwapper);
+  // pcvEquityMinter should be unpaused
+  expect(await contracts.pcvEquityMinter.paused()).to.be.equal(false);
+  // pcvEquityMinter will be ready to mint, but its mint call will revert for 1 week,
+  // so we have to manually mint 1 week of buyback (+ missed buybacks) inside the
+  // proposal
+  expect(await contracts.pcvEquityMinter.isTimeEnded()).to.be.equal(true);
+
+  // No tokens should remain anywhere on our contracts
+  expect(await contracts.fei.balanceOf(addresses.feiTribeLBPSwapper)).to.be.equal('0');
+  expect(await contracts.tribe.balanceOf(addresses.feiTribeLBPSwapper)).to.be.equal('0');
+  expect(await contracts.fei.balanceOf(addresses.noFeeFeiTribeLBPSwapper)).to.be.equal('0');
+  expect(await contracts.tribe.balanceOf(addresses.noFeeFeiTribeLBPSwapper)).to.be.equal('0');
+
+  // All funds should be in Balancer
+  const poolTokens = await contracts.balancerVault.getPoolTokens(noFeeFeiTribeLBPPoolId);
+  expect(poolTokens.tokens[0]).to.be.equal(addresses.fei);
+  expect(poolTokens.tokens[1]).to.be.equal(addresses.tribe);
+  // at least the 4M FEI we just seeded, + the 26.6k FEI from exitPool
+  expect(poolTokens.balances[0]).to.be.at.least('4000000000000000000000000');
+  expect(poolTokens.balances[0]).to.be.at.most('4030000000000000000000000');
+  // at least ~400k$ of TRIBE
+  // checking >200k TRIBE and <800k TRIBE to have a large boundary
+  // should be around 500k at current price
+  expect(poolTokens.balances[1]).to.be.at.least('200000000000000000000000');
+  expect(poolTokens.balances[1]).to.be.at.most('800000000000000000000000');
+
+  // buybacks should have restarted
   expect(await contracts.noFeeFeiTribeLBPSwapper.isTimeStarted()).to.be.true;
 
   const price = (await contracts.noFeeFeiTribeLBPSwapper.readOracle())[0];
@@ -112,10 +141,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
 
   const response = await contracts.noFeeFeiTribeLBPSwapper.getTokensIn(100000);
   const amounts = response[1];
-  console.log('amounts[0]', amounts[0]);
-  console.log('amounts[1]', amounts[1]);
   expect(amounts[0]).to.be.bignumber.equal(ethers.BigNumber.from(100000));
-  console.log('aaaaa', price.mul(100000).div(ethers.constants.WeiPerEther).div(10).toString());
   // TRIBE/FEI price * FEI amount * 10% ~= amount
   expectApprox(price.mul(100000).div(ethers.constants.WeiPerEther).div(10), amounts[1]);
 };
