@@ -37,14 +37,21 @@ const buyback_newpool: ProposalDescription = {
       method: 'forceSwap()',
       arguments: [],
       description: 'Re-start the buybacks'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'swapDeposit(address,address)',
+      arguments: ['{feiBuybackLens}', '{feiBuybackLensNoFee}'],
+      description: 'Update CR oracle to inspect new buyback pool'
     }
   ],
   description: `
 Balancer will soon activate protocol fees. They asked us to re-deploy the Liquidity Bootstrapping Pool that we use for TRIBE buybacks with a new factory, that won't have protocol fees, due to a potential bug with LBPs when activating protocol fees.
 
-This proposal activates a new Balancer pool for TRIBE buybacks, active on the next weekly reset of buybacks.
+This proposal activates a new Balancer pool for TRIBE buybacks, replacing the old one.
 
-The new buyback LBP also shift weights from 10% to 90%, instead of the original 1% to 99%, to reduce slippage the protocol gets on buybacks.
+The new buyback LBP also shift weights from 5% to 95%, instead of the original 1% to 99%, to reduce slippage the protocol gets on buybacks.
 `
 };
 

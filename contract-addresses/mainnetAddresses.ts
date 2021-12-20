@@ -106,6 +106,10 @@ const MainnetAddresses = {
     artifactName: 'BPTLens',
     address: '0x107460564896377BA6CdcC7516c7eAb65E32E360'
   },
+  feiBuybackLensNoFee: {
+    artifactName: 'BPTLens',
+    address: '0x89DfBC12001b41985eFAbd7dFCae6a77B22E4Ec3'
+  },
   cream: {
     artifactName: 'IERC20',
     address: '0x2ba592F78dB6436527729929AAf6c908497cB200'

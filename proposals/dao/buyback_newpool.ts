@@ -29,6 +29,7 @@ DEPLOY ACTIONS:
 1. Deploy TRIBE LBP Swapper
 2. Create TRIBE LBP pool
 3. Init TRIBE LBP Swapper
+4. Deploy a new BPTLens
 
 DAO ACTIONS:
 1. Set PCVEquityMinter target to new buyback swapper
@@ -36,13 +37,10 @@ DAO ACTIONS:
 3. Mint 4m FEI for missed buybacks and this week's buybacks
 4. Unpause the PCV Equity Minter
 5. Re-start the buybacks
+6. Update CR oracle to inspect new buyback pool
 */
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
-  if (!addresses.core) {
-    throw new Error('An environment variable contract address is not set');
-  }
-
   // 1.
   const BalancerLBPSwapperFactory = await ethers.getContractFactory('BalancerLBPSwapper');
   const noFeeFeiTribeLBPSwapper = await BalancerLBPSwapperFactory.deploy(
@@ -71,12 +69,12 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   );
 
   const tx: TransactionResponse = await lbpFactory.create(
-    'FEI->TRIBE Auction Pool',
-    'apFEI-TRIBE',
-    [addresses.fei, addresses.tribe],
-    [ethers.constants.WeiPerEther.mul(90).div(100), ethers.constants.WeiPerEther.mul(10).div(100)],
-    ethers.constants.WeiPerEther.mul(30).div(10_000),
-    noFeeFeiTribeLBPSwapper.address,
+    'FEI->TRIBE Auction Pool', // pool name
+    'apFEI-TRIBE', // lbp token symbol
+    [addresses.fei, addresses.tribe], // pool contains [FEI, TRIBE]
+    [ethers.constants.WeiPerEther.mul(95).div(100), ethers.constants.WeiPerEther.mul(5).div(100)], // initial weights 5%/95%
+    ethers.constants.WeiPerEther.mul(30).div(10_000), // 0.3% swap fees
+    noFeeFeiTribeLBPSwapper.address, // pool owner = fei protocol swapper
     true
   );
 
@@ -90,7 +88,23 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   const tx2 = await noFeeFeiTribeLBPSwapper.init(noFeeFeiTribeLBPAddress);
   await tx2.wait();
 
+  // 4.
+  const BPTLensFactory = await ethers.getContractFactory('BPTLens');
+  const feiBuybackLensNoFee = await BPTLensFactory.deploy(
+    addresses.fei, // token reported in
+    '0xc35bdda2e93c401c6645e0d8a0b2c86906c51710', // pool address
+    addresses.oneConstantOracle, // reportedOracle
+    addresses.tribeUsdCompositeOracle, // otherOracle
+    true, // feiIsReportedIn
+    false // feiIsOther
+  );
+
+  await feiBuybackLensNoFee.deployTransaction.wait();
+
+  logging && console.log('BPTLens for new buyback pool: ', feiBuybackLensNoFee.address);
+
   return {
+    feiBuybackLensNoFee,
     noFeeFeiTribeLBPSwapper
   } as NamedContracts;
 };
@@ -136,9 +150,27 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   // buybacks should have restarted
   expect(await contracts.noFeeFeiTribeLBPSwapper.isTimeStarted()).to.be.true;
 
+  // BPTLens for new buyback pool
+  const resistantBalanceAndFei = await contracts.feiBuybackLensNoFee.resistantBalanceAndFei();
+  // should report ~4M FEI + the 26.6k FEI from exitPool
+  expect(resistantBalanceAndFei[0]).to.be.at.least('4000000000000000000000000');
+  expect(resistantBalanceAndFei[0]).to.be.at.most('4030000000000000000000000');
+  expect(resistantBalanceAndFei[1]).to.be.at.least('4000000000000000000000000');
+  expect(resistantBalanceAndFei[1]).to.be.at.most('4030000000000000000000000');
+
+  // CR oracle update
+  // swapped out old BPTLens
+  expect(await contracts.collateralizationOracle.depositToToken(addresses.feiBuybackLens)).to.be.equal(
+    '0x0000000000000000000000000000000000000000'
+  );
+  // added new BPTLens
+  expect(await contracts.collateralizationOracle.depositToToken(addresses.feiBuybackLensNoFee)).to.be.equal(
+    addresses.fei
+  );
+
   const price = (await contracts.noFeeFeiTribeLBPSwapper.readOracle())[0];
   // sanity check on the price offered in the pool
-  expect(price).to.be.at.least(e18.mul(toBN(1)).div(toBN(2))); // TRIBE price > 0.5 FEI
+  expect(price).to.be.at.least(e18.div(toBN(2))); // TRIBE price > 0.5 FEI
   expect(price).to.be.at.most(e18.mul(toBN(2))); // TRIBE price < 2 FEI
 
   const response = await contracts.noFeeFeiTribeLBPSwapper.getTokensIn(100000);
