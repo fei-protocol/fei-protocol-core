@@ -132,7 +132,7 @@ const MainnetAddresses = {
   },
   noFeeFeiTribeLBPSwapper: {
     artifactName: 'BalancerLBPSwapper',
-    address: '0x720472c8ce72c2A2D711333e064ABD3E6BbEAdd3'
+    address: '0xC05FAF6C5C4bC1bD841AdFC92b3D3f20180F26E8'
   },
   feiTribeLBP: {
     artifactName: 'IWeightedPool',
