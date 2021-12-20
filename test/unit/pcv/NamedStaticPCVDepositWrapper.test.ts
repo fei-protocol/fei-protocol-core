@@ -248,6 +248,20 @@ describe('NamedStaticPCVDepositWrapper', function () {
       expect(underlyingTokenAmount).to.be.equal(newUnderlyingAmt);
     });
 
+    it('should be able to edit existing deposit fei balance', async function () {
+      feiBalance = '200';
+      balance = '100';
+
+      await deposit
+        .connect(impersonatedSigners[governorAddress])
+        .editDeposit(0, balance, feiBalance, underlyingTokenAmount, 'Visor Finance USDC/FEI Deposit', await core.fei());
+
+      const { feiAmount, usdAmount } = await deposit.pcvDeposits(0);
+
+      expect(feiAmount).to.be.equal(feiBalance);
+      expect(usdAmount).to.be.equal(balance);
+    });
+
     it('edit existing deposit fails when index is out of bounds', async function () {
       const invalidIndex = await deposit.numDeposits();
       await expectRevert(

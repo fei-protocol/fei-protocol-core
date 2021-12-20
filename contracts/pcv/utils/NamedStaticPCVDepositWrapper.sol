@@ -92,7 +92,8 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         balance = balance - updatePCVDeposit.usdAmount + usdAmount;
         feiReportBalance = feiReportBalance - updatePCVDeposit.feiAmount + feiAmount;
 
-        updatePCVDeposit.usdAmount = usdAmount + updatePCVDeposit.usdAmount;
+        updatePCVDeposit.usdAmount = usdAmount;
+        updatePCVDeposit.feiAmount = feiAmount;
         updatePCVDeposit.depositName = depositName;
         updatePCVDeposit.underlyingTokenAmount = underlyingTokenAmount;
         updatePCVDeposit.underlyingToken = underlyingToken;
