@@ -39,6 +39,7 @@ import {
   TribeReserveStabilizer,
   UniswapPCVDeposit
 } from './contracts';
+import { RestrictedPermissions } from './contracts/RestrictedPermissions';
 
 export type Env = {
   contracts: NamedContracts;
@@ -225,7 +226,7 @@ export interface MainnetContracts {
   feiDAO: FeiDAO;
   autoRewardsDistributor: AutoRewardsDistributor;
   rewardsDistributorAdmin: RewardsDistributorAdmin;
-  restrictedPermissions: Contract;
+  restrictedPermissions: RestrictedPermissions;
 }
 
 export interface MainnetContractAddresses {
