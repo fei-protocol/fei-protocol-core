@@ -17,7 +17,7 @@ const proposals: ProposalsConfigMap = {
     }
     */
   buyback_newpool: {
-    deploy: true,
+    deploy: false,
     skipDAO: false,
     totalValue: 0,
     proposal: buyback_newpool
