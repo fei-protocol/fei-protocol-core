@@ -16,7 +16,7 @@ import { MockWeightedPool } from '@custom-types/contracts/MockWeightedPool';
 
 const toBN = ethers.BigNumber.from;
 
-describe.only('BalancerLBPSwapper', function () {
+describe('BalancerLBPSwapper', function () {
   let userAddress: string;
   let burnerAddress: string;
   let pcvControllerAddress: string;

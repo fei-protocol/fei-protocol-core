@@ -22,7 +22,7 @@ before(async () => {
   await resetFork();
 });
 
-describe.only('e2e-buybacks', function () {
+describe('e2e-buybacks', function () {
   let contracts: NamedContracts;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
