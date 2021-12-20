@@ -607,6 +607,10 @@ const MainnetAddresses = {
     artifactName: 'StakingTokenWrapper',
     address: '0x9B9ad20Cd99Cac3B536b94497A18346d66db0379'
   },
+  stakingTokenWrapperPoolTogetherLaaS: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0x6b018170311F3DA23c3fA62AFe1b2D0638522CCD'
+  },
   tWETH: { artifactName: 'IERC20', address: '0xD3D13a578a53685B4ac36A1Bab31912D2B2A2F36' },
   tToke: { artifactName: 'IERC20', address: '0xa760e26aA76747020171fCF8BdA108dFdE8Eb930' },
   toke: { artifactName: 'IERC20', address: '0x2e9d63788249371f1dfc918a52f8d799f4a38c94' },
