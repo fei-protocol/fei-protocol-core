@@ -19,7 +19,6 @@ const e18 = ethers.constants.WeiPerEther;
 // LBP swapper
 const LBP_FREQUENCY = '604800'; // weekly
 const MIN_LBP_SIZE = ethers.constants.WeiPerEther.mul(100_000); // 100k FEI
-let noFeeFeiTribeLBPPoolId;
 
 /*
 
@@ -84,10 +83,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   const txReceipt = await tx.wait();
   const { logs: rawLogs } = txReceipt;
   const noFeeFeiTribeLBPAddress = `0x${rawLogs[rawLogs.length - 1].topics[1].slice(-40)}`;
-  noFeeFeiTribeLBPPoolId = rawLogs[1].topics[1];
 
   logging && console.log('LBP Pool deployed to: ', noFeeFeiTribeLBPAddress);
-  logging && console.log('LBP Pool pool Id: ', noFeeFeiTribeLBPPoolId);
 
   // 3.
   const tx2 = await noFeeFeiTribeLBPSwapper.init(noFeeFeiTribeLBPAddress);
@@ -123,6 +120,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await contracts.tribe.balanceOf(addresses.noFeeFeiTribeLBPSwapper)).to.be.equal('0');
 
   // All funds should be in Balancer
+  const noFeeFeiTribeLBPPoolId = '0xc35bdda2e93c401c6645e0d8a0b2c86906c51710000200000000000000000111';
   const poolTokens = await contracts.balancerVault.getPoolTokens(noFeeFeiTribeLBPPoolId);
   expect(poolTokens.tokens[0]).to.be.equal(addresses.fei);
   expect(poolTokens.tokens[1]).to.be.equal(addresses.tribe);

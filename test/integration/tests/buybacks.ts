@@ -49,7 +49,7 @@ describe('e2e-buybacks', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe.skip('PCV Equity Minter + LBP', async function () {
+  describe('PCV Equity Minter + LBP', async function () {
     it('mints appropriate amount and swaps', async function () {
       const {
         pcvEquityMinter,
@@ -85,7 +85,7 @@ describe('e2e-buybacks', function () {
     });
   });
 
-  // Skipped because the buybacks are now in-progress
+  // Skipped because the LUSD auction is now over
   describe.skip('LUSD LBP', async function () {
     it('mints appropriate amount and swaps', async function () {
       const feiLusdLBPSwapper: BalancerLBPSwapper = contracts.feiLusdLBPSwapper as BalancerLBPSwapper;
