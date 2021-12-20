@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { Contract, ethers } from 'ethers';
 import {
   AavePCVDeposit,
   AutoRewardsDistributor,
@@ -30,7 +30,6 @@ import {
   PCVDripController,
   PCVEquityMinter,
   RatioPCVController,
-  RestrictedPermissions,
   RewardsDistributorAdmin,
   StakingTokenWrapper,
   StaticPCVDepositWrapper,
@@ -92,27 +91,28 @@ export type ProposalCommand = {
   description: string;
 };
 
-export type MainnetAddresses = {
+export interface MainnetAddresses {
   [key: string]: AddressConfig;
-};
-export type AddressConfig = {
+}
+
+export interface AddressConfig {
   artifactName: string;
   address: string;
-  type: AddressEnum;
-};
+  category: AddressCategory;
+}
 
-export enum AddressEnum {
-  Core_ = 'Core',
-  Peg_ = 'Peg',
-  PCV_ = 'PCV',
-  Collateralization_ = 'Collateralization',
-  Oracle_ = 'Oracle',
-  Keeper_ = 'Keeper',
-  Rewards_ = 'Rewards',
-  FeiRari_ = 'FeiRari',
-  External_ = 'External',
-  Deprecated_ = 'Deprecated',
-  TBD_ = 'TBD'
+export enum AddressCategory {
+  Core = 'Core',
+  Peg = 'Peg',
+  PCV = 'PCV',
+  Collateralization = 'Collateralization',
+  Oracle = 'Oracle',
+  Keeper = 'Keeper',
+  Rewards = 'Rewards',
+  FeiRari = 'FeiRari',
+  External = 'External',
+  Deprecated = 'Deprecated',
+  TBD = 'TBD'
 }
 
 export type NamedContracts = { [key: string]: ethers.Contract };
@@ -225,7 +225,7 @@ export interface MainnetContracts {
   feiDAO: FeiDAO;
   autoRewardsDistributor: AutoRewardsDistributor;
   rewardsDistributorAdmin: RewardsDistributorAdmin;
-  restrictedPermissions: RestrictedPermissions;
+  restrictedPermissions: Contract;
 }
 
 export interface MainnetContractAddresses {
