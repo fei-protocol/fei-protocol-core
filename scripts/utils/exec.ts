@@ -49,14 +49,14 @@ export async function execProposal(voterAddress, governorAlphaAddress, totalValu
     console.log('Vote already began');
   }
 
-  await governor.connect(signer).castVote(proposalNo, 1);
-  console.log('Casted vote');
-
   proposal = await governor.proposals(proposalNo);
   const { endBlock } = proposal;
 
   // Advance to after vote completes and queue the transaction
   if (toBN(await time.latestBlock()).lt(toBN(endBlock))) {
+    await governor.connect(signer).castVote(proposalNo, 1);
+    console.log('Casted vote');
+
     console.log(`Advancing To: ${endBlock}`);
     await time.advanceBlockTo(endBlock);
 
