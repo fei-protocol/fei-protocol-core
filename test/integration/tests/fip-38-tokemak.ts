@@ -21,7 +21,7 @@ before(async () => {
   await resetFork();
 });
 
-describe('e2e-fip-38-tokemak', function () {
+describe.skip('e2e-fip-38-tokemak', function () {
   let contracts: NamedContracts;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;

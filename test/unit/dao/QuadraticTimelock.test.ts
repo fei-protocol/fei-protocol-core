@@ -36,9 +36,11 @@ describe('QuadraticTimelockedDelegator', function () {
     window = toBN(4 * 365 * 24 * 60 * 60);
     delegator = await (
       await ethers.getContractFactory('QuadraticTimelockedDelegator')
-    ).deploy(tribe.address, userAddress, window);
+    ).deploy(tribe.address, userAddress, window, 60 * 60 * 24 * 30, secondUserAddress, '0');
     totalTribe = toBN('10000');
     await tribe.mint(delegator.address, totalTribe);
+
+    await delegator.delegate(userAddress);
   });
 
   describe('Init', function () {
@@ -259,21 +261,6 @@ describe('QuadraticTimelockedDelegator', function () {
           expect(await delegator.beneficiary()).to.be.equal(userAddress);
         });
 
-        it('should transfer voting power to new beneficiary', async function () {
-          expect(await tribe.getCurrentVotes(secondUserAddress)).to.be.bignumber.equal(toBN('0'));
-
-          await delegator.setPendingBeneficiary(secondUserAddress);
-          expectEvent(
-            await delegator.connect(impersonatedSigners[secondUserAddress]).acceptBeneficiary(),
-            delegator,
-            'BeneficiaryUpdate',
-            [secondUserAddress]
-          );
-          expect(await delegator.beneficiary()).to.be.equal(secondUserAddress);
-
-          expect(await tribe.getCurrentVotes(secondUserAddress)).to.be.bignumber.equal(totalTribe);
-        });
-
         it('Non pending beneficiary reverts', async function () {
           await expectRevert(
             delegator.connect(impersonatedSigners[secondUserAddress]).acceptBeneficiary(),
@@ -286,7 +273,16 @@ describe('QuadraticTimelockedDelegator', function () {
     describe('Release', function () {
       it('Non-beneficiary set reverts', async function () {
         await expectRevert(
-          delegator.connect(impersonatedSigners[beneficiaryAddress1]).release(userAddress, '100'),
+          delegator.connect(impersonatedSigners[secondUserAddress]).release(userAddress, '100'),
+          'TokenTimelock: Caller is not a beneficiary'
+        );
+      });
+    });
+
+    describe('Delegate', function () {
+      it('Non-beneficiary delegate reverts', async function () {
+        await expectRevert(
+          delegator.connect(impersonatedSigners[secondUserAddress]).release(userAddress, '100'),
           'TokenTimelock: Caller is not a beneficiary'
         );
       });
@@ -314,9 +310,9 @@ describe('QuadraticTimelockedDelegator', function () {
       await time.increase(cliffSeconds.add(toBN(1000)));
       expect(await tribe.balanceOf(delegator.address)).to.be.bignumber.equal(toBN(10000));
       await delegator.connect(await getImpersonatedSigner(clawbackAdmin)).clawback();
-      expect(await tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN(38));
+      expect(await tribe.balanceOf(userAddress)).to.be.bignumber.equal(toBN(4));
       expect(await tribe.balanceOf(delegator.address)).to.be.bignumber.equal(toBN(0));
-      expect(await tribe.balanceOf(clawbackAdmin)).to.be.bignumber.equal(toBN(9962));
+      expect(await tribe.balanceOf(clawbackAdmin)).to.be.bignumber.equal(toBN(9996));
     });
   });
 });

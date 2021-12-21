@@ -2,9 +2,7 @@ import { ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
-import peg_stability_module from '@proposals/description/peg_stability_module';
-import backstop_proposal from '@proposals/description/backstop';
-import fip_52_proposal from '@proposals/description/fip_52';
+import merger_proposal from '@proposals/description/merger';
 import fip_999 from '@proposals/description/fip_999';
 
 const proposals: ProposalsConfigMap = {
@@ -16,29 +14,17 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  peg_stability_module: {
-    deploy: true,
-    skipDAO: false,
-    totalValue: 0,
-    proposal: peg_stability_module
-  },
-  backstop: {
-    deploy: true,
-    skipDAO: false,
-    totalValue: 0,
-    proposal: backstop_proposal
-  },
-  fip_52: {
-    deploy: false,
-    skipDAO: false,
-    totalValue: 0,
-    proposal: fip_52_proposal
-  },
   fip_999: {
     deploy: true,
     skipDAO: false,
     totalValue: 0,
     proposal: fip_999
+  },
+  merger: {
+    deploy: false,
+    skipDAO: false,
+    totalValue: 0,
+    proposal: merger_proposal
   }
 };
 

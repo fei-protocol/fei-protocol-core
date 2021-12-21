@@ -29,20 +29,22 @@ contract MockCurve3pool is MockERC20 {
     return IERC20(coins[i]).balanceOf(address(this));
   }
 
-  function remove_liquidity(uint256 _amount, uint256[2] memory min_amounts) public {
-    uint256[2] memory amounts;
-    amounts[0] = _amount / 2;
-    amounts[1] = _amount / 2;
+  function remove_liquidity(uint256 _amount, uint256[3] memory min_amounts) public {
+    uint256[3] memory amounts;
+    amounts[0] = _amount / 3;
+    amounts[1] = _amount / 3;
+    amounts[2] = _amount / 3;
     IERC20(coins[0]).transfer(msg.sender, amounts[0]);
     IERC20(coins[1]).transfer(msg.sender, amounts[1]);
-    MockERC20(this).burnFrom(msg.sender, _amount);
+    IERC20(coins[2]).transfer(msg.sender, amounts[2]);
+    MockERC20(this).mockBurn(msg.sender, _amount);
   }
 
   function remove_liquidity_one_coin(uint256 _amount, int128 i, uint256 min_amount) public {
     uint256 _amountOut = _amount * (10000 - slippage) / 10000;
     _amountOut = _amountOut * 100000 / 100015; // 0.015% fee
     IERC20(coins[uint256(uint128(i))]).transfer(msg.sender, _amountOut);
-    MockERC20(this).burnFrom(msg.sender, _amount);
+    MockERC20(this).mockBurn(msg.sender, _amount);
   }
 
   function get_virtual_price() public pure returns (uint256) {
