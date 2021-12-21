@@ -38,9 +38,9 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     /// @notice the Balancer V2 Pool id of `pool`
     bytes32 public pid;
 
-    // Balancer constants for the 95:5 -> 5:95 auction
-    uint256 private constant FIVE_PERCENT = 0.05e18;
-    uint256 private constant NINETYFIVE_PERCENT = 0.95e18;
+    // Balancer constants for the weight changes
+    uint256 public immutable SMALL_PERCENT;
+    uint256 public immutable LARGE_PERCENT;
 
     // Balancer constants to memoize the target assets and weights from pool
     IAsset[] private assets;
@@ -75,6 +75,8 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     @param _core Core contract to reference
     @param oracleData The parameters needed to initialize the OracleRef
     @param _frequency minimum time between auctions and duration of auction
+    @param _weightSmall the small weight of weight changes (e.g. 5%)
+    @param _weightLarge the large weight of weight changes (e.g. 95%)
     @param _tokenSpent the token to be auctioned
     @param _tokenReceived the token to buy
     @param _tokenReceivingAddress the address to send `tokenReceived`
@@ -84,6 +86,8 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         address _core,
         OracleData memory oracleData,
         uint256 _frequency,
+        uint256 _weightSmall,
+        uint256 _weightLarge,
         address _tokenSpent,
         address _tokenReceived,
         address _tokenReceivingAddress,
@@ -99,6 +103,12 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         Timed(_frequency)
         WeightedBalancerPoolManager()
     {
+        // weight changes
+        SMALL_PERCENT = _weightSmall;
+        LARGE_PERCENT = _weightLarge;
+        require(_weightSmall < _weightLarge, "BalancerLBPSwapper: bad weights");
+        require(_weightSmall + _weightLarge == 1e18, "BalancerLBPSwapper: weights not normalized");
+
         // tokenSpent and tokenReceived are immutable
         tokenSpent = _tokenSpent;
         tokenReceived = _tokenReceived;
@@ -154,17 +164,17 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         endWeights = new uint[](2);
 
         if (tokenSpentAtIndex0) {
-            initialWeights[0] = NINETYFIVE_PERCENT;
-            initialWeights[1] = FIVE_PERCENT;
+            initialWeights[0] = LARGE_PERCENT;
+            initialWeights[1] = SMALL_PERCENT;
 
-            endWeights[0] = FIVE_PERCENT;
-            endWeights[1] = NINETYFIVE_PERCENT;
+            endWeights[0] = SMALL_PERCENT;
+            endWeights[1] = LARGE_PERCENT;
         }  else {
-            initialWeights[0] = FIVE_PERCENT;
-            initialWeights[1] = NINETYFIVE_PERCENT;
+            initialWeights[0] = SMALL_PERCENT;
+            initialWeights[1] = LARGE_PERCENT;
 
-            endWeights[0] = NINETYFIVE_PERCENT;
-            endWeights[1] = FIVE_PERCENT;
+            endWeights[0] = LARGE_PERCENT;
+            endWeights[1] = SMALL_PERCENT;
         }
 
         // Approve pool tokens for vault
@@ -276,7 +286,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         // 1. Withdraw existing LP tokens (if currently held)
         _exitPool();
 
-        // 2. Reset weights to 90:10
+        // 2. Reset weights to LARGE_PERCENT:SMALL_PERCENT
         // Using current block time triggers immediate weight reset
         _updateWeightsGradually(
             pool,
@@ -375,7 +385,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     function _getTokensIn(uint256 spentTokenBalance) internal view returns(uint256[] memory amountsIn) {
         amountsIn = new uint256[](2);
 
-        uint256 receivedTokenBalance = readOracle().mul(spentTokenBalance).mul(FIVE_PERCENT).div(NINETYFIVE_PERCENT).asUint256();
+        uint256 receivedTokenBalance = readOracle().mul(spentTokenBalance).mul(SMALL_PERCENT).div(LARGE_PERCENT).asUint256();
 
         if (address(assets[0]) == tokenSpent) {
             amountsIn[0] = spentTokenBalance;
