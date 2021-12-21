@@ -51,7 +51,7 @@ Balancer will soon activate protocol fees. They asked us to re-deploy the Liquid
 
 This proposal activates a new Balancer pool for TRIBE buybacks, replacing the old one.
 
-The new buyback LBP also shift weights from 5% to 95%, instead of the original 1% to 99%, to reduce slippage the protocol gets on buybacks.
+The new buyback LBP also shift weights from 10% to 90%, instead of the original 1% to 99%, to reduce slippage the protocol gets on buybacks.
 `
 };
 

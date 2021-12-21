@@ -52,6 +52,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
       _decimalsNormalizer: 0
     },
     LBP_FREQUENCY,
+    '100000000000000000', // small weight 10%
+    '900000000000000000', // large weight 90%
     addresses.fei,
     addresses.tribe,
     addresses.core, // send TRIBE back to treasury
@@ -72,7 +74,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     'FEI->TRIBE Auction Pool', // pool name
     'apFEI-TRIBE', // lbp token symbol
     [addresses.fei, addresses.tribe], // pool contains [FEI, TRIBE]
-    [ethers.constants.WeiPerEther.mul(95).div(100), ethers.constants.WeiPerEther.mul(5).div(100)], // initial weights 5%/95%
+    [ethers.constants.WeiPerEther.mul(90).div(100), ethers.constants.WeiPerEther.mul(10).div(100)], // initial weights 10%/90%
     ethers.constants.WeiPerEther.mul(30).div(10_000), // 0.3% swap fees
     noFeeFeiTribeLBPSwapper.address, // pool owner = fei protocol swapper
     true
