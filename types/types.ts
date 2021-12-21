@@ -104,6 +104,7 @@ export interface AddressConfig {
 
 export enum AddressCategory {
   Core = 'Core',
+  Governance = 'Governance',
   Peg = 'Peg',
   PCV = 'PCV',
   Collateralization = 'Collateralization',
