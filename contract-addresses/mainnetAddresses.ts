@@ -1,4 +1,4 @@
-import { MainnetAddresses, AddressCategory } from '@custom-types/types';
+import { MainnetAddresses, AddressCategory } from '../types/types'; // imported without custom path to allow docs to autogen without ts errors
 
 const MainnetAddresses: MainnetAddresses = {
   pegExchangerDripper: {
@@ -169,7 +169,7 @@ const MainnetAddresses: MainnetAddresses = {
   collateralizationOracleKeeper: {
     artifactName: 'CollateralizationOracleKeeper',
     address: '0x62378C316a6161A613D02E11F65290aED79B3eD5',
-    category: AddressCategory.Collateralization
+    category: AddressCategory.Keeper
   },
   chainlinkEurUsdOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
@@ -209,7 +209,7 @@ const MainnetAddresses: MainnetAddresses = {
   staticPcvDepositWrapper: {
     artifactName: 'StaticPCVDepositWrapper',
     address: '0x8B41DcEfAe6064E6bc2A9B3ae20141d23EFD6cbd',
-    category: AddressCategory.Collateralization
+    category: AddressCategory.Deprecated // replaced by staticPcvDepositWrapper2
   },
   ethReserveStabilizerWrapper: {
     artifactName: 'PCVDepositWrapper',
@@ -224,12 +224,12 @@ const MainnetAddresses: MainnetAddresses = {
   raiBondingCurveWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xc42e155788f9f599Fd437C7455F63810A395a81f',
-    category: AddressCategory.Collateralization
+    category: AddressCategory.Deprecated
   },
   dpiBondingCurveWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x60B63eF8f461355207fE1d8102dda938bbd8c3fB',
-    category: AddressCategory.Collateralization
+    category: AddressCategory.Deprecated // underlying deprecated
   },
   convexBooster: {
     artifactName: 'IConvexBooster',
@@ -440,7 +440,7 @@ const MainnetAddresses: MainnetAddresses = {
   aaveTribeIncentivesControllerProxy: {
     artifactName: 'TransparentUpgradeableProxy',
     address: '0xDee5c1662bBfF8f80f7c572D8091BF251b3B0dAB',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated // Deprecated because the controller duplicates it
   },
   aaveTribeIncentivesControllerImpl: {
     artifactName: 'IAaveIncentivesController',
@@ -917,7 +917,7 @@ const MainnetAddresses: MainnetAddresses = {
   raiBondingCurve: {
     artifactName: 'BondingCurve',
     address: '0x25d60212D47Dd8F6Ff0469367E4c6C98Cd3411A5',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   rariPool19Dpi: {
     artifactName: 'CErc20Delegator',
@@ -1232,7 +1232,7 @@ const MainnetAddresses: MainnetAddresses = {
   timelock: {
     artifactName: 'Timelock',
     address: '0x639572471f2f318464dc01066a56867130e45E25',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
   tribalChief: {
     artifactName: 'TribalChief',
