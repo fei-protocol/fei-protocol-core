@@ -8,6 +8,8 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
+import { forceEth } from '@test/integration/setup/utils';
+import { getImpersonatedSigner } from '@test/helpers';
 
 chai.use(CBN(ethers.BigNumber));
 
@@ -116,7 +118,14 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 };
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  logging && console.log('No setup');
+  const { optimisticTimelock, staticPcvDepositWrapper2, namedStaticPCVDepositWrapper } = addresses;
+  const { collateralizationOracle } = contracts;
+
+  const oatimelock = await getImpersonatedSigner(optimisticTimelock);
+  await forceEth(optimisticTimelock);
+
+  await collateralizationOracle.connect(oatimelock).removeDeposit(staticPcvDepositWrapper2);
+  await collateralizationOracle.connect(oatimelock).addDeposit(namedStaticPCVDepositWrapper);
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
