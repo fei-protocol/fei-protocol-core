@@ -101,7 +101,7 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xBcb307F590972B1C3188b7916d2969Cf75309dc6',
     category: AddressCategory.TBD
   },
-  agEurAngleUniswaPCVDeposit: {
+  agEurAngleUniswapPCVDeposit: {
     artifactName: 'AngleUniswapPCVDeposit',
     address: '0x7AC2Ab8143634419c5bc230A9f9955C3e29f64Ef',
     category: AddressCategory.TBD
@@ -1254,13 +1254,13 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x087F35bd241e41Fc28E43f0E8C58d283DD55bD65',
     category: AddressCategory.Deprecated
   },
-  uniswaPCVController: {
+  uniswapPCVController: {
     artifactName: 'unknown',
     address: '0x0760dfe09bd6d04d0df9a60c51f01ecedceb5132',
     category: AddressCategory.Deprecated
   },
-  uniswaPCVDeposit: {
-    artifactName: 'UniswaPCVDeposit',
+  uniswapPCVDeposit: {
+    artifactName: 'UniswapPCVDeposit',
     address: '0x15958381E9E6dc98bD49655e36f524D2203a28bD',
     category: AddressCategory.PCV
   },
