@@ -663,8 +663,8 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xBf5721c5E1C370f6F1A3E21b3972E0AcE93A1E84',
     category: AddressCategory.TBD
   },
-  dpiUniswaPCVDeposit: {
-    artifactName: 'UniswaPCVDeposit',
+  dpiUniswapPCVDeposit: {
+    artifactName: 'UniswapPCVDeposit',
     address: '0x902199755219A9f8209862d09F1891cfb34F59a3',
     category: AddressCategory.TBD
   },
