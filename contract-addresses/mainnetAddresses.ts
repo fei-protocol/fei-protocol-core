@@ -209,7 +209,7 @@ const MainnetAddresses: MainnetAddresses = {
   staticPcvDepositWrapper: {
     artifactName: 'StaticPCVDepositWrapper',
     address: '0x8B41DcEfAe6064E6bc2A9B3ae20141d23EFD6cbd',
-    category: AddressCategory.Collateralization
+    category: AddressCategory.Deprecated // replaced by staticPcvDepositWrapper2
   },
   ethReserveStabilizerWrapper: {
     artifactName: 'PCVDepositWrapper',
@@ -229,7 +229,7 @@ const MainnetAddresses: MainnetAddresses = {
   dpiBondingCurveWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x60B63eF8f461355207fE1d8102dda938bbd8c3fB',
-    category: AddressCategory.Collateralization
+    category: AddressCategory.Deprecated // underlying deprecated
   },
   convexBooster: {
     artifactName: 'IConvexBooster',
