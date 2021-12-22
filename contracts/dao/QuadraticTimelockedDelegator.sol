@@ -8,25 +8,33 @@ interface IVotingToken is IERC20 {
     function delegate(address delegatee) external;
 }
 
-/// @title a timelock for tokens allowing for sub-delegation
+/// @title a timelock for tokens allowing for bulk delegation
 /// @author Fei Protocol
 /// @notice allows the timelocked tokens to be delegated by the beneficiary while locked
 contract QuadraticTimelockedDelegator is QuadraticTokenTimelock {
     /// @notice QuadraticTimelockedDelegator constructor
     /// @param _token the token address
-    /// @param _beneficiary default delegate, admin, and timelock beneficiary
+    /// @param _beneficiary admin, and timelock beneficiary
     /// @param _duration duration of the token timelock window
+    /// @param _cliff the seconds before first claim is allowed
+    /// @param _clawbackAdmin the address which can trigger a clawback
+    /// @param _startTime the unix epoch for starting timelock. Use 0 to start at deployment
     constructor(
         address _token,
         address _beneficiary,
-        uint256 _duration
-    ) QuadraticTokenTimelock(_beneficiary, _duration, _token) {
-        IVotingToken(address(_token)).delegate(_beneficiary);
-    }
+        uint256 _duration,
+        uint256 _cliff,
+        address _clawbackAdmin,
+        uint256 _startTime
+    ) QuadraticTokenTimelock(_beneficiary, _duration, _token, _cliff, _clawbackAdmin, _startTime) {}
 
-    /// @notice accept beneficiary role over timelocked TRIBE. Delegates all held (non-subdelegated) tribe to beneficiary
+    /// @notice accept beneficiary role over timelocked TRIBE
     function acceptBeneficiary() public override {
         _setBeneficiary(msg.sender);
-        IVotingToken(address(lockedToken)).delegate(msg.sender);
+    }
+
+    /// @notice delegate all held TRIBE to the `to` address
+    function delegate(address to) public onlyBeneficiary {
+        IVotingToken(address(lockedToken)).delegate(to);
     }
 }
