@@ -1,23 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import "../pcv/idle/IIdleToken.sol";
 import "./MockERC20.sol";
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-
-interface IIdleToken {
-    function token() external view returns (address underlying);
-
-    function mintIdleToken(
-        uint256 _amount,
-        bool _skipWholeRebalance,
-        address _referral
-    ) external returns (uint256 mintedTokens);
-
-    function redeemIdleToken(uint256 _amount) external returns (uint256 redeemedTokens);
-
-    function tokenPriceWithFee(address user) external view returns (uint256 priceWFee);
-}
+import "hardhat/console.sol";
 
 contract MockIdleToken is IIdleToken, MockERC20 {
     uint256 private constant EXCHANGE_RATE_SCALE = 1e18;
