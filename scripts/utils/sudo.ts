@@ -8,10 +8,10 @@ dotenv.config();
 
 // Grants Governor, Minter, Burner, and PCVController access to accounts[0]
 // Also mints a large amount of FEI to accounts[0]
-export async function sudo(contracts: NamedContracts, logging = false) {
+export async function sudo(contracts: NamedContracts, logging = false): Promise<void> {
   const core = contracts.core;
   const fei = contracts.fei;
-  const timelock = contracts.timelock;
+  const timelock = contracts.feiDAOTimelock;
 
   // Impersonate the Timelock which has Governor access on-chain
   await network.provider.request({

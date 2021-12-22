@@ -1,20 +1,21 @@
-import hre, { ethers, artifacts } from 'hardhat';
-import { time } from '@openzeppelin/test-helpers';
+import hre, { ethers } from 'hardhat';
+import { time, getImpersonatedSigner } from '@test/helpers';
 
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
+const toBN = ethers.BigNumber.from;
+
 // This script fully executes an on-chain DAO proposal with pre-supplied calldata
 
 // txData = The calldata for the DAO transaction to execute.
 // The address at MAINNET_PROPOSER will submit this tx to the GovernorAlpha
-async function exec(txData, totalValue, addresses) {
+export async function exec(txData, totalValue, addresses, proposalNo) {
   const { proposerAddress, voterAddress, governorAlphaAddress } = addresses;
 
   // Impersonate the proposer and voter with sufficient TRIBE for execution
   await hre.network.provider.request({ method: 'hardhat_impersonateAccount', params: [proposerAddress] });
-  await hre.network.provider.request({ method: 'hardhat_impersonateAccount', params: [voterAddress] });
 
   // Submit proposal to the DAO
   if (txData) {
@@ -28,9 +29,12 @@ async function exec(txData, totalValue, addresses) {
     });
   }
 
-  const governor = await ethers.getContractAt('GovernorAlpha', governorAlphaAddress);
+  execProposal(voterAddress, governorAlphaAddress, totalValue, proposalNo);
+}
 
-  const proposalNo = await governor.latestProposalIds(proposerAddress);
+export async function execProposal(voterAddress, governorAlphaAddress, totalValue, proposalNo) {
+  const governor = await ethers.getContractAt('FeiDAO', governorAlphaAddress);
+  const signer = await getImpersonatedSigner(voterAddress);
 
   console.log(`Proposal Number: ${proposalNo}`);
 
@@ -38,41 +42,35 @@ async function exec(txData, totalValue, addresses) {
   const { startBlock } = proposal;
 
   // Advance to vote start
-  if ((await time.latestBlock()) < startBlock) {
+  if (toBN(await time.latestBlock()).lt(toBN(startBlock))) {
     console.log(`Advancing To: ${startBlock}`);
     await time.advanceBlockTo(startBlock);
   } else {
     console.log('Vote already began');
   }
 
-  try {
-    await governor.castVote(proposalNo, true, { from: voterAddress });
-    console.log('Casted vote');
-  } catch {
-    console.log('Already voted');
-  }
-
   proposal = await governor.proposals(proposalNo);
   const { endBlock } = proposal;
 
   // Advance to after vote completes and queue the transaction
-  if ((await time.latestBlock()) < endBlock) {
+  if (toBN(await time.latestBlock()).lt(toBN(endBlock))) {
+    await governor.connect(signer).castVote(proposalNo, 1);
+    console.log('Casted vote');
+
     console.log(`Advancing To: ${endBlock}`);
     await time.advanceBlockTo(endBlock);
 
     console.log('Queuing');
-    await governor.queue(proposalNo);
+    await governor['queue(uint256)'](proposalNo);
   } else {
     console.log('Already queued');
   }
 
   // Increase beyond the timelock delay
   console.log('Increasing Time');
-  await time.increase(86400); // 1 day in seconds
+  await time.increase(200000); // ~2 days in seconds
 
   console.log('Executing');
-  await governor.execute(proposalNo, { value: totalValue });
+  await governor['execute(uint256)'](proposalNo, { value: totalValue });
   console.log('Success');
 }
-
-module.exports = { exec };

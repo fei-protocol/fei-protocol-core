@@ -53,8 +53,8 @@ export default {
       chainId: 5777, // Any network (default: none)
       forking: enableMainnetForking
         ? {
-            url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-            blockNumber: 13398685
+            url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`
+            //blockNumber: <set>
           }
         : undefined
     },
@@ -70,14 +70,15 @@ export default {
 
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-      accounts: privateKey ? [privateKey] : []
+      accounts: privateKey ? [privateKey] : [],
+      gasPrice: 150000000000
     }
   },
 
   solidity: {
     compilers: [
       {
-        version: '0.8.4',
+        version: '0.8.10',
         settings: {
           optimizer: {
             enabled: true,

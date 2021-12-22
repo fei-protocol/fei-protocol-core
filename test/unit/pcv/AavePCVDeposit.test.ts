@@ -1,13 +1,9 @@
 import { expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
 
 const toBN = ethers.BigNumber.from;
-
-const AavePCVDeposit = artifacts.readArtifactSync('AavePCVDeposit');
-const MockLendingPool = artifacts.readArtifactSync('MockLendingPool');
-const MockERC20 = artifacts.readArtifactSync('MockERC20');
 
 describe('AavePCVDeposit', function () {
   let userAddress: string;

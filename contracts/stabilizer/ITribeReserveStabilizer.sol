@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "../oracle/ICollateralizationOracle.sol";
+import "../oracle/collateralization/ICollateralizationOracle.sol";
 
 /// @title a Tribe Reserve Stabilizer interface
 /// @author Fei Protocol
@@ -15,13 +15,13 @@ interface ITribeReserveStabilizer {
 
     // ----------- Governor only state changing api -----------
 
-    function setMinter(address newMinter) external;
-
-    function mint(address to, uint256 amount) external;
-
     function setCollateralizationOracle(ICollateralizationOracle newCollateralizationOracle) external;
 
     function setCollateralizationThreshold(uint256 newCollateralizationThresholdBasisPoints) external;
+
+    function startOracleDelayCountdown() external;
+
+    function resetOracleDelayCountdown() external;
 
     // ----------- Getters -----------
 

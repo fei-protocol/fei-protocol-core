@@ -3,21 +3,20 @@ pragma solidity ^0.8.4;
 
 import "./ReserveStabilizer.sol";
 import "./ITribeReserveStabilizer.sol";
-import "../utils/RateLimited.sol";
+import "../dao/ITribeMinter.sol";
+import "../utils/Timed.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
-
-interface ITribe is IERC20 {
-    function mint(address to, uint256 amount) external;
-    function setMinter(address newMinter) external;
-}
 
 /// @title implementation for a TRIBE Reserve Stabilizer
 /// @author Fei Protocol
-contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, RateLimited {
+contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, Timed {
     using Decimal for Decimal.D256;
 
     /// @notice a collateralization oracle
     ICollateralizationOracle public override collateralizationOracle;
+
+    /// @notice the TRIBE minter address
+    ITribeMinter public immutable tribeMinter;
 
     Decimal.D256 private _collateralizationThreshold;
 
@@ -28,6 +27,8 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, R
     /// @param _usdPerFeiBasisPoints the USD price per FEI to sell TRIBE at
     /// @param _collateralizationOracle the collateralization oracle to reference
     /// @param _collateralizationThresholdBasisPoints the collateralization ratio below which the stabilizer becomes active. Reported in basis points (1/10000)
+    /// @param _tribeMinter the tribe minter contract
+    /// @param _osmDuration the amount of delay time before the TribeReserveStabilizer begins minting TRIBE
     constructor(
         address _core,
         address _tribeOracle,
@@ -35,12 +36,11 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, R
         uint256 _usdPerFeiBasisPoints,
         ICollateralizationOracle _collateralizationOracle,
         uint256 _collateralizationThresholdBasisPoints,
-        uint256 _maxRateLimitPerSecond,
-        uint256 _rateLimitPerSecond,
-        uint256 _bufferCap
+        ITribeMinter _tribeMinter,
+        uint256 _osmDuration
     ) 
-      ReserveStabilizer(_core, _tribeOracle, _backupOracle, IERC20(address(0)), _usdPerFeiBasisPoints) 
-      RateLimited(_maxRateLimitPerSecond, _rateLimitPerSecond, _bufferCap, false)
+      ReserveStabilizer(_core, _tribeOracle, _backupOracle, IERC20(address(0)), _usdPerFeiBasisPoints)
+      Timed(_osmDuration) 
     {
         collateralizationOracle = _collateralizationOracle;
         emit CollateralizationOracleUpdate(address(0), address(_collateralizationOracle));
@@ -51,11 +51,13 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, R
         // Setting token here because it isn't available until after CoreRef is constructed
         // This does skip the _setDecimalsNormalizerFromToken call in ReserveStabilizer constructor, but it isn't needed because TRIBE is 18 decimals
         token = tribe();
+
+        tribeMinter = _tribeMinter;
     }
 
     /// @notice exchange FEI for minted TRIBE
-    /// @dev Collateralization oracle price must be below threshold
-    function exchangeFei(uint256 feiAmount) public override returns(uint256) {
+    /// @dev the timer counts down from first time below threshold and opens after window
+    function exchangeFei(uint256 feiAmount) public override afterTime returns(uint256) {
         require(isCollateralizationBelowThreshold(), "TribeReserveStabilizer: Collateralization ratio above threshold");
         return super.exchangeFei(feiAmount);
     }
@@ -65,18 +67,26 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, R
         revert("TribeReserveStabilizer: can't withdraw TRIBE");
     }
 
-    /// @dev reverts if _token is TRIBE. Held TRIBE should only be released by exchangeFei or mint
-    function withdrawERC20(address _token, address _to, uint256 _amount) public override {
-        require(_token != address(token), "TribeReserveStabilizer: can't withdraw TRIBE");
-        super.withdrawERC20(_token, _to, _amount);
-    }
-
     /// @notice check whether collateralization ratio is below the threshold set
     /// @dev returns false if the oracle is invalid
     function isCollateralizationBelowThreshold() public override view returns(bool) {
         (Decimal.D256 memory ratio, bool valid) = collateralizationOracle.read();
 
         return valid && ratio.lessThanOrEqualTo(_collateralizationThreshold);
+    }
+
+    /// @notice delay the opening of the TribeReserveStabilizer until oracle delay duration is met
+    function startOracleDelayCountdown() external override {
+        require(isCollateralizationBelowThreshold(), "TribeReserveStabilizer: Collateralization ratio above threshold");
+        require(!isTimeStarted(), "TribeReserveStabilizer: timer started");
+        _initTimed();
+    }
+
+    /// @notice reset the opening of the TribeReserveStabilizer oracle delay as soon as above CR target
+    function resetOracleDelayCountdown() external override {
+        require(!isCollateralizationBelowThreshold(), "TribeReserveStabilizer: Collateralization ratio under threshold");
+        require(isTimeStarted(), "TribeReserveStabilizer: timer started");
+        _pauseTimer();
     }
 
     /// @notice set the Collateralization oracle
@@ -99,41 +109,14 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, R
         return _collateralizationThreshold;
     }
 
-    /// @notice mints TRIBE to the target address
-    /// @param to the address to send TRIBE to
-    /// @param amount the amount of TRIBE to send
-    function mint(address to, uint256 amount) external override onlyGovernor {
-        _mint(to, amount);
-    }
-
-    /// @notice changes the TRIBE minter address
-    /// @param newMinter the new minter address
-    function setMinter(address newMinter) external override onlyGovernor {
-        require(newMinter != address(0), "TribeReserveStabilizer: zero address");
-        ITribe _tribe = ITribe(address(tribe()));
-        _tribe.setMinter(newMinter);
-    }
-
-    // Transfer held TRIBE first, then mint to cover remainder
+    // Call out to TRIBE minter for transferring
     function _transfer(address to, uint256 amount) internal override {
-        _depleteBuffer(amount);
-        uint256 _tribeBalance = balance();
-        uint256 mintAmount = amount;
-        if(_tribeBalance != 0) {
-            uint256 transferAmount = Math.min(_tribeBalance, amount);
-
-            _withdrawERC20(address(token), to, transferAmount);
-
-            mintAmount = mintAmount - transferAmount;
-            assert(mintAmount + transferAmount == amount);
-        }
-        if (mintAmount != 0) {
-            _mint(to, mintAmount);
-        }
+        tribeMinter.mint(to, amount);
     }
 
-    function _mint(address to, uint256 amount) internal {
-        ITribe _tribe = ITribe(address(token));
-        _tribe.mint(to, amount);
+    function _pauseTimer() internal {
+        // setting start time to 0 means isTimeStarted is false
+        startTime = 0;
+        emit TimerReset(0);
     }
 }

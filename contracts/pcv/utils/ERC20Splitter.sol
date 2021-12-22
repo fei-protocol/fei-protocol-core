@@ -12,6 +12,7 @@ contract ERC20Splitter is PCVSplitter {
     /**
         @notice constructor for ERC20Splitter
         @param _core the Core address to reference
+        @param _token the ERC20 token instance to split
         @param _pcvDeposits the locations to send tokens
         @param _ratios the relative ratios of how much tokens to send each location, in basis points
     */

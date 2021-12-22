@@ -1,17 +1,12 @@
 import { ZERO_ADDRESS, time, getCore, getAddresses, expectRevert } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-
-const CollateralizationOracleWrapper = artifacts.readArtifactSync('CollateralizationOracleWrapper');
-const MockCollateralizationOracle = artifacts.readArtifactSync('MockCollateralizationOracle');
-const Proxy = artifacts.readArtifactSync('TransparentUpgradeableProxy');
 
 const e18 = '000000000000000000';
 
 describe('CollateralizationOracleWrapper', function () {
   let userAddress: string;
-  let guardianAddress: string;
   let governorAddress: string;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
@@ -20,16 +15,7 @@ describe('CollateralizationOracleWrapper', function () {
     const addresses = await getAddresses();
 
     // add any addresses you want to impersonate here
-    const impersonatedAddresses = [
-      addresses.userAddress,
-      addresses.pcvControllerAddress,
-      addresses.governorAddress,
-      addresses.pcvControllerAddress,
-      addresses.minterAddress,
-      addresses.burnerAddress,
-      addresses.beneficiaryAddress1,
-      addresses.beneficiaryAddress2
-    ];
+    const impersonatedAddresses = [addresses.userAddress, addresses.governorAddress];
 
     for (const address of impersonatedAddresses) {
       await hre.network.provider.request({
@@ -42,7 +28,7 @@ describe('CollateralizationOracleWrapper', function () {
   });
 
   beforeEach(async function () {
-    ({ userAddress, guardianAddress, governorAddress } = await getAddresses());
+    ({ userAddress, governorAddress } = await getAddresses());
     this.core = await getCore();
     this.oracle = await (await ethers.getContractFactory('MockCollateralizationOracle')).deploy(this.core.address, 2);
     await this.oracle.set('1000', '3000');
@@ -116,6 +102,35 @@ describe('CollateralizationOracleWrapper', function () {
     });
   });
 
+  describe('Read Pause', function () {
+    describe('setReadPauseOverride', function () {
+      it('governor succeeds', async function () {
+        await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setReadPauseOverride(true);
+        expect(await this.oracleWrapper.readPauseOverride()).to.be.true;
+      });
+
+      it('non-governor reverts', async function () {
+        await expectRevert(
+          this.oracleWrapper.connect(impersonatedSigners[userAddress]).setReadPauseOverride(true),
+          'CoreRef: Caller is not a guardian or governor'
+        );
+      });
+    });
+
+    describe('ReadPause overrides pause', async function () {
+      beforeEach(async function () {
+        await this.oracleWrapper.update();
+        await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).pause();
+      });
+
+      it('succeeds', async function () {
+        expect((await this.oracleWrapper.read())[1]).to.be.false;
+        await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setReadPauseOverride(true);
+        expect((await this.oracleWrapper.read())[1]).to.be.true;
+      });
+    });
+  });
+
   describe('setCollateralizationOracle()', function () {
     it('should emit CollateralizationOracleUpdate', async function () {
       await expect(
@@ -164,6 +179,26 @@ describe('CollateralizationOracleWrapper', function () {
       await expectRevert(
         this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setDeviationThresholdBasisPoints('10001', {}),
         'CollateralizationOracleWrapper: invalid basis points'
+      );
+    });
+  });
+
+  describe('setCache()', function () {
+    it('should emit CachedValueUpdate', async function () {
+      await expect(await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setCache('1', '2', '3'))
+        .to.emit(this.oracleWrapper, 'CachedValueUpdate')
+        .withArgs(governorAddress, '1', '2', '3');
+    });
+    it('should update maps & array properties', async function () {
+      await this.oracleWrapper.connect(impersonatedSigners[governorAddress]).setCache('1', '2', '3');
+      expect((await this.oracleWrapper.cachedProtocolControlledValue()).toString()).to.be.equal('1');
+      expect((await this.oracleWrapper.cachedUserCirculatingFei()).toString()).to.be.equal('2');
+      expect((await this.oracleWrapper.cachedProtocolEquity()).toString()).to.be.equal('3');
+    });
+    it('should revert if not governor or admin', async function () {
+      await expectRevert(
+        this.oracleWrapper.connect(impersonatedSigners[userAddress]).setCache('1', '2', '3'),
+        'CoreRef: Caller is not a governor or contract admin'
       );
     });
   });

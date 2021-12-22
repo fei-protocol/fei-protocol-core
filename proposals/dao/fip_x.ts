@@ -6,7 +6,7 @@ import {
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
-} from '../../types/types';
+} from '@custom-types/types';
 
 /*
 
@@ -25,7 +25,7 @@ const fipNumber = '9001'; // Change me!
 
 // Do any deployments
 // This should exclusively include new contract deployments
-const deploy: DeployUpgradeFunc = async (deployAddress: string, address: NamedAddresses, logging: boolean) => {
+const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   console.log(`No deploy actions for fip${fipNumber}`);
   return {
     // put returned contract objects here

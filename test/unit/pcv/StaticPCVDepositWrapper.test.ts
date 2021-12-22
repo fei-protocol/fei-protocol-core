@@ -1,10 +1,7 @@
 import { getCore, getAddresses, expectRevert } from '../../helpers';
 import { expect } from 'chai';
-import hre, { artifacts, ethers } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-
-const StaticPCVDepositWrapper = artifacts.readArtifactSync('StaticPCVDepositWrapper');
-const toBN = ethers.BigNumber.from;
 
 describe('StaticPCVDepositWrapper', function () {
   let governorAddress: string;
@@ -74,6 +71,12 @@ describe('StaticPCVDepositWrapper', function () {
 
     expect(resistantBalances[0]).to.be.equal(this.balance);
     expect(resistantBalances[1]).to.be.equal(this.fei);
+
+    await this.deposit.connect(impersonatedSigners[governorAddress]).shiftBalance('50');
+    await this.deposit.connect(impersonatedSigners[governorAddress]).shiftFeiReportBalance('-50');
+
+    expect(await this.deposit.balance()).to.be.equal('350');
+    expect(await this.deposit.feiReportBalance()).to.be.equal('350');
   });
 
   it('set balances non-governor reverts', async function () {

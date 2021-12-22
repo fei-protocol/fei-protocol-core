@@ -1,19 +1,12 @@
 import { ZERO_ADDRESS, getCore, getAddresses, expectRevert, expectUnspecifiedRevert } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-
-const CollateralizationOracle = artifacts.readArtifactSync('CollateralizationOracle');
-const MockPCVDepositV2 = artifacts.readArtifactSync('MockPCVDepositV2');
-const MockOracleCoreRef = artifacts.readArtifactSync('MockOracleCoreRef');
-const MockERC20 = artifacts.readArtifactSync('MockERC20');
-const IFei = artifacts.readArtifactSync('IFei');
 
 const e18 = '000000000000000000';
 
 describe('CollateralizationOracle', function () {
   let userAddress: string;
-  let guardianAddress: string;
   let governorAddress: string;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
@@ -22,17 +15,7 @@ describe('CollateralizationOracle', function () {
     const addresses = await getAddresses();
 
     // add any addresses you want to impersonate here
-    const impersonatedAddresses = [
-      addresses.userAddress,
-      addresses.pcvControllerAddress,
-      addresses.governorAddress,
-      addresses.pcvControllerAddress,
-      addresses.minterAddress,
-      addresses.burnerAddress,
-      addresses.beneficiaryAddress1,
-      addresses.beneficiaryAddress2,
-      addresses.guardianAddress
-    ];
+    const impersonatedAddresses = [addresses.userAddress, addresses.governorAddress];
 
     for (const address of impersonatedAddresses) {
       await hre.network.provider.request({
@@ -45,7 +28,7 @@ describe('CollateralizationOracle', function () {
   });
 
   beforeEach(async function () {
-    ({ userAddress, guardianAddress, governorAddress } = await getAddresses());
+    ({ userAddress, governorAddress } = await getAddresses());
     this.core = await getCore();
     await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(userAddress);
     this.fei = await ethers.getContractAt('IFei', await this.core.fei());
@@ -104,9 +87,7 @@ describe('CollateralizationOracle', function () {
         [this.oracle1.address, this.oracle2.address]
       );
     });
-    it('excludedDeposits(address) => bool', async function () {
-      expect(await this.oracle.excludedDeposits(this.deposit1.address)).to.be.equal(false);
-    });
+
     it('tokenToOracle(address) => address', async function () {
       expect(await this.oracle.tokenToOracle(this.token1.address)).to.be.equal(this.oracle1.address);
     });
@@ -400,30 +381,6 @@ describe('CollateralizationOracle', function () {
           .connect(impersonatedSigners[governorAddress])
           .swapDeposit(this.deposit1.address, this.deposit2.address),
         'CollateralizationOracle: deposit duplicate'
-      );
-    });
-  });
-
-  describe('setDepositExclusion()', function () {
-    it('should allow guardian to exclude a deposit', async function () {
-      await this.oracle
-        .connect(impersonatedSigners[governorAddress])
-        .setOracle(this.token1.address, this.oracle1.address);
-      await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit1.address);
-      await this.oracle
-        .connect(impersonatedSigners[governorAddress])
-        .setOracle(this.token2.address, this.oracle2.address);
-      await this.oracle.connect(impersonatedSigners[governorAddress]).addDeposit(this.deposit2.address);
-
-      expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.equal(`5000${e18}`);
-      await this.oracle.connect(impersonatedSigners[guardianAddress]).setDepositExclusion(this.deposit1.address, true);
-      expect((await this.oracle.pcvStats()).protocolControlledValue).to.be.equal(`3000${e18}`);
-      expect((await this.oracle.pcvStats()).validityStatus).to.be.equal(true);
-    });
-    it('should revert if not guardian', async function () {
-      await expectRevert(
-        this.oracle.connect(impersonatedSigners[userAddress]).setDepositExclusion(this.deposit1.address, true),
-        'CoreRef: Caller is not a guardian or governor'
       );
     });
   });

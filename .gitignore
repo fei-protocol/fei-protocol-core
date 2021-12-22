@@ -1,3 +1,4 @@
+.eslintcache
 .env
 node_modules
 *.DS_Store*
@@ -9,3 +10,4 @@ tenderly.yaml
 artifacts
 cache
 types/contracts
+.eslintcache

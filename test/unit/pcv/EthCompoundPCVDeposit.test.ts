@@ -1,10 +1,7 @@
 import { expectRevert, balance, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-
-const EthCompoundPCVDeposit = artifacts.readArtifactSync('EthCompoundPCVDeposit');
-const MockCToken = artifacts.readArtifactSync('MockCToken');
 
 const toBN = ethers.BigNumber.from;
 

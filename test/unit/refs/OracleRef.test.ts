@@ -1,11 +1,7 @@
 import { expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-
-const ReserveStabilizer = artifacts.readArtifactSync('ReserveStabilizer');
-const MockOracle = artifacts.readArtifactSync('MockOracle');
-const MockERC20 = artifacts.readArtifactSync('MockERC20');
 
 const toBN = ethers.BigNumber.from;
 

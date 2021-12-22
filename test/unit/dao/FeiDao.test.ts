@@ -1,9 +1,9 @@
-import { expectRevert, time, getCore, getAddresses } from '../../helpers';
+import { expectRevert, time, getCore, getAddresses } from '@test/helpers';
 import { expect } from 'chai';
 import hre, { artifacts, ethers, network } from 'hardhat';
 import { Signer } from 'ethers';
 import { TransactionResponse } from '@ethersproject/providers';
-import { FeiDAO, Timelock } from '../../../types/contracts';
+import { Core, FeiDAO, Timelock } from '@custom-types/contracts';
 
 const Tribe = artifacts.readArtifactSync('Tribe');
 
@@ -13,7 +13,7 @@ describe('FeiDAO', function () {
   let userAddress: string;
   let governorAddress: string;
   let feiDAO: FeiDAO;
-  let core: any;
+  let core: Core;
   let timelock: Timelock;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
@@ -105,48 +105,6 @@ describe('FeiDAO', function () {
 
     it('backup governor correct address', async function () {
       expect(await feiDAO.BACKUP_GOVERNOR()).to.be.equal('0x4C895973334Af8E06fd6dA4f723Ac24A5f259e6B');
-    });
-  });
-
-  describe('Rollback', function () {
-    describe('__rollback', function () {
-      it('from admin succeeds', async function () {
-        const deadline = await feiDAO.ROLLBACK_DEADLINE();
-        expect(await feiDAO.connect(impersonatedSigners[userAddress]).__rollback(deadline))
-          .to.emit(feiDAO, 'RollbackQueued')
-          .withArgs(deadline);
-      });
-
-      it('not from admin reverts', async function () {
-        await expectRevert(
-          feiDAO.connect(impersonatedSigners[governorAddress]).__rollback('10'),
-          'FeiDAO: caller not guardian'
-        );
-      });
-
-      it('rollback expiry reverts', async function () {
-        await expectRevert(
-          feiDAO.connect(impersonatedSigners[userAddress]).__rollback('100000000000'),
-          'FeiDAO: rollback expired'
-        );
-      });
-    });
-
-    describe('__executeRollback', function () {
-      it('with rollback succeeds', async function () {
-        const deadline = await feiDAO.ROLLBACK_DEADLINE();
-        await feiDAO.connect(impersonatedSigners[userAddress]).__rollback(deadline);
-
-        await time.increaseTo(deadline.toString());
-
-        expect(await feiDAO.connect(impersonatedSigners[userAddress]).__executeRollback()).to.emit(feiDAO, 'Rollback');
-
-        expect(await timelock.pendingAdmin()).to.be.equal('0x4C895973334Af8E06fd6dA4f723Ac24A5f259e6B');
-      });
-
-      it('no rollback reverts', async function () {
-        await expectRevert(feiDAO.connect(impersonatedSigners[userAddress]).__executeRollback(), 'FeiDAO: no queue');
-      });
     });
   });
 

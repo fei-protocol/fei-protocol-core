@@ -1,14 +1,7 @@
 import { expectRevert, expectApprox, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { artifacts, ethers } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-
-const UniswapPCVDeposit = artifacts.readArtifactSync('UniswapPCVDeposit');
-const Fei = artifacts.readArtifactSync('Fei');
-const MockWeth = artifacts.readArtifactSync('MockWeth');
-const MockOracle = artifacts.readArtifactSync('MockOracle');
-const MockPair = artifacts.readArtifactSync('MockUniswapV2PairLiquidity');
-const MockRouter = artifacts.readArtifactSync('MockRouter');
 
 const toBN = ethers.BigNumber.from;
 
