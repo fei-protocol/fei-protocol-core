@@ -482,6 +482,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xA331D84eC860Bf466b4CdCcFb4aC09a1B43F3aE6',
     category: AddressCategory.External
   },
+  balancerWeightedPoolFactory: {
+    artifactName: 'IWeightedPool2TokensFactory',
+    address: '0xA5bf2ddF098bb0Ef6d120C98217dD6B141c74EE0',
+    category: AddressCategory.External
+  },
   balancerLBPoolFactory: {
     artifactName: 'ILiquidityBootstrappingPoolFactory',
     address: '0x751A0bC0e3f75b38e01Cf25bFCE7fF36DE1C87DE',
