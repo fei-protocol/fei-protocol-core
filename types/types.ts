@@ -61,7 +61,6 @@ export function namedContractsToNamedAddresses(contracts: NamedContracts): Named
 }
 
 export type Dependency = {
-  fips: { [key: string]: boolean };
   contractDependencies: string[];
   externalDependencies: string[];
 };
@@ -72,6 +71,7 @@ export type ProposalConfig = {
   skipDAO: boolean;
   totalValue: number;
   proposal: ProposalDescription;
+  affectedContractSignoff: string[];
 };
 
 export type ProposalsConfigMap = {
