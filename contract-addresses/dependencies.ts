@@ -2,7 +2,7 @@ import { DependencyMap } from '@custom-types/types';
 
 const dependencies: DependencyMap = {
   collateralizationOracleGuardian: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'guardian']
   },
   core: {
     contractDependencies: [
@@ -104,13 +104,13 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   optimisticMinter: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'optimisticTimelock']
   },
   pcvEquityMinter: {
     contractDependencies: ['core']
   },
   pcvGuardian: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'guardian']
   },
   proxyAdmin: {
     contractDependencies: ['feiDAOTimelock'] // NOTE this is slightly misleading as proxy admin needs to update admin to new timelock
@@ -131,7 +131,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'feiDAO', 'fei', 'proxyAdmin', 'creamDepositWrapper', 'balDepositWrapper']
   },
   guardian: {
-    contractDependencies: ['core'] // TODO do we want to document everything the guardian can affect. I think this should only reflect guardian-exclusive actions
+    contractDependencies: ['core', 'collateralizationOracleGuardian', 'pcvGuardian'] // TODO do we want to document everything the guardian can affect. I think this should only reflect guardian-exclusive actions
   },
   optimisticMultisig: {
     contractDependencies: ['optimisticTimelock']
@@ -142,7 +142,12 @@ const dependencies: DependencyMap = {
       'rewardsDistributorAdmin',
       'tribalChiefSync',
       'rariPool8Comptroller',
-      'optimisticMultisig'
+      'optimisticMultisig',
+      'optimisticMinter',
+      'tribalChief',
+      'collateralizationOracle',
+      'collateralizationOracleWrapper',
+      'staticPcvDepositWrapper2'
     ]
   },
   rariTimelock: {
@@ -314,10 +319,10 @@ const dependencies: DependencyMap = {
     contractDependencies: ['feiDAOTimelock']
   },
   collateralizationOracle: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'optimisticTimelock']
   },
   collateralizationOracleWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'optimisticTimelock']
   },
   collateralizationOracleWrapperImpl: {
     contractDependencies: ['core']
@@ -395,7 +400,7 @@ const dependencies: DependencyMap = {
     contractDependencies: []
   },
   staticPcvDepositWrapper2: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'optimisticTimelock']
   },
   balUsdCompositeOracle: {
     contractDependencies: ['core']
@@ -514,7 +519,7 @@ const dependencies: DependencyMap = {
     contractDependencies: []
   },
   tribalChief: {
-    contractDependencies: ['core', 'autoRewardsDistributor', 'tribalChiefSync']
+    contractDependencies: ['core', 'autoRewardsDistributor', 'tribalChiefSync', 'optimisticTimelock']
   },
   tribalChiefImpl: {
     contractDependencies: ['core']
