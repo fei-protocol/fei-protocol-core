@@ -88,8 +88,8 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
         uint256 oldBalance = balance;
         uint256 oldFEIBalance = feiReportBalance;
-        uint256 newBalance = balance - updatePCVDeposit.usdAmount + usdAmount;
-        uint256 newFeiReportBalance = feiReportBalance - updatePCVDeposit.feiAmount + feiAmount;
+        uint256 newBalance = oldBalance - updatePCVDeposit.usdAmount + usdAmount;
+        uint256 newFeiReportBalance = oldFEIBalance - updatePCVDeposit.feiAmount + feiAmount;
 
         balance = newBalance;
         feiReportBalance = newFeiReportBalance;
