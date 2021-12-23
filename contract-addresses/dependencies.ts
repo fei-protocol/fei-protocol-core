@@ -5,7 +5,97 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   core: {
-    contractDependencies: []
+    contractDependencies: [
+      'collateralizationOracleGuardian',
+      'fei',
+      'feiTribeLBPSwapper',
+      'optimisticMinter',
+      'pcvEquityMinter',
+      'pcvGuardian',
+      'ratioPCVController',
+      'tribe',
+      'tribeMinter',
+      'feiDAOTimelock',
+      'guardian',
+      'optimisticTimelock',
+      'aaveEthPCVDripController',
+      'bondingCurve',
+      'compoundEthPCVDripController',
+      'daiBondingCurve',
+      'daiPCVDripController',
+      'daiPSM',
+      'ethReserveStabilizer',
+      'tribeReserveStabilizer',
+      'aaveEthPCVDeposit',
+      'aaveFeiPCVDeposit',
+      'aaveRaiPCVDeposit',
+      'agEurAngleUniswapPCVDeposit',
+      'compoundDaiPCVDeposit',
+      'compoundEthPCVDeposit',
+      'creamFeiPCVDeposit',
+      'd3poolConvexPCVDeposit',
+      'd3poolCurvePCVDeposit',
+      'dpiUniswapPCVDeposit',
+      'ethLidoPCVDeposit',
+      'ethTokemakPCVDeposit',
+      'feiLusdLBPSwapper',
+      'indexCoopFusePoolDpiPCVDeposit',
+      'indexCoopFusePoolFeiPCVDeposit',
+      'indexDelegator',
+      'liquityFusePoolLusdPCVDeposit',
+      'poolPartyFeiPCVDeposit',
+      'rariPool18FeiPCVDeposit',
+      'rariPool19DpiPCVDeposit',
+      'rariPool19FeiPCVDeposit',
+      'rariPool22FeiPCVDeposit',
+      'rariPool24FeiPCVDeposit',
+      'rariPool25FeiPCVDeposit',
+      'rariPool26FeiPCVDeposit',
+      'rariPool27FeiPCVDeposit',
+      'rariPool28FeiPCVDeposit',
+      'rariPool31FeiPCVDeposit',
+      'rariPool54FeiPCVDeposit',
+      'rariPool6FeiPCVDeposit',
+      'rariPool72FeiPCVDeposit',
+      'rariPool79FeiPCVDeposit',
+      'rariPool7FeiPCVDeposit',
+      'rariPool7LusdPCVDeposit',
+      'rariPool8FeiPCVDeposit',
+      'rariPool90FeiPCVDeposit',
+      'rariPool91FeiPCVDeposit',
+      'rariPool9FeiPCVDeposit',
+      'rariPool9RaiPCVDeposit',
+      'reflexerStableAssetFusePoolRaiPCVDeposit',
+      'tokeTokemakPCVDeposit',
+      'uniswapPCVDeposit',
+      'collateralizationOracle',
+      'collateralizationOracleWrapper',
+      'collateralizationOracleWrapperImpl',
+      'staticPcvDepositWrapper2',
+      'balUsdCompositeOracle',
+      'chainlinkBALEthOracle',
+      'chainlinkCREAMEthOracle',
+      'chainlinkDaiUsdOracleWrapper',
+      'chainlinkDpiUsdOracleWrapper',
+      'chainlinkEthUsdOracleWrapper',
+      'chainlinkEurUsdOracleWrapper',
+      'chainlinkFeiEthOracleWrapper',
+      'chainlinkLUSDOracle',
+      'chainlinkRaiEthOracleWrapper',
+      'chainlinkRaiUsdCompositOracle',
+      'chainlinkTribeEthOracle',
+      'chainlinkTribeEthOracleWrapper',
+      'compositeOracle',
+      'creamUsdCompositeOracle',
+      'oneConstantOracle',
+      'tribeUsdCompositeOracle',
+      'zeroConstantOracle',
+      'collateralizationOracleKeeper',
+      'autoRewardsDistributor',
+      'erc20Dripper',
+      'tribalChief',
+      'tribalChiefImpl'
+    ]
   },
   fei: {
     contractDependencies: ['core', 'rariPool8Fei']
@@ -23,7 +113,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   proxyAdmin: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   ratioPCVController: {
     contractDependencies: ['core']
@@ -35,7 +125,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   feiDAO: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   feiDAOTimelock: {
     contractDependencies: ['core']
@@ -44,16 +134,16 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   optimisticMultisig: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   optimisticTimelock: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'rewardsDistributorAdmin', 'tribalChiefSync', 'rariPool8Comptroller']
   },
   rariTimelock: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   tribeRariDAO: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   aaveEthPCVDripController: {
     contractDependencies: ['core']
@@ -206,16 +296,16 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   aaveEthPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   aaveFeiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   aaveRaiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   balDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   collateralizationOracle: {
     contractDependencies: ['core']
@@ -227,76 +317,76 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   compoundDaiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   compoundEthPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   creamDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   creamFeiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   daiBondingCurveWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   ethLidoPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   ethReserveStabilizerWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   feiBuybackLens: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   feiLusdLens: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   feiOATimelockWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   rariPool18FeiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   rariPool19DpiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   rariPool19FeiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   rariPool24FeiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   rariPool25FeiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   rariPool26FeiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   rariPool27FeiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   rariPool28FeiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   rariPool31FeiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   rariPool6FeiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   rariPool7FeiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   rariPool8FeiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   rariPool9FeiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   rariPool9RaiPCVDepositWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   staticPcvDepositWrapper2: {
     contractDependencies: ['core']
@@ -359,13 +449,13 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   aaveTribeIncentivesController: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   aaveTribeIncentivesControllerImpl: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   autoRewardsDistributor: {
-    contractDependencies: ['core', 'rewardsDistributorAdmin', 'tribalChiefSync']
+    contractDependencies: ['core', 'rewardsDistributorAdmin', 'tribalChiefSync', 'tribalChief']
   },
   erc20Dripper: {
     contractDependencies: ['core']
@@ -379,7 +469,8 @@ const dependencies: DependencyMap = {
     contractDependencies: [
       'rariPool8Tribe',
       'rariRewardsDistributorDelegate', // impl
-      'rewardsDistributorAdmin' //admin
+      'rewardsDistributorAdmin', //admin
+      'rariPool8Comptroller'
     ]
   },
   rewardsDistributorAdmin: {
@@ -390,34 +481,34 @@ const dependencies: DependencyMap = {
     ]
   },
   stakingTokenWrapperFOXLaaS: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   stakingTokenWrapperGROLaaS: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   stakingTokenWrapperKYLINLaaS: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   stakingTokenWrapperMStableLaaS: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   stakingTokenWrapperNEARLaaS: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   stakingTokenWrapperPoolTogetherLaaS: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   stakingTokenWrapperRari: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   stakingTokenWrapperSYNLaaS: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   stakingTokenWrapperUMALaaS: {
-    contractDependencies: ['core']
+    contractDependencies: []
   },
   tribalChief: {
-    contractDependencies: ['core', 'autoRewardsDistributor']
+    contractDependencies: ['core', 'autoRewardsDistributor', 'tribalChiefSync']
   },
   tribalChiefImpl: {
     contractDependencies: ['core']
