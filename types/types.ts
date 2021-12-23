@@ -62,7 +62,6 @@ export function namedContractsToNamedAddresses(contracts: NamedContracts): Named
 
 export type Dependency = {
   contractDependencies: string[];
-  externalDependencies: string[];
 };
 export type DependencyMap = { [key: string]: Dependency };
 
