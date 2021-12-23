@@ -98,7 +98,7 @@ const dependencies: DependencyMap = {
     ]
   },
   fei: {
-    contractDependencies: ['core', 'rariPool8Fei']
+    contractDependencies: ['core', 'rariPool8Fei', 'feiDAOTimelock']
   },
   feiTribeLBPSwapper: {
     contractDependencies: ['core']
@@ -113,37 +113,43 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   proxyAdmin: {
-    contractDependencies: []
+    contractDependencies: ['feiDAOTimelock'] // NOTE this is slightly misleading as proxy admin needs to update admin to new timelock
   },
   ratioPCVController: {
     contractDependencies: ['core']
   },
   tribe: {
-    contractDependencies: ['core', 'rariPool8Tribe']
+    contractDependencies: ['core', 'rariPool8Tribe', 'feiDAO', 'tribeRariDAO']
   },
   tribeMinter: {
     contractDependencies: ['core']
   },
   feiDAO: {
-    contractDependencies: []
+    contractDependencies: ['feiDAOTimelock', 'tribe']
   },
   feiDAOTimelock: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'feiDAO', 'fei', 'proxyAdmin', 'creamDepositWrapper', 'balDepositWrapper']
   },
   guardian: {
-    contractDependencies: ['core']
+    contractDependencies: ['core'] // TODO do we want to document everything the guardian can affect. I think this should only reflect guardian-exclusive actions
   },
   optimisticMultisig: {
-    contractDependencies: []
+    contractDependencies: ['optimisticTimelock']
   },
   optimisticTimelock: {
-    contractDependencies: ['core', 'rewardsDistributorAdmin', 'tribalChiefSync', 'rariPool8Comptroller']
+    contractDependencies: [
+      'core',
+      'rewardsDistributorAdmin',
+      'tribalChiefSync',
+      'rariPool8Comptroller',
+      'optimisticMultisig'
+    ]
   },
   rariTimelock: {
-    contractDependencies: []
+    contractDependencies: ['tribeRariDAO']
   },
   tribeRariDAO: {
-    contractDependencies: []
+    contractDependencies: ['rariTimelock', 'tribe']
   },
   aaveEthPCVDripController: {
     contractDependencies: ['core']
@@ -305,7 +311,7 @@ const dependencies: DependencyMap = {
     contractDependencies: []
   },
   balDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['feiDAOTimelock']
   },
   collateralizationOracle: {
     contractDependencies: ['core']
@@ -323,7 +329,7 @@ const dependencies: DependencyMap = {
     contractDependencies: []
   },
   creamDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['feiDAOTimelock']
   },
   creamFeiPCVDepositWrapper: {
     contractDependencies: []
