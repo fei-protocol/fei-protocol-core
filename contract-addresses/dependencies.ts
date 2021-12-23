@@ -93,8 +93,7 @@ const dependencies: DependencyMap = {
       'collateralizationOracleKeeper',
       'autoRewardsDistributor',
       'erc20Dripper',
-      'tribalChief',
-      'tribalChiefImpl'
+      'tribalChief'
     ]
   },
   fei: {
@@ -113,13 +112,20 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'guardian']
   },
   proxyAdmin: {
-    contractDependencies: ['feiDAOTimelock'] // NOTE this is slightly misleading as proxy admin needs to update admin to new timelock
+    contractDependencies: ['feiDAOTimelock', 'aaveTribeIncentivesController'] // NOTE this is slightly misleading as proxy admin needs to update admin to new timelock
   },
   ratioPCVController: {
     contractDependencies: ['core']
   },
   tribe: {
-    contractDependencies: ['core', 'rariPool8Tribe', 'feiDAO', 'tribeRariDAO']
+    contractDependencies: [
+      'core',
+      'rariPool8Tribe',
+      'feiDAO',
+      'tribeRariDAO',
+      'erc20Dripper',
+      'aaveTribeIncentivesController'
+    ]
   },
   tribeMinter: {
     contractDependencies: ['core']
@@ -128,7 +134,15 @@ const dependencies: DependencyMap = {
     contractDependencies: ['feiDAOTimelock', 'tribe']
   },
   feiDAOTimelock: {
-    contractDependencies: ['core', 'feiDAO', 'fei', 'proxyAdmin', 'creamDepositWrapper', 'balDepositWrapper']
+    contractDependencies: [
+      'core',
+      'feiDAO',
+      'fei',
+      'proxyAdmin',
+      'creamDepositWrapper',
+      'balDepositWrapper',
+      'aaveTribeIncentivesController'
+    ]
   },
   guardian: {
     contractDependencies: ['core', 'collateralizationOracleGuardian', 'pcvGuardian'] // TODO do we want to document everything the guardian can affect. I think this should only reflect guardian-exclusive actions
@@ -460,16 +474,16 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   aaveTribeIncentivesController: {
-    contractDependencies: []
+    contractDependencies: ['aaveTribeIncentivesControllerImpl', 'tribe', 'feiDAOTimelock', 'proxyAdmin'] // NOTE uses old timelock
   },
   aaveTribeIncentivesControllerImpl: {
-    contractDependencies: []
+    contractDependencies: ['aaveTribeIncentivesController']
   },
   autoRewardsDistributor: {
     contractDependencies: ['core', 'rewardsDistributorAdmin', 'tribalChiefSync', 'tribalChief', 'rariPool8Tribe']
   },
   erc20Dripper: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'tribe', 'tribalChief']
   },
   rariRewardsDistributorDelegate: {
     contractDependencies: [
@@ -492,37 +506,53 @@ const dependencies: DependencyMap = {
     ]
   },
   stakingTokenWrapperFOXLaaS: {
-    contractDependencies: []
+    contractDependencies: ['tribalChief']
   },
   stakingTokenWrapperGROLaaS: {
-    contractDependencies: []
+    contractDependencies: ['tribalChief']
   },
   stakingTokenWrapperKYLINLaaS: {
-    contractDependencies: []
+    contractDependencies: ['tribalChief']
   },
   stakingTokenWrapperMStableLaaS: {
-    contractDependencies: []
+    contractDependencies: ['tribalChief']
   },
   stakingTokenWrapperNEARLaaS: {
-    contractDependencies: []
+    contractDependencies: ['tribalChief']
   },
   stakingTokenWrapperPoolTogetherLaaS: {
-    contractDependencies: []
+    contractDependencies: ['tribalChief']
   },
   stakingTokenWrapperRari: {
-    contractDependencies: []
+    contractDependencies: ['tribalChief']
   },
   stakingTokenWrapperSYNLaaS: {
-    contractDependencies: []
+    contractDependencies: ['tribalChief']
   },
   stakingTokenWrapperUMALaaS: {
-    contractDependencies: []
+    contractDependencies: ['tribalChief']
   },
   tribalChief: {
-    contractDependencies: ['core', 'autoRewardsDistributor', 'tribalChiefSync', 'optimisticTimelock']
+    contractDependencies: [
+      'core',
+      'autoRewardsDistributor',
+      'tribalChiefSync',
+      'optimisticTimelock',
+      'erc20Dripper',
+      'stakingTokenWrapperFOXLaaS',
+      'stakingTokenWrapperGROLaaS',
+      'stakingTokenWrapperKYLINLaaS',
+      'stakingTokenWrapperMStableLaaS',
+      'stakingTokenWrapperNEARLaaS',
+      'stakingTokenWrapperPoolTogetherLaaS',
+      'stakingTokenWrapperRari',
+      'stakingTokenWrapperSYNLaaS',
+      'stakingTokenWrapperUMALaaS',
+      'tribalChiefImpl'
+    ]
   },
   tribalChiefImpl: {
-    contractDependencies: ['core']
+    contractDependencies: ['tribalChief']
   },
   tribalChiefSync: {
     contractDependencies: [
