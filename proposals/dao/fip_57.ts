@@ -94,7 +94,7 @@ DEPLOY ACTIONS:
 
 1. Deploy NamedStaticPCVDepositWrapper
 
-DAO ACTIONS:
+OA ACTIONS:
 1. Add NamedStaticPCVDepositWrapper to the Collateralization Oracle 
 */
 

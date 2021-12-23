@@ -17,7 +17,7 @@ before(async () => {
   chai.use(solidity);
 });
 
-describe.only('e2e-named-collateralization', function () {
+describe('e2e-named-collateralization', function () {
   let contracts: NamedContracts;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
