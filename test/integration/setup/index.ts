@@ -1,4 +1,4 @@
-import permissions from '@addresses/permissions.json';
+import { permissions } from '@addresses/permissions';
 import { getAllContractAddresses, getAllContracts } from './loadContracts';
 import {
   Config,
