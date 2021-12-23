@@ -199,7 +199,7 @@ export interface MainnetContracts {
   raiBondingCurve: BondingCurve;
   rai: IERC20;
   chainlinkRaiEthOracleWrapper: ChainlinkOracleWrapper;
-  chainlinkRaiUsdCompositOracle: CompositeOracle;
+  chainlinkRaiUsdCompositeOracle: CompositeOracle;
   reflexerStableAssetFusePoolRaiPCVDeposit: ERC20CompoundPCVDeposit;
   kashiFeiTribe: IKashiPair;
   bentoBox: IMasterContractManager;

@@ -541,7 +541,7 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x060Be7B51F78DFFd04749332fd306BA1228e7444',
     category: AddressCategory.Oracle
   },
-  chainlinkLUSDOracle: {
+  chainlinkLUSDOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0xe61d11ec732d556A26fb863B192052BEa03eF8B5',
     category: AddressCategory.Oracle
@@ -551,14 +551,9 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x3d49573ee6aFCBDe606F8a1c2AA1C498048E7190',
     category: AddressCategory.Oracle
   },
-  chainlinkRaiUsdCompositOracle: {
+  chainlinkRaiUsdCompositeOracle: {
     artifactName: 'CompositeOracle',
     address: '0x392b1d29eDab680c5CA778D3A32b8284859BFBB0',
-    category: AddressCategory.Oracle
-  },
-  chainlinkTribeEthOracle: {
-    artifactName: 'unknown',
-    address: '0x84a24deCA415Acc0c395872a9e6a63E27D6225c8',
     category: AddressCategory.Oracle
   },
   chainlinkTribeEthOracleWrapper: {
@@ -874,6 +869,11 @@ const MainnetAddresses: MainnetAddresses = {
   chainlinkRaiEthOracle: {
     artifactName: 'unknown',
     address: '0x4ad7B025127e89263242aB68F0f9c4E5C033B489',
+    category: AddressCategory.External
+  },
+  chainlinkTribeEthOracle: {
+    artifactName: 'unknown',
+    address: '0x84a24deCA415Acc0c395872a9e6a63E27D6225c8',
     category: AddressCategory.External
   },
   communalFarm: {

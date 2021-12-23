@@ -80,10 +80,9 @@ const dependencies: DependencyMap = {
       'chainlinkEthUsdOracleWrapper',
       'chainlinkEurUsdOracleWrapper',
       'chainlinkFeiEthOracleWrapper',
-      'chainlinkLUSDOracle',
+      'chainlinkLUSDOracleWrapper',
       'chainlinkRaiEthOracleWrapper',
-      'chainlinkRaiUsdCompositOracle',
-      'chainlinkTribeEthOracle',
+      'chainlinkRaiUsdCompositeOracle',
       'chainlinkTribeEthOracleWrapper',
       'compositeOracle',
       'creamUsdCompositeOracle',
@@ -417,13 +416,13 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'optimisticTimelock']
   },
   balUsdCompositeOracle: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'chainlinkBALEthOracle', 'chainlinkEthUsdOracleWrapper']
   },
   chainlinkBALEthOracle: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'balUsdCompositeOracle']
   },
   chainlinkCREAMEthOracle: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'creamUsdCompositeOracle']
   },
   chainlinkDaiUsdOracleWrapper: {
     contractDependencies: ['core']
@@ -432,7 +431,14 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   chainlinkEthUsdOracleWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: [
+      'core',
+      'compositeOracle',
+      'tribeUsdCompositeOracle',
+      'chainlinkRaiUsdCompositeOracle',
+      'creamUsdCompositeOracle',
+      'balUsdCompositeOracle'
+    ]
   },
   chainlinkEurUsdOracleWrapper: {
     contractDependencies: ['core']
@@ -440,32 +446,29 @@ const dependencies: DependencyMap = {
   chainlinkFeiEthOracleWrapper: {
     contractDependencies: ['core']
   },
-  chainlinkLUSDOracle: {
+  chainlinkLUSDOracleWrapper: {
     contractDependencies: ['core']
   },
   chainlinkRaiEthOracleWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'chainlinkRaiUsdCompositeOracle']
   },
-  chainlinkRaiUsdCompositOracle: {
-    contractDependencies: ['core']
-  },
-  chainlinkTribeEthOracle: {
-    contractDependencies: ['core']
+  chainlinkRaiUsdCompositeOracle: {
+    contractDependencies: ['core', 'chainlinkEthUsdOracleWrapper', 'chainlinkRaiEthOracleWrapper']
   },
   chainlinkTribeEthOracleWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'tribeUsdCompositeOracle', 'compositeOracle']
   },
   compositeOracle: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'chainlinkEthUsdOracleWrapper', 'chainlinkTribeEthOracleWrapper']
   },
   creamUsdCompositeOracle: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'chainlinkEthUsdOracleWrapper', 'chainlinkCREAMEthOracle']
   },
   oneConstantOracle: {
     contractDependencies: ['core']
   },
   tribeUsdCompositeOracle: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'chainlinkTribeEthOracleWrapper', 'chainlinkEthUsdOracleWrapper']
   },
   zeroConstantOracle: {
     contractDependencies: ['core']
