@@ -272,7 +272,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   rariPool8FeiPCVDeposit: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'rariPool8Fei']
   },
   rariPool90FeiPCVDeposit: {
     contractDependencies: ['core']
@@ -455,7 +455,7 @@ const dependencies: DependencyMap = {
     contractDependencies: []
   },
   autoRewardsDistributor: {
-    contractDependencies: ['core', 'rewardsDistributorAdmin', 'tribalChiefSync', 'tribalChief']
+    contractDependencies: ['core', 'rewardsDistributorAdmin', 'tribalChiefSync', 'tribalChief', 'rariPool8Tribe']
   },
   erc20Dripper: {
     contractDependencies: ['core']
@@ -543,7 +543,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['rariPool8Eth']
   },
   rariPool8Fei: {
-    contractDependencies: ['fei', 'rariPool8Comptroller', 'rariPool8FeiIrm']
+    contractDependencies: ['fei', 'rariPool8Comptroller', 'rariPool8FeiIrm', 'rariPool8FeiPCVDeposit']
   },
   rariPool8FeiIrm: {
     contractDependencies: ['rariPool8Fei']
@@ -553,7 +553,8 @@ const dependencies: DependencyMap = {
       'tribe',
       'rariPool8Comptroller',
       'rariPool8TribeIrm',
-      'rariRewardsDistributorDelegator' // Drips TRIBE rewards
+      'rariRewardsDistributorDelegator', // Drips TRIBE rewards
+      'autoRewardsDistributor'
     ]
   },
   rariPool8TribeIrm: {
