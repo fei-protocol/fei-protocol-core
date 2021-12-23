@@ -166,8 +166,9 @@ describe('ERC20IdlePCVDeposit', function () {
 
       it('succeeds', async function () {
         const [depositBlance, depositFei] = await this.idlePCVDeposit.resistantBalanceAndFei();
-        expectApprox(await this.idlePCVDeposit.balance(), this.depositAmount, '1');
-        expectApprox(depositBlance, this.depositAmount, '1');
+        // Due to rounding error, deposited balance may not be exactly equal
+        expect(await this.idlePCVDeposit.balance()).to.be.equal(this.depositAmount.sub(1));
+        expect(depositBlance).to.be.equal(this.depositAmount.sub(1));
         expect(depositFei).to.be.equal(0);
       });
     });
@@ -193,9 +194,9 @@ describe('ERC20IdlePCVDeposit', function () {
       });
       it('succeeds', async function () {
         const [depositBlance, depositFei] = await this.idlePCVDeposit.resistantBalanceAndFei();
-        expectApprox(await this.idlePCVDeposit.balance(), this.depositAmount, '1');
-        expect(depositBlance).to.be.equal(0);
-        expectApprox(depositFei, this.depositAmount, '1');
+        expect(await this.idlePCVDeposit.balance()).to.be.equal(this.depositAmount.sub(1));
+        expect(depositBlance).to.be.equal(this.depositAmount.sub(1));
+        expect(depositFei).to.be.equal(this.depositAmount.sub(1));
       });
     });
   });

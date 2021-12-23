@@ -78,7 +78,7 @@ contract ERC20IdlePCVDeposit is PCVDeposit {
 
     function resistantBalanceAndFei() public view override returns (uint256, uint256) {
         uint256 _balance = balance();
-        if (address(token) == address(fei())) return (0, _balance);
+        if (address(token) == address(fei())) return (_balance, _balance);
         else return (_balance, 0);
     }
 }
