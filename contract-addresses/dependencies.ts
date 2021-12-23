@@ -97,7 +97,7 @@ const dependencies: DependencyMap = {
     ]
   },
   fei: {
-    contractDependencies: ['core', 'rariPool8Fei', 'feiDAOTimelock']
+    contractDependencies: ['core', 'rariPool8Fei', 'feiDAOTimelock', 'collateralizationOracleKeeper']
   },
   feiTribeLBPSwapper: {
     contractDependencies: ['core']
@@ -336,7 +336,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'optimisticTimelock']
   },
   collateralizationOracleWrapper: {
-    contractDependencies: ['core', 'optimisticTimelock']
+    contractDependencies: ['core', 'optimisticTimelock', 'collateralizationOracleKeeper']
   },
   collateralizationOracleWrapperImpl: {
     contractDependencies: ['core']
@@ -471,7 +471,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   collateralizationOracleKeeper: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'collateralizationOracleWrapper', 'fei']
   },
   aaveTribeIncentivesController: {
     contractDependencies: ['aaveTribeIncentivesControllerImpl', 'tribe', 'feiDAOTimelock', 'proxyAdmin'] // NOTE uses old timelock
