@@ -3,7 +3,7 @@ import { ProposalDescription } from '@custom-types/types';
 import proposals from '@test/integration/proposals_config';
 import dependencies from '@addresses/dependencies';
 
-describe.skip('e2e-dependencies', function () {
+describe('e2e-dependencies', function () {
   const doLogging = Boolean(process.env.LOGGING);
   let proposalNames: string[];
 
@@ -22,11 +22,9 @@ describe.skip('e2e-dependencies', function () {
         for (let j = 0; j < contracts.length; j++) {
           const contract = contracts[j];
           doLogging && console.log(`Checking contract: ${contract}`);
-          // Make sure all contracts are in dependencies map
-          expect(dependencies).to.haveOwnProperty(contract);
 
-          // Make sure this contract has this fip signed off
-          expect(dependencies[contract].fips).to.haveOwnProperty(proposalName);
+          // Make sure proposal config has this fip signed off
+          expect(proposals[proposalName].affectedContractSignoff).to.contain(contract);
         }
       }
     });
@@ -35,9 +33,11 @@ describe.skip('e2e-dependencies', function () {
       const contractNames = Object.keys(dependencies);
       for (let i = 0; i < contractNames.length; i++) {
         const contract = contractNames[i];
+        doLogging && console.log(`Checking contract: ${contract}`);
         const contractDependencies = dependencies[contract].contractDependencies;
         for (let j = 0; j < contractDependencies.length; j++) {
           const dependency = contractDependencies[j];
+          doLogging && console.log(`Checking contract dependency: ${dependency}`);
           expect(dependencies).to.haveOwnProperty(dependency);
           expect(dependencies[dependency].contractDependencies).to.contain(contract);
         }
