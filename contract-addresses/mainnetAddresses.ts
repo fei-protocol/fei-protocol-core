@@ -821,6 +821,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xba100000625a3754423978a60c9317c58a424e3D',
     category: AddressCategory.External
   },
+  usdc: {
+    artifactName: 'IERC20',
+    address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+    category: AddressCategory.External
+  },
   balancerAdmin: {
     artifactName: 'unknown',
     address: '0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f',

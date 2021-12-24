@@ -106,17 +106,24 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
 
     /// @notice returns total balance of PCV in the Deposit, expressed in "token"
     function balance() public view override returns (uint256) {
+        uint256 _bptSupply = IWeightedPool(poolAddress).totalSupply();
+        if (_bptSupply == 0) {
+          // empty (uninitialized) pools have a totalSupply of 0
+          return 0;
+        }
+
         (, uint256[] memory balances, ) = vault.getPoolTokens(poolId);
         uint256[] memory underlyingPrices = _readOracles();
 
         uint256 _balance = balances[tokenIndexInPool];
         for (uint256 i = 0; i < balances.length; i++) {
-            if (i != feiIndexInPool && i != tokenIndexInPool) {
+            bool isToken = i == tokenIndexInPool;
+            bool isFei = feiInPool && i == feiIndexInPool;
+            if (!isToken && !isFei) {
                 _balance += balances[i] * underlyingPrices[i] / underlyingPrices[tokenIndexInPool];
             }
         }
 
-        uint256 _bptSupply = IWeightedPool(poolAddress).totalSupply();
         uint256 _bptBalance = IWeightedPool(poolAddress).balanceOf(address(this));
 
         return _balance * _bptBalance / _bptSupply;
@@ -137,7 +144,7 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
         uint256 bptBalance = IWeightedPool(poolAddress).balanceOf(address(this));
         Decimal.D256 memory bptValueUSD = Decimal.from(bptBalance).mul(bptPrice).div(1e18);
 
-        // compte balance in "token" value
+        // compute balance in "token" value
         _resistantBalance = bptValueUSD.mul(1e18).div(underlyingPrices[tokenIndexInPool]).asUint256();
 
         // if FEI is in the pair, return only the value of asset, and does not
@@ -166,6 +173,10 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
         uint256 totalbalance = 0;
         for (uint256 i = 0; i < balances.length; i++) {
             balances[i] = IERC20(address(poolAssets[i])).balanceOf(address(this));
+            // @dev: note that totalbalance is meaningless here, because we are
+            // adding units of tokens that may have different decimals, different
+            // values, etc. But the totalbalance is only used for checking > 0,
+            // to make sure that we have something to deposit.
             totalbalance += balances[i];
         }
         require(totalbalance > 0, "BalancerPCVDepositWeightedPool: no tokens to deposit");
@@ -181,7 +192,12 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
             _mintFei(address(this), _feiToMint);
             balances[feiIndexInPool] = _feiToMint;
         }
+
         bytes memory userData = abi.encode(IWeightedPool.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT, balances, 0);
+        // If the pool is not initialized, join with an INIT JoinKind
+        if (IWeightedPool(poolAddress).totalSupply() == 0) {
+            userData = abi.encode(IWeightedPool.JoinKind.INIT, balances);
+        }
 
         IVault.JoinPoolRequest memory request = IVault.JoinPoolRequest({
             assets: poolAssets,
@@ -273,6 +289,13 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
             (Decimal.D256 memory oracleValue, bool oracleValid) = tokenOraclesMapping[IERC20(address(poolAssets[i]))].read();
             require(oracleValid, "BalancerPCVDepositWeightedPool: invalid oracle");
             underlyingPrices[i] = oracleValue.mul(1e18).asUint256();
+
+            // normalize prices for tokens with different decimals
+            uint8 decimals = ERC20(address(poolAssets[i])).decimals();
+            assert(decimals <= 18, "invalid decimals"); // should never happen
+            if (decimals < 18) {
+                underlyingPrices[i] = underlyingPrices[i] * 10**(18-decimals);
+            }
         }
     }
 

@@ -25,8 +25,11 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
     );
 
     // @notice event generated when pool position is exited (LP tokens redeemed
-    // for token & otherToken in proportion to the pool's weights).
-    event ExitPool();
+    // for tokens in proportion to the pool's weights.
+    event ExitPool(
+        bytes32 indexed _poodId,
+        uint256 _bptAmount
+    );
 
     // Maximum tolerated slippage for deposits
     uint256 public maximumSlippageBasisPoints;
@@ -123,7 +126,7 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
 
             _burnFeiHeld();
 
-            emit ExitPool();
+            emit ExitPool(poolId, bptBalance);
         }
     }
 
