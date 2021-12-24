@@ -292,7 +292,7 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
 
             // normalize prices for tokens with different decimals
             uint8 decimals = ERC20(address(poolAssets[i])).decimals();
-            assert(decimals <= 18, "invalid decimals"); // should never happen
+            require(decimals <= 18, "invalid decimals"); // should never happen
             if (decimals < 18) {
                 underlyingPrices[i] = underlyingPrices[i] * 10**(18-decimals);
             }
