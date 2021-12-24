@@ -332,7 +332,20 @@ const dependencies: DependencyMap = {
     contractDependencies: ['feiDAOTimelock']
   },
   collateralizationOracle: {
-    contractDependencies: ['core', 'optimisticTimelock']
+    contractDependencies: [
+      'core',
+      'optimisticTimelock',
+      'balUsdCompositeOracle',
+      'chainlinkDaiUsdOracleWrapper',
+      'chainlinkDpiUsdOracleWrapper',
+      'chainlinkEthUsdOracleWrapper',
+      'chainlinkEurUsdOracleWrapper',
+      'chainlinkLUSDOracleWrapper',
+      'chainlinkRaiUsdCompositeOracle',
+      'creamUsdCompositeOracle',
+      'oneConstantOracle',
+      'zeroConstantOracle'
+    ]
   },
   collateralizationOracleWrapper: {
     contractDependencies: ['core', 'optimisticTimelock', 'collateralizationOracleKeeper']
@@ -416,7 +429,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'optimisticTimelock']
   },
   balUsdCompositeOracle: {
-    contractDependencies: ['core', 'chainlinkBALEthOracle', 'chainlinkEthUsdOracleWrapper']
+    contractDependencies: ['core', 'chainlinkBALEthOracle', 'chainlinkEthUsdOracleWrapper', 'collateralizationOracle']
   },
   chainlinkBALEthOracle: {
     contractDependencies: ['core', 'balUsdCompositeOracle']
@@ -425,10 +438,10 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'creamUsdCompositeOracle']
   },
   chainlinkDaiUsdOracleWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'collateralizationOracle']
   },
   chainlinkDpiUsdOracleWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'collateralizationOracle']
   },
   chainlinkEthUsdOracleWrapper: {
     contractDependencies: [
@@ -437,23 +450,29 @@ const dependencies: DependencyMap = {
       'tribeUsdCompositeOracle',
       'chainlinkRaiUsdCompositeOracle',
       'creamUsdCompositeOracle',
-      'balUsdCompositeOracle'
+      'balUsdCompositeOracle',
+      'collateralizationOracle'
     ]
   },
   chainlinkEurUsdOracleWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'collateralizationOracle']
   },
   chainlinkFeiEthOracleWrapper: {
     contractDependencies: ['core']
   },
   chainlinkLUSDOracleWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'collateralizationOracle']
   },
   chainlinkRaiEthOracleWrapper: {
     contractDependencies: ['core', 'chainlinkRaiUsdCompositeOracle']
   },
   chainlinkRaiUsdCompositeOracle: {
-    contractDependencies: ['core', 'chainlinkEthUsdOracleWrapper', 'chainlinkRaiEthOracleWrapper']
+    contractDependencies: [
+      'core',
+      'chainlinkEthUsdOracleWrapper',
+      'chainlinkRaiEthOracleWrapper',
+      'collateralizationOracle'
+    ]
   },
   chainlinkTribeEthOracleWrapper: {
     contractDependencies: ['core', 'tribeUsdCompositeOracle', 'compositeOracle']
@@ -462,16 +481,16 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'chainlinkEthUsdOracleWrapper', 'chainlinkTribeEthOracleWrapper']
   },
   creamUsdCompositeOracle: {
-    contractDependencies: ['core', 'chainlinkEthUsdOracleWrapper', 'chainlinkCREAMEthOracle']
+    contractDependencies: ['core', 'chainlinkEthUsdOracleWrapper', 'chainlinkCREAMEthOracle', 'collateralizationOracle']
   },
   oneConstantOracle: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'collateralizationOracle']
   },
   tribeUsdCompositeOracle: {
     contractDependencies: ['core', 'chainlinkTribeEthOracleWrapper', 'chainlinkEthUsdOracleWrapper']
   },
   zeroConstantOracle: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'collateralizationOracle']
   },
   collateralizationOracleKeeper: {
     contractDependencies: ['core', 'collateralizationOracleWrapper', 'fei']
