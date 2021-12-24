@@ -217,8 +217,8 @@ describe('balancer-weightedpool', function () {
     });
 
     it('should be able to exitPool', async function () {
-      // exit hte pool
-      await balancerDepositTribeWeth.connect(daoSigner).exitPool();
+      // exit the pool
+      await balancerDepositTribeWeth.connect(daoSigner).exitPool(balancerDepositTribeWeth.address);
 
       // fetch price
       const ethPrice = (await contracts.chainlinkEthUsdOracleWrapper.read())[0] / 1e18; // ~= 4,000
@@ -304,7 +304,7 @@ describe('balancer-weightedpool', function () {
 
     it('should burn FEI on exitPool', async function () {
       // exitPool
-      await balancerDepositFeiUsdc.connect(daoSigner).exitPool();
+      await balancerDepositFeiUsdc.connect(daoSigner).exitPool(balancerDepositFeiUsdc.address);
 
       // check balances
       expect(await contracts.fei.balanceOf(balancerDepositFeiUsdc.address)).to.be.equal('0'); // burn the FEI

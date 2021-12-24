@@ -28,6 +28,7 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
     // for tokens in proportion to the pool's weights.
     event ExitPool(
         bytes32 indexed _poodId,
+        address indexed _to,
         uint256 _bptAmount
     );
 
@@ -110,7 +111,8 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
     }
 
     /// @notice redeeem all assets from LP pool
-    function exitPool() external whenNotPaused onlyPCVController {
+    /// @param _to address to send underlying tokens to
+    function exitPool(address _to) external whenNotPaused onlyPCVController {
         uint256 bptBalance = IWeightedPool(poolAddress).balanceOf(address(this));
         if (bptBalance != 0) {
             IVault.ExitPoolRequest memory request;
@@ -122,11 +124,13 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
             request.userData = userData;
             request.toInternalBalance = false; // use external balances to be able to transfer out tokenReceived
 
-            vault.exitPool(poolId, address(this), payable(address(this)), request);
+            vault.exitPool(poolId, address(this), payable(address(_to)), request);
 
-            _burnFeiHeld();
+            if (_to == address(this)) {
+                _burnFeiHeld();
+            }
 
-            emit ExitPool(poolId, bptBalance);
+            emit ExitPool(poolId, _to, bptBalance);
         }
     }
 

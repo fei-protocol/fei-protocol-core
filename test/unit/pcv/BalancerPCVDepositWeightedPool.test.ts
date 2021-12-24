@@ -154,13 +154,13 @@ describe('BalancerPCVDepositWeightedPool', function () {
     describe('Exit pool', function () {
       it('reverts if paused', async function () {
         await deposit.connect(await getImpersonatedSigner(governorAddress)).pause();
-        await expect(deposit.exitPool()).to.be.revertedWith('Pausable: paused');
+        await expect(deposit.exitPool(userAddress)).to.be.revertedWith('Pausable: paused');
       });
 
       it('reverts if not PCVController', async function () {
-        await expect(deposit.connect(await getImpersonatedSigner(userAddress)).exitPool()).to.be.revertedWith(
-          'CoreRef: Caller is not a PCV controller'
-        );
+        await expect(
+          deposit.connect(await getImpersonatedSigner(userAddress)).exitPool(userAddress)
+        ).to.be.revertedWith('CoreRef: Caller is not a PCV controller');
       });
 
       it('succeeds and holds all underlying tokens', async function () {
@@ -170,9 +170,9 @@ describe('BalancerPCVDepositWeightedPool', function () {
         await deposit.deposit();
         expect(await weth.balanceOf(userAddress)).to.be.equal('0');
         expect(await bal.balanceOf(userAddress)).to.be.equal('0');
-        await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).exitPool();
-        expect(await weth.balanceOf(deposit.address)).to.be.equal('250');
-        expect(await bal.balanceOf(deposit.address)).to.be.equal('40000');
+        await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).exitPool(userAddress);
+        expect(await weth.balanceOf(userAddress)).to.be.equal('250');
+        expect(await bal.balanceOf(userAddress)).to.be.equal('40000');
       });
     });
 
@@ -286,15 +286,26 @@ describe('BalancerPCVDepositWeightedPool', function () {
     });
 
     describe('Exit Pool', function () {
-      it('Should burn the FEI', async function () {
+      it('Should burn the FEI if sending to self', async function () {
         await weth.mint(deposit.address, toBN('1000'));
         await deposit.deposit();
-        await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).exitPool();
+        await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).exitPool(deposit.address);
         expect(await deposit.balance()).to.be.equal('0');
         expect(await fei.balanceOf(poolAddress)).to.be.equal('0');
         expect(await weth.balanceOf(poolAddress)).to.be.equal('0');
         expect(await weth.balanceOf(deposit.address)).to.be.equal(toBN('1000'));
         expect(await fei.balanceOf(deposit.address)).to.be.equal('0');
+      });
+
+      it('Should not burn the FEI if sending somewhere lese', async function () {
+        await weth.mint(deposit.address, toBN('1000'));
+        await deposit.deposit();
+        await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).exitPool(userAddress);
+        expect(await deposit.balance()).to.be.equal('0');
+        expect(await fei.balanceOf(poolAddress)).to.be.equal('0');
+        expect(await weth.balanceOf(poolAddress)).to.be.equal('0');
+        expect(await weth.balanceOf(userAddress)).to.be.equal(toBN('1000'));
+        expect(await fei.balanceOf(userAddress)).to.be.equal('4000000');
       });
     });
   });
@@ -378,12 +389,12 @@ describe('BalancerPCVDepositWeightedPool', function () {
     });
 
     describe('Exit Pool', function () {
-      it('Should burn the FEI', async function () {
+      it('Should burn the FEI if sending to self', async function () {
         await token1.mint(deposit.address, '1000'); // 100,000 $
         await token2.mint(deposit.address, '500'); // 100,000 $
         await token3.mint(deposit.address, '250'); // 100,000 $
         await deposit.deposit();
-        await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).exitPool();
+        await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).exitPool(deposit.address);
         expect(await deposit.balance()).to.be.equal('0');
         expect(await fei.balanceOf(deposit.address)).to.be.equal('0');
         expectApproxAbs(await token1.balanceOf(deposit.address), '1000', '10'); // [990, 1010]
