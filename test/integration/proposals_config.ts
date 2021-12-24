@@ -14,12 +14,6 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  merger: {
-    deploy: false,
-    skipDAO: false,
-    totalValue: 0,
-    proposal: merger_proposal
-  }
 };
 
 export default proposals;
