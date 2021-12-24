@@ -151,6 +151,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x7AC2Ab8143634419c5bc230A9f9955C3e29f64Ef',
     category: AddressCategory.PCV
   },
+  balancerDepositBalWeth: {
+    artifactName: 'BalancerPCVDepositWeightedPool',
+    address: '0xcd1Ac0014E2ebd972f40f24dF1694e6F528B2fD4',
+    category: AddressCategory.PCV
+  },
   compoundDaiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0xe0f73b8d76D2Ad33492F995af218b03564b8Ce20',
