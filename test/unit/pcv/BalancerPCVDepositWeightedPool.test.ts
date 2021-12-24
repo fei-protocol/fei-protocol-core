@@ -4,8 +4,6 @@ import CBN from 'chai-bn';
 import { ethers } from 'hardhat';
 import {
   Fei,
-  IWETH,
-  IERC20,
   MockERC20,
   MockERC20__factory,
   MockOracle,
@@ -223,8 +221,7 @@ describe('BalancerPCVDepositWeightedPool', function () {
 
   describe('With ETH and FEI', function () {
     let fei: Fei;
-    let weth: IWETH;
-    let wethERC20: IERC20;
+    let weth: MockWeth;
     let bal: MockERC20;
     let oracleFei: MockOracle;
     let oracleWeth: MockOracle;
@@ -233,8 +230,7 @@ describe('BalancerPCVDepositWeightedPool', function () {
     beforeEach(async function () {
       core = await getCore();
       fei = await ethers.getContractAt('Fei', await core.fei());
-      weth = await ethers.getContractAt('IWETH', '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2');
-      wethERC20 = await ethers.getContractAt('IERC20', '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2');
+      weth = await new MockWeth__factory(await getImpersonatedSigner(userAddress)).deploy();
       bal = await new MockERC20__factory(await getImpersonatedSigner(userAddress)).deploy();
       oracleFei = await new MockOracle__factory(await getImpersonatedSigner(userAddress)).deploy('1');
       oracleWeth = await new MockOracle__factory(await getImpersonatedSigner(userAddress)).deploy('4000');
@@ -259,37 +255,16 @@ describe('BalancerPCVDepositWeightedPool', function () {
       await core.grantMinter(deposit.address);
     });
 
-    it('should be able to wrap and unwrap ETH', async function () {
-      expect(await wethERC20.balanceOf(deposit.address)).to.be.equal('0');
-      expect((await balance.current(deposit.address)).toString()).to.be.equal('0');
-
-      await (await ethers.getSigner(userAddress)).sendTransaction({ to: deposit.address, value: toBN('1000') });
-
-      expect(await wethERC20.balanceOf(deposit.address)).to.be.equal('0');
-      expect((await balance.current(deposit.address)).toString()).to.be.equal(toBN('1000'));
-
-      await deposit.wrapETH();
-
-      expect(await wethERC20.balanceOf(deposit.address)).to.be.equal(toBN('1000'));
-      expect((await balance.current(deposit.address)).toString()).to.be.equal('0');
-
-      await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).unwrapETH();
-
-      expect(await wethERC20.balanceOf(deposit.address)).to.be.equal('0');
-      expect((await balance.current(deposit.address)).toString()).to.be.equal(toBN('1000'));
-    });
-
     describe('Deposit + balance checks', function () {
       it('Should mint required FEI, and update the balances properly', async function () {
-        await (await ethers.getSigner(userAddress)).sendTransaction({ to: deposit.address, value: toBN('1000') });
-        await deposit.wrapETH();
+        await weth.mint(deposit.address, toBN('1000'));
         expect(await deposit.balance()).to.be.equal('0');
         expect(await fei.balanceOf(poolAddress)).to.be.equal('0');
-        expect(await wethERC20.balanceOf(poolAddress)).to.be.equal('0');
+        expect(await weth.balanceOf(poolAddress)).to.be.equal('0');
         await deposit.deposit();
         expectApproxAbs(await deposit.balance(), '1000', '1'); // [999, 1001]
         expectApproxAbs(await fei.balanceOf(poolAddress), '4000000', '1000'); // [3999000, 4001000]
-        expectApproxAbs(await wethERC20.balanceOf(poolAddress), '1000', '1'); // [999, 1001]
+        expectApproxAbs(await weth.balanceOf(poolAddress), '1000', '1'); // [999, 1001]
         expectApproxAbs((await deposit.resistantBalanceAndFei())._resistantBalance, '1000', '1'); // [999, 1001]
         expectApproxAbs((await deposit.resistantBalanceAndFei())._resistantFei, '4000000', '10000'); // [3990000, 4010000]
       });
@@ -297,30 +272,28 @@ describe('BalancerPCVDepositWeightedPool', function () {
 
     describe('Withdraw', function () {
       it('Should burn the FEI', async function () {
-        await (await ethers.getSigner(userAddress)).sendTransaction({ to: deposit.address, value: toBN('1000') });
-        await deposit.wrapETH();
+        await weth.mint(deposit.address, toBN('1000'));
         await deposit.deposit();
         await deposit
           .connect(await getImpersonatedSigner(pcvControllerAddress))
           .withdraw(deposit.address, toBN('1000'));
         expect(await deposit.balance()).to.be.equal('0');
         expect(await fei.balanceOf(poolAddress)).to.be.equal('0');
-        expect(await wethERC20.balanceOf(poolAddress)).to.be.equal('0');
-        expect(await wethERC20.balanceOf(deposit.address)).to.be.equal(toBN('1000'));
+        expect(await weth.balanceOf(poolAddress)).to.be.equal('0');
+        expect(await weth.balanceOf(deposit.address)).to.be.equal(toBN('1000'));
         expect(await fei.balanceOf(deposit.address)).to.be.equal('0');
       });
     });
 
     describe('Exit Pool', function () {
       it('Should burn the FEI', async function () {
-        await (await ethers.getSigner(userAddress)).sendTransaction({ to: deposit.address, value: toBN('1000') });
-        await deposit.wrapETH();
+        await weth.mint(deposit.address, toBN('1000'));
         await deposit.deposit();
         await deposit.connect(await getImpersonatedSigner(pcvControllerAddress)).exitPool();
         expect(await deposit.balance()).to.be.equal('0');
         expect(await fei.balanceOf(poolAddress)).to.be.equal('0');
-        expect(await wethERC20.balanceOf(poolAddress)).to.be.equal('0');
-        expect(await wethERC20.balanceOf(deposit.address)).to.be.equal(toBN('1000'));
+        expect(await weth.balanceOf(poolAddress)).to.be.equal('0');
+        expect(await weth.balanceOf(deposit.address)).to.be.equal(toBN('1000'));
         expect(await fei.balanceOf(deposit.address)).to.be.equal('0');
       });
     });
