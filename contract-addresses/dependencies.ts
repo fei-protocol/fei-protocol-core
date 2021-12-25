@@ -70,7 +70,6 @@ const dependencies: DependencyMap = {
       'uniswapPCVDeposit',
       'collateralizationOracle',
       'collateralizationOracleWrapper',
-      'collateralizationOracleWrapperImpl',
       'staticPcvDepositWrapper2',
       'balUsdCompositeOracle',
       'chainlinkBALEthOracle',
@@ -384,7 +383,7 @@ const dependencies: DependencyMap = {
     ]
   },
   collateralizationOracleWrapperImpl: {
-    contractDependencies: ['core', 'collateralizationOracleWrapper']
+    contractDependencies: ['collateralizationOracleWrapper']
   },
   compoundDaiPCVDepositWrapper: {
     contractDependencies: ['collateralizationOracle']
