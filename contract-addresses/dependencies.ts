@@ -131,19 +131,24 @@ const dependencies: DependencyMap = {
     ]
   },
   feiTribeLBPSwapper: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'pcvEquityMinter']
   },
   optimisticMinter: {
     contractDependencies: ['core', 'optimisticTimelock']
   },
   pcvEquityMinter: {
-    contractDependencies: ['core', 'collateralizationOracleWrapper']
+    contractDependencies: ['core', 'collateralizationOracleWrapper', 'feiTribeLBPSwapper']
   },
   pcvGuardian: {
     contractDependencies: ['core', 'guardian']
   },
   proxyAdmin: {
-    contractDependencies: ['feiDAOTimelock', 'aaveTribeIncentivesController'] // NOTE this is slightly misleading as proxy admin needs to update admin to new timelock
+    contractDependencies: [
+      'feiDAOTimelock',
+      'aaveTribeIncentivesController',
+      'tribalChief',
+      'collateralizationOracleWrapper'
+    ] // NOTE this is slightly misleading as proxy admin needs to update admin to new timelock
   },
   ratioPCVController: {
     contractDependencies: ['core']
@@ -155,11 +160,13 @@ const dependencies: DependencyMap = {
       'feiDAO',
       'tribeRariDAO',
       'erc20Dripper',
-      'aaveTribeIncentivesController'
+      'aaveTribeIncentivesController',
+      'tribeMinter',
+      'tribeReserveStabilizer'
     ]
   },
   tribeMinter: {
-    contractDependencies: ['core', 'tribeReserveStabilizer']
+    contractDependencies: ['core', 'tribeReserveStabilizer', 'tribe', 'erc20Dripper', 'feiDAOTimelock' /* Owner */]
   },
   feiDAO: {
     contractDependencies: ['feiDAOTimelock', 'tribe']
@@ -172,7 +179,8 @@ const dependencies: DependencyMap = {
       'proxyAdmin',
       'creamDepositWrapper',
       'balDepositWrapper',
-      'aaveTribeIncentivesController'
+      'aaveTribeIncentivesController',
+      'tribeMinter'
     ]
   },
   guardian: {
@@ -234,7 +242,7 @@ const dependencies: DependencyMap = {
     ]
   },
   tribeReserveStabilizer: {
-    contractDependencies: ['core', 'tribeUsdCompositeOracle', 'tribeMinter', 'collateralizationOracleWrapper']
+    contractDependencies: ['core', 'tribeUsdCompositeOracle', 'tribeMinter', 'collateralizationOracleWrapper', 'tribe']
   },
   aaveEthPCVDeposit: {
     contractDependencies: ['core', 'aaveEthPCVDripController', 'bondingCurve']
@@ -422,7 +430,8 @@ const dependencies: DependencyMap = {
       'collateralizationOracleGuardian',
       'collateralizationOracleWrapperImpl',
       'tribeReserveStabilizer',
-      'pcvEquityMinter'
+      'pcvEquityMinter',
+      'proxyAdmin'
     ]
   },
   collateralizationOracleWrapperImpl: {
@@ -585,7 +594,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'rewardsDistributorAdmin', 'tribalChiefSync', 'tribalChief', 'rariPool8Tribe']
   },
   erc20Dripper: {
-    contractDependencies: ['core', 'tribe', 'tribalChief']
+    contractDependencies: ['core', 'tribe', 'tribalChief', 'tribeMinter']
   },
   rariRewardsDistributorDelegate: {
     contractDependencies: [
@@ -650,7 +659,8 @@ const dependencies: DependencyMap = {
       'stakingTokenWrapperRari',
       'stakingTokenWrapperSYNLaaS',
       'stakingTokenWrapperUMALaaS',
-      'tribalChiefImpl'
+      'tribalChiefImpl',
+      'proxyAdmin'
     ]
   },
   tribalChiefImpl: {
