@@ -151,6 +151,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x7AC2Ab8143634419c5bc230A9f9955C3e29f64Ef',
     category: AddressCategory.PCV
   },
+  balancerDepositBalWeth: {
+    artifactName: 'BalancerPCVDepositWeightedPool',
+    address: '0xcd1Ac0014E2ebd972f40f24dF1694e6F528B2fD4',
+    category: AddressCategory.PCV
+  },
   compoundDaiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0xe0f73b8d76D2Ad33492F995af218b03564b8Ce20',
@@ -821,6 +826,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xba100000625a3754423978a60c9317c58a424e3D',
     category: AddressCategory.External
   },
+  usdc: {
+    artifactName: 'IERC20',
+    address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+    category: AddressCategory.External
+  },
   balancerAdmin: {
     artifactName: 'unknown',
     address: '0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f',
@@ -831,6 +841,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xA331D84eC860Bf466b4CdCcFb4aC09a1B43F3aE6',
     category: AddressCategory.External
   },
+  balancerWeightedPoolFactory: {
+    artifactName: 'IWeightedPool2TokensFactory',
+    address: '0xA5bf2ddF098bb0Ef6d120C98217dD6B141c74EE0',
+    category: AddressCategory.External
+  },
   balancerLBPoolFactory: {
     artifactName: 'ILiquidityBootstrappingPoolFactory',
     address: '0x751A0bC0e3f75b38e01Cf25bFCE7fF36DE1C87DE',
@@ -839,6 +854,11 @@ const MainnetAddresses: MainnetAddresses = {
   balancerVault: {
     artifactName: 'IVault',
     address: '0xBA12222222228d8Ba445958a75a0704d566BF2C8',
+    category: AddressCategory.External
+  },
+  balancerRewards: {
+    artifactName: 'IMerkleOrchard',
+    address: '0xdAE7e32ADc5d490a43cCba1f0c736033F2b4eFca',
     category: AddressCategory.External
   },
   bentoBox: {
