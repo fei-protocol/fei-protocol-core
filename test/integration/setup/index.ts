@@ -85,6 +85,17 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   ): Promise<NamedContracts> {
     let deployedUpgradedContracts = {};
 
+    if (config.proposalId) {
+      this.config.logging && console.log(`Checking proposal completed`);
+      const feiDAO = existingContracts.feiDAO;
+
+      const state = await feiDAO.state(config.proposalId);
+      if (state === 7) {
+        this.config.logging && console.log(`Proposal completed on-chain, skipping`);
+        return existingContracts;
+      }
+    }
+
     // Get the upgrade setup and teardown scripts
     const { deploy, setup, teardown, validate } = await import('@proposals/dao/' + proposalName);
 

@@ -72,6 +72,7 @@ export type ProposalConfig = {
   skipDAO: boolean;
   totalValue: number;
   proposal: ProposalDescription;
+  proposalId: string;
 };
 
 export type ProposalsConfigMap = {
