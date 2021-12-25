@@ -159,7 +159,7 @@ const MainnetAddresses: MainnetAddresses = {
   creamFeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x243C601CC5DaA3Ac250B14509804188347bd2aFB',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
   d3poolConvexPCVDeposit: {
     artifactName: 'ConvexPCVDeposit',
