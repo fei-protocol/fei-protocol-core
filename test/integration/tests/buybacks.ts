@@ -49,19 +49,19 @@ describe('e2e-buybacks', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe.skip('PCV Equity Minter + LBP', async function () {
+  describe('PCV Equity Minter + LBP', async function () {
     it('mints appropriate amount and swaps', async function () {
       const {
         pcvEquityMinter,
         collateralizationOracleWrapper,
         staticPcvDepositWrapper,
-        feiTribeLBPSwapper,
+        noFeeFeiTribeLBPSwapper,
         fei,
         tribe,
         core
       } = contracts;
 
-      await increaseTime(await feiTribeLBPSwapper.remainingTime());
+      await increaseTime(await noFeeFeiTribeLBPSwapper.remainingTime());
 
       const pcvStats = await collateralizationOracleWrapper.pcvStats();
 
@@ -70,22 +70,22 @@ describe('e2e-buybacks', function () {
       }
       await collateralizationOracleWrapper.update();
 
-      await core.allocateTribe(feiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(50_000));
+      await core.allocateTribe(noFeeFeiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(1_000_000));
       const tx = await pcvEquityMinter.mint();
       expect(tx).to.emit(pcvEquityMinter, 'FeiMinting');
       expect(tx).to.emit(fei, 'Transfer');
       expect(tx).to.emit(tribe, 'Transfer');
 
-      expect(await feiTribeLBPSwapper.swapEndTime()).to.be.gt(toBN((await latestTime()).toString()));
+      expect(await noFeeFeiTribeLBPSwapper.swapEndTime()).to.be.gt(toBN((await latestTime()).toString()));
 
       await increaseTime(await pcvEquityMinter.duration());
-      await core.allocateTribe(feiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(50_000));
+      await core.allocateTribe(noFeeFeiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(1_000_000));
 
       await pcvEquityMinter.mint();
     });
   });
 
-  // Skipped because the buybacks are now in-progress
+  // Skipped because the LUSD auction is now over
   describe.skip('LUSD LBP', async function () {
     it('mints appropriate amount and swaps', async function () {
       const feiLusdLBPSwapper: BalancerLBPSwapper = contracts.feiLusdLBPSwapper as BalancerLBPSwapper;

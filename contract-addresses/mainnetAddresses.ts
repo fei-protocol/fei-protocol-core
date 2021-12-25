@@ -21,6 +21,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x16ef9601076d45e8cc564cDD91E5dF3Ae83dD3B3',
     category: AddressCategory.Core
   },
+  noFeeFeiTribeLBPSwapper: {
+    artifactName: 'BalancerLBPSwapper',
+    address: '0xC05FAF6C5C4bC1bD841AdFC92b3D3f20180F26E8',
+    category: AddressCategory.Core
+  },
   optimisticMinter: {
     artifactName: 'OwnableTimedMinter',
     address: '0xE66c4De480Bd317054B5a3CF8E8689649d0728c9',
@@ -419,6 +424,11 @@ const MainnetAddresses: MainnetAddresses = {
   feiBuybackLens: {
     artifactName: 'BPTLens',
     address: '0x107460564896377BA6CdcC7516c7eAb65E32E360',
+    category: AddressCategory.Collateralization
+  },
+  feiBuybackLensNoFee: {
+    artifactName: 'BPTLens',
+    address: '0x89DfBC12001b41985eFAbd7dFCae6a77B22E4Ec3',
     category: AddressCategory.Collateralization
   },
   feiLusdLens: {
@@ -849,6 +859,11 @@ const MainnetAddresses: MainnetAddresses = {
   balancerLBPoolFactory: {
     artifactName: 'ILiquidityBootstrappingPoolFactory',
     address: '0x751A0bC0e3f75b38e01Cf25bFCE7fF36DE1C87DE',
+    category: AddressCategory.External
+  },
+  balancerLBPoolFactoryNoFee: {
+    artifactName: 'ILiquidityBootstrappingPoolFactory',
+    address: '0x0F3e0c4218b7b0108a3643cFe9D3ec0d4F57c54e',
     category: AddressCategory.External
   },
   balancerVault: {
