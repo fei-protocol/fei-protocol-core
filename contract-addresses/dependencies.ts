@@ -95,7 +95,18 @@ const dependencies: DependencyMap = {
     ]
   },
   fei: {
-    contractDependencies: ['core', 'rariPool8Fei', 'feiDAOTimelock', 'collateralizationOracleKeeper']
+    contractDependencies: [
+      'core',
+      'rariPool8Fei',
+      'feiDAOTimelock',
+      'collateralizationOracleKeeper',
+      'aaveEthPCVDripController',
+      'bondingCurve',
+      'compoundEthPCVDripController',
+      'daiBondingCurve',
+      'daiPSM',
+      'daiPCVDripController'
+    ]
   },
   feiTribeLBPSwapper: {
     contractDependencies: ['core']
@@ -104,7 +115,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'optimisticTimelock']
   },
   pcvEquityMinter: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'collateralizationOracleWrapper']
   },
   pcvGuardian: {
     contractDependencies: ['core', 'guardian']
@@ -126,7 +137,7 @@ const dependencies: DependencyMap = {
     ]
   },
   tribeMinter: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'tribeReserveStabilizer']
   },
   feiDAO: {
     contractDependencies: ['feiDAOTimelock', 'tribe']
@@ -169,31 +180,42 @@ const dependencies: DependencyMap = {
     contractDependencies: ['rariTimelock', 'tribe']
   },
   aaveEthPCVDripController: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'fei', 'aaveEthPCVDeposit', 'ethReserveStabilizer']
   },
   bondingCurve: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'fei', 'aaveEthPCVDeposit', 'compoundEthPCVDeposit', 'chainlinkEthUsdOracleWrapper']
   },
   compoundEthPCVDripController: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'fei', 'compoundEthPCVDeposit', 'ethReserveStabilizer']
   },
   daiBondingCurve: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'fei', 'compoundDaiPCVDeposit', 'chainlinkDaiUsdOracleWrapper']
   },
   daiPCVDripController: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'fei', 'daiPSM', 'compoundDaiPCVDeposit']
   },
   daiPSM: {
-    contractDependencies: ['core']
+    contractDependencies: [
+      'core',
+      'fei',
+      'compoundDaiPCVDeposit',
+      'daiPCVDripController',
+      'chainlinkDaiUsdOracleWrapper'
+    ]
   },
   ethReserveStabilizer: {
-    contractDependencies: ['core']
+    contractDependencies: [
+      'core',
+      'aaveEthPCVDripController',
+      'compoundEthPCVDripController',
+      'chainlinkEthUsdOracleWrapper'
+    ]
   },
   tribeReserveStabilizer: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'tribeUsdCompositeOracle', 'tribeMinter', 'collateralizationOracleWrapper']
   },
   aaveEthPCVDeposit: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'aaveEthPCVDripController', 'bondingCurve']
   },
   aaveFeiPCVDeposit: {
     contractDependencies: ['core']
@@ -205,10 +227,10 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   compoundDaiPCVDeposit: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'daiBondingCurve', 'daiPCVDripController', 'daiPSM']
   },
   compoundEthPCVDeposit: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'bondingCurve', 'compoundEthPCVDripController']
   },
   creamFeiPCVDeposit: {
     contractDependencies: ['core']
@@ -379,7 +401,9 @@ const dependencies: DependencyMap = {
       'optimisticTimelock',
       'collateralizationOracleKeeper',
       'collateralizationOracleGuardian',
-      'collateralizationOracleWrapperImpl'
+      'collateralizationOracleWrapperImpl',
+      'tribeReserveStabilizer',
+      'pcvEquityMinter'
     ]
   },
   collateralizationOracleWrapperImpl: {
@@ -467,7 +491,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'creamUsdCompositeOracle']
   },
   chainlinkDaiUsdOracleWrapper: {
-    contractDependencies: ['core', 'collateralizationOracle']
+    contractDependencies: ['core', 'collateralizationOracle', 'daiBondingCurve', 'daiPSM']
   },
   chainlinkDpiUsdOracleWrapper: {
     contractDependencies: ['core', 'collateralizationOracle']
@@ -480,7 +504,9 @@ const dependencies: DependencyMap = {
       'chainlinkRaiUsdCompositeOracle',
       'creamUsdCompositeOracle',
       'balUsdCompositeOracle',
-      'collateralizationOracle'
+      'collateralizationOracle',
+      'bondingCurve',
+      'ethReserveStabilizer'
     ]
   },
   chainlinkEurUsdOracleWrapper: {
@@ -516,7 +542,12 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'collateralizationOracle']
   },
   tribeUsdCompositeOracle: {
-    contractDependencies: ['core', 'chainlinkTribeEthOracleWrapper', 'chainlinkEthUsdOracleWrapper']
+    contractDependencies: [
+      'core',
+      'chainlinkTribeEthOracleWrapper',
+      'chainlinkEthUsdOracleWrapper',
+      'tribeReserveStabilizer'
+    ]
   },
   zeroConstantOracle: {
     contractDependencies: ['core', 'collateralizationOracle']
