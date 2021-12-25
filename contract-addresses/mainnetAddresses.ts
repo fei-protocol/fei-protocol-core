@@ -361,11 +361,6 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x1267B39c93711Dd374DEAB15e0127e4adB259BE0',
     category: AddressCategory.Collateralization
   },
-  balDepositWrapper: {
-    artifactName: 'ERC20PCVDepositWrapper',
-    address: '0x7E28BA7a2D52Af88242E588d868E927119BA45dB',
-    category: AddressCategory.Collateralization
-  },
   collateralizationOracle: {
     artifactName: 'CollateralizationOracle',
     address: '0xFF6f59333cfD8f4Ebc14aD0a0E181a83e655d257',
@@ -1224,6 +1219,11 @@ const MainnetAddresses: MainnetAddresses = {
   aaveTribeIncentivesControllerProxy: {
     artifactName: 'TransparentUpgradeableProxy',
     address: '0xDee5c1662bBfF8f80f7c572D8091BF251b3B0dAB',
+    category: AddressCategory.Deprecated
+  },
+  balDepositWrapper: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x7E28BA7a2D52Af88242E588d868E927119BA45dB',
     category: AddressCategory.Deprecated
   },
   compoundPassthroughETH: {

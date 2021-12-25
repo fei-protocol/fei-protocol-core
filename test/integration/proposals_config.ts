@@ -18,7 +18,8 @@ const proposals: ProposalsConfigMap = {
     deploy: false,
     skipDAO: false,
     totalValue: 0,
-    proposal: fip_33b
+    proposal: fip_33b,
+    affectedContractSignoff: ['balancerDepositBalWeth', 'collateralizationOracle', 'aaveEthPCVDeposit']
   }
 };
 

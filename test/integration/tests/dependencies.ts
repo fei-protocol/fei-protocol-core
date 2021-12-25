@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { ProposalDescription } from '@custom-types/types';
 import proposals from '@test/integration/proposals_config';
 import dependencies from '@addresses/dependencies';
+import addresses from '@addresses/mainnetAddresses';
 
 describe('e2e-dependencies', function () {
   const doLogging = Boolean(process.env.LOGGING);
@@ -21,7 +22,14 @@ describe('e2e-dependencies', function () {
 
         for (let j = 0; j < contracts.length; j++) {
           const contract = contracts[j];
+          const category = addresses[contract].category;
+          if (category === 'External' || category === 'Deprecated') {
+            continue;
+          }
+
           doLogging && console.log(`Checking contract: ${contract}`);
+
+          expect(dependencies).to.haveOwnProperty(contract);
 
           // Make sure proposal config has this fip signed off
           expect(proposals[proposalName].affectedContractSignoff).to.contain(contract);

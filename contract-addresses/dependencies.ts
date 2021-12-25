@@ -30,6 +30,7 @@ const dependencies: DependencyMap = {
       'aaveFeiPCVDeposit',
       'aaveRaiPCVDeposit',
       'agEurAngleUniswapPCVDeposit',
+      'balancerDepositBalWeth',
       'compoundDaiPCVDeposit',
       'compoundEthPCVDeposit',
       'd3poolConvexPCVDeposit',
@@ -186,7 +187,6 @@ const dependencies: DependencyMap = {
       'fei',
       'proxyAdmin',
       'creamDepositWrapper',
-      'balDepositWrapper',
       'aaveTribeIncentivesController',
       'tribeMinter',
       'pcvGuardian'
@@ -266,6 +266,9 @@ const dependencies: DependencyMap = {
   },
   agEurAngleUniswapPCVDeposit: {
     contractDependencies: ['core', 'fei', 'chainlinkEurUsdOracleWrapper']
+  },
+  balancerDepositBalWeth: {
+    contractDependencies: ['core', 'balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
   },
   compoundDaiPCVDeposit: {
     contractDependencies: ['core', 'daiBondingCurve', 'daiPCVDripController', 'daiPSM']
@@ -387,9 +390,6 @@ const dependencies: DependencyMap = {
   aaveRaiPCVDepositWrapper: {
     contractDependencies: ['collateralizationOracle']
   },
-  balDepositWrapper: {
-    contractDependencies: ['feiDAOTimelock', 'collateralizationOracle']
-  },
   collateralizationOracle: {
     contractDependencies: [
       'core',
@@ -407,7 +407,6 @@ const dependencies: DependencyMap = {
       'aaveEthPCVDepositWrapper',
       'aaveFeiPCVDepositWrapper',
       'aaveRaiPCVDepositWrapper',
-      'balDepositWrapper',
       'compoundDaiPCVDepositWrapper',
       'compoundEthPCVDepositWrapper',
       'creamDepositWrapper',
@@ -521,7 +520,13 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'optimisticTimelock']
   },
   balUsdCompositeOracle: {
-    contractDependencies: ['core', 'chainlinkBALEthOracle', 'chainlinkEthUsdOracleWrapper', 'collateralizationOracle']
+    contractDependencies: [
+      'core',
+      'chainlinkBALEthOracle',
+      'chainlinkEthUsdOracleWrapper',
+      'collateralizationOracle',
+      'balancerDepositBalWeth'
+    ]
   },
   chainlinkBALEthOracle: {
     contractDependencies: ['core', 'balUsdCompositeOracle']
@@ -546,7 +551,8 @@ const dependencies: DependencyMap = {
       'collateralizationOracle',
       'bondingCurve',
       'ethReserveStabilizer',
-      'uniswapPCVDeposit'
+      'uniswapPCVDeposit',
+      'balancerDepositBalWeth'
     ]
   },
   chainlinkEurUsdOracleWrapper: {
