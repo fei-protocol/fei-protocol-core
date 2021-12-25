@@ -140,7 +140,15 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'collateralizationOracleWrapper', 'feiTribeLBPSwapper']
   },
   pcvGuardian: {
-    contractDependencies: ['core', 'guardian']
+    contractDependencies: [
+      'core',
+      'guardian',
+      'feiDAOTimelock',
+      'daiPSM',
+      'compoundEthPCVDeposit',
+      'aaveEthPCVDeposit',
+      'ethReserveStabilizer'
+    ]
   },
   proxyAdmin: {
     contractDependencies: [
@@ -180,7 +188,8 @@ const dependencies: DependencyMap = {
       'creamDepositWrapper',
       'balDepositWrapper',
       'aaveTribeIncentivesController',
-      'tribeMinter'
+      'tribeMinter',
+      'pcvGuardian'
     ]
   },
   guardian: {
@@ -230,7 +239,8 @@ const dependencies: DependencyMap = {
       'fei',
       'compoundDaiPCVDeposit',
       'daiPCVDripController',
-      'chainlinkDaiUsdOracleWrapper'
+      'chainlinkDaiUsdOracleWrapper',
+      'pcvGuardian'
     ]
   },
   ethReserveStabilizer: {
@@ -238,14 +248,15 @@ const dependencies: DependencyMap = {
       'core',
       'aaveEthPCVDripController',
       'compoundEthPCVDripController',
-      'chainlinkEthUsdOracleWrapper'
+      'chainlinkEthUsdOracleWrapper',
+      'pcvGuardian'
     ]
   },
   tribeReserveStabilizer: {
     contractDependencies: ['core', 'tribeUsdCompositeOracle', 'tribeMinter', 'collateralizationOracleWrapper', 'tribe']
   },
   aaveEthPCVDeposit: {
-    contractDependencies: ['core', 'aaveEthPCVDripController', 'bondingCurve']
+    contractDependencies: ['core', 'aaveEthPCVDripController', 'bondingCurve', 'pcvGuardian']
   },
   aaveFeiPCVDeposit: {
     contractDependencies: ['core', 'fei']
@@ -260,7 +271,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'daiBondingCurve', 'daiPCVDripController', 'daiPSM']
   },
   compoundEthPCVDeposit: {
-    contractDependencies: ['core', 'bondingCurve', 'compoundEthPCVDripController']
+    contractDependencies: ['core', 'bondingCurve', 'compoundEthPCVDripController', 'pcvGuardian']
   },
   d3poolConvexPCVDeposit: {
     contractDependencies: ['core']
