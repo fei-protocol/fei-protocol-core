@@ -2,7 +2,7 @@ import { DependencyMap } from '@custom-types/types';
 
 const dependencies: DependencyMap = {
   collateralizationOracleGuardian: {
-    contractDependencies: ['core', 'guardian']
+    contractDependencies: ['core', 'guardian', 'collateralizationOracleWrapper']
   },
   core: {
     contractDependencies: [
@@ -320,16 +320,16 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   aaveEthPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   aaveFeiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   aaveRaiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   balDepositWrapper: {
-    contractDependencies: ['feiDAOTimelock']
+    contractDependencies: ['feiDAOTimelock', 'collateralizationOracle']
   },
   collateralizationOracle: {
     contractDependencies: [
@@ -344,86 +344,116 @@ const dependencies: DependencyMap = {
       'chainlinkRaiUsdCompositeOracle',
       'creamUsdCompositeOracle',
       'oneConstantOracle',
-      'zeroConstantOracle'
+      'zeroConstantOracle',
+      'aaveEthPCVDepositWrapper',
+      'aaveFeiPCVDepositWrapper',
+      'aaveRaiPCVDepositWrapper',
+      'balDepositWrapper',
+      'compoundDaiPCVDepositWrapper',
+      'compoundEthPCVDepositWrapper',
+      'creamDepositWrapper',
+      'daiBondingCurveWrapper',
+      'ethLidoPCVDepositWrapper',
+      'ethReserveStabilizerWrapper',
+      'feiBuybackLens',
+      'feiLusdLens',
+      'feiOATimelockWrapper',
+      'rariPool18FeiPCVDepositWrapper',
+      'rariPool19DpiPCVDepositWrapper',
+      'rariPool19FeiPCVDepositWrapper',
+      'rariPool24FeiPCVDepositWrapper',
+      'rariPool25FeiPCVDepositWrapper',
+      'rariPool26FeiPCVDepositWrapper',
+      'rariPool27FeiPCVDepositWrapper',
+      'rariPool28FeiPCVDepositWrapper',
+      'rariPool31FeiPCVDepositWrapper',
+      'rariPool6FeiPCVDepositWrapper',
+      'rariPool7FeiPCVDepositWrapper',
+      'rariPool8FeiPCVDepositWrapper',
+      'rariPool9FeiPCVDepositWrapper',
+      'rariPool9RaiPCVDepositWrapper'
     ]
   },
   collateralizationOracleWrapper: {
-    contractDependencies: ['core', 'optimisticTimelock', 'collateralizationOracleKeeper']
+    contractDependencies: [
+      'core',
+      'optimisticTimelock',
+      'collateralizationOracleKeeper',
+      'collateralizationOracleGuardian',
+      'collateralizationOracleWrapperImpl'
+    ]
   },
   collateralizationOracleWrapperImpl: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'collateralizationOracleWrapper']
   },
   compoundDaiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   compoundEthPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   creamDepositWrapper: {
-    contractDependencies: ['feiDAOTimelock']
-  },
-  creamFeiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['feiDAOTimelock', 'collateralizationOracle']
   },
   daiBondingCurveWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   ethLidoPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   ethReserveStabilizerWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   feiBuybackLens: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   feiLusdLens: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   feiOATimelockWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   rariPool18FeiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   rariPool19DpiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   rariPool19FeiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   rariPool24FeiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   rariPool25FeiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   rariPool26FeiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   rariPool27FeiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   rariPool28FeiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   rariPool31FeiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   rariPool6FeiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   rariPool7FeiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   rariPool8FeiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   rariPool9FeiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   rariPool9RaiPCVDepositWrapper: {
-    contractDependencies: []
+    contractDependencies: ['collateralizationOracle']
   },
   staticPcvDepositWrapper2: {
     contractDependencies: ['core', 'optimisticTimelock']

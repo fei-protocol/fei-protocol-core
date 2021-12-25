@@ -1,11 +1,6 @@
 import { MainnetAddresses, AddressCategory } from '../types/types'; // imported without custom path to allow docs to autogen without ts errors
 
 const MainnetAddresses: MainnetAddresses = {
-  collateralizationOracleGuardian: {
-    artifactName: 'CollateralizationOracleGuardian',
-    address: '0x81De6bA8df84A4B679061952E171a27F096F3eAe',
-    category: AddressCategory.Core
-  },
   core: {
     artifactName: AddressCategory.Core,
     address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
@@ -366,6 +361,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xFF6f59333cfD8f4Ebc14aD0a0E181a83e655d257',
     category: AddressCategory.Collateralization
   },
+  collateralizationOracleGuardian: {
+    artifactName: 'CollateralizationOracleGuardian',
+    address: '0x81De6bA8df84A4B679061952E171a27F096F3eAe',
+    category: AddressCategory.Collateralization
+  },
   collateralizationOracleWrapper: {
     artifactName: 'CollateralizationOracleWrapper',
     address: '0xd1866289B4Bd22D453fFF676760961e0898EE9BF',
@@ -389,11 +389,6 @@ const MainnetAddresses: MainnetAddresses = {
   creamDepositWrapper: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x3a1838Ac9EcA864054bebB82C32455Dd7d7Fc89c',
-    category: AddressCategory.Collateralization
-  },
-  creamFeiPCVDepositWrapper: {
-    artifactName: 'PCVDepositWrapper',
-    address: '0xFf419Bc27483edb94b7Ad5c97b7FaB5DB323c7E0',
     category: AddressCategory.Collateralization
   },
   daiBondingCurveWrapper: {
@@ -1204,6 +1199,11 @@ const MainnetAddresses: MainnetAddresses = {
   coreV1: {
     artifactName: 'ICoreV1',
     address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
+    category: AddressCategory.Deprecated
+  },
+  creamFeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0xFf419Bc27483edb94b7Ad5c97b7FaB5DB323c7E0',
     category: AddressCategory.Deprecated
   },
   defiPulseOTC: {
