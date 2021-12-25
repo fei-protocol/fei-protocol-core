@@ -68,6 +68,8 @@ describe('BalancerLBPSwapper', function () {
         _decimalsNormalizer: 0
       },
       600, // 600 seconds frequency
+      ethers.constants.WeiPerEther.mul(toBN(5)).div(toBN(100)), // small weight
+      ethers.constants.WeiPerEther.mul(toBN(95)).div(toBN(100)), // large weight
       fei.address,
       tribe.address,
       userAddress,
@@ -82,6 +84,18 @@ describe('BalancerLBPSwapper', function () {
 
   describe('Init', function () {
     describe('Before Init', function () {
+      it('SMALL_PERCENT', async function () {
+        expect(await balancerLBPSwapper.SMALL_PERCENT()).to.be.equal(
+          ethers.constants.WeiPerEther.mul(toBN(5)).div(toBN(100))
+        );
+      });
+
+      it('LARGE_PERCENT', async function () {
+        expect(await balancerLBPSwapper.LARGE_PERCENT()).to.be.equal(
+          ethers.constants.WeiPerEther.mul(toBN(95)).div(toBN(100))
+        );
+      });
+
       it('tokenSpent', async function () {
         expect(await balancerLBPSwapper.tokenSpent()).to.be.equal(fei.address);
       });
@@ -164,7 +178,7 @@ describe('BalancerLBPSwapper', function () {
       expect(tokens[1]).to.be.equal(tribe.address);
 
       expect(amounts[0]).to.be.equal(toBN(100000));
-      expect(amounts[1]).to.be.bignumber.equal(toBN(505));
+      expect(amounts[1]).to.be.bignumber.equal(toBN(2631));
     });
   });
 
