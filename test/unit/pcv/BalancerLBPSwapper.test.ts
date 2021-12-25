@@ -240,7 +240,7 @@ describe('BalancerLBPSwapper', function () {
       it('reverts', async function () {
         await expectRevert(
           balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).swap(),
-          'BalancerLBPSwapper: not enough tokenSpent to init'
+          'BalancerLBPSwapper: not enough for new swap'
         );
       });
     });
