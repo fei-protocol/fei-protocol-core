@@ -39,17 +39,31 @@ const fip_50: ProposalDescription = {
       description: 'Deposit LUSD to pool 7'
     },
     {
-      target: 'lusd',
+      target: 'fei',
       values: '0',
       method: 'approve(address,uint256)',
       arguments: ['{ratioPCVControllerV2}', '1000000000000000000000000000'],
-      description: 'Approve 1bn LUSD to RarioPCVControllerV2'
+      description: 'Approve 1bn FEI to RatioPCVControllerV2'
     },
     {
       target: 'ratioPCVControllerV2',
       values: '0',
       method: 'transferFromRatio(address,address,address,uint256)',
-      arguments: ['{lusd}', '{feiDAOTimelock}', '{bammDeposit}', '10000'],
+      arguments: ['{feiDAOTimelock}', '{fei}', '{optimisticTimelock}', '10000'],
+      description: 'Withdraw all FEI to Optimistic Timelock'
+    },
+    {
+      target: 'lusd',
+      values: '0',
+      method: 'approve(address,uint256)',
+      arguments: ['{ratioPCVControllerV2}', '1000000000000000000000000000'],
+      description: 'Approve 1bn LUSD to RatioPCVControllerV2'
+    },
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'transferFromRatio(address,address,address,uint256)',
+      arguments: ['{feiDAOTimelock}', '{lusd}', '{bammDeposit}', '10000'],
       description: 'Withdraw all LUSD to BAMMDeposit'
     },
     {

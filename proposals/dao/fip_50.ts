@@ -74,6 +74,9 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 };
 
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  expect(await contracts.lusd.balanceOf(addresses.feiDAOTimelock)).to.be.equal(ethers.constants.Zero);
+  expect(await contracts.fei.balanceOf(addresses.feiDAOTimelock)).to.be.equal(ethers.constants.Zero);
+
   // Check LUSD balance BAMM deposit
   expect(await contracts.lusd.balanceOf(addresses.bammDeposit)).to.be.at.least(
     ethers.constants.WeiPerEther.mul(89_000_000)
