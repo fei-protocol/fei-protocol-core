@@ -166,11 +166,6 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x4fCB1435fD42CE7ce7Af3cB2e98289F79d2962b3',
     category: AddressCategory.PCV
   },
-  creamFeiPCVDeposit: {
-    artifactName: 'ERC20CompoundPCVDeposit',
-    address: '0x243C601CC5DaA3Ac250B14509804188347bd2aFB',
-    category: AddressCategory.Deprecated
-  },
   d3poolConvexPCVDeposit: {
     artifactName: 'ConvexPCVDeposit',
     address: '0x5ae217dE26f6Ff5F481C6e10ec48b2cf2fc857C8',
@@ -1234,6 +1229,11 @@ const MainnetAddresses: MainnetAddresses = {
   coreV1: {
     artifactName: 'ICoreV1',
     address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
+    category: AddressCategory.Deprecated
+  },
+  creamFeiPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x243C601CC5DaA3Ac250B14509804188347bd2aFB',
     category: AddressCategory.Deprecated
   },
   creamFeiPCVDepositWrapper: {
