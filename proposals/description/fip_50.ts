@@ -109,7 +109,24 @@ const fip_50: ProposalDescription = {
       description: 'Revoke PCV Controller from RatioPCVController'
     }
   ],
-  description: 'Withdraw and deploy LUSD and stETH'
+  description: `
+    Summary: Deploy 100m LUSD and 24k stETH
+
+    Proposal:
+      1. Withdraw all LUSD from Balancer LBP
+      2. Deploy 10m LUSD to Fuse Pool 7
+      3. Deploy remaining LUSD ~90m to B. Protocol B.AMM
+      4. Withdraw 12k ETH from Compound and Aave
+      5. Deposit 24k ETH to Lido stETH
+      6. Cleanup CR Oracle
+
+    Access control changes: 
+      1. Swap "RatioPCVController" utility for new v2 upgrade.
+      2. Grant OA the ability to trigger LBP swaps.
+
+    Code: https://github.com/fei-protocol/fei-protocol-core/pull/344
+    Forum: https://tribe.fei.money/t/fip-50-cont-fei-interest-shift-for-huge-yield/3750
+  `
 };
 
 export default fip_50;
