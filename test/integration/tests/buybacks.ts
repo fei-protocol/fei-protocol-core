@@ -2,8 +2,15 @@ import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
-import { NamedContracts } from '@custom-types/types';
-import { expectApprox, getImpersonatedSigner, increaseTime, latestTime, resetFork } from '@test/helpers';
+import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import {
+  expectApprox,
+  getImpersonatedSigner,
+  increaseTime,
+  latestTime,
+  resetFork,
+  overwriteChainlinkAggregator
+} from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import {
@@ -24,6 +31,7 @@ before(async () => {
 
 describe('e2e-buybacks', function () {
   let contracts: NamedContracts;
+  let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
@@ -45,7 +53,7 @@ describe('e2e-buybacks', function () {
     e2eCoord = new TestEndtoEndCoordinator(config, proposals);
 
     doLogging && console.log(`Loading environment...`);
-    ({ contracts } = await e2eCoord.loadEnvironment());
+    ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
   });
 
@@ -68,6 +76,10 @@ describe('e2e-buybacks', function () {
       if (pcvStats[2] < 0) {
         await staticPcvDepositWrapper.setBalance(pcvStats[0]);
       }
+
+      // set Chainlink ETHUSD to a fixed 4,000$ value
+      await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
+
       await collateralizationOracleWrapper.update();
 
       await core.allocateTribe(noFeeFeiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(1_000_000));
@@ -178,6 +190,9 @@ describe('e2e-buybacks', function () {
         contracts;
 
       const beforeBalance = await fei.balanceOf(deployAddress);
+
+      // set Chainlink ETHUSD to a fixed 4,000$ value
+      await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
 
       await collateralizationOracleWrapper.update();
 
