@@ -11,9 +11,9 @@ import {
 } from '@custom-types/types';
 import { PegExchanger, Timelock, TRIBERagequit } from '@custom-types/contracts';
 import { getImpersonatedSigner } from '@test/helpers';
-import rariMergerProposal from '@proposals/description/mergerRari';
-import constructProposal from '@scripts/utils/constructProposal';
+import { execProposal } from '@scripts/utils/exec';
 import { createTree } from '@scripts/utils/merkle';
+import { forceEth } from '@test/integration/setup/utils';
 
 chai.use(CBN(ethers.BigNumber));
 
@@ -25,7 +25,8 @@ DEPLOY ACTIONS:
 1. Deploy TribeRariDAO
 2. Deploy PegExchanger
 3. Deploy TribeRagequit
-
+4. Deploy MergerGate
+5. Deploy PegExchangerDripper
 */
 
 const tree = createTree();
@@ -35,9 +36,7 @@ const merkleRoot = '0x8c1f858b87b4e23cb426875833bf8f1aaeb627fe2f47e62385d704c415
 
 const rageQuitStart = '1640221200'; // Dec 23, 1am UTC
 const rageQuitDeadline = '1640480400'; // Dec 26, 1am UTC
-const equity = '792326034963459120910718196';
-
-const toBN = ethers.BigNumber.from;
+const equity = '692588388367337720822976255';
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
   const { tribe, rariTimelock } = addresses;
@@ -70,10 +69,28 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('tribeRagequit: ', tribeRagequit.address);
 
+  // 4. Deploy MergerGate
+  const gateFactory = await ethers.getContractFactory('MergerGate');
+  const mergerGate = await gateFactory.deploy();
+
+  await mergerGate.deployTransaction.wait();
+
+  logging && console.log('mergerGate: ', mergerGate.address);
+
+  // 5. Deploy PegExchangerDripper
+  const dripperFactory = await ethers.getContractFactory('PegExchangerDripper');
+  const pegExchangerDripper = await dripperFactory.deploy();
+
+  await pegExchangerDripper.deployTransaction.wait();
+
+  logging && console.log('pegExchangerDripper: ', pegExchangerDripper.address);
+
   return {
     tribeRariDAO,
     pegExchanger,
-    tribeRagequit
+    tribeRagequit,
+    mergerGate,
+    pegExchangerDripper
   } as NamedContracts;
 };
 
@@ -84,24 +101,22 @@ export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts
 
   const signer = await getImpersonatedSigner(guardian);
 
-  await tribeRagequit.connect(signer).setExchangeRate(equity);
+  if ((await tribeRagequit.intrinsicValueExchangeRateBase()).toString() === '0') {
+    await tribeRagequit.connect(signer).setExchangeRate(equity);
+  }
+
+  const rgt = contracts.rgt;
+  await forceEth(addresses.rariTimelock);
+
+  const rariSigner = await getImpersonatedSigner(addresses.rariTimelock);
+
+  await rgt.connect(rariSigner).delegate(addresses.rariTimelock);
+
+  await execProposal(addresses.rariTimelock, await contracts.rariTimelock.admin(), '0', '9');
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   logging && console.log('Teardown');
-  const proposal = await constructProposal(
-    rariMergerProposal,
-    contracts as unknown as MainnetContracts,
-    addresses,
-    logging
-  );
-
-  const timelock: Timelock = (await contracts.rariTimelock) as Timelock;
-
-  await proposal.setGovernor(await timelock.admin());
-
-  logging && console.log(`Simulating proposal...`);
-  await proposal.simulate();
 
   const tribeRagequit: TRIBERagequit = contracts.tribeRagequit as TRIBERagequit;
   const pegExchanger: PegExchanger = contracts.pegExchanger as PegExchanger;
@@ -112,14 +127,20 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
   const tribeRagequit: TRIBERagequit = contracts.tribeRagequit as TRIBERagequit;
   const pegExchanger: PegExchanger = contracts.pegExchanger as PegExchanger;
-  const { tribe, fei } = contracts;
+  const { tribe, fei, rariTimelock } = contracts;
+
+  expect(await rariTimelock.admin()).to.be.equal(addresses.tribeRariDAO);
 
   expect(await tribeRagequit.bothPartiesAccepted()).to.be.true;
   expect(await pegExchanger.bothPartiesAccepted()).to.be.true;
 
-  expect((await tribeRagequit.intrinsicValueExchangeRateBase()).toString()).to.be.equal('1234273768');
-  expect((await tribe.balanceOf(pegExchanger.address)).toString()).to.be.equal('270000000000000000000000000');
+  expect((await tribeRagequit.intrinsicValueExchangeRateBase()).toString()).to.be.equal('1078903938');
+  expect((await tribe.balanceOf(addresses.pegExchangerDripper)).toString()).to.be.equal('170000000000000000000000000');
+  expect((await tribe.balanceOf(addresses.pegExchanger)).toString()).to.be.equal('100000000000000000000000000');
+
   expect((await fei.balanceOf(addresses.gfxAddress)).toString()).to.be.equal('315909060000000000000000');
+
+  expect(await contracts.pegExchangerDripper.isEligible()).to.be.false;
 
   expect((await tribeRagequit.rageQuitStart()).toString()).to.be.equal(rageQuitStart);
   expect((await tribeRagequit.rageQuitEnd()).toString()).to.be.equal(rageQuitDeadline);
