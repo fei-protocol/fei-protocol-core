@@ -46,9 +46,9 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xf8c2b645988b7658E7748BA637fE25bdD46A704A',
     category: AddressCategory.Core
   },
-  ratioPCVController: {
-    artifactName: 'RatioPCVController',
-    address: '0xB1410aeCe2c65fE9e107c58b5aa32e91B18f0BC7',
+  ratioPCVControllerV2: {
+    artifactName: 'RatioPCVControllerV2',
+    address: '0x221fff24FB66dA3c722c7C5B856956a6a30C0179',
     category: AddressCategory.Core
   },
   tribe: {
@@ -154,6 +154,11 @@ const MainnetAddresses: MainnetAddresses = {
   agEurAngleUniswapPCVDeposit: {
     artifactName: 'AngleUniswapPCVDeposit',
     address: '0x7AC2Ab8143634419c5bc230A9f9955C3e29f64Ef',
+    category: AddressCategory.PCV
+  },
+  bammDeposit: {
+    artifactName: 'BAMMDeposit',
+    address: '0x374628EBE7Ef6AcA0574e750B618097531A26Ff8',
     category: AddressCategory.PCV
   },
   balancerDepositBalWeth: {
@@ -1319,6 +1324,11 @@ const MainnetAddresses: MainnetAddresses = {
   oldEthReserveStabilizer: {
     artifactName: 'EthReserveStabilizer',
     address: '0xa08A721dFB595753FFf335636674D76C455B275C',
+    category: AddressCategory.Deprecated
+  },
+  ratioPCVController: {
+    artifactName: 'RatioPCVController',
+    address: '0xB1410aeCe2c65fE9e107c58b5aa32e91B18f0BC7',
     category: AddressCategory.Deprecated
   },
   oldRatioPCVController: {
