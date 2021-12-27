@@ -76,7 +76,7 @@ describe('BPTLens', function () {
 
   it('resistantBalanceAndFei', async function () {
     const balances = await lens.resistantBalanceAndFei();
-    expect(balances[0]).to.be.bignumber.equal(toBN('737787946466881060'));
-    expect(balances[1]).to.be.bignumber.equal(toBN('1106681919700321592'));
+    expect(balances[0]).to.be.bignumber.equal(toBN('1414213562373095048'));
+    expect(balances[1]).to.be.bignumber.equal(toBN('707106781186547524'));
   });
 });
