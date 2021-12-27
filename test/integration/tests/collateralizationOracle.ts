@@ -2,8 +2,8 @@ import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
-import { NamedContracts } from '@custom-types/types';
-import { expectApprox } from '@test/helpers';
+import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import { expectApprox, overwriteChainlinkAggregator } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import {
@@ -20,6 +20,7 @@ before(async () => {
 
 describe('e2e-collateralization', function () {
   let contracts: NamedContracts;
+  let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
@@ -41,7 +42,7 @@ describe('e2e-collateralization', function () {
     e2eCoord = new TestEndtoEndCoordinator(config, proposals);
 
     doLogging && console.log(`Loading environment...`);
-    ({ contracts } = await e2eCoord.loadEnvironment());
+    ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
   });
 
@@ -52,6 +53,9 @@ describe('e2e-collateralization', function () {
 
       const collateralizationOracleGuardian: CollateralizationOracleGuardian =
         contracts.collateralizationOracleGuardian as CollateralizationOracleGuardian;
+
+      // set Chainlink ETHUSD to a fixed 4,000$ value
+      await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
 
       await collateralizationOracleWrapper.update();
 
@@ -78,6 +82,9 @@ describe('e2e-collateralization', function () {
         contracts.collateralizationOracle as CollateralizationOracle;
       const staticPcvDepositWrapper: StaticPCVDepositWrapper =
         contracts.staticPcvDepositWrapper as StaticPCVDepositWrapper;
+
+      // set Chainlink ETHUSD to a fixed 4,000$ value
+      await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
 
       await collateralizationOracleWrapper.update();
 
