@@ -521,6 +521,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xe72EB93de743F819fe91277582d7d0Fa9bb9b023',
     category: AddressCategory.Collateralization
   },
+  namedStaticPCVDepositWrapper: {
+    artifactName: 'NamedStaticPCVDepositWrapper',
+    address: '0x06dAcca04e201AD31393754E68dA04Dc14778Fa6',
+    category: AddressCategory.Collateralization
+  },
   balUsdCompositeOracle: {
     artifactName: 'CompositeOracle',
     address: '0xDe0407851AEC6F073A63D27C7D29805CCD59D3e0',
