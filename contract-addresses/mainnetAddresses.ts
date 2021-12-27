@@ -696,6 +696,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x90B336dFF819b9e4b3D9A32cabdcAB0E92836065',
     category: AddressCategory.Rewards
   },
+  stwBulkHarvest: {
+    artifactName: 'STWBulkHarvest',
+    address: '0x83433D925048d7e9D2D7Eec2A0Efbb4456Af2F93',
+    category: AddressCategory.Rewards
+  },
   tribalChief: {
     artifactName: 'TribalChief',
     address: '0x9e1076cC0d19F9B0b8019F384B0a29E48Ee46f7f',
