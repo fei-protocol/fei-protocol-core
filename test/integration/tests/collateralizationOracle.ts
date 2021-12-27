@@ -209,6 +209,9 @@ describe('e2e-collateralization', function () {
       const namedStaticPCVDepositWrapper: NamedStaticPCVDepositWrapper =
         contracts.namedStaticPCVDepositWrapper as NamedStaticPCVDepositWrapper;
 
+      // set Chainlink ETHUSD to a fixed 4,000$ value
+      await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
+
       await collateralizationOracleWrapper.update();
 
       const beforeBalance = await namedStaticPCVDepositWrapper.balance();
