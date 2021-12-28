@@ -88,18 +88,25 @@ const namedPCVDeposits = [
   }
 ];
 
+const rewards = [];
+const timestamps = [];
+
 /*
 FIP-57
 DEPLOY ACTIONS:
 
 1. Deploy NamedStaticPCVDepositWrapper
+2. Deploy TribalChiefSyncV2
 
-OA ACTIONS:
+DAO ACTIONS:
 1. Add NamedStaticPCVDepositWrapper to the Collateralization Oracle 
+2. Deprecate DAI bonding curve + TRIBERagequit
+3. Add TribalChief auto-decrease rewards
+4. Reduce DAI PSM spread to 25 bps
 */
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
-  const { core } = addresses;
+  const { core, tribalChief, optimisticTimelock, autoRewardsDistributor } = addresses;
 
   if (!core) {
     throw new Error('An environment variable contract address is not set');
@@ -112,8 +119,22 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('namedStaticPCVDepositWrapper: ', namedStaticPCVDepositWrapper.address);
 
+  // 2. Deploy TribalChiefSyncV2
+  const tcFactory = await ethers.getContractFactory('TribalChiefSyncV2');
+  const tribalChiefSyncV2 = await tcFactory.deploy(
+    tribalChief,
+    optimisticTimelock,
+    autoRewardsDistributor,
+    rewards,
+    timestamps
+  );
+  await tribalChiefSyncV2.deployTransaction.wait();
+
+  logging && console.log('tribalChiefSyncV2: ', tribalChiefSyncV2.address);
+
   return {
-    namedStaticPCVDepositWrapper
+    namedStaticPCVDepositWrapper,
+    tribalChiefSyncV2
   };
 };
 

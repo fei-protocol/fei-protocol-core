@@ -27,7 +27,7 @@ interface ITimelock {
     It also includes a mapping for updating block rewards according to the schedule in https://tribe.fei.money/t/tribe-liquidity-mining-emission-schedule/3549
     It needs the TRIBAL_CHIEF_ADMIN_ROLE role to auto trigger reward decreases.
  */
-contract TribalChiefSync {
+contract TribalChiefSyncV2 {
     ITribalChief public immutable tribalChief;
     IAutoRewardsDistributor public immutable autoRewardsDistributor;
     ITimelock public immutable timelock;
