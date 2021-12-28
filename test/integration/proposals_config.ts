@@ -3,6 +3,7 @@ import { ProposalsConfigMap } from '@custom-types/types';
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
 import fip_50_proposal from '@proposals/description/fip_50';
+import fip_61_proposal from '@proposals/description/fip_61';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -18,6 +19,12 @@ const proposals: ProposalsConfigMap = {
     skipDAO: false,
     totalValue: 0,
     proposal: fip_50_proposal
+  },
+  fip_61: {
+    deploy: true,
+    skipDAO: false,
+    totalValue: 0,
+    proposal: fip_61_proposal
   }
 };
 
