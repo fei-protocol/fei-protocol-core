@@ -35,6 +35,8 @@ contract TribalChiefSync {
     /// @notice a mapping from reward rates to timestamps after which they become active
     mapping(uint256 => uint256) public rewardsSchedule;
 
+    uint256[] internal rewardsArray;
+
     // TribalChief struct
     struct RewardData {
         uint128 lockLength;
@@ -53,9 +55,13 @@ contract TribalChiefSync {
         timelock = _timelock;
 
         require(rewards.length == timestamps.length, "length");
+
         uint256 lastReward = type(uint256).max;
         uint256 lastTimestamp = block.timestamp;
-        for (uint256 i = 0; i < rewards.length; i++) {
+        uint256 len = rewards.length;
+        rewardsArray = new uint256[](len);
+
+        for (uint256 i = 0; i < len; i++) {
             uint256 nextReward = rewards[i];
             uint256 nextTimestamp = timestamps[i];
             
@@ -63,6 +69,7 @@ contract TribalChiefSync {
             require(nextTimestamp > lastTimestamp, "timestamp");
             
             rewardsSchedule[nextReward] = nextTimestamp;
+            rewardsArray[len - i - 1] = nextReward;
 
             lastReward = nextReward;
             lastTimestamp = nextTimestamp;
@@ -82,9 +89,23 @@ contract TribalChiefSync {
     }
 
     /// @notice Sync a rewards rate change automatically using pre-approved map
-    function autoDecreaseRewards(uint256 tribePerBlock) external update {
-        require(rewardsSchedule[tribePerBlock] < block.timestamp, "time not passed");
+    function autoDecreaseRewards() external update {
+        require(isRewardDecreaseAvailable(), "time not passed");
+        uint256 tribePerBlock = nextRewardsRate();
         tribalChief.updateBlockReward(tribePerBlock);
+        rewardsArray.pop();
+    }
+
+    function isRewardDecreaseAvailable() public view returns(bool) {
+        return nextRewardTimestamp() < block.timestamp;
+    }
+
+    function nextRewardTimestamp() public view returns(uint256) {
+        return rewardsSchedule[nextRewardsRate()];
+    }
+
+    function nextRewardsRate() public view returns(uint256) {
+        return rewardsArray[rewardsArray.length - 1];
     }
 
     /// @notice Sync a rewards rate change
