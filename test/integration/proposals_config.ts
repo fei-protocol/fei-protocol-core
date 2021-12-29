@@ -14,7 +14,7 @@ const proposals: ProposalsConfigMap = {
     }
     */
   fip_61: {
-    deploy: true,
+    deploy: false,
     proposalId: undefined,
     skipDAO: false,
     totalValue: 0,

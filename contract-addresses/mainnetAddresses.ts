@@ -701,9 +701,9 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x2d91362e8bcAA8826b482B531dcb170FC9d17777',
     category: AddressCategory.Rewards
   },
-  tribalChiefSync: {
-    artifactName: 'TribalChiefSync',
-    address: '0x7A883825caA45fcbDcd76991C5972Baf1551aa3d',
+  tribalChiefSyncV2: {
+    artifactName: 'TribalChiefSyncV2',
+    address: '0xb41c594f9a6a2E0882212598337AF8145f63731b',
     category: AddressCategory.Rewards
   },
   rariPool8Comptroller: {
@@ -1374,6 +1374,11 @@ const MainnetAddresses: MainnetAddresses = {
   tribalChiefOptimisticTimelock: {
     artifactName: 'Timelock',
     address: '0x27Fae9E49AD955A24bB578B66Cdc962b5029fbA9',
+    category: AddressCategory.Deprecated
+  },
+  tribalChiefSync: {
+    artifactName: 'TribalChiefSync',
+    address: '0x7A883825caA45fcbDcd76991C5972Baf1551aa3d',
     category: AddressCategory.Deprecated
   },
   tribeBalOtcEscrow: {

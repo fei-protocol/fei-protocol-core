@@ -161,7 +161,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   logging && console.log('tribalChiefSyncV2: ', tribalChiefSyncV2.address);
 
   return {
-    // namedStaticPCVDepositWrapper, // already deployed
+    namedStaticPCVDepositWrapper,
     tribalChiefSyncV2
   };
 };
