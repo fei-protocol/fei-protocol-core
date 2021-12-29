@@ -161,7 +161,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   logging && console.log('tribalChiefSyncV2: ', tribalChiefSyncV2.address);
 
   return {
-    namedStaticPCVDepositWrapper,
+    // namedStaticPCVDepositWrapper, // already deployed
     tribalChiefSyncV2
   };
 };
@@ -186,13 +186,17 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   } = contracts;
   const usdAddress = '0x1111111111111111111111111111111111111111';
 
-  // expect(await collateralizationOracle.depositToToken(namedStaticPCVDepositWrapper.address)).to.be.equal(usdAddress);
-  // expect(await collateralizationOracle.depositToToken(staticPcvDepositWrapper2.address)).to.be.equal(ethers.constants.AddressZero);
-  // expect(await collateralizationOracle.depositToToken(daiBondingCurveWrapper.address)).to.be.equal(ethers.constants.AddressZero);
+  expect(await collateralizationOracle.depositToToken(namedStaticPCVDepositWrapper.address)).to.be.equal(usdAddress);
+  expect(await collateralizationOracle.depositToToken(staticPcvDepositWrapper2.address)).to.be.equal(
+    ethers.constants.AddressZero
+  );
+  expect(await collateralizationOracle.depositToToken(daiBondingCurveWrapper.address)).to.be.equal(
+    ethers.constants.AddressZero
+  );
 
-  // expect(await collateralizationOracle.getDepositsForToken(usdAddress)).to.include(
-  //   namedStaticPCVDepositWrapper.address
-  // );
+  expect(await collateralizationOracle.getDepositsForToken(usdAddress)).to.include(
+    namedStaticPCVDepositWrapper.address
+  );
   expect(await namedStaticPCVDepositWrapper.numDeposits()).to.equal(10);
   expect(await namedStaticPCVDepositWrapper.balance()).to.equal(eth.mul(2_240_000));
   expect(await namedStaticPCVDepositWrapper.feiReportBalance()).to.equal(eth.mul(64_000_000));
