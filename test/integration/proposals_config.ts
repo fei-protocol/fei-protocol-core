@@ -2,7 +2,7 @@ import { ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
-import fip_33b from '@proposals/description/fip_33b';
+import fip_50_proposal from '@proposals/description/fip_50';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -13,12 +13,12 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  fip_33b: {
-    proposalId: '96686993103134327090567928241787967019835211231210745102174800470768691128710',
+  fip_50: {
+    proposalId: '95350699291559233969894926874586064836554064299212547920320505748177226392479',
     deploy: false,
     skipDAO: false,
     totalValue: 0,
-    proposal: fip_33b
+    proposal: fip_50_proposal
   }
 };
 

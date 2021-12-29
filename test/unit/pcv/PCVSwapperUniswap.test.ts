@@ -94,13 +94,16 @@ describe('PCVSwapperUniswap', function () {
 
   describe('Payable', function () {
     it('should accept ETH transfers', async function () {
+      const beforeBalance = await ethers.provider.getBalance(this.swapper.address);
       // send 23 ETH
       await impersonatedSigners[userAddress].sendTransaction({
         from: userAddress,
         to: this.swapper.address,
         value: toBN(`23${e18}`)
       });
-      expect(await ethers.provider.getBalance(this.swapper.address)).to.be.equal(`23${e18}`);
+      const afterBalance = await ethers.provider.getBalance(this.swapper.address);
+
+      expect(afterBalance.sub(beforeBalance)).to.be.equal(`23${e18}`);
     });
   });
 

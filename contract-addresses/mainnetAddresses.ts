@@ -46,9 +46,9 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xf8c2b645988b7658E7748BA637fE25bdD46A704A',
     category: AddressCategory.Core
   },
-  ratioPCVController: {
-    artifactName: 'RatioPCVController',
-    address: '0xB1410aeCe2c65fE9e107c58b5aa32e91B18f0BC7',
+  ratioPCVControllerV2: {
+    artifactName: 'RatioPCVControllerV2',
+    address: '0x221fff24FB66dA3c722c7C5B856956a6a30C0179',
     category: AddressCategory.Core
   },
   tribe: {
@@ -154,6 +154,11 @@ const MainnetAddresses: MainnetAddresses = {
   agEurAngleUniswapPCVDeposit: {
     artifactName: 'AngleUniswapPCVDeposit',
     address: '0x7AC2Ab8143634419c5bc230A9f9955C3e29f64Ef',
+    category: AddressCategory.PCV
+  },
+  bammDeposit: {
+    artifactName: 'BAMMDeposit',
+    address: '0x374628EBE7Ef6AcA0574e750B618097531A26Ff8',
     category: AddressCategory.PCV
   },
   balancerDepositBalWeth: {
@@ -516,6 +521,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xe72EB93de743F819fe91277582d7d0Fa9bb9b023',
     category: AddressCategory.Collateralization
   },
+  namedStaticPCVDepositWrapper: {
+    artifactName: 'NamedStaticPCVDepositWrapper',
+    address: '0x06dAcca04e201AD31393754E68dA04Dc14778Fa6',
+    category: AddressCategory.Collateralization
+  },
   balUsdCompositeOracle: {
     artifactName: 'CompositeOracle',
     address: '0xDe0407851AEC6F073A63D27C7D29805CCD59D3e0',
@@ -689,6 +699,11 @@ const MainnetAddresses: MainnetAddresses = {
   stakingTokenWrapperUMALaaS: {
     artifactName: 'StakingTokenWrapper',
     address: '0x90B336dFF819b9e4b3D9A32cabdcAB0E92836065',
+    category: AddressCategory.Rewards
+  },
+  stwBulkHarvest: {
+    artifactName: 'STWBulkHarvest',
+    address: '0x83433D925048d7e9D2D7Eec2A0Efbb4456Af2F93',
     category: AddressCategory.Rewards
   },
   tribalChief: {
@@ -874,6 +889,11 @@ const MainnetAddresses: MainnetAddresses = {
   balancerRewards: {
     artifactName: 'IMerkleOrchard',
     address: '0xdAE7e32ADc5d490a43cCba1f0c736033F2b4eFca',
+    category: AddressCategory.External
+  },
+  bamm: {
+    artifactName: 'IBAMM',
+    address: '0x0d3AbAA7E088C2c82f54B2f47613DA438ea8C598',
     category: AddressCategory.External
   },
   bentoBox: {
@@ -1069,6 +1089,11 @@ const MainnetAddresses: MainnetAddresses = {
   liquityFusePoolLusd: {
     artifactName: 'CErc20Delegator',
     address: '0x5052BfbB7972E702179f3Eeed43B9213819b681a',
+    category: AddressCategory.External
+  },
+  lqty: {
+    artifactName: 'IERC20',
+    address: '0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D',
     category: AddressCategory.External
   },
   lusd: {
@@ -1309,6 +1334,11 @@ const MainnetAddresses: MainnetAddresses = {
   oldEthReserveStabilizer: {
     artifactName: 'EthReserveStabilizer',
     address: '0xa08A721dFB595753FFf335636674D76C455B275C',
+    category: AddressCategory.Deprecated
+  },
+  ratioPCVController: {
+    artifactName: 'RatioPCVController',
+    address: '0xB1410aeCe2c65fE9e107c58b5aa32e91B18f0BC7',
     category: AddressCategory.Deprecated
   },
   oldRatioPCVController: {
