@@ -11,6 +11,13 @@ const fip_61: ProposalDescription = {
       description: 'Swap static deposit out for named static deposit'
     },
     {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'removeDeposit(address)',
+      arguments: ['{daiBondingCurveWrapper}'],
+      description: 'Remove DAI bonding curve from cr oracle'
+    },
+    {
       target: 'core',
       values: '0',
       method: 'revokeMinter(address)',
@@ -20,7 +27,7 @@ const fip_61: ProposalDescription = {
     {
       target: 'daiBondingCurve',
       values: '0',
-      method: 'pause()', // TODO look for other deprecated contracts that need to be paused
+      method: 'pause()',
       arguments: [],
       description: 'Deprecate DAI bonding curve'
     },
@@ -53,11 +60,11 @@ const fip_61: ProposalDescription = {
       description: 'Add TribalChiefSyncV2 EXECUTOR_ROLE'
     },
     {
-      target: 'core',
+      target: 'optimisticTimelock',
       values: '0',
       method: 'revokeRole(bytes32,address)',
-      arguments: ['0x23970cab3799b6876df4319661e6c03cc45bd59628799d92e988dd8cbdc90e31', '{tribalChiefSync}'],
-      description: 'Revoke TribalChiefSyncV2'
+      arguments: ['0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63', '{tribalChiefSync}'],
+      description: 'Revoke TribalChiefSync'
     },
     {
       target: 'daiPSM',

@@ -1,4 +1,4 @@
-import { AutoRewardsDistributor, TribalChief } from '@custom-types/contracts';
+import { AutoRewardsDistributor, TribalChief, TribalChiefSyncV2 } from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -45,6 +45,29 @@ describe('e2e-staking', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
+  });
+
+  describe('TribalChiefSyncV2', async () => {
+    it('auto-sync works correctly', async () => {
+      const tribalChiefSync: TribalChiefSyncV2 = contracts.tribalChiefSyncV2 as TribalChiefSyncV2;
+      const tribalChief: TribalChief = contracts.tribalChief as TribalChief;
+
+      if (!(await tribalChiefSync.isRewardDecreaseAvailable())) {
+        await time.increaseTo(await tribalChiefSync.nextRewardTimestamp());
+      }
+
+      while (await tribalChiefSync.isRewardDecreaseAvailable()) {
+        const nextRewardRate = await tribalChiefSync.nextRewardsRate();
+        doLogging && console.log(`Decreasing to ${nextRewardRate.toString()}`);
+
+        expect(await tribalChief.tribePerBlock()).to.not.be.bignumber.equal(nextRewardRate);
+        await tribalChiefSync.autoDecreaseRewards();
+        expect(await tribalChief.tribePerBlock()).to.be.bignumber.equal(nextRewardRate);
+      }
+      doLogging && console.log(`Done and checking latest`);
+
+      expect(await time.latest()).to.be.greaterThan(1677628800);
+    });
   });
 
   describe('TribalChief', async () => {

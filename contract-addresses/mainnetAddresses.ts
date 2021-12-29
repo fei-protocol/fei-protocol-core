@@ -111,11 +111,6 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xa84C8be28f3d560059339f06C6b6c5B23f53C58C',
     category: AddressCategory.Peg
   },
-  daiBondingCurve: {
-    artifactName: 'BondingCurve',
-    address: '0xC0afe0E649e32528666F993ce63822c3840e941a',
-    category: AddressCategory.Peg
-  },
   daiPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0x3e0f66c5687FF917809A3F7fA7096e1Bc409fB03',
@@ -411,11 +406,6 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xFf419Bc27483edb94b7Ad5c97b7FaB5DB323c7E0',
     category: AddressCategory.Collateralization
   },
-  daiBondingCurveWrapper: {
-    artifactName: 'PCVDepositWrapper',
-    address: '0x2547d76E2447E67F29d6bFeE5d46FDd2183c88E4',
-    category: AddressCategory.Collateralization
-  },
   ethLidoPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xA271fF86426c7fdAaAE72603e6Ce68c892d69ED7',
@@ -514,11 +504,6 @@ const MainnetAddresses: MainnetAddresses = {
   rariPool9RaiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xCCe230c087F31032fc17621a2CF5E425A0b80C96',
-    category: AddressCategory.Collateralization
-  },
-  staticPcvDepositWrapper2: {
-    artifactName: 'StaticPCVDepositWrapper',
-    address: '0xe72EB93de743F819fe91277582d7d0Fa9bb9b023',
     category: AddressCategory.Collateralization
   },
   namedStaticPCVDepositWrapper: {
@@ -1266,6 +1251,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
     category: AddressCategory.Deprecated
   },
+  daiBondingCurve: {
+    artifactName: 'BondingCurve',
+    address: '0xC0afe0E649e32528666F993ce63822c3840e941a',
+    category: AddressCategory.Deprecated
+  },
+  daiBondingCurveWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0x2547d76E2447E67F29d6bFeE5d46FDd2183c88E4',
+    category: AddressCategory.Deprecated
+  },
   defiPulseOTC: {
     artifactName: 'unknown',
     address: '0x673d140eed36385cb784e279f8759f495c97cf03',
@@ -1359,6 +1354,11 @@ const MainnetAddresses: MainnetAddresses = {
   staticPcvDepositWrapper: {
     artifactName: 'StaticPCVDepositWrapper',
     address: '0x8B41DcEfAe6064E6bc2A9B3ae20141d23EFD6cbd',
+    category: AddressCategory.Deprecated
+  },
+  staticPcvDepositWrapper2: {
+    artifactName: 'StaticPCVDepositWrapper',
+    address: '0xe72EB93de743F819fe91277582d7d0Fa9bb9b023',
     category: AddressCategory.Deprecated
   },
   timelock: {
