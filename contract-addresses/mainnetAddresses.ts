@@ -166,11 +166,6 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x243C601CC5DaA3Ac250B14509804188347bd2aFB',
     category: AddressCategory.PCV
   },
-  votiumBribe: {
-    artifactName: 'IVotiumBribe',
-    address: '0x19BBC3463Dd8d07f55438014b021Fb457EBD4595',
-    category: AddressCategory.External
-  },
   d3poolConvexPCVDeposit: {
     artifactName: 'ConvexPCVDeposit',
     address: '0x5ae217dE26f6Ff5F481C6e10ec48b2cf2fc857C8',
@@ -1179,6 +1174,11 @@ const MainnetAddresses: MainnetAddresses = {
   tWETH: {
     artifactName: 'IERC20',
     address: '0xD3D13a578a53685B4ac36A1Bab31912D2B2A2F36',
+    category: AddressCategory.External
+  },
+  votiumBribe: {
+    artifactName: 'IVotiumBribe',
+    address: '0x19BBC3463Dd8d07f55438014b021Fb457EBD4595',
     category: AddressCategory.External
   },
   weth: {

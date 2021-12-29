@@ -33,7 +33,7 @@ contract VotiumBriber is CoreRef {
         token = _token;
         votiumBribe = _votiumBribe;
 
-        _setContractAdminRole(keccak256("VOTIUM_BRIBE_ADMIN_ROLE"));
+        _setContractAdminRole(keccak256("TRIBAL_CHIEF_ADMIN_ROLE"));
     }
 
     /// @notice Spend tokens on Votium to bribe for a given pool.
