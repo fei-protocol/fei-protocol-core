@@ -53,7 +53,7 @@ describe('e2e-staking', function () {
       const tribalChief: TribalChief = contracts.tribalChief as TribalChief;
 
       if (!(await tribalChiefSync.isRewardDecreaseAvailable())) {
-        await time.increaseTo(await tribalChiefSync.nextRewardTimestamp());
+        await time.increaseTo((await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)));
       }
 
       while (await tribalChiefSync.isRewardDecreaseAvailable()) {
@@ -63,6 +63,10 @@ describe('e2e-staking', function () {
         expect(await tribalChief.tribePerBlock()).to.not.be.bignumber.equal(nextRewardRate);
         await tribalChiefSync.autoDecreaseRewards();
         expect(await tribalChief.tribePerBlock()).to.be.bignumber.equal(nextRewardRate);
+
+        if (nextRewardRate.toString() !== '6060000000000000000') {
+          await time.increaseTo((await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)));
+        }
       }
       doLogging && console.log(`Done and checking latest`);
 

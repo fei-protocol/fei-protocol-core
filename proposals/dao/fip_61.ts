@@ -151,8 +151,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   const tcFactory = await ethers.getContractFactory('TribalChiefSyncV2');
   const tribalChiefSyncV2 = await tcFactory.deploy(
     tribalChief,
-    optimisticTimelock,
     autoRewardsDistributor,
+    optimisticTimelock,
     rewards,
     timestamps
   );

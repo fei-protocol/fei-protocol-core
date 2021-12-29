@@ -97,7 +97,7 @@ contract TribalChiefSyncV2 {
     }
 
     function isRewardDecreaseAvailable() public view returns(bool) {
-        return nextRewardTimestamp() < block.timestamp;
+        return rewardsArray.length > 0 && nextRewardTimestamp() < block.timestamp;
     }
 
     function nextRewardTimestamp() public view returns(uint256) {
