@@ -4,7 +4,7 @@ import { solidity } from 'ethereum-waffle';
 import { Contract } from 'ethers';
 import hre, { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { expectApprox, resetFork, time } from '@test/helpers';
+import { expectApprox, getImpersonatedSigner, overwriteChainlinkAggregator, resetFork, time } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '@test/integration/setup/utils';
@@ -30,7 +30,7 @@ describe('e2e-pcv', function () {
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
 
-  const tenPow18 = toBN('1000000000000000000');
+  const tenPow18 = ethers.constants.WeiPerEther;
 
   before(async function () {
     // Setup test environment and get contracts
@@ -51,6 +51,25 @@ describe('e2e-pcv', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
+  });
+
+  describe('BAMM', function () {
+    it('should be able to withdraw LUSD from B.AMM', async function () {
+      // set Chainlink ETHUSD to a fixed 4,000$ value
+      await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
+
+      const stabilityPool = '0x66017D22b0f8556afDd19FC67041899Eb65a21bb';
+      const signer = await getImpersonatedSigner(stabilityPool);
+      await contracts.lusd.connect(signer).transfer(contracts.bammDeposit.address, ethers.constants.WeiPerEther);
+
+      await contracts.bammDeposit.deposit();
+      expect(await contracts.bammDeposit.balance()).to.be.at.least(toBN(89_000_000).mul(tenPow18));
+
+      await contracts.bammDeposit.withdraw(contractAddresses.feiDAOTimelock, toBN(89_000_000).mul(tenPow18));
+
+      const lusdBalanceAfter = await contracts.lusd.balanceOf(contracts.feiDAOTimelock.address);
+      expect(lusdBalanceAfter).to.be.bignumber.equal(toBN(89_000_000).mul(tenPow18));
+    });
   });
 
   describe('PCV Guardian', async () => {
