@@ -16,7 +16,7 @@ export const permissions = {
   GOVERN_ROLE: ['core', 'timelock', 'feiDAOTimelock'],
   PCV_CONTROLLER_ROLE: [
     'feiDAOTimelock',
-    'ratioPCVController',
+    'ratioPCVControllerV2',
     'aaveEthPCVDripController',
     'compoundEthPCVDripController',
     'pcvGuardian',
@@ -24,7 +24,7 @@ export const permissions = {
   ],
   GUARDIAN_ROLE: ['multisig', 'pcvGuardian'],
   ORACLE_ADMIN_ROLE: ['collateralizationOracleGuardian', 'optimisticTimelock'],
-  SWAP_ADMIN_ROLE: ['pcvEquityMinter'],
+  SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'optimisticTimelock'],
   BALANCER_MANAGER_ADMIN_ROLE: [],
   PSM_ADMIN_ROLE: [],
   TRIBAL_CHIEF_ADMIN_ROLE: ['optimisticTimelock']

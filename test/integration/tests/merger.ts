@@ -48,7 +48,7 @@ describe('e2e-merger', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe('TribeRagequit', async function () {
+  describe.skip('TribeRagequit', async function () {
     const guardianBalance = '18903018000000000000000000';
 
     it('ngmi', async function () {

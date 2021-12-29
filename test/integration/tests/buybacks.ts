@@ -2,8 +2,15 @@ import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
-import { NamedContracts } from '@custom-types/types';
-import { expectApprox, getImpersonatedSigner, increaseTime, latestTime, resetFork } from '@test/helpers';
+import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import {
+  expectApprox,
+  getImpersonatedSigner,
+  increaseTime,
+  latestTime,
+  resetFork,
+  overwriteChainlinkAggregator
+} from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import {
@@ -24,6 +31,7 @@ before(async () => {
 
 describe('e2e-buybacks', function () {
   let contracts: NamedContracts;
+  let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
@@ -45,47 +53,51 @@ describe('e2e-buybacks', function () {
     e2eCoord = new TestEndtoEndCoordinator(config, proposals);
 
     doLogging && console.log(`Loading environment...`);
-    ({ contracts } = await e2eCoord.loadEnvironment());
+    ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe.skip('PCV Equity Minter + LBP', async function () {
+  describe('PCV Equity Minter + LBP', async function () {
     it('mints appropriate amount and swaps', async function () {
       const {
         pcvEquityMinter,
         collateralizationOracleWrapper,
         staticPcvDepositWrapper,
-        feiTribeLBPSwapper,
+        noFeeFeiTribeLBPSwapper,
         fei,
         tribe,
         core
       } = contracts;
 
-      await increaseTime(await feiTribeLBPSwapper.remainingTime());
+      await increaseTime(await noFeeFeiTribeLBPSwapper.remainingTime());
 
       const pcvStats = await collateralizationOracleWrapper.pcvStats();
 
       if (pcvStats[2] < 0) {
         await staticPcvDepositWrapper.setBalance(pcvStats[0]);
       }
+
+      // set Chainlink ETHUSD to a fixed 4,000$ value
+      await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
+
       await collateralizationOracleWrapper.update();
 
-      await core.allocateTribe(feiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(50_000));
+      await core.allocateTribe(noFeeFeiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(1_000_000));
       const tx = await pcvEquityMinter.mint();
       expect(tx).to.emit(pcvEquityMinter, 'FeiMinting');
       expect(tx).to.emit(fei, 'Transfer');
       expect(tx).to.emit(tribe, 'Transfer');
 
-      expect(await feiTribeLBPSwapper.swapEndTime()).to.be.gt(toBN((await latestTime()).toString()));
+      expect(await noFeeFeiTribeLBPSwapper.swapEndTime()).to.be.gt(toBN((await latestTime()).toString()));
 
       await increaseTime(await pcvEquityMinter.duration());
-      await core.allocateTribe(feiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(50_000));
+      await core.allocateTribe(noFeeFeiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(1_000_000));
 
       await pcvEquityMinter.mint();
     });
   });
 
-  // Skipped because the buybacks are now in-progress
+  // Skipped because the LUSD auction is now over
   describe.skip('LUSD LBP', async function () {
     it('mints appropriate amount and swaps', async function () {
       const feiLusdLBPSwapper: BalancerLBPSwapper = contracts.feiLusdLBPSwapper as BalancerLBPSwapper;
@@ -178,6 +190,9 @@ describe('e2e-buybacks', function () {
         contracts;
 
       const beforeBalance = await fei.balanceOf(deployAddress);
+
+      // set Chainlink ETHUSD to a fixed 4,000$ value
+      await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
 
       await collateralizationOracleWrapper.update();
 
