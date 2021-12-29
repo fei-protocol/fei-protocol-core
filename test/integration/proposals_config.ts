@@ -14,6 +14,7 @@ const proposals: ProposalsConfigMap = {
     }
     */
   fip_50: {
+    proposalId: '95350699291559233969894926874586064836554064299212547920320505748177226392479',
     deploy: false,
     skipDAO: false,
     totalValue: 0,
