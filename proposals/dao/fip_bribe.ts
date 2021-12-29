@@ -51,7 +51,9 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in setup for fip${fipNumber}`);
+  await contracts.tribalChief.add('250', addresses.stakingTokenWrapperBribeD3pool, ethers.constants.AddressZero, [
+    [0, 10000]
+  ]);
 };
 
 // Tears down any changes made in setup() that need to be
