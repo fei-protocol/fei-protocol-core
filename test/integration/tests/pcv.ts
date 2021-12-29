@@ -30,7 +30,7 @@ describe('e2e-pcv', function () {
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
 
-  const tenPow18 = toBN('1000000000000000000');
+  const tenPow18 = ethers.constants.WeiPerEther;
 
   before(async function () {
     // Setup test environment and get contracts
@@ -63,12 +63,12 @@ describe('e2e-pcv', function () {
       await contracts.lusd.connect(signer).transfer(contracts.bammDeposit.address, ethers.constants.WeiPerEther);
 
       await contracts.bammDeposit.deposit();
-      expect(await contracts.bammDeposit.balance()).to.be.at.least(toBN(89_000_000).mul(e18));
+      expect(await contracts.bammDeposit.balance()).to.be.at.least(toBN(89_000_000).mul(tenPow18));
 
-      await contracts.bammDeposit.withdraw(contractAddresses.feiDAOTimelock, toBN(89_000_000).mul(e18));
+      await contracts.bammDeposit.withdraw(contractAddresses.feiDAOTimelock, toBN(89_000_000).mul(tenPow18));
 
       const lusdBalanceAfter = await contracts.lusd.balanceOf(contracts.feiDAOTimelock.address);
-      expect(lusdBalanceAfter).to.be.bignumber.equal(toBN(89_000_000).mul(e18));
+      expect(lusdBalanceAfter).to.be.bignumber.equal(toBN(89_000_000).mul(tenPow18));
     });
   });
 
