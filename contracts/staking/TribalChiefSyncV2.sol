@@ -35,7 +35,8 @@ contract TribalChiefSyncV2 {
     /// @notice a mapping from reward rates to timestamps after which they become active
     mapping(uint256 => uint256) public rewardsSchedule;
 
-    uint256[] internal rewardsArray;
+    /// @notice rewards schedule in reverse order
+    uint256[] public rewardsArray;
 
     // TribalChief struct
     struct RewardData {
