@@ -1391,6 +1391,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xe2fE8041429e4bd51c40F92C6cDb699527171298',
     category: AddressCategory.Deprecated
   },
+  tribeRagequit: {
+    artifactName: 'TRIBERagequit',
+    address: '0xE77d572F04904fFea40899FD907F7ADd6Ea5228A',
+    category: AddressCategory.Deprecated
+  },
   uniswapOracle: {
     artifactName: 'UniswapOracle',
     address: '0x087F35bd241e41Fc28E43f0E8C58d283DD55bD65',
@@ -1419,11 +1424,6 @@ const MainnetAddresses: MainnetAddresses = {
   pegExchangerDripper: {
     artifactName: 'PegExchangerDripper',
     address: '0xC416EEe663ECa29cEB726241caDFFe6a77D61E2D',
-    category: AddressCategory.TBD
-  },
-  tribeRagequit: {
-    artifactName: 'TRIBERagequit',
-    address: '0xE77d572F04904fFea40899FD907F7ADd6Ea5228A',
     category: AddressCategory.TBD
   }
 };

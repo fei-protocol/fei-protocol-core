@@ -82,12 +82,13 @@ const fip_61: ProposalDescription = {
     }
   ],
   description: `
-  1. Add NamedStaticPCVDepositWrapper to the Collateralization Oracle 
-  2. Deprecate DAI bonding curve + TRIBERagequit
+  This proposal includes several maintenance upgrades that are bundled together:
+  1. Upgrade static pcv deposit in Collateralization Oracle
+  2. Deprecate DAI bonding curve + TRIBERagequit by removing Minter role
   3. Add TribalChief auto-decrease rewards
   4. Reduce DAI PSM spread to 25 bps
 
-  Code: 
+  Code: https://github.com/fei-protocol/fei-protocol-core/pull/411
 `
 };
 

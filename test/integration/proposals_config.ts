@@ -25,7 +25,9 @@ const proposals: ProposalsConfigMap = {
       'tribalChiefSyncV2',
       'optimisticTimelock',
       'tribalChiefSync',
-      'daiPSM'
+      'daiPSM',
+      'collateralizationOracle',
+      'core'
     ],
     skipDAO: false,
     totalValue: 0,

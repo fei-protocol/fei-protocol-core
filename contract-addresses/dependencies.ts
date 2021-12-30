@@ -70,7 +70,7 @@ const dependencies: DependencyMap = {
       'uniswapPCVDeposit',
       'collateralizationOracle',
       'collateralizationOracleWrapper',
-      'staticPcvDepositWrapper2',
+      'namedStaticPCVDepositWrapper',
       'balUsdCompositeOracle',
       'chainlinkBALEthOracle',
       'chainlinkCREAMEthOracle',
@@ -202,14 +202,14 @@ const dependencies: DependencyMap = {
     contractDependencies: [
       'core',
       'rewardsDistributorAdmin',
-      'tribalChiefSync',
+      'tribalChiefSyncV2',
       'rariPool8Comptroller',
       'optimisticMultisig',
       'optimisticMinter',
       'tribalChief',
       'collateralizationOracle',
       'collateralizationOracleWrapper',
-      'staticPcvDepositWrapper2'
+      'namedStaticPCVDepositWrapper'
     ]
   },
   rariTimelock: {
@@ -516,7 +516,7 @@ const dependencies: DependencyMap = {
   rariPool9RaiPCVDepositWrapper: {
     contractDependencies: ['collateralizationOracle']
   },
-  staticPcvDepositWrapper2: {
+  namedStaticPCVDepositWrapper: {
     contractDependencies: ['core', 'optimisticTimelock']
   },
   balUsdCompositeOracle: {
@@ -608,7 +608,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['aaveTribeIncentivesController']
   },
   autoRewardsDistributor: {
-    contractDependencies: ['core', 'rewardsDistributorAdmin', 'tribalChiefSync', 'tribalChief', 'rariPool8Tribe']
+    contractDependencies: ['core', 'rewardsDistributorAdmin', 'tribalChiefSyncV2', 'tribalChief', 'rariPool8Tribe']
   },
   erc20Dripper: {
     contractDependencies: ['core', 'tribe', 'tribalChief', 'tribeMinter']
@@ -664,7 +664,7 @@ const dependencies: DependencyMap = {
     contractDependencies: [
       'core',
       'autoRewardsDistributor',
-      'tribalChiefSync',
+      'tribalChiefSyncV2',
       'optimisticTimelock',
       'erc20Dripper',
       'stakingTokenWrapperFOXLaaS',
@@ -683,7 +683,7 @@ const dependencies: DependencyMap = {
   tribalChiefImpl: {
     contractDependencies: ['tribalChief']
   },
-  tribalChiefSync: {
+  tribalChiefSyncV2: {
     contractDependencies: [
       'autoRewardsDistributor', // triggers autoRewardsDistributor after updates
       'optimisticTimelock', // executes atomic updates
