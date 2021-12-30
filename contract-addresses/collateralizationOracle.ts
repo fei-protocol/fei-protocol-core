@@ -25,7 +25,7 @@ const collateralizationAddresses = {
   usd: ['namedStaticPCVDepositWrapper', 'd3poolCurvePCVDeposit', 'd3poolConvexPCVDeposit'],
   bal: ['balancerDepositBalWeth'],
   cream: ['creamDepositWrapper'],
-  eth: [
+  weth: [
     'ethReserveStabilizerWrapper',
     'ethLidoPCVDepositWrapper',
     'compoundEthPCVDepositWrapper',

@@ -1146,6 +1146,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F',
     category: AddressCategory.External
   },
+  usd: {
+    artifactName: 'unknown',
+    address: '0x1111111111111111111111111111111111111111',
+    category: AddressCategory.External
+  },
   toke: {
     artifactName: 'IERC20',
     address: '0x2e9d63788249371f1dfc918a52f8d799f4a38c94',
