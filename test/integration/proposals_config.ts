@@ -14,7 +14,7 @@ const proposals: ProposalsConfigMap = {
     }
     */
   fip_bribe: {
-    deploy: true,
+    deploy: false,
     proposalId: undefined,
     affectedContractSignoff: [],
     skipDAO: true,
