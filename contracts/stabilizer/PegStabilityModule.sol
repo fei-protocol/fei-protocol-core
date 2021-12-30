@@ -164,7 +164,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
 
         _transfer(to, amountOut);
 
-        emit Redeem(to, amountFeiIn);
+        emit Redeem(to, amountFeiIn, amountOut);
     }
 
     /// @notice function to buy FEI for an underlying asset
@@ -190,7 +190,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
             _mintFei(to, amountFeiToMint);
         }
         
-        emit Mint(to, amountIn);
+        emit Mint(to, amountIn, amountFeiOut);
     }
 
     // ----------- Public View-Only API ----------
