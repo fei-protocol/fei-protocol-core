@@ -2,8 +2,6 @@ import { ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
-import fip_50_proposal from '@proposals/description/fip_50';
-
 const proposals: ProposalsConfigMap = {
   /*
     fip_xx : {
@@ -13,13 +11,6 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  fip_50: {
-    proposalId: '95350699291559233969894926874586064836554064299212547920320505748177226392479',
-    deploy: false,
-    skipDAO: false,
-    totalValue: 0,
-    proposal: fip_50_proposal
-  }
 };
 
 export default proposals;

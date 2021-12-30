@@ -72,6 +72,9 @@ async function resetTime(): Promise<void> {
 }
 
 async function resetFork(): Promise<void> {
+  if (process.env.NO_RESET) {
+    return;
+  }
   await hre.network.provider.request({
     method: 'hardhat_reset',
     params: [

@@ -1,11 +1,6 @@
 import { MainnetAddresses, AddressCategory } from '../types/types'; // imported without custom path to allow docs to autogen without ts errors
 
 const MainnetAddresses: MainnetAddresses = {
-  collateralizationOracleGuardian: {
-    artifactName: 'CollateralizationOracleGuardian',
-    address: '0x81De6bA8df84A4B679061952E171a27F096F3eAe',
-    category: AddressCategory.Core
-  },
   core: {
     artifactName: AddressCategory.Core,
     address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
@@ -174,11 +169,6 @@ const MainnetAddresses: MainnetAddresses = {
   compoundEthPCVDeposit: {
     artifactName: 'EthCompoundPCVDeposit',
     address: '0x4fCB1435fD42CE7ce7Af3cB2e98289F79d2962b3',
-    category: AddressCategory.PCV
-  },
-  creamFeiPCVDeposit: {
-    artifactName: 'ERC20CompoundPCVDeposit',
-    address: '0x243C601CC5DaA3Ac250B14509804188347bd2aFB',
     category: AddressCategory.PCV
   },
   d3poolConvexPCVDeposit: {
@@ -371,14 +361,14 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x1267B39c93711Dd374DEAB15e0127e4adB259BE0',
     category: AddressCategory.Collateralization
   },
-  balDepositWrapper: {
-    artifactName: 'ERC20PCVDepositWrapper',
-    address: '0x7E28BA7a2D52Af88242E588d868E927119BA45dB',
-    category: AddressCategory.Collateralization
-  },
   collateralizationOracle: {
     artifactName: 'CollateralizationOracle',
     address: '0xFF6f59333cfD8f4Ebc14aD0a0E181a83e655d257',
+    category: AddressCategory.Collateralization
+  },
+  collateralizationOracleGuardian: {
+    artifactName: 'CollateralizationOracleGuardian',
+    address: '0x81De6bA8df84A4B679061952E171a27F096F3eAe',
     category: AddressCategory.Collateralization
   },
   collateralizationOracleWrapper: {
@@ -404,11 +394,6 @@ const MainnetAddresses: MainnetAddresses = {
   creamDepositWrapper: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x3a1838Ac9EcA864054bebB82C32455Dd7d7Fc89c',
-    category: AddressCategory.Collateralization
-  },
-  creamFeiPCVDepositWrapper: {
-    artifactName: 'PCVDepositWrapper',
-    address: '0xFf419Bc27483edb94b7Ad5c97b7FaB5DB323c7E0',
     category: AddressCategory.Collateralization
   },
   daiBondingCurveWrapper: {
@@ -566,7 +551,7 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x060Be7B51F78DFFd04749332fd306BA1228e7444',
     category: AddressCategory.Oracle
   },
-  chainlinkLUSDOracle: {
+  chainlinkLUSDOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0xe61d11ec732d556A26fb863B192052BEa03eF8B5',
     category: AddressCategory.Oracle
@@ -576,14 +561,9 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x3d49573ee6aFCBDe606F8a1c2AA1C498048E7190',
     category: AddressCategory.Oracle
   },
-  chainlinkRaiUsdCompositOracle: {
+  chainlinkRaiUsdCompositeOracle: {
     artifactName: 'CompositeOracle',
     address: '0x392b1d29eDab680c5CA778D3A32b8284859BFBB0',
-    category: AddressCategory.Oracle
-  },
-  chainlinkTribeEthOracle: {
-    artifactName: 'unknown',
-    address: '0x84a24deCA415Acc0c395872a9e6a63E27D6225c8',
     category: AddressCategory.Oracle
   },
   chainlinkTribeEthOracleWrapper: {
@@ -931,6 +911,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x4ad7B025127e89263242aB68F0f9c4E5C033B489',
     category: AddressCategory.External
   },
+  chainlinkTribeEthOracle: {
+    artifactName: 'unknown',
+    address: '0x84a24deCA415Acc0c395872a9e6a63E27D6225c8',
+    category: AddressCategory.External
+  },
   communalFarm: {
     artifactName: 'unknown',
     address: '0x0639076265e9f88542C91DCdEda65127974A5CA5',
@@ -1256,6 +1241,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xDee5c1662bBfF8f80f7c572D8091BF251b3B0dAB',
     category: AddressCategory.Deprecated
   },
+  balDepositWrapper: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x7E28BA7a2D52Af88242E588d868E927119BA45dB',
+    category: AddressCategory.Deprecated
+  },
   compoundPassthroughETH: {
     artifactName: 'CompoundPassthroughETH',
     address: '0xF56B0B80ea6E986364c50177d396b988C3e41094',
@@ -1264,6 +1254,16 @@ const MainnetAddresses: MainnetAddresses = {
   coreV1: {
     artifactName: 'ICoreV1',
     address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
+    category: AddressCategory.Deprecated
+  },
+  creamFeiPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x243C601CC5DaA3Ac250B14509804188347bd2aFB',
+    category: AddressCategory.Deprecated
+  },
+  creamFeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0xFf419Bc27483edb94b7Ad5c97b7FaB5DB323c7E0',
     category: AddressCategory.Deprecated
   },
   defiPulseOTC: {
