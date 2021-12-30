@@ -91,7 +91,7 @@ describe('votium-bribe', function () {
       await contracts.stakingTokenWrapperBribeD3pool.harvest();
       const briberBalanceAfter = await contracts.tribe.balanceOf(contracts.votiumBriberD3pool.address);
       const bribeAmount = briberBalanceAfter.sub(briberBalanceBefore);
-      expect(bribeAmount).to.be.at.least('1');
+      expect(bribeAmount).to.be.at.least(ethers.constants.WeiPerEther.mul(100_000));
 
       // >= 96% of rewards should be distributed as bribes (4% Votium platform fees)
       const distributorBalanceBefore = await contracts.tribe.balanceOf(VOTIUM_TRIBE_DISTRIBUTOR);

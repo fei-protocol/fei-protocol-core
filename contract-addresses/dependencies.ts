@@ -209,7 +209,8 @@ const dependencies: DependencyMap = {
       'tribalChief',
       'collateralizationOracle',
       'collateralizationOracleWrapper',
-      'namedStaticPCVDepositWrapper'
+      'namedStaticPCVDepositWrapper',
+      'votiumBriberD3pool'
     ]
   },
   rariTimelock: {
@@ -636,6 +637,9 @@ const dependencies: DependencyMap = {
   stakingTokenWrapperFOXLaaS: {
     contractDependencies: ['tribalChief']
   },
+  stakingTokenWrapperBribeD3pool: {
+    contractDependencies: ['tribalChief', 'votiumBriberD3pool']
+  },
   stakingTokenWrapperGROLaaS: {
     contractDependencies: ['tribalChief']
   },
@@ -667,6 +671,7 @@ const dependencies: DependencyMap = {
       'tribalChiefSyncV2',
       'optimisticTimelock',
       'erc20Dripper',
+      'stakingTokenWrapperBribeD3pool',
       'stakingTokenWrapperFOXLaaS',
       'stakingTokenWrapperGROLaaS',
       'stakingTokenWrapperKYLINLaaS',
@@ -689,6 +694,9 @@ const dependencies: DependencyMap = {
       'optimisticTimelock', // executes atomic updates
       'tribalChief' // mass updates pools
     ]
+  },
+  votiumBriberD3pool: {
+    contractDependencies: ['stakingTokenWrapperBribeD3pool', 'optimisticTimelock']
   },
   rariPool8Comptroller: {
     contractDependencies: [

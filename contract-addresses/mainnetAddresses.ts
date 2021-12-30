@@ -621,6 +621,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x4e979E8b136Cd7BdEBB83ea50a599C3BED1e15c0',
     category: AddressCategory.Rewards
   },
+  stakingTokenWrapperBribeD3pool: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0x462515dC7c21C728C8b7A777fDC89EEdAcF74537',
+    category: AddressCategory.Rewards
+  },
   stakingTokenWrapperFOXLaaS: {
     artifactName: 'StakingTokenWrapper',
     address: '0x3CD384ff1Fa1cbA8f06DF326AF4cbDA634aF94e8',
@@ -684,6 +689,11 @@ const MainnetAddresses: MainnetAddresses = {
   tribalChiefSyncV2: {
     artifactName: 'TribalChiefSyncV2',
     address: '0xb41c594f9a6a2E0882212598337AF8145f63731b',
+    category: AddressCategory.Rewards
+  },
+  votiumBriberD3pool: {
+    artifactName: 'VotiumBriber',
+    address: '0x0BEC570466B466aB689Ad33F1Ce5238CA43C8003',
     category: AddressCategory.Rewards
   },
   rariPool8Comptroller: {

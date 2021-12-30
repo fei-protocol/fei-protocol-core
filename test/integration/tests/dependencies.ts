@@ -16,6 +16,11 @@ describe('e2e-dependencies', function () {
     it('all dependencies signed off', async function () {
       for (let i = 0; i < proposalNames.length; i++) {
         const proposalName = proposalNames[i];
+        if (proposals[proposalName].skipDAO) {
+          doLogging && console.log(`Skipping: ${proposalName}`);
+          continue;
+        }
+
         const contracts = getProposalContracts(proposals[proposalName].proposal);
         doLogging && console.log(`Checking proposal: ${proposalName}`);
         doLogging && console.log(`Proposal affects contracts: ${contracts}`);

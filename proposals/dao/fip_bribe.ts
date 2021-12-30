@@ -30,7 +30,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const votiumBriberFactory = await ethers.getContractFactory('VotiumBriber');
   const votiumBriberD3pool = await votiumBriberFactory.deploy(addresses.core, addresses.tribe, addresses.votiumBribe);
   await votiumBriberD3pool.deployTransaction.wait();
-  logging && console.log('votiumBriber3pool :', votiumBriberD3pool.address);
+  logging && console.log('votiumBriberD3pool :', votiumBriberD3pool.address);
 
   // Deploy StakingTokenWrapper for votiumBriberD3pool
   const stakingTokenWrapperFactory = await ethers.getContractFactory('StakingTokenWrapper');
