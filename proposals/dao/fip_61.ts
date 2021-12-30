@@ -8,8 +8,6 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { forceEth } from '@test/integration/setup/utils';
-import { getImpersonatedSigner } from '@test/helpers';
 
 chai.use(CBN(ethers.BigNumber));
 
@@ -88,18 +86,55 @@ const namedPCVDeposits = [
   }
 ];
 
+const rewards = [
+  '46750000000000000000', // 2-1-22
+  '41600000000000000000', // 3-1-22
+  '36200000000000000000', // 4-1-22
+  '30770000000000000000', // 5-1-22
+  '26150000000000000000', // 6-1-22
+  '22230000000000000000', // 7-1-22
+  '18890000000000000000', // 8-1-22
+  '16060000000000000000', // 9-1-22
+  '13650000000000000000', // 10-1-22
+  '11600000000000000000', // 11-1-22
+  '9860000000000000000', // 12-1-22
+  '8380000000000000000', // 1-1-23
+  '7130000000000000000', // 2-1-2
+  '6060000000000000000' // 3-1-23
+];
+const timestamps = [
+  '1643673600', // 2-1-22
+  '1646092800', // 3-1-22
+  '1648771200', // 4-1-22
+  '1651363200', // 5-1-22
+  '1654041600', // 6-1-22
+  '1656633600', // 7-1-22
+  '1659312000', // 8-1-22
+  '1661990400', // 9-1-22
+  '1664582400', // 10-1-22
+  '1667260800', // 11-1-22
+  '1669852800', // 12-1-22
+  '1672531200', // 1-1-23
+  '1675209600', // 2-1-2
+  '1677628800' // 3-1-23
+];
+
 /*
 FIP-57
 DEPLOY ACTIONS:
 
 1. Deploy NamedStaticPCVDepositWrapper
+2. Deploy TribalChiefSyncV2
 
-OA ACTIONS:
+DAO ACTIONS:
 1. Add NamedStaticPCVDepositWrapper to the Collateralization Oracle 
+2. Deprecate DAI bonding curve + TRIBERagequit
+3. Add TribalChief auto-decrease rewards
+4. Reduce DAI PSM spread to 25 bps
 */
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
-  const { core } = addresses;
+  const { core, tribalChief, optimisticTimelock, autoRewardsDistributor } = addresses;
 
   if (!core) {
     throw new Error('An environment variable contract address is not set');
@@ -112,20 +147,27 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('namedStaticPCVDepositWrapper: ', namedStaticPCVDepositWrapper.address);
 
+  // 2. Deploy TribalChiefSyncV2
+  const tcFactory = await ethers.getContractFactory('TribalChiefSyncV2');
+  const tribalChiefSyncV2 = await tcFactory.deploy(
+    tribalChief,
+    autoRewardsDistributor,
+    optimisticTimelock,
+    rewards,
+    timestamps
+  );
+  await tribalChiefSyncV2.deployTransaction.wait();
+
+  logging && console.log('tribalChiefSyncV2: ', tribalChiefSyncV2.address);
+
   return {
-    namedStaticPCVDepositWrapper
+    namedStaticPCVDepositWrapper,
+    tribalChiefSyncV2
   };
 };
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const { optimisticTimelock, staticPcvDepositWrapper2, namedStaticPCVDepositWrapper } = addresses;
-  const { collateralizationOracle } = contracts;
-
-  const oatimelock = await getImpersonatedSigner(optimisticTimelock);
-  await forceEth(optimisticTimelock);
-
-  await collateralizationOracle.connect(oatimelock).removeDeposit(staticPcvDepositWrapper2);
-  await collateralizationOracle.connect(oatimelock).addDeposit(namedStaticPCVDepositWrapper);
+  logging && console.log('No setup');
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
@@ -133,14 +175,47 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
-  const { collateralizationOracle, namedStaticPCVDepositWrapper } = contracts;
+  const {
+    collateralizationOracle,
+    namedStaticPCVDepositWrapper,
+    staticPcvDepositWrapper2,
+    daiBondingCurve,
+    daiBondingCurveWrapper,
+    optimisticTimelock,
+    daiPSM
+  } = contracts;
   const usdAddress = '0x1111111111111111111111111111111111111111';
 
   expect(await collateralizationOracle.depositToToken(namedStaticPCVDepositWrapper.address)).to.be.equal(usdAddress);
+  expect(await collateralizationOracle.depositToToken(staticPcvDepositWrapper2.address)).to.be.equal(
+    ethers.constants.AddressZero
+  );
+  expect(await collateralizationOracle.depositToToken(daiBondingCurveWrapper.address)).to.be.equal(
+    ethers.constants.AddressZero
+  );
+
   expect(await collateralizationOracle.getDepositsForToken(usdAddress)).to.include(
     namedStaticPCVDepositWrapper.address
   );
   expect(await namedStaticPCVDepositWrapper.numDeposits()).to.equal(10);
   expect(await namedStaticPCVDepositWrapper.balance()).to.equal(eth.mul(2_240_000));
   expect(await namedStaticPCVDepositWrapper.feiReportBalance()).to.equal(eth.mul(64_000_000));
+
+  expect(await daiBondingCurve.paused()).to.be.true;
+
+  expect(
+    await optimisticTimelock.hasRole(
+      '0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63',
+      addresses.tribalChiefSyncV2
+    )
+  ).to.be.true;
+  expect(
+    await optimisticTimelock.hasRole(
+      '0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63',
+      addresses.tribalChiefSync
+    )
+  ).to.be.false;
+
+  expect(await daiPSM.redeemFeeBasisPoints()).to.be.equal(ethers.BigNumber.from(25));
+  expect(await daiPSM.mintFeeBasisPoints()).to.be.equal(ethers.BigNumber.from(25));
 };

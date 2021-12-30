@@ -2,6 +2,8 @@ import { ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
+import fip_61_proposal from '@proposals/description/fip_61';
+
 const proposals: ProposalsConfigMap = {
   /*
     fip_xx : {
@@ -11,6 +13,26 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
+  fip_61: {
+    deploy: false,
+    proposalId: undefined,
+    affectedContractSignoff: [
+      'staticPcvDepositWrapper2',
+      'namedStaticPCVDepositWrapper',
+      'daiBondingCurveWrapper',
+      'daiBondingCurve',
+      'tribeRagequit',
+      'tribalChiefSyncV2',
+      'optimisticTimelock',
+      'tribalChiefSync',
+      'daiPSM',
+      'collateralizationOracle',
+      'core'
+    ],
+    skipDAO: false,
+    totalValue: 0,
+    proposal: fip_61_proposal
+  }
 };
 
 export default proposals;
