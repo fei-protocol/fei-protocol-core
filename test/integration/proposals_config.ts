@@ -16,6 +16,17 @@ const proposals: ProposalsConfigMap = {
   fip_61: {
     deploy: false,
     proposalId: undefined,
+    affectedContractSignoff: [
+      'staticPcvDepositWrapper2',
+      'namedStaticPCVDepositWrapper',
+      'daiBondingCurveWrapper',
+      'daiBondingCurve',
+      'tribeRagequit',
+      'tribalChiefSyncV2',
+      'optimisticTimelock',
+      'tribalChiefSync',
+      'daiPSM'
+    ],
     skipDAO: false,
     totalValue: 0,
     proposal: fip_61_proposal
