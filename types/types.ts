@@ -61,9 +61,7 @@ export function namedContractsToNamedAddresses(contracts: NamedContracts): Named
 }
 
 export type Dependency = {
-  fips: { [key: string]: boolean };
   contractDependencies: string[];
-  externalDependencies: string[];
 };
 export type DependencyMap = { [key: string]: Dependency };
 
@@ -72,6 +70,7 @@ export type ProposalConfig = {
   skipDAO: boolean;
   totalValue: number;
   proposal: ProposalDescription;
+  affectedContractSignoff: string[];
   proposalId: string;
 };
 
@@ -201,7 +200,7 @@ export interface MainnetContracts {
   raiBondingCurve: BondingCurve;
   rai: IERC20;
   chainlinkRaiEthOracleWrapper: ChainlinkOracleWrapper;
-  chainlinkRaiUsdCompositOracle: CompositeOracle;
+  chainlinkRaiUsdCompositeOracle: CompositeOracle;
   reflexerStableAssetFusePoolRaiPCVDeposit: ERC20CompoundPCVDeposit;
   kashiFeiTribe: IKashiPair;
   bentoBox: IMasterContractManager;

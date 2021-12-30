@@ -1,11 +1,6 @@
 import { MainnetAddresses, AddressCategory } from '../types/types'; // imported without custom path to allow docs to autogen without ts errors
 
 const MainnetAddresses: MainnetAddresses = {
-  collateralizationOracleGuardian: {
-    artifactName: 'CollateralizationOracleGuardian',
-    address: '0x81De6bA8df84A4B679061952E171a27F096F3eAe',
-    category: AddressCategory.Core
-  },
   core: {
     artifactName: AddressCategory.Core,
     address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
@@ -111,11 +106,6 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xa84C8be28f3d560059339f06C6b6c5B23f53C58C',
     category: AddressCategory.Peg
   },
-  daiBondingCurve: {
-    artifactName: 'BondingCurve',
-    address: '0xC0afe0E649e32528666F993ce63822c3840e941a',
-    category: AddressCategory.Peg
-  },
   daiPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0x3e0f66c5687FF917809A3F7fA7096e1Bc409fB03',
@@ -174,11 +164,6 @@ const MainnetAddresses: MainnetAddresses = {
   compoundEthPCVDeposit: {
     artifactName: 'EthCompoundPCVDeposit',
     address: '0x4fCB1435fD42CE7ce7Af3cB2e98289F79d2962b3',
-    category: AddressCategory.PCV
-  },
-  creamFeiPCVDeposit: {
-    artifactName: 'ERC20CompoundPCVDeposit',
-    address: '0x243C601CC5DaA3Ac250B14509804188347bd2aFB',
     category: AddressCategory.PCV
   },
   d3poolConvexPCVDeposit: {
@@ -371,14 +356,14 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x1267B39c93711Dd374DEAB15e0127e4adB259BE0',
     category: AddressCategory.Collateralization
   },
-  balDepositWrapper: {
-    artifactName: 'ERC20PCVDepositWrapper',
-    address: '0x7E28BA7a2D52Af88242E588d868E927119BA45dB',
-    category: AddressCategory.Collateralization
-  },
   collateralizationOracle: {
     artifactName: 'CollateralizationOracle',
     address: '0xFF6f59333cfD8f4Ebc14aD0a0E181a83e655d257',
+    category: AddressCategory.Collateralization
+  },
+  collateralizationOracleGuardian: {
+    artifactName: 'CollateralizationOracleGuardian',
+    address: '0x81De6bA8df84A4B679061952E171a27F096F3eAe',
     category: AddressCategory.Collateralization
   },
   collateralizationOracleWrapper: {
@@ -404,16 +389,6 @@ const MainnetAddresses: MainnetAddresses = {
   creamDepositWrapper: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x3a1838Ac9EcA864054bebB82C32455Dd7d7Fc89c',
-    category: AddressCategory.Collateralization
-  },
-  creamFeiPCVDepositWrapper: {
-    artifactName: 'PCVDepositWrapper',
-    address: '0xFf419Bc27483edb94b7Ad5c97b7FaB5DB323c7E0',
-    category: AddressCategory.Collateralization
-  },
-  daiBondingCurveWrapper: {
-    artifactName: 'PCVDepositWrapper',
-    address: '0x2547d76E2447E67F29d6bFeE5d46FDd2183c88E4',
     category: AddressCategory.Collateralization
   },
   ethLidoPCVDepositWrapper: {
@@ -516,11 +491,6 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xCCe230c087F31032fc17621a2CF5E425A0b80C96',
     category: AddressCategory.Collateralization
   },
-  staticPcvDepositWrapper2: {
-    artifactName: 'StaticPCVDepositWrapper',
-    address: '0xe72EB93de743F819fe91277582d7d0Fa9bb9b023',
-    category: AddressCategory.Collateralization
-  },
   namedStaticPCVDepositWrapper: {
     artifactName: 'NamedStaticPCVDepositWrapper',
     address: '0x06dAcca04e201AD31393754E68dA04Dc14778Fa6',
@@ -566,7 +536,7 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x060Be7B51F78DFFd04749332fd306BA1228e7444',
     category: AddressCategory.Oracle
   },
-  chainlinkLUSDOracle: {
+  chainlinkLUSDOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0xe61d11ec732d556A26fb863B192052BEa03eF8B5',
     category: AddressCategory.Oracle
@@ -576,14 +546,9 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x3d49573ee6aFCBDe606F8a1c2AA1C498048E7190',
     category: AddressCategory.Oracle
   },
-  chainlinkRaiUsdCompositOracle: {
+  chainlinkRaiUsdCompositeOracle: {
     artifactName: 'CompositeOracle',
     address: '0x392b1d29eDab680c5CA778D3A32b8284859BFBB0',
-    category: AddressCategory.Oracle
-  },
-  chainlinkTribeEthOracle: {
-    artifactName: 'unknown',
-    address: '0x84a24deCA415Acc0c395872a9e6a63E27D6225c8',
     category: AddressCategory.Oracle
   },
   chainlinkTribeEthOracleWrapper: {
@@ -716,9 +681,9 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x2d91362e8bcAA8826b482B531dcb170FC9d17777',
     category: AddressCategory.Rewards
   },
-  tribalChiefSync: {
-    artifactName: 'TribalChiefSync',
-    address: '0x7A883825caA45fcbDcd76991C5972Baf1551aa3d',
+  tribalChiefSyncV2: {
+    artifactName: 'TribalChiefSyncV2',
+    address: '0xb41c594f9a6a2E0882212598337AF8145f63731b',
     category: AddressCategory.Rewards
   },
   rariPool8Comptroller: {
@@ -929,6 +894,11 @@ const MainnetAddresses: MainnetAddresses = {
   chainlinkRaiEthOracle: {
     artifactName: 'unknown',
     address: '0x4ad7B025127e89263242aB68F0f9c4E5C033B489',
+    category: AddressCategory.External
+  },
+  chainlinkTribeEthOracle: {
+    artifactName: 'unknown',
+    address: '0x84a24deCA415Acc0c395872a9e6a63E27D6225c8',
     category: AddressCategory.External
   },
   communalFarm: {
@@ -1261,6 +1231,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xDee5c1662bBfF8f80f7c572D8091BF251b3B0dAB',
     category: AddressCategory.Deprecated
   },
+  balDepositWrapper: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x7E28BA7a2D52Af88242E588d868E927119BA45dB',
+    category: AddressCategory.Deprecated
+  },
   compoundPassthroughETH: {
     artifactName: 'CompoundPassthroughETH',
     address: '0xF56B0B80ea6E986364c50177d396b988C3e41094',
@@ -1269,6 +1244,26 @@ const MainnetAddresses: MainnetAddresses = {
   coreV1: {
     artifactName: 'ICoreV1',
     address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
+    category: AddressCategory.Deprecated
+  },
+  daiBondingCurve: {
+    artifactName: 'BondingCurve',
+    address: '0xC0afe0E649e32528666F993ce63822c3840e941a',
+    category: AddressCategory.Deprecated
+  },
+  daiBondingCurveWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0x2547d76E2447E67F29d6bFeE5d46FDd2183c88E4',
+    category: AddressCategory.Deprecated
+  },
+  creamFeiPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x243C601CC5DaA3Ac250B14509804188347bd2aFB',
+    category: AddressCategory.Deprecated
+  },
+  creamFeiPCVDepositWrapper: {
+    artifactName: 'PCVDepositWrapper',
+    address: '0xFf419Bc27483edb94b7Ad5c97b7FaB5DB323c7E0',
     category: AddressCategory.Deprecated
   },
   defiPulseOTC: {
@@ -1366,6 +1361,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x8B41DcEfAe6064E6bc2A9B3ae20141d23EFD6cbd',
     category: AddressCategory.Deprecated
   },
+  staticPcvDepositWrapper2: {
+    artifactName: 'StaticPCVDepositWrapper',
+    address: '0xe72EB93de743F819fe91277582d7d0Fa9bb9b023',
+    category: AddressCategory.Deprecated
+  },
   timelock: {
     artifactName: 'Timelock',
     address: '0x639572471f2f318464dc01066a56867130e45E25',
@@ -1381,6 +1381,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x27Fae9E49AD955A24bB578B66Cdc962b5029fbA9',
     category: AddressCategory.Deprecated
   },
+  tribalChiefSync: {
+    artifactName: 'TribalChiefSync',
+    address: '0x7A883825caA45fcbDcd76991C5972Baf1551aa3d',
+    category: AddressCategory.Deprecated
+  },
   tribeBalOtcEscrow: {
     artifactName: 'OtcEscrow',
     address: '0xfFdEe6b0261d70278f5A3093A375c282eF8266Db',
@@ -1389,6 +1394,11 @@ const MainnetAddresses: MainnetAddresses = {
   tribeOTCEscrow: {
     artifactName: 'OtcEscrow',
     address: '0xe2fE8041429e4bd51c40F92C6cDb699527171298',
+    category: AddressCategory.Deprecated
+  },
+  tribeRagequit: {
+    artifactName: 'TRIBERagequit',
+    address: '0xE77d572F04904fFea40899FD907F7ADd6Ea5228A',
     category: AddressCategory.Deprecated
   },
   uniswapOracle: {
@@ -1419,11 +1429,6 @@ const MainnetAddresses: MainnetAddresses = {
   pegExchangerDripper: {
     artifactName: 'PegExchangerDripper',
     address: '0xC416EEe663ECa29cEB726241caDFFe6a77D61E2D',
-    category: AddressCategory.TBD
-  },
-  tribeRagequit: {
-    artifactName: 'TRIBERagequit',
-    address: '0xE77d572F04904fFea40899FD907F7ADd6Ea5228A',
     category: AddressCategory.TBD
   }
 };

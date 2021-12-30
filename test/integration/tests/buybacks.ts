@@ -186,7 +186,7 @@ describe('e2e-buybacks', function () {
 
   describe('Collateralization Oracle Keeper', async function () {
     it('can only call when deviation or time met', async function () {
-      const { staticPcvDepositWrapper2, collateralizationOracleWrapper, collateralizationOracleKeeper, fei } =
+      const { namedStaticPCVDepositWrapper, collateralizationOracleWrapper, collateralizationOracleKeeper, fei } =
         contracts;
 
       const beforeBalance = await fei.balanceOf(deployAddress);
@@ -213,7 +213,13 @@ describe('e2e-buybacks', function () {
 
       // Increase PCV balance to exceed deviation threshold
       const pcvStats = await collateralizationOracleWrapper.pcvStats();
-      await staticPcvDepositWrapper2.setBalance(pcvStats[0]);
+      await namedStaticPCVDepositWrapper.addDeposit({
+        depositName: 'massive test deposit',
+        usdAmount: pcvStats[0],
+        feiAmount: 1,
+        underlyingTokenAmount: 1,
+        underlyingToken: ethers.constants.AddressZero
+      });
 
       expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.true;
       expect(await collateralizationOracleWrapper.isOutdated()).to.be.false;

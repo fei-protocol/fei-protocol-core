@@ -3,13 +3,11 @@ export const permissions = {
     'bondingCurve',
     'uniswapPCVDeposit',
     'feiDAOTimelock',
-    'daiBondingCurve',
     'dpiUniswapPCVDeposit',
     'pcvEquityMinter',
     'collateralizationOracleKeeper',
     'optimisticMinter',
     'agEurAngleUniswapPCVDeposit',
-    'tribeRagequit',
     'daiPSM'
   ],
   BURNER_ROLE: ['ethReserveStabilizer'],
@@ -27,5 +25,5 @@ export const permissions = {
   SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'optimisticTimelock'],
   BALANCER_MANAGER_ADMIN_ROLE: [],
   PSM_ADMIN_ROLE: [],
-  TRIBAL_CHIEF_ADMIN_ROLE: ['optimisticTimelock']
+  TRIBAL_CHIEF_ADMIN_ROLE: ['optimisticTimelock', 'tribalChiefSyncV2']
 };
