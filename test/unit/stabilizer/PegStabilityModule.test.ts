@@ -404,7 +404,12 @@ describe('PegStabilityModule', function () {
         await oracle.setExchangeRate(10_000);
         const tenM = toBN(10_000_000);
         const newRedeemFee = 250;
+
         await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(newRedeemFee);
+
+        const userStartingFeiBalance = await fei.balanceOf(userAddress);
+        const psmStartingWETHBalance = await weth.balanceOf(psm.address);
+        const userStartingWETHBalance = await weth.balanceOf(userAddress);
 
         const expectedAssetAmount = 975;
 
@@ -417,6 +422,14 @@ describe('PegStabilityModule', function () {
         await expect(psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, tenM, expectedAssetAmount))
           .to.emit(psm, 'Redeem')
           .withArgs(userAddress, tenM, expectedAssetAmount);
+
+        const userEndingWETHBalance = await weth.balanceOf(userAddress);
+        const userEndingFeiBalance = await fei.balanceOf(userAddress);
+        const psmEndingWETHBalance = await weth.balanceOf(psm.address);
+
+        expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(0);
+        expect(psmStartingWETHBalance.sub(psmEndingWETHBalance)).to.be.equal(expectedAssetAmount);
+        expect(userEndingWETHBalance.sub(userStartingWETHBalance)).to.be.equal(expectedAssetAmount);
       });
 
       it('redeem fails when expected amount out is greater than actual amount out', async () => {
