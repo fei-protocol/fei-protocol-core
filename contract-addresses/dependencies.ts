@@ -21,7 +21,6 @@ const dependencies: DependencyMap = {
       'aaveEthPCVDripController',
       'bondingCurve',
       'compoundEthPCVDripController',
-      'daiBondingCurve',
       'daiPCVDripController',
       'daiPSM',
       'ethReserveStabilizer',
@@ -103,7 +102,6 @@ const dependencies: DependencyMap = {
       'aaveEthPCVDripController',
       'bondingCurve',
       'compoundEthPCVDripController',
-      'daiBondingCurve',
       'daiPSM',
       'daiPCVDripController',
       'aaveFeiPCVDeposit',
@@ -227,9 +225,6 @@ const dependencies: DependencyMap = {
   compoundEthPCVDripController: {
     contractDependencies: ['core', 'fei', 'compoundEthPCVDeposit', 'ethReserveStabilizer']
   },
-  daiBondingCurve: {
-    contractDependencies: ['core', 'fei', 'compoundDaiPCVDeposit', 'chainlinkDaiUsdOracleWrapper']
-  },
   daiPCVDripController: {
     contractDependencies: ['core', 'fei', 'daiPSM', 'compoundDaiPCVDeposit']
   },
@@ -271,7 +266,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
   },
   compoundDaiPCVDeposit: {
-    contractDependencies: ['core', 'daiBondingCurve', 'daiPCVDripController', 'daiPSM']
+    contractDependencies: ['core', 'daiPCVDripController', 'daiPSM']
   },
   compoundEthPCVDeposit: {
     contractDependencies: ['core', 'bondingCurve', 'compoundEthPCVDripController', 'pcvGuardian']
@@ -410,7 +405,6 @@ const dependencies: DependencyMap = {
       'compoundDaiPCVDepositWrapper',
       'compoundEthPCVDepositWrapper',
       'creamDepositWrapper',
-      'daiBondingCurveWrapper',
       'ethLidoPCVDepositWrapper',
       'ethReserveStabilizerWrapper',
       'feiBuybackLens',
@@ -455,9 +449,6 @@ const dependencies: DependencyMap = {
   },
   creamDepositWrapper: {
     contractDependencies: ['feiDAOTimelock', 'collateralizationOracle']
-  },
-  daiBondingCurveWrapper: {
-    contractDependencies: ['collateralizationOracle']
   },
   ethLidoPCVDepositWrapper: {
     contractDependencies: ['collateralizationOracle']
@@ -535,7 +526,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'creamUsdCompositeOracle']
   },
   chainlinkDaiUsdOracleWrapper: {
-    contractDependencies: ['core', 'collateralizationOracle', 'daiBondingCurve', 'daiPSM']
+    contractDependencies: ['core', 'collateralizationOracle', 'daiPSM']
   },
   chainlinkDpiUsdOracleWrapper: {
     contractDependencies: ['core', 'collateralizationOracle', 'dpiUniswapPCVDeposit']

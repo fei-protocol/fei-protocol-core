@@ -23,7 +23,17 @@ describe('e2e-dependencies', function () {
         for (let j = 0; j < contracts.length; j++) {
           const contract = contracts[j];
           const category = addresses[contract].category;
-          if (category === 'External' || category === 'Deprecated') {
+          if (category === 'External') {
+            continue;
+          }
+
+          if (category === 'Deprecated') {
+            doLogging && console.log(`Checking deprecated contract: ${contract}`);
+
+            expect(dependencies).to.not.haveOwnProperty(contract);
+
+            // Make sure proposal config has this deprecated contract signed off
+            expect(proposals[proposalName].deprecatedContractSignoff).to.contain(contract);
             continue;
           }
 
@@ -33,6 +43,34 @@ describe('e2e-dependencies', function () {
 
           // Make sure proposal config has this fip signed off
           expect(proposals[proposalName].affectedContractSignoff).to.contain(contract);
+        }
+      }
+    });
+
+    it('contract category correct', async function () {
+      for (let i = 0; i < proposalNames.length; i++) {
+        const proposalName = proposalNames[i];
+        const contracts = proposals[proposalName].affectedContractSignoff;
+        const deprecated = proposals[proposalName].deprecatedContractSignoff;
+
+        doLogging && console.log(`Checking proposal: ${proposalName}`);
+        doLogging && console.log(`Proposal affects contracts: ${contracts}`);
+
+        for (let j = 0; j < contracts.length; j++) {
+          const contract = contracts[j];
+          const category = addresses[contract].category;
+          expect(category).to.not.be.equal('External');
+          expect(category).to.not.be.equal('Deprecated');
+
+          expect(deprecated).to.not.contain(contract);
+        }
+
+        for (let j = 0; j < deprecated.length; j++) {
+          const contract = deprecated[j];
+          const category = addresses[contract].category;
+          expect(category).to.be.equal('Deprecated');
+
+          expect(contracts).to.not.contain(contract);
         }
       }
     });

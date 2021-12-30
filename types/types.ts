@@ -71,6 +71,7 @@ export type ProposalConfig = {
   totalValue: number;
   proposal: ProposalDescription;
   affectedContractSignoff: string[];
+  deprecatedContractSignoff: string[];
   proposalId: string;
 };
 
