@@ -9,9 +9,8 @@ import {
 } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer, utils } from 'ethers';
-import { Core, MockERC20, Fei, MockOracle, PegStabilityModule, MockPCVDepositV2, WETH9 } from '@custom-types/contracts';
+import { Core, Fei, MockOracle, PegStabilityModule, MockPCVDepositV2, WETH9 } from '@custom-types/contracts';
 import { keccak256 } from 'ethers/lib/utils';
-import { constants } from 'buffer';
 
 const toBN = ethers.BigNumber.from;
 
@@ -240,7 +239,9 @@ describe('PegStabilityModule', function () {
 
         expect(mintAmountOut).to.be.equal(expectedMintAmountOut);
 
-        await psm.connect(impersonatedSigners[userAddress]).mint(userAddress, tenEth, expectedMintAmountOut);
+        await expect(psm.connect(impersonatedSigners[userAddress]).mint(userAddress, tenEth, expectedMintAmountOut))
+          .to.emit(psm, 'Mint')
+          .withArgs(userAddress, tenEth, expectedMintAmountOut);
 
         const userEndingFeiBalance = await fei.balanceOf(userAddress);
         const psmEndingWETHBalance = await weth.balanceOf(psm.address);
@@ -399,15 +400,12 @@ describe('PegStabilityModule', function () {
         );
       });
 
-      it('exchanges 10,000,000 FEI for 97.5 Eth as fee is 250 bips and exchange rate is 1:10000', async () => {
+      it('redeem emits correct event', async () => {
         await oracle.setExchangeRate(10_000);
         const tenM = toBN(10_000_000);
         const newRedeemFee = 250;
         await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(newRedeemFee);
 
-        const userStartingFeiBalance = await fei.balanceOf(userAddress);
-        const psmStartingWETHBalance = await weth.balanceOf(psm.address);
-        const userStartingWETHBalance = await weth.balanceOf(userAddress);
         const expectedAssetAmount = 975;
 
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, tenM);
@@ -416,15 +414,9 @@ describe('PegStabilityModule', function () {
         const redeemAmountOut = await psm.getRedeemAmountOut(tenM);
         expect(redeemAmountOut).to.be.equal(expectedAssetAmount);
 
-        await psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, tenM, expectedAssetAmount);
-
-        const userEndingWETHBalance = await weth.balanceOf(userAddress);
-        const userEndingFeiBalance = await fei.balanceOf(userAddress);
-        const psmEndingWETHBalance = await weth.balanceOf(psm.address);
-
-        expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(0);
-        expect(psmStartingWETHBalance.sub(psmEndingWETHBalance)).to.be.equal(expectedAssetAmount);
-        expect(userEndingWETHBalance.sub(userStartingWETHBalance)).to.be.equal(expectedAssetAmount);
+        await expect(psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, tenM, expectedAssetAmount))
+          .to.emit(psm, 'Redeem')
+          .withArgs(userAddress, tenM, expectedAssetAmount);
       });
 
       it('redeem fails when expected amount out is greater than actual amount out', async () => {

@@ -163,7 +163,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
 
         _transfer(to, amountOut);
 
-        emit Redeem(to, amountFeiIn);
+        emit Redeem(to, amountFeiIn, amountOut);
     }
 
     /// @notice internal helper method to mint fei in exchange for an external asset
@@ -189,7 +189,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
             _mintFei(to, amountFeiToMint);
         }
         
-        emit Mint(to, amountIn);
+        emit Mint(to, amountIn, amountFeiOut);
     }
 
     /// @notice function to redeem FEI for an underlying asset 
