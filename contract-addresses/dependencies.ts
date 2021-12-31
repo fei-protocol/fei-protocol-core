@@ -625,35 +625,49 @@ const dependencies: DependencyMap = {
       'autoRewardsDistributor' // rewards dripper role
     ]
   },
+  stwBulkHarvest: {
+    contractDependencies: [
+      'stakingTokenWrapperFOXLaaS',
+      'stakingTokenWrapperBribeD3pool',
+      'stakingTokenWrapperGROLaaS',
+      'stakingTokenWrapperKYLINLaaS',
+      'stakingTokenWrapperMStableLaaS',
+      'stakingTokenWrapperNEARLaaS',
+      'stakingTokenWrapperPoolTogetherLaaS',
+      'stakingTokenWrapperRari',
+      'stakingTokenWrapperSYNLaaS',
+      'stakingTokenWrapperUMALaaS'
+    ]
+  },
   stakingTokenWrapperFOXLaaS: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   stakingTokenWrapperBribeD3pool: {
-    contractDependencies: ['tribalChief', 'votiumBriberD3pool']
+    contractDependencies: ['tribalChief', 'votiumBriberD3pool', 'stwBulkHarvest']
   },
   stakingTokenWrapperGROLaaS: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   stakingTokenWrapperKYLINLaaS: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   stakingTokenWrapperMStableLaaS: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   stakingTokenWrapperNEARLaaS: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   stakingTokenWrapperPoolTogetherLaaS: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   stakingTokenWrapperRari: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   stakingTokenWrapperSYNLaaS: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   stakingTokenWrapperUMALaaS: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   tribalChief: {
     contractDependencies: [
