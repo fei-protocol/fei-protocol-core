@@ -17,6 +17,7 @@ const proposals: ProposalsConfigMap = {
     deploy: false,
     proposalId: undefined,
     affectedContractSignoff: [],
+    deprecatedContractSignoff: [],
     skipDAO: true,
     totalValue: 0,
     proposal: undefined
