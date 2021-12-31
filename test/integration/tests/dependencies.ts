@@ -3,6 +3,7 @@ import { ProposalDescription } from '@custom-types/types';
 import proposals from '@test/integration/proposals_config';
 import dependencies from '@addresses/dependencies';
 import addresses from '@addresses/mainnetAddresses';
+import collateralizationAddresses from '@addresses/collateralizationOracle';
 import { AddressCategory } from '@custom-types/types'; // imported without custom path to allow docs to autogen without ts errors
 
 describe('e2e-dependencies', function () {
@@ -77,6 +78,36 @@ describe('e2e-dependencies', function () {
           expect(category).to.be.equal(AddressCategory.Deprecated);
 
           expect(contracts).to.not.contain(contract);
+        }
+      }
+    });
+
+    it('collateralization oracle deposits category correct', async function () {
+      const tokenAddresses = Object.keys(collateralizationAddresses);
+      const crDeposits = [];
+      for (let i = 0; i < tokenAddresses.length; i++) {
+        const element = tokenAddresses[i];
+
+        const deposits = collateralizationAddresses[element];
+
+        for (let i = 0; i < deposits.length; i++) {
+          const deposit = deposits[i];
+          crDeposits.push(deposit);
+
+          doLogging && console.log(`${element} contract address: ${deposit}`);
+          expect(addresses[deposit].category).to.not.be.equal('Deprecated');
+        }
+      }
+
+      const mainnetAddresses = Object.keys(addresses);
+
+      for (let i = 0; i < mainnetAddresses.length; i++) {
+        const element = mainnetAddresses[i];
+
+        const category = addresses[element].category;
+
+        if (category === 'PCV') {
+          expect(crDeposits).to.contain(element);
         }
       }
     });
