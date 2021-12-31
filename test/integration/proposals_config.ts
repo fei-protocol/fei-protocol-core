@@ -17,6 +17,7 @@ const proposals: ProposalsConfigMap = {
     deploy: false,
     proposalId: undefined,
     affectedContractSignoff: [],
+    deprecatedContractSignoff: [],
     skipDAO: true,
     totalValue: 0,
     proposal: undefined
@@ -25,17 +26,19 @@ const proposals: ProposalsConfigMap = {
     deploy: false,
     proposalId: undefined,
     affectedContractSignoff: [
-      'staticPcvDepositWrapper2',
       'namedStaticPCVDepositWrapper',
-      'daiBondingCurveWrapper',
-      'daiBondingCurve',
-      'tribeRagequit',
       'tribalChiefSyncV2',
       'optimisticTimelock',
-      'tribalChiefSync',
       'daiPSM',
       'collateralizationOracle',
       'core'
+    ],
+    deprecatedContractSignoff: [
+      'staticPcvDepositWrapper2',
+      'daiBondingCurveWrapper',
+      'daiBondingCurve',
+      'tribalChiefSync',
+      'tribeRagequit'
     ],
     skipDAO: false,
     totalValue: 0,
