@@ -13,6 +13,15 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
+  fip_bribe: {
+    deploy: false,
+    proposalId: undefined,
+    affectedContractSignoff: [],
+    deprecatedContractSignoff: [],
+    skipDAO: true,
+    totalValue: 0,
+    proposal: undefined
+  },
   fip_61: {
     deploy: false,
     proposalId: undefined,
