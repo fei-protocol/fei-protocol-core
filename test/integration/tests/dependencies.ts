@@ -3,6 +3,7 @@ import { ProposalDescription } from '@custom-types/types';
 import proposals from '@test/integration/proposals_config';
 import dependencies from '@addresses/dependencies';
 import addresses from '@addresses/mainnetAddresses';
+import { AddressCategory } from '@custom-types/types'; // imported without custom path to allow docs to autogen without ts errors
 
 describe('e2e-dependencies', function () {
   const doLogging = Boolean(process.env.LOGGING);
@@ -13,7 +14,7 @@ describe('e2e-dependencies', function () {
   });
 
   describe('Check Dependencies', function () {
-    it('all dependencies signed off', async function () {
+    it('are all signed off', async function () {
       for (let i = 0; i < proposalNames.length; i++) {
         const proposalName = proposalNames[i];
         const contracts = getProposalContracts(proposals[proposalName].proposal);
@@ -23,11 +24,11 @@ describe('e2e-dependencies', function () {
         for (let j = 0; j < contracts.length; j++) {
           const contract = contracts[j];
           const category = addresses[contract].category;
-          if (category === 'External') {
+          if (category === AddressCategory.External) {
             continue;
           }
 
-          if (category === 'Deprecated') {
+          if (category === AddressCategory.Deprecated) {
             doLogging && console.log(`Checking deprecated contract: ${contract}`);
 
             expect(dependencies).to.not.haveOwnProperty(contract);
@@ -47,7 +48,7 @@ describe('e2e-dependencies', function () {
       }
     });
 
-    it('contract category correct', async function () {
+    it('all have contract category correct', async function () {
       for (let i = 0; i < proposalNames.length; i++) {
         const proposalName = proposalNames[i];
         const contracts = proposals[proposalName].affectedContractSignoff;
@@ -59,8 +60,8 @@ describe('e2e-dependencies', function () {
         for (let j = 0; j < contracts.length; j++) {
           const contract = contracts[j];
           const category = addresses[contract].category;
-          expect(category).to.not.be.equal('External');
-          expect(category).to.not.be.equal('Deprecated');
+          expect(category).to.not.be.equal(AddressCategory.External);
+          expect(category).to.not.be.equal(AddressCategory.Deprecated);
 
           expect(deprecated).to.not.contain(contract);
         }
@@ -68,14 +69,14 @@ describe('e2e-dependencies', function () {
         for (let j = 0; j < deprecated.length; j++) {
           const contract = deprecated[j];
           const category = addresses[contract].category;
-          expect(category).to.be.equal('Deprecated');
+          expect(category).to.be.equal(AddressCategory.Deprecated);
 
           expect(contracts).to.not.contain(contract);
         }
       }
     });
 
-    it('all dependencies bidirectional', async function () {
+    it('are listed bidirectionally', async function () {
       const contractNames = Object.keys(dependencies);
       for (let i = 0; i < contractNames.length; i++) {
         const contract = contractNames[i];
