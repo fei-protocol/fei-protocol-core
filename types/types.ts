@@ -108,6 +108,7 @@ export enum AddressCategory {
   Governance = 'Governance',
   Peg = 'Peg',
   PCV = 'PCV',
+  PCV_V1 = 'PCV_V1',
   Collateralization = 'Collateralization',
   Oracle = 'Oracle',
   Keeper = 'Keeper',
