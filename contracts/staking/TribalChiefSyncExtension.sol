@@ -18,8 +18,10 @@ contract TribalChiefSyncExtension {
 
     modifier update(IAutoRewardsDistributor[] calldata distributors) {
         _;
-        for (uint256 i = 0; i < distributors.length; i++) {
-            distributors[i].setAutoRewardsDistribution();
+        unchecked {
+            for (uint256 i = 0; i < distributors.length; i++) {
+                distributors[i].setAutoRewardsDistribution();
+            }
         }
     }
 
@@ -38,7 +40,7 @@ contract TribalChiefSyncExtension {
         uint120 allocPoint, 
         address stakedToken, 
         address rewarder, 
-        TribalChiefSyncV2.RewardData[] memory rewardData, 
+        TribalChiefSyncV2.RewardData[] calldata rewardData, 
         bytes32 salt,
         IAutoRewardsDistributor[] calldata distributors
     ) external update(distributors) {
