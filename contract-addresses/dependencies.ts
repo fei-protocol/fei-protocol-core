@@ -1,4 +1,4 @@
-import { DependencyMap } from '@custom-types/types';
+import { DependencyMap } from '../types/types';
 
 const dependencies: DependencyMap = {
   collateralizationOracleGuardian: {
