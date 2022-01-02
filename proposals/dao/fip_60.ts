@@ -187,10 +187,35 @@ export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  logging && console.log('No teardown');
+  const {
+    gelatoAutoRewardsDistributor,
+    d3AutoRewardsDistributor,
+    fei3CrvAutoRewardsDistributor,
+    autoRewardsDistributor
+  } = contracts;
+
+  logging && console.log('Teardown: mass ARD sync');
+  await autoRewardsDistributor.setAutoRewardsDistribution();
+
+  logging && console.log('gelato ARD');
+  await gelatoAutoRewardsDistributor.setAutoRewardsDistribution();
+  logging && console.log('fei3Crv ARD');
+  await fei3CrvAutoRewardsDistributor.setAutoRewardsDistribution();
+  logging && console.log('d3 ARD');
+  await d3AutoRewardsDistributor.setAutoRewardsDistribution();
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
+  const {
+    tribalChief,
+    d3StakingTokenWrapper,
+    gelatoFEIUSDCStakingTokenWrapper,
+    fei3CrvStakingtokenWrapper,
+    gelatoAutoRewardsDistributor,
+    d3AutoRewardsDistributor,
+    fei3CrvAutoRewardsDistributor,
+    rariRewardsDistributorDelegator
+  } = contracts;
   const comptroller = contracts.rariPool8Comptroller;
 
   const d3Ctoken = await comptroller.cTokensByUnderlying(UNDERLYINGS[0]);
@@ -198,6 +223,33 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   const gelatoCtoken = await comptroller.cTokensByUnderlying(UNDERLYINGS[2]);
 
   expect(d3Ctoken).to.not.be.equal(ethers.constants.AddressZero);
+  expect(d3Ctoken).to.be.equal(await d3AutoRewardsDistributor.cTokenAddress());
+  expect(await d3StakingTokenWrapper.pid()).to.be.equal(await d3AutoRewardsDistributor.tribalChiefRewardIndex());
+  expect((await tribalChief.poolInfo(await d3StakingTokenWrapper.pid())).allocPoint).to.be.equal(250);
+  const d3RewardSpeed = await d3AutoRewardsDistributor.getNewRewardSpeed();
+  expect(d3RewardSpeed[1]).to.be.false;
+  console.log(`d3 reward speed: ${d3RewardSpeed[0]}`);
+  expect(d3RewardSpeed[0]).to.be.equal(await rariRewardsDistributorDelegator.compSupplySpeeds(d3Ctoken));
+
   expect(fei3CrvCtoken).to.not.be.equal(ethers.constants.AddressZero);
+  expect(fei3CrvCtoken).to.be.equal(await fei3CrvAutoRewardsDistributor.cTokenAddress());
+  expect(await fei3CrvStakingtokenWrapper.pid()).to.be.equal(
+    await fei3CrvAutoRewardsDistributor.tribalChiefRewardIndex()
+  );
+  expect((await tribalChief.poolInfo(await fei3CrvStakingtokenWrapper.pid())).allocPoint).to.be.equal(250);
+  const fei3CrvRewardSpeed = await fei3CrvAutoRewardsDistributor.getNewRewardSpeed();
+  expect(fei3CrvRewardSpeed[1]).to.be.false;
+  console.log(`fei3CrvRewardSpeed: ${fei3CrvRewardSpeed[0]}`);
+  expect(fei3CrvRewardSpeed[0]).to.be.equal(await rariRewardsDistributorDelegator.compSupplySpeeds(fei3CrvCtoken));
+
   expect(gelatoCtoken).to.not.be.equal(ethers.constants.AddressZero);
+  expect(gelatoCtoken).to.be.equal(await gelatoAutoRewardsDistributor.cTokenAddress());
+  expect(await gelatoFEIUSDCStakingTokenWrapper.pid()).to.be.equal(
+    await gelatoAutoRewardsDistributor.tribalChiefRewardIndex()
+  );
+  expect((await tribalChief.poolInfo(await gelatoFEIUSDCStakingTokenWrapper.pid())).allocPoint).to.be.equal(500);
+  const gelatoRewardSpeed = await gelatoAutoRewardsDistributor.getNewRewardSpeed();
+  expect(gelatoRewardSpeed[1]).to.be.false;
+  console.log(`gelatoRewardSpeed: ${gelatoRewardSpeed[0]}`);
+  expect(gelatoRewardSpeed[0]).to.be.equal(await rariRewardsDistributorDelegator.compSupplySpeeds(gelatoCtoken));
 };

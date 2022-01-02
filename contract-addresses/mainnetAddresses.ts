@@ -557,12 +557,12 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Rewards
   },
   rariRewardsDistributorDelegate: {
-    artifactName: 'unknown',
+    artifactName: 'IRewardsDistributorAdmin',
     address: '0x220f93183a69d1598e8405310cB361CFF504146F',
     category: AddressCategory.Rewards
   },
   rariRewardsDistributorDelegator: {
-    artifactName: 'unknown',
+    artifactName: 'IRewardsDistributorAdmin',
     address: '0x73F16f0c0Cd1A078A54894974C5C054D8dC1A3d7',
     category: AddressCategory.Rewards
   },
