@@ -3,6 +3,7 @@ import { MainnetContracts, NamedAddresses, ProposalDescription } from '@custom-t
 import format from 'string-template';
 import { OptimisticTimelock } from '@custom-types/contracts';
 import { getImpersonatedSigner, time } from '@test/helpers';
+import { Contract } from '@ethersproject/contracts';
 
 export default async function simulateOAProposal(
   proposalInfo: ProposalDescription,
@@ -16,11 +17,27 @@ export default async function simulateOAProposal(
   logging && console.log(`Constructing proposal ${proposalInfo.title}`);
 
   const salt = ethers.utils.id(proposalInfo.title);
-  const predecessor = ethers.constants.AddressZero;
+  const predecessor = ethers.constants.HashZero;
   const targets = [];
   const values = [];
   const datas = [];
   const delay = await timelock.getMinDelay();
+
+  for (let i = 0; i < proposalInfo.commands.length; i += 1) {
+    const command = proposalInfo.commands[i];
+
+    const ethersContract: Contract = contracts[command.target] as Contract;
+
+    const target = contractAddresses[command.target];
+    targets.push(target);
+    values.push(command.values);
+
+    const args = replaceArgs(command.arguments, contractAddresses);
+    const data = ethersContract.interface.encodeFunctionData(command.method, args);
+    datas.push(data);
+
+    logging && console.log(`Adding proposal step: ${command.description}`);
+  }
 
   logging && console.log(`Scheduling proposal ${proposalInfo.title}`);
 
@@ -33,16 +50,6 @@ export default async function simulateOAProposal(
   logging && console.log(`Executing proposal ${proposalInfo.title}`);
 
   await timelock.connect(signer).executeBatch(targets, values, datas, predecessor, salt);
-
-  //   for (let i = 0; i < proposalInfo.commands.length; i += 1) {
-  //     const command = proposalInfo.commands[i];
-  //     const ethersContract = contracts[command.target];
-
-  //     const args = replaceArgs(command.arguments, contractAddresses);
-  //     proposalBuilder.addContractAction(ethersContract, command.method, args, command.values);
-
-  //     logging && console.log(`Adding proposal step: ${command.description}`);
-  //   }
 }
 
 // Recursively interpolate strings in the argument array
