@@ -14,9 +14,6 @@ import { forceEth } from '@test/integration/setup/utils';
 
 chai.use(CBN(ethers.BigNumber));
 
-const D3_TRIBAL_CHIEF_INDEX = 2;
-const GELATO_TRIBAL_CHIEF_INDEX = 3;
-
 const UNDERLYINGS = [
   '0xBaaa1F5DbA42C3389bDbc2c9D2dE134F5cD0Dc89',
   '0x06cb22615BA53E60D67Bf6C341a0fD5E718E1655',
@@ -28,7 +25,7 @@ const SYMBOLS = ['fD3-8', 'fFEI-3Crv-8', 'fG-UNI-FEI-DAI-8'];
 const COLLATERAL_FACTOR = ethers.constants.WeiPerEther.mul(60).div(100); // 60% CF
 
 const IMPL = '0x67Db14E73C2Dce786B5bbBfa4D010dEab4BBFCF9';
-const BECOME_IMPL_DATA = '0x';
+const BECOME_IMPL_DATA = [];
 
 const COMPTROLLER = '0xc54172e34046c1653d1920d40333dd358c7a1af4'; // Pool 8 comptroller
 const IRM = '0xbab47e4b692195bf064923178a90ef999a15f819'; // ETH IRM (not really used because borrowing off)
@@ -40,9 +37,11 @@ DEPLOY ACTIONS:
 
 1. Deploy TribalChiefSyncExtension
 2. Deploy StakedTokenWrapper d3
-3. Deploy StakedTokenWrapper Gelato
-4. Deploy AutoRewardsDistributor d3
-5. Deploy AutoRewardsDistributor Gelato
+3. Deploy StakedTokenWrapper FEI-3Crv
+4. Deploy StakingTokenWrapper Gelato
+5. Deploy AutoRewardsDistributor d3
+6. Deploy AutoRewardsDistributor FEI-3Crv
+7. Deploy AutoRewardsDistributor Gelato
 
 OA ACTIONS:
 1. Add cTokens
@@ -84,7 +83,7 @@ const deployCToken = async function (addresses, underlying, name, symbol) {
       0 // no admin fee
     ]
   );
-  console.log(calldata);
+  console.log(underlying, calldata);
   await comptroller.connect(signer)._deployMarket(false, calldata, COLLATERAL_FACTOR);
 
   return await comptroller.cTokensByUnderlying(underlying);
@@ -108,7 +107,12 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   logging && console.log('d3StakingTokenWrapper: ', d3StakingTokenWrapper.address);
 
   const stw2 = await deploySTW(deployAddress, addresses, logging);
-  const gelatoFEIUSDCStakingTokenWrapper = stw2.stakingTokenWrapper;
+  const fei3CrvStakingtokenWrapper = stw2.stakingTokenWrapper;
+
+  logging && console.log('fei3CrvStakingtokenWrapper: ', fei3CrvStakingtokenWrapper.address);
+
+  const stw3 = await deploySTW(deployAddress, addresses, logging);
+  const gelatoFEIUSDCStakingTokenWrapper = stw3.stakingTokenWrapper;
 
   logging && console.log('gelatoFEIUSDCStakingTokenWrapper: ', gelatoFEIUSDCStakingTokenWrapper.address);
 
@@ -142,20 +146,39 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('gelatoAutoRewardsDistributor: ', gelatoAutoRewardsDistributor.address);
 
-  await setMaster(addresses, rariPool8MasterOracle);
+  const fei3CrvAutoRewardsDistributor = await ardFactory.deploy(
+    core,
+    rewardsDistributorAdmin,
+    tribalChief,
+    fei3CrvStakingtokenWrapper.address,
+    UNDERLYINGS[1],
+    false,
+    rariPool8Comptroller
+  );
 
-  const rariPool8D3 = await deployCToken(addresses, UNDERLYINGS[0], NAMES[0], SYMBOLS[0]);
-  console.log(NAMES[0], rariPool8D3);
+  await fei3CrvAutoRewardsDistributor.deployed();
 
-  const rariPool8Gelato = await deployCToken(addresses, UNDERLYINGS[2], NAMES[2], SYMBOLS[2]);
-  console.log(NAMES[2], rariPool8Gelato);
+  logging && console.log('fei3CrvAutoRewardsDistributor: ', fei3CrvAutoRewardsDistributor.address);
+
+  // await setMaster(addresses, rariPool8MasterOracle);
+
+  // const rariPool8D3 = await deployCToken(addresses, UNDERLYINGS[0], NAMES[0], SYMBOLS[0]);
+  // console.log(NAMES[0], rariPool8D3);
+
+  // const rariPool8Fei3Crv = await deployCToken(addresses, UNDERLYINGS[1], NAMES[1], SYMBOLS[1]);
+  // console.log(NAMES[1], rariPool8Fei3Crv);
+
+  // const rariPool8Gelato = await deployCToken(addresses, UNDERLYINGS[2], NAMES[2], SYMBOLS[2]);
+  // console.log(NAMES[2], rariPool8Gelato);
 
   return {
     tribalChiefSyncExtension,
     d3StakingTokenWrapper,
     gelatoFEIUSDCStakingTokenWrapper,
+    fei3CrvStakingtokenWrapper,
     gelatoAutoRewardsDistributor,
-    d3AutoRewardsDistributor
+    d3AutoRewardsDistributor,
+    fei3CrvAutoRewardsDistributor
   } as NamedContracts;
 };
 
@@ -167,4 +190,14 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
   logging && console.log('No teardown');
 };
 
-export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {};
+export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
+  const comptroller = contracts.rariPool8Comptroller;
+
+  const d3Ctoken = await comptroller.cTokensByUnderlying(UNDERLYINGS[0]);
+  const fei3CrvCtoken = await comptroller.cTokensByUnderlying(UNDERLYINGS[1]);
+  const gelatoCtoken = await comptroller.cTokensByUnderlying(UNDERLYINGS[2]);
+
+  expect(d3Ctoken).to.not.be.equal(ethers.constants.AddressZero);
+  expect(fei3CrvCtoken).to.not.be.equal(ethers.constants.AddressZero);
+  expect(gelatoCtoken).to.not.be.equal(ethers.constants.AddressZero);
+};

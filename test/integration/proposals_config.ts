@@ -2,6 +2,8 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
+import fip_60_proposal from '@proposals/description/fip_60';
+
 const proposals: ProposalsConfigMap = {
   /*
     fip_xx : {
@@ -11,23 +13,14 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  // fip_bribe: {
-  //   deploy: false,
-  //   proposalId: undefined,
-  //   affectedContractSignoff: [],
-  //   deprecatedContractSignoff: [],
-  //   skipDAO: true,
-  //   totalValue: 0,
-  //   proposal: undefined
-  // },
   fip_60: {
     deploy: true,
     proposalId: undefined,
     affectedContractSignoff: [],
     deprecatedContractSignoff: [],
-    category: ProposalCategory.None,
+    category: ProposalCategory.OA,
     totalValue: 0,
-    proposal: undefined
+    proposal: fip_60_proposal
   }
 };
 
