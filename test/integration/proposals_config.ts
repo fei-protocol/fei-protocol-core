@@ -1,4 +1,4 @@
-import { ProposalsConfigMap } from '@custom-types/types';
+import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
@@ -18,7 +18,7 @@ const proposals: ProposalsConfigMap = {
     proposalId: undefined,
     affectedContractSignoff: [],
     deprecatedContractSignoff: [],
-    skipDAO: true,
+    category: ProposalCategory.None,
     totalValue: 0,
     proposal: undefined
   },
@@ -40,7 +40,7 @@ const proposals: ProposalsConfigMap = {
       'tribalChiefSync',
       'tribeRagequit'
     ],
-    skipDAO: false,
+    category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_61_proposal
   }
