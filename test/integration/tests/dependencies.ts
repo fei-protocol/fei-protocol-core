@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { ProposalDescription } from '@custom-types/types';
+import { ProposalCategory, ProposalDescription } from '@custom-types/types';
 import proposals from '@test/integration/proposals_config';
 import dependencies from '@addresses/dependencies';
 import addresses from '@addresses/mainnetAddresses';
@@ -18,7 +18,7 @@ describe('e2e-dependencies', function () {
     it('are all signed off', async function () {
       for (let i = 0; i < proposalNames.length; i++) {
         const proposalName = proposalNames[i];
-        if (proposals[proposalName].skipDAO) {
+        if (proposals[proposalName].category === ProposalCategory.None) {
           doLogging && console.log(`Skipping: ${proposalName}`);
           continue;
         }
