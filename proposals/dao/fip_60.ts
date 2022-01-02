@@ -42,6 +42,7 @@ DEPLOY ACTIONS:
 5. Deploy AutoRewardsDistributor d3
 6. Deploy AutoRewardsDistributor FEI-3Crv
 7. Deploy AutoRewardsDistributor Gelato
+8. Deploy Fuse Pause Guardian
 
 OA ACTIONS:
 1. Add cTokens
@@ -160,6 +161,13 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('fei3CrvAutoRewardsDistributor: ', fei3CrvAutoRewardsDistributor.address);
 
+  const pauseFactory = await ethers.getContractFactory('FuseGuardian');
+  const fuseGuardian = await pauseFactory.deploy(core, rariPool8Comptroller);
+
+  await fuseGuardian.deployed();
+
+  logging && console.log('fuseGuardian: ', fuseGuardian.address);
+
   // await setMaster(addresses, rariPool8MasterOracle);
 
   // const rariPool8D3 = await deployCToken(addresses, UNDERLYINGS[0], NAMES[0], SYMBOLS[0]);
@@ -178,7 +186,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     fei3CrvStakingtokenWrapper,
     gelatoAutoRewardsDistributor,
     d3AutoRewardsDistributor,
-    fei3CrvAutoRewardsDistributor
+    fei3CrvAutoRewardsDistributor,
+    fuseGuardian
   } as NamedContracts;
 };
 
@@ -214,15 +223,47 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
     gelatoAutoRewardsDistributor,
     d3AutoRewardsDistributor,
     fei3CrvAutoRewardsDistributor,
-    rariRewardsDistributorDelegator
+    rariRewardsDistributorDelegator,
+    rariPool8Comptroller
   } = contracts;
   const comptroller = contracts.rariPool8Comptroller;
 
   const d3Ctoken = await comptroller.cTokensByUnderlying(UNDERLYINGS[0]);
-  const fei3CrvCtoken = await comptroller.cTokensByUnderlying(UNDERLYINGS[1]);
-  const gelatoCtoken = await comptroller.cTokensByUnderlying(UNDERLYINGS[2]);
-
   expect(d3Ctoken).to.not.be.equal(ethers.constants.AddressZero);
+
+  const fei3CrvCtoken = await comptroller.cTokensByUnderlying(UNDERLYINGS[1]);
+  expect(fei3CrvCtoken).to.not.be.equal(ethers.constants.AddressZero);
+
+  const gelatoCtoken = await comptroller.cTokensByUnderlying(UNDERLYINGS[2]);
+  expect(gelatoCtoken).to.not.be.equal(ethers.constants.AddressZero);
+
+  // Ctoken configs
+  // supply cap
+  expect(await rariPool8Comptroller.supplyCaps(d3Ctoken)).to.be.equal(ethers.constants.WeiPerEther.mul(25_000_000)); // 25 M
+  expect(await rariPool8Comptroller.supplyCaps(fei3CrvCtoken)).to.be.equal(
+    ethers.constants.WeiPerEther.mul(25_000_000)
+  ); // 25 M
+  expect(await rariPool8Comptroller.supplyCaps(gelatoCtoken)).to.be.equal(
+    ethers.constants.WeiPerEther.mul(2_500_000_000)
+  ); // 2.5 B
+
+  // borrow paused
+  expect(await rariPool8Comptroller.borrowGuardianPaused(d3Ctoken)).to.be.true;
+  expect(await rariPool8Comptroller.borrowGuardianPaused(fei3CrvCtoken)).to.be.true;
+  expect(await rariPool8Comptroller.borrowGuardianPaused(gelatoCtoken)).to.be.true;
+
+  // LTV
+  expect((await rariPool8Comptroller.markets(d3Ctoken)).collateralFactorMantissa).to.be.equal(
+    ethers.constants.WeiPerEther.mul(60).div(100)
+  );
+  expect((await rariPool8Comptroller.markets(fei3CrvCtoken)).collateralFactorMantissa).to.be.equal(
+    ethers.constants.WeiPerEther.mul(60).div(100)
+  );
+  expect((await rariPool8Comptroller.markets(gelatoCtoken)).collateralFactorMantissa).to.be.equal(
+    ethers.constants.WeiPerEther.mul(60).div(100)
+  );
+
+  // Rewards configs
   expect(d3Ctoken).to.be.equal(await d3AutoRewardsDistributor.cTokenAddress());
   expect(await d3StakingTokenWrapper.pid()).to.be.equal(await d3AutoRewardsDistributor.tribalChiefRewardIndex());
   expect((await tribalChief.poolInfo(await d3StakingTokenWrapper.pid())).allocPoint).to.be.equal(250);
@@ -231,7 +272,6 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   console.log(`d3 reward speed: ${d3RewardSpeed[0]}`);
   expect(d3RewardSpeed[0]).to.be.equal(await rariRewardsDistributorDelegator.compSupplySpeeds(d3Ctoken));
 
-  expect(fei3CrvCtoken).to.not.be.equal(ethers.constants.AddressZero);
   expect(fei3CrvCtoken).to.be.equal(await fei3CrvAutoRewardsDistributor.cTokenAddress());
   expect(await fei3CrvStakingtokenWrapper.pid()).to.be.equal(
     await fei3CrvAutoRewardsDistributor.tribalChiefRewardIndex()
@@ -242,7 +282,6 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   console.log(`fei3CrvRewardSpeed: ${fei3CrvRewardSpeed[0]}`);
   expect(fei3CrvRewardSpeed[0]).to.be.equal(await rariRewardsDistributorDelegator.compSupplySpeeds(fei3CrvCtoken));
 
-  expect(gelatoCtoken).to.not.be.equal(ethers.constants.AddressZero);
   expect(gelatoCtoken).to.be.equal(await gelatoAutoRewardsDistributor.cTokenAddress());
   expect(await gelatoFEIUSDCStakingTokenWrapper.pid()).to.be.equal(
     await gelatoAutoRewardsDistributor.tribalChiefRewardIndex()
