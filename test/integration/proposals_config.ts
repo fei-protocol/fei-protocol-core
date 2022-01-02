@@ -13,36 +13,23 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  fip_bribe: {
-    deploy: false,
+  // fip_bribe: {
+  //   deploy: false,
+  //   proposalId: undefined,
+  //   affectedContractSignoff: [],
+  //   deprecatedContractSignoff: [],
+  //   skipDAO: true,
+  //   totalValue: 0,
+  //   proposal: undefined
+  // },
+  fip_60: {
+    deploy: true,
     proposalId: undefined,
     affectedContractSignoff: [],
     deprecatedContractSignoff: [],
     skipDAO: true,
     totalValue: 0,
     proposal: undefined
-  },
-  fip_61: {
-    deploy: false,
-    proposalId: undefined,
-    affectedContractSignoff: [
-      'namedStaticPCVDepositWrapper',
-      'tribalChiefSyncV2',
-      'optimisticTimelock',
-      'daiPSM',
-      'collateralizationOracle',
-      'core'
-    ],
-    deprecatedContractSignoff: [
-      'staticPcvDepositWrapper2',
-      'daiBondingCurveWrapper',
-      'daiBondingCurve',
-      'tribalChiefSync',
-      'tribeRagequit'
-    ],
-    skipDAO: false,
-    totalValue: 0,
-    proposal: fip_61_proposal
   }
 };
 

@@ -651,6 +651,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xc54172e34046c1653d1920d40333dd358c7a1af4',
     category: AddressCategory.FeiRari
   },
+  rariPool8MasterOracle: {
+    artifactName: 'unknown',
+    address: '0x4d10BC156FBaD2474a94f792fe0D6c3261469cdd',
+    category: AddressCategory.FeiRari
+  },
+  curveLPTokenOracle: {
+    artifactName: 'unknown',
+    address: '0xa9f3faac3b8eDF7b3DCcFDBBf25033D6F5fc02F3',
+    category: AddressCategory.FeiRari
+  },
   rariPool8Dai: {
     artifactName: 'CErc20Delegator',
     address: '0x7e9cE3CAa9910cc048590801e64174957Ed41d43',
