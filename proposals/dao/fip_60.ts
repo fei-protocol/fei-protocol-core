@@ -91,7 +91,8 @@ const deployCToken = async function (addresses, underlying, name, symbol) {
 };
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
-  const { core, tribalChiefSyncV2, tribalChief, rewardsDistributorAdmin, rariPool8MasterOracle } = addresses;
+  const { core, tribalChiefSyncV2, tribalChief, rewardsDistributorAdmin, rariPool8MasterOracle, rariPool8Comptroller } =
+    addresses;
 
   // 1.
   const factory = await ethers.getContractFactory('TribalChiefSyncExtension');
@@ -111,26 +112,19 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('gelatoFEIUSDCStakingTokenWrapper: ', gelatoFEIUSDCStakingTokenWrapper.address);
 
-  await setMaster(addresses, rariPool8MasterOracle);
-
-  const rariPool8D3 = await deployCToken(addresses, UNDERLYINGS[0], NAMES[0], SYMBOLS[0]);
-  console.log(NAMES[0], rariPool8D3);
-
-  const ardFactory = await ethers.getContractFactory('AutoRewardsDistributor');
+  const ardFactory = await ethers.getContractFactory('AutoRewardsDistributorV2');
 
   const d3AutoRewardsDistributor = await ardFactory.deploy(
     core,
     rewardsDistributorAdmin,
     tribalChief,
-    D3_TRIBAL_CHIEF_INDEX,
-    rariPool8D3,
-    false
+    d3StakingTokenWrapper.address,
+    UNDERLYINGS[0],
+    false,
+    rariPool8Comptroller
   );
 
   await d3AutoRewardsDistributor.deployed();
-
-  const rariPool8Gelato = await deployCToken(addresses, UNDERLYINGS[2], NAMES[2], SYMBOLS[2]);
-  console.log(NAMES[2], rariPool8D3);
 
   logging && console.log('d3AutoRewardsDistributor: ', d3AutoRewardsDistributor.address);
 
@@ -138,14 +132,23 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     core,
     rewardsDistributorAdmin,
     tribalChief,
-    GELATO_TRIBAL_CHIEF_INDEX,
-    rariPool8Gelato,
-    false
+    gelatoFEIUSDCStakingTokenWrapper.address,
+    UNDERLYINGS[2],
+    false,
+    rariPool8Comptroller
   );
 
   await gelatoAutoRewardsDistributor.deployed();
 
   logging && console.log('gelatoAutoRewardsDistributor: ', gelatoAutoRewardsDistributor.address);
+
+  await setMaster(addresses, rariPool8MasterOracle);
+
+  const rariPool8D3 = await deployCToken(addresses, UNDERLYINGS[0], NAMES[0], SYMBOLS[0]);
+  console.log(NAMES[0], rariPool8D3);
+
+  const rariPool8Gelato = await deployCToken(addresses, UNDERLYINGS[2], NAMES[2], SYMBOLS[2]);
+  console.log(NAMES[2], rariPool8Gelato);
 
   return {
     tribalChiefSyncExtension,
