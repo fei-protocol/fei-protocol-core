@@ -1,41 +1,48 @@
-import { proposals } from 'hardhat';
+import { ethers } from 'hardhat';
 import { MainnetContracts, NamedAddresses, ProposalDescription } from '@custom-types/types';
 import format from 'string-template';
-import { AlphaProposal } from '@idle-finance/hardhat-proposals-plugin/dist/src/proposals/compound-alpha';
+import { OptimisticTimelock } from '@custom-types/contracts';
+import { getImpersonatedSigner, time } from '@test/helpers';
 
-/**
- * Constucts a hardhat proposal object
- * https://github.com/Idle-Finance/hardhat-proposals-plugin/blob/main/src/proposals/proposal.ts
- *
- */
 export default async function simulateOAProposal(
   proposalInfo: ProposalDescription,
   contracts: MainnetContracts,
   contractAddresses: NamedAddresses,
   logging = false
-): Promise<AlphaProposal> {
-  logging && console.log(`Constructing proposal...`);
+) {
+  const timelock: OptimisticTimelock = contracts.optimisticTimelock as OptimisticTimelock;
+  const signer = await getImpersonatedSigner(contractAddresses.optimisticMultisig);
 
-  const proposalDescription = proposalInfo.description;
+  logging && console.log(`Constructing proposal ${proposalInfo.title}`);
 
-  const proposalBuilder = proposals.builders.alpha();
-  proposalBuilder.maxActions = 40;
+  const salt = ethers.utils.id(proposalInfo.title);
+  const predecessor = ethers.constants.AddressZero;
+  const targets = [];
+  const values = [];
+  const datas = [];
+  const delay = await timelock.getMinDelay();
 
-  for (let i = 0; i < proposalInfo.commands.length; i += 1) {
-    const command = proposalInfo.commands[i];
-    const ethersContract = contracts[command.target];
+  logging && console.log(`Scheduling proposal ${proposalInfo.title}`);
 
-    const args = replaceArgs(command.arguments, contractAddresses);
-    proposalBuilder.addContractAction(ethersContract, command.method, args, command.values);
+  const schedule = await timelock.connect(signer).scheduleBatch(targets, values, datas, predecessor, salt, delay);
 
-    logging && console.log(`Adding proposal step: ${command.description}`);
-  }
+  console.log(schedule);
 
-  proposalBuilder.setDescription(`${proposalInfo.title}\n${proposalDescription.toString()}`); // Set proposal description
+  await time.increase(delay);
 
-  const proposal = proposalBuilder.build();
-  logging && console.log(await proposal.printProposalInfo());
-  return proposal;
+  logging && console.log(`Executing proposal ${proposalInfo.title}`);
+
+  await timelock.connect(signer).executeBatch(targets, values, datas, predecessor, salt);
+
+  //   for (let i = 0; i < proposalInfo.commands.length; i += 1) {
+  //     const command = proposalInfo.commands[i];
+  //     const ethersContract = contracts[command.target];
+
+  //     const args = replaceArgs(command.arguments, contractAddresses);
+  //     proposalBuilder.addContractAction(ethersContract, command.method, args, command.values);
+
+  //     logging && console.log(`Adding proposal step: ${command.description}`);
+  //   }
 }
 
 // Recursively interpolate strings in the argument array
