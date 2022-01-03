@@ -1,4 +1,9 @@
-import { AutoRewardsDistributor, TribalChief, TribalChiefSyncV2 } from '@custom-types/contracts';
+import {
+  AutoRewardsDistributor,
+  TribalChief,
+  TribalChiefSyncExtension,
+  TribalChiefSyncV2
+} from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -50,7 +55,22 @@ describe('e2e-staking', function () {
   describe('TribalChiefSyncV2', async () => {
     it('auto-sync works correctly', async () => {
       const tribalChiefSync: TribalChiefSyncV2 = contracts.tribalChiefSyncV2 as TribalChiefSyncV2;
+      const tribalChiefSyncExtension: TribalChiefSyncExtension =
+        contracts.tribalChiefSyncExtension as TribalChiefSyncExtension;
+
       const tribalChief: TribalChief = contracts.tribalChief as TribalChief;
+
+      const {
+        gelatoAutoRewardsDistributor,
+        d3AutoRewardsDistributor,
+        fei3CrvAutoRewardsDistributor,
+        rariRewardsDistributorDelegator
+      } = contracts;
+      const distributors = [
+        d3AutoRewardsDistributor.address,
+        fei3CrvAutoRewardsDistributor.address,
+        gelatoAutoRewardsDistributor.address
+      ];
 
       if (!(await tribalChiefSync.isRewardDecreaseAvailable())) {
         await time.increaseTo((await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)));
@@ -61,8 +81,19 @@ describe('e2e-staking', function () {
         doLogging && console.log(`Decreasing to ${nextRewardRate.toString()}`);
 
         expect(await tribalChief.tribePerBlock()).to.not.be.bignumber.equal(nextRewardRate);
-        await tribalChiefSync.autoDecreaseRewards();
+        await tribalChiefSyncExtension.autoDecreaseRewards(distributors);
         expect(await tribalChief.tribePerBlock()).to.be.bignumber.equal(nextRewardRate);
+
+        [gelatoAutoRewardsDistributor, d3AutoRewardsDistributor, fei3CrvAutoRewardsDistributor].forEach(
+          async (distributor) => {
+            const rewardSpeed = await distributor.getNewRewardSpeed();
+            expect(rewardSpeed[1]).to.be.false;
+            doLogging && console.log(`rewardSpeed: ${rewardSpeed[0]}`);
+            expect(rewardSpeed[0]).to.be.equal(
+              await rariRewardsDistributorDelegator.compSupplySpeeds(await distributor.cTokenAddress())
+            );
+          }
+        );
 
         if (nextRewardRate.toString() !== '6060000000000000000') {
           await time.increaseTo((await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)));
