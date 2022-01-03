@@ -65,12 +65,19 @@ export type Dependency = {
 };
 export type DependencyMap = { [key: string]: Dependency };
 
+export enum ProposalCategory {
+  DAO,
+  OA,
+  None
+}
+
 export type ProposalConfig = {
   deploy: boolean;
-  skipDAO: boolean;
+  category: ProposalCategory;
   totalValue: number;
   proposal: ProposalDescription;
   affectedContractSignoff: string[];
+  deprecatedContractSignoff: string[];
   proposalId: string;
 };
 
@@ -107,6 +114,7 @@ export enum AddressCategory {
   Governance = 'Governance',
   Peg = 'Peg',
   PCV = 'PCV',
+  PCV_V1 = 'PCV_V1',
   Collateralization = 'Collateralization',
   Oracle = 'Oracle',
   Keeper = 'Keeper',

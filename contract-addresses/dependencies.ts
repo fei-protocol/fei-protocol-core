@@ -1,4 +1,4 @@
-import { DependencyMap } from '@custom-types/types';
+import { DependencyMap } from '../types/types';
 
 const dependencies: DependencyMap = {
   collateralizationOracleGuardian: {
@@ -21,7 +21,6 @@ const dependencies: DependencyMap = {
       'aaveEthPCVDripController',
       'bondingCurve',
       'compoundEthPCVDripController',
-      'daiBondingCurve',
       'daiPCVDripController',
       'daiPSM',
       'ethReserveStabilizer',
@@ -103,7 +102,6 @@ const dependencies: DependencyMap = {
       'aaveEthPCVDripController',
       'bondingCurve',
       'compoundEthPCVDripController',
-      'daiBondingCurve',
       'daiPSM',
       'daiPCVDripController',
       'aaveFeiPCVDeposit',
@@ -209,7 +207,8 @@ const dependencies: DependencyMap = {
       'tribalChief',
       'collateralizationOracle',
       'collateralizationOracleWrapper',
-      'namedStaticPCVDepositWrapper'
+      'namedStaticPCVDepositWrapper',
+      'votiumBriberD3pool'
     ]
   },
   rariTimelock: {
@@ -226,9 +225,6 @@ const dependencies: DependencyMap = {
   },
   compoundEthPCVDripController: {
     contractDependencies: ['core', 'fei', 'compoundEthPCVDeposit', 'ethReserveStabilizer']
-  },
-  daiBondingCurve: {
-    contractDependencies: ['core', 'fei', 'compoundDaiPCVDeposit', 'chainlinkDaiUsdOracleWrapper']
   },
   daiPCVDripController: {
     contractDependencies: ['core', 'fei', 'daiPSM', 'compoundDaiPCVDeposit']
@@ -271,7 +267,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
   },
   compoundDaiPCVDeposit: {
-    contractDependencies: ['core', 'daiBondingCurve', 'daiPCVDripController', 'daiPSM']
+    contractDependencies: ['core', 'daiPCVDripController', 'daiPSM']
   },
   compoundEthPCVDeposit: {
     contractDependencies: ['core', 'bondingCurve', 'compoundEthPCVDripController', 'pcvGuardian']
@@ -410,7 +406,6 @@ const dependencies: DependencyMap = {
       'compoundDaiPCVDepositWrapper',
       'compoundEthPCVDepositWrapper',
       'creamDepositWrapper',
-      'daiBondingCurveWrapper',
       'ethLidoPCVDepositWrapper',
       'ethReserveStabilizerWrapper',
       'feiBuybackLens',
@@ -455,9 +450,6 @@ const dependencies: DependencyMap = {
   },
   creamDepositWrapper: {
     contractDependencies: ['feiDAOTimelock', 'collateralizationOracle']
-  },
-  daiBondingCurveWrapper: {
-    contractDependencies: ['collateralizationOracle']
   },
   ethLidoPCVDepositWrapper: {
     contractDependencies: ['collateralizationOracle']
@@ -535,7 +527,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'creamUsdCompositeOracle']
   },
   chainlinkDaiUsdOracleWrapper: {
-    contractDependencies: ['core', 'collateralizationOracle', 'daiBondingCurve', 'daiPSM']
+    contractDependencies: ['core', 'collateralizationOracle', 'daiPSM']
   },
   chainlinkDpiUsdOracleWrapper: {
     contractDependencies: ['core', 'collateralizationOracle', 'dpiUniswapPCVDeposit']
@@ -633,32 +625,49 @@ const dependencies: DependencyMap = {
       'autoRewardsDistributor' // rewards dripper role
     ]
   },
+  stwBulkHarvest: {
+    contractDependencies: [
+      'stakingTokenWrapperFOXLaaS',
+      'stakingTokenWrapperBribeD3pool',
+      'stakingTokenWrapperGROLaaS',
+      'stakingTokenWrapperKYLINLaaS',
+      'stakingTokenWrapperMStableLaaS',
+      'stakingTokenWrapperNEARLaaS',
+      'stakingTokenWrapperPoolTogetherLaaS',
+      'stakingTokenWrapperRari',
+      'stakingTokenWrapperSYNLaaS',
+      'stakingTokenWrapperUMALaaS'
+    ]
+  },
   stakingTokenWrapperFOXLaaS: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
+  },
+  stakingTokenWrapperBribeD3pool: {
+    contractDependencies: ['tribalChief', 'votiumBriberD3pool', 'stwBulkHarvest']
   },
   stakingTokenWrapperGROLaaS: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   stakingTokenWrapperKYLINLaaS: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   stakingTokenWrapperMStableLaaS: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   stakingTokenWrapperNEARLaaS: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   stakingTokenWrapperPoolTogetherLaaS: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   stakingTokenWrapperRari: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   stakingTokenWrapperSYNLaaS: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   stakingTokenWrapperUMALaaS: {
-    contractDependencies: ['tribalChief']
+    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   tribalChief: {
     contractDependencies: [
@@ -667,6 +676,7 @@ const dependencies: DependencyMap = {
       'tribalChiefSyncV2',
       'optimisticTimelock',
       'erc20Dripper',
+      'stakingTokenWrapperBribeD3pool',
       'stakingTokenWrapperFOXLaaS',
       'stakingTokenWrapperGROLaaS',
       'stakingTokenWrapperKYLINLaaS',
@@ -689,6 +699,9 @@ const dependencies: DependencyMap = {
       'optimisticTimelock', // executes atomic updates
       'tribalChief' // mass updates pools
     ]
+  },
+  votiumBriberD3pool: {
+    contractDependencies: ['stakingTokenWrapperBribeD3pool', 'optimisticTimelock']
   },
   rariPool8Comptroller: {
     contractDependencies: [

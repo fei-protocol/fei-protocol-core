@@ -5,6 +5,7 @@ import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { expectApprox, overwriteChainlinkAggregator } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
+import collateralizationAddresses from '@addresses/collateralizationOracle';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import {
   CollateralizationOracle,
@@ -148,6 +149,40 @@ describe('e2e-collateralization', function () {
       await namedStaticPCVDepositWrapper.removeDeposit(Number(await namedStaticPCVDepositWrapper.numDeposits()) - 1);
       const numDeposits = Number(await namedStaticPCVDepositWrapper.numDeposits());
       expect(numDeposits).to.be.eq(allNames.length);
+    });
+  });
+
+  describe('Collateralization Oracle', function () {
+    it('token deposits should have correct cardinality', async function () {
+      const collateralizationOracle = contracts.collateralizationOracle;
+
+      const addresses = Object.keys(collateralizationAddresses);
+
+      for (let i = 0; i < addresses.length; i++) {
+        const element = contractAddresses[addresses[i]];
+
+        const numTokens = (await collateralizationOracle.getDepositsForToken(element)).length;
+        doLogging && console.log(`Address count for token ${addresses[i]}: ${numTokens}`);
+        expect(numTokens).to.be.equal(collateralizationAddresses[addresses[i]].length);
+      }
+    });
+
+    it('token deposits should contain correct addresses', async function () {
+      const collateralizationOracle = contracts.collateralizationOracle;
+
+      const addresses = Object.keys(collateralizationAddresses);
+
+      for (let i = 0; i < addresses.length; i++) {
+        const element = addresses[i];
+
+        const deposits = await collateralizationOracle.getDepositsForToken(contractAddresses[element]);
+
+        for (let i = 0; i < collateralizationAddresses[element].length; i++) {
+          const contractAddress = contractAddresses[collateralizationAddresses[element][i]];
+          doLogging && console.log(`${element} contract address: ${contractAddress}`);
+          expect(deposits).to.contain(contractAddress);
+        }
+      }
     });
   });
 
