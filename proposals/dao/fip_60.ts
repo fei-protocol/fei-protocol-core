@@ -123,7 +123,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   await fuseGuardian.deployed();
 
   logging && console.log('fuseGuardian: ', fuseGuardian.address);
-  
+
   return {
     tribalChiefSyncExtension,
     d3StakingTokenWrapper,
@@ -163,7 +163,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   const comptroller = contracts.rariPool8Comptroller;
 
   const d3Ctoken = await comptroller.cTokensByUnderlying(addresses.curveD3pool);
-    expect(d3Ctoken).to.not.be.equal(ethers.constants.AddressZero);
+  expect(d3Ctoken).to.not.be.equal(ethers.constants.AddressZero);
 
   const fei3CrvCtoken = await comptroller.cTokensByUnderlying(addresses.curve3Metapool);
   expect(fei3CrvCtoken).to.not.be.equal(ethers.constants.AddressZero);
@@ -174,23 +174,16 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await rariPool8Comptroller.supplyCaps(fei3CrvCtoken)).to.be.equal(
     ethers.constants.WeiPerEther.mul(25_000_000)
   ); // 25 M
-  expect(await rariPool8Comptroller.supplyCaps(gelatoCtoken)).to.be.equal(
-    ethers.constants.WeiPerEther.mul(2_500_000_000)
-  ); // 2.5 B
 
   // borrow paused
   expect(await rariPool8Comptroller.borrowGuardianPaused(d3Ctoken)).to.be.true;
   expect(await rariPool8Comptroller.borrowGuardianPaused(fei3CrvCtoken)).to.be.true;
-  expect(await rariPool8Comptroller.borrowGuardianPaused(gelatoCtoken)).to.be.true;
 
   // LTV
   expect((await rariPool8Comptroller.markets(d3Ctoken)).collateralFactorMantissa).to.be.equal(
     ethers.constants.WeiPerEther.mul(60).div(100)
   );
   expect((await rariPool8Comptroller.markets(fei3CrvCtoken)).collateralFactorMantissa).to.be.equal(
-    ethers.constants.WeiPerEther.mul(60).div(100)
-  );
-  expect((await rariPool8Comptroller.markets(gelatoCtoken)).collateralFactorMantissa).to.be.equal(
     ethers.constants.WeiPerEther.mul(60).div(100)
   );
 
