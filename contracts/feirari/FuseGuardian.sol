@@ -29,7 +29,7 @@ contract FuseGuardian is CoreRef {
       * @param cTokens The addresses of the markets (tokens) to change the supply caps for
       * @param newSupplyCaps The new supply cap values in underlying to be set. A value of 0 corresponds to unlimited supplying.
       */
-    function _setMarketSupplyCaps(CToken[] memory cTokens, uint[] memory newSupplyCaps) public isGovernorOrGuardianOrAdmin {
+    function _setMarketSupplyCaps(CToken[] memory cTokens, uint[] calldata newSupplyCaps) public isGovernorOrGuardianOrAdmin {
         comptroller._setMarketSupplyCaps(cTokens, newSupplyCaps);
     }
 
@@ -37,7 +37,7 @@ contract FuseGuardian is CoreRef {
         _setMarketSupplyCaps(_underlyingToCTokens(underlyings), newSupplyCaps);
     }
 
-    function _underlyingToCTokens(address[] memory underlyings) internal view returns (CToken[] memory) {
+    function _underlyingToCTokens(address[] calldata underlyings) internal view returns (CToken[] memory) {
         CToken[] memory cTokens = new CToken[](underlyings.length);
         for (uint256 i = 0; i < underlyings.length; i++) {
             address cToken = comptroller.cTokensByUnderlying(underlyings[i]);
@@ -53,7 +53,7 @@ contract FuseGuardian is CoreRef {
       * @param cTokens The addresses of the markets (tokens) to change the borrow caps for
       * @param newBorrowCaps The new borrow cap values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
       */
-    function _setMarketBorrowCaps(CToken[] memory cTokens, uint[] memory newBorrowCaps) public isGovernorOrGuardianOrAdmin {
+    function _setMarketBorrowCaps(CToken[] memory cTokens, uint[] calldata newBorrowCaps) public isGovernorOrGuardianOrAdmin {
         comptroller._setMarketBorrowCaps(cTokens, newBorrowCaps);
     }
 
@@ -75,35 +75,43 @@ contract FuseGuardian is CoreRef {
      * @param newPauseGuardian The address of the new Pause Guardian
      * @return uint 0=success, otherwise a failure. (See enum Error for details)
      */
-    function _setPauseGuardian(address newPauseGuardian) public onlyGovernor returns (uint) {
+    function _setPauseGuardian(address newPauseGuardian) external onlyGovernor returns (uint) {
         return comptroller._setPauseGuardian(newPauseGuardian);
     }
 
-    function _setMintPausedByUnderlying(address underlying, bool state) external {
+    function _setMintPausedByUnderlying(address underlying, bool state) external isGovernorOrGuardianOrAdmin returns (bool) {
         address cToken = comptroller.cTokensByUnderlying(underlying);
         require(cToken != address(0), "cToken doesn't exist");
-        _setMintPaused(CToken(cToken), state);
+        _setMintPausedInternal(CToken(cToken), state);
     }
 
-    function _setMintPaused(CToken cToken, bool state) public isGovernorOrGuardianOrAdmin returns (bool) {
+    function _setMintPaused(CToken cToken, bool state) external isGovernorOrGuardianOrAdmin returns (bool) {
+        return _setMintPausedInternal(cToken, state);
+    }
+
+    function _setMintPausedInternal(CToken cToken, bool state) internal returns (bool) {
         return comptroller._setMintPaused(cToken, state);
     }
 
-    function _setBorrowPausedByUnderlying(address underlying, bool state) external {
+    function _setBorrowPausedByUnderlying(address underlying, bool state) external isGovernorOrGuardianOrAdmin returns (bool) {
         address cToken = comptroller.cTokensByUnderlying(underlying);
         require(cToken != address(0), "cToken doesn't exist");
-        _setBorrowPaused(CToken(cToken), state);
+        return _setBorrowPausedInternal(CToken(cToken), state);
     }
 
-    function _setBorrowPaused(CToken cToken, bool state) public isGovernorOrGuardianOrAdmin returns (bool) {
+    function _setBorrowPausedInternal(CToken cToken, bool state) internal returns (bool) {
         return comptroller._setBorrowPaused(cToken, state);
     }
 
-    function _setTransferPaused(bool state) public isGovernorOrGuardianOrAdmin returns (bool) {
-        return comptroller._setSeizePaused(state);
+    function _setBorrowPaused(CToken cToken, bool state) external isGovernorOrGuardianOrAdmin returns (bool) {
+        _setBorrowPausedInternal(CToken(cToken), state);
     }
 
-    function _setSeizePaused(bool state) public isGovernorOrGuardianOrAdmin returns (bool) {
+    function _setTransferPaused(bool state) external isGovernorOrGuardianOrAdmin returns (bool) {
+        return comptroller._setTransferPaused(state);
+    }
+
+    function _setSeizePaused(bool state) external isGovernorOrGuardianOrAdmin returns (bool) {
         return comptroller._setSeizePaused(state);
     }
 }
