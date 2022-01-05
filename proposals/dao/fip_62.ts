@@ -107,7 +107,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await ethPSM.reservesThreshold()).to.be.equal(reservesThreshold);
   expect((await ethPSM.underlyingToken()).toLowerCase()).to.be.equal(wethERC20.address.toLowerCase());
   expect(await ethPSM.bufferCap()).to.be.equal(ethPSMBufferCap);
-  expect(await ethPSM.secondaryPaused()).to.be.true;
+  expect(await ethPSM.redeemPaused()).to.be.true;
 
   expect(await ethPSMRouter.psm()).to.be.equal(ethPSM.address);
 

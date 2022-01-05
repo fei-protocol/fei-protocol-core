@@ -50,7 +50,7 @@ const fip_62: ProposalDescription = {
     {
       target: 'ethPSM',
       values: '0',
-      method: 'secondaryPause()',
+      method: 'pauseRedeem()',
       arguments: [],
       description: 'Pause redemptions on Eth PSM'
     },
@@ -90,9 +90,9 @@ const fip_62: ProposalDescription = {
   1. Update the Collateralization Oracle to remove Eth Reserve Stabilizer and Eth Bonding Curve and add the new Eth PSM
   2. Deprecate Eth bonding curve + Eth Reserve Stabilizer by removing Minter role and pausing the contracts
   3. Grant the Eth PSM the minter role
-  4. Secondary pause the Eth PSM so that redemptions cannot take place
+  4. Pause redemptions on the Eth PSM
 
-  Code: https://github.com/fei-protocol/fei-protocol-core/pull/411
+  Code: https://github.com/fei-protocol/fei-protocol-core/pull/435
 `
 };
 
