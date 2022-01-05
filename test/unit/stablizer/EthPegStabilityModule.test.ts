@@ -800,14 +800,14 @@ describe('EthPegStabilityModule', function () {
           it('can not pause as non governor', async () => {
             await expectRevert(
               psm.connect(impersonatedSigners[userAddress]).pauseRedeem(),
-              'CoreRef: Caller is not a guardian or governor'
+              'CoreRef: Caller is not governor or guardian or admin'
             );
           });
 
           it('can not unpause as non governor', async () => {
             await expectRevert(
               psm.connect(impersonatedSigners[userAddress]).pauseRedeem(),
-              'CoreRef: Caller is not a guardian or governor'
+              'CoreRef: Caller is not governor or guardian or admin'
             );
           });
         });
