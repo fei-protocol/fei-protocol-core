@@ -239,6 +239,19 @@ const dependencies: DependencyMap = {
       'pcvGuardian'
     ]
   },
+  ethPSM: {
+    contractDependencies: [
+      'core',
+      'fei',
+      'aaveEthPCVDeposit',
+      'ethPSMAavePCVDripController',
+      'chainlinkFeiEthOracleWrapper',
+      'pcvGuardian'
+    ]
+  },
+  ethPSMRouter: {
+    contractDependencies: ['ethPSM']
+  },
   ethReserveStabilizer: {
     contractDependencies: [
       'core',

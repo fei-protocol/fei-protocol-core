@@ -9,9 +9,8 @@ import {
 } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer, utils } from 'ethers';
-import { Core, MockERC20, Fei, MockOracle, PegStabilityModule, MockPCVDepositV2, WETH9 } from '@custom-types/contracts';
+import { Core, Fei, MockOracle, PegStabilityModule, MockPCVDepositV2, WETH9 } from '@custom-types/contracts';
 import { keccak256 } from 'ethers/lib/utils';
-import { constants } from 'buffer';
 
 const toBN = ethers.BigNumber.from;
 

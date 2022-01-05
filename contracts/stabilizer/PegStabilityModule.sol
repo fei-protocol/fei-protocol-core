@@ -148,7 +148,6 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     }
 
     /// @notice internal helper method to redeem fei in exchange for an external asset
-    /// sells user fei for PCV asset
     function _redeem(
         address to,
         uint256 amountFeiIn,
@@ -167,7 +166,6 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     }
 
     /// @notice internal helper method to mint fei in exchange for an external asset
-    /// buys user's asset to add to PCV and pays with minted fei
     function _mint(
         address to,
         uint256 amountIn,

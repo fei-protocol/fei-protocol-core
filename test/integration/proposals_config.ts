@@ -1,6 +1,7 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
+import fip_62 from '@proposals/description/fip_62';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -19,6 +20,15 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.None,
     totalValue: 0,
     proposal: undefined
+  },
+  fip_62: {
+    deploy: true,
+    proposalId: undefined,
+    affectedContractSignoff: [],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_62
   }
 };
 
