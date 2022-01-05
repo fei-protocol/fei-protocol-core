@@ -791,8 +791,14 @@ describe('EthPegStabilityModule', function () {
             );
           });
 
-          it('can pause as the governor', async () => {
+          it('can pause redemptions as the governor', async () => {
             await psm.connect(impersonatedSigners[governorAddress]).pauseRedeem();
+            expect(await psm.redeemPaused()).to.be.true;
+            await expectRevert(psm.redeem(userAddress, 0, 0), 'EthPSM: Redeem paused');
+          });
+
+          it('can pause redemptions as the PSM_ADMIN', async () => {
+            await psm.connect(impersonatedSigners[psmAdminAddress]).pauseRedeem();
             expect(await psm.redeemPaused()).to.be.true;
             await expectRevert(psm.redeem(userAddress, 0, 0), 'EthPSM: Redeem paused');
           });
