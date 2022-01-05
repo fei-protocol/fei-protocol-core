@@ -31,15 +31,15 @@ DAO ACTIONS:
 const decimalsNormalizer = 0;
 const doInvert = false;
 
-const mintFeeBasisPoints = 50;
-const redeemFeeBasisPoints = 50;
+const mintFeeBasisPoints = 75;
+const redeemFeeBasisPoints = 75;
 const reservesThreshold = toBN(250).mul(eth);
 const feiMintLimitPerSecond = ethers.utils.parseEther('10000');
 const ethPSMBufferCap = ethers.utils.parseEther('10000000');
 
 const incentiveAmount = 0;
 
-const ethDripAmount = ethers.utils.parseEther('1000');
+const ethDripAmount = ethers.utils.parseEther('5000');
 const dripDuration = 7200;
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {

@@ -83,13 +83,6 @@ const fip_62: ProposalDescription = {
       method: 'setIncentiveAmount(uint256)',
       arguments: ['0'],
       description: 'Set incentive amount to 0'
-    },
-    {
-      target: 'aaveEthPCVDripController',
-      values: '0',
-      method: 'setDripAmount(uint256)',
-      arguments: ['1000000000000000000000'],
-      description: 'Lower drip amount from 5k to 1k eth'
     }
   ],
   description: `
