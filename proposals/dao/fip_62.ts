@@ -1,14 +1,7 @@
-import hre, { ethers } from 'hardhat';
+import { ethers } from 'hardhat';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
-import {
-  DeployUpgradeFunc,
-  NamedContracts,
-  SetupUpgradeFunc,
-  TeardownUpgradeFunc,
-  ValidateUpgradeFunc
-} from '@custom-types/types';
-import { WETH9 } from '@custom-types/contracts';
+import { DeployUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '@custom-types/types';
 
 chai.use(CBN(ethers.BigNumber));
 
@@ -50,7 +43,7 @@ const ethDripAmount = ethers.utils.parseEther('1000');
 const dripDuration = 7200;
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
-  const { aaveEthPCVDripController, core, chainlinkEthUsdOracleWrapper, weth, fei, aaveEthPCVDeposit } = addresses;
+  const { aaveEthPCVDripController, core, chainlinkEthUsdOracleWrapper, weth, fei } = addresses;
 
   if (!core) {
     throw new Error('An environment variable contract address is not set');
@@ -112,6 +105,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await ethPSM.redeemFeeBasisPoints()).to.be.equal(redeemFeeBasisPoints);
   expect(await ethPSM.mintFeeBasisPoints()).to.be.equal(mintFeeBasisPoints);
   expect(await ethPSM.reservesThreshold()).to.be.equal(reservesThreshold);
+  expect((await ethPSM.underlyingToken()).toLowerCase()).to.be.equal(wethERC20.address.toLowerCase());
   expect(await ethPSM.bufferCap()).to.be.equal(ethPSMBufferCap);
   expect(await ethPSM.secondaryPaused()).to.be.true;
 

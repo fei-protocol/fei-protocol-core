@@ -1,12 +1,4 @@
-import {
-  AutoRewardsDistributor,
-  EthPegStabilityModule,
-  Fei,
-  PSMRouter,
-  TribalChief,
-  TribalChiefSyncV2,
-  WETH9
-} from '@custom-types/contracts';
+import { EthPegStabilityModule, Fei, PCVDripController, PSMRouter, WETH9 } from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -14,7 +6,7 @@ import { solidity } from 'ethereum-waffle';
 import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { expectRevert, resetFork } from '@test/helpers';
+import { expectRevert, increaseTime, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 
@@ -27,7 +19,7 @@ before(async () => {
   await resetFork();
 });
 
-describe('eth PSM', function () {
+describe.only('eth PSM', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: SignerWithAddress;
@@ -37,6 +29,7 @@ describe('eth PSM', function () {
   let ethPSMRouter: PSMRouter;
   let weth: WETH9;
   let fei: Fei;
+  let dripper: PCVDripController;
 
   before(async function () {
     // Setup test environment and get contracts
@@ -61,6 +54,7 @@ describe('eth PSM', function () {
     ethPSMRouter = contracts.ethPSMRouter as PSMRouter;
     weth = await ethers.getContractAt('WETH9', '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2');
     fei = await ethers.getContractAt('Fei', contractAddresses.fei);
+    dripper = contracts.aaveEthPCVDripController as PCVDripController;
   });
 
   describe('ethPSM', async () => {
@@ -100,7 +94,20 @@ describe('eth PSM', function () {
         ['mint(address,uint256,uint256)'](deployAddress.address, minAmountOut, mintAmount, {
           value: mintAmount
         });
+
       expect((await fei.balanceOf(deployAddress.address)).sub(startingFeiBalance)).to.be.equal(minAmountOut);
+    });
+  });
+
+  describe('WETH AavePCVDripController', async () => {
+    beforeEach(async () => {
+      /// increase time by 2 hours so that regardless of mainnet state,
+      /// this test will always pass
+      await increaseTime(7200);
+    });
+
+    it('dripper cannot drip because it is paused', async () => {
+      await expectRevert(dripper.drip(), 'Pausable: paused');
     });
   });
 });
