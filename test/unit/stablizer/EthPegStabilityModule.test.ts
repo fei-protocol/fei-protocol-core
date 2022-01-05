@@ -391,13 +391,13 @@ describe('EthPegStabilityModule', function () {
         await weth.connect(impersonatedSigners[userAddress]).transfer(psm.address, wethAmount);
       });
 
-      it('redeem fails when secondary pause is active', async () => {
-        await psm.connect(impersonatedSigners[governorAddress]).secondaryPause();
-        expect(await psm.secondaryPaused()).to.be.true;
+      it('redeem fails when redeem pause is active', async () => {
+        await psm.connect(impersonatedSigners[governorAddress]).pauseRedeem();
+        expect(await psm.redeemPaused()).to.be.true;
 
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 10000, 0),
-          'PauserV2: paused'
+          'EthPSM: Redeem paused'
         );
       });
 
@@ -406,6 +406,39 @@ describe('EthPegStabilityModule', function () {
         const tenM = toBN(10_000_000);
         const newRedeemFee = 250;
         await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(newRedeemFee);
+
+        const userStartingFeiBalance = await fei.balanceOf(userAddress);
+        const psmStartingWETHBalance = await weth.balanceOf(psm.address);
+        const userStartingWETHBalance = await weth.balanceOf(userAddress);
+        const expectedAssetAmount = 975;
+
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, tenM);
+        await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, tenM);
+
+        const redeemAmountOut = await psm.getRedeemAmountOut(tenM);
+        expect(redeemAmountOut).to.be.equal(expectedAssetAmount);
+
+        await psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, tenM, expectedAssetAmount);
+
+        const userEndingWETHBalance = await weth.balanceOf(userAddress);
+        const userEndingFeiBalance = await fei.balanceOf(userAddress);
+        const psmEndingWETHBalance = await weth.balanceOf(psm.address);
+
+        expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(0);
+        expect(psmStartingWETHBalance.sub(psmEndingWETHBalance)).to.be.equal(expectedAssetAmount);
+        expect(userEndingWETHBalance.sub(userStartingWETHBalance)).to.be.equal(expectedAssetAmount);
+      });
+
+      it('redeem succeeds after contract is paused then unpaused', async () => {
+        await oracle.setExchangeRate(10_000);
+        const tenM = toBN(10_000_000);
+        const newRedeemFee = 250;
+        await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(newRedeemFee);
+
+        await psm.connect(impersonatedSigners[governorAddress]).pauseRedeem();
+        expect(await psm.redeemPaused()).to.be.true;
+        await psm.connect(impersonatedSigners[governorAddress]).unpauseRedeem();
+        expect(await psm.redeemPaused()).to.be.false;
 
         const userStartingFeiBalance = await fei.balanceOf(userAddress);
         const psmStartingWETHBalance = await weth.balanceOf(psm.address);
@@ -724,39 +757,56 @@ describe('EthPegStabilityModule', function () {
         });
       });
 
-      describe('Secondary Pausing', function () {
+      describe('Redemptions Pausing', function () {
         describe('pause', function () {
           it('can pause as the guardian', async () => {
-            await psm.connect(impersonatedSigners[guardianAddress]).secondaryPause();
-            expect(await psm.secondaryPaused()).to.be.true;
-            await expectRevert(psm.redeem(userAddress, 0, 0), 'PauserV2: paused');
+            await psm.connect(impersonatedSigners[guardianAddress]).pauseRedeem();
+            expect(await psm.redeemPaused()).to.be.true;
+            await expectRevert(psm.redeem(userAddress, 0, 0), 'EthPSM: Redeem paused');
           });
 
           it('can pause and unpause as the guardian', async () => {
-            await psm.connect(impersonatedSigners[guardianAddress]).secondaryPause();
-            expect(await psm.secondaryPaused()).to.be.true;
-            await expectRevert(psm.redeem(userAddress, 0, 0), 'PauserV2: paused');
+            await psm.connect(impersonatedSigners[guardianAddress]).pauseRedeem();
+            expect(await psm.redeemPaused()).to.be.true;
+            await expectRevert(psm.redeem(userAddress, 0, 0), 'EthPSM: Redeem paused');
 
-            await psm.connect(impersonatedSigners[guardianAddress]).secondaryUnpause();
-            expect(await psm.secondaryPaused()).to.be.false;
+            await psm.connect(impersonatedSigners[guardianAddress]).unpauseRedeem();
+            expect(await psm.redeemPaused()).to.be.false;
+          });
+
+          it('cannot pause while paused', async () => {
+            await psm.connect(impersonatedSigners[guardianAddress]).pauseRedeem();
+            expect(await psm.redeemPaused()).to.be.true;
+            await expectRevert(
+              psm.connect(impersonatedSigners[guardianAddress]).pauseRedeem(),
+              'EthPSM: Redeem paused'
+            );
+          });
+
+          it('cannot unpause while unpaused', async () => {
+            expect(await psm.redeemPaused()).to.be.false;
+            await expectRevert(
+              psm.connect(impersonatedSigners[guardianAddress]).unpauseRedeem(),
+              'EthPSM: Redeem not paused'
+            );
           });
 
           it('can pause as the governor', async () => {
-            await psm.connect(impersonatedSigners[governorAddress]).secondaryPause();
-            expect(await psm.secondaryPaused()).to.be.true;
-            await expectRevert(psm.redeem(userAddress, 0, 0), 'PauserV2: paused');
+            await psm.connect(impersonatedSigners[governorAddress]).pauseRedeem();
+            expect(await psm.redeemPaused()).to.be.true;
+            await expectRevert(psm.redeem(userAddress, 0, 0), 'EthPSM: Redeem paused');
           });
 
           it('can not pause as non governor', async () => {
             await expectRevert(
-              psm.connect(impersonatedSigners[userAddress]).secondaryPause(),
+              psm.connect(impersonatedSigners[userAddress]).pauseRedeem(),
               'CoreRef: Caller is not a guardian or governor'
             );
           });
 
           it('can not unpause as non governor', async () => {
             await expectRevert(
-              psm.connect(impersonatedSigners[userAddress]).secondaryUnpause(),
+              psm.connect(impersonatedSigners[userAddress]).pauseRedeem(),
               'CoreRef: Caller is not a guardian or governor'
             );
           });

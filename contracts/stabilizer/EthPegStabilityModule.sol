@@ -2,11 +2,19 @@
 pragma solidity ^0.8.4;
 
 import "./PegStabilityModule.sol";
-import "./../utils/PauserV2.sol";
 
 /// @notice ETH PSM that allows separate pausing of mint and redeem
 /// by the guardian and governor
-contract EthPegStabilityModule is PegStabilityModule, PauserV2 {
+contract EthPegStabilityModule is PegStabilityModule {
+
+    /// @notice boolean switch that indicates whether redemptions are paused
+    bool public redeemPaused;
+
+    /// @notice event that is emitted when redemptions are paused
+    event RedemptionsPaused(address account);
+    
+    /// @notice event that is emitted when redemptions are unpaused
+    event RedemptionsUnpaused(address account);
 
     constructor(
         OracleParams memory params,
@@ -26,24 +34,38 @@ contract EthPegStabilityModule is PegStabilityModule, PauserV2 {
         _mintingBufferCap,
         _underlyingToken,
         _surplusTarget
-    ) PauserV2() {}
+    ) {}
+
+    /// @notice modifier that allows execution when redemptions are not paused
+    modifier whileRedemptionsNotPaused {
+        require(!redeemPaused, "EthPSM: Redeem paused");
+        _;
+    }
+
+    /// @notice modifier that allows execution when redemptions are paused
+    modifier whileRedemptionsPaused {
+        require(redeemPaused, "EthPSM: Redeem not paused");
+        _;
+    }
+
+    /// @notice set secondary pausable methods to paused
+    function pauseRedeem() public onlyGuardianOrGovernor whileRedemptionsNotPaused {
+        redeemPaused = true;
+        emit RedemptionsPaused(msg.sender);
+    }
+
+    /// @notice set secondary pausable methods to unpaused
+    function unpauseRedeem() public onlyGuardianOrGovernor whileRedemptionsPaused {
+        redeemPaused = false;
+        emit RedemptionsUnpaused(msg.sender);
+    }
 
     /// @notice override redeem function that allows secondary pausing 
     function redeem(
         address to,
         uint256 amountFeiIn,
         uint256 minAmountOut
-    ) external override nonReentrant whenNotSecondaryPaused returns (uint256 amountOut) {
+    ) external override nonReentrant whileRedemptionsNotPaused returns (uint256 amountOut) {
         amountOut = _redeem(to, amountFeiIn, minAmountOut);
-    }
-
-    /// @notice set secondary pausable methods to paused
-    function secondaryPause() public onlyGuardianOrGovernor {
-        _secondaryPause();
-    }
-
-    /// @notice set secondary pausable methods to unpaused
-    function secondaryUnpause() public onlyGuardianOrGovernor {
-        _secondaryUnpause();
     }
 }
