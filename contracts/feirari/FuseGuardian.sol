@@ -29,12 +29,16 @@ contract FuseGuardian is CoreRef {
       * @param cTokens The addresses of the markets (tokens) to change the supply caps for
       * @param newSupplyCaps The new supply cap values in underlying to be set. A value of 0 corresponds to unlimited supplying.
       */
-    function _setMarketSupplyCaps(CToken[] memory cTokens, uint[] calldata newSupplyCaps) public isGovernorOrGuardianOrAdmin {
-        comptroller._setMarketSupplyCaps(cTokens, newSupplyCaps);
+    function _setMarketSupplyCaps(CToken[] memory cTokens, uint[] calldata newSupplyCaps) external isGovernorOrGuardianOrAdmin {
+        _setMarketSupplyCapsInternal(cTokens, newSupplyCaps);
     }
 
-    function _setMarketSupplyCapsByUnderlying(address[] calldata underlyings, uint[] calldata newSupplyCaps) external {
-        _setMarketSupplyCaps(_underlyingToCTokens(underlyings), newSupplyCaps);
+    function _setMarketSupplyCapsByUnderlying(address[] calldata underlyings, uint[] calldata newSupplyCaps) external isGovernorOrGuardianOrAdmin {
+        _setMarketSupplyCapsInternal(_underlyingToCTokens(underlyings), newSupplyCaps);
+    }
+
+    function _setMarketSupplyCapsInternal(CToken[] memory cTokens, uint[] calldata newSupplyCaps) internal {
+        comptroller._setMarketSupplyCaps(cTokens, newSupplyCaps);
     }
 
     function _underlyingToCTokens(address[] calldata underlyings) internal view returns (CToken[] memory) {
@@ -53,12 +57,16 @@ contract FuseGuardian is CoreRef {
       * @param cTokens The addresses of the markets (tokens) to change the borrow caps for
       * @param newBorrowCaps The new borrow cap values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
       */
-    function _setMarketBorrowCaps(CToken[] memory cTokens, uint[] calldata newBorrowCaps) public isGovernorOrGuardianOrAdmin {
+    function _setMarketBorrowCaps(CToken[] memory cTokens, uint[] calldata newBorrowCaps) external isGovernorOrGuardianOrAdmin {
+        _setMarketBorrowCapsInternal(cTokens, newBorrowCaps);
+    }
+
+    function _setMarketBorrowCapsInternal(CToken[] memory cTokens, uint[] calldata newBorrowCaps) internal {
         comptroller._setMarketBorrowCaps(cTokens, newBorrowCaps);
     }
 
-    function _setMarketBorrowCapsByUnderlying(address[] calldata underlyings, uint[] calldata newBorrowCaps) external {
-        _setMarketBorrowCaps(_underlyingToCTokens(underlyings), newBorrowCaps);
+    function _setMarketBorrowCapsByUnderlying(address[] calldata underlyings, uint[] calldata newBorrowCaps) external isGovernorOrGuardianOrAdmin {
+        _setMarketBorrowCapsInternal(_underlyingToCTokens(underlyings), newBorrowCaps);
     }
 
     /**
