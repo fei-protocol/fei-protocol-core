@@ -33,6 +33,44 @@ const fip_60: ProposalDescription = {
       description: 'Add FEI-3Crv to FeiRari'
     },
     {
+      target: 'rariPool8Comptroller',
+      values: '0',
+      method: '_setPauseGuardian(address)',
+      arguments: ['{fuseGuardian}'],
+      description: 'Set Fuse pause guardian'
+    },
+    {
+      target: 'fuseGuardian',
+      values: '0',
+      method: '_setBorrowPausedByUnderlying(address,bool)',
+      arguments: ['{curveD3pool}', true],
+      description: 'Set d3 borrow paused'
+    },
+    {
+      target: 'fuseGuardian',
+      values: '0',
+      method: '_setBorrowPausedByUnderlying(address,bool)',
+      arguments: ['{curve3Metapool}', true],
+      description: 'Set Fei-3Crv borrow paused'
+    },
+    {
+      target: 'rariPool8Comptroller',
+      values: '0',
+      method: '_setBorrowCapGuardian(address)',
+      arguments: ['{fuseGuardian}'],
+      description: 'Set Fuse borrow cap guardian'
+    },
+    {
+      target: 'fuseGuardian',
+      values: '0',
+      method: '_setMarketSupplyCapsByUnderlying(address[],uint256[])',
+      arguments: [
+        ['{curveD3pool}', '{curve3Metapool}'],
+        ['25000000000000000000000000', '25000000000000000000000000']
+      ],
+      description: 'Set Fuse supply caps'
+    },
+    {
       target: 'tribalChief',
       values: '0',
       method: 'add(uint120,address,address,(uint128,uint128)[])',
