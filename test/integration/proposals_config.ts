@@ -14,9 +14,19 @@ const proposals: ProposalsConfigMap = {
     }
     */
   fip_60: {
-    deploy: true,
+    deploy: false,
     proposalId: undefined,
-    affectedContractSignoff: [],
+    affectedContractSignoff: [
+      'rariPool8Comptroller',
+      'rariPool8MasterOracle',
+      'd3StakingTokenWrapper',
+      'tribalChief',
+      'fei3CrvStakingtokenWrapper',
+      'd3AutoRewardsDistributor',
+      'fei3CrvAutoRewardsDistributor',
+      'rewardsDistributorAdmin',
+      'fuseGuardian'
+    ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.OA,
     totalValue: 0,

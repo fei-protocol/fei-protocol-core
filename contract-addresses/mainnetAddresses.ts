@@ -551,6 +551,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x61be49dfbd869a601fea076e1a1379903e61a895',
     category: AddressCategory.Rewards
   },
+  d3AutoRewardsDistributor: {
+    artifactName: 'AutoRewardsDistributorV2',
+    address: '0x9Fd318C3F8f8583Fd40a0C2fba058fB7097E11d4',
+    category: AddressCategory.Rewards
+  },
+  fei3CrvAutoRewardsDistributor: {
+    artifactName: 'AutoRewardsDistributorV2',
+    address: '0x15f6D0d95aceCD7570e8Ff6128D953BC6aA3573C',
+    category: AddressCategory.Rewards
+  },
   erc20Dripper: {
     artifactName: 'ERC20Dripper',
     address: '0x3Fe0EAD3500e767F0F8bC2d3B5AF7755B1b21A6a',
@@ -621,6 +631,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x90B336dFF819b9e4b3D9A32cabdcAB0E92836065',
     category: AddressCategory.Rewards
   },
+  fei3CrvStakingtokenWrapper: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0x7013dc2e3c0D5ca3c0a6a66F6B5883eD203ac49c',
+    category: AddressCategory.Rewards
+  },
+  d3StakingTokenWrapper: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0xAa267d0A5A0A56Ef0F17bB4A28f85a5C4e0394F6',
+    category: AddressCategory.Rewards
+  },
   stwBulkHarvest: {
     artifactName: 'STWBulkHarvest',
     address: '0x83433D925048d7e9D2D7Eec2A0Efbb4456Af2F93',
@@ -639,6 +659,11 @@ const MainnetAddresses: MainnetAddresses = {
   tribalChiefSyncV2: {
     artifactName: 'TribalChiefSyncV2',
     address: '0xb41c594f9a6a2E0882212598337AF8145f63731b',
+    category: AddressCategory.Rewards
+  },
+  tribalChiefSyncExtension: {
+    artifactName: 'TribalChiefSyncExtension',
+    address: '0x7b834cA07f81d52bB52d98DaE560D1442b2d7dBa',
     category: AddressCategory.Rewards
   },
   votiumBriberD3pool: {
@@ -699,6 +724,11 @@ const MainnetAddresses: MainnetAddresses = {
   rariPool8TribeIrm: {
     artifactName: 'unknown',
     address: '0x075538650a9c69ac8019507a7dd1bd879b12c1d7',
+    category: AddressCategory.FeiRari
+  },
+  fuseGuardian: {
+    artifactName: 'FuseGuardian',
+    address: '0xc0c59A2d3F278445f27ed4a00E2727D6c677c43F',
     category: AddressCategory.FeiRari
   },
   aave: {
