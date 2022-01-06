@@ -17,7 +17,8 @@ before(async () => {
   await resetFork();
 });
 
-describe('e2e-bondingcurve', function () {
+/// skip the bonding curve tests as it is now paused and disabled
+describe.skip('e2e-bondingcurve', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;

@@ -24,7 +24,14 @@ const proposals: ProposalsConfigMap = {
   fip_62: {
     deploy: true,
     proposalId: undefined,
-    affectedContractSignoff: [],
+    affectedContractSignoff: [
+      'ethPSM',
+      'PSMRouter',
+      'aaveEthPCVDripController',
+      'collateralizationOracle',
+      'bondingCurve',
+      'ethReserveStabilizer'
+    ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,
