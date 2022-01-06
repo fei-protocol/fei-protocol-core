@@ -19,7 +19,6 @@ const dependencies: DependencyMap = {
       'guardian',
       'optimisticTimelock',
       'aaveEthPCVDripController',
-
       'compoundEthPCVDripController',
       'daiPCVDripController',
       'daiPSM',
@@ -542,7 +541,6 @@ const dependencies: DependencyMap = {
       'creamUsdCompositeOracle',
       'balUsdCompositeOracle',
       'collateralizationOracle',
-
       'uniswapPCVDeposit',
       'balancerDepositBalWeth'
     ]

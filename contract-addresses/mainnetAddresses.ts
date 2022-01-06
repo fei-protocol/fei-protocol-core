@@ -99,7 +99,7 @@ const MainnetAddresses: MainnetAddresses = {
   bondingCurve: {
     artifactName: 'EthBondingCurve',
     address: '0xB783c0E21763bEf9F2d04E6499abFbe23AdB7e1F',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   compoundEthPCVDripController: {
     artifactName: 'PCVDripController',

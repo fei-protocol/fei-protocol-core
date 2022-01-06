@@ -6,7 +6,7 @@ import addresses from '@addresses/mainnetAddresses';
 import collateralizationAddresses from '@addresses/collateralizationOracle';
 import { AddressCategory } from '@custom-types/types'; // imported without custom path to allow docs to autogen without ts errors
 
-describe.only('e2e-dependencies', function () {
+describe('e2e-dependencies', function () {
   const doLogging = Boolean(process.env.LOGGING);
   let proposalNames: string[];
 
