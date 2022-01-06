@@ -30,7 +30,8 @@ const proposals: ProposalsConfigMap = {
       'aaveEthPCVDripController',
       'collateralizationOracle',
       'bondingCurve',
-      'ethReserveStabilizer'
+      'ethReserveStabilizer',
+      'ethReserveStabilizerWrapper'
     ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
