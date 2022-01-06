@@ -43,7 +43,7 @@ export default async function simulateOAProposal(
 
   const schedule = await timelock.connect(signer).scheduleBatch(targets, values, datas, predecessor, salt, delay);
 
-  console.log(schedule);
+  console.log('Calldata:', schedule.data);
 
   await time.increase(delay);
 

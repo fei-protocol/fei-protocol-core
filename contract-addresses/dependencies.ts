@@ -191,7 +191,7 @@ const dependencies: DependencyMap = {
     ]
   },
   guardian: {
-    contractDependencies: ['core', 'collateralizationOracleGuardian', 'pcvGuardian'] // TODO do we want to document everything the guardian can affect. I think this should only reflect guardian-exclusive actions
+    contractDependencies: ['core', 'collateralizationOracleGuardian', 'pcvGuardian', 'fuseGuardian']
   },
   optimisticMultisig: {
     contractDependencies: ['optimisticTimelock']
@@ -208,7 +208,8 @@ const dependencies: DependencyMap = {
       'collateralizationOracle',
       'collateralizationOracleWrapper',
       'namedStaticPCVDepositWrapper',
-      'votiumBriberD3pool'
+      'votiumBriberD3pool',
+      'rariPool8MasterOracle'
     ]
   },
   rariTimelock: {
@@ -615,14 +616,30 @@ const dependencies: DependencyMap = {
       'rariPool8Tribe',
       'rariRewardsDistributorDelegate', // impl
       'rewardsDistributorAdmin', //admin
-      'rariPool8Comptroller'
+      'rariPool8Comptroller',
+      'fei3CrvStakingtokenWrapper',
+      'd3StakingTokenWrapper'
     ]
+  },
+  fei3CrvAutoRewardsDistributor: {
+    contractDependencies: ['fei3CrvStakingtokenWrapper', 'tribalChief', 'rewardsDistributorAdmin']
+  },
+  d3AutoRewardsDistributor: {
+    contractDependencies: ['d3StakingTokenWrapper', 'tribalChief', 'rewardsDistributorAdmin']
+  },
+  fei3CrvStakingtokenWrapper: {
+    contractDependencies: ['fei3CrvAutoRewardsDistributor', 'tribalChief', 'rariRewardsDistributorDelegator']
+  },
+  d3StakingTokenWrapper: {
+    contractDependencies: ['d3AutoRewardsDistributor', 'tribalChief', 'rariRewardsDistributorDelegator']
   },
   rewardsDistributorAdmin: {
     contractDependencies: [
       'rariRewardsDistributorDelegator',
       'optimisticTimelock',
-      'autoRewardsDistributor' // rewards dripper role
+      'autoRewardsDistributor', // rewards dripper role
+      'fei3CrvAutoRewardsDistributor',
+      'd3AutoRewardsDistributor'
     ]
   },
   stwBulkHarvest: {
@@ -687,7 +704,11 @@ const dependencies: DependencyMap = {
       'stakingTokenWrapperSYNLaaS',
       'stakingTokenWrapperUMALaaS',
       'tribalChiefImpl',
-      'proxyAdmin'
+      'proxyAdmin',
+      'fei3CrvAutoRewardsDistributor',
+      'd3AutoRewardsDistributor',
+      'fei3CrvStakingtokenWrapper',
+      'd3StakingTokenWrapper'
     ]
   },
   tribalChiefImpl: {
@@ -710,8 +731,19 @@ const dependencies: DependencyMap = {
       'rariPool8Fei',
       'rariPool8Tribe',
       'rariRewardsDistributorDelegator', // registered rewards distributor
-      'optimisticTimelock' // admin
+      'optimisticTimelock', // admin
+      'rariPool8MasterOracle',
+      'fuseGuardian'
     ]
+  },
+  fuseGuardian: {
+    contractDependencies: ['rariPool8Comptroller', 'guardian']
+  },
+  rariPool8MasterOracle: {
+    contractDependencies: ['optimisticTimelock', 'rariPool8Comptroller', 'curveLPTokenOracle']
+  },
+  curveLPTokenOracle: {
+    contractDependencies: ['rariPool8MasterOracle']
   },
   rariPool8Dai: {
     contractDependencies: ['rariPool8Comptroller', 'rariPool8DaiIrm']
