@@ -19,12 +19,11 @@ const dependencies: DependencyMap = {
       'guardian',
       'optimisticTimelock',
       'aaveEthPCVDripController',
-      'bondingCurve',
+
       'compoundEthPCVDripController',
       'daiPCVDripController',
       'daiPSM',
       'ethPSM',
-      'ethReserveStabilizer',
       'tribeReserveStabilizer',
       'aaveEthPCVDeposit',
       'aaveFeiPCVDeposit',
@@ -101,7 +100,7 @@ const dependencies: DependencyMap = {
       'feiDAOTimelock',
       'collateralizationOracleKeeper',
       'aaveEthPCVDripController',
-      'bondingCurve',
+
       'compoundEthPCVDripController',
       'daiPSM',
       'ethPSM',
@@ -148,8 +147,7 @@ const dependencies: DependencyMap = {
       'daiPSM',
       'ethPSM',
       'compoundEthPCVDeposit',
-      'aaveEthPCVDeposit',
-      'ethReserveStabilizer'
+      'aaveEthPCVDeposit'
     ]
   },
   proxyAdmin: {
@@ -221,13 +219,10 @@ const dependencies: DependencyMap = {
     contractDependencies: ['rariTimelock', 'tribe']
   },
   aaveEthPCVDripController: {
-    contractDependencies: ['core', 'fei', 'aaveEthPCVDeposit', 'ethReserveStabilizer', 'ethPSM']
-  },
-  bondingCurve: {
-    contractDependencies: ['core', 'fei', 'aaveEthPCVDeposit', 'compoundEthPCVDeposit', 'chainlinkEthUsdOracleWrapper']
+    contractDependencies: ['core', 'fei', 'aaveEthPCVDeposit', 'ethPSM']
   },
   compoundEthPCVDripController: {
-    contractDependencies: ['core', 'fei', 'compoundEthPCVDeposit', 'ethReserveStabilizer']
+    contractDependencies: ['core', 'fei', 'compoundEthPCVDeposit']
   },
   daiPCVDripController: {
     contractDependencies: ['core', 'fei', 'daiPSM', 'compoundDaiPCVDeposit']
@@ -256,20 +251,11 @@ const dependencies: DependencyMap = {
   ethPSMRouter: {
     contractDependencies: ['ethPSM']
   },
-  ethReserveStabilizer: {
-    contractDependencies: [
-      'core',
-      'aaveEthPCVDripController',
-      'compoundEthPCVDripController',
-      'chainlinkEthUsdOracleWrapper',
-      'pcvGuardian'
-    ]
-  },
   tribeReserveStabilizer: {
     contractDependencies: ['core', 'tribeUsdCompositeOracle', 'tribeMinter', 'collateralizationOracleWrapper', 'tribe']
   },
   aaveEthPCVDeposit: {
-    contractDependencies: ['core', 'aaveEthPCVDripController', 'bondingCurve', 'pcvGuardian', 'ethPSM']
+    contractDependencies: ['core', 'aaveEthPCVDripController', 'pcvGuardian', 'ethPSM']
   },
   aaveFeiPCVDeposit: {
     contractDependencies: ['core', 'fei']
@@ -287,7 +273,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'daiPCVDripController', 'daiPSM']
   },
   compoundEthPCVDeposit: {
-    contractDependencies: ['core', 'bondingCurve', 'compoundEthPCVDripController', 'pcvGuardian']
+    contractDependencies: ['core', 'compoundEthPCVDripController', 'pcvGuardian']
   },
   d3poolConvexPCVDeposit: {
     contractDependencies: ['core']
@@ -424,7 +410,6 @@ const dependencies: DependencyMap = {
       'compoundEthPCVDepositWrapper',
       'creamDepositWrapper',
       'ethLidoPCVDepositWrapper',
-      'ethReserveStabilizerWrapper',
       'feiBuybackLens',
       'feiLusdLens',
       'feiOATimelockWrapper',
@@ -469,9 +454,6 @@ const dependencies: DependencyMap = {
     contractDependencies: ['feiDAOTimelock', 'collateralizationOracle']
   },
   ethLidoPCVDepositWrapper: {
-    contractDependencies: ['collateralizationOracle']
-  },
-  ethReserveStabilizerWrapper: {
     contractDependencies: ['collateralizationOracle']
   },
   feiBuybackLens: {
@@ -559,8 +541,7 @@ const dependencies: DependencyMap = {
       'creamUsdCompositeOracle',
       'balUsdCompositeOracle',
       'collateralizationOracle',
-      'bondingCurve',
-      'ethReserveStabilizer',
+
       'uniswapPCVDeposit',
       'balancerDepositBalWeth'
     ]
