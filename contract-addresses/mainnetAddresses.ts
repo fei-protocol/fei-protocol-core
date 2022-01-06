@@ -119,7 +119,7 @@ const MainnetAddresses: MainnetAddresses = {
   ethReserveStabilizer: {
     artifactName: 'EthReserveStabilizer',
     address: '0x17305f0e18318994a57b494078CAC866A857F7b6',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   tribeReserveStabilizer: {
     artifactName: 'TribeReserveStabilizer',
@@ -349,7 +349,7 @@ const MainnetAddresses: MainnetAddresses = {
   ethReserveStabilizerWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xB24570Bc46efDf97b4Aa7f008B4268005Eb7A27E',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
   feiBuybackLensNoFee: {
     artifactName: 'BPTLens',
