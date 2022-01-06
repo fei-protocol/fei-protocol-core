@@ -29,7 +29,6 @@ const collateralizationAddresses = {
     'ethLidoPCVDepositWrapper',
     'compoundEthPCVDepositWrapper',
     'aaveEthPCVDepositWrapper',
-    'bondingCurve',
     'uniswapPCVDeposit',
     'ethTokemakPCVDeposit',
     'ethPSM'
