@@ -453,7 +453,7 @@ describe('e2e-staking', function () {
         totalAllocPoint = await tribalChief.totalAllocPoint();
         expect(stakingTokenWrapper.address).to.be.equal(await tribalChief.stakedToken(3));
         expect((await tribalChief.poolInfo(pid)).allocPoint).to.be.bignumber.equal(toBN(poolAllocPoints));
-        expect(totalAllocPoint).to.be.gte(toBN(3100));
+        expect(totalAllocPoint).to.be.gte(toBN(2000));
       });
 
       it('harvest rewards staking token wrapper', async function () {
