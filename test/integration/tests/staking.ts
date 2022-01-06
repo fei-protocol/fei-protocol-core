@@ -1,4 +1,9 @@
-import { AutoRewardsDistributor, TribalChief, TribalChiefSyncV2 } from '@custom-types/contracts';
+import {
+  AutoRewardsDistributor,
+  TribalChief,
+  TribalChiefSyncExtension,
+  TribalChiefSyncV2
+} from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -45,33 +50,6 @@ describe('e2e-staking', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
-  });
-
-  describe('TribalChiefSyncV2', async () => {
-    it('auto-sync works correctly', async () => {
-      const tribalChiefSync: TribalChiefSyncV2 = contracts.tribalChiefSyncV2 as TribalChiefSyncV2;
-      const tribalChief: TribalChief = contracts.tribalChief as TribalChief;
-
-      if (!(await tribalChiefSync.isRewardDecreaseAvailable())) {
-        await time.increaseTo((await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)));
-      }
-
-      while (await tribalChiefSync.isRewardDecreaseAvailable()) {
-        const nextRewardRate = await tribalChiefSync.nextRewardsRate();
-        doLogging && console.log(`Decreasing to ${nextRewardRate.toString()}`);
-
-        expect(await tribalChief.tribePerBlock()).to.not.be.bignumber.equal(nextRewardRate);
-        await tribalChiefSync.autoDecreaseRewards();
-        expect(await tribalChief.tribePerBlock()).to.be.bignumber.equal(nextRewardRate);
-
-        if (nextRewardRate.toString() !== '6060000000000000000') {
-          await time.increaseTo((await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)));
-        }
-      }
-      doLogging && console.log(`Done and checking latest`);
-
-      expect(await time.latest()).to.be.greaterThan(1677628800);
-    });
   });
 
   describe('TribalChief', async () => {
@@ -577,6 +555,48 @@ describe('e2e-staking', function () {
         const endingTribeBalance = await tribe.balanceOf(erc20Dripper);
         expect(endingTribeBalance).to.be.equal(startingTribeBalance);
       });
+    });
+  });
+
+  describe('TribalChiefSyncV2', async () => {
+    it('auto-sync works correctly', async () => {
+      const tribalChiefSync: TribalChiefSyncV2 = contracts.tribalChiefSyncV2 as TribalChiefSyncV2;
+      const tribalChiefSyncExtension: TribalChiefSyncExtension =
+        contracts.tribalChiefSyncExtension as TribalChiefSyncExtension;
+
+      const tribalChief: TribalChief = contracts.tribalChief as TribalChief;
+
+      const { d3AutoRewardsDistributor, fei3CrvAutoRewardsDistributor, rariRewardsDistributorDelegator } = contracts;
+      const distributors = [d3AutoRewardsDistributor.address, fei3CrvAutoRewardsDistributor.address];
+
+      if (!(await tribalChiefSync.isRewardDecreaseAvailable())) {
+        await time.increaseTo((await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)));
+      }
+
+      while (await tribalChiefSync.isRewardDecreaseAvailable()) {
+        const nextRewardRate = await tribalChiefSync.nextRewardsRate();
+        doLogging && console.log(`Decreasing to ${nextRewardRate.toString()}`);
+
+        expect(await tribalChief.tribePerBlock()).to.not.be.bignumber.equal(nextRewardRate);
+        await tribalChiefSyncExtension.autoDecreaseRewards(distributors);
+        expect(await tribalChief.tribePerBlock()).to.be.bignumber.equal(nextRewardRate);
+
+        [d3AutoRewardsDistributor, fei3CrvAutoRewardsDistributor].forEach(async (distributor) => {
+          const rewardSpeed = await distributor.getNewRewardSpeed();
+          expect(rewardSpeed[1]).to.be.false;
+          doLogging && console.log(`rewardSpeed: ${rewardSpeed[0]}`);
+          expect(rewardSpeed[0]).to.be.equal(
+            await rariRewardsDistributorDelegator.compSupplySpeeds(await distributor.cTokenAddress())
+          );
+        });
+
+        if (nextRewardRate.toString() !== '6060000000000000000') {
+          await time.increaseTo((await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)));
+        }
+      }
+      doLogging && console.log(`Done and checking latest`);
+
+      expect(await time.latest()).to.be.greaterThan(1677628800);
     });
   });
 });
