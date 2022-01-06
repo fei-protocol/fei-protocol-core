@@ -49,13 +49,13 @@ contract EthPegStabilityModule is PegStabilityModule {
     }
 
     /// @notice set secondary pausable methods to paused
-    function pauseRedeem() public onlyGuardianOrGovernor whileRedemptionsNotPaused {
+    function pauseRedeem() public isGovernorOrGuardianOrAdmin whileRedemptionsNotPaused {
         redeemPaused = true;
         emit RedemptionsPaused(msg.sender);
     }
 
     /// @notice set secondary pausable methods to unpaused
-    function unpauseRedeem() public onlyGuardianOrGovernor whileRedemptionsPaused {
+    function unpauseRedeem() public isGovernorOrGuardianOrAdmin whileRedemptionsPaused {
         redeemPaused = false;
         emit RedemptionsUnpaused(msg.sender);
     }
