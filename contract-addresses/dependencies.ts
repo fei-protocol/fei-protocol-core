@@ -23,6 +23,7 @@ const dependencies: DependencyMap = {
       'compoundEthPCVDripController',
       'daiPCVDripController',
       'daiPSM',
+      'ethPSM',
       'ethReserveStabilizer',
       'tribeReserveStabilizer',
       'aaveEthPCVDeposit',
