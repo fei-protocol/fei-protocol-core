@@ -92,7 +92,7 @@ const fip_62: ProposalDescription = {
   3. Grant the Eth PSM the minter role
   4. Pause redemptions on the Eth PSM
 
-  Code: https://github.com/fei-protocol/fei-protocol-core/pull/435
+  Code: https://github.com/fei-protocol/fei-protocol-core/pull/439
 `
 };
 
