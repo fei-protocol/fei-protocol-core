@@ -43,7 +43,7 @@ const ethDripAmount = ethers.utils.parseEther('5000');
 const dripDuration = 7200;
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
-  const { aaveEthPCVDripController, core, chainlinkEthUsdOracleWrapper, weth, fei } = addresses;
+  const { aaveEthPCVDeposit, core, chainlinkEthUsdOracleWrapper, weth, fei } = addresses;
 
   if (!core) {
     throw new Error('An environment variable contract address is not set');
@@ -66,7 +66,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     feiMintLimitPerSecond,
     ethPSMBufferCap,
     weth,
-    aaveEthPCVDripController
+    aaveEthPCVDeposit
   );
 
   // 2. deploy psm router
@@ -93,7 +93,15 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
-  const { aaveEthPCVDripController, ethPSM, ethPSMRouter, aaveEthPCVDeposit, wethERC20 } = contracts;
+  const {
+    aaveEthPCVDripController,
+    ethPSM,
+    ethPSMRouter,
+    aaveEthPCVDeposit,
+    wethERC20,
+    pcvGuardian,
+    ethReserveStabilizer
+  } = contracts;
 
   expect(await aaveEthPCVDripController.source()).to.be.equal(aaveEthPCVDeposit.address);
   expect(await aaveEthPCVDripController.target()).to.be.equal(ethPSM.address);
@@ -101,7 +109,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await aaveEthPCVDripController.incentiveAmount()).to.be.equal(incentiveAmount);
   expect(await aaveEthPCVDripController.duration()).to.be.equal(dripDuration);
 
-  expect(await ethPSM.surplusTarget()).to.be.equal(aaveEthPCVDripController.address);
+  expect(await ethPSM.surplusTarget()).to.be.equal(aaveEthPCVDeposit.address);
   expect(await ethPSM.redeemFeeBasisPoints()).to.be.equal(redeemFeeBasisPoints);
   expect(await ethPSM.mintFeeBasisPoints()).to.be.equal(mintFeeBasisPoints);
   expect(await ethPSM.reservesThreshold()).to.be.equal(reservesThreshold);
@@ -111,5 +119,9 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
 
   expect(await ethPSMRouter.psm()).to.be.equal(ethPSM.address);
 
+  expect(await ethReserveStabilizer.balance()).to.be.equal(0);
+
   expect(await wethERC20.balanceOf(ethPSM.address)).to.be.equal(0);
+
+  expect(await pcvGuardian.isSafeAddress(ethPSM.address)).to.be.true;
 };

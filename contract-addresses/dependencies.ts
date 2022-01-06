@@ -247,7 +247,7 @@ const dependencies: DependencyMap = {
       'core',
       'fei',
       'aaveEthPCVDeposit',
-      'chainlinkFeiEthOracleWrapper',
+      'chainlinkEthUsdOracleWrapper',
       'pcvGuardian',
       'aaveEthPCVDripController',
       'ethPSMRouter'
@@ -552,6 +552,7 @@ const dependencies: DependencyMap = {
   chainlinkEthUsdOracleWrapper: {
     contractDependencies: [
       'core',
+      'ethPSM',
       'compositeOracle',
       'tribeUsdCompositeOracle',
       'chainlinkRaiUsdCompositeOracle',
@@ -568,7 +569,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'collateralizationOracle', 'agEurAngleUniswapPCVDeposit']
   },
   chainlinkFeiEthOracleWrapper: {
-    contractDependencies: ['core', 'ethPSM']
+    contractDependencies: ['core']
   },
   chainlinkLUSDOracleWrapper: {
     contractDependencies: ['core', 'collateralizationOracle', 'feiLusdLBPSwapper']

@@ -48,6 +48,13 @@ const fip_62: ProposalDescription = {
       description: 'Pause Aave Eth PCV Drip Controller'
     },
     {
+      target: 'compoundEthPCVDripController',
+      values: '0',
+      method: 'pause()',
+      arguments: [],
+      description: 'Pause Compound Eth PCV Drip Controller'
+    },
+    {
       target: 'ethPSM',
       values: '0',
       method: 'pauseRedeem()',
@@ -69,6 +76,20 @@ const fip_62: ProposalDescription = {
       arguments: ['{ethPSM}'],
       description: 'Grant Eth PSM minter role'
     },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeBurner(address)',
+      arguments: ['{ethReserveStabilizer}'],
+      description: 'Revoke burner role from eth reserve stabilizer'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokePCVController(address)',
+      arguments: ['{compoundEthPCVDripController}'],
+      description: 'Revoke burner role from eth reserve stabilizer'
+    },
     /// modify settings of existing PCV Drip Controller to point to the eth PSM
     {
       target: 'aaveEthPCVDripController',
@@ -83,6 +104,22 @@ const fip_62: ProposalDescription = {
       method: 'setIncentiveAmount(uint256)',
       arguments: ['0'],
       description: 'Set incentive amount to 0'
+    },
+    /// pcv guardian
+    {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'setSafeAddress(address)',
+      arguments: ['{ethPSM}'],
+      description: 'Set the eth PSM as a safe address'
+    },
+    /// go pull all assets out of decommissioned eth bonding curve and eth reserve stabilizer
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatio(address,address,uint256)',
+      arguments: ['{ethReserveStabilizer}', '{aaveEthPCVDeposit}', '10000'],
+      description: 'Set the eth PSM as a safe address'
     }
   ],
   description: `

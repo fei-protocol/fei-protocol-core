@@ -104,7 +104,7 @@ const MainnetAddresses: MainnetAddresses = {
   compoundEthPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0xa84C8be28f3d560059339f06C6b6c5B23f53C58C',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   daiPCVDripController: {
     artifactName: 'PCVDripController',

@@ -33,7 +33,7 @@ const proposals: ProposalsConfigMap = {
       'ethReserveStabilizer',
       'ethReserveStabilizerWrapper'
     ],
-    deprecatedContractSignoff: [],
+    deprecatedContractSignoff: ['compoundEthPCVDripController'],
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_62
