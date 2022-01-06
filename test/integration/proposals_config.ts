@@ -3,7 +3,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 import fip_62 from '@proposals/description/fip_62';
 
-import fip_60_proposal from '@proposals/description/fip_60';
+import fip_62_proposal from '@proposals/description/fip_62';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -16,7 +16,7 @@ const proposals: ProposalsConfigMap = {
     */
   fip_60: {
     deploy: false,
-    proposalId: undefined,
+    proposalId: '22694F289BABFB99A255EB1BC40608360D8BC81FAD6176DEA39CA27F760F0DA4',
     affectedContractSignoff: [
       'rariPool8Comptroller',
       'rariPool8MasterOracle',
@@ -31,7 +31,7 @@ const proposals: ProposalsConfigMap = {
     deprecatedContractSignoff: [],
     category: ProposalCategory.OA,
     totalValue: 0,
-    proposal: fip_60_proposal
+    proposal: undefined
   },
   fip_62: {
     deploy: true,
@@ -53,7 +53,7 @@ const proposals: ProposalsConfigMap = {
     ],
     category: ProposalCategory.DAO,
     totalValue: 0,
-    proposal: fip_62
+    proposal: fip_62_proposal
   }
 };
 
