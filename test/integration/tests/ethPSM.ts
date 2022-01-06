@@ -19,7 +19,7 @@ before(async () => {
   await resetFork();
 });
 
-describe.only('eth PSM', function () {
+describe('eth PSM', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: SignerWithAddress;
