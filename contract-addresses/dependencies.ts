@@ -104,6 +104,7 @@ const dependencies: DependencyMap = {
       'bondingCurve',
       'compoundEthPCVDripController',
       'daiPSM',
+      'ethPSM',
       'daiPCVDripController',
       'aaveFeiPCVDeposit',
       'agEurAngleUniswapPCVDeposit',
@@ -145,6 +146,7 @@ const dependencies: DependencyMap = {
       'guardian',
       'feiDAOTimelock',
       'daiPSM',
+      'ethPSM',
       'compoundEthPCVDeposit',
       'aaveEthPCVDeposit',
       'ethReserveStabilizer'
@@ -219,7 +221,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['rariTimelock', 'tribe']
   },
   aaveEthPCVDripController: {
-    contractDependencies: ['core', 'fei', 'aaveEthPCVDeposit', 'ethReserveStabilizer']
+    contractDependencies: ['core', 'fei', 'aaveEthPCVDeposit', 'ethReserveStabilizer', 'ethPSM']
   },
   bondingCurve: {
     contractDependencies: ['core', 'fei', 'aaveEthPCVDeposit', 'compoundEthPCVDeposit', 'chainlinkEthUsdOracleWrapper']
@@ -245,9 +247,10 @@ const dependencies: DependencyMap = {
       'core',
       'fei',
       'aaveEthPCVDeposit',
-      'ethPSMAavePCVDripController',
       'chainlinkFeiEthOracleWrapper',
-      'pcvGuardian'
+      'pcvGuardian',
+      'aaveEthPCVDripController',
+      'ethPSMRouter'
     ]
   },
   ethPSMRouter: {
@@ -266,7 +269,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'tribeUsdCompositeOracle', 'tribeMinter', 'collateralizationOracleWrapper', 'tribe']
   },
   aaveEthPCVDeposit: {
-    contractDependencies: ['core', 'aaveEthPCVDripController', 'bondingCurve', 'pcvGuardian']
+    contractDependencies: ['core', 'aaveEthPCVDripController', 'bondingCurve', 'pcvGuardian', 'ethPSM']
   },
   aaveFeiPCVDeposit: {
     contractDependencies: ['core', 'fei']
@@ -565,7 +568,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'collateralizationOracle', 'agEurAngleUniswapPCVDeposit']
   },
   chainlinkFeiEthOracleWrapper: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'ethPSM']
   },
   chainlinkLUSDOracleWrapper: {
     contractDependencies: ['core', 'collateralizationOracle', 'feiLusdLBPSwapper']
