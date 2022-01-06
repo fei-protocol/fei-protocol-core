@@ -193,7 +193,8 @@ describe('e2e-staking', function () {
       }
     }
 
-    describe('FeiTribe LP Token Staking', async () => {
+    /// skip this test as FEI/TRIBE LM rewards have been disabled
+    describe.skip('FeiTribe LP Token Staking', async () => {
       const feiTribeLPTokenOwner = '0x7D809969f6A04777F0A87FF94B57E56078E5fE0F';
       const feiTribeLPTokenOwnerNumberFour = '0xEc0AB4ED27f6dEF15165Fede40EebdcB955B710D';
       const feiTribeLPTokenOwnerNumberFive = '0x2464E8F7809c05FCd77C54292c69187Cb66FE294';
