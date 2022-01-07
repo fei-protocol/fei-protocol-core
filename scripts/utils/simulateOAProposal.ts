@@ -41,15 +41,24 @@ export default async function simulateOAProposal(
 
   logging && console.log(`Scheduling proposal ${proposalInfo.title}`);
 
-  const schedule = await timelock.connect(signer).scheduleBatch(targets, values, datas, predecessor, salt, delay);
+  const proposalId = await timelock.hashOperationBatch(targets, values, datas, predecessor, salt);
 
-  console.log('Calldata:', schedule.data);
+  console.log('proposalId: ', proposalId);
+  if (proposalId && !timelock.isOperation(proposalId)) {
+    const schedule = await timelock.connect(signer).scheduleBatch(targets, values, datas, predecessor, salt, delay);
+    console.log('Calldata:', schedule.data);
+  } else {
+    console.log('Already scheduled proposal');
+  }
 
   await time.increase(delay);
 
-  logging && console.log(`Executing proposal ${proposalInfo.title}`);
-
-  await timelock.connect(signer).executeBatch(targets, values, datas, predecessor, salt);
+  if ((await timelock.isOperationReady(proposalId)) && !(await timelock.isOperationDone(proposalId))) {
+    logging && console.log(`Executing proposal ${proposalInfo.title}`);
+    await timelock.connect(signer).executeBatch(targets, values, datas, predecessor, salt);
+  } else {
+    console.log('Operation not ready for execution');
+  }
 }
 
 // Recursively interpolate strings in the argument array

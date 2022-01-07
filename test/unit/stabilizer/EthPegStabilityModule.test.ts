@@ -9,18 +9,18 @@ import {
 } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer, utils } from 'ethers';
-import { Core, MockERC20, Fei, MockOracle, PegStabilityModule, MockPCVDepositV2, WETH9 } from '@custom-types/contracts';
+import { Core, Fei, MockOracle, MockPCVDepositV2, WETH9, EthPegStabilityModule } from '@custom-types/contracts';
 import { keccak256 } from 'ethers/lib/utils';
-import { constants } from 'buffer';
 
 const toBN = ethers.BigNumber.from;
 
-describe('PegStabilityModule', function () {
+describe('EthPegStabilityModule', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
   let pcvControllerAddress;
   let psmAdminAddress;
+  let guardianAddress;
 
   const mintFeeBasisPoints = 30;
   const redeemFeeBasisPoints = 30;
@@ -35,7 +35,7 @@ describe('PegStabilityModule', function () {
   let core: Core;
   let fei: Fei;
   let oracle: MockOracle;
-  let psm: PegStabilityModule;
+  let psm: EthPegStabilityModule;
   let pcvDeposit: MockPCVDepositV2;
   let weth: WETH9;
 
@@ -50,7 +50,8 @@ describe('PegStabilityModule', function () {
       addresses.minterAddress,
       addresses.burnerAddress,
       addresses.beneficiaryAddress1,
-      addresses.beneficiaryAddress2
+      addresses.beneficiaryAddress2,
+      addresses.guardianAddress
     ];
 
     await hre.network.provider.request({
@@ -73,6 +74,7 @@ describe('PegStabilityModule', function () {
     minterAddress = addresses.minterAddress;
     pcvControllerAddress = addresses.pcvControllerAddress;
     psmAdminAddress = addresses.beneficiaryAddress1;
+    guardianAddress = addresses.guardianAddress;
 
     core = await getCore();
     fei = await ethers.getContractAt('Fei', await core.fei());
@@ -81,7 +83,7 @@ describe('PegStabilityModule', function () {
     pcvDeposit = await (await ethers.getContractFactory('MockPCVDepositV2')).deploy(core.address, weth.address, 0, 0);
 
     psm = await (
-      await ethers.getContractFactory('PegStabilityModule')
+      await ethers.getContractFactory('EthPegStabilityModule')
     ).deploy(
       {
         coreAddress: core.address,
@@ -389,17 +391,81 @@ describe('PegStabilityModule', function () {
         await weth.connect(impersonatedSigners[userAddress]).transfer(psm.address, wethAmount);
       });
 
-      it('redeem fails when contract is paused', async () => {
-        await psm.connect(impersonatedSigners[governorAddress]).pause();
-        expect(await psm.paused()).to.be.true;
+      it('redeem fails when redeem pause is active', async () => {
+        await psm.connect(impersonatedSigners[governorAddress]).pauseRedeem();
+        expect(await psm.redeemPaused()).to.be.true;
 
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 10000, 0),
-          'Pausable: paused'
+          'EthPSM: Redeem paused'
         );
       });
 
       it('exchanges 10,000,000 FEI for 97.5 Eth as fee is 250 bips and exchange rate is 1:10000', async () => {
+        await oracle.setExchangeRate(10_000);
+        const tenM = toBN(10_000_000);
+        const newRedeemFee = 250;
+        await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(newRedeemFee);
+
+        const userStartingFeiBalance = await fei.balanceOf(userAddress);
+        const psmStartingWETHBalance = await weth.balanceOf(psm.address);
+        const userStartingWETHBalance = await weth.balanceOf(userAddress);
+        const expectedAssetAmount = 975;
+
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, tenM);
+        await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, tenM);
+
+        const redeemAmountOut = await psm.getRedeemAmountOut(tenM);
+        expect(redeemAmountOut).to.be.equal(expectedAssetAmount);
+
+        await psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, tenM, expectedAssetAmount);
+
+        const userEndingWETHBalance = await weth.balanceOf(userAddress);
+        const userEndingFeiBalance = await fei.balanceOf(userAddress);
+        const psmEndingWETHBalance = await weth.balanceOf(psm.address);
+
+        expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(0);
+        expect(psmStartingWETHBalance.sub(psmEndingWETHBalance)).to.be.equal(expectedAssetAmount);
+        expect(userEndingWETHBalance.sub(userStartingWETHBalance)).to.be.equal(expectedAssetAmount);
+      });
+
+      it('redeem succeeds after contract is paused then unpaused', async () => {
+        await oracle.setExchangeRate(10_000);
+        const tenM = toBN(10_000_000);
+        const newRedeemFee = 250;
+        await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(newRedeemFee);
+
+        await psm.connect(impersonatedSigners[governorAddress]).pauseRedeem();
+        expect(await psm.redeemPaused()).to.be.true;
+        await psm.connect(impersonatedSigners[governorAddress]).unpauseRedeem();
+        expect(await psm.redeemPaused()).to.be.false;
+
+        const userStartingFeiBalance = await fei.balanceOf(userAddress);
+        const psmStartingWETHBalance = await weth.balanceOf(psm.address);
+        const userStartingWETHBalance = await weth.balanceOf(userAddress);
+        const expectedAssetAmount = 975;
+
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, tenM);
+        await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, tenM);
+
+        const redeemAmountOut = await psm.getRedeemAmountOut(tenM);
+        expect(redeemAmountOut).to.be.equal(expectedAssetAmount);
+
+        await psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, tenM, expectedAssetAmount);
+
+        const userEndingWETHBalance = await weth.balanceOf(userAddress);
+        const userEndingFeiBalance = await fei.balanceOf(userAddress);
+        const psmEndingWETHBalance = await weth.balanceOf(psm.address);
+
+        expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(0);
+        expect(psmStartingWETHBalance.sub(psmEndingWETHBalance)).to.be.equal(expectedAssetAmount);
+        expect(userEndingWETHBalance.sub(userStartingWETHBalance)).to.be.equal(expectedAssetAmount);
+      });
+
+      it('redeem succeeds when regular pause is active', async () => {
+        await psm.connect(impersonatedSigners[governorAddress]).pause();
+        expect(await psm.paused()).to.be.true;
+
         await oracle.setExchangeRate(10_000);
         const tenM = toBN(10_000_000);
         const newRedeemFee = 250;
@@ -622,39 +688,135 @@ describe('PegStabilityModule', function () {
       });
     });
 
-    describe('deposit', function () {
-      it('sends surplus to PCVDeposit target when called', async () => {
-        const startingSurplusBalance = await weth.balanceOf(pcvDeposit.address);
+    describe('PCV', function () {
+      describe('allocateSurplus', function () {
+        it('sends surplus to PCVDeposit target when called', async () => {
+          const startingSurplusBalance = await weth.balanceOf(pcvDeposit.address);
+          await weth.connect(impersonatedSigners[userAddress]).deposit({ value: reservesThreshold.mul(2) });
+          await weth.connect(impersonatedSigners[userAddress]).transfer(psm.address, reservesThreshold.mul(2));
 
-        await weth.connect(impersonatedSigners[userAddress]).deposit({ value: reservesThreshold.mul(2) });
-        await weth.connect(impersonatedSigners[userAddress]).transfer(psm.address, reservesThreshold.mul(2));
+          expect(await psm.hasSurplus()).to.be.true;
+          expect(await psm.reservesSurplus()).to.be.equal(reservesThreshold);
 
-        expect(await psm.hasSurplus()).to.be.true;
-        expect(await psm.reservesSurplus()).to.be.equal(reservesThreshold);
+          await psm.allocateSurplus();
 
-        await psm.deposit();
+          expect(await psm.reservesSurplus()).to.be.equal(0);
+          expect(await psm.hasSurplus()).to.be.false;
 
-        expect(await psm.reservesSurplus()).to.be.equal(0);
-        expect(await psm.hasSurplus()).to.be.false;
+          const endingSurplusBalance = await weth.balanceOf(pcvDeposit.address);
+          const endingPSMBalance = await weth.balanceOf(psm.address);
 
-        const endingSurplusBalance = await weth.balanceOf(pcvDeposit.address);
-        const endingPSMBalance = await weth.balanceOf(psm.address);
+          expect(endingSurplusBalance.sub(startingSurplusBalance)).to.be.equal(reservesThreshold);
+          expect(endingPSMBalance).to.be.equal(reservesThreshold);
+        });
 
-        expect(endingSurplusBalance.sub(startingSurplusBalance)).to.be.equal(reservesThreshold);
-        expect(endingPSMBalance).to.be.equal(reservesThreshold);
+        it('reverts when there is no surplus to allocate', async () => {
+          await weth.connect(impersonatedSigners[userAddress]).deposit({ value: reservesThreshold });
+          await weth.connect(impersonatedSigners[userAddress]).transfer(psm.address, reservesThreshold);
+
+          expect(await psm.hasSurplus()).to.be.false;
+          expect(await psm.reservesSurplus()).to.be.equal(0);
+
+          await expectRevert(psm.allocateSurplus(), 'PegStabilityModule: No surplus to allocate');
+        });
       });
 
-      it('succeeds when called and sends no value when reserves are met', async () => {
-        await weth.connect(impersonatedSigners[userAddress]).deposit({ value: reservesThreshold });
-        await weth.connect(impersonatedSigners[userAddress]).transfer(psm.address, reservesThreshold);
+      describe('deposit', function () {
+        it('sends surplus to PCVDeposit target when called', async () => {
+          const startingSurplusBalance = await weth.balanceOf(pcvDeposit.address);
 
-        expect(await psm.hasSurplus()).to.be.false;
-        expect(await psm.reservesSurplus()).to.be.equal(0);
+          await weth.connect(impersonatedSigners[userAddress]).deposit({ value: reservesThreshold.mul(2) });
+          await weth.connect(impersonatedSigners[userAddress]).transfer(psm.address, reservesThreshold.mul(2));
 
-        await psm.deposit();
+          expect(await psm.hasSurplus()).to.be.true;
+          expect(await psm.reservesSurplus()).to.be.equal(reservesThreshold);
 
-        expect(await psm.hasSurplus()).to.be.false;
-        expect(await psm.reservesSurplus()).to.be.equal(0);
+          await psm.deposit();
+
+          expect(await psm.reservesSurplus()).to.be.equal(0);
+          expect(await psm.hasSurplus()).to.be.false;
+
+          const endingSurplusBalance = await weth.balanceOf(pcvDeposit.address);
+          const endingPSMBalance = await weth.balanceOf(psm.address);
+
+          expect(endingSurplusBalance.sub(startingSurplusBalance)).to.be.equal(reservesThreshold);
+          expect(endingPSMBalance).to.be.equal(reservesThreshold);
+        });
+
+        it('succeeds when called and sends no value when reserves are met', async () => {
+          await weth.connect(impersonatedSigners[userAddress]).deposit({ value: reservesThreshold });
+          await weth.connect(impersonatedSigners[userAddress]).transfer(psm.address, reservesThreshold);
+
+          expect(await psm.hasSurplus()).to.be.false;
+          expect(await psm.reservesSurplus()).to.be.equal(0);
+
+          await psm.deposit();
+
+          expect(await psm.hasSurplus()).to.be.false;
+          expect(await psm.reservesSurplus()).to.be.equal(0);
+        });
+      });
+
+      describe('Redemptions Pausing', function () {
+        describe('pause', function () {
+          it('can pause as the guardian', async () => {
+            await psm.connect(impersonatedSigners[guardianAddress]).pauseRedeem();
+            expect(await psm.redeemPaused()).to.be.true;
+            await expectRevert(psm.redeem(userAddress, 0, 0), 'EthPSM: Redeem paused');
+          });
+
+          it('can pause and unpause as the guardian', async () => {
+            await psm.connect(impersonatedSigners[guardianAddress]).pauseRedeem();
+            expect(await psm.redeemPaused()).to.be.true;
+            await expectRevert(psm.redeem(userAddress, 0, 0), 'EthPSM: Redeem paused');
+
+            await psm.connect(impersonatedSigners[guardianAddress]).unpauseRedeem();
+            expect(await psm.redeemPaused()).to.be.false;
+          });
+
+          it('cannot pause while paused', async () => {
+            await psm.connect(impersonatedSigners[guardianAddress]).pauseRedeem();
+            expect(await psm.redeemPaused()).to.be.true;
+            await expectRevert(
+              psm.connect(impersonatedSigners[guardianAddress]).pauseRedeem(),
+              'EthPSM: Redeem paused'
+            );
+          });
+
+          it('cannot unpause while unpaused', async () => {
+            expect(await psm.redeemPaused()).to.be.false;
+            await expectRevert(
+              psm.connect(impersonatedSigners[guardianAddress]).unpauseRedeem(),
+              'EthPSM: Redeem not paused'
+            );
+          });
+
+          it('can pause redemptions as the governor', async () => {
+            await psm.connect(impersonatedSigners[governorAddress]).pauseRedeem();
+            expect(await psm.redeemPaused()).to.be.true;
+            await expectRevert(psm.redeem(userAddress, 0, 0), 'EthPSM: Redeem paused');
+          });
+
+          it('can pause redemptions as the PSM_ADMIN', async () => {
+            await psm.connect(impersonatedSigners[psmAdminAddress]).pauseRedeem();
+            expect(await psm.redeemPaused()).to.be.true;
+            await expectRevert(psm.redeem(userAddress, 0, 0), 'EthPSM: Redeem paused');
+          });
+
+          it('can not pause as non governor', async () => {
+            await expectRevert(
+              psm.connect(impersonatedSigners[userAddress]).pauseRedeem(),
+              'CoreRef: Caller is not governor or guardian or admin'
+            );
+          });
+
+          it('can not unpause as non governor', async () => {
+            await expectRevert(
+              psm.connect(impersonatedSigners[userAddress]).pauseRedeem(),
+              'CoreRef: Caller is not governor or guardian or admin'
+            );
+          });
+        });
       });
     });
   });

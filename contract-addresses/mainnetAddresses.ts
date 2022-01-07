@@ -99,12 +99,12 @@ const MainnetAddresses: MainnetAddresses = {
   bondingCurve: {
     artifactName: 'EthBondingCurve',
     address: '0xB783c0E21763bEf9F2d04E6499abFbe23AdB7e1F',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   compoundEthPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0xa84C8be28f3d560059339f06C6b6c5B23f53C58C',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   daiPCVDripController: {
     artifactName: 'PCVDripController',
@@ -119,7 +119,7 @@ const MainnetAddresses: MainnetAddresses = {
   ethReserveStabilizer: {
     artifactName: 'EthReserveStabilizer',
     address: '0x17305f0e18318994a57b494078CAC866A857F7b6',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   tribeReserveStabilizer: {
     artifactName: 'TribeReserveStabilizer',
@@ -349,7 +349,7 @@ const MainnetAddresses: MainnetAddresses = {
   ethReserveStabilizerWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xB24570Bc46efDf97b4Aa7f008B4268005Eb7A27E',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
   feiBuybackLensNoFee: {
     artifactName: 'BPTLens',
