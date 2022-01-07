@@ -85,7 +85,11 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 };
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  logging && console.log('Nothing to setup');
+  const { bondingCurve } = contracts;
+
+  /// give the bonding curve a balance so that the ratioPCVControllerV2 doesn't revert in the dao script
+  await hre.network.provider.send('hardhat_setBalance', [bondingCurve.address, '0x21E19E0C9BAB2400000']);
+  logging && console.log('Sent eth to bonding curve so ratioPCVController withdraw');
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
@@ -100,7 +104,8 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
     aaveEthPCVDeposit,
     wethERC20,
     pcvGuardian,
-    ethReserveStabilizer
+    ethReserveStabilizer,
+    bondingCurve
   } = contracts;
 
   expect(await aaveEthPCVDripController.source()).to.be.equal(aaveEthPCVDeposit.address);
@@ -124,4 +129,6 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await wethERC20.balanceOf(ethPSM.address)).to.be.equal(0);
 
   expect(await pcvGuardian.isSafeAddress(ethPSM.address)).to.be.true;
+
+  expect(await bondingCurve.balance()).to.be.equal(0);
 };

@@ -25,6 +25,21 @@ const fip_62: ProposalDescription = {
       arguments: ['{ethPSM}'],
       description: 'Add Eth PSM to cr oracle'
     },
+    /// pull all assets out of decommissioned eth reserve stabilizer and eth bonding curve
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatio(address,address,uint256)',
+      arguments: ['{ethReserveStabilizer}', '{aaveEthPCVDeposit}', '10000'],
+      description: 'Pull assets out of the Eth Reserve Stabilizer and send to aaveEthPCVDeposit'
+    },
+    {
+      target: 'bondingCurve',
+      values: '0',
+      method: 'allocate()',
+      arguments: [],
+      description: 'Pull assets out of the Eth Bonding Curve and send to aaveEthPCVDeposit'
+    },
     /// Pause existing solutions
     {
       target: 'ethReserveStabilizer',
@@ -112,14 +127,6 @@ const fip_62: ProposalDescription = {
       method: 'setSafeAddress(address)',
       arguments: ['{ethPSM}'],
       description: 'Set the eth PSM as a safe address'
-    },
-    /// pull all assets out of decommissioned eth reserve stabilizer
-    {
-      target: 'ratioPCVControllerV2',
-      values: '0',
-      method: 'withdrawRatio(address,address,uint256)',
-      arguments: ['{ethReserveStabilizer}', '{aaveEthPCVDeposit}', '10000'],
-      description: 'Pull assets out of the Eth Reserve Stabilizer and send to aaveEthPCVDeposit'
     }
   ],
   description: `
