@@ -34,7 +34,7 @@ const proposals: ProposalsConfigMap = {
     proposal: fip_60
   },
   fip_62: {
-    deploy: true,
+    deploy: false,
     proposalId: undefined,
     affectedContractSignoff: [
       'ethPSM',
