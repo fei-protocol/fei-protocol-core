@@ -127,6 +127,13 @@ const fip_62: ProposalDescription = {
       method: 'setSafeAddress(address)',
       arguments: ['{ethPSM}'],
       description: 'Set the eth PSM as a safe address'
+    },
+    {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'unsetSafeAddress(address)',
+      arguments: ['{ethReserveStabilizer}'],
+      description: 'Remove the Eth Reserve Stabilizer as a safe address'
     }
   ],
   description: `

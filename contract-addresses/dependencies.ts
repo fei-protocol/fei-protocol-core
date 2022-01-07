@@ -19,7 +19,6 @@ const dependencies: DependencyMap = {
       'guardian',
       'optimisticTimelock',
       'aaveEthPCVDripController',
-      'compoundEthPCVDripController',
       'daiPCVDripController',
       'daiPSM',
       'ethPSM',
@@ -99,8 +98,6 @@ const dependencies: DependencyMap = {
       'feiDAOTimelock',
       'collateralizationOracleKeeper',
       'aaveEthPCVDripController',
-
-      'compoundEthPCVDripController',
       'daiPSM',
       'ethPSM',
       'daiPCVDripController',
@@ -221,9 +218,6 @@ const dependencies: DependencyMap = {
   aaveEthPCVDripController: {
     contractDependencies: ['core', 'fei', 'aaveEthPCVDeposit', 'ethPSM']
   },
-  compoundEthPCVDripController: {
-    contractDependencies: ['core', 'fei', 'compoundEthPCVDeposit']
-  },
   daiPCVDripController: {
     contractDependencies: ['core', 'fei', 'daiPSM', 'compoundDaiPCVDeposit']
   },
@@ -273,7 +267,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'daiPCVDripController', 'daiPSM']
   },
   compoundEthPCVDeposit: {
-    contractDependencies: ['core', 'compoundEthPCVDripController', 'pcvGuardian']
+    contractDependencies: ['core', 'pcvGuardian']
   },
   d3poolConvexPCVDeposit: {
     contractDependencies: ['core']
