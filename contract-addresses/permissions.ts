@@ -10,13 +10,12 @@ export const permissions = {
     'daiPSM',
     'ethPSM'
   ],
-  BURNER_ROLE: ['ethReserveStabilizer'],
+  BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'timelock', 'feiDAOTimelock'],
   PCV_CONTROLLER_ROLE: [
     'feiDAOTimelock',
     'ratioPCVControllerV2',
     'aaveEthPCVDripController',
-    'compoundEthPCVDripController',
     'pcvGuardian',
     'daiPCVDripController'
   ],
