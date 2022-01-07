@@ -53,7 +53,7 @@ export default async function simulateOAProposal(
 
   await time.increase(delay);
 
-  if (await timelock.isOperationReady(proposalId)) {
+  if ((await timelock.isOperationReady(proposalId)) && !(await timelock.isOperationDone(proposalId))) {
     logging && console.log(`Executing proposal ${proposalInfo.title}`);
     await timelock.connect(signer).executeBatch(targets, values, datas, predecessor, salt);
   } else {

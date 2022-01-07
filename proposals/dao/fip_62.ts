@@ -1,4 +1,4 @@
-import { ethers } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { DeployUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '@custom-types/types';
@@ -85,7 +85,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 };
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  logging && console.log('No setup');
+  logging && console.log('Nothing to setup');
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {

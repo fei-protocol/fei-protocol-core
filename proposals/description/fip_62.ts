@@ -113,13 +113,13 @@ const fip_62: ProposalDescription = {
       arguments: ['{ethPSM}'],
       description: 'Set the eth PSM as a safe address'
     },
-    /// go pull all assets out of decommissioned eth bonding curve and eth reserve stabilizer
+    /// pull all assets out of decommissioned eth reserve stabilizer
     {
       target: 'ratioPCVControllerV2',
       values: '0',
       method: 'withdrawRatio(address,address,uint256)',
       arguments: ['{ethReserveStabilizer}', '{aaveEthPCVDeposit}', '10000'],
-      description: 'Set the eth PSM as a safe address'
+      description: 'Pull assets out of the Eth Reserve Stabilizer and send to aaveEthPCVDeposit'
     }
   ],
   description: `
@@ -128,6 +128,10 @@ const fip_62: ProposalDescription = {
   2. Deprecate Eth bonding curve + Eth Reserve Stabilizer by removing Minter role and pausing the contracts
   3. Grant the Eth PSM the minter role
   4. Pause redemptions on the Eth PSM
+  5. Revoke burner role from the Eth Reserve Stabilizer
+  6. Revoke PCV Controller from the compoundEthPCVDripController and pause
+  7. Set Eth PSM as a safe address for the PCV guardian
+  8. Withdraw assets out of Eth Reserve Stabilizer and deposit them into the Aave Eth PCV Deposit
 
   Code: https://github.com/fei-protocol/fei-protocol-core/pull/439
 `
