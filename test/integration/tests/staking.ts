@@ -1,4 +1,9 @@
-import { AutoRewardsDistributor, TribalChief, TribalChiefSyncV2 } from '@custom-types/contracts';
+import {
+  AutoRewardsDistributor,
+  TribalChief,
+  TribalChiefSyncExtension,
+  TribalChiefSyncV2
+} from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -45,33 +50,6 @@ describe('e2e-staking', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
-  });
-
-  describe('TribalChiefSyncV2', async () => {
-    it('auto-sync works correctly', async () => {
-      const tribalChiefSync: TribalChiefSyncV2 = contracts.tribalChiefSyncV2 as TribalChiefSyncV2;
-      const tribalChief: TribalChief = contracts.tribalChief as TribalChief;
-
-      if (!(await tribalChiefSync.isRewardDecreaseAvailable())) {
-        await time.increaseTo((await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)));
-      }
-
-      while (await tribalChiefSync.isRewardDecreaseAvailable()) {
-        const nextRewardRate = await tribalChiefSync.nextRewardsRate();
-        doLogging && console.log(`Decreasing to ${nextRewardRate.toString()}`);
-
-        expect(await tribalChief.tribePerBlock()).to.not.be.bignumber.equal(nextRewardRate);
-        await tribalChiefSync.autoDecreaseRewards();
-        expect(await tribalChief.tribePerBlock()).to.be.bignumber.equal(nextRewardRate);
-
-        if (nextRewardRate.toString() !== '6060000000000000000') {
-          await time.increaseTo((await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)));
-        }
-      }
-      doLogging && console.log(`Done and checking latest`);
-
-      expect(await time.latest()).to.be.greaterThan(1677628800);
-    });
   });
 
   describe('TribalChief', async () => {
@@ -193,7 +171,8 @@ describe('e2e-staking', function () {
       }
     }
 
-    describe('FeiTribe LP Token Staking', async () => {
+    /// skip this test as FEI/TRIBE LM rewards have been disabled
+    describe.skip('FeiTribe LP Token Staking', async () => {
       const feiTribeLPTokenOwner = '0x7D809969f6A04777F0A87FF94B57E56078E5fE0F';
       const feiTribeLPTokenOwnerNumberFour = '0xEc0AB4ED27f6dEF15165Fede40EebdcB955B710D';
       const feiTribeLPTokenOwnerNumberFive = '0x2464E8F7809c05FCd77C54292c69187Cb66FE294';
@@ -453,7 +432,7 @@ describe('e2e-staking', function () {
         totalAllocPoint = await tribalChief.totalAllocPoint();
         expect(stakingTokenWrapper.address).to.be.equal(await tribalChief.stakedToken(3));
         expect((await tribalChief.poolInfo(pid)).allocPoint).to.be.bignumber.equal(toBN(poolAllocPoints));
-        expect(totalAllocPoint).to.be.gte(toBN(3100));
+        expect(totalAllocPoint).to.be.gte(toBN(2000));
       });
 
       it('harvest rewards staking token wrapper', async function () {
@@ -576,6 +555,48 @@ describe('e2e-staking', function () {
         const endingTribeBalance = await tribe.balanceOf(erc20Dripper);
         expect(endingTribeBalance).to.be.equal(startingTribeBalance);
       });
+    });
+  });
+
+  describe('TribalChiefSyncV2', async () => {
+    it('auto-sync works correctly', async () => {
+      const tribalChiefSync: TribalChiefSyncV2 = contracts.tribalChiefSyncV2 as TribalChiefSyncV2;
+      const tribalChiefSyncExtension: TribalChiefSyncExtension =
+        contracts.tribalChiefSyncExtension as TribalChiefSyncExtension;
+
+      const tribalChief: TribalChief = contracts.tribalChief as TribalChief;
+
+      const { d3AutoRewardsDistributor, fei3CrvAutoRewardsDistributor, rariRewardsDistributorDelegator } = contracts;
+      const distributors = [d3AutoRewardsDistributor.address, fei3CrvAutoRewardsDistributor.address];
+
+      if (!(await tribalChiefSync.isRewardDecreaseAvailable())) {
+        await time.increaseTo((await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)));
+      }
+
+      while (await tribalChiefSync.isRewardDecreaseAvailable()) {
+        const nextRewardRate = await tribalChiefSync.nextRewardsRate();
+        doLogging && console.log(`Decreasing to ${nextRewardRate.toString()}`);
+
+        expect(await tribalChief.tribePerBlock()).to.not.be.bignumber.equal(nextRewardRate);
+        await tribalChiefSyncExtension.autoDecreaseRewards(distributors);
+        expect(await tribalChief.tribePerBlock()).to.be.bignumber.equal(nextRewardRate);
+
+        [d3AutoRewardsDistributor, fei3CrvAutoRewardsDistributor].forEach(async (distributor) => {
+          const rewardSpeed = await distributor.getNewRewardSpeed();
+          expect(rewardSpeed[1]).to.be.false;
+          doLogging && console.log(`rewardSpeed: ${rewardSpeed[0]}`);
+          expect(rewardSpeed[0]).to.be.equal(
+            await rariRewardsDistributorDelegator.compSupplySpeeds(await distributor.cTokenAddress())
+          );
+        });
+
+        if (nextRewardRate.toString() !== '6060000000000000000') {
+          await time.increaseTo((await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)));
+        }
+      }
+      doLogging && console.log(`Done and checking latest`);
+
+      expect(await time.latest()).to.be.greaterThan(1677628800);
     });
   });
 });

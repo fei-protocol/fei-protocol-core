@@ -19,11 +19,9 @@ const dependencies: DependencyMap = {
       'guardian',
       'optimisticTimelock',
       'aaveEthPCVDripController',
-      'bondingCurve',
-      'compoundEthPCVDripController',
       'daiPCVDripController',
       'daiPSM',
-      'ethReserveStabilizer',
+      'ethPSM',
       'tribeReserveStabilizer',
       'aaveEthPCVDeposit',
       'aaveFeiPCVDeposit',
@@ -100,9 +98,8 @@ const dependencies: DependencyMap = {
       'feiDAOTimelock',
       'collateralizationOracleKeeper',
       'aaveEthPCVDripController',
-      'bondingCurve',
-      'compoundEthPCVDripController',
       'daiPSM',
+      'ethPSM',
       'daiPCVDripController',
       'aaveFeiPCVDeposit',
       'agEurAngleUniswapPCVDeposit',
@@ -144,9 +141,9 @@ const dependencies: DependencyMap = {
       'guardian',
       'feiDAOTimelock',
       'daiPSM',
+      'ethPSM',
       'compoundEthPCVDeposit',
-      'aaveEthPCVDeposit',
-      'ethReserveStabilizer'
+      'aaveEthPCVDeposit'
     ]
   },
   proxyAdmin: {
@@ -191,7 +188,7 @@ const dependencies: DependencyMap = {
     ]
   },
   guardian: {
-    contractDependencies: ['core', 'collateralizationOracleGuardian', 'pcvGuardian'] // TODO do we want to document everything the guardian can affect. I think this should only reflect guardian-exclusive actions
+    contractDependencies: ['core', 'collateralizationOracleGuardian', 'pcvGuardian', 'fuseGuardian']
   },
   optimisticMultisig: {
     contractDependencies: ['optimisticTimelock']
@@ -208,7 +205,8 @@ const dependencies: DependencyMap = {
       'collateralizationOracle',
       'collateralizationOracleWrapper',
       'namedStaticPCVDepositWrapper',
-      'votiumBriberD3pool'
+      'votiumBriberD3pool',
+      'rariPool8MasterOracle'
     ]
   },
   rariTimelock: {
@@ -218,13 +216,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['rariTimelock', 'tribe']
   },
   aaveEthPCVDripController: {
-    contractDependencies: ['core', 'fei', 'aaveEthPCVDeposit', 'ethReserveStabilizer']
-  },
-  bondingCurve: {
-    contractDependencies: ['core', 'fei', 'aaveEthPCVDeposit', 'compoundEthPCVDeposit', 'chainlinkEthUsdOracleWrapper']
-  },
-  compoundEthPCVDripController: {
-    contractDependencies: ['core', 'fei', 'compoundEthPCVDeposit', 'ethReserveStabilizer']
+    contractDependencies: ['core', 'fei', 'aaveEthPCVDeposit', 'ethPSM']
   },
   daiPCVDripController: {
     contractDependencies: ['core', 'fei', 'daiPSM', 'compoundDaiPCVDeposit']
@@ -239,20 +231,25 @@ const dependencies: DependencyMap = {
       'pcvGuardian'
     ]
   },
-  ethReserveStabilizer: {
+  ethPSM: {
     contractDependencies: [
       'core',
-      'aaveEthPCVDripController',
-      'compoundEthPCVDripController',
+      'fei',
+      'aaveEthPCVDeposit',
       'chainlinkEthUsdOracleWrapper',
-      'pcvGuardian'
+      'pcvGuardian',
+      'aaveEthPCVDripController',
+      'ethPSMRouter'
     ]
+  },
+  ethPSMRouter: {
+    contractDependencies: ['ethPSM']
   },
   tribeReserveStabilizer: {
     contractDependencies: ['core', 'tribeUsdCompositeOracle', 'tribeMinter', 'collateralizationOracleWrapper', 'tribe']
   },
   aaveEthPCVDeposit: {
-    contractDependencies: ['core', 'aaveEthPCVDripController', 'bondingCurve', 'pcvGuardian']
+    contractDependencies: ['core', 'aaveEthPCVDripController', 'pcvGuardian', 'ethPSM']
   },
   aaveFeiPCVDeposit: {
     contractDependencies: ['core', 'fei']
@@ -270,7 +267,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'daiPCVDripController', 'daiPSM']
   },
   compoundEthPCVDeposit: {
-    contractDependencies: ['core', 'bondingCurve', 'compoundEthPCVDripController', 'pcvGuardian']
+    contractDependencies: ['core', 'pcvGuardian']
   },
   d3poolConvexPCVDeposit: {
     contractDependencies: ['core']
@@ -407,7 +404,6 @@ const dependencies: DependencyMap = {
       'compoundEthPCVDepositWrapper',
       'creamDepositWrapper',
       'ethLidoPCVDepositWrapper',
-      'ethReserveStabilizerWrapper',
       'feiBuybackLens',
       'feiLusdLens',
       'feiOATimelockWrapper',
@@ -452,9 +448,6 @@ const dependencies: DependencyMap = {
     contractDependencies: ['feiDAOTimelock', 'collateralizationOracle']
   },
   ethLidoPCVDepositWrapper: {
-    contractDependencies: ['collateralizationOracle']
-  },
-  ethReserveStabilizerWrapper: {
     contractDependencies: ['collateralizationOracle']
   },
   feiBuybackLens: {
@@ -535,14 +528,13 @@ const dependencies: DependencyMap = {
   chainlinkEthUsdOracleWrapper: {
     contractDependencies: [
       'core',
+      'ethPSM',
       'compositeOracle',
       'tribeUsdCompositeOracle',
       'chainlinkRaiUsdCompositeOracle',
       'creamUsdCompositeOracle',
       'balUsdCompositeOracle',
       'collateralizationOracle',
-      'bondingCurve',
-      'ethReserveStabilizer',
       'uniswapPCVDeposit',
       'balancerDepositBalWeth'
     ]
@@ -615,14 +607,30 @@ const dependencies: DependencyMap = {
       'rariPool8Tribe',
       'rariRewardsDistributorDelegate', // impl
       'rewardsDistributorAdmin', //admin
-      'rariPool8Comptroller'
+      'rariPool8Comptroller',
+      'fei3CrvStakingtokenWrapper',
+      'd3StakingTokenWrapper'
     ]
+  },
+  fei3CrvAutoRewardsDistributor: {
+    contractDependencies: ['fei3CrvStakingtokenWrapper', 'tribalChief', 'rewardsDistributorAdmin']
+  },
+  d3AutoRewardsDistributor: {
+    contractDependencies: ['d3StakingTokenWrapper', 'tribalChief', 'rewardsDistributorAdmin']
+  },
+  fei3CrvStakingtokenWrapper: {
+    contractDependencies: ['fei3CrvAutoRewardsDistributor', 'tribalChief', 'rariRewardsDistributorDelegator']
+  },
+  d3StakingTokenWrapper: {
+    contractDependencies: ['d3AutoRewardsDistributor', 'tribalChief', 'rariRewardsDistributorDelegator']
   },
   rewardsDistributorAdmin: {
     contractDependencies: [
       'rariRewardsDistributorDelegator',
       'optimisticTimelock',
-      'autoRewardsDistributor' // rewards dripper role
+      'autoRewardsDistributor', // rewards dripper role
+      'fei3CrvAutoRewardsDistributor',
+      'd3AutoRewardsDistributor'
     ]
   },
   stwBulkHarvest: {
@@ -687,7 +695,11 @@ const dependencies: DependencyMap = {
       'stakingTokenWrapperSYNLaaS',
       'stakingTokenWrapperUMALaaS',
       'tribalChiefImpl',
-      'proxyAdmin'
+      'proxyAdmin',
+      'fei3CrvAutoRewardsDistributor',
+      'd3AutoRewardsDistributor',
+      'fei3CrvStakingtokenWrapper',
+      'd3StakingTokenWrapper'
     ]
   },
   tribalChiefImpl: {
@@ -710,8 +722,19 @@ const dependencies: DependencyMap = {
       'rariPool8Fei',
       'rariPool8Tribe',
       'rariRewardsDistributorDelegator', // registered rewards distributor
-      'optimisticTimelock' // admin
+      'optimisticTimelock', // admin
+      'rariPool8MasterOracle',
+      'fuseGuardian'
     ]
+  },
+  fuseGuardian: {
+    contractDependencies: ['rariPool8Comptroller', 'guardian']
+  },
+  rariPool8MasterOracle: {
+    contractDependencies: ['optimisticTimelock', 'rariPool8Comptroller', 'curveLPTokenOracle']
+  },
+  curveLPTokenOracle: {
+    contractDependencies: ['rariPool8MasterOracle']
   },
   rariPool8Dai: {
     contractDependencies: ['rariPool8Comptroller', 'rariPool8DaiIrm']

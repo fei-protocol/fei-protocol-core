@@ -26,13 +26,12 @@ const collateralizationAddresses = {
   bal: ['balancerDepositBalWeth'],
   cream: ['creamDepositWrapper'],
   weth: [
-    'ethReserveStabilizerWrapper',
     'ethLidoPCVDepositWrapper',
     'compoundEthPCVDepositWrapper',
     'aaveEthPCVDepositWrapper',
-    'bondingCurve',
     'uniswapPCVDeposit',
-    'ethTokemakPCVDeposit'
+    'ethTokemakPCVDeposit',
+    'ethPSM'
   ],
   dpi: ['dpiUniswapPCVDeposit', 'rariPool19DpiPCVDepositWrapper'],
   rai: ['rariPool9RaiPCVDepositWrapper', 'aaveRaiPCVDepositWrapper'],
