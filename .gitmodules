@@ -1,0 +1,3 @@
+[submodule "contracts/external/solmate"]
+	path = contracts/external/solmate
+	url = git@github.com:Rari-Capital/solmate.git
