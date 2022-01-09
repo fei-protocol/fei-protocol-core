@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "./FuseGuardian.sol";
+import "./IMasterOracle.sol";
 
 contract FuseAdmin is FuseGuardian {
 
@@ -13,6 +14,14 @@ contract FuseAdmin is FuseGuardian {
         address _core,
         Unitroller _comptroller
     ) FuseGuardian(_core, _comptroller) {}
+
+    function oracleAdd(address[] calldata underlyings, address[] calldata _oracles) external onlyGovernorOrAdmin {
+        IMasterOracle(comptroller.oracle()).add(underlyings, _oracles);
+    }
+
+    function oracleChangeAdmin(address newAdmin) external onlyGovernor {
+        IMasterOracle(comptroller.oracle()).changeAdmin(newAdmin);
+    }
 
     function _addRewardsDistributor(address distributor) external onlyGovernorOrAdmin {
         if (comptroller._addRewardsDistributor(distributor) != 0) revert ComptrollerError();
@@ -26,7 +35,7 @@ contract FuseAdmin is FuseGuardian {
         if (comptroller._setWhitelistStatuses(suppliers, statuses) !=0) revert ComptrollerError();
     }
 
-    function _setPriceOracle(address newOracle) public onlyGovernorOrAdmin {
+    function _setPriceOracle(address newOracle) public onlyGovernor {
         if (comptroller._setPriceOracle(newOracle) !=0) revert ComptrollerError();
     }
 

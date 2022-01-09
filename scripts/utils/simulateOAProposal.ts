@@ -44,7 +44,7 @@ export default async function simulateOAProposal(
   const proposalId = await timelock.hashOperationBatch(targets, values, datas, predecessor, salt);
 
   console.log('proposalId: ', proposalId);
-  if (proposalId && !timelock.isOperation(proposalId)) {
+  if (!proposalId || !(await timelock.isOperation(proposalId))) {
     const schedule = await timelock.connect(signer).scheduleBatch(targets, values, datas, predecessor, salt, delay);
     console.log('Calldata:', schedule.data);
   } else {
