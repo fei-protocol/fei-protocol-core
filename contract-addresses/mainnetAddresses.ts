@@ -677,13 +677,18 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.FeiRari
   },
   rariPool8MasterOracle: {
-    artifactName: 'unknown',
+    artifactName: 'IMasterOracle',
     address: '0x4d10BC156FBaD2474a94f792fe0D6c3261469cdd',
     category: AddressCategory.FeiRari
   },
   curveLPTokenOracle: {
     artifactName: 'unknown',
     address: '0xa9f3faac3b8eDF7b3DCcFDBBf25033D6F5fc02F3',
+    category: AddressCategory.FeiRari
+  },
+  gUniFuseOracle: {
+    artifactName: 'unknown',
+    address: '0xEa3633b38C747ceA231aDB74b511DC2eD3992B43',
     category: AddressCategory.FeiRari
   },
   rariPool8Dai: {
@@ -724,6 +729,11 @@ const MainnetAddresses: MainnetAddresses = {
   rariPool8TribeIrm: {
     artifactName: 'unknown',
     address: '0x075538650a9c69ac8019507a7dd1bd879b12c1d7',
+    category: AddressCategory.FeiRari
+  },
+  rariPool8CTokenImpl: {
+    artifactName: 'unknown',
+    address: '0x67Db14E73C2Dce786B5bbBfa4D010dEab4BBFCF9',
     category: AddressCategory.FeiRari
   },
   fuseGuardian: {
@@ -1019,6 +1029,11 @@ const MainnetAddresses: MainnetAddresses = {
   gUniFeiDaiLP: {
     artifactName: 'unknown',
     address: '0x3D1556e84783672f2a3bd187a592520291442539',
+    category: AddressCategory.External
+  },
+  gUniFeiUsdcLP: {
+    artifactName: 'unknown',
+    address: '0xCf84a3dC12319531E3deBD48C86E68eAeAfF224a',
     category: AddressCategory.External
   },
   index: {

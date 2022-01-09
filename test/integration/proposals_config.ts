@@ -3,6 +3,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
 import fip_60 from '@proposals/description/fip_60';
+import fip_60b from '@proposals/description/fip_60b';
 import fip_62 from '@proposals/description/fip_62';
 
 const proposals: ProposalsConfigMap = {
@@ -33,28 +34,47 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0,
     proposal: fip_60
   },
-  fip_62: {
+  fip_60b: {
     deploy: true,
     proposalId: undefined,
     affectedContractSignoff: [
-      'ethPSM',
-      'PSMRouter',
-      'aaveEthPCVDripController',
-      'collateralizationOracle',
-      'bondingCurve',
-      'ethReserveStabilizer',
-      'ethReserveStabilizerWrapper'
+      'rariPool8Comptroller',
+      'rariPool8MasterOracle',
+      'd3StakingTokenWrapper',
+      'tribalChief',
+      'fei3CrvStakingtokenWrapper',
+      'd3AutoRewardsDistributor',
+      'fei3CrvAutoRewardsDistributor',
+      'rewardsDistributorAdmin',
+      'fuseGuardian'
     ],
-    deprecatedContractSignoff: [
-      'compoundEthPCVDripController',
-      'bondingCurve',
-      'ethReserveStabilizer',
-      'ethReserveStabilizerWrapper'
-    ],
-    category: ProposalCategory.DAO,
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.OA,
     totalValue: 0,
-    proposal: fip_62
+    proposal: fip_60b
   }
+  // fip_62: {
+  //   deploy: true,
+  //   proposalId: undefined,
+  //   affectedContractSignoff: [
+  //     'ethPSM',
+  //     'PSMRouter',
+  //     'aaveEthPCVDripController',
+  //     'collateralizationOracle',
+  //     'bondingCurve',
+  //     'ethReserveStabilizer',
+  //     'ethReserveStabilizerWrapper'
+  //   ],
+  //   deprecatedContractSignoff: [
+  //     'compoundEthPCVDripController',
+  //     'bondingCurve',
+  //     'ethReserveStabilizer',
+  //     'ethReserveStabilizerWrapper'
+  //   ],
+  //   category: ProposalCategory.DAO,
+  //   totalValue: 0,
+  //   proposal: fip_62
+  // }
 };
 
 export default proposals;
