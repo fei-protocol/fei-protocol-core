@@ -736,6 +736,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x67Db14E73C2Dce786B5bbBfa4D010dEab4BBFCF9',
     category: AddressCategory.FeiRari
   },
+  rariPool146Comptroller: {
+    artifactName: 'Unitroller',
+    address: '0x88F7c23EA6C4C404dA463Bc9aE03b012B32DEf9e',
+    category: AddressCategory.FeiRari
+  },
+  rariPool146FuseAdmin: {
+    artifactName: 'FuseAdmin',
+    address: '0x6d64D080345C446dA31b8D3855bA6d9C0fC875D2',
+    category: AddressCategory.FeiRari
+  },
   fuseGuardian: {
     artifactName: 'FuseGuardian',
     address: '0xc0c59A2d3F278445f27ed4a00E2727D6c677c43F',
