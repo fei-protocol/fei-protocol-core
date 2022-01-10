@@ -63,6 +63,9 @@ jobs:
           command: |
             circleci tests glob "test/unit/**/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
             npm run test $(cat /tmp/tests-to-run)
+      - store_test_results:
+            path: test-results.xml
+
       - discord/status:
           webhook: https://discord.com/api/webhooks/929894982813372457/aLeEVAAtczQh5RLZS0sBCNC8gPc-jIhmRpSfUfzhR47kakzHvTi9kLViBmqBU5rYGKid 
           fail_only: true 
