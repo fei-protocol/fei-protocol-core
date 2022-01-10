@@ -116,6 +116,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x210300C158f95E1342fD008aE417ef68311c49C2',
     category: AddressCategory.Peg
   },
+  ethPSM: {
+    artifactName: 'EthPegStabilityModule',
+    address: '0x98E5F5706897074a4664DD3a32eB80242d6E694B',
+    category: AddressCategory.Peg
+  },
+  ethPSMRouter: {
+    artifactName: 'PSMRouter',
+    address: '0xFA6a07f3551bF0ceE88D494780ce793AF452Cbca',
+    category: AddressCategory.Peg
+  },
   ethReserveStabilizer: {
     artifactName: 'EthReserveStabilizer',
     address: '0x17305f0e18318994a57b494078CAC866A857F7b6',

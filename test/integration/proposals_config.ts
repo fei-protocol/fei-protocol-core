@@ -36,6 +36,28 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.OA,
     totalValue: 0,
     proposal: fip_60b
+  },
+  fip_62: {
+    deploy: false,
+    proposalId: undefined,
+    affectedContractSignoff: [
+      'ethPSM',
+      'PSMRouter',
+      'aaveEthPCVDripController',
+      'collateralizationOracle',
+      'bondingCurve',
+      'ethReserveStabilizer',
+      'ethReserveStabilizerWrapper'
+    ],
+    deprecatedContractSignoff: [
+      'compoundEthPCVDripController',
+      'bondingCurve',
+      'ethReserveStabilizer',
+      'ethReserveStabilizerWrapper'
+    ],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_62
   }
 };
 
