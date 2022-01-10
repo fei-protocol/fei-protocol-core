@@ -68,9 +68,11 @@ describe('e2e-dependencies', function () {
           const contract = contracts[j];
           const category = addresses[contract].category;
           expect(category).to.not.be.equal(AddressCategory.External);
-          expect(category).to.not.be.equal(AddressCategory.Deprecated);
 
-          expect(deprecated).to.not.contain(contract);
+          if (deprecated.indexOf(contract) == -1) {
+            expect(category).to.not.be.equal(AddressCategory.Deprecated);
+            expect(deprecated).to.not.contain(contract);
+          }
         }
 
         for (let j = 0; j < deprecated.length; j++) {
@@ -78,7 +80,9 @@ describe('e2e-dependencies', function () {
           const category = addresses[contract].category;
           expect(category).to.be.equal(AddressCategory.Deprecated);
 
-          expect(contracts).to.not.contain(contract);
+          if (deprecated.indexOf(contract) == -1) {
+            expect(contracts).to.not.contain(contract);
+          }
         }
       }
     });
