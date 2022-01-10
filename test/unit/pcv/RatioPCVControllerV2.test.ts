@@ -1,4 +1,11 @@
-import { expectRevert, balance, getAddresses, getCore, getImpersonatedSigner } from '../../helpers';
+import {
+  expectRevert,
+  balance,
+  getAddresses,
+  getCore,
+  getImpersonatedSigner,
+  deployDevelopmentWeth
+} from '../../helpers';
 import { forceEth } from '@test/integration/setup/utils';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
@@ -14,7 +21,7 @@ import {
 
 const toBN = ethers.BigNumber.from;
 
-describe('RatioPCVControllerV2', function () {
+describe.skip('RatioPCVControllerV2', function () {
   let userAddress: string;
   let governorAddress: string;
   let pcvControllerAddress: string;
@@ -37,6 +44,8 @@ describe('RatioPCVControllerV2', function () {
     for (const address of impersonatedAddresses) {
       impersonatedSigners[address] = await getImpersonatedSigner(address);
     }
+
+    await deployDevelopmentWeth();
   });
 
   beforeEach(async function () {

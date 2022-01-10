@@ -1,6 +1,5 @@
 export const permissions = {
   MINTER_ROLE: [
-    'bondingCurve',
     'uniswapPCVDeposit',
     'feiDAOTimelock',
     'dpiUniswapPCVDeposit',
@@ -8,15 +7,15 @@ export const permissions = {
     'collateralizationOracleKeeper',
     'optimisticMinter',
     'agEurAngleUniswapPCVDeposit',
-    'daiPSM'
+    'daiPSM',
+    'ethPSM'
   ],
-  BURNER_ROLE: ['ethReserveStabilizer'],
+  BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'timelock', 'feiDAOTimelock'],
   PCV_CONTROLLER_ROLE: [
     'feiDAOTimelock',
     'ratioPCVControllerV2',
     'aaveEthPCVDripController',
-    'compoundEthPCVDripController',
     'pcvGuardian',
     'daiPCVDripController'
   ],

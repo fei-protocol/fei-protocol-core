@@ -105,8 +105,8 @@ interface IPegStabilityModule {
     event SurplusTargetUpdate(IPCVDeposit oldTarget, IPCVDeposit newTarget);
 
     /// @notice event emitted upon a redemption
-    event Redeem(address to, uint256 amountFeiIn);
+    event Redeem(address to, uint256 amountFeiIn, uint256 amountAssetOut);
 
     /// @notice event emitted when fei gets minted
-    event Mint(address to, uint256 amountIn);
+    event Mint(address to, uint256 amountIn, uint256 amountFeiOut);
 }

@@ -108,7 +108,9 @@ describe('e2e-pcv', function () {
     });
   });
 
-  describe('Drip Controller', async () => {
+  /// pause this test as it has been disabled for FIP-62
+  /// PCVDripController now sends funds to the eth PSM
+  describe.skip('Drip Controller', async () => {
     it('drip controller can withdraw from PCV deposit to stabiliser', async function () {
       const ethReserveStabilizer = contracts.ethReserveStabilizer;
       const aaveEthPCVDeposit = contracts.aaveEthPCVDeposit;

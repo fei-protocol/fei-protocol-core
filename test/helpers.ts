@@ -4,6 +4,7 @@ import CBN from 'chai-bn';
 import { Core, Core__factory } from '@custom-types/contracts';
 import { BigNumber, BigNumberish, Signer } from 'ethers';
 import { NamedAddresses } from '@custom-types/types';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
@@ -52,7 +53,7 @@ async function getAddresses(): Promise<NamedAddresses> {
   };
 }
 
-async function getImpersonatedSigner(address: string): Promise<Signer> {
+async function getImpersonatedSigner(address: string): Promise<SignerWithAddress> {
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
     params: [address]
