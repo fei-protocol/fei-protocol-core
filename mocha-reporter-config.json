@@ -1,6 +1,6 @@
 {
     "reporterEnabled": "spec, mocha-junit-reporter",
-    "mochaJunitReporterOptions": {
+    "mochaJunitReporterReporterOptions": {
         "mochaFile": "./test-results/test-results.[hash].xml",
         "testsuitesTitle": true,
         "suiteTitleSeparatedBy": "."
