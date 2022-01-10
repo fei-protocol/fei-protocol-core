@@ -65,7 +65,8 @@ jobs:
             npm run test $(cat /tmp/tests-to-run)
       - store_test_results:
             path: test-results
-
+      - store_artifacts:
+            path: test-results
       - discord/status:
           webhook: https://discord.com/api/webhooks/929894982813372457/aLeEVAAtczQh5RLZS0sBCNC8gPc-jIhmRpSfUfzhR47kakzHvTi9kLViBmqBU5rYGKid 
           fail_only: true 
@@ -88,6 +89,8 @@ jobs:
             circleci tests glob "test/integration/**/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
             npm run test:e2e $(cat /tmp/tests-to-run)
       - store_test_results:
+            path: test-results
+      - store_artifacts:
             path: test-results
       - discord/status:
           webhook: https://discord.com/api/webhooks/929894982813372457/aLeEVAAtczQh5RLZS0sBCNC8gPc-jIhmRpSfUfzhR47kakzHvTi9kLViBmqBU5rYGKid 
