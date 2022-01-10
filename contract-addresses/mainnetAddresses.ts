@@ -99,12 +99,12 @@ const MainnetAddresses: MainnetAddresses = {
   bondingCurve: {
     artifactName: 'EthBondingCurve',
     address: '0xB783c0E21763bEf9F2d04E6499abFbe23AdB7e1F',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   compoundEthPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0xa84C8be28f3d560059339f06C6b6c5B23f53C58C',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   daiPCVDripController: {
     artifactName: 'PCVDripController',
@@ -119,7 +119,7 @@ const MainnetAddresses: MainnetAddresses = {
   ethReserveStabilizer: {
     artifactName: 'EthReserveStabilizer',
     address: '0x17305f0e18318994a57b494078CAC866A857F7b6',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   tribeReserveStabilizer: {
     artifactName: 'TribeReserveStabilizer',
@@ -349,7 +349,7 @@ const MainnetAddresses: MainnetAddresses = {
   ethReserveStabilizerWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xB24570Bc46efDf97b4Aa7f008B4268005Eb7A27E',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
   feiBuybackLensNoFee: {
     artifactName: 'BPTLens',
@@ -551,18 +551,28 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x61be49dfbd869a601fea076e1a1379903e61a895',
     category: AddressCategory.Rewards
   },
+  d3AutoRewardsDistributor: {
+    artifactName: 'AutoRewardsDistributorV2',
+    address: '0x9Fd318C3F8f8583Fd40a0C2fba058fB7097E11d4',
+    category: AddressCategory.Rewards
+  },
+  fei3CrvAutoRewardsDistributor: {
+    artifactName: 'AutoRewardsDistributorV2',
+    address: '0x15f6D0d95aceCD7570e8Ff6128D953BC6aA3573C',
+    category: AddressCategory.Rewards
+  },
   erc20Dripper: {
     artifactName: 'ERC20Dripper',
     address: '0x3Fe0EAD3500e767F0F8bC2d3B5AF7755B1b21A6a',
     category: AddressCategory.Rewards
   },
   rariRewardsDistributorDelegate: {
-    artifactName: 'unknown',
+    artifactName: 'IRewardsDistributorAdmin',
     address: '0x220f93183a69d1598e8405310cB361CFF504146F',
     category: AddressCategory.Rewards
   },
   rariRewardsDistributorDelegator: {
-    artifactName: 'unknown',
+    artifactName: 'IRewardsDistributorAdmin',
     address: '0x73F16f0c0Cd1A078A54894974C5C054D8dC1A3d7',
     category: AddressCategory.Rewards
   },
@@ -621,6 +631,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x90B336dFF819b9e4b3D9A32cabdcAB0E92836065',
     category: AddressCategory.Rewards
   },
+  fei3CrvStakingtokenWrapper: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0x7013dc2e3c0D5ca3c0a6a66F6B5883eD203ac49c',
+    category: AddressCategory.Rewards
+  },
+  d3StakingTokenWrapper: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0xAa267d0A5A0A56Ef0F17bB4A28f85a5C4e0394F6',
+    category: AddressCategory.Rewards
+  },
   stwBulkHarvest: {
     artifactName: 'STWBulkHarvest',
     address: '0x83433D925048d7e9D2D7Eec2A0Efbb4456Af2F93',
@@ -641,6 +661,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xb41c594f9a6a2E0882212598337AF8145f63731b',
     category: AddressCategory.Rewards
   },
+  tribalChiefSyncExtension: {
+    artifactName: 'TribalChiefSyncExtension',
+    address: '0x7b834cA07f81d52bB52d98DaE560D1442b2d7dBa',
+    category: AddressCategory.Rewards
+  },
   votiumBriberD3pool: {
     artifactName: 'VotiumBriber',
     address: '0x0BEC570466B466aB689Ad33F1Ce5238CA43C8003',
@@ -649,6 +674,16 @@ const MainnetAddresses: MainnetAddresses = {
   rariPool8Comptroller: {
     artifactName: 'Unitroller',
     address: '0xc54172e34046c1653d1920d40333dd358c7a1af4',
+    category: AddressCategory.FeiRari
+  },
+  rariPool8MasterOracle: {
+    artifactName: 'unknown',
+    address: '0x4d10BC156FBaD2474a94f792fe0D6c3261469cdd',
+    category: AddressCategory.FeiRari
+  },
+  curveLPTokenOracle: {
+    artifactName: 'unknown',
+    address: '0xa9f3faac3b8eDF7b3DCcFDBBf25033D6F5fc02F3',
     category: AddressCategory.FeiRari
   },
   rariPool8Dai: {
@@ -689,6 +724,11 @@ const MainnetAddresses: MainnetAddresses = {
   rariPool8TribeIrm: {
     artifactName: 'unknown',
     address: '0x075538650a9c69ac8019507a7dd1bd879b12c1d7',
+    category: AddressCategory.FeiRari
+  },
+  fuseGuardian: {
+    artifactName: 'FuseGuardian',
+    address: '0xc0c59A2d3F278445f27ed4a00E2727D6c677c43F',
     category: AddressCategory.FeiRari
   },
   aave: {

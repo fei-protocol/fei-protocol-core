@@ -147,14 +147,12 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         }
     }
 
-    /// @notice function to redeem FEI for an underlying asset 
-    /// We do not burn Fei; this allows the contract's balance of Fei to be used before the buffer is used
-    /// In practice, this helps prevent artificial cycling of mint-burn cycles and prevents a griefing vector.
-    function redeem(
+    /// @notice internal helper method to redeem fei in exchange for an external asset
+    function _redeem(
         address to,
         uint256 amountFeiIn,
         uint256 minAmountOut
-    ) external virtual override nonReentrant whenNotPaused returns (uint256 amountOut) {
+    ) internal virtual returns(uint256 amountOut) {
         updateOracle();
 
         amountOut = _getRedeemAmountOut(amountFeiIn);
@@ -164,16 +162,15 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
 
         _transfer(to, amountOut);
 
-        emit Redeem(to, amountFeiIn);
+        emit Redeem(to, amountFeiIn, amountOut);
     }
 
-    /// @notice function to buy FEI for an underlying asset
-    /// We first transfer any contract-owned fei, then mint the remaining if necessary
-    function mint(
+    /// @notice internal helper method to mint fei in exchange for an external asset
+    function _mint(
         address to,
         uint256 amountIn,
         uint256 minAmountOut
-    ) external virtual override nonReentrant whenNotPaused returns (uint256 amountFeiOut) {
+    ) internal virtual returns(uint256 amountFeiOut) {
         updateOracle();
 
         amountFeiOut = _getMintAmountOut(amountIn);
@@ -190,7 +187,28 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
             _mintFei(to, amountFeiToMint);
         }
         
-        emit Mint(to, amountIn);
+        emit Mint(to, amountIn, amountFeiOut);
+    }
+
+    /// @notice function to redeem FEI for an underlying asset 
+    /// We do not burn Fei; this allows the contract's balance of Fei to be used before the buffer is used
+    /// In practice, this helps prevent artificial cycling of mint-burn cycles and prevents a griefing vector.
+    function redeem(
+        address to,
+        uint256 amountFeiIn,
+        uint256 minAmountOut
+    ) external virtual override nonReentrant whenNotPaused returns (uint256 amountOut) {
+        amountOut = _redeem(to, amountFeiIn, minAmountOut);
+    }
+
+    /// @notice function to buy FEI for an underlying asset
+    /// We first transfer any contract-owned fei, then mint the remaining if necessary
+    function mint(
+        address to,
+        uint256 amountIn,
+        uint256 minAmountOut
+    ) external virtual override nonReentrant whenNotPaused returns (uint256 amountFeiOut) {
+        amountFeiOut = _mint(to, amountIn, minAmountOut);
     }
 
     // ----------- Public View-Only API ----------
