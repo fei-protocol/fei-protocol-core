@@ -52,8 +52,8 @@ export default {
       chainId: 5777, // Any network (default: none)
       forking: enableMainnetForking
         ? {
-            url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-            blockNumber: 13937690
+            url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`
+            //lockNumber: 13937690
           }
         : undefined
     },
