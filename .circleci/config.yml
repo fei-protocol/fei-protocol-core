@@ -32,11 +32,6 @@ jobs:
           key: repo-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - ~/repo
-      - discord/status:
-          webhook: https://discord.com/api/webhooks/929894982813372457/aLeEVAAtczQh5RLZS0sBCNC8gPc-jIhmRpSfUfzhR47kakzHvTi9kLViBmqBU5rYGKid 
-          fail_only: true 
-          failure_message: ":failed: CircleCI BUILD failed. Probably @Joey | Tribe (1+1=3)#1111  's fault." 
-          only_for_branches: develop 
   lint:
     working_directory: ~/repo
     docker:
@@ -63,11 +58,6 @@ jobs:
           command: |
             circleci tests glob "test/unit/**/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
             npm run test $(cat /tmp/tests-to-run)
-      - discord/status:
-          webhook: https://discord.com/api/webhooks/929894982813372457/aLeEVAAtczQh5RLZS0sBCNC8gPc-jIhmRpSfUfzhR47kakzHvTi9kLViBmqBU5rYGKid 
-          fail_only: true 
-          failure_message: ":failed: CircleCI unit tests failing on develop. Probably @Joey | Tribe (1+1=3)#1111  's fault." 
-          only_for_branches: develop 
 
   e2e-test:
     working_directory: ~/repo
@@ -84,11 +74,6 @@ jobs:
           command: |
             circleci tests glob "test/integration/**/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
             npm run test:e2e $(cat /tmp/tests-to-run)
-      - discord/status:
-          webhook: https://discord.com/api/webhooks/929894982813372457/aLeEVAAtczQh5RLZS0sBCNC8gPc-jIhmRpSfUfzhR47kakzHvTi9kLViBmqBU5rYGKid 
-          fail_only: true 
-          failure_message: ":failed: CircleCI e2e tests failing on develop. Probably @Joey | Tribe (1+1=3)#1111  's fault." 
-          only_for_branches: develop 
 
 workflows:
   main:
