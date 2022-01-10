@@ -92,11 +92,6 @@ jobs:
             path: test-results
       - store_artifacts:
             path: test-results
-      - discord/status:
-          webhook: https://discord.com/api/webhooks/929894982813372457/aLeEVAAtczQh5RLZS0sBCNC8gPc-jIhmRpSfUfzhR47kakzHvTi9kLViBmqBU5rYGKid 
-          fail_only: true 
-          failure_message: ":failed: CircleCI e2e tests failing on develop." 
-          only_for_branches: develop 
 
 workflows:
   main:
