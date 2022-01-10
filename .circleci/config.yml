@@ -1,5 +1,6 @@
 version: 2.1
-
+orbs:
+  discord: antonioned/discord@0.1.0
 jobs:
   build:
     working_directory: ~/repo
@@ -7,7 +8,7 @@ jobs:
       - image: circleci/node:14
     resource_class: xlarge
     steps:
-      - checkout
+      - checkout 
       - run:
           name: 'Update NPM'
           command: sudo npm install -g npm@6.13.4
