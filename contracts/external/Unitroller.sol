@@ -44,4 +44,13 @@ abstract contract Unitroller {
     function borrowGuardianPaused(address cToken) external view virtual returns(bool);
     function comptrollerImplementation() external view virtual returns(address);
     function rewardsDistributors(uint256 index) external view virtual returns(address);
+
+    function _addRewardsDistributor(address distributor) external virtual returns (uint);
+    function _setWhitelistEnforcement(bool enforce) external virtual returns (uint);
+
+    function _setWhitelistStatuses(address[] calldata suppliers, bool[] calldata statuses) external virtual returns (uint);
+
+    function _unsupportMarket(CToken cToken) external virtual returns (uint);
+
+    function _toggleAutoImplementations(bool enabled) public virtual returns (uint);
 }
