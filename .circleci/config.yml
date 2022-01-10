@@ -35,7 +35,7 @@ jobs:
       - discord/status:
           webhook: https://discord.com/api/webhooks/929894982813372457/aLeEVAAtczQh5RLZS0sBCNC8gPc-jIhmRpSfUfzhR47kakzHvTi9kLViBmqBU5rYGKid 
           fail_only: true 
-          failure_message: ":failed: CircleCI BUILD failed." 
+          failure_message: ":failed: Unit tests failing in prod! @fei-protocol-dev please check/fix" 
           only_for_branches: develop 
   lint:
     working_directory: ~/repo
