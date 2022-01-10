@@ -42,12 +42,13 @@ const proposals: ProposalsConfigMap = {
     proposalId: undefined,
     affectedContractSignoff: [
       'ethPSM',
-      'PSMRouter',
+      'ethPSMRouter',
       'aaveEthPCVDripController',
       'collateralizationOracle',
-      'bondingCurve',
-      'ethReserveStabilizer',
-      'ethReserveStabilizerWrapper'
+      'ratioPCVControllerV2',
+      'aaveEthPCVDeposit',
+      'core',
+      'pcvGuardian'
     ],
     deprecatedContractSignoff: [
       'compoundEthPCVDripController',

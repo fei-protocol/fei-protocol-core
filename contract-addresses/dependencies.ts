@@ -12,7 +12,7 @@ const dependencies: DependencyMap = {
       'optimisticMinter',
       'pcvEquityMinter',
       'pcvGuardian',
-      'ratioPCVController',
+      'ratioPCVControllerV2',
       'tribe',
       'tribeMinter',
       'feiDAOTimelock',
@@ -156,7 +156,7 @@ const dependencies: DependencyMap = {
       'collateralizationOracleWrapper'
     ] // NOTE this is slightly misleading as proxy admin needs to update admin to new timelock
   },
-  ratioPCVController: {
+  ratioPCVControllerV2: {
     contractDependencies: ['core']
   },
   tribe: {
