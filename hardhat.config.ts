@@ -106,7 +106,7 @@ export default {
     reporter: useJSONTestReporter ? 'mocha-multi-reporters' : undefined,
     reporterOptions: useJSONTestReporter
       ? {
-          configFile: 'config.json'
+          configFile: 'mocha-reporter-config.json'
         }
       : undefined
   },
