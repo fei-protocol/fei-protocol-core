@@ -646,6 +646,26 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x7013dc2e3c0D5ca3c0a6a66F6B5883eD203ac49c',
     category: AddressCategory.Rewards
   },
+  feiDaiStakingTokenWrapper: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0x601FFddACcAF7F05600D7E7561a51C745B8A2A3e',
+    category: AddressCategory.Rewards
+  },
+  feiUsdcStakingTokenWrapper: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0x0A0542Adf2fA8e85DD797697da537448b2e7c3EE',
+    category: AddressCategory.Rewards
+  },
+  feiDaiAutoRewardsDistributor: {
+    artifactName: 'AutoRewardsDistributorV2',
+    address: '0xE6Fef62A834D9b0BA1Da832769D6E99135dD2E0e',
+    category: AddressCategory.Rewards
+  },
+  feiUsdcAutoRewardsDistributor: {
+    artifactName: 'AutoRewardsDistributorV2',
+    address: '0x1126f1fA7Da556F8F82846223E3C2176B5631707',
+    category: AddressCategory.Rewards
+  },
   d3StakingTokenWrapper: {
     artifactName: 'StakingTokenWrapper',
     address: '0xAa267d0A5A0A56Ef0F17bB4A28f85a5C4e0394F6',
@@ -687,13 +707,18 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.FeiRari
   },
   rariPool8MasterOracle: {
-    artifactName: 'unknown',
+    artifactName: 'IMasterOracle',
     address: '0x4d10BC156FBaD2474a94f792fe0D6c3261469cdd',
     category: AddressCategory.FeiRari
   },
   curveLPTokenOracle: {
     artifactName: 'unknown',
     address: '0xa9f3faac3b8eDF7b3DCcFDBBf25033D6F5fc02F3',
+    category: AddressCategory.FeiRari
+  },
+  gUniFuseOracle: {
+    artifactName: 'unknown',
+    address: '0xEa3633b38C747ceA231aDB74b511DC2eD3992B43',
     category: AddressCategory.FeiRari
   },
   rariPool8Dai: {
@@ -734,6 +759,31 @@ const MainnetAddresses: MainnetAddresses = {
   rariPool8TribeIrm: {
     artifactName: 'unknown',
     address: '0x075538650a9c69ac8019507a7dd1bd879b12c1d7',
+    category: AddressCategory.FeiRari
+  },
+  rariPool8CTokenImpl: {
+    artifactName: 'unknown',
+    address: '0x67Db14E73C2Dce786B5bbBfa4D010dEab4BBFCF9',
+    category: AddressCategory.FeiRari
+  },
+  rariPool8Fei3Crv: {
+    artifactName: 'CErc20Delegator',
+    address: '0xBFB6f7532d2DB0fE4D83aBb001c5C2B0842AF4dB',
+    category: AddressCategory.FeiRari
+  },
+  rariPool146Comptroller: {
+    artifactName: 'Unitroller',
+    address: '0x88F7c23EA6C4C404dA463Bc9aE03b012B32DEf9e',
+    category: AddressCategory.FeiRari
+  },
+  rariPool146FuseAdmin: {
+    artifactName: 'FuseAdmin',
+    address: '0x6d64D080345C446dA31b8D3855bA6d9C0fC875D2',
+    category: AddressCategory.FeiRari
+  },
+  fuseAdmin: {
+    artifactName: 'FuseAdmin',
+    address: '0x761dD1Ae03D95BdABeC3C228532Dcdab4F2c7adD',
     category: AddressCategory.FeiRari
   },
   fuseGuardian: {
@@ -1029,6 +1079,11 @@ const MainnetAddresses: MainnetAddresses = {
   gUniFeiDaiLP: {
     artifactName: 'unknown',
     address: '0x3D1556e84783672f2a3bd187a592520291442539',
+    category: AddressCategory.External
+  },
+  gUniFeiUsdcLP: {
+    artifactName: 'unknown',
+    address: '0xCf84a3dC12319531E3deBD48C86E68eAeAfF224a',
     category: AddressCategory.External
   },
   index: {

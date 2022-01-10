@@ -29,6 +29,7 @@ describe('e2e-dependencies', function () {
 
         for (let j = 0; j < contracts.length; j++) {
           const contract = contracts[j];
+          doLogging && console.log(`Contract: ${contract}`);
           const category = addresses[contract].category;
           if (category === AddressCategory.External) {
             continue;
@@ -65,8 +66,6 @@ describe('e2e-dependencies', function () {
 
         for (let j = 0; j < contracts.length; j++) {
           const contract = contracts[j];
-          doLogging && console.log(`contract: ${contract}`);
-          doLogging && console.log(`addresses[contract]: ${addresses[contract]}`);
           const category = addresses[contract].category;
           expect(category).to.not.be.equal(AddressCategory.External);
           expect(category).to.not.be.equal(AddressCategory.Deprecated);
