@@ -2,7 +2,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
-import fip_60 from '@proposals/description/fip_60';
+import fip_60b from '@proposals/description/fip_60b';
 import fip_62 from '@proposals/description/fip_62';
 
 const proposals: ProposalsConfigMap = {
@@ -14,36 +14,41 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  fip_60: {
+  fip_60b: {
     deploy: false,
     proposalId: undefined,
     affectedContractSignoff: [
+      'rewardsDistributorAdmin',
+      'fuseAdmin',
       'rariPool8Comptroller',
       'rariPool8MasterOracle',
-      'd3StakingTokenWrapper',
+      'gUniFuseOracle',
+      'rariPool8EthIrm',
+      'rariPool8CTokenImpl',
+      'fuseGuardian',
       'tribalChief',
-      'fei3CrvStakingtokenWrapper',
-      'd3AutoRewardsDistributor',
-      'fei3CrvAutoRewardsDistributor',
-      'rewardsDistributorAdmin',
-      'fuseGuardian'
+      'feiDaiStakingTokenWrapper',
+      'feiUsdcStakingTokenWrapper',
+      'feiDaiAutoRewardsDistributor',
+      'feiUsdcAutoRewardsDistributor'
     ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.OA,
     totalValue: 0,
-    proposal: fip_60
+    proposal: fip_60b
   },
   fip_62: {
     deploy: false,
     proposalId: undefined,
     affectedContractSignoff: [
       'ethPSM',
-      'PSMRouter',
+      'ethPSMRouter',
       'aaveEthPCVDripController',
       'collateralizationOracle',
-      'bondingCurve',
-      'ethReserveStabilizer',
-      'ethReserveStabilizerWrapper'
+      'ratioPCVControllerV2',
+      'aaveEthPCVDeposit',
+      'core',
+      'pcvGuardian'
     ],
     deprecatedContractSignoff: [
       'compoundEthPCVDripController',
