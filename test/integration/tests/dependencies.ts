@@ -29,6 +29,7 @@ describe('e2e-dependencies', function () {
 
         for (let j = 0; j < contracts.length; j++) {
           const contract = contracts[j];
+          doLogging && console.log(`Contract: ${contract}`);
           const category = addresses[contract].category;
           if (category === AddressCategory.External) {
             continue;

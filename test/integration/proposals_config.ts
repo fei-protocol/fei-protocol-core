@@ -15,45 +15,27 @@ const proposals: ProposalsConfigMap = {
     }
     */
   fip_60b: {
-    deploy: true,
+    deploy: false,
     proposalId: undefined,
     affectedContractSignoff: [
+      'rewardsDistributorAdmin',
+      'fuseAdmin',
       'rariPool8Comptroller',
       'rariPool8MasterOracle',
-      'd3StakingTokenWrapper',
+      'gUniFuseOracle',
+      'rariPool8EthIrm',
+      'rariPool8CTokenImpl',
+      'fuseGuardian',
       'tribalChief',
-      'fei3CrvStakingtokenWrapper',
-      'd3AutoRewardsDistributor',
-      'fei3CrvAutoRewardsDistributor',
-      'rewardsDistributorAdmin',
-      'fuseGuardian'
+      'feiDaiStakingTokenWrapper',
+      'feiUsdcStakingTokenWrapper',
+      'feiDaiAutoRewardsDistributor',
+      'feiUsdcAutoRewardsDistributor'
     ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.OA,
     totalValue: 0,
     proposal: fip_60b
-  },
-  fip_62: {
-    deploy: true,
-    proposalId: undefined,
-    affectedContractSignoff: [
-      'ethPSM',
-      'PSMRouter',
-      'aaveEthPCVDripController',
-      'collateralizationOracle',
-      'bondingCurve',
-      'ethReserveStabilizer',
-      'ethReserveStabilizerWrapper'
-    ],
-    deprecatedContractSignoff: [
-      'compoundEthPCVDripController',
-      'bondingCurve',
-      'ethReserveStabilizer',
-      'ethReserveStabilizerWrapper'
-    ],
-    category: ProposalCategory.DAO,
-    totalValue: 0,
-    proposal: fip_62
   }
 };
 
