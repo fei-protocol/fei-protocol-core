@@ -3,7 +3,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
 import fip_60b from '@proposals/description/fip_60b';
-import fip_62 from '@proposals/description/fip_62';
+import fip_63 from '@proposals/description/fip_63';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -36,6 +36,15 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.OA,
     totalValue: 0,
     proposal: fip_60b
+  },
+  fip_63: {
+    deploy: true,
+    proposalId: undefined,
+    affectedContractSignoff: ['lusdPSM', 'lusdPCVDripController', 'collateralizationOracle', 'core', 'pcvGuardian'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_63
   }
 };
 

@@ -19,9 +19,12 @@ const dependencies: DependencyMap = {
       'guardian',
       'optimisticTimelock',
       'aaveEthPCVDripController',
+      'bammDeposit',
       'daiPCVDripController',
       'daiPSM',
       'ethPSM',
+      'lusdPSM',
+      'lusdPCVDripController',
       'tribeReserveStabilizer',
       'aaveEthPCVDeposit',
       'aaveFeiPCVDeposit',
@@ -102,6 +105,7 @@ const dependencies: DependencyMap = {
       'aaveEthPCVDripController',
       'daiPSM',
       'ethPSM',
+      'lusdPSM',
       'daiPCVDripController',
       'aaveFeiPCVDeposit',
       'agEurAngleUniswapPCVDeposit',
@@ -144,6 +148,7 @@ const dependencies: DependencyMap = {
       'feiDAOTimelock',
       'daiPSM',
       'ethPSM',
+      'lusdPSM',
       'compoundEthPCVDeposit',
       'aaveEthPCVDeposit'
     ]
@@ -234,6 +239,22 @@ const dependencies: DependencyMap = {
       'chainlinkDaiUsdOracleWrapper',
       'pcvGuardian'
     ]
+  },
+  lusdPSM: {
+    contractDependencies: [
+      'core',
+      'fei',
+      'bammDeposit',
+      'chainlinkLUSDOracleWrapper',
+      'pcvGuardian',
+      'lusdPCVDripController'
+    ]
+  },
+  lusdPCVDripController: {
+    contractDependencies: ['lusdPSM', 'core', 'bammDeposit']
+  },
+  bammDeposit: {
+    contractDependencies: ['lusdPSM', 'core', 'lusdPCVDripController']
   },
   ethPSM: {
     contractDependencies: [
@@ -550,7 +571,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   chainlinkLUSDOracleWrapper: {
-    contractDependencies: ['core', 'collateralizationOracle', 'feiLusdLBPSwapper']
+    contractDependencies: ['core', 'collateralizationOracle', 'feiLusdLBPSwapper', 'lusdPSM']
   },
   chainlinkRaiEthOracleWrapper: {
     contractDependencies: ['core', 'chainlinkRaiUsdCompositeOracle']
