@@ -56,6 +56,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xFC3532b443383d9022b1B2c6FD5Fd0895943360A',
     category: AddressCategory.Core
   },
+  restrictedPermissions: {
+    artifactName: 'RestrictedPermissions',
+    address: '0x10ffa0CD36Bc16b355d21A08DF4a552c4A9FEC10',
+    category: AddressCategory.Core
+  },
   feiDAO: {
     artifactName: 'FeiDAO',
     address: '0x0BEF27FEB58e857046d630B2c03dFb7bae567494',
@@ -91,20 +96,15 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x637deEED4e4deb1D222650bD4B64192abf002c00',
     category: AddressCategory.Governance
   },
+  opsOptimisticTimelock: {
+    artifactName: 'OptimisticTimelock',
+    address: '0x7DC26A320a9f70Db617e24B77aCA1D3DC48C5721',
+    category: AddressCategory.Governance
+  },
   aaveEthPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0xb3D63876d95d3a5e591D4DE536dC410b97244086',
     category: AddressCategory.Peg
-  },
-  bondingCurve: {
-    artifactName: 'EthBondingCurve',
-    address: '0xB783c0E21763bEf9F2d04E6499abFbe23AdB7e1F',
-    category: AddressCategory.Deprecated
-  },
-  compoundEthPCVDripController: {
-    artifactName: 'PCVDripController',
-    address: '0xa84C8be28f3d560059339f06C6b6c5B23f53C58C',
-    category: AddressCategory.Deprecated
   },
   daiPCVDripController: {
     artifactName: 'PCVDripController',
@@ -126,14 +126,19 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xFA6a07f3551bF0ceE88D494780ce793AF452Cbca',
     category: AddressCategory.Peg
   },
-  ethReserveStabilizer: {
-    artifactName: 'EthReserveStabilizer',
-    address: '0x17305f0e18318994a57b494078CAC866A857F7b6',
-    category: AddressCategory.Deprecated
-  },
   tribeReserveStabilizer: {
     artifactName: 'TribeReserveStabilizer',
     address: '0xE1A468418f4D8D3F070A06d49b3575A9562b6CfD',
+    category: AddressCategory.Peg
+  },
+  ethPSMFeiSkimmer: {
+    artifactName: 'FeiSkimmer',
+    address: '0xA8A25F8cbfC5053241aB6FA87b865755dcB5501F',
+    category: AddressCategory.Peg
+  },
+  daiPSMFeiSkimmer: {
+    artifactName: 'FeiSkimmer',
+    address: '0xf8Ca6c10a794C867497541F5b7A7f96ca2bCd1E8',
     category: AddressCategory.Peg
   },
   aaveEthPCVDeposit: {
@@ -1331,6 +1336,21 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x243C601CC5DaA3Ac250B14509804188347bd2aFB',
     category: AddressCategory.Deprecated
   },
+  bondingCurve: {
+    artifactName: 'EthBondingCurve',
+    address: '0xB783c0E21763bEf9F2d04E6499abFbe23AdB7e1F',
+    category: AddressCategory.Deprecated
+  },
+  compoundEthPCVDripController: {
+    artifactName: 'PCVDripController',
+    address: '0xa84C8be28f3d560059339f06C6b6c5B23f53C58C',
+    category: AddressCategory.Deprecated
+  },
+  ethReserveStabilizer: {
+    artifactName: 'EthReserveStabilizer',
+    address: '0x17305f0e18318994a57b494078CAC866A857F7b6',
+    category: AddressCategory.Deprecated
+  },
   creamFeiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xFf419Bc27483edb94b7Ad5c97b7FaB5DB323c7E0',
@@ -1549,6 +1569,16 @@ const MainnetAddresses: MainnetAddresses = {
   tokeTokemakPCVDeposit: {
     artifactName: 'ERC20TokemakPCVDeposit',
     address: '0x45C8FaB07B64C78d03006591132Ac51DE82a4B22',
+    category: AddressCategory.TBD
+  },
+  rariInfraFeiTimelock: {
+    artifactName: 'LinearTokenTimelock',
+    address: '0xfaFC562265a49975E8B20707EAC966473795CF90',
+    category: AddressCategory.TBD
+  },
+  rariInfraTribeTimelock: {
+    artifactName: 'LinearTimelockedDelegator',
+    address: '0x625cf6AA7DafB154F3Eb6BE87592110e30290dEe',
     category: AddressCategory.TBD
   }
 };

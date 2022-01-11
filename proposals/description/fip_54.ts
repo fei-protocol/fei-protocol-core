@@ -64,11 +64,17 @@ const permanently_revoke_burner: ProposalDescription = {
     }
   ],
   description: `
-  Replace the core reference in the FEI token to a “Restricted Permissions” which only allows for minting and pausing. 
+  FIP-54: Replace the core reference in the FEI token to a “Restricted Permissions” which only allows for minting and pausing. 
   This would permanently lock the contract’s ability to burn from any address. It preserves the ability for a user or contract to burn its own FEI.
 
-  Code: https://github.com/fei-protocol/fei-protocol-core/pull/352
-  Discussion: https://tribe.fei.money/t/fip-54-permanently-deprecate-burner/3743 
+  FIP-63: Fund Rari Infrastructure with 4M FEI and 4M TRIBE over 2 years with clawback
+
+  Maintenance: 
+  1. Add an ops optimistic timelock with 24h delay for votium bribes and DAO grants
+  2. Add Fei Skimmers for both PSMs to burn surplus FEI
+
+  Code: https://github.com/fei-protocol/fei-protocol-core/pull/458
+  Discussion: https://tribe.fei.money/t/fip-54-permanently-deprecate-burner/3743, https://tribe.fei.money/t/fip-63-infrastructure-team-funding/3855 
 `
 };
 

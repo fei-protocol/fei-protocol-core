@@ -16,7 +16,7 @@ const proposals: ProposalsConfigMap = {
     }
     */
   fip_54: {
-    deploy: true,
+    deploy: false,
     proposalId: undefined,
     affectedContractSignoff: [
       'restrictedPermissions',
