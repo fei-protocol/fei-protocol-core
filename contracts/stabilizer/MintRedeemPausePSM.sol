@@ -5,7 +5,7 @@ import "./PegStabilityModule.sol";
 
 /// @notice ETH PSM that allows separate pausing of mint and redeem
 /// by the guardian and governor
-contract GranularPegStabilityModule is PegStabilityModule {
+contract MintRedeemPausePSM is PegStabilityModule {
 
     /// @notice boolean switch that indicates whether redemptions are paused
     bool public redeemPaused;
