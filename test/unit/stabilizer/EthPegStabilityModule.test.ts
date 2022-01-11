@@ -9,12 +9,12 @@ import {
 } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer, utils } from 'ethers';
-import { Core, Fei, MockOracle, MockPCVDepositV2, WETH9, EthPegStabilityModule } from '@custom-types/contracts';
+import { Core, Fei, MockOracle, MockPCVDepositV2, WETH9, MintRedeemPausePSM } from '@custom-types/contracts';
 import { keccak256 } from 'ethers/lib/utils';
 
 const toBN = ethers.BigNumber.from;
 
-describe('EthPegStabilityModule', function () {
+describe('MintRedeemPausePSM', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
@@ -35,7 +35,7 @@ describe('EthPegStabilityModule', function () {
   let core: Core;
   let fei: Fei;
   let oracle: MockOracle;
-  let psm: EthPegStabilityModule;
+  let psm: MintRedeemPausePSM;
   let pcvDeposit: MockPCVDepositV2;
   let weth: WETH9;
 
@@ -83,7 +83,7 @@ describe('EthPegStabilityModule', function () {
     pcvDeposit = await (await ethers.getContractFactory('MockPCVDepositV2')).deploy(core.address, weth.address, 0, 0);
 
     psm = await (
-      await ethers.getContractFactory('EthPegStabilityModule')
+      await ethers.getContractFactory('MintRedeemPausePSM')
     ).deploy(
       {
         coreAddress: core.address,
