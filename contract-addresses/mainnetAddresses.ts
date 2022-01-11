@@ -501,6 +501,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xe61d11ec732d556A26fb863B192052BEa03eF8B5',
     category: AddressCategory.Oracle
   },
+  chainlinkLUSDOracle: {
+    artifactName: 'unknown',
+    address: '0x3d7ae7e594f2f2091ad8798313450130d0aba3a0',
+    category: AddressCategory.External
+  },
   chainlinkRaiEthOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0x3d49573ee6aFCBDe606F8a1c2AA1C498048E7190',

@@ -1,11 +1,12 @@
 import {
   AavePCVDeposit,
-  GranularPegStabilityModule,
+  MintRedeemPausePSM,
   Fei,
   IERC20,
   PCVDripController,
   PSMRouter,
-  WETH9
+  WETH9,
+  BAMMDeposit
 } from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
@@ -14,7 +15,13 @@ import { solidity } from 'ethereum-waffle';
 import { BigNumber } from 'ethers';
 import hre, { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { expectRevert, getImpersonatedSigner, increaseTime, resetFork } from '@test/helpers';
+import {
+  expectRevert,
+  getImpersonatedSigner,
+  increaseTime,
+  overwriteChainlinkAggregator,
+  resetFork
+} from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '../setup/utils';
@@ -28,17 +35,18 @@ before(async () => {
   await resetFork();
 });
 
-describe('lusd PSM', function () {
+describe.only('lusd PSM', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: SignerWithAddress;
   let guardian: SignerWithAddress;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
-  let lusdPSM: GranularPegStabilityModule;
+  let lusdPSM: MintRedeemPausePSM;
   let lusd: IERC20;
   let fei: Fei;
   let dripper: PCVDripController;
+  let bammDeposit: BAMMDeposit;
   const amount = toBN(5_000_000).mul(oneEth);
 
   before(async function () {
@@ -60,7 +68,8 @@ describe('lusd PSM', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
-    lusdPSM = contracts.lusdPSM as GranularPegStabilityModule;
+    lusdPSM = contracts.lusdPSM as MintRedeemPausePSM;
+    bammDeposit = contracts.bammDeposit as BAMMDeposit;
 
     lusd = contracts.lusd as IERC20;
     fei = await ethers.getContractAt('Fei', contractAddresses.fei);
@@ -69,32 +78,22 @@ describe('lusd PSM', function () {
     await fei.mint(deployAddress.address, amount);
     guardian = await getImpersonatedSigner(contractAddresses.guardian);
     await hre.network.provider.send('hardhat_setBalance', [guardian.address, '0x21E19E0C9BAB2400000']);
+    console.log('contractAddresses.chainlinkEthUsdOracle: ', contracts.chainlinkEthUsdOracle);
+    await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
   });
 
   describe('lusdPSM', async () => {
     /// create a before each hook that approves the PSM to spend user's LUSD
     it('cannot sell lusd to the PSM as redemptions are disabled', async () => {
-      await expectRevert(lusdPSM.redeem(lusdPSM.address, 0, 0), 'lusdPSM: Redeem paused');
+      await expectRevert(lusdPSM.redeem(lusdPSM.address, 0, 0), 'EthPSM: Redeem paused');
     });
 
-    it('can sell lusd directly to the PSM as minting is active', async () => {
-      const mintAmount = oneEth;
-      const startingFeiBalance = await fei.balanceOf(deployAddress.address);
-
-      const minAmountOut = await lusdPSM.getMintAmountOut(mintAmount);
-
-      await lusdPSM.connect(deployAddress).mint(deployAddress.address, mintAmount, minAmountOut);
-      expect((await fei.balanceOf(deployAddress.address)).sub(startingFeiBalance)).to.be.equal(minAmountOut);
+    it('cannot buy lusd to the PSM as minting is disabled', async () => {
+      await expectRevert(lusdPSM.mint(lusdPSM.address, 0, 0), 'Pausable: paused');
     });
   });
 
   describe('LUSD BammPCVDripController', async () => {
-    beforeEach(async () => {
-      /// increase time by 30 minutes so that regardless of mainnet state,
-      /// this test will always pass
-      await increaseTime(1800);
-    });
-
     it('dripper cannot drip because it is paused', async () => {
       await expectRevert(dripper.drip(), 'Pausable: paused');
     });
@@ -103,39 +102,38 @@ describe('lusd PSM', function () {
   describe('capital flows', async () => {
     before(async () => {
       await lusdPSM.connect(guardian).unpauseRedeem();
+      await lusdPSM.connect(guardian).unpause();
+      await dripper.unpause();
     });
 
-    describe('mint flow', async () => {
-      it('after mint, eth flows to aave eth pcv deposit', async () => {
-        const mintAmount: BigNumber = oneEth.mul(500);
-        const minAmountOut = await lusdPSM.getMintAmountOut(mintAmount);
-        const startingFeiBalance = await fei.balanceOf(deployAddress.address);
+    beforeEach(async () => {
+      /// increase time by 30 minutes so that regardless of mainnet state,
+      /// this test will always pass
+      await increaseTime(1800);
+    });
 
-        await lusdPSM.connect(deployAddress).mint(deployAddress.address, minAmountOut, mintAmount);
+    describe('dripper drips ', async () => {
+      it('successfully drips 10m LUSD to the lusd PSM', async () => {
+        const psmStartingLusdBalance = await lusd.balanceOf(lusdPSM.address);
+        await dripper.drip();
+        const psmEndingLusdBalance = await lusd.balanceOf(lusdPSM.address);
 
-        expect((await fei.balanceOf(deployAddress.address)).sub(startingFeiBalance)).to.be.equal(minAmountOut);
-
-        // expect(await weth.balanceOf(lusdPSM.address)).to.be.equal(oneEth.mul(250));
+        expect(psmEndingLusdBalance.sub(psmStartingLusdBalance)).to.be.equal(await dripper.dripAmount());
       });
     });
 
     describe('redeem flow', async () => {
       let timelock: SignerWithAddress;
-      const mintAmount = oneEth.mul(5_000_000);
 
       before(async () => {
-        await dripper.connect(guardian).unpause();
         timelock = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
         await forceEth(timelock.address);
-        await fei.connect(timelock).mint(deployAddress.address, mintAmount);
+        const lusdBalance = await lusd.balanceOf(lusdPSM.address);
+        await lusdPSM.connect(timelock).withdraw(bammDeposit.address, lusdBalance);
+        await fei.connect(deployAddress).approve(lusdPSM.address, amount);
       });
 
-      it('sets lusdPSM reserve threshold to 5250 eth', async () => {
-        await lusdPSM.connect(timelock).setReservesThreshold(oneEth.mul(5_250));
-        expect(await lusdPSM.reservesThreshold()).to.be.equal(oneEth.mul(5_250));
-      });
-
-      it('drip and get correct amount of weth sent into the psm', async () => {
+      it('drip and get correct amount of lusd sent into the psm', async () => {
         const lusdPSMStartingBalance = await lusd.balanceOf(lusdPSM.address);
 
         expect(await dripper.dripEligible()).to.be.true;
@@ -151,18 +149,35 @@ describe('lusd PSM', function () {
         const userStartingFeiBalance = await fei.balanceOf(deployAddress.address);
         const userStartingLusdBalance = await lusd.balanceOf(deployAddress.address);
         const psmStartingLusdBalance = await lusd.balanceOf(lusdPSM.address);
-        const minAmountOut = await lusdPSM.getRedeemAmountOut(mintAmount);
+        const minAmountOut = await lusdPSM.getRedeemAmountOut(amount);
 
-        await fei.connect(deployAddress).approve(lusdPSM.address, mintAmount);
-        await lusdPSM.connect(deployAddress).redeem(deployAddress.address, mintAmount, minAmountOut);
+        await lusdPSM.connect(deployAddress).redeem(deployAddress.address, amount, minAmountOut);
 
         const userEndingFeiBalance = await fei.balanceOf(deployAddress.address);
         const userEndingLusdBalance = await lusd.balanceOf(deployAddress.address);
         const psmEndingLusdBalance = await lusd.balanceOf(lusdPSM.address);
 
         expect(userEndingLusdBalance.sub(userStartingLusdBalance)).to.be.equal(minAmountOut);
-        expect(userStartingFeiBalance.sub(userEndingFeiBalance)).to.be.equal(mintAmount);
+        expect(userStartingFeiBalance.sub(userEndingFeiBalance)).to.be.equal(amount);
         expect(psmStartingLusdBalance.sub(psmEndingLusdBalance)).to.be.equal(minAmountOut);
+      });
+    });
+
+    describe('mint flow', async () => {
+      it('user can mint FEI by providing LUSD', async () => {
+        const mintAmount: BigNumber = oneEth.mul(500);
+        const minAmountOut = await lusdPSM.getMintAmountOut(mintAmount);
+        const startingFeiBalance = await fei.balanceOf(deployAddress.address);
+        const startingLUSDBalance = await lusd.balanceOf(deployAddress.address);
+
+        await lusd.connect(deployAddress).approve(lusdPSM.address, mintAmount);
+        await lusdPSM.connect(deployAddress).mint(deployAddress.address, mintAmount, minAmountOut);
+
+        const endingLUSDBalance = await lusd.balanceOf(deployAddress.address);
+        const endingFeiBalance = await fei.balanceOf(deployAddress.address);
+
+        expect(endingFeiBalance.sub(startingFeiBalance)).to.be.equal(minAmountOut);
+        expect(startingLUSDBalance.sub(endingLUSDBalance)).to.be.equal(mintAmount);
       });
     });
   });

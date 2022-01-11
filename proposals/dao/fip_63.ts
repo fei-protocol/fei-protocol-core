@@ -9,37 +9,29 @@ const eth = ethers.constants.WeiPerEther;
 const toBN = ethers.BigNumber.from;
 
 /*
-FIP-62
+FIP-63
 DEPLOY ACTIONS:
 
 1. Deploy lusdPSM
-  -- target of WETH PSM will be compoundEthPCVDeposit
-  -- reserve threshold will be 250 eth
+  -- target of LUSD PSM will be bammDeposit
+  -- reserve threshold will be 10m lusd
   -- mint fee 50 basis points
-  -- redeem fee 20 basis points
-2. Deploy PSM Router
+  -- redeem fee 50 basis points
 
-DAO ACTIONS:
-1. Grant the lusdPSM the minter role
-2. Hit the secondary pause switch so redemptions are paused
-3. Pause the WETH compound PCV Drip controller
-4. Point the aave eth PCV Drip controller to the lusdPSM
-5. Pause eth redeemer
-6. Pause eth reserve stabilizer
 */
 
 const decimalsNormalizer = 0;
 const doInvert = false;
 
-const mintFeeBasisPoints = 25;
-const redeemFeeBasisPoints = 25;
+const mintFeeBasisPoints = 50;
+const redeemFeeBasisPoints = 50;
 const reservesThreshold = toBN(10_000_000).mul(eth);
 const feiMintLimitPerSecond = ethers.utils.parseEther('10000');
 const lusdPSMBufferCap = ethers.utils.parseEther('10000000');
 
 const incentiveAmount = 0;
 
-const lusdDripAmount = ethers.utils.parseEther('50000000');
+const lusdDripAmount = ethers.utils.parseEther('5000000');
 const dripDuration = 1800;
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
@@ -51,7 +43,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   // 1. Deploy eth PSM
   const lusdPSM = await (
-    await ethers.getContractFactory('GranularPegStabilityModule')
+    await ethers.getContractFactory('MintRedeemPausePSM')
   ).deploy(
     {
       coreAddress: core,
