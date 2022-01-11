@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import { Signer } from 'ethers';
 import { ethers } from 'hardhat';
 
-describe.only('FeiSkimmer', function () {
+describe('FeiSkimmer', function () {
   let minterAddress: string;
   let userAddress: string;
   let governorAddress: string;
@@ -47,6 +47,7 @@ describe.only('FeiSkimmer', function () {
 
     it('is not skim eligible', async function () {
       expect(await skimmer.skimEligible()).to.be.false;
+      await expectRevert(skimmer.skim(), 'under threshold');
     });
   });
 
