@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./ITimelockedDelegator.sol";
-import "../utils/timelock/QuadraticTokenTimelock.sol";
+import "../../utils/timelock/LinearTokenTimelock.sol";
 
 /// @title a proxy delegate contract for TRIBE
 /// @author Fei Protocol
@@ -30,7 +30,7 @@ contract Delegatee is Ownable {
 /// @title a timelock for TRIBE allowing for sub-delegation
 /// @author Fei Protocol
 /// @notice allows the timelocked TRIBE to be delegated by the beneficiary while locked
-contract QuadtraticTimelockedSubdelegator is ITimelockedDelegator, QuadraticTokenTimelock {
+contract TimelockedDelegator is ITimelockedDelegator, LinearTokenTimelock {
     /// @notice associated delegate proxy contract for a delegatee
     mapping(address => address) public override delegateContract;
 
@@ -45,20 +45,16 @@ contract QuadtraticTimelockedSubdelegator is ITimelockedDelegator, QuadraticToke
     uint256 public override totalDelegated;
 
     /// @notice Delegatee constructor
+    /// @param _tribe the TRIBE token address
     /// @param _beneficiary default delegate, admin, and timelock beneficiary
     /// @param _duration duration of the token timelock window
-    /// @param _tribe the TRIBE token address
-    /// @param _cliff the seconds before first claim is allowed
-    /// @param _startTime the initial time to use for timelock
-    /// @dev clawback admin needs to be 0 because clawbacks can be bricked by beneficiary
     constructor(
-        address _beneficiary,
-        uint256 _duration,
         address _tribe,
-        uint256 _cliff,
-        uint256 _startTime
-    ) QuadraticTokenTimelock(_beneficiary, _duration, _tribe, _cliff, address(0), _startTime) {
+        address _beneficiary,
+        uint256 _duration
+    ) LinearTokenTimelock(_beneficiary, _duration, _tribe, 0, address(0), 0) {
         tribe = ITribe(_tribe);
+        tribe.delegate(_beneficiary);
     }
 
     /// @notice delegate locked TRIBE to a delegatee

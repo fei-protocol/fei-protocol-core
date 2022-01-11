@@ -18,7 +18,8 @@ describe('e2e-dependencies', function () {
     it('are all signed off', async function () {
       for (let i = 0; i < proposalNames.length; i++) {
         const proposalName = proposalNames[i];
-        if (proposals[proposalName].category === ProposalCategory.None) {
+        if (proposals[proposalName].category === ProposalCategory.None || proposals[proposalName].deploy) {
+          // Skip if not a DAO/OA proposal or not yet deployed
           doLogging && console.log(`Skipping: ${proposalName}`);
           continue;
         }
@@ -61,6 +62,11 @@ describe('e2e-dependencies', function () {
         const contracts = proposals[proposalName].affectedContractSignoff;
         const deprecated = proposals[proposalName].deprecatedContractSignoff;
 
+        if (proposals[proposalName].deploy) {
+          // Skip these checks if not mainnet deployed
+          doLogging && console.log(`Skipping: ${proposalName}`);
+          continue;
+        }
         doLogging && console.log(`Checking proposal: ${proposalName}`);
         doLogging && console.log(`Proposal affects contracts: ${contracts}`);
 
