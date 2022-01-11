@@ -117,7 +117,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Peg
   },
   ethPSM: {
-    artifactName: 'EthPegStabilityModule',
+    artifactName: 'MintRedeemPausePSM',
     address: '0x98E5F5706897074a4664DD3a32eB80242d6E694B',
     category: AddressCategory.Peg
   },
