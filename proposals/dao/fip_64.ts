@@ -75,6 +75,6 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
 
   // LTV
   expect((await rariPool8Comptroller.markets(wstEthCToken)).collateralFactorMantissa).to.be.equal(
-    ethers.constants.WeiPerEther.mul(70).div(100)
+    ethers.constants.WeiPerEther.mul(80).div(100)
   );
 };

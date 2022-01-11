@@ -60,7 +60,7 @@ const proposals: ProposalsConfigMap = {
   fip_64: {
     deploy: false,
     proposalId: undefined,
-    affectedContractSignoff: [],
+    affectedContractSignoff: ['fuseAdmin', 'rariPool8EthIrm', 'rariPool8CTokenImpl', 'fuseGuardian'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.OA,
     totalValue: 0,

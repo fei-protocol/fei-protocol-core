@@ -16,7 +16,7 @@ const fip_60b: ProposalDescription = {
         '0x', // constructor bytes (not used)
         '0', // reserve factor (not used)
         '0', // admin fee (not used)
-        '700000000000000000' // LTV scaled by 1e18
+        '800000000000000000' // LTV scaled by 1e18
       ],
       description: 'Add wstETH to FeiRari'
     },
