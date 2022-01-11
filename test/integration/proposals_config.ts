@@ -4,7 +4,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 import fip_54 from '@proposals/description/fip_54';
 import fip_60b from '@proposals/description/fip_60b';
-import fip_62 from '@proposals/description/fip_62';
+import fip_64 from '@proposals/description/fip_64';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -56,6 +56,15 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.OA,
     totalValue: 0,
     proposal: fip_60b
+  },
+  fip_64: {
+    deploy: false,
+    proposalId: undefined,
+    affectedContractSignoff: ['fuseAdmin', 'rariPool8EthIrm', 'rariPool8CTokenImpl', 'fuseGuardian'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.OA,
+    totalValue: 0,
+    proposal: fip_64
   }
 };
 
