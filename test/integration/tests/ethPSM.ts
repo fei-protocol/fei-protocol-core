@@ -18,6 +18,7 @@ import { expectApprox, expectRevert, getImpersonatedSigner, increaseTime, resetF
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '../setup/utils';
+import { contract } from '@openzeppelin/test-environment';
 
 const oneEth = ethers.constants.WeiPerEther;
 
@@ -72,6 +73,14 @@ describe('eth PSM', function () {
     await hre.network.provider.send('hardhat_setBalance', [deployAddress.address, '0x21E19E0C9BAB2400000']);
     guardian = await getImpersonatedSigner(contractAddresses.guardian);
     await forceEth(guardian.address);
+  });
+
+  describe('ethPSMFeiSkimmer', async () => {
+    it('can skim', async () => {
+      await contracts.fei.mint(ethPSM.address, ethers.constants.WeiPerEther.mul(100_000_000));
+      await contracts.ethPSMFeiSkimmer.skim();
+      expect(await contracts.fei.balanceOf(ethPSM.address)).to.be.equal(ethers.constants.WeiPerEther.mul(10_000_000));
+    });
   });
 
   describe('ethPSM', async () => {
