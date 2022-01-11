@@ -1246,6 +1246,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x4da27a545c0c5b758a6ba100e3a049001de870f5',
     category: AddressCategory.External
   },
+  wstEth: {
+    artifactName: 'IERC20',
+    address: '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0',
+    category: AddressCategory.External
+  },
   steth: {
     artifactName: 'IERC20',
     address: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
