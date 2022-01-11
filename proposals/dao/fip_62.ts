@@ -51,7 +51,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   // 1. Deploy eth PSM
   const ethPSM = await (
-    await ethers.getContractFactory('GranularPegStabilityModule')
+    await ethers.getContractFactory('MintRedeemPausePSM')
   ).deploy(
     {
       coreAddress: core,
