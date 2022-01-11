@@ -35,7 +35,7 @@ before(async () => {
   await resetFork();
 });
 
-describe.only('lusd PSM', function () {
+describe('lusd PSM', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: SignerWithAddress;
