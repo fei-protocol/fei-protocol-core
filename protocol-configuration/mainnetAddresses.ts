@@ -1352,7 +1352,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Deprecated
   },
   ethReserveStabilizer: {
-    artifactName: 'EthReserveStabilizer',
+    artifactName: 'unknown', // EthReserveStabilizer
     address: '0x17305f0e18318994a57b494078CAC866A857F7b6',
     category: AddressCategory.Deprecated
   },
@@ -1442,7 +1442,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Deprecated
   },
   oldEthReserveStabilizer: {
-    artifactName: 'EthReserveStabilizer',
+    artifactName: 'unknown', // EthReserveStabilizer
     address: '0xa08A721dFB595753FFf335636674D76C455B275C',
     category: AddressCategory.Deprecated
   },
@@ -1532,7 +1532,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Deprecated
   },
   uniswapOracle: {
-    artifactName: 'UniswapOracle',
+    artifactName: 'unknown', // UniswapOracle
     address: '0x087F35bd241e41Fc28E43f0E8C58d283DD55bD65',
     category: AddressCategory.Deprecated
   },
