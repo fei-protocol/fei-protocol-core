@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "./../pcv/PCVDeposit.sol";
-import "./../utils/RateLimitedMinter.sol";
+import "./../fei/minter/RateLimitedMinter.sol";
 import "./IPegStabilityModule.sol";
 import "./../refs/OracleRef.sol";
 import "../Constants.sol";

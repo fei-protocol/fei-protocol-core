@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 import "../../refs/CoreRef.sol";
 import "../../utils/Timed.sol";
 import "../../utils/Incentivized.sol";
-import "../../utils/RateLimitedMinter.sol";
+import "./RateLimitedMinter.sol";
 import "./IFeiTimedMinter.sol";
 
 /// @title FeiTimedMinter

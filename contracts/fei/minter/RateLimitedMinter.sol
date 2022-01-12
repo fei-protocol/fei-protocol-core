@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "./RateLimited.sol";
+import "../../utils/RateLimited.sol";
 
 /// @title abstract contract for putting a rate limit on how fast a contract can mint FEI
 /// @author Fei Protocol
