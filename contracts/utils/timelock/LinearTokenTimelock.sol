@@ -8,8 +8,22 @@ contract LinearTokenTimelock is TokenTimelock {
     constructor (
         address _beneficiary,
         uint256 _duration,
-        address _lockedToken
-    ) TokenTimelock(_beneficiary, _duration, 0, _lockedToken, address(0)) {}
+        address _lockedToken,
+        uint256 _cliffDuration,
+        address _clawbackAdmin,
+        uint256 _startTime
+    ) TokenTimelock(
+        _beneficiary, 
+        _duration, 
+        _cliffDuration,
+        _lockedToken, 
+        _clawbackAdmin
+    ) {
+        if (_startTime != 0) {
+            startTime = _startTime;
+        }
+    }
+
 
     function _proportionAvailable(
         uint256 initialBalance,

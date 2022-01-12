@@ -4,6 +4,15 @@ const dependencies: DependencyMap = {
   collateralizationOracleGuardian: {
     contractDependencies: ['core', 'guardian', 'collateralizationOracleWrapper']
   },
+  restrictedPermissions: {
+    contractDependencies: ['fei', 'core']
+  },
+  rariInfraTribeTimelock: {
+    contractDependencies: ['tribe']
+  },
+  rariInfraFeiTimelock: {
+    contractDependencies: ['fei']
+  },
   core: {
     contractDependencies: [
       'collateralizationOracleGuardian',
@@ -93,7 +102,8 @@ const dependencies: DependencyMap = {
       'erc20Dripper',
       'tribalChief',
       'fuseAdmin',
-      'fuseGuardian'
+      'fuseGuardian',
+      'restrictedPermissions'
     ]
   },
   fei: {
@@ -129,8 +139,18 @@ const dependencies: DependencyMap = {
       'rariPool8FeiPCVDeposit',
       'rariPool90FeiPCVDeposit',
       'rariPool91FeiPCVDeposit',
-      'rariPool9FeiPCVDeposit'
+      'rariPool9FeiPCVDeposit',
+      'restrictedPermissions',
+      'ethPSMFeiSkimmer',
+      'daiPSMFeiSkimmer',
+      'rariInfraFeiTimelock'
     ]
+  },
+  ethPSMFeiSkimmer: {
+    contractDependencies: ['fei', 'ethPSM']
+  },
+  daiPSMFeiSkimmer: {
+    contractDependencies: ['fei', 'daiPSM']
   },
   feiTribeLBPSwapper: {
     contractDependencies: ['core', 'pcvEquityMinter']
@@ -175,7 +195,8 @@ const dependencies: DependencyMap = {
       'tribeMinter',
       'tribeReserveStabilizer',
       'rariPool8Fei3Crv',
-      'rariPool8d3'
+      'rariPool8d3',
+      'rariInfraTribeTimelock'
     ]
   },
   tribeMinter: {
@@ -202,6 +223,9 @@ const dependencies: DependencyMap = {
   optimisticMultisig: {
     contractDependencies: ['optimisticTimelock']
   },
+  opsOptimisticTimelock: {
+    contractDependencies: ['votiumBriberD3pool']
+  },
   optimisticTimelock: {
     contractDependencies: [
       'core',
@@ -214,7 +238,6 @@ const dependencies: DependencyMap = {
       'collateralizationOracle',
       'collateralizationOracleWrapper',
       'namedStaticPCVDepositWrapper',
-      'votiumBriberD3pool',
       'rariPool8MasterOracle'
     ]
   },
@@ -237,7 +260,8 @@ const dependencies: DependencyMap = {
       'compoundDaiPCVDeposit',
       'daiPCVDripController',
       'chainlinkDaiUsdOracleWrapper',
-      'pcvGuardian'
+      'pcvGuardian',
+      'daiPSMFeiSkimmer'
     ]
   },
   lusdPSM: {
@@ -264,7 +288,8 @@ const dependencies: DependencyMap = {
       'chainlinkEthUsdOracleWrapper',
       'pcvGuardian',
       'aaveEthPCVDripController',
-      'ethPSMRouter'
+      'ethPSMRouter',
+      'ethPSMFeiSkimmer'
     ]
   },
   ethPSMRouter: {
@@ -760,7 +785,7 @@ const dependencies: DependencyMap = {
     ]
   },
   votiumBriberD3pool: {
-    contractDependencies: ['stakingTokenWrapperBribeD3pool', 'optimisticTimelock']
+    contractDependencies: ['stakingTokenWrapperBribeD3pool', 'opsOptimisticTimelock']
   },
   rariPool8Comptroller: {
     contractDependencies: [
