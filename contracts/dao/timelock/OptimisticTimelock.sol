@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/governance/TimelockController.sol";
-import "../refs/CoreRef.sol";
+import "../../refs/CoreRef.sol";
 
 // Timelock with veto admin roles
 contract OptimisticTimelock is TimelockController, CoreRef {

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "./Timelock.sol";
-import "../refs/CoreRef.sol";
+import "../../refs/CoreRef.sol";
 
 /** 
  @title Fei DAO Timelock

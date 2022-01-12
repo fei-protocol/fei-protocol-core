@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./../core/Permissions.sol";
 import "../fei/Fei.sol";
-import "../dao/Tribe.sol";
+import "../tribe/Tribe.sol";
 
 /// @title Mock Source of truth for Fei Protocol
 /// @author Fei Protocol
