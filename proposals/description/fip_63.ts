@@ -19,6 +19,14 @@ const fip_62: ProposalDescription = {
       arguments: [],
       description: 'Pause LUSD PCVDripController'
     },
+    /// Pause LUSD PCV Drip Controller
+    {
+      target: 'lusdPSMFeiSkimmer',
+      values: '0',
+      method: 'pause()',
+      arguments: [],
+      description: 'Pause LUSD PSM Fei Skimmer'
+    },
     /// Pause Both Minting and Redemptions
     {
       target: 'lusdPSM',
@@ -49,6 +57,13 @@ const fip_62: ProposalDescription = {
       arguments: ['{lusdPCVDripController}'],
       description: 'Grant lusdPCVDripController PCV controller role'
     },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantPCVController(address)',
+      arguments: ['{lusdPSMFeiSkimmer}'],
+      description: 'Grant lusdPSMFeiSkimmer PCV controller role'
+    },
     /// pcv guardian
     {
       target: 'pcvGuardian',
@@ -64,7 +79,7 @@ const fip_62: ProposalDescription = {
   2. Pause LUSD PCVDripController
   3. Pause minting and redemptions on the newly created lusd PSM
   4. Grant the LUSD PSM the minter role
-  5. Grant PCV Controller to the lusdPCVDripController and pause
+  5. Grant PCV Controller to the lusdPCVDripController and lusdPSMFeiSkimmer, then pause
 
   Code: 
 `

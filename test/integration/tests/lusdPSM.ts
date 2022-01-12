@@ -1,13 +1,4 @@
-import {
-  AavePCVDeposit,
-  MintRedeemPausePSM,
-  Fei,
-  IERC20,
-  PCVDripController,
-  PSMRouter,
-  WETH9,
-  BAMMDeposit
-} from '@custom-types/contracts';
+import { MintRedeemPausePSM, Fei, IERC20, PCVDripController, BAMMDeposit, FeiSkimmer } from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -46,6 +37,7 @@ describe('lusd PSM', function () {
   let lusd: IERC20;
   let fei: Fei;
   let dripper: PCVDripController;
+  let skimmer: FeiSkimmer;
   let bammDeposit: BAMMDeposit;
   const amount = toBN(5_000_000).mul(oneEth);
 
@@ -70,6 +62,7 @@ describe('lusd PSM', function () {
     doLogging && console.log(`Environment loaded.`);
     lusdPSM = contracts.lusdPSM as MintRedeemPausePSM;
     bammDeposit = contracts.bammDeposit as BAMMDeposit;
+    skimmer = contracts.lusdPSMFeiSkimmer as FeiSkimmer;
 
     lusd = contracts.lusd as IERC20;
     fei = await ethers.getContractAt('Fei', contractAddresses.fei);
@@ -104,6 +97,7 @@ describe('lusd PSM', function () {
       await lusdPSM.connect(guardian).unpauseRedeem();
       await lusdPSM.connect(guardian).unpause();
       await dripper.unpause();
+      await skimmer.unpause();
     });
 
     beforeEach(async () => {
@@ -178,6 +172,21 @@ describe('lusd PSM', function () {
 
         expect(endingFeiBalance.sub(startingFeiBalance)).to.be.equal(minAmountOut);
         expect(startingLUSDBalance.sub(endingLUSDBalance)).to.be.equal(mintAmount);
+      });
+    });
+
+    describe('skimmer skims', async () => {
+      before(async function () {
+        await fei.mint(lusdPSM.address, oneEth.mul(100_000_000));
+      });
+
+      it('successfully skims everything over 10m FEI in the lusd PSM', async () => {
+        const startingFeiBalance = await fei.balanceOf(lusdPSM.address);
+        await skimmer.skim();
+        const endingFeiBalance = await fei.balanceOf(lusdPSM.address);
+
+        expect(endingFeiBalance).to.be.equal(await skimmer.threshold());
+        expect(startingFeiBalance).to.be.gt(await skimmer.threshold());
       });
     });
   });

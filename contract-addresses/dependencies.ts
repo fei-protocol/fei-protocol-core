@@ -34,6 +34,9 @@ const dependencies: DependencyMap = {
       'ethPSM',
       'lusdPSM',
       'lusdPCVDripController',
+      'lusdPSMFeiSkimmer',
+      'ethPSMFeiSkimmer',
+      'daiPSMFeiSkimmer',
       'tribeReserveStabilizer',
       'aaveEthPCVDeposit',
       'aaveFeiPCVDeposit',
@@ -117,6 +120,7 @@ const dependencies: DependencyMap = {
       'ethPSM',
       'lusdPSM',
       'daiPCVDripController',
+      'lusdPSMFeiSkimmer',
       'aaveFeiPCVDeposit',
       'agEurAngleUniswapPCVDeposit',
       'dpiUniswapPCVDeposit',
@@ -147,10 +151,13 @@ const dependencies: DependencyMap = {
     ]
   },
   ethPSMFeiSkimmer: {
-    contractDependencies: ['fei', 'ethPSM']
+    contractDependencies: ['fei', 'ethPSM', 'core']
   },
   daiPSMFeiSkimmer: {
-    contractDependencies: ['fei', 'daiPSM']
+    contractDependencies: ['fei', 'daiPSM', 'core']
+  },
+  lusdPSMFeiSkimmer: {
+    contractDependencies: ['fei', 'lusdPSM', 'core']
   },
   feiTribeLBPSwapper: {
     contractDependencies: ['core', 'pcvEquityMinter']
@@ -271,7 +278,8 @@ const dependencies: DependencyMap = {
       'bammDeposit',
       'chainlinkLUSDOracleWrapper',
       'pcvGuardian',
-      'lusdPCVDripController'
+      'lusdPCVDripController',
+      'lusdPSMFeiSkimmer'
     ]
   },
   lusdPCVDripController: {
