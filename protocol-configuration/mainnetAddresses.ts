@@ -1487,12 +1487,12 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Deprecated
   },
   staticPcvDepositWrapper: {
-    artifactName: 'StaticPCVDepositWrapper',
+    artifactName: 'unknown', // StaticPCVDepositWrapper
     address: '0x8B41DcEfAe6064E6bc2A9B3ae20141d23EFD6cbd',
     category: AddressCategory.Deprecated
   },
   staticPcvDepositWrapper2: {
-    artifactName: 'StaticPCVDepositWrapper',
+    artifactName: 'unknown', // StaticPCVDepositWrapper
     address: '0xe72EB93de743F819fe91277582d7d0Fa9bb9b023',
     category: AddressCategory.Deprecated
   },
