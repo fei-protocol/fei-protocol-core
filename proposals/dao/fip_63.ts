@@ -7,6 +7,7 @@ chai.use(CBN(ethers.BigNumber));
 
 const eth = ethers.constants.WeiPerEther;
 const toBN = ethers.BigNumber.from;
+const ZERO_ADDRESS = ethers.constants.AddressZero;
 
 /*
 FIP-63
@@ -41,14 +42,14 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
     throw new Error('An environment variable contract address is not set');
   }
 
-  // 1. Deploy eth PSM
+  // 1. Deploy lusd PSM
   const lusdPSM = await (
     await ethers.getContractFactory('MintRedeemPausePSM')
   ).deploy(
     {
       coreAddress: core,
       oracleAddress: chainlinkLUSDOracleWrapper,
-      backupOracle: chainlinkLUSDOracleWrapper,
+      backupOracle: ZERO_ADDRESS,
       decimalsNormalizer,
       doInvert
     },
@@ -63,12 +64,14 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   logging && console.log('lusdPSM: ', lusdPSM.address);
 
+  // 2. deploy lusd PCV DripController
   const lusdPCVDripController = await (
     await ethers.getContractFactory('PCVDripController')
   ).deploy(core, bammDeposit, lusdPSM.address, dripDuration, lusdDripAmount, incentiveAmount);
 
   logging && console.log('lusdPCVDripController: ', lusdPCVDripController.address);
 
+  // 3. deploy lusd PSM Fei Skimmer
   const lusdPSMFeiSkimmer = await (
     await ethers.getContractFactory('FeiSkimmer')
   ).deploy(core, lusdPSM.address, lusdPSMBufferCap);

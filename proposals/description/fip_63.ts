@@ -1,7 +1,7 @@
 import { ProposalDescription } from '@custom-types/types';
 
 const fip_62: ProposalDescription = {
-  title: 'FIP-63: Create Backup LUSD PSM',
+  title: 'FIP-67: Create Backup LUSD PSM',
   commands: [
     /// CR Oracle ops
     {
@@ -77,11 +77,12 @@ const fip_62: ProposalDescription = {
   This proposal operationalizes the LUSD PSM:
   1. Add the LUSD PSM to the CR Oracle
   2. Pause LUSD PCVDripController
-  3. Pause minting and redemptions on the newly created lusd PSM
-  4. Grant the LUSD PSM the minter role
-  5. Grant PCV Controller to the lusdPCVDripController and lusdPSMFeiSkimmer, then pause
+  3. Pause LUSD lusdPSMFeiSkimmer
+  4. Pause minting and redemptions on the newly created lusd PSM
+  5. Grant the LUSD PSM the minter role
+  6. Grant PCV Controller to the lusdPCVDripController and lusdPSMFeiSkimmer
 
-  Code: 
+  Code: https://github.com/fei-protocol/fei-protocol-core/pull/456
 `
 };
 
