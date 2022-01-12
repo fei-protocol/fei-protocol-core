@@ -1452,7 +1452,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Deprecated
   },
   ratioPCVController: {
-    artifactName: 'RatioPCVController',
+    artifactName: 'unknown', // RatioPCVController
     address: '0xB1410aeCe2c65fE9e107c58b5aa32e91B18f0BC7',
     category: AddressCategory.Deprecated
   },
@@ -1467,7 +1467,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Deprecated
   },
   oldRatioPCVController: {
-    artifactName: 'RatioPCVController',
+    artifactName: 'unknown', // RatioPCVController
     address: '0xfC1aD6eb84351597cD3b9B65179633697d65B920',
     category: AddressCategory.Deprecated
   },

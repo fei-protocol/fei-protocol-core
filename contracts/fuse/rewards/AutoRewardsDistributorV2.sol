@@ -1,21 +1,33 @@
 pragma solidity ^0.8.0;
 
-import "./../ITribalChief.sol";
+import "../../staking/ITribalChief.sol";
 import "../../refs/CoreRef.sol";
+import "../../external/Unitroller.sol";
+import "../../staking/StakingTokenWrapper.sol";
 import "./IRewardsDistributorAdmin.sol";
 
 /// @notice Controller Contract to set tribe per block in Rewards Distributor Admin on Rari
-contract AutoRewardsDistributor is CoreRef {
+contract AutoRewardsDistributorV2 is CoreRef {
     /// @notice rewards distributor admin contract
     IRewardsDistributorAdmin public rewardsDistributorAdmin;
     /// @notice tribal chief contract
     ITribalChief public immutable tribalChief;
-    /// @notice address of the CToken this contract controls rewards for
-    address public immutable cTokenAddress;
+    /// @notice address of the underlying token for the cToken this contract controls rewards for
+    address public immutable underlying;
     /// @notice boolean which decides the action to incentivize
     bool public immutable isBorrowIncentivized;
+
+    /// @notice address of the comptroller, used to determine cToken
+    Unitroller public immutable comptroller;
+
+    /// @notice address of the stakedTokenWrapper
+    StakingTokenWrapper public immutable stakedTokenWrapper;
+
+    /// @notice address of the cToken this contract controls rewards for
+    address public cTokenAddress;
+
     /// @notice reward index on tribal chief to grab this staked token wrapper's index
-    uint256 public immutable tribalChiefRewardIndex;
+    uint256 public tribalChiefRewardIndex;
 
     event SpeedChanged(uint256 newSpeed);
     event RewardsDistributorAdminChanged(IRewardsDistributorAdmin oldRewardsDistributorAdmin, IRewardsDistributorAdmin newRewardsDistributorAdmin);
@@ -24,24 +36,35 @@ contract AutoRewardsDistributor is CoreRef {
     /// @param coreAddress address of core contract
     /// @param _rewardsDistributorAdmin address of rewards distributor admin contract
     /// @param _tribalChief address of tribalchief contract
-    /// @param _tribalChiefRewardIndex index for this contract's rewards in tribalchief
-    /// @param _cTokenAddress address of ctoken contract to incentivize
+    /// @param _stakedTokenWrapper the stakedTokenWrapper this contract controls rewards for
+    /// @param _underlying address of the underlying for the cToken
     /// @param _isBorrowIncentivized boolean that incentivizes borrow or supply
+    /// @param _comptroller address of the comptroller contract
     constructor(
         address coreAddress,
         IRewardsDistributorAdmin _rewardsDistributorAdmin,
         ITribalChief _tribalChief,
-        uint256 _tribalChiefRewardIndex,
-        address _cTokenAddress,
-        bool _isBorrowIncentivized
+        StakingTokenWrapper _stakedTokenWrapper,
+        address _underlying,
+        bool _isBorrowIncentivized,
+        Unitroller _comptroller
     ) CoreRef(coreAddress) {
         isBorrowIncentivized = _isBorrowIncentivized;
-        cTokenAddress = _cTokenAddress;
-        tribalChiefRewardIndex = _tribalChiefRewardIndex;
+        underlying = _underlying;
+        stakedTokenWrapper = _stakedTokenWrapper;
         rewardsDistributorAdmin = _rewardsDistributorAdmin;
         tribalChief = _tribalChief;
+        comptroller = _comptroller;
 
         _setContractAdminRole(keccak256("TRIBAL_CHIEF_ADMIN_ROLE"));
+    }
+
+    function init() external {
+        tribalChiefRewardIndex = stakedTokenWrapper.pid();
+        require(tribalChiefRewardIndex != 0, "pid");
+
+        cTokenAddress = comptroller.cTokensByUnderlying(underlying);
+        require(cTokenAddress != address(0), "ctoken");
     }
 
     /// @notice helper function that gets all needed state from the TribalChief contract
@@ -79,6 +102,7 @@ contract AutoRewardsDistributor is CoreRef {
     /// @notice function to automatically set the rewards speed on the RewardsDistributor contract
     /// through the RewardsDistributorAdmin
     function setAutoRewardsDistribution() external whenNotPaused {
+        require(cTokenAddress != address(0), "init");
         (uint256 compSpeed, bool updateNeeded) = getNewRewardSpeed();
         require(updateNeeded, "AutoRewardsDistributor: update not needed");
 
