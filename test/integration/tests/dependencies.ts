@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { ProposalCategory, ProposalDescription } from '@custom-types/types';
 import proposals from '@test/integration/proposals_config';
-import dependencies from '@addresses/dependencies';
-import addresses from '@addresses/mainnetAddresses';
-import collateralizationAddresses from '@addresses/collateralizationOracle';
+import dependencies from '@protocol/dependencies';
+import addresses from '@protocol/mainnetAddresses';
+import collateralizationAddresses from '@protocol/collateralizationOracle';
 import { AddressCategory } from '@custom-types/types'; // imported without custom path to allow docs to autogen without ts errors
 
 describe('e2e-dependencies', function () {
