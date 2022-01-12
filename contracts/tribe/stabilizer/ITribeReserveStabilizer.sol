@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "../oracle/collateralization/ICollateralizationOracle.sol";
+import "../../oracle/collateralization/ICollateralizationOracle.sol";
 
 /// @title a Tribe Reserve Stabilizer interface
 /// @author Fei Protocol

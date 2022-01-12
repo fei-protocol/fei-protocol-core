@@ -3,8 +3,8 @@ pragma solidity ^0.8.4;
 
 import "./ReserveStabilizer.sol";
 import "./ITribeReserveStabilizer.sol";
-import "../tribe/ITribeMinter.sol";
-import "../utils/Timed.sol";
+import "../../tribe/ITribeMinter.sol";
+import "../../utils/Timed.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
 /// @title implementation for a TRIBE Reserve Stabilizer

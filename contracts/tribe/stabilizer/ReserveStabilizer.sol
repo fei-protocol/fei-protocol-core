@@ -2,9 +2,9 @@
 pragma solidity ^0.8.4;
 
 import "./IReserveStabilizer.sol";
-import "../pcv/PCVDeposit.sol";
-import "../refs/OracleRef.sol";
-import "../Constants.sol";
+import "../../pcv/PCVDeposit.sol";
+import "../../refs/OracleRef.sol";
+import "../../Constants.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title implementation for an ERC20 Reserve Stabilizer

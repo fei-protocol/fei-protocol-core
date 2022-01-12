@@ -77,7 +77,7 @@ describe('e2e-peg-stability-module', function () {
     }
   });
 
-  describe.skip('weth-router', async () => {
+  describe('weth-router', async () => {
     describe('redeem', async () => {
       const redeemAmount = 10_000_000;
       beforeEach(async () => {
@@ -164,7 +164,7 @@ describe('e2e-peg-stability-module', function () {
     });
   });
 
-  describe.skip('weth-psm', async () => {
+  describe('weth-psm', async () => {
     describe('redeem', function () {
       const redeemAmount = 10_000_000;
       beforeEach(async () => {
