@@ -1302,7 +1302,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.External
   },
   aavePassthroughETH: {
-    artifactName: 'AavePassthroughETH',
+    artifactName: 'unknown', // AavePassthroughETH
     address: '0x126AD2B5341A30D8115C443B3158E7661e4faD26',
     category: AddressCategory.Deprecated
   },
@@ -1317,7 +1317,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Deprecated
   },
   compoundPassthroughETH: {
-    artifactName: 'CompoundPassthroughETH',
+    artifactName: 'unknown', // CompoundPassthroughETH
     address: '0xF56B0B80ea6E986364c50177d396b988C3e41094',
     category: AddressCategory.Deprecated
   },
