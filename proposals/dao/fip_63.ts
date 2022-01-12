@@ -75,11 +75,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 };
 
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const { bondingCurve } = contracts;
-
-  /// give the bonding curve a balance so that the ratioPCVControllerV2 doesn't revert in the dao script
-  await hre.network.provider.send('hardhat_setBalance', [bondingCurve.address, '0x21E19E0C9BAB2400000']);
-  logging && console.log('Sent eth to bonding curve so ratioPCVController withdraw');
+  logging && console.log('No setup');
 };
 
 export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
