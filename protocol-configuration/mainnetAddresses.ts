@@ -1327,7 +1327,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Deprecated
   },
   daiBondingCurve: {
-    artifactName: 'BondingCurve',
+    artifactName: 'unknown', // BondingCurve
     address: '0xC0afe0E649e32528666F993ce63822c3840e941a',
     category: AddressCategory.Deprecated
   },
@@ -1342,7 +1342,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Deprecated
   },
   bondingCurve: {
-    artifactName: 'EthBondingCurve',
+    artifactName: 'unknown', // EthBondingCurve
     address: '0xB783c0E21763bEf9F2d04E6499abFbe23AdB7e1F',
     category: AddressCategory.Deprecated
   },
@@ -1367,7 +1367,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Deprecated
   },
   dpiBondingCurve: {
-    artifactName: 'BondingCurve',
+    artifactName: 'unknown', // BondingCurve
     address: '0xBf5721c5E1C370f6F1A3E21b3972E0AcE93A1E84',
     category: AddressCategory.Deprecated
   },
@@ -1437,7 +1437,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Deprecated
   },
   oldEthBondingCurve: {
-    artifactName: 'EthBondingCurve',
+    artifactName: 'unknown', // EthBondingCurve
     address: '0xe1578B4a32Eaefcd563a9E6d0dc02a4213f673B7',
     category: AddressCategory.Deprecated
   },
@@ -1472,7 +1472,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Deprecated
   },
   raiBondingCurve: {
-    artifactName: 'BondingCurve',
+    artifactName: 'unknown', // BondingCurve
     address: '0x25d60212D47Dd8F6Ff0469367E4c6C98Cd3411A5',
     category: AddressCategory.Deprecated
   },
