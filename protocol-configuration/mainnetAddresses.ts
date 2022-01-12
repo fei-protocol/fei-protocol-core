@@ -1412,7 +1412,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Deprecated
   },
   feiRewardsDistributor: {
-    artifactName: 'IFeiRewardsDistributor',
+    artifactName: 'unknown', // IFeiRewardsDistributor
     address: '0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5',
     category: AddressCategory.Deprecated
   },
@@ -1512,7 +1512,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Deprecated
   },
   tribalChiefSync: {
-    artifactName: 'TribalChiefSync',
+    artifactName: 'unknown', // TribalChiefSync
     address: '0x7A883825caA45fcbDcd76991C5972Baf1551aa3d',
     category: AddressCategory.Deprecated
   },
