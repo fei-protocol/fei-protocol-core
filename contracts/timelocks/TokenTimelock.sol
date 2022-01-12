@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 // Inspired by OpenZeppelin TokenTimelock contract
 // Reference: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/TokenTimelock.sol
 
-import "../Timed.sol";
+import "../utils/Timed.sol";
 import "./ITokenTimelock.sol";
 
 abstract contract TokenTimelock is ITokenTimelock, Timed {

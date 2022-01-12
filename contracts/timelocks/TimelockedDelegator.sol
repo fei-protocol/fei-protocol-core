@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./ITimelockedDelegator.sol";
-import "../../utils/timelock/LinearTokenTimelock.sol";
+import "./LinearTokenTimelock.sol";
 
 /// @title a proxy delegate contract for TRIBE
 /// @author Fei Protocol
