@@ -1,7 +1,7 @@
 pragma solidity ^0.8.4;
 
 import "./IPegStabilityModule.sol";
-import "../token/IFei.sol";
+import "../fei/IFei.sol";
 
 interface IPSMRouter {
     // ---------- View-Only API ----------
