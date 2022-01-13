@@ -12,7 +12,7 @@ async function main() {
       'utils/SafeMath32.sol',
       'dao/Timelock.sol',
       'dao/GovernorAlpha.sol',
-      'dao/Tribe.sol',
+      'tribe/Tribe.sol',
       'Migrations.sol'
     ],
     'npx oz compile --evm-version "istanbul" --optimizer off',

@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "../refs/CoreRef.sol";
 import "./IPCVGuardian.sol";
 import "./IPCVDeposit.sol";
-import "../utils/CoreRefPauseableLib.sol";
+import "../libs/CoreRefPauseableLib.sol";
 
 contract PCVGuardian is IPCVGuardian, CoreRef {
     using CoreRefPauseableLib for address;
