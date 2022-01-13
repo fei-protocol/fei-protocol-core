@@ -19,7 +19,7 @@ before(async () => {
   await resetFork();
 });
 
-describe.only('e2e-peg-stability-module', function () {
+describe('e2e-peg-stability-module', function () {
   const impersonatedSigners: { [key: string]: Signer } = {};
   let contracts: NamedContracts;
   let deployAddress: string;
