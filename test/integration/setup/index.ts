@@ -1,4 +1,4 @@
-import { permissions } from '@addresses/permissions';
+import { permissions } from '@protocol/permissions';
 import { getAllContractAddresses, getAllContracts } from './loadContracts';
 import {
   Config,

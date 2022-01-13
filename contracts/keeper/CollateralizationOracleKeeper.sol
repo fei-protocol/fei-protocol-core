@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 
-import "../token/minter/FeiTimedMinter.sol";
+import "../fei/minter/FeiTimedMinter.sol";
 import "../oracle/collateralization/ICollateralizationOracleWrapper.sol";
 
 /// @title CollateralizationOracleKeeper

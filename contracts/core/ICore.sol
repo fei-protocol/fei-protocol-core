@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "./IPermissions.sol";
-import "../token/IFei.sol";
+import "../fei/IFei.sol";
 
 /// @title Core Interface
 /// @author Fei Protocol

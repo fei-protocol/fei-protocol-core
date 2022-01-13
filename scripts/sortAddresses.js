@@ -1,5 +1,5 @@
 
-import addresses from '../contract-addresses/mainnetAddresses';
+import addresses from '../protocol-configuration/mainnetAddresses';
 
 const categories = {
     Core: 0,
