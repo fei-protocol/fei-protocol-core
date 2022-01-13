@@ -9,6 +9,7 @@ import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '@test/integration/setup/utils';
 import { Contract, Signer } from 'ethers';
 import { expectApprox } from '@test/helpers';
+import { WETH9 } from '@custom-types/contracts';
 
 const toBN = ethers.BigNumber.from;
 
@@ -18,20 +19,20 @@ before(async () => {
   await resetFork();
 });
 
-describe('e2e-peg-stability-module', function () {
+describe.only('e2e-peg-stability-module', function () {
   const impersonatedSigners: { [key: string]: Signer } = {};
   let contracts: NamedContracts;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let daiPCVDripController: Contract;
   let doLogging: boolean;
-  let psmRouter: Contract;
+  let ethPSMRouter: Contract;
   let userAddress;
   let minterAddress;
   let weth: Contract;
   let dai: Contract;
   let daiPSM: Contract;
-  let wethPSM: Contract;
+  let ethPSM: Contract;
   let fei: Contract;
   let core: Contract;
   let feiDAOTimelock: Contract;
@@ -68,8 +69,9 @@ describe('e2e-peg-stability-module', function () {
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts } = await e2eCoord.loadEnvironment());
-    ({ dai, weth, daiPSM, wethPSM, psmRouter, fei, core, daiPCVDripController, feiDAOTimelock } = contracts);
+    ({ dai, weth, daiPSM, ethPSM, ethPSMRouter, fei, core, daiPCVDripController, feiDAOTimelock } = contracts);
     doLogging && console.log(`Environment loaded.`);
+    weth = contracts.weth as WETH9;
     await core.grantMinter(minterAddress);
 
     for (const address of impersonatedAddresses) {
@@ -77,20 +79,24 @@ describe('e2e-peg-stability-module', function () {
     }
   });
 
-  describe.skip('weth-router', async () => {
+  describe('weth-router', async () => {
     describe('redeem', async () => {
       const redeemAmount = 10_000_000;
+      before(async () => {
+        await ethPSM.unpauseRedeem();
+      });
+
       beforeEach(async () => {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
-        await fei.connect(impersonatedSigners[userAddress]).approve(psmRouter.address, redeemAmount);
+        await fei.connect(impersonatedSigners[userAddress]).approve(ethPSMRouter.address, redeemAmount);
       });
 
       it('exchanges 10,000,000 FEI for 1994 ETH', async () => {
         const startingFEIBalance = await fei.balanceOf(userAddress);
         const startingETHBalance = await ethers.provider.getBalance(beneficiaryAddress1);
-        const expectedEthAmount = await psmRouter.getRedeemAmountOut(redeemAmount);
+        const expectedEthAmount = await ethPSMRouter.getRedeemAmountOut(redeemAmount);
 
-        await psmRouter
+        await ethPSMRouter
           .connect(impersonatedSigners[userAddress])
           ['redeem(address,uint256,uint256)'](beneficiaryAddress1, redeemAmount, expectedEthAmount);
 
@@ -104,9 +110,9 @@ describe('e2e-peg-stability-module', function () {
       it('exchanges 5,000,000 FEI for 997 ETH', async () => {
         const startingFEIBalance = await fei.balanceOf(userAddress);
         const startingETHBalance = await ethers.provider.getBalance(beneficiaryAddress1);
-        const expectedEthAmount = await psmRouter.getRedeemAmountOut(redeemAmount / 2);
+        const expectedEthAmount = await ethPSMRouter.getRedeemAmountOut(redeemAmount / 2);
 
-        await psmRouter
+        await ethPSMRouter
           .connect(impersonatedSigners[userAddress])
           ['redeem(address,uint256,uint256)'](beneficiaryAddress1, redeemAmount / 2, expectedEthAmount);
 
@@ -117,8 +123,8 @@ describe('e2e-peg-stability-module', function () {
       });
 
       it('passthrough getRedeemAmountOut returns same value as PSM', async () => {
-        const actualEthAmountRouter = await psmRouter.getRedeemAmountOut(redeemAmount);
-        const actualEthAmountPSM = await wethPSM.getRedeemAmountOut(redeemAmount);
+        const actualEthAmountRouter = await ethPSMRouter.getRedeemAmountOut(redeemAmount);
+        const actualEthAmountPSM = await ethPSM.getRedeemAmountOut(redeemAmount);
         expect(actualEthAmountPSM).to.be.equal(actualEthAmountRouter);
       });
     });
@@ -130,10 +136,10 @@ describe('e2e-peg-stability-module', function () {
       });
 
       it('mint succeeds with 1 ether', async () => {
-        const minAmountOut = await psmRouter.getMintAmountOut(ethers.constants.WeiPerEther);
+        const minAmountOut = await ethPSMRouter.getMintAmountOut(ethers.constants.WeiPerEther);
         const userStartingFEIBalance = await fei.balanceOf(userAddress);
 
-        await psmRouter
+        await ethPSMRouter
           .connect(impersonatedSigners[userAddress])
           ['mint(address,uint256,uint256)'](userAddress, minAmountOut, ethers.constants.WeiPerEther, {
             value: ethers.constants.WeiPerEther
@@ -145,10 +151,10 @@ describe('e2e-peg-stability-module', function () {
 
       it('mint succeeds with 2 ether', async () => {
         const ethAmountIn = toBN(2).mul(ethers.constants.WeiPerEther);
-        const minAmountOut = await psmRouter.getMintAmountOut(ethAmountIn);
+        const minAmountOut = await ethPSMRouter.getMintAmountOut(ethAmountIn);
         const userStartingFEIBalance = await fei.balanceOf(userAddress);
 
-        await psmRouter
+        await ethPSMRouter
           .connect(impersonatedSigners[userAddress])
           ['mint(address,uint256,uint256)'](userAddress, minAmountOut, ethAmountIn, { value: ethAmountIn });
 
@@ -157,27 +163,27 @@ describe('e2e-peg-stability-module', function () {
       });
 
       it('passthrough getMintAmountOut returns same value as PSM', async () => {
-        const actualEthAmountRouter = await psmRouter.getMintAmountOut(mintAmount);
-        const actualEthAmountPSM = await wethPSM.getMintAmountOut(mintAmount);
+        const actualEthAmountRouter = await ethPSMRouter.getMintAmountOut(mintAmount);
+        const actualEthAmountPSM = await ethPSM.getMintAmountOut(mintAmount);
         expect(actualEthAmountPSM).to.be.equal(actualEthAmountRouter);
       });
     });
   });
 
-  describe.skip('weth-psm', async () => {
+  describe('weth-psm', async () => {
     describe('redeem', function () {
       const redeemAmount = 10_000_000;
       beforeEach(async () => {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
-        await fei.connect(impersonatedSigners[userAddress]).approve(wethPSM.address, redeemAmount);
+        await fei.connect(impersonatedSigners[userAddress]).approve(ethPSM.address, redeemAmount);
       });
 
       it('exchanges 10,000,000 FEI for WETH', async () => {
         const startingFEIBalance = await fei.balanceOf(userAddress);
         const startingWETHBalance = await weth.balanceOf(userAddress);
-        const expectedEthAmount = await wethPSM.getRedeemAmountOut(redeemAmount);
+        const expectedEthAmount = await ethPSM.getRedeemAmountOut(redeemAmount);
 
-        await wethPSM.connect(impersonatedSigners[userAddress]).redeem(userAddress, redeemAmount, expectedEthAmount);
+        await ethPSM.connect(impersonatedSigners[userAddress]).redeem(userAddress, redeemAmount, expectedEthAmount);
 
         const endingFEIBalance = await fei.balanceOf(userAddress);
         const endingWETHBalance = await weth.balanceOf(userAddress);
@@ -190,11 +196,9 @@ describe('e2e-peg-stability-module', function () {
       it('exchanges 5,000,000 FEI for WETH', async () => {
         const startingFEIBalance = await fei.balanceOf(userAddress);
         const startingWETHBalance = await weth.balanceOf(userAddress);
-        const expectedEthAmount = await wethPSM.getRedeemAmountOut(redeemAmount / 2);
+        const expectedEthAmount = await ethPSM.getRedeemAmountOut(redeemAmount / 2);
 
-        await wethPSM
-          .connect(impersonatedSigners[userAddress])
-          .redeem(userAddress, redeemAmount / 2, expectedEthAmount);
+        await ethPSM.connect(impersonatedSigners[userAddress]).redeem(userAddress, redeemAmount / 2, expectedEthAmount);
 
         const endingFEIBalance = await fei.balanceOf(userAddress);
         const endingWETHBalance = await weth.balanceOf(userAddress);
@@ -211,14 +215,14 @@ describe('e2e-peg-stability-module', function () {
       beforeEach(async () => {
         await forceEth(userAddress);
         await weth.connect(impersonatedSigners[userAddress]).deposit({ value: mintAmount });
-        await weth.connect(impersonatedSigners[userAddress]).approve(wethPSM.address, mintAmount);
+        await weth.connect(impersonatedSigners[userAddress]).approve(ethPSM.address, mintAmount);
       });
 
       it('mint succeeds with 1 WETH', async () => {
-        const minAmountOut = await wethPSM.getMintAmountOut(ethers.constants.WeiPerEther);
+        const minAmountOut = await ethPSM.getMintAmountOut(ethers.constants.WeiPerEther);
         const userStartingFEIBalance = await fei.balanceOf(userAddress);
 
-        await wethPSM.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount.div(2), minAmountOut);
+        await ethPSM.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount.div(2), minAmountOut);
 
         const userEndingFEIBalance = await fei.balanceOf(userAddress);
         expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.gte(minAmountOut);
@@ -227,10 +231,10 @@ describe('e2e-peg-stability-module', function () {
 
       it('mint succeeds with 2 WETH', async () => {
         const ethAmountIn = toBN(2).mul(ethers.constants.WeiPerEther);
-        const minAmountOut = await psmRouter.getMintAmountOut(ethAmountIn);
+        const minAmountOut = await ethPSMRouter.getMintAmountOut(ethAmountIn);
         const userStartingFEIBalance = await fei.balanceOf(userAddress);
 
-        await wethPSM.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, minAmountOut);
+        await ethPSM.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, minAmountOut);
 
         const userEndingFEIBalance = await fei.balanceOf(userAddress);
         expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.equal(minAmountOut);
