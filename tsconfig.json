@@ -17,7 +17,7 @@
       "@scripts/*" : ["scripts/*"],
       "@test/*" : ["test/*"],
       "@proposals/*" : ["proposals/*"],
-      "@addresses/*" : ["contract-addresses/*"],
+      "@protocol/*" : ["protocol-configuration/*"],
     }
   },
   "include": [

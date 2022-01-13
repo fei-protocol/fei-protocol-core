@@ -5,7 +5,7 @@ import "../IPCVSwapper.sol";
 import "../../Constants.sol";
 import "../utils/WethPCVDeposit.sol";
 import "../../utils/Incentivized.sol";
-import "../../utils/RateLimitedMinter.sol";
+import "../../fei/minter/RateLimitedMinter.sol";
 import "../../refs/OracleRef.sol";
 import "../../utils/Timed.sol";
 import "../../external/UniswapV2Library.sol";

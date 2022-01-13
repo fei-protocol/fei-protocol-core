@@ -67,11 +67,10 @@ describe('e2e-dao', function () {
     it('proposal succeeds', async function () {
       const feiDAO = contracts.feiDAO;
 
-      const targets = [feiDAO.address, contractAddresses.daiBondingCurve];
-      const values = [0, 0];
+      const targets = [feiDAO.address];
+      const values = [0];
       const calldatas = [
-        '0x70b0f660000000000000000000000000000000000000000000000000000000000000000a', // set voting delay 10
-        '0xe1d92bf8000000000000000000000000000000000000000000000000000000000000000b' // set bonding curve duration 11
+        '0x70b0f660000000000000000000000000000000000000000000000000000000000000000a' // set voting delay 10
       ];
       const description = [];
 
@@ -119,7 +118,6 @@ describe('e2e-dao', function () {
       );
 
       expect((await feiDAO.votingDelay()).toString()).to.be.equal('10');
-      expect((await contracts.daiBondingCurve.duration()).toString()).to.be.equal('11');
     });
   });
 
