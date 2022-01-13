@@ -1221,6 +1221,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x752F119bD4Ee2342CE35E2351648d21962c7CAfE',
     category: AddressCategory.External
   },
+  reptb: {
+    artifactName: 'IERC20',
+    address: '0x6c806eDDAd78A5505Fce27B18C6f859fc9739BEc',
+    category: AddressCategory.External
+  },
   reflexerStableAssetFusePoolRai: {
     artifactName: 'CErc20Delegator',
     address: '0x752F119bD4Ee2342CE35E2351648d21962c7CAfE',
