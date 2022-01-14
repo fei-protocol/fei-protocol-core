@@ -8,7 +8,8 @@ export const permissions = {
     'optimisticMinter',
     'agEurAngleUniswapPCVDeposit',
     'daiPSM',
-    'ethPSM'
+    'ethPSM',
+    'lusdPSM'
   ],
   BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'timelock', 'feiDAOTimelock'],
@@ -18,8 +19,10 @@ export const permissions = {
     'aaveEthPCVDripController',
     'pcvGuardian',
     'daiPCVDripController',
+    'lusdPCVDripController',
     'ethPSMFeiSkimmer',
-    'daiPSMFeiSkimmer'
+    'daiPSMFeiSkimmer',
+    'lusdPSMFeiSkimmer'
   ],
   GUARDIAN_ROLE: ['multisig', 'pcvGuardian'],
   ORACLE_ADMIN_ROLE: ['collateralizationOracleGuardian', 'optimisticTimelock'],
