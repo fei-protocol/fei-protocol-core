@@ -4,6 +4,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 import fip_54 from '@proposals/description/fip_54';
 import fip_60b from '@proposals/description/fip_60b';
+import fip_63 from '@proposals/description/fip_63';
 import fip_64 from '@proposals/description/fip_64';
 import fip_redeem from '@proposals/description/fip_redeem';
 
@@ -66,6 +67,22 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.OA,
     totalValue: 0,
     proposal: fip_60b
+  },
+  fip_63: {
+    deploy: false,
+    proposalId: undefined,
+    affectedContractSignoff: [
+      'lusdPSM',
+      'lusdPCVDripController',
+      'lusdPSMFeiSkimmer',
+      'collateralizationOracle',
+      'core',
+      'pcvGuardian'
+    ],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_63
   },
   fip_64: {
     deploy: false,

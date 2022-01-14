@@ -116,6 +116,21 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x210300C158f95E1342fD008aE417ef68311c49C2',
     category: AddressCategory.Peg
   },
+  lusdPSM: {
+    artifactName: 'MintRedeemPausePSM',
+    address: '0xb0e731F036AdfDeC12da77c15aaB0F90E8e45A0e',
+    category: AddressCategory.Peg
+  },
+  lusdPSMFeiSkimmer: {
+    artifactName: 'FeiSkimmer',
+    address: '0xFc29429D8c8D80320C4AB454131f741F56239c2b',
+    category: AddressCategory.Peg
+  },
+  lusdPCVDripController: {
+    artifactName: 'PCVDripController',
+    address: '0x59fA1bB4fBd7fcB055476645F228f13ac14754a8',
+    category: AddressCategory.Peg
+  },
   ethPSM: {
     artifactName: 'MintRedeemPausePSM',
     address: '0x98E5F5706897074a4664DD3a32eB80242d6E694B',
@@ -1297,7 +1312,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.External
   },
   weth: {
-    artifactName: 'IWETH',
+    artifactName: 'WETH9',
     address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
     category: AddressCategory.External
   },
