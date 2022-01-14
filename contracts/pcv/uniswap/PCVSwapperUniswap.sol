@@ -8,7 +8,7 @@ import "../../utils/Incentivized.sol";
 import "../../fei/minter/RateLimitedMinter.sol";
 import "../../refs/OracleRef.sol";
 import "../../utils/Timed.sol";
-import "../../external/UniswapV2Library.sol";
+import "../../external/uniswap/UniswapV2Library.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
