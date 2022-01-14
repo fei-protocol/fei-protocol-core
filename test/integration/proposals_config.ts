@@ -59,9 +59,16 @@ const proposals: ProposalsConfigMap = {
     proposal: fip_60b
   },
   fip_63: {
-    deploy: true,
+    deploy: false,
     proposalId: undefined,
-    affectedContractSignoff: ['lusdPSM', 'lusdPCVDripController', 'collateralizationOracle', 'core', 'pcvGuardian'],
+    affectedContractSignoff: [
+      'lusdPSM',
+      'lusdPCVDripController',
+      'lusdPSMFeiSkimmer',
+      'collateralizationOracle',
+      'core',
+      'pcvGuardian'
+    ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,
