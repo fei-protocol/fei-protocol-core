@@ -1,4 +1,4 @@
-import { DeployUpgradeFunc } from '../../types/types';
+import { DeployUpgradeFunc } from '../../../types/types';
 import { ethers } from 'hardhat';
 
 const fourDays = 4 * 24 * 60 * 60;

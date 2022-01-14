@@ -7,7 +7,7 @@ import {
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
-} from '../../types/types';
+} from '../../../types/types';
 
 chai.use(CBN(ethers.BigNumber));
 
