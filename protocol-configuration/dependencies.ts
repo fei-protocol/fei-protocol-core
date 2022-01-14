@@ -28,9 +28,15 @@ const dependencies: DependencyMap = {
       'guardian',
       'optimisticTimelock',
       'aaveEthPCVDripController',
+      'bammDeposit',
       'daiPCVDripController',
       'daiPSM',
       'ethPSM',
+      'lusdPSM',
+      'lusdPCVDripController',
+      'lusdPSMFeiSkimmer',
+      'ethPSMFeiSkimmer',
+      'daiPSMFeiSkimmer',
       'tribeReserveStabilizer',
       'aaveEthPCVDeposit',
       'aaveFeiPCVDeposit',
@@ -112,7 +118,9 @@ const dependencies: DependencyMap = {
       'aaveEthPCVDripController',
       'daiPSM',
       'ethPSM',
+      'lusdPSM',
       'daiPCVDripController',
+      'lusdPSMFeiSkimmer',
       'aaveFeiPCVDeposit',
       'agEurAngleUniswapPCVDeposit',
       'dpiUniswapPCVDeposit',
@@ -143,10 +151,13 @@ const dependencies: DependencyMap = {
     ]
   },
   ethPSMFeiSkimmer: {
-    contractDependencies: ['fei', 'ethPSM']
+    contractDependencies: ['fei', 'ethPSM', 'core']
   },
   daiPSMFeiSkimmer: {
-    contractDependencies: ['fei', 'daiPSM']
+    contractDependencies: ['fei', 'daiPSM', 'core']
+  },
+  lusdPSMFeiSkimmer: {
+    contractDependencies: ['fei', 'lusdPSM', 'core']
   },
   feiTribeLBPSwapper: {
     contractDependencies: ['core', 'pcvEquityMinter']
@@ -164,6 +175,7 @@ const dependencies: DependencyMap = {
       'feiDAOTimelock',
       'daiPSM',
       'ethPSM',
+      'lusdPSM',
       'compoundEthPCVDeposit',
       'aaveEthPCVDeposit'
     ]
@@ -258,6 +270,23 @@ const dependencies: DependencyMap = {
       'pcvGuardian',
       'daiPSMFeiSkimmer'
     ]
+  },
+  lusdPSM: {
+    contractDependencies: [
+      'core',
+      'fei',
+      'bammDeposit',
+      'chainlinkLUSDOracleWrapper',
+      'pcvGuardian',
+      'lusdPCVDripController',
+      'lusdPSMFeiSkimmer'
+    ]
+  },
+  lusdPCVDripController: {
+    contractDependencies: ['lusdPSM', 'core', 'bammDeposit']
+  },
+  bammDeposit: {
+    contractDependencies: ['lusdPSM', 'core', 'lusdPCVDripController']
   },
   ethPSM: {
     contractDependencies: [
@@ -575,7 +604,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core']
   },
   chainlinkLUSDOracleWrapper: {
-    contractDependencies: ['core', 'collateralizationOracle', 'feiLusdLBPSwapper']
+    contractDependencies: ['core', 'collateralizationOracle', 'feiLusdLBPSwapper', 'lusdPSM']
   },
   chainlinkRaiEthOracleWrapper: {
     contractDependencies: ['core', 'chainlinkRaiUsdCompositeOracle']
