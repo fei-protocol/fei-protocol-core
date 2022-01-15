@@ -15,7 +15,7 @@ before(async () => {
   await resetFork();
 });
 
-describe.only('e2e-backstop', function () {
+describe('e2e-backstop', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
