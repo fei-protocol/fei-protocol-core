@@ -2,7 +2,7 @@ pragma solidity ^0.8.0;
 
 import "../../staking/ITribalChief.sol";
 import "../../refs/CoreRef.sol";
-import "../../external/Unitroller.sol";
+import "../../external/fuse/Unitroller.sol";
 import "../../staking/StakingTokenWrapper.sol";
 import "./IRewardsDistributorAdmin.sol";
 

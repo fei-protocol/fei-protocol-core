@@ -1,7 +1,7 @@
 pragma solidity ^0.8.0;
 
 import "../refs/CoreRef.sol";
-import "../external/Unitroller.sol";
+import "../external/fuse/Unitroller.sol";
 
 /// @title a Fuse pause and borrow cap guardian used to expand access control to more Fei roles
 /// @author joeysantoro
