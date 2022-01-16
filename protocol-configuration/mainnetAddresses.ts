@@ -391,6 +391,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x7Eb88140af813294aEDce981b6aC08fcd139d408',
     category: AddressCategory.PCV
   },
+  rariPool146EthPCVDeposit: {
+    artifactName: 'EthCompoundPCVDeposit',
+    address: '0xC68412B72e68c30D4E6c0854b439CBBe957146e4',
+    category: AddressCategory.PCV
+  },
   rariPool18FeiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x07F2DD7E6A78D96c08D0a8212f4097dCC129d629',
@@ -799,6 +804,11 @@ const MainnetAddresses: MainnetAddresses = {
   rariPool146FuseAdmin: {
     artifactName: 'FuseAdmin',
     address: '0x6d64D080345C446dA31b8D3855bA6d9C0fC875D2',
+    category: AddressCategory.FeiRari
+  },
+  rariPool146Eth: {
+    artifactName: 'unknown',
+    address: '0xfbD8Aaf46Ab3C2732FA930e5B343cd67cEA5054C',
     category: AddressCategory.FeiRari
   },
   fuseAdmin: {
