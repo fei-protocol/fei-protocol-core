@@ -56,6 +56,7 @@ const dependencies: DependencyMap = {
       'indexDelegator',
       'liquityFusePoolLusdPCVDeposit',
       'poolPartyFeiPCVDeposit',
+      'rariPool146EthPCVDeposit',
       'rariPool18FeiPCVDeposit',
       'rariPool19DpiPCVDeposit',
       'rariPool19FeiPCVDeposit',
@@ -147,7 +148,8 @@ const dependencies: DependencyMap = {
       'restrictedPermissions',
       'ethPSMFeiSkimmer',
       'daiPSMFeiSkimmer',
-      'rariInfraFeiTimelock'
+      'rariInfraFeiTimelock',
+      'reptbRedeemer'
     ]
   },
   ethPSMFeiSkimmer: {
@@ -203,7 +205,8 @@ const dependencies: DependencyMap = {
       'tribeReserveStabilizer',
       'rariPool8Fei3Crv',
       'rariPool8d3',
-      'rariInfraTribeTimelock'
+      'rariInfraTribeTimelock',
+      'pegExchanger'
     ]
   },
   tribeMinter: {
@@ -221,7 +224,8 @@ const dependencies: DependencyMap = {
       'creamDepositWrapper',
       'aaveTribeIncentivesController',
       'tribeMinter',
-      'pcvGuardian'
+      'pcvGuardian',
+      'pegExchanger'
     ]
   },
   guardian: {
@@ -359,6 +363,18 @@ const dependencies: DependencyMap = {
   },
   poolPartyFeiPCVDeposit: {
     contractDependencies: ['core', 'fei']
+  },
+  rariPool146EthPCVDeposit: {
+    contractDependencies: ['core', 'rariPool146Eth']
+  },
+  rariPool146Comptroller: {
+    contractDependencies: ['rariPool146FuseAdmin', 'rariPool146Eth']
+  },
+  rariPool146FuseAdmin: {
+    contractDependencies: ['rariPool146Comptroller']
+  },
+  rariPool146Eth: {
+    contractDependencies: ['rariPool146Comptroller', 'rariPool146EthPCVDeposit']
   },
   rariPool18FeiPCVDeposit: {
     contractDependencies: ['core', 'fei']
@@ -875,6 +891,12 @@ const dependencies: DependencyMap = {
   },
   rariPool8TribeIrm: {
     contractDependencies: ['rariPool8Tribe']
+  },
+  reptbRedeemer: {
+    contractDependencies: ['fei']
+  },
+  pegExchanger: {
+    contractDependencies: ['tribe', 'feiDAOTimelock']
   }
 };
 
