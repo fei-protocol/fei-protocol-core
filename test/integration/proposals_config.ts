@@ -5,6 +5,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 import fip_60b from '@proposals/description/old/fip_60b';
 import fip_67 from '@proposals/description/fip_67';
 import fip_64 from '@proposals/description/fip_64';
+import fip_redeem from '@proposals/description/fip_redeem';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -15,6 +16,15 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
+  fip_redeem: {
+    deploy: false,
+    proposalId: undefined,
+    affectedContractSignoff: ['reptbRedeemer', 'fei', 'pegExchanger'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_redeem
+  },
   fip_60b: {
     deploy: false,
     proposalId: undefined,

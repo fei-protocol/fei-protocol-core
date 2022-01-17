@@ -148,7 +148,8 @@ const dependencies: DependencyMap = {
       'restrictedPermissions',
       'ethPSMFeiSkimmer',
       'daiPSMFeiSkimmer',
-      'rariInfraFeiTimelock'
+      'rariInfraFeiTimelock',
+      'reptbRedeemer'
     ]
   },
   ethPSMFeiSkimmer: {
@@ -204,7 +205,8 @@ const dependencies: DependencyMap = {
       'tribeReserveStabilizer',
       'rariPool8Fei3Crv',
       'rariPool8d3',
-      'rariInfraTribeTimelock'
+      'rariInfraTribeTimelock',
+      'pegExchanger'
     ]
   },
   tribeMinter: {
@@ -222,7 +224,8 @@ const dependencies: DependencyMap = {
       'creamDepositWrapper',
       'aaveTribeIncentivesController',
       'tribeMinter',
-      'pcvGuardian'
+      'pcvGuardian',
+      'pegExchanger'
     ]
   },
   guardian: {
@@ -888,6 +891,12 @@ const dependencies: DependencyMap = {
   },
   rariPool8TribeIrm: {
     contractDependencies: ['rariPool8Tribe']
+  },
+  reptbRedeemer: {
+    contractDependencies: ['fei']
+  },
+  pegExchanger: {
+    contractDependencies: ['tribe', 'feiDAOTimelock']
   }
 };
 
