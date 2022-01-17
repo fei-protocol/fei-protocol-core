@@ -56,6 +56,7 @@ const dependencies: DependencyMap = {
       'indexDelegator',
       'liquityFusePoolLusdPCVDeposit',
       'poolPartyFeiPCVDeposit',
+      'rariPool146EthPCVDeposit',
       'rariPool18FeiPCVDeposit',
       'rariPool19DpiPCVDeposit',
       'rariPool19FeiPCVDeposit',
@@ -359,6 +360,18 @@ const dependencies: DependencyMap = {
   },
   poolPartyFeiPCVDeposit: {
     contractDependencies: ['core', 'fei']
+  },
+  rariPool146EthPCVDeposit: {
+    contractDependencies: ['core', 'rariPool146Eth']
+  },
+  rariPool146Comptroller: {
+    contractDependencies: ['rariPool146FuseAdmin', 'rariPool146Eth']
+  },
+  rariPool146FuseAdmin: {
+    contractDependencies: ['rariPool146Comptroller']
+  },
+  rariPool146Eth: {
+    contractDependencies: ['rariPool146Comptroller', 'rariPool146EthPCVDeposit']
   },
   rariPool18FeiPCVDeposit: {
     contractDependencies: ['core', 'fei']

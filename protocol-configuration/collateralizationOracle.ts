@@ -31,7 +31,8 @@ const collateralizationAddresses = {
     'aaveEthPCVDepositWrapper',
     'uniswapPCVDeposit',
     'ethTokemakPCVDeposit',
-    'ethPSM'
+    'ethPSM',
+    'rariPool146EthPCVDeposit'
   ],
   dpi: ['dpiUniswapPCVDeposit', 'rariPool19DpiPCVDepositWrapper'],
   rai: ['rariPool9RaiPCVDepositWrapper', 'aaveRaiPCVDepositWrapper'],

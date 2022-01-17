@@ -98,7 +98,15 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
-  const { lusdPCVDripController, lusdPSMFeiSkimmer, lusdPSM, pcvGuardian, bammDeposit, lusd } = contracts;
+  const {
+    lusdPCVDripController,
+    lusdPSMFeiSkimmer,
+    lusdPSM,
+    pcvGuardian,
+    bammDeposit,
+    lusd,
+    rariPool146EthPCVDeposit
+  } = contracts;
 
   expect(await lusdPCVDripController.source()).to.be.equal(bammDeposit.address);
   expect(await lusdPCVDripController.target()).to.be.equal(lusdPSM.address);
@@ -123,4 +131,6 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(await lusd.balanceOf(lusdPSM.address)).to.be.equal(0);
 
   expect(await pcvGuardian.isSafeAddress(lusdPSM.address)).to.be.true;
+
+  expect(await rariPool146EthPCVDeposit.balance()).to.be.equal(ethers.constants.WeiPerEther.mul(2500));
 };
