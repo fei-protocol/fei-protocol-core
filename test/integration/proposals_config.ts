@@ -17,9 +17,9 @@ const proposals: ProposalsConfigMap = {
     }
     */
   fip_redeem: {
-    deploy: true,
+    deploy: false,
     proposalId: undefined,
-    affectedContractSignoff: [],
+    affectedContractSignoff: ['reptbRedeemer', 'fei', 'pegExchanger'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,

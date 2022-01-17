@@ -1615,6 +1615,11 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'LinearTimelockedDelegator',
     address: '0x625cf6AA7DafB154F3Eb6BE87592110e30290dEe',
     category: AddressCategory.TBD
+  },
+  reptbRedeemer: {
+    artifactName: 'REPTbRedeemer',
+    address: '0x362e7278Bf74389781812A1201e7A400872A0598',
+    category: AddressCategory.TBD
   }
 };
 
