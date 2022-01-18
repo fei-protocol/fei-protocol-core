@@ -58,7 +58,7 @@ describe('votium-bribe', function () {
       const signer = await getImpersonatedSigner(VOTIUM_ADMIN);
       await contracts.votiumBribe.connect(signer).initiateProposal(
         CVX_PROPOSAL, // snapshot proposal id
-        Math.floor((Date.now() + 24 * 36e5) / 1000), // _deadline in 24h
+        Math.floor((Date.now() + 99999 * 24 * 36e5) / 1000), // _deadline in a long time
         50 // maxIndex in the proposal
       );
     });
