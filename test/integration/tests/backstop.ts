@@ -3,7 +3,7 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { resetFork, time } from '@test/helpers';
+import { resetFork, time, overwriteChainlinkAggregator } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 
@@ -15,7 +15,7 @@ before(async () => {
   await resetFork();
 });
 
-describe('e2e', function () {
+describe('e2e-backstop', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
@@ -61,6 +61,9 @@ describe('e2e', function () {
   describe('TribeReserveStabilizer', async function () {
     it('exchangeFei', async function () {
       const { fei, staticPcvDepositWrapper, tribe, tribeReserveStabilizer, collateralizationOracleWrapper } = contracts;
+
+      // set Chainlink ETHUSD to a fixed 4,000$ value
+      await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
 
       await fei.mint(deployAddress, tenPow18.mul(tenPow18).mul(toBN(4)));
       await collateralizationOracleWrapper.update();

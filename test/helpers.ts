@@ -4,6 +4,7 @@ import CBN from 'chai-bn';
 import { Core, Core__factory } from '@custom-types/contracts';
 import { BigNumber, BigNumberish, Signer } from 'ethers';
 import { NamedAddresses } from '@custom-types/types';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
@@ -52,7 +53,7 @@ async function getAddresses(): Promise<NamedAddresses> {
   };
 }
 
-async function getImpersonatedSigner(address: string): Promise<Signer> {
+async function getImpersonatedSigner(address: string): Promise<SignerWithAddress> {
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
     params: [address]
@@ -72,6 +73,9 @@ async function resetTime(): Promise<void> {
 }
 
 async function resetFork(): Promise<void> {
+  if (process.env.NO_RESET) {
+    return;
+  }
   await hre.network.provider.request({
     method: 'hardhat_reset',
     params: [
@@ -187,6 +191,18 @@ const balance = {
   }
 };
 
+async function overwriteChainlinkAggregator(chainlink, value, decimals) {
+  // Deploy new mock aggregator
+  const factory = await ethers.getContractFactory('MockChainlinkOracle');
+  const mockAggregator = await factory.deploy(value, decimals);
+
+  await mockAggregator.deployTransaction.wait();
+
+  // Overwrite storage at chainlink address to use mock aggregator for updates
+  const address = `0x00000000000000000000${mockAggregator.address.slice(2)}0005`;
+  await hre.network.provider.send('hardhat_setStorageAt', [chainlink, '0x2', address]);
+}
+
 const time = {
   latest: async (): Promise<number> => latestTime(),
 
@@ -255,5 +271,6 @@ export {
   getImpersonatedSigner,
   setNextBlockTimestamp,
   resetTime,
-  resetFork
+  resetFork,
+  overwriteChainlinkAggregator
 };

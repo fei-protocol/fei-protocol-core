@@ -1,4 +1,4 @@
-import { permissions } from '@addresses/permissions';
+import { permissions } from '@protocol/permissions';
 import { getAllContractAddresses, getAllContracts } from './loadContracts';
 import {
   Config,
@@ -13,12 +13,14 @@ import {
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc,
-  MainnetContracts
+  MainnetContracts,
+  ProposalCategory
 } from '@custom-types/types';
 import { sudo } from '@scripts/utils/sudo';
 import constructProposal from '@scripts/utils/constructProposal';
 import '@nomiclabs/hardhat-ethers';
 import { resetFork } from '@test/helpers';
+import simulateOAProposal from '@scripts/utils/simulateOAProposal';
 
 /**
  * Coordinate initialising an end-to-end testing environment
@@ -85,6 +87,17 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   ): Promise<NamedContracts> {
     let deployedUpgradedContracts = {};
 
+    if (config.proposalId) {
+      this.config.logging && console.log(`Checking proposal completed`);
+      const feiDAO = existingContracts.feiDAO;
+
+      const state = await feiDAO.state(config.proposalId);
+      if (state === 7) {
+        this.config.logging && console.log(`Proposal completed on-chain, skipping`);
+        return existingContracts;
+      }
+    }
+
     // Get the upgrade setup and teardown scripts
     const { deploy, setup, teardown, validate } = await import('@proposals/dao/' + proposalName);
 
@@ -122,8 +135,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     const setupTyped = setup as SetupUpgradeFunc;
     await setupTyped(contractAddresses, existingContracts, contracts, this.config.logging);
 
-    // TODO maybe replace skipDAO with existence of config.proposal
-    if (!config.skipDAO) {
+    if (config.category === ProposalCategory.DAO) {
       // Simulate the DAO proposal
       const proposal = await constructProposal(
         config.proposal,
@@ -131,9 +143,20 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
         contractAddresses,
         this.config.logging
       );
-      this.config.logging && console.log(`Simulating proposal...`);
+      this.config.logging && console.log(`Simulating DAO proposal...`);
       await proposal.simulate();
     }
+
+    if (config.category === ProposalCategory.OA) {
+      this.config.logging && console.log(`Simulating OA proposal...`);
+      await simulateOAProposal(
+        config.proposal,
+        contracts as unknown as MainnetContracts,
+        contractAddresses,
+        this.config.logging
+      );
+    }
+
     // teardown the DAO proposal
     this.config.logging && console.log(`Running proposal teardown...`);
     const teardownTyped = teardown as TeardownUpgradeFunc;

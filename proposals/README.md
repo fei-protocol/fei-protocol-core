@@ -14,9 +14,9 @@ These files will be used to programatically generate the proposal calldata for s
 Make sure these files are up to date and approved by the Fei Core smart contracts team before continuing development.
 
 ## Step 2 (Optional): Updating Permissions
-If your proposal updates the access control permissions of a contract, you need to list/remove the address key in the appropriate sections of `/contract-addresses/permissions.json`
+If your proposal updates the access control permissions of a contract, you need to list/remove the address key in the appropriate sections of `/protocol-configuration/permissions.json`
 
-The key names are the same as the ones in `/contract-addresses/mainnetAddresses.ts`
+The key names are the same as the ones in `/protocol-configuration/mainnetAddresses.ts`
 
 These permissiones are validated against on-chain state in the last e2e test
 
@@ -43,10 +43,10 @@ The setup hook should contain operational actions from third parties including a
 
 The script should use the injected `addresses`, `contracts`, and `oldContracts` parameters to trigger the appropriate governor functions with the intended inputs.
 
-* `addresses` contains a flat mapping of address names to addresses found in `contract-addresses/mainnetAddresses`
-* `contracts` contains a flat mapping of contract names to contract objects using the specified artifact and contract from `contract-addresses/mainnetAddresses` AFTER all of the deploy and upgrade steps have taken place
+* `addresses` contains a flat mapping of address names to addresses found in `protocol-configuration/mainnetAddresses`
+* `contracts` contains a flat mapping of contract names to contract objects using the specified artifact and contract from `protocol-configuration/mainnetAddresses` AFTER all of the deploy and upgrade steps have taken place
 
-* `oldContracts` contains a flat mapping of contract names to contract objects using the specified artifact and contract from `contract-addresses/mainnetAddresses` from BEFORE all of the deploy and upgrade steps have taken place, in case actions need to be taken on the prior versions of upgraded contracts
+* `oldContracts` contains a flat mapping of contract names to contract objects using the specified artifact and contract from `protocol-configuration/mainnetAddresses` from BEFORE all of the deploy and upgrade steps have taken place, in case actions need to be taken on the prior versions of upgraded contracts
 
 ### Step 3c (Optional): teardown() - Post-DAO steps
 The teardown hook should contain operational actions from third parties including any address impersonation that occur AFTER the DAO proposal executes. 
@@ -63,7 +63,7 @@ If your contract has an optional deployment step from above, you need to deploy 
 
 Run `DEPLOY_FILE=fip_x npm run deploy:fip`
 
-Run your deploy script if you had one from step 2. Update `/contract-addresses/mainnetAddresses.ts` with the new contract addresses. 
+Run your deploy script if you had one from step 2. Update `/protocol-configuration/mainnetAddresses.ts` with the new contract addresses. 
 
 Update the fork block inside the hardhat config and set the deploy flag to false in the config entry for `fip_x` in `end-to-end/proposals_config.ts`
 

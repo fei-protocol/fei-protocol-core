@@ -4,8 +4,8 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "./Permissions.sol";
 import "./ICore.sol";
-import "../token/Fei.sol";
-import "../dao/Tribe.sol";
+import "../fei/Fei.sol";
+import "../tribe/Tribe.sol";
 
 /// @title Source of truth for Fei Protocol
 /// @author Fei Protocol
