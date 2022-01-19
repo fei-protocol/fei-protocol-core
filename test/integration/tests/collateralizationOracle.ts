@@ -162,7 +162,15 @@ describe('e2e-collateralization', function () {
 
         const numTokens = (await collateralizationOracle.getDepositsForToken(element)).length;
         doLogging && console.log(`Address count for token ${addresses[i]}: ${numTokens}`);
-        expect(numTokens).to.be.equal(collateralizationAddresses[addresses[i]].length);
+        expect(numTokens).to.be.equal(
+          collateralizationAddresses[addresses[i]].length,
+          'bad number of deposits for token ' +
+            element +
+            ' - expected ' +
+            collateralizationAddresses[addresses[i]].length +
+            ' but got ' +
+            numTokens
+        );
       }
     });
 

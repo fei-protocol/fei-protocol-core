@@ -102,7 +102,12 @@ describe('e2e-dependencies', function () {
           crDeposits.push(deposit);
 
           doLogging && console.log(`${element} contract address: ${deposit}`);
-          expect(addresses[deposit].category).to.not.be.equal('Deprecated');
+          if (addresses[deposit]) {
+            // addresses[deposit] may be undefined if a deposit is added to the
+            // dependencies and permissions/collateralizationOracle files, but
+            // is not yet deployed on the mainnet (i.e. in mainnetAddresses.ts).
+            expect(addresses[deposit].category).to.not.be.equal('Deprecated');
+          }
         }
       }
 

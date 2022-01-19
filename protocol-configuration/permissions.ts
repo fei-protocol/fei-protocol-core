@@ -9,7 +9,8 @@ export const permissions = {
     'agEurAngleUniswapPCVDeposit',
     'daiPSM',
     'ethPSM',
-    'lusdPSM'
+    'lusdPSM',
+    'balancerDepositFeiWeth'
   ],
   BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'timelock', 'feiDAOTimelock'],

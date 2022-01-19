@@ -75,6 +75,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 
   return {
     weightedBalancerPoolManagerBase,
+    balancerFeiWethPool,
     balancerDepositFeiWeth,
     delayedPCVMoverWethUniToBal
   };

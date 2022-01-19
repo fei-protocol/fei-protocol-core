@@ -31,7 +31,7 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0,
     proposal: fip_70
   },
-  fip_60b: {
+  /*fip_60b: {
     deploy: false,
     proposalId: undefined,
     affectedContractSignoff: [
@@ -80,7 +80,7 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.OA,
     totalValue: 0,
     proposal: fip_64
-  }
+  }*/
 };
 
 export default proposals;

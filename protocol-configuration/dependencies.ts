@@ -108,6 +108,8 @@ const dependencies: DependencyMap = {
       'fuseAdmin',
       'fuseGuardian',
       'restrictedPermissions'
+      //'balancerDepositFeiWeth',
+      //'delayedPCVMoverWethUniToBal'
     ]
   },
   fei: {
@@ -897,7 +899,24 @@ const dependencies: DependencyMap = {
   },
   pegExchanger: {
     contractDependencies: ['tribe', 'feiDAOTimelock']
+  },
+  weightedBalancerPoolManagerBase: {
+    contractDependencies: []
   }
+  /*balancerDepositFeiWeth: {
+    contractDependencies: [
+      'core',
+      'balancerVault',
+      'balancerRewards',
+      'balancerFeiWethPool',
+      'weth',
+      'oneConstantOracle',
+      'chainlinkEthUsdOracleWrapper'
+    ]
+  },
+  delayedPCVMoverWethUniToBal: {
+    contractDependencies: ['core', 'uniswapPCVDeposit', 'balancerDepositFeiWeth', 'ratioPCVControllerV2']
+  }*/
 };
 
 export default dependencies;
