@@ -4,7 +4,10 @@ pragma solidity ^0.8.4;
 import "../../refs/CoreRef.sol";
 import "./RatioPCVControllerV2.sol";
 
-/// @title a PCV controller for moving a ratio of the total value in the PCV deposit
+/// @title a PCV controller for moving a ratio of the total value in a
+/// PCV deposit, after a certain deadline. PCV_CONTROLLER_ROLE has to be
+/// granted temporarily, and this contract renounce to this role after
+/// it has executed the scheduled PCV movement.
 /// @author Fei Protocol
 contract DelayedPCVMover is CoreRef {
     using SafeERC20 for IERC20;
@@ -42,22 +45,17 @@ contract DelayedPCVMover is CoreRef {
         basisPoints = _basisPoints;
     }
 
-    /// @notice Modifier for PCV movement functions. This will enforce the
-    /// deadline check, and renounce to the PCV_CONTROLLER_ROLE role after
-    /// a successful call.
-    modifier pcvMovement() {
+    /// @notice PCV movement by calling withdrawRatio on the PCVController.
+    /// This will enforce the deadline check, and renounce to the
+    /// PCV_CONTROLLER_ROLE role after a successful call.
+    function withdrawRatio() public whenNotPaused {
         // Check that deadline has been reached
         require(block.timestamp >= deadline, "DelayedPCVMover: deadline not reached");
 
         // Perform PCV movement
-        _;
+        controller.withdrawRatio(deposit, target, basisPoints);
 
         // Revoke PCV_CONTROLLER_ROLE from self
         core().renounceRole(keccak256("PCV_CONTROLLER_ROLE"), address(this));
-    }
-
-    /// @notice PCV movement by calling withdrawRatio on the PCVController.
-    function withdrawRatio() public whenNotPaused pcvMovement {
-        controller.withdrawRatio(deposit, target, basisPoints);
     }
 }
