@@ -76,7 +76,7 @@
     "mocha-junit-reporter": "^2.0.2",
     "mocha-multi-reporters": "^1.5.1",
     "prettier": "^2.5.1",
-    "solidity-coverage": "^0.7.17",
+    "solidity-coverage": "^0.7.18",
     "ts-node": "^10.4.0",
     "tsconfig-paths": "^3.12.0",
     "typechain": "^5.2.0",
