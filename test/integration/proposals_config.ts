@@ -2,9 +2,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
-import fip_60b from '@proposals/description/old/fip_60b';
-import fip_67 from '@proposals/description/fip_67';
-import fip_64 from '@proposals/description/fip_64';
+import fip_60c from '@proposals/description/fip_60c';
 import fip_68 from '@proposals/description/fip_68';
 
 const proposals: ProposalsConfigMap = {
@@ -16,46 +14,23 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  fip_68: {
-    deploy: false,
-    proposalId: '35352825965290593619963926287136976535992260019512232369033890490308293973890',
-    affectedContractSignoff: ['reptbRedeemer', 'fei', 'pegExchanger'],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.DAO,
-    totalValue: 0,
-    proposal: fip_68
-  },
-  fip_60b: {
-    deploy: false,
+  // fip_68: {
+  //   deploy: false,
+  //   proposalId: '35352825965290593619963926287136976535992260019512232369033890490308293973890',
+  //   affectedContractSignoff: ['reptbRedeemer', 'fei', 'pegExchanger'],
+  //   deprecatedContractSignoff: [],
+  //   category: ProposalCategory.DAO,
+  //   totalValue: 0,
+  //   proposal: fip_68
+  // },
+  fip_60c: {
+    deploy: true,
     proposalId: undefined,
-    affectedContractSignoff: [
-      'rewardsDistributorAdmin',
-      'fuseAdmin',
-      'rariPool8Comptroller',
-      'rariPool8MasterOracle',
-      'gUniFuseOracle',
-      'rariPool8EthIrm',
-      'rariPool8CTokenImpl',
-      'fuseGuardian',
-      'tribalChief',
-      'feiDaiStakingTokenWrapper',
-      'feiUsdcStakingTokenWrapper',
-      'feiDaiAutoRewardsDistributor',
-      'feiUsdcAutoRewardsDistributor'
-    ],
+    affectedContractSignoff: [],
     deprecatedContractSignoff: [],
     category: ProposalCategory.OA,
     totalValue: 0,
-    proposal: fip_60b
-  },
-  fip_64: {
-    deploy: false,
-    proposalId: undefined,
-    affectedContractSignoff: ['fuseAdmin', 'rariPool8EthIrm', 'rariPool8CTokenImpl', 'fuseGuardian'],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.OA,
-    totalValue: 0,
-    proposal: fip_64
+    proposal: fip_60c
   }
 };
 

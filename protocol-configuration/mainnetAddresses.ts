@@ -226,6 +226,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x91f50E3183a8CC30D2A981C3aFA85A2Bf6691c67',
     category: AddressCategory.PCV_V1
   },
+  rariPool128FeiPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x02101960B3B317839254a17ba54a811A087cB3A0',
+    category: AddressCategory.PCV_V1
+  },
   rariPool19DpiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x3dD3d945C4253bAc5B4Cc326a001B7d3f9C4DD66',
