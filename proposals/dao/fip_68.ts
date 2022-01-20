@@ -15,7 +15,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   const { fei, reptb } = addresses;
 
   // 1. Deploy Redeemer
-  const reptbRedeemer = await (await ethers.getContractFactory('REPTbRedeemer')).deploy(fei, reptb);
+  const reptbRedeemer = await (await ethers.getContractFactory('REPTbRedeemer')).deploy(reptb, fei);
 
   return {
     reptbRedeemer
@@ -33,4 +33,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   console.log('Validating');
   expect(await fei.balanceOf(reptbRedeemer.address)).to.be.equal(ethers.constants.WeiPerEther.mul(12_000_000));
   expect(await pegExchanger.expirationTimestamp()).to.be.equal(1659312000);
+
+  expect(await reptbRedeemer.fei()).to.be.equal(fei.address);
+  expect(await reptbRedeemer.reptB()).to.be.equal(addresses.reptb);
 };
