@@ -1,7 +1,7 @@
 pragma solidity ^0.8.0;
 
-import "../token/FeiTimedMinter.sol";
-import "../oracle/ICollateralizationOracleWrapper.sol";
+import "../fei/minter/FeiTimedMinter.sol";
+import "../oracle/collateralization/ICollateralizationOracleWrapper.sol";
 
 /// @title CollateralizationOracleKeeper
 /// @notice a FEI timed minter which only rewards when updating the collateralization oracle 

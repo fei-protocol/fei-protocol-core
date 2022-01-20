@@ -19,7 +19,7 @@ Smart contract code for Fei Protocol and the FEI stablecoin
  - run `npm run prettier-format` to run prettier and automatically format all ts files
  - run `npm run coverage:hardhat` to run smart-contract coverage based off of all tests
  - run `npm run calldata` to generage calldata for a proposal
- - run `npm run checkProposal` to run tests for a specific dao proposal
+ - run `npm run check-proposal` to run tests for a specific dao proposal
  - run `npm run compile` to compile smart contracts, if needed
 
 ## Documentation

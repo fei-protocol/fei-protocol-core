@@ -14,4 +14,6 @@ interface IWeightedBalancerPoolManager is IBaseBalancerPoolManager {
         uint256 endTime,
         uint256[] memory endWeights
     ) external;
+
+    function withdrawCollectedManagementFees(IWeightedPool pool, address recipient) external;
 }   

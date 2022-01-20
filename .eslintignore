@@ -5,3 +5,6 @@ coverage/
 dist/
 lib/
 node_modules/
+proposals/dao/old/
+proposals/dao/fip_x.ts
+scripts/deploy/old/

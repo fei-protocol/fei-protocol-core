@@ -1,8 +1,6 @@
-import mainnetAddresses from '../../../contract-addresses/mainnetAddresses';
+import mainnetAddresses from '@protocol/mainnetAddresses';
 import { artifacts, ethers } from 'hardhat';
-import { MainnetContracts, NamedAddresses } from '../../../types/types';
-
-const contractArtifacts = {};
+import { MainnetContracts, NamedAddresses } from '@custom-types/types';
 
 interface MainnetContractJSONEntry {
   artifactName: string;
@@ -22,8 +20,7 @@ export async function getAllContracts(): Promise<MainnetContracts> {
     const artifactName = mainnetAddressEntry.artifactName;
     const address = mainnetAddressEntry.address;
     if (artifactName == 'unknown') continue;
-    const artifact = artifacts.readArtifactSync(artifactName);
-    const contract = await ethers.getContractAt(artifact.abi, address);
+    const contract = await ethers.getContractAt(artifactName, address);
     contracts[mainnetAddressEntryName] = contract;
   }
 

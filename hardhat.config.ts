@@ -19,17 +19,12 @@ const runE2ETests = process.env.RUN_E2E_TESTS;
 const enableMainnetForking = process.env.ENABLE_MAINNET_FORKING;
 const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
 const runAllTests = process.env.RUN_ALL_TESTS;
+const useJSONTestReporter = process.env.REPORT_TEST_RESULTS_AS_JSON;
 
 if (!(process.env.NODE_OPTIONS && process.env.NODE_OPTIONS.includes('max-old-space-size'))) {
   throw new Error(
     `Please export node env var max-old-space-size before running hardhat. "export NODE_OPTIONS=--max-old-space-size=4096"`
   );
-} else {
-  console.log(`Node option max-old-space-size correctly set. Good job.`);
-}
-
-if (!rinkebyAlchemyApiKey || !testnetPrivateKey || !privateKey || !mainnetAlchemyApiKey) {
-  console.warn('Not all Ethereum keys provided; some functionality will be unavailable.');
 }
 
 if (enableMainnetForking) {
@@ -40,6 +35,10 @@ if (enableMainnetForking) {
   console.log('Mainnet forking enabled.');
 } else {
   console.log('Mainnet forking disabled.');
+}
+
+if (useJSONTestReporter) {
+  console.log(`Reporting test results as JSON, you will not see them in the console.`);
 }
 
 export default {
@@ -53,8 +52,8 @@ export default {
       chainId: 5777, // Any network (default: none)
       forking: enableMainnetForking
         ? {
-            url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-            blockNumber: 13398685
+            url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`
+            // blockNumber: 13968350
           }
         : undefined
     },
@@ -70,14 +69,15 @@ export default {
 
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-      accounts: privateKey ? [privateKey] : []
+      accounts: privateKey ? [privateKey] : [],
+      gasPrice: 150000000000
     }
   },
 
   solidity: {
     compilers: [
       {
-        version: '0.8.4',
+        version: '0.8.10',
         settings: {
           optimizer: {
             enabled: true,
@@ -102,7 +102,13 @@ export default {
   },
 
   mocha: {
-    timeout: 1000000
+    timeout: 1000000,
+    reporter: useJSONTestReporter ? 'mocha-multi-reporters' : undefined,
+    reporterOptions: useJSONTestReporter
+      ? {
+          configFile: 'mocha-reporter-config.json'
+        }
+      : undefined
   },
 
   typechain: {
