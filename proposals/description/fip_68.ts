@@ -1,7 +1,7 @@
 import { ProposalDescription } from '@custom-types/types';
 
-const fip_redeemer: ProposalDescription = {
-  title: 'REPT-B Redemption',
+const fip_68: ProposalDescription = {
+  title: 'FIP-68: REPT-B Redemption and RGT Migration Future Expiry',
   commands: [
     {
       target: 'fei',
@@ -18,7 +18,11 @@ const fip_redeemer: ProposalDescription = {
       description: 'Expire peg exchanger'
     }
   ],
-  description: ``
+  description: `
+  This proposal allows all REPT-B to redeem for FEI at 1:1.
+
+  It also triggers the RGT->TRIBE expiry for August 1, 2022 (unix epoch 1659312000).
+  `
 };
 
-export default fip_redeemer;
+export default fip_68;
