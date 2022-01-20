@@ -1618,7 +1618,7 @@ const MainnetAddresses: MainnetAddresses = {
   },
   reptbRedeemer: {
     artifactName: 'REPTbRedeemer',
-    address: '0x362e7278Bf74389781812A1201e7A400872A0598',
+    address: '0xfEa132A3B7B70089f3d58F04eC1D1C2F321ef660',
     category: AddressCategory.TBD
   }
 };
