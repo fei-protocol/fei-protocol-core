@@ -14,19 +14,38 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  // fip_68: {
-  //   deploy: false,
-  //   proposalId: '35352825965290593619963926287136976535992260019512232369033890490308293973890',
-  //   affectedContractSignoff: ['reptbRedeemer', 'fei', 'pegExchanger'],
-  //   deprecatedContractSignoff: [],
-  //   category: ProposalCategory.DAO,
-  //   totalValue: 0,
-  //   proposal: fip_68
-  // },
+  fip_68: {
+    deploy: false,
+    proposalId: '35352825965290593619963926287136976535992260019512232369033890490308293973890',
+    affectedContractSignoff: ['reptbRedeemer', 'fei', 'pegExchanger'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_68
+  },
   fip_60c: {
-    deploy: true,
+    deploy: false,
     proposalId: undefined,
-    affectedContractSignoff: [],
+    affectedContractSignoff: [
+      'rariPool90FeiPCVDepositWrapper',
+      'rariPool91FeiPCVDepositWrapper',
+      'rariPool79FeiPCVDepositWrapper',
+      'rariPool72FeiPCVDepositWrapper',
+      'rariPool128FeiPCVDepositWrapper',
+      'rariPool22FeiPCVDepositWrapper',
+      'rariPool28FeiPCVDepositWrapper',
+      'rariPool31FeiPCVDepositWrapper',
+      'collateralizationOracle',
+      'rariPool90FeiPCVDeposit',
+      'rariPool91FeiPCVDeposit',
+      'rariPool79FeiPCVDeposit',
+      'rariPool72FeiPCVDeposit',
+      'rariPool28FeiPCVDeposit',
+      'rariPool31FeiPCVDeposit',
+      'rariPool128FeiPCVDeposit',
+      'fei',
+      'tribalChief'
+    ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.OA,
     totalValue: 0,
