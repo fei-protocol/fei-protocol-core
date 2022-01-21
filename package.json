@@ -37,7 +37,7 @@
   "dependencies": {
     "@balancer-labs/v2-pool-weighted": "^2.0.1",
     "@chainlink/contracts": "^0.1.7",
-    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@nomiclabs/hardhat-waffle": "^2.0.2",
     "@openzeppelin/contracts": "^4.4.2",
     "@openzeppelin/test-environment": "^0.1.7",
     "@openzeppelin/test-helpers": "^0.5.15",
