@@ -386,7 +386,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'fei']
   },
   rariPool22FeiPCVDeposit: {
-    contractDependencies: ['core', 'fei']
+    contractDependencies: ['core', 'fei', 'rariPool22FeiPCVDepositWrapper']
   },
   rariPool24FeiPCVDeposit: {
     contractDependencies: ['core', 'fei']
@@ -401,10 +401,10 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'fei']
   },
   rariPool28FeiPCVDeposit: {
-    contractDependencies: ['core', 'fei']
+    contractDependencies: ['core', 'fei', 'rariPool28FeiPCVDepositWrapper']
   },
   rariPool31FeiPCVDeposit: {
-    contractDependencies: ['core', 'fei']
+    contractDependencies: ['core', 'fei', 'rariPool31FeiPCVDepositWrapper']
   },
   rariPool54FeiPCVDeposit: {
     contractDependencies: ['core', 'fei']
@@ -413,10 +413,10 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'fei']
   },
   rariPool72FeiPCVDeposit: {
-    contractDependencies: ['core', 'fei']
+    contractDependencies: ['core', 'fei', 'rariPool72FeiPCVDepositWrapper']
   },
   rariPool79FeiPCVDeposit: {
-    contractDependencies: ['core', 'fei']
+    contractDependencies: ['core', 'fei', 'rariPool79FeiPCVDepositWrapper']
   },
   rariPool7FeiPCVDeposit: {
     contractDependencies: ['core', 'fei']
@@ -428,10 +428,10 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'rariPool8Fei', 'fei']
   },
   rariPool90FeiPCVDeposit: {
-    contractDependencies: ['core', 'fei']
+    contractDependencies: ['core', 'fei', 'rariPool90FeiPCVDepositWrapper']
   },
   rariPool91FeiPCVDeposit: {
-    contractDependencies: ['core', 'fei']
+    contractDependencies: ['core', 'fei', 'rariPool91FeiPCVDepositWrapper']
   },
   rariPool9FeiPCVDeposit: {
     contractDependencies: ['core', 'fei']
@@ -494,7 +494,13 @@ const dependencies: DependencyMap = {
       'rariPool7FeiPCVDepositWrapper',
       'rariPool8FeiPCVDepositWrapper',
       'rariPool9FeiPCVDepositWrapper',
-      'rariPool9RaiPCVDepositWrapper'
+      'rariPool9RaiPCVDepositWrapper',
+      'rariPool90FeiPCVDepositWrapper',
+      'rariPool91FeiPCVDepositWrapper',
+      'rariPool79FeiPCVDepositWrapper',
+      'rariPool72FeiPCVDepositWrapper',
+      'rariPool128FeiPCVDepositWrapper',
+      'rariPool22FeiPCVDepositWrapper'
     ]
   },
   collateralizationOracleWrapper: {
@@ -555,16 +561,37 @@ const dependencies: DependencyMap = {
     contractDependencies: ['collateralizationOracle']
   },
   rariPool28FeiPCVDepositWrapper: {
-    contractDependencies: ['collateralizationOracle']
+    contractDependencies: ['collateralizationOracle', 'rariPool28FeiPCVDeposit']
   },
   rariPool31FeiPCVDepositWrapper: {
-    contractDependencies: ['collateralizationOracle']
+    contractDependencies: ['collateralizationOracle', 'rariPool31FeiPCVDeposit']
   },
   rariPool6FeiPCVDepositWrapper: {
     contractDependencies: ['collateralizationOracle']
   },
   rariPool7FeiPCVDepositWrapper: {
     contractDependencies: ['collateralizationOracle']
+  },
+  rariPool90FeiPCVDepositWrapper: {
+    contractDependencies: ['collateralizationOracle', 'rariPool90FeiPCVDeposit']
+  },
+  rariPool91FeiPCVDepositWrapper: {
+    contractDependencies: ['collateralizationOracle', 'rariPool91FeiPCVDeposit']
+  },
+  rariPool79FeiPCVDepositWrapper: {
+    contractDependencies: ['collateralizationOracle', 'rariPool79FeiPCVDeposit']
+  },
+  rariPool72FeiPCVDepositWrapper: {
+    contractDependencies: ['collateralizationOracle', 'rariPool72FeiPCVDeposit']
+  },
+  rariPool128FeiPCVDeposit: {
+    contractDependencies: ['rariPool128FeiPCVDepositWrapper']
+  },
+  rariPool128FeiPCVDepositWrapper: {
+    contractDependencies: ['collateralizationOracle', 'rariPool128FeiPCVDeposit']
+  },
+  rariPool22FeiPCVDepositWrapper: {
+    contractDependencies: ['collateralizationOracle', 'rariPool22FeiPCVDeposit']
   },
   rariPool8FeiPCVDepositWrapper: {
     contractDependencies: ['collateralizationOracle']
