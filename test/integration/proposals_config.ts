@@ -15,16 +15,16 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  fip_68: {
-    fip_contraction: {
-      deploy: false,
-      proposalId: null,
-      affectedContractSignoff: [],
-      deprecatedContractSignoff: [],
-      category: ProposalCategory.DAO,
-      totalValue: 0,
-      proposal: fip_contraction
-    },
+  fip_contraction: {
+    deploy: false,
+    proposalId: null,
+    affectedContractSignoff: [],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_contraction
+  }
+  /*fip_68: {
     deploy: false,
     proposalId: '35352825965290593619963926287136976535992260019512232369033890490308293973890',
     affectedContractSignoff: ['reptbRedeemer', 'fei', 'pegExchanger'],
@@ -60,7 +60,7 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.OA,
     totalValue: 0,
     proposal: fip_60c
-  }
+  }*/
 };
 
 export default proposals;
