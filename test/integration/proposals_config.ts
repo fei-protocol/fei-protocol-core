@@ -4,6 +4,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 import fip_60c from '@proposals/description/fip_60c';
 import fip_68 from '@proposals/description/fip_68';
+import fip_contraction from '@proposals/description/fip_contraction';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -15,6 +16,15 @@ const proposals: ProposalsConfigMap = {
     }
     */
   fip_68: {
+    fip_contraction: {
+      deploy: false,
+      proposalId: null,
+      affectedContractSignoff: [],
+      deprecatedContractSignoff: [],
+      category: ProposalCategory.DAO,
+      totalValue: 0,
+      proposal: fip_contraction
+    },
     deploy: false,
     proposalId: '35352825965290593619963926287136976535992260019512232369033890490308293973890',
     affectedContractSignoff: ['reptbRedeemer', 'fei', 'pegExchanger'],
