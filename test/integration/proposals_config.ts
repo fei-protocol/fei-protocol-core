@@ -22,10 +22,11 @@ const proposals: ProposalsConfigMap = {
     proposalId: undefined,
     affectedContractSignoff: [],
     deprecatedContractSignoff: [],
-    category: ProposalCategory.DAO,
+    category: ProposalCategory.OA,
+    //category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_9001
-  },
+  } /*,
   fip_redeem: {
     deploy: false,
     proposalId: undefined,
@@ -84,7 +85,7 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.OA,
     totalValue: 0,
     proposal: fip_64
-  }
+  }*/
 };
 
 export default proposals;

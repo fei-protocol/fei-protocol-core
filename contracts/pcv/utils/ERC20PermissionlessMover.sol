@@ -28,7 +28,6 @@ contract ERC20PermissionlessMover is CoreRef {
     /// @param _from source of the token
     /// @param _to destination of the token
     function addToWhitelist(address _token, address _from, address _to) public onlyGovernorOrAdmin {
-        require(ICoreRef(_from).core() != core(), "ERC20PermissionlessMover: _from different core");
         require(_to != address(0), "ERC20PermissionlessMover: _to zero address");
         require(_token != address(0), "ERC20PermissionlessMover: _token zero address");
 

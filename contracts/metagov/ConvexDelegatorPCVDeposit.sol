@@ -62,7 +62,7 @@ contract ConvexDelegatorPCVDeposit is SnapshotDelegatorPCVDeposit {
     ) SnapshotDelegatorPCVDeposit(
         _core,
         IERC20(cvxLocker.stakingToken()), // CVX token
-        bytes32(0x6376782e65746800000000000000000000000000000000000000000000000000), // cvx.eth
+        keccak256("cvx.eth"),
         _initialDelegate
     ) {}
 

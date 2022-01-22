@@ -7,6 +7,8 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
+import { getImpersonatedSigner, time } from '@test/helpers';
+import { forceEth } from '@test/integration/setup/utils';
 
 /*
 
@@ -22,10 +24,10 @@ Steps:
 */
 
 const fipNumber = '9001'; // Change me!
-const DELEGATE_AAVE = '0x0000000000000000000000000000000000000000';
-const DELEGATE_ANGLE = '0x0000000000000000000000000000000000000000';
-const DELEGATE_COMP = '0x0000000000000000000000000000000000000000';
-const DELEGATE_CVX = '0x0000000000000000000000000000000000000000';
+const DELEGATE_AAVE = '0x6ef71cA9cD708883E129559F5edBFb9d9D5C6148';
+const DELEGATE_ANGLE = '0x6ef71cA9cD708883E129559F5edBFb9d9D5C6148';
+const DELEGATE_COMP = '0x6ef71cA9cD708883E129559F5edBFb9d9D5C6148';
+const DELEGATE_CVX = '0x6ef71cA9cD708883E129559F5edBFb9d9D5C6148';
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -44,11 +46,12 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await aaveDelegatorPCVDeposit.deployTransaction.wait();
   logging && console.log('aaveDelegatorPCVDeposit: ', aaveDelegatorPCVDeposit.address);
 
-  const delegatorFactory = await ethers.getContractFactory('DelegatorPCVDeposit');
-  const angleDelegatorPCVDeposit = await delegatorFactory.deploy(addresses.core, addresses.angle, DELEGATE_ANGLE);
+  const angleDelegatorFactory = await ethers.getContractFactory('AngleDelegatorPCVDeposit');
+  const angleDelegatorPCVDeposit = await angleDelegatorFactory.deploy(addresses.core, DELEGATE_ANGLE);
   await angleDelegatorPCVDeposit.deployTransaction.wait();
   logging && console.log('angleDelegatorPCVDeposit: ', angleDelegatorPCVDeposit.address);
 
+  const delegatorFactory = await ethers.getContractFactory('DelegatorPCVDeposit');
   const compDelegatorPCVDeposit = await delegatorFactory.deploy(addresses.core, addresses.comp, DELEGATE_COMP);
   await compDelegatorPCVDeposit.deployTransaction.wait();
   logging && console.log('compDelegatorPCVDeposit: ', compDelegatorPCVDeposit.address);
@@ -71,7 +74,23 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in setup for fip${fipNumber}`);
+  // Whitelist our contract for vote-locking on Angle's governance
+  logging && console.log('Whitelist angleDelegatorPCVDeposit as a smartwallet on Angle governance...');
+  const ANGLE_MULTISIG_ADDRESS = '0xdC4e6DFe07EFCa50a197DF15D9200883eF4Eb1c8';
+  await forceEth(ANGLE_MULTISIG_ADDRESS);
+  const angleMultisigSigner = await getImpersonatedSigner(ANGLE_MULTISIG_ADDRESS);
+  const abi = ['function approveWallet(address _wallet)'];
+  const smartWalletCheckerInterface = new ethers.utils.Interface(abi);
+  const encodeWhitelistingCall = smartWalletCheckerInterface.encodeFunctionData('approveWallet', [
+    contracts.angleDelegatorPCVDeposit.address
+  ]);
+  await (
+    await angleMultisigSigner.sendTransaction({
+      data: encodeWhitelistingCall,
+      to: '0xAa241Ccd398feC742f463c534a610529dCC5888E' // SmartWalletChecker
+    })
+  ).wait();
+  logging && console.log('Whitelisted angleDelegatorPCVDeposit as a smartwallet on Angle governance.');
 };
 
 // Tears down any changes made in setup() that need to be
@@ -89,7 +108,63 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.compDelegatorPCVDeposit.delegate()).to.be.equal(DELEGATE_COMP);
   expect(await contracts.convexDelegatorPCVDeposit.delegate()).to.be.equal(DELEGATE_CVX);
 
+  // Angle game
+  console.log(
+    'angleDelegatorPCVDeposit ANGLE balance',
+    (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'angleDelegatorPCVDeposit veANGLE balance',
+    (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+  );
+  await contracts.angleDelegatorPCVDeposit.lock();
+  console.log(
+    'angleDelegatorPCVDeposit ANGLE balance',
+    (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'angleDelegatorPCVDeposit veANGLE balance',
+    (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log('ff 1 year');
+  await time.increase(365 * 24 * 3600);
+  console.log(
+    'angleDelegatorPCVDeposit ANGLE balance',
+    (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'angleDelegatorPCVDeposit veANGLE balance',
+    (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+  );
+
+  // Comp delegation check
+  // comp.getCurrentVotes(address)
+
+  // Aave game
+
+  // Convex game
+  console.log('========================= CONVEX GAME =======================');
+  console.log(
+    'convexDelegatorPCVDeposit CVX balance',
+    (await contracts.cvx.balanceOf(contracts.convexDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'convexDelegatorPCVDeposit CRV balance',
+    (await contracts.crv.balanceOf(contracts.convexDelegatorPCVDeposit.address)) / 1e18
+  );
+  await contracts.permissionlessPcvMover.move(contracts.crv.address, contracts.convexDelegatorPCVDeposit.address);
+  await contracts.permissionlessPcvMover.move(contracts.cvx.address, contracts.convexDelegatorPCVDeposit.address);
+  console.log(
+    'convexDelegatorPCVDeposit CVX balance',
+    (await contracts.cvx.balanceOf(contracts.convexDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'convexDelegatorPCVDeposit CRV balance',
+    (await contracts.crv.balanceOf(contracts.convexDelegatorPCVDeposit.address)) / 1e18
+  );
+
   // TODO: additional checks
+  console.log('done');
   expect(false).to.be.true;
 };
 

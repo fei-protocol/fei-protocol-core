@@ -24,19 +24,8 @@ const fip_9001: ProposalDescription = {
       target: 'core',
       values: '0',
       method: 'grantRole(bytes32,address)',
-      arguments: ['0x5b5763ebd14d5a5d64e0b90c5e541f0e220ced6d249a6188d33227d6d799380b', '{optimisticTimelock}'],
-      description: 'Grant METAGOV_ADMIN_ROLE Role to OA Timelock'
-    },
-    {
-      target: 'permissionlessPcvMover',
-      values: '0',
-      method: 'addToWhitelist',
-      arguments: [
-        '{angle}', // token
-        '{agEurAngleUniswapPCVDeposit}', // from
-        '{angleDelegatorPCVDeposit}' // to
-      ],
-      description: 'Whitelist movement of ANGLE tokens to the delegator'
+      arguments: ['0x5b5763ebd14d5a5d64e0b90c5e541f0e220ced6d249a6188d33227d6d799380b', '{opsOptimisticTimelock}'],
+      description: 'Grant METAGOV_ADMIN_ROLE Role to OPS OA Timelock'
     },
     {
       target: 'permissionlessPcvMover',
@@ -47,7 +36,7 @@ const fip_9001: ProposalDescription = {
         '{compoundDaiPCVDeposit}', // from
         '{compDelegatorPCVDeposit}' // to
       ],
-      description: 'Whitelist movement of COMP tokens to the delegator'
+      description: 'Whitelist movement of COMP tokens to the delegator [DAI deposit]'
     },
     {
       target: 'permissionlessPcvMover',
@@ -58,7 +47,7 @@ const fip_9001: ProposalDescription = {
         '{compoundEthPCVDeposit}', // from
         '{compDelegatorPCVDeposit}' // to
       ],
-      description: 'Whitelist movement of COMP tokens to the delegator'
+      description: 'Whitelist movement of COMP tokens to the delegator [ETH deposit]'
     },
     {
       target: 'permissionlessPcvMover',
@@ -81,7 +70,27 @@ const fip_9001: ProposalDescription = {
         '{convexDelegatorPCVDeposit}' // to
       ],
       description: 'Whitelist movement of CVX tokens to the delegator'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantPCVController(address)',
+      arguments: ['{permissionlessPcvMover}'],
+      description: 'Grant PCV_CONTROLLER_ROLE to the permissionlessPcvMover'
+    },
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatioERC20',
+      arguments: [
+        '{agEurAngleUniswapPCVDeposit}', // deposit
+        '{angle}', // token
+        '{angleDelegatorPCVDeposit}', // to
+        '10000' // basis poins
+      ],
+      description: 'Move all ANGLE tokens to the new Angle deposit'
     }
+    // TODO: add token delegator deposits to CR oracle
   ],
   description: `
 

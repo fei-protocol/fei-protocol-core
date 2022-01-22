@@ -24,12 +24,12 @@ interface IStkAave is IERC20 {
 contract AaveDelegatorPCVDeposit is SnapshotDelegatorPCVDeposit {
 
     /// @notice the Aave Incentives Controller.
-    IAaveIncentivesController public constant aaveIncentivesController = IAaveIncentivesController(address(0xd784927Ff2f95ba542BfC824c8a8a98F3495f6b5));
+    IAaveIncentivesController public constant aaveIncentivesController = IAaveIncentivesController(0xd784927Ff2f95ba542BfC824c8a8a98F3495f6b5);
 
     /// @notice the AAVE token address.
-    IERC20 public constant aave = IERC20(address(0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9));
+    IERC20 public constant aave = IERC20(0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9);
     /// @notice the stkAAVE token address.
-    IStkAave public constant stkaave = IStkAave(address(0x4da27a545c0c5B758a6BA100e3a049001de870f5));
+    IStkAave public constant stkaave = IStkAave(0x4da27a545c0c5B758a6BA100e3a049001de870f5);
 
     /// @notice Aave Delegator PCV Deposit constructor
     /// @param _core Fei Core for reference
@@ -40,7 +40,7 @@ contract AaveDelegatorPCVDeposit is SnapshotDelegatorPCVDeposit {
     ) SnapshotDelegatorPCVDeposit(
         _core,
         aave, // report balance in AAVE
-        bytes32(0x616176652e657468000000000000000000000000000000000000000000000000), // aave.eth
+        keccak256("aave.eth"),
         _initialDelegate
     ) {}
 

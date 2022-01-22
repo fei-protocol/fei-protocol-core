@@ -876,6 +876,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x31429d1856ad1377a8a0079410b297e1a9e214c2',
     category: AddressCategory.External
   },
+  veAngle: {
+    artifactName: 'IVeToken',
+    address: '0x0C462Dbb9EC8cD1630f1728B2CFD2769d09f0dd5',
+    category: AddressCategory.External
+  },
   angleAgEurFeiPool: {
     artifactName: 'IUniswapV2Pair',
     address: '0xF89CE5eD65737dA8440411544b0499c9FaD323B2',
@@ -909,6 +914,11 @@ const MainnetAddresses: MainnetAddresses = {
   bal: {
     artifactName: 'IERC20',
     address: '0xba100000625a3754423978a60c9317c58a424e3D',
+    category: AddressCategory.External
+  },
+  comp: {
+    artifactName: 'Tribe',
+    address: '0xc00e94Cb662C3520282E6f5717214004A7f26888',
     category: AddressCategory.External
   },
   usdc: {

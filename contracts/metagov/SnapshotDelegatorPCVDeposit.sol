@@ -71,6 +71,12 @@ contract SnapshotDelegatorPCVDeposit is PCVDeposit {
         return address(token);
     }
 
+    /// @notice sets the snapshot space ID
+    /// @dev callable by governor or admin
+    function setSpaceId(bytes32 _spaceId) external onlyGovernorOrAdmin {
+        spaceId = _spaceId;
+    }
+
     /// @notice sets the snapshot delegate
     /// @dev callable by governor or admin
     function setDelegate(address newDelegate) external onlyGovernorOrAdmin {
