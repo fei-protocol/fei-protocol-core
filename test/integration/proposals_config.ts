@@ -28,7 +28,8 @@ const proposals: ProposalsConfigMap = {
       'wethDepositWrapper',
       'dpiDepositWrapper',
       'raiDepositWrapper',
-      'agEurDepositWrapper'
+      'agEurDepositWrapper',
+      'opsOptimisticTimelock'
     ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
