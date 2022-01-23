@@ -54,6 +54,20 @@ const fip_x: ProposalDescription = {
       method: 'addDeposit(address)',
       arguments: ['{dpiDepositWrapper}'],
       description: 'Add DPI lens to DAO timelock'
+    },
+    {
+      target: 'lusdPSM',
+      values: '0',
+      method: 'setMintFee(uint256)',
+      arguments: ['25'],
+      description: 'Set LUSD PSM mint fee to 0.25%'
+    },
+    {
+      target: 'lusdPSM',
+      values: '0',
+      method: 'setRedeemFee(uint256)',
+      arguments: ['25'],
+      description: 'Set LUSD PSM redeem fee to 0.25%'
     }
   ],
   description: `
@@ -62,7 +76,8 @@ Snapshot: https://snapshot.org/#/fei.eth/proposal/0xb313a773d8f9dc28aca6e637b625
 
 - Grant OA timelock the PCV_GUARDIAN_ADMIN_ROLE role, so it can add safe withdrawal addresses to the PCVGuardian.
 - Allow movement between Convex and Curve d3pool deposits, where the PCVGuardian will be able to withdraw FEI out of circulation if needed.
-- Parameter adjustments on the ETH PSM
+- Parameter adjustments on the ETH PSM (increase reserve threshold from 250 ETH to 5000 ETH)
+- Parameter adjustments on the LUSD PSM (reduce mint and redeem fee to 25 bps, down from 50 bps)
 `
 };
 
