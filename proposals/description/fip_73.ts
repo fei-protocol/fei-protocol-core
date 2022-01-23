@@ -1,7 +1,7 @@
 import { ProposalDescription } from '@custom-types/types';
 
 const fip_73: ProposalDescription = {
-  title: 'Fei Peg Policy Changes',
+  title: 'FIP-73: Fei Peg Policy Changes',
   commands: [
     {
       target: 'core',
