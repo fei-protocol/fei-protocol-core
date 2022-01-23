@@ -152,7 +152,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
             uint256 _userCirculatingFei,
             int256 _protocolEquity,
             bool _validityStatus
-        ) = ICollateralizationOracle(collateralizationOracle).pcvStats();
+        ) = ICollateralizationOracleBase(collateralizationOracle).pcvStats();
 
         outdated = outdated 
             || _isExceededDeviationThreshold(cachedProtocolControlledValue, _protocolControlledValue)
@@ -216,7 +216,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
             uint256 _userCirculatingFei,
             , // int256 _protocolEquity,
             bool _validityStatus
-        ) = ICollateralizationOracle(collateralizationOracle).pcvStats();
+        ) = ICollateralizationOracleBase(collateralizationOracle).pcvStats();
 
         require(_validityStatus, "CollateralizationOracleWrapper: CollateralizationOracle reading is invalid");
 
@@ -299,7 +299,7 @@ contract CollateralizationOracleWrapper is Timed, ICollateralizationOracleWrappe
           userCirculatingFei,
           protocolEquity,
           fetchedValidityStatus
-      ) = ICollateralizationOracle(collateralizationOracle).pcvStats();
+      ) = ICollateralizationOracleBase(collateralizationOracle).pcvStats();
 
       validityStatus = fetchedValidityStatus && _readNotPaused();
     }
