@@ -18,7 +18,19 @@ const proposals: ProposalsConfigMap = {
   fip_73: {
     deploy: false,
     proposalId: null,
-    affectedContractSignoff: [],
+    affectedContractSignoff: [
+      'core',
+      'optimisticTimelock',
+      'pcvGuardian',
+      'd3poolCurvePCVDeposit',
+      'd3poolConvexPCVDeposit',
+      'ethPSM',
+      'collateralizationOracle',
+      'wethDepositWrapper',
+      'dpiDepositWrapper',
+      'raiDepositWrapper',
+      'agEurDepositWrapper'
+    ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,
