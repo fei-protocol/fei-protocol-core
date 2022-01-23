@@ -3,7 +3,6 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
 import fip_60c from '@proposals/description/fip_60c';
-import fip_68 from '@proposals/description/fip_68';
 import fip_73 from '@proposals/description/fip_73';
 
 const proposals: ProposalsConfigMap = {
@@ -35,15 +34,6 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_73
-  }
-  /*fip_68: {
-    deploy: false,
-    proposalId: '35352825965290593619963926287136976535992260019512232369033890490308293973890',
-    affectedContractSignoff: ['reptbRedeemer', 'fei', 'pegExchanger'],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.DAO,
-    totalValue: 0,
-    proposal: fip_68
   },
   fip_60c: {
     deploy: false,
@@ -72,7 +62,7 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.OA,
     totalValue: 0,
     proposal: fip_60c
-  }*/
+  }
 };
 
 export default proposals;
