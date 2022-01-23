@@ -30,9 +30,13 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const wethDepositWrapper = await erc20wrapperFactory.deploy(addresses.feiDAOTimelock, addresses.weth, false);
   await wethDepositWrapper.deployed();
   logging && console.log('WETH PCV deposit wrapper deployed to: ', wethDepositWrapper.address);
+  const dpiDepositWrapper = await erc20wrapperFactory.deploy(addresses.feiDAOTimelock, addresses.dpi, false);
+  await dpiDepositWrapper.deployed();
+  logging && console.log('DAI PCV deposit wrapper deployed to: ', dpiDepositWrapper.address);
 
   return {
-    wethDepositWrapper
+    wethDepositWrapper,
+    dpiDepositWrapper
   };
 };
 
@@ -63,6 +67,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.ethPSM.reservesThreshold()).to.be.equal(ethers.constants.WeiPerEther.mul('5000'));
   expect(await contracts.collateralizationOracle.depositToToken(contracts.wethDepositWrapper.address)).to.be.equal(
     contracts.weth.address
+  );
+  expect(await contracts.collateralizationOracle.depositToToken(contracts.dpiDepositWrapper.address)).to.be.equal(
+    contracts.dpi.address
   );
 };
 

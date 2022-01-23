@@ -47,6 +47,13 @@ const fip_x: ProposalDescription = {
       method: 'addDeposit(address)',
       arguments: ['{wethDepositWrapper}'],
       description: 'Add WETH lens to DAO timelock'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposit(address)',
+      arguments: ['{dpiDepositWrapper}'],
+      description: 'Add DPI lens to DAO timelock'
     }
   ],
   description: `
