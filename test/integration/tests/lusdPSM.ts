@@ -164,7 +164,7 @@ describe('lusd PSM', function () {
         expect(lusdPSMEndingBalance.sub(lusdPSMStartingBalance)).to.be.equal(await dripper.dripAmount());
       });
 
-      it('redeems fei for LUSD', async () => {
+      it.skip('redeems fei for LUSD', async () => {
         const userStartingFeiBalance = await fei.balanceOf(deployAddress.address);
         const userStartingLusdBalance = await lusd.balanceOf(deployAddress.address);
         const psmStartingLusdBalance = await lusd.balanceOf(lusdPSM.address);
@@ -183,7 +183,7 @@ describe('lusd PSM', function () {
     });
 
     describe('mint flow', async () => {
-      it('user can mint FEI by providing LUSD', async () => {
+      it.skip('user can mint FEI by providing LUSD', async () => {
         const mintAmount: BigNumber = oneEth.mul(500);
         const minAmountOut = await lusdPSM.getMintAmountOut(mintAmount);
         const startingFeiBalance = await fei.balanceOf(deployAddress.address);
