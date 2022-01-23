@@ -56,6 +56,20 @@ const fip_x: ProposalDescription = {
       description: 'Add DPI lens to DAO timelock'
     },
     {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposit(address)',
+      arguments: ['{raiDepositWrapper}'],
+      description: 'Add RAI lens to DAO timelock'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposit(address)',
+      arguments: ['{agEurDepositWrapper}'],
+      description: 'Add agEUR lens to DAO timelock'
+    },
+    {
       target: 'lusdPSM',
       values: '0',
       method: 'setMintFee(uint256)',

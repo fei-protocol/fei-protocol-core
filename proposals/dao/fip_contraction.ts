@@ -7,6 +7,8 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
+import { getImpersonatedSigner } from '@test/helpers';
+import { forceEth } from '@test/integration/setup/utils';
 
 /*
 
@@ -33,10 +35,18 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const dpiDepositWrapper = await erc20wrapperFactory.deploy(addresses.feiDAOTimelock, addresses.dpi, false);
   await dpiDepositWrapper.deployed();
   logging && console.log('DAI PCV deposit wrapper deployed to: ', dpiDepositWrapper.address);
+  const raiDepositWrapper = await erc20wrapperFactory.deploy(addresses.feiDAOTimelock, addresses.rai, false);
+  await raiDepositWrapper.deployed();
+  logging && console.log('RAI PCV deposit wrapper deployed to: ', raiDepositWrapper.address);
+  const agEurDepositWrapper = await erc20wrapperFactory.deploy(addresses.feiDAOTimelock, addresses.agEUR, false);
+  await agEurDepositWrapper.deployed();
+  logging && console.log('agEUR PCV deposit wrapper deployed to: ', agEurDepositWrapper.address);
 
   return {
     wethDepositWrapper,
-    dpiDepositWrapper
+    dpiDepositWrapper,
+    raiDepositWrapper,
+    agEurDepositWrapper
   };
 };
 
@@ -44,6 +54,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  // Initial condition checks
   expect(await contracts.pcvGuardian.isSafeAddress(addresses.d3poolCurvePCVDeposit)).to.be.false;
   expect(await contracts.pcvGuardian.isSafeAddress(addresses.d3poolConvexPCVDeposit)).to.be.false;
   expect(await contracts.core.hasRole(ethers.utils.id('PCV_GUARDIAN_ADMIN_ROLE'), contracts.optimisticTimelock.address))
@@ -72,6 +83,12 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   );
   expect(await contracts.collateralizationOracle.depositToToken(contracts.dpiDepositWrapper.address)).to.be.equal(
     contracts.dpi.address
+  );
+  expect(await contracts.collateralizationOracle.depositToToken(contracts.raiDepositWrapper.address)).to.be.equal(
+    contracts.rai.address
+  );
+  expect(await contracts.collateralizationOracle.depositToToken(contracts.agEurDepositWrapper.address)).to.be.equal(
+    contracts.agEUR.address
   );
   expect(await contracts.lusdPSM.mintFeeBasisPoints()).to.be.equal('25');
   expect(await contracts.lusdPSM.redeemFeeBasisPoints()).to.be.equal('25');

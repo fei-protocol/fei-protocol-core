@@ -224,6 +224,8 @@ const dependencies: DependencyMap = {
       'creamDepositWrapper',
       'wethDepositWrapper',
       'dpiDepositWrapper',
+      'raiDepositWrapper',
+      'agEurDepositWrapper',
       'aaveTribeIncentivesController',
       'tribeMinter',
       'pcvGuardian',
@@ -481,6 +483,8 @@ const dependencies: DependencyMap = {
       'creamDepositWrapper',
       'wethDepositWrapper',
       'dpiDepositWrapper',
+      'raiDepositWrapper',
+      'agEurDepositWrapper',
       'ethLidoPCVDepositWrapper',
       'feiBuybackLens',
       'feiLusdLens',
@@ -535,6 +539,12 @@ const dependencies: DependencyMap = {
     contractDependencies: ['feiDAOTimelock', 'collateralizationOracle']
   },
   dpiDepositWrapper: {
+    contractDependencies: ['feiDAOTimelock', 'collateralizationOracle']
+  },
+  raiDepositWrapper: {
+    contractDependencies: ['feiDAOTimelock', 'collateralizationOracle']
+  },
+  agEurDepositWrapper: {
     contractDependencies: ['feiDAOTimelock', 'collateralizationOracle']
   },
   ethLidoPCVDepositWrapper: {
