@@ -1,6 +1,6 @@
 import { ProposalDescription } from '@custom-types/types';
 
-const fip_x: ProposalDescription = {
+const fip_73: ProposalDescription = {
   title: 'Fei Peg Policy Changes',
   commands: [
     {
@@ -95,4 +95,4 @@ Snapshot: https://snapshot.org/#/fei.eth/proposal/0xb313a773d8f9dc28aca6e637b625
 `
 };
 
-export default fip_x;
+export default fip_73;

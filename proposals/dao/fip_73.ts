@@ -10,20 +10,7 @@ import {
 import { getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 
-/*
-
-DAO Proposal #9001
-
-Description:
-
-Steps:
-  1 -
-  2 -
-  3 -
-
-*/
-
-const fipNumber = '9001'; // Change me!
+const fipNumber = '73';
 
 // Do any deployments
 // This should exclusively include new contract deployments
