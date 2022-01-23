@@ -82,9 +82,10 @@ Forum discussion: https://tribe.fei.money/t/fei-peg-policy-changes/3906
 Snapshot: https://snapshot.org/#/fei.eth/proposal/0xb313a773d8f9dc28aca6e637b625959851cce4e5a19d9e2ebde7a14c057d5d2b
 
 - Grant OA timelock the PCV_GUARDIAN_ADMIN_ROLE role, so it can add safe withdrawal addresses to the PCVGuardian.
-- Allow movement between Convex and Curve d3pool deposits, where the PCVGuardian will be able to withdraw FEI out of circulation if needed.
-- Parameter adjustments on the ETH PSM (increase reserve threshold from 250 ETH to 5000 ETH)
-- Parameter adjustments on the LUSD PSM (reduce mint and redeem fee to 25 bps, down from 50 bps)
+- Grant OA OPS timelock the ORACLE_ADMIN_ROLE role, to be more reactive on oracle updates if needed (1 day timelock instead of 4 days)
+- Allow movement between Convex and Curve d3pool deposits, where the PCVGuardian will be able to take FEI out of circulation if needed by using the PCV FRAX and alUSD.
+- Parameter adjustments on the ETH PSM (increase reserve threshold from 250 ETH to 5000 ETH, to match dripper size)
+- Add ERC20 lenses for WETH, DPI, RAI, and agEUR on the DAO Timelock, so they are still accounted in PCV, if they need to be moved there by the guardian.
 `
 };
 
