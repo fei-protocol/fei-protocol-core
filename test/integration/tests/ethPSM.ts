@@ -75,6 +75,17 @@ describe('eth PSM', function () {
     await forceEth(guardian.address);
   });
 
+  before(async function () {
+    const redeemPaused = await contracts.ethPSM.redeemPaused();
+    if (!redeemPaused) {
+      await contracts.ethPSM.pauseRedeem();
+    }
+    const paused = await contracts.ethPSM.paused();
+    if (paused) {
+      await contracts.ethPSM.unpause();
+    }
+  });
+
   describe('ethPSMFeiSkimmer', async () => {
     it('can skim', async () => {
       await contracts.fei.mint(ethPSM.address, ethers.constants.WeiPerEther.mul(100_000_000));

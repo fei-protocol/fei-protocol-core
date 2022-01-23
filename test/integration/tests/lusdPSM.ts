@@ -75,6 +75,17 @@ describe('lusd PSM', function () {
     await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
   });
 
+  before(async function () {
+    const redeemPaused = await contracts.lusdPSM.redeemPaused();
+    if (!redeemPaused) {
+      await contracts.lusdPSM.pauseRedeem();
+    }
+    const paused = await contracts.lusdPSM.paused();
+    if (!paused) {
+      await contracts.lusdPSM.pause();
+    }
+  });
+
   describe('lusdPSM', async () => {
     /// create a before each hook that approves the PSM to spend user's LUSD
     it('cannot sell lusd to the PSM as redemptions are disabled', async () => {
