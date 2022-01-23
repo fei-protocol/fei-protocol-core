@@ -21,11 +21,18 @@ const fip_x: ProposalDescription = {
       description: 'Grant OA Timelock the PCV_GUARDIAN_ADMIN_ROLE role'
     },
     {
-      target: 'd3poolConvexPCVDeposit',
+      target: 'pcvGuardian',
       values: '0',
-      method: 'withdraw(address,uint256)',
-      arguments: ['{d3poolCurvePCVDeposit}', '49817687278780155379999541'],
-      description: 'Unstake d3pool tokens from Convex, move them to Curve deposit'
+      method: 'setSafeAddress(address)',
+      arguments: ['{d3poolCurvePCVDeposit}'],
+      description: 'Set d3pool Curve deposit as safe address'
+    },
+    {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'setSafeAddress(address)',
+      arguments: ['{d3poolConvexPCVDeposit}'],
+      description: 'Set d3pool Convex deposit as safe address'
     },
     {
       target: 'ethPSM',
@@ -33,6 +40,13 @@ const fip_x: ProposalDescription = {
       method: 'setReservesThreshold(uint256)',
       arguments: ['5000000000000000000000'],
       description: 'Set ETH psm reserve threshold to 5000 ETH (up from 250 ETH)'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposit(address)',
+      arguments: ['{wethDepositWrapper}'],
+      description: 'Add WETH lens to DAO timelock'
     }
   ],
   description: `
@@ -40,7 +54,7 @@ Forum discussion: https://tribe.fei.money/t/fei-peg-policy-changes/3906
 Snapshot: https://snapshot.org/#/fei.eth/proposal/0xb313a773d8f9dc28aca6e637b625959851cce4e5a19d9e2ebde7a14c057d5d2b
 
 - Grant OA timelock the PCV_GUARDIAN_ADMIN_ROLE role, so it can add safe withdrawal addresses to the PCVGuardian.
-- Unstake d3pool tokens from Convex, move them to the Curve deposit, where the PCVGuardian will be able to withdraw FEI out of circulation
+- Allow movement between Convex and Curve d3pool deposits, where the PCVGuardian will be able to withdraw FEI out of circulation if needed.
 - Parameter adjustments on the ETH PSM
 `
 };

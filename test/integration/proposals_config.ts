@@ -16,7 +16,7 @@ const proposals: ProposalsConfigMap = {
     }
     */
   fip_contraction: {
-    deploy: false,
+    deploy: true,
     proposalId: null,
     affectedContractSignoff: [],
     deprecatedContractSignoff: [],

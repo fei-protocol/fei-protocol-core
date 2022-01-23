@@ -26,9 +26,13 @@ const fipNumber = '9001'; // Change me!
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  console.log(`No deploy actions for fip${fipNumber}`);
+  const erc20wrapperFactory = await ethers.getContractFactory('ERC20PCVDepositWrapper');
+  const wethDepositWrapper = await erc20wrapperFactory.deploy(addresses.feiDAOTimelock, addresses.weth, false);
+  await wethDepositWrapper.deployed();
+  logging && console.log('WETH PCV deposit wrapper deployed to: ', wethDepositWrapper.address);
+
   return {
-    // put returned contract objects here
+    wethDepositWrapper
   };
 };
 
@@ -36,8 +40,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  expect((await contracts.d3poolConvexPCVDeposit.balance()) / 1).to.be.greaterThan(0);
-  expect(await contracts.d3poolCurvePCVDeposit.balance()).to.be.equal(0);
+  expect(await contracts.pcvGuardian.isSafeAddress(addresses.d3poolCurvePCVDeposit)).to.be.false;
+  expect(await contracts.pcvGuardian.isSafeAddress(addresses.d3poolConvexPCVDeposit)).to.be.false;
   expect(await contracts.core.hasRole(ethers.utils.id('PCV_GUARDIAN_ADMIN_ROLE'), contracts.optimisticTimelock.address))
     .to.be.false;
   expect(await contracts.ethPSM.reservesThreshold()).to.be.equal(ethers.constants.WeiPerEther.mul('250'));
@@ -52,11 +56,14 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  expect(await contracts.d3poolConvexPCVDeposit.balance()).to.be.equal(0);
-  expect((await contracts.d3poolCurvePCVDeposit.balance()) / 1).to.be.greaterThan(0);
+  expect(await contracts.pcvGuardian.isSafeAddress(addresses.d3poolCurvePCVDeposit)).to.be.true;
+  expect(await contracts.pcvGuardian.isSafeAddress(addresses.d3poolConvexPCVDeposit)).to.be.true;
   expect(await contracts.core.hasRole(ethers.utils.id('PCV_GUARDIAN_ADMIN_ROLE'), contracts.optimisticTimelock.address))
     .to.be.true;
   expect(await contracts.ethPSM.reservesThreshold()).to.be.equal(ethers.constants.WeiPerEther.mul('5000'));
+  expect(await contracts.collateralizationOracle.depositToToken(contracts.wethDepositWrapper.address)).to.be.equal(
+    contracts.weth.address
+  );
 };
 
 export { deploy, setup, teardown, validate };
