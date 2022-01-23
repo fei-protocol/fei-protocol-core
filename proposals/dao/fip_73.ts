@@ -47,8 +47,6 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   expect(await contracts.core.hasRole(ethers.utils.id('PCV_GUARDIAN_ADMIN_ROLE'), contracts.optimisticTimelock.address))
     .to.be.false;
   expect(await contracts.ethPSM.reservesThreshold()).to.be.equal(ethers.constants.WeiPerEther.mul('250'));
-  expect(await contracts.lusdPSM.mintFeeBasisPoints()).to.be.equal('50');
-  expect(await contracts.lusdPSM.redeemFeeBasisPoints()).to.be.equal('50');
 };
 
 // Tears down any changes made in setup() that need to be
@@ -77,8 +75,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.collateralizationOracle.depositToToken(contracts.agEurDepositWrapper.address)).to.be.equal(
     contracts.agEUR.address
   );
-  expect(await contracts.lusdPSM.mintFeeBasisPoints()).to.be.equal('25');
-  expect(await contracts.lusdPSM.redeemFeeBasisPoints()).to.be.equal('25');
 };
 
 export { deploy, setup, teardown, validate };

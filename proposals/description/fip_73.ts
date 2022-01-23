@@ -68,20 +68,6 @@ const fip_73: ProposalDescription = {
       method: 'addDeposit(address)',
       arguments: ['{agEurDepositWrapper}'],
       description: 'Add agEUR lens to DAO timelock'
-    },
-    {
-      target: 'lusdPSM',
-      values: '0',
-      method: 'setMintFee(uint256)',
-      arguments: ['25'],
-      description: 'Set LUSD PSM mint fee to 0.25%'
-    },
-    {
-      target: 'lusdPSM',
-      values: '0',
-      method: 'setRedeemFee(uint256)',
-      arguments: ['25'],
-      description: 'Set LUSD PSM redeem fee to 0.25%'
     }
   ],
   description: `
