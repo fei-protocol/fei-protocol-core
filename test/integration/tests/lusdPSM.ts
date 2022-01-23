@@ -98,6 +98,12 @@ describe('lusd PSM', function () {
   });
 
   describe('LUSD BammPCVDripController', async () => {
+    before(async function () {
+      const paused = await dripper.paused();
+      if (!paused) await dripper.pause();
+      await increaseTime(7200);
+    });
+
     it('dripper cannot drip because it is paused', async () => {
       await expectRevert(dripper.drip(), 'Pausable: paused');
     });
@@ -105,10 +111,14 @@ describe('lusd PSM', function () {
 
   describe('capital flows', async () => {
     before(async () => {
-      await lusdPSM.connect(guardian).unpauseRedeem();
-      await lusdPSM.connect(guardian).unpause();
-      await dripper.unpause();
-      await skimmer.unpause();
+      const redeemPaused = await lusdPSM.redeemPaused();
+      if (redeemPaused) await lusdPSM.connect(guardian).unpauseRedeem();
+      const paused = await lusdPSM.paused();
+      if (paused) await lusdPSM.connect(guardian).unpause();
+      const dripperPaused = await dripper.paused();
+      if (dripperPaused) await dripper.unpause();
+      const skimmerPaused = await skimmer.paused();
+      if (skimmerPaused) await skimmer.unpause();
     });
 
     beforeEach(async () => {

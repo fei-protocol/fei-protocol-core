@@ -257,7 +257,7 @@ describe('e2e-peg-stability-module', function () {
 
   describe('dai-psm pcv drip controller', async () => {
     before(async function () {
-      // make sure there is enough DAI available to the dripper
+      // make sure there is enough DAI available to the dripper and on the PSM
       const DAI_HOLDER = '0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7'; // curve 3pool
       const signer = await getImpersonatedSigner(DAI_HOLDER);
       await forceEth(DAI_HOLDER);
@@ -266,6 +266,10 @@ describe('e2e-peg-stability-module', function () {
         '100000000000000000000000000' // 100M
       );
       await contracts.compoundDaiPCVDeposit.deposit();
+      await contracts.dai.connect(signer).transfer(
+        contracts.daiPSM.address,
+        '5500000000000000000000000' // 5.5M
+      );
     });
 
     beforeEach(async () => {

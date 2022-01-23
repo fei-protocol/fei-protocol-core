@@ -143,6 +143,11 @@ describe('eth PSM', function () {
       await increaseTime(7200);
     });
 
+    before(async function () {
+      const paused = await dripper.paused();
+      if (!paused) await dripper.pause();
+    });
+
     it('dripper cannot drip because it is paused', async () => {
       await expectRevert(dripper.drip(), 'Pausable: paused');
     });
@@ -174,7 +179,7 @@ describe('eth PSM', function () {
         await ethPSM.allocateSurplus();
 
         await expectApprox(endingAavePCVDepositaWethBalance.sub(startingAavePCVDepositaWethBalance), mintAmount);
-        expect(await weth.balanceOf(ethPSM.address)).to.be.equal(oneEth.mul(250));
+        expect(await weth.balanceOf(ethPSM.address)).to.be.equal(oneEth.mul(5000));
       });
     });
 
@@ -183,7 +188,8 @@ describe('eth PSM', function () {
       const mintAmount = oneEth.mul(5_000_000);
 
       before(async () => {
-        await dripper.connect(guardian).unpause();
+        const paused = await dripper.paused();
+        if (paused) await dripper.connect(guardian).unpause();
         timelock = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
         await forceEth(timelock.address);
         await fei.connect(timelock).mint(deployAddress.address, mintAmount);
