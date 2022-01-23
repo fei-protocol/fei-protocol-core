@@ -25,7 +25,7 @@ export const permissions = {
     'lusdPSMFeiSkimmer'
   ],
   GUARDIAN_ROLE: ['multisig', 'pcvGuardian'],
-  ORACLE_ADMIN_ROLE: ['collateralizationOracleGuardian', 'optimisticTimelock'],
+  ORACLE_ADMIN_ROLE: ['collateralizationOracleGuardian', 'optimisticTimelock', 'opsOptimisticTimelock'],
   SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'optimisticTimelock'],
   BALANCER_MANAGER_ADMIN_ROLE: [],
   PSM_ADMIN_ROLE: [],

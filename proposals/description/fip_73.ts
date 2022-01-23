@@ -68,6 +68,13 @@ const fip_73: ProposalDescription = {
       method: 'addDeposit(address)',
       arguments: ['{agEurDepositWrapper}'],
       description: 'Add agEUR lens to DAO timelock'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: ['0xc307c44629779eb8fc0b85f224c3d22f5876a6c84de0ee42d481eb7814f0d3a8', '{opsOptimisticTimelock}'],
+      description: 'Grant ORACLE_ADMIN_ROLE to OPS OA Timelock'
     }
   ],
   description: `
