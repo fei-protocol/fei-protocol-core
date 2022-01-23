@@ -125,6 +125,10 @@ describe('lusd PSM', function () {
       /// increase time by 30 minutes so that regardless of mainnet state,
       /// this test will always pass
       await increaseTime(1800);
+      // empty drip target to make sure it is empty
+      await forceEth(lusdPSM.address);
+      const signer = await getImpersonatedSigner(lusdPSM.address);
+      await lusd.connect(signer).transfer(await dripper.source(), await lusd.balanceOf(lusdPSM.address));
     });
 
     describe('dripper drips ', async () => {

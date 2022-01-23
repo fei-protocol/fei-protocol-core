@@ -193,6 +193,13 @@ describe('eth PSM', function () {
         timelock = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
         await forceEth(timelock.address);
         await fei.connect(timelock).mint(deployAddress.address, mintAmount);
+
+        // empty drip target to make sure it is empty
+        await forceEth(ethPSM.address);
+        const signer = await getImpersonatedSigner(ethPSM.address);
+        await contracts.wethERC20
+          .connect(signer)
+          .transfer(await dripper.source(), await contracts.wethERC20.balanceOf(ethPSM.address));
       });
 
       it('sets ethpsm reserve threshold to 5250 eth', async () => {
