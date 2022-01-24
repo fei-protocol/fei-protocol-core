@@ -506,6 +506,26 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xCCe230c087F31032fc17621a2CF5E425A0b80C96',
     category: AddressCategory.PCV
   },
+  wethDepositWrapper: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x5E9fA7d783A7F7d4626cE450C8Bd2EbBB26dfdB2',
+    category: AddressCategory.PCV
+  },
+  dpiDepositWrapper: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0xB250926E75b1CC6c53E77bb9426Baac14aB1e24c',
+    category: AddressCategory.PCV
+  },
+  raiDepositWrapper: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x7339cA4Ac94020b83A34f5edFA6e0F26986c434b',
+    category: AddressCategory.PCV
+  },
+  agEurDepositWrapper: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x485d23ce5725ecdE46ca9033012984D90b514FFd',
+    category: AddressCategory.PCV
+  },
   collateralizationOracle: {
     artifactName: 'CollateralizationOracle',
     address: '0xFF6f59333cfD8f4Ebc14aD0a0E181a83e655d257',
