@@ -3,7 +3,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
 import fip_60c from '@proposals/description/fip_60c';
-import fip_73 from '@proposals/description/fip_73';
+import fip_73_swap from '@proposals/description/fip_73_swap';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -14,27 +14,14 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  fip_73: {
-    deploy: false,
+  fip_73_swap: {
+    deploy: true,
     proposalId: null,
-    affectedContractSignoff: [
-      'core',
-      'optimisticTimelock',
-      'pcvGuardian',
-      'd3poolCurvePCVDeposit',
-      'd3poolConvexPCVDeposit',
-      'ethPSM',
-      'collateralizationOracle',
-      'wethDepositWrapper',
-      'dpiDepositWrapper',
-      'raiDepositWrapper',
-      'agEurDepositWrapper',
-      'opsOptimisticTimelock'
-    ],
+    affectedContractSignoff: [],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,
-    proposal: fip_73
+    proposal: fip_73_swap
   },
   fip_60c: {
     deploy: false,
