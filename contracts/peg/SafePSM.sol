@@ -50,7 +50,7 @@ contract SafePSM is PriceBoundPSM {
         uint256 minAmountOut
     ) internal virtual override returns(uint256 amountFeiOut) {
         _validatePrice();
-        PegStabilityModule._mint(to, amountIn, minAmountOut);
+        amountFeiOut = PegStabilityModule._mint(to, amountIn, minAmountOut);
     }
 
 
@@ -61,7 +61,7 @@ contract SafePSM is PriceBoundPSM {
         uint256 minAmountOut
     ) internal virtual override returns(uint256 amountOut) {
         _validatePrice();
-        PegStabilityModule._redeem(to, amountFeiIn, minAmountOut);
+        amountOut = PegStabilityModule._redeem(to, amountFeiIn, minAmountOut);
     }
 
     /// @notice function that reverts if the oracle price is outside of
