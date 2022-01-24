@@ -1,34 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
+import "./IAngleStableMaster.sol";
+import "./IAnglePoolManager.sol";
 import "../uniswap/UniswapPCVDeposit.sol";
-
-// Angle PoolManager contract
-interface IPoolManager {
-    function token() external returns (address);
-}
-
-// Angle StableMaster contract
-interface IStableMaster {
-    function agToken() external returns (address);
-
-    function mint(
-        uint256 amount,
-        address user,
-        IPoolManager poolManager,
-        uint256 minStableAmount
-    ) external;
-
-    function burn(
-        uint256 amount,
-        address burner,
-        address dest,
-        IPoolManager poolManager,
-        uint256 minCollatAmount
-    ) external;
-
-    function unpause(bytes32 agent, IPoolManager poolManager) external;
-}
 
 // Angle StakingRewards contract
 interface IStakingRewards {
@@ -49,10 +24,10 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
     using Decimal for Decimal.D256;
 
     /// @notice the Angle StableMaster contract
-    IStableMaster public immutable stableMaster;
+    IAngleStableMaster public immutable stableMaster;
 
     /// @notice the Angle PoolManager contract
-    IPoolManager public poolManager;
+    IAnglePoolManager public poolManager;
 
     /// @notice the Angle StakingRewards contract
     IStakingRewards public stakingRewards;
@@ -71,8 +46,8 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
         address _oracle,
         address _backupOracle,
         uint256 _maxBasisPointsFromPegLP,
-        IStableMaster _stableMaster,
-        IPoolManager _poolManager,
+        IAngleStableMaster _stableMaster,
+        IAnglePoolManager _poolManager,
         IStakingRewards _stakingRewards
     ) UniswapPCVDeposit(_core, _pair, _router, _oracle, _backupOracle, _maxBasisPointsFromPegLP) {
         stableMaster = _stableMaster;
@@ -176,7 +151,7 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
 
     /// @notice set a new poolManager address
     /// @param _poolManager the new poolManager
-    function setPoolManager(IPoolManager _poolManager)
+    function setPoolManager(IAnglePoolManager _poolManager)
         public
         onlyGovernor
     {
