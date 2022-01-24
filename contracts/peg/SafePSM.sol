@@ -44,19 +44,29 @@ contract SafePSM is PriceBoundPSM {
         return _peg;
     }
 
+    function _mint(
+        address to,
+        uint256 amountIn,
+        uint256 minAmountOut
+    ) internal virtual override returns(uint256 amountFeiOut) {
+        _validatePrice();
+        PegStabilityModule._mint(to, amountIn, minAmountOut);
+    }
+
+
+    /// @notice internal helper method to redeem fei in exchange for an external asset
+    function _redeem(
+        address to,
+        uint256 amountFeiIn,
+        uint256 minAmountOut
+    ) internal virtual override returns(uint256 amountOut) {
+        _validatePrice();
+        PegStabilityModule._redeem(to, amountFeiIn, minAmountOut);
+    }
+
     /// @notice function that reverts if the oracle price is outside of
     /// the allowable price range
     function _validatePrice() internal view {
         _validatePriceRange(readActualOracle());
-    }
-
-    /// @notice stop PSM from executing if price is outside of the acceptable band
-    function _afterRedeemHook() internal view override virtual {
-        _validatePrice();
-    }
-
-    /// @notice stop PSM from executing if price is outside of the acceptable band
-    function _afterMintHook() internal view override virtual {
-        _validatePrice();
     }
 }

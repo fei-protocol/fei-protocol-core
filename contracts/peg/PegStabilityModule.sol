@@ -162,8 +162,6 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
 
         _transfer(to, amountOut);
 
-        _afterRedeemHook();
-
         emit Redeem(to, amountFeiIn, amountOut);
     }
 
@@ -188,8 +186,6 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         if (amountFeiToMint > 0) {
             _mintFei(to, amountFeiToMint);
         }
-
-        _afterMintHook();
         
         emit Mint(to, amountIn, amountFeiOut);
     }
@@ -322,10 +318,4 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
 
     /// @notice overriden function in the bounded PSM
     function _validatePriceRange(Decimal.D256 memory price) internal view virtual {}
-
-    /// @notice overriden function in the 1:1 PSM
-    function _afterRedeemHook() internal view virtual {}
-
-    /// @notice overriden function in the 1:1 PSM
-    function _afterMintHook() internal view virtual {}
 }
