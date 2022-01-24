@@ -4,6 +4,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 import fip_60c from '@proposals/description/fip_60c';
 import fip_73 from '@proposals/description/fip_73';
+import fip_73b from '@proposals/description/fip_73b';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -14,6 +15,15 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
+  fip_73b: {
+    deploy: true,
+    proposalId: null,
+    affectedContractSignoff: [],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.OA,
+    totalValue: 0,
+    proposal: fip_73b
+  },
   fip_73: {
     deploy: false,
     proposalId: null,

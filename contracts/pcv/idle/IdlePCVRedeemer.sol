@@ -7,6 +7,8 @@ interface IIdleToken {
     function redeemIdleToken(uint256 _amount) external;
 
     function token() external view returns (IERC20);
+
+    function transfer(address account, uint256 amount) external;
 }
 
 /// @title base class for a claiming Idle tokens
@@ -35,5 +37,9 @@ contract IdlePCVRedeemer {
 
         uint256 balance = token.balanceOf(address(this));
         token.safeTransfer(target, balance);
+    }
+
+    function sweep(IERC20 token, uint256 amount) external {
+        token.safeTransfer(target, amount);
     }
 }

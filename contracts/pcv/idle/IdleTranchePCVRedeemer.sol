@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-interface IIdleTranche {
+interface IIdleTrancheMinter {
     function withdrawAA(uint256 _amount) external returns (uint256);
     
     function token() external view returns (IERC20);
@@ -16,11 +16,11 @@ contract IdleTranchePCVRedeemer {
 
     address public immutable target;
 
-    IIdleTranche public immutable idleToken;
+    IIdleTrancheMinter public immutable idleToken;
 
     constructor(
         address _target,
-        IIdleTranche _idleToken
+        IIdleTrancheMinter _idleToken
     ) { 
       target = _target;
       idleToken = _idleToken;
@@ -35,5 +35,9 @@ contract IdleTranchePCVRedeemer {
 
         uint256 balance = token.balanceOf(address(this));
         token.safeTransfer(target, balance);
+    }
+
+    function sweep(IERC20 token, uint256 amount) external {
+        token.safeTransfer(target, amount);
     }
 }

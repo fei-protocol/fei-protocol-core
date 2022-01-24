@@ -1016,6 +1016,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xdAE7e32ADc5d490a43cCba1f0c736033F2b4eFca',
     category: AddressCategory.External
   },
+  barnbridgeAFei: {
+    artifactName: 'ISmartYield',
+    address: '0xA3abb32c657adA8803bF6AEEF6Eb42B29c74bf28',
+    category: AddressCategory.External
+  },
   bamm: {
     artifactName: 'IBAMM',
     address: '0x0d3AbAA7E088C2c82f54B2f47613DA438ea8C598',
@@ -1184,6 +1189,21 @@ const MainnetAddresses: MainnetAddresses = {
   gUniFeiUsdcLP: {
     artifactName: 'unknown',
     address: '0xCf84a3dC12319531E3deBD48C86E68eAeAfF224a',
+    category: AddressCategory.External
+  },
+  idleBestYield: {
+    artifactName: 'IIdleToken',
+    address: '0xb2d5cb72a621493fe83c6885e4a776279be595bc',
+    category: AddressCategory.External
+  },
+  idleTranches: {
+    artifactName: 'IERC20',
+    address: '0x9ce3a740df498646939bcbb213a66bbfa1440af6',
+    category: AddressCategory.External
+  },
+  idleTranchesMinter: {
+    artifactName: 'IIdleTrancheMinter',
+    address: '0x77648A2661687ef3B05214d824503F6717311596',
     category: AddressCategory.External
   },
   index: {
