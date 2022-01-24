@@ -40,7 +40,7 @@ contract SafeCeilingPSM is SafePSM {
     }
 
     /// @notice function to update exposure in case a balance changes outside of a mint or redeem
-    function updateCurrentExposure() external {
+    function updateCurrentExposure() public {
         currentExposure = underlyingToken.balanceOf(address(this));
     }
 
@@ -58,5 +58,20 @@ contract SafeCeilingPSM is SafePSM {
 
         currentExposure += amountIn;
         require(currentExposure <= assetCap, "SafeCeilingPSM: Asset cap reached");
+    }
+
+    /// @notice withdraw assets from PSM to an external address
+    function withdraw(address to, uint256 amount) external override virtual onlyPCVController {
+        _withdrawERC20(address(underlyingToken), to, amount);
+        updateCurrentExposure();
+    }
+
+    /// @notice Allocates a portion of escrowed PCV to a target PCV deposit
+    function _allocate(uint256 amount) internal virtual override {
+        _transfer(address(surplusTarget), amount);
+        surplusTarget.deposit();
+        updateCurrentExposure();
+
+        emit AllocateSurplus(msg.sender, amount);
     }
 }

@@ -296,7 +296,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     }
 
     /// @notice Allocates a portion of escrowed PCV to a target PCV deposit
-    function _allocate(uint256 amount) internal {
+    function _allocate(uint256 amount) internal virtual {
         _transfer(address(surplusTarget), amount);
         surplusTarget.deposit();
 
