@@ -2,8 +2,9 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
-import fip_60c from '@proposals/description/fip_60c';
+import fip_visor from '@proposals/description/fip_visor';
 import fip_73 from '@proposals/description/fip_73';
+import fip_60c from '@proposals/description/fip_60c';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -14,6 +15,15 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
+  fip_visor: {
+    deploy: false,
+    proposalId: undefined,
+    affectedContractSignoff: ['optimisticTimelock'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.OA,
+    totalValue: 0,
+    proposal: fip_visor
+  },
   fip_73: {
     deploy: false,
     proposalId: null,
