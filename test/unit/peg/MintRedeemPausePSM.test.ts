@@ -216,6 +216,19 @@ describe('PegStabilityModule', function () {
         'PegStabilityModule: Minting paused'
       );
     });
+
+    it('governor can pause globally and for minting, mint fails', async () => {
+      await psm.connect(impersonatedSigners[governorAddress]).pause();
+      await psm.connect(impersonatedSigners[governorAddress]).pauseMint();
+
+      expect(await psm.paused()).to.be.true;
+      expect(await psm.mintPaused()).to.be.true;
+
+      await expectRevert(
+        psm.connect(impersonatedSigners[userAddress]).mint(userAddress, 0, 0),
+        'PegStabilityModule: Minting paused'
+      );
+    });
   });
 
   describe('pause redeem', function () {
@@ -231,6 +244,19 @@ describe('PegStabilityModule', function () {
     it('governor can pause globally, redemption fails', async () => {
       await psm.connect(impersonatedSigners[governorAddress]).pause();
       expect(await psm.paused()).to.be.true;
+      await expectRevert(
+        psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 0, 0),
+        'PegStabilityModule: Redeem paused'
+      );
+    });
+
+    it('governor can pause globally and for redeem, redemption fails', async () => {
+      await psm.connect(impersonatedSigners[governorAddress]).pause();
+      await psm.connect(impersonatedSigners[governorAddress]).pauseRedeem();
+
+      expect(await psm.paused()).to.be.true;
+      expect(await psm.redeemPaused()).to.be.true;
+
       await expectRevert(
         psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 0, 0),
         'PegStabilityModule: Redeem paused'
