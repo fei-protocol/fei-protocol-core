@@ -34,6 +34,24 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     /// Governance can change this fee
     uint256 public override MAX_FEE = 300;
 
+    /// @notice boolean switch that indicates whether redemptions are paused
+    bool public redeemPaused;
+
+    /// @notice event that is emitted when redemptions are paused
+    event RedemptionsPaused(address account);
+    
+    /// @notice event that is emitted when redemptions are unpaused
+    event RedemptionsUnpaused(address account);
+
+    /// @notice boolean switch that indicates whether minting is paused
+    bool public mintPaused;
+
+    /// @notice event that is emitted when minting is paused
+    event MintingPaused(address account);
+    
+    /// @notice event that is emitted when minting is unpaused
+    event MintingUnpaused(address account);
+
     /// @notice struct for passing constructor parameters related to OracleRef
     struct OracleParams {
         address coreAddress;
@@ -66,6 +84,54 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         _setRedeemFee(_redeemFeeBasisPoints);
         _setSurplusTarget(_surplusTarget);
         _setContractAdminRole(keccak256("PSM_ADMIN_ROLE"));
+    }
+
+    /// @notice modifier that allows execution when redemptions are not paused
+    modifier whileRedemptionsNotPaused {
+        require(!redeemPaused && !paused(), "PegStabilityModule: Redeem paused");
+        _;
+    }
+
+    /// @notice modifier that allows execution when redemptions are paused
+    modifier whileRedemptionsPaused {
+        require(redeemPaused, "PegStabilityModule: Redeem not paused");
+        _;
+    }
+
+    /// @notice modifier that allows execution when minting is not paused
+    modifier whileMintingNotPaused {
+        require(!mintPaused && !paused(), "PegStabilityModule: Minting paused");
+        _;
+    }
+
+    /// @notice modifier that allows execution when minting is paused
+    modifier whileMintingPaused {
+        require(mintPaused, "PegStabilityModule: Minting not paused");
+        _;
+    }
+
+    /// @notice set secondary pausable methods to paused
+    function pauseRedeem() public isGovernorOrGuardianOrAdmin {
+        redeemPaused = true;
+        emit RedemptionsPaused(msg.sender);
+    }
+
+    /// @notice set secondary pausable methods to unpaused
+    function unpauseRedeem() public isGovernorOrGuardianOrAdmin {
+        redeemPaused = false;
+        emit RedemptionsUnpaused(msg.sender);
+    }
+
+    /// @notice set secondary pausable methods to paused
+    function pauseMint() public isGovernorOrGuardianOrAdmin {
+        mintPaused = true;
+        emit RedemptionsPaused(msg.sender);
+    }
+
+    /// @notice set secondary pausable methods to unpaused
+    function unpauseMint() public isGovernorOrGuardianOrAdmin {
+        mintPaused = false;
+        emit RedemptionsUnpaused(msg.sender);
     }
 
     /// @notice withdraw assets from PSM to an external address
@@ -197,7 +263,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         address to,
         uint256 amountFeiIn,
         uint256 minAmountOut
-    ) external virtual override nonReentrant whenNotPaused returns (uint256 amountOut) {
+    ) external virtual override nonReentrant whileRedemptionsNotPaused returns (uint256 amountOut) {
         amountOut = _redeem(to, amountFeiIn, minAmountOut);
     }
 
@@ -207,7 +273,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         address to,
         uint256 amountIn,
         uint256 minAmountOut
-    ) external virtual override nonReentrant whenNotPaused returns (uint256 amountFeiOut) {
+    ) external virtual override nonReentrant whileMintingNotPaused returns (uint256 amountFeiOut) {
         amountFeiOut = _mint(to, amountIn, minAmountOut);
     }
 

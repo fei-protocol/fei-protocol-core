@@ -97,7 +97,7 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBound {
     }
 
     /// @notice reverts if the price is greater than or equal to the ceiling or less than or equal to the floor
-    function _validatePriceRange(Decimal.D256 memory price) internal view override {
+    function _validatePriceRange(Decimal.D256 memory price) internal view virtual override {
         require(_validPrice(price), "PegStabilityModule: price out of bounds");
     }
 }

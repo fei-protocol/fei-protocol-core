@@ -355,7 +355,7 @@ describe('SafePSM', function () {
 
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).mint(userAddress, oneK, 0),
-          'PegStabilityModule: price out of bounds'
+          'SafePSM: price out of bounds'
         );
       });
 
@@ -371,11 +371,11 @@ describe('SafePSM', function () {
         await asset.mint(userAddress, oneK);
         await asset.connect(impersonatedSigners[userAddress]).approve(psm.address, oneK);
 
-        const mintAmountOut = await psm.getMintAmountOut(oneK);
+        await expectRevert(psm.getMintAmountOut(oneK), 'SafePSM: price out of bounds');
 
         await expectRevert(
-          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, oneK, mintAmountOut),
-          'PegStabilityModule: price out of bounds'
+          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, oneK, 0),
+          'SafePSM: price out of bounds'
         );
       });
 
@@ -473,7 +473,7 @@ describe('SafePSM', function () {
 
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, 0),
-          'Pausable: paused'
+          'PegStabilityModule: Minting paused'
         );
       });
     });
@@ -491,7 +491,7 @@ describe('SafePSM', function () {
 
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount, 0),
-          'Pausable: paused'
+          'PegStabilityModule: Redeem paused'
         );
       });
 
@@ -771,14 +771,11 @@ describe('SafePSM', function () {
 
         const expectedAssetAmount = mintAmount.mul(bpGranularity - 100).div(bpGranularity);
 
-        const actualAssetAmount = await psm.getRedeemAmountOut(mintAmount);
-
-        expect(expectedAssetAmount).to.be.equal(actualAssetAmount);
-        await asset.connect(impersonatedSigners[minterAddress]).mint(psm.address, expectedAssetAmount);
+        await expectRevert(psm.getRedeemAmountOut(mintAmount), 'SafePSM: price out of bounds');
 
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount, expectedAssetAmount),
-          'PegStabilityModule: price out of bounds'
+          'SafePSM: price out of bounds'
         );
       });
 
@@ -818,7 +815,7 @@ describe('SafePSM', function () {
         await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmount);
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount, 0),
-          'PegStabilityModule: price out of bounds'
+          'SafePSM: price out of bounds'
         );
       });
 

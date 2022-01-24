@@ -44,29 +44,9 @@ contract SafePSM is PriceBoundPSM {
         return _peg;
     }
 
-    function _mint(
-        address to,
-        uint256 amountIn,
-        uint256 minAmountOut
-    ) internal virtual override returns(uint256 amountFeiOut) {
-        _validatePrice();
-        amountFeiOut = PegStabilityModule._mint(to, amountIn, minAmountOut);
-    }
-
-
-    /// @notice internal helper method to redeem fei in exchange for an external asset
-    function _redeem(
-        address to,
-        uint256 amountFeiIn,
-        uint256 minAmountOut
-    ) internal virtual override returns(uint256 amountOut) {
-        _validatePrice();
-        amountOut = PegStabilityModule._redeem(to, amountFeiIn, minAmountOut);
-    }
-
-    /// @notice function that reverts if the oracle price is outside of
-    /// the allowable price range
-    function _validatePrice() internal view {
-        _validatePriceRange(readActualOracle());
+    /// @notice gas optimization, remove bounds check on fixed price oracle
+    /// we can just assume that this always returns properly
+    function _validatePriceRange(Decimal.D256 memory) internal view virtual override {
+        require(_validPrice(readActualOracle()), "SafePSM: price out of bounds");
     }
 }
