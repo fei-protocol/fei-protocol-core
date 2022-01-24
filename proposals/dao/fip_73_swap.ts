@@ -9,13 +9,13 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { TransactionResponse } from '@ethersproject/providers';
-import { getImpersonatedSigner, time, expectRevert } from '@test/helpers';
+import { getImpersonatedSigner, time, overwriteChainlinkAggregator } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 
 const fipNumber = '73_swap';
 
 // LBP swapper
-const LBP_FREQUENCY = '259200'; // 3 days
+const LBP_FREQUENCY = '86400'; // 24 hours
 const MIN_LBP_SIZE = ethers.constants.WeiPerEther.mul(1_000_000); // 1M
 let poolId; // auction pool id
 
@@ -111,12 +111,19 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  // overwrite chainlink ETH/USD oracle
+  await overwriteChainlinkAggregator(addresses.chainlinkEthUsdOracle, '250000000000', '8');
+
+  // invariant checks
   expect(await contracts.lusdToDaiLBPSwapper.tokenSpent()).to.be.equal(addresses.lusd);
   expect(await contracts.lusdToDaiLBPSwapper.tokenReceived()).to.be.equal(addresses.dai);
   expect(await contracts.lusdToDaiLBPSwapper.tokenReceivingAddress()).to.be.equal(addresses.compoundDaiPCVDeposit);
   const poolTokens = await contracts.balancerVault.getPoolTokens(poolId);
   expect(poolTokens.tokens[0]).to.be.equal(addresses.lusd);
   expect(poolTokens.tokens[1]).to.be.equal(addresses.dai);
+
+  console.log('setup compound DAI balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
+  console.log('setup bamm LUSD balance [M]', (await contracts.bammDeposit.balance()) / 1e24);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -128,36 +135,54 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  console.log('validate compound DAI balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
+  console.log('validate bamm LUSD balance [M]', (await contracts.bammDeposit.balance()) / 1e24);
+
+  // should have at least 20M in the DAI reserves
+  expect(await contracts.compoundDaiPCVDeposit.balance()).to.be.at.least(ethers.constants.WeiPerEther.mul(20_000_000));
+
+  // LBP swapper should be empty
+  const poolTokens = await contracts.balancerVault.getPoolTokens(poolId);
+  expect(poolTokens.balances[0]).to.be.equal('0');
+  expect(poolTokens.balances[1]).to.be.equal('0');
+
+  // Lenses should report 0 because LBP is empty
+  expect(await contracts.lusdToDaiLensDai.balance()).to.be.equal('0');
+  expect(await contracts.lusdToDaiLensLusd.balance()).to.be.equal('0');
+
+  // Swapper should hold no tokens
+  expect(await contracts.lusd.balanceOf(contracts.lusdToDaiLBPSwapper.address)).to.be.equal('0');
+  expect(await contracts.dai.balanceOf(contracts.lusdToDaiLBPSwapper.address)).to.be.equal('0');
+
+  // End-to-end test : use the guardian to start a LUSD->DAI auction
   const signer = await getImpersonatedSigner('0xB8f482539F2d3Ae2C9ea6076894df36D1f632775'); // guardian
   await forceEth('0xB8f482539F2d3Ae2C9ea6076894df36D1f632775');
-
-  const poolTokens = await contracts.balancerVault.getPoolTokens(poolId);
-  console.log('poolTokens.balances[0]', poolTokens.balances[0] / 1e18);
-  console.log('poolTokens.balances[1]', poolTokens.balances[1] / 1e18);
-
-  console.log('BEFORE lusdToDaiLensDai.balance()', (await contracts.lusdToDaiLensDai.balance()) / 1e18);
-  console.log('BEFORE lusdToDaiLensLusd.balance()', (await contracts.lusdToDaiLensLusd.balance()) / 1e18);
-  console.log(
-    'BEFORE swapper LUSD balance',
-    (await contracts.lusd.balanceOf(contracts.lusdToDaiLBPSwapper.address)) / 1e18
-  );
-  console.log('Withdraw 10M LUSD to the swapper with PCVGuardian');
+  // Move 9M LUSD an 1M DAI to the swapper
   await contracts.pcvGuardian.connect(signer).withdrawToSafeAddress(
     contracts.bammDeposit.address, // address pcvDeposit,
     contracts.lusdToDaiLBPSwapper.address, // address safeAddress,
-    '10000000000000000000000000', // uint256 amount,
+    '9000000000000000000000000', // uint256 amount,
     false, // bool pauseAfter,
     false // bool depositAfter
   );
-  console.log(
-    'AFTER swapper LUSD balance',
-    (await contracts.lusd.balanceOf(contracts.lusdToDaiLBPSwapper.address)) / 1e18
+  await contracts.pcvGuardian.connect(signer).withdrawToSafeAddress(
+    contracts.compoundDaiPCVDeposit.address, // address pcvDeposit,
+    contracts.lusdToDaiLBPSwapper.address, // address safeAddress,
+    '1000000000000000000000000', // uint256 amount,
+    false, // bool pauseAfter,
+    false // bool depositAfter
   );
-  await time.increase(3 * 24 * 3600);
-  console.log('guardian can trigger a new swap');
-  // if this error message shows, it means the balancer pool contract has been
-  // called, so we passed the access control checks on the Fei contract above
-  expectRevert(contracts.lusdToDaiLBPSwapper.connect(signer).swap(), 'Dai/insufficient-balance');
+  expect(await contracts.lusd.balanceOf(contracts.lusdToDaiLBPSwapper.address)).to.be.equal(
+    ethers.constants.WeiPerEther.mul(9_000_000)
+  );
+  expect(await contracts.dai.balanceOf(contracts.lusdToDaiLBPSwapper.address)).to.be.equal(
+    ethers.constants.WeiPerEther.mul(1_000_000)
+  );
+  //
+  await time.increase(await contracts.lusdToDaiLBPSwapper.remainingTime());
+  expect(await contracts.lusdToDaiLBPSwapper.isTimeEnded()).to.be.true;
+  await contracts.lusdToDaiLBPSwapper.connect(signer).swap();
+  expect(await contracts.lusdToDaiLBPSwapper.isTimeEnded()).to.be.false;
 };
 
 export { deploy, setup, teardown, validate };

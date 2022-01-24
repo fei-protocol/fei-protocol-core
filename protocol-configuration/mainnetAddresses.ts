@@ -1111,6 +1111,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x06cb22615BA53E60D67Bf6C341a0fD5E718E1655',
     category: AddressCategory.External
   },
+  curveLusdMetapool: {
+    artifactName: 'ICurvePool',
+    address: '0xEd279fDD11cA84bEef15AF5D39BB4d4bEE23F0cA',
+    category: AddressCategory.External
+  },
   curve3pool: {
     artifactName: 'unknown',
     address: '0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7',

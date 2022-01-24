@@ -4,25 +4,38 @@ const fip_73: ProposalDescription = {
   title: 'FIP-73: Fei Peg Policy Changes',
   commands: [
     {
-      target: 'compoundDaiPCVDeposit',
-      values: '0',
-      method: 'withdraw(address,uint256)',
-      arguments: ['{lusdToDaiLBPSwapper}', '680000000000000000000000'],
-      description: 'Withdraw 680k DAI from Compound to the swapper'
-    },
-    {
       target: 'bammDeposit',
       values: '0',
       method: 'withdraw(address,uint256)',
-      arguments: ['{lusdToDaiLBPSwapper}', '6000000000000000000000000'],
-      description: 'Withdraw 6M LUSD from BAMM to the swapper'
+      arguments: ['{feiDAOTimelock}', '20000000000000000000000000'],
+      description: 'Withdraw 20M LUSD from BAMM to the DAO Timelock'
     },
     {
-      target: 'lusdToDaiLBPSwapper',
+      target: 'lusd',
       values: '0',
-      method: 'forceSwap()',
+      method: 'approve(address,uint256)',
+      arguments: ['{curveLusdMetapool}', '20000000000000000000000000'],
+      description: 'Approve 20M LUSD on Curve LUSD metapool'
+    },
+    {
+      target: 'curveLusdMetapool',
+      values: '0',
+      method: 'exchange_underlying(int128,int128,uint256,uint256,address)',
+      arguments: [
+        '0', // i
+        '1', // j
+        '20000000000000000000000000', // dx
+        '19960000000000000000000000', // min_dy (tolerate 0.2% slip)
+        '{compoundDaiPCVDeposit}'
+      ],
+      description: 'Swap 20M LUSD on Curve for at least 19.96M DAI and send to Compound DAI deposit'
+    },
+    {
+      target: 'compoundDaiPCVDeposit',
+      values: '0',
+      method: 'deposit()',
       arguments: [],
-      description: 'Start LUSD->DAI auction'
+      description: 'Deposit 20M DAI on Compound'
     },
     {
       target: 'core',
@@ -57,9 +70,11 @@ const fip_73: ProposalDescription = {
 Forum discussion: https://tribe.fei.money/t/fei-peg-policy-changes/3906
 Snapshot: https://snapshot.org/#/fei.eth/proposal/0x825420b492363969de1d728655904181d92df2984631a232533e6a86b2125ee3
 
+Immediately swap 20M LUSD for 20M DAI using Curve to re-fill the DAI reserves and allow DAI redemptions.
+
 Create a new swapper for LUSD->DAI whitelisted as a safe address to allow the PCVGuardian to exchange LUSD for DAI using an LBP swapper like used for the buybacks.
 
-The DAI received will be sent to Compound, where the dripper can pull it to the DAI PSM.
+The DAI received by swapping will be sent to Compound, where the dripper can pull it to the DAI PSM.
 `
 };
 
