@@ -26,7 +26,7 @@ export const permissions = {
   ],
   GUARDIAN_ROLE: ['multisig', 'pcvGuardian'],
   ORACLE_ADMIN_ROLE: ['collateralizationOracleGuardian', 'optimisticTimelock', 'opsOptimisticTimelock'],
-  SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'optimisticTimelock'],
+  SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'optimisticTimelock', 'guardian'],
   BALANCER_MANAGER_ADMIN_ROLE: [],
   PSM_ADMIN_ROLE: [],
   TRIBAL_CHIEF_ADMIN_ROLE: ['optimisticTimelock', 'tribalChiefSyncV2'],
