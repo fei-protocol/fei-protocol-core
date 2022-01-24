@@ -51,12 +51,12 @@ contract SafePSM is PriceBoundPSM {
     }
 
     /// @notice stop PSM from executing if price is outside of the acceptable band
-    function _afterRedeemHook() internal view override virtual {
+    function _afterRedeemHook(uint256) internal override virtual {
         _validatePrice();
     }
 
     /// @notice stop PSM from executing if price is outside of the acceptable band
-    function _afterMintHook() internal view override virtual {
+    function _afterMintHook(uint256) internal override virtual {
         _validatePrice();
     }
 }
