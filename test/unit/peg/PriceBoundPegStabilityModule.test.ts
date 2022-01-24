@@ -504,7 +504,7 @@ describe('PriceBoundPegStabilityModule', function () {
 
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, 0),
-          'Pausable: paused'
+          'PegStabilityModule: Minting paused'
         );
       });
     });
@@ -522,7 +522,7 @@ describe('PriceBoundPegStabilityModule', function () {
 
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount, 0),
-          'Pausable: paused'
+          'PegStabilityModule: Redeem paused'
         );
       });
 
