@@ -521,6 +521,7 @@ describe('SafePSM', function () {
     describe('Sells FEI for Token', function () {
       beforeEach(async () => {
         await asset.mint(psm.address, mintAmount);
+        await psm.updateCurrentExposure();
       });
 
       it('redeem fails when contract is paused', async () => {
