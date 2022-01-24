@@ -1191,6 +1191,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xCf84a3dC12319531E3deBD48C86E68eAeAfF224a',
     category: AddressCategory.External
   },
+  hypervisor: {
+    artifactName: 'IHypervisor',
+    address: '0x704eCeCABe7855996CeDE5CeFa660Eccd3c01dBE',
+    category: AddressCategory.External
+  },
   index: {
     artifactName: 'IERC20',
     address: '0x0954906da0Bf32d5479e25f46056d22f08464cab',
