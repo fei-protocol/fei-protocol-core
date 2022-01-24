@@ -211,10 +211,7 @@ describe('PegStabilityModule', function () {
     it('governor can pause globally, mint fails', async () => {
       await psm.connect(impersonatedSigners[governorAddress]).pause();
       expect(await psm.paused()).to.be.true;
-      await expectRevert(
-        psm.connect(impersonatedSigners[userAddress]).mint(userAddress, 0, 0),
-        'PegStabilityModule: Minting paused'
-      );
+      await expectRevert(psm.connect(impersonatedSigners[userAddress]).mint(userAddress, 0, 0), 'Pausable: paused');
     });
 
     it('governor can pause globally and for minting, mint fails', async () => {
@@ -224,10 +221,7 @@ describe('PegStabilityModule', function () {
       expect(await psm.paused()).to.be.true;
       expect(await psm.mintPaused()).to.be.true;
 
-      await expectRevert(
-        psm.connect(impersonatedSigners[userAddress]).mint(userAddress, 0, 0),
-        'PegStabilityModule: Minting paused'
-      );
+      await expectRevert(psm.connect(impersonatedSigners[userAddress]).mint(userAddress, 0, 0), 'Pausable: paused');
     });
   });
 
@@ -244,10 +238,7 @@ describe('PegStabilityModule', function () {
     it('governor can pause globally, redemption fails', async () => {
       await psm.connect(impersonatedSigners[governorAddress]).pause();
       expect(await psm.paused()).to.be.true;
-      await expectRevert(
-        psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 0, 0),
-        'PegStabilityModule: Redeem paused'
-      );
+      await expectRevert(psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 0, 0), 'Pausable: paused');
     });
 
     it('governor can pause globally and for redeem, redemption fails', async () => {
@@ -257,10 +248,7 @@ describe('PegStabilityModule', function () {
       expect(await psm.paused()).to.be.true;
       expect(await psm.redeemPaused()).to.be.true;
 
-      await expectRevert(
-        psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 0, 0),
-        'PegStabilityModule: Redeem paused'
-      );
+      await expectRevert(psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 0, 0), 'Pausable: paused');
     });
   });
 
@@ -450,7 +438,7 @@ describe('PegStabilityModule', function () {
 
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).mint(userAddress, 10000, 0),
-          'PegStabilityModule: Minting paused'
+          'Pausable: paused'
         );
       });
     });
@@ -540,10 +528,7 @@ describe('PegStabilityModule', function () {
         await psm.connect(impersonatedSigners[governorAddress]).pause();
         expect(await psm.paused()).to.be.true;
 
-        await expectRevert(
-          psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 0, 0),
-          'PegStabilityModule: Redeem paused'
-        );
+        await expectRevert(psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 0, 0), 'Pausable: paused');
       });
 
       it('redeem fails when expected amount out is greater than actual amount out', async () => {

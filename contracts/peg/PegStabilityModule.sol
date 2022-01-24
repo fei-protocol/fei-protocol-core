@@ -88,36 +88,36 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
 
     /// @notice modifier that allows execution when redemptions are not paused
     modifier whileRedemptionsNotPaused {
-        require(!redeemPaused && !paused(), "PegStabilityModule: Redeem paused");
+        require(!redeemPaused, "PegStabilityModule: Redeem paused");
         _;
     }
 
     /// @notice modifier that allows execution when minting is not paused
     modifier whileMintingNotPaused {
-        require(!mintPaused && !paused(), "PegStabilityModule: Minting paused");
+        require(!mintPaused, "PegStabilityModule: Minting paused");
         _;
     }
 
     /// @notice set secondary pausable methods to paused
-    function pauseRedeem() public isGovernorOrGuardianOrAdmin {
+    function pauseRedeem() external isGovernorOrGuardianOrAdmin {
         redeemPaused = true;
         emit RedemptionsPaused(msg.sender);
     }
 
     /// @notice set secondary pausable methods to unpaused
-    function unpauseRedeem() public isGovernorOrGuardianOrAdmin {
+    function unpauseRedeem() external isGovernorOrGuardianOrAdmin {
         redeemPaused = false;
         emit RedemptionsUnpaused(msg.sender);
     }
 
     /// @notice set secondary pausable methods to paused
-    function pauseMint() public isGovernorOrGuardianOrAdmin {
+    function pauseMint() external isGovernorOrGuardianOrAdmin {
         mintPaused = true;
         emit MintingPaused(msg.sender);
     }
 
     /// @notice set secondary pausable methods to unpaused
-    function unpauseMint() public isGovernorOrGuardianOrAdmin {
+    function unpauseMint() external isGovernorOrGuardianOrAdmin {
         mintPaused = false;
         emit MintingUnpaused(msg.sender);
     }
@@ -251,7 +251,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         address to,
         uint256 amountFeiIn,
         uint256 minAmountOut
-    ) external virtual override nonReentrant whileRedemptionsNotPaused returns (uint256 amountOut) {
+    ) external virtual override nonReentrant whenNotPaused whileRedemptionsNotPaused returns (uint256 amountOut) {
         amountOut = _redeem(to, amountFeiIn, minAmountOut);
     }
 
@@ -261,7 +261,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         address to,
         uint256 amountIn,
         uint256 minAmountOut
-    ) external virtual override nonReentrant whileMintingNotPaused returns (uint256 amountFeiOut) {
+    ) external virtual override nonReentrant whenNotPaused whileMintingNotPaused returns (uint256 amountFeiOut) {
         amountFeiOut = _mint(to, amountIn, minAmountOut);
     }
 

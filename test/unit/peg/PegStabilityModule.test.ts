@@ -375,7 +375,7 @@ describe('PegStabilityModule', function () {
 
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).mint(userAddress, 10000, 0),
-          'PegStabilityModule: Minting paused'
+          'Pausable: paused'
         );
       });
     });
@@ -396,7 +396,7 @@ describe('PegStabilityModule', function () {
 
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 10000, 0),
-          'PegStabilityModule: Redeem paused'
+          'Pausable: paused'
         );
       });
 
