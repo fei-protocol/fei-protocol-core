@@ -92,21 +92,9 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         _;
     }
 
-    /// @notice modifier that allows execution when redemptions are paused
-    modifier whileRedemptionsPaused {
-        require(redeemPaused, "PegStabilityModule: Redeem not paused");
-        _;
-    }
-
     /// @notice modifier that allows execution when minting is not paused
     modifier whileMintingNotPaused {
         require(!mintPaused && !paused(), "PegStabilityModule: Minting paused");
-        _;
-    }
-
-    /// @notice modifier that allows execution when minting is paused
-    modifier whileMintingPaused {
-        require(mintPaused, "PegStabilityModule: Minting not paused");
         _;
     }
 
