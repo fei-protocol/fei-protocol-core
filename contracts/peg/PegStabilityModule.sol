@@ -125,13 +125,13 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     /// @notice set secondary pausable methods to paused
     function pauseMint() public isGovernorOrGuardianOrAdmin {
         mintPaused = true;
-        emit RedemptionsPaused(msg.sender);
+        emit MintingPaused(msg.sender);
     }
 
     /// @notice set secondary pausable methods to unpaused
     function unpauseMint() public isGovernorOrGuardianOrAdmin {
         mintPaused = false;
-        emit RedemptionsUnpaused(msg.sender);
+        emit MintingUnpaused(msg.sender);
     }
 
     /// @notice withdraw assets from PSM to an external address
