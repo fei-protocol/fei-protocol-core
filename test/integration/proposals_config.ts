@@ -18,7 +18,7 @@ const proposals: ProposalsConfigMap = {
   fip_visor: {
     deploy: false,
     proposalId: undefined,
-    affectedContractSignoff: [],
+    affectedContractSignoff: ['optimisticTimelock'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.OA,
     totalValue: 0,
