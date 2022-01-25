@@ -40,7 +40,7 @@ contract ERC20PermissionlessMover is CoreRef {
     /// @param _token to transfer
     /// @param _from source of the token
     function removeFromWhitelist(address _token, address _from) public onlyGovernorOrAdmin {
-        require(whitelist[_token][_from] != address(0), "ERC20PermissionlessMover: not found");
+        require(whitelist[_token][_from] != address(0), "ERC20PermissionlessMover: not added to whitelist");
 
         address _oldTo = whitelist[_token][_from];
         whitelist[_token][_from] = address(0);
@@ -53,7 +53,7 @@ contract ERC20PermissionlessMover is CoreRef {
     /// @param _from source of the token
     function move(address _token, address _from) public whenNotPaused {
         address _to = whitelist[_token][_from];
-        require(_to != address(0), "ERC20PermissionlessMover: not found");
+        require(_to != address(0), "ERC20PermissionlessMover: no whitelisted destination");
 
         uint256 _amount = IERC20(_token).balanceOf(_from);
         IPCVDeposit(_from).withdrawERC20(_token, _to, _amount);

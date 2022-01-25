@@ -102,22 +102,93 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  const daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
+  await forceEth(contracts.feiDAOTimelock.address);
+
   // Validate delegatees
   expect(await contracts.aaveDelegatorPCVDeposit.delegate()).to.be.equal(DELEGATE_AAVE);
   expect(await contracts.angleDelegatorPCVDeposit.delegate()).to.be.equal(DELEGATE_ANGLE);
   expect(await contracts.compDelegatorPCVDeposit.delegate()).to.be.equal(DELEGATE_COMP);
   expect(await contracts.convexDelegatorPCVDeposit.delegate()).to.be.equal(DELEGATE_CVX);
 
-  // Angle game
+  console.log('========== Move all our gov tokens to delegators ==========');
+  await contracts.permissionlessPcvMover.move(contracts.crv.address, contracts.d3poolConvexPCVDeposit.address);
+  await contracts.permissionlessPcvMover.move(contracts.cvx.address, contracts.d3poolConvexPCVDeposit.address);
+  await contracts.permissionlessPcvMover.move(contracts.comp.address, contracts.compoundEthPCVDeposit.address);
+  await contracts.permissionlessPcvMover.move(contracts.comp.address, contracts.compoundDaiPCVDeposit.address);
+  await contracts.permissionlessPcvMover.move(contracts.stkaave.address, contracts.aaveEthPCVDeposit.address);
+  await contracts.permissionlessPcvMover.move(contracts.stkaave.address, contracts.aaveRaiPCVDeposit.address);
   console.log(
-    'angleDelegatorPCVDeposit ANGLE balance',
+    'Aave delegator AAVE balance',
+    (await contracts.aave.balanceOf(contracts.aaveDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'Aave delegator stkAAVE balance',
+    (await contracts.stkaave.balanceOf(contracts.aaveDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'Angle delegator ANGLE balance',
     (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
   );
   console.log(
-    'angleDelegatorPCVDeposit veANGLE balance',
-    (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+    'Compound delegator COMP balance',
+    (await contracts.comp.balanceOf(contracts.compDelegatorPCVDeposit.address)) / 1e18
   );
+  console.log(
+    'Convex delegator CVX balance',
+    (await contracts.cvx.balanceOf(contracts.convexDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'Convex delegator CRV balance',
+    (await contracts.crv.balanceOf(contracts.convexDelegatorPCVDeposit.address)) / 1e18
+  );
+
+  // Aave game
+  console.log('========== Aave game ==========');
+  console.log('claimRewards()');
+  await contracts.aaveDelegatorPCVDeposit.claimRewards();
+  console.log(
+    'Aave delegator AAVE balance',
+    (await contracts.aave.balanceOf(contracts.aaveDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'Aave delegator stkAAVE balance',
+    (await contracts.stkaave.balanceOf(contracts.aaveDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log('start stkAAVE -> AAVE cooldown [as governor]');
+  await contracts.aaveDelegatorPCVDeposit.connect(daoSigner).cooldown();
+  console.log('cooldown started. fast-forwarding 10 days');
+  await time.increase(10 * 24 * 3600);
+  console.log('unstaking stkAAVE to AAVE');
+  await contracts.aaveDelegatorPCVDeposit.unstakeAave();
+  console.log(
+    'Aave delegator AAVE balance',
+    (await contracts.aave.balanceOf(contracts.aaveDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'Aave delegator stkAAVE balance',
+    (await contracts.stkaave.balanceOf(contracts.aaveDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log('stake AAVE to stkAAVE');
+  await contracts.aaveDelegatorPCVDeposit.stakeAave();
+  console.log(
+    'Aave delegator AAVE balance',
+    (await contracts.aave.balanceOf(contracts.aaveDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'Aave delegator stkAAVE balance',
+    (await contracts.stkaave.balanceOf(contracts.aaveDelegatorPCVDeposit.address)) / 1e18
+  );
+
+  // Comp delegation check
+  console.log('========== Compound game ==========');
+  console.log('comp.getCurrentVotes(DELEGATE_COMP)', (await contracts.comp.getCurrentVotes(DELEGATE_COMP)) / 1e18);
+
+  // Angle game
+  console.log('========== Angle game ==========');
+  console.log('Vote-locking ANGLE...');
   await contracts.angleDelegatorPCVDeposit.lock();
+  console.log('Vote-locked ANGLE.');
   console.log(
     'angleDelegatorPCVDeposit ANGLE balance',
     (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
@@ -136,32 +207,50 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     'angleDelegatorPCVDeposit veANGLE balance',
     (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
   );
-
-  // Comp delegation check
-  // comp.getCurrentVotes(address)
-
-  // Aave game
+  console.log('prolong locking period');
+  await contracts.angleDelegatorPCVDeposit.lock();
+  console.log(
+    'angleDelegatorPCVDeposit ANGLE balance',
+    (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'angleDelegatorPCVDeposit veANGLE balance',
+    (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log('ff 4 years');
+  await time.increase(4 * 365 * 24 * 3600);
+  console.log(
+    'angleDelegatorPCVDeposit ANGLE balance',
+    (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'angleDelegatorPCVDeposit veANGLE balance',
+    (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log('exitLock()');
+  console.log(
+    'angleDelegatorPCVDeposit ANGLE balance',
+    (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'angleDelegatorPCVDeposit veANGLE balance',
+    (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log('lock()');
+  await contracts.angleDelegatorPCVDeposit.lock();
+  console.log(
+    'angleDelegatorPCVDeposit ANGLE balance',
+    (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'angleDelegatorPCVDeposit veANGLE balance',
+    (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log('gauge stuff - todo');
 
   // Convex game
-  console.log('========================= CONVEX GAME =======================');
-  console.log(
-    'convexDelegatorPCVDeposit CVX balance',
-    (await contracts.cvx.balanceOf(contracts.convexDelegatorPCVDeposit.address)) / 1e18
-  );
-  console.log(
-    'convexDelegatorPCVDeposit CRV balance',
-    (await contracts.crv.balanceOf(contracts.convexDelegatorPCVDeposit.address)) / 1e18
-  );
-  await contracts.permissionlessPcvMover.move(contracts.crv.address, contracts.convexDelegatorPCVDeposit.address);
-  await contracts.permissionlessPcvMover.move(contracts.cvx.address, contracts.convexDelegatorPCVDeposit.address);
-  console.log(
-    'convexDelegatorPCVDeposit CVX balance',
-    (await contracts.cvx.balanceOf(contracts.convexDelegatorPCVDeposit.address)) / 1e18
-  );
-  console.log(
-    'convexDelegatorPCVDeposit CRV balance',
-    (await contracts.crv.balanceOf(contracts.convexDelegatorPCVDeposit.address)) / 1e18
-  );
+  console.log('========== Convex game ==========');
+  console.log('todo');
 
   // TODO: additional checks
   console.log('done');

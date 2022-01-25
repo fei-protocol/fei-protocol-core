@@ -72,6 +72,28 @@ const fip_9001: ProposalDescription = {
       description: 'Whitelist movement of CVX tokens to the delegator'
     },
     {
+      target: 'permissionlessPcvMover',
+      values: '0',
+      method: 'addToWhitelist',
+      arguments: [
+        '{stkaave}', // token
+        '{aaveEthPCVDeposit}', // from
+        '{aaveDelegatorPCVDeposit}' // to
+      ],
+      description: 'Whitelist movement of stkAAVE tokens to the delegator [ETH deposit]'
+    },
+    {
+      target: 'permissionlessPcvMover',
+      values: '0',
+      method: 'addToWhitelist',
+      arguments: [
+        '{stkaave}', // token
+        '{aaveRaiPCVDeposit}', // from
+        '{aaveDelegatorPCVDeposit}' // to
+      ],
+      description: 'Whitelist movement of stkAAVE tokens to the delegator [RAI deposit]'
+    },
+    {
       target: 'core',
       values: '0',
       method: 'grantPCVController(address)',

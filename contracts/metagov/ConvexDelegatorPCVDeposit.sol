@@ -87,6 +87,15 @@ contract ConvexDelegatorPCVDeposit is SnapshotDelegatorPCVDeposit {
         cvxLocker.lock(address(this), amount, 10000); // 100% lock
     }
 
+    /// @notice permissionless call to renew lock of CVX tokens.
+    /// If a migration is planned, this contract should be paused.
+    /// Then, the function won't be able to be called, and tokens remain
+    /// withdrawable by PCVController.
+    /// @dev locked CVX will earn cvxCRV rewards
+    function relockCvx() public whenNotPaused {
+        cvxLocker.processExpiredLocks(true);
+    }
+
     /// @notice After the CVX lock of 16 weeks is over, use this function to
     /// burn vlCVX held by this contract, and recover CVX.
     function unlockCvx() external onlyPCVController {

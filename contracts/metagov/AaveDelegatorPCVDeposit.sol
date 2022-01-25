@@ -9,6 +9,8 @@ interface IStkAave is IERC20 {
     function stake(address onBehalfOf, uint256 amount) external;
     function redeem(address to, uint256 amount) external;
     function cooldown() external;
+    function claimRewards(address to, uint256 amount) external;
+    function stakerRewardsToClaim(address who) external returns (uint256);
 }
 
 /// @title Aave Delegator PCV Deposit
@@ -44,6 +46,12 @@ contract AaveDelegatorPCVDeposit is SnapshotDelegatorPCVDeposit {
         _initialDelegate
     ) {}
 
+    /// @notice Claim stkAAVE rewards (AAVE tokens) for this contract.
+    function claimRewards() external {
+        uint256 claimAmount = stkaave.stakerRewardsToClaim(address(this));
+        stkaave.claimRewards(address(this), claimAmount);
+    }
+
     /// @notice returns total balance of PCV in the Deposit
     function balance() public view virtual override returns (uint256) {
         // if the contract is paused, this contract may hold non-staked AAVE
@@ -52,25 +60,6 @@ contract AaveDelegatorPCVDeposit is SnapshotDelegatorPCVDeposit {
         uint256 stkaaveBalance = stkaave.balanceOf(address(this));
 
         return aaveBalance + stkaaveBalance;
-    }
-
-    /// @notice Claim rewards on behalf of a PCVDeposit, and send them to this
-    /// contract. Note: the Aave team have to whitelist manually this contract
-    /// as an authorized claimer for each PCVDeposits that earn rewards before
-    /// calling this function, or it will revert.
-    /// @param pcvDeposit address of the pcvDeposit to claim rewards for
-    /// @param aaveAsset address of the aToken held by the PCVDeposit
-    /// @param amount amount of rewards to claim (look offchain to save gas)
-    function claimRewards(address pcvDeposit, address aaveAsset, uint256 amount) public whenNotPaused {
-        address[] memory assets = new address[](1);
-        assets[0] = aaveAsset;
-
-        aaveIncentivesController.claimRewardsOnBehalf(
-            assets, // assets
-            amount, // amount
-            pcvDeposit, // user
-            address(this) // to
-        );
     }
 
     /// @notice If this contract holds AAVE, anyone can stake to stkAAVE.

@@ -4,8 +4,6 @@ pragma solidity ^0.8.0;
 import "../../refs/CoreRef.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import "hardhat/console.sol";
-
 interface IVeToken {
     function balanceOf(address) external view returns (uint256);
     function locked(address) external view returns (uint256);
@@ -55,13 +53,12 @@ abstract contract VoteEscrowTokenManager is CoreRef {
 
         // First lock
         if (tokenBalance != 0 && locked == 0) {
-            console.log("veToken", address(veToken));
-            console.log("create_lock(", tokenBalance, lockHorizon, ")");
+            liquidToken.approve(address(veToken), tokenBalance);
             veToken.create_lock(tokenBalance, lockHorizon);
-            console.log("create_lock done.");
         }
         // Increase amount of tokens locked & refresh duration to MAXTIME
         else if (tokenBalance != 0 && locked != 0) {
+            liquidToken.approve(address(veToken), tokenBalance);
             veToken.increase_amount(tokenBalance);
             veToken.increase_unlock_time(lockHorizon);
         }

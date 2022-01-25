@@ -22,8 +22,7 @@ const proposals: ProposalsConfigMap = {
     proposalId: undefined,
     affectedContractSignoff: [],
     deprecatedContractSignoff: [],
-    category: ProposalCategory.OA,
-    //category: ProposalCategory.DAO,
+    category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_9001
   } /*,
