@@ -120,7 +120,9 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   const ethPrice = (await contracts.chainlinkEthUsdOracleWrapper.read())[0] / 1e18; // ~3200.0 in Number
   expectApproxAbs(
     (await contracts.balancerDepositFeiWeth.resistantBalanceAndFei())[1],
-    ethers.constants.WeiPerEther.mul(Math.round((ethPrice * uniswapEthBalanceBefore.div(2e18) * 30) / 70).toString()),
+    ethers.constants.WeiPerEther.mul(
+      Math.round((((ethPrice * uniswapEthBalanceBefore * 0.5) / 1e18) * 30) / 70).toString()
+    ),
     ethers.constants.WeiPerEther.mul('10000').toString() // +/- 10k FEI
   );
 

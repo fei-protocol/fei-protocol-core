@@ -108,8 +108,7 @@ const dependencies: DependencyMap = {
       'fuseAdmin',
       'fuseGuardian',
       'restrictedPermissions',
-      'balancerDepositFeiWeth',
-      'delayedPCVMoverWethUniToBal'
+      'balancerDepositFeiWeth'
     ]
   },
   fei: {
@@ -639,7 +638,8 @@ const dependencies: DependencyMap = {
       'balUsdCompositeOracle',
       'collateralizationOracle',
       'uniswapPCVDeposit',
-      'balancerDepositBalWeth'
+      'balancerDepositBalWeth',
+      'balancerDepositFeiWeth'
     ]
   },
   chainlinkEurUsdOracleWrapper: {
@@ -672,7 +672,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'chainlinkEthUsdOracleWrapper', 'chainlinkCREAMEthOracle', 'collateralizationOracle']
   },
   oneConstantOracle: {
-    contractDependencies: ['core', 'collateralizationOracle']
+    contractDependencies: ['core', 'collateralizationOracle', 'balancerDepositFeiWeth']
   },
   tribeUsdCompositeOracle: {
     contractDependencies: [
@@ -931,18 +931,7 @@ const dependencies: DependencyMap = {
     contractDependencies: []
   },
   balancerDepositFeiWeth: {
-    contractDependencies: [
-      'core',
-      'balancerVault',
-      'balancerRewards',
-      'balancerFeiWethPool',
-      'weth',
-      'oneConstantOracle',
-      'chainlinkEthUsdOracleWrapper'
-    ]
-  },
-  delayedPCVMoverWethUniToBal: {
-    contractDependencies: ['core', 'uniswapPCVDeposit', 'balancerDepositFeiWeth', 'ratioPCVControllerV2']
+    contractDependencies: ['core', 'oneConstantOracle', 'chainlinkEthUsdOracleWrapper']
   }
 };
 
