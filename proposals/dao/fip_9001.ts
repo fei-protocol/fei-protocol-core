@@ -36,6 +36,27 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     throw new Error('An environment variable contract address is not set');
   }
 
+  // Create Chainlink Oracle Wrapper for COMP/USD feed
+  const chainlinkOracleWrapperFactory = await ethers.getContractFactory('ChainlinkOracleWrapper');
+  const chainlinkCompUsdOracleWrapper = await chainlinkOracleWrapperFactory.deploy(
+    addresses.core,
+    '0xdbd020CAeF83eFd542f4De03e3cF0C28A4428bd5' // COMP/USD Chainlink feed
+  );
+  await chainlinkCompUsdOracleWrapper.deployTransaction.wait();
+  logging && console.log('Chainlink COMP/USD Oracle Wrapper:', chainlinkCompUsdOracleWrapper.address);
+  const chainlinkAaveUsdOracleWrapper = await chainlinkOracleWrapperFactory.deploy(
+    addresses.core,
+    '0x547a514d5e3769680Ce22B2361c10Ea13619e8a9' // AAVE/USD Chainlink feed
+  );
+  await chainlinkAaveUsdOracleWrapper.deployTransaction.wait();
+  logging && console.log('Chainlink AAVE/USD Oracle Wrapper:', chainlinkAaveUsdOracleWrapper.address);
+  const chainlinkCvxUsdOracleWrapper = await chainlinkOracleWrapperFactory.deploy(
+    addresses.core,
+    '0xd962fC30A72A84cE50161031391756Bf2876Af5D' // CVX/USD Chainlink feed
+  );
+  await chainlinkCvxUsdOracleWrapper.deployTransaction.wait();
+  logging && console.log('Chainlink CVX/USD Oracle Wrapper:', chainlinkCvxUsdOracleWrapper.address);
+
   const moverFactory = await ethers.getContractFactory('ERC20PermissionlessMover');
   const permissionlessPcvMover = await moverFactory.deploy(addresses.core);
   await permissionlessPcvMover.deployTransaction.wait();
@@ -62,6 +83,9 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   logging && console.log('convexDelegatorPCVDeposit: ', convexDelegatorPCVDeposit.address);
 
   return {
+    chainlinkCompUsdOracleWrapper,
+    chainlinkAaveUsdOracleWrapper,
+    chainlinkCvxUsdOracleWrapper,
     aaveDelegatorPCVDeposit,
     angleDelegatorPCVDeposit,
     compDelegatorPCVDeposit,
@@ -228,6 +252,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
   );
   console.log('exitLock()');
+  await contracts.angleDelegatorPCVDeposit.exitLock();
   console.log(
     'angleDelegatorPCVDeposit ANGLE balance',
     (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18

@@ -111,8 +111,31 @@ const fip_9001: ProposalDescription = {
         '10000' // basis poins
       ],
       description: 'Move all ANGLE tokens to the new Angle deposit'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'setOracles(address[],address[])',
+      arguments: [
+        ['{comp}', '{aave}', '{cvx}'],
+        ['{chainlinkCompUsdOracleWrapper}', '{chainlinkAaveUsdOracleWrapper}', '{chainlinkCvxUsdOracleWrapper}']
+      ],
+      description: 'Add governance price feed oracles to Collateralization Oracle'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposits(address[])',
+      arguments: [
+        [
+          '{compDelegatorPCVDeposit}',
+          '{aaveDelegatorPCVDeposit}',
+          '{convexDelegatorPCVDeposit}' // CRV is not reported, only CVX
+          // ANGLE and INDEX are not reported because no oracle price feed exists on Chainlink
+        ]
+      ],
+      description: 'Add Delegator PCVDeposits to Collateralization Oracle'
     }
-    // TODO: add token delegator deposits to CR oracle
   ],
   description: `
 
