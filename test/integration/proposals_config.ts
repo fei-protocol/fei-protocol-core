@@ -16,7 +16,7 @@ const proposals: ProposalsConfigMap = {
     }
     */
   fip_70: {
-    deploy: true,
+    deploy: false,
     proposalId: undefined,
     affectedContractSignoff: [
       'weightedBalancerPoolManagerBase',
