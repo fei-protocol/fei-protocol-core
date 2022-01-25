@@ -9,12 +9,12 @@ import {
 } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer, utils } from 'ethers';
-import { Core, MockERC20, Fei, MockOracle, MockPCVDepositV2, ConstantOracle, SafePSM } from '@custom-types/contracts';
+import { Core, MockERC20, Fei, MockOracle, MockPCVDepositV2, FixedPricePSM } from '@custom-types/contracts';
 import { keccak256 } from 'ethers/lib/utils';
 
 const toBN = ethers.BigNumber.from;
 
-describe('SafePSM', function () {
+describe('FixedPricePSM', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
@@ -39,9 +39,8 @@ describe('SafePSM', function () {
   let asset: MockERC20;
   let fei: Fei;
   let oracle: MockOracle;
-  let psm: SafePSM;
+  let psm: FixedPricePSM;
   let pcvDeposit: MockPCVDepositV2;
-  let fixedPriceOracle: ConstantOracle;
 
   before(async () => {
     const addresses = await getAddresses();
@@ -82,16 +81,15 @@ describe('SafePSM', function () {
     oracle = await (await ethers.getContractFactory('MockOracle')).deploy(1);
     asset = await (await ethers.getContractFactory('MockERC20')).deploy();
     pcvDeposit = await (await ethers.getContractFactory('MockPCVDepositV2')).deploy(core.address, asset.address, 0, 0);
-    fixedPriceOracle = await (await ethers.getContractFactory('ConstantOracle')).deploy(core.address, 10_000);
 
     psm = await (
-      await ethers.getContractFactory('SafePSM')
+      await ethers.getContractFactory('FixedPricePSM')
     ).deploy(
       floorPrice,
       ceilingPrice,
       {
         coreAddress: core.address,
-        oracleAddress: fixedPriceOracle.address,
+        oracleAddress: oracle.address,
         backupOracle: ZERO_ADDRESS,
         decimalsNormalizer,
         doInvert: false
@@ -102,8 +100,7 @@ describe('SafePSM', function () {
       feiLimitPerSecond,
       bufferCap,
       asset.address,
-      pcvDeposit.address,
-      oracle.address
+      pcvDeposit.address
     );
 
     await core.grantMinter(psm.address);
@@ -118,16 +115,8 @@ describe('SafePSM', function () {
   });
 
   describe('after contract initialization, parameters are correct:', function () {
-    it('oracle address', async () => {
-      expect(await psm.oracle()).to.be.equal(fixedPriceOracle.address);
-    });
-
     it('backup oracle address is correct', async () => {
       expect(await psm.backupOracle()).to.be.equal(ZERO_ADDRESS);
-    });
-
-    it('actual price oracle address is correct', async () => {
-      expect(await psm.actualPriceOracle()).to.be.equal(oracle.address);
     });
 
     it('mintFeeBasisPoints', async () => {
@@ -355,7 +344,7 @@ describe('SafePSM', function () {
 
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).mint(userAddress, oneK, 0),
-          'SafePSM: price out of bounds'
+          'PegStabilityModule: price out of bounds'
         );
       });
 
@@ -371,11 +360,11 @@ describe('SafePSM', function () {
         await asset.mint(userAddress, oneK);
         await asset.connect(impersonatedSigners[userAddress]).approve(psm.address, oneK);
 
-        await expectRevert(psm.getMintAmountOut(oneK), 'SafePSM: price out of bounds');
+        await expectRevert(psm.getMintAmountOut(oneK), 'PegStabilityModule: price out of bounds');
 
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).mint(userAddress, oneK, 0),
-          'SafePSM: price out of bounds'
+          'PegStabilityModule: price out of bounds'
         );
       });
 
@@ -771,11 +760,11 @@ describe('SafePSM', function () {
 
         const expectedAssetAmount = mintAmount.mul(bpGranularity - 100).div(bpGranularity);
 
-        await expectRevert(psm.getRedeemAmountOut(mintAmount), 'SafePSM: price out of bounds');
+        await expectRevert(psm.getRedeemAmountOut(mintAmount), 'PegStabilityModule: price out of bounds');
 
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount, expectedAssetAmount),
-          'SafePSM: price out of bounds'
+          'PegStabilityModule: price out of bounds'
         );
       });
 
@@ -815,7 +804,7 @@ describe('SafePSM', function () {
         await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmount);
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount, 0),
-          'SafePSM: price out of bounds'
+          'PegStabilityModule: price out of bounds'
         );
       });
 
