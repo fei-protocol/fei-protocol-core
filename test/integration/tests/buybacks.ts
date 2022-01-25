@@ -17,18 +17,18 @@ import { BalancerLBPSwapper, CollateralizationOracle, IVault, IWeightedPool } fr
 import { forceEth } from '../setup/utils';
 const toBN = ethers.BigNumber.from;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe('e2e-buybacks', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts

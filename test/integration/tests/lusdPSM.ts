@@ -20,12 +20,6 @@ import { forceEth } from '../setup/utils';
 const oneEth = ethers.constants.WeiPerEther;
 const toBN = ethers.BigNumber.from;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe('lusd PSM', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
@@ -40,6 +34,12 @@ describe('lusd PSM', function () {
   let skimmer: FeiSkimmer;
   let bammDeposit: BAMMDeposit;
   const amount = toBN(5_000_000).mul(oneEth);
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts

@@ -9,12 +9,6 @@ import { TestEndtoEndCoordinator } from '@test/integration/setup';
 
 const toBN = ethers.BigNumber.from;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe('e2e-backstop', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
@@ -23,6 +17,12 @@ describe('e2e-backstop', function () {
   let doLogging: boolean;
 
   const tenPow18 = ethers.constants.WeiPerEther;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts

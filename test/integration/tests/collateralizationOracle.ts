@@ -14,11 +14,6 @@ import {
   NamedStaticPCVDepositWrapper
 } from '@custom-types/contracts';
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-});
-
 describe('e2e-collateralization', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
@@ -39,6 +34,11 @@ describe('e2e-collateralization', function () {
     'Kashi 2.5m WETH-FEI'
   ];
   const eth = ethers.constants.WeiPerEther;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+  });
 
   before(async function () {
     // Setup test environment and get contracts

@@ -22,12 +22,6 @@ import { contract } from '@openzeppelin/test-environment';
 
 const oneEth = ethers.constants.WeiPerEther;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe('eth PSM', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
@@ -42,6 +36,12 @@ describe('eth PSM', function () {
   let fei: Fei;
   let dripper: PCVDripController;
   let aaveEthPCVDeposit: AavePCVDeposit;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
