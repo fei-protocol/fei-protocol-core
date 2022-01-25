@@ -365,7 +365,9 @@ describe('e2e-staking', function () {
         });
 
         if (nextRewardRate.toString() !== '6060000000000000000') {
-          await time.increaseTo((await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)));
+          const deadline = (await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)).toNumber();
+          const currentTime = await time.latest();
+          if (deadline > currentTime) await time.increaseTo(deadline);
         }
       }
       doLogging && console.log(`Done and checking latest`);

@@ -160,7 +160,7 @@ describe('eth PSM', function () {
 
     describe('mint flow', async () => {
       it('after mint, eth flows to aave eth pcv deposit', async () => {
-        const mintAmount: BigNumber = oneEth.mul(500);
+        const mintAmount: BigNumber = oneEth.mul(7500);
         const minAmountOut = await ethPSM.getMintAmountOut(mintAmount);
         const startingFeiBalance = await fei.balanceOf(deployAddress.address);
         const startingAavePCVDepositaWethBalance = await aWeth.balanceOf(aaveEthPCVDeposit.address);

@@ -48,7 +48,7 @@ describe('e2e-merger', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe('PegExchanger', async () => {
+  describe.skip('PegExchanger', async () => {
     const RGT_WHALE = '0x20017a30D3156D4005bDA08C40Acda0A6aE209B1';
 
     it('drips correctly before expiration', async function () {
