@@ -18,25 +18,18 @@ const fip_70: ProposalDescription = {
       description: 'Add Balancer WETH/FEI deposit to CR oracle'
     },
     {
-      target: 'uniswapPCVDeposit',
+      target: 'ratioPCVControllerV2',
       values: '0',
-      method: 'withdraw(address,uint256)',
-      arguments: ['{balancerDepositFeiWeth}', '20000000000000000000000'],
-      description: 'Withdraw 20,000 ETH from Uniswap to Balancer FEI pair'
-    },
-    {
-      target: 'balancerDepositFeiWeth',
-      values: '0',
-      method: 'wrapETH()',
-      arguments: [],
-      description: 'Wrap 20,000 ETH to WETH for deposit on Balancer'
+      method: 'withdrawRatio(address,address,uint256)',
+      arguments: ['{uniswapPCVDeposit}', '{balancerDepositFeiWeth}', '5000'],
+      description: 'Withdraw half ETH from Uniswap to Balancer FEI pair'
     },
     {
       target: 'balancerDepositFeiWeth',
       values: '0',
       method: 'deposit()',
       arguments: [],
-      description: 'Deposit 20,000 WETH on Balancer with matching FEI'
+      description: 'Deposit WETH on Balancer with matching FEI'
     },
     {
       target: 'core',

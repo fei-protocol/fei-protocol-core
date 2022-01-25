@@ -64,7 +64,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   const delayedPCVMoverFactory = await ethers.getContractFactory('DelayedPCVMover');
   const delayedPCVMoverWethUniToBal = await delayedPCVMoverFactory.deploy(
     addresses.core,
-    Math.floor((Date.now() + 10 * 24 * 36e5) / 1000).toString(), // deadline for 2nd PCV movement in 10 days
+    '1643930000000', // Thu Feb 03 2022 15:13:20 GMT-0800 (PT)
     addresses.ratioPCVControllerV2, // controller used to move funds
     addresses.uniswapPCVDeposit, // deposit from = uniswapPCVDeposit
     balancerDepositFeiWeth.address, // deposit target = balancerDepositFeiWeth
@@ -84,7 +84,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   // initial checks : should start with ~40k ETH on Uniswap & 0 on Balancer
   uniswapEthBalanceBefore = await contracts.uniswapPCVDeposit.balance();
-  expect(uniswapEthBalanceBefore).to.be.at.least(ethers.constants.WeiPerEther.mul('35000'));
+  expect(uniswapEthBalanceBefore).to.be.at.least(ethers.constants.WeiPerEther.mul('5000'));
   expect(await contracts.balancerDepositFeiWeth.balance()).to.be.equal('0');
 
   logging && console.log('No setup');
@@ -95,32 +95,32 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
-  // Should have removed 20k ETH from Uniswap
+  // Should have removed half ETH from Uniswap
   const uniswapEthBalanceAfter = await contracts.uniswapPCVDeposit.balance();
   const uniswapEthBalanceRemoved = uniswapEthBalanceBefore.sub(uniswapEthBalanceAfter);
   expectApproxAbs(
     uniswapEthBalanceRemoved,
-    ethers.constants.WeiPerEther.mul('20000'),
+    uniswapEthBalanceBefore.div(2),
     ethers.constants.WeiPerEther.toString() // +/- 1 ETH
   );
 
-  // Should have moved 20k ETH to Balancer
+  // Should have moved half ETH to Balancer
   expectApproxAbs(
     await contracts.balancerDepositFeiWeth.balance(),
-    ethers.constants.WeiPerEther.mul('20000'),
+    uniswapEthBalanceBefore.div(2),
     ethers.constants.WeiPerEther.toString() // +/- 1 ETH
   );
 
   // Check for right amounts of ETH and FEI in resistantBalanceAndFei
   expectApproxAbs(
     (await contracts.balancerDepositFeiWeth.resistantBalanceAndFei())[0],
-    ethers.constants.WeiPerEther.mul('20000'),
+    uniswapEthBalanceBefore.div(2),
     ethers.constants.WeiPerEther.toString() // +/- 1 ETH
   );
   const ethPrice = (await contracts.chainlinkEthUsdOracleWrapper.read())[0] / 1e18; // ~3200.0 in Number
   expectApproxAbs(
     (await contracts.balancerDepositFeiWeth.resistantBalanceAndFei())[1],
-    ethers.constants.WeiPerEther.mul(Math.round((ethPrice * 20000 * 30) / 70).toString()),
+    ethers.constants.WeiPerEther.mul(Math.round((ethPrice * uniswapEthBalanceBefore.div(2e18) * 30) / 70).toString()),
     ethers.constants.WeiPerEther.mul('10000').toString() // +/- 10k FEI
   );
 
@@ -158,7 +158,6 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
     await contracts.core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), contracts.delayedPCVMoverWethUniToBal.address)
   ).to.be.true;
   await contracts.delayedPCVMoverWethUniToBal.withdrawRatio();
-  await contracts.balancerDepositFeiWeth.wrapETH();
   await contracts.balancerDepositFeiWeth.deposit();
 
   // Check that 2nd half of PCV has moved properly

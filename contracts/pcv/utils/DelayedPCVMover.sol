@@ -13,15 +13,15 @@ contract DelayedPCVMover is CoreRef {
     using SafeERC20 for IERC20;
 
     /// @notice deadline to wait before PCV movement.
-    uint256 public deadline;
+    uint256 public immutable deadline;
     /// @notice controller used to move PCV.
-    RatioPCVControllerV2 public controller;
+    RatioPCVControllerV2 public immutable controller;
     /// @notice deposit to withdraw funds from.
-    IPCVDeposit public deposit;
+    IPCVDeposit public immutable deposit;
     /// @notice target to send funds to.
-    address public target;
+    address public immutable target;
     /// @notice basis points for the ratio of funds to move.
-    uint256 public basisPoints;
+    uint256 public immutable basisPoints;
 
     /// @notice DelayedPCVMover constructor
     /// @param _core Fei Core for reference

@@ -107,9 +107,9 @@ const dependencies: DependencyMap = {
       'tribalChief',
       'fuseAdmin',
       'fuseGuardian',
-      'restrictedPermissions'
-      //'balancerDepositFeiWeth',
-      //'delayedPCVMoverWethUniToBal'
+      'restrictedPermissions',
+      'balancerDepositFeiWeth',
+      'delayedPCVMoverWethUniToBal'
     ]
   },
   fei: {
@@ -929,8 +929,8 @@ const dependencies: DependencyMap = {
   },
   weightedBalancerPoolManagerBase: {
     contractDependencies: []
-  }
-  /*balancerDepositFeiWeth: {
+  },
+  balancerDepositFeiWeth: {
     contractDependencies: [
       'core',
       'balancerVault',
@@ -943,7 +943,7 @@ const dependencies: DependencyMap = {
   },
   delayedPCVMoverWethUniToBal: {
     contractDependencies: ['core', 'uniswapPCVDeposit', 'balancerDepositFeiWeth', 'ratioPCVControllerV2']
-  }*/
+  }
 };
 
 export default dependencies;
