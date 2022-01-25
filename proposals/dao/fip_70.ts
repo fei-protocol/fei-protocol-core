@@ -154,7 +154,10 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   );
 
   // Forward time 10 days, when the other half of liquidity will be available for movement
-  await time.increaseTo(await contracts.delayedPCVMoverWethUniToBal.deadline());
+  const deadline = await contracts.delayedPCVMoverWethUniToBal.deadline();
+  const currentTime = await time.latest();
+  if (deadline > currentTime) await time.increaseTo(deadline);
+
   // Move the 2nd half of PCV
   expect(
     await contracts.core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), contracts.delayedPCVMoverWethUniToBal.address)

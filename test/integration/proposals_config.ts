@@ -4,7 +4,6 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 import fip_visor from '@proposals/description/fip_visor';
 import fip_73 from '@proposals/description/fip_73';
-import fip_60c from '@proposals/description/fip_60c';
 import fip_70 from '@proposals/description/fip_70';
 
 const proposals: ProposalsConfigMap = {
@@ -61,34 +60,6 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_73
-  },
-  fip_60c: {
-    deploy: false,
-    proposalId: undefined,
-    affectedContractSignoff: [
-      'rariPool90FeiPCVDepositWrapper',
-      'rariPool91FeiPCVDepositWrapper',
-      'rariPool79FeiPCVDepositWrapper',
-      'rariPool72FeiPCVDepositWrapper',
-      'rariPool128FeiPCVDepositWrapper',
-      'rariPool22FeiPCVDepositWrapper',
-      'rariPool28FeiPCVDepositWrapper',
-      'rariPool31FeiPCVDepositWrapper',
-      'collateralizationOracle',
-      'rariPool90FeiPCVDeposit',
-      'rariPool91FeiPCVDeposit',
-      'rariPool79FeiPCVDeposit',
-      'rariPool72FeiPCVDeposit',
-      'rariPool28FeiPCVDeposit',
-      'rariPool31FeiPCVDeposit',
-      'rariPool128FeiPCVDeposit',
-      'fei',
-      'tribalChief'
-    ],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.OA,
-    totalValue: 0,
-    proposal: fip_60c
   }
 };
 
