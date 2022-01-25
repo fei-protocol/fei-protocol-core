@@ -28,7 +28,7 @@ before(async () => {
   await resetFork();
 });
 
-describe('eth PSM', function () {
+describe.skip('eth PSM', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: SignerWithAddress;
