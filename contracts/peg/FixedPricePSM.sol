@@ -50,12 +50,10 @@ contract FixedPricePSM is PriceBoundPSM {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 
-        /// get amount of dollars being provided
-        Decimal.D256 memory adjustedAmountIn = Decimal.from(
-            amountFeiIn * (Constants.BASIS_POINTS_GRANULARITY - redeemFeeBasisPoints) / Constants.BASIS_POINTS_GRANULARITY
-        );
-
-        /// now turn the dollars into the underlying token amounts
-        amountTokenOut = adjustedAmountIn.asUint256();
+        amountTokenOut = Decimal.one()
+            .mul(amountFeiIn)
+            .mul(Constants.BASIS_POINTS_GRANULARITY - redeemFeeBasisPoints)
+            .div(Constants.BASIS_POINTS_GRANULARITY)
+            .asUint256();
     }
 }
