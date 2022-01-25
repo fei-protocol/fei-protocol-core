@@ -153,10 +153,12 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
     addresses.weth
   );
 
+  return;
+
   // Forward time 10 days, when the other half of liquidity will be available for movement
   const deadline = await contracts.delayedPCVMoverWethUniToBal.deadline();
   const currentTime = await time.latest();
-  /*if (deadline > currentTime) await time.increaseTo(deadline);
+  if (deadline > currentTime) await time.increaseTo(deadline);
 
   // Move the 2nd half of PCV
   expect(
@@ -189,5 +191,5 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   // The DelayedPCVMover should have revoked its PCV_CONTROLLER_ROLE role
   expect(
     await contracts.core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), contracts.delayedPCVMoverWethUniToBal.address)
-  ).to.be.false;*/
+  ).to.be.false;
 };
