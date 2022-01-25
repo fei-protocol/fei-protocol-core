@@ -33,9 +33,11 @@ const dependencies: DependencyMap = {
       'daiPSM',
       'ethPSM',
       'lusdPSM',
+      'daiFixedPricePSM',
       'lusdPCVDripController',
       'lusdPSMFeiSkimmer',
       'ethPSMFeiSkimmer',
+      'daiFixedPricePSMFeiSkimmer',
       'daiPSMFeiSkimmer',
       'tribeReserveStabilizer',
       'aaveEthPCVDeposit',
@@ -120,6 +122,7 @@ const dependencies: DependencyMap = {
       'daiPSM',
       'ethPSM',
       'lusdPSM',
+      'daiFixedPricePSM',
       'daiPCVDripController',
       'lusdPSMFeiSkimmer',
       'aaveFeiPCVDeposit',
@@ -148,6 +151,7 @@ const dependencies: DependencyMap = {
       'restrictedPermissions',
       'ethPSMFeiSkimmer',
       'daiPSMFeiSkimmer',
+      'daiFixedPricePSMFeiSkimmer',
       'rariInfraFeiTimelock',
       'reptbRedeemer'
     ]
@@ -157,6 +161,9 @@ const dependencies: DependencyMap = {
   },
   daiPSMFeiSkimmer: {
     contractDependencies: ['fei', 'daiPSM', 'core']
+  },
+  daiFixedPricePSMFeiSkimmer: {
+    contractDependencies: ['fei', 'daiFixedPricePSM', 'core']
   },
   lusdPSMFeiSkimmer: {
     contractDependencies: ['fei', 'lusdPSM', 'core']
@@ -178,6 +185,7 @@ const dependencies: DependencyMap = {
       'daiPSM',
       'ethPSM',
       'lusdPSM',
+      'daiFixedPricePSM',
       'compoundEthPCVDeposit',
       'aaveEthPCVDeposit'
     ]
@@ -266,7 +274,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'fei', 'aaveEthPCVDeposit', 'ethPSM']
   },
   daiPCVDripController: {
-    contractDependencies: ['core', 'fei', 'daiPSM', 'compoundDaiPCVDeposit']
+    contractDependencies: ['core', 'fei', 'daiPSM', 'daiFixedPricePSM', 'compoundDaiPCVDeposit']
   },
   daiPSM: {
     contractDependencies: [
@@ -277,6 +285,17 @@ const dependencies: DependencyMap = {
       'chainlinkDaiUsdOracleWrapper',
       'pcvGuardian',
       'daiPSMFeiSkimmer'
+    ]
+  },
+  daiFixedPricePSM: {
+    contractDependencies: [
+      'core',
+      'fei',
+      'compoundDaiPCVDeposit',
+      'daiPCVDripController',
+      'chainlinkDaiUsdOracleWrapper',
+      'pcvGuardian',
+      'daiFixedPricePSMFeiSkimmer'
     ]
   },
   lusdPSM: {
@@ -330,7 +349,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
   },
   compoundDaiPCVDeposit: {
-    contractDependencies: ['core', 'daiPCVDripController', 'daiPSM']
+    contractDependencies: ['core', 'daiPCVDripController', 'daiPSM', 'daiFixedPricePSM']
   },
   compoundEthPCVDeposit: {
     contractDependencies: ['core', 'pcvGuardian']
@@ -641,7 +660,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'creamUsdCompositeOracle']
   },
   chainlinkDaiUsdOracleWrapper: {
-    contractDependencies: ['core', 'collateralizationOracle', 'daiPSM']
+    contractDependencies: ['core', 'collateralizationOracle', 'daiFixedPricePSM', 'daiPSM']
   },
   chainlinkDpiUsdOracleWrapper: {
     contractDependencies: ['core', 'collateralizationOracle', 'dpiUniswapPCVDeposit']

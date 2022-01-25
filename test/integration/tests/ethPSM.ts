@@ -1,6 +1,6 @@
 import {
   AavePCVDeposit,
-  MintRedeemPausePSM,
+  PegStabilityModule,
   Fei,
   IERC20,
   PCVDripController,
@@ -35,7 +35,7 @@ describe('eth PSM', function () {
   let guardian: SignerWithAddress;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
-  let ethPSM: MintRedeemPausePSM;
+  let ethPSM: PegStabilityModule;
   let ethPSMRouter: PSMRouter;
   let weth: WETH9;
   let aWeth: IERC20;
@@ -62,7 +62,7 @@ describe('eth PSM', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
-    ethPSM = contracts.ethPSM as MintRedeemPausePSM;
+    ethPSM = contracts.ethPSM as PegStabilityModule;
     ethPSMRouter = contracts.ethPSMRouter as PSMRouter;
     aaveEthPCVDeposit = contracts.aaveEthPCVDeposit as AavePCVDeposit;
     aWeth = contracts.aWETH as IERC20;

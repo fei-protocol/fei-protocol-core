@@ -9,9 +9,11 @@ import "../../refs/CoreRef.sol";
 contract FeiSkimmer is CoreRef {
  
     event ThresholdUpdate(uint256 newThreshold);
+    
+    event SourceUpdate(address newSource);
 
     /// @notice source PCV deposit to skim excess FEI from
-    IPCVDeposit public immutable source;
+    IPCVDeposit public source;
 
     /// @notice the threshold of FEI above which to skim
     uint256 public threshold;
@@ -52,11 +54,18 @@ contract FeiSkimmer is CoreRef {
 
         _fei.burn(burnAmount);
     }
-    
+
     /// @notice set the threshold for FEI skims. Only Governor or Admin
     /// @param newThreshold the new value above which FEI is skimmed.
     function setThreshold(uint256 newThreshold) external onlyGovernorOrAdmin {
         threshold = newThreshold;
         emit ThresholdUpdate(newThreshold);
+    }
+
+    /// @notice set the source for FEI skims. Only Governor
+    /// @param newSource the new source from which FEI is skimmed.
+    function setSource(address newSource) external onlyGovernor {
+        source = IPCVDeposit(newSource);
+        emit SourceUpdate(newSource);
     }
 }

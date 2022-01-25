@@ -1,5 +1,5 @@
 import { Core, FeiSkimmer, MockPCVDepositV2 } from '@custom-types/contracts';
-import { expectRevert, getAddresses, getCore, getImpersonatedSigner } from '@test/helpers';
+import { expectRevert, getAddresses, getCore, getImpersonatedSigner, ZERO_ADDRESS } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
 import { ethers } from 'hardhat';
@@ -78,6 +78,23 @@ describe('FeiSkimmer', function () {
       await expectRevert(
         skimmer.connect(impersonatedSigners[userAddress]).setThreshold(0),
         'CoreRef: Caller is not a governor or contract admin'
+      );
+    });
+  });
+
+  describe('Set Source', function () {
+    it('from governor succeeds', async function () {
+      expect(await skimmer.source()).to.be.equal(source.address);
+
+      await skimmer.connect(impersonatedSigners[governorAddress]).setSource(ZERO_ADDRESS);
+
+      expect(await skimmer.source()).to.be.equal(ZERO_ADDRESS);
+    });
+
+    it('not from governor succeeds', async function () {
+      await expectRevert(
+        skimmer.connect(impersonatedSigners[userAddress]).setSource(ZERO_ADDRESS),
+        'CoreRef: Caller is not a governor'
       );
     });
   });
