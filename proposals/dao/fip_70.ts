@@ -127,12 +127,12 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   );
 
   // Check Balancer pool and its content
-  const poolId = await balancerFeiWethPool.getPoolId();
+  const poolId = await contracts.balancerFeiWethPool.getPoolId();
   const poolTokens = await contracts.balancerVault.getPoolTokens(poolId);
   // check pool tokens
   expect(poolTokens.tokens[0]).to.be.equal(contracts.fei.address);
   expect(poolTokens.tokens[1]).to.be.equal(contracts.weth.address);
-  const weights = await balancerFeiWethPool.getNormalizedWeights();
+  const weights = await contracts.balancerFeiWethPool.getNormalizedWeights();
   // check pool weights
   expect(weights[0]).to.be.equal('300000000000000000'); // 30% FEI
   expect(weights[1]).to.be.equal('700000000000000000'); // 70% WETH
