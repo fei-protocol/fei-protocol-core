@@ -53,6 +53,25 @@ describe('e2e-pcv', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
+  describe('BAMM', function () {
+    it('should be able to withdraw LUSD from B.AMM', async function () {
+      // set Chainlink ETHUSD to a fixed 4,000$ value
+      await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
+
+      const stabilityPool = '0x66017D22b0f8556afDd19FC67041899Eb65a21bb';
+      const signer = await getImpersonatedSigner(stabilityPool);
+      await contracts.lusd.connect(signer).transfer(contracts.bammDeposit.address, ethers.constants.WeiPerEther);
+
+      await contracts.bammDeposit.deposit();
+      expect(await contracts.bammDeposit.balance()).to.be.at.least(toBN(1_000_000).mul(tenPow18));
+
+      await contracts.bammDeposit.withdraw(contractAddresses.feiDAOTimelock, toBN(1_000_000).mul(tenPow18));
+
+      const lusdBalanceAfter = await contracts.lusd.balanceOf(contracts.feiDAOTimelock.address);
+      expect(lusdBalanceAfter).to.be.bignumber.equal(toBN(1_000_000).mul(tenPow18));
+    });
+  });
+
   describe('PCV Guardian', async () => {
     it('can withdraw PCV and pause', async () => {
       const pcvGuardian = contracts.pcvGuardian;

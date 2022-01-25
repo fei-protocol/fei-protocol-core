@@ -2,6 +2,8 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
+import fip_visor from '@proposals/description/fip_visor';
+import fip_73 from '@proposals/description/fip_73';
 import fip_60c from '@proposals/description/fip_60c';
 import fip_70 from '@proposals/description/fip_70';
 
@@ -28,6 +30,37 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_70
+  },
+  fip_visor: {
+    deploy: false,
+    proposalId: undefined,
+    affectedContractSignoff: ['optimisticTimelock'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.OA,
+    totalValue: 0,
+    proposal: fip_visor
+  },
+  fip_73: {
+    deploy: false,
+    proposalId: null,
+    affectedContractSignoff: [
+      'core',
+      'optimisticTimelock',
+      'pcvGuardian',
+      'd3poolCurvePCVDeposit',
+      'd3poolConvexPCVDeposit',
+      'ethPSM',
+      'collateralizationOracle',
+      'wethDepositWrapper',
+      'dpiDepositWrapper',
+      'raiDepositWrapper',
+      'agEurDepositWrapper',
+      'opsOptimisticTimelock'
+    ],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_73
   },
   fip_60c: {
     deploy: false,

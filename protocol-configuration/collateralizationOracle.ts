@@ -35,11 +35,12 @@ const collateralizationAddresses = {
     'ethTokemakPCVDeposit',
     'ethPSM',
     'rariPool146EthPCVDeposit',
+    'wethDepositWrapper',
     'balancerDepositFeiWeth'
   ],
-  dpi: ['dpiUniswapPCVDeposit', 'rariPool19DpiPCVDepositWrapper'],
-  rai: ['rariPool9RaiPCVDepositWrapper', 'aaveRaiPCVDepositWrapper'],
-  agEUR: ['agEurAngleUniswapPCVDeposit']
+  dpi: ['dpiUniswapPCVDeposit', 'rariPool19DpiPCVDepositWrapper', 'dpiDepositWrapper'],
+  rai: ['rariPool9RaiPCVDepositWrapper', 'aaveRaiPCVDepositWrapper', 'raiDepositWrapper'],
+  agEUR: ['agEurAngleUniswapPCVDeposit', 'agEurDepositWrapper']
 };
 
 export default collateralizationAddresses;
