@@ -41,7 +41,7 @@ const proposals: ProposalsConfigMap = {
   },
   fip_73: {
     deploy: false,
-    proposalId: null,
+    proposalId: '38813827748657927688712449919303464603881921173152703694284146936644184242456',
     affectedContractSignoff: [
       'core',
       'optimisticTimelock',
