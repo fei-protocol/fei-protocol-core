@@ -64,7 +64,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
   const delayedPCVMoverFactory = await ethers.getContractFactory('DelayedPCVMover');
   const delayedPCVMoverWethUniToBal = await delayedPCVMoverFactory.deploy(
     addresses.core,
-    '1643930000000', // Thu Feb 03 2022 15:13:20 GMT-0800 (PT)
+    '1643930000', // Thu Feb 03 2022 15:13:20 GMT-0800 (PT)
     addresses.ratioPCVControllerV2, // controller used to move funds
     addresses.uniswapPCVDeposit, // deposit from = uniswapPCVDeposit
     balancerDepositFeiWeth.address, // deposit target = balancerDepositFeiWeth

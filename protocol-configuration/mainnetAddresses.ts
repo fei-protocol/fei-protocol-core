@@ -318,7 +318,7 @@ const MainnetAddresses: MainnetAddresses = {
   },
   delayedPCVMoverWethUniToBal: {
     artifactName: 'DelayedPCVMover',
-    address: '0x0E91Ee4f8d989026A1a263B9fB47b491F0a72fc3',
+    address: '0x52B1D5BE5005002afD76193ADd3a827c18e2db99',
     category: AddressCategory.PCV
   },
   weightedBalancerPoolManagerBase: {
