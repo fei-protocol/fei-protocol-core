@@ -3,7 +3,7 @@ import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { DeployUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '@custom-types/types';
 import { TransactionResponse } from '@ethersproject/providers';
-import { expectApproxAbs, time, resetTime } from '@test/helpers';
+import { expectApproxAbs, time } from '@test/helpers';
 
 chai.use(CBN(ethers.BigNumber));
 
@@ -190,7 +190,4 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   expect(
     await contracts.core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), contracts.delayedPCVMoverWethUniToBal.address)
   ).to.be.false;
-
-  // reset time in the local hardhat fork
-  await resetTime();
 };

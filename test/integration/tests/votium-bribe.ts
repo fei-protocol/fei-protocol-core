@@ -54,12 +54,11 @@ describe('votium-bribe', function () {
 
   describe('When a voting round is active', async function () {
     before(async function () {
-      const currentTime = await time.latest();
       // start a new votium bribe round
       const signer = await getImpersonatedSigner(VOTIUM_ADMIN);
       await contracts.votiumBribe.connect(signer).initiateProposal(
         CVX_PROPOSAL, // snapshot proposal id
-        Math.floor((currentTime * 1000 + 99999 * 24 * 36e5) / 1000), // _deadline in a long time
+        Math.floor(((await time.latest()) * 1000 + 24 * 36e5) / 1000), // _deadline in 24h
         50 // maxIndex in the proposal
       );
     });

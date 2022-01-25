@@ -98,6 +98,19 @@ describe('e2e-buybacks', function () {
   });
 
   describe('Collateralization Oracle', async function () {
+    before(async function () {
+      const numDeposits = await contracts.namedStaticPCVDepositWrapper.numDeposits();
+      if (numDeposits == 0) {
+        await contracts.namedStaticPCVDepositWrapper.addDeposit({
+          depositName: 'make static pcv deposit not empty',
+          usdAmount: 1,
+          feiAmount: 1,
+          underlyingTokenAmount: 1,
+          underlyingToken: ethers.constants.AddressZero
+        });
+      }
+    });
+
     it('exempting an address removes from PCV stats', async function () {
       const collateralizationOracle: CollateralizationOracle =
         contracts.collateralizationOracle as CollateralizationOracle;
