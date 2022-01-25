@@ -101,7 +101,7 @@ contract FeiSink is CoreRef {
     /// @notice remove a source for FEI skims. Only Governor or Guardian
     /// @param sourceToRemove the source to remove from skimming.
     /// @dev we don't need to set thresholds for source to zero as it doesnt matter
-    function removeSource(address sourceToRemove) external onlyGovernor {
+    function removeSource(address sourceToRemove) external onlyGuardianOrGovernor {
         sources.remove(sourceToRemove);
         emit SourceRemoved(sourceToRemove);
     }
