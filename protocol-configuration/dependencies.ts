@@ -944,6 +944,18 @@ const dependencies: DependencyMap = {
   },
   pegExchanger: {
     contractDependencies: ['tribe', 'feiDAOTimelock']
+  },
+  bbRedeemer: {
+    contractDependencies: []
+  },
+  idleRedeemer: {
+    contractDependencies: []
+  },
+  idleTranchesRedeemer: {
+    contractDependencies: []
+  },
+  kashiRedeemer: {
+    contractDependencies: []
   }
 };
 

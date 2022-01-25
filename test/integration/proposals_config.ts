@@ -17,9 +17,15 @@ const proposals: ProposalsConfigMap = {
     }
     */
   fip_73b: {
-    deploy: true,
+    deploy: false,
     proposalId: null,
-    affectedContractSignoff: [],
+    affectedContractSignoff: [
+      'bbRedeemer',
+      'idleRedeemer',
+      'idleTranchesRedeemer',
+      'kashiRedeemer',
+      'namedStaticPCVDepositWrapper'
+    ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.OA,
     totalValue: 0,

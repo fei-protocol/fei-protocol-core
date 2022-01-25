@@ -1,6 +1,6 @@
 import { ProposalDescription } from '@custom-types/types';
 
-const fip_73: ProposalDescription = {
+const fip_73b: ProposalDescription = {
   title: 'FIP-73b: Contractionary Monetary Policy',
   commands: [
     {
@@ -112,4 +112,4 @@ const fip_73: ProposalDescription = {
   description: ``
 };
 
-export default fip_73;
+export default fip_73b;

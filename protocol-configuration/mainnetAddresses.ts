@@ -1700,6 +1700,26 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'REPTbRedeemer',
     address: '0xfEa132A3B7B70089f3d58F04eC1D1C2F321ef660',
     category: AddressCategory.TBD
+  },
+  kashiRedeemer: {
+    artifactName: 'KashiPCVRedeemer',
+    address: '0x14a38801FcC8a20b6c26cBcF85B7231218633928',
+    category: AddressCategory.TBD
+  },
+  idleTranchesRedeemer: {
+    artifactName: 'IdleTranchePCVRedeemer',
+    address: '0x4E2F5e67e0A7A9bbFc257CEB1586D56F20364077',
+    category: AddressCategory.TBD
+  },
+  idleRedeemer: {
+    artifactName: 'IdlePCVRedeemer',
+    address: '0xBca1d1eC00581ad3033eB88D9F0206BB4B9D1b90',
+    category: AddressCategory.TBD
+  },
+  bbRedeemer: {
+    artifactName: 'SmartYieldRedeemer',
+    address: '0x2dC77678Be7F900e81c638b056F4835BB7203C96',
+    category: AddressCategory.TBD
   }
 };
 
