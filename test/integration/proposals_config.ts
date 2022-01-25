@@ -19,6 +19,8 @@ const proposals: ProposalsConfigMap = {
     deploy: false,
     proposalId: undefined,
     affectedContractSignoff: [
+      'ratioPCVControllerV2',
+      'delayedPCVMoverWethUniToBal',
       'weightedBalancerPoolManagerBase',
       'balancerDepositFeiWeth',
       'uniswapPCVDeposit',

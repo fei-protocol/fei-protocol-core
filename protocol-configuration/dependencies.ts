@@ -108,7 +108,8 @@ const dependencies: DependencyMap = {
       'fuseAdmin',
       'fuseGuardian',
       'restrictedPermissions',
-      'balancerDepositFeiWeth'
+      'balancerDepositFeiWeth',
+      'delayedPCVMoverWethUniToBal'
     ]
   },
   fei: {
@@ -192,7 +193,7 @@ const dependencies: DependencyMap = {
     ] // NOTE this is slightly misleading as proxy admin needs to update admin to new timelock
   },
   ratioPCVControllerV2: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'delayedPCVMoverWethUniToBal']
   },
   tribe: {
     contractDependencies: [
@@ -952,6 +953,9 @@ const dependencies: DependencyMap = {
   },
   balancerDepositFeiWeth: {
     contractDependencies: ['core', 'oneConstantOracle', 'chainlinkEthUsdOracleWrapper']
+  },
+  delayedPCVMoverWethUniToBal: {
+    contractDependencies: ['core', 'ratioPCVControllerV2']
   }
 };
 
