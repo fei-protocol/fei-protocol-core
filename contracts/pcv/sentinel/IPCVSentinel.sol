@@ -22,7 +22,7 @@ interface IPCVSentinel {
     function slayTraitor(address traitor) external;
 
     // ---------- Public State-Changing API ----------
-    function protec(address guardedContract) external returns (bool activated);
-    function activateGuard(address guardAddress) external returns (bool);
-    function activateAllGuards() external returns (bool activated, address[] memory activatedGuards);
+    function protec(address guardedContract) external payable returns (bool activated);
+    function activateGuard(address guardAddress) external payable returns (bool);
+    function activateAllGuards() external payable returns (bool activated, address[] memory activatedGuards);
 }

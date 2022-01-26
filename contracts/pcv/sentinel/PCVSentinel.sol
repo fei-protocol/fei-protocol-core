@@ -8,6 +8,18 @@ import "../IPCVDeposit.sol";
 import "../../libs/CoreRefPauseableLib.sol";
 import "./IGuard.sol";
 
+/**
+ * @title PCV Sentinel
+ * @dev the PCV Sentinel should be granted the roles Guardian and PCVController
+ * @notice The PCV Sentinel is a general-purpose protector with extremely flexible powers.
+ * On its own, it is useless; it must be paired with "guards". Guards are deployed smart contracts
+ * that each know how to protect a specific contract (typically a pcv deposit), and know what actions
+ * to take in order to protect their contract. Each protected contract can have many guards; each guard
+ * is assigned to a single smart contract. The PCV Sentinel delegates (via delegatecall) to each guard
+ * to perform actions with the PCVSentinel's powers (guardian and pcv controller). The DAO
+ * can choose to add or remove guards to the contract. Each guard should be THOUROUGLY reviewed.
+ * Anyone can activate guards, allowing the Sentinel to act instantly in time of need.
+ */
 contract PCVSentinel is IPCVSentinel, CoreRef {
     using EnumerableSet for EnumerableSet.AddressSet;
 
@@ -133,7 +145,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
      * @param guardedContract the contract for which to activate its guards, if any
      * @return activated true if any guards took action
      */
-    function protec(address guardedContract) external override returns (bool activated) {
+    function protec(address guardedContract) external payable override returns (bool activated) {
         require(guardedContracts.contains(guardedContract));
 
         for (uint i = 0; i < contractToGuards[guardedContract].length(); i++) {
@@ -152,9 +164,12 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
      * @param guardAddress the address of the guard to activate
      * @return true if the guard took any action
      */
-    function activateGuard(address guardAddress) public override returns (bool) {
+    function activateGuard(address guardAddress) public payable override returns (bool) {
         require(guards.contains(guardAddress));
 
+        // If the guard takes no action, it will revert.
+        // Because this is a delegatecall we'll get this as the "success" bool.
+        // Beacuse we are delegate-calling, there's no need to try-catch when calling many guards.
         (bool activated,) = guardAddress.delegatecall(abi.encodeWithSignature("checkAndProtec()"));
 
         return activated;
@@ -166,7 +181,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
      * @return activatedGuards the addresses of guards that took action
      * @dev use this function with ethers.js staticCall() to get a list of activate-able guards
      */
-    function activateAllGuards() external override returns (bool activated, address[] memory activatedGuards) {
+    function activateAllGuards() external payable override returns (bool activated, address[] memory activatedGuards) {
         activatedGuards = new address[](guards.length());
         uint numGuardsActivated = 0;
 

@@ -1,3 +1,4 @@
 interface IGuard {
-    function check() external view returns (bytes memory);
+    event Guarded(string reason);
+    function checkAndProtec() external payable;
 }

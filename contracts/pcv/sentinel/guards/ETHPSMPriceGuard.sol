@@ -22,9 +22,8 @@ contract ETHPSMPriceGuard is IGuard {
     address immutable private chainlinkETHUSDPriceFeed = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419;
     address immutable private uniV2ETHUSDCPair = 0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc;
     uint256 immutable private allowedDeviationBips = 100; // 1%
-    bytes private pauseETHPSMCalldata = "0xDEADBEEF";
 
-    function check() external view override returns (bytes memory) {
+    function checkAndProtec() external payable override {
         
         (uint112 reserveETH, uint112 reserveUSD,) = IUniV2Pair(uniV2ETHUSDCPair).getReserves();
         uint256 uniSpotPrice = (reserveUSD * 1e18) / reserveETH;
@@ -39,9 +38,10 @@ contract ETHPSMPriceGuard is IGuard {
          (deviationAmount * 10000) / chainlinkPrice;
 
         if (deviationBips > allowedDeviationBips) {
-            return (pauseETHPSMCalldata);
+            // execute pause-eth-psm action
+            emit Guarded("Paused the ETH PSM because the ETH price is too far from the Uniswap price.");
+        } else {
+            revert("Nothing to protec.");
         }
-
-        return ("");
     }
 }
