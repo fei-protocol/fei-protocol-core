@@ -36,7 +36,6 @@ const dependencies: DependencyMap = {
       'lusdPCVDripController',
       'lusdPSMFeiSkimmer',
       'ethPSMFeiSkimmer',
-      'daiFixedPricePSMFeiSkimmer',
       'tribeReserveStabilizer',
       'aaveEthPCVDeposit',
       'aaveFeiPCVDeposit',
@@ -147,16 +146,12 @@ const dependencies: DependencyMap = {
       'rariPool9FeiPCVDeposit',
       'restrictedPermissions',
       'ethPSMFeiSkimmer',
-      'daiFixedPricePSMFeiSkimmer',
       'rariInfraFeiTimelock',
       'reptbRedeemer'
     ]
   },
   ethPSMFeiSkimmer: {
     contractDependencies: ['fei', 'ethPSM', 'core']
-  },
-  daiFixedPricePSMFeiSkimmer: {
-    contractDependencies: ['fei', 'daiFixedPricePSM', 'core']
   },
   lusdPSMFeiSkimmer: {
     contractDependencies: ['fei', 'lusdPSM', 'core']
@@ -275,8 +270,7 @@ const dependencies: DependencyMap = {
       'compoundDaiPCVDeposit',
       'daiPCVDripController',
       'chainlinkDaiUsdOracleWrapper',
-      'pcvGuardian',
-      'daiFixedPricePSMFeiSkimmer'
+      'pcvGuardian'
     ]
   },
   lusdPSM: {

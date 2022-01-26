@@ -55,7 +55,6 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   }
 
   const daiPSMFactory = await ethers.getContractFactory('FixedPricePSM');
-  const feiSkimmerFactory = await ethers.getContractFactory('FeiSkimmer');
 
   // Deploy DAI Peg Stability Module
   // PSM will trade while DAI is between 97.5 cents and 102.5 cents.
@@ -81,17 +80,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   logging && console.log('daiPSM: ', daiFixedPricePSM.address);
 
-  const daiFixedPricePSMFeiSkimmer = await feiSkimmerFactory.deploy(core, daiFixedPricePSM.address, feiSkimThreshold);
-
-  logging && console.log('daiFixedPricePSMFeiSkimmer: ', daiFixedPricePSMFeiSkimmer.address);
-
   // Wait for daiFixedPricePSM to deploy
   await daiFixedPricePSM.deployTransaction.wait();
-  await daiFixedPricePSMFeiSkimmer.deployTransaction.wait();
 
   return {
-    daiFixedPricePSM,
-    daiFixedPricePSMFeiSkimmer
+    daiFixedPricePSM
   };
 };
 
@@ -111,15 +104,7 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const {
-    daiPCVDripController,
-    daiFixedPricePSM,
-    daiPSM,
-    fei,
-    dai,
-    compoundDaiPCVDeposit,
-    daiFixedPricePSMFeiSkimmer
-  } = contracts;
+  const { daiPCVDripController, daiFixedPricePSM, daiPSM, fei, dai, compoundDaiPCVDeposit } = contracts;
 
   expect(await daiFixedPricePSM.underlyingToken()).to.be.equal(dai.address);
   expect(await daiFixedPricePSM.redeemFeeBasisPoints()).to.be.equal(daiPSMRedeemFeeBasisPoints);
@@ -129,9 +114,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await daiFixedPricePSM.rateLimitPerSecond()).to.be.equal(toBN(10_000).mul(ethers.constants.WeiPerEther));
   expect(await daiFixedPricePSM.buffer()).to.be.equal(daiPSMBufferCap);
   expect(await daiFixedPricePSM.bufferCap()).to.be.equal(daiPSMBufferCap);
-
-  expect(await daiFixedPricePSMFeiSkimmer.source()).to.be.equal(daiFixedPricePSM.address);
-  expect(await daiFixedPricePSMFeiSkimmer.threshold()).to.be.equal(feiSkimThreshold);
 
   expect(await daiPCVDripController.target()).to.be.equal(daiFixedPricePSM.address);
   expect(await daiPCVDripController.dripAmount()).to.be.equal(daiDripAmount);

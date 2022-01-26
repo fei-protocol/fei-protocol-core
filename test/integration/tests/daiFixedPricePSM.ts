@@ -18,7 +18,6 @@ before(async () => {
 });
 
 describe('e2e-peg-stability-module', function () {
-  const feiSkimThreshold = ethers.utils.parseEther('10000000');
   const impersonatedSigners: { [key: string]: Signer } = {};
   let contracts: NamedContracts;
   let deployAddress: string;
@@ -31,7 +30,6 @@ describe('e2e-peg-stability-module', function () {
   let daiPSM: Contract;
   let fei: Contract;
   let core: Contract;
-  let daiFixedPricePSMFeiSkimmer: Contract;
   let feiDAOTimelock: Contract;
 
   before(async function () {
@@ -63,8 +61,7 @@ describe('e2e-peg-stability-module', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts } = await e2eCoord.loadEnvironment());
     let daiFixedPricePSM;
-    ({ dai, daiFixedPricePSM, daiFixedPricePSMFeiSkimmer, fei, core, daiPCVDripController, feiDAOTimelock } =
-      contracts);
+    ({ dai, daiFixedPricePSM, fei, core, daiPCVDripController, feiDAOTimelock } = contracts);
     doLogging && console.log(`Environment loaded.`);
     daiPSM = daiFixedPricePSM as FixedPricePSM;
     await core.grantMinter(minterAddress);
@@ -207,20 +204,6 @@ describe('e2e-peg-stability-module', function () {
         const actualDAIAmountOut = await daiPSM.getMintAmountOut(mintAmount);
         await expectApprox(actualDAIAmountOut, mintAmount);
       });
-    });
-  });
-
-  describe('skim FEI', function () {
-    before(async () => {
-      await fei.mint(daiPSM.address, feiSkimThreshold.mul(2));
-    });
-
-    it('skim all excess FEi', async () => {
-      await daiFixedPricePSMFeiSkimmer.skim();
-
-      const endingFEIBalance = await fei.balanceOf(daiPSM.address);
-
-      expect(endingFEIBalance).to.be.equal(feiSkimThreshold);
     });
   });
 });
