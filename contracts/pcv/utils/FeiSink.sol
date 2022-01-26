@@ -65,7 +65,7 @@ contract FeiSink is CoreRef {
         return sourceAddresses;
     }
 
-    /// @notice skim FEI above the threshold from the source. Pausable. Requires skimEligible()
+    /// @notice skim FEI above the threshold from the source. Pausable
     function skim(address[] memory _sources)
         public
         whenNotPaused
@@ -78,7 +78,7 @@ contract FeiSink is CoreRef {
         _burnFeiHeld();
     }
 
-    /// @notice skim FEI above the threshold for all sources. Pausable. Requires skimEligible()
+    /// @notice skim FEI above the threshold for all sources. Pausable
     function skimAll()
         external
         whenNotPaused
