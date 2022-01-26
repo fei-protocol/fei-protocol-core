@@ -103,8 +103,10 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const { daiPCVDripController, daiFixedPricePSM, daiPSM, fei, dai, compoundDaiPCVDeposit } = contracts;
+  const { oneConstantOracle, daiPCVDripController, daiFixedPricePSM, daiPSM, fei, dai, compoundDaiPCVDeposit } =
+    contracts;
 
+  expect(await daiFixedPricePSM.backupOracle()).to.be.equal(oneConstantOracle.address);
   expect(await daiFixedPricePSM.underlyingToken()).to.be.equal(dai.address);
   expect(await daiFixedPricePSM.redeemFeeBasisPoints()).to.be.equal(daiPSMRedeemFeeBasisPoints);
   expect(await daiFixedPricePSM.mintFeeBasisPoints()).to.be.equal(daiPSMMintFeeBasisPoints);

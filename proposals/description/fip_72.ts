@@ -60,6 +60,13 @@ const fip_73: ProposalDescription = {
       description: 'Withdraw all FEI from current DAI PSM and place in new PSM'
     },
     {
+      target: 'daiFixedPricePSM',
+      values: '0',
+      method: 'setBackupOracle(address)',
+      arguments: ['{oneConstantOracle}'],
+      description: 'Set backup oracle to constant price oracle'
+    },
+    {
       target: 'collateralizationOracle',
       values: '0',
       method: 'swapDeposit(address,address)',
@@ -86,6 +93,7 @@ Snapshot: https://snapshot.fei.money/#/proposal/0xbb8160b0835556d2472c27bd05750b
 - Remove all FEI and DAI from old DAI PSM and deposit it into new DAI PSM
 - Add new DAI PSM to pcv guardian as a safe address
 - Add new DAI PSM to CR Oracle
+- Set backup oracle to fixed price oracle
 - Remove old DAI PSM from CR Oracle
 - Deprecate old DAI PSM
 `

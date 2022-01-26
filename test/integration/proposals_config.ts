@@ -59,12 +59,14 @@ const proposals: ProposalsConfigMap = {
     proposal: fip_visor
   },
   fip_72: {
-    deploy: true,
-    proposalId: null,
+    deploy: false,
+    proposalId: '16589839164626732188601208812870579934969443993529803083961504445114020239912',
     affectedContractSignoff: [
+      'fei',
       'core',
       'pcvGuardian',
       'daiFixedPricePSM',
+      'oneConstantOracle',
       'daiPCVDripController',
       'ratioPCVControllerV2',
       'collateralizationOracle'
