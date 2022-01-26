@@ -4,6 +4,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 import fip_visor from '@proposals/description/fip_visor';
 import fip_73 from '@proposals/description/fip_73';
+import fip_72 from '@proposals/description/fip_72';
 import fip_60c from '@proposals/description/fip_60c';
 
 const proposals: ProposalsConfigMap = {
@@ -23,6 +24,22 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.OA,
     totalValue: 0,
     proposal: fip_visor
+  },
+  fip_72: {
+    deploy: true,
+    proposalId: null,
+    affectedContractSignoff: [
+      'core',
+      'pcvGuardian',
+      'daiFixedPricePSM',
+      'daiPCVDripController',
+      'ratioPCVControllerV2',
+      'collateralizationOracle'
+    ],
+    deprecatedContractSignoff: ['daiPSM'],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_72
   },
   fip_73: {
     deploy: false,

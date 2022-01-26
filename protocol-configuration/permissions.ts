@@ -7,7 +7,7 @@ export const permissions = {
     'collateralizationOracleKeeper',
     'optimisticMinter',
     'agEurAngleUniswapPCVDeposit',
-    'daiPSM',
+    'daiFixedPricePSM',
     'ethPSM',
     'lusdPSM'
   ],
@@ -21,7 +21,6 @@ export const permissions = {
     'daiPCVDripController',
     'lusdPCVDripController',
     'ethPSMFeiSkimmer',
-    'daiPSMFeiSkimmer',
     'lusdPSMFeiSkimmer'
   ],
   GUARDIAN_ROLE: ['multisig', 'pcvGuardian'],
