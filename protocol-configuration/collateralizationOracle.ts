@@ -11,13 +11,15 @@ const collateralizationAddresses = {
     'rariPool26FeiPCVDepositWrapper',
     'rariPool27FeiPCVDepositWrapper',
     'rariPool18FeiPCVDepositWrapper',
-    'rariPool90FeiPCVDeposit',
+    'rariPool90FeiPCVDepositWrapper',
     'aaveFeiPCVDepositWrapper',
-    'rariPool91FeiPCVDeposit',
-    'rariPool79FeiPCVDeposit',
-    'rariPool28FeiPCVDeposit',
-    'rariPool31FeiPCVDeposit',
-    'rariPool72FeiPCVDeposit',
+    'rariPool91FeiPCVDepositWrapper',
+    'rariPool79FeiPCVDepositWrapper',
+    'rariPool28FeiPCVDepositWrapper',
+    'rariPool31FeiPCVDepositWrapper',
+    'rariPool72FeiPCVDepositWrapper',
+    'rariPool128FeiPCVDepositWrapper',
+    'rariPool22FeiPCVDepositWrapper',
     'feiBuybackLensNoFee'
   ],
   lusd: ['liquityFusePoolLusdPCVDeposit', 'rariPool7LusdPCVDeposit', 'bammDeposit', 'lusdPSM'],
@@ -32,11 +34,13 @@ const collateralizationAddresses = {
     'uniswapPCVDeposit',
     'ethTokemakPCVDeposit',
     'ethPSM',
-    'rariPool146EthPCVDeposit'
+    'rariPool146EthPCVDeposit',
+    'wethDepositWrapper',
+    'balancerDepositFeiWeth'
   ],
-  dpi: ['dpiUniswapPCVDeposit', 'rariPool19DpiPCVDepositWrapper'],
-  rai: ['rariPool9RaiPCVDepositWrapper', 'aaveRaiPCVDepositWrapper'],
-  agEUR: ['agEurAngleUniswapPCVDeposit']
+  dpi: ['dpiUniswapPCVDeposit', 'rariPool19DpiPCVDepositWrapper', 'dpiDepositWrapper'],
+  rai: ['rariPool9RaiPCVDepositWrapper', 'aaveRaiPCVDepositWrapper', 'raiDepositWrapper'],
+  agEUR: ['agEurAngleUniswapPCVDeposit', 'agEurDepositWrapper']
 };
 
 export default collateralizationAddresses;

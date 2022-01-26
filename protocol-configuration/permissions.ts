@@ -9,7 +9,8 @@ export const permissions = {
     'agEurAngleUniswapPCVDeposit',
     'daiPSM',
     'ethPSM',
-    'lusdPSM'
+    'lusdPSM',
+    'balancerDepositFeiWeth'
   ],
   BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'timelock', 'feiDAOTimelock'],
@@ -22,13 +23,15 @@ export const permissions = {
     'lusdPCVDripController',
     'ethPSMFeiSkimmer',
     'daiPSMFeiSkimmer',
-    'lusdPSMFeiSkimmer'
+    'lusdPSMFeiSkimmer',
+    'delayedPCVMoverWethUniToBal'
   ],
   GUARDIAN_ROLE: ['multisig', 'pcvGuardian'],
-  ORACLE_ADMIN_ROLE: ['collateralizationOracleGuardian', 'optimisticTimelock'],
+  ORACLE_ADMIN_ROLE: ['collateralizationOracleGuardian', 'optimisticTimelock', 'opsOptimisticTimelock'],
   SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'optimisticTimelock'],
   BALANCER_MANAGER_ADMIN_ROLE: [],
   PSM_ADMIN_ROLE: [],
   TRIBAL_CHIEF_ADMIN_ROLE: ['optimisticTimelock', 'tribalChiefSyncV2'],
-  VOTIUM_ADMIN_ROLE: ['opsOptimisticTimelock']
+  VOTIUM_ADMIN_ROLE: ['opsOptimisticTimelock'],
+  PCV_GUARDIAN_ADMIN_ROLE: ['optimisticTimelock']
 };

@@ -22,12 +22,6 @@ import { contract } from '@openzeppelin/test-environment';
 
 const oneEth = ethers.constants.WeiPerEther;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe('eth PSM', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
@@ -42,6 +36,12 @@ describe('eth PSM', function () {
   let fei: Fei;
   let dripper: PCVDripController;
   let aaveEthPCVDeposit: AavePCVDeposit;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -73,6 +73,17 @@ describe('eth PSM', function () {
     await hre.network.provider.send('hardhat_setBalance', [deployAddress.address, '0x21E19E0C9BAB2400000']);
     guardian = await getImpersonatedSigner(contractAddresses.guardian);
     await forceEth(guardian.address);
+  });
+
+  before(async function () {
+    const redeemPaused = await contracts.ethPSM.redeemPaused();
+    if (!redeemPaused) {
+      await contracts.ethPSM.pauseRedeem();
+    }
+    const paused = await contracts.ethPSM.paused();
+    if (paused) {
+      await contracts.ethPSM.unpause();
+    }
   });
 
   describe('ethPSMFeiSkimmer', async () => {
@@ -132,6 +143,11 @@ describe('eth PSM', function () {
       await increaseTime(7200);
     });
 
+    before(async function () {
+      const paused = await dripper.paused();
+      if (!paused) await dripper.pause();
+    });
+
     it('dripper cannot drip because it is paused', async () => {
       await expectRevert(dripper.drip(), 'Pausable: paused');
     });
@@ -144,7 +160,7 @@ describe('eth PSM', function () {
 
     describe('mint flow', async () => {
       it('after mint, eth flows to aave eth pcv deposit', async () => {
-        const mintAmount: BigNumber = oneEth.mul(500);
+        const mintAmount: BigNumber = oneEth.mul(7500);
         const minAmountOut = await ethPSM.getMintAmountOut(mintAmount);
         const startingFeiBalance = await fei.balanceOf(deployAddress.address);
         const startingAavePCVDepositaWethBalance = await aWeth.balanceOf(aaveEthPCVDeposit.address);
@@ -163,7 +179,7 @@ describe('eth PSM', function () {
         await ethPSM.allocateSurplus();
 
         await expectApprox(endingAavePCVDepositaWethBalance.sub(startingAavePCVDepositaWethBalance), mintAmount);
-        expect(await weth.balanceOf(ethPSM.address)).to.be.equal(oneEth.mul(250));
+        expect(await weth.balanceOf(ethPSM.address)).to.be.equal(oneEth.mul(5000));
       });
     });
 
@@ -172,10 +188,18 @@ describe('eth PSM', function () {
       const mintAmount = oneEth.mul(5_000_000);
 
       before(async () => {
-        await dripper.connect(guardian).unpause();
+        const paused = await dripper.paused();
+        if (paused) await dripper.connect(guardian).unpause();
         timelock = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
         await forceEth(timelock.address);
         await fei.connect(timelock).mint(deployAddress.address, mintAmount);
+
+        // empty drip target to make sure it is empty
+        await forceEth(ethPSM.address);
+        const signer = await getImpersonatedSigner(ethPSM.address);
+        await contracts.wethERC20
+          .connect(signer)
+          .transfer(await dripper.source(), await contracts.wethERC20.balanceOf(ethPSM.address));
       });
 
       it('sets ethpsm reserve threshold to 5250 eth', async () => {

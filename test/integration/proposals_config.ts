@@ -2,10 +2,9 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
-import fip_60b from '@proposals/description/old/fip_60b';
-import fip_67 from '@proposals/description/fip_67';
-import fip_64 from '@proposals/description/fip_64';
-import fip_redeem from '@proposals/description/fip_redeem';
+import fip_visor from '@proposals/description/fip_visor';
+import fip_73 from '@proposals/description/fip_73';
+import fip_70 from '@proposals/description/fip_70';
 import fip_9001 from '@proposals/description/fip_9001';
 
 const proposals: ProposalsConfigMap = {
@@ -25,66 +24,55 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_9001
-  } /*,
-  fip_redeem: {
-    deploy: false,
-    proposalId: undefined,
-    affectedContractSignoff: ['reptbRedeemer', 'fei', 'pegExchanger'],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.DAO,
-    totalValue: 0,
-    proposal: fip_redeem
   },
-  fip_60b: {
+  fip_70: {
     deploy: false,
-    proposalId: undefined,
+    proposalId: '69735027602527924842253936836766902646166984300134193529060263948046226490388',
     affectedContractSignoff: [
-      'rewardsDistributorAdmin',
-      'fuseAdmin',
-      'rariPool8Comptroller',
-      'rariPool8MasterOracle',
-      'gUniFuseOracle',
-      'rariPool8EthIrm',
-      'rariPool8CTokenImpl',
-      'fuseGuardian',
-      'tribalChief',
-      'feiDaiStakingTokenWrapper',
-      'feiUsdcStakingTokenWrapper',
-      'feiDaiAutoRewardsDistributor',
-      'feiUsdcAutoRewardsDistributor'
-    ],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.OA,
-    totalValue: 0,
-    proposal: fip_60b
-  },
-  fip_67: {
-    deploy: false,
-    proposalId: undefined,
-    affectedContractSignoff: [
-      'lusdPSM',
-      'lusdPCVDripController',
-      'lusdPSMFeiSkimmer',
+      'ratioPCVControllerV2',
+      'delayedPCVMoverWethUniToBal',
+      'weightedBalancerPoolManagerBase',
+      'balancerDepositFeiWeth',
+      'uniswapPCVDeposit',
       'collateralizationOracle',
-      'core',
-      'pcvGuardian',
-      'rariPool146EthPCVDeposit',
-      'compoundEthPCVDeposit'
+      'core'
     ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,
-    proposal: fip_67
+    proposal: fip_70
   },
-  fip_64: {
+  fip_visor: {
     deploy: false,
     proposalId: undefined,
-    affectedContractSignoff: ['fuseAdmin', 'rariPool8EthIrm', 'rariPool8CTokenImpl', 'fuseGuardian'],
+    affectedContractSignoff: ['optimisticTimelock'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.OA,
     totalValue: 0,
-    proposal: fip_64
-  }*/
+    proposal: fip_visor
+  },
+  fip_73: {
+    deploy: false,
+    proposalId: '38813827748657927688712449919303464603881921173152703694284146936644184242456',
+    affectedContractSignoff: [
+      'core',
+      'optimisticTimelock',
+      'pcvGuardian',
+      'd3poolCurvePCVDeposit',
+      'd3poolConvexPCVDeposit',
+      'ethPSM',
+      'collateralizationOracle',
+      'wethDepositWrapper',
+      'dpiDepositWrapper',
+      'raiDepositWrapper',
+      'agEurDepositWrapper',
+      'opsOptimisticTimelock'
+    ],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_73
+  }
 };
 
 export default proposals;

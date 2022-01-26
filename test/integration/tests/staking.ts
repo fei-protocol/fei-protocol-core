@@ -18,18 +18,18 @@ import { forceEth } from '@test/integration/setup/utils';
 
 const toBN = ethers.BigNumber.from;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe('e2e-staking', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -365,7 +365,9 @@ describe('e2e-staking', function () {
         });
 
         if (nextRewardRate.toString() !== '6060000000000000000') {
-          await time.increaseTo((await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)));
+          const deadline = (await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)).toNumber();
+          const currentTime = await time.latest();
+          if (deadline > currentTime) await time.increaseTo(deadline);
         }
       }
       doLogging && console.log(`Done and checking latest`);
