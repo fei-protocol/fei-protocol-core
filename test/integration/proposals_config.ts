@@ -17,7 +17,7 @@ const proposals: ProposalsConfigMap = {
     */
   fip_70: {
     deploy: false,
-    proposalId: undefined,
+    proposalId: '69735027602527924842253936836766902646166984300134193529060263948046226490388',
     affectedContractSignoff: [
       'ratioPCVControllerV2',
       'delayedPCVMoverWethUniToBal',
