@@ -10,10 +10,8 @@ contract FeiSkimmer is CoreRef {
  
     event ThresholdUpdate(uint256 newThreshold);
     
-    event SourceUpdate(address newSource);
-
     /// @notice source PCV deposit to skim excess FEI from
-    IPCVDeposit public source;
+    IPCVDeposit public immutable source;
 
     /// @notice the threshold of FEI above which to skim
     uint256 public threshold;
@@ -60,12 +58,5 @@ contract FeiSkimmer is CoreRef {
     function setThreshold(uint256 newThreshold) external onlyGovernorOrAdmin {
         threshold = newThreshold;
         emit ThresholdUpdate(newThreshold);
-    }
-
-    /// @notice set the source for FEI skims. Only Governor
-    /// @param newSource the new source from which FEI is skimmed.
-    function setSource(address newSource) external onlyGovernor {
-        source = IPCVDeposit(newSource);
-        emit SourceUpdate(newSource);
     }
 }
