@@ -3,7 +3,7 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, expectRevert, balance, resetFork } from '@test/helpers';
+import { getImpersonatedSigner, expectRevert, expectApproxAbs, balance, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '@test/integration/setup/utils';
@@ -378,6 +378,30 @@ describe('balancer-weightedpool', function () {
 
       expect(await contracts.wethERC20.balanceOf(balancerDepositFeiWeth.address)).to.be.equal('0');
       expect((await balance.current(balancerDepositFeiWeth.address)).toString()).to.be.equal(toBN('1000'));
+    });
+
+    it('should mint associated FEI on deposit', async function () {
+      // seed deposit with USDC
+      const WETH_HOLDER = '0x030bA81f1c18d280636F32af80b9AAd02Cf0854e';
+      const signer = await getImpersonatedSigner(WETH_HOLDER);
+      await forceEth(WETH_HOLDER);
+      const amount = '10000000000000000000000'; // 10k WETH (18 decimals)
+      await contracts.wethERC20.connect(signer).transfer(balancerDepositFeiWeth.address, amount);
+
+      // check initial amounts and deposit
+      expect(await contracts.wethERC20.balanceOf(balancerDepositFeiWeth.address)).to.be.equal(amount);
+      expect(await contracts.fei.balanceOf(balancerDepositFeiWeth.address)).to.be.equal('0');
+      await balancerDepositFeiWeth.deposit();
+
+      // check amount of tokens in pool
+      const poolTokens = await contracts.balancerVault.getPoolTokens(await balancerDepositFeiWeth.poolId());
+      expect(poolTokens.balances[1]).to.be.equal(amount); // 10k WETH
+      const ethPrice = (await contracts.chainlinkEthUsdOracleWrapper.read())[0] / 1e18; // ~3200.0 in Number
+      expectApproxAbs(
+        poolTokens.balances[0],
+        ethers.constants.WeiPerEther.mul(Math.round((ethPrice * 10000 * 30) / 70).toString()),
+        ethers.constants.WeiPerEther.mul('10000').toString() // matching FEI, +/- 10k FEI
+      );
     });
   });
 });

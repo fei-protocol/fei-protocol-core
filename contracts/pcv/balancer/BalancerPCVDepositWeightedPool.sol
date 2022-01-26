@@ -189,6 +189,10 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
             // If FEI is in pool, we mint the good balance of FEI to go with the tokens
             // we are depositing
             uint256 _feiToMint = underlyingPrices[tokenIndexInPool] * balances[tokenIndexInPool] / 1e18;
+            // normalize by weights
+            uint256[] memory _weights = IWeightedPool(poolAddress).getNormalizedWeights();
+            _feiToMint = _feiToMint * _weights[feiIndexInPool] / _weights[tokenIndexInPool];
+            // mint FEI
             _mintFei(address(this), _feiToMint);
             balances[feiIndexInPool] = _feiToMint;
         }

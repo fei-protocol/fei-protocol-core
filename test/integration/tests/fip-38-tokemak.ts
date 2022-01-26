@@ -15,17 +15,17 @@ const TOKEMAK_MANAGER_ADDRESS = '0xa86e412109f77c45a3bc1c5870b880492fb86a14'; //
 const TOKE_HOLDER_ADDRESS = '0x96f98ed74639689c3a11daf38ef86e59f43417d3'; // TOKE staking contract
 const IPFS_JSON_FILE_HASH = 'QmP4Vzg45jExr3mcNsx9xxV1fNft95uVzgZGeLtkBXgpkx';
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe.skip('e2e-fip-38-tokemak', function () {
   let contracts: NamedContracts;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
