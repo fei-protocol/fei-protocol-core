@@ -811,6 +811,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x7b834cA07f81d52bB52d98DaE560D1442b2d7dBa',
     category: AddressCategory.Rewards
   },
+  stakingTokenWrapperBribe3Crvpool: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0xaC98807E5CC43f134b00E87349e4ea3eDf927961',
+    category: AddressCategory.Rewards
+  },
+  votiumBriber3Crvpool: {
+    artifactName: 'VotiumBriber',
+    address: '0x8B6A295a35171E2F05B1579E485017B999810dcb',
+    category: AddressCategory.Rewards
+  },
   votiumBriberD3pool: {
     artifactName: 'VotiumBriber',
     address: '0x0BEC570466B466aB689Ad33F1Ce5238CA43C8003',
