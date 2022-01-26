@@ -17,18 +17,18 @@ import { BalancerLBPSwapper, CollateralizationOracle, IVault, IWeightedPool } fr
 import { forceEth } from '../setup/utils';
 const toBN = ethers.BigNumber.from;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe('e2e-buybacks', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -98,6 +98,19 @@ describe('e2e-buybacks', function () {
   });
 
   describe('Collateralization Oracle', async function () {
+    before(async function () {
+      const numDeposits = await contracts.namedStaticPCVDepositWrapper.numDeposits();
+      if (numDeposits == 0) {
+        await contracts.namedStaticPCVDepositWrapper.addDeposit({
+          depositName: 'make static pcv deposit not empty',
+          usdAmount: 1,
+          feiAmount: 1,
+          underlyingTokenAmount: 1,
+          underlyingToken: ethers.constants.AddressZero
+        });
+      }
+    });
+
     it('exempting an address removes from PCV stats', async function () {
       const collateralizationOracle: CollateralizationOracle =
         contracts.collateralizationOracle as CollateralizationOracle;
