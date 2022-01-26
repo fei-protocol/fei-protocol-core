@@ -2,66 +2,14 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "../refs/CoreRef.sol";
+import "../../refs/CoreRef.sol";
 import "./IPCVSentinel.sol";
-import "./IPCVDeposit.sol";
-import "../libs/CoreRefPauseableLib.sol";
-
-interface IGuard {
-    function check() external view returns (bytes memory);
-}
-
-interface IUniV2Pair {
-    function getReserves() external view returns (uint112, uint112, uint32);
-}
-
-interface IChainlinkPriceFeed {
-    function latestAnswer() external view returns (uint256);
-    function decimals() external view returns (uint8);
-}
-
-/**
- * This condition checks the spot price of ETH on Uniswap vs the
- * reported price of ETH on chainlink. If the deviation is greater than
- * 1%, it will allow the caller to pause the ETH PSM (and provide the calldata to do so)
- */
-contract ETHPSMPriceGuard is IGuard {
-    using EnumerableSet for EnumerableSet.AddressSet;
-
-    // Hardcoded values here since each condition is approved on its own
-    address immutable private chainlinkETHUSDPriceFeed = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419;
-    address immutable private uniV2ETHUSDCPair = 0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc;
-    uint256 immutable private allowedDeviationBips = 100; // 1%
-    bytes private pauseETHPSMCalldata = "0xDEADBEEF";
-
-    function check() external view override returns (bytes memory) {
-        
-        (uint112 reserveETH, uint112 reserveUSD,) = IUniV2Pair(uniV2ETHUSDCPair).getReserves();
-        uint256 uniSpotPrice = (reserveUSD * 1e18) / reserveETH;
-
-        uint8 decimals = IChainlinkPriceFeed(chainlinkETHUSDPriceFeed).decimals();
-        uint256 chainlinkPrice = IChainlinkPriceFeed(chainlinkETHUSDPriceFeed).latestAnswer() * (10 ^ (17-decimals));
-
-        uint256 deviationAmount = chainlinkPrice > uniSpotPrice ? chainlinkPrice - uniSpotPrice : uniSpotPrice - chainlinkPrice;
-        uint256 deviationBips;
-        
-        if (chainlinkPrice >= uniSpotPrice) 
-         (deviationAmount * 10000) / chainlinkPrice;
-
-        if (deviationBips > allowedDeviationBips) {
-            return (pauseETHPSMCalldata);
-        }
-
-        return ("");
-    }
-}
+import "../IPCVDeposit.sol";
+import "../../libs/CoreRefPauseableLib.sol";
+import "./IGuard.sol";
 
 contract PCVSentinel is IPCVSentinel, CoreRef {
     using EnumerableSet for EnumerableSet.AddressSet;
-
-    event ContractProtected(address indexed protectedContract, address indexed guard);
-    event ContractGuardAdded(address indexed protectedContract, address indexed guard);
-    event ContractGuardRemoved(address indexed protectedContract, address indexed guard);
 
     // Each contract can have many guards
     // But each guard can guard only one contract
@@ -69,10 +17,10 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
     EnumerableSet.AddressSet private guards;
 
     // This mapping gives us the contract to which the supplied guard applies to
-    mapping(address => address) public guardRegistry;
+    mapping(address => address) public guardToContract;
 
     // This mapping gives us all of the guards of the supplied contract
-    mapping(address => EnumerableSet.AddressSet) private contractGuards;
+    mapping(address => EnumerableSet.AddressSet) private contractToGuards;
 
     constructor(
         address _core
@@ -82,7 +30,11 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
 
     // ---------- Read-Only API ----------
 
-    function getGuardedContracts() external view returns (address[] memory guarded) {
+    /**
+     * @notice Get all contracts that are guarded
+     * @return guarded an array of guarded contracts
+     */
+    function getGuardedContracts() external override view returns (address[] memory guarded) {
         guarded = new address[](guardedContracts.length());
         for (uint i = 0; i < guardedContracts.length(); i++) {
             guarded[i] = guardedContracts.at(i);
@@ -91,7 +43,11 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
         return guarded;
     }
 
-    function getAllGuards() external view returns (address[] memory allGuards) {
+    /**
+     * @notice Get all guards
+     * @return allGuards an array of all guards
+     */
+    function getAllGuards() external override view returns (address[] memory allGuards) {
         allGuards = new address[](guards.length());
         for (uint i = 0; i < guards.length(); i++) {
             allGuards[i] = guards.at(i);
@@ -100,16 +56,20 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
         return allGuards;
     }
 
-    function getContractsAndGuards() external view returns (address[][] memory contractsAndGuards) {
+    /**
+     * @notice Get all contracts and their guards
+     * @return contractsAndGuards a 2-dimensional array of contracts and their guards
+     */
+    function getContractsAndGuards() external override view returns (address[][] memory contractsAndGuards) {
         contractsAndGuards = new address[][](guardedContracts.length());
         for (uint i = 0; i < guardedContracts.length(); i++) {
             address guardedContract = guardedContracts.at(i);
-            uint256 numGuards = contractGuards[guardedContract].length();
+            uint256 numGuards = contractToGuards[guardedContract].length();
 
             address[] memory guardsForContract = new address[](numGuards);
 
             for (uint j = 0; j < numGuards; j++) {
-                guardsForContract[j] = contractGuards[guardedContract].at(j);
+                guardsForContract[j] = contractToGuards[guardedContract].at(j);
             }
 
             contractsAndGuards[i] = guardsForContract;
@@ -118,36 +78,49 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
         return contractsAndGuards;
     }
 
-    // ---------- Governor-or-Admin-Only State-Changing API ----------
+    // ---------- Governor-Only State-Changing API ----------
 
-    // ---------- Governor-or-Admin-Or-Guardian-Only State-Changing API ----------
-    function knightTheWorthy(address squire, address guardedContract) external onlyGovernor {
+    /**
+     * @notice adds a guard and its associated contract
+     * @dev Guards are given the full power of the Guardian and PCVController roles and should be added carefully.
+     *      They are activated via delegateCall and will take arbitrary actions on behalf of the Sentinel.
+     *      Tread carefully; with great power comes great responsibility.
+     * @param squire the guard-contract to add
+     * @param guardedContract the contract that the guard protects
+     */
+    function knightTheWorthy(address squire, address guardedContract) external override onlyGovernor {
         // .add on addressSet is a no-op if the address is already in the set
         guardedContracts.add(guardedContract);
         guards.add(squire);
 
         // Assign the newly appointed knight to his fief (contract)
-        guardRegistry[squire] = guardedContract;
+        guardToContract[squire] = guardedContract;
 
         // Let the fief know that it has a new guard
-        contractGuards[guardedContract].add(squire);
+        contractToGuards[guardedContract].add(squire);
 
         // Inform the kingdom of this glorious news
         emit ContractGuardAdded(guardedContract, squire);
     }
 
-    function slayTraitor(address traitor) external isGovernorOrGuardianOrAdmin {
+    // ---------- Governor-or-Admin-Or-Guardian-Only State-Changing API ----------
+
+    /**
+     * @notice removes a guard
+     * @param traitor the guard-contract to remove
+     */
+    function slayTraitor(address traitor) external override isGovernorOrGuardianOrAdmin {
         /// Find out which address the traitor was guarding
-        address guardedContract = guardRegistry[traitor];
+        address guardedContract = guardToContract[traitor];
 
         // Unassign the guard from the global registry
         guards.remove(traitor);
 
         // Unassign the guard from his contract
-        guardRegistry[traitor] = address(0x0);
+        guardToContract[traitor] = address(0x0);
         
         // Remove the guard from the list of guards that his contract has
-        contractGuards[guardedContract].remove(traitor);
+        contractToGuards[guardedContract].remove(traitor);
 
         // Inform the kingdom of this sudden and inevitable betrayal
         emit ContractGuardRemoved(guardedContract, traitor);
@@ -160,13 +133,13 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
      * @param guardedContract the contract for which to activate its guards, if any
      * @return activated true if any guards took action
      */
-    function protec(address guardedContract) external returns (bool activated) {
+    function protec(address guardedContract) external override returns (bool activated) {
         require(guardedContracts.contains(guardedContract));
 
-        for (uint i = 0; i < contractGuards[guardedContract].length(); i++) {
-            bool thisGuardActivated = activateGuard(contractGuards[guardedContract].at(i));
+        for (uint i = 0; i < contractToGuards[guardedContract].length(); i++) {
+            bool thisGuardActivated = activateGuard(contractToGuards[guardedContract].at(i));
             if (thisGuardActivated) {
-                emit ContractProtected(guardedContract, contractGuards[guardedContract].at(i));
+                emit ContractProtected(guardedContract, contractToGuards[guardedContract].at(i));
             }
             activated = activated || thisGuardActivated;
         }
@@ -179,7 +152,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
      * @param guardAddress the address of the guard to activate
      * @return true if the guard took any action
      */
-    function activateGuard(address guardAddress) public returns (bool) {
+    function activateGuard(address guardAddress) public override returns (bool) {
         require(guards.contains(guardAddress));
 
         (bool activated,) = guardAddress.delegatecall(abi.encodeWithSignature("checkAndProtec()"));
@@ -193,7 +166,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
      * @return activatedGuards the addresses of guards that took action
      * @dev use this function with ethers.js staticCall() to get a list of activate-able guards
      */
-    function activateAllGuards() external returns (bool activated, address[] memory activatedGuards) {
+    function activateAllGuards() external override returns (bool activated, address[] memory activatedGuards) {
         activatedGuards = new address[](guards.length());
         uint numGuardsActivated = 0;
 
@@ -202,7 +175,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
             if (thisGuardActivated) {
                 activatedGuards[numGuardsActivated] = guards.at(i);
                 numGuardsActivated++;
-                emit ContractProtected(guardRegistry[guards.at(i)], guards.at(i));
+                emit ContractProtected(guardToContract[guards.at(i)], guards.at(i));
             }
             activated = activated || thisGuardActivated;
         }
