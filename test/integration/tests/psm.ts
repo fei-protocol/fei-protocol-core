@@ -13,13 +13,7 @@ import { WETH9 } from '@custom-types/contracts';
 
 const toBN = ethers.BigNumber.from;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
-describe.skip('e2e-peg-stability-module', function () {
+describe('e2e-peg-stability-module', function () {
   const impersonatedSigners: { [key: string]: Signer } = {};
   let contracts: NamedContracts;
   let deployAddress: string;
@@ -37,6 +31,12 @@ describe.skip('e2e-peg-stability-module', function () {
   let core: Contract;
   let feiDAOTimelock: Contract;
   let beneficiaryAddress1;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts

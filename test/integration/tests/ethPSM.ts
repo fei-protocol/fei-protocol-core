@@ -22,13 +22,7 @@ import { contract } from '@openzeppelin/test-environment';
 
 const oneEth = ethers.constants.WeiPerEther;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
-describe.skip('eth PSM', function () {
+describe('eth PSM', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: SignerWithAddress;
@@ -42,6 +36,12 @@ describe.skip('eth PSM', function () {
   let fei: Fei;
   let dripper: PCVDripController;
   let aaveEthPCVDeposit: AavePCVDeposit;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -160,7 +160,7 @@ describe.skip('eth PSM', function () {
 
     describe('mint flow', async () => {
       it('after mint, eth flows to aave eth pcv deposit', async () => {
-        const mintAmount: BigNumber = oneEth.mul(500);
+        const mintAmount: BigNumber = oneEth.mul(7500);
         const minAmountOut = await ethPSM.getMintAmountOut(mintAmount);
         const startingFeiBalance = await fei.balanceOf(deployAddress.address);
         const startingAavePCVDepositaWethBalance = await aWeth.balanceOf(aaveEthPCVDeposit.address);

@@ -9,7 +9,8 @@ export const permissions = {
     'agEurAngleUniswapPCVDeposit',
     'daiFixedPricePSM',
     'ethPSM',
-    'lusdPSM'
+    'lusdPSM',
+    'balancerDepositFeiWeth'
   ],
   BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'timelock', 'feiDAOTimelock'],
@@ -21,7 +22,9 @@ export const permissions = {
     'daiPCVDripController',
     'lusdPCVDripController',
     'ethPSMFeiSkimmer',
-    'lusdPSMFeiSkimmer'
+    'daiPSMFeiSkimmer',
+    'lusdPSMFeiSkimmer',
+    'delayedPCVMoverWethUniToBal'
   ],
   GUARDIAN_ROLE: ['multisig', 'pcvGuardian'],
   ORACLE_ADMIN_ROLE: ['collateralizationOracleGuardian', 'optimisticTimelock', 'opsOptimisticTimelock'],

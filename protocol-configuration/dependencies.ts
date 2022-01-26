@@ -106,7 +106,9 @@ const dependencies: DependencyMap = {
       'tribalChief',
       'fuseAdmin',
       'fuseGuardian',
-      'restrictedPermissions'
+      'restrictedPermissions',
+      'balancerDepositFeiWeth',
+      'delayedPCVMoverWethUniToBal'
     ]
   },
   fei: {
@@ -186,7 +188,7 @@ const dependencies: DependencyMap = {
     ] // NOTE this is slightly misleading as proxy admin needs to update admin to new timelock
   },
   ratioPCVControllerV2: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'delayedPCVMoverWethUniToBal']
   },
   tribe: {
     contractDependencies: [
@@ -651,7 +653,8 @@ const dependencies: DependencyMap = {
       'balUsdCompositeOracle',
       'collateralizationOracle',
       'uniswapPCVDeposit',
-      'balancerDepositBalWeth'
+      'balancerDepositBalWeth',
+      'balancerDepositFeiWeth'
     ]
   },
   chainlinkEurUsdOracleWrapper: {
@@ -684,7 +687,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'chainlinkEthUsdOracleWrapper', 'chainlinkCREAMEthOracle', 'collateralizationOracle']
   },
   oneConstantOracle: {
-    contractDependencies: ['core', 'collateralizationOracle']
+    contractDependencies: ['core', 'collateralizationOracle', 'balancerDepositFeiWeth']
   },
   tribeUsdCompositeOracle: {
     contractDependencies: [
@@ -938,6 +941,15 @@ const dependencies: DependencyMap = {
   },
   pegExchanger: {
     contractDependencies: ['tribe', 'feiDAOTimelock']
+  },
+  weightedBalancerPoolManagerBase: {
+    contractDependencies: []
+  },
+  balancerDepositFeiWeth: {
+    contractDependencies: ['core', 'oneConstantOracle', 'chainlinkEthUsdOracleWrapper']
+  },
+  delayedPCVMoverWethUniToBal: {
+    contractDependencies: ['core', 'ratioPCVControllerV2']
   }
 };
 

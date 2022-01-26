@@ -14,18 +14,18 @@ import { forceEth } from '../setup/utils';
 
 const toBN = ethers.BigNumber.from;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe('e2e-merger', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -48,7 +48,7 @@ describe('e2e-merger', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe('PegExchanger', async () => {
+  describe.skip('PegExchanger', async () => {
     const RGT_WHALE = '0x20017a30D3156D4005bDA08C40Acda0A6aE209B1';
 
     it('drips correctly before expiration', async function () {
