@@ -122,11 +122,10 @@ describe.only('FeiSkim', function () {
 
   describe('Set Threshold', function () {
     it('from governor succeeds', async function () {
-      expect(await sink.thresholds(source.address)).to.be.equal(threshold);
-
+      await sink.connect(impersonatedSigners[governorAddress]).addSource(source.address, 1);
+      expect(await sink.thresholds(source.address)).to.be.equal(1);
       await sink.connect(impersonatedSigners[governorAddress]).setThreshold(source.address, 0);
-
-      expect(await sink.thresholds[source.address]).to.be.equal(0);
+      expect(await sink.thresholds(source.address)).to.be.equal(0);
     });
 
     it('not from governor succeeds', async function () {
@@ -139,10 +138,10 @@ describe.only('FeiSkim', function () {
 
   describe('Add', function () {
     it('from governor succeeds', async function () {
-      expect((await sink.getSources())[0][0]).to.be.equal(source.address);
+      await sink.connect(impersonatedSigners[governorAddress]).addSource(source2.address, 1);
       await sink.connect(impersonatedSigners[governorAddress]).addSource(source.address, 1);
       expect((await sink.getSources()).length).to.be.equal(2);
-      expect((await sink.getSources())[0][1]).to.be.equal(source.address);
+      expect((await sink.getSources())[0][1]).to.be.equal(source2.address);
       expect((await sink.getSources())[1][1]).to.be.equal(1);
     });
 
