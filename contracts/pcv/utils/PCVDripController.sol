@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 import "./IPCVDripController.sol"; 
 import "../../utils/Incentivized.sol"; 
-import "../../utils/RateLimitedMinter.sol"; 
+import "../../fei/minter/RateLimitedMinter.sol"; 
 import "../../utils/Timed.sol";
 
 /// @title a PCV dripping controller

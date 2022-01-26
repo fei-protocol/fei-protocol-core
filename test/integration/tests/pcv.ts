@@ -17,12 +17,6 @@ const dripAmount = toBN(4000000).mul(toBN(10).pow(toBN(18)));
 // this is 1 week in seconds
 const dripFrequency = 604800;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe('e2e-pcv', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
@@ -31,6 +25,12 @@ describe('e2e-pcv', function () {
   let doLogging: boolean;
 
   const tenPow18 = ethers.constants.WeiPerEther;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -63,12 +63,12 @@ describe('e2e-pcv', function () {
       await contracts.lusd.connect(signer).transfer(contracts.bammDeposit.address, ethers.constants.WeiPerEther);
 
       await contracts.bammDeposit.deposit();
-      expect(await contracts.bammDeposit.balance()).to.be.at.least(toBN(89_000_000).mul(tenPow18));
+      expect(await contracts.bammDeposit.balance()).to.be.at.least(toBN(1_000_000).mul(tenPow18));
 
-      await contracts.bammDeposit.withdraw(contractAddresses.feiDAOTimelock, toBN(89_000_000).mul(tenPow18));
+      await contracts.bammDeposit.withdraw(contractAddresses.feiDAOTimelock, toBN(1_000_000).mul(tenPow18));
 
       const lusdBalanceAfter = await contracts.lusd.balanceOf(contracts.feiDAOTimelock.address);
-      expect(lusdBalanceAfter).to.be.bignumber.equal(toBN(89_000_000).mul(tenPow18));
+      expect(lusdBalanceAfter).to.be.bignumber.equal(toBN(1_000_000).mul(tenPow18));
     });
   });
 
@@ -108,7 +108,9 @@ describe('e2e-pcv', function () {
     });
   });
 
-  describe('Drip Controller', async () => {
+  /// pause this test as it has been disabled for FIP-62
+  /// PCVDripController now sends funds to the eth PSM
+  describe.skip('Drip Controller', async () => {
     it('drip controller can withdraw from PCV deposit to stabiliser', async function () {
       const ethReserveStabilizer = contracts.ethReserveStabilizer;
       const aaveEthPCVDeposit = contracts.aaveEthPCVDeposit;

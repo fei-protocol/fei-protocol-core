@@ -5,20 +5,14 @@ import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { expectApprox, overwriteChainlinkAggregator } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
-import collateralizationAddresses from '@addresses/collateralizationOracle';
+import collateralizationAddresses from '@protocol/collateralizationOracle';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import {
   CollateralizationOracle,
-  StaticPCVDepositWrapper,
   CollateralizationOracleWrapper,
   CollateralizationOracleGuardian,
   NamedStaticPCVDepositWrapper
 } from '@custom-types/contracts';
-
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-});
 
 describe('e2e-collateralization', function () {
   let contracts: NamedContracts;
@@ -40,6 +34,11 @@ describe('e2e-collateralization', function () {
     'Kashi 2.5m WETH-FEI'
   ];
   const eth = ethers.constants.WeiPerEther;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -163,7 +162,15 @@ describe('e2e-collateralization', function () {
 
         const numTokens = (await collateralizationOracle.getDepositsForToken(element)).length;
         doLogging && console.log(`Address count for token ${addresses[i]}: ${numTokens}`);
-        expect(numTokens).to.be.equal(collateralizationAddresses[addresses[i]].length);
+        expect(numTokens).to.be.equal(
+          collateralizationAddresses[addresses[i]].length,
+          'bad number of deposits for token ' +
+            element +
+            ' - expected ' +
+            collateralizationAddresses[addresses[i]].length +
+            ' but got ' +
+            numTokens
+        );
       }
     });
 
@@ -187,55 +194,6 @@ describe('e2e-collateralization', function () {
   });
 
   describe('Collateralization Oracle Wrapper', async function () {
-    it('collateralization changes register after an update', async function () {
-      const collateralizationOracleWrapper: CollateralizationOracleWrapper =
-        contracts.collateralizationOracleWrapper as CollateralizationOracleWrapper;
-      const collateralizationOracle: CollateralizationOracle =
-        contracts.collateralizationOracle as CollateralizationOracle;
-      const staticPcvDepositWrapper: StaticPCVDepositWrapper =
-        contracts.staticPcvDepositWrapper as StaticPCVDepositWrapper;
-
-      // set Chainlink ETHUSD to a fixed 4,000$ value
-      await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
-
-      await collateralizationOracleWrapper.update();
-
-      const beforeBalance = await staticPcvDepositWrapper.balance();
-
-      // Make sure wrapper = oracle after update
-      const beforeStats = await collateralizationOracle.pcvStats();
-      const wrapperStats = await collateralizationOracleWrapper.pcvStats();
-
-      expect(wrapperStats[0]).to.be.bignumber.equal(beforeStats[0]);
-      expect(wrapperStats[1]).to.be.bignumber.equal(beforeStats[1]);
-      expect(wrapperStats[2]).to.be.bignumber.equal(beforeStats[2]);
-
-      // Zero out the static balance
-      await staticPcvDepositWrapper.setBalance(0);
-
-      // Make sure wrapper unchanged
-      const wrapperStatsAfter = await collateralizationOracleWrapper.pcvStats();
-      expect(wrapperStatsAfter[0]).to.be.bignumber.equal(beforeStats[0]);
-      expect(wrapperStatsAfter[1]).to.be.bignumber.equal(beforeStats[1]);
-      expect(wrapperStatsAfter[2]).to.be.bignumber.equal(beforeStats[2]);
-
-      // Make sure wrapper current matches the true value
-      const wrapperStatsAfterCurrent = await collateralizationOracleWrapper.pcvStatsCurrent();
-      expectApprox(wrapperStatsAfterCurrent[0], beforeStats[0].sub(beforeBalance));
-      expectApprox(wrapperStatsAfterCurrent[1], beforeStats[1]);
-      expectApprox(wrapperStatsAfterCurrent[2], beforeStats[2].sub(beforeBalance));
-
-      // Make sure wrapper matches the true value after another update
-      await collateralizationOracleWrapper.update();
-
-      const afterStats = await collateralizationOracle.pcvStats();
-
-      const wrapperStatsAfterUpdate = await collateralizationOracleWrapper.pcvStats();
-      expectApprox(wrapperStatsAfterUpdate[0], afterStats[0]);
-      expectApprox(wrapperStatsAfterUpdate[1], afterStats[1]);
-      expectApprox(wrapperStatsAfterUpdate[2], afterStats[2]);
-    });
-
     it('collateralization changes register after an update to the named pcv deposit wrapper', async function () {
       const collateralizationOracleWrapper: CollateralizationOracleWrapper =
         contracts.collateralizationOracleWrapper as CollateralizationOracleWrapper;

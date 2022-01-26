@@ -17,6 +17,7 @@ describe('votium-bribe', function () {
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
   let bribeSigner: any;
+  let daoSigner: any;
 
   before(async function () {
     // Setup test environment and get contracts
@@ -38,12 +39,15 @@ describe('votium-bribe', function () {
     ({ contracts } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
 
-    bribeSigner = await getImpersonatedSigner(contracts.optimisticTimelock.address);
-    await forceEth(contracts.optimisticTimelock.address);
+    bribeSigner = await getImpersonatedSigner(contracts.opsOptimisticTimelock.address);
+    await forceEth(contracts.opsOptimisticTimelock.address);
+    daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
+    await forceEth(contracts.feiDAOTimelock.address);
   });
 
   describe('When no voting round is active', async function () {
     it('should revert if proposal is not found', async function () {
+      await contracts.core.connect(daoSigner).allocateTribe(contracts.votiumBriberD3pool.address, '1000');
       await expectRevert(contracts.votiumBriberD3pool.connect(bribeSigner).bribe(CVX_PROPOSAL, 44), 'invalid proposal');
     });
   });
@@ -54,7 +58,7 @@ describe('votium-bribe', function () {
       const signer = await getImpersonatedSigner(VOTIUM_ADMIN);
       await contracts.votiumBribe.connect(signer).initiateProposal(
         CVX_PROPOSAL, // snapshot proposal id
-        Math.floor((Date.now() + 24 * 36e5) / 1000), // _deadline in 24h
+        Math.floor(((await time.latest()) * 1000 + 24 * 36e5) / 1000), // _deadline in 24h
         50 // maxIndex in the proposal
       );
     });
@@ -98,6 +102,30 @@ describe('votium-bribe', function () {
       const distributorBalanceAfter = await contracts.tribe.balanceOf(VOTIUM_TRIBE_DISTRIBUTOR);
       const distributorAmount = distributorBalanceAfter.sub(distributorBalanceBefore);
       expect(distributorAmount).to.be.at.least(bribeAmount.mul(95).div(100));
+    });
+
+    it('should revert if paused and be able to claim back TRIBE', async function () {
+      // Should receive a non-zero rewards stream from TribalChief
+      const briberBalanceBefore = await contracts.tribe.balanceOf(contracts.votiumBriberD3pool.address);
+      await contracts.stakingTokenWrapperBribeD3pool.harvest();
+      const briberBalanceAfter = await contracts.tribe.balanceOf(contracts.votiumBriberD3pool.address);
+      const bribeAmount = briberBalanceAfter.sub(briberBalanceBefore);
+      expect(bribeAmount).to.be.at.least(1);
+
+      // Pause briber
+      await contracts.votiumBriberD3pool.connect(daoSigner).pause();
+
+      // Call to bribe should revert
+      await expectRevert(contracts.votiumBriberD3pool.connect(bribeSigner).bribe(CVX_PROPOSAL, 42), 'Pausable: paused');
+
+      // DAO should be able to recover unspent TRIBE
+      const balanceBefore = await contracts.tribe.balanceOf(contracts.core.address);
+      await contracts.votiumBriberD3pool
+        .connect(daoSigner)
+        .withdrawERC20(contracts.tribe.address, contracts.core.address, bribeAmount);
+      const balanceAfter = await contracts.tribe.balanceOf(contracts.core.address);
+      const balanceRecovered = balanceAfter.sub(balanceBefore);
+      expect(balanceRecovered).to.be.equal(bribeAmount);
     });
   });
 });
