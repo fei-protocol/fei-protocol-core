@@ -23,7 +23,7 @@ const fipNumber = '72';
 // mint fee starts at 0
 const daiPSMMintFeeBasisPoints = 0;
 // redeem fee is 30 basis points
-const daiPSMRedeemFeeBasisPoints = 30;
+const daiPSMRedeemFeeBasisPoints = 10;
 
 // hold a maximum of 20m DAI in this contract
 const daiReservesThreshold = ethers.utils.parseEther('20000000');

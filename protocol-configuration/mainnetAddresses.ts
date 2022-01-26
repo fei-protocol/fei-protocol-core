@@ -114,7 +114,7 @@ const MainnetAddresses: MainnetAddresses = {
   daiPSM: {
     artifactName: 'PriceBoundPSM',
     address: '0x210300C158f95E1342fD008aE417ef68311c49C2',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   lusdPSM: {
     artifactName: 'PegStabilityModule',

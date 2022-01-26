@@ -15,7 +15,7 @@ const fip_73: ProposalDescription = {
       values: '0',
       method: 'revokeMinter(address)',
       arguments: ['{daiPSM}'],
-      description: 'Grant OA Timelock the PCV_GUARDIAN_ADMIN_ROLE role'
+      description: 'Remove minter role from old DAI psm'
     },
     {
       target: 'core',
