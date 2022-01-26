@@ -55,7 +55,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   }
 
   const daiPSMFactory = await ethers.getContractFactory('FixedPricePSM');
-  const feiSkimmerFactory = await ethers.getContractFactory('FeiSkimmer');
+  const feiSinkFactory = await ethers.getContractFactory('FeiSink');
 
   // Deploy DAI Peg Stability Module
   // PSM will trade while DAI is between 97.5 cents and 102.5 cents.
@@ -81,7 +81,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   logging && console.log('daiPSM: ', daiFixedPricePSM.address);
 
-  const daiFixedPricePSMFeiSkimmer = await feiSkimmerFactory.deploy(core, daiFixedPricePSM.address, feiSkimThreshold);
+  const daiFixedPricePSMFeiSkimmer = await feiSinkFactory.deploy(core, [daiFixedPricePSM.address], [feiSkimThreshold]);
 
   logging && console.log('daiFixedPricePSMFeiSkimmer: ', daiFixedPricePSMFeiSkimmer.address);
 
