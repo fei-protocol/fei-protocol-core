@@ -81,13 +81,13 @@ Snapshot: https://snapshot.fei.money/#/proposal/0xbb8160b0835556d2472c27bd05750b
 - Grant new DAI PSM minter role
 - Revoke minter role from old DAI psm
 - Set target of DAI PCV Drip Controller to new DAI PSM
-- Grant new DAI PSM FEI skimmer PCV controller role
+- Revoke pcv controller role from deprecated DAI PSM FEI skimmer
 - Remove old DAI PSM from pcv guardian
 - Remove all FEI and DAI from old DAI PSM and deposit it into new DAI PSM
 - Add new DAI PSM to pcv guardian as a safe address
 - Add new DAI PSM to CR Oracle
 - Remove old DAI PSM from CR Oracle
-- Pause DAI PSM
+- Deprecate old DAI PSM
 `
 };
 
