@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import { Signer } from 'ethers';
 import { ethers } from 'hardhat';
 
-describe('FeiSkim', function () {
+describe.only('FeiSkim', function () {
   let minterAddress: string;
   let userAddress: string;
   let governorAddress: string;
@@ -35,15 +35,15 @@ describe('FeiSkim', function () {
     source = await (await ethers.getContractFactory('MockPCVDepositV2')).deploy(core.address, await core.fei(), 0, 0);
     source2 = await (await ethers.getContractFactory('MockPCVDepositV2')).deploy(core.address, await core.fei(), 0, 0);
     sink = (await (
-      await ethers.getContractFactory('FeiSkimmer')
-    ).deploy(core.address, source.address, threshold)) as FeiSink;
+      await ethers.getContractFactory('FeiSink')
+    ).deploy(core.address, [source.address], [threshold])) as FeiSink;
   });
 
   describe('Initial configuration', function () {
     it('has a source & threshold set', async function () {
       const sources = await sink.getSources();
       expect(sources[0][0]).to.equal(source.address);
-      expect(sources[1][0]).to.equal(ZERO_ADDRESS);
+      expect(sources[0][1]).to.equal(ZERO_ADDRESS);
     });
   });
 
@@ -130,7 +130,7 @@ describe('FeiSkim', function () {
     it('not from governor succeeds', async function () {
       await expectRevert(
         sink.connect(impersonatedSigners[userAddress]).setThreshold(source.address, 0),
-        'CoreRef: Caller is not a governor or contract admin'
+        'CoreRef: Caller is not a governor'
       );
     });
   });
@@ -140,7 +140,7 @@ describe('FeiSkim', function () {
       expect((await sink.getSources())[0][0]).to.be.equal(source.address);
       await sink.connect(impersonatedSigners[governorAddress]).addSource(source.address, 1);
       expect((await sink.getSources()).length).to.be.equal(2);
-      expect((await sink.getSources())[1][0]).to.be.equal(source.address);
+      expect((await sink.getSources())[0][1]).to.be.equal(source.address);
       expect((await sink.getSources())[1][1]).to.be.equal(1);
     });
 
@@ -158,17 +158,17 @@ describe('FeiSkim', function () {
       await sink.connect(impersonatedSigners[governorAddress]).addSource(source2.address, 1);
       await sink.connect(impersonatedSigners[governorAddress]).removeSource(source.address);
 
-      expect((await sink.getSources()).length).to.be.equal(1);
+      expect((await sink.getSources())[0].length).to.be.equal(1);
 
       await sink.connect(impersonatedSigners[governorAddress]).removeSource(source2.address);
 
-      expect((await sink.getSources()).length).to.be.equal(0);
+      expect((await sink.getSources())[0].length).to.be.equal(0);
     });
 
     it('not from governor succeeds', async function () {
       await expectRevert(
         sink.connect(impersonatedSigners[userAddress]).removeSource(source.address),
-        'CoreRef: Caller is not a governor'
+        'CoreRef: Caller is not a guardian or governor'
       );
     });
   });
