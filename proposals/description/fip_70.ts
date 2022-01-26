@@ -39,7 +39,14 @@ const fip_70: ProposalDescription = {
       description: 'Grant PCV_CONTROLLER_ROLE to the DelayedPCVMover for 2nd half of migration'
     }
   ],
-  description: ``
+  description: `
+Forum discussion: https://tribe.fei.money/t/fip-70-lets-get-balsy/3752/10
+Snapshot: https://snapshot.org/#/fei.eth/proposal/0x15fe70617a8a1b09021bc007ddd4264f7129196bb57eb37866af3d73292b3019
+
+Move Uniswap-v2 FEI-ETH liquidity to Balancer, in a 70% WETH / 30% FEI pool.
+
+Half of the liquidity will be migrated instantly, the 2nd half on Thu Feb 03 2022 15:13:20 GMT-0800 (PT).
+`
 };
 
 export default fip_70;
