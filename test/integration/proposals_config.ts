@@ -5,7 +5,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 import fip_visor from '@proposals/description/fip_visor';
 import fip_73 from '@proposals/description/fip_73';
 import fip_73b from '@proposals/description/fip_73b';
-import fip_60c from '@proposals/description/fip_60c';
+import fip_70 from '@proposals/description/fip_70';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -31,6 +31,23 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0,
     proposal: fip_73b
   },
+  fip_70: {
+    deploy: false,
+    proposalId: '69735027602527924842253936836766902646166984300134193529060263948046226490388',
+    affectedContractSignoff: [
+      'ratioPCVControllerV2',
+      'delayedPCVMoverWethUniToBal',
+      'weightedBalancerPoolManagerBase',
+      'balancerDepositFeiWeth',
+      'uniswapPCVDeposit',
+      'collateralizationOracle',
+      'core'
+    ],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_70
+  },
   fip_visor: {
     deploy: false,
     proposalId: undefined,
@@ -42,7 +59,7 @@ const proposals: ProposalsConfigMap = {
   },
   fip_73: {
     deploy: false,
-    proposalId: null,
+    proposalId: '38813827748657927688712449919303464603881921173152703694284146936644184242456',
     affectedContractSignoff: [
       'core',
       'optimisticTimelock',
@@ -61,34 +78,6 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_73
-  },
-  fip_60c: {
-    deploy: false,
-    proposalId: undefined,
-    affectedContractSignoff: [
-      'rariPool90FeiPCVDepositWrapper',
-      'rariPool91FeiPCVDepositWrapper',
-      'rariPool79FeiPCVDepositWrapper',
-      'rariPool72FeiPCVDepositWrapper',
-      'rariPool128FeiPCVDepositWrapper',
-      'rariPool22FeiPCVDepositWrapper',
-      'rariPool28FeiPCVDepositWrapper',
-      'rariPool31FeiPCVDepositWrapper',
-      'collateralizationOracle',
-      'rariPool90FeiPCVDeposit',
-      'rariPool91FeiPCVDeposit',
-      'rariPool79FeiPCVDeposit',
-      'rariPool72FeiPCVDeposit',
-      'rariPool28FeiPCVDeposit',
-      'rariPool31FeiPCVDeposit',
-      'rariPool128FeiPCVDeposit',
-      'fei',
-      'tribalChief'
-    ],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.OA,
-    totalValue: 0,
-    proposal: fip_60c
   }
 };
 
