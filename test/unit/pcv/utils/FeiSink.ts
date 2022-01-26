@@ -9,7 +9,7 @@ describe('FeiSkim', function () {
   let userAddress: string;
   let governorAddress: string;
   let core: Core;
-  let skimmer: FeiSink;
+  let sink: FeiSink;
   let source: MockPCVDepositV2;
 
   const threshold = ethers.constants.WeiPerEther;
@@ -29,23 +29,19 @@ describe('FeiSkim', function () {
 
   beforeEach(async function () {
     ({ userAddress, governorAddress, minterAddress } = await getAddresses());
+
     core = await getCore();
-
     source = await (await ethers.getContractFactory('MockPCVDepositV2')).deploy(core.address, await core.fei(), 0, 0);
-
-    skimmer = await (await ethers.getContractFactory('FeiSkimmer')).deploy(core.address, source.address, threshold);
+    sink = (await (
+      await ethers.getContractFactory('FeiSkimmer')
+    ).deploy(core.address, source.address, threshold)) as FeiSink;
   });
 
   describe('Initial configuration', function () {
     it('has a source & threshold set', async function () {
-      const sources = await skimmer.sources();
+      const sources = await sink.getSources();
       expect(sources[0][0]).to.equal(source.address);
       expect(sources[1][0]).to.equal(ZERO_ADDRESS);
-    });
-
-    it('initial source is not skim eligible', async function () {
-      const sources = await skimmer.sources();
-      expect(await skimmer.skimEligible(sources[0][0])).to.be.false;
     });
   });
 
@@ -54,10 +50,7 @@ describe('FeiSkim', function () {
       const fei = await ethers.getContractAt('IFei', await core.fei());
 
       await fei.connect(impersonatedSigners[minterAddress]).mint(source.address, ethers.constants.WeiPerEther.mul(2));
-
-      expect(await skimmer.skimEligible(source.address)).to.be.true;
-
-      await skimmer.skim(source.address);
+      await sink.skim([source.address]);
 
       expect(await fei.balanceOf(source.address)).to.be.equal(threshold);
     });
@@ -65,33 +58,33 @@ describe('FeiSkim', function () {
 
   describe('Set Threshold', function () {
     it('from governor succeeds', async function () {
-      expect(await skimmer.thresholds(source.address)).to.be.equal(threshold);
+      expect(await sink.thresholds(source.address)).to.be.equal(threshold);
 
-      await skimmer.connect(impersonatedSigners[governorAddress]).setThreshold(source, 0);
+      await sink.connect(impersonatedSigners[governorAddress]).setThreshold(source.address, 0);
 
-      expect(await skimmer.threshold()).to.be.equal(0);
+      expect(await sink.thresholds[source.address]).to.be.equal(0);
     });
 
     it('not from governor succeeds', async function () {
       await expectRevert(
-        skimmer.connect(impersonatedSigners[userAddress]).setThreshold(0),
+        sink.connect(impersonatedSigners[userAddress]).setThreshold(source.address, 0),
         'CoreRef: Caller is not a governor or contract admin'
       );
     });
   });
 
-  describe('Set Source', function () {
+  describe('Remove', function () {
     it('from governor succeeds', async function () {
-      expect(await skimmer.source()).to.be.equal(source.address);
+      expect((await sink.getSources())[0][0]).to.be.equal(source.address);
 
-      await skimmer.connect(impersonatedSigners[governorAddress]).setSource(ZERO_ADDRESS);
+      await sink.connect(impersonatedSigners[governorAddress]).removeSource(source.address);
 
-      expect(await skimmer.source()).to.be.equal(ZERO_ADDRESS);
+      expect((await sink.getSources()).length).to.be.equal(0);
     });
 
     it('not from governor succeeds', async function () {
       await expectRevert(
-        skimmer.connect(impersonatedSigners[userAddress]).setSource(ZERO_ADDRESS),
+        sink.connect(impersonatedSigners[userAddress]).removeSource(source.address),
         'CoreRef: Caller is not a governor'
       );
     });
