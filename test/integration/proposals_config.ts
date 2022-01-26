@@ -46,6 +46,7 @@ const proposals: ProposalsConfigMap = {
     deploy: false,
     proposalId: '16589839164626732188601208812870579934969443993529803083961504445114020239912',
     affectedContractSignoff: [
+      'fei',
       'core',
       'pcvGuardian',
       'daiFixedPricePSM',
