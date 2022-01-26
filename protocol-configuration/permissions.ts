@@ -22,7 +22,6 @@ export const permissions = {
     'daiPCVDripController',
     'lusdPCVDripController',
     'ethPSMFeiSkimmer',
-    'daiPSMFeiSkimmer',
     'lusdPSMFeiSkimmer',
     'delayedPCVMoverWethUniToBal'
   ],
