@@ -37,13 +37,15 @@ describe.only('FeiSkim', function () {
     sink = (await (
       await ethers.getContractFactory('FeiSink')
     ).deploy(core.address, [source.address], [threshold])) as FeiSink;
+
+    await source.deployTransaction.wait();
+    await source2.deployTransaction.wait();
   });
 
   describe('Initial configuration', function () {
     it('has a source & threshold set', async function () {
       const sources = await sink.getSources();
       expect(sources[0][0]).to.equal(source.address);
-      expect(sources[0][1]).to.equal(ZERO_ADDRESS);
     });
   });
 
