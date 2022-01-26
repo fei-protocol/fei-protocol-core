@@ -50,6 +50,7 @@ const proposals: ProposalsConfigMap = {
       'core',
       'pcvGuardian',
       'daiFixedPricePSM',
+      'oneConstantOracle',
       'daiPCVDripController',
       'ratioPCVControllerV2',
       'collateralizationOracle'
