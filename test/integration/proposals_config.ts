@@ -36,7 +36,7 @@ const proposals: ProposalsConfigMap = {
       'ratioPCVControllerV2',
       'collateralizationOracle'
     ],
-    deprecatedContractSignoff: ['daiPSM'],
+    deprecatedContractSignoff: ['daiPSM', 'daiPSMFeiSkimmer'],
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_72

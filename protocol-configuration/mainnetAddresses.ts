@@ -154,7 +154,7 @@ const MainnetAddresses: MainnetAddresses = {
   daiPSMFeiSkimmer: {
     artifactName: 'FeiSkimmer',
     address: '0xf8Ca6c10a794C867497541F5b7A7f96ca2bCd1E8',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   aaveEthPCVDeposit: {
     artifactName: 'AavePCVDeposit',
