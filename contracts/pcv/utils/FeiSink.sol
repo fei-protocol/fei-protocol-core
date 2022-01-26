@@ -54,23 +54,33 @@ contract FeiSink is CoreRef {
         return (sourceAddresses, sourceThresholds);
     }
 
+    /// @notice convenience method to view source addresses
+    function getSourceAddresses() public view returns(address[] memory sourceAddresses) {
+        sourceAddresses = new address[](sources.length());
+
+        for (uint i=0; i<sources.length(); i++) {
+            sourceAddresses[i] = sources.at(i);
+        }
+
+        return sourceAddresses;
+    }
+
     /// @return true if FEI balance of source exceeds threshold
     function skimEligible(address _source) public view returns (bool) {
-        require(sources.contains(_source), "source not valid");
-        return fei().balanceOf(_source) > thresholds[_source];
+        return (sources.contains(_source) && (getBurnAmount(_source) > 0));
     }
 
     /// @notice skim FEI above the threshold from the source. Pausable. Requires skimEligible()
-    function skim(address _source)
+    function skim(address[] calldata _sources)
         public
         whenNotPaused
     {
-        if(skimEligible(_source)) {
-            IFei fei = fei();
-            uint256 burnAmount = fei.balanceOf(_source) - thresholds[_source];
-            IPCVDeposit(_source).withdrawERC20(address(fei), address(this), burnAmount);
-            fei.burn(burnAmount);
+        for (uint i=0; i< _sources.length; i++) {
+            require(sources.contains(i), "invalid skim source");
+            _skim(_sources[i]);
         }
+
+        _burnFeiHeld();
     }
 
     /// @notice skim FEI above the threshold for all sources. Pausable. Requires skimEligible()
@@ -78,14 +88,13 @@ contract FeiSink is CoreRef {
         external
         whenNotPaused
     {
-        for(uint i=0; i<sources.length(); i++) {
-            skim(sources.at(i));
-        }
+        skim(getSourceAddresses());
     }
 
     /// @notice set the threshold for FEI skims. Only Governor or Admin
     /// @param newThreshold the new value above which FEI is skimmed.
     function setThreshold(address source, uint256 newThreshold) external onlyGovernorOrAdmin {
+        require(sources.contains(source), "source not valid");
         thresholds[source] = newThreshold;
         emit ThresholdUpdate(source, newThreshold);
     }
@@ -104,5 +113,18 @@ contract FeiSink is CoreRef {
     function removeSource(address sourceToRemove) external onlyGuardianOrGovernor {
         sources.remove(sourceToRemove);
         emit SourceRemoved(sourceToRemove);
+    }
+
+    function _skim(address _source) internal {
+        uint256 skimAmount = _getSkimAmount(_source);
+
+        if (skimAmount > 0) {
+            IPCVDeposit(_source).withdrawERC20(address(fei), address(this), skimAmount);
+        }
+    }
+
+    function _getSkimAmount(address _source) internal view returns (uint256) {
+        uint256 sourceBalance = IPCVDeposit(_source).balance();
+        return sourceBalance > thresholds[_source] ? sourceBalance - thresholds[_source] : 0;
     }
 }
