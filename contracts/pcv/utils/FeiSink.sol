@@ -65,18 +65,13 @@ contract FeiSink is CoreRef {
         return sourceAddresses;
     }
 
-    /// @return true if FEI balance of source exceeds threshold
-    function skimEligible(address _source) public view returns (bool) {
-        return (sources.contains(_source) && (getBurnAmount(_source) > 0));
-    }
-
     /// @notice skim FEI above the threshold from the source. Pausable. Requires skimEligible()
-    function skim(address[] calldata _sources)
+    function skim(address[] memory _sources)
         public
         whenNotPaused
     {
         for (uint i=0; i< _sources.length; i++) {
-            require(sources.contains(i), "invalid skim source");
+            require(sources.contains(_sources[i]), "invalid skim source");
             _skim(_sources[i]);
         }
 
@@ -119,7 +114,7 @@ contract FeiSink is CoreRef {
         uint256 skimAmount = _getSkimAmount(_source);
 
         if (skimAmount > 0) {
-            IPCVDeposit(_source).withdrawERC20(address(fei), address(this), skimAmount);
+            IPCVDeposit(_source).withdrawERC20(address(fei()), address(this), skimAmount);
         }
     }
 
