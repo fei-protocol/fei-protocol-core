@@ -311,6 +311,26 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x374628EBE7Ef6AcA0574e750B618097531A26Ff8',
     category: AddressCategory.PCV
   },
+  balancerFeiWethPool: {
+    artifactName: 'IWeightedPool',
+    address: '0x90291319F1D4eA3ad4dB0Dd8fe9E12BAF749E845',
+    category: AddressCategory.External
+  },
+  delayedPCVMoverWethUniToBal: {
+    artifactName: 'DelayedPCVMover',
+    address: '0x52B1D5BE5005002afD76193ADd3a827c18e2db99',
+    category: AddressCategory.Core
+  },
+  weightedBalancerPoolManagerBase: {
+    artifactName: 'WeightedBalancerPoolManagerBase',
+    address: '0x75b984d8Ad22007923B03b5D40daA1917EF35313',
+    category: AddressCategory.Governance
+  },
+  balancerDepositFeiWeth: {
+    artifactName: 'BalancerPCVDepositWeightedPool',
+    address: '0xc5bb8F0253776beC6FF450c2B40f092f7e7f5b57',
+    category: AddressCategory.PCV
+  },
   balancerDepositBalWeth: {
     artifactName: 'BalancerPCVDepositWeightedPool',
     address: '0xcd1Ac0014E2ebd972f40f24dF1694e6F528B2fD4',

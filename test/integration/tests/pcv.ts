@@ -17,12 +17,6 @@ const dripAmount = toBN(4000000).mul(toBN(10).pow(toBN(18)));
 // this is 1 week in seconds
 const dripFrequency = 604800;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe('e2e-pcv', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
@@ -31,6 +25,12 @@ describe('e2e-pcv', function () {
   let doLogging: boolean;
 
   const tenPow18 = ethers.constants.WeiPerEther;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
