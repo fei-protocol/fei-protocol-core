@@ -20,13 +20,6 @@ const fip_73: ProposalDescription = {
     {
       target: 'core',
       values: '0',
-      method: 'grantPCVController(address)',
-      arguments: ['{daiFixedPricePSMFeiSkimmer}'],
-      description: 'Grant daiFixedPricePSMFeiSkimmer PCV controller role'
-    },
-    {
-      target: 'core',
-      values: '0',
       method: 'revokePCVController(address)',
       arguments: ['{daiPSMFeiSkimmer}'],
       description: 'Revoke daiPSMFeiSkimmer PCV controller role from old DAI PSM FEI skimmer'
