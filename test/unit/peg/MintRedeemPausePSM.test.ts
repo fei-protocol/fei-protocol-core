@@ -9,12 +9,12 @@ import {
 } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer, utils } from 'ethers';
-import { Core, Fei, MockOracle, MockPCVDepositV2, WETH9, MintRedeemPausePSM } from '@custom-types/contracts';
+import { Core, Fei, MockOracle, MockPCVDepositV2, WETH9, PegStabilityModule } from '@custom-types/contracts';
 import { keccak256 } from 'ethers/lib/utils';
 
 const toBN = ethers.BigNumber.from;
 
-describe('MintRedeemPausePSM', function () {
+describe('PegStabilityModule', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
@@ -35,7 +35,7 @@ describe('MintRedeemPausePSM', function () {
   let core: Core;
   let fei: Fei;
   let oracle: MockOracle;
-  let psm: MintRedeemPausePSM;
+  let psm: PegStabilityModule;
   let pcvDeposit: MockPCVDepositV2;
   let weth: WETH9;
 
@@ -83,7 +83,7 @@ describe('MintRedeemPausePSM', function () {
     pcvDeposit = await (await ethers.getContractFactory('MockPCVDepositV2')).deploy(core.address, weth.address, 0, 0);
 
     psm = await (
-      await ethers.getContractFactory('MintRedeemPausePSM')
+      await ethers.getContractFactory('PegStabilityModule')
     ).deploy(
       {
         coreAddress: core.address,
@@ -167,6 +167,14 @@ describe('MintRedeemPausePSM', function () {
       expect(await psm.hasSurplus()).to.be.false;
     });
 
+    it('mintpaused is false', async () => {
+      expect(await psm.mintPaused()).to.be.false;
+    });
+
+    it('redeempaused is false', async () => {
+      expect(await psm.redeemPaused()).to.be.false;
+    });
+
     it('CONTRACT_ADMIN_ROLE', async () => {
       expect(await psm.CONTRACT_ADMIN_ROLE()).to.be.equal(PSM_ADMIN_ROLE);
     });
@@ -187,6 +195,60 @@ describe('MintRedeemPausePSM', function () {
       const startingMaxMintAmountOut = bufferCap.add(await fei.balanceOf(psm.address));
       await fei.connect(impersonatedSigners[minterAddress]).mint(psm.address, 10);
       expect(await psm.getMaxMintAmountOut()).to.be.equal(startingMaxMintAmountOut.add(10));
+    });
+  });
+
+  describe('pause mint', function () {
+    it('governor can pause, mint fails', async () => {
+      await psm.connect(impersonatedSigners[governorAddress]).pauseMint();
+      expect(await psm.mintPaused()).to.be.true;
+      await expectRevert(
+        psm.connect(impersonatedSigners[userAddress]).mint(userAddress, 0, 0),
+        'PegStabilityModule: Minting paused'
+      );
+    });
+
+    it('governor can pause globally, mint fails', async () => {
+      await psm.connect(impersonatedSigners[governorAddress]).pause();
+      expect(await psm.paused()).to.be.true;
+      await expectRevert(psm.connect(impersonatedSigners[userAddress]).mint(userAddress, 0, 0), 'Pausable: paused');
+    });
+
+    it('governor can pause globally and for minting, mint fails', async () => {
+      await psm.connect(impersonatedSigners[governorAddress]).pause();
+      await psm.connect(impersonatedSigners[governorAddress]).pauseMint();
+
+      expect(await psm.paused()).to.be.true;
+      expect(await psm.mintPaused()).to.be.true;
+
+      await expectRevert(psm.connect(impersonatedSigners[userAddress]).mint(userAddress, 0, 0), 'Pausable: paused');
+    });
+  });
+
+  describe('pause redeem', function () {
+    it('governor can pause redeem, redemption fails', async () => {
+      await psm.connect(impersonatedSigners[governorAddress]).pauseRedeem();
+      expect(await psm.redeemPaused()).to.be.true;
+      await expectRevert(
+        psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 0, 0),
+        'PegStabilityModule: Redeem paused'
+      );
+    });
+
+    it('governor can pause globally, redemption fails', async () => {
+      await psm.connect(impersonatedSigners[governorAddress]).pause();
+      expect(await psm.paused()).to.be.true;
+      await expectRevert(psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 0, 0), 'Pausable: paused');
+    });
+
+    it('governor can pause globally and for redeem, redemption fails', async () => {
+      await psm.connect(impersonatedSigners[governorAddress]).pause();
+      await psm.connect(impersonatedSigners[governorAddress]).pauseRedeem();
+
+      expect(await psm.paused()).to.be.true;
+      expect(await psm.redeemPaused()).to.be.true;
+
+      await expectRevert(psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 0, 0), 'Pausable: paused');
     });
   });
 
@@ -397,7 +459,7 @@ describe('MintRedeemPausePSM', function () {
 
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 10000, 0),
-          'EthPSM: Redeem paused'
+          'PegStabilityModule: Redeem paused'
         );
       });
 
@@ -462,35 +524,11 @@ describe('MintRedeemPausePSM', function () {
         expect(userEndingWETHBalance.sub(userStartingWETHBalance)).to.be.equal(expectedAssetAmount);
       });
 
-      it('redeem succeeds when regular pause is active', async () => {
+      it('redeem fails when regular pause is active', async () => {
         await psm.connect(impersonatedSigners[governorAddress]).pause();
         expect(await psm.paused()).to.be.true;
 
-        await oracle.setExchangeRate(10_000);
-        const tenM = toBN(10_000_000);
-        const newRedeemFee = 250;
-        await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(newRedeemFee);
-
-        const userStartingFeiBalance = await fei.balanceOf(userAddress);
-        const psmStartingWETHBalance = await weth.balanceOf(psm.address);
-        const userStartingWETHBalance = await weth.balanceOf(userAddress);
-        const expectedAssetAmount = 975;
-
-        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, tenM);
-        await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, tenM);
-
-        const redeemAmountOut = await psm.getRedeemAmountOut(tenM);
-        expect(redeemAmountOut).to.be.equal(expectedAssetAmount);
-
-        await psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, tenM, expectedAssetAmount);
-
-        const userEndingWETHBalance = await weth.balanceOf(userAddress);
-        const userEndingFeiBalance = await fei.balanceOf(userAddress);
-        const psmEndingWETHBalance = await weth.balanceOf(psm.address);
-
-        expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(0);
-        expect(psmStartingWETHBalance.sub(psmEndingWETHBalance)).to.be.equal(expectedAssetAmount);
-        expect(userEndingWETHBalance.sub(userStartingWETHBalance)).to.be.equal(expectedAssetAmount);
+        await expectRevert(psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 0, 0), 'Pausable: paused');
       });
 
       it('redeem fails when expected amount out is greater than actual amount out', async () => {
@@ -762,45 +800,28 @@ describe('MintRedeemPausePSM', function () {
           it('can pause as the guardian', async () => {
             await psm.connect(impersonatedSigners[guardianAddress]).pauseRedeem();
             expect(await psm.redeemPaused()).to.be.true;
-            await expectRevert(psm.redeem(userAddress, 0, 0), 'EthPSM: Redeem paused');
+            await expectRevert(psm.redeem(userAddress, 0, 0), 'PegStabilityModule: Redeem paused');
           });
 
           it('can pause and unpause as the guardian', async () => {
             await psm.connect(impersonatedSigners[guardianAddress]).pauseRedeem();
             expect(await psm.redeemPaused()).to.be.true;
-            await expectRevert(psm.redeem(userAddress, 0, 0), 'EthPSM: Redeem paused');
+            await expectRevert(psm.redeem(userAddress, 0, 0), 'PegStabilityModule: Redeem paused');
 
             await psm.connect(impersonatedSigners[guardianAddress]).unpauseRedeem();
             expect(await psm.redeemPaused()).to.be.false;
           });
 
-          it('cannot pause while paused', async () => {
-            await psm.connect(impersonatedSigners[guardianAddress]).pauseRedeem();
-            expect(await psm.redeemPaused()).to.be.true;
-            await expectRevert(
-              psm.connect(impersonatedSigners[guardianAddress]).pauseRedeem(),
-              'EthPSM: Redeem paused'
-            );
-          });
-
-          it('cannot unpause while unpaused', async () => {
-            expect(await psm.redeemPaused()).to.be.false;
-            await expectRevert(
-              psm.connect(impersonatedSigners[guardianAddress]).unpauseRedeem(),
-              'EthPSM: Redeem not paused'
-            );
-          });
-
           it('can pause redemptions as the governor', async () => {
             await psm.connect(impersonatedSigners[governorAddress]).pauseRedeem();
             expect(await psm.redeemPaused()).to.be.true;
-            await expectRevert(psm.redeem(userAddress, 0, 0), 'EthPSM: Redeem paused');
+            await expectRevert(psm.redeem(userAddress, 0, 0), 'PegStabilityModule: Redeem paused');
           });
 
           it('can pause redemptions as the PSM_ADMIN', async () => {
             await psm.connect(impersonatedSigners[psmAdminAddress]).pauseRedeem();
             expect(await psm.redeemPaused()).to.be.true;
-            await expectRevert(psm.redeem(userAddress, 0, 0), 'EthPSM: Redeem paused');
+            await expectRevert(psm.redeem(userAddress, 0, 0), 'PegStabilityModule: Redeem paused');
           });
 
           it('can not pause as non governor', async () => {
@@ -813,6 +834,51 @@ describe('MintRedeemPausePSM', function () {
           it('can not unpause as non governor', async () => {
             await expectRevert(
               psm.connect(impersonatedSigners[userAddress]).pauseRedeem(),
+              'CoreRef: Caller is not governor or guardian or admin'
+            );
+          });
+        });
+      });
+
+      describe('Mint Pausing', function () {
+        describe('pause', function () {
+          it('can pause as the guardian', async () => {
+            await psm.connect(impersonatedSigners[guardianAddress]).pauseMint();
+            expect(await psm.mintPaused()).to.be.true;
+            await expectRevert(psm.mint(userAddress, 0, 0), 'PegStabilityModule: Minting paused');
+          });
+
+          it('can pause and unpause as the guardian', async () => {
+            await psm.connect(impersonatedSigners[guardianAddress]).pauseMint();
+            expect(await psm.mintPaused()).to.be.true;
+            await expectRevert(psm.mint(userAddress, 0, 0), 'PegStabilityModule: Minting paused');
+
+            await psm.connect(impersonatedSigners[guardianAddress]).unpauseMint();
+            expect(await psm.mintPaused()).to.be.false;
+          });
+
+          it('can pause minting as the governor', async () => {
+            await psm.connect(impersonatedSigners[governorAddress]).pauseMint();
+            expect(await psm.mintPaused()).to.be.true;
+            await expectRevert(psm.mint(userAddress, 0, 0), 'PegStabilityModule: Minting paused');
+          });
+
+          it('can pause minting as the PSM_ADMIN', async () => {
+            await psm.connect(impersonatedSigners[psmAdminAddress]).pauseMint();
+            expect(await psm.mintPaused()).to.be.true;
+            await expectRevert(psm.mint(userAddress, 0, 0), 'PegStabilityModule: Minting paused');
+          });
+
+          it('can not pause as non governor', async () => {
+            await expectRevert(
+              psm.connect(impersonatedSigners[userAddress]).pauseMint(),
+              'CoreRef: Caller is not governor or guardian or admin'
+            );
+          });
+
+          it('can not unpause as non governor', async () => {
+            await expectRevert(
+              psm.connect(impersonatedSigners[userAddress]).unpauseMint(),
               'CoreRef: Caller is not governor or guardian or admin'
             );
           });
