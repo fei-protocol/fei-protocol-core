@@ -12,6 +12,10 @@ interface IChainlinkPriceFeed {
     function decimals() external view returns (uint8);
 }
 
+interface IPauseable {
+    function pause() external;
+}
+
 /**
  * This condition checks the spot price of ETH on Uniswap vs the
  * reported price of ETH on chainlink. If the deviation is greater than
@@ -19,6 +23,7 @@ interface IChainlinkPriceFeed {
  */
 contract ETHPSMPriceGuard is IGuard {
     // Hardcoded values here since each condition is approved on its own
+    address immutable private ethPSM = 0x98E5F5706897074a4664DD3a32eB80242d6E694B;
     address immutable private chainlinkETHUSDPriceFeed = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419;
     address immutable private uniV2ETHUSDCPair = 0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc;
     uint256 immutable private allowedDeviationBips = 100; // 1%
@@ -39,6 +44,7 @@ contract ETHPSMPriceGuard is IGuard {
 
         if (deviationBips > allowedDeviationBips) {
             // execute pause-eth-psm action
+            IPauseable(ethPSM).pause();
             emit Guarded("Paused the ETH PSM because the ETH price is too far from the Uniswap price.");
         } else {
             revert("Nothing to protec.");
