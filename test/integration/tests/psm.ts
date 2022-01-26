@@ -255,7 +255,7 @@ describe('e2e-peg-stability-module', function () {
     });
   });
 
-  describe('dai-psm pcv drip controller', async () => {
+  describe.skip('dai-psm pcv drip controller', async () => {
     before(async function () {
       // make sure there is enough DAI available to the dripper and on the PSM
       const DAI_HOLDER = '0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7'; // curve 3pool
@@ -284,7 +284,11 @@ describe('e2e-peg-stability-module', function () {
 
     it('does drip when the dai PSM is under the threshold', async () => {
       const timelock = await getImpersonatedSigner(feiDAOTimelock.address);
-      await daiPSM.connect(timelock).withdrawERC20(dai.address, userAddress, await dai.balanceOf(daiPSM.address));
+      await daiPSM
+        .connect(timelock)
+        .withdrawERC20(dai.address, contracts.compoundDaiPCVDeposit.address, await dai.balanceOf(daiPSM.address));
+      await contracts.compoundDaiPCVDeposit.deposit();
+
       expect(await dai.balanceOf(daiPSM.address)).to.be.equal(0);
 
       await daiPCVDripController.drip();
@@ -293,7 +297,7 @@ describe('e2e-peg-stability-module', function () {
     });
   });
 
-  describe('dai_psm', async () => {
+  describe.skip('dai_psm', async () => {
     describe('redeem', function () {
       const redeemAmount = 10_000_000;
       beforeEach(async () => {
