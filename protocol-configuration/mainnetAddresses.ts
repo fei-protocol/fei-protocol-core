@@ -151,11 +151,6 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xA8A25F8cbfC5053241aB6FA87b865755dcB5501F',
     category: AddressCategory.Peg
   },
-  daiPSMFeiSkimmer: {
-    artifactName: 'FeiSkimmer',
-    address: '0xf8Ca6c10a794C867497541F5b7A7f96ca2bCd1E8',
-    category: AddressCategory.Deprecated
-  },
   daiFixedPricePSM: {
     artifactName: 'FixedPricePSM',
     address: '0x2A188F9EB761F70ECEa083bA6c2A40145078dfc2',
@@ -1489,6 +1484,11 @@ const MainnetAddresses: MainnetAddresses = {
   creamFeiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xFf419Bc27483edb94b7Ad5c97b7FaB5DB323c7E0',
+    category: AddressCategory.Deprecated
+  },
+  daiPSMFeiSkimmer: {
+    artifactName: 'FeiSkimmer',
+    address: '0xf8Ca6c10a794C867497541F5b7A7f96ca2bCd1E8',
     category: AddressCategory.Deprecated
   },
   defiPulseOTC: {
