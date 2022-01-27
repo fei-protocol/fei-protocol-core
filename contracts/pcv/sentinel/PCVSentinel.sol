@@ -7,10 +7,11 @@ import "./IPCVSentinel.sol";
 import "../IPCVDeposit.sol";
 import "../../libs/CoreRefPauseableLib.sol";
 import "./IGuard.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /**
  * @title PCV Sentinel
- * @dev the PCV Sentinel should be granted the roles Guardian and PCVController
+ * @dev the PCV Sentinel should be granted the role Guardian
  * @notice The PCV Sentinel is a general-purpose protector with extremely flexible powers.
  * On its own, it is useless; it must be paired with "guards". Guards are deployed smart contracts
  * that each know how to protect a specific contract (typically a pcv deposit), and know what actions
@@ -97,22 +98,22 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
      * @dev Guards are given the full power of the Guardian and PCVController roles and should be added carefully.
      *      They are activated via delegateCall and will take arbitrary actions on behalf of the Sentinel.
      *      Tread carefully; with great power comes great responsibility.
-     * @param squire the guard-contract to add
+     * @param knight the guard-contract to add
      * @param guardedContract the contract that the guard protects
      */
-    function knightTheWorthy(address squire, address guardedContract) external override onlyGovernor {
+    function knight(address guard, address guardedContract) external override onlyGovernor {
         // .add on addressSet is a no-op if the address is already in the set
         guardedContracts.add(guardedContract);
-        guards.add(squire);
+        guards.add(guard);
 
         // Assign the newly appointed knight to his fief (contract)
-        guardToContract[squire] = guardedContract;
+        guardToContract[guard] = guardedContract;
 
         // Let the fief know that it has a new guard
-        contractToGuards[guardedContract].add(squire);
+        contractToGuards[guardedContract].add(guard);
 
         // Inform the kingdom of this glorious news
-        emit ContractGuardAdded(guardedContract, squire);
+        emit ContractGuardAdded(guardedContract, guard);
     }
 
     // ---------- Governor-or-Admin-Or-Guardian-Only State-Changing API ----------
@@ -121,7 +122,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
      * @notice removes a guard
      * @param traitor the guard-contract to remove
      */
-    function slayTraitor(address traitor) external override isGovernorOrGuardianOrAdmin {
+    function slay(address traitor) external override isGovernorOrGuardianOrAdmin {
         /// Find out which address the traitor was guarding
         address guardedContract = guardToContract[traitor];
 
@@ -129,7 +130,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
         guards.remove(traitor);
 
         // Unassign the guard from his contract
-        guardToContract[traitor] = address(0x0);
+        delete(guardToContract[traitor]);
         
         // Remove the guard from the list of guards that his contract has
         contractToGuards[guardedContract].remove(traitor);
@@ -145,7 +146,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
      * @param guardedContract the contract for which to activate its guards, if any
      * @return activated true if any guards took action
      */
-    function protec(address guardedContract) external payable override returns (bool activated) {
+    function protec(address guardedContract) external override returns (bool activated) {
         require(guardedContracts.contains(guardedContract));
 
         for (uint i = 0; i < contractToGuards[guardedContract].length(); i++) {
@@ -159,20 +160,36 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
         return activated;
     }
 
+    function activateGuards(address[] calldata guardAddresses) external returns (bool) {
+        for (uint i = 0; i < guardAddresses.length; i++) {
+            activateGuard(guardAddresses[i]);
+        }
+    }
+
+
     /**
      * @notice Activate an individual guard by calling it directly
      * @param guardAddress the address of the guard to activate
      * @return true if the guard took any action
      */
-    function activateGuard(address guardAddress) public payable override returns (bool) {
+    function activateGuard(address guardAddress) public override nonReentrant returns (bool) {
         require(guards.contains(guardAddress));
+        address contractAddress = guardToContract[guardAddress];
 
-        // If the guard takes no action, it will revert.
-        // Because this is a delegatecall we'll get this as the "success" bool.
-        // Beacuse we are delegate-calling, there's no need to try-catch when calling many guards.
-        (bool activated,) = guardAddress.delegatecall(abi.encodeWithSignature("checkAndProtec()"));
+        if (IGuard(guardAddress).check()) {
+            (address[] memory targets, bytes[] memory calldatas, bool allowReverts) = IGuard(guardAddress).getProtecActions();
+            require(targets.length == calldatas.length, "Targets and calldatas must be the same length");
+            for(uint i=0; i<targets.length; i++) {
+                require(targets[i] != address(this), "Stahp");
+                (bool success,) = targets[i].call(calldatas[i]);
+                if (!success && !allowReverts) revert("Guard action failed and reverts not allowed.");
+            }
 
-        return activated;
+            emit ContractProtected(contractAddress, guardAddress);
+            return true;
+        }
+
+        return false;
     }
 
     /**

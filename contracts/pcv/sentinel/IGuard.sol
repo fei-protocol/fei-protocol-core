@@ -1,4 +1,5 @@
 interface IGuard {
     event Guarded(string reason);
-    function checkAndProtec() external payable;
+    function check() external returns (bool);
+    function getProtecActions() external returns (address[] memory, bytes[] memory, bool allowReverts);
 }

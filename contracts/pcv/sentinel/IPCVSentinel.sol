@@ -16,13 +16,13 @@ interface IPCVSentinel {
     function getContractsAndGuards() external view returns (address[][] memory contractsAndGuards);
 
     // ---------- Governor-Only State-Changing API ----------
-    function knightTheWorthy(address squire, address guardedContract) external;
+    function knight(address guard, address guardedContract) external;
 
     // ---------- Governor-Or-Admin-Or-Guardian-Only State-Changing API ----------
-    function slayTraitor(address traitor) external;
+    function slay(address traitor) external;
 
     // ---------- Public State-Changing API ----------
-    function protec(address guardedContract) external payable returns (bool activated);
-    function activateGuard(address guardAddress) external payable returns (bool);
+    function protec(address guardedContract) external returns (bool activated);
+    function activateGuard(address guardAddress) external returns (bool);
     function activateAllGuards() external payable returns (bool activated, address[] memory activatedGuards);
 }
