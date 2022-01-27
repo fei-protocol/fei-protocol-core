@@ -65,7 +65,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
     function knight(address guard) 
         external 
         override 
-        onlyGuardianOrGovernor
+        isGovernorOrGuardianOrAdmin
         nonReentrant
     {
         guards.add(guard);
@@ -81,7 +81,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
     function slay(address traitor) 
         external 
         override 
-        onlyGuardianOrGovernor
+        isGovernorOrGuardianOrAdmin
         nonReentrant
     {
         guards.remove(traitor);
@@ -119,7 +119,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
      * @dev we use try-catch here in case any guards fail, this could be the case
      * if something changes before the transaction hits the chain
      */
-    function protecMany(address[] calldata whichGuards) 
+    function protecMany(address[] calldata whichGuards)
         public 
         override
         nonReentrant
