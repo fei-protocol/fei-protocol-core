@@ -35,7 +35,11 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
      * @dev you *can* use this on-chain if you want, but this is made
      * to be called off-chain to pass into protecManys and not hyper-efficient
      */
-    function checkAll() public view returns (address[] memory) {
+    function checkAll() 
+        public 
+        view 
+        returns (address[] memory) 
+    {
         uint256 numGuardsCanProtec;
 
         for (uint256 i=0; i<guards.length(); i++) {

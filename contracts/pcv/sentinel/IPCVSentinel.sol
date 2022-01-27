@@ -11,6 +11,9 @@ interface IPCVSentinel {
     event GuardAdded(address indexed guard);
     event GuardRemoved(address indexed guard);
 
+    // ---------- Public Read-Only API ----------
+    function checkAll() external view returns(address[] memory guards);
+
     // ---------- Governor-Only State-Changing API ----------
     function knight(address guard) external;
 
