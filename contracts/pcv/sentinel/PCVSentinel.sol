@@ -16,7 +16,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
  * The Guardian can add Guards to the PCV Sentinel. Guards run checks
  * and provide addresses and calldata for the Sentinel to run, if needed.
  */
-contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
+contract PCVSentinel is IPCVSentinel, CoreRef {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     // The set of all guards
@@ -24,7 +24,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
 
     constructor(
         address _core
-    ) CoreRef(_core) ReentrancyGuard() {
+    ) CoreRef(_core) {
         _setContractAdminRole(keccak256("PCV_SENTINEL_ADMIN_ROLE"));
     }
 
@@ -94,7 +94,6 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
         external 
         override 
         isGovernorOrGuardianOrAdmin
-        nonReentrant
     {
         guards.add(guard);
 
@@ -110,7 +109,6 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
         external 
         override 
         isGovernorOrGuardianOrAdmin
-        nonReentrant
     {
         guards.remove(traitor);
 
@@ -121,9 +119,8 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
     // ---------- Public State-Changing API ----------
 
     function protec(address guard) 
-        external 
+        external
         override
-        nonReentrant
     {
         require(guards.contains(guard), "Guard does not exist.");
 
@@ -133,6 +130,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
             (address[] memory targets, bytes[] memory datas) = IGuard(guard).getProtecActions();
 
             for(uint256 i=0; i<targets.length; i++) {
+                require(targets[i] != address(this), "Nyeh!");
                 targets[i].call(datas[i]); // Unopinionated about reverts
             }
 
@@ -150,13 +148,12 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
     function protecMany(address[] calldata whichGuards)
         public 
         override
-        nonReentrant
     {
         for(uint256 i=0; i<whichGuards.length; i++) {
             try this.protec(whichGuards[i]) {
                 // the emit happens in protec
             } catch {
-                emit NoProtecNeeded(whichGuards[i]);
+                emit ProtecFailure(whichGuards[i]);
             }
         }
     }

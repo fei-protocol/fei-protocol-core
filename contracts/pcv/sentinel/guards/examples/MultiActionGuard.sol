@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 import "../../IGuard.sol";
 
-contract MultiACtionBalanceGuard is IGuard {
+contract MultiActionGuard is IGuard {
     address constant private ONE = address(0x1);
     address constant private TWO = address(0x2);
     address constant private THREE = address(0x3);

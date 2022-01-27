@@ -12,7 +12,7 @@ contract BalanceGuard is IGuard {
         override 
         returns (bool) 
     {
-        if(address(block.coinbase).balance % 2 == 0) return true;
+        if(address(this).balance % 2 == 0) return true;
         return false;
     }
 
