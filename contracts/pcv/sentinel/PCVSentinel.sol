@@ -93,7 +93,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
     // ---------- Public State-Changing API ----------
 
     function protec(address guard) 
-        public 
+        external 
         override
         nonReentrant
     {
@@ -109,6 +109,8 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
             }
 
             emit Protected(guard);
+        } else {
+            revert("No need to protec.");
         }
     }
 
@@ -118,7 +120,11 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
         nonReentrant
     {
         for(uint256 i=0; i<whichGuards.length; i++) {
-            protec(whichGuards[i]);
+            try this.protec(whichGuards[i]) {
+                // the emit happens in protec
+            } catch {
+                emit NoProtecNeeded(whichGuards[i]);
+            }
         }
     }
 }

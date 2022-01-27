@@ -7,6 +7,7 @@ pragma solidity ^0.8.4;
 interface IPCVSentinel {
     // ---------- Events ----------
     event Protected(address indexed guard);
+    event NoProtecNeeded(address indexed guard);
     event GuardAdded(address indexed guard);
     event GuardRemoved(address indexed guard);
 
