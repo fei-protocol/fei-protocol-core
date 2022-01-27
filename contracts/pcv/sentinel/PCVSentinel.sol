@@ -98,9 +98,12 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
         nonReentrant
     {
         require(guards.contains(guard), "Guard does not exist.");
-        (bool needsProtec, address[] targets, bytes[] datas) = IGuard(guard).check();
+
+        bool needsProtec = IGuard(guard).check();
 
         if (needsProtec) {
+            (address[] memory targets, bytes[] memory datas) = IGuard(guard).getProtecActions();
+
             for(uint256 i=0; i<targets.length; i++) {
                 targets[i].call(datas[i]); // Unopinionated about reverts
             }
