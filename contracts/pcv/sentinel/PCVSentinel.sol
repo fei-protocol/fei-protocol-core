@@ -29,15 +29,39 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
     }
 
     // ---------- Read-Only API ----------
+    function isGuard(address guard) 
+        external 
+        view
+        override
+        returns (bool) 
+    {
+        return guards.contains(guard);
+    }
+
+    function allGuards() 
+        external
+        view
+        override
+        returns (address[] memory all) 
+    {
+        all = new address[](guards.length());
+
+        for (uint i = 0; i < guards.length(); i++) {
+            all[i] = guards.at(i);
+        }
+
+        return all;
+    }
 
     /**
      * @notice returns the list of all guards that pass their check
      * @dev you *can* use this on-chain if you want, but this is made
      * to be called off-chain to pass into protecManys and not hyper-efficient
      */
-    function checkAll() 
-        public 
-        view 
+    function checkAll()
+        external 
+        view
+        override 
         returns (address[] memory) 
     {
         uint256 numGuardsCanProtec;
