@@ -114,6 +114,11 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
         }
     }
 
+    /**
+     * @notice activate many guards
+     * @dev we use try-catch here in case any guards fail, this could be the case
+     * if something changes before the transaction hits the chain
+     */
     function protecMany(address[] calldata whichGuards) 
         public 
         override
