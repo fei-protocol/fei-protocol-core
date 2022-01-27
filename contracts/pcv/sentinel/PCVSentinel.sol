@@ -29,6 +29,11 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
     }
 
     // ---------- Read-Only API ----------
+
+    /**
+     * @notice returns whether or not the given address is a guard
+     * @param guard the address to check
+     */
     function isGuard(address guard) 
         external 
         view
@@ -38,6 +43,9 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
         return guards.contains(guard);
     }
 
+    /**
+     * @notice returns a list of all guards
+     */
     function allGuards() 
         external
         view
@@ -118,6 +126,10 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
 
     // ---------- Public State-Changing API ----------
 
+    /**
+     * @notice checks the guard and runs its protec actions if needed
+     * @param guard the guard to activate
+     */
     function protec(address guard) 
         external
         override
@@ -144,6 +156,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
      * @notice activate many guards
      * @dev we use try-catch here in case any guards fail, this could be the case
      * if something changes before the transaction hits the chain
+     * @param whichGuards the guards to try to activate
      */
     function protecMany(address[] calldata whichGuards)
         public 

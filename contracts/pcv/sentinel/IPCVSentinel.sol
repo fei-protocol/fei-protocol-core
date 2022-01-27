@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 /// @title IPCVSentinel
 /// @notice an interface for defining how the PCVSentinel functions
-/// @dev any implementation of this contract should be granted the roles of Guardian and PCVController in order to work correctly
+/// @dev any implementation of this contract should be granted the Guardian role
 interface IPCVSentinel {
     // ---------- Events ----------
     event Protected(address indexed guard);
@@ -16,10 +16,8 @@ interface IPCVSentinel {
     function allGuards() external view returns (address[] memory all);
     function checkAll() external view returns(address[] memory guards);
 
-    // ---------- Governor-Only State-Changing API ----------
-    function knight(address guard) external;
-
     // ---------- Governor-Or-Admin-Or-Guardian-Only State-Changing API ----------
+    function knight(address guard) external;
     function slay(address traitor) external;
 
     // ---------- Public State-Changing API ----------
