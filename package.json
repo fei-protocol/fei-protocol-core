@@ -44,7 +44,7 @@
     "@uniswap/lib": "^1.1.2",
     "@uniswap/v2-core": "^1.0.1",
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
-    "chai": "^4.3.5",
+    "chai": "^4.3.6",
     "dotenv": "^14.3.0",
     "hardhat": "^2.8.3",
     "hardhat-contract-sizer": "^2.4.0",
