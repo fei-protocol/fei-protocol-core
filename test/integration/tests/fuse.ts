@@ -17,7 +17,7 @@ before(async () => {
 // TODO add address to mainnet addresses config
 const plugin = '0x2a810409872afc346f9b5b26571fd6ec42ea4849';
 
-describe.only('e2e-fuse', function () {
+describe('e2e-fuse', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
@@ -82,8 +82,6 @@ describe.only('e2e-fuse', function () {
       expect(await fD3.balanceOfUnderlying(deployAddress)).to.be.equal(
         fd3BalanceBefore.add(ethers.constants.WeiPerEther.mul(1_000_000))
       );
-
-      const pluginERC20 = await ethers.getContractAt('IERC20', plugin);
 
       doLogging && console.log('Redeeming Underlying');
       await fD3.connect(signer).redeemUnderlying(ethers.constants.WeiPerEther.mul(1_000_000));
