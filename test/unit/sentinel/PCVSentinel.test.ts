@@ -107,7 +107,7 @@ describe.only('PCV Sentinel', function () {
     it('adds and checks and protecs', async () => {
       await pcvSentinel.connect(impersonatedSigners[guardianAddress]).knight(noOpGuard.address);
       expect(await pcvSentinel.isGuard(noOpGuard.address)).to.equal(true);
-      expect(await pcvSentinel.protec(noOpGuard.address)).to.emit(pcvSentinel, 'Protected');
+      await expect(pcvSentinel.protec(noOpGuard.address)).to.emit(pcvSentinel, 'Protected');
     });
   });
 
@@ -115,7 +115,7 @@ describe.only('PCV Sentinel', function () {
     it('adds and checks and protecs', async () => {
       await pcvSentinel.connect(impersonatedSigners[guardianAddress]).knight(balanceGuard.address);
       expect(await pcvSentinel.isGuard(balanceGuard.address)).to.equal(true);
-      expect(await pcvSentinel.protec(balanceGuard.address)).to.emit(pcvSentinel, 'Protected');
+      await expect(pcvSentinel.protec(balanceGuard.address)).to.emit(pcvSentinel, 'Protected');
     });
 
     it('reverts if condition not met', async () => {
@@ -128,18 +128,18 @@ describe.only('PCV Sentinel', function () {
   describe('sentinel with multi-action guard', async () => {
     it('adds and checks and protecs', async () => {
       await pcvSentinel.connect(impersonatedSigners[guardianAddress]).knight(multiActionGuard.address);
-      expect(await pcvSentinel.protec(multiActionGuard.address)).to.emit(pcvSentinel, 'Protected');
+      await expect(pcvSentinel.protec(multiActionGuard.address)).to.emit(pcvSentinel, 'Protected');
     });
   });
 
   describe('sentinel with several guards', async () => {
-    it('does not execute failing guards', async () => {
+    it('does not execute failing guards when failures are allowed', async () => {
       await pcvSentinel.connect(impersonatedSigners[guardianAddress]).knight(balanceGuard.address);
 
       await forceSpecificEth(balanceGuard.address, '1');
 
       await expect(
-        pcvSentinel.protecMany([
+        pcvSentinel.protecMany(true, [
           balanceGuard.address, // should not execute
           balanceGuard.address, // should not execute
           balanceGuard.address // should not execute
@@ -147,6 +147,20 @@ describe.only('PCV Sentinel', function () {
       )
         .to.emit(pcvSentinel, 'ProtecFailure')
         .and.to.not.emit(pcvSentinel, 'Protected');
+    });
+
+    it('reverts when failures are not allowed', async () => {
+      await pcvSentinel.connect(impersonatedSigners[guardianAddress]).knight(balanceGuard.address);
+
+      await forceSpecificEth(balanceGuard.address, '1');
+
+      await expect(
+        pcvSentinel.protecMany(false, [
+          balanceGuard.address, // should not execute
+          balanceGuard.address, // should not execute
+          balanceGuard.address // should not execute
+        ])
+      ).to.be.reverted;
     });
 
     it('catches failures gracefully', async () => {
@@ -158,7 +172,7 @@ describe.only('PCV Sentinel', function () {
       await forceSpecificEth(balanceGuard.address, '1');
 
       await expect(
-        pcvSentinel.protecMany([
+        pcvSentinel.protecMany(true, [
           noOpGuard.address, // should execute
           multiActionGuard.address, // should execute
           reEntrancyGuard.address // should execute *and* revert
@@ -167,9 +181,9 @@ describe.only('PCV Sentinel', function () {
         .to.emit(pcvSentinel, 'ProtecFailure')
         .withArgs(reEntrancyGuard.address)
         .and.to.emit(pcvSentinel, 'Protected')
-        .withArgs(noOpGuard.address)
+        .withArgs(multiActionGuard.address)
         .and.to.emit(pcvSentinel, 'Protected')
-        .withArgs(multiActionGuard.address);
+        .withArgs(noOpGuard.address);
     });
   });
 

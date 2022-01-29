@@ -22,5 +22,5 @@ interface IPCVSentinel {
 
     // ---------- Public State-Changing API ----------
     function protec(address guard) external;
-    function protecMany(address[] memory guards) external;
+    function protecMany(bool allowFailure, address[] memory guards) external;
 }

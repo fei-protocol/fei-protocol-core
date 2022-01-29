@@ -2,12 +2,11 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "../../refs/CoreRef.sol";
-import "./IPCVSentinel.sol";
-import "../IPCVDeposit.sol";
-import "../../libs/CoreRefPauseableLib.sol";
-import "./IGuard.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "../refs/CoreRef.sol";
+import "../pcv/IPCVDeposit.sol";
+import "./IPCVSentinel.sol";
+import "./IGuard.sol";
 
 /**
  * @title PCV Sentinel
@@ -72,20 +71,22 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
         override 
         returns (address[] memory) 
     {
-        uint256 numGuardsCanProtec;
+        uint256 numGuardsWhoCanProtec = 0;
+        bool[] memory guardChecks = new bool[](guards.length());
 
         for (uint256 i=0; i<guards.length(); i++) {
             if(IGuard(guards.at(i)).check()) {
-                numGuardsCanProtec++;
+                guardChecks[i] = true;
+                numGuardsWhoCanProtec++;
             }
         }
 
-        address[] memory guardsWhoCanProtec = new address[](numGuardsCanProtec);
+        address[] memory guardsWhoCanProtec = new address[](numGuardsWhoCanProtec);
 
         for (uint256 i=0; i<guards.length(); i++) {
-            if(IGuard(guards.at(i)).check()) {
-                numGuardsCanProtec--;
-                guardsWhoCanProtec[numGuardsCanProtec] = guards.at(i);
+            if(guardChecks[i]) {
+                numGuardsWhoCanProtec--;
+                guardsWhoCanProtec[numGuardsWhoCanProtec] = guards.at(i);
             }
         }
 
@@ -139,11 +140,12 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
         bool needsProtec = IGuard(guard).check();
 
         if (needsProtec) {
-            (address[] memory targets, bytes[] memory datas) = IGuard(guard).getProtecActions();
+            (address[] memory targets, bytes[] memory calldatas) = IGuard(guard).getProtecActions();
 
             for(uint256 i=0; i<targets.length; i++) {
                 require(targets[i] != address(this), "Nyeh!");
-                targets[i].call(datas[i]); // Unopinionated about reverts
+                (bool success, bytes memory data) = targets[i].call(calldatas[i]);
+                require(success, string(data)); // Fail this call if any of the sub-calls fail
             }
 
             emit Protected(guard);
@@ -154,19 +156,24 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
 
     /**
      * @notice activate many guards
-     * @dev we use try-catch here in case any guards fail, this could be the case
-     * if something changes before the transaction hits the chain
+     * @dev we use (optional) try-catch here in case any guards fail, this could be the case
+     * if something changes before the transaction hits the chain\
+     * @param allowFailure whether or not the entire transaction should revert on failure
      * @param whichGuards the guards to try to activate
      */
-    function protecMany(address[] calldata whichGuards)
+    function protecMany(bool allowFailure, address[] calldata whichGuards)
         public 
         override
     {
         for(uint256 i=0; i<whichGuards.length; i++) {
-            try this.protec(whichGuards[i]) {
-                // the emit happens in protec
-            } catch {
-                emit ProtecFailure(whichGuards[i]);
+            if (allowFailure) {
+                try this.protec(whichGuards[i]) {
+                    // the emit happens in protec
+                } catch {
+                    emit ProtecFailure(whichGuards[i]);
+                }
+            } else {
+                this.protec(whichGuards[i]);
             }
         }
     }
