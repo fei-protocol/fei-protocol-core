@@ -886,6 +886,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xBFB6f7532d2DB0fE4D83aBb001c5C2B0842AF4dB',
     category: AddressCategory.FeiRari
   },
+  rariPool8FeiD3: {
+    artifactName: 'CErc20Delegator',
+    address: '0x5cA8Ffe4DAD9452ED880FA429DD0A08574225936',
+    category: AddressCategory.FeiRari
+  },
   rariPool146Comptroller: {
     artifactName: 'Unitroller',
     address: '0x88F7c23EA6C4C404dA463Bc9aE03b012B32DEf9e',
@@ -1184,6 +1189,16 @@ const MainnetAddresses: MainnetAddresses = {
   feiTribePair: {
     artifactName: 'IUniswapV2Pair',
     address: '0x9928e4046d7c6513326cCeA028cD3e7a91c7590A',
+    category: AddressCategory.External
+  },
+  fuseFeeDistributor: {
+    artifactName: 'IFuseFeeDistributor',
+    address: '0xa731585ab05fC9f83555cf9Bff8F58ee94e18F85',
+    category: AddressCategory.External
+  },
+  fuseMultisig: {
+    artifactName: 'unknown',
+    address: '0x5eA4A9a7592683bF0Bc187d6Da706c6c4770976F',
     category: AddressCategory.External
   },
   frax: {

@@ -14,7 +14,10 @@ before(async () => {
   await resetFork();
 });
 
-describe('e2e-fuse', function () {
+// TODO add address to mainnet addresses config
+const plugin = '0x2a810409872afc346f9b5b26571fd6ec42ea4849';
+
+describe.only('e2e-fuse', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
@@ -67,21 +70,26 @@ describe('e2e-fuse', function () {
       doLogging && console.log('Approving d3');
       await d3.connect(signer).approve(fD3.address, ethers.constants.MaxUint256);
 
+      const d3RewardsBalanceBefore = await contracts.convexD3poolRewards.balanceOf(plugin);
+      const fd3BalanceBefore = await fD3.balanceOfUnderlying(deployAddress);
+
       doLogging && console.log('Minting fD3');
       await fD3.connect(signer).mint(ethers.constants.WeiPerEther.mul(1_000_000));
 
-      // TODO add address to mainnet addresses config
-      const plugin = '0x5fc748f1FEb28d7b76fa1c6B07D8ba2d5535177c';
       expect(await contracts.convexD3poolRewards.balanceOf(plugin)).to.be.equal(
-        ethers.constants.WeiPerEther.mul(1_000_000)
+        d3RewardsBalanceBefore.add(ethers.constants.WeiPerEther.mul(1_000_000))
       );
-      expect(await fD3.balanceOfUnderlying(deployAddress)).to.be.equal(ethers.constants.WeiPerEther.mul(1_000_000));
+      expect(await fD3.balanceOfUnderlying(deployAddress)).to.be.equal(
+        fd3BalanceBefore.add(ethers.constants.WeiPerEther.mul(1_000_000))
+      );
+
+      const pluginERC20 = await ethers.getContractAt('IERC20', plugin);
 
       doLogging && console.log('Redeeming Underlying');
       await fD3.connect(signer).redeemUnderlying(ethers.constants.WeiPerEther.mul(1_000_000));
 
-      expect(await contracts.convexD3poolRewards.balanceOf(plugin)).to.be.equal(0);
-      expect(await fD3.balanceOfUnderlying(deployAddress)).to.be.equal(0);
+      expect(await contracts.convexD3poolRewards.balanceOf(plugin)).to.be.equal(d3RewardsBalanceBefore);
+      expect(await fD3.balanceOfUnderlying(deployAddress)).to.be.equal(fd3BalanceBefore);
 
       doLogging && console.log('Notifying rewards');
 
@@ -99,8 +107,8 @@ describe('e2e-fuse', function () {
       const rewards = await ethers.getContractAt('ConvexPCVDeposit', plugin);
       await rewards.claimRewards();
 
-      expect(await contracts.crv.balanceOf(contractAddresses.feiDAOTimelock)).to.be.at.least(1);
-      expect(await contracts.cvx.balanceOf(contractAddresses.feiDAOTimelock)).to.be.at.least(1);
+      expect(await contracts.crv.balanceOf(contractAddresses.d3poolConvexPCVDeposit)).to.be.at.least(1);
+      expect(await contracts.cvx.balanceOf(contractAddresses.d3poolConvexPCVDeposit)).to.be.at.least(1);
     });
   });
 });

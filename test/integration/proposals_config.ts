@@ -16,6 +16,15 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
+  fip_cvx: {
+    deploy: false, // deployed from other repos
+    proposalId: undefined,
+    affectedContractSignoff: [],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.None,
+    totalValue: 0,
+    proposal: undefined
+  },
   fip_70: {
     deploy: false,
     proposalId: '69735027602527924842253936836766902646166984300134193529060263948046226490388',
