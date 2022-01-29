@@ -971,6 +971,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x0C462Dbb9EC8cD1630f1728B2CFD2769d09f0dd5',
     category: AddressCategory.External
   },
+  angleGaugeController: {
+    artifactName: 'ILiquidityGaugeController',
+    address: '0x9aD7e7b0877582E14c17702EecF49018DD6f2367',
+    category: AddressCategory.External
+  },
+  angleGaugeUniswapV2FeiAgEur: {
+    artifactName: 'ILiquidityGauge',
+    address: '0xd6282C5aEAaD4d776B932451C44b8EB453E44244',
+    category: AddressCategory.External
+  },
   angleAgEurFeiPool: {
     artifactName: 'IUniswapV2Pair',
     address: '0xF89CE5eD65737dA8440411544b0499c9FaD323B2',
@@ -984,11 +994,6 @@ const MainnetAddresses: MainnetAddresses = {
   angleStableMaster: {
     artifactName: 'IStableMaster',
     address: '0x5adDc89785D75C86aB939E9e15bfBBb7Fc086A87',
-    category: AddressCategory.External
-  },
-  angleStakingRewards: {
-    artifactName: 'IStakingRewards',
-    address: '0xBcb307F590972B1C3188b7916d2969Cf75309dc6',
     category: AddressCategory.External
   },
   aRai: {
@@ -1694,11 +1699,6 @@ const MainnetAddresses: MainnetAddresses = {
   rariPool54FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x9d28B8Cb17c3E25b6Cce17f88B259f75174b69f4',
-    category: AddressCategory.TBD
-  },
-  tokeTokemakPCVDeposit: {
-    artifactName: 'ERC20TokemakPCVDeposit',
-    address: '0x45C8FaB07B64C78d03006591132Ac51DE82a4B22',
     category: AddressCategory.TBD
   },
   rariInfraFeiTimelock: {

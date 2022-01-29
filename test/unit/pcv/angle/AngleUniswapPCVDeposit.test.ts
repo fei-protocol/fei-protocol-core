@@ -31,9 +31,6 @@ describe('AngleUniswapPCVDeposit', function () {
     // Mock Angle Contracts
     this.stableMaster = await (await ethers.getContractFactory('MockAngleStableMaster')).deploy(this.agEUR.address, 2); // 2:1 oracle price
     this.poolManager = await (await ethers.getContractFactory('MockAnglePoolManager')).deploy(this.fei.address);
-    this.stakingRewards = await (
-      await ethers.getContractFactory('MockAngleStakingRewards')
-    ).deploy(this.pair.address, this.angle.address);
 
     this.pcvDeposit = await (
       await ethers.getContractFactory('AngleUniswapPCVDeposit')
@@ -45,8 +42,7 @@ describe('AngleUniswapPCVDeposit', function () {
       this.oracle.address,
       '100',
       this.stableMaster.address,
-      this.poolManager.address,
-      this.stakingRewards.address
+      this.poolManager.address
     );
 
     await this.core.connect(await getImpersonatedSigner(governorAddress)).grantMinter(this.pcvDeposit.address);
@@ -111,7 +107,6 @@ describe('AngleUniswapPCVDeposit', function () {
       describe('No existing liquidity', function () {
         it('liquidityOwned', async function () {
           expect(await this.pcvDeposit.liquidityOwned()).to.be.equal(toBN(LIQUIDITY_INCREMENT));
-          expect(await this.stakingRewards.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN(LIQUIDITY_INCREMENT));
         });
 
         it('pair reserves', async function () {
@@ -143,9 +138,6 @@ describe('AngleUniswapPCVDeposit', function () {
 
         it('liquidityOwned', async function () {
           expect(await this.pcvDeposit.liquidityOwned()).to.be.equal(toBN(2 * LIQUIDITY_INCREMENT));
-          expect(await this.stakingRewards.balanceOf(this.pcvDeposit.address)).to.be.equal(
-            toBN(2 * LIQUIDITY_INCREMENT)
-          );
         });
 
         it('pair reserves', async function () {
@@ -189,9 +181,6 @@ describe('AngleUniswapPCVDeposit', function () {
 
           it('liquidityOwned', async function () {
             expect(await this.pcvDeposit.liquidityOwned()).to.be.equal(toBN(2 * LIQUIDITY_INCREMENT));
-            expect(await this.stakingRewards.balanceOf(this.pcvDeposit.address)).to.be.equal(
-              toBN(2 * LIQUIDITY_INCREMENT)
-            );
           });
 
           it('pair reserves', async function () {
@@ -225,9 +214,6 @@ describe('AngleUniswapPCVDeposit', function () {
 
         it('liquidityOwned', async function () {
           expect(await this.pcvDeposit.liquidityOwned()).to.be.equal(toBN(2 * LIQUIDITY_INCREMENT));
-          expect(await this.stakingRewards.balanceOf(this.pcvDeposit.address)).to.be.equal(
-            toBN(2 * LIQUIDITY_INCREMENT)
-          );
         });
 
         it('pair reserves', async function () {
@@ -260,9 +246,6 @@ describe('AngleUniswapPCVDeposit', function () {
 
         it('liquidityOwned', async function () {
           expect(await this.pcvDeposit.liquidityOwned()).to.be.equal(toBN(2 * LIQUIDITY_INCREMENT));
-          expect(await this.stakingRewards.balanceOf(this.pcvDeposit.address)).to.be.equal(
-            toBN(2 * LIQUIDITY_INCREMENT)
-          );
         });
 
         it('pair reserves', async function () {
@@ -296,9 +279,6 @@ describe('AngleUniswapPCVDeposit', function () {
 
         it('liquidityOwned', async function () {
           expect(await this.pcvDeposit.liquidityOwned()).to.be.equal(toBN(2 * LIQUIDITY_INCREMENT));
-          expect(await this.stakingRewards.balanceOf(this.pcvDeposit.address)).to.be.equal(
-            toBN(2 * LIQUIDITY_INCREMENT)
-          );
         });
 
         it('pair reserves', async function () {
@@ -362,7 +342,6 @@ describe('AngleUniswapPCVDeposit', function () {
 
       it('liquidityOwned', async function () {
         expect(await this.pcvDeposit.liquidityOwned()).to.be.equal(toBN(LIQUIDITY_INCREMENT));
-        expect(await this.stakingRewards.balanceOf(this.pcvDeposit.address)).to.be.equal(toBN(LIQUIDITY_INCREMENT));
       });
 
       it('balance', async function () {

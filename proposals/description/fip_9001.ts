@@ -94,6 +94,27 @@ const fip_9001: ProposalDescription = {
       description: 'Whitelist movement of stkAAVE tokens to the delegator [RAI deposit]'
     },
     {
+      target: 'permissionlessPcvMover',
+      values: '0',
+      method: 'addToWhitelist',
+      arguments: [
+        '{toke}', // token
+        '{ethTokemakPCVDeposit}', // from
+        '{tokeTokemakPCVDepositVoting}' // to
+      ],
+      description: 'Whitelist movement of TOKE tokens to the TOKE deposit/voter'
+    },
+    {
+      target: 'tokeTokemakPCVDepositVoting',
+      values: '0',
+      method: 'setReactorKeysAndAllocations(bytes32[],uint256[])',
+      arguments: [
+        ['0x6665692d64656661756c74000000000000000000000000000000000000000000'], // fei-default
+        ['10000'] // 100%
+      ],
+      description: 'Set TOKE votes as 100% for fei-default strategy'
+    },
+    {
       target: 'core',
       values: '0',
       method: 'grantPCVController(address)',
@@ -135,6 +156,56 @@ const fip_9001: ProposalDescription = {
         ]
       ],
       description: 'Add Delegator PCVDeposits to Collateralization Oracle'
+    },
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatio(address,address,uint256)',
+      arguments: ['{agEurAngleUniswapPCVDeposit}', '{agEurAngleUniswapPCVDepositNoStaking}', '10000'],
+      description: 'Move all agEUR from old to new Angle deposit'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeMinter(address)',
+      arguments: ['{agEurAngleUniswapPCVDeposit}'],
+      description: 'Revoke Minter from old Angle deposit'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantMinter(address)',
+      arguments: ['{agEurAngleUniswapPCVDepositNoStaking}'],
+      description: 'Grant Minter to new Angle deposit'
+    },
+    {
+      target: 'agEurAngleUniswapPCVDepositNoStaking',
+      values: '0',
+      method: 'deposit()',
+      arguments: [],
+      description: 'Deposit agEUR/FEI to Uniswap v2'
+    },
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatioERC20',
+      arguments: [
+        '{agEurAngleUniswapPCVDepositNoStaking}', // deposit
+        '{angleAgEurFeiPool}', // token
+        '{angleDelegatorPCVDeposit}', // to
+        '10000' // basis poins
+      ],
+      description: 'Move all Uni-v2 LP tokens to the new Angle delegator deposit'
+    },
+    {
+      target: 'angleDelegatorPCVDeposit',
+      values: '0',
+      method: 'stakeAllInGauge(address,address)',
+      arguments: [
+        '{angleGaugeUniswapV2FeiAgEur}', // gauge
+        '{angleAgEurFeiPool}' // token
+      ],
+      description: 'Stake all Uni-v2 LP tokens in gauge'
     }
   ],
   description: `

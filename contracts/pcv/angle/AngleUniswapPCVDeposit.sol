@@ -30,19 +30,6 @@ interface IStableMaster {
     function unpause(bytes32 agent, IPoolManager poolManager) external;
 }
 
-// Angle StakingRewards contract
-interface IStakingRewards {
-    function stakingToken() external returns (address);
-
-    function balanceOf(address account) external view returns (uint256);
-
-    function stake(uint256 amount) external;
-
-    function withdraw(uint256 amount) external;
-
-    function getReward() external;
-}
-
 /// @title implementation for Angle PCV Deposit
 /// @author Angle Core Team and Fei Protocol
 contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
@@ -53,9 +40,6 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
 
     /// @notice the Angle PoolManager contract
     IPoolManager public poolManager;
-
-    /// @notice the Angle StakingRewards contract
-    IStakingRewards public stakingRewards;
 
     /// @notice Uniswap PCV Deposit constructor
     /// @param _core Fei Core for reference
@@ -72,25 +56,15 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
         address _backupOracle,
         uint256 _maxBasisPointsFromPegLP,
         IStableMaster _stableMaster,
-        IPoolManager _poolManager,
-        IStakingRewards _stakingRewards
+        IPoolManager _poolManager
     ) UniswapPCVDeposit(_core, _pair, _router, _oracle, _backupOracle, _maxBasisPointsFromPegLP) {
         stableMaster = _stableMaster;
         poolManager = _poolManager;
-        stakingRewards = _stakingRewards;
         require(_poolManager.token() == address(fei()), "AngleUniswapPCVDeposit: invalid poolManager");
         require(_stableMaster.agToken() == token, "AngleUniswapPCVDeposit: invalid stableMaster");
-        require(_stakingRewards.stakingToken() == _pair, "AngleUniswapPCVDeposit: invalid stakingRewards");
 
         // Approve FEI on StableMaster to be able to mint agTokens
         SafeERC20.safeApprove(IERC20(address(fei())), address(_stableMaster), type(uint256).max);
-        // Approve LP tokens on StakingRewards to earn ANGLE rewards
-        SafeERC20.safeApprove(IERC20(_pair), address(_stakingRewards), type(uint256).max);
-    }
-
-    /// @notice claim staking rewards
-    function claimRewards() external {
-        stakingRewards.getReward();
     }
 
     /// @notice mint agToken from FEI
@@ -153,27 +127,6 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
         burnAgToken(IERC20(token).balanceOf(address(this)));
     }
 
-    /// @notice set the new pair contract
-    /// @param _pair the new pair
-    /// @dev also approves the router for the new pair token and underlying token
-    function setPair(address _pair) public override onlyGovernor {
-        super.setPair(_pair);
-        SafeERC20.safeApprove(IERC20(_pair), address(stakingRewards), type(uint256).max);
-    }
-
-    /// @notice set a new stakingRewards address
-    /// @param _stakingRewards the new stakingRewards
-    function setStakingRewards(IStakingRewards _stakingRewards)
-        public
-        onlyGovernor
-    {
-        require(
-            address(_stakingRewards) != address(0),
-            "AngleUniswapPCVDeposit: zero address"
-        );
-        stakingRewards = _stakingRewards;
-    }
-
     /// @notice set a new poolManager address
     /// @param _poolManager the new poolManager
     function setPoolManager(IPoolManager _poolManager)
@@ -185,22 +138,5 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
             "AngleUniswapPCVDeposit: zero address"
         );
         poolManager = _poolManager;
-    }
-
-    /// @notice amount of pair liquidity owned by this contract
-    /// @return amount of LP tokens
-    function liquidityOwned() public view override returns (uint256) {
-        return pair.balanceOf(address(this)) + stakingRewards.balanceOf(address(this));
-    }
-
-    function _removeLiquidity(uint256 liquidity) internal override returns (uint256) {
-        stakingRewards.withdraw(liquidity);
-        return super._removeLiquidity(liquidity);
-    }
-
-    function _addLiquidity(uint256 tokenAmount, uint256 feiAmount) internal override {
-        super._addLiquidity(tokenAmount, feiAmount);
-        uint256 lpBalanceAfter = pair.balanceOf(address(this));
-        stakingRewards.stake(lpBalanceAfter);
     }
 }

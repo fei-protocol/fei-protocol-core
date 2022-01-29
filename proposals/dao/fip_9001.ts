@@ -82,6 +82,31 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await convexDelegatorPCVDeposit.deployTransaction.wait();
   logging && console.log('convexDelegatorPCVDeposit: ', convexDelegatorPCVDeposit.address);
 
+  // Create a new agEUR-FEI Uniswap PCVDeposit that does not stake on the old staking rewards contract
+  const angleUniswapPCVDepositFactory = await ethers.getContractFactory('AngleUniswapPCVDeposit');
+  const agEurAngleUniswapPCVDepositNoStaking = await angleUniswapPCVDepositFactory.deploy(
+    addresses.core,
+    addresses.angleAgEurFeiPool, // Uniswap-v2 agEUR/FEI pool
+    addresses.uniswapRouter, // UNiswap-v2 router
+    addresses.chainlinkEurUsdOracleWrapper,
+    ethers.constants.AddressZero,
+    '100', // max. 1% slippage
+    addresses.angleStableMaster,
+    addresses.anglePoolManager
+  );
+  await agEurAngleUniswapPCVDepositNoStaking.deployTransaction.wait();
+  logging && console.log('Angle agEUR/FEI Uniswap PCVDeposit:', agEurAngleUniswapPCVDepositNoStaking.address);
+
+  // Create a TOKE Tokemak PCVDeposit that can also vote on reactor weights
+  const tokeTokemakFactory = await ethers.getContractFactory('TokeTokemakPCVDeposit');
+  const tokeTokemakPCVDepositVoting = await tokeTokemakFactory.deploy(
+    addresses.core,
+    '0xa760e26aA76747020171fCF8BdA108dFdE8Eb930', // TOKE pool
+    '0x79dD22579112d8a5F7347c5ED7E609e60da713C5' // TOKE rewards
+  );
+  await tokeTokemakPCVDepositVoting.deployTransaction.wait();
+  logging && console.log('tokeTokemakPCVDepositVoting: ', tokeTokemakPCVDepositVoting.address);
+
   return {
     chainlinkCompUsdOracleWrapper,
     chainlinkAaveUsdOracleWrapper,
@@ -90,7 +115,9 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     angleDelegatorPCVDeposit,
     compDelegatorPCVDeposit,
     convexDelegatorPCVDeposit,
-    permissionlessPcvMover
+    permissionlessPcvMover,
+    agEurAngleUniswapPCVDepositNoStaking,
+    tokeTokemakPCVDepositVoting
   };
 };
 
@@ -142,6 +169,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   await contracts.permissionlessPcvMover.move(contracts.comp.address, contracts.compoundDaiPCVDeposit.address);
   await contracts.permissionlessPcvMover.move(contracts.stkaave.address, contracts.aaveEthPCVDeposit.address);
   await contracts.permissionlessPcvMover.move(contracts.stkaave.address, contracts.aaveRaiPCVDeposit.address);
+  await contracts.permissionlessPcvMover.move(contracts.toke.address, contracts.ethTokemakPCVDeposit.address);
   console.log(
     'Aave delegator AAVE balance',
     (await contracts.aave.balanceOf(contracts.aaveDelegatorPCVDeposit.address)) / 1e18
@@ -165,6 +193,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log(
     'Convex delegator CRV balance',
     (await contracts.crv.balanceOf(contracts.convexDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'TOKE deposit TOKE balance',
+    (await contracts.toke.balanceOf(contracts.tokeTokemakPCVDepositVoting.address)) / 1e18
   );
 
   // Aave game
@@ -207,6 +239,27 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // Comp delegation check
   console.log('========== Compound game ==========');
   console.log('comp.getCurrentVotes(DELEGATE_COMP)', (await contracts.comp.getCurrentVotes(DELEGATE_COMP)) / 1e18);
+
+  // TOKE deposit and vote
+  console.log('========== Tokemak game ==========');
+  console.log('balance()', (await contracts.tokeTokemakPCVDepositVoting.balance()) / 1e18);
+  console.log('deposit()...');
+  await contracts.tokeTokemakPCVDepositVoting.deposit();
+  console.log('balance()', (await contracts.tokeTokemakPCVDepositVoting.balance()) / 1e18);
+  console.log(
+    'tokeTokemakPCVDepositVoting TOKE balance',
+    (await contracts.toke.balanceOf(contracts.tokeTokemakPCVDepositVoting.address)) / 1e18
+  );
+  console.log(
+    'tokeTokemakPCVDepositVoting tTOKE balance',
+    (await contracts.tToke.balanceOf(contracts.tokeTokemakPCVDepositVoting.address)) / 1e18
+  );
+  console.log('vote...');
+  await contracts.tokeTokemakPCVDepositVoting.vote(
+    '0x00000000000000000000000000000000000000000000000000000000000000af', // bytes32 voteSessionKey
+    '1' // uint256 nonce
+  );
+  console.log('voted :)');
 
   // Angle game
   console.log('========== Angle game ==========');
@@ -271,7 +324,12 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     'angleDelegatorPCVDeposit veANGLE balance',
     (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
   );
-  console.log('gauge stuff - todo');
+  console.log('Vote 100% for Uni-v2 FEI/agEUR pool');
+  await contracts.angleDelegatorPCVDeposit.voteForGaugeWeight(
+    contracts.angleGaugeController.address, // gauge controller
+    contracts.angleGaugeUniswapV2FeiAgEur.address, // gauge address
+    '10000' // 100%
+  );
 
   // Convex game
   console.log('========== Convex game ==========');
