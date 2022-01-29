@@ -18,9 +18,6 @@ const plugin = '0x2a810409872afc346f9b5b26571fd6ec42ea4849';
 
 /*
 FIP-60d: Curve and Convex Farming for FeiRari
-
-DEPLOY ACTIONS:
-1. Deploy TribalChiefSyncExtension
 */
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
