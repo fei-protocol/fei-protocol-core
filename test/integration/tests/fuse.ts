@@ -101,12 +101,18 @@ describe('e2e-fuse', function () {
 
       doLogging && console.log('Claiming rewards');
 
+      const crvRewardsBefore = await contracts.crv.balanceOf(contractAddresses.d3poolConvexPCVDeposit);
+      const cvxRewardsBefore = await contracts.cvx.balanceOf(contractAddresses.d3poolConvexPCVDeposit);
+
       // Note this is not the right interface but it has the desired function
       const rewards = await ethers.getContractAt('ConvexPCVDeposit', plugin);
       await rewards.claimRewards();
 
-      expect(await contracts.crv.balanceOf(contractAddresses.d3poolConvexPCVDeposit)).to.be.at.least(1);
-      expect(await contracts.cvx.balanceOf(contractAddresses.d3poolConvexPCVDeposit)).to.be.at.least(1);
+      const crvRewardsAfter = await contracts.crv.balanceOf(contractAddresses.d3poolConvexPCVDeposit);
+      const cvxRewardsAfter = await contracts.cvx.balanceOf(contractAddresses.d3poolConvexPCVDeposit);
+
+      expect(crvRewardsAfter.sub(crvRewardsBefore)).to.be.at.least(1);
+      expect(cvxRewardsAfter.sub(cvxRewardsBefore)).to.be.at.least(1);
     });
   });
 });
