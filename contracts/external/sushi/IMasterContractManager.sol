@@ -12,4 +12,17 @@ interface IMasterContractManager {
         bytes32 r,
         bytes32 s
     ) external;
+
+    function withdraw(
+        address token,
+        address from,
+        address to,
+        uint amount,
+        uint shares
+    ) external;
+
+    function balanceOf(
+        address token,
+        address owner
+    ) external view returns(uint256);
 }
