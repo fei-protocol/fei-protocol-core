@@ -267,6 +267,24 @@ describe('GlobalglobalRateLimitedMinter', function () {
         );
       });
 
+      it('governor fails when new limit is over buffer cap', async function () {
+        await expectRevert(
+          globalRateLimitedMinter
+            .connect(impersonatedSigners[governorAddress])
+            .updateMinter(authorizedMinter.address, addressRateLimitPerSecond.div(2), bufferCap.add(1)),
+          'GlobalRateLimitedMinter: buffer cap exceeds global max'
+        );
+      });
+
+      it('governor fails when new limit is over rate limit', async function () {
+        await expectRevert(
+          globalRateLimitedMinter
+            .connect(impersonatedSigners[governorAddress])
+            .updateMinter(authorizedMinter.address, globalRateLimitPerSecond.add(1), minterBufferCap.div(2)),
+          'GlobalRateLimitedMinter: rate limit exceeds global max'
+        );
+      });
+
       it('non-governor reverts', async function () {
         await expectRevert(
           globalRateLimitedMinter
