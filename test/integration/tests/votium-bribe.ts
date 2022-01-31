@@ -56,6 +56,7 @@ describe('votium-bribe', function () {
     before(async function () {
       // start a new votium bribe round
       const signer = await getImpersonatedSigner(VOTIUM_ADMIN);
+      await forceEth(VOTIUM_ADMIN);
       await contracts.votiumBribe.connect(signer).initiateProposal(
         CVX_PROPOSAL, // snapshot proposal id
         Math.floor(((await time.latest()) * 1000 + 24 * 36e5) / 1000), // _deadline in 24h
