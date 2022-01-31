@@ -6,11 +6,11 @@ import "./../utils/GlobalRateLimitedMinter.sol";
 contract MockMinter {
     GlobalRateLimitedMinter globalRateLimitedMinter;
 
-	constructor(GlobalRateLimitedMinter _globalRateLimitedMinter) {
+    constructor(GlobalRateLimitedMinter _globalRateLimitedMinter) {
         globalRateLimitedMinter = _globalRateLimitedMinter;
     }
 
-	function mintFei(address to, uint256 amount) external {
-		globalRateLimitedMinter.mintFei(to, amount);
-	}
+    function mintFei(address to, uint256 amount) external {
+        globalRateLimitedMinter.mintFei(to, amount);
+    }
 }
