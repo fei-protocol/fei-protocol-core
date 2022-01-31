@@ -21,18 +21,7 @@ describe('e2e-collateralization', function () {
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
 
-  const allNames = [
-    '500k Idle FEI Senior Tranche',
-    '2M Visor FEI-USDC 0.05% fee pool',
-    '500k Barnbridge Senior',
-    '2.5M Idle FEI Best Yield',
-    '100k INDEX Token',
-    '50m Ondo LaaS',
-    'Kashi 1m DPI-FEI',
-    'Kashi 2.5m SUSHI-FEI',
-    'Kashi 2.5m TRIBE-FEI',
-    'Kashi 2.5m WETH-FEI'
-  ];
+  const allNames = ['100k INDEX Token', '50m Ondo LaaS'];
   const eth = ethers.constants.WeiPerEther;
 
   before(async () => {
