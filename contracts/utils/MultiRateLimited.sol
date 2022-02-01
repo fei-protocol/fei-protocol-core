@@ -6,7 +6,9 @@ import "./RateLimited.sol";
 import "./IMultiRateLimited.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
-/// @title abstract contract for putting a rate limit on how fast a contract can perform an action e.g. Minting
+/// @title contract for putting a rate limit on how fast an address can perform an action e.g. Minting
+/// there are two buffers, one buffer which is each individual addresses's current buffer,
+/// and then there is a global buffer which is the buffer that each individual address must respect as well
 /// @author Fei Protocol
 contract MultiRateLimited is RateLimited, IMultiRateLimited {
 
@@ -24,21 +26,21 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
 
     constructor(
         address coreAddress,
-        uint256 _globalMaxRateLimitPerSecond,
-        uint256 _globalRateLimitPerSecond,
+        uint256 _maxRateLimitPerSecond,
+        uint256 _rateLimitPerSecond,
         uint256 _bufferCap,
         uint256 maxBufferCap,
         bool _doPartialAction
     )
         CoreRef(coreAddress)
-        RateLimited(_globalMaxRateLimitPerSecond, _globalMaxRateLimitPerSecond, _bufferCap, _doPartialAction)
+        RateLimited(_maxRateLimitPerSecond, _rateLimitPerSecond, _bufferCap, _doPartialAction)
     {}
 
     /// @notice add an authorized minter contract
     /// @param _minter the new address to add as a minter
     /// @param _rateLimitPerSecond the rate limit per second for this minter
     /// @param _bufferCap  the buffer cap for this minter
-    function addAddress(address _minter, uint256 _rateLimitPerSecond, uint256 _bufferCap) public virtual override onlyGovernorOrAdmin {
+    function addAddress(address _minter, uint256 _rateLimitPerSecond, uint256 _bufferCap) external virtual override onlyGovernorOrAdmin {
         require(_bufferCap <= bufferCap, "MultiRateLimited: new buffercap too high");
 
         individualRateLimitPerSecond[_minter] = _rateLimitPerSecond;
@@ -53,7 +55,7 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @param _minter the address whose buffer and rate limit per second will be set
     /// @param _rateLimitPerSecond the new rate limit per second for this minter
     /// @param _bufferCap  the new buffer cap for this minter
-    function updateAddress(address _minter, uint256 _rateLimitPerSecond, uint256 _bufferCap) public virtual override onlyGovernorOrAdmin {
+    function updateAddress(address _minter, uint256 _rateLimitPerSecond, uint256 _bufferCap) external virtual override onlyGovernorOrAdmin {
         require(_bufferCap <= bufferCap, "MultiRateLimited: buffercap too high");
 
         individualRateLimitPerSecond[_minter] = _rateLimitPerSecond;
@@ -66,7 +68,7 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
 
     /// @notice remove an authorized minter contract
     /// @param _minter the address to remove from the whitelist of addresses
-    function removeAddress(address _minter) public virtual override isGovernorOrGuardianOrAdmin {
+    function removeAddress(address _minter) external virtual override isGovernorOrGuardianOrAdmin {
         uint256 oldRateLimitPerSecond = individualRateLimitPerSecond[_minter];
 
         delete individualRateLimitPerSecond[_minter];
@@ -80,7 +82,7 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @notice set the rate limit per second
     /// @param minter the address whose buffer will be set
     /// @param newRateLimitPerSecond the new rate limit per second for this minter
-    function setIndividualRateLimitPerSecond(address minter, uint256 newRateLimitPerSecond) public virtual override onlyGovernorOrAdmin {
+    function setIndividualRateLimitPerSecond(address minter, uint256 newRateLimitPerSecond) external virtual override onlyGovernorOrAdmin {
         require(newRateLimitPerSecond <= rateLimitPerSecond, "MultiRateLimited: rateLimitPerSecond too high");
 
         _updateIndividualBufferStored(minter);
