@@ -2,11 +2,12 @@
 pragma solidity ^0.8.4;
 
 import "./AddressRateLimited.sol";
+import "./IGlobalRateLimitedMinter.sol";
 
 /// @notice global contract to handle rate limited minting of FEI on a global level
 /// allows whitelisted minters to call in and specify the address to mint FEI to within
 /// that contract's limits
-contract GlobalRateLimitedMinter is AddressRateLimited {
+contract GlobalRateLimitedMinter is AddressRateLimited, IGlobalRateLimitedMinter {
 
     /// @notice FEI protocol system maximum amount of FEI replenishment per second
     uint256 public maximumGlobalFeiPerSecond;
@@ -20,14 +21,6 @@ contract GlobalRateLimitedMinter is AddressRateLimited {
 
     /// @notice Current FEI protocol system buffer cap maximum
     uint256 public currentMaximumGlobalBufferCap;
-
-    // ----------- Events -----------
-
-    /// @notice emitted when fei per second is updated
-    event MaxFeiPerSecondUpdate(uint256 oldFeiPerSecond, uint256 newFeiPerSecond);
-
-    /// @notice emitted when the fei buffer cap is updated
-    event MaxBufferCapUpdate(uint256 oldBufferCap, uint256 newBufferCap);
 
     /// @param coreAddress address of the core contract
     /// @param _maximumGlobalFeiPerSecond maximum amount of fei that can replenish per second
@@ -61,7 +54,7 @@ contract GlobalRateLimitedMinter is AddressRateLimited {
     /// @notice set the new rate limit for the specified minter
     /// @param _minter the address whose buffer will be set
     /// @param _rateLimitPerSecond the new rate limit per second for this minter
-    function setRateLimitPerSecond(address _minter, uint256 _rateLimitPerSecond) public override virtual onlyGovernorOrAdmin {
+    function setRateLimitPerSecond(address _minter, uint256 _rateLimitPerSecond) public override(AddressRateLimited, IAddressRateLimited) virtual onlyGovernorOrAdmin {
         uint256 currentRateLimitPerSecond = rateLimitPerSecond[_minter];
 
         require(
@@ -77,7 +70,7 @@ contract GlobalRateLimitedMinter is AddressRateLimited {
     /// @notice set the buffer cap for the specified minter
     /// @param _minter the address whose buffer will be set
     /// @param _bufferCap the new buffer cap for this minter
-    function setBufferCap(address _minter, uint256 _bufferCap) external override virtual onlyGovernorOrAdmin {
+    function setBufferCap(address _minter, uint256 _bufferCap) external override(AddressRateLimited, IAddressRateLimited) virtual onlyGovernorOrAdmin {
         uint256 currentBufferCap = bufferCap[_minter];
 
         require(
@@ -94,7 +87,7 @@ contract GlobalRateLimitedMinter is AddressRateLimited {
     /// @param _minter the new address to add as a minter
     /// @param _rateLimitPerSecond the rate limit per second for this minter
     /// @param _bufferCap  the buffer cap for this minter
-    function addMinter(address _minter, uint256 _rateLimitPerSecond, uint256 _bufferCap) public override virtual onlyGovernorOrAdmin {
+    function addMinter(address _minter, uint256 _rateLimitPerSecond, uint256 _bufferCap) public override(AddressRateLimited, IAddressRateLimited) virtual onlyGovernorOrAdmin {
         require(
             currentMaximumGlobalFeiPerSecond + _rateLimitPerSecond <= maximumGlobalBufferCap,
             "GlobalRateLimitedMinter: max fei per second exceeded"
@@ -114,7 +107,7 @@ contract GlobalRateLimitedMinter is AddressRateLimited {
     /// @param _minter the address whose buffer and rate limit per second will be set
     /// @param _rateLimitPerSecond the new rate limit per second for this minter
     /// @param _bufferCap  the new buffer cap for this minter
-    function updateMinter(address _minter, uint256 _rateLimitPerSecond, uint256 _bufferCap) public override onlyGovernorOrAdmin {
+    function updateMinter(address _minter, uint256 _rateLimitPerSecond, uint256 _bufferCap) public override(AddressRateLimited, IAddressRateLimited) onlyGovernorOrAdmin {
         uint256 currentRateLimitPerSecond = rateLimitPerSecond[_minter];
         uint256 currentBufferCap = bufferCap[_minter];
 
@@ -135,7 +128,7 @@ contract GlobalRateLimitedMinter is AddressRateLimited {
 
     /// @notice remove specified minter from the system
     /// @param _minter the address to remove from the whitelist of minters
-    function removeMinter(address _minter) public override isGovernorOrGuardianOrAdmin {
+    function removeMinter(address _minter) public override(AddressRateLimited, IAddressRateLimited) isGovernorOrGuardianOrAdmin {
         uint256 currentRateLimitPerSecond = rateLimitPerSecond[_minter];
         uint256 currentBufferCap = bufferCap[_minter];
 
@@ -147,7 +140,7 @@ contract GlobalRateLimitedMinter is AddressRateLimited {
 
     /// @notice update the global fei per second replenishment
     /// @param _maximumGlobalFeiPerSecond the new global maximum fei per second replenishment
-    function updateGlobalFeiPerSecond(uint256 _maximumGlobalFeiPerSecond) external onlyGovernorOrAdmin {
+    function updateGlobalFeiPerSecond(uint256 _maximumGlobalFeiPerSecond) external override onlyGovernorOrAdmin {
         uint256 oldMaximumGlobalFeiPerSecond = maximumGlobalFeiPerSecond;
         maximumGlobalFeiPerSecond = _maximumGlobalFeiPerSecond;
 
@@ -156,7 +149,7 @@ contract GlobalRateLimitedMinter is AddressRateLimited {
 
     /// @notice update the global fei buffer cap
     /// @param _maximumGlobalBufferCap the new global maximum buffer cap
-    function updateGlobalFeiBufferCap(uint256 _maximumGlobalBufferCap) external onlyGovernorOrAdmin {
+    function updateGlobalFeiBufferCap(uint256 _maximumGlobalBufferCap) external override onlyGovernorOrAdmin {
         uint256 oldMaximumGlobalBufferCap = maximumGlobalBufferCap;
         maximumGlobalBufferCap = _maximumGlobalBufferCap;
 

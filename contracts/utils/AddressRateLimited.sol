@@ -2,11 +2,12 @@
 pragma solidity ^0.8.4;
 
 import "../refs/CoreRef.sol";
+import "./IAddressRateLimited.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
 /// @title abstract contract for putting a rate limit on how fast a contract can perform an action e.g. Minting
 /// @author Fei Protocol
-abstract contract AddressRateLimited is CoreRef {
+abstract contract AddressRateLimited is CoreRef, IAddressRateLimited {
 
     /// @notice maximum rate limit per second governance can set for this contract
     uint256 public immutable MAX_RATE_LIMIT_PER_SECOND_PER_ADDRESS;
@@ -29,17 +30,6 @@ abstract contract AddressRateLimited is CoreRef {
     /// @notice the buffer at the timestamp of lastBufferUsedTime
     mapping (address => uint256) private _bufferStored;
 
-    // ----------- Events -----------
-    
-    /// @notice emitted when a buffer is eaten into
-    event BufferUsed(address minter, uint256 amountUsed, uint256 bufferRemaining);
-    
-    /// @notice emitted when a buffer cap is updated
-    event BufferCapUpdate(address minter, uint256 oldBufferCap, uint256 newBufferCap);
-    
-    /// @notice emitted when rate limit is updated
-    event RateLimitPerSecondUpdate(address minter, uint256 oldRateLimitPerSecond, uint256 newRateLimitPerSecond);
-
     constructor(uint256 _maxRateLimitPerSecond, uint256 maxBufferCap, bool _doPartialAction) {
         MAX_BUFFER_CAP = maxBufferCap;
         MAX_RATE_LIMIT_PER_SECOND_PER_ADDRESS = _maxRateLimitPerSecond;
@@ -56,7 +46,7 @@ abstract contract AddressRateLimited is CoreRef {
     /// @param _minter the new address to add as a minter
     /// @param _rateLimitPerSecond the rate limit per second for this minter
     /// @param _bufferCap  the buffer cap for this minter
-    function addMinter(address _minter, uint256 _rateLimitPerSecond, uint256 _bufferCap) public virtual onlyGovernorOrAdmin {
+    function addMinter(address _minter, uint256 _rateLimitPerSecond, uint256 _bufferCap) public virtual override onlyGovernorOrAdmin {
         require(_rateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND_PER_ADDRESS, "AddressRateLimited: new rateLimitPerSecond too high");
         require(_bufferCap <= MAX_BUFFER_CAP, "AddressRateLimited: new buffercap too high");
 
@@ -72,7 +62,7 @@ abstract contract AddressRateLimited is CoreRef {
     /// @param _minter the address whose buffer and rate limit per second will be set
     /// @param _rateLimitPerSecond the new rate limit per second for this minter
     /// @param _bufferCap  the new buffer cap for this minter
-    function updateMinter(address _minter, uint256 _rateLimitPerSecond, uint256 _bufferCap) public virtual onlyGovernorOrAdmin {
+    function updateMinter(address _minter, uint256 _rateLimitPerSecond, uint256 _bufferCap) public virtual override onlyGovernorOrAdmin {
         require(_rateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND_PER_ADDRESS, "AddressRateLimited: rateLimitPerSecond too high");
         require(_bufferCap <= MAX_BUFFER_CAP, "AddressRateLimited: buffercap too high");
 
@@ -86,7 +76,7 @@ abstract contract AddressRateLimited is CoreRef {
 
     /// @notice remove an authorized minter contract
     /// @param _minter the address to remove from the whitelist of minters
-    function removeMinter(address _minter) public virtual isGovernorOrGuardianOrAdmin {
+    function removeMinter(address _minter) public virtual override isGovernorOrGuardianOrAdmin {
         uint256 oldRateLimitPerSecond = rateLimitPerSecond[_minter];
 
         delete rateLimitPerSecond[_minter];
@@ -101,7 +91,7 @@ abstract contract AddressRateLimited is CoreRef {
     /// @notice set the rate limit per second
     /// @param minter the address whose buffer will be set
     /// @param newRateLimitPerSecond the new rate limit per second for this minter
-    function setRateLimitPerSecond(address minter, uint256 newRateLimitPerSecond) public virtual onlyGovernorOrAdmin {
+    function setRateLimitPerSecond(address minter, uint256 newRateLimitPerSecond) public virtual override onlyGovernorOrAdmin {
         require(newRateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND_PER_ADDRESS, "AddressRateLimited: rateLimitPerSecond too high");
         _updateBufferStored(minter);
         
@@ -111,14 +101,14 @@ abstract contract AddressRateLimited is CoreRef {
     /// @notice set the buffer cap
     /// @param minter the address whose buffer will be set
     /// @param newBufferCap the new buffer cap for this minter
-    function setBufferCap(address minter, uint256 newBufferCap) external virtual onlyGovernorOrAdmin {
+    function setBufferCap(address minter, uint256 newBufferCap) external virtual override onlyGovernorOrAdmin {
         _setBufferCap(minter, newBufferCap);
     }
 
     /// @notice the amount of action used before hitting limit
     /// @dev replenishes at rateLimitPerSecond per second up to bufferCap
     /// @param minter the address whose buffer will be returned
-    function buffer(address minter) public view returns(uint256) { 
+    function buffer(address minter) public view override returns(uint256) { 
         uint256 elapsed = block.timestamp - lastBufferUsedTime[minter];
         return Math.min(_bufferStored[minter] + (rateLimitPerSecond[minter] * elapsed), bufferCap[minter]);
     }
