@@ -19,6 +19,7 @@ import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '../setup/utils';
 import { contract } from '@openzeppelin/test-environment';
+import { time, overwriteChainlinkAggregator } from '@test/helpers';
 
 const oneEth = ethers.constants.WeiPerEther;
 
@@ -160,7 +161,8 @@ describe('eth PSM', function () {
 
     describe('mint flow', async () => {
       it('after mint, eth flows to aave eth pcv deposit', async () => {
-        const mintAmount: BigNumber = oneEth.mul(7500);
+        time.increase(86400);
+        const mintAmount: BigNumber = oneEth.mul(500);
         const minAmountOut = await ethPSM.getMintAmountOut(mintAmount);
         const startingFeiBalance = await fei.balanceOf(deployAddress.address);
         const startingAavePCVDepositaWethBalance = await aWeth.balanceOf(aaveEthPCVDeposit.address);
@@ -176,10 +178,7 @@ describe('eth PSM', function () {
         /// this should be 500 eth
         const endingAavePCVDepositaWethBalance = await aWeth.balanceOf(aaveEthPCVDeposit.address);
 
-        await ethPSM.allocateSurplus();
-
         await expectApprox(endingAavePCVDepositaWethBalance.sub(startingAavePCVDepositaWethBalance), mintAmount);
-        expect(await weth.balanceOf(ethPSM.address)).to.be.equal(oneEth.mul(5000));
       });
     });
 

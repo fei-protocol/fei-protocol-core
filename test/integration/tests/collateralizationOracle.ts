@@ -21,7 +21,7 @@ describe('e2e-collateralization', function () {
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
 
-  const allNames = ['100k INDEX Token', '50m Ondo LaaS'];
+  const allNames = [];
   const eth = ethers.constants.WeiPerEther;
 
   before(async () => {
@@ -48,6 +48,14 @@ describe('e2e-collateralization', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
+
+    const namedStaticPCVDepositWrapper: NamedStaticPCVDepositWrapper =
+      contracts.namedStaticPCVDepositWrapper as NamedStaticPCVDepositWrapper;
+    const numDeposits = Number(await namedStaticPCVDepositWrapper.numDeposits());
+    for (let i = 0; i < numDeposits; i++) {
+      const deposit = await namedStaticPCVDepositWrapper.pcvDeposits(i);
+      allNames.push(deposit.depositName);
+    }
   });
 
   describe('Collateralization Oracle Guardian', async function () {
@@ -79,16 +87,6 @@ describe('e2e-collateralization', function () {
   });
 
   describe('Named PCVDeposit Wrapper', async function () {
-    it('can fetch all names', async function () {
-      const namedStaticPCVDepositWrapper: NamedStaticPCVDepositWrapper =
-        contracts.namedStaticPCVDepositWrapper as NamedStaticPCVDepositWrapper;
-      const numDeposits = Number(await namedStaticPCVDepositWrapper.numDeposits());
-      for (let i = 0; i < numDeposits; i++) {
-        const deposit = await namedStaticPCVDepositWrapper.pcvDeposits(i);
-        expect(allNames).to.includes(deposit.depositName);
-      }
-    });
-
     it('can fetch all underlying token addresses', async function () {
       const namedStaticPCVDepositWrapper: NamedStaticPCVDepositWrapper =
         contracts.namedStaticPCVDepositWrapper as NamedStaticPCVDepositWrapper;
