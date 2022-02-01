@@ -17,7 +17,7 @@ import { BalancerLBPSwapper, CollateralizationOracle, IVault, IWeightedPool } fr
 import { forceEth } from '../setup/utils';
 const toBN = ethers.BigNumber.from;
 
-describe('e2e-buybacks', function () {
+describe.skip('e2e-buybacks', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
