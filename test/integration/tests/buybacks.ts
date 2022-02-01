@@ -51,11 +51,9 @@ describe('e2e-buybacks', function () {
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
 
-    const addresses = await getAddresses();
-
     // unpause the pcv equity minter if it is paused
     if (await contracts.pcvEquityMinter.paused()) {
-      const govSigner = await getImpersonatedSigner(addresses.governorAddress);
+      const govSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
       await contracts.pcvEquityMinter.connect(govSigner).unpause();
     }
   });
