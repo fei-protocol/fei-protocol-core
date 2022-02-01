@@ -178,8 +178,6 @@ describe('eth PSM', function () {
         /// this should be 500 eth
         const endingAavePCVDepositaWethBalance = await aWeth.balanceOf(aaveEthPCVDeposit.address);
 
-        await ethPSM.allocateSurplus();
-
         await expectApprox(endingAavePCVDepositaWethBalance.sub(startingAavePCVDepositaWethBalance), mintAmount);
         expect(await weth.balanceOf(ethPSM.address)).to.be.equal(oneEth.mul(500));
       });
