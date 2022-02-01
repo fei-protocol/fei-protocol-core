@@ -216,7 +216,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log('cooldown started. fast-forwarding 10 days');
   await time.increase(10 * 24 * 3600);
   console.log('unstaking stkAAVE to AAVE');
-  await contracts.aaveDelegatorPCVDeposit.unstakeAave();
+  await contracts.aaveDelegatorPCVDeposit.redeem();
   console.log(
     'Aave delegator AAVE balance',
     (await contracts.aave.balanceOf(contracts.aaveDelegatorPCVDeposit.address)) / 1e18
@@ -226,7 +226,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     (await contracts.stkaave.balanceOf(contracts.aaveDelegatorPCVDeposit.address)) / 1e18
   );
   console.log('stake AAVE to stkAAVE');
-  await contracts.aaveDelegatorPCVDeposit.stakeAave();
+  await contracts.aaveDelegatorPCVDeposit.stake();
   console.log(
     'Aave delegator AAVE balance',
     (await contracts.aave.balanceOf(contracts.aaveDelegatorPCVDeposit.address)) / 1e18
@@ -274,8 +274,26 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     'angleDelegatorPCVDeposit veANGLE balance',
     (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
   );
+  console.log('Vote 100% for Uni-v2 FEI/agEUR pool');
+  await contracts.angleDelegatorPCVDeposit.voteForGaugeWeight(
+    contracts.angleGaugeController.address, // gauge controller
+    contracts.angleGaugeUniswapV2FeiAgEur.address, // gauge address
+    '10000' // 100%
+  );
   console.log('ff 1 year');
   await time.increase(365 * 24 * 3600);
+  console.log(
+    'angleDelegatorPCVDeposit ANGLE balance',
+    (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'angleDelegatorPCVDeposit veANGLE balance',
+    (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
+  );
+  console.log('claim gauge rewards');
+  await contracts.angleDelegatorPCVDeposit.claimGaugeRewards(
+    contracts.angleGaugeUniswapV2FeiAgEur.address // gauge address
+  );
   console.log(
     'angleDelegatorPCVDeposit ANGLE balance',
     (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
@@ -323,12 +341,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log(
     'angleDelegatorPCVDeposit veANGLE balance',
     (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
-  );
-  console.log('Vote 100% for Uni-v2 FEI/agEUR pool');
-  await contracts.angleDelegatorPCVDeposit.voteForGaugeWeight(
-    contracts.angleGaugeController.address, // gauge controller
-    contracts.angleGaugeUniswapV2FeiAgEur.address, // gauge address
-    '10000' // 100%
   );
 
   // Convex game

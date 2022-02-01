@@ -49,7 +49,7 @@ contract DelegatorPCVDeposit is PCVDeposit {
     function deposit() external override {}
 
     /// @notice returns total balance of PCV in the Deposit
-    function balance() public view override returns (uint256) {
+    function balance() public view override virtual returns (uint256) {
         return token.balanceOf(address(this));
     }
 

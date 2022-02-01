@@ -138,7 +138,7 @@ const fip_9001: ProposalDescription = {
       values: '0',
       method: 'setOracles(address[],address[])',
       arguments: [
-        ['{comp}', '{aave}', '{cvx}'],
+        ['{comp}', '{stkaave}', '{cvx}'],
         ['{chainlinkCompUsdOracleWrapper}', '{chainlinkAaveUsdOracleWrapper}', '{chainlinkCvxUsdOracleWrapper}']
       ],
       description: 'Add governance price feed oracles to Collateralization Oracle'

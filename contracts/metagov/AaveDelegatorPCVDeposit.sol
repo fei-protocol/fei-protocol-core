@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "./SnapshotDelegatorPCVDeposit.sol";
+import "./DelegatorPCVDeposit.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../external/aave/IAaveIncentivesController.sol";
 
 interface IStkAave is IERC20 {
+    function delegate(address delegatee) external;
     function stake(address onBehalfOf, uint256 amount) external;
     function redeem(address to, uint256 amount) external;
     function cooldown() external;
@@ -14,16 +15,12 @@ interface IStkAave is IERC20 {
 }
 
 /// @title Aave Delegator PCV Deposit
-/// This contract delegates the voting power it holds in the Aave governance.
-/// This contract is designed to be whitelisted as the rewards claimer for the
-/// PCVDeposits that deposit on Aave protocol. This contract will pull rewards
-/// (mostly stkAAVE) directly on this contract, claiming on behalf of other
-/// deposits. Should this contract receive AAVE, they can be staked to stkAAVE
+/// Should this contract receive AAVE, they can be staked to stkAAVE
 /// permissionlessly. If this contract is paused, stkAAVE can also be unwrapped
 /// to AAVE after the cooldown period of 10 days. After a cooldown is initiated,
 /// and the 2-day redeem period opens, anyone can unwrap the stkAAVE to AAVE.
 /// @author Fei Protocol
-contract AaveDelegatorPCVDeposit is SnapshotDelegatorPCVDeposit {
+contract AaveDelegatorPCVDeposit is DelegatorPCVDeposit {
 
     /// @notice the Aave Incentives Controller.
     IAaveIncentivesController public constant aaveIncentivesController = IAaveIncentivesController(0xd784927Ff2f95ba542BfC824c8a8a98F3495f6b5);
@@ -39,10 +36,9 @@ contract AaveDelegatorPCVDeposit is SnapshotDelegatorPCVDeposit {
     constructor(
         address _core,
         address _initialDelegate
-    ) SnapshotDelegatorPCVDeposit(
+    ) DelegatorPCVDeposit(
         _core,
-        aave, // report balance in AAVE
-        keccak256("aave.eth"),
+        address(stkaave), // report balance and delegate stkAAVE
         _initialDelegate
     ) {}
 
@@ -53,7 +49,7 @@ contract AaveDelegatorPCVDeposit is SnapshotDelegatorPCVDeposit {
     }
 
     /// @notice returns total balance of PCV in the Deposit
-    function balance() public view virtual override returns (uint256) {
+    function balance() public view override returns (uint256) {
         // if the contract is paused, this contract may hold non-staked AAVE
         uint256 aaveBalance = aave.balanceOf(address(this));
         // under normal conditions, all AAVE are staked (stkAAVE)
@@ -63,21 +59,21 @@ contract AaveDelegatorPCVDeposit is SnapshotDelegatorPCVDeposit {
     }
 
     /// @notice If this contract holds AAVE, anyone can stake to stkAAVE.
-    function stakeAave() external whenNotPaused {
+    function stake() external whenNotPaused {
         uint256 amount = aave.balanceOf(address(this));
         aave.approve(address(stkaave), amount);
         stkaave.stake(address(this), amount);
     }
 
-    /// @notice A PCVController can start the cooldown period to unwrap stkAAVE
+    /// @notice An admin can start the cooldown period to unwrap stkAAVE
     /// into AAVE after 10 days.
-    function cooldown() external onlyPCVController {
+    function cooldown() external onlyGovernorOrAdmin {
         stkaave.cooldown();
     }
 
     /// @notice After the 10-days cooldown period is passed, anyone can call
     /// this function to unwrap stkAAVE held on this contract to AAVE.
-    function unstakeAave() external {
+    function redeem() external {
         uint256 amount = stkaave.balanceOf(address(this));
         stkaave.redeem(address(this), amount);
     }
