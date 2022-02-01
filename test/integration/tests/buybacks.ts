@@ -9,7 +9,8 @@ import {
   increaseTime,
   latestTime,
   resetFork,
-  overwriteChainlinkAggregator
+  overwriteChainlinkAggregator,
+  getAddresses
 } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
@@ -17,7 +18,7 @@ import { BalancerLBPSwapper, CollateralizationOracle, IVault, IWeightedPool } fr
 import { forceEth } from '../setup/utils';
 const toBN = ethers.BigNumber.from;
 
-describe.skip('e2e-buybacks', function () {
+describe('e2e-buybacks', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
@@ -49,6 +50,14 @@ describe.skip('e2e-buybacks', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
+
+    const addresses = await getAddresses();
+
+    // unpause the pcv equity minter if it is paused
+    if (await contracts.pcvEquityMinter.paused()) {
+      const govSigner = await getImpersonatedSigner(addresses.governorAddress);
+      await contracts.pcvEquityMinter.connect(govSigner).unpause();
+    }
   });
 
   describe('PCV Equity Minter + LBP', async function () {
