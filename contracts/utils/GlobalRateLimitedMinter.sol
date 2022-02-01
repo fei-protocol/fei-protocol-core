@@ -43,12 +43,13 @@ contract GlobalRateLimitedMinter is AddressRateLimited, IGlobalRateLimitedMinter
         maximumGlobalBufferCap = _maximumGlobalBufferCap;
     }
 
-    /// @notice function that all FEI minters call to mint FEI
+    /// @notice mint fei to the target address and deplete the buffer
     /// pausable and depletes the msg.sender's buffer
     /// @param to the recipient address of the minted FEI
     /// @param amount the amount of FEI to mint
-    function mintFei(address to, uint256 amount) external whenNotPaused {
-        _mintFei(to, amount);
+    function mintFei(address to, uint256 amount) external virtual override whenNotPaused {
+        _depleteBuffer(msg.sender, amount);
+        super._mintFei(to, amount);
     }
 
     /// @notice set the new rate limit for the specified minter

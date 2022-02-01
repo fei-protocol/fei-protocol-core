@@ -36,12 +36,6 @@ abstract contract AddressRateLimited is CoreRef, IAddressRateLimited {
         doPartialAction = _doPartialAction;
     }
 
-    /// @notice mint fei to the target address and deplete the buffer
-    function _mintFei(address to, uint256 amount) internal virtual override(CoreRef) {
-        _depleteBuffer(msg.sender, amount);
-        super._mintFei(to, amount);
-    }
-
     /// @notice add an authorized minter contract
     /// @param _minter the new address to add as a minter
     /// @param _rateLimitPerSecond the rate limit per second for this minter
