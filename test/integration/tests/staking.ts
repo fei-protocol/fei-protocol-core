@@ -18,18 +18,18 @@ import { forceEth } from '@test/integration/setup/utils';
 
 const toBN = ethers.BigNumber.from;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe('e2e-staking', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -170,232 +170,6 @@ describe('e2e-staking', function () {
         }
       }
     }
-
-    /// skip this test as FEI/TRIBE LM rewards have been disabled
-    describe.skip('FeiTribe LP Token Staking', async () => {
-      const feiTribeLPTokenOwner = '0x7D809969f6A04777F0A87FF94B57E56078E5fE0F';
-      const feiTribeLPTokenOwnerNumberFour = '0xEc0AB4ED27f6dEF15165Fede40EebdcB955B710D';
-      const feiTribeLPTokenOwnerNumberFive = '0x2464E8F7809c05FCd77C54292c69187Cb66FE294';
-      const totalStaked = '100000000000000000000';
-
-      let uniFeiTribe: Contract;
-      let tribalChief: Contract;
-      let tribePerBlock: BigNumber;
-      let tribe: Contract;
-
-      before(async function () {
-        await hre.network.provider.request({
-          method: 'hardhat_impersonateAccount',
-          params: [feiTribeLPTokenOwner]
-        });
-
-        await hre.network.provider.request({
-          method: 'hardhat_impersonateAccount',
-          params: [feiTribeLPTokenOwnerNumberFour]
-        });
-
-        await hre.network.provider.request({
-          method: 'hardhat_impersonateAccount',
-          params: [feiTribeLPTokenOwnerNumberFive]
-        });
-
-        uniFeiTribe = contracts.feiTribePair;
-        tribalChief = contracts.tribalChief;
-        tribePerBlock = await tribalChief.tribePerBlock();
-        tribe = contracts.tribe;
-        await forceEth(feiTribeLPTokenOwner);
-      });
-
-      it('find uni fei/tribe LP balances', async function () {
-        expect(await uniFeiTribe.balanceOf(feiTribeLPTokenOwner)).to.be.gt(toBN(0));
-        expect(await uniFeiTribe.balanceOf(feiTribeLPTokenOwnerNumberFour)).to.be.gt(toBN(0));
-        expect(await uniFeiTribe.balanceOf(feiTribeLPTokenOwnerNumberFive)).to.be.gt(toBN(0));
-      });
-
-      it('stakes uniswap fei/tribe LP tokens', async function () {
-        const pid = 0;
-
-        await hre.network.provider.request({
-          method: 'hardhat_impersonateAccount',
-          params: [feiTribeLPTokenOwner]
-        });
-
-        const feiTribeLPTokenOwnerSigner = await ethers.getSigner(feiTribeLPTokenOwner);
-
-        await uniFeiTribe.connect(feiTribeLPTokenOwnerSigner).approve(tribalChief.address, totalStaked);
-        await tribalChief.connect(feiTribeLPTokenOwnerSigner).deposit(pid, totalStaked, 0);
-
-        const advanceBlockAmount = 3;
-        for (let i = 0; i < advanceBlockAmount; i++) {
-          await time.advanceBlock();
-        }
-
-        const balanceOfPool = await uniFeiTribe.balanceOf(tribalChief.address);
-        const perBlockReward = tribePerBlock
-          .div(await tribalChief.numPools())
-          .mul(toBN(totalStaked))
-          .div(balanceOfPool);
-
-        expectApprox(
-          await tribalChief.pendingRewards(pid, feiTribeLPTokenOwner),
-          Number(perBlockReward.toString()) * advanceBlockAmount
-        );
-
-        await tribalChief.connect(feiTribeLPTokenOwnerSigner).harvest(pid, feiTribeLPTokenOwner);
-
-        // add on one to the advance block amount as we have
-        // advanced one more block when calling the harvest function
-        expectApprox(
-          await tribe.balanceOf(feiTribeLPTokenOwner),
-          Number(perBlockReward.toString()) * (advanceBlockAmount + 1)
-        );
-        // now withdraw from deposit to clear the setup for the next test
-        await unstakeAndHarvestAllPositions([feiTribeLPTokenOwner], pid, tribalChief, uniFeiTribe);
-
-        await hre.network.provider.request({
-          method: 'hardhat_stopImpersonatingAccount',
-          params: [feiTribeLPTokenOwner]
-        });
-      });
-
-      it('multiple users stake uniswap fei/tribe LP tokens', async function () {
-        const userAddresses = [feiTribeLPTokenOwner, feiTribeLPTokenOwnerNumberFour];
-        const pid = 0;
-
-        const balanceOfPool: BigNumber = await uniFeiTribe.balanceOf(tribalChief.address);
-        const staked = ethers.BigNumber.from(totalStaked);
-        const userPerBlockReward = tribePerBlock
-          .div(await tribalChief.numPools())
-          .mul(staked)
-          .div(balanceOfPool.add(staked.mul(toBN(userAddresses.length))));
-
-        await testMultipleUsersPooling(
-          tribalChief,
-          uniFeiTribe,
-          userAddresses,
-          userPerBlockReward,
-          1,
-          0,
-          totalStaked,
-          pid
-        );
-
-        for (let i = 0; i < userAddresses.length; i++) {
-          const pendingTribe = await tribalChief.pendingRewards(pid, userAddresses[i]);
-
-          // assert that getTotalStakedInPool returns proper amount
-          const expectedTotalStaked = toBN(totalStaked);
-          const poolStakedAmount = await tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
-          expect(expectedTotalStaked).to.be.equal(poolStakedAmount);
-          const startingUniLPTokenBalance = await uniFeiTribe.balanceOf(userAddresses[i]);
-          const startingTribeBalance = await tribe.balanceOf(userAddresses[i]);
-
-          await hre.network.provider.request({
-            method: 'hardhat_impersonateAccount',
-            params: [userAddresses[i]]
-          });
-
-          const userSigner = await ethers.getSigner(userAddresses[i]);
-
-          await tribalChief.connect(userSigner).withdrawAllAndHarvest(pid, userAddresses[i]);
-
-          await hre.network.provider.request({
-            method: 'hardhat_stopImpersonatingAccount',
-            params: [userAddresses[i]]
-          });
-
-          expect(await uniFeiTribe.balanceOf(userAddresses[i])).to.be.equal(
-            toBN(totalStaked).add(startingUniLPTokenBalance)
-          );
-
-          expect(await tribe.balanceOf(userAddresses[i])).to.be.gt(pendingTribe.add(startingTribeBalance));
-        }
-        // withdraw from deposit to clear the setup for the next test
-        await unstakeAndHarvestAllPositions(userAddresses, pid, tribalChief, uniFeiTribe);
-      });
-
-      it('multiple users stake uniswap fei/tribe LP tokens, one user calls emergency withdraw and loses all reward debt', async function () {
-        const userAddresses = [feiTribeLPTokenOwner, feiTribeLPTokenOwnerNumberFour, feiTribeLPTokenOwnerNumberFive];
-        const pid = 0;
-
-        const balanceOfPool = await uniFeiTribe.balanceOf(tribalChief.address);
-        const staked = toBN(totalStaked);
-        const userPerBlockReward = tribePerBlock
-          .div(await tribalChief.numPools())
-          .mul(staked)
-          .div(balanceOfPool.add(staked.mul(toBN(userAddresses.length))));
-
-        await testMultipleUsersPooling(
-          tribalChief,
-          uniFeiTribe,
-          userAddresses,
-          userPerBlockReward,
-          1,
-          0,
-          totalStaked,
-          pid
-        );
-
-        const startingUniLPTokenBalance = await uniFeiTribe.balanceOf(feiTribeLPTokenOwnerNumberFive);
-        const { virtualAmount } = await tribalChief.userInfo(pid, feiTribeLPTokenOwnerNumberFive);
-
-        await hre.network.provider.request({
-          method: 'hardhat_impersonateAccount',
-          params: [feiTribeLPTokenOwnerNumberFive]
-        });
-
-        const feiTribeLPTokenOwnerNumberFiveSigner = await ethers.getSigner(feiTribeLPTokenOwnerNumberFive);
-
-        await tribalChief
-          .connect(feiTribeLPTokenOwnerNumberFiveSigner)
-          .emergencyWithdraw(pid, feiTribeLPTokenOwnerNumberFive);
-
-        await hre.network.provider.request({
-          method: 'hardhat_stopImpersonatingAccount',
-          params: [feiTribeLPTokenOwnerNumberFive]
-        });
-
-        const endingUniLPTokenBalance = await uniFeiTribe.balanceOf(feiTribeLPTokenOwnerNumberFive);
-        expect(startingUniLPTokenBalance.add(virtualAmount)).to.be.equal(endingUniLPTokenBalance);
-        const { rewardDebt } = await tribalChief.userInfo(pid, feiTribeLPTokenOwnerNumberFive);
-        expect(rewardDebt).to.be.equal(toBN(0));
-
-        // remove user 5 from userAddresses array
-        userAddresses.pop();
-        for (let i = 0; i < userAddresses.length; i++) {
-          const pendingTribe = await tribalChief.pendingRewards(pid, userAddresses[i]);
-
-          // assert that getTotalStakedInPool returns proper amount
-          const expectedTotalStaked = toBN(totalStaked);
-          const poolStakedAmount = await tribalChief.getTotalStakedInPool(pid, userAddresses[i]);
-          expect(expectedTotalStaked).to.be.equal(poolStakedAmount);
-          const startingUniLPTokenBalance = await uniFeiTribe.balanceOf(userAddresses[i]);
-          const startingTribeBalance = await tribe.balanceOf(userAddresses[i]);
-
-          await hre.network.provider.request({
-            method: 'hardhat_impersonateAccount',
-            params: [userAddresses[i]]
-          });
-
-          const userSigner = await ethers.getSigner(userAddresses[i]);
-
-          await tribalChief.connect(userSigner).withdrawAllAndHarvest(pid, userAddresses[i]);
-
-          await hre.network.provider.request({
-            method: 'hardhat_stopImpersonatingAccount',
-            params: [userAddresses[i]]
-          });
-
-          expect(await uniFeiTribe.balanceOf(userAddresses[i])).to.be.equal(
-            toBN(totalStaked).add(startingUniLPTokenBalance)
-          );
-
-          expect(await tribe.balanceOf(userAddresses[i])).to.be.gt(pendingTribe.add(startingTribeBalance));
-        }
-        // withdraw from deposit to clear the setup for the next test
-        await unstakeAndHarvestAllPositions(userAddresses, pid, tribalChief, uniFeiTribe);
-      });
-    });
   });
 
   describe('FeiRari Tribe Staking Rewards', async () => {
@@ -591,7 +365,9 @@ describe('e2e-staking', function () {
         });
 
         if (nextRewardRate.toString() !== '6060000000000000000') {
-          await time.increaseTo((await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)));
+          const deadline = (await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)).toNumber();
+          const currentTime = await time.latest();
+          if (deadline > currentTime) await time.increaseTo(deadline);
         }
       }
       doLogging && console.log(`Done and checking latest`);

@@ -12,7 +12,7 @@ import { web3, ethers } from 'hardhat';
 */
 
 /* Params:
-    addresses - all addresses in /contract-addresses/mainnetAddresses in an object of depth 1
+    addresses - all addresses in /protocol-configuration/mainnetAddresses in an object of depth 1
     oldContracts - an object of Web3 contract instances using the contract state from BEFORE any upgrades
     contracts - an object of Web3 contract instances using the contract state from AFTER any upgrades
         for example if a new UniswapPCVDeposit is deployed, the new instance is in contracts and the old instance is in oldContracts
