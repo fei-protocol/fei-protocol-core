@@ -9,7 +9,8 @@ import {
   increaseTime,
   latestTime,
   resetFork,
-  overwriteChainlinkAggregator
+  overwriteChainlinkAggregator,
+  getAddresses
 } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
@@ -49,6 +50,12 @@ describe('e2e-buybacks', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
+
+    // unpause the pcv equity minter if it is paused
+    if (await contracts.pcvEquityMinter.paused()) {
+      const govSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
+      await contracts.pcvEquityMinter.connect(govSigner).unpause();
+    }
   });
 
   describe('PCV Equity Minter + LBP', async function () {
