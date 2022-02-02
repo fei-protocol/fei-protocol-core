@@ -36,6 +36,8 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
         RateLimited(_maxRateLimitPerSecond, _rateLimitPerSecond, _bufferCap, _doPartialAction)
     {}
 
+    // ----------- Governor and Admin only state changing api -----------
+
     /// @notice add an authorized rateLimitedAddress contract
     /// @param rateLimitedAddress the new address to add as a rateLimitedAddress
     /// @param _rateLimitPerSecond the rate limit per second for this rateLimitedAddress
@@ -103,6 +105,8 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
         _setIndividualBufferCap(rateLimitedAddress, newBufferCap);
     }
 
+    // ----------- Getters -----------
+
     /// @notice the amount of action used before hitting limit
     /// @dev replenishes at rateLimitPerSecond per second up to bufferCap
     /// @param rateLimitedAddress the address whose buffer will be returned
@@ -114,19 +118,21 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     }
 
     /// @notice the rate per second for each address
-    function individualRateLimitPerSecond(address limiter) external override view returns(uint256) {
+    function getRateLimitPerSecond(address limiter) external override view returns(uint256) {
         return rateLimitPerAddress[limiter].rateLimitPerSecond;
     }
 
     /// @notice the last time the buffer was used by each address
-    function individualLastBufferUsedTime(address limiter) external override view returns(uint256) {
+    function getLastBufferUsedTime(address limiter) external override view returns(uint256) {
         return rateLimitPerAddress[limiter].lastBufferUsedTime;
     }
 
     /// @notice the cap of the buffer that can be used at once
-    function individualBufferCap(address limiter) external override view returns(uint256) {
+    function getBufferCap(address limiter) external override view returns(uint256) {
         return rateLimitPerAddress[limiter].bufferCap;
     }
+
+    // ----------- Helper Methods -----------
 
     /// @notice the method that enforces the rate limit. Decreases buffer by "amount". 
     /// If buffer is <= amount either

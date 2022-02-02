@@ -72,12 +72,12 @@ describe('GlobalglobalRateLimitedMinter', function () {
 
       it('time increase refreshes buffer', async function () {
         await time.increase(500);
-        expectApprox(await globalRateLimitedMinter.individualBufferCap(authorizedMinter.address), bufferCap.div(2));
+        expectApprox(await globalRateLimitedMinter.getBufferCap(authorizedMinter.address), bufferCap.div(2));
       });
 
       it('time increase refreshes buffer', async function () {
         await time.increase(1000);
-        expectApprox(await globalRateLimitedMinter.individualBufferCap(authorizedMinter.address), bufferCap);
+        expectApprox(await globalRateLimitedMinter.getBufferCap(authorizedMinter.address), bufferCap);
       });
     });
 
@@ -124,13 +124,13 @@ describe('GlobalglobalRateLimitedMinter', function () {
 
     describe('Set Fei Limit Per Second', function () {
       it('governor succeeds', async function () {
-        const startingBuffer = await globalRateLimitedMinter.individualBufferCap(authorizedMinter.address);
+        const startingBuffer = await globalRateLimitedMinter.getBufferCap(authorizedMinter.address);
         await globalRateLimitedMinter
           .connect(impersonatedSigners[governorAddress])
           .setIndividualRateLimitPerSecond(authorizedMinter.address, '10000');
 
-        expect(await globalRateLimitedMinter.individualBufferCap(authorizedMinter.address)).to.be.equal(startingBuffer);
-        expect(await globalRateLimitedMinter.individualRateLimitPerSecond(authorizedMinter.address)).to.be.equal(10000);
+        expect(await globalRateLimitedMinter.getBufferCap(authorizedMinter.address)).to.be.equal(startingBuffer);
+        expect(await globalRateLimitedMinter.getRateLimitPerSecond(authorizedMinter.address)).to.be.equal(10000);
       });
 
       it('non-governor reverts', async function () {
@@ -178,9 +178,9 @@ describe('GlobalglobalRateLimitedMinter', function () {
       });
 
       it('starting values are 0', async function () {
-        expect(await globalRateLimitedMinter.individualBufferCap(authorizedMinter.address)).to.be.equal(0);
-        expect(await globalRateLimitedMinter.individualBufferCap(authorizedMinter.address)).to.be.equal(0);
-        expect(await globalRateLimitedMinter.individualRateLimitPerSecond(authorizedMinter.address)).to.be.equal(0);
+        expect(await globalRateLimitedMinter.getBufferCap(authorizedMinter.address)).to.be.equal(0);
+        expect(await globalRateLimitedMinter.getBufferCap(authorizedMinter.address)).to.be.equal(0);
+        expect(await globalRateLimitedMinter.getRateLimitPerSecond(authorizedMinter.address)).to.be.equal(0);
       });
 
       it('governor succeeds and caps are correct', async function () {
@@ -188,9 +188,9 @@ describe('GlobalglobalRateLimitedMinter', function () {
           .connect(impersonatedSigners[governorAddress])
           .addAddress(authorizedMinter.address, globalRateLimitPerSecond, bufferCap);
 
-        expect(await globalRateLimitedMinter.individualBufferCap(authorizedMinter.address)).to.be.equal(bufferCap);
-        expect(await globalRateLimitedMinter.individualBufferCap(authorizedMinter.address)).to.be.equal(bufferCap);
-        expect(await globalRateLimitedMinter.individualRateLimitPerSecond(authorizedMinter.address)).to.be.equal(
+        expect(await globalRateLimitedMinter.getBufferCap(authorizedMinter.address)).to.be.equal(bufferCap);
+        expect(await globalRateLimitedMinter.getBufferCap(authorizedMinter.address)).to.be.equal(bufferCap);
+        expect(await globalRateLimitedMinter.getRateLimitPerSecond(authorizedMinter.address)).to.be.equal(
           globalRateLimitPerSecond
         );
       });
@@ -220,9 +220,9 @@ describe('GlobalglobalRateLimitedMinter', function () {
           .connect(impersonatedSigners[governorAddress])
           .removeAddress(authorizedMinter.address);
 
-        expect(await globalRateLimitedMinter.individualRateLimitPerSecond(authorizedMinter.address)).to.be.equal(0);
-        expect(await globalRateLimitedMinter.individualBufferCap(authorizedMinter.address)).to.be.equal(0);
-        expect(await globalRateLimitedMinter.individualBufferCap(authorizedMinter.address)).to.be.equal(0);
+        expect(await globalRateLimitedMinter.getRateLimitPerSecond(authorizedMinter.address)).to.be.equal(0);
+        expect(await globalRateLimitedMinter.getBufferCap(authorizedMinter.address)).to.be.equal(0);
+        expect(await globalRateLimitedMinter.getBufferCap(authorizedMinter.address)).to.be.equal(0);
 
         await expectRevert(
           authorizedMinter.mintFei(authorizedMinter.address, 1),
@@ -287,8 +287,8 @@ describe('GlobalglobalRateLimitedMinter', function () {
           .connect(impersonatedSigners[governorAddress])
           .setIndividualBufferCap(authorizedMinter.address, '10000', {});
 
-        expect(await globalRateLimitedMinter.individualBufferCap(authorizedMinter.address)).to.be.equal(toBN('10000'));
-        expect(await globalRateLimitedMinter.individualBufferCap(authorizedMinter.address)).to.be.equal(toBN('10000'));
+        expect(await globalRateLimitedMinter.getBufferCap(authorizedMinter.address)).to.be.equal(toBN('10000'));
+        expect(await globalRateLimitedMinter.getBufferCap(authorizedMinter.address)).to.be.equal(toBN('10000'));
       });
 
       it('too high fei buffer cap reverts', async function () {

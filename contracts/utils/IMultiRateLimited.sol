@@ -6,13 +6,13 @@ pragma solidity ^0.8.4;
 interface IMultiRateLimited {
 
     /// @notice the rate per second for each address
-    function individualRateLimitPerSecond(address) external view returns(uint256);
+    function getRateLimitPerSecond(address) external view returns(uint256);
 
     /// @notice the last time the buffer was used by each address
-    function individualLastBufferUsedTime(address) external view returns(uint256);
+    function getLastBufferUsedTime(address) external view returns(uint256);
 
     /// @notice the cap of the buffer that can be used at once
-    function individualBufferCap(address) external view returns(uint256);
+    function getBufferCap(address) external view returns(uint256);
 
     // ----------- Events -----------
     
