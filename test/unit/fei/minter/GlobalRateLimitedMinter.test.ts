@@ -62,7 +62,7 @@ describe('GlobalglobalRateLimitedMinter', function () {
       });
 
       it('clears out buffer', async function () {
-        expectApprox(await globalRateLimitedMinter['buffer(address)'](authorizedMinter.address), '0');
+        expectApprox(await globalRateLimitedMinter.individualBuffer(authorizedMinter.address), '0');
         expect(await fei.balanceOf(userAddress)).to.be.equal(bufferCap);
       });
 
@@ -103,20 +103,20 @@ describe('GlobalglobalRateLimitedMinter', function () {
       });
 
       it('partially clears out buffer', async function () {
-        expectApprox(await globalRateLimitedMinter['buffer(address)'](authorizedMinter.address), bufferCap);
+        expectApprox(await globalRateLimitedMinter.individualBuffer(authorizedMinter.address), bufferCap);
         expect(await fei.balanceOf(userAddress)).to.be.equal(mintAmount);
       });
 
       it('second mint is partial', async function () {
         await authorizedMinter.mintFei(userAddress, bufferCap.mul(2));
         expectApprox(await fei.balanceOf(userAddress), bufferCap);
-        expectApprox(await globalRateLimitedMinter['buffer(address)'](authorizedMinter.address), '0');
+        expectApprox(await globalRateLimitedMinter.individualBuffer(authorizedMinter.address), '0');
       });
 
       it('time increase refreshes buffer', async function () {
         await time.increase('1000');
         expectApprox(
-          await globalRateLimitedMinter['buffer(address)'](authorizedMinter.address),
+          await globalRateLimitedMinter.individualBuffer(authorizedMinter.address),
           bufferCap.sub(mintAmount)
         );
       });

@@ -5,10 +5,10 @@ pragma solidity ^0.8.4;
 /// @author Fei Protocol
 interface IMultiRateLimited {
 
-    /// @notice the rate per second for each minter
+    /// @notice the rate per second for each address
     function individualRateLimitPerSecond(address) external view returns(uint256);
 
-    /// @notice the last time the buffer was used by each minter
+    /// @notice the last time the buffer was used by each address
     function individualLastBufferUsedTime(address) external view returns(uint256);
 
     /// @notice the cap of the buffer that can be used at once
@@ -25,34 +25,22 @@ interface IMultiRateLimited {
     /// @notice emitted when rate limit is updated
     event IndividualRateLimitPerSecondUpdate(address minter, uint256 oldRateLimitPerSecond, uint256 newRateLimitPerSecond);
 
-    /// @notice add an authorized minter contract
-    /// @param _minter the new address to add as a minter
-    /// @param _rateLimitPerSecond the rate limit per second for this minter
-    /// @param _bufferCap  the buffer cap for this minter
-    function addAddress(address _minter, uint256 _rateLimitPerSecond, uint256 _bufferCap) external;
+    /// @notice add an authorized contract, its per second replenishment and buffer
+    function addAddress(address, uint112, uint144) external;
 
-    /// @notice add an authorized minter contract
-    /// @param _minter the address whose buffer and rate limit per second will be set
-    /// @param _rateLimitPerSecond the new rate limit per second for this minter
-    /// @param _bufferCap  the new buffer cap for this minter
-    function updateAddress(address _minter, uint256 _rateLimitPerSecond, uint256 _bufferCap) external;
+    /// @notice update an authorized contract
+    function updateAddress(address, uint112, uint144) external;
 
-    /// @notice remove an authorized minter contract
-    /// @param _minter the address to remove from the whitelist of minters
-    function removeAddress(address _minter) external;
+    /// @notice remove an authorized contract
+    function removeAddress(address) external;
 
     /// @notice set the rate limit per second
-    /// @param minter the address whose buffer will be set
-    /// @param newRateLimitPerSecond the new rate limit per second for this minter
-    function setIndividualRateLimitPerSecond(address minter, uint256 newRateLimitPerSecond) external;
+    function setIndividualRateLimitPerSecond(address, uint112) external;
 
     /// @notice set the buffer cap
-    /// @param minter the address whose buffer will be set
-    /// @param newBufferCap the new buffer cap for this minter
-    function setIndividualBufferCap(address minter, uint256 newBufferCap) external;
+    function setIndividualBufferCap(address, uint144) external;
 
-    /// @notice the amount of action used before hitting limit
+    /// @notice the amount of action that can be used before hitting limit
     /// @dev replenishes at rateLimitPerSecond per second up to bufferCap
-    /// @param minter the address whose buffer will be returned
-    function buffer(address minter) external view returns(uint256);
+    function individualBuffer(address) external view returns(uint144);
 }
