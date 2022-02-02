@@ -30,7 +30,6 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
         uint256 _maxRateLimitPerSecond,
         uint256 _rateLimitPerSecond,
         uint256 _bufferCap,
-        uint256 maxBufferCap,
         bool _doPartialAction
     )
         CoreRef(coreAddress)

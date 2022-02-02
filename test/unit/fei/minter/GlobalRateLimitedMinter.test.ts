@@ -44,7 +44,7 @@ describe('GlobalglobalRateLimitedMinter', function () {
 
     globalRateLimitedMinter = await (
       await ethers.getContractFactory('GlobalRateLimitedMinter')
-    ).deploy(core.address, globalRateLimitPerSecond, globalRateLimitPerSecond, bufferCap, bufferCap, false);
+    ).deploy(core.address, globalRateLimitPerSecond, globalRateLimitPerSecond, bufferCap, false);
 
     authorizedMinter = await (await ethers.getContractFactory('MockMinter')).deploy(globalRateLimitedMinter.address);
 
@@ -87,7 +87,7 @@ describe('GlobalglobalRateLimitedMinter', function () {
       beforeEach(async function () {
         globalRateLimitedMinter = await (
           await ethers.getContractFactory('GlobalRateLimitedMinter')
-        ).deploy(core.address, globalRateLimitPerSecond, globalRateLimitPerSecond, bufferCap, bufferCap, true);
+        ).deploy(core.address, globalRateLimitPerSecond, globalRateLimitPerSecond, bufferCap, true);
 
         authorizedMinter = await (
           await ethers.getContractFactory('MockMinter')
