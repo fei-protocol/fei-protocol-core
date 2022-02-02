@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-/// @title interface for putting a rate limit on how fast a contract can perform minting
+/// @title interface for putting a rate limit on how fast a contract can perform an action, e.g. Minting
 /// @author Fei Protocol
 interface IMultiRateLimited {
 
@@ -17,13 +17,13 @@ interface IMultiRateLimited {
     // ----------- Events -----------
     
     /// @notice emitted when a buffer is eaten into
-    event IndividualBufferUsed(address minter, uint256 amountUsed, uint256 bufferRemaining);
+    event IndividualBufferUsed(address rateLimitedAddress, uint256 amountUsed, uint256 bufferRemaining);
     
     /// @notice emitted when a buffer cap is updated
-    event IndividualBufferCapUpdate(address minter, uint256 oldBufferCap, uint256 newBufferCap);
+    event IndividualBufferCapUpdate(address rateLimitedAddress, uint256 oldBufferCap, uint256 newBufferCap);
     
     /// @notice emitted when rate limit is updated
-    event IndividualRateLimitPerSecondUpdate(address minter, uint256 oldRateLimitPerSecond, uint256 newRateLimitPerSecond);
+    event IndividualRateLimitPerSecondUpdate(address rateLimitedAddress, uint256 oldRateLimitPerSecond, uint256 newRateLimitPerSecond);
 
     /// @notice add an authorized contract, its per second replenishment and buffer
     function addAddress(address, uint112, uint144) external;
