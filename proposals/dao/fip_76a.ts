@@ -64,13 +64,15 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   await contracts.lusd.connect(signer).approve(lusdCTokenAddress, ethers.constants.WeiPerEther.mul(100_000));
   await lusdCToken.mint(ethers.constants.WeiPerEther.mul(100_000));
   // borrow LUSD in FeiRari
-  await lusdCToken.borrow(ethers.constants.WeiPerEther.mul(20_000));
+  await lusdCToken.borrow(ethers.constants.WeiPerEther.mul(79_000));
   // invariant check for LUSD borrowed
-  expect(await contracts.lusd.balanceOf(signer.address)).to.be.equal(ethers.constants.WeiPerEther.mul(20_000));
+  expect(await contracts.lusd.balanceOf(signer.address)).to.be.equal(ethers.constants.WeiPerEther.mul(79_000));
   // invariant check for new G-UNI DAI/FEI 4x supply cap increase
   const gUniFeiDaiLPCTokenAddress = await contracts.rariPool8Comptroller.cTokensByUnderlying(addresses.gUniFeiDaiLP);
   expect(await contracts.rariPool8Comptroller.supplyCaps(gUniFeiDaiLPCTokenAddress)).to.be.equal(
-    '10000000000000000000000000000'
+    // G-UNI tokens have a 100x factor vs underlying,
+    // so 10B G-UNI tokens is 100M$ liquidity
+    ethers.constants.WeiPerEther.mul(10_000_000_000)
   );
 };
 

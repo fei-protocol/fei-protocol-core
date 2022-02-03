@@ -21,7 +21,7 @@ const fip_x: ProposalDescription = {
         'fLUSD-8', // Symbol
         '{rariPool8CTokenImpl}', // impl
         '0x', // constructor bytes (not used)
-        '200000000000000000', // reserve factor 20%
+        '0', // reserve factor 0%
         '0', // no admin fee
         '800000000000000000' // LTV 80%
       ],
