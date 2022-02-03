@@ -1,6 +1,6 @@
 import { ProposalDescription } from '@custom-types/types';
 
-const fip_x: ProposalDescription = {
+const fip_76a: ProposalDescription = {
   title: 'FIP-76a: Add LUSD to FeiRari',
   commands: [
     {
@@ -38,4 +38,4 @@ const fip_x: ProposalDescription = {
   description: 'OA action to add LUSD to FeiRari. Also raise G-UNI DAI/FEI supply cap 4x in FeiRari.'
 };
 
-export default fip_x;
+export default fip_76a;

@@ -3,6 +3,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
 import fip_76a from '@proposals/description/fip_76a';
+import fip_76b from '@proposals/description/fip_76b';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -16,11 +17,20 @@ const proposals: ProposalsConfigMap = {
   fip_76a: {
     deploy: false,
     proposalId: undefined,
-    affectedContractSignoff: ['fuseAdmin'],
+    affectedContractSignoff: ['fuseAdmin', 'fuseGuardian'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.OA,
     totalValue: 0,
     proposal: fip_76a
+  },
+  fip_76b: {
+    deploy: true,
+    proposalId: undefined,
+    affectedContractSignoff: [],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_76b
   }
 };
 
