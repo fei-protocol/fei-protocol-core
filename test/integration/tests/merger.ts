@@ -14,18 +14,18 @@ import { forceEth } from '../setup/utils';
 
 const toBN = ethers.BigNumber.from;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe('e2e-merger', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -48,61 +48,7 @@ describe('e2e-merger', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe.skip('TribeRagequit', async function () {
-    const guardianBalance = '18903018000000000000000000';
-
-    it('ngmi', async function () {
-      const tribeRagequit: TRIBERagequit = contracts.tribeRagequit as TRIBERagequit;
-      const { fei, tribe } = contracts;
-
-      // Construct merkle tree and leaf for guardian
-      const tree = createTree();
-      const guardian = contractAddresses.multisig;
-      const leaf = solidityKeccak256(['address', 'uint256'], [guardian, guardianBalance]);
-
-      // Construct proof for guardian
-      const proof = tree.getProof(leaf);
-      const proofArray = [];
-      proof.map(function (key, index) {
-        proofArray.push(key.data);
-      });
-
-      const signer = await getImpersonatedSigner(guardian);
-
-      const startTime = await tribeRagequit.rageQuitStart();
-
-      // Advance to vote start
-      if (toBN(await time.latest()).lt(toBN(startTime))) {
-        doLogging && console.log(`Advancing To: ${startTime}`);
-        await time.increaseTo(startTime);
-      } else {
-        doLogging && console.log('Ragequit live');
-      }
-
-      // Ragequit 1 TRIBE
-      const feiBalanceBefore = await fei.balanceOf(guardian);
-      const tribeBalanceBefore = await tribe.balanceOf(guardian);
-      await tribe.connect(signer).approve(tribeRagequit.address, ethers.constants.MaxUint256);
-
-      await tribeRagequit.connect(signer).ngmi(ethers.constants.WeiPerEther, guardianBalance, proofArray);
-      const feiBalanceAfter = await fei.balanceOf(guardian);
-      const tribeBalanceAfter = await tribe.balanceOf(guardian);
-
-      expect(tribeBalanceBefore.sub(tribeBalanceAfter)).to.be.equal(ethers.constants.WeiPerEther);
-      expect(feiBalanceAfter.sub(feiBalanceBefore)).to.be.bignumber.equal(toBN('1078903938000000000'));
-
-      // Ragequit original TRIBE fails
-      expect(tribeRagequit.connect(signer).ngmi(guardianBalance, guardianBalance, proofArray)).to.be.revertedWith(
-        'exceeds ragequit limit'
-      );
-
-      // Ragequit all held TRIBE succeeds
-      await tribeRagequit.connect(signer).ngmi(await tribe.balanceOf(guardian), guardianBalance, proofArray);
-      expect(await tribe.balanceOf(guardian)).to.be.bignumber.equal(toBN(0));
-    });
-  });
-
-  describe('PegExchanger', async () => {
+  describe.skip('PegExchanger', async () => {
     const RGT_WHALE = '0x20017a30D3156D4005bDA08C40Acda0A6aE209B1';
 
     it('drips correctly before expiration', async function () {

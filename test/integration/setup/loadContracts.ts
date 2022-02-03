@@ -1,4 +1,4 @@
-import mainnetAddresses from '@addresses/mainnetAddresses';
+import mainnetAddresses from '@protocol/mainnetAddresses';
 import { artifacts, ethers } from 'hardhat';
 import { MainnetContracts, NamedAddresses } from '@custom-types/types';
 

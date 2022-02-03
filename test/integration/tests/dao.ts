@@ -10,18 +10,18 @@ import { forceEth } from '@test/integration/setup/utils';
 import { Core } from '@custom-types/contracts';
 const toBN = ethers.BigNumber.from;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe('e2e-dao', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -67,11 +67,10 @@ describe('e2e-dao', function () {
     it('proposal succeeds', async function () {
       const feiDAO = contracts.feiDAO;
 
-      const targets = [feiDAO.address, contractAddresses.daiBondingCurve];
-      const values = [0, 0];
+      const targets = [feiDAO.address];
+      const values = [0];
       const calldatas = [
-        '0x70b0f660000000000000000000000000000000000000000000000000000000000000000a', // set voting delay 10
-        '0xe1d92bf8000000000000000000000000000000000000000000000000000000000000000b' // set bonding curve duration 11
+        '0x70b0f660000000000000000000000000000000000000000000000000000000000000000a' // set voting delay 10
       ];
       const description = [];
 
@@ -119,7 +118,6 @@ describe('e2e-dao', function () {
       );
 
       expect((await feiDAO.votingDelay()).toString()).to.be.equal('10');
-      expect((await contracts.daiBondingCurve.duration()).toString()).to.be.equal('11');
     });
   });
 

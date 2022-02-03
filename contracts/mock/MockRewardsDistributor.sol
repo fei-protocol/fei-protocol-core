@@ -2,7 +2,7 @@ pragma solidity ^0.8.0;
 
 import "./../staking/TribalChief.sol";
 import "../refs/CoreRef.sol";
-import "../staking/feirari/IRewardsDistributorAdmin.sol";
+import "../fuse/rewards/IRewardsDistributorAdmin.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
