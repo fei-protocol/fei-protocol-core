@@ -2,7 +2,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
-import fip_73d from '@proposals/description/fip_73d';
+import fip_76a from '@proposals/description/fip_76a';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -13,14 +13,14 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  fip_73d: {
+  fip_76a: {
     deploy: false,
     proposalId: undefined,
-    affectedContractSignoff: ['fei', 'optimisticTimelock'],
+    affectedContractSignoff: ['fuseAdmin'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.OA,
     totalValue: 0,
-    proposal: fip_73d
+    proposal: fip_76a
   }
 };
 

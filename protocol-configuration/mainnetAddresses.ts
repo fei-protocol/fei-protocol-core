@@ -836,6 +836,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x4d10BC156FBaD2474a94f792fe0D6c3261469cdd',
     category: AddressCategory.FeiRari
   },
+  rariChainlinkPriceOracleV3: {
+    artifactName: 'unknown',
+    address: '0x058c345D3240001088b6280e008F9e78b3B2112d',
+    category: AddressCategory.FeiRari
+  },
   curveLPTokenOracle: {
     artifactName: 'unknown',
     address: '0xa9f3faac3b8eDF7b3DCcFDBBf25033D6F5fc02F3',
