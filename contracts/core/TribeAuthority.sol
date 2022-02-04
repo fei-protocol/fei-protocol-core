@@ -23,7 +23,8 @@ abstract contract TribeAuthority is MultiRolesAuthority {
         uint8 role,
         bool enabled
     ) public override {
-        require(isRoleAdmin(msg.sender, role));
+        // Role admins can grant/revoke role, and users can revoke from themselves
+        require(isRoleAdmin(msg.sender, role) || (doesUserHaveRole(user, role) && !enabled));
 
         if (enabled) {
             getUserRoles[user] |= bytes32(1 << role);
