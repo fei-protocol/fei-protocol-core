@@ -8,32 +8,23 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 /// @author Fei Protocol
 /// @notice defines some modifiers and utilities around interacting with Core
 abstract contract CoreRef is ICoreRef, Pausable {
-    ICore private _core;
-    IFei internal immutable _fei;
-    IERC20 internal immutable _tribe;
+    ICore private immutable _core;
+    IFei private immutable _fei;
+    IERC20 private immutable _tribe;
 
     /// @notice a role used with a subset of governor permissions for this contract only
     bytes32 public override CONTRACT_ADMIN_ROLE;
 
-    /// @notice boolean to check whether or not the contract has been initialized.
-    /// cannot be initialized twice.
-    bool private _initialized;
-
     constructor(address coreAddress) {
-        _initialize(coreAddress);
-        _fei = _core.fei();
-        _tribe = _core.tribe();
-    }
-
-    /// @notice CoreRef constructor
-    /// @param coreAddress Fei Core to reference
-    function _initialize(address coreAddress) internal {
-        require(!_initialized, "CoreRef: already initialized");
-        _initialized = true;
-
         _core = ICore(coreAddress);
-        _setContractAdminRole(_core.GOVERN_ROLE());
+
+        _fei = ICore(coreAddress).fei();
+        _tribe = ICore(coreAddress).tribe();
+
+        _setContractAdminRole(ICore(coreAddress).GOVERN_ROLE());
     }
+
+    function _initialize(address) internal {} // no-op for backward compatibility
 
     modifier ifMinterSelf() {
         if (_core.isMinter(address(this))) {
@@ -103,15 +94,6 @@ abstract contract CoreRef is ICoreRef, Pausable {
     modifier onlyFei() {
         require(msg.sender == address(_fei), "CoreRef: Caller is not FEI");
         _;
-    }
-
-    /// @notice set new Core reference address
-    /// @param newCore the new core address
-    function setCore(address newCore) external override onlyGovernor {
-        require(newCore != address(0), "CoreRef: zero address");
-        address oldCore = address(_core);
-        _core = ICore(newCore);
-        emit CoreUpdate(oldCore, newCore);
     }
 
     /// @notice sets a new admin role for this contract
