@@ -35,6 +35,6 @@ contract GlobalRateLimitedMinter is MultiRateLimited, IGlobalRateLimitedMinter {
     /// @param amount the amount of FEI to mint
     function mintFei(address to, uint256 amount) external virtual override whenNotPaused {
         _depleteBuffer(msg.sender, amount);
-        super._mintFei(to, amount);
+        _mintFei(to, amount);
     }
 }
