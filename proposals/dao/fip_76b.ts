@@ -75,7 +75,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   ).to.be.false;
   expect(await contracts.balancerDepositFeiWeth.balance()).to.be.at.least(ethers.constants.WeiPerEther.mul(14000));
   // Uniswap has some liquidity
-  expect(await contracts.uniswapPCVDeposit.balance()).to.be.at.least(ethers.constants.WeiPerEther.mul(399));
+  expect(await contracts.uniswapPCVDeposit.balance()).to.be.at.least(ethers.constants.WeiPerEther.mul(390));
   // DPI has moved
   expect(await contracts.dpiUniswapPCVDeposit.balance()).to.be.equal(0);
   expect(await contracts.dpi.balanceOf(contracts.feiDAOTimelock.address)).to.be.at.least(
