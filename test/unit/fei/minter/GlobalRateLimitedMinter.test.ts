@@ -95,6 +95,21 @@ describe('GlobalglobalRateLimitedMinter', function () {
       it('second mint reverts', async function () {
         await expectRevert(authorizedMinter.mintFei(userAddress, bufferCap), 'RateLimited: rate limit hit');
       });
+
+      it('mint fails when user has no buffer or allocation in the system', async function () {
+        const { lastBufferUsedTime, bufferCap, rateLimitPerSecond, bufferStored } =
+          await globalRateLimitedMinter.rateLimitPerAddress(userAddress);
+
+        expect(lastBufferUsedTime).to.be.equal(0);
+        expect(bufferCap).to.be.equal(0);
+        expect(rateLimitPerSecond).to.be.equal(0);
+        expect(bufferStored).to.be.equal(0);
+
+        await expectRevert(
+          globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).mintFei(userAddress, 100),
+          'MultiRateLimited: no rate limit buffer'
+        );
+      });
     });
 
     it('time increase refreshes buffer', async function () {
