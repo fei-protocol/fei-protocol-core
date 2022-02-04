@@ -957,6 +957,9 @@ const dependencies: DependencyMap = {
   weightedBalancerPoolManagerBase: {
     contractDependencies: []
   },
+  rariChainlinkPriceOracleV3: {
+    contractDependencies: []
+  },
   balancerDepositFeiWeth: {
     contractDependencies: ['core', 'oneConstantOracle', 'chainlinkEthUsdOracleWrapper']
   },

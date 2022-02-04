@@ -88,6 +88,13 @@ const fip_76b: ProposalDescription = {
         ]
       ],
       description: 'Cleanup: Remove PCV Deposit that are empty'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposits(address[])',
+      arguments: [['{rariPool8DaiPCVDeposit}', '{rariPool8LusdPCVDeposit}']],
+      description: 'Add new PCV Deposits to CR oracle'
     }
   ],
   description: `
