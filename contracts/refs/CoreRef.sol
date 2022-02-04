@@ -9,6 +9,8 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 /// @notice defines some modifiers and utilities around interacting with Core
 abstract contract CoreRef is ICoreRef, Pausable {
     ICore private _core;
+    IFei internal immutable _fei;
+    IERC20 internal immutable _tribe;
 
     /// @notice a role used with a subset of governor permissions for this contract only
     bytes32 public override CONTRACT_ADMIN_ROLE;
@@ -19,6 +21,8 @@ abstract contract CoreRef is ICoreRef, Pausable {
 
     constructor(address coreAddress) {
         _initialize(coreAddress);
+        _fei = _core.fei();
+        _tribe = _core.tribe();
     }
 
     /// @notice CoreRef constructor
@@ -90,8 +94,14 @@ abstract contract CoreRef is ICoreRef, Pausable {
         _;
     }
 
+    // Named onlyTribeRole to prevent collision with OZ onlyRole modifier
+    modifier onlyTribeRole(bytes32 role) {
+        require(_core.hasRole(role, msg.sender), "UNAUTHORIZED");
+        _;
+    }
+
     modifier onlyFei() {
-        require(msg.sender == address(fei()), "CoreRef: Caller is not FEI");
+        require(msg.sender == address(_fei), "CoreRef: Caller is not FEI");
         _;
     }
 
@@ -133,34 +143,34 @@ abstract contract CoreRef is ICoreRef, Pausable {
     /// @notice address of the Fei contract referenced by Core
     /// @return IFei implementation address
     function fei() public view override returns (IFei) {
-        return _core.fei();
+        return _fei;
     }
 
     /// @notice address of the Tribe contract referenced by Core
     /// @return IERC20 implementation address
     function tribe() public view override returns (IERC20) {
-        return _core.tribe();
+        return _tribe;
     }
 
     /// @notice fei balance of contract
     /// @return fei amount held
     function feiBalance() public view override returns (uint256) {
-        return fei().balanceOf(address(this));
+        return _fei.balanceOf(address(this));
     }
 
     /// @notice tribe balance of contract
     /// @return tribe amount held
     function tribeBalance() public view override returns (uint256) {
-        return tribe().balanceOf(address(this));
+        return _tribe.balanceOf(address(this));
     }
 
     function _burnFeiHeld() internal {
-        fei().burn(feiBalance());
+        _fei.burn(feiBalance());
     }
 
     function _mintFei(address to, uint256 amount) internal virtual {
         if (amount != 0) {
-            fei().mint(to, amount);
+            _fei.mint(to, amount);
         }
     }
 
