@@ -46,7 +46,7 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
         require(_bufferCap <= bufferCap, "MultiRateLimited: new buffercap too high");
 
         RateLimitData memory rateLimitData = RateLimitData({
-            lastBufferUsedTime: _blockTimestamp(),
+            lastBufferUsedTime: block.timestamp.toUint32(),
             bufferCap: _bufferCap,
             rateLimitPerSecond: _rateLimitPerSecond,
             bufferStored: _bufferCap
@@ -68,7 +68,7 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
 
         RateLimitData storage rateLimitData = rateLimitPerAddress[rateLimitedAddress];
 
-        rateLimitData.lastBufferUsedTime = _blockTimestamp();
+        rateLimitData.lastBufferUsedTime = block.timestamp.toUint32();
         rateLimitData.bufferCap = _bufferCap;
         rateLimitData.rateLimitPerSecond = _rateLimitPerSecond;
         rateLimitData.bufferStored = _bufferCap;
@@ -156,16 +156,11 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
 
         rateLimitPerAddress[rateLimitedAddress].bufferStored = uint144(newBuffer - usedAmount);
 
-        rateLimitPerAddress[rateLimitedAddress].lastBufferUsedTime = _blockTimestamp();
+        rateLimitPerAddress[rateLimitedAddress].lastBufferUsedTime = block.timestamp.toUint32();
 
         emit IndividualBufferUsed(rateLimitedAddress, usedAmount, newBuffer - usedAmount);
 
         return usedAmount;
-    }
-
-    /// @notice return current block timestamp as a uint32
-    function _blockTimestamp() private view returns (uint32) {
-        return block.timestamp.toUint32();
     }
 
     /// @notice set a new rate limit per second for a given rateLimitedAddress
@@ -188,7 +183,7 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
 
         rateLimitData.bufferCap = newBufferCap;
         rateLimitData.bufferStored = newBufferCap;
-        rateLimitData.lastBufferUsedTime = _blockTimestamp();
+        rateLimitData.lastBufferUsedTime = block.timestamp.toUint32();
 
         emit IndividualBufferCapUpdate(rateLimitedAddress, oldBufferCap, newBufferCap);
     }
@@ -203,6 +198,6 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
         RateLimitData storage rateLimitData = rateLimitPerAddress[rateLimitedAddress];
 
         rateLimitData.bufferStored = individualBuffer(rateLimitedAddress);
-        rateLimitData.lastBufferUsedTime = _blockTimestamp();
+        rateLimitData.lastBufferUsedTime = block.timestamp.toUint32();
     }
 }
