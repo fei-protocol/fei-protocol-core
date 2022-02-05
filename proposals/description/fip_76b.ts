@@ -95,6 +95,13 @@ const fip_76b: ProposalDescription = {
       method: 'addDeposits(address[])',
       arguments: [['{rariPool8DaiPCVDeposit}', '{rariPool8LusdPCVDeposit}']],
       description: 'Add new PCV Deposits to CR oracle'
+    },
+    {
+      target: 'votiumBriber3Crvpool',
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: ['0x2d46c62aa6fbc9b550f22e00476aebb90f4ea69cd492a68db4d444217763330d'], // keccak256("VOTIUM_ADMIN_ROLE")
+      description: 'Set Votium 3crv-fei Briber Admin'
     }
   ],
   description: `
@@ -107,6 +114,7 @@ Also includes some technical maintenance tasks :
 - Seed 400 ETH on Uniswap FEI/ETH pool to keep ~2M$ of liquidity on Uniswap (required for Compound)
 - Remove remaining DPI on Sushiswap & send to DAO Timelock
 - Remove unused PCVDeposits from CR oracle
+- Set VOTIUM_ADMIN_ROLE as the role for fei-3crv briber (bribes are currently not working for this pool)
 `
 };
 
