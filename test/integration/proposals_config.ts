@@ -4,6 +4,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 import fip_76a from '@proposals/description/fip_76a';
 import fip_76b from '@proposals/description/fip_76b';
+import fip_77 from '@proposals/description/fip_77';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -58,6 +59,15 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_76b
+  },
+  fip_77: {
+    deploy: false,
+    proposalId: undefined,
+    affectedContractSignoff: ['tribalChief', 'fuseGuardian'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.OA,
+    totalValue: 0,
+    proposal: fip_77
   }
 };
 
