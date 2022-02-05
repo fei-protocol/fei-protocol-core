@@ -145,22 +145,17 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
         _depleteBuffer(amount);
 
         uint256 newBuffer = individualBuffer(rateLimitedAddress);
-        
-        uint256 usedAmount = amount;
-        if (doPartialAction && usedAmount > newBuffer) {
-            usedAmount = newBuffer;
-        }
 
         require(newBuffer != 0, "MultiRateLimited: no rate limit buffer");
-        require(usedAmount <= newBuffer, "MultiRateLimited: rate limit hit");
+        require(amount <= newBuffer, "MultiRateLimited: rate limit hit");
 
-        rateLimitPerAddress[rateLimitedAddress].bufferStored = uint144(newBuffer - usedAmount);
+        rateLimitPerAddress[rateLimitedAddress].bufferStored = uint144(newBuffer - amount);
 
         rateLimitPerAddress[rateLimitedAddress].lastBufferUsedTime = block.timestamp.toUint32();
 
-        emit IndividualBufferUsed(rateLimitedAddress, usedAmount, newBuffer - usedAmount);
+        emit IndividualBufferUsed(rateLimitedAddress, amount, newBuffer - amount);
 
-        return usedAmount;
+        return amount;
     }
 
     /// @notice set a new rate limit per second for a given rateLimitedAddress

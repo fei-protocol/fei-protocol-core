@@ -208,10 +208,8 @@ describe('GlobalglobalRateLimitedMinter', function () {
       expect(await fei.balanceOf(userAddress)).to.be.equal(mintAmount);
     });
 
-    it('second mint is partial', async function () {
-      await authorizedMinter.mintFei(userAddress, bufferCap.mul(2));
-      expectApprox(await fei.balanceOf(userAddress), bufferCap);
-      expectApprox(await globalRateLimitedMinter.individualBuffer(authorizedMinter.address), '0');
+    it('second mint does not have enough buffer and fails', async function () {
+      await expectRevert(authorizedMinter.mintFei(userAddress, bufferCap.mul(2)), 'MultiRateLimited: rate limit hit');
     });
 
     it('time increase refreshes buffer', async function () {
