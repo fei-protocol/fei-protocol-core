@@ -8,8 +8,6 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 
-const fipNumber = '73b';
-
 /*
 FIP-77:
 
