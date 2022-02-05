@@ -1,7 +1,7 @@
 import { ProposalDescription } from '@custom-types/types';
 
 const fip_77: ProposalDescription = {
-  title: 'FIP-77: Withdraw BentoBox',
+  title: 'FIP-77: FEI-3Crv rewards',
   commands: [
     {
       target: 'tribalChief',

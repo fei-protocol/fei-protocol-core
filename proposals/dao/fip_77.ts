@@ -34,6 +34,20 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   logging && console.log('Validate:');
+  const { rariPool8Comptroller, tribalChief } = contracts;
+  // supply cap
+  const fei3CrvCToken = await rariPool8Comptroller.cTokensByUnderlying(addresses.curve3Metapool);
+
+  expect(await rariPool8Comptroller.supplyCaps(fei3CrvCToken)).to.be.equal(
+    ethers.constants.WeiPerEther.mul(250_000_000)
+  ); // 250m
+
+  // TribalChief
+  expect(await tribalChief.stakedToken(1)).to.be.equal(addresses.curve3Metapool);
+  expect(await tribalChief.stakedToken(14)).to.be.equal(addresses.fei3CrvStakingtokenWrapper);
+
+  expect((await tribalChief.poolInfo(1)).allocPoint).to.be.equal(0);
+  expect((await tribalChief.poolInfo(14)).allocPoint).to.be.equal(1000);
 };
 
 export { deploy, setup, teardown, validate };

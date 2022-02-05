@@ -14,15 +14,15 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  // fip_73d: {
-  //   deploy: false,
-  //   proposalId: undefined,
-  //   affectedContractSignoff: ['fei', 'optimisticTimelock'],
-  //   deprecatedContractSignoff: [],
-  //   category: ProposalCategory.OA,
-  //   totalValue: 0,
-  //   proposal: fip_73d
-  // },
+  fip_73d: {
+    deploy: false,
+    proposalId: undefined,
+    affectedContractSignoff: ['fei', 'optimisticTimelock'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.OA,
+    totalValue: 0,
+    proposal: fip_73d
+  },
   fip_77: {
     deploy: false,
     proposalId: undefined,
