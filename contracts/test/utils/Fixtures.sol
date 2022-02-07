@@ -16,8 +16,7 @@ struct FeiTestAddresses {
 }
 
 
-/// @notice Get a list of addresses 
-// TODO: Put real addresses in here
+/// @dev Get a list of addresses
 function getAddresses() pure returns (
   FeiTestAddresses memory
 ) {
@@ -38,8 +37,9 @@ function getAddresses() pure returns (
     return addresses;
 }
 
+/// @dev Deploy and configure Core
 function getCore() returns (Core) {
-    address HEVM_ADDRESS = address(bytes20(uint160(uint256(keccak256('hevm cheat code')))));
+    address HEVM_ADDRESS = address(bytes20(uint160(uint256(keccak256("hevm cheat code")))));
     Vm vm = Vm(HEVM_ADDRESS);
     FeiTestAddresses memory addresses = getAddresses();
 
