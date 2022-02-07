@@ -13,6 +13,7 @@ abstract contract TribeMetadataV1 {
         uint8 minor;
         uint8 patch;
         string name;
+        string domain;
     }
 
     TribeMetadata public metadata;
@@ -21,11 +22,13 @@ abstract contract TribeMetadataV1 {
         uint8 major,
         uint8 minor,
         uint8 patch,
-        string memory name
+        string memory name,
+        string memory domain
     ) {
         metadata.major = major;
         metadata.minor = minor;
         metadata.patch = patch;
         metadata.name = name;
+        metadata.domain = domain;
     }
 }
