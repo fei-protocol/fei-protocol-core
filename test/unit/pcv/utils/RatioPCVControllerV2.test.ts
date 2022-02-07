@@ -21,7 +21,7 @@ import {
 
 const toBN = ethers.BigNumber.from;
 
-describe.skip('RatioPCVControllerV2', function () {
+describe('RatioPCVControllerV2', function () {
   let userAddress: string;
   let governorAddress: string;
   let pcvControllerAddress: string;
