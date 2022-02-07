@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   discord: antonioned/discord@0.1.0
+
 jobs:
   build:
     working_directory: ~/repo
@@ -62,6 +63,23 @@ jobs:
             path: test-results
       - store_artifacts:
             path: test-results
+
+  test-forge:
+    working_directory: ~/repo
+    machine:
+      image: ubuntu-1604:202007-01
+    steps:
+      - checkout
+      - run:
+          name: Setup env
+          command: echo "export PATH=$PATH:$(pwd)/.circleci" >> /home/circleci/.bashrc
+      - run: 
+          name: Install Foundry
+          command: curl -L https://foundry.paradigm.xyz | bash; source /home/circleci/.bashrc; foundryup 
+      - run:
+          name: Run tests
+          command: forge test      
+
   e2e-test:
     working_directory: ~/repo
     docker:
@@ -85,13 +103,18 @@ jobs:
 workflows:
   main:
     jobs:
-      - build
-      - lint: 
-          requires:
-            - build
-      - test:
-          requires:
-            - build
-      - e2e-test:
-          requires:
-            - build
+      # - build
+      
+      - test-forge
+          
+          # requires:
+          #   - build
+      # - lint: 
+      #     requires:
+      #       - build
+      # - test:
+      #     requires:
+      #       - build
+      # - e2e-test:
+      #     requires:
+      #       - build
