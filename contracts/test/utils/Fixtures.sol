@@ -22,17 +22,17 @@ function getAddresses() pure returns (
   FeiTestAddresses memory
 ) {
     FeiTestAddresses memory addresses = FeiTestAddresses({
-      userAddress: address(0x0),
-      secondUserAddress: address(0x0),
-      beneficiaryAddress1: address(0x0),
-      beneficiaryAddress2: address(0x0),
-      governorAddress: address(0x1),
-      genesisGroup: address(0x0),
-      keeperAddress: address(0x0),
-      pcvControllerAddress: address(0x0),
-      minterAddress: address(0x0),
-      burnerAddress: address(0x0),
-      guardianAddress: address(0x0)
+      userAddress: address(0x1),
+      secondUserAddress: address(0x2),
+      beneficiaryAddress1: address(0x3),
+      beneficiaryAddress2: address(0x4),
+      governorAddress: address(0x5),
+      genesisGroup: address(0x6),
+      keeperAddress: address(0x7),
+      pcvControllerAddress: address(0x8),
+      minterAddress: address(0x9),
+      burnerAddress: address(0x10),
+      guardianAddress: address(0x11)
     });
 
     return addresses;
