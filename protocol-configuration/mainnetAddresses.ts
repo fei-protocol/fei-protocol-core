@@ -426,6 +426,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xC68412B72e68c30D4E6c0854b439CBBe957146e4',
     category: AddressCategory.PCV
   },
+  rariPool8DaiPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x9CC46aB5A714f7cd24C59f33C5769039B5872491',
+    category: AddressCategory.PCV
+  },
+  rariPool8LusdPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0xF846eE6E8EE9A6fbf51c7c65105CAbc041c048ad',
+    category: AddressCategory.PCV
+  },
   rariPool18FeiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x07F2DD7E6A78D96c08D0a8212f4097dCC129d629',
@@ -849,6 +859,11 @@ const MainnetAddresses: MainnetAddresses = {
   gUniFuseOracle: {
     artifactName: 'unknown',
     address: '0xEa3633b38C747ceA231aDB74b511DC2eD3992B43',
+    category: AddressCategory.FeiRari
+  },
+  rariPool8Lusd: {
+    artifactName: 'CErc20Delegator',
+    address: '0x647A36d421183a0a9Fa62717a64B664a24E469C7',
     category: AddressCategory.FeiRari
   },
   rariPool8Dai: {
