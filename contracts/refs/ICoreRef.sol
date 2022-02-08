@@ -14,8 +14,6 @@ interface ICoreRef {
 
     // ----------- Governor only state changing api -----------
 
-    function setCore(address newCore) external;
-
     function setContractAdminRole(bytes32 newContractAdminRole) external;
 
     // ----------- Governor or Guardian only state changing api -----------
