@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import "../core/TribeRoles.sol";
 import "../pcv/PCVDeposit.sol";
 
 interface DelegateRegistry {
@@ -42,9 +43,6 @@ contract SnapshotDelegatorPCVDeposit is PCVDeposit {
         token = _token;
         spaceId = _spaceId;
         _delegate(_initialDelegate);
-
-        // Use a shared role to manage meta-governance related actions
-        _setContractAdminRole(keccak256("METAGOV_ADMIN_ROLE"));
     }
 
     /// @notice withdraw tokens from the PCV allocation
@@ -72,20 +70,17 @@ contract SnapshotDelegatorPCVDeposit is PCVDeposit {
     }
 
     /// @notice sets the snapshot space ID
-    /// @dev callable by governor or admin
-    function setSpaceId(bytes32 _spaceId) external onlyGovernorOrAdmin {
+    function setSpaceId(bytes32 _spaceId) external onlyTribeRole(TribeRoles.METAGOVERNANCE_ADMIN) {
         spaceId = _spaceId;
     }
 
     /// @notice sets the snapshot delegate
-    /// @dev callable by governor or admin
-    function setDelegate(address newDelegate) external onlyGovernorOrAdmin {
+    function setDelegate(address newDelegate) external onlyTribeRole(TribeRoles.METAGOVERNANCE_ADMIN) {
         _delegate(newDelegate);
     }
 
     /// @notice clears the delegate from snapshot
-    /// @dev callable by governor or guardian
-    function clearDelegate() external onlyGuardianOrGovernor {
+    function clearDelegate() external onlyTribeRole(TribeRoles.METAGOVERNANCE_ADMIN) {
         address oldDelegate = delegate;
         DELEGATE_REGISTRY.clearDelegate(spaceId);
 

@@ -58,6 +58,9 @@ library TribeRoles {
     /// @notice manages the constituents of Optimistic Timelocks, including Proposers and Executors
     bytes32 internal constant OPTIMISTIC_ADMIN = keccak256("OPTIMISTIC_ADMIN");
 
+    /// @notice manages meta-governance actions, like voting & changing delegatees
+    bytes32 internal constant METAGOVERNANCE_ADMIN = keccak256("METAGOVERNANCE_ADMIN");
+
     /*///////////////////////////////////////////////////////////////
                                  Minor Roles
     //////////////////////////////////////////////////////////////*/
