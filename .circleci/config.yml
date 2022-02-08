@@ -68,17 +68,19 @@ jobs:
     working_directory: ~/repo
     machine:
       image: ubuntu-1604:202007-01
+    environment:
+      - BASH_ENV: /home/circleci/.bashrc
     steps:
       - checkout
       - run:
           name: Setup env
-          command: echo "export PATH=$PATH:$(pwd)/.circleci" >> /home/circleci/.bashrc
+          command: echo "export PATH=$PATH:$(pwd)/.circleci" >> $BASH_ENV
       - run: 
           name: Install Foundry
-          command: curl -L https://foundry.paradigm.xyz | bash; source /home/circleci/.bashrc; foundryup 
+          command: curl -L https://foundry.paradigm.xyz | bash; source $BASH_ENV; foundryup 
       - run:
           name: Run tests
-          command: forge test      
+          command: source $BASH_ENV; forge test      
 
   e2e-test:
     working_directory: ~/repo

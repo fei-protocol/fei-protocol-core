@@ -20,6 +20,7 @@
     "lint-all": "eslint --config ./.eslintrc --ignore-path ./.eslintignore --ext .js,.jsx,.ts,.tsx .",
     "lint:fix": "eslint --fix --config ./.eslintrc --ignore-path ./.eslintignore --ext .ts,.tsx .",
     "size-contracts": "npx hardhat size-contracts",
+    "setup:forge": "curl -L https://foundry.paradigm.xyz | bash && foundryup",
     "deploy:localhost": "npx hardhat run --network localhost scripts/deploy/migrations.ts",
     "deploy:main": "npx hardhat run --network mainnet scripts/deploy/migrations.ts",
     "deploy:fip": "IS_FIP=true npm run deploy:main",
