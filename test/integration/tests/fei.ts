@@ -81,13 +81,7 @@ describe('e2e-fei', function () {
     });
   });
 
-  /* Test disabled until restrictedPermissions is deployed. */
   describe('CoreRef Functionality', async function () {
-    it('setCore', async function () {
-      expect(await contracts.core.isGovernor(deployAddress)).to.be.true;
-      await expectRevert(fei.connect(deploySigner).setCore(ZERO_ADDRESS), 'CoreRef: Caller is not a governor');
-    });
-
     it('pause/unpause', async function () {
       await contracts.core.grantGuardian(deployAddress);
       expect(await contracts.core.isGuardian(deployAddress)).to.be.true;

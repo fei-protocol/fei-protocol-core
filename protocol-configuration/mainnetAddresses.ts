@@ -114,10 +114,10 @@ const MainnetAddresses: MainnetAddresses = {
   daiPSM: {
     artifactName: 'PriceBoundPSM',
     address: '0x210300C158f95E1342fD008aE417ef68311c49C2',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   lusdPSM: {
-    artifactName: 'MintRedeemPausePSM',
+    artifactName: 'PegStabilityModule',
     address: '0xb0e731F036AdfDeC12da77c15aaB0F90E8e45A0e',
     category: AddressCategory.Peg
   },
@@ -132,7 +132,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Peg
   },
   ethPSM: {
-    artifactName: 'MintRedeemPausePSM',
+    artifactName: 'PegStabilityModule',
     address: '0x98E5F5706897074a4664DD3a32eB80242d6E694B',
     category: AddressCategory.Peg
   },
@@ -151,9 +151,9 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xA8A25F8cbfC5053241aB6FA87b865755dcB5501F',
     category: AddressCategory.Peg
   },
-  daiPSMFeiSkimmer: {
-    artifactName: 'FeiSkimmer',
-    address: '0xf8Ca6c10a794C867497541F5b7A7f96ca2bCd1E8',
+  daiFixedPricePSM: {
+    artifactName: 'FixedPricePSM',
+    address: '0x2A188F9EB761F70ECEa083bA6c2A40145078dfc2',
     category: AddressCategory.Peg
   },
   aaveEthPCVDeposit: {
@@ -811,6 +811,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x7b834cA07f81d52bB52d98DaE560D1442b2d7dBa',
     category: AddressCategory.Rewards
   },
+  stakingTokenWrapperBribe3Crvpool: {
+    artifactName: 'StakingTokenWrapper',
+    address: '0xaC98807E5CC43f134b00E87349e4ea3eDf927961',
+    category: AddressCategory.Rewards
+  },
+  votiumBriber3Crvpool: {
+    artifactName: 'VotiumBriber',
+    address: '0x8B6A295a35171E2F05B1579E485017B999810dcb',
+    category: AddressCategory.Rewards
+  },
   votiumBriberD3pool: {
     artifactName: 'VotiumBriber',
     address: '0x0BEC570466B466aB689Ad33F1Ce5238CA43C8003',
@@ -1056,6 +1066,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xdAE7e32ADc5d490a43cCba1f0c736033F2b4eFca',
     category: AddressCategory.External
   },
+  barnbridgeAFei: {
+    artifactName: 'ISmartYield',
+    address: '0xA3abb32c657adA8803bF6AEEF6Eb42B29c74bf28',
+    category: AddressCategory.External
+  },
   bamm: {
     artifactName: 'IBAMM',
     address: '0x0d3AbAA7E088C2c82f54B2f47613DA438ea8C598',
@@ -1224,6 +1239,21 @@ const MainnetAddresses: MainnetAddresses = {
   gUniFeiUsdcLP: {
     artifactName: 'unknown',
     address: '0xCf84a3dC12319531E3deBD48C86E68eAeAfF224a',
+    category: AddressCategory.External
+  },
+  idleBestYield: {
+    artifactName: 'IIdleToken',
+    address: '0xb2d5cb72a621493fe83c6885e4a776279be595bc',
+    category: AddressCategory.External
+  },
+  idleTranches: {
+    artifactName: 'IERC20',
+    address: '0x9ce3a740df498646939bcbb213a66bbfa1440af6',
+    category: AddressCategory.External
+  },
+  idleTranchesMinter: {
+    artifactName: 'IIdleTrancheMinter',
+    address: '0x77648A2661687ef3B05214d824503F6717311596',
     category: AddressCategory.External
   },
   hypervisor: {
@@ -1506,6 +1536,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xFf419Bc27483edb94b7Ad5c97b7FaB5DB323c7E0',
     category: AddressCategory.Deprecated
   },
+  daiPSMFeiSkimmer: {
+    artifactName: 'FeiSkimmer',
+    address: '0xf8Ca6c10a794C867497541F5b7A7f96ca2bCd1E8',
+    category: AddressCategory.Deprecated
+  },
   defiPulseOTC: {
     artifactName: 'unknown',
     address: '0x673d140eed36385cb784e279f8759f495c97cf03',
@@ -1714,6 +1749,26 @@ const MainnetAddresses: MainnetAddresses = {
   reptbRedeemer: {
     artifactName: 'REPTbRedeemer',
     address: '0xfEa132A3B7B70089f3d58F04eC1D1C2F321ef660',
+    category: AddressCategory.TBD
+  },
+  kashiRedeemer: {
+    artifactName: 'KashiPCVRedeemer',
+    address: '0x14a38801FcC8a20b6c26cBcF85B7231218633928',
+    category: AddressCategory.TBD
+  },
+  idleTranchesRedeemer: {
+    artifactName: 'IdleTranchePCVRedeemer',
+    address: '0x4E2F5e67e0A7A9bbFc257CEB1586D56F20364077',
+    category: AddressCategory.TBD
+  },
+  idleRedeemer: {
+    artifactName: 'IdlePCVRedeemer',
+    address: '0xBca1d1eC00581ad3033eB88D9F0206BB4B9D1b90',
+    category: AddressCategory.TBD
+  },
+  bbRedeemer: {
+    artifactName: 'SmartYieldRedeemer',
+    address: '0x2dC77678Be7F900e81c638b056F4835BB7203C96',
     category: AddressCategory.TBD
   }
 };
