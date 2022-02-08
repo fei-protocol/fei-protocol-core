@@ -15,7 +15,7 @@ before(async () => {
 });
 
 // TODO add address to mainnet addresses config
-const plugin = '0x2a810409872afc346f9b5b26571fd6ec42ea4849';
+const plugin = '0xca8c8688914e0f7096c920146cd0ad85cd7ae8b9';
 
 describe('e2e-fuse', function () {
   let contracts: NamedContracts;
@@ -46,6 +46,13 @@ describe('e2e-fuse', function () {
   });
 
   describe('D3 Fuse Plugin', function () {
+    it('Plugin can reset rewards array', async function () {
+      const p = await ethers.getContractAt('IConvexERC4626', plugin);
+
+      await p.updateRewardTokens();
+      expect(await p.rewardTokens(0)).to.be.equal(contractAddresses.cvx);
+    });
+
     it('deposit, claim, then withdraw', async function () {
       const comptroller = await ethers.getContractAt('Unitroller', contractAddresses.rariPool8Comptroller);
 

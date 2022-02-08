@@ -13,8 +13,8 @@ import { forceEth } from '@test/integration/setup/utils';
 
 chai.use(CBN(ethers.BigNumber));
 
-const cErc20PluginImpl = '0xb9bEECD1A582768711dE1EE7B0A1d582D9d72a6C';
-const plugin = '0x2a810409872afc346f9b5b26571fd6ec42ea4849';
+const cErc20PluginImpl = '0xB0f05d25e41FbC2b52013099ED9616f1206Ae21B';
+const plugin = '0xca8c8688914e0f7096c920146cd0ad85cd7ae8b9';
 
 /*
 FIP-60d: Curve and Convex Farming for FeiRari
