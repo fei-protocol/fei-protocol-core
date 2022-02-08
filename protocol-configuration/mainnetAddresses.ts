@@ -986,9 +986,19 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x5adDc89785D75C86aB939E9e15bfBBb7Fc086A87',
     category: AddressCategory.External
   },
-  angleStakingRewards: {
-    artifactName: 'IStakingRewards',
-    address: '0xBcb307F590972B1C3188b7916d2969Cf75309dc6',
+  angleGaugeController: {
+    artifactName: 'ILiquidityGaugeController',
+    address: '0x9aD7e7b0877582E14c17702EecF49018DD6f2367',
+    category: AddressCategory.External
+  },
+  angleGaugeUniswapV2FeiAgEur: {
+    artifactName: 'ILiquidityGauge',
+    address: '0xd6282C5aEAaD4d776B932451C44b8EB453E44244',
+    category: AddressCategory.External
+  },
+  veAngle: {
+    artifactName: 'IVeToken',
+    address: '0x0C462Dbb9EC8cD1630f1728B2CFD2769d09f0dd5',
     category: AddressCategory.External
   },
   aRai: {
