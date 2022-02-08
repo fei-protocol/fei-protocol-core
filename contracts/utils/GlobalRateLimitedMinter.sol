@@ -17,6 +17,8 @@ contract GlobalRateLimitedMinter is MultiRateLimited, IGlobalRateLimitedMinter {
         address coreAddress,
         uint256 _globalMaxRateLimitPerSecond,
         uint256 _globalRateLimitPerSecond,
+        uint256 _maxRateLimitPerSecondSubGovernor,
+        uint256 _maxBufferCapSubGovernor,
         uint256 _bufferCap,
         bool _doPartialAction
     )
@@ -24,6 +26,8 @@ contract GlobalRateLimitedMinter is MultiRateLimited, IGlobalRateLimitedMinter {
             coreAddress,
             _globalMaxRateLimitPerSecond,
             _globalRateLimitPerSecond,
+            _maxRateLimitPerSecondSubGovernor,
+            _maxBufferCapSubGovernor,
             _bufferCap,
             _doPartialAction
         )

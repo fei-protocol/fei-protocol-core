@@ -25,11 +25,31 @@ interface IMultiRateLimited {
     /// @notice emitted when rate limit is updated
     event IndividualRateLimitPerSecondUpdate(address rateLimitedAddress, uint256 oldRateLimitPerSecond, uint256 newRateLimitPerSecond);
 
+    /// @notice emitted when the sub gov buffer cap max is updated
+    event SubGovBufferCapUpdate(uint256 oldBufferCap, uint256 newBufferCap);
+
+    /// @notice emitted when the sub gov buffer rate limit per second max is updated
+    event SubGovMaxRateLimitPerSecondUpdate(uint256 oldMaxRateLimitPerSecond, uint256 newMaxRateLimitPerSecond);
+
+    /// @notice update the sub gov max rate limit per second
+    function updateSubGovMaxRateLimitPerSecond(uint256 newMaxRateLimitPerSecond) external;
+
+    /// @notice update the sub gov max buffer cap
+    function updateSubGovMaxBufferCap(uint256 newBufferCap) external;
+
     /// @notice add an authorized contract, its per second replenishment and buffer
     function addAddress(address, uint112, uint144) external;
 
+    /// @notice add an authorized contract, its per second replenishment and buffer
+    /// complies with max sub governor buffer cap and rate limit per second
+    function addAddressSubGovernor(address, uint112, uint144) external;
+
     /// @notice update an authorized contract
     function updateAddress(address, uint112, uint144) external;
+
+    /// @notice update an authorized contract, its per second replenishment and buffer
+    /// complies with max sub governor buffer cap and rate limit per second
+    function updateAddressSubGovernor(address, uint112, uint144) external;
 
     /// @notice remove an authorized contract
     function removeAddress(address) external;
