@@ -3,7 +3,7 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { expectRevert, getImpersonatedSigner, resetFork, ZERO_ADDRESS } from '@test/helpers';
+import { expectRevert, getAddresses, getImpersonatedSigner, resetFork, ZERO_ADDRESS } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { Fei } from '@custom-types/contracts';
@@ -94,11 +94,12 @@ describe('e2e-fei', function () {
     });
 
     it('hasAnyOfRoles works', async function () {
+      const addresses = await getAddresses();
       const mockCoreRefTestFacotry = await ethers.getContractFactory('MockCoreRefTest');
       const mockCoreRefTest = await mockCoreRefTestFacotry.deploy();
       await mockCoreRefTest.governorOrGuardianTest();
       expect(
-        await mockCoreRefTest.connect(await getImpersonatedSigner(deployAddress)).governorOrGuardianTest()
+        await mockCoreRefTest.connect(await getImpersonatedSigner(addresses.secondUserAddress)).governorOrGuardianTest()
       ).to.be.revertedWith('UNAUTHORIZED');
     });
   });
