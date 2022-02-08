@@ -10,7 +10,7 @@ abstract contract Unitroller {
         uint collateralFactorMantissa;
         mapping(address => bool) accountMembership;
     }
-    
+
     address public admin;
     address public borrowCapGuardian;
     address public pauseGuardian;
@@ -23,7 +23,9 @@ abstract contract Unitroller {
     mapping(address => address) public cTokensByUnderlying;
     mapping(address => uint) public supplyCaps;
 
-    function _setPendingAdmin(address newPendingAdmin) public virtual returns (uint); 
+    function enterMarkets(address[] memory cTokens) public virtual returns (uint[] memory);
+
+    function _setPendingAdmin(address newPendingAdmin) public virtual returns (uint);
 
     function _setBorrowCapGuardian(address newBorrowCapGuardian) public virtual;
     function _setMarketSupplyCaps(CToken[] calldata cTokens, uint[] calldata newSupplyCaps) external virtual;
