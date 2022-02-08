@@ -23,23 +23,22 @@ const proposals: ProposalsConfigMap = {
       'aaveEthPCVDeposit',
       'uniswapPCVDeposit',
       'compoundDaiPCVDeposit',
-      'rariPool8DaiPCVDeposit',
       'bammDeposit',
-      'rariPool8LusdPCVDeposit',
       'ratioPCVControllerV2',
-      'dpiUniswapPCVDeposit',
       'feiDAOTimelock',
       'collateralizationOracle',
+      'rariPool8DaiPCVDeposit',
+      'rariPool8LusdPCVDeposit',
+      'votiumBriber3Crvpool'
+    ],
+    deprecatedContractSignoff: [
+      'dpiUniswapPCVDeposit',
       'rariPool7FeiPCVDepositWrapper',
       'rariPool9FeiPCVDepositWrapper',
       'rariPool26FeiPCVDepositWrapper',
       'rariPool28FeiPCVDepositWrapper',
-      'rariPool91FeiPCVDepositWrapper',
-      'dpiUniswapPCVDeposit',
-      'rariPool8DaiPCVDeposit',
-      'rariPool8LusdPCVDeposit'
+      'rariPool91FeiPCVDepositWrapper'
     ],
-    deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_76b
