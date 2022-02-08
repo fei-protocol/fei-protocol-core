@@ -108,8 +108,6 @@ describe('e2e-pcv', function () {
     });
   });
 
-  /// pause this test as it has been disabled for FIP-62
-  /// PCVDripController now sends funds to the eth PSM
   describe('Drip Controller', async () => {
     before(async function () {
       // unpause contracts if needed

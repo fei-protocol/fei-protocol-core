@@ -48,7 +48,7 @@ describe('e2e-tribalchief', function () {
     const documentedPoolsValues = Object.values(tribalchief);
     for (let i = 0; i < numPools && i < documentedPoolsKeys.length; i++) {
       const documentedStakedContract = mainnetAddresses[documentedPoolsKeys[i]];
-      const errmsg1 = 'Staked token "' + documentedPoolsKeys[i] + '" is not found in mainnetAddresses.ts';
+      const errmsg1 = `Staked token "${documentedPoolsKeys[i]}" is not found in mainnetAddresses.ts`;
       expect(documentedStakedContract).to.not.be.equal(undefined, errmsg1);
 
       const poolInfo = await contracts.tribalChief.poolInfo(i);
@@ -59,41 +59,16 @@ describe('e2e-tribalchief', function () {
           stakedTokenName = key;
         }
       }
-      const errmsg2 =
-        'Staked token "' +
-        documentedPoolsKeys[i] +
-        '" has wrong address' +
-        (stakedTokenName
-          ? '. Did you mean "' +
-            stakedTokenName +
-            '" ? This contract is what is actually staked on the TribalChief pool #' +
-            i +
-            '.'
-          : '');
+      let errmsg2 = `Staked token "${documentedPoolsKeys[i]}" has wrong address`;
+      if (stakedTokenName) {
+        errmsg2 += `. Did you mean "${stakedTokenName}" ? This contract is what is actually staked on the TribalChief pool #${i}.`;
+      }
       expect(stakedToken).to.be.equal(documentedStakedContract.address, errmsg2);
 
-      const errmsg3 =
-        'TribalChief pool #' +
-        i +
-        ' "' +
-        documentedPoolsKeys[i] +
-        '" has ' +
-        poolInfo.allocPoint +
-        ' allocPoint on-chain, but ' +
-        documentedPoolsValues[i].allocPoint +
-        ' in the config file.';
+      const errmsg3 = `TribalChief pool #${i} "${documentedPoolsKeys[i]}" has ${poolInfo.allocPoint} allocPoint on-chain, but ${documentedPoolsValues[i].allocPoint} in the config file.`;
       expect(poolInfo.allocPoint, errmsg3).to.be.equal(documentedPoolsValues[i].allocPoint);
 
-      const errmsg4 =
-        'TribalChief pool #' +
-        i +
-        ' "' +
-        documentedPoolsKeys[i] +
-        '" has unlocked=' +
-        poolInfo.unlocked +
-        ' on-chain, but ' +
-        documentedPoolsValues[i].unlocked +
-        ' in the config file.';
+      const errmsg4 = `TribalChief pool #${i} "${documentedPoolsKeys[i]}" has unlocked=${poolInfo.unlocked} on-chain, but ${documentedPoolsValues[i].unlocked} in the config file.`;
       expect(poolInfo.unlocked).to.be.equal(documentedPoolsValues[i].unlocked, errmsg4);
     }
   });
