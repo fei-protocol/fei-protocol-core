@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "../PCVDeposit.sol";
+import "../pcv/PCVDeposit.sol";
 
 interface DelegateRegistry {
     function setDelegate(bytes32 id, address delegate) external;
@@ -19,13 +19,13 @@ contract SnapshotDelegatorPCVDeposit is PCVDeposit {
 
     /// @notice the Gnosis delegate registry used by snapshot
     DelegateRegistry public constant DELEGATE_REGISTRY = DelegateRegistry(0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446);
-    
+
     /// @notice the token that is being used for snapshot
     IERC20 public immutable token;
 
     /// @notice the keccak encoded spaceId of the snapshot space
     bytes32 public spaceId;
-    
+
     /// @notice the snapshot delegate for the deposit
     address public delegate;
 
@@ -42,6 +42,9 @@ contract SnapshotDelegatorPCVDeposit is PCVDeposit {
         token = _token;
         spaceId = _spaceId;
         _delegate(_initialDelegate);
+
+        // Use a shared role to manage meta-governance related actions
+        _setContractAdminRole(keccak256("METAGOV_ADMIN_ROLE"));
     }
 
     /// @notice withdraw tokens from the PCV allocation
@@ -59,13 +62,19 @@ contract SnapshotDelegatorPCVDeposit is PCVDeposit {
     function deposit() external override {}
 
     /// @notice returns total balance of PCV in the Deposit
-    function balance() public view override returns (uint256) {
+    function balance() public view virtual override returns (uint256) {
         return token.balanceOf(address(this));
     }
 
     /// @notice display the related token of the balance reported
     function balanceReportedIn() public view override returns (address) {
         return address(token);
+    }
+
+    /// @notice sets the snapshot space ID
+    /// @dev callable by governor or admin
+    function setSpaceId(bytes32 _spaceId) external onlyGovernorOrAdmin {
+        spaceId = _spaceId;
     }
 
     /// @notice sets the snapshot delegate
