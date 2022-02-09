@@ -10,11 +10,13 @@ interface ILiquidityGauge {
     function withdraw(uint256 value, bool claim_rewards) external;
     function claim_rewards() external;
     function balanceOf(address) external view returns(uint256);
+    function staking_token() external view returns(address);
 }
 interface ILiquidityGaugeController {
     function vote_for_gauge_weights(address gauge_addr, uint256 user_weight) external;
     function last_user_vote(address user, address gauge) external view returns(uint256);
     function vote_user_power(address user) external view returns(uint256);
+    function gauge_types(address gauge) external view returns(int128);
 }
 
 /// @title Liquidity gauge manager, used to stake tokens in liquidity gauges.
@@ -44,6 +46,8 @@ abstract contract LiquidityGaugeManager is CoreRef {
         address token,
         address gaugeAddress
     ) public onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN) {
+        require(ILiquidityGauge(gaugeAddress).staking_token() == token, "LiquidityGaugeManager: wrong gauge for token");
+        require(ILiquidityGaugeController(gaugeController).gauge_types(gaugeAddress) >= 0, "LiquidityGaugeManager: wrong gauge address");
         tokenToGauge[token] = gaugeAddress;
     }
 
