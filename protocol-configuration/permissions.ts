@@ -6,7 +6,6 @@ export const permissions = {
     'pcvEquityMinter',
     'collateralizationOracleKeeper',
     'optimisticMinter',
-    'agEurAngleUniswapPCVDeposit',
     'daiFixedPricePSM',
     'ethPSM',
     'lusdPSM',
@@ -32,5 +31,9 @@ export const permissions = {
   PSM_ADMIN_ROLE: [],
   TRIBAL_CHIEF_ADMIN_ROLE: ['optimisticTimelock', 'tribalChiefSyncV2'],
   VOTIUM_ADMIN_ROLE: ['opsOptimisticTimelock'],
-  PCV_GUARDIAN_ADMIN_ROLE: ['optimisticTimelock']
+  PCV_GUARDIAN_ADMIN_ROLE: ['optimisticTimelock'],
+  METAGOVERNANCE_VOTE_ADMIN: ['feiDAOTimelock', 'opsOptimisticTimelock'],
+  METAGOVERNANCE_TOKEN_STAKING: ['feiDAOTimelock', 'opsOptimisticTimelock'],
+  METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'opsOptimisticTimelock'],
+  METAGOVERNANCE_GAUGE_STAKING: ['feiDAOTimelock', 'opsOptimisticTimelock']
 };

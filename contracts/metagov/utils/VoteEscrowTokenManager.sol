@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../../refs/CoreRef.sol";
+import "../../core/TribeRoles.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IVeToken {
@@ -43,10 +44,9 @@ abstract contract VoteEscrowTokenManager is CoreRef {
     }
 
     /// @notice Deposit tokens to get veTokens. Set lock duration to MAXTIME.
-    /// @dev permissionless: anyone can lock tokens and extend the lock
-    /// duration at anytime. The only way to withdraw tokens will be to
-    /// pause this contract for MAXTIME and then call exitLock().
-    function lock() external whenNotPaused {
+    /// The only way to withdraw tokens will be to pause this contract
+    /// for MAXTIME and then call exitLock().
+    function lock() external whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_TOKEN_STAKING) {
         uint256 tokenBalance = liquidToken.balanceOf(address(this));
         uint256 locked = veToken.locked(address(this));
         uint256 lockHorizon = block.timestamp + MAXTIME;
@@ -71,11 +71,11 @@ abstract contract VoteEscrowTokenManager is CoreRef {
 
     /// @notice Exit the veToken lock. For this function to be called and not
     /// revert, tokens had to be locked previously, and the contract must have
-    /// been paused for MAXTIME in order to prevent permissionless lock extensions
+    /// been paused for MAXTIME in order to prevent lock extensions
     /// by calling lock(). This function will recover tokens on the contract,
     /// which can then be moved by calling withdraw() as a PCVController if the
     /// contract is also a PCVDeposit, for instance.
-    function exitLock() external {
+    function exitLock() external onlyTribeRole(TribeRoles.METAGOVERNANCE_TOKEN_STAKING) {
         veToken.withdraw();
     }
 

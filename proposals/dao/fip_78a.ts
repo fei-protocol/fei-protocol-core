@@ -10,6 +10,8 @@ import {
 import { getImpersonatedSigner, time } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 
+const e18 = (x) => ethers.constants.WeiPerEther.mul(x);
+
 const fipNumber = '78a';
 const DELEGATE_ANGLE = '0x6ef71cA9cD708883E129559F5edBFb9d9D5C6148';
 
@@ -81,7 +83,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // Check that liquidity was correctly migrated to the gauge
   expect(
     await contracts.angleGaugeUniswapV2FeiAgEur.balanceOf(contracts.angleDelegatorPCVDeposit.address)
-  ).to.be.at.least(ethers.constants.WeiPerEther.mul(9337023)); // should have the same balance as currently
+  ).to.be.at.least(e18(9_000_000)); // should have the same balance as currently
 
   // Check that gauge vote is properly set to agEUR/FEI Uniswap-v2 pool
   expect(await contracts.angleGaugeController.vote_user_power(contracts.angleDelegatorPCVDeposit.address)).to.be.equal(
@@ -96,88 +98,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // All ANGLE converted to veANGLE
   expect(await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)).to.be.equal('0');
-  expect(await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)).to.be.at.least(
-    ethers.constants.WeiPerEther.mul(160000)
-  );
-
-  // Angle game
-  console.log(
-    'angleDelegatorPCVDeposit ANGLE balance',
-    (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
-  );
-  console.log(
-    'angleDelegatorPCVDeposit veANGLE balance',
-    (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
-  );
-  console.log('ff 1 year');
-  await time.increase(365 * 24 * 3600);
-  await time.advanceBlock();
-  console.log(
-    'angleDelegatorPCVDeposit ANGLE balance',
-    (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
-  );
-  console.log(
-    'angleDelegatorPCVDeposit veANGLE balance',
-    (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
-  );
-  console.log('claim gauge rewards');
-  await contracts.angleDelegatorPCVDeposit.claimGaugeRewards(
-    contracts.angleGaugeUniswapV2FeiAgEur.address // gauge address
-  );
-  console.log(
-    'angleDelegatorPCVDeposit ANGLE balance',
-    (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
-  );
-  console.log(
-    'angleDelegatorPCVDeposit veANGLE balance',
-    (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
-  );
-  console.log('prolong locking period');
-  await contracts.angleDelegatorPCVDeposit.lock();
-  console.log(
-    'angleDelegatorPCVDeposit ANGLE balance',
-    (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
-  );
-  console.log(
-    'angleDelegatorPCVDeposit veANGLE balance',
-    (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
-  );
-  console.log('ff 4 years');
-  await time.increase(4 * 365 * 24 * 3600);
-  await time.advanceBlock();
-  await time.advanceBlock();
-  await time.advanceBlock();
-  await time.advanceBlock();
-  console.log(
-    'angleDelegatorPCVDeposit ANGLE balance',
-    (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
-  );
-  console.log(
-    'angleDelegatorPCVDeposit veANGLE balance',
-    (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
-  );
-  /*console.log('exitLock()');
-  await contracts.angleDelegatorPCVDeposit.exitLock();
-  console.log(
-    'angleDelegatorPCVDeposit ANGLE balance',
-    (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
-  );
-  console.log(
-    'angleDelegatorPCVDeposit veANGLE balance',
-    (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
-  );*/
-  console.log('lock()');
-  await contracts.angleDelegatorPCVDeposit.lock();
-  console.log(
-    'angleDelegatorPCVDeposit ANGLE balance',
-    (await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
-  );
-  console.log(
-    'angleDelegatorPCVDeposit veANGLE balance',
-    (await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)) / 1e18
-  );
-
-  console.log('FIP-78a done');
+  expect(await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)).to.be.at.least(e18(160_000));
 };
 
 export { deploy, setup, teardown, validate };

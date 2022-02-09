@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../../refs/CoreRef.sol";
+import "../../core/TribeRoles.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface ILiquidityGauge {
@@ -20,51 +21,76 @@ interface ILiquidityGaugeController {
 /// @author Fei Protocol
 abstract contract LiquidityGaugeManager is CoreRef {
 
+    /// @notice address of the gauge controller used for voting
+    address public gaugeController;
+
+    /// @notice mapping of token staked to gauge address
+    mapping(address=>address) public tokenToGauge;
+
+    constructor(address _gaugeController) {
+        gaugeController = _gaugeController;
+    }
+
+    /// @notice Set the gauge controller used for gauge weight voting
+    /// @param _gaugeController the gauge controller address
+    function setGaugeController(address _gaugeController) public onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN) {
+        gaugeController = _gaugeController;
+    }
+
+    /// @notice Set gauge for a given token.
+    /// @param token the token address to stake in gauge
+    /// @param gaugeAddress the address of the gauge where to stake token
+    function setTokenToGauge(
+        address token,
+        address gaugeAddress
+    ) public onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN) {
+        tokenToGauge[token] = gaugeAddress;
+    }
+
     /// @notice Vote for a gauge's weight
-    /// @param gaugeController the address of a gauge controller contract
-    /// @param gaugeAddress the address of a gauge controlled by the gaugeController
+    /// @param token the address of the token to vote for
     /// @param gaugeWeight the weight of gaugeAddress in basis points [0, 10_000]
     function voteForGaugeWeight(
-        address gaugeController,
-        address gaugeAddress,
+        address token,
         uint256 gaugeWeight
-    ) public whenNotPaused onlyGovernorOrAdmin {
+    ) public whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN) {
+        address gaugeAddress = tokenToGauge[token];
+        require(gaugeAddress != address(0), "LiquidityGaugeManager: token has no gauge configured");
         ILiquidityGaugeController(gaugeController).vote_for_gauge_weights(gaugeAddress, gaugeWeight);
     }
 
     /// @notice Stake tokens in a gauge
-    /// @param gaugeAddress the address of a gauge to stake tokens in
     /// @param token the address of the token to stake in the gauge
     /// @param amount the amount of tokens to stake in the gauge
     function stakeInGauge(
-        address gaugeAddress,
         address token,
         uint256 amount
-    ) public whenNotPaused onlyPCVController {
+    ) public whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_STAKING) {
+        address gaugeAddress = tokenToGauge[token];
+        require(gaugeAddress != address(0), "LiquidityGaugeManager: token has no gauge configured");
         IERC20(token).approve(gaugeAddress, amount);
         ILiquidityGauge(gaugeAddress).deposit(amount);
     }
 
     /// @notice Stake all tokens held in a gauge
-    /// @param gaugeAddress the address of a gauge to stake tokens in
     /// @param token the address of the token to stake in the gauge
-    function stakeAllInGauge(
-        address gaugeAddress,
-        address token
-    ) public whenNotPaused onlyPCVController {
+    function stakeAllInGauge(address token) public whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_STAKING) {
+        address gaugeAddress = tokenToGauge[token];
+        require(gaugeAddress != address(0), "LiquidityGaugeManager: token has no gauge configured");
         uint256 amount = IERC20(token).balanceOf(address(this));
-        stakeInGauge(gaugeAddress, token, amount);
+        IERC20(token).approve(gaugeAddress, amount);
+        ILiquidityGauge(gaugeAddress).deposit(amount);
     }
 
     /// @notice Unstake tokens from a gauge
-    /// @param gaugeAddress the address of a gauge to unstake tokens from
     /// @param token the address of the token to unstake from the gauge
     /// @param amount the amount of tokens to unstake from the gauge
     function unstakeFromGauge(
-        address gaugeAddress,
         address token,
         uint256 amount
-    ) public whenNotPaused onlyPCVController {
+    ) public whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_STAKING) {
+        address gaugeAddress = tokenToGauge[token];
+        require(gaugeAddress != address(0), "LiquidityGaugeManager: token has no gauge configured");
         ILiquidityGauge(gaugeAddress).withdraw(amount, false);
     }
 

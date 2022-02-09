@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../../refs/CoreRef.sol";
+import "../../core/TribeRoles.sol";
 
 interface IOZGovernor {
     function propose(
@@ -24,7 +25,7 @@ abstract contract OZGovernorVoter is CoreRef {
         uint256[] memory values,
         bytes[] memory calldatas,
         string memory description
-    ) external onlyGovernorOrAdmin {
+    ) external onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN) {
         governor.propose(targets, values, calldatas, description);
     }
 
@@ -33,7 +34,7 @@ abstract contract OZGovernorVoter is CoreRef {
         IOZGovernor governor,
         uint256 proposalId,
         uint8 support
-    ) external onlyGovernorOrAdmin {
+    ) external onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN) {
         governor.castVote(proposalId, support);
     }
 }

@@ -70,17 +70,17 @@ contract SnapshotDelegatorPCVDeposit is PCVDeposit {
     }
 
     /// @notice sets the snapshot space ID
-    function setSpaceId(bytes32 _spaceId) external onlyTribeRole(TribeRoles.METAGOVERNANCE_ADMIN) {
+    function setSpaceId(bytes32 _spaceId) external onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN) {
         spaceId = _spaceId;
     }
 
     /// @notice sets the snapshot delegate
-    function setDelegate(address newDelegate) external onlyTribeRole(TribeRoles.METAGOVERNANCE_ADMIN) {
+    function setDelegate(address newDelegate) external onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN) {
         _delegate(newDelegate);
     }
 
     /// @notice clears the delegate from snapshot
-    function clearDelegate() external onlyTribeRole(TribeRoles.METAGOVERNANCE_ADMIN) {
+    function clearDelegate() external onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN) {
         address oldDelegate = delegate;
         DELEGATE_REGISTRY.clearDelegate(spaceId);
 

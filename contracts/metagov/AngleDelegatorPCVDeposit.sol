@@ -25,7 +25,7 @@ contract AngleDelegatorPCVDeposit is SnapshotDelegatorPCVDeposit, VoteEscrowToke
         IERC20(0x31429d1856aD1377A8A0079410B297e1a9e214c2), // ANGLE
         IVeToken(0x0C462Dbb9EC8cD1630f1728B2CFD2769d09f0dd5), // veANGLE
         4 * 365 * 86400 // 4 years
-    ) LiquidityGaugeManager() OZGovernorVoter() {}
+    ) LiquidityGaugeManager(address(0x9aD7e7b0877582E14c17702EecF49018DD6f2367)) OZGovernorVoter() {}
 
     /// @notice returns total balance of PCV in the Deposit
     function balance() public view override returns (uint256) {
