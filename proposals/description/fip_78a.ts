@@ -193,6 +193,13 @@ const fip_9001: ProposalDescription = {
         '{angleAgEurFeiPool}' // token
       ],
       description: 'Stake all Uni-v2 LP tokens in gauge'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposit(address)',
+      arguments: ['{uniswapLensAgEurUniswapGauge}'],
+      description: 'Add agEUR/FEI Uniswap Lens to cr oracle'
     }
   ],
   description: `

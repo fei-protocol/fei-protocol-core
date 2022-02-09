@@ -40,7 +40,7 @@ const collateralizationAddresses = {
   ],
   dpi: ['dpiUniswapPCVDeposit', 'rariPool19DpiPCVDepositWrapper', 'dpiDepositWrapper'],
   rai: ['rariPool9RaiPCVDepositWrapper', 'aaveRaiPCVDepositWrapper', 'raiDepositWrapper'],
-  agEUR: ['agEurAngleUniswapPCVDeposit', 'agEurDepositWrapper']
+  agEUR: ['agEurAngleUniswapPCVDeposit', 'agEurDepositWrapper', 'uniswapLensAgEurUniswapGauge']
 };
 
 export default collateralizationAddresses;

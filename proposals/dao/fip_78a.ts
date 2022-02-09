@@ -36,7 +36,28 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await agEurUniswapPCVDeposit.deployTransaction.wait();
   logging && console.log('New agEUR/FEI Uniswap PCVDeposit:', agEurUniswapPCVDeposit.address);
 
+  const gaugeLensFactory = await ethers.getContractFactory('GaugeLens');
+  const gaugeLensAgEurUniswapGauge = await gaugeLensFactory.deploy(
+    addresses.angleGaugeUniswapV2FeiAgEur,
+    angleDelegatorPCVDeposit.address
+  );
+  await gaugeLensAgEurUniswapGauge.deployTransaction.wait();
+  logging && console.log('gaugeLensAgEurUniswapGauge:', gaugeLensAgEurUniswapGauge.address);
+
+  const uniswapLensFactory = await ethers.getContractFactory('UniswapLens');
+  const uniswapLensAgEurUniswapGauge = await uniswapLensFactory.deploy(
+    gaugeLensAgEurUniswapGauge.address, // deposit to read from
+    addresses.core, // core
+    addresses.chainlinkEurUsdOracleWrapper, // oracle
+    ethers.constants.AddressZero, // no backup oracle
+    false // fei is token1 in the pool
+  );
+  await uniswapLensAgEurUniswapGauge.deployTransaction.wait();
+  logging && console.log('uniswapLensAgEurUniswapGauge:', uniswapLensAgEurUniswapGauge.address);
+
   return {
+    uniswapLensAgEurUniswapGauge,
+    gaugeLensAgEurUniswapGauge,
     angleDelegatorPCVDeposit,
     agEurUniswapPCVDeposit
   };
@@ -99,6 +120,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // All ANGLE converted to veANGLE
   expect(await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)).to.be.equal('0');
   expect(await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)).to.be.at.least(e18(160_000));
+
+  // Resistant balance & fei properly read
+  const resistantBalanceAndFei = await contracts.uniswapLensAgEurUniswapGauge.resistantBalanceAndFei();
+  expect(resistantBalanceAndFei[0]).to.be.at.least(e18(8_000_000)); // >8M agEUR
+  expect(resistantBalanceAndFei[1]).to.be.at.least(e18(9_900_000)); // >9.9M FEI
 };
 
 export { deploy, setup, teardown, validate };
