@@ -82,7 +82,7 @@ describe('e2e-fei', function () {
     });
   });
 
-  describe.only('CoreRef Functionality', async function () {
+  describe('CoreRef Functionality', async function () {
     it('pauses/unpauses', async function () {
       await contracts.core.grantGuardian(deployAddress);
       expect(await contracts.core.isGuardian(deployAddress)).to.be.true;
