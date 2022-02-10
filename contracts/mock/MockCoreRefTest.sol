@@ -9,8 +9,8 @@ contract MockCoreRefTest is CoreRef {
 	}
 
 	function governorOrGuardianTest() hasAnyOfTwoRoles(
-        keccak256("GOVERN_ROLE"),
-        keccak256("GUARDIAN_ROLE")
+        GOVERN_ROLE,
+        GUARDIAN_ROLE
     ) external {
 
     }
