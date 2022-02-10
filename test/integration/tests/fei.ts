@@ -95,9 +95,9 @@ describe('e2e-fei', function () {
 
     it('hasAnyOfRoles works', async function () {
       const addresses = await getAddresses();
-      const mockCoreRefTestFacotry = await ethers.getContractFactory('MockCoreRefTest');
-      const mockCoreRefTest = await mockCoreRefTestFacotry.deploy(contracts.core.address);
-      await mockCoreRefTest.connect(await getImpersonatedSigner(addresses.governorAddress)).governorOrGuardianTest();
+      const mockCoreRefTestFactory = await ethers.getContractFactory('MockCoreRefTest');
+      const mockCoreRefTest = await mockCoreRefTestFactory.deploy(contracts.core.address);
+      await mockCoreRefTest.connect(await getImpersonatedSigner(addresses.guardianAddress)).governorOrGuardianTest();
       await expect(mockCoreRefTest.governorOrGuardianTest()).to.be.revertedWith('UNAUTHORIZED');
     });
   });
