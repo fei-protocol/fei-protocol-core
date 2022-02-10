@@ -16,6 +16,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
 
   address public immutable pool;
   uint32 public immutable secondsAgo;
+  address public constant testRead = address(0x01);
   IUniswapMathWrapper private immutable uniswapMathWrapper;
 
   constructor(
