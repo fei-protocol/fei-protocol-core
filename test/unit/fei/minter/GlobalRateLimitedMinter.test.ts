@@ -92,11 +92,13 @@ describe('GlobalglobalRateLimitedMinter', function () {
     });
 
     it('maxBufferCapSubGovernor is correctly initialized on individual minter', async function () {
-      expect(await globalRateLimitedMinter.maxBufferCap()).to.be.equal(maxBufferCapSubGovernor);
+      expect(await globalRateLimitedMinter.bufferCapSubGovernor()).to.be.equal(maxBufferCapSubGovernor);
     });
 
     it('maxRateLimitPerSecond is correctly initialized on individual minter', async function () {
-      expect(await globalRateLimitedMinter.maxRateLimitPerSecond()).to.be.equal(maxRateLimitPerSecondSubGovernor);
+      expect(await globalRateLimitedMinter.rateLimitPerSecondSubGovernor()).to.be.equal(
+        maxRateLimitPerSecondSubGovernor
+      );
     });
   });
 
@@ -334,96 +336,12 @@ describe('GlobalglobalRateLimitedMinter', function () {
         globalRateLimitedMinter
           .connect(impersonatedSigners[userAddress])
           .addAddress(authorizedMinter.address, globalRateLimitPerSecond, bufferCap),
-        'CoreRef: Caller is not a governor or contract admin'
+        'CoreRef: Caller is not a governor'
       );
     });
   });
 
   describe('Sub governor actions', function () {
-    describe('Update Minter', function () {
-      it('cannot exceed global max buffer cap', async function () {
-        await expectRevert(
-          globalRateLimitedMinter
-            .connect(impersonatedSigners[governorAddress])
-            .updateAddressSubGovernor(
-              authorizedMinter.address,
-              maxRateLimitPerSecondSubGovernor,
-              maxBufferCapSubGovernor.add(1)
-            ),
-          'MultiRateLimited: buffer cap too high subgov'
-        );
-      });
-
-      it('cannot exceed sub governor max buffer cap', async function () {
-        await expectRevert(
-          globalRateLimitedMinter
-            .connect(impersonatedSigners[governorAddress])
-            .updateAddressSubGovernor(
-              authorizedMinter.address,
-              maxRateLimitPerSecondSubGovernor,
-              maxBufferCapSubGovernor.add(1)
-            ),
-          'MultiRateLimited: buffer cap too high subgov'
-        );
-      });
-
-      it('cannot exceed sub governor max rate limit per second', async function () {
-        await expectRevert(
-          globalRateLimitedMinter
-            .connect(impersonatedSigners[governorAddress])
-            .updateAddressSubGovernor(
-              authorizedMinter.address,
-              maxRateLimitPerSecondSubGovernor.add(1),
-              maxBufferCapSubGovernor
-            ),
-          'MultiRateLimited: rate limit per second too high subgov'
-        );
-      });
-
-      it('sub governor can update max rate limit per second', async function () {
-        const newRateLimitPerSecond = scale.mul(1_000);
-        const newBufferCap = maxBufferCapSubGovernor.div(10);
-
-        await globalRateLimitedMinter
-          .connect(impersonatedSigners[governorAddress])
-          .updateAddressSubGovernor(authorizedMinter.address, newRateLimitPerSecond, newBufferCap);
-
-        const { bufferCap, rateLimitPerSecond, bufferStored } = await globalRateLimitedMinter.rateLimitPerAddress(
-          authorizedMinter.address
-        );
-
-        expect(bufferCap).to.be.equal(newBufferCap);
-        expect(bufferStored).to.be.equal(newBufferCap);
-        expect(rateLimitPerSecond).to.be.equal(newRateLimitPerSecond);
-      });
-
-      it('sub governor cannot update address not in mapping', async function () {
-        await globalRateLimitedMinter
-          .connect(impersonatedSigners[governorAddress])
-          .removeAddress(authorizedMinter.address);
-
-        await expectRevert(
-          globalRateLimitedMinter
-            .connect(impersonatedSigners[governorAddress])
-            .updateAddressSubGovernor(
-              authorizedMinter.address,
-              maxRateLimitPerSecondSubGovernor,
-              maxBufferCapSubGovernor
-            ),
-          'MultiRateLimited: rate limit address does not exist'
-        );
-      });
-
-      it('non-governor reverts', async function () {
-        await expectRevert(
-          globalRateLimitedMinter
-            .connect(impersonatedSigners[userAddress])
-            .updateAddressSubGovernor(authorizedMinter.address, globalRateLimitPerSecond, bufferCap),
-          'CoreRef: Caller is not a governor or contract admin'
-        );
-      });
-    });
-
     describe('Add Minter', function () {
       beforeEach(async function () {
         await globalRateLimitedMinter
@@ -431,41 +349,15 @@ describe('GlobalglobalRateLimitedMinter', function () {
           .removeAddress(authorizedMinter.address);
       });
 
-      it('cannot exceed global max buffer cap', async function () {
-        await expectRevert(
-          globalRateLimitedMinter
-            .connect(impersonatedSigners[governorAddress])
-            .addAddressSubGovernor(
-              authorizedMinter.address,
-              maxRateLimitPerSecondSubGovernor,
-              maxBufferCapSubGovernor.add(1)
-            ),
-          'MultiRateLimited: buffer cap too high subgov'
-        );
-      });
-
-      it('cannot exceed sub governor max rate limit per second', async function () {
-        await expectRevert(
-          globalRateLimitedMinter
-            .connect(impersonatedSigners[governorAddress])
-            .addAddressSubGovernor(
-              authorizedMinter.address,
-              maxRateLimitPerSecondSubGovernor.add(1),
-              maxBufferCapSubGovernor
-            ),
-          'MultiRateLimited: rate limit per second too high subgov'
-        );
-      });
-
       it('cannot add the same address twice', async function () {
         await globalRateLimitedMinter
           .connect(impersonatedSigners[governorAddress])
-          .addAddressSubGovernor(authorizedMinter.address, maxRateLimitPerSecondSubGovernor, maxBufferCapSubGovernor);
+          .addAddressSubGovernor(authorizedMinter.address);
 
         await expectRevert(
           globalRateLimitedMinter
             .connect(impersonatedSigners[governorAddress])
-            .addAddressSubGovernor(authorizedMinter.address, maxRateLimitPerSecondSubGovernor, maxBufferCapSubGovernor),
+            .addAddressSubGovernor(authorizedMinter.address),
           'MultiRateLimited: address already added'
         );
       });
@@ -474,8 +366,8 @@ describe('GlobalglobalRateLimitedMinter', function () {
         await expectRevert(
           globalRateLimitedMinter
             .connect(impersonatedSigners[userAddress])
-            .addAddressSubGovernor(authorizedMinter.address, globalRateLimitPerSecond, bufferCap),
-          'CoreRef: Caller is not a governor or contract admin'
+            .addAddressSubGovernor(authorizedMinter.address),
+          'CoreRef: Caller is not a governor'
         );
       });
     });
@@ -499,7 +391,7 @@ describe('GlobalglobalRateLimitedMinter', function () {
     it('non-governor reverts', async function () {
       await expectRevert(
         globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).removeAddress(authorizedMinter.address),
-        'CoreRef: Caller is not governor or guardian or admin'
+        'CoreRef: Caller is not a guardian or governor'
       );
     });
   });
@@ -523,7 +415,7 @@ describe('GlobalglobalRateLimitedMinter', function () {
     it('non-governor reverts', async function () {
       await expectRevert(
         globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).updateAddress(authorizedMinter.address, 0, 0),
-        'CoreRef: Caller is not a governor or contract admin'
+        'CoreRef: Caller is not a governor'
       );
     });
   });
@@ -539,25 +431,25 @@ describe('GlobalglobalRateLimitedMinter', function () {
     it('non-governor reverts', async function () {
       await expectRevert(
         globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).setBufferCap('10000'),
-        'CoreRef: Caller is not a governor or contract admin'
+        'CoreRef: Caller is not a governor'
       );
     });
   });
 
-  describe('updateSubGovMaxRateLimitPerSecond', function () {
+  describe('updateSubGovRateLimitPerSecond', function () {
     it('governor succeeds', async function () {
       const newRateLimitPerSecond = 10000;
       await globalRateLimitedMinter
         .connect(impersonatedSigners[governorAddress])
-        .updateSubGovMaxRateLimitPerSecond(newRateLimitPerSecond);
+        .updateSubGovRateLimitPerSecond(newRateLimitPerSecond);
 
-      expect(await globalRateLimitedMinter.maxRateLimitPerSecond()).to.be.equal(newRateLimitPerSecond);
+      expect(await globalRateLimitedMinter.rateLimitPerSecondSubGovernor()).to.be.equal(newRateLimitPerSecond);
     });
 
     it('non-governor reverts', async function () {
       await expectRevert(
-        globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).updateSubGovMaxRateLimitPerSecond('10000'),
-        'CoreRef: Caller is not a governor or contract admin'
+        globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).updateSubGovRateLimitPerSecond('10000'),
+        'CoreRef: Caller is not a governor'
       );
     });
   });
@@ -581,20 +473,18 @@ describe('GlobalglobalRateLimitedMinter', function () {
     });
   });
 
-  describe('updateSubGovMaxBufferCap', function () {
+  describe('updateSubGovBufferCap', function () {
     it('governor succeeds', async function () {
       const newBufferCap = 10000;
-      await globalRateLimitedMinter
-        .connect(impersonatedSigners[governorAddress])
-        .updateSubGovMaxBufferCap(newBufferCap);
+      await globalRateLimitedMinter.connect(impersonatedSigners[governorAddress]).updateSubGovBufferCap(newBufferCap);
 
-      expect(await globalRateLimitedMinter.maxBufferCap()).to.be.equal(newBufferCap);
+      expect(await globalRateLimitedMinter.bufferCapSubGovernor()).to.be.equal(newBufferCap);
     });
 
     it('non-governor reverts', async function () {
       await expectRevert(
-        globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).updateSubGovMaxBufferCap('10000'),
-        'CoreRef: Caller is not a governor or contract admin'
+        globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).updateSubGovBufferCap('10000'),
+        'CoreRef: Caller is not a governor'
       );
     });
   });

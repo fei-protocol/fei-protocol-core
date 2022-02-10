@@ -26,56 +26,56 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     mapping (address => RateLimitData) public rateLimitPerAddress;
 
     /// @notice max rate limit per second allowable by authorized sub governor
-    uint256 public maxRateLimitPerSecond;
+    uint256 public rateLimitPerSecondSubGovernor;
 
     /// @notice max buffer cap allowable by authorized sub governor
-    uint256 public maxBufferCap;
+    uint256 public bufferCapSubGovernor;
 
     constructor(
         address coreAddress,
         uint256 _maxRateLimitPerSecond,
         uint256 _rateLimitPerSecond,
-        uint256 _maxRateLimitPerSecondSubGovernor,
-        uint256 _maxBufferCapSubGovernor,
+        uint256 _rateLimitPerSecondSubGovernor,
+        uint256 _bufferCapSubGovernor,
         uint256 _bufferCap,
         bool _doPartialAction
     )
         CoreRef(coreAddress)
         RateLimited(_maxRateLimitPerSecond, _rateLimitPerSecond, _bufferCap, _doPartialAction)
     {
-        require(_maxBufferCapSubGovernor < _bufferCap, "MultiRateLimited: max buffer cap invalid");
+        require(_bufferCapSubGovernor < _bufferCap, "MultiRateLimited: max buffer cap invalid");
 
-        maxRateLimitPerSecond = _maxRateLimitPerSecondSubGovernor;
-        maxBufferCap = _maxBufferCapSubGovernor;
+        rateLimitPerSecondSubGovernor = _rateLimitPerSecondSubGovernor;
+        bufferCapSubGovernor = _bufferCapSubGovernor;
     }
 
     // ----------- Governor and Admin only state changing api -----------
 
-    /// @notice update the sub gov max rate limit per second
-    /// @param newMaxRateLimitPerSecond new maximum rate limit per second for sub governors
+    /// @notice update the sub gov rate limit per second
+    /// @param newRateLimitPerSecondSubGovernor new maximum rate limit per second for sub governors
     /// TODO determine the proper modifier for this function
-    function updateSubGovMaxRateLimitPerSecond(uint256 newMaxRateLimitPerSecond) external virtual override onlyGovernorOrAdmin {
-        uint256 oldMaxRateLimitPerSecond = maxRateLimitPerSecond;
-        maxRateLimitPerSecond = newMaxRateLimitPerSecond;
+    function updateSubGovRateLimitPerSecond(uint256 newRateLimitPerSecondSubGovernor) external virtual override onlyGovernor {
+        uint256 oldMaxRateLimitPerSecond = rateLimitPerSecondSubGovernor;
+        rateLimitPerSecondSubGovernor = newRateLimitPerSecondSubGovernor;
 
-        emit SubGovMaxRateLimitPerSecondUpdate(oldMaxRateLimitPerSecond, newMaxRateLimitPerSecond);
+        emit SubGovMaxRateLimitPerSecondUpdate(oldMaxRateLimitPerSecond, newRateLimitPerSecondSubGovernor);
     }
 
     /// @notice update the sub gov max buffer cap
-    /// @param newBufferCap new buffer cap for sub governors
+    /// @param newSubGovBufferCap new buffer cap for sub governor added addresses
     /// TODO determine the proper modifier for this function
-    function updateSubGovMaxBufferCap(uint256 newBufferCap) external virtual override onlyGovernorOrAdmin {
-        uint256 oldBufferCap = newBufferCap;
-        maxBufferCap = newBufferCap;
+    function updateSubGovBufferCap(uint256 newSubGovBufferCap) external virtual override onlyGovernor {
+        uint256 oldBufferCap = bufferCapSubGovernor;
+        bufferCapSubGovernor = newSubGovBufferCap;
 
-        emit SubGovBufferCapUpdate(oldBufferCap, newBufferCap);
+        emit SubGovBufferCapUpdate(oldBufferCap, newSubGovBufferCap);
     }
 
     /// @notice add an authorized rateLimitedAddress contract
     /// @param rateLimitedAddress the new address to add as a rateLimitedAddress
     /// @param _rateLimitPerSecond the rate limit per second for this rateLimitedAddress
     /// @param _bufferCap  the buffer cap for this rateLimitedAddress
-    function addAddress(address rateLimitedAddress, uint112 _rateLimitPerSecond, uint144 _bufferCap) external virtual override onlyGovernorOrAdmin {
+    function addAddress(address rateLimitedAddress, uint112 _rateLimitPerSecond, uint144 _bufferCap) external virtual override onlyGovernor {
         _addAddress(rateLimitedAddress, _rateLimitPerSecond, _bufferCap);
     }
 
@@ -83,7 +83,7 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @param rateLimitedAddress the address whose buffer and rate limit per second will be set
     /// @param _rateLimitPerSecond the new rate limit per second for this rateLimitedAddress
     /// @param _bufferCap  the new buffer cap for this rateLimitedAddress
-    function updateAddress(address rateLimitedAddress, uint112 _rateLimitPerSecond, uint144 _bufferCap) external virtual override onlyGovernorOrAdmin {
+    function updateAddress(address rateLimitedAddress, uint112 _rateLimitPerSecond, uint144 _bufferCap) external virtual override onlyGovernor {
         require(_bufferCap <= bufferCap, "MultiRateLimited: buffercap too high");
 
         _updateAddress(rateLimitedAddress, _rateLimitPerSecond, _bufferCap);
@@ -91,32 +91,14 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
 
     /// @notice add an authorized rateLimitedAddress contract
     /// @param rateLimitedAddress the new address to add as a rateLimitedAddress
-    /// @param _rateLimitPerSecond the rate limit per second for this rateLimitedAddress
-    /// @param _bufferCap  the buffer cap for this rateLimitedAddress
     /// TODO figure out what the modifier should be for this function
-    function addAddressSubGovernor(address rateLimitedAddress, uint112 _rateLimitPerSecond, uint144 _bufferCap) external virtual override onlyGovernorOrAdmin {
-        require(_rateLimitPerSecond <= maxRateLimitPerSecond, "MultiRateLimited: rate limit per second too high subgov");
-        require(_bufferCap <= maxBufferCap, "MultiRateLimited: buffer cap too high subgov");
-
-        _addAddress(rateLimitedAddress, _rateLimitPerSecond, _bufferCap);
-    }
-
-    /// @notice add an authorized rateLimitedAddress contract
-    /// @param rateLimitedAddress the address whose buffer and rate limit per second will be set
-    /// @param _rateLimitPerSecond the new rate limit per second for this rateLimitedAddress
-    /// @param _bufferCap  the new buffer cap for this rateLimitedAddress
-    /// TODO figure out what the modifier should be for this function
-    function updateAddressSubGovernor(address rateLimitedAddress, uint112 _rateLimitPerSecond, uint144 _bufferCap) external virtual override onlyGovernorOrAdmin {
-        require(_rateLimitPerSecond <= maxRateLimitPerSecond, "MultiRateLimited: rate limit per second too high subgov");
-        require(_bufferCap <= maxBufferCap, "MultiRateLimited: buffer cap too high subgov");
-        require(_bufferCap <= bufferCap, "MultiRateLimited: buffercap too high");
-
-        _updateAddress(rateLimitedAddress, _rateLimitPerSecond, _bufferCap);
+    function addAddressSubGovernor(address rateLimitedAddress) external virtual override onlyGovernorOrAdmin {
+        _addAddress(rateLimitedAddress, uint112(rateLimitPerSecondSubGovernor), uint144(bufferCapSubGovernor));
     }
 
     /// @notice remove an authorized rateLimitedAddress contract
     /// @param rateLimitedAddress the address to remove from the whitelist of addresses
-    function removeAddress(address rateLimitedAddress) external virtual override isGovernorOrGuardianOrAdmin {
+    function removeAddress(address rateLimitedAddress) external virtual override onlyGuardianOrGovernor {
         uint256 oldRateLimitPerSecond = rateLimitPerAddress[rateLimitedAddress].rateLimitPerSecond;
 
         delete rateLimitPerAddress[rateLimitedAddress];
@@ -127,7 +109,7 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @notice set the rate limit per second
     /// @param rateLimitedAddress the address whose buffer will be set
     /// @param newRateLimitPerSecond the new rate limit per second for this rateLimitedAddress
-    function setIndividualRateLimitPerSecond(address rateLimitedAddress, uint112 newRateLimitPerSecond) external virtual override onlyGovernorOrAdmin {
+    function setIndividualRateLimitPerSecond(address rateLimitedAddress, uint112 newRateLimitPerSecond) external virtual override onlyGovernor {
         require(newRateLimitPerSecond <= rateLimitPerSecond, "MultiRateLimited: rateLimitPerSecond too high");
 
         _updateIndividualBufferStored(rateLimitedAddress);
@@ -137,7 +119,7 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @notice set the buffer cap
     /// @param rateLimitedAddress the address whose buffer will be set
     /// @param newBufferCap the new buffer cap for this rateLimitedAddress
-    function setIndividualBufferCap(address rateLimitedAddress, uint144 newBufferCap) external virtual override onlyGovernorOrAdmin {
+    function setIndividualBufferCap(address rateLimitedAddress, uint144 newBufferCap) external virtual override onlyGovernor {
         require(newBufferCap <= bufferCap, "MultiRateLimited: new buffer cap is over global max");
 
         _setIndividualBufferCap(rateLimitedAddress, newBufferCap);
