@@ -3,7 +3,6 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
 import fip_76b from '@proposals/description/fip_76b';
-import fip_77 from '@proposals/description/fip_77';
 
 const proposals: ProposalsConfigMap = {
   /*
