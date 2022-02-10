@@ -12,7 +12,7 @@ import {CoreRef} from "../refs/CoreRef.sol";
 
 /// @title UniswapV3 TWAP Oracle wrapper
 /// @notice Reads a UniswapV3 TWAP oracle and wraps it under the standard Fei interface
-contract UniswapV3OracleWrapper is IOracle {
+contract UniswapV3OracleWrapper is IOracle, CoreRef {
   using Decimal for Decimal.D256;
 
   address public immutable pool;
@@ -38,10 +38,11 @@ contract UniswapV3OracleWrapper is IOracle {
     uint160 sqrtPrice = TickMath.getSqrtRatioAtTick(arithmeticMeanTick);
 
     // Get full price
-    uint256 price = FullMath.mulDiv(sqrtPrice, sqrtPrice, FixedPoint96.Q96);
+    uint256 price = Decimal.from(FullMath.mulDiv(sqrtPrice, sqrtPrice, FixedPoint96.Q96));
     bool valid = !paused() && price > 0;
     return (price, valid);
   }
 
+  /// @notice no-op, Uniswap V3 constantly updates the price
   function isOutdated() external view override returns (bool) {}
 }
