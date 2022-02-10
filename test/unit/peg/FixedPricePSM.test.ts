@@ -452,7 +452,7 @@ describe('FixedPricePSM', function () {
       it('fails when token is not approved to be spent by the PSM', async () => {
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, 0),
-          'ERC20: transfer amount exceeds balance'
+          'ERC20: insufficient allowance'
         );
       });
 
