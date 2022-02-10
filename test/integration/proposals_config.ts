@@ -42,15 +42,6 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_76b
-  },
-  fip_77: {
-    deploy: false,
-    proposalId: undefined,
-    affectedContractSignoff: ['tribalChief', 'fuseGuardian'],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.OA,
-    totalValue: 0,
-    proposal: fip_77
   }
 };
 
