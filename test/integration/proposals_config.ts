@@ -3,7 +3,6 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
 import fip_76b from '@proposals/description/fip_76b';
-import fip_77 from '@proposals/description/fip_77';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -16,7 +15,7 @@ const proposals: ProposalsConfigMap = {
     */
   fip_76b: {
     deploy: false,
-    proposalId: undefined,
+    proposalId: '73485618643971795717112481006319668453253357499719729532595075539568233811807',
     affectedContractSignoff: [
       'delayedPCVMoverWethUniToBal',
       'balancerDepositFeiWeth',
@@ -42,15 +41,6 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_76b
-  },
-  fip_77: {
-    deploy: false,
-    proposalId: undefined,
-    affectedContractSignoff: ['tribalChief', 'fuseGuardian'],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.OA,
-    totalValue: 0,
-    proposal: fip_77
   }
 };
 
