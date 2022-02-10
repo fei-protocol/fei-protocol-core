@@ -15,7 +15,7 @@ const proposals: ProposalsConfigMap = {
     */
   fip_76b: {
     deploy: false,
-    proposalId: undefined,
+    proposalId: '73485618643971795717112481006319668453253357499719729532595075539568233811807',
     affectedContractSignoff: [
       'delayedPCVMoverWethUniToBal',
       'balancerDepositFeiWeth',
