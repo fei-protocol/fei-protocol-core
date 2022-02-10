@@ -14,7 +14,7 @@ import { keccak256 } from 'ethers/lib/utils';
 
 const toBN = ethers.BigNumber.from;
 
-describe('PegStabilityModule', function () {
+describe.only('PegStabilityModule', function () {
   let userAddress;
   let governorAddress;
   let minterAddress;
@@ -454,7 +454,7 @@ describe('PegStabilityModule', function () {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 10_000_000);
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 1, 0),
-          'ERC20: transfer amount exceeds allowance'
+          'ERC20: insufficient allowance'
         );
       });
     });

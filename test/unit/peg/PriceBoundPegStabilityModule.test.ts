@@ -871,7 +871,7 @@ describe('PriceBoundPegStabilityModule', function () {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 100);
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 100, 0),
-          'ERC20: transfer amount exceeds allowance'
+          'ERC20: insufficient allowance'
         );
       });
     });
