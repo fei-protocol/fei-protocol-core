@@ -47,4 +47,9 @@ contract UniswapV3OracleTest is DSTest, StdLib {
     (Decimal.D256 memory value, bool valid) = oracle.read();
     assertTrue(valid);
   }
+
+  function testPriceIsDecimal() public {
+    (Decimal.D256 memory value, bool valid) = oracle.read();
+    // TODO
+  }
 }
