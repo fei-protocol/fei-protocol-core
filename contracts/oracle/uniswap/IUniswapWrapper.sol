@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 interface IUniswapWrapper {
-  function calculatePrice(address pool, uint32 secondsAgo) external view returns (uint256);
+  function calculatePrice(address pool, uint32 secondsAgo, address inputToken, address outputToken) external view returns (uint256);
 
   function getObservationCardinality(address pool) external view returns (uint16);
 }

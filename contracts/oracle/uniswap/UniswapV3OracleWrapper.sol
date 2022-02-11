@@ -11,13 +11,18 @@ import {IUniswapWrapper} from "./IUniswapWrapper.sol";
 
 
 /// @title UniswapV3 TWAP Oracle wrapper
-/// @notice Reads a UniswapV3 TWAP oracle and wraps it under the standard Fei interface
+/// @notice Reads a UniswapV3 TWAP oracle, based on a single Uniswap pool, and wraps it under 
+/// the standard Fei interface
 contract UniswapV3OracleWrapper is IOracle, CoreRef {
   using Decimal for Decimal.D256;
 
   address public pool;
+  address inputToken;
+  address outputToken;
   IUniswapWrapper private uniswapWrapper;
   OracleConfig public oracleConfig;
+
+  uint16 private constant meanBlockTime = 13 seconds;
 
   struct OracleConfig {
     uint32 twapPeriod;
@@ -31,6 +36,8 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   constructor(
     address _core,
     address _pool,
+    address _inputToken,
+    address _outputToken,
     address _uniswapWrapper,
     OracleConfig memory _oracleConfig
   ) CoreRef(_core) {
@@ -42,10 +49,19 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
       "TWAP period out of bounds"
     );
     validatePoolLiquidity(_pool, _oracleConfig.minPoolLiquidity);
+
+    // TODO: Maybe check that the pool exists for the tokens we're interested in?
+    // TODO: Check/refactor price calculation
+    // TODO: Check decimal calculation
+
     
     pool = _pool;
+    inputToken = _inputToken;
+    outputToken = _outputToken;
     uniswapWrapper = IUniswapWrapper(_uniswapWrapper);   
     oracleConfig = _oracleConfig;
+
+    addSupportForPool(pool, oracleConfig.twapPeriod, meanBlockTime);
     emit TwapPeriodUpdate(pool, 0, oracleConfig.twapPeriod); 
   }
 
@@ -65,10 +81,14 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
     validatePoolLiquidity(pool, oracleConfig.minPoolLiquidity);
     validateNumOberservationSlots(oracleConfig.twapPeriod);
 
-    // TODO: Not convinced this returns what we need
-    uint256 rawPrice = uniswapWrapper.calculatePrice(pool, oracleConfig.twapPeriod);
+    uint256 rawPrice = uniswapWrapper.calculatePrice(
+      pool, 
+      oracleConfig.twapPeriod,
+      inputToken,
+      outputToken
+    );
 
-    bool valid = !paused() && validatePrice(rawPrice);
+    bool valid = !paused();
     Decimal.D256 memory value = Decimal.from(rawPrice);
     return (value, valid);
   }
@@ -78,12 +98,6 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
 
 
   // ----------- Internal -----------
-  /// @notice Validate that the slippage caused by a proposed trade is acceptable
-  /// Does this check belong here? Maybe ideally in whatever executes the trade?
-  function validatePrice(uint256 rawPrice) internal view returns (bool) {
-    return true;
-  }
-
   /// @notice Validate that the pool liquidity is above a safe minimum threshold
   function validatePoolLiquidity(address _pool, uint128 _minPoolLiquidity) internal view {
     require(
@@ -92,9 +106,16 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
     );
   }
 
+  /// @notice Increase pool observation cardinality to support requested TWAP period
+  function addSupportForPool(address _pool, uint32 _twapPeriod, uint16 _meanBlockTime) internal {
+    uint16 requiredCardinality = uint16(_twapPeriod / _meanBlockTime) + 10; // Add additional number of slots to ensure available
+    IUniswapV3Pool(_pool).increaseObservationCardinalityNext(requiredCardinality);
+  }
+
   /// @notice Validate that the UniswapV3 pool has sufficient observation slots
   /// to support the requested TWAP period. If not revert and 
   //  `pool.increaseObservationCardinalityNext()` should be called
+  // TODO: Maybe remove
   function validateNumOberservationSlots(uint32 _twapPeriod) internal view {
       uint16 observationCardinality = uniswapWrapper.getObservationCardinality(pool);
 

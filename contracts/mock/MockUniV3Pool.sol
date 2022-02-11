@@ -43,4 +43,6 @@ contract MockUniV3Pool {
     secondsPerLiquidityCumulativeX128s[0] = uint160(10);
     secondsPerLiquidityCumulativeX128s[1] = uint160(20);
   }
+
+  function increaseObservationCardinalityNext(uint16 cardinality) external {}
 }

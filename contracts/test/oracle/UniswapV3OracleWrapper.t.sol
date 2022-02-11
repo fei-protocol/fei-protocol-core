@@ -28,6 +28,9 @@ contract UniswapV3OracleTest is DSTest, StdLib {
   uint32[] secondsAgoRange = [twapPeriod, 0];
   int56[] tickCumulatives = [int56(12), int56(12)];
   uint160[] secondsPerLiqCumulatives = [10, 20];
+
+  address inputToken = address(0x1);
+  address outputToken = address(0x2);
   
   function setUp() public {
     core = getCore();
@@ -44,7 +47,15 @@ contract UniswapV3OracleTest is DSTest, StdLib {
       minPoolLiquidity: mockUniswapPool.liquidity()
     });    
     
-    oracle = new UniswapV3OracleWrapper(address(core), address(mockUniswapPool), uniswapMathWrapper, oracleConfig);
+    
+    oracle = new UniswapV3OracleWrapper(
+      address(core),
+      address(mockUniswapPool),
+      inputToken,
+      outputToken,
+      uniswapMathWrapper,
+      oracleConfig
+    );
   } 
 
   function testMetadataSet() public {
@@ -69,7 +80,14 @@ contract UniswapV3OracleTest is DSTest, StdLib {
     vm.expectRevert(
       bytes("Pool has insufficient liquidity")
     );
-    oracle = new UniswapV3OracleWrapper(address(core), address(mockUniswapPool), uniswapMathWrapper, highMinLiquidityConfig);
+    oracle = new UniswapV3OracleWrapper(
+      address(core),
+      address(mockUniswapPool),
+      inputToken,
+      outputToken,
+      uniswapMathWrapper,
+      highMinLiquidityConfig
+    );
   }
 
   function testTwapPeriodBounds() public {
