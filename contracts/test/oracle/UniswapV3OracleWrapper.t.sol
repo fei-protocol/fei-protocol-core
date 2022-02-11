@@ -11,35 +11,54 @@ import {FeiTestAddresses, getAddresses, getCore} from "../utils/fixtures/Fei.sol
 import {DSTest} from "../utils/DSTest.sol";
 import {StdLib} from "../utils/StdLib.sol";
 import {Vm} from "../utils/Vm.sol";
+import "hardhat/console.sol";
 
 contract UniswapV3OracleTest is DSTest, StdLib {
+  UniswapV3OracleWrapper private oracle;
+  uint32 twapPeriod = 61;  // Min TWAP period is 60 seconds
+  uint32[] secondsAgoRange = [twapPeriod, 0];
+  int56[] tickCumulatives = [int56(12), int56(12)];
+  uint160[] secondsPerLiqCumulatives = [10, 20];
+  FeiTestAddresses addresses = getAddresses();
+  Vm public constant vm = Vm(HEVM_ADDRESS);
+
   // Note: Where deployCode() is used, it's a workaround to deploy a contract necessarily compiled with a 
   // different Solidity version (Uniswap contracts written in different version, and rely on prior features)
   address private mockUniswapPool = deployCode("./out/MockUniV3Pool.sol/MockUniV3Pool.json");
-  UniswapV3OracleWrapper private oracle;
-
-  Vm public constant vm = Vm(HEVM_ADDRESS);
-
-  uint32 secondsAgo = 3;  
-  uint32[] secondsAgoRange = [secondsAgo, 0];
-  int56[] tickCumulatives = [int56(12), int56(12)];
-  uint160[] secondsPerLiqCumulatives = [10, 20];
-
+  
   function setUp() public {
     ICore core = getCore();
     address uniswapMathWrapper = deployCode("./out/UniswapWrapper.sol/UniswapWrapper.json");
-    oracle = new UniswapV3OracleWrapper(address(core), mockUniswapPool, secondsAgo, uniswapMathWrapper);
+
+    UniswapV3OracleWrapper.OracleConfig memory oracleConfig = UniswapV3OracleWrapper.OracleConfig({
+      twapPeriod: twapPeriod,
+      minTwapPeriod: 0,
+      maxTwapPeriod: 50000
+    });    
+
+    oracle = new UniswapV3OracleWrapper(address(core), mockUniswapPool, uniswapMathWrapper, oracleConfig);
   } 
+
+  function testMetadataSet() public {
+    assertEq(oracle.pool(), mockUniswapPool);
+    assertEq(oracle.getTwapPeriod(), twapPeriod);
+    assertFalse(oracle.isOutdated());
+  }
 
   function testPausedFalseOnDeploy() public {    
     oracle.update();
     assertFalse(oracle.paused());
   }
 
-  function testMetadataSet() public {
-    assertEq(oracle.pool(), mockUniswapPool);
-    assertEq(oracle.secondsAgo(), secondsAgo);
-    assertFalse(oracle.isOutdated());
+  function testTwapPeriodBounds() public {
+    (, , uint32 maxTwapPeriod) = oracle.oracleConfig();
+    uint32 newTwapPeriod = maxTwapPeriod + 1;
+
+    vm.prank(addresses.governorAddress);
+    vm.expectRevert(
+      bytes("TWAP period out of bounds")
+    );
+    oracle.setTwapPeriod(newTwapPeriod);
   }
   
   function testUpdateNoop() public {
@@ -48,38 +67,35 @@ contract UniswapV3OracleTest is DSTest, StdLib {
     assertFalse(oracle.isOutdated());
   }
 
-  function testSetSecondsAgo() public {
-    FeiTestAddresses memory addresses = getAddresses();
+  function testSetTwapPeriod() public {
     
     vm.prank(addresses.governorAddress);
-    uint32 newSecondsAgo = 5;
-    oracle.setSecondsAgo(newSecondsAgo);
+    uint32 newTwapPeriod = 100;
+    oracle.setTwapPeriod(newTwapPeriod);
 
-    assertEq(oracle.secondsAgo(), newSecondsAgo);
+    assertEq(oracle.getTwapPeriod(), newTwapPeriod);
   }
 
-  function testSetSecondsAgoWrongAuth() public {    
-    uint32 newSecondsAgo = 5;
+  function testSetTwapPeriodWrongAuth() public {    
+    uint32 newTwapPeriod = 100;
     
     vm.expectRevert(
       bytes("CoreRef: Caller is not a guardian or governor")
     );
-    oracle.setSecondsAgo(newSecondsAgo);
+    oracle.setTwapPeriod(newTwapPeriod);
   }
 
   function testInsufficientObsSlots() public {
-      // Request much larger time range than available
-      FeiTestAddresses memory addresses = getAddresses();
+    (, , , uint16 observationCardinality, , , ) = IUniswapV3Pool(mockUniswapPool).slot0();
+    uint16 approxBlockTime = uint16(11);
+    uint32 newTwapPeriod = (observationCardinality * approxBlockTime) + 1;
+    console.log(newTwapPeriod);
 
-      (, , , uint16 observationCardinality, , , ) = IUniswapV3Pool(mockUniswapPool).slot0();
-      uint16 approxBlockTime = uint16(11);
-      uint32 newSecondsAgo = (observationCardinality * approxBlockTime) + 1;
-
-      vm.expectRevert(
-        bytes("Insufficient pool observation slots")
-      );
-      vm.prank(addresses.governorAddress);
-      oracle.setSecondsAgo(newSecondsAgo);
+    vm.expectRevert(
+      bytes("Insufficient pool observation slots")
+    );
+    vm.prank(addresses.governorAddress);
+    oracle.setTwapPeriod(newTwapPeriod);
   }
 
   function testReadIsValid() public {

@@ -15,20 +15,38 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   using Decimal for Decimal.D256;
 
   address public pool;
-  uint32 public secondsAgo;
   IUniswapWrapper private uniswapWrapper;
+  OracleConfig public oracleConfig;
 
-  event TwapPeriodUpdate(address indexed pool, uint32 oldSecondsAgo, uint32 newSecondsAgo);
+  struct OracleConfig {
+    uint32 twapPeriod;
+    uint32 minTwapPeriod;
+    uint32 maxTwapPeriod;
+  }
+
+  event TwapPeriodUpdate(address indexed pool, uint32 oldTwapPeriod, uint32 newTwapPeriod);
 
   constructor(
     address _core,
     address _pool,
-    uint32 _secondsAgo,
-    address _uniswapWrapper
+    address _uniswapWrapper,
+    OracleConfig memory _oracleConfig
   ) CoreRef(_core) {
+    require(_core != address(0x0), "_core cannot be null address");
+    require(_pool != address(0x0), "_pool cannot be null address");
+    require(_uniswapWrapper != address(0x0), "_uniswapWrapper cannot be null address");
+    require(
+      _oracleConfig.twapPeriod >= _oracleConfig.minTwapPeriod && _oracleConfig.twapPeriod <= _oracleConfig.maxTwapPeriod,
+      "TWAP period out of bounds"
+    );
+
+    // TODO: Add a safeguard about minimum amount of liquidity in the Uniswap position?
+    
     pool = _pool;
-    secondsAgo = _secondsAgo;
-    uniswapWrapper = IUniswapWrapper(_uniswapWrapper);    
+    uniswapWrapper = IUniswapWrapper(_uniswapWrapper);   
+    oracleConfig = _oracleConfig;
+
+    emit TwapPeriodUpdate(pool, 0, oracleConfig.twapPeriod); 
   }
 
   /// @notice updates the oracle price
@@ -37,10 +55,17 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
 
   // ----------- Getters -----------
 
-  function read() external view override returns (Decimal.D256 memory, bool) {
-    validateNumOberservationSlots(secondsAgo);
+  /// @notice Convenience getter for twapPeriod
+  function getTwapPeriod() external view returns (uint32) {
+    return oracleConfig.twapPeriod;
+  }
 
-    uint256 rawPrice = uniswapWrapper.calculatePrice(pool, secondsAgo);
+  /// @notice Read the oracle price
+  function read() external view override returns (Decimal.D256 memory, bool) {
+    validateNumOberservationSlots(oracleConfig.twapPeriod);
+
+    // TODO: Not convinced this returns what we need
+    uint256 rawPrice = uniswapWrapper.calculatePrice(pool, oracleConfig.twapPeriod);
 
     bool valid = !paused() && validatePrice(rawPrice);
     Decimal.D256 memory value = Decimal.from(rawPrice);
@@ -61,12 +86,12 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   /// @notice Validate that the UniswapV3 pool has sufficient observation slots
   /// to support the requested TWAP period. If not revert and 
   //  `pool.increaseObservationCardinalityNext()` should be called
-  function validateNumOberservationSlots(uint32 _secondsAgo) internal view {
+  function validateNumOberservationSlots(uint32 _twapPeriod) internal view {
       uint16 observationCardinality = uniswapWrapper.getObservationCardinality(pool);
 
       // 1 observation = 1 block ~ 11 seconds
       uint16 approxBlockTime = uint16(11);
-      uint16 requestedTwapPeriodInBlocks = uint16(_secondsAgo) / approxBlockTime; 
+      uint16 requestedTwapPeriodInBlocks = uint16(_twapPeriod) / approxBlockTime; 
       require(requestedTwapPeriodInBlocks < observationCardinality,
         "Insufficient pool observation slots");
   }
@@ -75,10 +100,15 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   // ----------- Governor only state changing api -----------
 
   /// @notice Change the time period over which the TWAP price is calculated
-  function setSecondsAgo(uint32 _secondsAgo) external onlyGuardianOrGovernor {
-    validateNumOberservationSlots(_secondsAgo);
-    uint32 oldSecondsAgo = secondsAgo;
-    secondsAgo = _secondsAgo;
-    emit TwapPeriodUpdate(pool, oldSecondsAgo, secondsAgo);
+  function setTwapPeriod(uint32 _twapPeriod) external onlyGuardianOrGovernor {
+    require(
+      _twapPeriod >= oracleConfig.minTwapPeriod && _twapPeriod <= oracleConfig.maxTwapPeriod,
+      "TWAP period out of bounds"
+    );
+    validateNumOberservationSlots(_twapPeriod);
+
+    uint32 oldTwapPeriod = oracleConfig.twapPeriod;
+    oracleConfig.twapPeriod = _twapPeriod;
+    emit TwapPeriodUpdate(pool, oldTwapPeriod, oracleConfig.twapPeriod);
   }
 }
