@@ -5,7 +5,8 @@ import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Po
 import {FixedPoint96} from "@uniswap/v3-core/contracts/libraries/FixedPoint96.sol";
 
 import {CoreRef} from "../../refs/CoreRef.sol";
-import {IOracle, Decimal} from "../IOracle.sol";
+import {IOracle} from "../IOracle.sol";
+import {Decimal} from "../../external/Decimal.sol";
 import {IUniswapWrapper} from "./IUniswapWrapper.sol";
 
 
@@ -22,6 +23,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
     uint32 twapPeriod;
     uint32 minTwapPeriod;
     uint32 maxTwapPeriod;
+    uint128 minPoolLiquidity;
   }
 
   event TwapPeriodUpdate(address indexed pool, uint32 oldTwapPeriod, uint32 newTwapPeriod);
@@ -39,13 +41,11 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
       _oracleConfig.twapPeriod >= _oracleConfig.minTwapPeriod && _oracleConfig.twapPeriod <= _oracleConfig.maxTwapPeriod,
       "TWAP period out of bounds"
     );
-
-    // TODO: Add a safeguard about minimum amount of liquidity in the Uniswap position?
+    validatePoolLiquidity(_pool, _oracleConfig.minPoolLiquidity);
     
     pool = _pool;
     uniswapWrapper = IUniswapWrapper(_uniswapWrapper);   
     oracleConfig = _oracleConfig;
-
     emit TwapPeriodUpdate(pool, 0, oracleConfig.twapPeriod); 
   }
 
@@ -62,6 +62,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
 
   /// @notice Read the oracle price
   function read() external view override returns (Decimal.D256 memory, bool) {
+    validatePoolLiquidity(pool, oracleConfig.minPoolLiquidity);
     validateNumOberservationSlots(oracleConfig.twapPeriod);
 
     // TODO: Not convinced this returns what we need
@@ -81,6 +82,14 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   /// Does this check belong here? Maybe ideally in whatever executes the trade?
   function validatePrice(uint256 rawPrice) internal view returns (bool) {
     return true;
+  }
+
+  /// @notice Validate that the pool liquidity is above a safe minimum threshold
+  function validatePoolLiquidity(address _pool, uint128 _minPoolLiquidity) internal view {
+    require(
+      IUniswapV3Pool(_pool).liquidity() >= _minPoolLiquidity,
+      "Pool has insufficient liquidity"
+    );
   }
 
   /// @notice Validate that the UniswapV3 pool has sufficient observation slots

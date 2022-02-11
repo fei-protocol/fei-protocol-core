@@ -4,6 +4,8 @@ pragma solidity >=0.4.0 <0.8.0;
 
 contract MockUniV3Pool {
 
+  uint128 public liquidity = 50001;
+
   struct Slot0 {
     // the current price
     uint160 sqrtPriceX96;
