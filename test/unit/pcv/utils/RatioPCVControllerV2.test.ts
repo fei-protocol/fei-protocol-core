@@ -576,6 +576,11 @@ describe('RatioPCVControllerV2', function () {
         });
 
         it('200% reverts', async function () {
+          // approve 2x
+          const signer = await getImpersonatedSigner(pcvDepositEth.address);
+          await forceEth(pcvDepositEth.address);
+          await token.connect(signer).approve(pcvController.address, pcvAmount.mul(toBN('2')));
+
           await expectRevert(
             pcvController
               .connect(impersonatedSigners[pcvControllerAddress])
@@ -588,6 +593,11 @@ describe('RatioPCVControllerV2', function () {
           await pcvController
             .connect(impersonatedSigners[pcvControllerAddress])
             .transferFrom(pcvDepositEth.address, token.address, userAddress, pcvAmount, {}); // withdraw all
+
+          // approve again
+          const signer = await getImpersonatedSigner(pcvDepositEth.address);
+          await forceEth(pcvDepositEth.address);
+          await token.connect(signer).approve(pcvController.address, pcvAmount);
 
           await expectRevert(
             pcvController
