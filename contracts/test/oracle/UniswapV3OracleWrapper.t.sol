@@ -5,15 +5,20 @@ import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Po
 import {IOracle, Decimal} from "../../oracle/IOracle.sol";
 import {ICore} from "../../core/ICore.sol";
 import {UniswapV3OracleWrapper} from "../../oracle/uniswap/UniswapV3OracleWrapper.sol";
+import {IUniswapWrapper} from "../../oracle/uniswap/IUniswapWrapper.sol";
+import {FeiTestAddresses, getAddresses, getCore} from "../utils/fixtures/fei.sol";
+
 import {DSTest} from "../utils/DSTest.sol";
-import {getCore} from "../utils/fixtures/fei.sol";
 import {StdLib} from "../utils/StdLib.sol";
+import {Vm} from "../utils/Vm.sol";
 
 contract UniswapV3OracleTest is DSTest, StdLib {
   // Note: Where deployCode() is used, it's a workaround to deploy a contract necessarily compiled with a 
   // different Solidity version (Uniswap contracts written in different version, and rely on prior features)
   address private mockUniswapPool = deployCode("./out/MockUniV3Pool.sol/MockUniV3Pool.json");
   UniswapV3OracleWrapper private oracle;
+
+  Vm public constant vm = Vm(HEVM_ADDRESS);
 
   uint32 secondsAgo = 3;  
   uint32[] secondsAgoRange = [secondsAgo, 0];
@@ -41,6 +46,40 @@ contract UniswapV3OracleTest is DSTest, StdLib {
     assertFalse(oracle.isOutdated());
     oracle.update();
     assertFalse(oracle.isOutdated());
+  }
+
+  function testSetSecondsAgo() public {
+    FeiTestAddresses memory addresses = getAddresses();
+    
+    vm.prank(addresses.governorAddress);
+    uint32 newSecondsAgo = 5;
+    oracle.setSecondsAgo(newSecondsAgo);
+
+    assertEq(oracle.secondsAgo(), newSecondsAgo);
+  }
+
+  function testSetSecondsAgoWrongAuth() public {    
+    uint32 newSecondsAgo = 5;
+    
+    vm.expectRevert(
+      bytes("CoreRef: Caller is not a guardian or governor")
+    );
+    oracle.setSecondsAgo(newSecondsAgo);
+  }
+
+  function testInsufficientObsSlots() public {
+      // Request much larger time range than available
+      FeiTestAddresses memory addresses = getAddresses();
+
+      (, , , uint16 observationCardinality, , , ) = IUniswapV3Pool(mockUniswapPool).slot0();
+      uint16 approxBlockTime = uint16(11);
+      uint32 newSecondsAgo = (observationCardinality * approxBlockTime) + 1;
+
+      vm.expectRevert(
+        bytes("Insufficient pool observation slots")
+      );
+      vm.prank(addresses.governorAddress);
+      oracle.setSecondsAgo(newSecondsAgo);
   }
 
   function testReadIsValid() public {

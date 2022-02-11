@@ -28,9 +28,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   ) CoreRef(_core) {
     pool = _pool;
     secondsAgo = _secondsAgo;
-    uniswapWrapper = IUniswapWrapper(_uniswapWrapper);
-    
-    validateNumOberservationSlots();
+    uniswapWrapper = IUniswapWrapper(_uniswapWrapper);    
   }
 
   /// @notice updates the oracle price
@@ -40,10 +38,11 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   // ----------- Getters -----------
 
   function read() external view override returns (Decimal.D256 memory, bool) {
-    uint256 rawPrice = uniswapWrapper.calculatePrice(pool, secondsAgo);
-    validatePrice(rawPrice);
+    validateNumOberservationSlots(secondsAgo);
 
-    bool valid = !paused() && rawPrice > 0;
+    uint256 rawPrice = uniswapWrapper.calculatePrice(pool, secondsAgo);
+
+    bool valid = !paused() && validatePrice(rawPrice);
     Decimal.D256 memory value = Decimal.from(rawPrice);
     return (value, valid);
   }
@@ -55,18 +54,18 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   // ----------- Internal -----------
   /// @notice Validate that the slippage caused by a proposed trade is acceptable
   /// Does this check belong here? Maybe ideally in whatever executes the trade?
-  function validatePrice(uint256 rawPrice) internal view {}
+  function validatePrice(uint256 rawPrice) internal view returns (bool) {}
 
   /// @notice Validate that the UniswapV3 pool has sufficient observation slots
   /// to support the requested TWAP period. If not revert and 
   //  `pool.increaseObservationCardinalityNext()` should be called
-  function validateNumOberservationSlots() internal view {
+  function validateNumOberservationSlots(uint32 _secondsAgo) internal view {
       uint16 observationCardinality = uniswapWrapper.getObservationCardinality(pool);
 
       // 1 observation = 1 block ~ 11 seconds
       uint16 approxBlockTime = uint16(11);
-      uint16 requestedTwapPeriodInBlocks = uint16(secondsAgo) / 11; 
-      require(requestedTwapPeriodInBlocks <= observationCardinality,
+      uint16 requestedTwapPeriodInBlocks = uint16(_secondsAgo) / approxBlockTime; 
+      require(requestedTwapPeriodInBlocks < observationCardinality,
         "Insufficient pool observation slots");
   }
 
@@ -75,6 +74,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
 
   /// @notice Change the time period over which the TWAP price is calculated
   function setSecondsAgo(uint32 _secondsAgo) external onlyGuardianOrGovernor {
+    validateNumOberservationSlots(_secondsAgo);
     uint32 oldSecondsAgo = secondsAgo;
     secondsAgo = _secondsAgo;
     emit TwapPeriodUpdate(pool, oldSecondsAgo, secondsAgo);
