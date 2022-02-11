@@ -54,7 +54,9 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   // ----------- Internal -----------
   /// @notice Validate that the slippage caused by a proposed trade is acceptable
   /// Does this check belong here? Maybe ideally in whatever executes the trade?
-  function validatePrice(uint256 rawPrice) internal view returns (bool) {}
+  function validatePrice(uint256 rawPrice) internal view returns (bool) {
+    return true;
+  }
 
   /// @notice Validate that the UniswapV3 pool has sufficient observation slots
   /// to support the requested TWAP period. If not revert and 

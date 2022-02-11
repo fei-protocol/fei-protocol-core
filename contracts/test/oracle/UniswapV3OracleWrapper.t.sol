@@ -6,7 +6,7 @@ import {IOracle, Decimal} from "../../oracle/IOracle.sol";
 import {ICore} from "../../core/ICore.sol";
 import {UniswapV3OracleWrapper} from "../../oracle/uniswap/UniswapV3OracleWrapper.sol";
 import {IUniswapWrapper} from "../../oracle/uniswap/IUniswapWrapper.sol";
-import {FeiTestAddresses, getAddresses, getCore} from "../utils/fixtures/fei.sol";
+import {FeiTestAddresses, getAddresses, getCore} from "../utils/fixtures/Fei.sol";
 
 import {DSTest} from "../utils/DSTest.sol";
 import {StdLib} from "../utils/StdLib.sol";
