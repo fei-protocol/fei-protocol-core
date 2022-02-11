@@ -6,7 +6,7 @@ import {FixedPoint96} from "@uniswap/v3-core/contracts/libraries/FixedPoint96.so
 
 import {CoreRef} from "../../refs/CoreRef.sol";
 import {IOracle, Decimal} from "../IOracle.sol";
-import {IUniswapMathWrapper} from "./IUniswapMathWrapper.sol";
+import {IUniswapWrapper} from "./IUniswapWrapper.sol";
 
 
 /// @title UniswapV3 TWAP Oracle wrapper
@@ -14,24 +14,23 @@ import {IUniswapMathWrapper} from "./IUniswapMathWrapper.sol";
 contract UniswapV3OracleWrapper is IOracle, CoreRef {
   using Decimal for Decimal.D256;
 
-  address public immutable pool;
+  address public pool;
   uint32 public secondsAgo;
-  IUniswapMathWrapper private immutable uniswapMathWrapper;
+  IUniswapWrapper private uniswapWrapper;
 
-  event TwapPeriodUpdate(address indexed pool, uint32 newSecondsAgo);
+  event TwapPeriodUpdate(address indexed pool, uint32 oldSecondsAgo, uint32 newSecondsAgo);
 
   constructor(
     address _core,
     address _pool,
     uint32 _secondsAgo,
-    address _uniswapMathWrapper
+    address _uniswapWrapper
   ) CoreRef(_core) {
-    // TODO: Check number of TWAP storage slots?
-    validateNumTWAPSlots();
-
     pool = _pool;
     secondsAgo = _secondsAgo;
-    uniswapMathWrapper = IUniswapMathWrapper(_uniswapMathWrapper);
+    uniswapWrapper = IUniswapWrapper(_uniswapWrapper);
+    
+    validateNumOberservationSlots();
   }
 
   /// @notice updates the oracle price
@@ -41,7 +40,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   // ----------- Getters -----------
 
   function read() external view override returns (Decimal.D256 memory, bool) {
-    uint256 rawPrice = uniswapMathWrapper.calculatePrice(pool, secondsAgo);
+    uint256 rawPrice = uniswapWrapper.calculatePrice(pool, secondsAgo);
     validatePrice(rawPrice);
 
     bool valid = !paused() && rawPrice > 0;
@@ -58,14 +57,26 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   /// Does this check belong here? Maybe ideally in whatever executes the trade?
   function validatePrice(uint256 rawPrice) internal view {}
 
-  function validateNumTWAPSlots() internal view {}
+  /// @notice Validate that the UniswapV3 pool has sufficient observation slots
+  /// to support the requested TWAP period. If not revert and 
+  //  `pool.increaseObservationCardinalityNext()` should be called
+  function validateNumOberservationSlots() internal view {
+      uint16 observationCardinality = uniswapWrapper.getObservationCardinality(pool);
+
+      // 1 observation = 1 block ~ 11 seconds
+      uint16 approxBlockTime = uint16(11);
+      uint16 requestedTwapPeriodInBlocks = uint16(secondsAgo) / 11; 
+      require(requestedTwapPeriodInBlocks <= observationCardinality,
+        "Insufficient pool observation slots");
+  }
 
 
   // ----------- Governor only state changing api -----------
 
   /// @notice Change the time period over which the TWAP price is calculated
   function setSecondsAgo(uint32 _secondsAgo) external onlyGuardianOrGovernor {
+    uint32 oldSecondsAgo = secondsAgo;
     secondsAgo = _secondsAgo;
-    emit TwapPeriodUpdate(pool, secondsAgo);
+    emit TwapPeriodUpdate(pool, oldSecondsAgo, secondsAgo);
   }
 }

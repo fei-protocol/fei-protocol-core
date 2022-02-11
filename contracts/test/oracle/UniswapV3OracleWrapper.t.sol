@@ -22,7 +22,7 @@ contract UniswapV3OracleTest is DSTest, StdLib {
 
   function setUp() public {
     ICore core = getCore();
-    address uniswapMathWrapper = deployCode("./out/UniswapMathWrapper.sol/UniswapMathWrapper.json");
+    address uniswapMathWrapper = deployCode("./out/UniswapWrapper.sol/UniswapWrapper.json");
     oracle = new UniswapV3OracleWrapper(address(core), mockUniswapPool, secondsAgo, uniswapMathWrapper);
   } 
 
