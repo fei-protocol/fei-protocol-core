@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "../refs/CoreRef.sol";
-import "./RateLimited.sol";
-import "./IMultiRateLimited.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/utils/math/SafeCast.sol";
+import {CoreRef} from "../refs/CoreRef.sol";
+import {RateLimited} from "./RateLimited.sol";
+import {IMultiRateLimited} from "./IMultiRateLimited.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @title contract for putting a rate limit on how fast an address can perform an action e.g. Minting
 /// there are two buffers, one buffer which is each individual addresses's current buffer,
@@ -25,10 +25,10 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @notice rate limited address information
     mapping (address => RateLimitData) public rateLimitPerAddress;
 
-    /// @notice max rate limit per second allowable by authorized sub governor
+    /// @notice max rate limit per second allowable by non governor
     uint256 public maxRateLimitPerSecond;
 
-    /// @notice max buffer cap allowable by authorized sub governor
+    /// @notice max buffer cap allowable by non governor
     uint256 public maxBufferCap;
 
     constructor(
@@ -180,6 +180,7 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     function _addAddress(address rateLimitedAddress, uint112 _rateLimitPerSecond, uint144 _bufferCap) internal {
         require(_bufferCap <= bufferCap, "MultiRateLimited: new buffercap too high");
         require(rateLimitPerAddress[rateLimitedAddress].lastBufferUsedTime == 0, "MultiRateLimited: address already added");
+        require(_rateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND, "MultiRateLimited: rateLimitPerSecond too high");
 
         RateLimitData memory rateLimitData = RateLimitData({
             lastBufferUsedTime: block.timestamp.toUint32(),
