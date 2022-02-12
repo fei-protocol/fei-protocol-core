@@ -46,9 +46,6 @@ interface IMultiRateLimited {
     /// @notice update an authorized contract
     function updateAddress(address, uint112, uint144) external;
 
-    /// @notice update an authorized contract as a minor minter add role
-    function updateAddressWithCaps(address, uint112, uint144) external;
-
     /// @notice remove an authorized contract
     function removeAddress(address) external;
 

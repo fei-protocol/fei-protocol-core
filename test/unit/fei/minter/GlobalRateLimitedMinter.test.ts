@@ -16,6 +16,9 @@ describe('GlobalglobalRateLimitedMinter', function () {
   let core: Core;
   let fei: Fei;
 
+  const MINOR_MINTER_ADD_ROLE = keccak256(utils.toUtf8Bytes('MINOR_MINTER_ADD_ROLE'));
+  const GOVERN_ROLE = keccak256(utils.toUtf8Bytes('GOVERN_ROLE'));
+
   const globalRateLimitPerSecond = scale.mul(100_000);
   const maxRateLimitPerSecondSubGovernor = globalRateLimitPerSecond.div(10);
   const bufferCap = scale.mul(100_000_000);
@@ -346,6 +349,9 @@ describe('GlobalglobalRateLimitedMinter', function () {
         await globalRateLimitedMinter
           .connect(impersonatedSigners[governorAddress])
           .removeAddress(authorizedMinter.address);
+
+        await core.createRole(MINOR_MINTER_ADD_ROLE, GOVERN_ROLE);
+        await core.grantRole(MINOR_MINTER_ADD_ROLE, governorAddress);
       });
 
       it('cannot add the same address twice', async function () {
@@ -366,7 +372,7 @@ describe('GlobalglobalRateLimitedMinter', function () {
           globalRateLimitedMinter
             .connect(impersonatedSigners[userAddress])
             .addAddressWithCaps(authorizedMinter.address),
-          'CoreRef: Caller is not a governor'
+          'UNAUTHORIZED'
         );
       });
     });
@@ -423,15 +429,12 @@ describe('GlobalglobalRateLimitedMinter', function () {
     it('non-governor reverts', async function () {
       await expectRevert(
         globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).updateAddress(authorizedMinter.address, 0, 0),
-        'CoreRef: Caller is not a governor'
+        'UNAUTHORIZED'
       );
     });
   });
 
   describe('Update Address With Caps', function () {
-    const MINOR_MINTER_ADD_ROLE = keccak256(utils.toUtf8Bytes('MINOR_MINTER_ADD_ROLE'));
-    const GOVERN_ROLE = keccak256(utils.toUtf8Bytes('GOVERN_ROLE'));
-
     beforeEach(async () => {
       await core.createRole(MINOR_MINTER_ADD_ROLE, GOVERN_ROLE);
       await core.grantRole(MINOR_MINTER_ADD_ROLE, governorAddress);
@@ -440,7 +443,7 @@ describe('GlobalglobalRateLimitedMinter', function () {
     it('minor minter add role succeeds', async function () {
       await globalRateLimitedMinter
         .connect(impersonatedSigners[governorAddress])
-        .updateAddressWithCaps(authorizedMinter.address, maxRateLimitPerSecondSubGovernor, maxBufferCapSubGovernor);
+        .updateAddress(authorizedMinter.address, maxRateLimitPerSecondSubGovernor, maxBufferCapSubGovernor);
 
       const { bufferCap, bufferStored, rateLimitPerSecond } = await globalRateLimitedMinter.rateLimitPerAddress(
         authorizedMinter.address
@@ -455,7 +458,7 @@ describe('GlobalglobalRateLimitedMinter', function () {
       await expectRevert(
         globalRateLimitedMinter
           .connect(impersonatedSigners[governorAddress])
-          .updateAddressWithCaps(authorizedMinter.address, maxRateLimitPerSecondSubGovernor, bufferCap.add(1)),
+          .updateAddress(authorizedMinter.address, maxRateLimitPerSecondSubGovernor, bufferCap.add(1)),
         'MultiRateLimited: max buffer cap exceeds non governor allowable amount'
       );
     });
@@ -464,16 +467,14 @@ describe('GlobalglobalRateLimitedMinter', function () {
       await expectRevert(
         globalRateLimitedMinter
           .connect(impersonatedSigners[governorAddress])
-          .updateAddressWithCaps(authorizedMinter.address, globalRateLimitPerSecond.add(1), maxBufferCapSubGovernor),
+          .updateAddress(authorizedMinter.address, globalRateLimitPerSecond.add(1), maxBufferCapSubGovernor),
         'MultiRateLimited: rate limit per second exceeds non governor allowable amount'
       );
     });
 
     it('unauthorized reverts', async function () {
       await expectRevert(
-        globalRateLimitedMinter
-          .connect(impersonatedSigners[userAddress])
-          .updateAddressWithCaps(authorizedMinter.address, 0, 0),
+        globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).updateAddress(authorizedMinter.address, 0, 0),
         'UNAUTHORIZED'
       );
     });
