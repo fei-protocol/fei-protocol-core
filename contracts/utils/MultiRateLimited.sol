@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "../refs/CoreRef.sol";
-import "./RateLimited.sol";
-import "./IMultiRateLimited.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/utils/math/SafeCast.sol";
+import {CoreRef} from "../refs/CoreRef.sol";
+import {RateLimited} from "./RateLimited.sol";
+import {IMultiRateLimited} from "./IMultiRateLimited.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @title contract for putting a rate limit on how fast an address can perform an action e.g. Minting
 /// there are two buffers, one buffer which is each individual addresses's current buffer,
@@ -35,7 +35,7 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
         address coreAddress,
         uint256 _maxRateLimitPerSecond,
         uint256 _rateLimitPerSecond,
-        uint256 _maxRateLimitPerSecondNonGovernor,
+        uint256 _maxRateLimitPerSecondMRL,
         uint256 _maxBufferCap,
         uint256 _bufferCap,
         bool _doPartialAction
@@ -43,9 +43,9 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
         CoreRef(coreAddress)
         RateLimited(_maxRateLimitPerSecond, _rateLimitPerSecond, _bufferCap, _doPartialAction)
     {
-        require(_bufferCap < _bufferCap, "MultiRateLimited: max buffer cap invalid");
+        require(_maxBufferCap < _bufferCap, "MultiRateLimited: max buffer cap invalid");
 
-        maxRateLimitPerSecond = _maxRateLimitPerSecondNonGovernor;
+        maxRateLimitPerSecond = _maxRateLimitPerSecondMRL;
         maxBufferCap = _maxBufferCap;
     }
 
@@ -98,7 +98,7 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @param rateLimitedAddress the new address to add as a rateLimitedAddress
     /// TODO figure out what the modifier should be for this function
     function addAddressWithCaps(address rateLimitedAddress) external virtual override onlyGovernorOrAdmin {
-        _addAddress(rateLimitedAddress, uint112(rateLimitPerSecond), uint144(bufferCap));
+        _addAddress(rateLimitedAddress, uint112(maxRateLimitPerSecond), uint144(maxBufferCap));
     }
 
     /// @notice remove an authorized rateLimitedAddress contract

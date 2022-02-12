@@ -92,13 +92,11 @@ describe('GlobalglobalRateLimitedMinter', function () {
     });
 
     it('maxBufferCapSubGovernor is correctly initialized on individual minter', async function () {
-      expect(await globalRateLimitedMinter.bufferCapSubGovernor()).to.be.equal(maxBufferCapSubGovernor);
+      expect(await globalRateLimitedMinter.maxBufferCap()).to.be.equal(maxBufferCapSubGovernor);
     });
 
     it('maxRateLimitPerSecond is correctly initialized on individual minter', async function () {
-      expect(await globalRateLimitedMinter.rateLimitPerSecondSubGovernor()).to.be.equal(
-        maxRateLimitPerSecondSubGovernor
-      );
+      expect(await globalRateLimitedMinter.maxRateLimitPerSecond()).to.be.equal(maxRateLimitPerSecondSubGovernor);
     });
   });
 
@@ -352,12 +350,12 @@ describe('GlobalglobalRateLimitedMinter', function () {
       it('cannot add the same address twice', async function () {
         await globalRateLimitedMinter
           .connect(impersonatedSigners[governorAddress])
-          .addAddressSubGovernor(authorizedMinter.address);
+          .addAddressWithCaps(authorizedMinter.address);
 
         await expectRevert(
           globalRateLimitedMinter
             .connect(impersonatedSigners[governorAddress])
-            .addAddressSubGovernor(authorizedMinter.address),
+            .addAddressWithCaps(authorizedMinter.address),
           'MultiRateLimited: address already added'
         );
       });
@@ -366,7 +364,7 @@ describe('GlobalglobalRateLimitedMinter', function () {
         await expectRevert(
           globalRateLimitedMinter
             .connect(impersonatedSigners[userAddress])
-            .addAddressSubGovernor(authorizedMinter.address),
+            .addAddressWithCaps(authorizedMinter.address),
           'CoreRef: Caller is not a governor'
         );
       });
@@ -400,15 +398,24 @@ describe('GlobalglobalRateLimitedMinter', function () {
     it('governor succeeds', async function () {
       await globalRateLimitedMinter
         .connect(impersonatedSigners[governorAddress])
-        .updateAddress(authorizedMinter.address, globalRateLimitPerSecond.div(2), bufferCap.div(2));
+        .updateAddress(authorizedMinter.address, maxRateLimitPerSecondSubGovernor, maxBufferCapSubGovernor);
     });
 
     it('governor fails when new limit is over buffer cap', async function () {
       await expectRevert(
         globalRateLimitedMinter
           .connect(impersonatedSigners[governorAddress])
-          .updateAddress(authorizedMinter.address, globalRateLimitPerSecond.div(2), bufferCap.add(1)),
-        'MultiRateLimited: buffercap too high'
+          .updateAddress(authorizedMinter.address, maxRateLimitPerSecondSubGovernor, bufferCap.add(1)),
+        'MultiRateLimited: max buffer cap exceeds non governor allowable amount'
+      );
+    });
+
+    it('governor fails when new limit is over max rate limit per second', async function () {
+      await expectRevert(
+        globalRateLimitedMinter
+          .connect(impersonatedSigners[governorAddress])
+          .updateAddress(authorizedMinter.address, maxRateLimitPerSecondSubGovernor.add(1), maxBufferCapSubGovernor),
+        'MultiRateLimited: rate limit per second exceeds non governor allowable amount'
       );
     });
 
@@ -436,19 +443,37 @@ describe('GlobalglobalRateLimitedMinter', function () {
     });
   });
 
-  describe('updateSubGovRateLimitPerSecond', function () {
+  describe('updateMaxBufferCap', function () {
     it('governor succeeds', async function () {
       const newRateLimitPerSecond = 10000;
       await globalRateLimitedMinter
         .connect(impersonatedSigners[governorAddress])
-        .updateSubGovRateLimitPerSecond(newRateLimitPerSecond);
+        .updateMaxBufferCap(newRateLimitPerSecond);
 
-      expect(await globalRateLimitedMinter.rateLimitPerSecondSubGovernor()).to.be.equal(newRateLimitPerSecond);
+      expect(await globalRateLimitedMinter.maxBufferCap()).to.be.equal(newRateLimitPerSecond);
     });
 
     it('non-governor reverts', async function () {
       await expectRevert(
-        globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).updateSubGovRateLimitPerSecond('10000'),
+        globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).updateMaxBufferCap('10000'),
+        'CoreRef: Caller is not a governor'
+      );
+    });
+  });
+
+  describe('updateMaxRateLimitPerSecond', function () {
+    it('governor succeeds', async function () {
+      const newRateLimitPerSecond = 10000;
+      await globalRateLimitedMinter
+        .connect(impersonatedSigners[governorAddress])
+        .updateMaxRateLimitPerSecond(newRateLimitPerSecond);
+
+      expect(await globalRateLimitedMinter.maxRateLimitPerSecond()).to.be.equal(newRateLimitPerSecond);
+    });
+
+    it('non-governor reverts', async function () {
+      await expectRevert(
+        globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).updateMaxRateLimitPerSecond('10000'),
         'CoreRef: Caller is not a governor'
       );
     });
@@ -469,22 +494,6 @@ describe('GlobalglobalRateLimitedMinter', function () {
           false
         ),
         'MultiRateLimited: max buffer cap invalid'
-      );
-    });
-  });
-
-  describe('updateSubGovBufferCap', function () {
-    it('governor succeeds', async function () {
-      const newBufferCap = 10000;
-      await globalRateLimitedMinter.connect(impersonatedSigners[governorAddress]).updateSubGovBufferCap(newBufferCap);
-
-      expect(await globalRateLimitedMinter.bufferCapSubGovernor()).to.be.equal(newBufferCap);
-    });
-
-    it('non-governor reverts', async function () {
-      await expectRevert(
-        globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).updateSubGovBufferCap('10000'),
-        'CoreRef: Caller is not a governor'
       );
     });
   });
