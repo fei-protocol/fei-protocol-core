@@ -11,7 +11,6 @@ import {FeiTestAddresses, getAddresses, getCore} from "../utils/fixtures/Fei.sol
 import {DSTest} from "../utils/DSTest.sol";
 import {StdLib} from "../utils/StdLib.sol";
 import {Vm} from "../utils/Vm.sol";
-import "hardhat/console.sol";
 
 contract UniswapV3OracleTest is DSTest, StdLib {
   
@@ -42,6 +41,7 @@ contract UniswapV3OracleTest is DSTest, StdLib {
 
     UniswapV3OracleWrapper.OracleConfig memory oracleConfig = UniswapV3OracleWrapper.OracleConfig({
       twapPeriod: twapPeriod,
+      uniswapPool: address(mockUniswapPool),
       minTwapPeriod: 0,
       maxTwapPeriod: 50000,
       minPoolLiquidity: mockUniswapPool.liquidity()
@@ -50,7 +50,6 @@ contract UniswapV3OracleTest is DSTest, StdLib {
     
     oracle = new UniswapV3OracleWrapper(
       address(core),
-      address(mockUniswapPool),
       inputToken,
       outputToken,
       uniswapMathWrapper,
@@ -74,7 +73,8 @@ contract UniswapV3OracleTest is DSTest, StdLib {
       twapPeriod: twapPeriod,
       minTwapPeriod: 0,
       maxTwapPeriod: 50000,
-      minPoolLiquidity: mockUniswapPool.liquidity() + 1
+      minPoolLiquidity: mockUniswapPool.liquidity() + 1,
+      uniswapPool: address(mockUniswapPool)
     });    
     
     vm.expectRevert(
@@ -82,7 +82,6 @@ contract UniswapV3OracleTest is DSTest, StdLib {
     );
     oracle = new UniswapV3OracleWrapper(
       address(core),
-      address(mockUniswapPool),
       inputToken,
       outputToken,
       uniswapMathWrapper,
@@ -91,7 +90,7 @@ contract UniswapV3OracleTest is DSTest, StdLib {
   }
 
   function testTwapPeriodBounds() public {
-    (, , uint32 maxTwapPeriod, ) = oracle.oracleConfig();
+    (, , uint32 maxTwapPeriod, , ) = oracle.oracleConfig();
     uint32 newTwapPeriod = maxTwapPeriod + 1;
 
     vm.prank(addresses.governorAddress);
@@ -122,19 +121,6 @@ contract UniswapV3OracleTest is DSTest, StdLib {
     vm.expectRevert(
       bytes("CoreRef: Caller is not a guardian or governor")
     );
-    oracle.setTwapPeriod(newTwapPeriod);
-  }
-
-  function testInsufficientObsSlots() public {
-    (, , , uint16 observationCardinality, , , ) = mockUniswapPool.slot0();
-    uint16 approxBlockTime = uint16(11);
-    uint32 newTwapPeriod = (observationCardinality * approxBlockTime) + 1;
-    console.log(newTwapPeriod);
-
-    vm.expectRevert(
-      bytes("Insufficient pool observation slots")
-    );
-    vm.prank(addresses.governorAddress);
     oracle.setTwapPeriod(newTwapPeriod);
   }
 

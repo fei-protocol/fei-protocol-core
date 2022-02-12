@@ -7,7 +7,7 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 
-import { backupOracleConfig } from '@protocol/backupOracleConfig';
+import { daiUsdcBackupOracleConfig, ethUsdcBackupOracleConfig } from '@protocol/backupOracleConfig';
 
 /*
 
@@ -31,25 +31,27 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   logging && console.log('uniswapWrapper:', uniswapWrapper.address);
 
   const uniswapV3TwapOracleFactory = await ethers.getContractFactory('UniswapV3OracleWrapper');
+
   const daiUsdcTwapOracle = await uniswapV3TwapOracleFactory.deploy(
     addresses.core,
-    backupOracleConfig.daiUsdc.uniswapPool,
-    backupOracleConfig.daiUsdc.secondsAgo,
-    uniswapWrapper.address
+    addresses.dai,
+    addresses.usdc,
+    uniswapWrapper.address,
+    daiUsdcBackupOracleConfig as any
   );
   logging && console.log('daiUsdcTwapOracle:', daiUsdcTwapOracle.address);
 
   const ethUsdcTwapOracle = await uniswapV3TwapOracleFactory.deploy(
     addresses.core,
-    backupOracleConfig.ethUsdc.uniswapPool,
-    backupOracleConfig.ethUsdc.secondsAgo,
-    uniswapWrapper.address
+    addresses.weth,
+    addresses.usdc,
+    uniswapWrapper.address,
+    ethUsdcBackupOracleConfig as any
   );
 
   logging && console.log('ethUsdcTwapOracle:', ethUsdcTwapOracle.address);
 
   return {
-    // put returned contract objects here
     uniswapWrapper,
     daiUsdcTwapOracle,
     ethUsdcTwapOracle

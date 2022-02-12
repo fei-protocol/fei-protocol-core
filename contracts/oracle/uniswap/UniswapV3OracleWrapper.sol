@@ -9,6 +9,8 @@ import {IOracle} from "../IOracle.sol";
 import {Decimal} from "../../external/Decimal.sol";
 import {IUniswapWrapper} from "./IUniswapWrapper.sol";
 
+// TODO: Maybe check that the pool corresponds to the tokens we're interested in?
+// TODO: Confirm price calculation is correct
 
 /// @title UniswapV3 TWAP Oracle wrapper
 /// @notice Reads a UniswapV3 TWAP oracle, based on a single Uniswap pool, and wraps it under 
@@ -29,33 +31,28 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
     uint32 minTwapPeriod;
     uint32 maxTwapPeriod;
     uint128 minPoolLiquidity;
+    address uniswapPool;
   }
 
   event TwapPeriodUpdate(address indexed pool, uint32 oldTwapPeriod, uint32 newTwapPeriod);
 
   constructor(
     address _core,
-    address _pool,
     address _inputToken,
     address _outputToken,
     address _uniswapWrapper,
     OracleConfig memory _oracleConfig
   ) CoreRef(_core) {
     require(_core != address(0x0), "_core cannot be null address");
-    require(_pool != address(0x0), "_pool cannot be null address");
+    require(_oracleConfig.uniswapPool != address(0x0), "_pool cannot be null address");
     require(_uniswapWrapper != address(0x0), "_uniswapWrapper cannot be null address");
     require(
       _oracleConfig.twapPeriod >= _oracleConfig.minTwapPeriod && _oracleConfig.twapPeriod <= _oracleConfig.maxTwapPeriod,
       "TWAP period out of bounds"
     );
-    validatePoolLiquidity(_pool, _oracleConfig.minPoolLiquidity);
-
-    // TODO: Maybe check that the pool exists for the tokens we're interested in?
-    // TODO: Check/refactor price calculation
-    // TODO: Check decimal calculation
-
+    validatePoolLiquidity(_oracleConfig.uniswapPool, _oracleConfig.minPoolLiquidity);
     
-    pool = _pool;
+    pool = _oracleConfig.uniswapPool;
     inputToken = _inputToken;
     outputToken = _outputToken;
     uniswapWrapper = IUniswapWrapper(_uniswapWrapper);   
@@ -79,7 +76,6 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   /// @notice Read the oracle price
   function read() external view override returns (Decimal.D256 memory, bool) {
     validatePoolLiquidity(pool, oracleConfig.minPoolLiquidity);
-    validateNumOberservationSlots(oracleConfig.twapPeriod);
 
     uint256 rawPrice = uniswapWrapper.calculatePrice(
       pool, 
@@ -112,21 +108,6 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
     IUniswapV3Pool(_pool).increaseObservationCardinalityNext(requiredCardinality);
   }
 
-  /// @notice Validate that the UniswapV3 pool has sufficient observation slots
-  /// to support the requested TWAP period. If not revert and 
-  //  `pool.increaseObservationCardinalityNext()` should be called
-  // TODO: Maybe remove
-  function validateNumOberservationSlots(uint32 _twapPeriod) internal view {
-      uint16 observationCardinality = uniswapWrapper.getObservationCardinality(pool);
-
-      // 1 observation = 1 block ~ 11 seconds
-      uint16 approxBlockTime = uint16(11);
-      uint16 requestedTwapPeriodInBlocks = uint16(_twapPeriod) / approxBlockTime; 
-      require(requestedTwapPeriodInBlocks < observationCardinality,
-        "Insufficient pool observation slots");
-  }
-
-
   // ----------- Governor only state changing api -----------
 
   /// @notice Change the time period over which the TWAP price is calculated
@@ -135,7 +116,6 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
       _twapPeriod >= oracleConfig.minTwapPeriod && _twapPeriod <= oracleConfig.maxTwapPeriod,
       "TWAP period out of bounds"
     );
-    validateNumOberservationSlots(_twapPeriod);
 
     uint32 oldTwapPeriod = oracleConfig.twapPeriod;
     oracleConfig.twapPeriod = _twapPeriod;

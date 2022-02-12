@@ -1,45 +1,27 @@
-import {
-  AavePCVDeposit,
-  PegStabilityModule,
-  Fei,
-  IERC20,
-  PCVDripController,
-  PSMRouter,
-  WETH9
-} from '@custom-types/contracts';
+import { PegStabilityModule, UniswapV3OracleWrapper } from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { BigNumber } from 'ethers';
-import hre, { ethers } from 'hardhat';
+import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { expectApprox, expectRevert, getImpersonatedSigner, increaseTime, resetFork } from '@test/helpers';
+import { expectApprox, expectRevert, getImpersonatedSigner, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
-import { forceEth } from '../setup/utils';
-import { contract } from '@openzeppelin/test-environment';
-import { time, overwriteChainlinkAggregator } from '@test/helpers';
-
-const oneEth = ethers.constants.WeiPerEther;
 
 describe('Backup Oracles', function () {
   let contracts: NamedContracts;
-  let contractAddresses: NamedAddresses;
   let deployAddress: SignerWithAddress;
-  let guardian: SignerWithAddress;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
+  let daiPSM: PegStabilityModule;
   let ethPSM: PegStabilityModule;
-  let ethPSMRouter: PSMRouter;
-  let weth: WETH9;
-  let aWeth: IERC20;
-  let fei: Fei;
-  let dripper: PCVDripController;
-  let aaveEthPCVDeposit: AavePCVDeposit;
+  let daiUsdcBackupOracle: UniswapV3OracleWrapper;
+  let ethUsdcBackupOracle: UniswapV3OracleWrapper;
 
   before(async () => {
-    chai.use(CBN(ethers.BigNumber));
+    chai.use(CBN(BigNumber));
     chai.use(solidity);
     await resetFork();
   });
@@ -61,31 +43,69 @@ describe('Backup Oracles', function () {
     e2eCoord = new TestEndtoEndCoordinator(config, proposals);
 
     doLogging && console.log(`Loading environment...`);
-    ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
+    ({ contracts } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
-    ethPSM = contracts.ethPSM as PegStabilityModule;
-    ethPSMRouter = contracts.ethPSMRouter as PSMRouter;
-    aaveEthPCVDeposit = contracts.aaveEthPCVDeposit as AavePCVDeposit;
-    aWeth = contracts.aWETH as IERC20;
 
-    weth = await ethers.getContractAt('WETH9', '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2');
+    const daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
+
+    // Add backup oracle to DAI PSM
+    daiPSM = contracts.daiFixedPricePSM as PegStabilityModule;
+    console.log('dai psm address: ', daiPSM.address);
+
+    daiUsdcBackupOracle = contracts.daiUsdcTwapOracle as UniswapV3OracleWrapper;
+
+    console.log('dai oracle address: ', daiUsdcBackupOracle.address);
+    await daiPSM.connect(daoSigner).setBackupOracle(daiUsdcBackupOracle.address);
+
+    // Add backup oracle to ETH PSM
+    ethPSM = contracts.ethPSM as PegStabilityModule;
+    ethUsdcBackupOracle = contracts.ethUsdcTwapOracle as UniswapV3OracleWrapper;
+    await ethPSM.connect(daoSigner).setBackupOracle(ethUsdcBackupOracle.address);
   });
 
   before(async function () {
-    // Make PSM fully online
-    const redeemPaused = await contracts.ethPSM.redeemPaused();
-    if (redeemPaused) {
-      await contracts.ethPSM.unpauseRedeem();
-    }
-    const paused = await contracts.ethPSM.paused();
-    if (paused) {
-      await contracts.ethPSM.unpause();
-    }
+    const turnPSMOn = async (psm: PegStabilityModule) => {
+      const redeemPaused = await psm.redeemPaused();
+      if (redeemPaused) {
+        await psm.unpauseRedeem();
+      }
+      const paused = await psm.paused();
+      if (paused) {
+        await psm.unpause();
+      }
+    };
+
+    await turnPSMOn(daiPSM);
+    await turnPSMOn(ethPSM);
   });
 
-  it('should switch to the backup oracle', async () => {});
+  it('should have set backup oracle', async () => {
+    const daiBackupOracle = await daiPSM.backupOracle();
+    const ethBackupOracle = await ethPSM.backupOracle();
+    expect(daiBackupOracle).to.equal(daiUsdcBackupOracle.address);
+    expect(ethBackupOracle).to.equal(ethUsdcBackupOracle.address);
+  });
 
-  it('should read reasonable Uniswap V3 TWAP oracle price', async () => {});
+  it.only('should read reasonable Uniswap V3 TWAP oracle price', async () => {
+    // Can call the oracle directly to query price
+    const [daiPrice, isValid] = await daiUsdcBackupOracle.read();
 
-  it('should read Uniswap V3 TWAP oracle price comparable to primary oracle price', async () => {});
+    console.log({ isValid });
+    console.log('daiPrice: ', daiPrice.toString());
+
+    expect(isValid).to.be.true;
+    expect(daiPrice.toString()).to.be.equal('1000000000000000000');
+  });
+
+  it.only('should read Uniswap V3 TWAP oracle price comparable to primary oracle price', async () => {
+    const primaryChainlinkOracle = contracts.chainlinkDaiUsdOracleWrapper;
+
+    const primaryOraclePrice = await primaryChainlinkOracle.read();
+    const backupOraclePrice = await daiUsdcBackupOracle.read();
+
+    console.log('primary oracle price: ', primaryOraclePrice.toString());
+    console.log('backup oracle price: ', backupOraclePrice.toString());
+
+    expect(primaryOraclePrice.toString()).to.equal(backupOraclePrice.toString());
+  });
 });
