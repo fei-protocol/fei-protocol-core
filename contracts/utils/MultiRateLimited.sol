@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import {CoreRef} from "../refs/CoreRef.sol";
+import {TribeRoles} from "./../core/TribeRoles.sol";
 import {RateLimited} from "./RateLimited.sol";
 import {IMultiRateLimited} from "./IMultiRateLimited.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
@@ -83,12 +84,24 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @param rateLimitedAddress the address whose buffer and rate limit per second will be set
     /// @param _rateLimitPerSecond the new rate limit per second for this rateLimitedAddress
     /// @param _bufferCap  the new buffer cap for this rateLimitedAddress
-    function updateAddress(address rateLimitedAddress, uint112 _rateLimitPerSecond, uint144 _bufferCap) external virtual override onlyGovernorOrAdmin {
-        if (isContractAdmin(msg.sender)) {
-            /// if the caller is not the governor, then enforce these caps
-            require(_rateLimitPerSecond <= maxRateLimitPerSecond, "MultiRateLimited: rate limit per second exceeds non governor allowable amount");
-            require(_bufferCap <= maxBufferCap, "MultiRateLimited: max buffer cap exceeds non governor allowable amount");
-        }
+    function updateAddress(address rateLimitedAddress, uint112 _rateLimitPerSecond, uint144 _bufferCap) external virtual override onlyGovernor {
+        require(_bufferCap <= bufferCap, "MultiRateLimited: buffercap too high");
+
+        _updateAddress(rateLimitedAddress, _rateLimitPerSecond, _bufferCap);
+    }
+
+    /// @notice add an authorized rateLimitedAddress contract
+    /// @param rateLimitedAddress the address whose buffer and rate limit per second will be set
+    /// @param _rateLimitPerSecond the new rate limit per second for this rateLimitedAddress
+    /// @param _bufferCap  the new buffer cap for this rateLimitedAddress
+    function updateAddressWithCaps(
+        address rateLimitedAddress,
+        uint112 _rateLimitPerSecond,
+        uint144 _bufferCap
+    ) external virtual override onlyTribeRole(TribeRoles.MINOR_MINTER_ADD_ROLE) {
+        /// if the caller is not the governor, then enforce these caps
+        require(_rateLimitPerSecond <= maxRateLimitPerSecond, "MultiRateLimited: rate limit per second exceeds non governor allowable amount");
+        require(_bufferCap <= maxBufferCap, "MultiRateLimited: max buffer cap exceeds non governor allowable amount");
         require(_bufferCap <= bufferCap, "MultiRateLimited: buffercap too high");
 
         _updateAddress(rateLimitedAddress, _rateLimitPerSecond, _bufferCap);
@@ -165,6 +178,7 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
         RateLimitData storage rateLimitData = rateLimitPerAddress[rateLimitedAddress];
 
         require(rateLimitData.lastBufferUsedTime != 0, "MultiRateLimited: rate limit address does not exist");
+        require(_rateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND, "MultiRateLimited: rateLimitPerSecond too high");
 
         rateLimitData.lastBufferUsedTime = block.timestamp.toUint32();
         rateLimitData.bufferCap = _bufferCap;

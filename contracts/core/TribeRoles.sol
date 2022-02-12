@@ -70,4 +70,7 @@ library TribeRoles {
 
     /// @notice capable of changing parameters within non-critical ranges
     bytes32 internal constant MINOR_PARAM_ROLE = keccak256("MINOR_PARAM_ROLE");
+
+    /// @notice capable of changing parameters within non-critical ranges
+    bytes32 internal constant MINOR_MINTER_ADD_ROLE = keccak256("MINOR_MINTER_ADD_ROLE");
 } 
