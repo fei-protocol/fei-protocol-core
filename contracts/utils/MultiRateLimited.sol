@@ -25,50 +25,50 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @notice rate limited address information
     mapping (address => RateLimitData) public rateLimitPerAddress;
 
-    /// @notice max rate limit per second allowable by authorized sub governor
-    uint256 public rateLimitPerSecondSubGovernor;
+    /// @notice max rate limit per second allowable by non governor
+    uint256 public maxRateLimitPerSecond;
 
-    /// @notice max buffer cap allowable by authorized sub governor
-    uint256 public bufferCapSubGovernor;
+    /// @notice max buffer cap allowable by non governor
+    uint256 public maxBufferCap;
 
     constructor(
         address coreAddress,
         uint256 _maxRateLimitPerSecond,
         uint256 _rateLimitPerSecond,
-        uint256 _rateLimitPerSecondSubGovernor,
-        uint256 _bufferCapSubGovernor,
+        uint256 _maxRateLimitPerSecondNonGovernor,
+        uint256 _maxBufferCap,
         uint256 _bufferCap,
         bool _doPartialAction
     )
         CoreRef(coreAddress)
         RateLimited(_maxRateLimitPerSecond, _rateLimitPerSecond, _bufferCap, _doPartialAction)
     {
-        require(_bufferCapSubGovernor < _bufferCap, "MultiRateLimited: max buffer cap invalid");
+        require(_bufferCap < _bufferCap, "MultiRateLimited: max buffer cap invalid");
 
-        rateLimitPerSecondSubGovernor = _rateLimitPerSecondSubGovernor;
-        bufferCapSubGovernor = _bufferCapSubGovernor;
+        maxRateLimitPerSecond = _maxRateLimitPerSecondNonGovernor;
+        maxBufferCap = _maxBufferCap;
     }
 
     // ----------- Governor and Admin only state changing api -----------
 
     /// @notice update the sub gov rate limit per second
-    /// @param newRateLimitPerSecondSubGovernor new maximum rate limit per second for sub governors
+    /// @param newRateLimitPerSecond new maximum rate limit per second for sub governors
     /// TODO determine the proper modifier for this function
-    function updateSubGovRateLimitPerSecond(uint256 newRateLimitPerSecondSubGovernor) external virtual override onlyGovernor {
-        uint256 oldMaxRateLimitPerSecond = rateLimitPerSecondSubGovernor;
-        rateLimitPerSecondSubGovernor = newRateLimitPerSecondSubGovernor;
+    function updateMaxRateLimitPerSecond(uint256 newRateLimitPerSecond) external virtual override onlyGovernor {
+        uint256 oldMaxRateLimitPerSecond = maxRateLimitPerSecond;
+        maxRateLimitPerSecond = newRateLimitPerSecond;
 
-        emit SubGovMaxRateLimitPerSecondUpdate(oldMaxRateLimitPerSecond, newRateLimitPerSecondSubGovernor);
+        emit MultiMaxRateLimitPerSecondUpdate(oldMaxRateLimitPerSecond, newRateLimitPerSecond);
     }
 
     /// @notice update the sub gov max buffer cap
     /// @param newSubGovBufferCap new buffer cap for sub governor added addresses
     /// TODO determine the proper modifier for this function
-    function updateSubGovBufferCap(uint256 newSubGovBufferCap) external virtual override onlyGovernor {
-        uint256 oldBufferCap = bufferCapSubGovernor;
-        bufferCapSubGovernor = newSubGovBufferCap;
+    function updateMaxBufferCap(uint256 newSubGovBufferCap) external virtual override onlyGovernor {
+        uint256 oldBufferCap = maxBufferCap;
+        maxBufferCap = newSubGovBufferCap;
 
-        emit SubGovBufferCapUpdate(oldBufferCap, newSubGovBufferCap);
+        emit MultiBufferCapUpdate(oldBufferCap, newSubGovBufferCap);
     }
 
     /// @notice add an authorized rateLimitedAddress contract
@@ -83,7 +83,12 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @param rateLimitedAddress the address whose buffer and rate limit per second will be set
     /// @param _rateLimitPerSecond the new rate limit per second for this rateLimitedAddress
     /// @param _bufferCap  the new buffer cap for this rateLimitedAddress
-    function updateAddress(address rateLimitedAddress, uint112 _rateLimitPerSecond, uint144 _bufferCap) external virtual override onlyGovernor {
+    function updateAddress(address rateLimitedAddress, uint112 _rateLimitPerSecond, uint144 _bufferCap) external virtual override onlyGovernorOrAdmin {
+        if (isContractAdmin(msg.sender)) {
+            /// if the caller is not the governor, then enforce these caps
+            require(_rateLimitPerSecond <= maxRateLimitPerSecond, "MultiRateLimited: rate limit per second exceeds non governor allowable amount");
+            require(_bufferCap <= maxBufferCap, "MultiRateLimited: max buffer cap exceeds non governor allowable amount");
+        }
         require(_bufferCap <= bufferCap, "MultiRateLimited: buffercap too high");
 
         _updateAddress(rateLimitedAddress, _rateLimitPerSecond, _bufferCap);
@@ -92,8 +97,8 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @notice add an authorized rateLimitedAddress contract
     /// @param rateLimitedAddress the new address to add as a rateLimitedAddress
     /// TODO figure out what the modifier should be for this function
-    function addAddressSubGovernor(address rateLimitedAddress) external virtual override onlyGovernorOrAdmin {
-        _addAddress(rateLimitedAddress, uint112(rateLimitPerSecondSubGovernor), uint144(bufferCapSubGovernor));
+    function addAddressWithCaps(address rateLimitedAddress) external virtual override onlyGovernorOrAdmin {
+        _addAddress(rateLimitedAddress, uint112(rateLimitPerSecond), uint144(bufferCap));
     }
 
     /// @notice remove an authorized rateLimitedAddress contract
@@ -175,6 +180,7 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     function _addAddress(address rateLimitedAddress, uint112 _rateLimitPerSecond, uint144 _bufferCap) internal {
         require(_bufferCap <= bufferCap, "MultiRateLimited: new buffercap too high");
         require(rateLimitPerAddress[rateLimitedAddress].lastBufferUsedTime == 0, "MultiRateLimited: address already added");
+        require(_rateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND, "MultiRateLimited: rateLimitPerSecond too high");
 
         RateLimitData memory rateLimitData = RateLimitData({
             lastBufferUsedTime: block.timestamp.toUint32(),

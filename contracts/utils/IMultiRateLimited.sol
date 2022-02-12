@@ -26,23 +26,22 @@ interface IMultiRateLimited {
     event IndividualRateLimitPerSecondUpdate(address rateLimitedAddress, uint256 oldRateLimitPerSecond, uint256 newRateLimitPerSecond);
 
     /// @notice emitted when the sub gov buffer cap max is updated
-    event SubGovBufferCapUpdate(uint256 oldBufferCap, uint256 newBufferCap);
+    event MultiBufferCapUpdate(uint256 oldBufferCap, uint256 newBufferCap);
 
     /// @notice emitted when the sub gov buffer rate limit per second max is updated
-    event SubGovMaxRateLimitPerSecondUpdate(uint256 oldMaxRateLimitPerSecond, uint256 newMaxRateLimitPerSecond);
+    event MultiMaxRateLimitPerSecondUpdate(uint256 oldMaxRateLimitPerSecond, uint256 newMaxRateLimitPerSecond);
 
     /// @notice update the sub gov max rate limit per second
-    function updateSubGovRateLimitPerSecond(uint256 newMaxRateLimitPerSecond) external;
+    function updateMaxRateLimitPerSecond(uint256 newMaxRateLimitPerSecond) external;
 
     /// @notice update the sub gov max buffer cap
-    function updateSubGovBufferCap(uint256 newBufferCap) external;
+    function updateMaxBufferCap(uint256 newBufferCap) external;
+
+    /// @notice add an authorized contract, its per second replenishment and buffer set to the non governor caps
+    function addAddressWithCaps(address) external;
 
     /// @notice add an authorized contract, its per second replenishment and buffer
     function addAddress(address, uint112, uint144) external;
-
-    /// @notice add an authorized contract, its per second replenishment and buffer
-    /// complies with max sub governor buffer cap and rate limit per second
-    function addAddressSubGovernor(address) external;
 
     /// @notice update an authorized contract
     function updateAddress(address, uint112, uint144) external;
