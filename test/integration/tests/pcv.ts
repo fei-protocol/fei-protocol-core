@@ -108,22 +108,26 @@ describe('e2e-pcv', function () {
     });
   });
 
-  /// pause this test as it has been disabled for FIP-62
-  /// PCVDripController now sends funds to the eth PSM
-  describe.skip('Drip Controller', async () => {
-    it('drip controller can withdraw from PCV deposit to stabiliser', async function () {
-      const ethReserveStabilizer = contracts.ethReserveStabilizer;
+  describe('Drip Controller', async () => {
+    before(async function () {
+      // unpause contracts if needed
+      if (await contracts.ethPSM.paused()) await contracts.ethPSM.unpause();
+      if (await contracts.aaveEthPCVDripController.paused()) await contracts.aaveEthPCVDripController.unpause();
+    });
+
+    it('drip controller can withdraw from PCV deposit to PSM', async function () {
+      const ethPsm = contracts.ethPSM;
       const aaveEthPCVDeposit = contracts.aaveEthPCVDeposit;
       const pcvDripper = contracts.aaveEthPCVDripController;
       const fei = contracts.fei;
 
       const userFeiBalanceBefore = await fei.balanceOf(deployAddress);
-      let stabilizerBalanceBefore = await ethReserveStabilizer.balance();
+      let balanceBefore = await ethPsm.balance();
 
       const dripAmount = await pcvDripper.dripAmount();
-      if (stabilizerBalanceBefore.gt(dripAmount)) {
-        await ethReserveStabilizer.withdraw(deployAddress, stabilizerBalanceBefore);
-        stabilizerBalanceBefore = await ethReserveStabilizer.balance();
+      if (balanceBefore.gt(dripAmount)) {
+        await ethPsm.withdraw(deployAddress, balanceBefore);
+        balanceBefore = await ethPsm.balance();
       }
 
       const pcvDepositBefore = await aaveEthPCVDeposit.balance();
@@ -135,8 +139,8 @@ describe('e2e-pcv', function () {
       const pcvDepositAfter = toBN(await aaveEthPCVDeposit.balance());
       await expectApprox(pcvDepositAfter, pcvDepositBefore.sub(dripAmount), '100');
 
-      const stabilizerBalanceAfter = toBN(await ethReserveStabilizer.balance());
-      await expectApprox(stabilizerBalanceAfter, stabilizerBalanceBefore.add(dripAmount), '100');
+      const balanceAfter = toBN(await ethPsm.balance());
+      await expectApprox(balanceAfter, balanceBefore.add(dripAmount), '100');
 
       const feiIncentive = await pcvDripper.incentiveAmount();
 
