@@ -26,6 +26,9 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
 
   uint16 private constant meanBlockTime = 13 seconds;
 
+  // TODO: Confirm this is constant across Uniswap pools/tokens. Check Uniswap normalises out
+  uint256 public constant uniswapDecimalsNormalizer = 10 ** uint256(18);
+
   struct OracleConfig {
     uint32 twapPeriod;
     uint32 minTwapPeriod;
@@ -85,7 +88,8 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
     );
 
     bool valid = !paused();
-    Decimal.D256 memory value = Decimal.from(rawPrice);
+
+    Decimal.D256 memory value = Decimal.from(rawPrice).div(uniswapDecimalsNormalizer);
     return (value, valid);
   }
 

@@ -6,6 +6,7 @@ import {TickMath} from "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 import {FullMath} from "@uniswap/v3-core/contracts/libraries/FullMath.sol";
 import {FixedPoint96} from "@uniswap/v3-core/contracts/libraries/FixedPoint96.sol";
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
+import "hardhat/console.sol";
 
 /// @title Wrapper around Uniswap V3 Oracle Maths operations
 /// @dev Required due to differing compiler versions
@@ -17,7 +18,15 @@ contract UniswapWrapper {
     address oracleInputToken,
     address oracleOutputToken
   ) external view returns (uint256) {
-    (int24 arithmeticMeanTick, ) = OracleLibrary.consult(pool, secondsAgo);
+
+    uint32[] memory twapInterval = new uint32[](2);
+    twapInterval[0] = secondsAgo; // from 
+    twapInterval[1] = 0; // to
+
+    (int56[] memory tickCumulatives, ) = IUniswapV3Pool(pool).observe(twapInterval);
+
+    // (int24 arithmeticMeanTick, ) = OracleLibrary.consult(pool, secondsAgo);
+    // console.log("arithmeticMeanTick");
 
     // Get tokens in same order as Uniswap
     (address token0, address token1) = sortTokensAccordingToUniswap(oracleInputToken, oracleOutputToken);
@@ -28,9 +37,11 @@ contract UniswapWrapper {
     if (invertTick) {
       // TODO: Invert tick price
     }
-    
-    // sqrtPrice = ratio of the two assets (token1/token0)
+      
+    // TODO: Check that this is safe. Returns square root of the ratio of the assets (token1/token0) in X96 format
+    int24 arithmeticMeanTick = int24((tickCumulatives[1] - tickCumulatives[0]) / secondsAgo);
     uint160 sqrtPrice = TickMath.getSqrtRatioAtTick(arithmeticMeanTick);
+
     uint256 price = FullMath.mulDiv(sqrtPrice, sqrtPrice, FixedPoint96.Q96);
     return price;
   }
