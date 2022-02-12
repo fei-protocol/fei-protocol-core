@@ -1736,11 +1736,6 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x9d28B8Cb17c3E25b6Cce17f88B259f75174b69f4',
     category: AddressCategory.TBD
   },
-  tokeTokemakPCVDeposit: {
-    artifactName: 'ERC20TokemakPCVDeposit',
-    address: '0x45C8FaB07B64C78d03006591132Ac51DE82a4B22',
-    category: AddressCategory.TBD
-  },
   rariInfraFeiTimelock: {
     artifactName: 'LinearTokenTimelock',
     address: '0xfaFC562265a49975E8B20707EAC966473795CF90',
