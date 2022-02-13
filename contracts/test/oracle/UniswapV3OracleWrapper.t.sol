@@ -28,37 +28,36 @@ contract UniswapV3OracleTest is DSTest, StdLib {
   int56[] tickCumulatives = [int56(12), int56(12)];
   uint160[] secondsPerLiqCumulatives = [10, 20];
 
-  address inputToken = address(0x1);
-  address outputToken = address(0x2);
+  IUniswapV3Pool daiUsdcPool = IUniswapV3Pool(0x5777d92f208679DB4b9778590Fa3CAB3aC9e2168);
+  address dai = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+  address usdc = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
   
   function setUp() public {
     core = getCore();
-
-    // Note: Where deployCode() is used, it's a workaround to deploy a contract necessarily compiled with a 
-    // different Solidity version (Uniswap contracts written in different version, and rely on prior features)
-    mockUniswapPool = IUniswapV3Pool(deployCode("./out/MockUniV3Pool.sol/MockUniV3Pool.json"));
+    // mockUniswapPool = IUniswapV3Pool(deployCode("./out/MockUniV3Pool.sol/MockUniV3Pool.json"));
+    
     uniswapMathWrapper = deployCode("./out/UniswapWrapper.sol/UniswapWrapper.json");
 
     UniswapV3OracleWrapper.OracleConfig memory oracleConfig = UniswapV3OracleWrapper.OracleConfig({
       twapPeriod: twapPeriod,
-      uniswapPool: address(mockUniswapPool),
+      uniswapPool: address(daiUsdcPool),
       minTwapPeriod: 0,
       maxTwapPeriod: 50000,
-      minPoolLiquidity: mockUniswapPool.liquidity()
+      minPoolLiquidity: daiUsdcPool.liquidity()
     });    
     
     
     oracle = new UniswapV3OracleWrapper(
       address(core),
-      inputToken,
-      outputToken,
+      dai,
+      usdc,
       uniswapMathWrapper,
       oracleConfig
     );
   } 
 
   function testMetadataSet() public {
-    assertEq(oracle.pool(), address(mockUniswapPool));
+    assertEq(oracle.pool(), address(daiUsdcPool));
     assertEq(oracle.getTwapPeriod(), twapPeriod);
     assertFalse(oracle.isOutdated());
   }
@@ -73,8 +72,8 @@ contract UniswapV3OracleTest is DSTest, StdLib {
       twapPeriod: twapPeriod,
       minTwapPeriod: 0,
       maxTwapPeriod: 50000,
-      minPoolLiquidity: mockUniswapPool.liquidity() + 1,
-      uniswapPool: address(mockUniswapPool)
+      minPoolLiquidity: daiUsdcPool.liquidity() + 1,
+      uniswapPool: address(daiUsdcPool)
     });    
     
     vm.expectRevert(
@@ -82,10 +81,35 @@ contract UniswapV3OracleTest is DSTest, StdLib {
     );
     oracle = new UniswapV3OracleWrapper(
       address(core),
-      inputToken,
-      outputToken,
+      dai,
+      usdc,
       uniswapMathWrapper,
       highMinLiquidityConfig
+    );
+  }
+
+  function testMismatchedPoolTokens() public {
+    address incorrectPoolToken0 = address(0x3);
+    address incorrectPoolToken1 = address(0x4);
+
+    UniswapV3OracleWrapper.OracleConfig memory oracleConfig = UniswapV3OracleWrapper.OracleConfig({
+      twapPeriod: twapPeriod,
+      uniswapPool: address(daiUsdcPool),
+      minTwapPeriod: 0,
+      maxTwapPeriod: 50000,
+      minPoolLiquidity: daiUsdcPool.liquidity()
+    });  
+
+
+    vm.expectRevert(
+      bytes("Incorrect pool for tokens")
+    );
+    oracle = new UniswapV3OracleWrapper(
+      address(core),
+      incorrectPoolToken0,
+      incorrectPoolToken1,
+      uniswapMathWrapper,
+      oracleConfig
     );
   }
 
@@ -125,7 +149,7 @@ contract UniswapV3OracleTest is DSTest, StdLib {
   }
 
   function testReadIsValid() public {
-    (Decimal.D256 memory value, bool valid) = oracle.read();
+    (, bool valid) = oracle.read();
     assertTrue(valid);
   }
 

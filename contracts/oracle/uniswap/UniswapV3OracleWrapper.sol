@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {FixedPoint96} from "@uniswap/v3-core/contracts/libraries/FixedPoint96.sol";
 
@@ -9,7 +10,6 @@ import {IOracle} from "../IOracle.sol";
 import {Decimal} from "../../external/Decimal.sol";
 import {IUniswapWrapper} from "./IUniswapWrapper.sol";
 
-// TODO: Maybe check that the pool corresponds to the tokens we're interested in?
 // TODO: Confirm price calculation is correct
 
 /// @title UniswapV3 TWAP Oracle wrapper
@@ -54,6 +54,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
       "TWAP period out of bounds"
     );
     validatePoolLiquidity(_oracleConfig.uniswapPool, _oracleConfig.minPoolLiquidity);
+    validateTokensInPool(_oracleConfig.uniswapPool, _inputToken,_outputToken);
     
     pool = _oracleConfig.uniswapPool;
     inputToken = _inputToken;
@@ -80,16 +81,20 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   function read() external view override returns (Decimal.D256 memory, bool) {
     validatePoolLiquidity(pool, oracleConfig.minPoolLiquidity);
 
+    uint8 inputTokenDecimals = ERC20(inputToken).decimals();
+    uint8 outputTokenDecimals = ERC20(outputToken).decimals();
     uint256 rawPrice = uniswapWrapper.calculatePrice(
       pool, 
       oracleConfig.twapPeriod,
       inputToken,
-      outputToken
+      outputToken,
+      inputTokenDecimals,
+      outputTokenDecimals
     );
 
     bool valid = !paused();
 
-    Decimal.D256 memory value = Decimal.from(rawPrice).div(uniswapDecimalsNormalizer);
+    Decimal.D256 memory value = Decimal.from(rawPrice); //.div(uniswapDecimalsNormalizer);
     return (value, valid);
   }
 
@@ -110,6 +115,25 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   function addSupportForPool(address _pool, uint32 _twapPeriod, uint16 _meanBlockTime) internal {
     uint16 requiredCardinality = uint16(_twapPeriod / _meanBlockTime) + 10; // Add additional number of slots to ensure available
     IUniswapV3Pool(_pool).increaseObservationCardinalityNext(requiredCardinality);
+  }
+
+  /// @notice Validate that the single Uniswap pool has reserves in both input and output tokens
+  function validateTokensInPool(address _pool, address _inputToken, address _outputToken) internal view {
+    address uniswapToken0 = IUniswapV3Pool(_pool).token0();
+    address uniswapToken1 = IUniswapV3Pool(_pool).token1();
+
+    (address token0, address token1) = sortTokensAccordingToUniswap(_inputToken, _outputToken);
+    require(
+      uniswapToken0 == token0 || uniswapToken1 == token1,
+      "Incorrect pool for tokens"
+    );
+  }
+
+  /// @notice Utility function to sort tokens, needed when calculating the tick, in the same order
+  // as Uniswap does and assigns on pools
+  function sortTokensAccordingToUniswap(address tokenA, address tokenB) internal view returns (address, address) {
+    (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
+    return (token0, token1);
   }
 
   // ----------- Governor only state changing api -----------

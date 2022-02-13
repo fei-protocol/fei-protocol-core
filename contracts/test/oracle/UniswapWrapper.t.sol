@@ -18,7 +18,15 @@ contract UniswapWrapperTest is DSTest {
   }
 
   function testPrice() public {
-    uint256 price = uniswapWrapper.calculatePrice(address(mockPool), secondsAgo, address(0x2), address(0x3));
-    assertGt(price, 0);
+    uint256 price = uniswapWrapper.calculatePrice(
+      address(mockPool),
+      secondsAgo,
+      address(0x2),
+      address(0x3),
+      uint8(18),
+      uint8(18)
+    );
+    
+    assertGt(price, 0);    
   }
 }

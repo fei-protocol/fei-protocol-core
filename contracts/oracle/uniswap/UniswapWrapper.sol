@@ -14,17 +14,20 @@ contract UniswapWrapper {
 
   function calculatePrice(
     address pool,
-    uint32 secondsAgo,
+    uint32 twapPeriod,
     address oracleInputToken,
-    address oracleOutputToken
+    address oracleOutputToken,
+    uint8 inputTokenDecimals,
+    uint8 outputTokenDecimals
   ) external view returns (uint256) {
 
     uint32[] memory twapInterval = new uint32[](2);
-    twapInterval[0] = secondsAgo; // from 
+    twapInterval[0] = twapPeriod; // from 
     twapInterval[1] = 0; // to
 
     (int56[] memory tickCumulatives, ) = IUniswapV3Pool(pool).observe(twapInterval);
 
+    uint256 decimalNormaliser = calculateDecimalNormaliser(inputTokenDecimals, outputTokenDecimals);
     // (int24 arithmeticMeanTick, ) = OracleLibrary.consult(pool, secondsAgo);
     // console.log("arithmeticMeanTick");
 
@@ -56,6 +59,10 @@ contract UniswapWrapper {
   function sortTokensAccordingToUniswap(address tokenA, address tokenB) internal view returns (address, address) {
     (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
     return (token0, token1);
+  }
+
+  function calculateDecimalNormaliser(uint8 _token0Decimals, uint8 _token1Decimals) internal view returns (uint256) {
+    return 10**(_token0Decimals - _token1Decimals);
   }
 }
 

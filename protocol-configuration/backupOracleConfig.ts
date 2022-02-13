@@ -1,6 +1,6 @@
 export const daiUsdcBackupOracleConfig: BackupOracleConfig = {
   twapPeriod: 600, // 10 minutes
-  minTwapPeriod: 60, // 1 minute
+  minTwapPeriod: 600, // 10 minutes
   maxTwapPeriod: 86400, // 1 day
   minPoolLiquidity: 50e6, // 50m
   uniswapPool: '0x5777d92f208679DB4b9778590Fa3CAB3aC9e2168' // TODO: Check
