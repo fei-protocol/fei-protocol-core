@@ -6,6 +6,10 @@ contract MockUniV3Pool {
 
   uint128 public liquidity = 50001;
 
+  address public token0;
+  
+  address public token1;
+
   struct Slot0 {
     // the current price
     uint160 sqrtPriceX96;
@@ -45,4 +49,11 @@ contract MockUniV3Pool {
   }
 
   function increaseObservationCardinalityNext(uint16 cardinality) external {}
+
+  // NOTE: Not part of the UnisV3Pool interface. Test method only
+  function setTokens(address tokenA, address tokenB) external {
+    (address _token0, address _token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
+    token0 = _token0;
+    token1 = _token1;
+  }
 }

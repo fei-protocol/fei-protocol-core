@@ -3,13 +3,13 @@ pragma solidity ^0.8.4;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {IFei} from "../../fei/IFei.sol";
-import {Fei} from "../../fei/Fei.sol";
-import {ICore} from "../../core/ICore.sol";
-import {Core} from "../../core/Core.sol";
-import {Vm} from "../utils/Vm.sol";
-import {DSTest} from "../utils/DSTest.sol";
-import {getCore, getAddresses, FeiTestAddresses} from "../utils/fixtures/Fei.sol";
+import {IFei} from "../../../fei/IFei.sol";
+import {Fei} from "../../../fei/Fei.sol";
+import {ICore} from "../../../core/ICore.sol";
+import {Core} from "../../../core/Core.sol";
+import {Vm} from "../../utils/Vm.sol";
+import {DSTest} from "../../utils/DSTest.sol";
+import {getCore, getAddresses, FeiTestAddresses} from "../../utils/fixtures/Fei.sol";
 
 contract FeiTest is DSTest {
     IFei private fei;

@@ -9,6 +9,7 @@ import {CoreRef} from "../../refs/CoreRef.sol";
 import {IOracle} from "../IOracle.sol";
 import {Decimal} from "../../external/Decimal.sol";
 import {IUniswapWrapper} from "./IUniswapWrapper.sol";
+import "hardhat/console.sol";
 
 // TODO: Confirm price calculation is correct
 
@@ -94,7 +95,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
 
     bool valid = !paused();
 
-    Decimal.D256 memory value = Decimal.from(rawPrice); //.div(uniswapDecimalsNormalizer);
+    Decimal.D256 memory value = Decimal.from(rawPrice);
     return (value, valid);
   }
 
@@ -121,8 +122,8 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   function validateTokensInPool(address _pool, address _inputToken, address _outputToken) internal view {
     address uniswapToken0 = IUniswapV3Pool(_pool).token0();
     address uniswapToken1 = IUniswapV3Pool(_pool).token1();
-
     (address token0, address token1) = sortTokensAccordingToUniswap(_inputToken, _outputToken);
+  
     require(
       uniswapToken0 == token0 || uniswapToken1 == token1,
       "Incorrect pool for tokens"

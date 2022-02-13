@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity >=0.4.0 <0.8.0;
 
-import {MockUniV3Pool} from "../../mock/MockUniV3Pool.sol";
-import {UniswapWrapper} from "../../oracle/uniswap/UniswapWrapper.sol";
-import {DSTest} from "../utils/DSTest.sol";
+import {MockUniV3Pool} from "../../../mock/MockUniV3Pool.sol";
+import {UniswapWrapper} from "../../../oracle/uniswap/UniswapWrapper.sol";
+import {DSTest} from "../../utils/DSTest.sol";
 
 contract UniswapWrapperTest is DSTest {
   MockUniV3Pool private mockPool;
