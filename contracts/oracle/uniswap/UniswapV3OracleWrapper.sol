@@ -55,7 +55,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
       "TWAP period out of bounds"
     );
     validatePoolLiquidity(_oracleConfig.uniswapPool, _oracleConfig.minPoolLiquidity);
-    validateTokensInPool(_oracleConfig.uniswapPool, _inputToken,_outputToken);
+    validateTokensInPool(_oracleConfig.uniswapPool, _inputToken, _outputToken);
     
     pool = _oracleConfig.uniswapPool;
     inputToken = _inputToken;
@@ -84,6 +84,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
 
     uint8 inputTokenDecimals = ERC20(inputToken).decimals();
     uint8 outputTokenDecimals = ERC20(outputToken).decimals();
+
     uint256 rawPrice = uniswapWrapper.calculatePrice(
       pool, 
       oracleConfig.twapPeriod,
