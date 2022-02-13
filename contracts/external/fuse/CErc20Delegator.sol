@@ -18,5 +18,6 @@ abstract contract CErc20Delegator is IERC20 {
     function _acceptAdmin() external virtual returns (uint);
     function mint(uint mintAmount) external virtual returns (uint);
     function balanceOf(address owner) external view virtual returns (uint);
+    function borrow(uint mintAmount) external virtual returns (uint);
     function balanceOfUnderlying(address owner) external view virtual returns (uint);
 }
