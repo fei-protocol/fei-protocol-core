@@ -11,10 +11,14 @@ import {FeiTestAddresses, getAddresses, getCore} from "../utils/fixtures/Fei.sol
 import {DSTest} from "../utils/DSTest.sol";
 import {StdLib} from "../utils/StdLib.sol";
 import {Vm} from "../utils/Vm.sol";
+import "hardhat/console.sol";
+
+// Note: Where deployCode() is used, it's a workaround to deploy a contract necessarily compiled with a 
+// different Solidity version (Uniswap contracts written in different version, and rely on prior features)
 
 contract UniswapV3OracleTest is DSTest, StdLib {
   
-  IUniswapV3Pool private mockUniswapPool;
+  // IUniswapV3Pool private mockUniswapPool;
   address private uniswapMathWrapper;
   ICore core;
 
@@ -153,8 +157,13 @@ contract UniswapV3OracleTest is DSTest, StdLib {
     assertTrue(valid);
   }
 
-  function testPriceIsDecimal() public {
-    (Decimal.D256 memory value, bool valid) = oracle.read();
-    // TODO
+  function testPriceIsCorrect() public {
+    (Decimal.D256 memory price, bool valid) = oracle.read();
+    assertTrue(valid);
+
+    console.log("price");
+    console.log(price.value);
+
+    assertEq(price.value, 1);
   }
 }

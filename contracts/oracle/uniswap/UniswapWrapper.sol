@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+
 pragma solidity >=0.4.0 <0.8.0;
 
 import {OracleLibrary} from "@uniswap/v3-periphery/contracts/libraries/OracleLibrary.sol";
@@ -20,32 +21,29 @@ contract UniswapWrapper {
     uint8 inputTokenDecimals,
     uint8 outputTokenDecimals
   ) external view returns (uint256) {
-
     uint32[] memory twapInterval = new uint32[](2);
     twapInterval[0] = twapPeriod; // from 
     twapInterval[1] = 0; // to
 
     (int56[] memory tickCumulatives, ) = IUniswapV3Pool(pool).observe(twapInterval);
+    int56 tickCumulativesDiff = tickCumulatives[1] - tickCumulatives[0];
+    int24 arithmeticMeanTick = int24(tickCumulativesDiff / int32(twapPeriod));
 
+    // Uniswap scales values by 2**96. X96 represents that
+    // sqrtPriceX96 represents the square root of the token ratio, multiplied by 2**96
+    uint160 sqrtPriceX96 = TickMath.getSqrtRatioAtTick(arithmeticMeanTick);
+    
     uint256 decimalNormaliser = calculateDecimalNormaliser(inputTokenDecimals, outputTokenDecimals);
-    // (int24 arithmeticMeanTick, ) = OracleLibrary.consult(pool, secondsAgo);
-    // console.log("arithmeticMeanTick");
-
+    uint256 price = (uint(sqrtPriceX96)**2 * decimalNormaliser) >> (96 * 2);
+    
     // Get tokens in same order as Uniswap
     (address token0, address token1) = sortTokensAccordingToUniswap(oracleInputToken, oracleOutputToken);
-
-    // Ticks are based on the ratio between token0:token1 so if the input token is token1 then
-    // we need to treat the tick as an inverse
-    bool invertTick = token0 == oracleInputToken ? false : true;
-    if (invertTick) {
-      // TODO: Invert tick price
-    }
-      
-    // TODO: Check that this is safe. Returns square root of the ratio of the assets (token1/token0) in X96 format
-    int24 arithmeticMeanTick = int24((tickCumulatives[1] - tickCumulatives[0]) / secondsAgo);
-    uint160 sqrtPrice = TickMath.getSqrtRatioAtTick(arithmeticMeanTick);
-
-    uint256 price = FullMath.mulDiv(sqrtPrice, sqrtPrice, FixedPoint96.Q96);
+    
+    // Ticks based on the ratio between token0:token1. If inputToken is token1 rather than token0, invert
+    // bool invertTick = token0 == oracleInputToken ? false : true;
+    // if (invertTick) {
+    //   price = 1 / price;
+    // } 
     return price;
   }
 
@@ -66,3 +64,6 @@ contract UniswapWrapper {
   }
 }
 
+// TODO: Consider whether to add this in
+// if (tickCumulativesDiff < 0 && (tickCumulativesDiff % int56(int32(twapPeriod)) != 0))
+//     arithmeticMeanTick--;
