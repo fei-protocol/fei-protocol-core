@@ -44,9 +44,16 @@ export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts
 
   logging && console.log('setting impl');
 
-  await fD3
-    .connect(signer)
-    ._setImplementationSafe(cErc20PluginImpl, false, await ethers.utils.defaultAbiCoder.encode(['address'], [plugin]));
+  await admin
+    .connect(daoSigner)
+    ._callPool(
+      [fD3.address],
+      '0x50d85b73000000000000000000000000bfb8d550b53f64f581df1da41dda0cb9e596aa0e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000020000000000000000000000000e5af1ac8b9b2c1e1912a051da12c48f25b771b1d'
+    );
+  // ^ alternative to below
+  // await fD3
+  //   .connect(signer)
+  //   ._setImplementationSafe(cErc20PluginImpl, false, await ethers.utils.defaultAbiCoder.encode(['address'], [plugin]));
 
   console.log(await fD3.implementation());
 
