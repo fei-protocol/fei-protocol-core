@@ -121,11 +121,15 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
     );
   }
 
+  function testZeroTwapPeriodPrice() public {
+    console.log();
+  }
+
   // Correct to some precision. Some accuracy being lost. 
   // Should be 1.0001, reports 1
   function testPriceIsCorrectForDaiUsdc() public {
     (Decimal.D256 memory price, bool valid) = daiOracle.read();
-    console.log("dai price:", price.value / 1e18);
+    console.log("dai price:", price.value);
     assertTrue(valid);
 
     // Confirm DAI price is >0.90 and < 1.1
@@ -136,7 +140,7 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
   // Incorrect
   function testPriceIsCorrectForEthUsdc() public {
     (Decimal.D256 memory price, bool valid) = ethOracle.read();
-    console.log("eth price:", price.value / 1e18);
+    console.log("eth price:", price.value);
     assertTrue(valid);
 
     assertGt(price.value, 2500e18);
@@ -146,7 +150,7 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
   // Correct
   function testPriceIsCorrectForWbtcUsdc() public {
     (Decimal.D256 memory price, bool valid) = wbtcOracle.read();
-    console.log("wbtc price:", price.value / 1e18);
+    console.log("wbtc price:", price.value);
     assertTrue(valid);
 
     assertGt(price.value, 40000e18);

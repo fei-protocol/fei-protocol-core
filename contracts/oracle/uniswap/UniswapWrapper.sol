@@ -13,6 +13,13 @@ import "hardhat/console.sol";
 /// @dev Required due to differing compiler versions
 contract UniswapWrapper {
 
+  /// @notice Calculate the TWAP price based on a Uniswap V3 pool
+  /// @param pool The Uniswap V3 pool containing the input and output tokens
+  /// @param twapPeriod Period over which the TWAP (time weighted average price) is calculated
+  /// @param oracleInputToken Input token
+  /// @param oracleOutputToken Output token
+  /// @param inputTokenDecimals Number of decimals on the input token
+  /// @param outputTokenDecimals Number of decimals on the output token
   function calculatePrice(
     address pool,
     uint32 twapPeriod,
@@ -54,18 +61,18 @@ contract UniswapWrapper {
     }
   }
 
-  function getObservationCardinality(address pool) external view returns (uint16) {
-    (, , , uint16 observationCardinality, , , ) = IUniswapV3Pool(pool).slot0();
-    return observationCardinality;
-  }
-
-  /// @notice Utility function to sort tokens, needed when calculating the tick, in the same order
-  // as Uniswap does and assigns on pools
-  function sortTokensAccordingToUniswap(address tokenA, address tokenB) internal view returns (address, address) {
-    (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
+  /// @notice Sort tokens in the same way Uniswap does and assigns to token0 and token1. Needed when calculating price ratio
+  /// @param inputToken Input token for the oracle
+  /// @param outputToken Output token for the oracle
+  function sortTokensAccordingToUniswap(address inputToken, address outputToken) internal view returns (address, address) {
+    (address token0, address token1) = inputToken < outputToken ? (inputToken, outputToken) : (outputToken, inputToken);
     return (token0, token1);
   }
 
+  /// @notice Determine the normalising factor between two tokens with a potentially different number of decimals
+  /// @param _token0Decimals Number of decimals of the token corresponding to token0 on the Uniswap pool
+  /// @param _token1Decimals Number of decimals of the token corresponding to token1 on the Uniswap pool
+  /// @param invert Bool indicating whether normalising factor should be calculated in an inverse manner
   function calculateDecimalNormaliser(uint8 _token0Decimals, uint8 _token1Decimals, bool invert) internal view returns (uint256) {
     if (_token0Decimals > _token1Decimals) {
       return 10**(_token0Decimals - _token1Decimals);

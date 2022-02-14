@@ -11,25 +11,38 @@ import {Decimal} from "../../external/Decimal.sol";
 import {IUniswapWrapper} from "./IUniswapWrapper.sol";
 import "hardhat/console.sol";
 
-// TODO: Confirm price calculation is correct
-
 /// @title UniswapV3 TWAP Oracle wrapper
 /// @notice Reads a UniswapV3 TWAP oracle, based on a single Uniswap pool, and wraps it under 
 /// the standard Fei interface
 contract UniswapV3OracleWrapper is IOracle, CoreRef {
   using Decimal for Decimal.D256;
 
+  /// @notice Uniswap V3 pool which the oracle is built on
   address public pool;
+
+  /// @notice Input token for which a price is being determined
   address inputToken;
+  
+  /// @notice Output token
   address outputToken;
+
+  /// @notice Uniswap wrapper contract which contains the oracle price calculation logic
   IUniswapWrapper private uniswapWrapper;
+
+  /// @notice Oracle configuration parameters
   OracleConfig public oracleConfig;
 
+  /// @notice Mean Ethereum block time. Used in estimating the number of observations
+  /// required on the Uniswap pool to support a particular TWAP period.
   uint16 private constant meanBlockTime = 13 seconds;
 
-  // TODO: Confirm this is constant across Uniswap pools/tokens. Check Uniswap normalises out
-  uint256 public constant uniswapDecimalsNormalizer = 10 ** uint256(18);
-
+  /// @notice Type for the oracle configuration parameters
+  /// @param twapPeriod Time period of which the time weighted average price is calculated
+  /// @param minTwapPeriod Safety parameter, minimum time period for which twap can be determined
+  /// @param maxTwapPeriod Safety parameter, maximum time period for which twap can be determined
+  /// @param minPoolLiquidity Safety parameter, minimum liquidity that must be present in the pool
+  ///                          for the oracle reading to be permitted
+  /// @param uniswapPool The Uniswap pool on which the oracle is based
   struct OracleConfig {
     uint32 twapPeriod;
     uint32 minTwapPeriod;
@@ -38,8 +51,18 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
     address uniswapPool;
   }
 
+  /// @notice An event emitted when the TWAP period is updated. TODO: (possibly) Change to update all params
   event TwapPeriodUpdate(address indexed pool, uint32 oldTwapPeriod, uint32 newTwapPeriod);
 
+  /// @notice An event emitted when a Uniswap pool has oracle support added 
+  event AddPoolSupport(address indexed pool, uint32 twapPeriod, uint16 cardinality);
+
+  /// @notice UniswapV3OracleWrapper constructor
+  /// @param _core Address of the Fei core contract
+  /// @param _inputToken Address of the input token for which a price is being quoted
+  /// @param _outputToken Address of the output token
+  /// @param _uniswapWrapper Address of the Uniswap wrapper contract which contains price calculation logic 
+  /// @param _oracleConfig Parameters for oracle function. Includes safety parameters
   constructor(
     address _core,
     address _inputToken,
@@ -95,7 +118,6 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
     );
 
     bool valid = !paused();
-
     Decimal.D256 memory value = Decimal.from(rawPrice);
     return (value, valid);
   }
@@ -117,9 +139,13 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   function addSupportForPool(address _pool, uint32 _twapPeriod, uint16 _meanBlockTime) internal {
     uint16 requiredCardinality = uint16(_twapPeriod / _meanBlockTime) + 10; // Add additional number of slots to ensure available
     IUniswapV3Pool(_pool).increaseObservationCardinalityNext(requiredCardinality);
+    emit AddPoolSupport(_pool, _twapPeriod, requiredCardinality);
   }
 
   /// @notice Validate that the single Uniswap pool has reserves in both input and output tokens
+  /// @param _pool Uniswap pool address
+  /// @param _inputToken Input token for which a price is being quoted
+  /// @param _outputToken Output token
   function validateTokensInPool(address _pool, address _inputToken, address _outputToken) internal view {
     address uniswapToken0 = IUniswapV3Pool(_pool).token0();
     address uniswapToken1 = IUniswapV3Pool(_pool).token1();
@@ -133,7 +159,9 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
 
   /// @notice Utility function to sort tokens, needed when calculating the tick, in the same order
   // as Uniswap does and assigns on pools
-  function sortTokensAccordingToUniswap(address tokenA, address tokenB) internal view returns (address, address) {
+  /// @param tokenA Input token to be compared to Uniswap ordering
+  /// @param tokenB Output token to be compared to Uniswap ordering
+  function sortTokensAccordingToUniswap(address tokenA, address tokenB) internal pure returns (address, address) {
     (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
     return (token0, token1);
   }
@@ -141,6 +169,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   // ----------- Governor only state changing api -----------
 
   /// @notice Change the time period over which the TWAP price is calculated
+  /// @param _twapPeriod Period of time over which time weighted average price is calculated
   function setTwapPeriod(uint32 _twapPeriod) external onlyGuardianOrGovernor {
     require(
       _twapPeriod >= oracleConfig.minTwapPeriod && _twapPeriod <= oracleConfig.maxTwapPeriod,

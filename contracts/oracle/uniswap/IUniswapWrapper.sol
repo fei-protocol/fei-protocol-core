@@ -11,5 +11,4 @@ interface IUniswapWrapper {
     uint8 outputTokenDecimals
   ) external view returns (uint256);
 
-  function getObservationCardinality(address pool) external view returns (uint16);
 }
