@@ -836,6 +836,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x0BEC570466B466aB689Ad33F1Ce5238CA43C8003',
     category: AddressCategory.Rewards
   },
+  rariPool8ConvexD3Plugin: {
+    artifactName: 'IConvexERC4626',
+    address: '0xe5af1ac8b9b2c1e1912a051da12c48f25b771b1d',
+    category: AddressCategory.FeiRari
+  },
+  rariCErc20PluginImpl: {
+    artifactName: 'unknown',
+    address: '0xbfb8D550B53F64F581df1Da41DDa0CB9E596Aa0E',
+    category: AddressCategory.FeiRari
+  },
   rariPool8Comptroller: {
     artifactName: 'Unitroller',
     address: '0xc54172e34046c1653d1920d40333dd358c7a1af4',

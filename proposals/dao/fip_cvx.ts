@@ -13,9 +13,6 @@ import { forceEth } from '@test/integration/setup/utils';
 
 chai.use(CBN(ethers.BigNumber));
 
-const cErc20PluginImpl = '0xB0f05d25e41FbC2b52013099ED9616f1206Ae21B';
-const plugin = '0xca8c8688914e0f7096c920146cd0ad85cd7ae8b9';
-
 /*
 FIP-60d: Curve and Convex Farming for FeiRari
 */
@@ -27,6 +24,8 @@ export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, loggin
 export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   const cTokenImpl = addresses.rariPool8CTokenImpl;
   const admin = contracts.fuseFeeDistributor;
+  const plugin = addresses.rariPool8ConvexD3Plugin;
+  const cErc20PluginImpl = addresses.rariCErc20PluginImpl;
 
   logging && console.log('Setup');
 
@@ -37,12 +36,12 @@ export const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts
   const daoSigner = await getImpersonatedSigner(addresses.fuseMultisig);
 
   logging && console.log('editing whitelist');
+  await forceEth(addresses.fuseMultisig);
   await admin.connect(daoSigner)._editCErc20DelegateWhitelist([cTokenImpl], [cErc20PluginImpl], [false], [true]);
 
   const signer = await getImpersonatedSigner(admin.address);
   await forceEth(admin.address);
 
-  // TODO move setup to OA script
   logging && console.log('setting impl');
 
   await fD3
