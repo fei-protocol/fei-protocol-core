@@ -80,7 +80,7 @@
     "mocha-multi-reporters": "^1.5.1",
     "prettier": "^2.5.1",
     "solidity-coverage": "^0.7.18",
-    "ts-node": "^10.4.0",
+    "ts-node": "^10.5.0",
     "tsconfig-paths": "^3.12.0",
     "typechain": "^5.2.0",
     "typescript": "^4.5.5"
