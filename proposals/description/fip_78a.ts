@@ -136,15 +136,15 @@ const fip_9001: ProposalDescription = {
       target: 'fei',
       values: '0',
       method: 'mint(address,uint256)',
-      arguments: ['{agEurUniswapPCVDeposit}', '10050000000000000000000000'],
-      description: 'Mint 10.05M FEI on the new agEUR Uniswap deposit'
+      arguments: ['{agEurUniswapPCVDeposit}', '10500000000000000000000000'],
+      description: 'Mint 10.5M FEI on the new agEUR Uniswap deposit'
     },
     {
       target: 'agEurUniswapPCVDeposit',
       values: '0',
       method: 'deposit()',
       arguments: [],
-      description: 'Deposit agEUR/FEI to Uniswap v2'
+      description: 'Deposit agEUR/FEI to Uniswap v2 (and burn excess FEI)'
     },
     {
       target: 'ratioPCVControllerV2',
