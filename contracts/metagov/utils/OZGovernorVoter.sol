@@ -10,8 +10,9 @@ interface IOZGovernor {
         uint256[] memory values,
         bytes[] memory calldatas,
         string memory description
-    ) external;
+    ) external returns (uint256);
     function castVote(uint256 proposalId, uint8 support) external returns (uint256);
+    function state(uint256 proposalId) external view returns (uint256);
 }
 
 /// @title Abstract class to interact with an OZ governor.
@@ -25,8 +26,8 @@ abstract contract OZGovernorVoter is CoreRef {
         uint256[] memory values,
         bytes[] memory calldatas,
         string memory description
-    ) external onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN) {
-        governor.propose(targets, values, calldatas, description);
+    ) external onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN) returns (uint256) {
+        return governor.propose(targets, values, calldatas, description);
     }
 
     /// @notice cast a vote on a given proposal on the target governor.
@@ -34,7 +35,7 @@ abstract contract OZGovernorVoter is CoreRef {
         IOZGovernor governor,
         uint256 proposalId,
         uint8 support
-    ) external onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN) {
-        governor.castVote(proposalId, support);
+    ) external onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN) returns (uint256) {
+        return governor.castVote(proposalId, support);
     }
 }

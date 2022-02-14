@@ -967,7 +967,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.External
   },
   angle: {
-    artifactName: 'IERC20',
+    artifactName: 'Tribe', // using Tribe instead of IERC20 to have delegate()
     address: '0x31429d1856ad1377a8a0079410b297e1a9e214c2',
     category: AddressCategory.External
   },

@@ -119,7 +119,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // All ANGLE converted to veANGLE
   expect(await contracts.angle.balanceOf(contracts.angleDelegatorPCVDeposit.address)).to.be.equal('0');
-  expect(await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)).to.be.at.least(e18(160_000));
+  expect(await contracts.veAngle.balanceOf(contracts.angleDelegatorPCVDeposit.address)).to.be.at.least(e18(150_000));
 
   // Resistant balance & fei properly read
   const resistantBalanceAndFei = await contracts.uniswapLensAgEurUniswapGauge.resistantBalanceAndFei();

@@ -12,6 +12,8 @@ interface IVeToken {
     function increase_amount(uint256 value) external;
     function increase_unlock_time(uint256 unlock_time) external;
     function withdraw() external;
+    function locked__end(address) external view returns (uint256);
+    function checkpoint() external;
 }
 
 /// @title Vote-escrowed Token Manager
@@ -22,6 +24,8 @@ abstract contract VoteEscrowTokenManager is CoreRef {
 
     /// @notice The maximum lock duration of veTokens
     uint256 private immutable MAXTIME;
+    /// @notice One week, in seconds. Vote-locking is rounded down to weeks.
+    uint256 private constant WEEK = 7 * 86400; // 1 week, in seconds
 
     /// @notice The vote-escrowed token address
     IVeToken public immutable veToken;
@@ -49,7 +53,7 @@ abstract contract VoteEscrowTokenManager is CoreRef {
     function lock() external whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_TOKEN_STAKING) {
         uint256 tokenBalance = liquidToken.balanceOf(address(this));
         uint256 locked = veToken.locked(address(this));
-        uint256 lockHorizon = block.timestamp + MAXTIME;
+        uint256 lockHorizon = ((block.timestamp + MAXTIME) / WEEK) * WEEK;
 
         // First lock
         if (tokenBalance != 0 && locked == 0) {
@@ -60,7 +64,9 @@ abstract contract VoteEscrowTokenManager is CoreRef {
         else if (tokenBalance != 0 && locked != 0) {
             liquidToken.approve(address(veToken), tokenBalance);
             veToken.increase_amount(tokenBalance);
-            veToken.increase_unlock_time(lockHorizon);
+            if (veToken.locked__end(address(this)) != lockHorizon) {
+                veToken.increase_unlock_time(lockHorizon);
+            }
         }
         // No additional tokens to lock, just refresh duration to MAXTIME
         else if (tokenBalance == 0 && locked != 0) {
