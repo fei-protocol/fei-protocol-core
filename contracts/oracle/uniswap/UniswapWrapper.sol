@@ -12,7 +12,6 @@ import "hardhat/console.sol";
 /// @title Wrapper around Uniswap V3 Oracle Maths operations
 /// @dev Required due to differing compiler versions
 contract UniswapWrapper {
-
   /// @notice Calculate the TWAP price based on a Uniswap V3 pool
   /// @param pool The Uniswap V3 pool containing the input and output tokens
   /// @param twapPeriod Period over which the TWAP (time weighted average price) is calculated
@@ -20,6 +19,11 @@ contract UniswapWrapper {
   /// @param oracleOutputToken Output token
   /// @param inputTokenDecimals Number of decimals on the input token
   /// @param outputTokenDecimals Number of decimals on the output token
+  /// @dev This function calculates the time weighted average price for an input token in terms of an output token
+  /// 1. Get the difference in cumulative tick value between two times - the twapPeriod
+  /// 2. Calculate the mean price over this period of time. i.e. cumulativeTickValueDiff / twapPeriod
+  ///     - Due to the units used by Uniswap, this value is actually the square root of the price to the power of 2^96
+  /// 4. Convert from these units to just price, and adjust for any decimal number differences between the input and output tokens
   function calculatePrice(
     address pool,
     uint32 twapPeriod,
@@ -46,18 +50,32 @@ contract UniswapWrapper {
     
     // TODO: What happens if first token has more decimals than the second?
     uint256 decimalNormaliser = calculateDecimalNormaliser(inputTokenDecimals, outputTokenDecimals, invertTick);
+
+    // FullMath library calculates the floor, so rounds down the last digit. Add more precision.
+    // uint256 precision = 7;
     
 
     if (!invertTick) {
-      // TODO: Add detailed explanation of what is happening
-      uint256 numerator = uint256(sqrtPriceX96) * uint256(sqrtPriceX96) * decimalNormaliser;
+      // price = numerator / denominator
+      
+      // numerator = (sqrtPrice*2^96) * (sqrtPrice*2^96) * decimalNormaliser
+      uint256 unNormalisedPrice = FullMath.mulDiv(sqrtPriceX96, sqrtPriceX96, uint256(1));
+      uint256 numerator = FullMath.mulDiv(unNormalisedPrice, (decimalNormaliser), uint256(1));
+
+      // denominator = (2^96)^2
       uint256 denominator = 2**192;
-      return numerator / denominator;
+      return FullMath.mulDiv(numerator, uint256(1), denominator);
     } else {
-      // TODO: Explain what is happening with inversion, why factors are flipped 
-      uint256 numerator = (2**192) * decimalNormaliser;
-      uint256 denominator = uint256(sqrtPriceX96) * uint256(sqrtPriceX96);
-      return numerator / denominator;
+      // Invert the calculation in the case where Uniswap stores the tokens in the inverse
+      // ratio to that which the oracle requires the price.
+      // i.e. uniswap may quote the price as outputToken/inputToken, whereas we may want inputToken/outputToken
+      
+      // numerator = (2^96)^2 * decimalNormaliser
+      uint256 numerator = FullMath.mulDiv(2**192, decimalNormaliser, uint256(1));
+
+      // denominator = (sqrtPrice*2^96) * (sqrtPrice*2^96) 
+      uint256 denominator = FullMath.mulDiv(uint256(sqrtPriceX96), uint256(sqrtPriceX96), uint256(1));      
+      return FullMath.mulDiv(numerator, uint256(1), denominator);
     }
   }
 
@@ -82,7 +100,3 @@ contract UniswapWrapper {
     }
   }
 }
-
-// TODO: Consider whether to add this in
-// if (tickCumulativesDiff < 0 && (tickCumulativesDiff % int56(int32(twapPeriod)) != 0))
-//     arithmeticMeanTick--;

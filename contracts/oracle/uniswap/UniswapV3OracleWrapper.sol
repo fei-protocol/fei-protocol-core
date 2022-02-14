@@ -2,13 +2,15 @@
 pragma solidity ^0.8.4;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {FixedPoint96} from "@uniswap/v3-core/contracts/libraries/FixedPoint96.sol";
 
 import {CoreRef} from "../../refs/CoreRef.sol";
-import {IOracle} from "../IOracle.sol";
 import {Decimal} from "../../external/Decimal.sol";
+import {IOracle} from "../IOracle.sol";
 import {IUniswapWrapper} from "./IUniswapWrapper.sol";
+
 import "hardhat/console.sol";
 
 /// @title UniswapV3 TWAP Oracle wrapper
@@ -16,6 +18,7 @@ import "hardhat/console.sol";
 /// the standard Fei interface
 contract UniswapV3OracleWrapper is IOracle, CoreRef {
   using Decimal for Decimal.D256;
+  using SafeCast for uint32;
 
   /// @notice Uniswap V3 pool which the oracle is built on
   address public pool;
