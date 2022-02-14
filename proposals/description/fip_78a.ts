@@ -1,7 +1,7 @@
 import { ProposalDescription } from '@custom-types/types';
 
-const fip_9001: ProposalDescription = {
-  title: 'FIP-9001: Metagov update [find a cool name]',
+const fip_78a: ProposalDescription = {
+  title: 'FIP-45a: ANGLE Meta-governance',
   commands: [
     {
       target: 'core',
@@ -204,8 +204,12 @@ const fip_9001: ProposalDescription = {
   ],
   description: `
 
-TODO
+This proposal will allow the use of ANGLE tokens for meta-governance, their staking to veANGLE, and the migration of the DAO's 20M$ Uniswa-v2 FEI/agEUR LP tokens from the old staking system to the new gauge system.
+
+Forum discussion: https://tribe.fei.money/t/fip-78a-meta-governance-angle-angle/3924
+Snapshot: https://snapshot.org/#/fei.eth/proposal/0x6fb9e4bc23247f5f65da9a57577bee83b8dc748a21c5102ed1401bbcde720908
+Code: https://github.com/fei-protocol/fei-protocol-core/pull/529
 `
 };
 
-export default fip_9001;
+export default fip_78a;

@@ -304,7 +304,7 @@ const MainnetAddresses: MainnetAddresses = {
   agEurAngleUniswapPCVDeposit: {
     artifactName: 'AngleUniswapPCVDeposit',
     address: '0x7AC2Ab8143634419c5bc230A9f9955C3e29f64Ef',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
   bammDeposit: {
     artifactName: 'BAMMDeposit',
