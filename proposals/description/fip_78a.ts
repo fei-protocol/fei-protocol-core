@@ -204,7 +204,7 @@ const fip_78a: ProposalDescription = {
   ],
   description: `
 
-This proposal will allow the use of ANGLE tokens for meta-governance, their staking to veANGLE, and the migration of the DAO's 20M$ Uniswa-v2 FEI/agEUR LP tokens from the old staking system to the new gauge system.
+This proposal will allow the use of ANGLE tokens for meta-governance, their staking to veANGLE, and the migration of the DAO's 20M$ Uniswap-v2 FEI/agEUR LP tokens from the old Angle staking system to their new gauge system, to continue earning ANGLE rewards.
 
 Forum discussion: https://tribe.fei.money/t/fip-78a-meta-governance-angle-angle/3924
 Snapshot: https://snapshot.org/#/fei.eth/proposal/0x6fb9e4bc23247f5f65da9a57577bee83b8dc748a21c5102ed1401bbcde720908

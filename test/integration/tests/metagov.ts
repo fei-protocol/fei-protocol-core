@@ -67,7 +67,7 @@ describe('e2e-metagov', function () {
       await contracts.angle.connect(signer).transfer(locker.address, e18(10_000_000));
     });
 
-    describe('without METAGOVERNANCE_VOTE_ADMIN role', function () {
+    describe('without METAGOVERNANCE_TOKEN_STAKING role', function () {
       it('lock() should revert', async () => {
         await expectRevert(locker.lock(), 'UNAUTHORIZED');
       });
@@ -77,7 +77,7 @@ describe('e2e-metagov', function () {
       });
     });
 
-    describe('with METAGOVERNANCE_VOTE_ADMIN role', function () {
+    describe('with METAGOVERNANCE_TOKEN_STAKING role', function () {
       before(async function () {
         // grant role
         await forceEth(contracts.feiDAOTimelock.address);
@@ -204,9 +204,7 @@ describe('e2e-metagov', function () {
         // revoke role
         await forceEth(contracts.feiDAOTimelock.address);
         const daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
-        await contracts.core
-          .connect(daoSigner)
-          .revokeRole(ethers.utils.id('METAGOVERNANCE_TOKEN_STAKING'), deployAddress);
+        await contracts.core.connect(daoSigner).revokeRole(ethers.utils.id('METAGOVERNANCE_VOTE_ADMIN'), deployAddress);
       });
 
       it('should be able to create a proposal and vote for it', async function () {
@@ -393,6 +391,12 @@ describe('e2e-metagov', function () {
             contracts.angleGaugeUniswapV2FeiAgEur.address
           )
         ).to.be.equal('0'); // timestamp of last vote = 0, never voted
+
+        // set token/gauge map
+        await manager.setTokenToGauge(
+          contracts.angleAgEurFeiPool.address,
+          contracts.angleGaugeUniswapV2FeiAgEur.address
+        );
 
         // vote
         await manager.voteForGaugeWeight(contracts.angleAgEurFeiPool.address, '10000');
