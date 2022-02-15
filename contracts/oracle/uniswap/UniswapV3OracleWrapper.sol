@@ -11,14 +11,12 @@ import {Decimal} from "../../external/Decimal.sol";
 import {IOracle} from "../IOracle.sol";
 import {IUniswapWrapper} from "./IUniswapWrapper.sol";
 
-import "hardhat/console.sol";
-
 /// @title UniswapV3 TWAP Oracle wrapper
 /// @notice Reads a UniswapV3 TWAP oracle, based on a single Uniswap pool, and wraps it under 
 /// the standard Fei interface
 contract UniswapV3OracleWrapper is IOracle, CoreRef {
   using Decimal for Decimal.D256;
-  using SafeCast for uint32;
+  using SafeCast for uint256;
 
   /// @notice Uniswap V3 pool which the oracle is built on
   address public pool;
@@ -37,7 +35,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
 
   /// @notice Mean Ethereum block time. Used in estimating the number of observations
   /// required on the Uniswap pool to support a particular TWAP period.
-  uint16 private constant meanBlockTime = 13 seconds;
+  uint32 private constant meanBlockTime = 13 seconds;
 
   /// @notice Type for the oracle configuration parameters
   /// @param twapPeriod Time period of which the time weighted average price is calculated
@@ -56,7 +54,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
     uint256 precision;
   }
 
-  /// @notice An event emitted when the TWAP period is updated. TODO: (possibly) Change to update all params
+  /// @notice An event emitted when the TWAP period is updated
   event TwapPeriodUpdate(address indexed pool, uint32 oldTwapPeriod, uint32 newTwapPeriod);
 
   /// @notice An event emitted when a Uniswap pool has oracle support added 
@@ -170,8 +168,11 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   }
 
   /// @notice Increase pool observation cardinality to support requested TWAP period
-  function addSupportForPool(address _pool, uint32 _twapPeriod, uint16 _meanBlockTime) internal {
-    uint16 requiredCardinality = uint16(_twapPeriod / _meanBlockTime) + 10; // Add additional number of slots to ensure available
+  function addSupportForPool(address _pool, uint32 _twapPeriod, uint32 _meanBlockTime) internal {
+    uint16 requiredCardinality = uint16(
+      uint256(_twapPeriod).toUint16() / uint256(_meanBlockTime).toUint16()
+    ) + uint16(10); // Add additional number of slots to ensure available
+    
     IUniswapV3Pool(_pool).increaseObservationCardinalityNext(requiredCardinality);
     emit AddPoolSupport(_pool, _twapPeriod, requiredCardinality);
   }

@@ -8,12 +8,11 @@ import {IUniswapWrapper} from "../../../oracle/uniswap/IUniswapWrapper.sol";
 
 import {MockERC20} from "../../../mock/MockERC20.sol";
 import {UniswapV3OracleWrapper} from "../../../oracle/uniswap/UniswapV3OracleWrapper.sol";
-import {FeiTestAddresses, getAddresses, getCore} from "../../utils/fixtures/Fei.sol";
+import {FeiTestAddresses, getAddresses, getCore} from "../../utils/fixtures/FeiFixture.sol";
 
 import {DSTest} from "../../utils/DSTest.sol";
 import {StdLib} from "../../utils/StdLib.sol";
 import {Vm} from "../../utils/Vm.sol";
-import "hardhat/console.sol";
 
 // Note: Where deployCode() is used, it's a workaround to deploy a contract necessarily compiled with a 
 // different Solidity version (Uniswap contracts written in different version, and rely on prior features)
@@ -68,6 +67,29 @@ contract UniswapV3OracleTest is DSTest, StdLib {
   function testPausedFalseOnDeploy() public {    
     oracle.update();
     assertFalse(oracle.paused());
+  }
+
+  function testZeroTwapPeriod() public {
+    UniswapV3OracleWrapper.OracleConfig memory zeroTwapConfig = UniswapV3OracleWrapper.OracleConfig({
+      twapPeriod: 0,
+      uniswapPool: address(mockUniswapPool),
+      minTwapPeriod: 0,
+      maxTwapPeriod: 50000,
+      minPoolLiquidity: mockUniswapPool.liquidity(),
+      precision: precision
+    });  
+
+    vm.expectRevert(
+      bytes("Twap period must be greater than 0")
+    );
+    oracle = new UniswapV3OracleWrapper(
+      address(core),
+      address(tokenA),
+      address(tokenB),
+      uniswapMathWrapper,
+      zeroTwapConfig
+    );
+
   }
 
   function testMinLiquidity() public {

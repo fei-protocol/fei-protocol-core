@@ -8,7 +8,7 @@ import {Decimal} from "../../oracle/IOracle.sol";
 
 import {UniswapV3OracleWrapper} from "../../oracle/uniswap/UniswapV3OracleWrapper.sol";
 
-import {getCore} from "../utils/fixtures/Fei.sol";
+import {getCore} from "../utils/fixtures/FeiFixture.sol";
 import {DSTest} from "../utils/DSTest.sol";
 import {StdLib} from "../utils/StdLib.sol";
 import {Vm} from "../utils/Vm.sol";
@@ -20,6 +20,7 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
   UniswapV3OracleWrapper private daiOracle;  
   UniswapV3OracleWrapper private ethOracle;  
   UniswapV3OracleWrapper private wbtcOracle;  
+  UniswapV3OracleWrapper private usdtAvinocOracle;  
 
   address private uniswapMathWrapper;
   Vm public constant vm = Vm(HEVM_ADDRESS);
@@ -40,6 +41,12 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
   // WBTC-USDC
   IUniswapV3Pool wbtcUsdcPool = IUniswapV3Pool(0x99ac8cA7087fA4A2A1FB6357269965A2014ABc35);
   address wbtc = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
+
+  // USDT-AVINOC (used to test decimals normalising)
+  IUniswapV3Pool usdtAvinocPool = IUniswapV3Pool(0x2Eb8f5708f238B0A2588f044ade8DeA7221639ab);
+  address usdt = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+  address avinoc = 0xF1cA9cb74685755965c7458528A36934Df52A3EF;
+
 
   function setUp() public {
     core = getCore();
@@ -99,6 +106,24 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
       uniswapMathWrapper,
       wbtcUsdcOracleConfig
     );
+
+    // ---------------       Deploy USDT-AVINOC oracle   -------------------
+    UniswapV3OracleWrapper.OracleConfig memory usdtAvinocOracleConfig = UniswapV3OracleWrapper.OracleConfig({
+      twapPeriod: twapPeriod,
+      uniswapPool: address(usdtAvinocPool),
+      minTwapPeriod: 0,
+      maxTwapPeriod: 50000,
+      minPoolLiquidity: usdtAvinocPool.liquidity(),
+      precision: precision
+    });  
+
+    usdtAvinocOracle = new UniswapV3OracleWrapper(
+      address(core),
+      usdt, // Note, the order here matters. First token should be the input (i.e. PSM asset), not dollar tracker
+      avinoc,
+      uniswapMathWrapper,
+      usdtAvinocOracleConfig
+    ); 
   }
 
   function testMismatchedPoolTokens() public {
@@ -127,13 +152,9 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
     );
   }
 
-  function testZeroTwapPeriodPrice() public {
-    console.log();
-  }
-
-  // Correct to some precision. Some accuracy being lost. 
-  // Should be 1.0001, reports 1
-  function testPriceIsCorrectForDaiUsdc() public {
+  // Note: These price tests themselves are not strict as price changes
+  // Exact price is logged and checked manually against spot prices on Uniswap
+  function testPriceForDaiUsdc() public {
     (Decimal.D256 memory price, bool valid) = daiOracle.read();
     console.log("dai price:", price.value / precision);
     assertTrue(valid);
@@ -143,8 +164,7 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
     assertLt(price.value, 1e18 + 1e17);
   }
 
-  // Incorrect
-  function testPriceIsCorrectForEthUsdc() public {
+  function testPriceForEthUsdc() public {
     (Decimal.D256 memory price, bool valid) = ethOracle.read();
     console.log("eth price:", price.value / precision);
     assertTrue(valid);
@@ -153,13 +173,21 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
     assertLt(price.value, 3200e18);
   }
 
-  // Correct
-  function testPriceIsCorrectForWbtcUsdc() public {
+  function testPriceForWbtcUsdc() public {
     (Decimal.D256 memory price, bool valid) = wbtcOracle.read();
     console.log("wbtc price:", price.value / precision);
     assertTrue(valid);
 
     assertGt(price.value, 40000e18);
     assertLt(price.value, 50000e18);
+  }
+
+  function testPriceForLowDecimalsFirst() public {
+    (Decimal.D256 memory price, bool valid) = usdtAvinocOracle.read();
+    console.log("usdt/avinoc price:", price.value);
+
+    assertTrue(valid);
+    assertGt(price.value, 2e18 + 5e17);
+    assertLt(price.value, 3e18 + 5e17);
   }
 }

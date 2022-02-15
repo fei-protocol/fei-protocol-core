@@ -9,7 +9,7 @@ import {ICore} from "../../../core/ICore.sol";
 import {Core} from "../../../core/Core.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {DSTest} from "../../utils/DSTest.sol";
-import {getCore, getAddresses, FeiTestAddresses} from "../../utils/fixtures/Fei.sol";
+import {getCore, getAddresses, FeiTestAddresses} from "../../utils/fixtures/FeiFixture.sol";
 
 contract FeiTest is DSTest {
     IFei private fei;
