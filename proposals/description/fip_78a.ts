@@ -109,7 +109,7 @@ const fip_78a: ProposalDescription = {
     {
       target: 'ratioPCVControllerV2',
       values: '0',
-      method: 'withdrawRatioERC20',
+      method: 'withdrawRatioERC20(address,address,address,uint256)',
       arguments: [
         '{agEurAngleUniswapPCVDeposit}', // deposit
         '{angle}', // token
@@ -149,7 +149,7 @@ const fip_78a: ProposalDescription = {
     {
       target: 'ratioPCVControllerV2',
       values: '0',
-      method: 'withdrawRatioERC20',
+      method: 'withdrawRatioERC20(address,address,address,uint256)',
       arguments: [
         '{agEurUniswapPCVDeposit}', // deposit
         '{angleAgEurFeiPool}', // token
