@@ -431,7 +431,7 @@ describe('e2e-metagov', function () {
       it('stakeAllInGauge()', async function () {
         expect(await contracts.angleGaugeUniswapV2FeiAgEur.balanceOf(manager.address)).to.be.equal(e18(500));
 
-        // stake 500 tokens in gauge
+        // stake remaining 1500 tokens in gauge
         await manager.stakeAllInGauge(
           contracts.angleAgEurFeiPool.address // token
         );
