@@ -24,7 +24,8 @@ contract UniswapWrapperTest is DSTest {
       address(0x2),
       address(0x3),
       uint8(18),
-      uint8(18)
+      uint8(18),
+      uint256(10**18)
     );
     
     assertGt(price, 0);    

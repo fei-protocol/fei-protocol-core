@@ -24,6 +24,8 @@ contract UniswapV3OracleTest is DSTest, StdLib {
   ICore core;
 
   uint32 private twapPeriod = 61; // Min TWAP period is 60 seconds
+  uint256 private precision = 10**18;
+
   UniswapV3OracleWrapper private oracle;  
   FeiTestAddresses addresses = getAddresses();
   Vm public constant vm = Vm(HEVM_ADDRESS);
@@ -43,7 +45,8 @@ contract UniswapV3OracleTest is DSTest, StdLib {
       uniswapPool: address(mockUniswapPool),
       minTwapPeriod: 0,
       maxTwapPeriod: 50000,
-      minPoolLiquidity: mockUniswapPool.liquidity()
+      minPoolLiquidity: mockUniswapPool.liquidity(),
+      precision: precision
     });    
     
     
@@ -73,7 +76,8 @@ contract UniswapV3OracleTest is DSTest, StdLib {
       minTwapPeriod: 0,
       maxTwapPeriod: 50000,
       minPoolLiquidity: mockUniswapPool.liquidity() + 1,
-      uniswapPool: address(mockUniswapPool)
+      uniswapPool: address(mockUniswapPool),
+      precision: precision
     });    
     
     vm.expectRevert(
@@ -89,7 +93,7 @@ contract UniswapV3OracleTest is DSTest, StdLib {
   }
 
   function testTwapPeriodBounds() public {
-    (, , uint32 maxTwapPeriod, , ) = oracle.oracleConfig();
+    (, , uint32 maxTwapPeriod, , , ) = oracle.oracleConfig();
     uint32 newTwapPeriod = maxTwapPeriod + 1;
 
     vm.prank(addresses.governorAddress);

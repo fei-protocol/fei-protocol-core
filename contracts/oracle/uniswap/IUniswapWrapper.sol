@@ -8,7 +8,8 @@ interface IUniswapWrapper {
     address inputToken,
     address outputToken,
     uint8 inputTokenDecimals,
-    uint8 outputTokenDecimals
+    uint8 outputTokenDecimals,
+    uint256 precision
   ) external view returns (uint256);
 
 }

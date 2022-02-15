@@ -46,12 +46,14 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   /// @param minPoolLiquidity Safety parameter, minimum liquidity that must be present in the pool
   ///                          for the oracle reading to be permitted
   /// @param uniswapPool The Uniswap pool on which the oracle is based
+  /// @param precision Number of decimal places to which the oracle price should be reported
   struct OracleConfig {
     uint32 twapPeriod;
     uint32 minTwapPeriod;
     uint32 maxTwapPeriod;
     uint128 minPoolLiquidity;
     address uniswapPool;
+    uint256 precision;
   }
 
   /// @notice An event emitted when the TWAP period is updated. TODO: (possibly) Change to update all params
@@ -76,12 +78,10 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
     require(_core != address(0x0), "_core cannot be null address");
     require(_oracleConfig.uniswapPool != address(0x0), "_pool cannot be null address");
     require(_uniswapWrapper != address(0x0), "_uniswapWrapper cannot be null address");
-    require(
-      _oracleConfig.twapPeriod >= _oracleConfig.minTwapPeriod && _oracleConfig.twapPeriod <= _oracleConfig.maxTwapPeriod,
-      "TWAP period out of bounds"
-    );
+    
     validatePoolLiquidity(_oracleConfig.uniswapPool, _oracleConfig.minPoolLiquidity);
     validateTokensInPool(_oracleConfig.uniswapPool, _inputToken, _outputToken);
+    validateTwapPeriod(_oracleConfig.twapPeriod, _oracleConfig.minTwapPeriod, _oracleConfig.maxTwapPeriod);
     
     pool = _oracleConfig.uniswapPool;
     inputToken = _inputToken;
@@ -107,7 +107,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   /// @notice Read the oracle price
   function read() external view override returns (Decimal.D256 memory, bool) {
     validatePoolLiquidity(pool, oracleConfig.minPoolLiquidity);
-
+    
     uint8 inputTokenDecimals = ERC20(inputToken).decimals();
     uint8 outputTokenDecimals = ERC20(outputToken).decimals();
 
@@ -117,11 +117,14 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
       inputToken,
       outputToken,
       inputTokenDecimals,
-      outputTokenDecimals
+      outputTokenDecimals,
+      oracleConfig.precision
     );
 
     bool valid = !paused();
-    Decimal.D256 memory value = Decimal.from(rawPrice);
+    
+    // Divide out the extra decimals that decimal library adds
+    Decimal.D256 memory value = Decimal.from(rawPrice).div(10**18);
     return (value, valid);
   }
 
@@ -130,19 +133,13 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
 
 
   // ----------- Internal -----------
+
   /// @notice Validate that the pool liquidity is above a safe minimum threshold
   function validatePoolLiquidity(address _pool, uint128 _minPoolLiquidity) internal view {
     require(
       IUniswapV3Pool(_pool).liquidity() >= _minPoolLiquidity,
       "Pool has insufficient liquidity"
     );
-  }
-
-  /// @notice Increase pool observation cardinality to support requested TWAP period
-  function addSupportForPool(address _pool, uint32 _twapPeriod, uint16 _meanBlockTime) internal {
-    uint16 requiredCardinality = uint16(_twapPeriod / _meanBlockTime) + 10; // Add additional number of slots to ensure available
-    IUniswapV3Pool(_pool).increaseObservationCardinalityNext(requiredCardinality);
-    emit AddPoolSupport(_pool, _twapPeriod, requiredCardinality);
   }
 
   /// @notice Validate that the single Uniswap pool has reserves in both input and output tokens
@@ -160,6 +157,26 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
     );
   }
 
+  /// @notice Validate that the TWAP period is within appropriate bounds
+  /// @param _twapPeriod Time period over which the mean price is calculated
+  /// @param _minTwapPeriod Minimum time period for which TWAP can be determined
+  /// @param _maxTwapPeriod Maximum time period for which TWAP can be determined
+  function validateTwapPeriod(uint32 _twapPeriod, uint32 _minTwapPeriod, uint32 _maxTwapPeriod) internal pure {
+    require(_twapPeriod > 0, "Twap period must be greater than 0");
+    require(
+      _twapPeriod >= _minTwapPeriod && _twapPeriod <= _maxTwapPeriod,
+      "TWAP period out of bounds"
+    );
+  }
+
+  /// @notice Increase pool observation cardinality to support requested TWAP period
+  function addSupportForPool(address _pool, uint32 _twapPeriod, uint16 _meanBlockTime) internal {
+    uint16 requiredCardinality = uint16(_twapPeriod / _meanBlockTime) + 10; // Add additional number of slots to ensure available
+    IUniswapV3Pool(_pool).increaseObservationCardinalityNext(requiredCardinality);
+    emit AddPoolSupport(_pool, _twapPeriod, requiredCardinality);
+  }
+
+
   /// @notice Utility function to sort tokens, needed when calculating the tick, in the same order
   // as Uniswap does and assigns on pools
   /// @param tokenA Input token to be compared to Uniswap ordering
@@ -174,10 +191,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   /// @notice Change the time period over which the TWAP price is calculated
   /// @param _twapPeriod Period of time over which time weighted average price is calculated
   function setTwapPeriod(uint32 _twapPeriod) external onlyGuardianOrGovernor {
-    require(
-      _twapPeriod >= oracleConfig.minTwapPeriod && _twapPeriod <= oracleConfig.maxTwapPeriod,
-      "TWAP period out of bounds"
-    );
+    validateTwapPeriod(_twapPeriod, oracleConfig.minTwapPeriod, oracleConfig.maxTwapPeriod);
 
     uint32 oldTwapPeriod = oracleConfig.twapPeriod;
     oracleConfig.twapPeriod = _twapPeriod;

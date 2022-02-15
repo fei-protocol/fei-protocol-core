@@ -25,6 +25,8 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
   Vm public constant vm = Vm(HEVM_ADDRESS);
 
   uint32 private twapPeriod = 10 minutes;
+  uint256 private precision = 10**18;
+
 
   // DAI-USDC 
   IUniswapV3Pool daiUsdcPool = IUniswapV3Pool(0x5777d92f208679DB4b9778590Fa3CAB3aC9e2168);
@@ -49,7 +51,8 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
       uniswapPool: address(daiUsdcPool),
       minTwapPeriod: 0,
       maxTwapPeriod: 50000,
-      minPoolLiquidity: daiUsdcPool.liquidity()
+      minPoolLiquidity: daiUsdcPool.liquidity(),
+      precision: precision
     });    
     
     daiOracle = new UniswapV3OracleWrapper(
@@ -66,7 +69,8 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
       uniswapPool: address(usdcEthPool),
       minTwapPeriod: 0,
       maxTwapPeriod: 50000,
-      minPoolLiquidity: usdcEthPool.liquidity()
+      minPoolLiquidity: usdcEthPool.liquidity(),
+      precision: precision
     });  
 
     ethOracle = new UniswapV3OracleWrapper(
@@ -84,7 +88,8 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
       uniswapPool: address(wbtcUsdcPool),
       minTwapPeriod: 0,
       maxTwapPeriod: 50000,
-      minPoolLiquidity: wbtcUsdcPool.liquidity()
+      minPoolLiquidity: wbtcUsdcPool.liquidity(),
+      precision: precision
     });  
 
     wbtcOracle = new UniswapV3OracleWrapper(
@@ -105,7 +110,8 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
       uniswapPool: address(daiUsdcPool),
       minTwapPeriod: 0,
       maxTwapPeriod: 50000,
-      minPoolLiquidity: daiUsdcPool.liquidity()
+      minPoolLiquidity: daiUsdcPool.liquidity(),
+      precision: precision
     });  
 
 
@@ -129,7 +135,7 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
   // Should be 1.0001, reports 1
   function testPriceIsCorrectForDaiUsdc() public {
     (Decimal.D256 memory price, bool valid) = daiOracle.read();
-    console.log("dai price:", price.value);
+    console.log("dai price:", price.value / precision);
     assertTrue(valid);
 
     // Confirm DAI price is >0.90 and < 1.1
@@ -140,7 +146,7 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
   // Incorrect
   function testPriceIsCorrectForEthUsdc() public {
     (Decimal.D256 memory price, bool valid) = ethOracle.read();
-    console.log("eth price:", price.value);
+    console.log("eth price:", price.value / precision);
     assertTrue(valid);
 
     assertGt(price.value, 2500e18);
@@ -150,7 +156,7 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
   // Correct
   function testPriceIsCorrectForWbtcUsdc() public {
     (Decimal.D256 memory price, bool valid) = wbtcOracle.read();
-    console.log("wbtc price:", price.value);
+    console.log("wbtc price:", price.value / precision);
     assertTrue(valid);
 
     assertGt(price.value, 40000e18);
