@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./QuadraticTokenTimelockUpgradeable.sol";
+import "./FixedQuadraticTokenTimelockUpgradeable.sol";
 
 interface IVotingToken is IERC20 {
     function delegate(address delegatee) external;
@@ -11,7 +11,7 @@ interface IVotingToken is IERC20 {
 /// @title a timelock for tokens allowing for bulk delegation
 /// @author Fei Protocol
 /// @notice allows the timelocked tokens to be delegated by the beneficiary while locked
-contract QuadraticTimelockedDelegatorUpgradeable is QuadraticTokenTimelockUpgradeable {
+contract FixedQuadraticTimelockedDelegatorUpgradeable is FixedQuadraticTokenTimelockUpgradeable {
     /// @notice accept beneficiary role over timelocked TRIBE
     function acceptBeneficiary() public override {
         _setBeneficiary(msg.sender);

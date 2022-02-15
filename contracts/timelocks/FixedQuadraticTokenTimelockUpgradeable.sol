@@ -2,9 +2,9 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import "./TokenTimelockUpgradeable.sol";
+import "./FixedTokenTimelockUpgradeable.sol";
 
-contract QuadraticTokenTimelockUpgradeable is Initializable, TokenTimelockUpgradeable {
+contract FixedQuadraticTokenTimelockUpgradeable is Initializable, FixedTokenTimelockUpgradeable {
 
     function initialize(
         address _beneficiary,
@@ -12,13 +12,15 @@ contract QuadraticTokenTimelockUpgradeable is Initializable, TokenTimelockUpgrad
         address _lockedToken,
         uint256 _cliffDuration,
         address _clawbackAdmin,
+        uint256 _lockedAmount,
         uint256 _startTime
     ) external initializer {
-        __TokenTimelock_init(
+        __FixedTokenTimelock_init(
             _beneficiary, 
             _duration, 
             _cliffDuration,
             _lockedToken, 
+            _lockedAmount,
             _clawbackAdmin
         );
 
