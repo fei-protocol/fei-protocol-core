@@ -11,7 +11,7 @@ const VOTIUM_ADMIN = '0xdC7C7F0bEA8444c12ec98Ec626ff071c6fA27a19'; // tommyg.eth
 const CVX_PROPOSAL = '0xee224d8e52bc9240eef248aaafa4b1a525c0f686da237620800ab549d1aba0ab'; // fictive
 const VOTIUM_TRIBE_DISTRIBUTOR = '0x378Ba9B73309bE80BF4C2c027aAD799766a7ED5A'; // TRIBE are sent here
 
-describe.only('votium-bribe', function () {
+describe('votium-bribe', function () {
   let contracts: NamedContracts;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
