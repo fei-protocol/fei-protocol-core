@@ -197,9 +197,23 @@ const fip_78a: ProposalDescription = {
     {
       target: 'collateralizationOracle',
       values: '0',
-      method: 'addDeposit(address)',
-      arguments: ['{uniswapLensAgEurUniswapGauge}'],
-      description: 'Add agEUR/FEI Uniswap Lens to cr oracle'
+      method: 'addDeposits(address[])',
+      arguments: [['{uniswapLensAgEurUniswapGauge}', '{agEurUniswapPCVDeposit}']],
+      description: 'Add agEUR/FEI Uniswap Lens and agEUR Uniswap deposit to cr oracle'
+    },
+    {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'setSafeAddress(address)',
+      arguments: ['{agEurUniswapPCVDeposit}'],
+      description: 'Set agEUR Uniswap deposit as a safe address'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'removeDeposits(address[])',
+      arguments: [['{agEurAngleUniswapPCVDeposit}']],
+      description: 'Remove old AngleUniswapPCVDeposit from CR oracle'
     }
   ],
   description: `
