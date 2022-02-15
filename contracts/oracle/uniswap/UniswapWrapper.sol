@@ -2,7 +2,7 @@
 
 pragma solidity >=0.4.0 <0.8.0;
 
-import {SafeCast} from "@openzeppelinv0.7/utils/SafeCast.sol";
+import {SafeCast} from "openzeppelinv0.7/utils/SafeCast.sol";
 import {OracleLibrary} from "@uniswap/v3-periphery/contracts/libraries/OracleLibrary.sol";
 import {TickMath} from "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 import {FullMath} from "@uniswap/v3-core/contracts/libraries/FullMath.sol";
