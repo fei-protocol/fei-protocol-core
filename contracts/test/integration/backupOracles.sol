@@ -3,8 +3,8 @@ pragma solidity ^0.8.4;
 
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {IUniswapWrapper} from "../../oracle/uniswap/IUniswapWrapper.sol";
-import {ICore} from "../../core/ICore.sol";
 import {Decimal} from "../../oracle/IOracle.sol";
+import {ICore} from "../../core/ICore.sol";
 
 import {UniswapV3OracleWrapper} from "../../oracle/uniswap/UniswapV3OracleWrapper.sol";
 
@@ -56,8 +56,6 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
     UniswapV3OracleWrapper.OracleConfig memory daiUsdOracleConfig = UniswapV3OracleWrapper.OracleConfig({
       twapPeriod: twapPeriod,
       uniswapPool: address(daiUsdcPool),
-      minTwapPeriod: 0,
-      maxTwapPeriod: 50000,
       minPoolLiquidity: daiUsdcPool.liquidity(),
       precision: precision
     });    
@@ -74,8 +72,6 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
     UniswapV3OracleWrapper.OracleConfig memory usdcEthOracleConfig = UniswapV3OracleWrapper.OracleConfig({
       twapPeriod: twapPeriod,
       uniswapPool: address(usdcEthPool),
-      minTwapPeriod: 0,
-      maxTwapPeriod: 50000,
       minPoolLiquidity: usdcEthPool.liquidity(),
       precision: precision
     });  
@@ -93,8 +89,6 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
     UniswapV3OracleWrapper.OracleConfig memory wbtcUsdcOracleConfig = UniswapV3OracleWrapper.OracleConfig({
       twapPeriod: twapPeriod,
       uniswapPool: address(wbtcUsdcPool),
-      minTwapPeriod: 0,
-      maxTwapPeriod: 50000,
       minPoolLiquidity: wbtcUsdcPool.liquidity(),
       precision: precision
     });  
@@ -111,8 +105,6 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
     UniswapV3OracleWrapper.OracleConfig memory usdtAvinocOracleConfig = UniswapV3OracleWrapper.OracleConfig({
       twapPeriod: twapPeriod,
       uniswapPool: address(usdtAvinocPool),
-      minTwapPeriod: 0,
-      maxTwapPeriod: 50000,
       minPoolLiquidity: usdtAvinocPool.liquidity(),
       precision: precision
     });  
@@ -133,8 +125,6 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
     UniswapV3OracleWrapper.OracleConfig memory daiUsdOracleConfig = UniswapV3OracleWrapper.OracleConfig({
       twapPeriod: twapPeriod,
       uniswapPool: address(daiUsdcPool),
-      minTwapPeriod: 0,
-      maxTwapPeriod: 50000,
       minPoolLiquidity: daiUsdcPool.liquidity(),
       precision: precision
     });  
@@ -150,6 +140,31 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
       uniswapMathWrapper,
       daiUsdOracleConfig
     );
+  }
+
+  function testAddPoolSupport() public {
+    uint32 highTwapPeriod = 4000;
+
+    UniswapV3OracleWrapper.OracleConfig memory highTwapPeriodConfig = UniswapV3OracleWrapper.OracleConfig({
+      twapPeriod: highTwapPeriod,
+      uniswapPool: address(daiUsdcPool),
+      minPoolLiquidity: daiUsdcPool.liquidity(),
+      precision: precision
+    });  
+
+    UniswapV3OracleWrapper highTwapOracle = new UniswapV3OracleWrapper(
+      address(core),
+      dai,
+      usdc,
+      uniswapMathWrapper,
+      highTwapPeriodConfig
+    );
+
+    ( , , , , uint16 observationCardinalityNext, , ) = daiUsdcPool.slot0();
+
+    uint32 meanBlockTime = highTwapOracle.meanBlockTime();
+    uint16 expectedCardinalityForMaxTwapPeriod = uint16(highTwapPeriod / meanBlockTime) + uint16(10);
+    assertEq(observationCardinalityNext, expectedCardinalityForMaxTwapPeriod);
   }
 
   // Note: These price tests themselves are not strict as price changes

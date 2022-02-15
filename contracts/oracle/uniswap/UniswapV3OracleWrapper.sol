@@ -35,20 +35,16 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
 
   /// @notice Mean Ethereum block time. Used in estimating the number of observations
   /// required on the Uniswap pool to support a particular TWAP period.
-  uint32 private constant meanBlockTime = 13 seconds;
+  uint32 public constant meanBlockTime = 13 seconds;
 
   /// @notice Type for the oracle configuration parameters
   /// @param twapPeriod Time period of which the time weighted average price is calculated
-  /// @param minTwapPeriod Safety parameter, minimum time period for which twap can be determined
-  /// @param maxTwapPeriod Safety parameter, maximum time period for which twap can be determined
   /// @param minPoolLiquidity Safety parameter, minimum liquidity that must be present in the pool
   ///                          for the oracle reading to be permitted
   /// @param uniswapPool The Uniswap pool on which the oracle is based
   /// @param precision Number of decimal places to which the oracle price should be reported
   struct OracleConfig {
     uint32 twapPeriod;
-    uint32 minTwapPeriod;
-    uint32 maxTwapPeriod;
     uint128 minPoolLiquidity;
     address uniswapPool;
     uint256 precision;
@@ -79,7 +75,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
     
     validatePoolLiquidity(_oracleConfig.uniswapPool, _oracleConfig.minPoolLiquidity);
     validateTokensInPool(_oracleConfig.uniswapPool, _inputToken, _outputToken);
-    validateTwapPeriod(_oracleConfig.twapPeriod, _oracleConfig.minTwapPeriod, _oracleConfig.maxTwapPeriod);
+    validateTwapPeriod(_oracleConfig.twapPeriod);
     
     pool = _oracleConfig.uniswapPool;
     inputToken = _inputToken;
@@ -157,22 +153,14 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
 
   /// @notice Validate that the TWAP period is within appropriate bounds
   /// @param _twapPeriod Time period over which the mean price is calculated
-  /// @param _minTwapPeriod Minimum time period for which TWAP can be determined
-  /// @param _maxTwapPeriod Maximum time period for which TWAP can be determined
-  function validateTwapPeriod(uint32 _twapPeriod, uint32 _minTwapPeriod, uint32 _maxTwapPeriod) internal pure {
+  function validateTwapPeriod(uint32 _twapPeriod) internal pure {
     require(_twapPeriod > 0, "Twap period must be greater than 0");
-    require(
-      _twapPeriod >= _minTwapPeriod && _twapPeriod <= _maxTwapPeriod,
-      "TWAP period out of bounds"
-    );
   }
 
   /// @notice Increase pool observation cardinality to support requested TWAP period
   function addSupportForPool(address _pool, uint32 _twapPeriod, uint32 _meanBlockTime) internal {
-    uint16 requiredCardinality = uint16(
-      uint256(_twapPeriod).toUint16() / uint256(_meanBlockTime).toUint16()
-    ) + uint16(10); // Add additional number of slots to ensure available
-    
+    uint16 requiredCardinality = uint16(_twapPeriod / _meanBlockTime) + uint16(10); // Add additional number of slots to ensure available
+
     IUniswapV3Pool(_pool).increaseObservationCardinalityNext(requiredCardinality);
     emit AddPoolSupport(_pool, _twapPeriod, requiredCardinality);
   }
@@ -192,7 +180,7 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   /// @notice Change the time period over which the TWAP price is calculated
   /// @param _twapPeriod Period of time over which time weighted average price is calculated
   function setTwapPeriod(uint32 _twapPeriod) external onlyGuardianOrGovernor {
-    validateTwapPeriod(_twapPeriod, oracleConfig.minTwapPeriod, oracleConfig.maxTwapPeriod);
+    validateTwapPeriod(_twapPeriod);
 
     uint32 oldTwapPeriod = oracleConfig.twapPeriod;
     oracleConfig.twapPeriod = _twapPeriod;

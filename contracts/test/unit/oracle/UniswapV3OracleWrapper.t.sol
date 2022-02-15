@@ -22,7 +22,7 @@ contract UniswapV3OracleTest is DSTest, StdLib {
   address private uniswapMathWrapper;
   ICore core;
 
-  uint32 private twapPeriod = 61; // Min TWAP period is 60 seconds
+  uint32 private twapPeriod = 61;
   uint256 private precision = 10**18;
 
   UniswapV3OracleWrapper private oracle;  
@@ -42,8 +42,6 @@ contract UniswapV3OracleTest is DSTest, StdLib {
     UniswapV3OracleWrapper.OracleConfig memory oracleConfig = UniswapV3OracleWrapper.OracleConfig({
       twapPeriod: twapPeriod,
       uniswapPool: address(mockUniswapPool),
-      minTwapPeriod: 0,
-      maxTwapPeriod: 50000,
       minPoolLiquidity: mockUniswapPool.liquidity(),
       precision: precision
     });    
@@ -73,8 +71,6 @@ contract UniswapV3OracleTest is DSTest, StdLib {
     UniswapV3OracleWrapper.OracleConfig memory zeroTwapConfig = UniswapV3OracleWrapper.OracleConfig({
       twapPeriod: 0,
       uniswapPool: address(mockUniswapPool),
-      minTwapPeriod: 0,
-      maxTwapPeriod: 50000,
       minPoolLiquidity: mockUniswapPool.liquidity(),
       precision: precision
     });  
@@ -95,8 +91,6 @@ contract UniswapV3OracleTest is DSTest, StdLib {
   function testMinLiquidity() public {
     UniswapV3OracleWrapper.OracleConfig memory highMinLiquidityConfig = UniswapV3OracleWrapper.OracleConfig({
       twapPeriod: twapPeriod,
-      minTwapPeriod: 0,
-      maxTwapPeriod: 50000,
       minPoolLiquidity: mockUniswapPool.liquidity() + 1,
       uniswapPool: address(mockUniswapPool),
       precision: precision
@@ -112,17 +106,6 @@ contract UniswapV3OracleTest is DSTest, StdLib {
       uniswapMathWrapper,
       highMinLiquidityConfig
     );
-  }
-
-  function testTwapPeriodBounds() public {
-    (, , uint32 maxTwapPeriod, , , ) = oracle.oracleConfig();
-    uint32 newTwapPeriod = maxTwapPeriod + 1;
-
-    vm.prank(addresses.governorAddress);
-    vm.expectRevert(
-      bytes("TWAP period out of bounds")
-    );
-    oracle.setTwapPeriod(newTwapPeriod);
   }
   
   function testUpdateNoop() public {

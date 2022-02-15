@@ -5,10 +5,13 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { expectApprox, expectRevert, getImpersonatedSigner, resetFork } from '@test/helpers';
+import { NamedContracts } from '@custom-types/types';
+import { expectApprox, getImpersonatedSigner, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
+
+const toBN = ethers.BigNumber.from;
+const BNe18 = (x: any) => ethers.constants.WeiPerEther.mul(toBN(x));
 
 describe('Backup Oracles', function () {
   let contracts: NamedContracts;
@@ -50,11 +53,7 @@ describe('Backup Oracles', function () {
 
     // Add backup oracle to DAI PSM
     daiPSM = contracts.daiFixedPricePSM as PegStabilityModule;
-    console.log('dai psm address: ', daiPSM.address);
-
     daiUsdcBackupOracle = contracts.daiUsdcTwapOracle as UniswapV3OracleWrapper;
-
-    console.log('dai oracle address: ', daiUsdcBackupOracle.address);
     await daiPSM.connect(daoSigner).setBackupOracle(daiUsdcBackupOracle.address);
 
     // Add backup oracle to ETH PSM
@@ -86,26 +85,17 @@ describe('Backup Oracles', function () {
     expect(ethBackupOracle).to.equal(ethUsdcBackupOracle.address);
   });
 
-  it.only('should read reasonable Uniswap V3 TWAP oracle price', async () => {
-    // Can call the oracle directly to query price
+  it('should read reasonable Uniswap V3 TWAP oracle price', async () => {
     const [daiPrice, isValid] = await daiUsdcBackupOracle.read();
-
-    console.log({ isValid });
-    console.log('daiPrice: ', daiPrice.toString());
-
     expect(isValid).to.be.true;
-    expect(daiPrice.toString()).to.be.equal('1000000000000000000');
+    expectApprox(daiPrice.toString(), BNe18(1).toString());
   });
 
-  it.only('should read Uniswap V3 TWAP oracle price comparable to primary oracle price', async () => {
+  it('should read Uniswap V3 TWAP oracle price comparable to primary oracle price', async () => {
     const primaryChainlinkOracle = contracts.chainlinkDaiUsdOracleWrapper;
-
     const primaryOraclePrice = await primaryChainlinkOracle.read();
     const backupOraclePrice = await daiUsdcBackupOracle.read();
 
-    console.log('primary oracle price: ', primaryOraclePrice.toString());
-    console.log('backup oracle price: ', backupOraclePrice.toString());
-
-    expect(primaryOraclePrice.toString()).to.equal(backupOraclePrice.toString());
+    expectApprox(primaryOraclePrice.toString(), backupOraclePrice.toString());
   });
 });
