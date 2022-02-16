@@ -29,7 +29,7 @@ contract AngleDelegatorPCVDeposit is SnapshotDelegatorPCVDeposit, VoteEscrowToke
     ) VoteEscrowTokenManager(
         IERC20(ANGLE_TOKEN), // liquid token
         IVeToken(ANGLE_VE_TOKEN), // vote-escrowed token
-        4 * 365 * 86400 // vote-escrow max time = 4 years
+        4 * 365 * 86400 // vote-escrow time = 4 years
     ) LiquidityGaugeManager(ANGLE_GAUGE_MANAGER) OZGovernorVoter() {}
 
     /// @notice returns total balance of PCV in the Deposit

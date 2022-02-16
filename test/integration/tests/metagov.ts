@@ -68,6 +68,10 @@ describe('e2e-metagov', function () {
     });
 
     describe('without METAGOVERNANCE_TOKEN_STAKING role', function () {
+      it('setLockDuration() should revert', async () => {
+        await expectRevert(locker.setLockDuration(365 * 86400), 'UNAUTHORIZED');
+      });
+
       it('lock() should revert', async () => {
         await expectRevert(locker.lock(), 'UNAUTHORIZED');
       });
@@ -96,6 +100,13 @@ describe('e2e-metagov', function () {
           .revokeRole(ethers.utils.id('METAGOVERNANCE_TOKEN_STAKING'), deployAddress);
       });
 
+      it('setLockDuration() should change lock duration', async function () {
+        expect(await locker.lockDuration()).to.be.equal(4 * 365 * 86400);
+        await locker.setLockDuration(1 * 365 * 86400);
+        expect(await locker.lockDuration()).to.be.equal(1 * 365 * 86400);
+        await locker.setLockDuration(4 * 365 * 86400);
+        expect(await locker.lockDuration()).to.be.equal(4 * 365 * 86400);
+      });
       it('initial lock()', async function () {
         expect(await contracts.angle.balanceOf(locker.address)).to.be.equal(e18(10_000_000));
         expect(await contracts.veAngle.balanceOf(locker.address)).to.be.equal('0');

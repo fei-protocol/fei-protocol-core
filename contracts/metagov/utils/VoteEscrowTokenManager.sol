@@ -22,10 +22,11 @@ interface IVeToken {
 /// @author Fei Protocol
 abstract contract VoteEscrowTokenManager is CoreRef {
 
-    /// @notice The maximum lock duration of veTokens
-    uint256 private immutable MAXTIME;
     /// @notice One week, in seconds. Vote-locking is rounded down to weeks.
     uint256 private constant WEEK = 7 * 86400; // 1 week, in seconds
+
+    /// @notice The lock duration of veTokens
+    uint256 public lockDuration;
 
     /// @notice The vote-escrowed token address
     IVeToken public immutable veToken;
@@ -36,31 +37,36 @@ abstract contract VoteEscrowTokenManager is CoreRef {
     /// @notice VoteEscrowTokenManager token Snapshot Delegator PCV Deposit constructor
     /// @param _liquidToken the token to lock for vote-escrow
     /// @param _veToken the vote-escrowed token used in governance
-    /// @param _maxTime maximum time tokens can be vote-escrowed for
+    /// @param _lockDuration amount of time (in seconds) tokens will  be vote-escrowed for
     constructor(
         IERC20 _liquidToken,
         IVeToken _veToken,
-        uint256 _maxTime
+        uint256 _lockDuration
     ) {
         liquidToken = _liquidToken;
         veToken = _veToken;
-        MAXTIME = _maxTime;
+        lockDuration = _lockDuration;
     }
 
-    /// @notice Deposit tokens to get veTokens. Set lock duration to MAXTIME.
+    /// @notice Set the amount of time tokens will be vote-escrowed for in lock() calls
+    function setLockDuration(uint256 newLockDuration) external onlyTribeRole(TribeRoles.METAGOVERNANCE_TOKEN_STAKING) {
+        lockDuration = newLockDuration;
+    }
+
+    /// @notice Deposit tokens to get veTokens. Set lock duration to lockDuration.
     /// The only way to withdraw tokens will be to pause this contract
-    /// for MAXTIME and then call exitLock().
+    /// for lockDuration and then call exitLock().
     function lock() external whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_TOKEN_STAKING) {
         uint256 tokenBalance = liquidToken.balanceOf(address(this));
         uint256 locked = veToken.locked(address(this));
-        uint256 lockHorizon = ((block.timestamp + MAXTIME) / WEEK) * WEEK;
+        uint256 lockHorizon = ((block.timestamp + lockDuration) / WEEK) * WEEK;
 
         // First lock
         if (tokenBalance != 0 && locked == 0) {
             liquidToken.approve(address(veToken), tokenBalance);
             veToken.create_lock(tokenBalance, lockHorizon);
         }
-        // Increase amount of tokens locked & refresh duration to MAXTIME
+        // Increase amount of tokens locked & refresh duration to lockDuration
         else if (tokenBalance != 0 && locked != 0) {
             liquidToken.approve(address(veToken), tokenBalance);
             veToken.increase_amount(tokenBalance);
@@ -68,7 +74,7 @@ abstract contract VoteEscrowTokenManager is CoreRef {
                 veToken.increase_unlock_time(lockHorizon);
             }
         }
-        // No additional tokens to lock, just refresh duration to MAXTIME
+        // No additional tokens to lock, just refresh duration to lockDuration
         else if (tokenBalance == 0 && locked != 0) {
             veToken.increase_unlock_time(lockHorizon);
         }
@@ -77,7 +83,7 @@ abstract contract VoteEscrowTokenManager is CoreRef {
 
     /// @notice Exit the veToken lock. For this function to be called and not
     /// revert, tokens had to be locked previously, and the contract must have
-    /// been paused for MAXTIME in order to prevent lock extensions
+    /// been paused for lockDuration in order to prevent lock extensions
     /// by calling lock(). This function will recover tokens on the contract,
     /// which can then be moved by calling withdraw() as a PCVController if the
     /// contract is also a PCVDeposit, for instance.
