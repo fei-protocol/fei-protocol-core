@@ -27,10 +27,20 @@ contract GaugeLens is IPCVDepositBalances {
         balanceReportedIn = ILiquidityGauge(_gaugeAddress).staking_token();
     }
 
+    /// @notice returns the amount of tokens staked by stakerAddress in 
+    /// the gauge gaugeAddress.
     function balance() public view override returns(uint256) {
         return ILiquidityGauge(gaugeAddress).balanceOf(stakerAddress);
     }
 
+    /// @notice returns the amount of tokens staked by stakerAddress in
+    /// the gauge gaugeAddress. FEI amount reported is 0, because FEI is
+    /// not staked in gauges, and only one token is staked per gauge.
+    /// In the case where an LP token between XYZ and FEI is staked in
+    /// the gauge, this lens reports the amount of LP tokens staked, not the
+    /// underlying amounts of XYZ and FEI tokens held within the LP tokens.
+    /// This lens can be coupled with another lens in order to compute the
+    /// underlying amounts of FEI and XYZ held inside the LP tokens.
     function resistantBalanceAndFei() public view override returns(uint256, uint256) {
         return (balance(), 0);
     }
