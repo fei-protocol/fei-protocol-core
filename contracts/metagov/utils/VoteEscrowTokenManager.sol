@@ -22,6 +22,10 @@ interface IVeToken {
 /// @author Fei Protocol
 abstract contract VoteEscrowTokenManager is CoreRef {
 
+    // Events
+    event Lock(uint256 cummulativeTokensLocked, uint256 lockHorizon);
+    event Unlock(uint256 tokensUnlocked);
+
     /// @notice One week, in seconds. Vote-locking is rounded down to weeks.
     uint256 private constant WEEK = 7 * 86400; // 1 week, in seconds
 
@@ -79,6 +83,8 @@ abstract contract VoteEscrowTokenManager is CoreRef {
             veToken.increase_unlock_time(lockHorizon);
         }
         // If tokenBalance == 0 and locked == 0, there is nothing to do.
+
+        emit Lock(tokenBalance + locked, lockHorizon);
     }
 
     /// @notice Exit the veToken lock. For this function to be called and not
@@ -89,6 +95,8 @@ abstract contract VoteEscrowTokenManager is CoreRef {
     /// contract is also a PCVDeposit, for instance.
     function exitLock() external onlyTribeRole(TribeRoles.METAGOVERNANCE_TOKEN_STAKING) {
         veToken.withdraw();
+
+        emit Unlock(liquidToken.balanceOf(address(this)));
     }
 
     /// @notice returns total balance of tokens, vote-escrowed or liquid.
