@@ -38,14 +38,14 @@ contract UniswapWrapper {
     uint256 precision
   ) external view returns (uint256) {
     (address token0, address token1) = sortTokensAccordingToUniswap(oracleInputToken, oracleOutputToken);
-    bool invertTick = token0 == oracleInputToken ? false : true;
+    bool invertPrice = token0 == oracleInputToken ? false : true;
 
     uint256 unnormalisedPrice = getUnNormalisedPrice(twapPeriod, pool);
     (uint256 decimalNormaliser, bool invertDecNormaliser) = calculateDecimalNormaliser(inputTokenDecimals, outputTokenDecimals);
 
     uint256 numerator;
     uint256 denominator;
-    if (!invertTick) {
+    if (!invertPrice) {
       // price = ((sqrtPrice*2^96) * (sqrtPrice*2^96) * decimalNormaliser) / (2^96)^2
       numerator = !invertDecNormaliser ? 
                     FullMath.mulDiv(unnormalisedPrice, decimalNormaliser, uint256(1))

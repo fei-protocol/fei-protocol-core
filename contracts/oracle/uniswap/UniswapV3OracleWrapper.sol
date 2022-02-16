@@ -9,26 +9,27 @@ import {FixedPoint96} from "@uniswap/v3-core/contracts/libraries/FixedPoint96.so
 import {CoreRef} from "../../refs/CoreRef.sol";
 import {Decimal} from "../../external/Decimal.sol";
 import {IOracle} from "../IOracle.sol";
+import {IUniswapV3OracleWrapper} from "./IUniswapV3OracleWrapper.sol";
 import {IUniswapWrapper} from "./IUniswapWrapper.sol";
 
 /// @title UniswapV3 TWAP Oracle wrapper
 /// @notice Reads a UniswapV3 TWAP oracle, based on a single Uniswap pool, and wraps it under 
 /// the standard Fei interface
-contract UniswapV3OracleWrapper is IOracle, CoreRef {
+contract UniswapV3OracleWrapper is IUniswapV3OracleWrapper, IOracle, CoreRef {
   using Decimal for Decimal.D256;
   using SafeCast for uint256;
 
   /// @notice Uniswap V3 pool which the oracle is built on
-  address public pool;
+  address immutable public pool;
 
   /// @notice Input token for which a price is being determined
-  address inputToken;
+  address immutable public inputToken;
   
   /// @notice Output token
-  address outputToken;
+  address immutable public outputToken;
 
   /// @notice Uniswap wrapper contract which contains the oracle price calculation logic
-  IUniswapWrapper private uniswapWrapper;
+  IUniswapWrapper immutable private uniswapWrapper;
 
   /// @notice Oracle configuration parameters
   OracleConfig public oracleConfig;
@@ -83,8 +84,8 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
     uniswapWrapper = IUniswapWrapper(_uniswapWrapper);   
     oracleConfig = _oracleConfig;
 
-    addSupportForPool(pool, oracleConfig.twapPeriod, meanBlockTime);
-    emit TwapPeriodUpdate(pool, 0, oracleConfig.twapPeriod); 
+    addSupportForPool(_oracleConfig.uniswapPool, oracleConfig.twapPeriod, meanBlockTime);
+    emit TwapPeriodUpdate(_oracleConfig.uniswapPool, 0, oracleConfig.twapPeriod); 
   }
 
   /// @notice updates the oracle price
@@ -123,7 +124,9 @@ contract UniswapV3OracleWrapper is IOracle, CoreRef {
   }
 
   /// @notice no-op, Uniswap V3 constantly updates the price
-  function isOutdated() external view override returns (bool) {}
+  function isOutdated() external view override returns (bool) {
+    return false;
+  }
 
 
   // ----------- Internal -----------

@@ -85,12 +85,6 @@ describe('Backup Oracles', function () {
     expect(ethBackupOracle).to.equal(ethUsdcBackupOracle.address);
   });
 
-  it('should read reasonable Uniswap V3 TWAP oracle price', async () => {
-    const [daiPrice, isValid] = await daiUsdcBackupOracle.read();
-    expect(isValid).to.be.true;
-    expectApprox(daiPrice.toString(), BNe18(1).toString());
-  });
-
   it('should read Uniswap V3 TWAP oracle price comparable to primary oracle price', async () => {
     const primaryChainlinkOracle = contracts.chainlinkDaiUsdOracleWrapper;
     const primaryOraclePrice = await primaryChainlinkOracle.read();
