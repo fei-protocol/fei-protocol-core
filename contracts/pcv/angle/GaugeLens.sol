@@ -9,6 +9,9 @@ import "../IPCVDepositBalances.sol";
 /// @notice a contract to read tokens held in a gauge
 contract GaugeLens is IPCVDepositBalances {
 
+    /// @notice FEI token address
+    address private constant FEI = 0x956F47F50A910163D8BF957Cf5846D573E7f87CA;
+
     /// @notice the gauge inspected
     address public immutable gaugeAddress;
 
@@ -34,14 +37,18 @@ contract GaugeLens is IPCVDepositBalances {
     }
 
     /// @notice returns the amount of tokens staked by stakerAddress in
-    /// the gauge gaugeAddress. FEI amount reported is 0, because FEI is
-    /// not staked in gauges, and only one token is staked per gauge.
+    /// the gauge gaugeAddress.
     /// In the case where an LP token between XYZ and FEI is staked in
     /// the gauge, this lens reports the amount of LP tokens staked, not the
     /// underlying amounts of XYZ and FEI tokens held within the LP tokens.
     /// This lens can be coupled with another lens in order to compute the
     /// underlying amounts of FEI and XYZ held inside the LP tokens.
     function resistantBalanceAndFei() public view override returns(uint256, uint256) {
-        return (balance(), 0);
+        uint256 stakedBalance = balance();
+        if (balanceReportedIn == FEI) {
+            return (stakedBalance, stakedBalance);
+        } else {
+            return (stakedBalance, 0);
+        }
     }
 }
