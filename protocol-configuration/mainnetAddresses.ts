@@ -836,6 +836,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x0BEC570466B466aB689Ad33F1Ce5238CA43C8003',
     category: AddressCategory.Rewards
   },
+  rariPool8ConvexD3Plugin: {
+    artifactName: 'IConvexERC4626',
+    address: '0xe5af1ac8b9b2c1e1912a051da12c48f25b771b1d',
+    category: AddressCategory.FeiRari
+  },
+  rariCErc20PluginImpl: {
+    artifactName: 'unknown',
+    address: '0xbfb8D550B53F64F581df1Da41DDa0CB9E596Aa0E',
+    category: AddressCategory.FeiRari
+  },
   rariPool8Comptroller: {
     artifactName: 'Unitroller',
     address: '0xc54172e34046c1653d1920d40333dd358c7a1af4',
@@ -914,6 +924,11 @@ const MainnetAddresses: MainnetAddresses = {
   rariPool8Fei3Crv: {
     artifactName: 'CErc20Delegator',
     address: '0xBFB6f7532d2DB0fE4D83aBb001c5C2B0842AF4dB',
+    category: AddressCategory.FeiRari
+  },
+  rariPool8FeiD3: {
+    artifactName: 'CErc20Delegator',
+    address: '0x5cA8Ffe4DAD9452ED880FA429DD0A08574225936',
     category: AddressCategory.FeiRari
   },
   rariPool146Comptroller: {
@@ -1229,6 +1244,16 @@ const MainnetAddresses: MainnetAddresses = {
   feiTribePair: {
     artifactName: 'IUniswapV2Pair',
     address: '0x9928e4046d7c6513326cCeA028cD3e7a91c7590A',
+    category: AddressCategory.External
+  },
+  fuseFeeDistributor: {
+    artifactName: 'IFuseFeeDistributor',
+    address: '0xa731585ab05fC9f83555cf9Bff8F58ee94e18F85',
+    category: AddressCategory.External
+  },
+  fuseMultisig: {
+    artifactName: 'unknown',
+    address: '0x5eA4A9a7592683bF0Bc187d6Da706c6c4770976F',
     category: AddressCategory.External
   },
   frax: {
@@ -1744,11 +1769,6 @@ const MainnetAddresses: MainnetAddresses = {
   rariPool54FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x9d28B8Cb17c3E25b6Cce17f88B259f75174b69f4',
-    category: AddressCategory.TBD
-  },
-  tokeTokemakPCVDeposit: {
-    artifactName: 'ERC20TokemakPCVDeposit',
-    address: '0x45C8FaB07B64C78d03006591132Ac51DE82a4B22',
     category: AddressCategory.TBD
   },
   rariInfraFeiTimelock: {

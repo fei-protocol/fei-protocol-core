@@ -98,6 +98,15 @@ export interface MainnetAddresses {
   [key: string]: AddressConfig;
 }
 
+export type TribalChiefPoolConfig = {
+  allocPoint: number;
+  unlocked: boolean;
+};
+
+export interface TribalChiefConfig {
+  [key: string]: TribalChiefPoolConfig;
+}
+
 export interface AddressConfig {
   artifactName: string;
   address: string;

@@ -1,0 +1,8 @@
+[default]
+optimizer = true
+optimizer_runs = 20000
+lib-paths = "node_modules"
+contracts = "contracts"
+
+[ci]
+verbosity = 3
