@@ -49,8 +49,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     gaugeLensAgEurUniswapGauge.address, // deposit to read from
     addresses.core, // core
     addresses.chainlinkEurUsdOracleWrapper, // oracle
-    ethers.constants.AddressZero, // no backup oracle
-    false // fei is token1 in the pool
+    ethers.constants.AddressZero // no backup oracle
   );
   await uniswapLensAgEurUniswapGauge.deployTransaction.wait();
   logging && console.log('uniswapLensAgEurUniswapGauge:', uniswapLensAgEurUniswapGauge.address);

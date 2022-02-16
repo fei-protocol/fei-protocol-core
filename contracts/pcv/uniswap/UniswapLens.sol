@@ -12,6 +12,9 @@ contract UniswapLens is IPCVDepositBalances, UniRef {
     using Decimal for Decimal.D256;
     using Babylonian for uint256;
 
+    /// @notice FEI token address
+    address private constant FEI = 0x956F47F50A910163D8BF957Cf5846D573E7f87CA;
+
     /// @notice the deposit inspected
     address public immutable depositAddress;
 
@@ -25,8 +28,7 @@ contract UniswapLens is IPCVDepositBalances, UniRef {
         address _depositAddress,
         address _core,
         address _oracle,
-        address _backupOracle,
-        bool _feiIsToken0
+        address _backupOracle
     ) UniRef(
       _core,
       IPCVDepositBalances(_depositAddress).balanceReportedIn(), // pair address
@@ -34,9 +36,11 @@ contract UniswapLens is IPCVDepositBalances, UniRef {
       _backupOracle
     ) {
         depositAddress = _depositAddress;
-        feiIsToken0 = _feiIsToken0;
         IUniswapV2Pair pair = IUniswapV2Pair(IPCVDepositBalances(_depositAddress).balanceReportedIn());
-        balanceReportedIn = _feiIsToken0 ? pair.token1() : pair.token0();
+        address token0 = pair.token0();
+        address token1 = pair.token1();
+        feiIsToken0 = token0 == FEI;
+        balanceReportedIn = feiIsToken0 ? token1 : token0;
     }
 
     function balance() public view override returns(uint256) {
