@@ -1,7 +1,7 @@
 import { ProposalDescription } from '@custom-types/types';
 
 const fip_x: ProposalDescription = {
-  title: 'FIP-77: FEI-3Crv rewards',
+  title: 'FIP-79a: Migrate proxy admins from oldTimelock',
   commands: [
     {
       target: 'feiDAO',
