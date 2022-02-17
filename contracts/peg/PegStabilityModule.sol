@@ -37,14 +37,14 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     /// @notice boolean switch that indicates whether redemptions are paused
     bool public redeemPaused;
 
+    /// @notice boolean switch that indicates whether minting is paused
+    bool public mintPaused;
+
     /// @notice event that is emitted when redemptions are paused
     event RedemptionsPaused(address account);
     
     /// @notice event that is emitted when redemptions are unpaused
     event RedemptionsUnpaused(address account);
-
-    /// @notice boolean switch that indicates whether minting is paused
-    bool public mintPaused;
 
     /// @notice event that is emitted when minting is paused
     event MintingPaused(address account);
@@ -166,7 +166,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     }
 
     /// @notice helper function to set reserves threshold
-    function _setReservesThreshold(uint256 newReservesThreshold) internal {
+    function _setReservesThreshold(uint256 newReservesThreshold) internal virtual {
         require(newReservesThreshold > 0, "PegStabilityModule: Invalid new reserves threshold");
         uint256 oldReservesThreshold = reservesThreshold;
         reservesThreshold = newReservesThreshold;
@@ -186,7 +186,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     // ----------- Public State Changing API -----------
 
     /// @notice send any surplus reserves to the PCV allocation
-    function allocateSurplus() external override {
+    function allocateSurplus() external virtual override {
         int256 currentSurplus = reservesSurplus();
         require(currentSurplus > 0, "PegStabilityModule: No surplus to allocate");
 
@@ -194,7 +194,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     }
 
     /// @notice function to receive ERC20 tokens from external contracts
-    function deposit() external override {
+    function deposit() external virtual override {
         int256 currentSurplus = reservesSurplus();
         if (currentSurplus > 0) {
             _allocate(currentSurplus.toUint256());
@@ -354,12 +354,12 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     }
 
     /// @notice transfer ERC20 token
-    function _transfer(address to, uint256 amount) internal {
+    function _transfer(address to, uint256 amount) internal virtual {
         SafeERC20.safeTransfer(underlyingToken, to, amount);
     }
 
     /// @notice transfer assets from user to this contract
-    function _transferFrom(address from, address to, uint256 amount) internal {
+    function _transferFrom(address from, address to, uint256 amount) internal virtual {
         SafeERC20.safeTransferFrom(underlyingToken, from, to, amount);
     }
 
