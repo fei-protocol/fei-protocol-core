@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./CompoundPCVDepositBase.sol";
-import "./Cerc20.sol";
+import "./CErc20.sol";
 
 /// @title ERC-20 implementation for a Compound PCV Deposit
 /// @author Fei Protocol
