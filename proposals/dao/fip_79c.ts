@@ -2,13 +2,13 @@ import { ethers } from 'hardhat';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { DeployUpgradeFunc, SetupUpgradeFunc, TeardownUpgradeFunc, ValidateUpgradeFunc } from '../../types/types';
-import { FeiDAO } from '@custom-types/contracts';
+import { Timelock } from '@custom-types/contracts';
 
 chai.use(CBN(ethers.BigNumber));
 
 /*
 DAO ACTIONS:
-1. Change the DAO timelock from the newTimelock to the oldTimelock
+1. On the oldTimelock, accept the newTimelock as the admin. Was previously set to pendingAdmin in fip_79b
 */
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
@@ -25,6 +25,7 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
-  const feiDAO: FeiDAO = contracts.feiDAO as FeiDAO;
-  expect(await feiDAO.timelock()).to.be.equal(addresses.timelock);
+  const oldTimelock: Timelock = contracts.timelock as Timelock;
+  const newTimelockAddress = addresses.feiDAOTimelock;
+  expect(await oldTimelock.admin()).to.be.equal(newTimelockAddress);
 };

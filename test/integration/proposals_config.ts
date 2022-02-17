@@ -1,6 +1,8 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
-// import fip_xx_proposal from '@proposals/description/fip_xx';
+import fip_79a from '@proposals/description/fip_79a';
+import fip_79b from '@proposals/description/fip_79b';
+import fip_79c from '@proposals/description/fip_79c';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -11,6 +13,34 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
+
+  fip_79a: {
+    deploy: false,
+    proposalId: '',
+    affectedContractSignoff: ['feiDAO'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_79a
+  },
+  fip_79b: {
+    deploy: false,
+    proposalId: '',
+    affectedContractSignoff: ['proxyAdmin', 'timelock', 'feiDAO'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_79b
+  },
+  fip_79c: {
+    deploy: false,
+    proposalId: '',
+    affectedContractSignoff: ['timelock'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_79c
+  }
 };
 
 export default proposals;

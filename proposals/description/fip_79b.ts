@@ -8,7 +8,7 @@ const fip_x: ProposalDescription = {
       values: '0',
       method: 'changeProxyAdmin(address, address)',
       arguments: ['{aaveTribeIncentivesControllerProxy}', '{feiDAOTimelock}'],
-      description: 'Change Aaave Tribal Incentives controller proxy admin from oldTimelock to newTimelock'
+      description: 'Change Aave Tribal Incentives controller proxy admin from oldTimelock to newTimelock'
     },
     {
       target: 'proxyAdmin',
