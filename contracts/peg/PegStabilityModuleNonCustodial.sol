@@ -38,7 +38,7 @@ contract PegStabilityModuleNonCustodial is FixedPricePSM {
         params,
         _mintFeeBasisPoints,
         _redeemFeeBasisPoints,
-        0, /// hardcode to reserve threshold to 0
+        0, /// hardcode reserve threshold to 0
         _feiLimitPerSecond,
         _mintingBufferCap,
         _underlyingToken,
