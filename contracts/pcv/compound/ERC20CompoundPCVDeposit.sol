@@ -2,12 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./CompoundPCVDepositBase.sol";
-
-interface CErc20 {
-    function mint(uint256 amount) external returns (uint256);
-
-    function underlying() external returns (address);
-}
+import "./Cerc20.sol";
 
 /// @title ERC-20 implementation for a Compound PCV Deposit
 /// @author Fei Protocol
