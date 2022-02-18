@@ -26,13 +26,16 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
-  const governorRole = ethers.utils.id('GOVERN_ROLE');
+  const GOVERN_ROLE = ethers.utils.id('GOVERN_ROLE');
   const core: Core = contracts.core as Core;
 
   // 1. Validate that Rari timelock has governor role
-  expect(await core.hasRole(governorRole, addresses.rariTimelock)).to.be.true;
+  expect(await core.hasRole(GOVERN_ROLE, addresses.rariTimelock)).to.be.true;
 
-  // 2. Validate that Fei DAO timelock has been changed to oldTimelock
+  // 2. Validate that oldTimelock does not have governor role
+  expect(await core.hasRole(GOVERN_ROLE, addresses.timelock)).to.be.false;
+
+  // 3. Validate that Fei DAO timelock has been changed to oldTimelock
   const feiDAO: FeiDAO = contracts.feiDAO as FeiDAO;
   expect(await feiDAO.timelock()).to.be.equal(addresses.timelock);
 };

@@ -60,16 +60,33 @@ describe.only('Migrate proxies', function () {
   });
 
   it('should give Rari timelock governor and point FEI DAO timelock to oldTimelock (fip_79a)', async () => {
+    const GOVERN_ROLE = ethers.utils.id('GOVERN_ROLE');
+    const initialRariTimelockHasRole = await contracts.core.hasRole(GOVERN_ROLE, contractAddresses.rariTimelock);
+    const initialOldTimelockHasRole = await contracts.core.hasRole(GOVERN_ROLE, contractAddresses.timelock);
+    const initialFeiDAOTimelock = await feiDAO.timelock();
+    const newTimelockHasRole = await contracts.core.hasRole(GOVERN_ROLE, contractAddresses.feiDAOTimelock);
+
+    expect(initialRariTimelockHasRole).to.be.false;
+    expect(initialOldTimelockHasRole).to.be.true;
+
+    // Initial timelock is the new one
+    expect(initialFeiDAOTimelock).to.equal(contractAddresses.feiDAOTimelock);
+    expect(newTimelockHasRole).to.be.true;
+
     // Multisig address has sufficient TRIBE to pass quorum
-    const targets = [contractAddresses.rariTimelock, feiDAO.address];
-    const values = [0, 0];
+    const targets = [contractAddresses.core, contractAddresses.core, feiDAO.address];
+    const values = [0, 0, 0];
     await performDAOAction(feiDAO, contractAddresses.multisig, fip_79aCalldata, targets, values);
 
     // 1. Rari timelock granted GOVERN_ROLE role
-    const hasRole = await contracts.core.hasRole(ethers.utils.id('GOVERN_ROLE'), contractAddresses.rariTimelock);
-    expect(hasRole).to.be.true;
+    const rariTimelockHasRole = await contracts.core.hasRole(GOVERN_ROLE, contractAddresses.rariTimelock);
+    expect(rariTimelockHasRole).to.be.true;
 
-    // 2. FEI DAO pointing to oldTimelock
+    // 2. oldTimelock has GOVERN_ROLE revoked
+    const oldTimelockHasRole = await contracts.core.hasRole(GOVERN_ROLE, contractAddresses.timelock);
+    expect(oldTimelockHasRole).to.be.false;
+
+    // 3. FEI DAO pointing to oldTimelock
     const daoTimelock = await feiDAO.timelock();
     expect(daoTimelock).to.equal(contractAddresses.timelock);
   });
@@ -78,6 +95,9 @@ describe.only('Migrate proxies', function () {
     const proxyAdmin = contracts.proxyAdmin;
     const initialProxyAdminOwner = await proxyAdmin.owner();
     expect(initialProxyAdminOwner).to.equal(contractAddresses.timelock);
+
+    const initialFeiDAOTimelock = await feiDAO.timelock();
+    expect(initialFeiDAOTimelock).to.equal(contractAddresses.timelock);
 
     const values = [0, 0, 0, 0];
     const targets = [
@@ -107,12 +127,20 @@ describe.only('Migrate proxies', function () {
   });
 
   it('should accept newTimelock as admin on oldTimelock', async () => {
+    const oldTimelock = contracts.timelock;
+
+    const initialOldTimelockAdmin = await oldTimelock.admin();
+    expect(initialOldTimelockAdmin).to.equal(contractAddresses.feiDAO);
+
     const values = [0];
     const targets = [contractAddresses.timelock];
     await performDAOAction(feiDAO, contractAddresses.multisig, fip_79cCalldata, targets, values);
 
-    const oldTimelock = contracts.timelock;
     const oldTimelockAdmin = await oldTimelock.admin();
     expect(oldTimelockAdmin).to.equal(contractAddresses.feiDAOTimelock);
   });
+
+  // End result:
+  // 1. oldTimelock admin = newTimelock
+  // 2. Owner of proxyAdmin (and therefore able to make upgrades) = newTimelock
 });

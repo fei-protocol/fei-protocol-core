@@ -14,6 +14,13 @@ const fip_79a: ProposalDescription = {
       description: 'Grant Rari Timelock the GOVERN_ROLE role'
     },
     {
+      target: 'core',
+      values: '0',
+      method: 'revokeGovernor(address)',
+      arguments: ['{timelock}'],
+      description: 'Revoke GOVERN_ROLE from the oldTimelock. Safety mechanism during the proxy migration'
+    },
+    {
       target: 'feiDAO',
       values: '0',
       method: 'updateTimelock(address)',
@@ -23,7 +30,9 @@ const fip_79a: ProposalDescription = {
   ],
   description: `
   Grant the Rari Timelock the GOVERN_ROLE role, as a safety and fallback mechanism during the 
-  proxy migration process. In addition, change the feiDAO to point to and use the oldTimelock.
+  proxy migration process.
+  Revoke the GOVERN_ROLE from the oldTimelock, as a safety mechanism.
+  Then, chance the feiDAO to point to and use the oldTimelock for migration purposes.
   `
 };
 
