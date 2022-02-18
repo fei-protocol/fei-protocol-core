@@ -17,30 +17,30 @@ const proposals: ProposalsConfigMap = {
   fip_79a: {
     deploy: false,
     proposalId: '',
-    affectedContractSignoff: ['feiDAO'],
+    affectedContractSignoff: ['feiDAO', 'core', 'rariTimelock', 'feiDAOTimelock'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_79a
+  },
+  fip_79b: {
+    deploy: false,
+    proposalId: '',
+    affectedContractSignoff: ['proxyAdmin', 'timelock', 'feiDAO', 'feiDAOTimelock'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_79b
+  },
+  fip_79c: {
+    deploy: false,
+    proposalId: '',
+    affectedContractSignoff: ['timelock', 'rariTimelock'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_79c
   }
-  // fip_79b: {
-  //   deploy: false,
-  //   proposalId: '',
-  //   affectedContractSignoff: ['proxyAdmin', 'timelock', 'feiDAO'],
-  //   deprecatedContractSignoff: [],
-  //   category: ProposalCategory.DAO,
-  //   totalValue: 0,
-  //   proposal: fip_79b
-  // },
-  // fip_79c: {
-  //   deploy: false,
-  //   proposalId: '',
-  //   affectedContractSignoff: ['timelock'],
-  //   deprecatedContractSignoff: [],
-  //   category: ProposalCategory.DAO,
-  //   totalValue: 0,
-  //   proposal: fip_79c
-  // }
 };
 
 export default proposals;

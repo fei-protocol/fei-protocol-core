@@ -1694,7 +1694,7 @@ const MainnetAddresses: MainnetAddresses = {
   timelock: {
     artifactName: 'Timelock',
     address: '0x639572471f2f318464dc01066a56867130e45E25',
-    category: AddressCategory.Deprecated
+    category: AddressCategory.TBD
   },
   tribalChiefOptimisticMultisig: {
     artifactName: 'unknown',

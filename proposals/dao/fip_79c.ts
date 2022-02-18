@@ -25,6 +25,7 @@ export const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, con
 };
 
 export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts) => {
+  // 1. Validate newTimelock is admin of the oldTimelock
   const oldTimelock: Timelock = contracts.timelock as Timelock;
   const newTimelockAddress = addresses.feiDAOTimelock;
   expect(await oldTimelock.admin()).to.be.equal(newTimelockAddress);
