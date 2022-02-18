@@ -5,7 +5,6 @@ import { Contract } from 'ethers';
 import hre, { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { expectApprox, getImpersonatedSigner, overwriteChainlinkAggregator, resetFork, time } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '@test/integration/setup/utils';
 
@@ -46,7 +45,7 @@ describe('e2e-pcv', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());

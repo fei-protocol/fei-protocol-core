@@ -1,8 +1,7 @@
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { NamedContracts, NamedAddresses } from '@custom-types/types';
-import { getImpersonatedSigner, time, resetFork } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
+import { NamedContracts } from '@custom-types/types';
+import { getImpersonatedSigner, time } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { expectRevert } from '@test/helpers';
 import { forceEth } from '../setup/utils';
@@ -33,7 +32,7 @@ describe('votium-bribe', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts } = await e2eCoord.loadEnvironment());

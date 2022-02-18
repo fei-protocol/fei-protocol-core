@@ -17,7 +17,7 @@ const proposals: ProposalsConfigMap = {
   fip_79a: {
     deploy: false,
     proposalId: '',
-    affectedContractSignoff: ['feiDAO', 'core', 'rariTimelock', 'feiDAOTimelock'],
+    affectedContractSignoff: ['feiDAO', 'core', 'rariTimelock', 'feiDAOTimelock', 'timelock'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,

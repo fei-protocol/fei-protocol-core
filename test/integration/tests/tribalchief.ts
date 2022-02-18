@@ -3,7 +3,6 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedContracts } from '@custom-types/types';
-import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import mainnetAddresses from '@protocol/mainnetAddresses';
 import tribalchief from '@protocol/tribalchief';
@@ -24,7 +23,7 @@ describe('e2e-tribalchief', function () {
       deployAddress: (await ethers.getSigners())[0].address,
       version: 1
     };
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config);
     ({ contracts } = await e2eCoord.loadEnvironment());
   });
 

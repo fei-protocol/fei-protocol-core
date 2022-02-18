@@ -950,6 +950,9 @@ const dependencies: DependencyMap = {
   },
   rariPool8Lusd: {
     contractDependencies: ['rariPool8LusdPCVDeposit', 'rariPool8Comptroller']
+  },
+  timelock: {
+    contractDependencies: []
   }
 };
 

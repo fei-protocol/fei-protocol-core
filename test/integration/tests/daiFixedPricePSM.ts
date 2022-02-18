@@ -1,10 +1,9 @@
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
-import hre, { ethers } from 'hardhat';
+import { ethers } from 'hardhat';
 import { NamedContracts } from '@custom-types/types';
 import { expectRevert, getAddresses, getImpersonatedSigner, resetFork, time } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '@test/integration/setup/utils';
 import { Contract, Signer } from 'ethers';
@@ -56,7 +55,7 @@ describe('e2e-peg-stability-module', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts } = await e2eCoord.loadEnvironment());

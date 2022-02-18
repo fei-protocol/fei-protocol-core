@@ -43,7 +43,7 @@ describe('e2e-collateralization', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
