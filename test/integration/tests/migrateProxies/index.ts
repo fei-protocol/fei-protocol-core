@@ -59,12 +59,17 @@ describe.only('Migrate proxies', function () {
     await reduceDAOVotingPeriod(feiDAO, contractAddresses.multisig);
   });
 
-  it('should update FEI DAO timelock from oldTimelock to newTimelock (fip_79a)', async () => {
+  it('should give Rari timelock governor and point FEI DAO timelock to oldTimelock (fip_79a)', async () => {
     // Multisig address has sufficient TRIBE to pass quorum
-    const targets = [feiDAO.address];
-    const values = [0];
+    const targets = [contractAddresses.rariTimelock, feiDAO.address];
+    const values = [0, 0];
     await performDAOAction(feiDAO, contractAddresses.multisig, fip_79aCalldata, targets, values);
 
+    // 1. Rari timelock granted GOVERN_ROLE role
+    const hasRole = await contracts.core.hasRole(ethers.utils.id('GOVERN_ROLE'), contractAddresses.rariTimelock);
+    expect(hasRole).to.be.true;
+
+    // 2. FEI DAO pointing to oldTimelock
     const daoTimelock = await feiDAO.timelock();
     expect(daoTimelock).to.equal(contractAddresses.timelock);
   });
