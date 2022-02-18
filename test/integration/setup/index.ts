@@ -31,8 +31,9 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   private mainnetContracts: NamedContracts;
   private afterUpgradeContracts: NamedContracts;
   private afterUpgradeAddresses: NamedAddresses;
+  private proposals: any;
 
-  constructor(private config: Config, private proposals: any) {
+  constructor(private config: Config, proposals?: any) {
     this.proposals = proposals;
   }
 
@@ -60,13 +61,15 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     // Grant privileges to deploy address
     await sudo(existingContracts, this.config.logging);
 
-    const proposalNames = Object.keys(this.proposals);
-    for (let i = 0; i < proposalNames.length; i++) {
-      existingContracts = await this.applyUpgrade(
-        existingContracts,
-        proposalNames[i],
-        this.proposals[proposalNames[i]]
-      );
+    if (this.proposals) {
+      const proposalNames = Object.keys(this.proposals);
+      for (let i = 0; i < proposalNames.length; i++) {
+        existingContracts = await this.applyUpgrade(
+          existingContracts,
+          proposalNames[i],
+          this.proposals[proposalNames[i]]
+        );
+      }
     }
 
     this.afterUpgradeAddresses = {

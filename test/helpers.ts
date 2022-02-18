@@ -272,7 +272,6 @@ async function performDAOAction(
   await feiDAO.connect(signer)['propose(address[],uint256[],bytes[],string)'](targets, values, calldatas, description);
 
   const pid = await feiDAO.hashProposal(targets, values, calldatas, ethers.utils.keccak256(description));
-  console.log({ pid });
   const startBlock = (await feiDAO.proposals(pid)).startBlock;
   await time.advanceBlockTo(startBlock.toString());
 

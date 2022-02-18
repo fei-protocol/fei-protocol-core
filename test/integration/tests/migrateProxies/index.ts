@@ -5,7 +5,6 @@ import { ethers } from 'hardhat';
 import { Contract } from 'ethers';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { resetFork, performDAOAction } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
 import { fip_79aCalldata, fip_79bCalldata, fip_79cCalldata } from './proposalCalldata';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '../../setup/utils';
@@ -47,7 +46,8 @@ describe.only('Migrate proxies', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    // Don't pass any proposals, to avoid simulating
+    e2eCoord = new TestEndtoEndCoordinator(config);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
