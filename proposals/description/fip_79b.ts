@@ -6,13 +6,6 @@ const fip_x: ProposalDescription = {
     {
       target: 'proxyAdmin',
       values: '0',
-      method: 'changeProxyAdmin(address, address)',
-      arguments: ['{aaveTribeIncentivesControllerProxy}', '{feiDAOTimelock}'],
-      description: 'Change Aave Tribal Incentives controller proxy admin from oldTimelock to newTimelock'
-    },
-    {
-      target: 'proxyAdmin',
-      values: '0',
       method: 'transferOwnership(address)',
       arguments: ['{feiDAOTimelock}'],
       description: 'Transfer ownership of proxyAdmin from oldTimelock to newTimelock'
@@ -45,6 +38,8 @@ const fip_x: ProposalDescription = {
   This is being done to address technical debt and to allow any relevant behaviour contracts to be upgraded.
   Revert the FEI DAO back to using the newTimelock. A subsequent action will have the oldTimelock accept the 
   newTimelock as it's admin.
+
+  For context, the FEI DAO at this stage is pointing to the oldTimelock
   `
 };
 

@@ -6,7 +6,7 @@ import { Contract } from 'ethers';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { resetFork, performDAOAction } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
-import { fip_79aCalldata, fip_79bCalldata, fip_79cCalldata } from './proposalData';
+import { fip_79aCalldata, fip_79bCalldata, fip_79cCalldata } from './proposalCalldata';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '../../setup/utils';
 
@@ -70,9 +70,12 @@ describe.only('Migrate proxies', function () {
   });
 
   it('should migrate proxies from oldTimelock to newTimelock (fip_79b)', async () => {
-    const values = [0, 0, 0, 0, 0];
+    const proxyAdmin = contracts.proxyAdmin;
+    const initialProxyAdminOwner = await proxyAdmin.owner();
+    expect(initialProxyAdminOwner).to.equal(contractAddresses.timelock);
+
+    const values = [0, 0, 0, 0];
     const targets = [
-      contractAddresses.proxyAdmin,
       contractAddresses.proxyAdmin,
       contractAddresses.timelock,
       contractAddresses.timelock,
@@ -80,16 +83,12 @@ describe.only('Migrate proxies', function () {
     ];
     await performDAOAction(feiDAO, contractAddresses.multisig, fip_79bCalldata, targets, values);
 
+    // 1. Check ProxyAdmin owner changed to newTimelock
     const newTimelockAddress = contractAddresses.feiDAOTimelock;
+    const newOwner = await proxyAdmin.owner();
+    expect(newOwner).to.equal(newTimelockAddress);
 
-    const aaveTribeIncentivesProxy = contracts.aaveTribeIncentivesControllerProxy;
-    const aaveIncentiveAdmin = await aaveTribeIncentivesProxy.admin();
-    expect(aaveIncentiveAdmin).to.equal(newTimelockAddress);
-
-    const proxyAdmin = contracts.proxyAdmin;
-    const proxyAdminOwner = await proxyAdmin.owner();
-    expect(proxyAdminOwner).to.equal(newTimelockAddress);
-
+    // 2. Check that oldTimelock delay set to 0 and pendingAdmin set to newTimelock
     const oldTimelock = contracts.timelock;
     const oldTimelockDelay = await oldTimelock.delay();
     expect(oldTimelockDelay).to.equal(0);
@@ -97,18 +96,18 @@ describe.only('Migrate proxies', function () {
     const oldTimelockPendingAdmin = await oldTimelock.pendingAdmin();
     expect(oldTimelockPendingAdmin).to.equal(newTimelockAddress);
 
+    // 3. Check that FEIDAO timelock updated to newTimelock
     const feiDAOTimelock = await feiDAO.timelock();
     expect(feiDAOTimelock).to.equal(newTimelockAddress);
   });
 
-  // it('should accept newTimelock as admin on oldTimelock', async () => {
-  // const values = [0];
-  // const targets = [contractAddresses.timelock];
-  //   await performDAOAction(feiDAO, contractAddresses.multisig, fip_79cCalldata, targets, values);
+  it('should accept newTimelock as admin on oldTimelock', async () => {
+    const values = [0];
+    const targets = [contractAddresses.timelock];
+    await performDAOAction(feiDAO, contractAddresses.multisig, fip_79cCalldata, targets, values);
 
-  //   // Check admin of the oldTimelock is the newTimelock
-  //   const oldTimelock = contracts.timelock;
-  //   const oldTimelockAdmin = await oldTimelock.admin();
-  //   expect(oldTimelockAdmin).to.equal(contractAddresses.feiDAOTimelock);
-  // })
+    const oldTimelock = contracts.timelock;
+    const oldTimelockAdmin = await oldTimelock.admin();
+    expect(oldTimelockAdmin).to.equal(contractAddresses.feiDAOTimelock);
+  });
 });
