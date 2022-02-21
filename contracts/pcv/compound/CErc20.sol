@@ -12,4 +12,6 @@ interface CErc20 is IERC20 {
     function exchangeRateCurrent() external returns (uint256);
     function isCToken() external view returns(bool);
     function isCEther() external view returns(bool);
+    function getCash() external view returns(uint256);
+    function totalBorrows() external view returns(uint256);
 }

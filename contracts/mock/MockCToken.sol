@@ -20,8 +20,8 @@ contract MockCToken is MockERC20 {
     uint256 private constant EXCHANGE_RATE_SCALE = 1e18;
     uint256 public effectiveExchangeRate = 2;
 
-    constructor(IERC20 _token, bool _isCEther) {
-        token = _token;
+    constructor(address _token, bool _isCEther) {
+        token = IERC20(_token);
         isCEther = _isCEther;
     }
 
@@ -47,6 +47,17 @@ contract MockCToken is MockERC20 {
         return error ? 1 : 0;
     }
 
+    function redeem(uint redeemTokens) external returns (uint) {
+        _burn(msg.sender, redeemTokens);
+        uint256 redeemAmount = redeemTokens * effectiveExchangeRate;
+        if (address(this).balance >= redeemAmount) {
+            payable(msg.sender).transfer(redeemAmount);
+        } else {
+            token.transfer(msg.sender, redeemAmount);
+        }
+        return error ? 1 : 0;
+    }
+    
     function redeemUnderlying(uint redeemAmount) external returns (uint) {
         _burn(msg.sender, redeemAmount / effectiveExchangeRate);
         if (address(this).balance >= redeemAmount) {
@@ -59,5 +70,17 @@ contract MockCToken is MockERC20 {
 
     function exchangeRateStored() external view returns (uint) {
         return EXCHANGE_RATE_SCALE * effectiveExchangeRate; // 2:1
+    }
+
+    function exchangeRateCurrent() external returns (uint) {
+        return EXCHANGE_RATE_SCALE * effectiveExchangeRate; // 2:1
+    }
+
+    function getCash() external view returns (uint) {
+        return token.balanceOf(address(this));
+    }
+
+    function totalBorrows() external pure returns (uint) {
+        return 0;
     }
 }

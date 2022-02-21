@@ -27,14 +27,14 @@ contract ERC4626CErc20Wrapper is IERC4626, ERC20 {
     /// @param name ERC20 name of the vault shares token
     /// @param symbol ERC20 symbol of the vault shares token
     constructor(
-        CErc20 _cToken,
+        address _cToken,
         string memory name,
         string memory symbol
     ) ERC20(name, symbol) {
-        require(_cToken.isCToken(), "ERC4626Cerc20Wrapper: not a cToken");
-        require(!_cToken.isCEther(), "ERC4626Cerc20Wrapper: cEther not supported");
-        cToken = _cToken;
-        cTokenUnderlying = IERC20(cToken.underlying());
+        require(CErc20(_cToken).isCToken(), "ERC4626Cerc20Wrapper: not a cToken");
+        require(!CErc20(_cToken).isCEther(), "ERC4626Cerc20Wrapper: cEther not supported");
+        cToken = CErc20(_cToken);
+        cTokenUnderlying = IERC20(CErc20(cToken).underlying());
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ contract ERC4626CErc20Wrapper is IERC4626, ERC20 {
     /// @notice Total amount of the underlying asset that
     /// is "managed" by Vault.
     function totalAssets() external view returns(uint256) {
-        return cToken.exchangeRateStored() * totalSupply() / 1e18;
+        return cToken.getCash() + cToken.totalBorrows();
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -108,11 +108,15 @@ contract ERC4626CErc20Wrapper is IERC4626, ERC20 {
         // redeem cTokens and get the actual number of shares burnt
         uint256 balanceBefore = cToken.balanceOf(address(this));
         require(cToken.redeemUnderlying(assets) == 0, "ERC4626CErc20Wrapper: error on cToken.redeemUnderlying");
-        shares = cToken.balanceOf(address(this)) - balanceBefore;
+        shares = balanceBefore - cToken.balanceOf(address(this));
 
         // Check that owner approved spending on behalf of the caller
         if (msg.sender != owner) {
-            require(allowance(owner, msg.sender) >= shares, "ERC4626CErc20Wrapper: spender not authorized");
+            uint256 allowed = allowance(owner, msg.sender);
+            require(allowed >= shares, "ERC4626CErc20Wrapper: spender not authorized");
+            if (allowed != type(uint256).max) {
+                _approve(owner, msg.sender, allowed - shares);
+            }
         }
 
         // Burn the owner's shares
@@ -133,7 +137,11 @@ contract ERC4626CErc20Wrapper is IERC4626, ERC20 {
     function redeem(uint256 shares, address receiver, address owner) external returns(uint256 assets) {
         // Check that owner approved spending on behalf of the caller
         if (msg.sender != owner) {
-            require(allowance(owner, msg.sender) >= shares, "ERC4626CErc20Wrapper: spender not authorized");
+            uint256 allowed = allowance(owner, msg.sender);
+            require(allowed >= shares, "ERC4626CErc20Wrapper: spender not authorized");
+            if (allowed != type(uint256).max) {
+                _approve(owner, msg.sender, allowed - shares);
+            }
         }
 
         // Burn the owner's shares
@@ -173,10 +181,10 @@ contract ERC4626CErc20Wrapper is IERC4626, ERC20 {
     }
 
     /// @notice Total number of underlying assets that can
-    /// be deposited by `caller` into the Vault, where `caller`
+    /// be deposited by `owner` into the Vault, where `owner`
     /// corresponds to the input parameter `receiver` of a
     /// `deposit` call.
-    function maxDeposit(address/* caller*/) external pure returns(uint256 maxAssets) {
+    function maxDeposit(address/* owner*/) external pure returns(uint256 maxAssets) {
         return type(uint256).max;
     }
 
@@ -188,9 +196,9 @@ contract ERC4626CErc20Wrapper is IERC4626, ERC20 {
     }
 
     /// @notice Total number of underlying shares that can be minted
-    /// for `caller`, where `caller` corresponds to the input
+    /// for `owner`, where `owner` corresponds to the input
     /// parameter `receiver` of a `mint` call.
-    function maxMint(address/* caller*/) external pure returns(uint256 maxShares) {
+    function maxMint(address/* owner*/) external pure returns(uint256 maxShares) {
         return type(uint256).max;
     }
 
@@ -202,10 +210,10 @@ contract ERC4626CErc20Wrapper is IERC4626, ERC20 {
     }
 
     /// @notice Total number of underlying assets that can be
-    /// withdrawn from the Vault by `caller`, where `caller`
-    /// corresponds to the input parameter `owner` of a `withdraw` call.
-    function maxWithdraw(address caller) external view returns(uint256 maxAssets) {
-        uint256 sharesOwned = balanceOf(caller);
+    /// withdrawn from the Vault by `owner`, where `owner`
+    /// corresponds to the input parameter of a `withdraw` call.
+    function maxWithdraw(address owner) external view returns(uint256 maxAssets) {
+        uint256 sharesOwned = balanceOf(owner);
         return convertToAssets(sharesOwned);
     }
 
@@ -217,10 +225,10 @@ contract ERC4626CErc20Wrapper is IERC4626, ERC20 {
     }
 
     /// @notice Total number of underlying shares that can be
-    /// redeemed from the Vault by `caller`, where `caller` corresponds
-    /// to the input parameter `owner` of a `redeem` call.
-    function maxRedeem(address caller) external view returns(uint256 maxShares) {
-        return balanceOf(caller);
+    /// redeemed from the Vault by `owner`, where `owner` corresponds
+    /// to the input parameter of a `redeem` call.
+    function maxRedeem(address owner) external view returns(uint256 maxShares) {
+        return balanceOf(owner);
     }
 
     /// @notice Allows an on-chain or off-chain user to simulate
