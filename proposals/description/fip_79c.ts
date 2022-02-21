@@ -12,8 +12,11 @@ const fip_79c: ProposalDescription = {
     }
   ],
   description: `
-  Accept the newTimelock as the admin of the oldTimelock. Required as a seperate DAO vote, as
-  this transaction has to be sent from the proposed pendingAdmin - the newTimelock.
+  This FIP 79c is the last stage of FIP 79. It's purpose is to have the old FEI DAO timelock 
+  accept the new FEI DAO timelock as it's admin. 
+
+  This will allow the new timelock, and by extension, the FEI DAO to perform admin level actions
+  with the old timelock.
   `
 };
 

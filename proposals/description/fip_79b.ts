@@ -34,12 +34,14 @@ const fip_79b: ProposalDescription = {
     }
   ],
   description: `
-  Migrate all proxies and contracts which have the oldFeiTimelock as their admin or owner to the newFeiTimelock.
-  This is being done to address technical debt and to allow any relevant behaviour contracts to be upgraded.
-  Revert the FEI DAO back to using the newTimelock. A subsequent action will have the oldTimelock accept the 
-  newTimelock as it's admin.
+  This FIP is the second stage in FIP 79, which changes the owner of the ProxyAdmin contract from the old timelock 
+  to the new FEI DAO timelock. This is being done to allow an incentive contract to be upgraded. 
 
-  For context, the FEI DAO at this stage is pointing to the oldTimelock
+  Specifically, this FIP 79b transfers ownership of the ProxyAdmin from the old timelock to the new timelock. 
+  Following that, the timelock delay is set to 0 and a pending admin of the new timelock is set on the old timelock.
+  Lastly, the FEI DAO timelock is changed back from the old timelock to the new timelock.
+  
+  A subsequent action will have the old timelock accept the new timelock as it's admin.
   `
 };
 
