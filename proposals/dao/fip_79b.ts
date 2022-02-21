@@ -8,11 +8,10 @@ chai.use(CBN(ethers.BigNumber));
 
 /*
 DAO ACTIONS:
-1. Change the admin of all proxy contracts for which it was previously the oldTimelock, to the newTimelock
-2. Change the owner of the ProxyAdmin contract from the oldTimelock to the newTimelock
-3. Ensure the delay on the oldTimelock is set to 0
-4. Set the pending admin on the oldTimelock to be the newTimelock. Will later need accepting by newTimelock
-5. Set the timelock on the FEI DAO back to the newTimelock
+1. Transfer ownership of the ProxyAdmin from the oldTimelock to the newTimelock
+2. Set the delay on the oldTimelock to 0
+3. Set the pending admin on the oldTimelock to be the newTimelock. Will later need accepting by newTimelock
+4. Set the timelock on the FEI DAO back to the newTimelock
 */
 
 export const deploy: DeployUpgradeFunc = async (deployAddress, addresses, logging = false) => {
@@ -32,11 +31,7 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   const feiDAO: FeiDAO = contracts.feiDAO as FeiDAO;
   const proxyAdmin: ProxyAdmin = contracts.proxyAdmin as ProxyAdmin;
   const oldTimelock: Timelock = contracts.timelock as Timelock;
-
   const newTimelockAddress = addresses.feiDAOTimelock;
-
-  // TODO: add checks for any other contracts getting moved over
-  expect(await proxyAdmin.getProxyAdmin(addresses.aaveTribeIncentivesControllerProxy)).to.be.equal(newTimelockAddress);
 
   expect(await proxyAdmin.owner()).to.be.equal(newTimelockAddress);
   expect(await oldTimelock.delay()).to.be.equal(0);
