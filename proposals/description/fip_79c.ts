@@ -1,6 +1,6 @@
 import { ProposalDescription } from '@custom-types/types';
 
-const fip_x: ProposalDescription = {
+const fip_79c: ProposalDescription = {
   title: 'FIP-79c: Accept newTimelock admin as the admin for the oldTimelock',
   commands: [
     {
@@ -17,4 +17,4 @@ const fip_x: ProposalDescription = {
   `
 };
 
-export default fip_x;
+export default fip_79c;

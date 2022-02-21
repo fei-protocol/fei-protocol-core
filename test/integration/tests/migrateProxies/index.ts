@@ -4,7 +4,7 @@ import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { Contract } from 'ethers';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { resetFork, performDAOAction } from '@test/helpers';
+import { resetFork, performDAOAction, getImpersonatedSigner } from '@test/helpers';
 import { fip_79aCalldata, fip_79bCalldata, fip_79cCalldata } from './proposalCalldata';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '../../setup/utils';
@@ -18,7 +18,7 @@ const reduceDAOVotingPeriod = async (feiDAO: Contract, senderAddress: string) =>
   await performDAOAction(feiDAO, senderAddress, calldatas, targets, values);
 };
 
-describe('Migrate proxies', function () {
+describe.only('e2e-migrate-proxies', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
@@ -138,6 +138,35 @@ describe('Migrate proxies', function () {
 
     const oldTimelockAdmin = await oldTimelock.admin();
     expect(oldTimelockAdmin).to.equal(contractAddresses.feiDAOTimelock);
+  });
+
+  it('should be able to upgrade aave incentives behaviour contract', async () => {
+    const proxyAdmin = contracts.proxyAdmin;
+    const newTimelockSigner = await getImpersonatedSigner(contractAddresses.feiDAOTimelock);
+
+    const oldIncentivesBehaviour = await proxyAdmin
+      .connect(newTimelockSigner)
+      .getProxyImplementation(contractAddresses.aaveTribeIncentivesControllerProxy);
+    expect(oldIncentivesBehaviour).to.equal(contractAddresses.aaveTribeIncentivesControllerImpl);
+    console.log({ oldIncentivesBehaviour });
+
+    const values = [0];
+    const targets = [contractAddresses.aaveTribeIncentivesController];
+
+    // Note, used to generate the calldata below
+    const dummyUpgradeAddress = '0xe87Eb61251cbbcBDF74C127F949E430cf25AfFA8';
+
+    const upgradeIncentivesCalldata = [
+      '0x0c42f3f9000000000000000000000000dee5c1662bbff8f80f7c572d8091bf251b3b0dab000000000000000000000000e87eb61251cbbcbdf74c127f949e430cf25affa8'
+    ];
+    await performDAOAction(feiDAO, contractAddresses.multisig, upgradeIncentivesCalldata, targets, values);
+
+    const newIncentivesBehaviour = await proxyAdmin
+      .connect(newTimelockSigner)
+      .getProxyImplementation(contractAddresses.aaveTribeIncentivesControllerProxy);
+    console.log({ newIncentivesBehaviour });
+
+    expect(newIncentivesBehaviour).to.equal(dummyUpgradeAddress);
   });
 
   // End result:

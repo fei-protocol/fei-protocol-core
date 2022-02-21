@@ -1,6 +1,6 @@
 import { ProposalDescription } from '@custom-types/types';
 
-const fip_x: ProposalDescription = {
+const fip_79b: ProposalDescription = {
   title: 'FIP-79b: Restore newTimelock to FeiDAO',
   commands: [
     {
@@ -43,4 +43,4 @@ const fip_x: ProposalDescription = {
   `
 };
 
-export default fip_x;
+export default fip_79b;
