@@ -146,7 +146,7 @@ describe('e2e-dao', function () {
       ).sendTransaction({ to: tribalChiefOptimisticMultisig, value: toBN('40000000000000000') });
     });
 
-    it('governor can assume timelock admin', async () => {
+    it.only('governor can assume timelock admin', async () => {
       const { timelock } = contractAddresses;
       const { optimisticTimelock } = contracts;
 
@@ -224,7 +224,6 @@ describe('e2e-dao', function () {
     it('should have granted contracts correct roles', async function () {
       const core: Core = contracts.core as Core;
       const accessControl = e2eCoord.getAccessControlMapping();
-
       const roles = Object.keys(accessControl);
 
       for (let i = 0; i < roles.length; i++) {
@@ -233,8 +232,8 @@ describe('e2e-dao', function () {
         for (let i = 0; i < accessControl[element].length; i++) {
           const contractAddress = accessControl[element][i];
           doLogging && console.log(`${element} contract address: ${contractAddress}`);
-          const isMinter = await core.hasRole(id, contractAddress);
-          expect(isMinter).to.be.true;
+          const hasRole = await core.hasRole(id, contractAddress);
+          expect(hasRole).to.be.true;
         }
       }
 
