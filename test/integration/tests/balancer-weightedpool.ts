@@ -38,7 +38,7 @@ describe('balancer-weightedpool', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config);
+    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts } = await e2eCoord.loadEnvironment());

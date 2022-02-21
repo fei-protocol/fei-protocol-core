@@ -5,6 +5,7 @@ import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { getImpersonatedSigner, resetFork, time } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
+import proposals from '@test/integration/proposals_config';
 import { PegExchanger, PegExchangerDripper } from '@custom-types/contracts';
 import { expectApprox, expectRevert } from '@test/helpers';
 import { forceEth } from '../setup/utils';
@@ -38,7 +39,7 @@ describe('e2e-merger', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config);
+    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());

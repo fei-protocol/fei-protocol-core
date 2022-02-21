@@ -13,6 +13,7 @@ import {
   overwriteChainlinkAggregator,
   resetFork
 } from '@test/helpers';
+import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '../setup/utils';
 
@@ -54,7 +55,7 @@ describe('lusd PSM', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config);
+    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());

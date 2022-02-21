@@ -4,6 +4,7 @@ import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedContracts } from '@custom-types/types';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
+import proposals from '@test/integration/proposals_config';
 import mainnetAddresses from '@protocol/mainnetAddresses';
 import tribalchief from '@protocol/tribalchief';
 
@@ -23,7 +24,7 @@ describe('e2e-tribalchief', function () {
       deployAddress: (await ethers.getSigners())[0].address,
       version: 1
     };
-    e2eCoord = new TestEndtoEndCoordinator(config);
+    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
     ({ contracts } = await e2eCoord.loadEnvironment());
   });
 

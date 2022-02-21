@@ -15,6 +15,7 @@ import { BigNumber } from 'ethers';
 import hre, { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { expectApprox, expectRevert, getImpersonatedSigner, increaseTime, resetFork } from '@test/helpers';
+import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '../setup/utils';
 import { time } from '@test/helpers';
@@ -56,7 +57,7 @@ describe('eth PSM', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config);
+    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());

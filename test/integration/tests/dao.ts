@@ -4,6 +4,7 @@ import { solidity } from 'ethereum-waffle';
 import hre, { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { getImpersonatedSigner, increaseTime, latestTime, resetFork, time } from '@test/helpers';
+import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '@test/integration/setup/utils';
 import { Core } from '@custom-types/contracts';
@@ -36,7 +37,7 @@ describe('e2e-dao', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config);
+    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());

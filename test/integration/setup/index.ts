@@ -61,6 +61,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     // Grant privileges to deploy address
     await sudo(existingContracts, this.config.logging);
 
+    // If proposals exist, simulate the upgrade
     if (this.proposals) {
       const proposalNames = Object.keys(this.proposals);
       for (let i = 0; i < proposalNames.length; i++) {
@@ -81,7 +82,11 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   }
 
   /**
-   * Apply an upgrade to the locally instantiated protocol
+   * Apply an upgrade to the locally instantiated protocol.
+   *
+   * This will take a proposal, run the `setup()` function and then simulate that proposal locally.
+   * Following this, it will perform any `teardown()` behaviour and call the proposal `validate()` function.
+   * This `validate()` function verifies basic state and properties about the upgrade are satisfied.
    */
   async applyUpgrade(
     existingContracts: NamedContracts,
