@@ -9,6 +9,7 @@
     "compile:hardhat": "npx hardhat compile",
     "coverage": "npx hardhat coverage",
     "console": "npx hardhat console",
+    "devnet": "ENABLE_MAINNET_FORKING=true NO_RESET=true npx hardhat node",
     "console:rinkeby": "npx hardhat console --network rinkeby",
     "console:ropsten": "npx hardhat console --network ropsten",
     "clean": "rm -rf build && rm -rf out",
