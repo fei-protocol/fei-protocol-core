@@ -146,14 +146,16 @@ describe('e2e-dao', function () {
       ).sendTransaction({ to: tribalChiefOptimisticMultisig, value: toBN('40000000000000000') });
     });
 
-    it.only('governor can assume timelock admin', async () => {
-      const { timelock } = contractAddresses;
+    it('governor can assume timelock admin', async () => {
+      // oldTimelock has had Governor revoked, so apply to newTimelock
+      const { feiDAOTimelock } = contractAddresses;
       const { optimisticTimelock } = contracts;
 
-      await optimisticTimelock.connect(await ethers.getSigner(timelock)).becomeAdmin();
+      const newTimelockSigner = await getImpersonatedSigner(feiDAOTimelock);
+      await optimisticTimelock.connect(newTimelockSigner).becomeAdmin();
 
       const admin = await optimisticTimelock.TIMELOCK_ADMIN_ROLE();
-      expect(await optimisticTimelock.hasRole(admin, timelock)).to.be.true;
+      expect(await optimisticTimelock.hasRole(admin, feiDAOTimelock)).to.be.true;
     });
 
     it('proposal can execute on tribalChief', async () => {

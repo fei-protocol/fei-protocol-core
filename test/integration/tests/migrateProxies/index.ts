@@ -142,6 +142,7 @@ describe('e2e-migrate-proxies', function () {
 
   it('should be able to upgrade aave incentives behaviour contract', async () => {
     const proxyAdmin = contracts.proxyAdmin;
+
     const newTimelockSigner = await getImpersonatedSigner(contractAddresses.feiDAOTimelock);
 
     const oldIncentivesBehaviour = await proxyAdmin
@@ -150,22 +151,18 @@ describe('e2e-migrate-proxies', function () {
     expect(oldIncentivesBehaviour).to.equal(contractAddresses.aaveTribeIncentivesControllerImpl);
     console.log({ oldIncentivesBehaviour });
 
+    // Calling `upgrade()` method on ProxyAdmin
     const values = [0];
-    const targets = [contractAddresses.aaveTribeIncentivesController];
-
-    // Note, used to generate the calldata below
-    const dummyUpgradeAddress = '0xe87Eb61251cbbcBDF74C127F949E430cf25AfFA8';
-
+    const targets = [contractAddresses.proxyAdmin];
+    const dummyUpgradeAddress = contractAddresses.weth; // Note, used to generate the calldata below
     const upgradeIncentivesCalldata = [
-      '0x0c42f3f9000000000000000000000000dee5c1662bbff8f80f7c572d8091bf251b3b0dab000000000000000000000000e87eb61251cbbcbdf74c127f949e430cf25affa8'
+      '0x99a88ec4000000000000000000000000dee5c1662bbff8f80f7c572d8091bf251b3b0dab000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
     ];
     await performDAOAction(feiDAO, contractAddresses.multisig, upgradeIncentivesCalldata, targets, values);
 
     const newIncentivesBehaviour = await proxyAdmin
       .connect(newTimelockSigner)
       .getProxyImplementation(contractAddresses.aaveTribeIncentivesControllerProxy);
-    console.log({ newIncentivesBehaviour });
-
     expect(newIncentivesBehaviour).to.equal(dummyUpgradeAddress);
   });
 
