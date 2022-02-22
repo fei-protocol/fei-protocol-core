@@ -56,17 +56,29 @@ contract UniswapV3OracleTest is DSTest, StdLib {
     );
   } 
 
+  /// @notice Validate that oracle contract metadata is set
   function testMetadataSet() public {
     assertEq(oracle.pool(), address(mockUniswapPool));
     assertEq(oracle.getTwapPeriod(), twapPeriod);
     assertFalse(oracle.isOutdated());
+    assertEq(oracle.inputToken(), address(tokenA));
+    assertEq(oracle.outputToken(), address(tokenB));
+    assertEq(oracle.pool(), address(mockUniswapPool));
+    
+    (uint32 _twapPeriod, uint128 minPoolLiquidity, address uniswapPool, uint256 _precision) = oracle.oracleConfig();
+    assertEq(_twapPeriod, twapPeriod);
+    assertEq(minPoolLiquidity, mockUniswapPool.liquidity());
+    assertEq(uniswapPool, address(mockUniswapPool));
+    assertEq(_precision, precision);
   }
 
+  /// @notice Validate that the oracle is not paused when deployed
   function testPausedFalseOnDeploy() public {    
     oracle.update();
     assertFalse(oracle.paused());
   }
 
+  /// @notice Validate that TWAPs of 0s are rejected (requesting a spot price)
   function testZeroTwapPeriod() public {
     UniswapV3OracleWrapper.OracleConfig memory zeroTwapConfig = UniswapV3OracleWrapper.OracleConfig({
       twapPeriod: 0,
@@ -88,6 +100,7 @@ contract UniswapV3OracleTest is DSTest, StdLib {
 
   }
 
+  /// @notice Validate that connecting an oracle to a low liquidity pool is rejected
   function testMinLiquidity() public {
     UniswapV3OracleWrapper.OracleConfig memory highMinLiquidityConfig = UniswapV3OracleWrapper.OracleConfig({
       twapPeriod: twapPeriod,
@@ -108,14 +121,15 @@ contract UniswapV3OracleTest is DSTest, StdLib {
     );
   }
   
+  /// @notice Validate that isOutdated returns false
   function testUpdateNoop() public {
     assertFalse(oracle.isOutdated());
     oracle.update();
     assertFalse(oracle.isOutdated());
   }
 
+  /// @notice Validate that TWAP period can be set by authorised users
   function testSetTwapPeriod() public {
-    
     vm.prank(addresses.governorAddress);
     uint32 newTwapPeriod = 100;
     oracle.setTwapPeriod(newTwapPeriod);
@@ -123,15 +137,19 @@ contract UniswapV3OracleTest is DSTest, StdLib {
     assertEq(oracle.getTwapPeriod(), newTwapPeriod);
   }
 
-  function testSetTwapPeriodWrongAuth() public {    
+  /// @notice Validate that access control on `setTwapPeriod()` is enforced 
+  function testSetTwapAccessControl() public {
+    vm.prank(addresses.userAddress);
     uint32 newTwapPeriod = 100;
-    
+
     vm.expectRevert(
-      bytes("CoreRef: Caller is not a guardian or governor")
+      bytes("UNAUTHORIZED")
     );
     oracle.setTwapPeriod(newTwapPeriod);
+
   }
 
+  /// @notice Validate that `read()` is valid 
   function testReadIsValid() public {
     (, bool valid) = oracle.read();
     assertTrue(valid);

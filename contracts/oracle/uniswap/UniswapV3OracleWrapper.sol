@@ -8,6 +8,7 @@ import {FixedPoint96} from "@uniswap/v3-core/contracts/libraries/FixedPoint96.so
 
 import {CoreRef} from "../../refs/CoreRef.sol";
 import {Decimal} from "../../external/Decimal.sol";
+import {TribeRoles} from "../../core/TribeRoles.sol";
 import {IOracle} from "../IOracle.sol";
 import {IUniswapV3OracleWrapper} from "./IUniswapV3OracleWrapper.sol";
 import {IUniswapWrapper} from "./IUniswapWrapper.sol";
@@ -95,7 +96,7 @@ contract UniswapV3OracleWrapper is IUniswapV3OracleWrapper, IOracle, CoreRef {
   // ----------- Getters -----------
 
   /// @notice Convenience getter for twapPeriod
-  function getTwapPeriod() external view returns (uint32) {
+  function getTwapPeriod() external override view returns (uint32) {
     return oracleConfig.twapPeriod;
   }
 
@@ -124,7 +125,7 @@ contract UniswapV3OracleWrapper is IUniswapV3OracleWrapper, IOracle, CoreRef {
   }
 
   /// @notice no-op, Uniswap V3 constantly updates the price
-  function isOutdated() external view override returns (bool) {
+  function isOutdated() external pure override returns (bool) {
     return false;
   }
 
@@ -182,7 +183,7 @@ contract UniswapV3OracleWrapper is IUniswapV3OracleWrapper, IOracle, CoreRef {
 
   /// @notice Change the time period over which the TWAP price is calculated
   /// @param _twapPeriod Period of time over which time weighted average price is calculated
-  function setTwapPeriod(uint32 _twapPeriod) external onlyGuardianOrGovernor {
+  function setTwapPeriod(uint32 _twapPeriod) external override hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.GUARDIAN, TribeRoles.ORACLE_ADMIN) {
     validateTwapPeriod(_twapPeriod);
 
     uint32 oldTwapPeriod = oracleConfig.twapPeriod;
