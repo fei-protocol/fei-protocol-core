@@ -54,6 +54,7 @@ const dependencies: DependencyMap = {
       'indexDelegator',
       'liquityFusePoolLusdPCVDeposit',
       'poolPartyFeiPCVDeposit',
+      'rariTimelock',
       'rariPool146EthPCVDeposit',
       'rariPool18FeiPCVDeposit',
       'rariPool19DpiPCVDeposit',
@@ -181,7 +182,7 @@ const dependencies: DependencyMap = {
       'aaveTribeIncentivesController',
       'tribalChief',
       'collateralizationOracleWrapper'
-    ] // NOTE this is slightly misleading as proxy admin needs to update admin to new timelock
+    ]
   },
   ratioPCVControllerV2: {
     contractDependencies: ['core', 'delayedPCVMoverWethUniToBal']
@@ -221,6 +222,7 @@ const dependencies: DependencyMap = {
       'agEurDepositWrapper',
       'aaveTribeIncentivesController',
       'tribeMinter',
+      'timelock',
       'pcvGuardian',
       'pegExchanger'
     ]
@@ -250,7 +252,7 @@ const dependencies: DependencyMap = {
     ]
   },
   rariTimelock: {
-    contractDependencies: ['tribeRariDAO']
+    contractDependencies: ['tribeRariDAO', 'core']
   },
   tribeRariDAO: {
     contractDependencies: ['rariTimelock', 'tribe']
@@ -952,7 +954,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['rariPool8LusdPCVDeposit', 'rariPool8Comptroller']
   },
   timelock: {
-    contractDependencies: []
+    contractDependencies: ['feiDAOTimelock']
   }
 };
 
