@@ -10,9 +10,6 @@ import { expectApprox, getImpersonatedSigner, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 
-const toBN = ethers.BigNumber.from;
-const BNe18 = (x: any) => ethers.constants.WeiPerEther.mul(toBN(x));
-
 describe('Backup Oracles', function () {
   let contracts: NamedContracts;
   let deployAddress: SignerWithAddress;
@@ -49,17 +46,10 @@ describe('Backup Oracles', function () {
     ({ contracts } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
 
-    const daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
-
-    // Add backup oracle to DAI PSM
     daiPSM = contracts.daiFixedPricePSM as PegStabilityModule;
-    daiUsdcBackupOracle = contracts.daiUsdcTwapOracle as UniswapV3OracleWrapper;
-    await daiPSM.connect(daoSigner).setBackupOracle(daiUsdcBackupOracle.address);
-
-    // Add backup oracle to ETH PSM
     ethPSM = contracts.ethPSM as PegStabilityModule;
+    daiUsdcBackupOracle = contracts.daiUsdcTwapOracle as UniswapV3OracleWrapper;
     ethUsdcBackupOracle = contracts.ethUsdcTwapOracle as UniswapV3OracleWrapper;
-    await ethPSM.connect(daoSigner).setBackupOracle(ethUsdcBackupOracle.address);
   });
 
   before(async function () {
@@ -78,18 +68,39 @@ describe('Backup Oracles', function () {
     await turnPSMOn(ethPSM);
   });
 
-  it('should have set backup oracle', async () => {
-    const daiBackupOracle = await daiPSM.backupOracle();
-    const ethBackupOracle = await ethPSM.backupOracle();
-    expect(daiBackupOracle).to.equal(daiUsdcBackupOracle.address);
-    expect(ethBackupOracle).to.equal(ethUsdcBackupOracle.address);
+  it('should read Uniswap V3 TWAP oracle price comparable to primary oracle price', async () => {
+    const primaryDaiChainlinkOracle = contracts.chainlinkDaiUsdOracleWrapper;
+    const [primaryDaiOraclePrice] = await primaryDaiChainlinkOracle.read();
+    const [backupDaiOraclePrice, daiPriceValid] = await daiUsdcBackupOracle.read();
+    expect(daiPriceValid).to.be.true;
+    expectApprox(primaryDaiOraclePrice.toString(), backupDaiOraclePrice.toString());
+
+    const primaryEthChainlinkOracle = contracts.chainlinkEthUsdOracleWrapper;
+    const [primaryEthOraclePrice] = await primaryEthChainlinkOracle.read();
+    const [backupEthOraclePrice, ethPriceValid] = await ethUsdcBackupOracle.read();
+    expect(ethPriceValid).to.be.true;
+    expectApprox(primaryEthOraclePrice.toString(), backupEthOraclePrice.toString());
   });
 
-  it('should read Uniswap V3 TWAP oracle price comparable to primary oracle price', async () => {
-    const primaryChainlinkOracle = contracts.chainlinkDaiUsdOracleWrapper;
-    const primaryOraclePrice = await primaryChainlinkOracle.read();
-    const backupOraclePrice = await daiUsdcBackupOracle.read();
+  it('should have PSM fallback to backup oracle', async () => {
+    const primaryDaiChainlinkOracle = contracts.chainlinkDaiUsdOracleWrapper;
 
-    expectApprox(primaryOraclePrice.toString(), backupOraclePrice.toString());
+    // Primary oracle price
+    const [, initialIsValid] = await primaryDaiChainlinkOracle.read();
+    expect(initialIsValid).to.be.true;
+
+    const [primaryPrice] = await daiPSM.readOracle();
+
+    // Trigger fallback to backup, by pausing Chainlink to force it to return an invalid price
+    const governorSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
+
+    await primaryDaiChainlinkOracle.connect(governorSigner).pause();
+
+    // Fallback oracle price
+    const [, fallbackIsValid] = await primaryDaiChainlinkOracle.read();
+    expect(fallbackIsValid).to.be.false;
+
+    const [fallbackPrice] = await daiPSM.readOracle();
+    expectApprox(fallbackPrice.toString(), primaryPrice.toString());
   });
 });

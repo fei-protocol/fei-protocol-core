@@ -8,19 +8,20 @@ import {
 } from '@custom-types/types';
 
 import { daiUsdcBackupOracleConfig, ethUsdcBackupOracleConfig } from '@protocol/backupOracleConfig';
+import { expect } from 'chai';
 
 /*
 
-FIP-78
+FIP-79
 
-OA Steps:
+Steps:
 1. Deploy DAI-USDC UniswapV3 TWAP oracle 
 2. Deploy ETH-USDC UniswapV3 TWAP oracle
 3. Set backupOracle on DAI PSM to DAI-USDC UniswapV3 TWAP oracle
 3. Set backupOracle on ETH PSM to ETH-USDC UniswapV3 TWAP oracle
 
 */
-const fipNumber = '78';
+const fipNumber = '79';
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -75,6 +76,26 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   console.log(`Validate logic is in the integration test for fip${fipNumber}`);
+  const daiUsdcTwapOracle = contracts.daiUsdcTwapOracle;
+  const ethUsdcTwapOracle = contracts.ethUsdcTwapOracle;
+
+  // 1. Validate that backupOracles have been set
+  const daiPSM = contracts.daiFixedPricePSM;
+  const daiBackupOracle = await daiPSM.backupOracle();
+  expect(daiBackupOracle).to.equal(daiUsdcTwapOracle.address);
+
+  const ethPSM = contracts.ethPSM;
+  const ethBackupOracle = await ethPSM.backupOracle();
+  expect(ethBackupOracle).to.equal(ethUsdcTwapOracle.address);
+
+  // 2. Validate that a valid `read()` can be fetched from the oracles
+  const [daiPrice, daiPriceValid] = await daiUsdcTwapOracle.read();
+  expect(daiPriceValid).to.equal(true);
+  expect(daiPrice.value).to.be.bignumber.greaterThan(ethers.BigNumber.from(0));
+
+  const [ethPrice, ethPriceValid] = await ethUsdcTwapOracle.read();
+  expect(ethPriceValid).to.equal(true);
+  expect(ethPrice.value).to.be.bignumber.greaterThan(ethers.BigNumber.from(0));
 };
 
 export { deploy, setup, teardown, validate };
