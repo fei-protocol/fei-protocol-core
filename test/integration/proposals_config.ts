@@ -1,8 +1,8 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
-import fip_79a from '@proposals/description/fip_79a';
-import fip_79b from '@proposals/description/fip_79b';
-import fip_79c from '@proposals/description/fip_79c';
+import fip_78a from '@proposals/description/fip_78a';
+import fip_78b from '@proposals/description/fip_78b';
+import fip_78c from '@proposals/description/fip_78c';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -14,32 +14,32 @@ const proposals: ProposalsConfigMap = {
     }
     */
 
-  fip_79a: {
+  fip_78a: {
     deploy: false,
     proposalId: '',
     affectedContractSignoff: ['feiDAO', 'core', 'rariTimelock', 'feiDAOTimelock', 'timelock'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,
-    proposal: fip_79a
+    proposal: fip_78a
   },
-  fip_79b: {
+  fip_78b: {
     deploy: false,
     proposalId: '',
     affectedContractSignoff: ['proxyAdmin', 'timelock', 'feiDAO', 'feiDAOTimelock'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,
-    proposal: fip_79b
+    proposal: fip_78b
   },
-  fip_79c: {
+  fip_78c: {
     deploy: false,
     proposalId: '',
     affectedContractSignoff: ['timelock', 'rariTimelock'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,
-    proposal: fip_79c
+    proposal: fip_78c
   }
 };
 

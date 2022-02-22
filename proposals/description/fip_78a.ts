@@ -1,7 +1,7 @@
 import { ProposalDescription } from '@custom-types/types';
 
-const fip_79a: ProposalDescription = {
-  title: 'FIP-79a: Change FEI DAO timelock to previous timelock. Grant Rari timelock governor',
+const fip_78a: ProposalDescription = {
+  title: 'FIP-78a: Change FEI DAO timelock to previous timelock. Grant Rari timelock governor',
   commands: [
     {
       target: 'core',
@@ -29,7 +29,7 @@ const fip_79a: ProposalDescription = {
     }
   ],
   description: `
-  FIP 79 is being performed to allow an incentives contract to be upgraded. 
+  FIP 78 is being performed to allow an incentives contract to be upgraded. 
 
   Specifically, to distribute rewards on Aave we deploy an incentives controller contract. That 
   contract has an upgrade mechanism managed by a ProxyAdmin contract. To participate in the next round
@@ -42,10 +42,10 @@ const fip_79a: ProposalDescription = {
   we have to temporarily switch the DAO timelock back to the old timelock and so this FIP comes in three stages:
   a, b, c. 
 
-  FIP 79a specifically changes the FEI DAO to point to and use the old timelock for migration purposes. It also
+  FIP 78a specifically changes the FEI DAO to point to and use the old timelock for migration purposes. It also
   grants the Rari Timelock the GOVERN_ROLE role and revokes the GOVERN_ROLE from the old timelock as
   as safety and fallback mechanims. 
   `
 };
 
-export default fip_79a;
+export default fip_78a;
