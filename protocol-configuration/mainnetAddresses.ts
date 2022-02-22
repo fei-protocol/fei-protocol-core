@@ -838,7 +838,7 @@ const MainnetAddresses: MainnetAddresses = {
   },
   rariPool8ConvexD3Plugin: {
     artifactName: 'IConvexERC4626',
-    address: '0xe5af1ac8b9b2c1e1912a051da12c48f25b771b1d',
+    address: '0xaa189e7f4aac757216b62849f78f1236749ba814',
     category: AddressCategory.FeiRari
   },
   rariCErc20PluginImpl: {
