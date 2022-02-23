@@ -1,8 +1,8 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
-// import fip_xx_proposal from '@proposals/description/fip_xx';
-
-import fip_76b from '@proposals/description/fip_76b';
+import fip_84a from '@proposals/description/fip_84a';
+import fip_84b from '@proposals/description/fip_84b';
+import fip_84c from '@proposals/description/fip_84c';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -13,34 +13,33 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  fip_76b: {
+
+  fip_84a: {
     deploy: false,
-    proposalId: '73485618643971795717112481006319668453253357499719729532595075539568233811807',
-    affectedContractSignoff: [
-      'delayedPCVMoverWethUniToBal',
-      'balancerDepositFeiWeth',
-      'aaveEthPCVDeposit',
-      'uniswapPCVDeposit',
-      'compoundDaiPCVDeposit',
-      'bammDeposit',
-      'ratioPCVControllerV2',
-      'feiDAOTimelock',
-      'collateralizationOracle',
-      'rariPool8DaiPCVDeposit',
-      'rariPool8LusdPCVDeposit',
-      'votiumBriber3Crvpool'
-    ],
-    deprecatedContractSignoff: [
-      'dpiUniswapPCVDeposit',
-      'rariPool7FeiPCVDepositWrapper',
-      'rariPool9FeiPCVDepositWrapper',
-      'rariPool26FeiPCVDepositWrapper',
-      'rariPool28FeiPCVDepositWrapper',
-      'rariPool91FeiPCVDepositWrapper'
-    ],
+    proposalId: '90781494616199164598522639897196626909064874385916078084737651147175659861373',
+    affectedContractSignoff: ['feiDAO', 'core', 'rariTimelock', 'feiDAOTimelock', 'timelock'],
+    deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,
-    proposal: fip_76b
+    proposal: fip_84a
+  },
+  fip_84b: {
+    deploy: false,
+    proposalId: '',
+    affectedContractSignoff: ['proxyAdmin', 'timelock', 'feiDAO', 'feiDAOTimelock'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_84b
+  },
+  fip_84c: {
+    deploy: false,
+    proposalId: '34000709159909885586797325379867128929719243307711747917169184886926028102786',
+    affectedContractSignoff: ['timelock', 'rariTimelock'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_84c
   }
 };
 
