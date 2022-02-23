@@ -16,7 +16,7 @@ const proposals: ProposalsConfigMap = {
 
   fip_84a: {
     deploy: false,
-    proposalId: '',
+    proposalId: '90781494616199164598522639897196626909064874385916078084737651147175659861373',
     affectedContractSignoff: ['feiDAO', 'core', 'rariTimelock', 'feiDAOTimelock', 'timelock'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
@@ -34,7 +34,7 @@ const proposals: ProposalsConfigMap = {
   },
   fip_84c: {
     deploy: false,
-    proposalId: '',
+    proposalId: '34000709159909885586797325379867128929719243307711747917169184886926028102786',
     affectedContractSignoff: ['timelock', 'rariTimelock'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
