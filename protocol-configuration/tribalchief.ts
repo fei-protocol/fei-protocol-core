@@ -5,12 +5,12 @@ const config: TribalChiefConfig = {
   curve3Metapool: { allocPoint: 0, unlocked: false }, // Curve 3crv-FEI metapool LP
   gUniFeiDaiLP: { allocPoint: 0, unlocked: true }, // G-UNI DAI/FEI 0.05% fee tier
   stakingTokenWrapperRari: { allocPoint: 1000, unlocked: false }, // FeiRari: TRIBE
-  stakingTokenWrapperGROLaaS: { allocPoint: 50, unlocked: false }, // LaaS: GRO
+  stakingTokenWrapperGROLaaS: { allocPoint: 0, unlocked: false }, // LaaS: GRO
   stakingTokenWrapperFOXLaaS: { allocPoint: 50, unlocked: false }, // LaaS: FOX
   stakingTokenWrapperUMALaaS: { allocPoint: 80, unlocked: false }, // LaaS: UMA
   stakingTokenWrapperSYNLaaS: { allocPoint: 144, unlocked: false }, // LaaS: SYN
   stakingTokenWrapperNEARLaaS: { allocPoint: 20, unlocked: false }, // LaaS: NEAR
-  stakingTokenWrapperKYLINLaaS: { allocPoint: 26, unlocked: false }, // LaaS: KYLIN
+  stakingTokenWrapperKYLINLaaS: { allocPoint: 0, unlocked: false }, // LaaS: KYLIN
   stakingTokenWrapperMStableLaaS: { allocPoint: 8, unlocked: false }, // LaaS: MStable
   stakingTokenWrapperPoolTogetherLaaS: { allocPoint: 13, unlocked: false }, // LaaS: PoolTogether
   stakingTokenWrapperBribeD3pool: { allocPoint: 250, unlocked: false }, // Votium bribes: d3pool
