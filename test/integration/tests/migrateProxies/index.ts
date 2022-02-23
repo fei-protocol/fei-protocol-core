@@ -5,7 +5,7 @@ import { ethers } from 'hardhat';
 import { Contract } from 'ethers';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { resetFork, performDAOAction, getImpersonatedSigner } from '@test/helpers';
-import { fip_78aCalldata, fip_78bCalldata, fip_78cCalldata } from './proposalCalldata';
+import { fip_84aCalldata, fip_84bCalldata, fip_84cCalldata } from './proposalCalldata';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '../../setup/utils';
 
@@ -59,7 +59,7 @@ describe('e2e-migrate-proxies', function () {
     await reduceDAOVotingPeriod(feiDAO, contractAddresses.multisig);
   });
 
-  it('should give Rari timelock governor and point FEI DAO timelock to oldTimelock (fip_78a)', async () => {
+  it('should give Rari timelock governor and point FEI DAO timelock to oldTimelock (fip_84a)', async () => {
     const GOVERN_ROLE = ethers.utils.id('GOVERN_ROLE');
     const initialRariTimelockHasRole = await contracts.core.hasRole(GOVERN_ROLE, contractAddresses.rariTimelock);
     const initialOldTimelockHasRole = await contracts.core.hasRole(GOVERN_ROLE, contractAddresses.timelock);
@@ -76,7 +76,7 @@ describe('e2e-migrate-proxies', function () {
     // Multisig address has sufficient TRIBE to pass quorum
     const targets = [contractAddresses.core, contractAddresses.core, feiDAO.address];
     const values = [0, 0, 0];
-    await performDAOAction(feiDAO, contractAddresses.multisig, fip_78aCalldata, targets, values);
+    await performDAOAction(feiDAO, contractAddresses.multisig, fip_84aCalldata, targets, values);
 
     // 1. Rari timelock granted GOVERN_ROLE role
     const rariTimelockHasRole = await contracts.core.hasRole(GOVERN_ROLE, contractAddresses.rariTimelock);
@@ -91,7 +91,7 @@ describe('e2e-migrate-proxies', function () {
     expect(daoTimelock).to.equal(contractAddresses.timelock);
   });
 
-  it('should migrate proxies from oldTimelock to newTimelock (fip_78b)', async () => {
+  it('should migrate proxies from oldTimelock to newTimelock (fip_84b)', async () => {
     const proxyAdmin = contracts.proxyAdmin;
     const initialProxyAdminOwner = await proxyAdmin.owner();
     expect(initialProxyAdminOwner).to.equal(contractAddresses.timelock);
@@ -106,7 +106,7 @@ describe('e2e-migrate-proxies', function () {
       contractAddresses.timelock,
       contractAddresses.feiDAO
     ];
-    await performDAOAction(feiDAO, contractAddresses.multisig, fip_78bCalldata, targets, values);
+    await performDAOAction(feiDAO, contractAddresses.multisig, fip_84bCalldata, targets, values);
 
     // 1. Check ProxyAdmin owner changed to newTimelock
     const newTimelockAddress = contractAddresses.feiDAOTimelock;
@@ -126,7 +126,7 @@ describe('e2e-migrate-proxies', function () {
     expect(feiDAOTimelock).to.equal(newTimelockAddress);
   });
 
-  it('should accept newTimelock as admin on oldTimelock', async () => {
+  it('should accept newTimelock as admin on oldTimelock (fip_84c)', async () => {
     const oldTimelock = contracts.timelock;
 
     const initialOldTimelockAdmin = await oldTimelock.admin();
@@ -134,7 +134,7 @@ describe('e2e-migrate-proxies', function () {
 
     const values = [0];
     const targets = [contractAddresses.timelock];
-    await performDAOAction(feiDAO, contractAddresses.multisig, fip_78cCalldata, targets, values);
+    await performDAOAction(feiDAO, contractAddresses.multisig, fip_84cCalldata, targets, values);
 
     const oldTimelockAdmin = await oldTimelock.admin();
     expect(oldTimelockAdmin).to.equal(contractAddresses.feiDAOTimelock);
