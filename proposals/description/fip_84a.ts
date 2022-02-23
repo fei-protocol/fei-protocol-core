@@ -1,7 +1,7 @@
 import { ProposalDescription } from '@custom-types/types';
 
-const fip_78a: ProposalDescription = {
-  title: 'FIP-78a: Change FEI DAO timelock to previous timelock. Grant Rari timelock governor',
+const fip_84a: ProposalDescription = {
+  title: 'FIP-84a: Change FEI DAO timelock to previous timelock. Grant Rari timelock governor',
   commands: [
     {
       target: 'core',
@@ -29,23 +29,24 @@ const fip_78a: ProposalDescription = {
     }
   ],
   description: `
-  FIP 78 is being performed to allow an incentives contract to be upgraded. 
+  Forum discussion: https://tribe.fei.money/t/fip-84-migrate-upgrade-mechanism-owner/3982
+  FIP 84 is being performed to allow an incentives contract to be upgraded. 
 
   Specifically, to distribute rewards on Aave we deploy an incentives controller contract. That 
   contract has an upgrade mechanism managed by a ProxyAdmin contract. To participate in the next round
   of Aave rewards there is a need to upgrade to a compatible incentives contract. 
 
-  However currently, the owner of the ProxyAdmin contract is the previous old timelock that the Fei DAO 
+  However currently, the owner of the ProxyAdmin contract is the old, deprecated timelock that the Fei DAO 
   used. Only the owner of the ProxyAdmin is able to upgrade a contract it manages. 
 
-  Therefore, this FIP is being used to change the ProxyAdmin contract to the new Fei DAO timelock. To do this,
+  Therefore, this FIP is being used to change the owner of the ProxyAdmin contract to the new Fei DAO timelock. To do this,
   we have to temporarily switch the DAO timelock back to the old timelock and so this FIP comes in three stages:
   a, b, c. 
 
-  FIP 78a specifically changes the FEI DAO to point to and use the old timelock for migration purposes. It also
-  grants the Rari Timelock the GOVERN_ROLE role and revokes the GOVERN_ROLE from the old timelock as
-  as safety and fallback mechanims. 
+  FIP 84a specifically changes the FEI DAO to point to and use the old timelock for migration purposes. It also
+  introduces redundancy onto the live sister Rari DAO by granting it's timelock the governor role. 
+  It also revokes the governor role from the old, deprecated timelock.
   `
 };
 
-export default fip_78a;
+export default fip_84a;
