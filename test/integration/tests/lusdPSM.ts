@@ -1,4 +1,4 @@
-import { MintRedeemPausePSM, Fei, IERC20, PCVDripController, BAMMDeposit, FeiSkimmer } from '@custom-types/contracts';
+import { PegStabilityModule, Fei, IERC20, PCVDripController, BAMMDeposit, FeiSkimmer } from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -20,12 +20,6 @@ import { forceEth } from '../setup/utils';
 const oneEth = ethers.constants.WeiPerEther;
 const toBN = ethers.BigNumber.from;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe('lusd PSM', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
@@ -33,13 +27,19 @@ describe('lusd PSM', function () {
   let guardian: SignerWithAddress;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
-  let lusdPSM: MintRedeemPausePSM;
+  let lusdPSM: PegStabilityModule;
   let lusd: IERC20;
   let fei: Fei;
   let dripper: PCVDripController;
   let skimmer: FeiSkimmer;
   let bammDeposit: BAMMDeposit;
   const amount = toBN(5_000_000).mul(oneEth);
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -60,7 +60,7 @@ describe('lusd PSM', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
-    lusdPSM = contracts.lusdPSM as MintRedeemPausePSM;
+    lusdPSM = contracts.lusdPSM as PegStabilityModule;
     bammDeposit = contracts.bammDeposit as BAMMDeposit;
     skimmer = contracts.lusdPSMFeiSkimmer as FeiSkimmer;
 
@@ -71,7 +71,6 @@ describe('lusd PSM', function () {
     await fei.mint(deployAddress.address, amount);
     guardian = await getImpersonatedSigner(contractAddresses.guardian);
     await hre.network.provider.send('hardhat_setBalance', [guardian.address, '0x21E19E0C9BAB2400000']);
-    console.log('contractAddresses.chainlinkEthUsdOracle: ', contracts.chainlinkEthUsdOracle);
     await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
   });
 

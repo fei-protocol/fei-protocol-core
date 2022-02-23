@@ -7,12 +7,13 @@ export const permissions = {
     'collateralizationOracleKeeper',
     'optimisticMinter',
     'agEurAngleUniswapPCVDeposit',
-    'daiPSM',
+    'daiFixedPricePSM',
     'ethPSM',
-    'lusdPSM'
+    'lusdPSM',
+    'balancerDepositFeiWeth'
   ],
   BURNER_ROLE: [],
-  GOVERN_ROLE: ['core', 'timelock', 'feiDAOTimelock'],
+  GOVERN_ROLE: ['core', 'feiDAOTimelock', 'rariTimelock'],
   PCV_CONTROLLER_ROLE: [
     'feiDAOTimelock',
     'ratioPCVControllerV2',
@@ -21,7 +22,6 @@ export const permissions = {
     'daiPCVDripController',
     'lusdPCVDripController',
     'ethPSMFeiSkimmer',
-    'daiPSMFeiSkimmer',
     'lusdPSMFeiSkimmer'
   ],
   GUARDIAN_ROLE: ['multisig', 'pcvGuardian'],

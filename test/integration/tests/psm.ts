@@ -1,23 +1,17 @@
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
-import hre, { ethers } from 'hardhat';
+import { ethers } from 'hardhat';
 import { NamedContracts } from '@custom-types/types';
 import { expectRevert, getAddresses, getImpersonatedSigner, resetFork, time } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
+import proposals from '@test/integration/proposals_config';
 import { forceEth } from '@test/integration/setup/utils';
 import { Contract, Signer } from 'ethers';
 import { expectApprox } from '@test/helpers';
 import { WETH9 } from '@custom-types/contracts';
 
 const toBN = ethers.BigNumber.from;
-
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
 
 describe('e2e-peg-stability-module', function () {
   const impersonatedSigners: { [key: string]: Signer } = {};
@@ -37,6 +31,12 @@ describe('e2e-peg-stability-module', function () {
   let core: Contract;
   let feiDAOTimelock: Contract;
   let beneficiaryAddress1;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -255,7 +255,7 @@ describe('e2e-peg-stability-module', function () {
     });
   });
 
-  describe('dai-psm pcv drip controller', async () => {
+  describe.skip('dai-psm pcv drip controller', async () => {
     before(async function () {
       // make sure there is enough DAI available to the dripper and on the PSM
       const DAI_HOLDER = '0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7'; // curve 3pool
@@ -284,7 +284,11 @@ describe('e2e-peg-stability-module', function () {
 
     it('does drip when the dai PSM is under the threshold', async () => {
       const timelock = await getImpersonatedSigner(feiDAOTimelock.address);
-      await daiPSM.connect(timelock).withdrawERC20(dai.address, userAddress, await dai.balanceOf(daiPSM.address));
+      await daiPSM
+        .connect(timelock)
+        .withdrawERC20(dai.address, contracts.compoundDaiPCVDeposit.address, await dai.balanceOf(daiPSM.address));
+      await contracts.compoundDaiPCVDeposit.deposit();
+
       expect(await dai.balanceOf(daiPSM.address)).to.be.equal(0);
 
       await daiPCVDripController.drip();
@@ -293,7 +297,7 @@ describe('e2e-peg-stability-module', function () {
     });
   });
 
-  describe('dai_psm', async () => {
+  describe.skip('dai_psm', async () => {
     describe('redeem', function () {
       const redeemAmount = 10_000_000;
       beforeEach(async () => {

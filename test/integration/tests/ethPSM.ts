@@ -1,6 +1,6 @@
 import {
   AavePCVDeposit,
-  MintRedeemPausePSM,
+  PegStabilityModule,
   Fei,
   IERC20,
   PCVDripController,
@@ -18,15 +18,9 @@ import { expectApprox, expectRevert, getImpersonatedSigner, increaseTime, resetF
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '../setup/utils';
-import { contract } from '@openzeppelin/test-environment';
+import { time } from '@test/helpers';
 
 const oneEth = ethers.constants.WeiPerEther;
-
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
 
 describe('eth PSM', function () {
   let contracts: NamedContracts;
@@ -35,13 +29,19 @@ describe('eth PSM', function () {
   let guardian: SignerWithAddress;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
-  let ethPSM: MintRedeemPausePSM;
+  let ethPSM: PegStabilityModule;
   let ethPSMRouter: PSMRouter;
   let weth: WETH9;
   let aWeth: IERC20;
   let fei: Fei;
   let dripper: PCVDripController;
   let aaveEthPCVDeposit: AavePCVDeposit;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -62,7 +62,7 @@ describe('eth PSM', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
-    ethPSM = contracts.ethPSM as MintRedeemPausePSM;
+    ethPSM = contracts.ethPSM as PegStabilityModule;
     ethPSMRouter = contracts.ethPSMRouter as PSMRouter;
     aaveEthPCVDeposit = contracts.aaveEthPCVDeposit as AavePCVDeposit;
     aWeth = contracts.aWETH as IERC20;
@@ -160,6 +160,7 @@ describe('eth PSM', function () {
 
     describe('mint flow', async () => {
       it('after mint, eth flows to aave eth pcv deposit', async () => {
+        time.increase(86400);
         const mintAmount: BigNumber = oneEth.mul(500);
         const minAmountOut = await ethPSM.getMintAmountOut(mintAmount);
         const startingFeiBalance = await fei.balanceOf(deployAddress.address);
@@ -176,10 +177,7 @@ describe('eth PSM', function () {
         /// this should be 500 eth
         const endingAavePCVDepositaWethBalance = await aWeth.balanceOf(aaveEthPCVDeposit.address);
 
-        await ethPSM.allocateSurplus();
-
         await expectApprox(endingAavePCVDepositaWethBalance.sub(startingAavePCVDepositaWethBalance), mintAmount);
-        expect(await weth.balanceOf(ethPSM.address)).to.be.equal(oneEth.mul(5000));
       });
     });
 

@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   discord: antonioned/discord@0.1.0
+
 jobs:
   build:
     working_directory: ~/repo
@@ -27,7 +28,7 @@ jobs:
           command: npm install
       - run:
           name: Compile contracts
-          command: npm run compile
+          command: npm run compile:hardhat
       - save_cache:
           key: repo-{{ .Environment.CIRCLE_SHA1 }}
           paths:
@@ -57,11 +58,31 @@ jobs:
           name: Run tests
           command: |
             circleci tests glob "test/unit/**/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
-            npm run test $(cat /tmp/tests-to-run)
+            npm run test:hardhat $(cat /tmp/tests-to-run)
       - store_test_results:
             path: test-results
       - store_artifacts:
             path: test-results
+
+  test-forge:
+    working_directory: ~/repo
+    machine:
+      image: ubuntu-2004:202111-02
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - repo-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Setup env
+          command: echo "export PATH=$PATH:$(pwd)/.circleci" >> /home/circleci/.bashrc
+      - run: 
+          name: Install Foundry
+          command: curl -L https://foundry.paradigm.xyz | bash; source /home/circleci/.bashrc; foundryup 
+      - run:
+          name: Run tests
+          command: source /home/circleci/.bashrc; npm run test
+
   e2e-test:
     working_directory: ~/repo
     docker:
@@ -89,6 +110,9 @@ workflows:
       - lint: 
           requires:
             - build
+      - test-forge:
+          requires:
+            - build          
       - test:
           requires:
             - build

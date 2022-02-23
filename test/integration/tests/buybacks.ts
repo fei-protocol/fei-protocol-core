@@ -13,15 +13,8 @@ import {
 } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { BalancerLBPSwapper, CollateralizationOracle, IVault, IWeightedPool } from '@custom-types/contracts';
-import { forceEth } from '../setup/utils';
+import { CollateralizationOracle } from '@custom-types/contracts';
 const toBN = ethers.BigNumber.from;
-
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
 
 describe('e2e-buybacks', function () {
   let contracts: NamedContracts;
@@ -29,6 +22,12 @@ describe('e2e-buybacks', function () {
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -49,6 +48,12 @@ describe('e2e-buybacks', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
+
+    // unpause the pcv equity minter if it is paused
+    if (await contracts.pcvEquityMinter.paused()) {
+      const govSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
+      await contracts.pcvEquityMinter.connect(govSigner).unpause();
+    }
   });
 
   describe('PCV Equity Minter + LBP', async function () {
@@ -98,6 +103,19 @@ describe('e2e-buybacks', function () {
   });
 
   describe('Collateralization Oracle', async function () {
+    before(async function () {
+      const numDeposits = await contracts.namedStaticPCVDepositWrapper.numDeposits();
+      if (numDeposits == 0) {
+        await contracts.namedStaticPCVDepositWrapper.addDeposit({
+          depositName: 'make static pcv deposit not empty',
+          usdAmount: 1,
+          feiAmount: 1,
+          underlyingTokenAmount: 1,
+          underlyingToken: ethers.constants.AddressZero
+        });
+      }
+    });
+
     it('exempting an address removes from PCV stats', async function () {
       const collateralizationOracle: CollateralizationOracle =
         contracts.collateralizationOracle as CollateralizationOracle;

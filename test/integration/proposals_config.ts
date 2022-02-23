@@ -1,9 +1,8 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
-// import fip_xx_proposal from '@proposals/description/fip_xx';
-
-import fip_60c from '@proposals/description/fip_60c';
-import fip_73 from '@proposals/description/fip_73';
+import fip_84a from '@proposals/description/fip_84a';
+import fip_84b from '@proposals/description/fip_84b';
+import fip_84c from '@proposals/description/fip_84c';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -14,55 +13,33 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  fip_73: {
+
+  fip_84a: {
     deploy: false,
-    proposalId: null,
-    affectedContractSignoff: [
-      'core',
-      'optimisticTimelock',
-      'pcvGuardian',
-      'd3poolCurvePCVDeposit',
-      'd3poolConvexPCVDeposit',
-      'ethPSM',
-      'collateralizationOracle',
-      'wethDepositWrapper',
-      'dpiDepositWrapper',
-      'raiDepositWrapper',
-      'agEurDepositWrapper',
-      'opsOptimisticTimelock'
-    ],
+    proposalId: '90781494616199164598522639897196626909064874385916078084737651147175659861373',
+    affectedContractSignoff: ['feiDAO', 'core', 'rariTimelock', 'feiDAOTimelock', 'timelock'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,
-    proposal: fip_73
+    proposal: fip_84a
   },
-  fip_60c: {
+  fip_84b: {
     deploy: false,
-    proposalId: undefined,
-    affectedContractSignoff: [
-      'rariPool90FeiPCVDepositWrapper',
-      'rariPool91FeiPCVDepositWrapper',
-      'rariPool79FeiPCVDepositWrapper',
-      'rariPool72FeiPCVDepositWrapper',
-      'rariPool128FeiPCVDepositWrapper',
-      'rariPool22FeiPCVDepositWrapper',
-      'rariPool28FeiPCVDepositWrapper',
-      'rariPool31FeiPCVDepositWrapper',
-      'collateralizationOracle',
-      'rariPool90FeiPCVDeposit',
-      'rariPool91FeiPCVDeposit',
-      'rariPool79FeiPCVDeposit',
-      'rariPool72FeiPCVDeposit',
-      'rariPool28FeiPCVDeposit',
-      'rariPool31FeiPCVDeposit',
-      'rariPool128FeiPCVDeposit',
-      'fei',
-      'tribalChief'
-    ],
+    proposalId: '',
+    affectedContractSignoff: ['proxyAdmin', 'timelock', 'feiDAO', 'feiDAOTimelock'],
     deprecatedContractSignoff: [],
-    category: ProposalCategory.OA,
+    category: ProposalCategory.DAO,
     totalValue: 0,
-    proposal: fip_60c
+    proposal: fip_84b
+  },
+  fip_84c: {
+    deploy: false,
+    proposalId: '34000709159909885586797325379867128929719243307711747917169184886926028102786',
+    affectedContractSignoff: ['timelock', 'rariTimelock'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_84c
   }
 };
 

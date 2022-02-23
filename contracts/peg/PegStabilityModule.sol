@@ -34,6 +34,24 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     /// Governance can change this fee
     uint256 public override MAX_FEE = 300;
 
+    /// @notice boolean switch that indicates whether redemptions are paused
+    bool public redeemPaused;
+
+    /// @notice event that is emitted when redemptions are paused
+    event RedemptionsPaused(address account);
+    
+    /// @notice event that is emitted when redemptions are unpaused
+    event RedemptionsUnpaused(address account);
+
+    /// @notice boolean switch that indicates whether minting is paused
+    bool public mintPaused;
+
+    /// @notice event that is emitted when minting is paused
+    event MintingPaused(address account);
+    
+    /// @notice event that is emitted when minting is unpaused
+    event MintingUnpaused(address account);
+
     /// @notice struct for passing constructor parameters related to OracleRef
     struct OracleParams {
         address coreAddress;
@@ -66,6 +84,42 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         _setRedeemFee(_redeemFeeBasisPoints);
         _setSurplusTarget(_surplusTarget);
         _setContractAdminRole(keccak256("PSM_ADMIN_ROLE"));
+    }
+
+    /// @notice modifier that allows execution when redemptions are not paused
+    modifier whileRedemptionsNotPaused {
+        require(!redeemPaused, "PegStabilityModule: Redeem paused");
+        _;
+    }
+
+    /// @notice modifier that allows execution when minting is not paused
+    modifier whileMintingNotPaused {
+        require(!mintPaused, "PegStabilityModule: Minting paused");
+        _;
+    }
+
+    /// @notice set secondary pausable methods to paused
+    function pauseRedeem() external isGovernorOrGuardianOrAdmin {
+        redeemPaused = true;
+        emit RedemptionsPaused(msg.sender);
+    }
+
+    /// @notice set secondary pausable methods to unpaused
+    function unpauseRedeem() external isGovernorOrGuardianOrAdmin {
+        redeemPaused = false;
+        emit RedemptionsUnpaused(msg.sender);
+    }
+
+    /// @notice set secondary pausable methods to paused
+    function pauseMint() external isGovernorOrGuardianOrAdmin {
+        mintPaused = true;
+        emit MintingPaused(msg.sender);
+    }
+
+    /// @notice set secondary pausable methods to unpaused
+    function unpauseMint() external isGovernorOrGuardianOrAdmin {
+        mintPaused = false;
+        emit MintingUnpaused(msg.sender);
     }
 
     /// @notice withdraw assets from PSM to an external address
@@ -197,7 +251,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         address to,
         uint256 amountFeiIn,
         uint256 minAmountOut
-    ) external virtual override nonReentrant whenNotPaused returns (uint256 amountOut) {
+    ) external virtual override nonReentrant whenNotPaused whileRedemptionsNotPaused returns (uint256 amountOut) {
         amountOut = _redeem(to, amountFeiIn, minAmountOut);
     }
 
@@ -207,7 +261,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         address to,
         uint256 amountIn,
         uint256 minAmountOut
-    ) external virtual override nonReentrant whenNotPaused returns (uint256 amountFeiOut) {
+    ) external virtual override nonReentrant whenNotPaused whileMintingNotPaused returns (uint256 amountFeiOut) {
         amountFeiOut = _mint(to, amountIn, minAmountOut);
     }
 
@@ -263,7 +317,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
 
     /// @notice helper function to get mint amount out based on current market prices
     /// @dev will revert if price is outside of bounds and bounded PSM is being used
-    function _getMintAmountOut(uint256 amountIn) private view returns (uint256 amountFeiOut) {
+    function _getMintAmountOut(uint256 amountIn) internal virtual view returns (uint256 amountFeiOut) {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 
@@ -277,7 +331,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
 
     /// @notice helper function to get redeem amount out based on current market prices
     /// @dev will revert if price is outside of bounds and bounded PSM is being used
-    function _getRedeemAmountOut(uint256 amountFeiIn) private view returns (uint256 amountTokenOut) {
+    function _getRedeemAmountOut(uint256 amountFeiIn) internal virtual view returns (uint256 amountTokenOut) {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 
