@@ -34,9 +34,9 @@ const fip_84b: ProposalDescription = {
     }
   ],
   description: `
-  Forum discussion: 
+  Forum discussion: https://tribe.fei.money/t/fip-84-migrate-upgrade-mechanism-owner/3982
   
-  This FIP is the second stage in FIP 84, which changes the owner of the ProxyAdmin contract from the old timelock 
+  This FIP is the second stage in FIP 84, which changes the owner of the ProxyAdmin contract from the old, deprecated timelock 
   to the new FEI DAO timelock. This is being done to allow an incentive contract to be upgraded. 
 
   Specifically, this FIP 84b transfers ownership of the ProxyAdmin from the old timelock to the new timelock. 

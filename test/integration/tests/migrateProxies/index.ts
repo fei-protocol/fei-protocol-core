@@ -18,7 +18,7 @@ const reduceDAOVotingPeriod = async (feiDAO: Contract, senderAddress: string) =>
   await performDAOAction(feiDAO, senderAddress, calldatas, targets, values);
 };
 
-describe.only('e2e-migrate-proxies', function () {
+describe('e2e-migrate-proxies', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;

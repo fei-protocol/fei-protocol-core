@@ -12,7 +12,9 @@ const fip_84c: ProposalDescription = {
     }
   ],
   description: `
-  This FIP 84c is the last stage of FIP 84. It's purpose is to have the old FEI DAO timelock 
+  Forum discussion: https://tribe.fei.money/t/fip-84-migrate-upgrade-mechanism-owner/3982
+  
+  This FIP 84c is the last stage of FIP 84. It's purpose is to have the old timelock 
   accept the new FEI DAO timelock as it's admin. 
 
   This will allow the new timelock, and by extension, the FEI DAO to perform admin level actions
