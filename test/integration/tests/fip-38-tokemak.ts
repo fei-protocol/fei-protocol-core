@@ -67,7 +67,7 @@ describe('e2e-fip-38-tokemak', function () {
 
     // Advance block by 1 tokemak cycle
     const currentBlock = await time.latestBlock();
-    await time.advanceBlockTo(currentBlock + 6460);
+    await time.advanceBlockTo(currentBlock + 6460 * 7);
 
     // impersonate the rollover signer, and make the Tokemak pool go to next cycle
     await forceEth(TOKEMAK_MANAGER_ROLLOVER_ADDRESS);
