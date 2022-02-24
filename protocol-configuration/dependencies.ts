@@ -33,6 +33,8 @@ const dependencies: DependencyMap = {
       'ethPSM',
       'lusdPSM',
       'daiFixedPricePSM',
+      'daiUsdcTwapOracle',
+      'ethUsdcTwapOracle',
       'lusdPCVDripController',
       'lusdPSMFeiSkimmer',
       'ethPSMFeiSkimmer',
@@ -308,13 +310,13 @@ const dependencies: DependencyMap = {
     contractDependencies: ['ethPSM']
   },
   ethUsdcTwapOracle: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'ethPSM']
   },
   uniswapWrapper: {
     contractDependencies: []
   },
   daiUsdcTwapOracle: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'daiFixedPricePSM']
   },
   tribeReserveStabilizer: {
     contractDependencies: ['core', 'tribeUsdCompositeOracle', 'tribeMinter', 'collateralizationOracleWrapper', 'tribe']
