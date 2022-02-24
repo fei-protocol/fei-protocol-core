@@ -123,7 +123,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // Resistant balance & fei properly read
   const resistantBalanceAndFei = await contracts.uniswapLensAgEurUniswapGauge.resistantBalanceAndFei();
   expect(resistantBalanceAndFei[0]).to.be.at.least(e18(8_000_000)); // >8M agEUR
-  expect(resistantBalanceAndFei[1]).to.be.at.least(e18(9_900_000)); // >9.9M FEI
+  expect(resistantBalanceAndFei[1]).to.be.at.least(e18(9_500_000)); // >9.5M FEI
 };
 
 export { deploy, setup, teardown, validate };
