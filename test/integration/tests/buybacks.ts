@@ -9,13 +9,11 @@ import {
   increaseTime,
   latestTime,
   resetFork,
-  overwriteChainlinkAggregator,
-  getAddresses
+  overwriteChainlinkAggregator
 } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { BalancerLBPSwapper, CollateralizationOracle, IVault, IWeightedPool } from '@custom-types/contracts';
-import { forceEth } from '../setup/utils';
+import { CollateralizationOracle } from '@custom-types/contracts';
 const toBN = ethers.BigNumber.from;
 
 describe('e2e-buybacks', function () {
