@@ -34,6 +34,6 @@ contract AngleDelegatorPCVDeposit is SnapshotDelegatorPCVDeposit, VoteEscrowToke
 
     /// @notice returns total balance of PCV in the Deposit
     function balance() public view override returns (uint256) {
-        return _totalTokens(); // liquid and vote-escrowed tokens
+        return _totalTokensManaged(); // liquid and vote-escrowed tokens
     }
 }

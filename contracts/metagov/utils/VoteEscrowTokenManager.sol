@@ -100,7 +100,7 @@ abstract contract VoteEscrowTokenManager is CoreRef {
     }
 
     /// @notice returns total balance of tokens, vote-escrowed or liquid.
-    function _totalTokens() internal view returns (uint256) {
+    function _totalTokensManaged() internal view returns (uint256) {
         return liquidToken.balanceOf(address(this)) + veToken.locked(address(this));
     }
 }
