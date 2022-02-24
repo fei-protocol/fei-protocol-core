@@ -1,7 +1,7 @@
 import { ProposalDescription } from '@custom-types/types';
 
-const fip_79: ProposalDescription = {
-  title: 'FIP-79: PSM Backup oracles',
+const fip_85: ProposalDescription = {
+  title: 'FIP-85: PSM Backup oracles',
   commands: [
     {
       target: 'daiFixedPricePSM',
@@ -21,4 +21,4 @@ const fip_79: ProposalDescription = {
   description: 'Set UniswapV3 TWAP oracles as the backup oracles for Peg Stability Modules'
 };
 
-export default fip_79;
+export default fip_85;

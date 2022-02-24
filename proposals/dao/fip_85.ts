@@ -12,7 +12,7 @@ import { expect } from 'chai';
 
 /*
 
-FIP-79
+FIP-85
 
 Steps:
 1. Deploy DAI-USDC UniswapV3 TWAP oracle 
@@ -21,7 +21,7 @@ Steps:
 3. Set backupOracle on ETH PSM to ETH-USDC UniswapV3 TWAP oracle
 
 */
-const fipNumber = '79';
+const fipNumber = '85';
 
 // Do any deployments
 // This should exclusively include new contract deployments

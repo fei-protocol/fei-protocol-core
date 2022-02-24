@@ -270,7 +270,8 @@ const dependencies: DependencyMap = {
       'compoundDaiPCVDeposit',
       'daiPCVDripController',
       'chainlinkDaiUsdOracleWrapper',
-      'pcvGuardian'
+      'pcvGuardian',
+      'daiUsdcTwapOracle'
     ]
   },
   lusdPSM: {
@@ -299,11 +300,21 @@ const dependencies: DependencyMap = {
       'pcvGuardian',
       'aaveEthPCVDripController',
       'ethPSMRouter',
-      'ethPSMFeiSkimmer'
+      'ethPSMFeiSkimmer',
+      'ethUsdcTwapOracle'
     ]
   },
   ethPSMRouter: {
     contractDependencies: ['ethPSM']
+  },
+  ethUsdcTwapOracle: {
+    contractDependencies: ['core']
+  },
+  uniswapWrapper: {
+    contractDependencies: []
+  },
+  daiUsdcTwapOracle: {
+    contractDependencies: ['core']
   },
   tribeReserveStabilizer: {
     contractDependencies: ['core', 'tribeUsdCompositeOracle', 'tribeMinter', 'collateralizationOracleWrapper', 'tribe']
