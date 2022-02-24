@@ -21,6 +21,7 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
   UniswapV3OracleWrapper private ethOracle;  
   UniswapV3OracleWrapper private wbtcOracle;  
   UniswapV3OracleWrapper private usdtAvinocOracle;  
+  UniswapV3OracleWrapper private feiOracle;  
 
   address private uniswapMathWrapper;
   Vm public constant vm = Vm(HEVM_ADDRESS);
@@ -42,10 +43,15 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
   IUniswapV3Pool wbtcUsdcPool = IUniswapV3Pool(0x99ac8cA7087fA4A2A1FB6357269965A2014ABc35);
   address wbtc = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
 
-  // USDT-AVINOC (used to test decimals normalising)
+  // USDT-AVINOC
   IUniswapV3Pool usdtAvinocPool = IUniswapV3Pool(0x2Eb8f5708f238B0A2588f044ade8DeA7221639ab);
   address usdt = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
   address avinoc = 0xF1cA9cb74685755965c7458528A36934Df52A3EF;
+
+  // USDC-FEI
+  IUniswapV3Pool usdcFeiPool = IUniswapV3Pool(0xdf50Fbde8180c8785842C8E316EBe06F542D3443);
+  address fei = 0x956F47F50A910163D8BF957Cf5846D573E7f87CA;
+
 
 
   function setUp() public {
@@ -116,6 +122,22 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
       uniswapMathWrapper,
       usdtAvinocOracleConfig
     ); 
+
+    // ---------------       Deploy USDC-FEI oracle   -------------------
+    UniswapV3OracleWrapper.OracleConfig memory usdcFeiOracleConfig = UniswapV3OracleWrapper.OracleConfig({
+      twapPeriod: twapPeriod,
+      uniswapPool: address(usdcFeiPool),
+      minPoolLiquidity: usdcFeiPool.liquidity(),
+      precision: precision
+    });  
+
+    feiOracle = new UniswapV3OracleWrapper(
+      address(core),
+      usdc, // Note, the order here matters. First token should be the input (i.e. PSM asset), not dollar tracker
+      fei,
+      uniswapMathWrapper,
+      usdcFeiOracleConfig
+    ); 
   }
 
   function testMismatchedPoolTokens() public {
@@ -167,8 +189,56 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
     assertEq(observationCardinalityNext, expectedCardinalityForMaxTwapPeriod);
   }
 
-  // Note: These price tests themselves are not strict as price changes
-  // Exact price is logged and checked manually against spot prices on Uniswap
+  /// @notice The below price tests themselves are not strict as price changes
+  /// Exact price is logged and checked manually against spot prices on Uniswap
+  
+  /// @dev Each test is designed to test a different path in the price calculation logic.
+  /// There are 4 possible paths that can be taken in the price calculations, depending on 
+  /// whether the inversion factors (a) Invert price ratio, b) Invert decimals) are set
+  /// The paths are:
+  /// 1. Invert price ratio: True, Invert decimals: False
+  /// 2. Invert price ratio: True, Invert decimals: True
+  /// 3. Invert price ratio: False, Invert decimals: False
+  /// 4. Invert price ratio: False, Invert decimals: True
+  
+  /// token0: usdc
+  /// token1: weth
+  /// inputTokenDecimals (weth): 18
+  /// outputTokenDecimals (usdc): 6
+  /// ----------  Path  --------------
+  /// Invert price ratio: True, Invert decimals: False
+  function testPriceForEthUsdc() public {
+    (Decimal.D256 memory price, bool valid) = ethOracle.read();
+    console.log("eth price:", price.value / precision);
+    assertTrue(valid);
+
+    assertGt(price.value, 2000e18);
+    assertLt(price.value, 5000e18);
+  }
+
+  /// token0: fei
+  /// token1: usdc
+  /// inputTokenDecimals (usdc): 6
+  /// outputTokenDecimals (fei): 18 
+  /// ----------  Path  --------------
+  /// Invert price ratio: True, Invert decimals: True
+  function testPriceForFei() public {
+    (Decimal.D256 memory price, bool valid) = feiOracle.read();
+    console.log("fei price:", price.value);
+    
+    assertTrue(valid);
+    // Confirm FEI price is >0.90 and < 1.1
+    assertGt(price.value, 9e17);
+    assertLt(price.value, 1e18 + 1e17);
+  }
+
+
+  /// token0: dai
+  /// token1: usdc
+  /// inputTokenDecimals (dai): 18
+  /// outputTokenDecimals (usdc): 6
+  /// ----------  Path  --------------
+  /// Invert price ratio: False, Invert decimals: False
   function testPriceForDaiUsdc() public {
     (Decimal.D256 memory price, bool valid) = daiOracle.read();
     console.log("dai price:", price.value / precision);
@@ -179,15 +249,27 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
     assertLt(price.value, 1e18 + 1e17);
   }
 
-  function testPriceForEthUsdc() public {
-    (Decimal.D256 memory price, bool valid) = ethOracle.read();
-    console.log("eth price:", price.value / precision);
-    assertTrue(valid);
+  /// token0: usdt
+  /// token1: avinoc
+  /// inputTokenDecimals (usdt): 6
+  /// outputTokenDecimals (avinoc): 18
+  /// ----------  Path  --------------
+  /// Invert price ratio: False, Invert decimals: True
+  function testPriceForUsdtAvinoc() public {
+    (Decimal.D256 memory price, bool valid) = usdtAvinocOracle.read();
+    console.log("usdt/avinoc price:", price.value);
 
-    assertGt(price.value, 2500e18);
-    assertLt(price.value, 3200e18);
+    assertTrue(valid);
+    assertGt(price.value, 2e18 + 5e17);
+    assertLt(price.value, 3e18 + 5e17);
   }
 
+  /// token0: wbtc
+  /// token1: usdc
+  /// inputTokenDecimals (wbtc): 8
+  /// outputTokenDecimals (usdc): 6
+  /// ----------  Path  --------------
+  /// Invert price ratio: False, Invert decimals: False
   function testPriceForWbtcUsdc() public {
     (Decimal.D256 memory price, bool valid) = wbtcOracle.read();
     console.log("wbtc price:", price.value / precision);
@@ -195,14 +277,5 @@ contract UniswapV3OracleIntegrationTest is DSTest, StdLib {
 
     assertGt(price.value, 40000e18);
     assertLt(price.value, 50000e18);
-  }
-
-  function testPriceForLowDecimalsFirst() public {
-    (Decimal.D256 memory price, bool valid) = usdtAvinocOracle.read();
-    console.log("usdt/avinoc price:", price.value);
-
-    assertTrue(valid);
-    assertGt(price.value, 2e18 + 5e17);
-    assertLt(price.value, 3e18 + 5e17);
   }
 }

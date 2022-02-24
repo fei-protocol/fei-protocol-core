@@ -46,6 +46,7 @@ contract UniswapWrapperTest is DSTest {
     assertEq(normalisingFactor, 10**(token1Decimals - token0Decimals));
   }
 
+  /// @notice Validate that a price can be calculated. Price value tests performed in integration tests
   function testPrice() public {
     uint256 price = uniswapWrapper.calculatePrice(
       address(mockPool),

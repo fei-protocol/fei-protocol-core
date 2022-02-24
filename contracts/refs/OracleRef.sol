@@ -92,6 +92,8 @@ abstract contract OracleRef is IOracleRef, CoreRef {
 
         // Scale the oracle price by token decimals delta if necessary
         uint256 scalingFactor;
+
+        // TODO: Broken abstraction, this needs pushing down
         if (decimalsNormalizer < 0) {
             scalingFactor = 10 ** (-1 * decimalsNormalizer).toUint256();
             _peg = _peg.div(scalingFactor);
