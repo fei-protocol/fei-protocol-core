@@ -31,7 +31,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     addresses.uniswapRouter, // UNiswap-v2 router
     addresses.chainlinkEurUsdOracleWrapper,
     ethers.constants.AddressZero,
-    '30' // max. 0.3% slippage
+    '75' // max. 0.75% slippage (Chainlink has 0.15% and Angle 0.5%)
   );
   await agEurUniswapPCVDeposit.deployTransaction.wait();
   logging && console.log('New agEUR/FEI Uniswap PCVDeposit:', agEurUniswapPCVDeposit.address);
