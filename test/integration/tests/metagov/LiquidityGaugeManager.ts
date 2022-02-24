@@ -90,21 +90,7 @@ describe('e2e-metagov', function () {
           'UNAUTHORIZED'
         );
       });
-    });
 
-    describe('without METAGOVERNANCE_VOTE_ADMIN role', function () {
-      it('voteForGaugeWeight() should revert', async function () {
-        await expectRevert(
-          manager.voteForGaugeWeight(
-            contracts.angleAgEurFeiPool.address, // token
-            '10000' // 100%
-          ),
-          'UNAUTHORIZED'
-        );
-      });
-    });
-
-    describe('without METAGOVERNANCE_GAUGE_STAKING role', function () {
       it('stakeInGauge() should revert', async function () {
         await expectRevert(
           manager.stakeInGauge(
@@ -135,6 +121,18 @@ describe('e2e-metagov', function () {
       });
     });
 
+    describe('without METAGOVERNANCE_VOTE_ADMIN role', function () {
+      it('voteForGaugeWeight() should revert', async function () {
+        await expectRevert(
+          manager.voteForGaugeWeight(
+            contracts.angleAgEurFeiPool.address, // token
+            '10000' // 100%
+          ),
+          'UNAUTHORIZED'
+        );
+      });
+    });
+
     describe('with roles', function () {
       before(async function () {
         // grant roles
@@ -142,9 +140,6 @@ describe('e2e-metagov', function () {
         const daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
         await contracts.core.connect(daoSigner).grantRole(ethers.utils.id('METAGOVERNANCE_GAUGE_ADMIN'), deployAddress);
         await contracts.core.connect(daoSigner).grantRole(ethers.utils.id('METAGOVERNANCE_VOTE_ADMIN'), deployAddress);
-        await contracts.core
-          .connect(daoSigner)
-          .grantRole(ethers.utils.id('METAGOVERNANCE_GAUGE_STAKING'), deployAddress);
       });
 
       after(async function () {
@@ -155,9 +150,6 @@ describe('e2e-metagov', function () {
           .connect(daoSigner)
           .revokeRole(ethers.utils.id('METAGOVERNANCE_GAUGE_ADMIN'), deployAddress);
         await contracts.core.connect(daoSigner).revokeRole(ethers.utils.id('METAGOVERNANCE_VOTE_ADMIN'), deployAddress);
-        await contracts.core
-          .connect(daoSigner)
-          .revokeRole(ethers.utils.id('METAGOVERNANCE_GAUGE_STAKING'), deployAddress);
       });
 
       it('setGaugeController()', async function () {

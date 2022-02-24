@@ -79,32 +79,8 @@ const fip_78a: ProposalDescription = {
       target: 'core',
       values: '0',
       method: 'grantRole(bytes32,address)',
-      arguments: ['0x3bee38c33241595abfefa470fd75bfa1cc9cb01eff02cf6732fd2baea4ea4241', '{opsOptimisticTimelock}'],
-      description: 'Grant METAGOVERNANCE_GAUGE_ADMIN Role to OPS OA Timelock'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'createRole(bytes32,bytes32)',
-      arguments: [
-        '0x17e41050a125542bb55c978885d43a19f95997bb3a31eef70860f3fd3c038c50',
-        '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e'
-      ],
-      description: 'Create METAGOVERNANCE_GAUGE_STAKING Role'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: ['0x17e41050a125542bb55c978885d43a19f95997bb3a31eef70860f3fd3c038c50', '{feiDAOTimelock}'],
-      description: 'Grant METAGOVERNANCE_GAUGE_STAKING Role to DAO Timelock'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: ['0x17e41050a125542bb55c978885d43a19f95997bb3a31eef70860f3fd3c038c50', '{opsOptimisticTimelock}'],
-      description: 'Grant METAGOVERNANCE_GAUGE_STAKING Role to OPS OA Timelock'
+      arguments: ['0x3bee38c33241595abfefa470fd75bfa1cc9cb01eff02cf6732fd2baea4ea4241', '{optimisticTimelock}'],
+      description: 'Grant METAGOVERNANCE_GAUGE_ADMIN Role to OA Timelock'
     },
     {
       target: 'ratioPCVControllerV2',

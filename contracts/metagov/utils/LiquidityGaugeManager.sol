@@ -88,7 +88,7 @@ abstract contract LiquidityGaugeManager is CoreRef {
     function stakeInGauge(
         address token,
         uint256 amount
-    ) public whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_STAKING) {
+    ) public whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN) {
         address gaugeAddress = tokenToGauge[token];
         require(gaugeAddress != address(0), "LiquidityGaugeManager: token has no gauge configured");
         IERC20(token).approve(gaugeAddress, amount);
@@ -99,7 +99,7 @@ abstract contract LiquidityGaugeManager is CoreRef {
 
     /// @notice Stake all tokens held in a gauge
     /// @param token the address of the token to stake in the gauge
-    function stakeAllInGauge(address token) public whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_STAKING) {
+    function stakeAllInGauge(address token) public whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN) {
         address gaugeAddress = tokenToGauge[token];
         require(gaugeAddress != address(0), "LiquidityGaugeManager: token has no gauge configured");
         uint256 amount = IERC20(token).balanceOf(address(this));
@@ -115,7 +115,7 @@ abstract contract LiquidityGaugeManager is CoreRef {
     function unstakeFromGauge(
         address token,
         uint256 amount
-    ) public whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_STAKING) {
+    ) public whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN) {
         address gaugeAddress = tokenToGauge[token];
         require(gaugeAddress != address(0), "LiquidityGaugeManager: token has no gauge configured");
         ILiquidityGauge(gaugeAddress).withdraw(amount, false);

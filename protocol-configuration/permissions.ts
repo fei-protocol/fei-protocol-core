@@ -33,6 +33,5 @@ export const permissions = {
   PCV_GUARDIAN_ADMIN_ROLE: ['optimisticTimelock'],
   METAGOVERNANCE_VOTE_ADMIN: ['feiDAOTimelock', 'opsOptimisticTimelock'],
   METAGOVERNANCE_TOKEN_STAKING: ['feiDAOTimelock', 'opsOptimisticTimelock'],
-  METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'opsOptimisticTimelock'],
-  METAGOVERNANCE_GAUGE_STAKING: ['feiDAOTimelock', 'opsOptimisticTimelock']
+  METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'optimisticTimelock']
 };
