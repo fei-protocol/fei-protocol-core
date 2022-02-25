@@ -11,6 +11,7 @@ import { daiUsdcBackupOracleConfig, ethUsdcBackupOracleConfig } from '@protocol/
 import { expect } from 'chai';
 
 const e18 = '000000000000000000';
+const e17 = '00000000000000000';
 /*
 
 FIP-85
@@ -92,15 +93,13 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 2. Validate that a valid `read()` can be fetched from the oracles
   const [daiPrice, daiPriceValid] = await daiUsdcTwapOracle.read();
   expect(daiPriceValid).to.equal(true);
-  console.log('dai price: ', daiPrice.value);
-  expect(daiPrice.value).to.be.bignumber.greaterThan(ethers.BigNumber.from(`0.8${e18}`));
-  expect(daiPrice.value).to.be.bignumber.lessThan(ethers.BigNumber.from(`1.2${e18}`));
+  expect(daiPrice.value).to.be.bignumber.greaterThan(ethers.BigNumber.from(`8${e17}`)); // 0.8
+  expect(daiPrice.value).to.be.bignumber.lessThan(ethers.BigNumber.from(`12${e17}`)); // 1.2
 
   const [ethPrice, ethPriceValid] = await ethUsdcTwapOracle.read();
   expect(ethPriceValid).to.equal(true);
-  console.log('ether price: ', ethPrice.value);
-  expect(ethPrice.value).to.be.bignumber.greaterThan(ethers.BigNumber.from(`500${e18}`));
-  expect(ethPrice.value).to.be.bignumber.lessThan(ethers.BigNumber.from(`10e3${e18}`));
+  expect(ethPrice.value).to.be.bignumber.greaterThan(ethers.BigNumber.from(`500${e18}`)); // 500
+  expect(ethPrice.value).to.be.bignumber.lessThan(ethers.BigNumber.from(`10000${e18}`)); // 10,000
 };
 
 export { deploy, setup, teardown, validate };
