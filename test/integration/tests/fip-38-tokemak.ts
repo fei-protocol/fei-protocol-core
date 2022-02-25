@@ -65,15 +65,16 @@ describe('e2e-fip-38-tokemak', function () {
     // request to withdraw 10k ETH
     await ethTokemakPCVDeposit.requestWithdrawal(tenPow18.mul(toBN(10_000)));
 
-    // Advance block by 1 tokemak cycle
-    const currentBlock = await time.latestBlock();
-    await time.advanceBlockTo(currentBlock + 6460 * 7);
-
     // impersonate the rollover signer, and make the Tokemak pool go to next cycle
     await forceEth(TOKEMAK_MANAGER_ROLLOVER_ADDRESS);
     const tokemakRolloverSigner = await getImpersonatedSigner(TOKEMAK_MANAGER_ROLLOVER_ADDRESS);
-    const tokemakManagerAbi = ['function completeRollover(string calldata rewardsIpfsHash)'];
+    const tokemakManagerAbi = [
+      'function nextCycleStartTime() view returns (uint256)',
+      'function completeRollover(string calldata rewardsIpfsHash)'
+    ];
     const tokemakManager = new ethers.Contract(TOKEMAK_MANAGER_ADDRESS, tokemakManagerAbi, tokemakRolloverSigner);
+    const cycleEnd = await tokemakManager.nextCycleStartTime();
+    await time.increaseTo(cycleEnd + 1);
     await tokemakManager.completeRollover(IPFS_JSON_FILE_HASH);
 
     // Perform withdraw
