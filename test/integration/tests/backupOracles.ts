@@ -10,7 +10,7 @@ import { expectApprox, getImpersonatedSigner, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 
-describe('Backup Oracles', function () {
+describe.only('Backup Oracles', function () {
   let contracts: NamedContracts;
   let deployAddress: SignerWithAddress;
   let e2eCoord: TestEndtoEndCoordinator;
