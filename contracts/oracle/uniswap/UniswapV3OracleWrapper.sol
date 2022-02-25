@@ -150,7 +150,7 @@ contract UniswapV3OracleWrapper is IUniswapV3OracleWrapper, IOracle, CoreRef {
     (address token0, address token1) = sortTokensAccordingToUniswap(_inputToken, _outputToken);
   
     require(
-      uniswapToken0 == token0 || uniswapToken1 == token1,
+      uniswapToken0 == token0 && uniswapToken1 == token1,
       "Incorrect pool for tokens"
     );
   }

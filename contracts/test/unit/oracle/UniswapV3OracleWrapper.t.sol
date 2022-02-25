@@ -36,7 +36,7 @@ contract UniswapV3OracleTest is DSTest, StdLib {
   function setUp() public {
     core = getCore();
     mockUniswapPool = IMockUniswapV3Pool(deployCode("./out/MockUniV3Pool.sol/MockUniV3Pool.json"));
-    mockUniswapPool.setTokens(address(tokenA), address(tokenB));
+    mockUniswapPool.mockSetTokens(address(tokenA), address(tokenB));
     uniswapMathWrapper = deployCode("./out/UniswapWrapper.sol/UniswapWrapper.json");
 
     UniswapV3OracleWrapper.OracleConfig memory oracleConfig = UniswapV3OracleWrapper.OracleConfig({
@@ -97,7 +97,48 @@ contract UniswapV3OracleTest is DSTest, StdLib {
       uniswapMathWrapper,
       zeroTwapConfig
     );
+  }
 
+  /// @notice Validate that a pool with different tokens to the oracle is rejected
+  function testWrongPoolToken0Detected() public {
+    UniswapV3OracleWrapper.OracleConfig memory config = UniswapV3OracleWrapper.OracleConfig({
+      twapPeriod: 0,
+      uniswapPool: address(mockUniswapPool),
+      minPoolLiquidity: mockUniswapPool.liquidity(),
+      precision: precision
+    });  
+
+    vm.expectRevert(
+      bytes("Incorrect pool for tokens")
+    );
+    oracle = new UniswapV3OracleWrapper(
+      address(core),
+      address(0x2),
+      address(tokenB),
+      uniswapMathWrapper,
+      config
+    );
+  }
+
+    /// @notice Validate that a pool with different tokens to the oracle is rejected
+  function testWrongPoolToken1Detected() public {
+    UniswapV3OracleWrapper.OracleConfig memory config = UniswapV3OracleWrapper.OracleConfig({
+      twapPeriod: 0,
+      uniswapPool: address(mockUniswapPool),
+      minPoolLiquidity: mockUniswapPool.liquidity(),
+      precision: precision
+    });  
+
+    vm.expectRevert(
+      bytes("Incorrect pool for tokens")
+    );
+    oracle = new UniswapV3OracleWrapper(
+      address(core),
+      address(tokenA),
+      address(0x2),
+      uniswapMathWrapper,
+      config
+    );
   }
 
   /// @notice Validate that connecting an oracle to a low liquidity pool is rejected
