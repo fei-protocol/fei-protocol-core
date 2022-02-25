@@ -52,7 +52,10 @@ contract MockRouter {
     }
 
     function checkAmountMin(uint256 amount) public view {
-        require(amountMinThreshold == 0 || amountMinThreshold > amount, "amount liquidity revert");
+        require(
+            amountMinThreshold == 0 || amountMinThreshold > amount,
+            "amount liquidity revert"
+        );
     }
 
     function setAmountMin(uint256 amount) public {
@@ -110,9 +113,15 @@ contract MockRouter {
     ) external returns (uint256 amountFei, uint256 amountToken) {
         checkAmountMin(amountToken0Min);
 
-        Decimal.D256 memory percentWithdrawal = Decimal.ratio(liquidity, PAIR.balanceOf(to));
+        Decimal.D256 memory percentWithdrawal = Decimal.ratio(
+            liquidity,
+            PAIR.balanceOf(to)
+        );
         Decimal.D256 memory ratio = ratioOwned(to);
-        (amountFei, amountToken) = PAIR.burnToken(to, ratio.mul(percentWithdrawal));
+        (amountFei, amountToken) = PAIR.burnToken(
+            to,
+            ratio.mul(percentWithdrawal)
+        );
 
         (uint112 reserves0, uint112 reserves1, ) = PAIR.getReserves();
         uint112 newReserve0 = uint112(reserves0) - uint112(amountFei);

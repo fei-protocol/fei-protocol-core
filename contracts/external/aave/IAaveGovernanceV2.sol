@@ -108,7 +108,11 @@ interface IAaveGovernanceV2 {
      * @param executionTime time when proposal underlying transactions can be executed
      * @param initiatorQueueing address of the initiator of the queuing transaction
      **/
-    event ProposalQueued(uint256 id, uint256 executionTime, address indexed initiatorQueueing);
+    event ProposalQueued(
+        uint256 id,
+        uint256 executionTime,
+        address indexed initiatorQueueing
+    );
     /**
      * @dev emitted when a proposal is executed
      * @param id Id of the proposal
@@ -122,11 +126,22 @@ interface IAaveGovernanceV2 {
      * @param support boolean, true = vote for, false = vote against
      * @param votingPower Power of the voter/vote
      **/
-    event VoteEmitted(uint256 id, address indexed voter, bool support, uint256 votingPower);
+    event VoteEmitted(
+        uint256 id,
+        address indexed voter,
+        bool support,
+        uint256 votingPower
+    );
 
-    event GovernanceStrategyChanged(address indexed newStrategy, address indexed initiatorChange);
+    event GovernanceStrategyChanged(
+        address indexed newStrategy,
+        address indexed initiatorChange
+    );
 
-    event VotingDelayChanged(uint256 newVotingDelay, address indexed initiatorChange);
+    event VotingDelayChanged(
+        uint256 newVotingDelay,
+        address indexed initiatorChange
+    );
 
     event ExecutorAuthorized(address executor);
 
@@ -244,7 +259,10 @@ interface IAaveGovernanceV2 {
      * @param executor address to evaluate as authorized executor
      * @return true if authorized
      **/
-    function isExecutorAuthorized(address executor) external view returns (bool);
+    function isExecutorAuthorized(address executor)
+        external
+        view
+        returns (bool);
 
     /**
      * @dev Getter the address of the guardian, that can mainly cancel proposals
@@ -285,5 +303,8 @@ interface IAaveGovernanceV2 {
      * @param proposalId id of the proposal
      * @return The current state if the proposal
      **/
-    function getProposalState(uint256 proposalId) external view returns (ProposalState);
+    function getProposalState(uint256 proposalId)
+        external
+        view
+        returns (ProposalState);
 }

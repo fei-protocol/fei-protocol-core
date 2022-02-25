@@ -8,7 +8,12 @@ import "../../utils/Timed.sol";
 
 /// @title a PCV dripping controller
 /// @author Fei Protocol
-contract PCVDripController is IPCVDripController, Timed, RateLimitedMinter, Incentivized {
+contract PCVDripController is
+    IPCVDripController,
+    Timed,
+    RateLimitedMinter,
+    Incentivized
+{
     /// @notice source PCV deposit to withdraw from
     IPCVDeposit public override source;
 
@@ -36,7 +41,11 @@ contract PCVDripController is IPCVDripController, Timed, RateLimitedMinter, Ince
         CoreRef(_core)
         Timed(_frequency)
         Incentivized(_incentiveAmount)
-        RateLimitedMinter(_incentiveAmount / _frequency, _incentiveAmount, false)
+        RateLimitedMinter(
+            _incentiveAmount / _frequency,
+            _incentiveAmount,
+            false
+        )
     {
         target = _target;
         emit TargetUpdate(address(0), address(_target));
@@ -69,7 +78,10 @@ contract PCVDripController is IPCVDripController, Timed, RateLimitedMinter, Ince
 
     /// @notice set the new PCV Deposit source
     function setSource(IPCVDeposit newSource) external override onlyGovernor {
-        require(address(newSource) != address(0), "PCVDripController: zero address");
+        require(
+            address(newSource) != address(0),
+            "PCVDripController: zero address"
+        );
 
         address oldSource = address(source);
         source = newSource;
@@ -78,7 +90,10 @@ contract PCVDripController is IPCVDripController, Timed, RateLimitedMinter, Ince
 
     /// @notice set the new PCV Deposit target
     function setTarget(IPCVDeposit newTarget) external override onlyGovernor {
-        require(address(newTarget) != address(0), "PCVDripController: zero address");
+        require(
+            address(newTarget) != address(0),
+            "PCVDripController: zero address"
+        );
 
         address oldTarget = address(target);
         target = newTarget;
@@ -86,7 +101,11 @@ contract PCVDripController is IPCVDripController, Timed, RateLimitedMinter, Ince
     }
 
     /// @notice set the new drip amount
-    function setDripAmount(uint256 newDripAmount) external override onlyGovernorOrAdmin {
+    function setDripAmount(uint256 newDripAmount)
+        external
+        override
+        onlyGovernorOrAdmin
+    {
         require(newDripAmount != 0, "PCVDripController: zero drip amount");
 
         uint256 oldDripAmount = dripAmount;
@@ -99,7 +118,10 @@ contract PCVDripController is IPCVDripController, Timed, RateLimitedMinter, Ince
         return target.balance() < dripAmount;
     }
 
-    function _mintFei(address to, uint256 amountIn) internal override(CoreRef, RateLimitedMinter) {
+    function _mintFei(address to, uint256 amountIn)
+        internal
+        override(CoreRef, RateLimitedMinter)
+    {
         RateLimitedMinter._mintFei(to, amountIn);
     }
 }

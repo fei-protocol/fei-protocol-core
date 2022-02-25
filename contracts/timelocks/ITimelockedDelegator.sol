@@ -25,7 +25,10 @@ interface ITimelockedDelegator {
 
     // ----------- Getters -----------
 
-    function delegateContract(address delegatee) external view returns (address);
+    function delegateContract(address delegatee)
+        external
+        view
+        returns (address);
 
     function delegateAmount(address delegatee) external view returns (uint256);
 

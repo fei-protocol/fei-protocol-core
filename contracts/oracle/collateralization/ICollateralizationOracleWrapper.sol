@@ -38,9 +38,12 @@ interface ICollateralizationOracleWrapper is ICollateralizationOracle {
 
     function setReadPauseOverride(bool newReadPauseOverride) external;
 
-    function setDeviationThresholdBasisPoints(uint256 _newDeviationThresholdBasisPoints) external;
+    function setDeviationThresholdBasisPoints(
+        uint256 _newDeviationThresholdBasisPoints
+    ) external;
 
-    function setCollateralizationOracle(address _newCollateralizationOracle) external;
+    function setCollateralizationOracle(address _newCollateralizationOracle)
+        external;
 
     function setCache(
         uint256 protocolControlledValue,
@@ -60,7 +63,10 @@ interface ICollateralizationOracleWrapper is ICollateralizationOracle {
 
     function collateralizationOracle() external view returns (address);
 
-    function isOutdatedOrExceededDeviationThreshold() external view returns (bool);
+    function isOutdatedOrExceededDeviationThreshold()
+        external
+        view
+        returns (bool);
 
     function pcvStatsCurrent()
         external

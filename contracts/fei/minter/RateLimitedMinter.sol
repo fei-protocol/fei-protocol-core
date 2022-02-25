@@ -13,7 +13,12 @@ abstract contract RateLimitedMinter is RateLimited {
         uint256 _mintingBufferCap,
         bool _doPartialMint
     )
-        RateLimited(MAX_FEI_LIMIT_PER_SECOND, _feiLimitPerSecond, _mintingBufferCap, _doPartialMint)
+        RateLimited(
+            MAX_FEI_LIMIT_PER_SECOND,
+            _feiLimitPerSecond,
+            _mintingBufferCap,
+            _doPartialMint
+        )
     {}
 
     /// @notice override the FEI minting behavior to enforce a rate limit

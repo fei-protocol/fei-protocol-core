@@ -17,7 +17,10 @@ interface ITribeMinter {
         uint256 oldAnnualMaxInflationBasisPoints,
         uint256 newAnnualMaxInflationBasisPoints
     );
-    event TribeTreasuryUpdate(address indexed oldTribeTreasury, address indexed newTribeTreasury);
+    event TribeTreasuryUpdate(
+        address indexed oldTribeTreasury,
+        address indexed newTribeTreasury
+    );
     event TribeRewardsDripperUpdate(
         address indexed oldTribeRewardsDripper,
         address indexed newTribeRewardsDripper
@@ -39,7 +42,9 @@ interface ITribeMinter {
 
     function setTribeRewardsDripper(address newTribeRewardsDripper) external;
 
-    function setAnnualMaxInflationBasisPoints(uint256 newAnnualMaxInflationBasisPoints) external;
+    function setAnnualMaxInflationBasisPoints(
+        uint256 newAnnualMaxInflationBasisPoints
+    ) external;
 
     // ----------- Getters -----------
 

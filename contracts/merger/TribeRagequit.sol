@@ -17,16 +17,19 @@ contract TRIBERagequit is MergerBase {
     using SafeERC20 for IERC20;
 
     /// @notice tribe treasury, removed from circulating supply
-    address public constant coreAddress = 0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9;
+    address public constant coreAddress =
+        0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9;
 
     /// @notice guardian multisig, sets the IV before DAO vote
-    address public constant guardian = 0xB8f482539F2d3Ae2C9ea6076894df36D1f632775;
+    address public constant guardian =
+        0xB8f482539F2d3Ae2C9ea6076894df36D1f632775;
 
     /// @notice Intrinsic value exchange rate (IV), scaled by 1e9
     uint256 public intrinsicValueExchangeRateBase;
 
     /// @notice tribe liquidity mining dripper, removed from circulating supply
-    address public constant rewardsDripper = 0x3Fe0EAD3500e767F0F8bC2d3B5AF7755B1b21A6a;
+    address public constant rewardsDripper =
+        0x3Fe0EAD3500e767F0F8bC2d3B5AF7755B1b21A6a;
 
     /// @notice you already know
     IFei public constant fei = IFei(0x956F47F50A910163D8BF957Cf5846D573E7f87CA);
@@ -51,7 +54,10 @@ contract TRIBERagequit is MergerBase {
     ) MergerBase(tribeRariDAO) {
         merkleRoot = root;
 
-        require(_rageQuitEnd - _rageQuitStart > 1 days, "need at least 24h ragequit window");
+        require(
+            _rageQuitEnd - _rageQuitStart > 1 days,
+            "need at least 24h ragequit window"
+        );
         rageQuitStart = _rageQuitStart;
         rageQuitEnd = _rageQuitEnd;
     }
@@ -71,8 +77,14 @@ contract TRIBERagequit is MergerBase {
             block.timestamp > rageQuitStart && block.timestamp < rageQuitEnd,
             "outside ragequit window"
         );
-        require(verifyClaim(msg.sender, totalMerkleAmount, merkleProof), "invalid proof");
-        require((claimed[msg.sender] + amount) <= totalMerkleAmount, "exceeds ragequit limit");
+        require(
+            verifyClaim(msg.sender, totalMerkleAmount, merkleProof),
+            "invalid proof"
+        );
+        require(
+            (claimed[msg.sender] + amount) <= totalMerkleAmount,
+            "exceeds ragequit limit"
+        );
         claimed[msg.sender] += amount;
 
         uint256 feiOut = (amount * intrinsicValueExchangeRateBase) / scalar;
@@ -84,13 +96,20 @@ contract TRIBERagequit is MergerBase {
     }
 
     function getCirculatingTribe() public view returns (uint256) {
-        return tribe.totalSupply() - tribe.balanceOf(coreAddress) - tribe.balanceOf(rewardsDripper);
+        return
+            tribe.totalSupply() -
+            tribe.balanceOf(coreAddress) -
+            tribe.balanceOf(rewardsDripper);
     }
 
     /// @notice recalculate the exchange amount using the protocolEquity
     /// @param protocolEquity the protocol equity
     /// @return the new intrinsicValueExchangeRateBase
-    function exchangeRate(uint256 protocolEquity) public view returns (uint256) {
+    function exchangeRate(uint256 protocolEquity)
+        public
+        view
+        returns (uint256)
+    {
         return (scalar * protocolEquity) / getCirculatingTribe();
     }
 
@@ -98,7 +117,10 @@ contract TRIBERagequit is MergerBase {
     /// @param protocolEquity the protocol equity
     /// @return the new exchange rate
     /// @dev only callable once by guardian
-    function setExchangeRate(uint256 protocolEquity) external returns (uint256) {
+    function setExchangeRate(uint256 protocolEquity)
+        external
+        returns (uint256)
+    {
         require(intrinsicValueExchangeRateBase == 0, "already set");
         require(msg.sender == guardian, "guardian");
         intrinsicValueExchangeRateBase = exchangeRate(protocolEquity);

@@ -26,10 +26,9 @@ contract TribalChiefSyncExtension {
     }
 
     /// @notice Sync a rewards rate change automatically using pre-approved map
-    function autoDecreaseRewards(IAutoRewardsDistributor[] calldata distributors)
-        external
-        update(distributors)
-    {
+    function autoDecreaseRewards(
+        IAutoRewardsDistributor[] calldata distributors
+    ) external update(distributors) {
         tribalChiefSync.autoDecreaseRewards();
     }
 
@@ -51,7 +50,13 @@ contract TribalChiefSyncExtension {
         bytes32 salt,
         IAutoRewardsDistributor[] calldata distributors
     ) external update(distributors) {
-        tribalChiefSync.addPool(allocPoint, stakedToken, rewarder, rewardData, salt);
+        tribalChiefSync.addPool(
+            allocPoint,
+            stakedToken,
+            rewarder,
+            rewardData,
+            salt
+        );
     }
 
     /// @notice Sync a pool set action

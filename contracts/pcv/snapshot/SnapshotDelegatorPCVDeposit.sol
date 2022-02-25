@@ -8,13 +8,19 @@ interface DelegateRegistry {
 
     function clearDelegate(bytes32 id) external;
 
-    function delegation(address delegator, bytes32 id) external view returns (address delegatee);
+    function delegation(address delegator, bytes32 id)
+        external
+        view
+        returns (address delegatee);
 }
 
 /// @title Snapshot Delegator PCV Deposit
 /// @author Fei Protocol
 contract SnapshotDelegatorPCVDeposit is PCVDeposit {
-    event DelegateUpdate(address indexed oldDelegate, address indexed newDelegate);
+    event DelegateUpdate(
+        address indexed oldDelegate,
+        address indexed newDelegate
+    );
 
     /// @notice the Gnosis delegate registry used by snapshot
     DelegateRegistry public constant DELEGATE_REGISTRY =
@@ -47,7 +53,11 @@ contract SnapshotDelegatorPCVDeposit is PCVDeposit {
     /// @notice withdraw tokens from the PCV allocation
     /// @param amountUnderlying of tokens withdrawn
     /// @param to the address to send PCV to
-    function withdraw(address to, uint256 amountUnderlying) external override onlyPCVController {
+    function withdraw(address to, uint256 amountUnderlying)
+        external
+        override
+        onlyPCVController
+    {
         _withdrawERC20(address(token), to, amountUnderlying);
     }
 

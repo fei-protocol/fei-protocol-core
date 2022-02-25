@@ -20,11 +20,13 @@ interface ITribeReserveStabilizer {
 
     // ----------- Governor only state changing api -----------
 
-    function setCollateralizationOracle(ICollateralizationOracle newCollateralizationOracle)
-        external;
+    function setCollateralizationOracle(
+        ICollateralizationOracle newCollateralizationOracle
+    ) external;
 
-    function setCollateralizationThreshold(uint256 newCollateralizationThresholdBasisPoints)
-        external;
+    function setCollateralizationThreshold(
+        uint256 newCollateralizationThresholdBasisPoints
+    ) external;
 
     function startOracleDelayCountdown() external;
 
@@ -34,7 +36,13 @@ interface ITribeReserveStabilizer {
 
     function isCollateralizationBelowThreshold() external view returns (bool);
 
-    function collateralizationOracle() external view returns (ICollateralizationOracle);
+    function collateralizationOracle()
+        external
+        view
+        returns (ICollateralizationOracle);
 
-    function collateralizationThreshold() external view returns (Decimal.D256 calldata);
+    function collateralizationThreshold()
+        external
+        view
+        returns (Decimal.D256 calldata);
 }

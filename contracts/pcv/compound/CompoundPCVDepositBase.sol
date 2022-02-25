@@ -41,7 +41,10 @@ abstract contract CompoundPCVDepositBase is PCVDeposit {
         onlyPCVController
         whenNotPaused
     {
-        require(cToken.redeemUnderlying(amountUnderlying) == 0, "CompoundPCVDeposit: redeem error");
+        require(
+            cToken.redeemUnderlying(amountUnderlying) == 0,
+            "CompoundPCVDeposit: redeem error"
+        );
         _transferUnderlying(to, amountUnderlying);
         emit Withdrawal(msg.sender, to, amountUnderlying);
     }
@@ -50,7 +53,9 @@ abstract contract CompoundPCVDepositBase is PCVDeposit {
     /// @dev returns stale values from Compound if the market hasn't been updated
     function balance() public view override returns (uint256) {
         uint256 exchangeRate = cToken.exchangeRateStored();
-        return (cToken.balanceOf(address(this)) * exchangeRate) / EXCHANGE_RATE_SCALE;
+        return
+            (cToken.balanceOf(address(this)) * exchangeRate) /
+            EXCHANGE_RATE_SCALE;
     }
 
     function _transferUnderlying(address to, uint256 amount) internal virtual;

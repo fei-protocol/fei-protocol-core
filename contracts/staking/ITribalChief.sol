@@ -24,7 +24,10 @@ interface ITribalChief {
     }
 
     /// @notice view only functions that return data on pools, user deposit(s), tribe distributed per block, and other constants
-    function rewardMultipliers(uint256 _pid, uint128 _blocksLocked) external view returns (uint128);
+    function rewardMultipliers(uint256 _pid, uint128 _blocksLocked)
+        external
+        view
+        returns (uint128);
 
     function stakedToken(uint256 _index) external view returns (IERC20);
 
@@ -41,11 +44,20 @@ interface ITribalChief {
 
     function tribePerBlock() external view returns (uint256);
 
-    function pendingRewards(uint256 _pid, address _user) external view returns (uint256);
+    function pendingRewards(uint256 _pid, address _user)
+        external
+        view
+        returns (uint256);
 
-    function getTotalStakedInPool(uint256 pid, address user) external view returns (uint256);
+    function getTotalStakedInPool(uint256 pid, address user)
+        external
+        view
+        returns (uint256);
 
-    function openUserDeposits(uint256 pid, address user) external view returns (uint256);
+    function openUserDeposits(uint256 pid, address user)
+        external
+        view
+        returns (uint256);
 
     function numPools() external view returns (uint256);
 

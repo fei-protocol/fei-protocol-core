@@ -76,7 +76,10 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
     function poke() public override {
         uint256 newBufferCap = idealBufferCap();
         uint256 oldBufferCap = bufferCap;
-        require(newBufferCap != oldBufferCap, "TribeMinter: No rate limit change needed");
+        require(
+            newBufferCap != oldBufferCap,
+            "TribeMinter: No rate limit change needed"
+        );
 
         _setBufferCap(newBufferCap);
         _setRateLimitPerSecond(newBufferCap / Constants.ONE_YEAR);
@@ -95,7 +98,11 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
     /// @notice mints TRIBE to the target address, subject to rate limit
     /// @param to the address to send TRIBE to
     /// @param amount the amount of TRIBE to send
-    function mint(address to, uint256 amount) external override onlyGovernorOrAdmin {
+    function mint(address to, uint256 amount)
+        external
+        override
+        onlyGovernorOrAdmin
+    {
         // first apply rate limit
         _depleteBuffer(amount);
 
@@ -104,7 +111,11 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
     }
 
     /// @notice sets the new TRIBE treasury address
-    function setTribeTreasury(address newTribeTreasury) external override onlyGovernorOrAdmin {
+    function setTribeTreasury(address newTribeTreasury)
+        external
+        override
+        onlyGovernorOrAdmin
+    {
         address oldTribeTreasury = tribeTreasury;
         tribeTreasury = newTribeTreasury;
         emit TribeTreasuryUpdate(oldTribeTreasury, newTribeTreasury);
@@ -118,24 +129,28 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
     {
         address oldTribeRewardsDripper = tribeRewardsDripper;
         tribeRewardsDripper = newTribeRewardsDripper;
-        emit TribeTreasuryUpdate(oldTribeRewardsDripper, newTribeRewardsDripper);
+        emit TribeTreasuryUpdate(
+            oldTribeRewardsDripper,
+            newTribeRewardsDripper
+        );
     }
 
     /// @notice changes the TRIBE minter address
     /// @param newMinter the new minter address
     function setMinter(address newMinter) external override onlyOwner {
-        require(newMinter != address(0), "TribeReserveStabilizer: zero address");
+        require(
+            newMinter != address(0),
+            "TribeReserveStabilizer: zero address"
+        );
         ITribe _tribe = ITribe(address(tribe()));
         _tribe.setMinter(newMinter);
     }
 
     /// @notice sets the max annual inflation relative to current supply
     /// @param newAnnualMaxInflationBasisPoints the new max inflation % denominated in basis points (1/10000)
-    function setAnnualMaxInflationBasisPoints(uint256 newAnnualMaxInflationBasisPoints)
-        external
-        override
-        onlyGovernorOrAdmin
-    {
+    function setAnnualMaxInflationBasisPoints(
+        uint256 newAnnualMaxInflationBasisPoints
+    ) external override onlyGovernorOrAdmin {
         _setAnnualMaxInflationBasisPoints(newAnnualMaxInflationBasisPoints);
     }
 
@@ -198,13 +213,19 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
         }
     }
 
-    function _setAnnualMaxInflationBasisPoints(uint256 newAnnualMaxInflationBasisPoints) internal {
+    function _setAnnualMaxInflationBasisPoints(
+        uint256 newAnnualMaxInflationBasisPoints
+    ) internal {
         uint256 oldAnnualMaxInflationBasisPoints = annualMaxInflationBasisPoints;
-        require(newAnnualMaxInflationBasisPoints != 0, "TribeMinter: cannot have 0 inflation");
+        require(
+            newAnnualMaxInflationBasisPoints != 0,
+            "TribeMinter: cannot have 0 inflation"
+        );
 
         // make sure the new inflation is strictly lower, unless the old inflation is 0 (which is only true upon construction)
         require(
-            newAnnualMaxInflationBasisPoints < oldAnnualMaxInflationBasisPoints ||
+            newAnnualMaxInflationBasisPoints <
+                oldAnnualMaxInflationBasisPoints ||
                 oldAnnualMaxInflationBasisPoints == 0,
             "TribeMinter: cannot increase max inflation"
         );

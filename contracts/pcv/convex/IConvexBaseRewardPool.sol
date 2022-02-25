@@ -30,7 +30,10 @@ interface IConvexBaseRewardPool {
 
     function newRewardRatio() external view returns (uint256);
 
-    function userRewardPerTokenPaid(address user) external view returns (uint256);
+    function userRewardPerTokenPaid(address user)
+        external
+        view
+        returns (uint256);
 
     function rewards(address user) external view returns (uint256);
 
@@ -62,11 +65,15 @@ interface IConvexBaseRewardPool {
 
     function withdrawAll(bool claim) external;
 
-    function withdrawAndUnwrap(uint256 amount, bool claim) external returns (bool);
+    function withdrawAndUnwrap(uint256 amount, bool claim)
+        external
+        returns (bool);
 
     function withdrawAllAndUnwrap(bool claim) external;
 
-    function getReward(address _account, bool _claimExtras) external returns (bool);
+    function getReward(address _account, bool _claimExtras)
+        external
+        returns (bool);
 
     function getReward() external returns (bool);
 

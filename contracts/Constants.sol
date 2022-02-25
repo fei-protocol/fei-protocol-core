@@ -10,7 +10,8 @@ library Constants {
     uint256 public constant ONE_YEAR = 365.25 days;
 
     /// @notice WETH9 address
-    IWETH public constant WETH = IWETH(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+    IWETH public constant WETH =
+        IWETH(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 
     /// @notice USD stand-in address
     address public constant USD = 0x1111111111111111111111111111111111111111;

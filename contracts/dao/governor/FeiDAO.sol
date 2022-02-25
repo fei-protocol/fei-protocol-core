@@ -8,7 +8,11 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20VotesComp.sol";
 
 // Forked functionality from https://github.com/unlock-protocol/unlock/blob/master/smart-contracts/contracts/UnlockProtocolGovernor.sol
 
-contract FeiDAO is GovernorCompatibilityBravo, GovernorVotesComp, GovernorTimelockCompound {
+contract FeiDAO is
+    GovernorCompatibilityBravo,
+    GovernorVotesComp,
+    GovernorTimelockCompound
+{
     uint256 private _votingDelay = 1; // reduce voting delay to 1 block
     uint256 private _votingPeriod = 13000; // extend voting period to 48h
     uint256 private _quorum = 25_000_000e18;
@@ -16,14 +20,19 @@ contract FeiDAO is GovernorCompatibilityBravo, GovernorVotesComp, GovernorTimelo
 
     address private _guardian;
     uint256 private _eta;
-    address public constant BACKUP_GOVERNOR = 0x4C895973334Af8E06fd6dA4f723Ac24A5f259e6B;
+    address public constant BACKUP_GOVERNOR =
+        0x4C895973334Af8E06fd6dA4f723Ac24A5f259e6B;
     uint256 public constant ROLLBACK_DEADLINE = 1635724800; // Nov 1, 2021 midnight UTC
 
     constructor(
         ERC20VotesComp tribe,
         ICompoundTimelock timelock,
         address guardian
-    ) GovernorVotesComp(tribe) GovernorTimelockCompound(timelock) Governor("Fei DAO") {
+    )
+        GovernorVotesComp(tribe)
+        GovernorTimelockCompound(timelock)
+        Governor("Fei DAO")
+    {
         _guardian = guardian;
     }
 
@@ -33,7 +42,10 @@ contract FeiDAO is GovernorCompatibilityBravo, GovernorVotesComp, GovernorTimelo
     event QuorumUpdated(uint256 oldQuorum, uint256 newQuorum);
     event VotingDelayUpdated(uint256 oldVotingDelay, uint256 newVotingDelay);
     event VotingPeriodUpdated(uint256 oldVotingPeriod, uint256 newVotingPeriod);
-    event ProposalThresholdUpdated(uint256 oldProposalThreshold, uint256 newProposalThreshold);
+    event ProposalThresholdUpdated(
+        uint256 oldProposalThreshold,
+        uint256 newProposalThreshold
+    );
     event RollbackQueued(uint256 eta);
     event Rollback();
 
@@ -72,10 +84,16 @@ contract FeiDAO is GovernorCompatibilityBravo, GovernorVotesComp, GovernorTimelo
         emit QuorumUpdated(oldQuorum, newQuorum);
     }
 
-    function setProposalThreshold(uint256 newProposalThreshold) public onlyGovernance {
+    function setProposalThreshold(uint256 newProposalThreshold)
+        public
+        onlyGovernance
+    {
         uint256 oldProposalThreshold = _proposalThreshold;
         _proposalThreshold = newProposalThreshold;
-        emit ProposalThresholdUpdated(oldProposalThreshold, newProposalThreshold);
+        emit ProposalThresholdUpdated(
+            oldProposalThreshold,
+            newProposalThreshold
+        );
     }
 
     /// @notice one-time option to roll back the DAO to old GovernorAlpha
@@ -141,7 +159,11 @@ contract FeiDAO is GovernorCompatibilityBravo, GovernorVotesComp, GovernorTimelo
         uint256[] memory values,
         bytes[] memory calldatas,
         string memory description
-    ) public override(IGovernor, Governor, GovernorCompatibilityBravo) returns (uint256) {
+    )
+        public
+        override(IGovernor, Governor, GovernorCompatibilityBravo)
+        returns (uint256)
+    {
         return super.propose(targets, values, calldatas, description);
     }
 

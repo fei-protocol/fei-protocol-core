@@ -19,7 +19,12 @@ contract MockAngleStakingRewards {
     }
 
     function stake(uint256 amount) external {
-        SafeERC20.safeTransferFrom(IERC20(stakingToken), msg.sender, address(this), amount);
+        SafeERC20.safeTransferFrom(
+            IERC20(stakingToken),
+            msg.sender,
+            address(this),
+            amount
+        );
         balanceOf[msg.sender] += amount;
     }
 

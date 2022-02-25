@@ -53,7 +53,12 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
     /// @notice mint FEI tokens
     /// @param account the account to mint to
     /// @param amount the amount to mint
-    function mint(address account, uint256 amount) external override onlyMinter whenNotPaused {
+    function mint(address account, uint256 amount)
+        external
+        override
+        onlyMinter
+        whenNotPaused
+    {
         _mint(account, amount);
         emit Minting(account, msg.sender, amount);
     }
@@ -95,25 +100,49 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         // incentive on sender
         address senderIncentive = incentiveContract[sender];
         if (senderIncentive != address(0)) {
-            IIncentive(senderIncentive).incentivize(sender, recipient, msg.sender, amount);
+            IIncentive(senderIncentive).incentivize(
+                sender,
+                recipient,
+                msg.sender,
+                amount
+            );
         }
 
         // incentive on recipient
         address recipientIncentive = incentiveContract[recipient];
         if (recipientIncentive != address(0)) {
-            IIncentive(recipientIncentive).incentivize(sender, recipient, msg.sender, amount);
+            IIncentive(recipientIncentive).incentivize(
+                sender,
+                recipient,
+                msg.sender,
+                amount
+            );
         }
 
         // incentive on operator
         address operatorIncentive = incentiveContract[msg.sender];
-        if (msg.sender != sender && msg.sender != recipient && operatorIncentive != address(0)) {
-            IIncentive(operatorIncentive).incentivize(sender, recipient, msg.sender, amount);
+        if (
+            msg.sender != sender &&
+            msg.sender != recipient &&
+            operatorIncentive != address(0)
+        ) {
+            IIncentive(operatorIncentive).incentivize(
+                sender,
+                recipient,
+                msg.sender,
+                amount
+            );
         }
 
         // all incentive, if active applies to every transfer
         address allIncentive = incentiveContract[address(0)];
         if (allIncentive != address(0)) {
-            IIncentive(allIncentive).incentivize(sender, recipient, msg.sender, amount);
+            IIncentive(allIncentive).incentivize(
+                sender,
+                recipient,
+                msg.sender,
+                amount
+            );
         }
     }
 
@@ -137,7 +166,14 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
                 "\x19\x01",
                 DOMAIN_SEPARATOR,
                 keccak256(
-                    abi.encode(PERMIT_TYPEHASH, owner, spender, value, nonces[owner]++, deadline)
+                    abi.encode(
+                        PERMIT_TYPEHASH,
+                        owner,
+                        spender,
+                        value,
+                        nonces[owner]++,
+                        deadline
+                    )
                 )
             )
         );

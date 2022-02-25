@@ -40,7 +40,11 @@ abstract contract TokemakPCVDepositBase is PCVDeposit {
     );
 
     /// @notice event generated when a withdrawal is requested
-    event RequestWithdrawal(address indexed _caller, address indexed _to, uint256 _amount);
+    event RequestWithdrawal(
+        address indexed _caller,
+        address indexed _to,
+        uint256 _amount
+    );
 
     address private constant TOKE_TOKEN_ADDRESS =
         address(0x2e9d63788249371f1DFC918a52f8d799F4a38C94);
@@ -123,6 +127,11 @@ abstract contract TokemakPCVDepositBase is PCVDeposit {
 
         ITokemakRewards(rewards).claim(recipient, v, r, s);
 
-        emit ClaimRewards(msg.sender, address(TOKE_TOKEN_ADDRESS), address(this), amount);
+        emit ClaimRewards(
+            msg.sender,
+            address(TOKE_TOKEN_ADDRESS),
+            address(this),
+            amount
+        );
     }
 }

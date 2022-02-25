@@ -79,7 +79,11 @@ contract MockVault {
     ) external payable {
         if (mockDoTransfers) {
             for (uint256 i = 0; i < _tokens.length; i++) {
-                _tokens[i].safeTransferFrom(msg.sender, address(_pool), request.maxAmountsIn[i]);
+                _tokens[i].safeTransferFrom(
+                    msg.sender,
+                    address(_pool),
+                    request.maxAmountsIn[i]
+                );
             }
         }
         _pool.mint(recipient, LIQUIDITY_AMOUNT);
@@ -101,7 +105,9 @@ contract MockVault {
         _pool.mockBurn(sender, LIQUIDITY_AMOUNT);
         if (mockDoTransfers) {
             _pool.mockInitApprovals();
-            if (request.minAmountsOut[0] == 0 && request.minAmountsOut[1] == 0) {
+            if (
+                request.minAmountsOut[0] == 0 && request.minAmountsOut[1] == 0
+            ) {
                 // transfer all
                 for (uint256 i = 0; i < _tokens.length; i++) {
                     _tokens[i].safeTransferFrom(

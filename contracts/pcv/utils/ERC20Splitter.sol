@@ -29,7 +29,10 @@ contract ERC20Splitter is PCVSplitter {
         _allocate(token.balanceOf(address(this)));
     }
 
-    function _allocateSingle(uint256 amount, address pcvDeposit) internal override {
+    function _allocateSingle(uint256 amount, address pcvDeposit)
+        internal
+        override
+    {
         token.transfer(pcvDeposit, amount);
     }
 }

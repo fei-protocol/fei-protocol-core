@@ -97,8 +97,8 @@ contract RatioPCVControllerV2 is CoreRef {
             basisPoints <= Constants.BASIS_POINTS_GRANULARITY,
             "RatioPCVController: basisPoints too high"
         );
-        uint256 amount = (IERC20(token).balanceOf(address(pcvDeposit)) * basisPoints) /
-            Constants.BASIS_POINTS_GRANULARITY;
+        uint256 amount = (IERC20(token).balanceOf(address(pcvDeposit)) *
+            basisPoints) / Constants.BASIS_POINTS_GRANULARITY;
         require(amount != 0, "RatioPCVController: no value to withdraw");
 
         pcvDeposit.withdrawERC20(token, to, amount);
@@ -144,20 +144,35 @@ contract RatioPCVControllerV2 is CoreRef {
 
     /// @notice send ETH as WETH
     /// @param to destination
-    function transferETHAsWETH(address to) public onlyPCVController whenNotPaused {
+    function transferETHAsWETH(address to)
+        public
+        onlyPCVController
+        whenNotPaused
+    {
         _transferETHAsWETH(to, address(this).balance);
     }
 
     /// @notice send WETH as ETH
     /// @param to destination
-    function transferWETHAsETH(address payable to) public onlyPCVController whenNotPaused {
-        _transferWETHAsETH(to, IERC20(address(Constants.WETH)).balanceOf(address(this)));
+    function transferWETHAsETH(address payable to)
+        public
+        onlyPCVController
+        whenNotPaused
+    {
+        _transferWETHAsETH(
+            to,
+            IERC20(address(Constants.WETH)).balanceOf(address(this))
+        );
     }
 
     /// @notice send away ERC20 held on this contract, to avoid having any stuck.
     /// @param token sent
     /// @param to destination
-    function transferERC20(IERC20 token, address to) public onlyPCVController whenNotPaused {
+    function transferERC20(IERC20 token, address to)
+        public
+        onlyPCVController
+        whenNotPaused
+    {
         uint256 amount = token.balanceOf(address(this));
         token.safeTransfer(to, amount);
     }
@@ -171,7 +186,8 @@ contract RatioPCVControllerV2 is CoreRef {
             basisPoints <= Constants.BASIS_POINTS_GRANULARITY,
             "RatioPCVController: basisPoints too high"
         );
-        uint256 amount = (pcvDeposit.balance() * basisPoints) / Constants.BASIS_POINTS_GRANULARITY;
+        uint256 amount = (pcvDeposit.balance() * basisPoints) /
+            Constants.BASIS_POINTS_GRANULARITY;
         require(amount != 0, "RatioPCVController: no value to withdraw");
 
         pcvDeposit.withdraw(to, amount);

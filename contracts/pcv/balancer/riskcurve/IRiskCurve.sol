@@ -37,7 +37,10 @@ interface IRiskCurve {
     function getCurrentLeverage() external view returns (uint256);
 
     /// @notice return the balancer weight of an asset at a given leverage
-    function getAssetWeight(address asset, uint256 leverage) external view returns (uint256);
+    function getAssetWeight(address asset, uint256 leverage)
+        external
+        view
+        returns (uint256);
 
     /// @notice return the set of assets and their corresponding weights at a given leverage
     function getWeights(uint256 leverage)
@@ -46,14 +49,20 @@ interface IRiskCurve {
         returns (address[] memory, uint256[] memory);
 
     /// @notice return the target weight for an asset at current leverage
-    function getCurrentTargetAssetWeight(address asset) external view returns (uint256);
-
-    /// @notice return the set of assets and their corresponding weights at a current leverage
-    function getCurrentTargetWeights() external view returns (address[] memory, uint256[] memory);
-
-    /// @notice get the number of seconds to transition weights given the old and new weights
-    function getWeightChangeTime(uint256[] memory oldWeights, uint256[] memory newWeights)
+    function getCurrentTargetAssetWeight(address asset)
         external
         view
         returns (uint256);
+
+    /// @notice return the set of assets and their corresponding weights at a current leverage
+    function getCurrentTargetWeights()
+        external
+        view
+        returns (address[] memory, uint256[] memory);
+
+    /// @notice get the number of seconds to transition weights given the old and new weights
+    function getWeightChangeTime(
+        uint256[] memory oldWeights,
+        uint256[] memory newWeights
+    ) external view returns (uint256);
 }

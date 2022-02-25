@@ -33,7 +33,10 @@ contract MockTokemakEthPool is MockERC20 {
             requestedWithdrawal[msg.sender] >= requestedAmount,
             "WITHDRAW_INSUFFICIENT_BALANCE"
         );
-        require(weth.balanceOf(address(this)) >= requestedAmount, "INSUFFICIENT_POOL_BALANCE");
+        require(
+            weth.balanceOf(address(this)) >= requestedAmount,
+            "INSUFFICIENT_POOL_BALANCE"
+        );
         requestedWithdrawal[msg.sender] -= requestedAmount;
         _burn(msg.sender, requestedAmount);
         weth.withdraw(requestedAmount);

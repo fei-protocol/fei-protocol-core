@@ -25,10 +25,10 @@ contract FuseGuardian is CoreRef {
      * @param cTokens The addresses of the markets (tokens) to change the supply caps for
      * @param newSupplyCaps The new supply cap values in underlying to be set. A value of 0 corresponds to unlimited supplying.
      */
-    function _setMarketSupplyCaps(CToken[] memory cTokens, uint256[] calldata newSupplyCaps)
-        external
-        isGovernorOrGuardianOrAdmin
-    {
+    function _setMarketSupplyCaps(
+        CToken[] memory cTokens,
+        uint256[] calldata newSupplyCaps
+    ) external isGovernorOrGuardianOrAdmin {
         _setMarketSupplyCapsInternal(cTokens, newSupplyCaps);
     }
 
@@ -36,12 +36,16 @@ contract FuseGuardian is CoreRef {
         address[] calldata underlyings,
         uint256[] calldata newSupplyCaps
     ) external isGovernorOrGuardianOrAdmin {
-        _setMarketSupplyCapsInternal(_underlyingToCTokens(underlyings), newSupplyCaps);
+        _setMarketSupplyCapsInternal(
+            _underlyingToCTokens(underlyings),
+            newSupplyCaps
+        );
     }
 
-    function _setMarketSupplyCapsInternal(CToken[] memory cTokens, uint256[] calldata newSupplyCaps)
-        internal
-    {
+    function _setMarketSupplyCapsInternal(
+        CToken[] memory cTokens,
+        uint256[] calldata newSupplyCaps
+    ) internal {
         comptroller._setMarketSupplyCaps(cTokens, newSupplyCaps);
     }
 
@@ -65,16 +69,17 @@ contract FuseGuardian is CoreRef {
      * @param cTokens The addresses of the markets (tokens) to change the borrow caps for
      * @param newBorrowCaps The new borrow cap values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
      */
-    function _setMarketBorrowCaps(CToken[] memory cTokens, uint256[] calldata newBorrowCaps)
-        external
-        isGovernorOrGuardianOrAdmin
-    {
+    function _setMarketBorrowCaps(
+        CToken[] memory cTokens,
+        uint256[] calldata newBorrowCaps
+    ) external isGovernorOrGuardianOrAdmin {
         _setMarketBorrowCapsInternal(cTokens, newBorrowCaps);
     }
 
-    function _setMarketBorrowCapsInternal(CToken[] memory cTokens, uint256[] calldata newBorrowCaps)
-        internal
-    {
+    function _setMarketBorrowCapsInternal(
+        CToken[] memory cTokens,
+        uint256[] calldata newBorrowCaps
+    ) internal {
         comptroller._setMarketBorrowCaps(cTokens, newBorrowCaps);
     }
 
@@ -82,14 +87,20 @@ contract FuseGuardian is CoreRef {
         address[] calldata underlyings,
         uint256[] calldata newBorrowCaps
     ) external isGovernorOrGuardianOrAdmin {
-        _setMarketBorrowCapsInternal(_underlyingToCTokens(underlyings), newBorrowCaps);
+        _setMarketBorrowCapsInternal(
+            _underlyingToCTokens(underlyings),
+            newBorrowCaps
+        );
     }
 
     /**
      * @notice Admin function to change the Borrow Cap Guardian
      * @param newBorrowCapGuardian The address of the new Borrow Cap Guardian
      */
-    function _setBorrowCapGuardian(address newBorrowCapGuardian) external onlyGovernor {
+    function _setBorrowCapGuardian(address newBorrowCapGuardian)
+        external
+        onlyGovernor
+    {
         comptroller._setBorrowCapGuardian(newBorrowCapGuardian);
     }
 
@@ -99,7 +110,11 @@ contract FuseGuardian is CoreRef {
      * @param newPauseGuardian The address of the new Pause Guardian
      * @return uint 0=success, otherwise a failure. (See enum Error for details)
      */
-    function _setPauseGuardian(address newPauseGuardian) external onlyGovernor returns (uint256) {
+    function _setPauseGuardian(address newPauseGuardian)
+        external
+        onlyGovernor
+        returns (uint256)
+    {
         return comptroller._setPauseGuardian(newPauseGuardian);
     }
 
@@ -121,7 +136,10 @@ contract FuseGuardian is CoreRef {
         return _setMintPausedInternal(cToken, state);
     }
 
-    function _setMintPausedInternal(CToken cToken, bool state) internal returns (bool) {
+    function _setMintPausedInternal(CToken cToken, bool state)
+        internal
+        returns (bool)
+    {
         return comptroller._setMintPaused(cToken, state);
     }
 
@@ -135,7 +153,10 @@ contract FuseGuardian is CoreRef {
         return _setBorrowPausedInternal(CToken(cToken), state);
     }
 
-    function _setBorrowPausedInternal(CToken cToken, bool state) internal returns (bool) {
+    function _setBorrowPausedInternal(CToken cToken, bool state)
+        internal
+        returns (bool)
+    {
         return comptroller._setBorrowPaused(cToken, state);
     }
 
@@ -147,11 +168,19 @@ contract FuseGuardian is CoreRef {
         _setBorrowPausedInternal(CToken(cToken), state);
     }
 
-    function _setTransferPaused(bool state) external isGovernorOrGuardianOrAdmin returns (bool) {
+    function _setTransferPaused(bool state)
+        external
+        isGovernorOrGuardianOrAdmin
+        returns (bool)
+    {
         return comptroller._setTransferPaused(state);
     }
 
-    function _setSeizePaused(bool state) external isGovernorOrGuardianOrAdmin returns (bool) {
+    function _setSeizePaused(bool state)
+        external
+        isGovernorOrGuardianOrAdmin
+        returns (bool)
+    {
         return comptroller._setSeizePaused(state);
     }
 }

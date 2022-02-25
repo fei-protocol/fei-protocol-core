@@ -9,5 +9,6 @@ interface IFuseFeeDistributor {
         bool[] memory statuses
     ) external;
 
-    function _callPool(address[] calldata targets, bytes calldata data) external;
+    function _callPool(address[] calldata targets, bytes calldata data)
+        external;
 }

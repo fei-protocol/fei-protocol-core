@@ -26,12 +26,22 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
 
     /// @notice returns true if the the provided address is a valid destination to withdraw funds to
     /// @param pcvDeposit the address to check
-    function isSafeAddress(address pcvDeposit) public view override returns (bool) {
+    function isSafeAddress(address pcvDeposit)
+        public
+        view
+        override
+        returns (bool)
+    {
         return safeAddresses.contains(pcvDeposit);
     }
 
     /// @notice returns all safe addresses
-    function getSafeAddresses() public view override returns (address[] memory) {
+    function getSafeAddresses()
+        public
+        view
+        override
+        returns (address[] memory)
+    {
         return safeAddresses.values();
     }
 
@@ -39,7 +49,11 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
 
     /// @notice governor-only method to set an address as "safe" to withdraw funds to
     /// @param pcvDeposit the address to set as safe
-    function setSafeAddress(address pcvDeposit) external override onlyGovernorOrAdmin {
+    function setSafeAddress(address pcvDeposit)
+        external
+        override
+        onlyGovernorOrAdmin
+    {
         _setSafeAddress(pcvDeposit);
     }
 
@@ -60,7 +74,11 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
 
     /// @notice governor-or-guardian-only method to un-set an address as "safe" to withdraw funds to
     /// @param pcvDeposit the address to un-set as safe
-    function unsetSafeAddress(address pcvDeposit) external override isGovernorOrGuardianOrAdmin {
+    function unsetSafeAddress(address pcvDeposit)
+        external
+        override
+        isGovernorOrGuardianOrAdmin
+    {
         _unsetSafeAddress(pcvDeposit);
     }
 
@@ -90,7 +108,10 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         bool pauseAfter,
         bool depositAfter
     ) external override isGovernorOrGuardianOrAdmin {
-        require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
+        require(
+            isSafeAddress(safeAddress),
+            "Provided address is not a safe address!"
+        );
 
         pcvDeposit._ensureUnpaused();
 
@@ -120,7 +141,10 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         bool pauseAfter,
         bool depositAfter
     ) external override isGovernorOrGuardianOrAdmin {
-        require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
+        require(
+            isSafeAddress(safeAddress),
+            "Provided address is not a safe address!"
+        );
 
         pcvDeposit._ensureUnpaused();
 
@@ -151,7 +175,10 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         bool pauseAfter,
         bool depositAfter
     ) external override isGovernorOrGuardianOrAdmin {
-        require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
+        require(
+            isSafeAddress(safeAddress),
+            "Provided address is not a safe address!"
+        );
 
         pcvDeposit._ensureUnpaused();
 

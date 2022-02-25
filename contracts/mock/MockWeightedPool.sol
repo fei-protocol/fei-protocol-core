@@ -40,7 +40,11 @@ contract MockWeightedPool is MockERC20 {
     }
 
     // this method is specific to weighted pool
-    function getNormalizedWeights() external view returns (uint256[] memory _weights) {
+    function getNormalizedWeights()
+        external
+        view
+        returns (uint256[] memory _weights)
+    {
         return weights;
     }
 

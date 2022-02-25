@@ -58,7 +58,13 @@ contract MockChainlinkOracle is AggregatorV3Interface {
             uint80 answeredInRound
         )
     {
-        return (_roundId, _value, block.timestamp, block.timestamp, _answeredInRound);
+        return (
+            _roundId,
+            _value,
+            block.timestamp,
+            block.timestamp,
+            _answeredInRound
+        );
     }
 
     function set(

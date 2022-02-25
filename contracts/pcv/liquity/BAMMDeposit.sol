@@ -17,7 +17,8 @@ contract BAMMDeposit is PCVDeposit {
         address(0x5f98805A4E8be255a32880FDeC7F6728C6568bA0);
 
     /// @notice B. Protocol BAMM address
-    IBAMM public constant BAMM = IBAMM(0x0d3AbAA7E088C2c82f54B2f47613DA438ea8C598);
+    IBAMM public constant BAMM =
+        IBAMM(0x0d3AbAA7E088C2c82f54B2f47613DA438ea8C598);
 
     /// @notice Liquity Stability pool address
     IStabilityPool public immutable stabilityPool = BAMM.SP();
@@ -38,9 +39,15 @@ contract BAMMDeposit is PCVDeposit {
     }
 
     /// @notice withdraw LUSD from B Protocol BAMM
-    function withdraw(address to, uint256 amount) external override onlyPCVController {
+    function withdraw(address to, uint256 amount)
+        external
+        override
+        onlyPCVController
+    {
         uint256 totalSupply = BAMM.totalSupply();
-        uint256 lusdValue = stabilityPool.getCompoundedLUSDDeposit(address(BAMM));
+        uint256 lusdValue = stabilityPool.getCompoundedLUSDDeposit(
+            address(BAMM)
+        );
         uint256 shares = ((amount * totalSupply) / lusdValue) + 1; // extra unit to prevent truncation errors
 
         // Withdraw the LUSD from BAMM (also withdraws LQTY and dust ETH)
@@ -60,8 +67,12 @@ contract BAMMDeposit is PCVDeposit {
 
         uint256 ethUsdValue = (ethBalance * eth2usdPrice) / PRECISION;
 
-        uint256 bammLusdValue = stabilityPool.getCompoundedLUSDDeposit(address(BAMM));
-        return ((bammLusdValue + ethUsdValue) * BAMM.balanceOf(address(this))) / BAMM.totalSupply();
+        uint256 bammLusdValue = stabilityPool.getCompoundedLUSDDeposit(
+            address(BAMM)
+        );
+        return
+            ((bammLusdValue + ethUsdValue) * BAMM.balanceOf(address(this))) /
+            BAMM.totalSupply();
     }
 
     function claimRewards() public {

@@ -50,7 +50,9 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
     /// @notice the reported FEI balance to track protocol controlled FEI in these deposits
     uint256 public feiReportBalance;
 
-    constructor(address _core, DepositInfo[] memory newPCVDeposits) CoreRef(_core) {
+    constructor(address _core, DepositInfo[] memory newPCVDeposits)
+        CoreRef(_core)
+    {
         // Uses oracle admin to share admin with CR oracle where this contract is used
         _setContractAdminRole(keccak256("ORACLE_ADMIN_ROLE"));
 
@@ -77,7 +79,12 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         pcvDeposits.push(newPCVDeposit);
 
         emit DepositAdded(pcvDeposits.length - 1, newPCVDeposit.depositName);
-        emit BalanceUpdate(oldBalance, balance, oldFEIBalance, feiReportBalance);
+        emit BalanceUpdate(
+            oldBalance,
+            balance,
+            oldFEIBalance,
+            feiReportBalance
+        );
     }
 
     /// @notice helper method to edit a PCV deposit
@@ -98,8 +105,12 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
         uint256 oldBalance = balance;
         uint256 oldFEIBalance = feiReportBalance;
-        uint256 newBalance = oldBalance - updatePCVDeposit.usdAmount + usdAmount;
-        uint256 newFeiReportBalance = oldFEIBalance - updatePCVDeposit.feiAmount + feiAmount;
+        uint256 newBalance = oldBalance -
+            updatePCVDeposit.usdAmount +
+            usdAmount;
+        uint256 newFeiReportBalance = oldFEIBalance -
+            updatePCVDeposit.feiAmount +
+            feiAmount;
 
         balance = newBalance;
         feiReportBalance = newFeiReportBalance;
@@ -111,7 +122,12 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         updatePCVDeposit.underlyingToken = underlyingToken;
 
         emit DepositChanged(index, depositName);
-        emit BalanceUpdate(oldBalance, newBalance, oldFEIBalance, newFeiReportBalance);
+        emit BalanceUpdate(
+            oldBalance,
+            newBalance,
+            oldFEIBalance,
+            newFeiReportBalance
+        );
     }
 
     /// @notice helper method to delete a PCV deposit
@@ -139,19 +155,30 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         balance -= depositBalance;
         feiReportBalance -= feiDepositBalance;
 
-        emit BalanceUpdate(oldBalance, balance, oldFeiReportBalance, feiReportBalance);
+        emit BalanceUpdate(
+            oldBalance,
+            balance,
+            oldFeiReportBalance,
+            feiReportBalance
+        );
         emit DepositRemoved(index);
     }
 
     // ----------- Governor only state changing api -----------
 
     /// @notice function to add a deposit
-    function addDeposit(DepositInfo calldata newPCVDeposit) external onlyGovernorOrAdmin {
+    function addDeposit(DepositInfo calldata newPCVDeposit)
+        external
+        onlyGovernorOrAdmin
+    {
         _addDeposit(newPCVDeposit);
     }
 
     /// @notice function to bulk add deposits
-    function bulkAddDeposits(DepositInfo[] calldata newPCVDeposits) external onlyGovernorOrAdmin {
+    function bulkAddDeposits(DepositInfo[] calldata newPCVDeposits)
+        external
+        onlyGovernorOrAdmin
+    {
         for (uint256 i = 0; i < newPCVDeposits.length; i++) {
             _addDeposit(newPCVDeposits[i]);
         }
@@ -171,7 +198,14 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         string calldata depositName,
         address underlying
     ) external onlyGovernorOrAdmin {
-        _editDeposit(index, depositName, usdAmount, feiAmount, underlyingTokenAmount, underlying);
+        _editDeposit(
+            index,
+            depositName,
+            usdAmount,
+            feiAmount,
+            underlyingTokenAmount,
+            underlying
+        );
     }
 
     // ----------- Getters -----------
@@ -182,7 +216,12 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
     }
 
     /// @notice returns the resistant balance and FEI in the deposit
-    function resistantBalanceAndFei() public view override returns (uint256, uint256) {
+    function resistantBalanceAndFei()
+        public
+        view
+        override
+        returns (uint256, uint256)
+    {
         return (balance, feiReportBalance);
     }
 

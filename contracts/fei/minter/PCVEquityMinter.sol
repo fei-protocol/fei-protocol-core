@@ -70,22 +70,28 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
 
         // return total equity scaled proportionally by the APR and the ratio of the mint frequency to the entire year
         return
-            (((equity.toUint256() * aprBasisPoints) / Constants.BASIS_POINTS_GRANULARITY) *
-                duration) / Constants.ONE_YEAR;
+            (((equity.toUint256() * aprBasisPoints) /
+                Constants.BASIS_POINTS_GRANULARITY) * duration) /
+            Constants.ONE_YEAR;
     }
 
     /// @notice set the collateralization oracle
-    function setCollateralizationOracle(ICollateralizationOracle newCollateralizationOracle)
-        external
-        override
-        onlyGovernor
-    {
+    function setCollateralizationOracle(
+        ICollateralizationOracle newCollateralizationOracle
+    ) external override onlyGovernor {
         _setCollateralizationOracle(newCollateralizationOracle);
     }
 
     /// @notice sets the new APR for determining buyback size from PCV equity
-    function setAPRBasisPoints(uint256 newAprBasisPoints) external override onlyGovernorOrAdmin {
-        require(newAprBasisPoints <= MAX_APR_BASIS_POINTS, "PCVEquityMinter: APR above max");
+    function setAPRBasisPoints(uint256 newAprBasisPoints)
+        external
+        override
+        onlyGovernorOrAdmin
+    {
+        require(
+            newAprBasisPoints <= MAX_APR_BASIS_POINTS,
+            "PCVEquityMinter: APR above max"
+        );
         _setAPRBasisPoints(newAprBasisPoints);
     }
 
@@ -97,10 +103,13 @@ contract PCVEquityMinter is IPCVEquityMinter, FeiTimedMinter {
         emit APRUpdate(oldAprBasisPoints, newAprBasisPoints);
     }
 
-    function _setCollateralizationOracle(ICollateralizationOracle newCollateralizationOracle)
-        internal
-    {
-        require(address(newCollateralizationOracle) != address(0), "PCVEquityMinter: zero address");
+    function _setCollateralizationOracle(
+        ICollateralizationOracle newCollateralizationOracle
+    ) internal {
+        require(
+            address(newCollateralizationOracle) != address(0),
+            "PCVEquityMinter: zero address"
+        );
         address oldCollateralizationOracle = address(collateralizationOracle);
         collateralizationOracle = newCollateralizationOracle;
         emit CollateralizationOracleUpdate(

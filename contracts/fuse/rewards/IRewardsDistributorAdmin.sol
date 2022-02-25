@@ -46,7 +46,8 @@ interface IRewardsDistributorAdmin {
      * @param contributor The contributor whose COMP speed to update
      * @param compSpeed New COMP speed for contributor
      */
-    function _setContributorCompSpeed(address contributor, uint256 compSpeed) external;
+    function _setContributorCompSpeed(address contributor, uint256 compSpeed)
+        external;
 
     /**
      * @notice Add a default market to claim rewards for in `claimRewards()`

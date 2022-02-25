@@ -25,7 +25,11 @@ contract MockBondingCurve {
         allocated = true;
     }
 
-    function purchase(address, uint256) public payable returns (uint256 amountOut) {
+    function purchase(address, uint256)
+        public
+        payable
+        returns (uint256 amountOut)
+    {
         return 1;
     }
 
@@ -33,7 +37,11 @@ contract MockBondingCurve {
         return 10 * amount;
     }
 
-    function getAverageUSDPrice(uint256) public view returns (Decimal.D256 memory) {
+    function getAverageUSDPrice(uint256)
+        public
+        view
+        returns (Decimal.D256 memory)
+    {
         return getCurrentPrice;
     }
 }

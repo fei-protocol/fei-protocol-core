@@ -49,8 +49,14 @@ contract AutoRewardsDistributor is CoreRef {
 
     /// @notice helper function that gets all needed state from the TribalChief contract
     /// based on this state, it then calculates what the compSpeed should be.
-    function _deriveRequiredCompSpeed() internal view returns (uint256 compSpeed) {
-        (, , , uint120 poolAllocPoints, ) = tribalChief.poolInfo(tribalChiefRewardIndex);
+    function _deriveRequiredCompSpeed()
+        internal
+        view
+        returns (uint256 compSpeed)
+    {
+        (, , , uint120 poolAllocPoints, ) = tribalChief.poolInfo(
+            tribalChiefRewardIndex
+        );
         uint256 totalAllocPoints = tribalChief.totalAllocPoint();
         uint256 tribePerBlock = tribalChief.tribePerBlock();
 
@@ -64,14 +70,22 @@ contract AutoRewardsDistributor is CoreRef {
     /// @notice function to get the new comp speed and figure out if an update is needed
     /// @return newCompSpeed the newly calculated compSpeed based on allocation points in the TribalChief
     /// @return updateNeeded boolean indicating whether the new compSpeed is not equal to the existing compSpeed
-    function getNewRewardSpeed() public view returns (uint256 newCompSpeed, bool updateNeeded) {
+    function getNewRewardSpeed()
+        public
+        view
+        returns (uint256 newCompSpeed, bool updateNeeded)
+    {
         newCompSpeed = _deriveRequiredCompSpeed();
         uint256 actualCompSpeed;
 
         if (isBorrowIncentivized) {
-            actualCompSpeed = rewardsDistributorAdmin.compBorrowSpeeds(cTokenAddress);
+            actualCompSpeed = rewardsDistributorAdmin.compBorrowSpeeds(
+                cTokenAddress
+            );
         } else {
-            actualCompSpeed = rewardsDistributorAdmin.compSupplySpeeds(cTokenAddress);
+            actualCompSpeed = rewardsDistributorAdmin.compSupplySpeeds(
+                cTokenAddress
+            );
         }
 
         if (actualCompSpeed != newCompSpeed) {
@@ -86,19 +100,24 @@ contract AutoRewardsDistributor is CoreRef {
         require(updateNeeded, "AutoRewardsDistributor: update not needed");
 
         if (isBorrowIncentivized) {
-            rewardsDistributorAdmin._setCompBorrowSpeed(cTokenAddress, compSpeed);
+            rewardsDistributorAdmin._setCompBorrowSpeed(
+                cTokenAddress,
+                compSpeed
+            );
         } else {
-            rewardsDistributorAdmin._setCompSupplySpeed(cTokenAddress, compSpeed);
+            rewardsDistributorAdmin._setCompSupplySpeed(
+                cTokenAddress,
+                compSpeed
+            );
         }
         emit SpeedChanged(compSpeed);
     }
 
     /// @notice API to point to a new rewards distributor admin contract
     /// @param _newRewardsDistributorAdmin the address of the new RewardsDistributorAdmin contract
-    function setRewardsDistributorAdmin(IRewardsDistributorAdmin _newRewardsDistributorAdmin)
-        external
-        onlyGovernorOrAdmin
-    {
+    function setRewardsDistributorAdmin(
+        IRewardsDistributorAdmin _newRewardsDistributorAdmin
+    ) external onlyGovernorOrAdmin {
         IRewardsDistributorAdmin oldRewardsDistributorAdmin = rewardsDistributorAdmin;
         rewardsDistributorAdmin = _newRewardsDistributorAdmin;
         emit RewardsDistributorAdminChanged(

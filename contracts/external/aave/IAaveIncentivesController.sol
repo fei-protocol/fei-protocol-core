@@ -36,8 +36,10 @@ interface IAaveIncentivesController is IAaveDistributionManager {
      * @param assets The assets to incentivize
      * @param emissionsPerSecond The emission for each asset
      */
-    function configureAssets(address[] calldata assets, uint256[] calldata emissionsPerSecond)
-        external;
+    function configureAssets(
+        address[] calldata assets,
+        uint256[] calldata emissionsPerSecond
+    ) external;
 
     /**
      * @dev Called by the corresponding asset on any update that affects the rewards distribution
@@ -93,7 +95,10 @@ interface IAaveIncentivesController is IAaveDistributionManager {
      * @param user the address of the user
      * @return the unclaimed user rewards
      */
-    function getUserUnclaimedRewards(address user) external view returns (uint256);
+    function getUserUnclaimedRewards(address user)
+        external
+        view
+        returns (uint256);
 
     /**
      * @dev for backward compatibility with previous implementation of the Incentives controller

@@ -75,7 +75,12 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, PCVDeposit {
 
     /// @notice returns the amount out of tokens from the reserves for a given amount of FEI
     /// @param amountFeiIn the amount of FEI in
-    function getAmountOut(uint256 amountFeiIn) public view override returns (uint256) {
+    function getAmountOut(uint256 amountFeiIn)
+        public
+        view
+        override
+        returns (uint256)
+    {
         uint256 adjustedAmountIn = (amountFeiIn * usdPerFeiBasisPoints) /
             Constants.BASIS_POINTS_GRANULARITY;
         return readOracle().mul(adjustedAmountIn).asUint256();
@@ -84,7 +89,12 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, PCVDeposit {
     /// @notice withdraw tokens from the reserves
     /// @param to address to send tokens
     /// @param amountOut amount of tokens to send
-    function withdraw(address to, uint256 amountOut) external virtual override onlyPCVController {
+    function withdraw(address to, uint256 amountOut)
+        external
+        virtual
+        override
+        onlyPCVController
+    {
         _transfer(to, amountOut);
         emit Withdrawal(msg.sender, to, amountOut);
     }
@@ -116,7 +126,10 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, PCVDeposit {
         );
         uint256 oldUsdPerFeiBasisPoints = usdPerFeiBasisPoints;
         usdPerFeiBasisPoints = newUsdPerFeiBasisPoints;
-        emit UsdPerFeiRateUpdate(oldUsdPerFeiBasisPoints, newUsdPerFeiBasisPoints);
+        emit UsdPerFeiRateUpdate(
+            oldUsdPerFeiBasisPoints,
+            newUsdPerFeiBasisPoints
+        );
     }
 
     function _transfer(address to, uint256 amount) internal virtual {

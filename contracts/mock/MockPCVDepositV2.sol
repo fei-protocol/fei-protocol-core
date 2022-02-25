@@ -23,13 +23,20 @@ contract MockPCVDepositV2 is IPCVDeposit, CoreRef {
 
     receive() external payable {}
 
-    function set(uint256 _resistantBalance, uint256 _resistantProtocolOwnedFei) public {
+    function set(uint256 _resistantBalance, uint256 _resistantProtocolOwnedFei)
+        public
+    {
         resistantBalance = _resistantBalance;
         resistantProtocolOwnedFei = _resistantProtocolOwnedFei;
     }
 
     // gets the resistant token balance and protocol owned fei of this deposit
-    function resistantBalanceAndFei() external view override returns (uint256, uint256) {
+    function resistantBalanceAndFei()
+        external
+        view
+        override
+        returns (uint256, uint256)
+    {
         return (resistantBalance, resistantProtocolOwnedFei);
     }
 
@@ -51,7 +58,11 @@ contract MockPCVDepositV2 is IPCVDeposit, CoreRef {
         IERC20(token).transfer(to, amount);
     }
 
-    function withdrawETH(address payable to, uint256 amount) external override onlyPCVController {
+    function withdrawETH(address payable to, uint256 amount)
+        external
+        override
+        onlyPCVController
+    {
         to.transfer(amount);
     }
 

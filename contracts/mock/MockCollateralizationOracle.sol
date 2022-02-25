@@ -8,7 +8,9 @@ contract MockCollateralizationOracle is MockOracleCoreRef {
 
     uint256 public pcvValue = 5e20;
 
-    constructor(address core, uint256 exchangeRate) MockOracleCoreRef(core, exchangeRate) {}
+    constructor(address core, uint256 exchangeRate)
+        MockOracleCoreRef(core, exchangeRate)
+    {}
 
     function set(uint256 _userCirculatingFei, uint256 _pcvValue) public {
         userCirculatingFei = _userCirculatingFei;

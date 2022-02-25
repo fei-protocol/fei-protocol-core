@@ -8,7 +8,11 @@ import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 /// and not leveraging core are twofold. One, it simplifies devops operations around adding
 /// and removing users, and two, by being self contained, it is more efficient as it does not need
 /// to make external calls to figure out who has a particular role.
-contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessControlEnumerable {
+contract RewardsDistributorAdmin is
+    IRewardsDistributorAdmin,
+    CoreRef,
+    AccessControlEnumerable
+{
     /// @notice auto rewards distributor controller role.
     /// This role will be given to auto rewards distributor controller smart contracts
     bytes32 public constant override AUTO_REWARDS_DISTRIBUTOR_ROLE =
@@ -33,7 +37,10 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
 
         /// give all AutoRewardsDistributor contracts the proper role so that they can set borrow and supply speeds
         for (uint256 i = 0; i < _autoRewardDistributors.length; i++) {
-            _setupRole(AUTO_REWARDS_DISTRIBUTOR_ROLE, _autoRewardDistributors[i]);
+            _setupRole(
+                AUTO_REWARDS_DISTRIBUTOR_ROLE,
+                _autoRewardDistributors[i]
+            );
         }
     }
 
@@ -42,7 +49,11 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
      * @dev Admin function to begin change of admin. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
      * @param newPendingAdmin New pending admin.
      */
-    function _setPendingAdmin(address newPendingAdmin) external override onlyGovernor {
+    function _setPendingAdmin(address newPendingAdmin)
+        external
+        override
+        onlyGovernor
+    {
         rewardsDistributorContract._setPendingAdmin(newPendingAdmin);
     }
 
@@ -63,7 +74,11 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
      * @param recipient The address of the recipient to transfer COMP to
      * @param amount The amount of COMP to (possibly) transfer
      */
-    function _grantComp(address recipient, uint256 amount) external override onlyGovernor {
+    function _grantComp(address recipient, uint256 amount)
+        external
+        override
+        onlyGovernor
+    {
         rewardsDistributorContract._grantComp(recipient, amount);
     }
 
@@ -100,7 +115,10 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
      * Callable only by the guardian or governor
      * @param cToken The market whose COMP speed to set to 0
      */
-    function guardianDisableSupplySpeed(address cToken) external onlyGuardianOrGovernor {
+    function guardianDisableSupplySpeed(address cToken)
+        external
+        onlyGuardianOrGovernor
+    {
         rewardsDistributorContract._setCompSupplySpeed(cToken, 0);
     }
 
@@ -109,7 +127,10 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
      * Callable only by the guardian or governor
      * @param cToken The market whose COMP speed to set to 0
      */
-    function guardianDisableBorrowSpeed(address cToken) external onlyGuardianOrGovernor {
+    function guardianDisableBorrowSpeed(address cToken)
+        external
+        onlyGuardianOrGovernor
+    {
         rewardsDistributorContract._setCompBorrowSpeed(cToken, 0);
     }
 
@@ -123,7 +144,10 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
         override
         onlyGovernorOrAdmin
     {
-        rewardsDistributorContract._setContributorCompSpeed(contributor, compSpeed);
+        rewardsDistributorContract._setContributorCompSpeed(
+            contributor,
+            compSpeed
+        );
     }
 
     /**
@@ -138,7 +162,11 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
      * @notice Set the implementation contract the RewardsDistributorDelegator delegate calls
      * @param implementation_ the logic contract address
      */
-    function _setImplementation(address implementation_) external override onlyGovernor {
+    function _setImplementation(address implementation_)
+        external
+        override
+        onlyGovernor
+    {
         rewardsDistributorContract._setImplementation(implementation_);
     }
 
@@ -146,7 +174,12 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
      * @notice view function to get the comp supply speeds from the rewards distributor contract
      * @param cToken The market to view
      */
-    function compSupplySpeeds(address cToken) external view override returns (uint256) {
+    function compSupplySpeeds(address cToken)
+        external
+        view
+        override
+        returns (uint256)
+    {
         return rewardsDistributorContract.compSupplySpeeds(cToken);
     }
 
@@ -154,7 +187,12 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
      * @notice view function to get the comp borrow speeds from the rewards distributor contract
      * @param cToken The market to view
      */
-    function compBorrowSpeeds(address cToken) external view override returns (uint256) {
+    function compBorrowSpeeds(address cToken)
+        external
+        view
+        override
+        returns (uint256)
+    {
         return rewardsDistributorContract.compBorrowSpeeds(cToken);
     }
 

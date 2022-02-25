@@ -54,7 +54,11 @@ contract ERC20Dripper is PCVDeposit, Timed {
     /// @notice withdraw tokens from the PCV allocation
     /// @param amountUnderlying of tokens withdrawn
     /// @param to the address to send PCV to
-    function withdraw(address to, uint256 amountUnderlying) external override onlyPCVController {
+    function withdraw(address to, uint256 amountUnderlying)
+        external
+        override
+        onlyPCVController
+    {
         _withdrawERC20(address(token), to, amountUnderlying);
     }
 

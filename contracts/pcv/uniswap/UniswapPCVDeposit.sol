@@ -76,15 +76,23 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
         whenNotPaused
     {
         uint256 totalUnderlying = balance();
-        require(amountUnderlying <= totalUnderlying, "UniswapPCVDeposit: Insufficient underlying");
+        require(
+            amountUnderlying <= totalUnderlying,
+            "UniswapPCVDeposit: Insufficient underlying"
+        );
 
         uint256 totalLiquidity = liquidityOwned();
 
         // ratio of LP tokens needed to get out the desired amount
-        Decimal.D256 memory ratioToWithdraw = Decimal.ratio(amountUnderlying, totalUnderlying);
+        Decimal.D256 memory ratioToWithdraw = Decimal.ratio(
+            amountUnderlying,
+            totalUnderlying
+        );
 
         // amount of LP tokens to withdraw factoring in ratio
-        uint256 liquidityToWithdraw = ratioToWithdraw.mul(totalLiquidity).asUint256();
+        uint256 liquidityToWithdraw = ratioToWithdraw
+            .mul(totalLiquidity)
+            .asUint256();
 
         // Withdraw liquidity from the pair and send to target
         uint256 amountWithdrawn = _removeLiquidity(liquidityToWithdraw);
@@ -110,7 +118,10 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
         uint256 oldMaxBasisPointsFromPegLP = maxBasisPointsFromPegLP;
         maxBasisPointsFromPegLP = _maxBasisPointsFromPegLP;
 
-        emit MaxBasisPointsFromPegLPUpdate(oldMaxBasisPointsFromPegLP, _maxBasisPointsFromPegLP);
+        emit MaxBasisPointsFromPegLPUpdate(
+            oldMaxBasisPointsFromPegLP,
+            _maxBasisPointsFromPegLP
+        );
     }
 
     /// @notice set the new pair contract
@@ -150,7 +161,12 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
 
         Finally scale the resistant reserves by the ratio owned by the contract
      */
-    function resistantBalanceAndFei() public view override returns (uint256, uint256) {
+    function resistantBalanceAndFei()
+        public
+        view
+        override
+        returns (uint256, uint256)
+    {
         (uint256 feiInPool, uint256 otherInPool) = getReserves();
 
         Decimal.D256 memory priceOfToken = readOracle();
@@ -158,9 +174,16 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
         uint256 k = feiInPool * otherInPool;
 
         // resistant other/fei in pool
-        uint256 resistantOtherInPool = Decimal.one().div(priceOfToken).mul(k).asUint256().sqrt();
+        uint256 resistantOtherInPool = Decimal
+            .one()
+            .div(priceOfToken)
+            .mul(k)
+            .asUint256()
+            .sqrt();
 
-        uint256 resistantFeiInPool = Decimal.ratio(k, resistantOtherInPool).asUint256();
+        uint256 resistantFeiInPool = Decimal
+            .ratio(k, resistantOtherInPool)
+            .asUint256();
 
         Decimal.D256 memory ratioOwned = _ratioOwned();
         return (
@@ -175,7 +198,11 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
         return pair.balanceOf(address(this));
     }
 
-    function _removeLiquidity(uint256 liquidity) internal virtual returns (uint256) {
+    function _removeLiquidity(uint256 liquidity)
+        internal
+        virtual
+        returns (uint256)
+    {
         uint256 endOfTime = type(uint256).max;
         // No restrictions on withdrawal price
         (, uint256 amountWithdrawn) = router.removeLiquidity(
@@ -190,7 +217,10 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
         return amountWithdrawn;
     }
 
-    function _addLiquidity(uint256 tokenAmount, uint256 feiAmount) internal virtual {
+    function _addLiquidity(uint256 tokenAmount, uint256 feiAmount)
+        internal
+        virtual
+    {
         _mintFei(address(this), feiAmount);
 
         uint256 endOfTime = type(uint256).max;
@@ -210,7 +240,9 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     /// @notice used as slippage protection when adding liquidity to the pool
     function _getMinLiquidity(uint256 amount) internal view returns (uint256) {
         return
-            (amount * (Constants.BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP)) /
+            (amount *
+                (Constants.BASIS_POINTS_GRANULARITY -
+                    maxBasisPointsFromPegLP)) /
             Constants.BASIS_POINTS_GRANULARITY;
     }
 

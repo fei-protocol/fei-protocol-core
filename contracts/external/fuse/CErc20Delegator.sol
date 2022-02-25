@@ -10,7 +10,10 @@ abstract contract CErc20Delegator is IERC20 {
     address public pendingAdmin;
     address public interestRateModel;
 
-    function _setPendingAdmin(address payable newPendingAdmin) external virtual returns (uint256);
+    function _setPendingAdmin(address payable newPendingAdmin)
+        external
+        virtual
+        returns (uint256);
 
     function _setInterestRateModel(InterestRateModel newInterestRateModel)
         public
@@ -33,5 +36,9 @@ abstract contract CErc20Delegator is IERC20 {
 
     function borrow(uint256 mintAmount) external virtual returns (uint256);
 
-    function balanceOfUnderlying(address owner) external view virtual returns (uint256);
+    function balanceOfUnderlying(address owner)
+        external
+        view
+        virtual
+        returns (uint256);
 }

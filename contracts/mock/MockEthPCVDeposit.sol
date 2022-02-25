@@ -23,7 +23,10 @@ contract MockEthPCVDeposit is IPCVDeposit {
     function deposit() external override {}
 
     function withdraw(address to, uint256 amount) external override {
-        require(address(this).balance >= amount, "MockEthPCVDeposit: Not enough value held");
+        require(
+            address(this).balance >= amount,
+            "MockEthPCVDeposit: Not enough value held"
+        );
         total -= amount;
         Address.sendValue(payable(to), amount);
     }
@@ -37,7 +40,11 @@ contract MockEthPCVDeposit is IPCVDeposit {
         emit WithdrawERC20(msg.sender, to, token, amount);
     }
 
-    function withdrawETH(address payable to, uint256 amountOut) external virtual override {
+    function withdrawETH(address payable to, uint256 amountOut)
+        external
+        virtual
+        override
+    {
         Address.sendValue(to, amountOut);
         emit WithdrawETH(msg.sender, to, amountOut);
     }
@@ -55,7 +62,13 @@ contract MockEthPCVDeposit is IPCVDeposit {
         return address(0);
     }
 
-    function resistantBalanceAndFei() public view virtual override returns (uint256, uint256) {
+    function resistantBalanceAndFei()
+        public
+        view
+        virtual
+        override
+        returns (uint256, uint256)
+    {
         return (balance(), 0);
     }
 }

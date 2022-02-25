@@ -12,9 +12,15 @@ interface IOracleRef {
 
     event InvertUpdate(bool oldDoInvert, bool newDoInvert);
 
-    event DecimalsNormalizerUpdate(int256 oldDecimalsNormalizer, int256 newDecimalsNormalizer);
+    event DecimalsNormalizerUpdate(
+        int256 oldDecimalsNormalizer,
+        int256 newDecimalsNormalizer
+    );
 
-    event BackupOracleUpdate(address indexed oldBackupOracle, address indexed newBackupOracle);
+    event BackupOracleUpdate(
+        address indexed oldBackupOracle,
+        address indexed newBackupOracle
+    );
 
     // ----------- State changing API -----------
 
@@ -42,5 +48,8 @@ interface IOracleRef {
 
     function readOracle() external view returns (Decimal.D256 memory);
 
-    function invert(Decimal.D256 calldata price) external pure returns (Decimal.D256 memory);
+    function invert(Decimal.D256 calldata price)
+        external
+        pure
+        returns (Decimal.D256 memory);
 }

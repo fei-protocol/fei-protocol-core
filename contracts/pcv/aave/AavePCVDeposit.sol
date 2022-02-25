@@ -72,7 +72,10 @@ contract AavePCVDeposit is WethPCVDeposit {
         address[] memory assets = new address[](1);
         assets[0] = address(aToken);
         // First grab the available balance
-        uint256 amount = incentivesController.getRewardsBalance(assets, address(this));
+        uint256 amount = incentivesController.getRewardsBalance(
+            assets,
+            address(this)
+        );
 
         // claim all available rewards
         incentivesController.claimRewards(assets, amount, address(this));
@@ -96,7 +99,11 @@ contract AavePCVDeposit is WethPCVDeposit {
     /// @notice withdraw tokens from the PCV allocation
     /// @param amountUnderlying of tokens withdrawn
     /// @param to the address to send PCV to
-    function withdraw(address to, uint256 amountUnderlying) external override onlyPCVController {
+    function withdraw(address to, uint256 amountUnderlying)
+        external
+        override
+        onlyPCVController
+    {
         lendingPool.withdraw(address(token), amountUnderlying, to);
         emit Withdrawal(msg.sender, to, amountUnderlying);
     }

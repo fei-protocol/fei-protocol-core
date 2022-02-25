@@ -39,7 +39,11 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @dev Admin function to begin change of admin. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
      * @param _newPendingAdmin New pending admin.
      */
-    function _setPendingAdmin(address _newPendingAdmin) external override onlyOwner {
+    function _setPendingAdmin(address _newPendingAdmin)
+        external
+        override
+        onlyOwner
+    {
         pendingNewAdmin = _newPendingAdmin;
         emit successSetAdmin(pendingNewAdmin);
     }
@@ -63,7 +67,11 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @param recipient The address of the recipient to transfer COMP to
      * @param amount The amount of COMP to (possibly) transfer
      */
-    function _grantComp(address recipient, uint256 amount) external override onlyOwner {
+    function _grantComp(address recipient, uint256 amount)
+        external
+        override
+        onlyOwner
+    {
         newCompGrantee = recipient;
         newCompGranteeAmount = amount;
         emit successGrantComp(recipient, amount);
@@ -73,7 +81,11 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @notice Set COMP speed for a single market
      * @param cToken The market whose COMP speed to update
      */
-    function _setCompSupplySpeed(address cToken, uint256 compSpeed) external override onlyOwner {
+    function _setCompSupplySpeed(address cToken, uint256 compSpeed)
+        external
+        override
+        onlyOwner
+    {
         compSupplySpeed = compSpeed;
         emit successSetCompSupplySpeed();
     }
@@ -82,7 +94,11 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @notice Set COMP speed for a single market
      * @param cToken The market whose COMP speed to update
      */
-    function _setCompBorrowSpeed(address cToken, uint256 compSpeed) external override onlyOwner {
+    function _setCompBorrowSpeed(address cToken, uint256 compSpeed)
+        external
+        override
+        onlyOwner
+    {
         compBorrowSpeed = compSpeed;
         emit successSetCompBorrowSpeed();
     }
@@ -115,7 +131,12 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @notice view function to get the comp supply speeds from the rewards distributor contract
      * @param cToken The market to view
      */
-    function compSupplySpeeds(address cToken) external view override returns (uint256) {
+    function compSupplySpeeds(address cToken)
+        external
+        view
+        override
+        returns (uint256)
+    {
         return compSupplySpeed;
     }
 
@@ -123,7 +144,12 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @notice view function to get the comp borrow speeds from the rewards distributor contract
      * @param cToken The market to view
      */
-    function compBorrowSpeeds(address cToken) external view override returns (uint256) {
+    function compBorrowSpeeds(address cToken)
+        external
+        view
+        override
+        returns (uint256)
+    {
         return compBorrowSpeed;
     }
 
@@ -140,7 +166,11 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @notice Set the implementation contract the RewardsDistributorDelegator delegate calls
      * @param implementation_ the logic contract address
      */
-    function _setImplementation(address implementation_) external override onlyOwner {
+    function _setImplementation(address implementation_)
+        external
+        override
+        onlyOwner
+    {
         implementation = implementation_;
     }
 }

@@ -27,12 +27,15 @@ interface ISaddleSwap {
         view
         returns (uint256);
 
-    function calculateRemoveLiquidity(uint256 amount) external view returns (uint256[] memory);
-
-    function calculateRemoveLiquidityOneToken(uint256 tokenAmount, uint8 tokenIndex)
+    function calculateRemoveLiquidity(uint256 amount)
         external
         view
-        returns (uint256 availableTokenAmount);
+        returns (uint256[] memory);
+
+    function calculateRemoveLiquidityOneToken(
+        uint256 tokenAmount,
+        uint8 tokenIndex
+    ) external view returns (uint256 availableTokenAmount);
 
     function swap(
         uint8 tokenIndexFrom,

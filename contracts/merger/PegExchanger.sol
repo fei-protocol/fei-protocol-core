@@ -49,8 +49,14 @@ contract PegExchanger is MergerBase {
     /// @param timestamp  the block timestamp for expiration
     /// @notice the expiry must be set to at least MIN_EXPIRY_WINDOW in the future.
     function setExpirationTimestamp(uint256 timestamp) public {
-        require(msg.sender == tribeTimelock, "Only the tribe timelock may call this function");
-        require(timestamp > (block.timestamp + MIN_EXPIRY_WINDOW), "timestamp too low");
+        require(
+            msg.sender == tribeTimelock,
+            "Only the tribe timelock may call this function"
+        );
+        require(
+            timestamp > (block.timestamp + MIN_EXPIRY_WINDOW),
+            "timestamp too low"
+        );
         require(
             bothPartiesAccepted == true,
             "Contract must be enabled before admin functions called"

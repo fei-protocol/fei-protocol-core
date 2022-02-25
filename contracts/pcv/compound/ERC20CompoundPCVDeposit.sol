@@ -18,7 +18,9 @@ contract ERC20CompoundPCVDeposit is CompoundPCVDepositBase {
     /// @notice Compound ERC20 PCV Deposit constructor
     /// @param _core Fei Core for reference
     /// @param _cToken Compound cToken to deposit
-    constructor(address _core, address _cToken) CompoundPCVDepositBase(_core, _cToken) {
+    constructor(address _core, address _cToken)
+        CompoundPCVDepositBase(_core, _cToken)
+    {
         token = IERC20(CErc20(_cToken).underlying());
     }
 

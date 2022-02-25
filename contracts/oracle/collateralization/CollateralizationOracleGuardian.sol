@@ -53,32 +53,40 @@ contract CollateralizationOracleGuardian is CoreRef, Timed {
     /// @param protocolControlledValue new PCV value
     /// @param userCirculatingFei new user FEI value
     /// @dev make sure to pause the CR oracle wrapper or else the set value would be overwritten on next update
-    function setCache(uint256 protocolControlledValue, uint256 userCirculatingFei)
-        external
-        onlyGuardianOrGovernor
-        afterTime
-    {
+    function setCache(
+        uint256 protocolControlledValue,
+        uint256 userCirculatingFei
+    ) external onlyGuardianOrGovernor afterTime {
         // Reset timer
         _initTimed();
 
         // Check boundaries on new update values
         uint256 cachedPCV = oracleWrapper.cachedProtocolControlledValue();
         require(
-            calculateDeviationThresholdBasisPoints(protocolControlledValue, cachedPCV) <=
-                deviationThresholdBasisPoints,
+            calculateDeviationThresholdBasisPoints(
+                protocolControlledValue,
+                cachedPCV
+            ) <= deviationThresholdBasisPoints,
             "CollateralizationOracleGuardian: Cached PCV exceeds deviation"
         );
 
         uint256 cachedUserFei = oracleWrapper.cachedUserCirculatingFei();
         require(
-            calculateDeviationThresholdBasisPoints(userCirculatingFei, cachedUserFei) <=
-                deviationThresholdBasisPoints,
+            calculateDeviationThresholdBasisPoints(
+                userCirculatingFei,
+                cachedUserFei
+            ) <= deviationThresholdBasisPoints,
             "CollateralizationOracleGuardian: Cached User FEI exceeds deviation"
         );
 
         // Set the new cache values
-        int256 equity = protocolControlledValue.toInt256() - userCirculatingFei.toInt256();
-        oracleWrapper.setCache(protocolControlledValue, userCirculatingFei, equity);
+        int256 equity = protocolControlledValue.toInt256() -
+            userCirculatingFei.toInt256();
+        oracleWrapper.setCache(
+            protocolControlledValue,
+            userCirculatingFei,
+            equity
+        );
 
         assert(oracleWrapper.cachedProtocolEquity() == equity);
     }
@@ -94,16 +102,18 @@ contract CollateralizationOracleGuardian is CoreRef, Timed {
     }
 
     /// @notice governance setter for maximum deviation the guardian can change per update
-    function setDeviationThresholdBasisPoints(uint256 newDeviationThresholdBasisPoints)
-        external
-        onlyGovernor
-    {
+    function setDeviationThresholdBasisPoints(
+        uint256 newDeviationThresholdBasisPoints
+    ) external onlyGovernor {
         _setDeviationThresholdBasisPoints(newDeviationThresholdBasisPoints);
     }
 
-    function _setDeviationThresholdBasisPoints(uint256 newDeviationThresholdBasisPoints) internal {
+    function _setDeviationThresholdBasisPoints(
+        uint256 newDeviationThresholdBasisPoints
+    ) internal {
         require(
-            newDeviationThresholdBasisPoints <= Constants.BASIS_POINTS_GRANULARITY,
+            newDeviationThresholdBasisPoints <=
+                Constants.BASIS_POINTS_GRANULARITY,
             "CollateralizationOracleGuardian: deviation exceeds granularity"
         );
 

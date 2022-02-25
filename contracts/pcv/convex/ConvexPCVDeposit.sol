@@ -108,7 +108,9 @@ contract ConvexPCVDeposit is PCVDeposit {
                 balances[i] = poolToken.balanceOf(address(curvePool));
                 totalBalances += balances[i];
             }
-            usdBalance -= (usdBalance * balances[feiIndexInPool]) / totalBalances;
+            usdBalance -=
+                (usdBalance * balances[feiIndexInPool]) /
+                totalBalances;
         }
 
         return usdBalance;

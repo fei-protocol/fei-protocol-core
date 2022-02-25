@@ -20,5 +20,8 @@ interface IUniRef {
 
     function token() external view returns (address);
 
-    function getReserves() external view returns (uint256 feiReserves, uint256 tokenReserves);
+    function getReserves()
+        external
+        view
+        returns (uint256 feiReserves, uint256 tokenReserves);
 }

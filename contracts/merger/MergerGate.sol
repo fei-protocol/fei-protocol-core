@@ -21,7 +21,11 @@ contract MergerGate {
     /// @notice ensures Rari proposal 9 has executed
     /// @dev uses MakerDAO variable naming conventions for obvious reasons: https://github.com/makerdao/dss/issues/28
     function floop() external {
-        require(rgtGovernor.state(PROPOSAL_NUMBER) == GovernorAlpha.ProposalState.Executed, "rip");
+        require(
+            rgtGovernor.state(PROPOSAL_NUMBER) ==
+                GovernorAlpha.ProposalState.Executed,
+            "rip"
+        );
         emit OnePlusOneEqualsThree("May the sun never set on the Tribe");
     }
 }

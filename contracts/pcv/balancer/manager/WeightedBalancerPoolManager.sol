@@ -39,11 +39,10 @@ abstract contract WeightedBalancerPoolManager is
         pool.updateWeightsGradually(startTime, endTime, endWeights);
     }
 
-    function withdrawCollectedManagementFees(IWeightedPool pool, address recipient)
-        public
-        override
-        onlyGovernorOrAdmin
-    {
+    function withdrawCollectedManagementFees(
+        IWeightedPool pool,
+        address recipient
+    ) public override onlyGovernorOrAdmin {
         pool.withdrawCollectedManagementFees(recipient);
     }
 }

@@ -22,7 +22,10 @@ contract PSMRouter is IPSMRouter {
     constructor(IPegStabilityModule _psm, IFei _fei) {
         psm = _psm;
         fei = _fei;
-        IERC20(address(Constants.WETH)).approve(address(_psm), type(uint256).max);
+        IERC20(address(Constants.WETH)).approve(
+            address(_psm),
+            type(uint256).max
+        );
         _fei.approve(address(_psm), type(uint256).max);
     }
 
@@ -142,7 +145,10 @@ contract PSMRouter is IPSMRouter {
         uint256 _minAmountOut,
         uint256 _ethAmountIn
     ) internal returns (uint256) {
-        require(_ethAmountIn == msg.value, "PSMRouter: ethAmountIn and msg.value mismatch");
+        require(
+            _ethAmountIn == msg.value,
+            "PSMRouter: ethAmountIn and msg.value mismatch"
+        );
         Constants.WETH.deposit{value: msg.value}();
         return psm.mint(_to, msg.value, _minAmountOut);
     }

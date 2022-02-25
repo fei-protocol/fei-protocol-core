@@ -73,7 +73,10 @@ contract CurvePCVDepositPlainPool is PCVDeposit {
         }
 
         // require non-empty deposit
-        require(totalBalances > 0, "CurvePCVDepositPlainPool: cannot deposit 0");
+        require(
+            totalBalances > 0,
+            "CurvePCVDepositPlainPool: cannot deposit 0"
+        );
 
         // set maximum allowed slippage
         uint256 virtualPrice = curvePool.get_virtual_price();
@@ -158,7 +161,9 @@ contract CurvePCVDepositPlainPool is PCVDeposit {
                 balances[i] = poolToken.balanceOf(address(curvePool));
                 totalBalances += balances[i];
             }
-            usdBalance -= (usdBalance * balances[feiIndexInPool]) / totalBalances;
+            usdBalance -=
+                (usdBalance * balances[feiIndexInPool]) /
+                totalBalances;
         }
 
         return usdBalance;

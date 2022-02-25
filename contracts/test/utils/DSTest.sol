@@ -595,7 +595,11 @@ contract DSTest {
         }
     }
 
-    function checkEq0(bytes memory a, bytes memory b) internal pure returns (bool ok) {
+    function checkEq0(bytes memory a, bytes memory b)
+        internal
+        pure
+        returns (bool ok)
+    {
         ok = true;
         if (a.length == b.length) {
             for (uint256 i = 0; i < a.length; i++) {
