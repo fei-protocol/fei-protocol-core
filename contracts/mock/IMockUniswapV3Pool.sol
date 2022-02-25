@@ -6,5 +6,5 @@ import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Po
 interface IMockUniswapV3Pool is IUniswapV3Pool {
   
   // NOTE: Not part of the UnisV3Pool interface. Test method only
-  function setTokens(address _token0, address _token1) external;
+  function mockSetTokens(address _token0, address _token1) external;
 }

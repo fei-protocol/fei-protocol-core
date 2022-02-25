@@ -51,7 +51,7 @@ contract MockUniV3Pool {
   function increaseObservationCardinalityNext(uint16 cardinality) external {}
 
   // NOTE: Not part of the UnisV3Pool interface. Test method only
-  function setTokens(address tokenA, address tokenB) external {
+  function mockSetTokens(address tokenA, address tokenB) external {
     (address _token0, address _token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
     token0 = _token0;
     token1 = _token1;
