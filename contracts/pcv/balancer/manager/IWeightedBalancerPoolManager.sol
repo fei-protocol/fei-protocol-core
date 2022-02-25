@@ -16,4 +16,4 @@ interface IWeightedBalancerPoolManager is IBaseBalancerPoolManager {
     ) external;
 
     function withdrawCollectedManagementFees(IWeightedPool pool, address recipient) external;
-}   
+}

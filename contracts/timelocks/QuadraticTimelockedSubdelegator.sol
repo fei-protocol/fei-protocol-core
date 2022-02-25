@@ -64,15 +64,8 @@ contract QuadtraticTimelockedSubdelegator is ITimelockedDelegator, QuadraticToke
     /// @notice delegate locked TRIBE to a delegatee
     /// @param delegatee the target address to delegate to
     /// @param amount the amount of TRIBE to delegate. Will increment existing delegated TRIBE
-    function delegate(address delegatee, uint256 amount)
-        public
-        override
-        onlyBeneficiary
-    {
-        require(
-            amount <= _tribeBalance(),
-            "TimelockedDelegator: Not enough Tribe"
-        );
+    function delegate(address delegatee, uint256 amount) public override onlyBeneficiary {
+        require(amount <= _tribeBalance(), "TimelockedDelegator: Not enough Tribe");
 
         // withdraw and include an existing delegation
         if (delegateContract[delegatee] != address(0)) {
@@ -80,8 +73,7 @@ contract QuadtraticTimelockedSubdelegator is ITimelockedDelegator, QuadraticToke
         }
 
         ITribe _tribe = tribe;
-        address _delegateContract =
-            address(new Delegatee(delegatee, address(_tribe)));
+        address _delegateContract = address(new Delegatee(delegatee, address(_tribe)));
         delegateContract[delegatee] = _delegateContract;
 
         delegateAmount[delegatee] = amount;
@@ -95,12 +87,7 @@ contract QuadtraticTimelockedSubdelegator is ITimelockedDelegator, QuadraticToke
     /// @notice return delegated TRIBE to the timelock
     /// @param delegatee the target address to undelegate from
     /// @return the amount of TRIBE returned
-    function undelegate(address delegatee)
-        public
-        override
-        onlyBeneficiary
-        returns (uint256)
-    {
+    function undelegate(address delegatee) public override onlyBeneficiary returns (uint256) {
         address _delegateContract = delegateContract[delegatee];
         require(
             _delegateContract != address(0),

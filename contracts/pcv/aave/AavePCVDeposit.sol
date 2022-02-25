@@ -4,21 +4,36 @@ pragma solidity ^0.8.0;
 import "../utils/WethPCVDeposit.sol";
 
 interface LendingPool {
-    function deposit(address asset, uint256 amount, address onBehalfOf, uint16 referralCode) external;
-    
-    function withdraw(address asset, uint256 amount, address to) external;
+    function deposit(
+        address asset,
+        uint256 amount,
+        address onBehalfOf,
+        uint16 referralCode
+    ) external;
+
+    function withdraw(
+        address asset,
+        uint256 amount,
+        address to
+    ) external;
 }
 
 interface IncentivesController {
-    function claimRewards(address[] calldata assets, uint256 amount, address to) external;
+    function claimRewards(
+        address[] calldata assets,
+        uint256 amount,
+        address to
+    ) external;
 
-    function getRewardsBalance(address[] calldata assets, address user) external view returns(uint256);
+    function getRewardsBalance(address[] calldata assets, address user)
+        external
+        view
+        returns (uint256);
 }
 
 /// @title Aave PCV Deposit
 /// @author Fei Protocol
 contract AavePCVDeposit is WethPCVDeposit {
-
     event ClaimRewards(address indexed caller, uint256 amount);
 
     /// @notice the associated Aave aToken for the deposit
@@ -74,18 +89,14 @@ contract AavePCVDeposit is WethPCVDeposit {
         uint256 pendingBalance = token.balanceOf(address(this));
         token.approve(address(lendingPool), pendingBalance);
         lendingPool.deposit(address(token), pendingBalance, address(this), 0);
-        
+
         emit Deposit(msg.sender, pendingBalance);
     }
 
     /// @notice withdraw tokens from the PCV allocation
     /// @param amountUnderlying of tokens withdrawn
     /// @param to the address to send PCV to
-    function withdraw(address to, uint256 amountUnderlying)
-        external
-        override
-        onlyPCVController
-    {
+    function withdraw(address to, uint256 amountUnderlying) external override onlyPCVController {
         lendingPool.withdraw(address(token), amountUnderlying, to);
         emit Withdrawal(msg.sender, to, amountUnderlying);
     }

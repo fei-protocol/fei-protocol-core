@@ -9,13 +9,12 @@ import "./IFeiTimedMinter.sol";
 /// @title FeiTimedMinter
 /// @notice a contract which mints FEI to a target address on a timed cadence
 contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized, RateLimitedMinter {
-    
     /// @notice most frequent that mints can happen
     uint256 public constant override MIN_MINT_FREQUENCY = 1 hours; // Min 1 hour per mint
 
     /// @notice least frequent that mints can happen
     uint256 public constant override MAX_MINT_FREQUENCY = 30 days; // Max 1 month per mint
-    
+
     uint256 private _mintAmount;
 
     /// @notice the target receiving minted FEI
@@ -35,11 +34,15 @@ contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized, RateLi
         uint256 _incentive,
         uint256 _frequency,
         uint256 _initialMintAmount
-    ) 
+    )
         CoreRef(_core)
         Timed(_frequency)
         Incentivized(_incentive)
-        RateLimitedMinter((_initialMintAmount + _incentive) / _frequency, (_initialMintAmount + _incentive), true) 
+        RateLimitedMinter(
+            (_initialMintAmount + _incentive) / _frequency,
+            (_initialMintAmount + _incentive),
+            true
+        )
     {
         _initTimed();
 
@@ -50,7 +53,6 @@ contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized, RateLi
     /// @notice triggers a minting of FEI
     /// @dev timed and incentivized
     function mint() public virtual override whenNotPaused afterTime {
-
         /// Reset the timer
         _initTimed();
 
@@ -62,13 +64,13 @@ contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized, RateLi
         if (amount != 0) {
             // Calls the overriden RateLimitedMinter _mintFei which includes the rate limiting logic
             _mintFei(target, amount);
-        
+
             emit FeiMinting(msg.sender, amount);
         }
         // After mint called whether a "mint" happens or not to allow incentivized target hooks
         _afterMint();
     }
-    
+
     function mintAmount() public view virtual override returns (uint256) {
         return _mintAmount;
     }
@@ -104,7 +106,7 @@ contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized, RateLi
     }
 
     function _mintFei(address to, uint256 amountIn) internal override(CoreRef, RateLimitedMinter) {
-      RateLimitedMinter._mintFei(to, amountIn);
+        RateLimitedMinter._mintFei(to, amountIn);
     }
 
     function _afterMint() internal virtual {}

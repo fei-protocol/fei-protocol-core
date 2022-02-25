@@ -6,7 +6,6 @@ import "../refs/CoreRef.sol";
 /// @title abstract contract for incentivizing keepers
 /// @author Fei Protocol
 abstract contract Incentivized is CoreRef {
-
     /// @notice FEI incentive for calling keeper functions
     uint256 public incentiveAmount;
 

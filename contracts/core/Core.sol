@@ -11,16 +11,15 @@ import "../tribe/Tribe.sol";
 /// @author Fei Protocol
 /// @notice maintains roles, access control, fei, tribe, genesisGroup, and the TRIBE treasury
 contract Core is ICore, Permissions, Initializable {
-
     /// @notice the address of the FEI contract
     IFei public override fei;
-    
+
     /// @notice the address of the TRIBE contract
     IERC20 public override tribe;
 
     function init() external override initializer {
         _setupGovernor(msg.sender);
-        
+
         Fei _fei = new Fei(address(this));
         _setFei(address(_fei));
 
@@ -43,16 +42,9 @@ contract Core is ICore, Permissions, Initializable {
     /// @notice sends TRIBE tokens from treasury to an address
     /// @param to the address to send TRIBE to
     /// @param amount the amount of TRIBE to send
-    function allocateTribe(address to, uint256 amount)
-        external
-        override
-        onlyGovernor
-    {
+    function allocateTribe(address to, uint256 amount) external override onlyGovernor {
         IERC20 _tribe = tribe;
-        require(
-            _tribe.balanceOf(address(this)) >= amount,
-            "Core: Not enough Tribe"
-        );
+        require(_tribe.balanceOf(address(this)) >= amount, "Core: Not enough Tribe");
 
         _tribe.transfer(to, amount);
 

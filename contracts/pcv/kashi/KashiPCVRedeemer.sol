@@ -14,14 +14,14 @@ contract KashiPCVRedeemer {
 
     address public immutable target;
 
-    constructor(
-        address _target
-    ) { target = _target; }
+    constructor(address _target) {
+        target = _target;
+    }
 
     /// @notice redeem Kashi shares
     /// @param pair kashi pair to redeem from
     /// @param fraction asset fraction to redeem
-    function redeem(IKashi pair, uint256 fraction) external { 
+    function redeem(IKashi pair, uint256 fraction) external {
         pair.removeAsset(target, fraction);
     }
 

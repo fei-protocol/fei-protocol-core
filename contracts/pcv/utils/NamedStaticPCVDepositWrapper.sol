@@ -16,11 +16,16 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
     // -------------- Events ---------------
     /// @notice event to update fei and usd balance
-    event BalanceUpdate(uint256 oldBalance, uint256 newBalance, uint256 oldFEIBalance, uint256 newFEIBalance);
+    event BalanceUpdate(
+        uint256 oldBalance,
+        uint256 newBalance,
+        uint256 oldFEIBalance,
+        uint256 newFEIBalance
+    );
 
     /// @notice event to remove a deposit
     event DepositRemoved(uint256 index);
-    
+
     /// @notice event to add a new deposit
     event DepositAdded(uint256 index, string indexed depositName);
 
@@ -46,7 +51,6 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
     uint256 public feiReportBalance;
 
     constructor(address _core, DepositInfo[] memory newPCVDeposits) CoreRef(_core) {
-
         // Uses oracle admin to share admin with CR oracle where this contract is used
         _setContractAdminRole(keccak256("ORACLE_ADMIN_ROLE"));
 
@@ -60,7 +64,10 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
     /// @notice helper method to add a PCV deposit
     function _addDeposit(DepositInfo memory newPCVDeposit) internal {
-        require(newPCVDeposit.feiAmount > 0 || newPCVDeposit.usdAmount > 0, "NamedStaticPCVDepositWrapper: must supply either fei or usd amount");
+        require(
+            newPCVDeposit.feiAmount > 0 || newPCVDeposit.usdAmount > 0,
+            "NamedStaticPCVDepositWrapper: must supply either fei or usd amount"
+        );
 
         uint256 oldBalance = balance;
         uint256 oldFEIBalance = feiReportBalance;
@@ -82,7 +89,10 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         uint256 underlyingTokenAmount,
         address underlyingToken
     ) internal {
-        require(index < pcvDeposits.length, "NamedStaticPCVDepositWrapper: cannot edit index out of bounds");
+        require(
+            index < pcvDeposits.length,
+            "NamedStaticPCVDepositWrapper: cannot edit index out of bounds"
+        );
 
         DepositInfo storage updatePCVDeposit = pcvDeposits[index];
 
@@ -106,7 +116,10 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
 
     /// @notice helper method to delete a PCV deposit
     function _removeDeposit(uint256 index) internal {
-        require(index < pcvDeposits.length, "NamedStaticPCVDepositWrapper: cannot remove index out of bounds");
+        require(
+            index < pcvDeposits.length,
+            "NamedStaticPCVDepositWrapper: cannot remove index out of bounds"
+        );
 
         DepositInfo storage pcvDepositToRemove = pcvDeposits[index];
 
@@ -133,21 +146,16 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
     // ----------- Governor only state changing api -----------
 
     /// @notice function to add a deposit
-    function addDeposit(
-        DepositInfo calldata newPCVDeposit
-    ) external onlyGovernorOrAdmin {
+    function addDeposit(DepositInfo calldata newPCVDeposit) external onlyGovernorOrAdmin {
         _addDeposit(newPCVDeposit);
     }
 
     /// @notice function to bulk add deposits
-    function bulkAddDeposits(
-        DepositInfo[] calldata newPCVDeposits
-    ) external onlyGovernorOrAdmin {
+    function bulkAddDeposits(DepositInfo[] calldata newPCVDeposits) external onlyGovernorOrAdmin {
         for (uint256 i = 0; i < newPCVDeposits.length; i++) {
             _addDeposit(newPCVDeposits[i]);
         }
     }
-
 
     /// @notice function to remove a PCV Deposit
     function removeDeposit(uint256 index) external isGovernorOrGuardianOrAdmin {
@@ -163,14 +171,7 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
         string calldata depositName,
         address underlying
     ) external onlyGovernorOrAdmin {
-        _editDeposit(
-            index,
-            depositName,
-            usdAmount,
-            feiAmount,
-            underlyingTokenAmount,
-            underlying
-        );
+        _editDeposit(index, depositName, usdAmount, feiAmount, underlyingTokenAmount, underlying);
     }
 
     // ----------- Getters -----------
@@ -189,7 +190,7 @@ contract NamedStaticPCVDepositWrapper is IPCVDepositBalances, CoreRef {
     function balanceReportedIn() public pure override returns (address) {
         return Constants.USD;
     }
-    
+
     /// @notice function to return all of the different tokens deposited into this contract
     function getAllUnderlying() public view returns (address[] memory) {
         uint256 totalDeposits = numDeposits();

@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 interface IIdleTrancheMinter {
     function withdrawAA(uint256 _amount) external returns (uint256);
-    
+
     function token() external view returns (IERC20);
 }
 
@@ -18,17 +18,14 @@ contract IdleTranchePCVRedeemer {
 
     IIdleTrancheMinter public immutable idleToken;
 
-    constructor(
-        address _target,
-        IIdleTrancheMinter _idleToken
-    ) { 
-      target = _target;
-      idleToken = _idleToken;
+    constructor(address _target, IIdleTrancheMinter _idleToken) {
+        target = _target;
+        idleToken = _idleToken;
     }
 
     /// @notice redeem Idle Token shares
     /// @param amount asset amount to redeem
-    function redeem(uint256 amount) external { 
+    function redeem(uint256 amount) external {
         idleToken.withdrawAA(amount);
 
         IERC20 token = idleToken.token();

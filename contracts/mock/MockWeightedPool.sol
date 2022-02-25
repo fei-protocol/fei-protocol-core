@@ -6,7 +6,6 @@ import "./MockVault.sol";
 import "../pcv/balancer/IVault.sol";
 
 contract MockWeightedPool is MockERC20 {
-
     uint256 public _startTime;
     uint256 public _endTime;
     uint256[] public _endWeights;
@@ -41,20 +40,16 @@ contract MockWeightedPool is MockERC20 {
     }
 
     // this method is specific to weighted pool
-    function getNormalizedWeights()
-        external
-        view
-        returns (
-            uint256[] memory _weights
-        ) {
-            return weights;
-        }
+    function getNormalizedWeights() external view returns (uint256[] memory _weights) {
+        return weights;
+    }
 
     // this method is specific to stable pool, but for convenience we just need
     // one mock balancer pool
     function getRate() external view returns (uint256) {
         return rate;
     }
+
     function mockSetRate(uint256 _rate) external {
         rate = _rate;
     }
@@ -66,9 +61,10 @@ contract MockWeightedPool is MockERC20 {
             uint256 startTime,
             uint256 endTime,
             uint256[] memory endWeights
-        ) {
-            return (_startTime, _endTime, _endWeights);
-        }
+        )
+    {
+        return (_startTime, _endTime, _endWeights);
+    }
 
     function setSwapEnabled(bool swapEnabled) external {
         getSwapEnabled = swapEnabled;

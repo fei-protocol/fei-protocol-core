@@ -13,10 +13,10 @@ contract MockAngleStakingRewards {
 
     mapping(address => uint256) public balanceOf;
 
-	constructor(IERC20 _stakingToken, IMockERC20 _rewardToken) {
-		stakingToken = _stakingToken;
+    constructor(IERC20 _stakingToken, IMockERC20 _rewardToken) {
+        stakingToken = _stakingToken;
         rewardToken = _rewardToken;
-	}
+    }
 
     function stake(uint256 amount) external {
         SafeERC20.safeTransferFrom(IERC20(stakingToken), msg.sender, address(this), amount);

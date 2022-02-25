@@ -9,7 +9,13 @@ import "../Constants.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef, PCVDeposit, ReentrancyGuard {
+contract PegStabilityModule is
+    IPegStabilityModule,
+    RateLimitedMinter,
+    OracleRef,
+    PCVDeposit,
+    ReentrancyGuard
+{
     using Decimal for Decimal.D256;
     using SafeCast for *;
     using SafeERC20 for IERC20;
@@ -39,7 +45,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
 
     /// @notice event that is emitted when redemptions are paused
     event RedemptionsPaused(address account);
-    
+
     /// @notice event that is emitted when redemptions are unpaused
     event RedemptionsUnpaused(address account);
 
@@ -48,7 +54,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
 
     /// @notice event that is emitted when minting is paused
     event MintingPaused(address account);
-    
+
     /// @notice event that is emitted when minting is unpaused
     event MintingUnpaused(address account);
 
@@ -73,7 +79,13 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         IERC20 _underlyingToken,
         IPCVDeposit _surplusTarget
     )
-        OracleRef(params.coreAddress, params.oracleAddress, params.backupOracle, params.decimalsNormalizer, params.doInvert)
+        OracleRef(
+            params.coreAddress,
+            params.oracleAddress,
+            params.backupOracle,
+            params.decimalsNormalizer,
+            params.doInvert
+        )
         /// rate limited minter passes false as the last param as there can be no partial mints
         RateLimitedMinter(_feiLimitPerSecond, _mintingBufferCap, false)
     {
@@ -87,13 +99,13 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     }
 
     /// @notice modifier that allows execution when redemptions are not paused
-    modifier whileRedemptionsNotPaused {
+    modifier whileRedemptionsNotPaused() {
         require(!redeemPaused, "PegStabilityModule: Redeem paused");
         _;
     }
 
     /// @notice modifier that allows execution when minting is not paused
-    modifier whileMintingNotPaused {
+    modifier whileMintingNotPaused() {
         require(!mintPaused, "PegStabilityModule: Minting paused");
         _;
     }
@@ -123,7 +135,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     }
 
     /// @notice withdraw assets from PSM to an external address
-    function withdraw(address to, uint256 amount) external override virtual onlyPCVController {
+    function withdraw(address to, uint256 amount) external virtual override onlyPCVController {
         _withdrawERC20(address(underlyingToken), to, amount);
     }
 
@@ -138,7 +150,11 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     }
 
     /// @notice set the ideal amount of reserves for the contract to hold for redemptions
-    function setReservesThreshold(uint256 newReservesThreshold) external override onlyGovernorOrAdmin {
+    function setReservesThreshold(uint256 newReservesThreshold)
+        external
+        override
+        onlyGovernorOrAdmin
+    {
         _setReservesThreshold(newReservesThreshold);
     }
 
@@ -158,7 +174,10 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
 
     /// @notice internal helper function to set the redemption fee
     function _setRedeemFee(uint256 newRedeemFeeBasisPoints) internal {
-        require(newRedeemFeeBasisPoints <= MAX_FEE, "PegStabilityModule: Redeem fee exceeds max fee");
+        require(
+            newRedeemFeeBasisPoints <= MAX_FEE,
+            "PegStabilityModule: Redeem fee exceeds max fee"
+        );
         uint256 _oldRedeemFee = redeemFeeBasisPoints;
         redeemFeeBasisPoints = newRedeemFeeBasisPoints;
 
@@ -176,7 +195,10 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
 
     /// @notice helper function to set the surplus target
     function _setSurplusTarget(IPCVDeposit newSurplusTarget) internal {
-        require(address(newSurplusTarget) != address(0), "PegStabilityModule: Invalid new surplus target");
+        require(
+            address(newSurplusTarget) != address(0),
+            "PegStabilityModule: Invalid new surplus target"
+        );
         IPCVDeposit oldTarget = surplusTarget;
         surplusTarget = newSurplusTarget;
 
@@ -206,7 +228,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         address to,
         uint256 amountFeiIn,
         uint256 minAmountOut
-    ) internal virtual returns(uint256 amountOut) {
+    ) internal virtual returns (uint256 amountOut) {
         updateOracle();
 
         amountOut = _getRedeemAmountOut(amountFeiIn);
@@ -224,7 +246,7 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         address to,
         uint256 amountIn,
         uint256 minAmountOut
-    ) internal virtual returns(uint256 amountFeiOut) {
+    ) internal virtual returns (uint256 amountFeiOut) {
         updateOracle();
 
         amountFeiOut = _getMintAmountOut(amountIn);
@@ -240,18 +262,26 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         if (amountFeiToMint > 0) {
             _mintFei(to, amountFeiToMint);
         }
-        
+
         emit Mint(to, amountIn, amountFeiOut);
     }
 
-    /// @notice function to redeem FEI for an underlying asset 
+    /// @notice function to redeem FEI for an underlying asset
     /// We do not burn Fei; this allows the contract's balance of Fei to be used before the buffer is used
     /// In practice, this helps prevent artificial cycling of mint-burn cycles and prevents a griefing vector.
     function redeem(
         address to,
         uint256 amountFeiIn,
         uint256 minAmountOut
-    ) external virtual override nonReentrant whenNotPaused whileRedemptionsNotPaused returns (uint256 amountOut) {
+    )
+        external
+        virtual
+        override
+        nonReentrant
+        whenNotPaused
+        whileRedemptionsNotPaused
+        returns (uint256 amountOut)
+    {
         amountOut = _redeem(to, amountFeiIn, minAmountOut);
     }
 
@@ -261,7 +291,15 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
         address to,
         uint256 amountIn,
         uint256 minAmountOut
-    ) external virtual override nonReentrant whenNotPaused whileMintingNotPaused returns (uint256 amountFeiOut) {
+    )
+        external
+        virtual
+        override
+        nonReentrant
+        whenNotPaused
+        whileMintingNotPaused
+        returns (uint256 amountFeiOut)
+    {
         amountFeiOut = _mint(to, amountIn, minAmountOut);
     }
 
@@ -271,7 +309,12 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     /// First get oracle price of token
     /// Then figure out how many dollars that amount in is worth by multiplying price * amount.
     /// ensure decimals are normalized if on underlying they are not 18
-    function getMintAmountOut(uint256 amountIn) public override view returns (uint256 amountFeiOut) {
+    function getMintAmountOut(uint256 amountIn)
+        public
+        view
+        override
+        returns (uint256 amountFeiOut)
+    {
         amountFeiOut = _getMintAmountOut(amountIn);
     }
 
@@ -279,27 +322,32 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     /// First get oracle price of token
     /// Then figure out how many dollars that amount in is worth by multiplying price * amount.
     /// ensure decimals are normalized if on underlying they are not 18
-    function getRedeemAmountOut(uint256 amountFeiIn) public override view returns (uint256 amountTokenOut) {
+    function getRedeemAmountOut(uint256 amountFeiIn)
+        public
+        view
+        override
+        returns (uint256 amountTokenOut)
+    {
         amountTokenOut = _getRedeemAmountOut(amountFeiIn);
     }
 
     /// @notice the maximum mint amount out
-    function getMaxMintAmountOut() external override view returns (uint256) {
+    function getMaxMintAmountOut() external view override returns (uint256) {
         return fei().balanceOf(address(this)) + buffer();
     }
 
     /// @notice a flag for whether the current balance is above (true) or below (false) the reservesThreshold
-    function hasSurplus() external override view returns (bool) {
+    function hasSurplus() external view override returns (bool) {
         return balance() > reservesThreshold;
     }
 
     /// @notice an integer representing the positive surplus or negative deficit of contract balance vs reservesThreshold
-    function reservesSurplus() public override view returns (int256) {
+    function reservesSurplus() public view override returns (int256) {
         return balance().toInt256() - reservesThreshold.toInt256();
     }
 
     /// @notice function from PCVDeposit that must be overriden
-    function balance() public view override virtual returns(uint256) {
+    function balance() public view virtual override returns (uint256) {
         return underlyingToken.balanceOf(address(this));
     }
 
@@ -309,15 +357,20 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     }
 
     /// @notice override default behavior of not checking fei balance
-    function resistantBalanceAndFei() public view override returns(uint256, uint256) {
-      return (balance(), feiBalance());
+    function resistantBalanceAndFei() public view override returns (uint256, uint256) {
+        return (balance(), feiBalance());
     }
 
     // ----------- Internal Methods -----------
 
     /// @notice helper function to get mint amount out based on current market prices
     /// @dev will revert if price is outside of bounds and bounded PSM is being used
-    function _getMintAmountOut(uint256 amountIn) internal virtual view returns (uint256 amountFeiOut) {
+    function _getMintAmountOut(uint256 amountIn)
+        internal
+        view
+        virtual
+        returns (uint256 amountFeiOut)
+    {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 
@@ -331,13 +384,19 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
 
     /// @notice helper function to get redeem amount out based on current market prices
     /// @dev will revert if price is outside of bounds and bounded PSM is being used
-    function _getRedeemAmountOut(uint256 amountFeiIn) internal virtual view returns (uint256 amountTokenOut) {
+    function _getRedeemAmountOut(uint256 amountFeiIn)
+        internal
+        view
+        virtual
+        returns (uint256 amountTokenOut)
+    {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 
         /// get amount of dollars being provided
         Decimal.D256 memory adjustedAmountIn = Decimal.from(
-            amountFeiIn * (Constants.BASIS_POINTS_GRANULARITY - redeemFeeBasisPoints) / Constants.BASIS_POINTS_GRANULARITY
+            (amountFeiIn * (Constants.BASIS_POINTS_GRANULARITY - redeemFeeBasisPoints)) /
+                Constants.BASIS_POINTS_GRANULARITY
         );
 
         /// now turn the dollars into the underlying token amounts
@@ -359,7 +418,11 @@ contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef
     }
 
     /// @notice transfer assets from user to this contract
-    function _transferFrom(address from, address to, uint256 amount) internal {
+    function _transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) internal {
         SafeERC20.safeTransferFrom(underlyingToken, from, to, amount);
     }
 

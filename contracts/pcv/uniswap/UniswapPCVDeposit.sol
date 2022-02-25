@@ -76,20 +76,15 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
         whenNotPaused
     {
         uint256 totalUnderlying = balance();
-        require(
-            amountUnderlying <= totalUnderlying,
-            "UniswapPCVDeposit: Insufficient underlying"
-        );
+        require(amountUnderlying <= totalUnderlying, "UniswapPCVDeposit: Insufficient underlying");
 
         uint256 totalLiquidity = liquidityOwned();
 
         // ratio of LP tokens needed to get out the desired amount
-        Decimal.D256 memory ratioToWithdraw =
-            Decimal.ratio(amountUnderlying, totalUnderlying);
+        Decimal.D256 memory ratioToWithdraw = Decimal.ratio(amountUnderlying, totalUnderlying);
 
         // amount of LP tokens to withdraw factoring in ratio
-        uint256 liquidityToWithdraw =
-            ratioToWithdraw.mul(totalLiquidity).asUint256();
+        uint256 liquidityToWithdraw = ratioToWithdraw.mul(totalLiquidity).asUint256();
 
         // Withdraw liquidity from the pair and send to target
         uint256 amountWithdrawn = _removeLiquidity(liquidityToWithdraw);
@@ -115,10 +110,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
         uint256 oldMaxBasisPointsFromPegLP = maxBasisPointsFromPegLP;
         maxBasisPointsFromPegLP = _maxBasisPointsFromPegLP;
 
-        emit MaxBasisPointsFromPegLPUpdate(
-            oldMaxBasisPointsFromPegLP,
-            _maxBasisPointsFromPegLP
-        );
+        emit MaxBasisPointsFromPegLPUpdate(oldMaxBasisPointsFromPegLP, _maxBasisPointsFromPegLP);
     }
 
     /// @notice set the new pair contract
@@ -158,7 +150,7 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
 
         Finally scale the resistant reserves by the ratio owned by the contract
      */
-    function resistantBalanceAndFei() public view override returns(uint256, uint256) {
+    function resistantBalanceAndFei() public view override returns (uint256, uint256) {
         (uint256 feiInPool, uint256 otherInPool) = getReserves();
 
         Decimal.D256 memory priceOfToken = readOracle();
@@ -186,16 +178,15 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     function _removeLiquidity(uint256 liquidity) internal virtual returns (uint256) {
         uint256 endOfTime = type(uint256).max;
         // No restrictions on withdrawal price
-        (, uint256 amountWithdrawn) =
-            router.removeLiquidity(
-                address(fei()),
-                token,
-                liquidity,
-                0,
-                0,
-                address(this),
-                endOfTime
-            );
+        (, uint256 amountWithdrawn) = router.removeLiquidity(
+            address(fei()),
+            token,
+            liquidity,
+            0,
+            0,
+            address(this),
+            endOfTime
+        );
         return amountWithdrawn;
     }
 

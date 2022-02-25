@@ -60,7 +60,10 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
         IOracle[] memory _tokenOracles
     ) BalancerPCVDepositBase(_core, _vault, _rewards, _poolId, _maximumSlippageBasisPoints) {
         // check that we have oracles for all tokens
-        require(poolAssets.length == _tokenOracles.length, "BalancerPCVDepositWeightedPool: wrong number of oracles.");
+        require(
+            poolAssets.length == _tokenOracles.length,
+            "BalancerPCVDepositWeightedPool: wrong number of oracles."
+        );
 
         tokenOracles = _tokenOracles;
 
@@ -96,20 +99,15 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
         tokenOraclesMapping[IERC20(_token)] = IOracle(_newOracle);
 
         // emit event
-        emit OracleUpdate(
-            msg.sender,
-            _token,
-            oldOracle,
-            _newOracle
-        );
+        emit OracleUpdate(msg.sender, _token, oldOracle, _newOracle);
     }
 
     /// @notice returns total balance of PCV in the Deposit, expressed in "token"
     function balance() public view override returns (uint256) {
         uint256 _bptSupply = IWeightedPool(poolAddress).totalSupply();
         if (_bptSupply == 0) {
-          // empty (uninitialized) pools have a totalSupply of 0
-          return 0;
+            // empty (uninitialized) pools have a totalSupply of 0
+            return 0;
         }
 
         (, uint256[] memory balances, ) = vault.getPoolTokens(poolId);
@@ -120,20 +118,24 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
             bool isToken = i == tokenIndexInPool;
             bool isFei = feiInPool && i == feiIndexInPool;
             if (!isToken && !isFei) {
-                _balance += balances[i] * underlyingPrices[i] / underlyingPrices[tokenIndexInPool];
+                _balance +=
+                    (balances[i] * underlyingPrices[i]) /
+                    underlyingPrices[tokenIndexInPool];
             }
         }
 
         uint256 _bptBalance = IWeightedPool(poolAddress).balanceOf(address(this));
 
-        return _balance * _bptBalance / _bptSupply;
+        return (_balance * _bptBalance) / _bptSupply;
     }
 
     // @notice returns the manipulation-resistant balance of tokens & FEI held.
-    function resistantBalanceAndFei() public view override returns (
-        uint256 _resistantBalance,
-        uint256 _resistantFei
-    ) {
+    function resistantBalanceAndFei()
+        public
+        view
+        override
+        returns (uint256 _resistantBalance, uint256 _resistantFei)
+    {
         // read oracle values
         uint256[] memory underlyingPrices = _readOracles();
 
@@ -145,7 +147,10 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
         Decimal.D256 memory bptValueUSD = Decimal.from(bptBalance).mul(bptPrice).div(1e18);
 
         // compute balance in "token" value
-        _resistantBalance = bptValueUSD.mul(1e18).div(underlyingPrices[tokenIndexInPool]).asUint256();
+        _resistantBalance = bptValueUSD
+            .mul(1e18)
+            .div(underlyingPrices[tokenIndexInPool])
+            .asUint256();
 
         // if FEI is in the pair, return only the value of asset, and does not
         // count the protocol-owned FEI in the balance. For instance, if the pool
@@ -156,7 +161,7 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
             uint256[] memory _weights = IWeightedPool(poolAddress).getNormalizedWeights();
             _resistantFei = bptValueUSD.mul(_weights[feiIndexInPool]).div(1e18).asUint256();
             // if FEI is x% of the pool, remove x% of the balance
-            _resistantBalance = _resistantBalance * (1e18 - _weights[feiIndexInPool]) / 1e18;
+            _resistantBalance = (_resistantBalance * (1e18 - _weights[feiIndexInPool])) / 1e18;
         }
 
         return (_resistantBalance, _resistantFei);
@@ -188,16 +193,21 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
         if (feiInPool) {
             // If FEI is in pool, we mint the good balance of FEI to go with the tokens
             // we are depositing
-            uint256 _feiToMint = underlyingPrices[tokenIndexInPool] * balances[tokenIndexInPool] / 1e18;
+            uint256 _feiToMint = (underlyingPrices[tokenIndexInPool] * balances[tokenIndexInPool]) /
+                1e18;
             // normalize by weights
             uint256[] memory _weights = IWeightedPool(poolAddress).getNormalizedWeights();
-            _feiToMint = _feiToMint * _weights[feiIndexInPool] / _weights[tokenIndexInPool];
+            _feiToMint = (_feiToMint * _weights[feiIndexInPool]) / _weights[tokenIndexInPool];
             // mint FEI
             _mintFei(address(this), _feiToMint);
             balances[feiIndexInPool] = _feiToMint;
         }
 
-        bytes memory userData = abi.encode(IWeightedPool.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT, balances, 0);
+        bytes memory userData = abi.encode(
+            IWeightedPool.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT,
+            balances,
+            0
+        );
         // If the pool is not initialized, join with an INIT JoinKind
         if (IWeightedPool(poolAddress).totalSupply() == 0) {
             userData = abi.encode(IWeightedPool.JoinKind.INIT, balances);
@@ -232,13 +242,18 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
             // Compute USD value deposited
             uint256 valueIn = 0;
             for (uint256 i = 0; i < balances.length; i++) {
-                valueIn += balances[i] * underlyingPrices[i] / 1e18;
+                valueIn += (balances[i] * underlyingPrices[i]) / 1e18;
             }
 
             // Compute USD value out
             uint256 bptPrice = _getBPTPrice(underlyingPrices);
-            uint256 valueOut = Decimal.from(bptPrice).mul(bptBalanceAfter - bptBalanceBefore).div(1e18).asUint256();
-            uint256 minValueOut = Decimal.from(valueIn)
+            uint256 valueOut = Decimal
+                .from(bptPrice)
+                .mul(bptBalanceAfter - bptBalanceBefore)
+                .div(1e18)
+                .asUint256();
+            uint256 minValueOut = Decimal
+                .from(valueIn)
                 .mul(Constants.BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints)
                 .div(Constants.BASIS_POINTS_GRANULARITY)
                 .asUint256();
@@ -256,7 +271,12 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
     /// in the right proportions for the pool, so only use this to withdraw small
     /// amounts comparatively to the pool size. For large withdrawals, it is
     /// preferrable to use exitPool() and then withdrawERC20().
-    function withdraw(address to, uint256 amount) external override onlyPCVController whenNotPaused {
+    function withdraw(address to, uint256 amount)
+        external
+        override
+        onlyPCVController
+        whenNotPaused
+    {
         uint256 bptBalance = IWeightedPool(poolAddress).balanceOf(address(this));
         if (bptBalance != 0) {
             IVault.ExitPoolRequest memory request;
@@ -268,14 +288,19 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
             if (feiInPool) {
                 // If FEI is in pool, we also remove an equivalent portion of FEI
                 // from the pool, to conserve balance as much as possible
-                (Decimal.D256 memory oracleValue, bool oracleValid) = tokenOraclesMapping[token].read();
+                (Decimal.D256 memory oracleValue, bool oracleValid) = tokenOraclesMapping[token]
+                    .read();
                 require(oracleValid, "BalancerPCVDepositWeightedPool: oracle invalid");
                 uint256 amountFeiToWithdraw = oracleValue.mul(amount).asUint256();
                 request.minAmountsOut[feiIndexInPool] = amountFeiToWithdraw;
             }
 
             // Uses encoding for exact tokens out, spending at maximum bptBalance
-            bytes memory userData = abi.encode(IWeightedPool.ExitKind.BPT_IN_FOR_EXACT_TOKENS_OUT, request.minAmountsOut, bptBalance);
+            bytes memory userData = abi.encode(
+                IWeightedPool.ExitKind.BPT_IN_FOR_EXACT_TOKENS_OUT,
+                request.minAmountsOut,
+                bptBalance
+            );
             request.userData = userData;
 
             vault.exitPool(poolId, address(this), payable(address(this)), request);
@@ -290,7 +315,9 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
     function _readOracles() internal view returns (uint256[] memory underlyingPrices) {
         underlyingPrices = new uint256[](poolAssets.length);
         for (uint256 i = 0; i < underlyingPrices.length; i++) {
-            (Decimal.D256 memory oracleValue, bool oracleValid) = tokenOraclesMapping[IERC20(address(poolAssets[i]))].read();
+            (Decimal.D256 memory oracleValue, bool oracleValid) = tokenOraclesMapping[
+                IERC20(address(poolAssets[i]))
+            ].read();
             require(oracleValid, "BalancerPCVDepositWeightedPool: invalid oracle");
             underlyingPrices[i] = oracleValue.mul(1e18).asUint256();
 
@@ -298,27 +325,31 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
             uint8 decimals = ERC20(address(poolAssets[i])).decimals();
             require(decimals <= 18, "invalid decimals"); // should never happen
             if (decimals < 18) {
-                underlyingPrices[i] = underlyingPrices[i] * 10**(18-decimals);
+                underlyingPrices[i] = underlyingPrices[i] * 10**(18 - decimals);
             }
         }
     }
 
     /**
-    * Calculates the value of Balancer pool tokens using the logic described here:
-    * https://docs.gyro.finance/learn/oracles/bpt-oracle
-    * This is robust to price manipulations within the Balancer pool.
-    * Courtesy of Gyroscope protocol, used with permission. See the original file here :
-    * https://github.com/gyrostable/core/blob/master/contracts/GyroPriceOracle.sol#L109-L167
-    * @param underlyingPrices = array of prices for underlying assets in the pool,
-    *   given in USD, on a base of 18 decimals.
-    * @return bptPrice = the price of balancer pool tokens, in USD, on a base
-    *   of 18 decimals.
-    */
-    function _getBPTPrice(uint256[] memory underlyingPrices) internal view returns (uint256 bptPrice) {
+     * Calculates the value of Balancer pool tokens using the logic described here:
+     * https://docs.gyro.finance/learn/oracles/bpt-oracle
+     * This is robust to price manipulations within the Balancer pool.
+     * Courtesy of Gyroscope protocol, used with permission. See the original file here :
+     * https://github.com/gyrostable/core/blob/master/contracts/GyroPriceOracle.sol#L109-L167
+     * @param underlyingPrices = array of prices for underlying assets in the pool,
+     *   given in USD, on a base of 18 decimals.
+     * @return bptPrice = the price of balancer pool tokens, in USD, on a base
+     *   of 18 decimals.
+     */
+    function _getBPTPrice(uint256[] memory underlyingPrices)
+        internal
+        view
+        returns (uint256 bptPrice)
+    {
         IWeightedPool pool = IWeightedPool(poolAddress);
         uint256 _bptSupply = pool.totalSupply();
         uint256[] memory _weights = pool.getNormalizedWeights();
-        ( , uint256[] memory _balances, ) = vault.getPoolTokens(poolId);
+        (, uint256[] memory _balances, ) = vault.getPoolTokens(poolId);
 
         uint256 _k = uint256(1e18);
         uint256 _weightedProd = uint256(1e18);

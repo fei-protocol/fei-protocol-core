@@ -8,11 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20VotesComp.sol";
 
 // Forked functionality from https://github.com/unlock-protocol/unlock/blob/master/smart-contracts/contracts/UnlockProtocolGovernor.sol
 
-contract FeiDAO is
-    GovernorCompatibilityBravo,
-    GovernorVotesComp,
-    GovernorTimelockCompound
-{
+contract FeiDAO is GovernorCompatibilityBravo, GovernorVotesComp, GovernorTimelockCompound {
     uint256 private _votingDelay = 1; // reduce voting delay to 1 block
     uint256 private _votingPeriod = 13000; // extend voting period to 48h
     uint256 private _quorum = 25_000_000e18;
@@ -24,14 +20,10 @@ contract FeiDAO is
     uint256 public constant ROLLBACK_DEADLINE = 1635724800; // Nov 1, 2021 midnight UTC
 
     constructor(
-        ERC20VotesComp tribe, 
+        ERC20VotesComp tribe,
         ICompoundTimelock timelock,
         address guardian
-    )
-        GovernorVotesComp(tribe)
-        GovernorTimelockCompound(timelock)
-        Governor("Fei DAO")
-    {
+    ) GovernorVotesComp(tribe) GovernorTimelockCompound(timelock) Governor("Fei DAO") {
         _guardian = guardian;
     }
 
@@ -53,12 +45,7 @@ contract FeiDAO is
         return _votingPeriod;
     }
 
-    function quorum(uint256)
-        public
-        view
-        override
-        returns (uint256)
-    {
+    function quorum(uint256) public view override returns (uint256) {
         return _quorum;
     }
 
@@ -102,7 +89,13 @@ contract FeiDAO is
         _eta = eta;
 
         ICompoundTimelock _timelock = ICompoundTimelock(payable(timelock()));
-        _timelock.queueTransaction(timelock(), 0, "setPendingAdmin(address)", abi.encode(BACKUP_GOVERNOR), eta);
+        _timelock.queueTransaction(
+            timelock(),
+            0,
+            "setPendingAdmin(address)",
+            abi.encode(BACKUP_GOVERNOR),
+            eta
+        );
 
         emit RollbackQueued(eta);
     }
@@ -113,7 +106,13 @@ contract FeiDAO is
         require(_guardian == address(0), "FeiDAO: no queue");
 
         ICompoundTimelock _timelock = ICompoundTimelock(payable(timelock()));
-        _timelock.executeTransaction(timelock(), 0, "setPendingAdmin(address)", abi.encode(BACKUP_GOVERNOR), _eta);
+        _timelock.executeTransaction(
+            timelock(),
+            0,
+            "setPendingAdmin(address)",
+            abi.encode(BACKUP_GOVERNOR),
+            _eta
+        );
 
         emit Rollback();
     }
@@ -142,11 +141,7 @@ contract FeiDAO is
         uint256[] memory values,
         bytes[] memory calldatas,
         string memory description
-    )
-        public
-        override(IGovernor, Governor, GovernorCompatibilityBravo)
-        returns (uint256)
-    {
+    ) public override(IGovernor, Governor, GovernorCompatibilityBravo) returns (uint256) {
         return super.propose(targets, values, calldatas, description);
     }
 
@@ -156,10 +151,7 @@ contract FeiDAO is
         uint256[] memory values,
         bytes[] memory calldatas,
         bytes32 descriptionHash
-    )
-        internal
-        override(Governor, GovernorTimelockCompound)
-    {
+    ) internal override(Governor, GovernorTimelockCompound) {
         super._execute(proposalId, targets, values, calldatas, descriptionHash);
     }
 
@@ -168,11 +160,7 @@ contract FeiDAO is
         uint256[] memory values,
         bytes[] memory calldatas,
         bytes32 descriptionHash
-    )
-        internal
-        override(Governor, GovernorTimelockCompound)
-        returns (uint256)
-    {
+    ) internal override(Governor, GovernorTimelockCompound) returns (uint256) {
         return super._cancel(targets, values, calldatas, descriptionHash);
     }
 

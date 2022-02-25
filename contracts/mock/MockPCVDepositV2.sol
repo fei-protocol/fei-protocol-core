@@ -5,17 +5,16 @@ import "../refs/CoreRef.sol";
 import "../pcv/IPCVDeposit.sol";
 
 contract MockPCVDepositV2 is IPCVDeposit, CoreRef {
-
     address public override balanceReportedIn;
 
     uint256 private resistantBalance;
     uint256 private resistantProtocolOwnedFei;
 
     constructor(
-      address _core,
-      address _token,
-      uint256 _resistantBalance,
-      uint256 _resistantProtocolOwnedFei
+        address _core,
+        address _token,
+        uint256 _resistantBalance,
+        uint256 _resistantProtocolOwnedFei
     ) CoreRef(_core) {
         balanceReportedIn = _token;
         resistantBalance = _resistantBalance;
@@ -44,15 +43,19 @@ contract MockPCVDepositV2 is IPCVDeposit, CoreRef {
         resistantBalance = IERC20(balanceReportedIn).balanceOf(address(this));
     }
 
-    function withdrawERC20(address token, address to, uint256 amount) external override {
+    function withdrawERC20(
+        address token,
+        address to,
+        uint256 amount
+    ) external override {
         IERC20(token).transfer(to, amount);
     }
 
-    function withdrawETH(address payable to, uint256 amount) external override onlyPCVController() {
+    function withdrawETH(address payable to, uint256 amount) external override onlyPCVController {
         to.transfer(amount);
     }
-    
-    function balance() external override view returns (uint256) {
+
+    function balance() external view override returns (uint256) {
         return IERC20(balanceReportedIn).balanceOf(address(this));
     }
 }

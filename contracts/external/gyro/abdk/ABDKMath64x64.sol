@@ -24,15 +24,15 @@ library ABDKMath64x64 {
      */
     int128 private constant MAX_64x64 = 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
 
-    function uint256toInt128(uint256 input) internal pure returns(int128) {
+    function uint256toInt128(uint256 input) internal pure returns (int128) {
         return int128(int256(input));
     }
 
-    function int128toUint256(int128 input) internal pure returns(uint256) {
+    function int128toUint256(int128 input) internal pure returns (uint256) {
         return uint256(int256(input));
     }
 
-    function int128toUint64(int128 input) internal pure returns(uint64) {
+    function int128toUint64(int128 input) internal pure returns (uint64) {
         return uint64(uint256(int256(input)));
     }
 
@@ -450,7 +450,10 @@ library ABDKMath64x64 {
     function ln(int128 x) internal pure returns (int128) {
         require(x > 0);
 
-        return uint256toInt128((int128toUint256(log_2(x)) * 0xB17217F7D1CF79ABC9E3B39803F2F6AF) >> 128);
+        return
+            uint256toInt128(
+                (int128toUint256(log_2(x)) * 0xB17217F7D1CF79ABC9E3B39803F2F6AF) >> 128
+            );
     }
 
     /**

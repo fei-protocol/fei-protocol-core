@@ -22,7 +22,6 @@ interface ITokenTimelock {
 
     function acceptBeneficiary() external;
 
-
     // ----------- Getters -----------
 
     function lockedToken() external view returns (IERC20);
@@ -35,7 +34,7 @@ interface ITokenTimelock {
 
     function availableForRelease() external view returns (uint256);
 
-    function totalToken() external view returns(uint256);
+    function totalToken() external view returns (uint256);
 
     function alreadyReleasedAmount() external view returns (uint256);
 }

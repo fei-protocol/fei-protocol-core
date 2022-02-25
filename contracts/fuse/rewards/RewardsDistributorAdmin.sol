@@ -9,10 +9,10 @@ import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 /// and removing users, and two, by being self contained, it is more efficient as it does not need
 /// to make external calls to figure out who has a particular role.
 contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessControlEnumerable {
-
     /// @notice auto rewards distributor controller role.
     /// This role will be given to auto rewards distributor controller smart contracts
-    bytes32 public constant override AUTO_REWARDS_DISTRIBUTOR_ROLE = keccak256("AUTO_REWARDS_DISTRIBUTOR_ROLE");
+    bytes32 public constant override AUTO_REWARDS_DISTRIBUTOR_ROLE =
+        keccak256("AUTO_REWARDS_DISTRIBUTOR_ROLE");
 
     /// @notice rewards distributor contract
     IRewardsDistributorAdmin public rewardsDistributorContract;
@@ -38,24 +38,24 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
     }
 
     /**
-      * @notice Begins transfer of admin rights. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
-      * @dev Admin function to begin change of admin. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
-      * @param newPendingAdmin New pending admin.
-      */
+     * @notice Begins transfer of admin rights. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
+     * @dev Admin function to begin change of admin. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
+     * @param newPendingAdmin New pending admin.
+     */
     function _setPendingAdmin(address newPendingAdmin) external override onlyGovernor {
         rewardsDistributorContract._setPendingAdmin(newPendingAdmin);
     }
 
     /**
-      * @notice Accepts transfer of admin rights. msg.sender must be pendingAdmin
-      * @dev Admin function for pending admin to accept role and update admin
-      */
+     * @notice Accepts transfer of admin rights. msg.sender must be pendingAdmin
+     * @dev Admin function for pending admin to accept role and update admin
+     */
     function _acceptAdmin() external override {
         rewardsDistributorContract._acceptAdmin();
     }
 
     /*** Comp Distribution ***/
-   /*** Comp Distribution Admin ***/
+    /*** Comp Distribution Admin ***/
 
     /**
      * @notice Transfer COMP to the recipient
@@ -63,7 +63,7 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
      * @param recipient The address of the recipient to transfer COMP to
      * @param amount The amount of COMP to (possibly) transfer
      */
-    function _grantComp(address recipient, uint amount) external override onlyGovernor {
+    function _grantComp(address recipient, uint256 amount) external override onlyGovernor {
         rewardsDistributorContract._grantComp(recipient, amount);
     }
 
@@ -72,7 +72,12 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
      * Callable only by users with auto rewards distributor role
      * @param cToken The market whose COMP speed to update
      */
-    function _setCompSupplySpeed(address cToken, uint256 compSpeed) external override onlyRole(AUTO_REWARDS_DISTRIBUTOR_ROLE) whenNotPaused {
+    function _setCompSupplySpeed(address cToken, uint256 compSpeed)
+        external
+        override
+        onlyRole(AUTO_REWARDS_DISTRIBUTOR_ROLE)
+        whenNotPaused
+    {
         rewardsDistributorContract._setCompSupplySpeed(cToken, compSpeed);
     }
 
@@ -81,10 +86,14 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
      * Callable only by users with auto rewards distributor role
      * @param cToken The market whose COMP speed to update
      */
-    function _setCompBorrowSpeed(address cToken, uint256 compSpeed) external override onlyRole(AUTO_REWARDS_DISTRIBUTOR_ROLE) whenNotPaused {
+    function _setCompBorrowSpeed(address cToken, uint256 compSpeed)
+        external
+        override
+        onlyRole(AUTO_REWARDS_DISTRIBUTOR_ROLE)
+        whenNotPaused
+    {
         rewardsDistributorContract._setCompBorrowSpeed(cToken, compSpeed);
     }
-
 
     /**
      * @notice Set COMP supply speed for a single market to 0
@@ -109,7 +118,11 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
      * @param contributor The contributor whose COMP speed to update
      * @param compSpeed New COMP speed for contributor
      */
-    function _setContributorCompSpeed(address contributor, uint compSpeed) external override onlyGovernorOrAdmin {
+    function _setContributorCompSpeed(address contributor, uint256 compSpeed)
+        external
+        override
+        onlyGovernorOrAdmin
+    {
         rewardsDistributorContract._setContributorCompSpeed(contributor, compSpeed);
     }
 
@@ -133,7 +146,7 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
      * @notice view function to get the comp supply speeds from the rewards distributor contract
      * @param cToken The market to view
      */
-    function compSupplySpeeds(address cToken) external view override returns(uint256) {
+    function compSupplySpeeds(address cToken) external view override returns (uint256) {
         return rewardsDistributorContract.compSupplySpeeds(cToken);
     }
 
@@ -141,7 +154,7 @@ contract RewardsDistributorAdmin is IRewardsDistributorAdmin, CoreRef, AccessCon
      * @notice view function to get the comp borrow speeds from the rewards distributor contract
      * @param cToken The market to view
      */
-    function compBorrowSpeeds(address cToken) external view override returns(uint256) {
+    function compBorrowSpeeds(address cToken) external view override returns (uint256) {
         return rewardsDistributorContract.compBorrowSpeeds(cToken);
     }
 

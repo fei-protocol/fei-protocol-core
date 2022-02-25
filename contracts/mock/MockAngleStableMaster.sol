@@ -31,7 +31,11 @@ contract MockAngleStableMaster {
         require(amountAfterFee >= minStableAmount, "15");
         // in reality, assets should go to the poolManager, but for this mock purpose, tokens
         // are held on the stablemaster
-        IERC20(MockAnglePoolManager(poolManager).token()).safeTransferFrom(msg.sender, address(this), amount);
+        IERC20(MockAnglePoolManager(poolManager).token()).safeTransferFrom(
+            msg.sender,
+            address(this),
+            amount
+        );
         agToken.mint(user, amountAfterFee);
     }
 

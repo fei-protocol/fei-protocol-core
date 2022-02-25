@@ -16,7 +16,6 @@ interface IOracleRef {
 
     event BackupOracleUpdate(address indexed oldBackupOracle, address indexed newBackupOracle);
 
-
     // ----------- State changing API -----------
 
     function updateOracle() external;
@@ -43,8 +42,5 @@ interface IOracleRef {
 
     function readOracle() external view returns (Decimal.D256 memory);
 
-    function invert(Decimal.D256 calldata price)
-        external
-        pure
-        returns (Decimal.D256 memory);
+    function invert(Decimal.D256 calldata price) external pure returns (Decimal.D256 memory);
 }

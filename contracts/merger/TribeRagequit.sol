@@ -18,7 +18,7 @@ contract TRIBERagequit is MergerBase {
 
     /// @notice tribe treasury, removed from circulating supply
     address public constant coreAddress = 0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9;
-    
+
     /// @notice guardian multisig, sets the IV before DAO vote
     address public constant guardian = 0xB8f482539F2d3Ae2C9ea6076894df36D1f632775;
 
@@ -44,7 +44,7 @@ contract TRIBERagequit is MergerBase {
     bytes32 public merkleRoot;
 
     constructor(
-        bytes32 root, 
+        bytes32 root,
         uint256 _rageQuitStart,
         uint256 _rageQuitEnd,
         address tribeRariDAO
@@ -68,20 +68,14 @@ contract TRIBERagequit is MergerBase {
     ) external {
         require(bothPartiesAccepted, "Proposals are not both passed");
         require(
-            block.timestamp > rageQuitStart && block.timestamp < rageQuitEnd, 
+            block.timestamp > rageQuitStart && block.timestamp < rageQuitEnd,
             "outside ragequit window"
         );
-        require(
-            verifyClaim(msg.sender, totalMerkleAmount, merkleProof),
-            "invalid proof"
-        );
-        require(
-            (claimed[msg.sender] + amount) <= totalMerkleAmount,
-            "exceeds ragequit limit"
-        );
+        require(verifyClaim(msg.sender, totalMerkleAmount, merkleProof), "invalid proof");
+        require((claimed[msg.sender] + amount) <= totalMerkleAmount, "exceeds ragequit limit");
         claimed[msg.sender] += amount;
 
-        uint256 feiOut = amount * intrinsicValueExchangeRateBase / scalar;
+        uint256 feiOut = (amount * intrinsicValueExchangeRateBase) / scalar;
 
         tribe.safeTransferFrom(msg.sender, coreAddress, amount);
         fei.mint(msg.sender, feiOut);
@@ -92,7 +86,7 @@ contract TRIBERagequit is MergerBase {
     function getCirculatingTribe() public view returns (uint256) {
         return tribe.totalSupply() - tribe.balanceOf(coreAddress) - tribe.balanceOf(rewardsDripper);
     }
-    
+
     /// @notice recalculate the exchange amount using the protocolEquity
     /// @param protocolEquity the protocol equity
     /// @return the new intrinsicValueExchangeRateBase

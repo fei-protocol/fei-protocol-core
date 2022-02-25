@@ -13,7 +13,6 @@ import "../IPCVDepositBalances.sol";
   This wrapper can be used in the CR oracle which reduces the number of contract upgrades and reduces the complexity and risk of the upgrade
 */
 contract PCVDepositWrapper is IPCVDepositBalances {
-   
     /// @notice the referenced PCV Deposit
     IPCVDepositBalances public pcvDeposit;
 
@@ -23,7 +22,11 @@ contract PCVDepositWrapper is IPCVDepositBalances {
     /// @notice a flag for whether to report the balance as protocol owned FEI
     bool public isProtocolFeiDeposit;
 
-    constructor(IPCVDepositBalances _pcvDeposit, address _token, bool _isProtocolFeiDeposit) {
+    constructor(
+        IPCVDepositBalances _pcvDeposit,
+        address _token,
+        bool _isProtocolFeiDeposit
+    ) {
         pcvDeposit = _pcvDeposit;
         token = _token;
         isProtocolFeiDeposit = _isProtocolFeiDeposit;

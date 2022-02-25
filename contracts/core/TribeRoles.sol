@@ -10,7 +10,6 @@ pragma solidity ^0.8.4;
          * Minor Roles - operational roles. May be held or managed by shorter optimistic timelocks or trusted multisigs.
  */
 library TribeRoles {
-
     /*///////////////////////////////////////////////////////////////
                                  Major Roles
     //////////////////////////////////////////////////////////////*/
@@ -70,4 +69,4 @@ library TribeRoles {
 
     /// @notice capable of changing parameters within non-critical ranges
     bytes32 internal constant MINOR_PARAM_ROLE = keccak256("MINOR_PARAM_ROLE");
-} 
+}

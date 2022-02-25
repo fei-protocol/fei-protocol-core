@@ -141,16 +141,14 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         // Check correct pool token components
         bytes32 _pid = _pool.getPoolId();
         pid = _pid;
-        (IERC20[] memory tokens,,) = _vault.getPoolTokens(_pid);
+        (IERC20[] memory tokens, , ) = _vault.getPoolTokens(_pid);
         require(tokens.length == 2, "BalancerLBPSwapper: pool does not have 2 tokens");
         require(
-            tokenSpent == address(tokens[0]) ||
-            tokenSpent == address(tokens[1]),
+            tokenSpent == address(tokens[0]) || tokenSpent == address(tokens[1]),
             "BalancerLBPSwapper: tokenSpent not in pool"
         );
         require(
-            tokenReceived == address(tokens[0]) ||
-            tokenReceived == address(tokens[1]),
+            tokenReceived == address(tokens[0]) || tokenReceived == address(tokens[1]),
             "BalancerLBPSwapper: tokenReceived not in pool"
         );
 
@@ -160,8 +158,8 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         assets[1] = IAsset(address(tokens[1]));
 
         bool tokenSpentAtIndex0 = tokenSpent == address(tokens[0]);
-        initialWeights = new uint[](2);
-        endWeights = new uint[](2);
+        initialWeights = new uint256[](2);
+        endWeights = new uint256[](2);
 
         if (tokenSpentAtIndex0) {
             initialWeights[0] = LARGE_PERCENT;
@@ -169,7 +167,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
 
             endWeights[0] = SMALL_PERCENT;
             endWeights[1] = LARGE_PERCENT;
-        }  else {
+        } else {
             initialWeights[0] = SMALL_PERCENT;
             initialWeights[1] = LARGE_PERCENT;
 
@@ -219,39 +217,47 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     /// @param to address destination of the ERC20
     /// @param amount quantity of ERC20 to send
     function withdrawERC20(
-      address token,
-      address to,
-      uint256 amount
+        address token,
+        address to,
+        uint256 amount
     ) public onlyPCVController {
         IERC20(token).safeTransfer(to, amount);
         emit WithdrawERC20(msg.sender, token, to, amount);
     }
 
     /// @notice returns when the next auction ends
-    function swapEndTime() public view returns(uint256 endTime) {
-        (,endTime,) = pool.getGradualWeightUpdateParams();
+    function swapEndTime() public view returns (uint256 endTime) {
+        (, endTime, ) = pool.getGradualWeightUpdateParams();
     }
 
     /// @notice sets the minimum time between swaps
-	/// @param _frequency minimum time between swaps in seconds
+    /// @param _frequency minimum time between swaps in seconds
     function setSwapFrequency(uint256 _frequency) external onlyGovernorOrAdmin {
-       _setDuration(_frequency);
+        _setDuration(_frequency);
     }
 
     /// @notice sets the minimum token spent balance
-	/// @param newMinTokenSpentBalance minimum amount of FEI to trigger a new auction
+    /// @param newMinTokenSpentBalance minimum amount of FEI to trigger a new auction
     function setMinTokenSpent(uint256 newMinTokenSpentBalance) external onlyGovernorOrAdmin {
-       _setMinTokenSpent(newMinTokenSpentBalance);
+        _setMinTokenSpent(newMinTokenSpentBalance);
     }
 
     /// @notice Sets the address receiving swap's inbound tokens
     /// @param newTokenReceivingAddress the address that will receive tokens
-    function setReceivingAddress(address newTokenReceivingAddress) external override onlyGovernorOrAdmin {
+    function setReceivingAddress(address newTokenReceivingAddress)
+        external
+        override
+        onlyGovernorOrAdmin
+    {
         _setReceivingAddress(newTokenReceivingAddress);
     }
 
     /// @notice return the amount of tokens needed to seed the next auction
-    function getTokensIn(uint256 spentTokenBalance) external view returns(address[] memory tokens, uint256[] memory amountsIn) {
+    function getTokensIn(uint256 spentTokenBalance)
+        external
+        view
+        returns (address[] memory tokens, uint256[] memory amountsIn)
+    {
         tokens = new address[](2);
         tokens[0] = address(assets[0]);
         tokens[1] = address(assets[1]);
@@ -269,7 +275,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         @dev assumes tokenSpent balance of contract exceeds minTokenSpentBalance to kick off a new auction
     */
     function _swap() internal {
-        (,, uint256 lastChangeBlock) = vault.getPoolTokens(pid);
+        (, , uint256 lastChangeBlock) = vault.getPoolTokens(pid);
 
         // Ensures no actor can change the pool contents earlier in the block
         require(lastChangeBlock < block.number, "BalancerLBPSwapper: pool changed this block");
@@ -288,21 +294,23 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
 
         // 2. Reset weights to LARGE_PERCENT:SMALL_PERCENT
         // Using current block time triggers immediate weight reset
-        _updateWeightsGradually(
-            pool,
-            block.timestamp,
-            block.timestamp,
-            initialWeights
-        );
+        _updateWeightsGradually(pool, block.timestamp, block.timestamp, initialWeights);
 
         // 3. Provide new liquidity
         uint256 spentTokenBalance = IERC20(tokenSpent).balanceOf(address(this));
-        require(spentTokenBalance > minTokenSpentBalance, "BalancerLBPSwapper: not enough for new swap");
+        require(
+            spentTokenBalance > minTokenSpentBalance,
+            "BalancerLBPSwapper: not enough for new swap"
+        );
 
         // uses exact tokens in encoding for deposit, supplying both tokens
         // will use some of the previously withdrawn tokenReceived to seed the 1% required for new auction
         uint256[] memory amountsIn = _getTokensIn(spentTokenBalance);
-        bytes memory userData = abi.encode(IWeightedPool.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT, amountsIn, 0);
+        bytes memory userData = abi.encode(
+            IWeightedPool.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT,
+            amountsIn,
+            0
+        );
 
         IVault.JoinPoolRequest memory joinRequest;
         joinRequest.assets = assets;
@@ -325,7 +333,10 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
             IVault.ExitPoolRequest memory exitRequest;
 
             // Uses encoding for exact BPT IN withdrawal using all held BPT
-            bytes memory userData = abi.encode(IWeightedPool.ExitKind.EXACT_BPT_IN_FOR_TOKENS_OUT, bptBalance);
+            bytes memory userData = abi.encode(
+                IWeightedPool.ExitKind.EXACT_BPT_IN_FOR_TOKENS_OUT,
+                bptBalance
+            );
 
             exitRequest.assets = assets;
             exitRequest.minAmountsOut = new uint256[](2); // 0 min
@@ -343,16 +354,19 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     }
 
     function _setReceivingAddress(address newTokenReceivingAddress) internal {
-      require(newTokenReceivingAddress != address(0), "BalancerLBPSwapper: zero address");
-      address oldTokenReceivingAddress = tokenReceivingAddress;
-      tokenReceivingAddress = newTokenReceivingAddress;
-      emit UpdateReceivingAddress(oldTokenReceivingAddress, newTokenReceivingAddress);
+        require(newTokenReceivingAddress != address(0), "BalancerLBPSwapper: zero address");
+        address oldTokenReceivingAddress = tokenReceivingAddress;
+        tokenReceivingAddress = newTokenReceivingAddress;
+        emit UpdateReceivingAddress(oldTokenReceivingAddress, newTokenReceivingAddress);
     }
 
     function _initializePool() internal {
         // Balancer LBP initialization uses a unique JoinKind which only takes in amountsIn
         uint256 spentTokenBalance = IERC20(tokenSpent).balanceOf(address(this));
-        require(spentTokenBalance >= minTokenSpentBalance, "BalancerLBPSwapper: not enough tokenSpent to init");
+        require(
+            spentTokenBalance >= minTokenSpentBalance,
+            "BalancerLBPSwapper: not enough tokenSpent to init"
+        );
 
         uint256[] memory amountsIn = _getTokensIn(spentTokenBalance);
         bytes memory userData = abi.encode(IWeightedPool.JoinKind.INIT, amountsIn);
@@ -363,29 +377,27 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
         joinRequest.userData = userData;
         joinRequest.fromInternalBalance = false;
 
-        vault.joinPool(
-            pid,
-            address(this),
-            payable(address(this)),
-            joinRequest
-        );
+        vault.joinPool(pid, address(this), payable(address(this)), joinRequest);
 
         // Kick off the first auction
-        _updateWeightsGradually(
-            pool,
-            block.timestamp,
-            block.timestamp + duration,
-            endWeights
-        );
+        _updateWeightsGradually(pool, block.timestamp, block.timestamp + duration, endWeights);
         _initTimed();
 
         _transferAll(tokenReceived, tokenReceivingAddress);
     }
 
-    function _getTokensIn(uint256 spentTokenBalance) internal view returns(uint256[] memory amountsIn) {
+    function _getTokensIn(uint256 spentTokenBalance)
+        internal
+        view
+        returns (uint256[] memory amountsIn)
+    {
         amountsIn = new uint256[](2);
 
-        uint256 receivedTokenBalance = readOracle().mul(spentTokenBalance).mul(SMALL_PERCENT).div(LARGE_PERCENT).asUint256();
+        uint256 receivedTokenBalance = readOracle()
+            .mul(spentTokenBalance)
+            .mul(SMALL_PERCENT)
+            .div(LARGE_PERCENT)
+            .asUint256();
 
         if (address(assets[0]) == tokenSpent) {
             amountsIn[0] = spentTokenBalance;
@@ -397,8 +409,8 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     }
 
     function _setMinTokenSpent(uint256 newMinTokenSpentBalance) internal {
-      uint256 oldMinTokenSpentBalance = minTokenSpentBalance;
-      minTokenSpentBalance = newMinTokenSpentBalance;
-      emit MinTokenSpentUpdate(oldMinTokenSpentBalance, newMinTokenSpentBalance);
+        uint256 oldMinTokenSpentBalance = minTokenSpentBalance;
+        minTokenSpentBalance = newMinTokenSpentBalance;
+        emit MinTokenSpentUpdate(oldMinTokenSpentBalance, newMinTokenSpentBalance);
     }
 }

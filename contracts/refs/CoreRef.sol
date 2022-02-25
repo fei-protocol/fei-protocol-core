@@ -43,34 +43,26 @@ abstract contract CoreRef is ICoreRef, Pausable {
     }
 
     modifier onlyPCVController() {
-        require(
-            _core.isPCVController(msg.sender),
-            "CoreRef: Caller is not a PCV controller"
-        );
+        require(_core.isPCVController(msg.sender), "CoreRef: Caller is not a PCV controller");
         _;
     }
 
     modifier onlyGovernorOrAdmin() {
         require(
-            _core.isGovernor(msg.sender) ||
-            isContractAdmin(msg.sender),
+            _core.isGovernor(msg.sender) || isContractAdmin(msg.sender),
             "CoreRef: Caller is not a governor or contract admin"
         );
         _;
     }
 
     modifier onlyGovernor() {
-        require(
-            _core.isGovernor(msg.sender),
-            "CoreRef: Caller is not a governor"
-        );
+        require(_core.isGovernor(msg.sender), "CoreRef: Caller is not a governor");
         _;
     }
 
     modifier onlyGuardianOrGovernor() {
         require(
-            _core.isGovernor(msg.sender) || 
-            _core.isGuardian(msg.sender),
+            _core.isGovernor(msg.sender) || _core.isGuardian(msg.sender),
             "CoreRef: Caller is not a guardian or governor"
         );
         _;
@@ -79,9 +71,10 @@ abstract contract CoreRef is ICoreRef, Pausable {
     modifier isGovernorOrGuardianOrAdmin() {
         require(
             _core.isGovernor(msg.sender) ||
-            _core.isGuardian(msg.sender) || 
-            isContractAdmin(msg.sender), 
-            "CoreRef: Caller is not governor or guardian or admin");
+                _core.isGuardian(msg.sender) ||
+                isContractAdmin(msg.sender),
+            "CoreRef: Caller is not governor or guardian or admin"
+        );
         _;
     }
 
@@ -93,22 +86,58 @@ abstract contract CoreRef is ICoreRef, Pausable {
 
     // Modifiers to allow any combination of roles
     modifier hasAnyOfTwoRoles(bytes32 role1, bytes32 role2) {
-        require(_core.hasRole(role1, msg.sender) || _core.hasRole(role2, msg.sender), "UNAUTHORIZED");
+        require(
+            _core.hasRole(role1, msg.sender) || _core.hasRole(role2, msg.sender),
+            "UNAUTHORIZED"
+        );
         _;
     }
 
-    modifier hasAnyOfThreeRoles(bytes32 role1, bytes32 role2, bytes32 role3) {
-        require(_core.hasRole(role1, msg.sender) || _core.hasRole(role2, msg.sender) || _core.hasRole(role3, msg.sender), "UNAUTHORIZED");
+    modifier hasAnyOfThreeRoles(
+        bytes32 role1,
+        bytes32 role2,
+        bytes32 role3
+    ) {
+        require(
+            _core.hasRole(role1, msg.sender) ||
+                _core.hasRole(role2, msg.sender) ||
+                _core.hasRole(role3, msg.sender),
+            "UNAUTHORIZED"
+        );
         _;
     }
 
-    modifier hasAnyOfFourRoles(bytes32 role1, bytes32 role2, bytes32 role3, bytes32 role4) {
-        require(_core.hasRole(role1, msg.sender) || _core.hasRole(role2, msg.sender) || _core.hasRole(role3, msg.sender) || _core.hasRole(role4, msg.sender), "UNAUTHORIZED");
+    modifier hasAnyOfFourRoles(
+        bytes32 role1,
+        bytes32 role2,
+        bytes32 role3,
+        bytes32 role4
+    ) {
+        require(
+            _core.hasRole(role1, msg.sender) ||
+                _core.hasRole(role2, msg.sender) ||
+                _core.hasRole(role3, msg.sender) ||
+                _core.hasRole(role4, msg.sender),
+            "UNAUTHORIZED"
+        );
         _;
     }
 
-    modifier hasAnyOfFiveRoles(bytes32 role1, bytes32 role2, bytes32 role3, bytes32 role4, bytes32 role5) {
-        require(_core.hasRole(role1, msg.sender) || _core.hasRole(role2, msg.sender) || _core.hasRole(role3, msg.sender) || _core.hasRole(role4, msg.sender) || _core.hasRole(role5, msg.sender), "UNAUTHORIZED");
+    modifier hasAnyOfFiveRoles(
+        bytes32 role1,
+        bytes32 role2,
+        bytes32 role3,
+        bytes32 role4,
+        bytes32 role5
+    ) {
+        require(
+            _core.hasRole(role1, msg.sender) ||
+                _core.hasRole(role2, msg.sender) ||
+                _core.hasRole(role3, msg.sender) ||
+                _core.hasRole(role4, msg.sender) ||
+                _core.hasRole(role5, msg.sender),
+            "UNAUTHORIZED"
+        );
         _;
     }
 

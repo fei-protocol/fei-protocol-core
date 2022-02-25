@@ -12,12 +12,11 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 /// @title base class for a Balancer PCV Deposit
 /// @author Fei Protocol
 abstract contract BalancerPCVDepositBase is PCVDeposit {
-
     // ----------- Events ---------------
     event UpdateMaximumSlippage(uint256 maximumSlippageBasisPoints);
 
     /// @notice event generated when rewards are claimed
-    event ClaimRewards (
+    event ClaimRewards(
         address indexed _caller,
         address indexed _token,
         address indexed _to,
@@ -26,11 +25,7 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
 
     // @notice event generated when pool position is exited (LP tokens redeemed
     // for tokens in proportion to the pool's weights.
-    event ExitPool(
-        bytes32 indexed _poodId,
-        address indexed _to,
-        uint256 _bptAmount
-    );
+    event ExitPool(bytes32 indexed _poodId, address indexed _to, uint256 _bptAmount);
 
     // Maximum tolerated slippage for deposits
     uint256 public maximumSlippageBasisPoints;
@@ -105,7 +100,10 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
     /// @notice Sets the maximum slippage vs 1:1 price accepted during withdraw.
     /// @param _maximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
     function setMaximumSlippage(uint256 _maximumSlippageBasisPoints) external onlyGovernorOrAdmin {
-        require(_maximumSlippageBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "BalancerPCVDepositBase: Exceeds bp granularity.");
+        require(
+            _maximumSlippageBasisPoints <= Constants.BASIS_POINTS_GRANULARITY,
+            "BalancerPCVDepositBase: Exceeds bp granularity."
+        );
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
         emit UpdateMaximumSlippage(_maximumSlippageBasisPoints);
     }
@@ -118,7 +116,10 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
             IVault.ExitPoolRequest memory request;
 
             // Uses encoding for exact BPT IN withdrawal using all held BPT
-            bytes memory userData = abi.encode(IWeightedPool.ExitKind.EXACT_BPT_IN_FOR_TOKENS_OUT, bptBalance);
+            bytes memory userData = abi.encode(
+                IWeightedPool.ExitKind.EXACT_BPT_IN_FOR_TOKENS_OUT,
+                bptBalance
+            );
             request.assets = poolAssets;
             request.minAmountsOut = new uint256[](poolAssets.length); // 0 minimums
             request.userData = userData;
@@ -165,11 +166,6 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
 
         IMerkleOrchard(rewards).claimDistributions(address(this), claims, tokens);
 
-        emit ClaimRewards(
-          msg.sender,
-          address(BAL_TOKEN_ADDRESS),
-          address(this),
-          amount
-        );
+        emit ClaimRewards(msg.sender, address(BAL_TOKEN_ADDRESS), address(this), amount);
     }
 }

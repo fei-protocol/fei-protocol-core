@@ -30,7 +30,10 @@ contract AutoRewardsDistributorV2 is CoreRef {
     uint256 public tribalChiefRewardIndex;
 
     event SpeedChanged(uint256 newSpeed);
-    event RewardsDistributorAdminChanged(IRewardsDistributorAdmin oldRewardsDistributorAdmin, IRewardsDistributorAdmin newRewardsDistributorAdmin);
+    event RewardsDistributorAdminChanged(
+        IRewardsDistributorAdmin oldRewardsDistributorAdmin,
+        IRewardsDistributorAdmin newRewardsDistributorAdmin
+    );
 
     /// @notice constructor function
     /// @param coreAddress address of core contract
@@ -70,7 +73,7 @@ contract AutoRewardsDistributorV2 is CoreRef {
     /// @notice helper function that gets all needed state from the TribalChief contract
     /// based on this state, it then calculates what the compSpeed should be.
     function _deriveRequiredCompSpeed() internal view returns (uint256 compSpeed) {
-        (,,, uint120 poolAllocPoints,) = tribalChief.poolInfo(tribalChiefRewardIndex);
+        (, , , uint120 poolAllocPoints, ) = tribalChief.poolInfo(tribalChiefRewardIndex);
         uint256 totalAllocPoints = tribalChief.totalAllocPoint();
         uint256 tribePerBlock = tribalChief.tribePerBlock();
 
@@ -116,11 +119,15 @@ contract AutoRewardsDistributorV2 is CoreRef {
 
     /// @notice API to point to a new rewards distributor admin contract
     /// @param _newRewardsDistributorAdmin the address of the new RewardsDistributorAdmin contract
-    function setRewardsDistributorAdmin(
-        IRewardsDistributorAdmin _newRewardsDistributorAdmin
-    ) external onlyGovernorOrAdmin {
+    function setRewardsDistributorAdmin(IRewardsDistributorAdmin _newRewardsDistributorAdmin)
+        external
+        onlyGovernorOrAdmin
+    {
         IRewardsDistributorAdmin oldRewardsDistributorAdmin = rewardsDistributorAdmin;
         rewardsDistributorAdmin = _newRewardsDistributorAdmin;
-        emit RewardsDistributorAdminChanged(oldRewardsDistributorAdmin, _newRewardsDistributorAdmin);
+        emit RewardsDistributorAdminChanged(
+            oldRewardsDistributorAdmin,
+            _newRewardsDistributorAdmin
+        );
     }
 }

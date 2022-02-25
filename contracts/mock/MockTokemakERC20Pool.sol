@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import "./MockERC20.sol";
 
 contract MockTokemakERC20Pool is MockERC20 {
-
     MockERC20 public token;
 
     mapping(address => uint256) public requestedWithdrawal;
@@ -27,7 +26,10 @@ contract MockTokemakERC20Pool is MockERC20 {
     }
 
     function withdraw(uint256 requestedAmount) external {
-        require(requestedWithdrawal[msg.sender] >= requestedAmount, "WITHDRAW_INSUFFICIENT_BALANCE");
+        require(
+            requestedWithdrawal[msg.sender] >= requestedAmount,
+            "WITHDRAW_INSUFFICIENT_BALANCE"
+        );
         require(token.balanceOf(address(this)) >= requestedAmount, "INSUFFICIENT_POOL_BALANCE");
         requestedWithdrawal[msg.sender] -= requestedAmount;
         _burn(msg.sender, requestedAmount);

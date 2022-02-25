@@ -13,11 +13,8 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
 
     // If an address is in this set, it's a safe address to withdraw to
     EnumerableSet.AddressSet private safeAddresses;
-    
-    constructor(
-        address _core,
-        address[] memory _safeAddresses
-    ) CoreRef(_core) {
+
+    constructor(address _core, address[] memory _safeAddresses) CoreRef(_core) {
         _setContractAdminRole(keccak256("PCV_GUARDIAN_ADMIN_ROLE"));
 
         for (uint256 i = 0; i < _safeAddresses.length; i++) {
@@ -48,7 +45,11 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
 
     /// @notice batch version of setSafeAddress
     /// @param _safeAddresses the addresses to set as safe, as calldata
-    function setSafeAddresses(address[] calldata _safeAddresses) external override onlyGovernorOrAdmin {
+    function setSafeAddresses(address[] calldata _safeAddresses)
+        external
+        override
+        onlyGovernorOrAdmin
+    {
         require(_safeAddresses.length != 0, "empty");
         for (uint256 i = 0; i < _safeAddresses.length; i++) {
             _setSafeAddress(_safeAddresses[i]);
@@ -65,7 +66,11 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
 
     /// @notice batch version of unsetSafeAddresses
     /// @param _safeAddresses the addresses to un-set as safe
-    function unsetSafeAddresses(address[] calldata _safeAddresses) external override isGovernorOrGuardianOrAdmin {
+    function unsetSafeAddresses(address[] calldata _safeAddresses)
+        external
+        override
+        isGovernorOrGuardianOrAdmin
+    {
         require(_safeAddresses.length != 0, "empty");
         for (uint256 i = 0; i < _safeAddresses.length; i++) {
             _unsetSafeAddress(_safeAddresses[i]);

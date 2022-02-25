@@ -8,7 +8,6 @@ import "../utils/Timed.sol";
 import "./ITokenTimelock.sol";
 
 abstract contract TokenTimelock is ITokenTimelock, Timed {
-
     /// @notice ERC20 basic token contract being held in timelock
     IERC20 public override lockedToken;
 
@@ -36,10 +35,7 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
         address _clawbackAdmin
     ) Timed(_duration) {
         require(_duration != 0, "TokenTimelock: duration is 0");
-        require(
-            _beneficiary != address(0),
-            "TokenTimelock: Beneficiary must not be 0 address"
-        );
+        require(_beneficiary != address(0), "TokenTimelock: Beneficiary must not be 0 address");
 
         beneficiary = _beneficiary;
         _initTimed();
@@ -62,10 +58,7 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
     }
 
     modifier onlyBeneficiary() {
-        require(
-            msg.sender == beneficiary,
-            "TokenTimelock: Caller is not a beneficiary"
-        );
+        require(msg.sender == beneficiary, "TokenTimelock: Caller is not a beneficiary");
         _;
     }
 
@@ -87,7 +80,7 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
     }
 
     /// @notice the total amount of tokens held by timelock
-    function totalToken() public view override virtual returns (uint256) {
+    function totalToken() public view virtual override returns (uint256) {
         return lockedToken.balanceOf(address(this));
     }
 
@@ -106,17 +99,13 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
     }
 
     /// @notice current beneficiary can appoint new beneficiary, which must be accepted
-    function setPendingBeneficiary(address _pendingBeneficiary)
-        public
-        override
-        onlyBeneficiary
-    {
+    function setPendingBeneficiary(address _pendingBeneficiary) public override onlyBeneficiary {
         pendingBeneficiary = _pendingBeneficiary;
         emit PendingBeneficiaryUpdate(_pendingBeneficiary);
     }
 
     /// @notice pending beneficiary accepts new beneficiary
-    function acceptBeneficiary() public override virtual {
+    function acceptBeneficiary() public virtual override {
         _setBeneficiary(msg.sender);
     }
 
@@ -132,7 +121,11 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
         return timeSinceStart() >= cliffSeconds;
     }
 
-    function _proportionAvailable(uint256 initialBalance, uint256 elapsed, uint256 duration) internal pure virtual returns (uint256);
+    function _proportionAvailable(
+        uint256 initialBalance,
+        uint256 elapsed,
+        uint256 duration
+    ) internal pure virtual returns (uint256);
 
     function _setBeneficiary(address newBeneficiary) internal {
         require(

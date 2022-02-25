@@ -16,7 +16,6 @@ contract ERC20Dripper is PCVDeposit, Timed {
     /// @notice amount to drip after each window
     uint256 public amountToDrip;
 
-
     /// @notice ERC20 PCV Dripper constructor
     /// @param _core Fei Core for reference
     /// @param _target address to drip to
@@ -41,13 +40,9 @@ contract ERC20Dripper is PCVDeposit, Timed {
         // start timer
         _initTimed();
     }
- 
+
     /// @notice drip ERC20 tokens to target
-    function drip()
-       external
-       afterTime
-       whenNotPaused
-    {
+    function drip() external afterTime whenNotPaused {
         // reset timer
         _initTimed();
 
@@ -59,11 +54,7 @@ contract ERC20Dripper is PCVDeposit, Timed {
     /// @notice withdraw tokens from the PCV allocation
     /// @param amountUnderlying of tokens withdrawn
     /// @param to the address to send PCV to
-    function withdraw(address to, uint256 amountUnderlying)
-        external
-        override
-        onlyPCVController
-    {
+    function withdraw(address to, uint256 amountUnderlying) external override onlyPCVController {
         _withdrawERC20(address(token), to, amountUnderlying);
     }
 
