@@ -1,5 +1,6 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
+import fip_83 from '@proposals/description/fip_83';
 import fip_84a from '@proposals/description/fip_84a';
 import fip_84b from '@proposals/description/fip_84b';
 import fip_84c from '@proposals/description/fip_84c';
@@ -13,7 +14,15 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-
+  fip_83: {
+    deploy: true,
+    proposalId: null,
+    affectedContractSignoff: [],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_83
+  },
   fip_84a: {
     deploy: false,
     proposalId: '90781494616199164598522639897196626909064874385916078084737651147175659861373',
