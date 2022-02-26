@@ -26,8 +26,8 @@ contract MockUniswapV2PairLiquidity {
     using SafeMath for uint256;
     using Decimal for Decimal.D256;
 
-    uint112 private reserve0;           // uses single storage slot, accessible via getReserves
-    uint112 private reserve1;           // uses single storage slot, accessible via getReserves
+    uint112 private reserve0; // uses single storage slot, accessible via getReserves
+    uint112 private reserve1; // uses single storage slot, accessible via getReserves
     uint256 private liquidity;
     address public token0;
     address public token1;
@@ -35,13 +35,21 @@ contract MockUniswapV2PairLiquidity {
     constructor(address _token0, address _token1) {
         token0 = _token0;
         token1 = _token1;
-    } 
+    }
 
-    function getReserves() external view returns (uint112, uint112, uint32) {
+    function getReserves()
+        external
+        view
+        returns (
+            uint112,
+            uint112,
+            uint32
+        )
+    {
         return (reserve0, reserve1, 0);
     }
 
-    function mint(address to) public returns (uint) {
+    function mint(address to) public returns (uint256) {
         _mint(to, liquidity);
         return liquidity;
     }
@@ -50,7 +58,11 @@ contract MockUniswapV2PairLiquidity {
         _mint(to, _liquidity);
     }
 
-    function set(uint112 newReserve0, uint112 newReserve1, uint256 newLiquidity) external payable {
+    function set(
+        uint112 newReserve0,
+        uint112 newReserve1,
+        uint256 newLiquidity
+    ) external payable {
         reserve0 = newReserve0;
         reserve1 = newReserve1;
         liquidity = newLiquidity;
@@ -67,7 +79,10 @@ contract MockUniswapV2PairLiquidity {
         return true;
     }
 
-    function burnEth(address to, Decimal.D256 memory ratio) public returns(uint256 amountEth, uint256 amount1) {
+    function burnEth(address to, Decimal.D256 memory ratio)
+        public
+        returns (uint256 amountEth, uint256 amount1)
+    {
         uint256 balanceEth = address(this).balance;
         amountEth = ratio.mul(balanceEth).asUint256();
         payable(to).transfer(amountEth);
@@ -81,7 +96,10 @@ contract MockUniswapV2PairLiquidity {
         IERC20(token1).transfer(to, amount);
     }
 
-    function burnToken(address to, Decimal.D256 memory ratio) public returns(uint256 amount0, uint256 amount1) {
+    function burnToken(address to, Decimal.D256 memory ratio)
+        public
+        returns (uint256 amount0, uint256 amount1)
+    {
         uint256 balance0 = reserve0;
         amount0 = ratio.mul(balance0).asUint256();
         IERC20(token0).transfer(to, amount0);
@@ -91,7 +109,12 @@ contract MockUniswapV2PairLiquidity {
         IERC20(token1).transfer(to, amount1);
     }
 
-    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata) external { 
+    function swap(
+        uint256 amount0Out,
+        uint256 amount1Out,
+        address to,
+        bytes calldata
+    ) external {
         if (amount0Out != 0) {
             IERC20(token0).transfer(to, amount0Out);
         }
@@ -101,13 +124,13 @@ contract MockUniswapV2PairLiquidity {
         }
     }
 
-    function sync() external { } // no-op 
+    function sync() external {} // no-op
 
     // @openzeppelin/contracts/token/ERC20/ERC20.sol
 
-    mapping (address => uint256) private _balances;
+    mapping(address => uint256) private _balances;
 
-    mapping (address => mapping (address => uint256)) private _allowances;
+    mapping(address => mapping(address => uint256)) private _allowances;
 
     uint256 private _totalSupply;
 
@@ -141,7 +164,11 @@ contract MockUniswapV2PairLiquidity {
     /**
      * @dev See {IERC20-allowance}.
      */
-    function allowance(address owner, address spender) public view returns (uint256) {
+    function allowance(address owner, address spender)
+        public
+        view
+        returns (uint256)
+    {
         return _allowances[owner][spender];
     }
 
@@ -169,9 +196,20 @@ contract MockUniswapV2PairLiquidity {
      * - the caller must have allowance for `sender`'s tokens of at least
      * `amount`.
      */
-    function transferFrom(address sender, address recipient, uint256 amount) public returns (bool) {
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) public returns (bool) {
         _transfer(sender, recipient, amount);
-        _approve(sender, msg.sender, _allowances[sender][msg.sender].sub(amount, "ERC20: transfer amount exceeds allowance"));
+        _approve(
+            sender,
+            msg.sender,
+            _allowances[sender][msg.sender].sub(
+                amount,
+                "ERC20: transfer amount exceeds allowance"
+            )
+        );
         return true;
     }
 
@@ -187,8 +225,15 @@ contract MockUniswapV2PairLiquidity {
      *
      * - `spender` cannot be the zero address.
      */
-    function increaseAllowance(address spender, uint256 addedValue) public returns (bool) {
-        _approve(msg.sender, spender, _allowances[msg.sender][spender].add(addedValue));
+    function increaseAllowance(address spender, uint256 addedValue)
+        public
+        returns (bool)
+    {
+        _approve(
+            msg.sender,
+            spender,
+            _allowances[msg.sender][spender].add(addedValue)
+        );
         return true;
     }
 
@@ -206,8 +251,18 @@ contract MockUniswapV2PairLiquidity {
      * - `spender` must have allowance for the caller of at least
      * `subtractedValue`.
      */
-    function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool) {
-        _approve(msg.sender, spender, _allowances[msg.sender][spender].sub(subtractedValue, "ERC20: decreased allowance below zero"));
+    function decreaseAllowance(address spender, uint256 subtractedValue)
+        public
+        returns (bool)
+    {
+        _approve(
+            msg.sender,
+            spender,
+            _allowances[msg.sender][spender].sub(
+                subtractedValue,
+                "ERC20: decreased allowance below zero"
+            )
+        );
         return true;
     }
 
@@ -225,11 +280,18 @@ contract MockUniswapV2PairLiquidity {
      * - `recipient` cannot be the zero address.
      * - `sender` must have a balance of at least `amount`.
      */
-    function _transfer(address sender, address recipient, uint256 amount) internal {
+    function _transfer(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) internal {
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
 
-        _balances[sender] = _balances[sender].sub(amount, "ERC20: transfer amount exceeds balance");
+        _balances[sender] = _balances[sender].sub(
+            amount,
+            "ERC20: transfer amount exceeds balance"
+        );
         _balances[recipient] = _balances[recipient].add(amount);
     }
 
@@ -263,7 +325,10 @@ contract MockUniswapV2PairLiquidity {
     function _burn(address account, uint256 amount) internal {
         require(account != address(0), "ERC20: burn from the zero address");
 
-        _balances[account] = _balances[account].sub(amount, "ERC20: burn amount exceeds balance");
+        _balances[account] = _balances[account].sub(
+            amount,
+            "ERC20: burn amount exceeds balance"
+        );
         _totalSupply = _totalSupply.sub(amount);
     }
 
@@ -280,7 +345,11 @@ contract MockUniswapV2PairLiquidity {
      * - `owner` cannot be the zero address.
      * - `spender` cannot be the zero address.
      */
-    function _approve(address owner, address spender, uint256 amount) internal {
+    function _approve(
+        address owner,
+        address spender,
+        uint256 amount
+    ) internal {
         require(owner != address(0), "ERC20: approve from the zero address");
         require(spender != address(0), "ERC20: approve to the zero address");
 
@@ -295,6 +364,13 @@ contract MockUniswapV2PairLiquidity {
      */
     function _burnFrom(address account, uint256 amount) internal {
         _burn(account, amount);
-        _approve(account, msg.sender, _allowances[account][msg.sender].sub(amount, "ERC20: burn amount exceeds allowance"));
+        _approve(
+            account,
+            msg.sender,
+            _allowances[account][msg.sender].sub(
+                amount,
+                "ERC20: burn amount exceeds allowance"
+            )
+        );
     }
 }

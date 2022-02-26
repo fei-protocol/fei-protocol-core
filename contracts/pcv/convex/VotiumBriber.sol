@@ -43,7 +43,11 @@ contract VotiumBriber is CoreRef {
     /// the _proposal ID, if _choiceIndex is out of range, or of block.timestamp
     /// is after the deadline for bribing (usually 6 hours before Convex snapshot
     /// vote ends).
-    function bribe(bytes32 _proposal, uint256 _choiceIndex) public onlyGovernorOrAdmin whenNotPaused {
+    function bribe(bytes32 _proposal, uint256 _choiceIndex)
+        public
+        onlyGovernorOrAdmin
+        whenNotPaused
+    {
         // fetch the current number of TRIBE
         uint256 tokenAmount = token.balanceOf(address(this));
         require(tokenAmount > 0, "VotiumBriber: no tokens to bribe");

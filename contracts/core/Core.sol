@@ -11,16 +11,15 @@ import "../tribe/Tribe.sol";
 /// @author Fei Protocol
 /// @notice maintains roles, access control, fei, tribe, genesisGroup, and the TRIBE treasury
 contract Core is ICore, Permissions, Initializable {
-
     /// @notice the address of the FEI contract
     IFei public override fei;
-    
+
     /// @notice the address of the TRIBE contract
     IERC20 public override tribe;
 
     function init() external override initializer {
         _setupGovernor(msg.sender);
-        
+
         Fei _fei = new Fei(address(this));
         _setFei(address(_fei));
 

@@ -8,7 +8,10 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 interface IUniswapPCVDeposit {
     // ----------- Events -----------
 
-    event MaxBasisPointsFromPegLPUpdate(uint256 oldMaxBasisPointsFromPegLP, uint256 newMaxBasisPointsFromPegLP);
+    event MaxBasisPointsFromPegLPUpdate(
+        uint256 oldMaxBasisPointsFromPegLP,
+        uint256 newMaxBasisPointsFromPegLP
+    );
 
     // ----------- Governor only state changing api -----------
 
@@ -22,4 +25,3 @@ interface IUniswapPCVDeposit {
 
     function maxBasisPointsFromPegLP() external view returns (uint256);
 }
-

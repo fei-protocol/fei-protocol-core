@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
@@ -48,7 +47,11 @@ contract OtcEscrow {
     /// @dev Either counterparty may execute swap if sufficient token approval is given by recipient
     function swap() public onlyApprovedParties {
         // Transfer expected receivedToken from beneficiary
-        IERC20(receivedToken).safeTransferFrom(beneficiary, recipient, receivedAmount);
+        IERC20(receivedToken).safeTransferFrom(
+            beneficiary,
+            recipient,
+            receivedAmount
+        );
 
         // Transfer sentToken to beneficiary
         IERC20(sentToken).safeTransfer(address(beneficiary), sentAmount);
@@ -62,7 +65,9 @@ contract OtcEscrow {
     }
 
     function revokeReceivedToken() external onlyApprovedParties {
-        uint256 receivedTokenBalance = IERC20(receivedToken).balanceOf(address(this));
+        uint256 receivedTokenBalance = IERC20(receivedToken).balanceOf(
+            address(this)
+        );
         IERC20(receivedToken).safeTransfer(beneficiary, receivedTokenBalance);
     }
 }

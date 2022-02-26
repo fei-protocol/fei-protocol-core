@@ -8,7 +8,7 @@ contract MockConvexBaseRewardPool is MockERC20 {
     uint256 public rewardAmountPerClaim = 0;
     MockERC20 public rewardToken;
     MockERC20 public lpTokens;
-    mapping(address=>uint256) private _balances;
+    mapping(address => uint256) private _balances;
 
     constructor(address _rewardToken, address _lpTokens) {
         rewardToken = MockERC20(_rewardToken);
@@ -19,7 +19,10 @@ contract MockConvexBaseRewardPool is MockERC20 {
         rewardAmountPerClaim = _rewardAmountPerClaim;
     }
 
-    function withdrawAndUnwrap(uint256 amount, bool claim) public returns(bool) {
+    function withdrawAndUnwrap(uint256 amount, bool claim)
+        public
+        returns (bool)
+    {
         lpTokens.transfer(msg.sender, amount);
         getReward(msg.sender, claim);
         return true;
@@ -31,18 +34,18 @@ contract MockConvexBaseRewardPool is MockERC20 {
         getReward(msg.sender, claim);
     }
 
-    function getReward(address who, bool claim) public returns(bool) {
+    function getReward(address who, bool claim) public returns (bool) {
         if (rewardAmountPerClaim > 0) {
             rewardToken.mint(who, rewardAmountPerClaim);
         }
         return true;
     }
 
-    function stakeFor(address who, uint256 amount) public returns(bool) {
+    function stakeFor(address who, uint256 amount) public returns (bool) {
         _balances[who] = amount;
     }
 
-    function balanceOf(address who) public view override returns(uint256) {
+    function balanceOf(address who) public view override returns (uint256) {
         return _balances[who];
     }
 }

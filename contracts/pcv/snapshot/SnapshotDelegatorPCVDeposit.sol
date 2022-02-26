@@ -8,24 +8,30 @@ interface DelegateRegistry {
 
     function clearDelegate(bytes32 id) external;
 
-    function delegation(address delegator, bytes32 id) external view returns(address delegatee);
+    function delegation(address delegator, bytes32 id)
+        external
+        view
+        returns (address delegatee);
 }
 
 /// @title Snapshot Delegator PCV Deposit
 /// @author Fei Protocol
 contract SnapshotDelegatorPCVDeposit is PCVDeposit {
-
-    event DelegateUpdate(address indexed oldDelegate, address indexed newDelegate);
+    event DelegateUpdate(
+        address indexed oldDelegate,
+        address indexed newDelegate
+    );
 
     /// @notice the Gnosis delegate registry used by snapshot
-    DelegateRegistry public constant DELEGATE_REGISTRY = DelegateRegistry(0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446);
-    
+    DelegateRegistry public constant DELEGATE_REGISTRY =
+        DelegateRegistry(0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446);
+
     /// @notice the token that is being used for snapshot
     IERC20 public immutable token;
 
     /// @notice the keccak encoded spaceId of the snapshot space
     bytes32 public spaceId;
-    
+
     /// @notice the snapshot delegate for the deposit
     address public delegate;
 

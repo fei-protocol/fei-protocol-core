@@ -13,14 +13,15 @@ interface IExchanger {
  @author Joey Santoro
  @notice For Rari core contributors to trustlessly maintain incentive alignment
 */
-contract ExchangerTimelock is Ownable {   
+contract ExchangerTimelock is Ownable {
     using SafeERC20 for IERC20;
 
     IExchanger public immutable exchanger;
     address public immutable timelock;
 
     /// @notice rari DAO timelock can clawback in event of no-deal
-    address public constant guardian = 0x8ace03Fc45139fDDba944c6A4082b604041d19FC;
+    address public constant guardian =
+        0x8ace03Fc45139fDDba944c6A4082b604041d19FC;
 
     IERC20 public constant rgt =
         IERC20(0xD291E7a03283640FDc51b121aC401383A46cC623);
@@ -51,4 +52,4 @@ contract ExchangerTimelock is Ownable {
         require(msg.sender == guardian);
         rgt.transfer(owner(), rgt.balanceOf(address(this)));
     }
-}   
+}

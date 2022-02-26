@@ -14,7 +14,8 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
     event successSetCompContributorSpeed();
     event successAddMarket();
 
-    bytes32 public constant override AUTO_REWARDS_DISTRIBUTOR_ROLE = keccak256("AUTO_REWARDS_DISTRIBUTOR_ROLE");
+    bytes32 public constant override AUTO_REWARDS_DISTRIBUTOR_ROLE =
+        keccak256("AUTO_REWARDS_DISTRIBUTOR_ROLE");
 
     uint256 public compSupplySpeed;
     uint256 public compBorrowSpeed;
@@ -34,19 +35,23 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
     constructor() Ownable() {}
 
     /**
-      * @notice Begins transfer of admin rights. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
-      * @dev Admin function to begin change of admin. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
-      * @param _newPendingAdmin New pending admin.
-      */
-    function _setPendingAdmin(address _newPendingAdmin) external override onlyOwner {
+     * @notice Begins transfer of admin rights. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
+     * @dev Admin function to begin change of admin. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
+     * @param _newPendingAdmin New pending admin.
+     */
+    function _setPendingAdmin(address _newPendingAdmin)
+        external
+        override
+        onlyOwner
+    {
         pendingNewAdmin = _newPendingAdmin;
         emit successSetAdmin(pendingNewAdmin);
     }
 
     /**
-      * @notice Accepts transfer of admin rights. msg.sender must be pendingAdmin
-      * @dev Admin function for pending admin to accept role and update admin
-      */
+     * @notice Accepts transfer of admin rights. msg.sender must be pendingAdmin
+     * @dev Admin function for pending admin to accept role and update admin
+     */
     function _acceptAdmin() external override onlyOwner {
         newAdmin = pendingNewAdmin;
         pendingNewAdmin = address(0);
@@ -54,7 +59,7 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
     }
 
     /*** Comp Distribution ***/
-   /*** Comp Distribution Admin ***/
+    /*** Comp Distribution Admin ***/
 
     /**
      * @notice Transfer COMP to the recipient
@@ -62,7 +67,11 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @param recipient The address of the recipient to transfer COMP to
      * @param amount The amount of COMP to (possibly) transfer
      */
-    function _grantComp(address recipient, uint amount) external override onlyOwner {
+    function _grantComp(address recipient, uint256 amount)
+        external
+        override
+        onlyOwner
+    {
         newCompGrantee = recipient;
         newCompGranteeAmount = amount;
         emit successGrantComp(recipient, amount);
@@ -72,7 +81,11 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @notice Set COMP speed for a single market
      * @param cToken The market whose COMP speed to update
      */
-    function _setCompSupplySpeed(address cToken, uint256 compSpeed) external override onlyOwner {
+    function _setCompSupplySpeed(address cToken, uint256 compSpeed)
+        external
+        override
+        onlyOwner
+    {
         compSupplySpeed = compSpeed;
         emit successSetCompSupplySpeed();
     }
@@ -81,7 +94,11 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @notice Set COMP speed for a single market
      * @param cToken The market whose COMP speed to update
      */
-    function _setCompBorrowSpeed(address cToken, uint256 compSpeed) external override onlyOwner {
+    function _setCompBorrowSpeed(address cToken, uint256 compSpeed)
+        external
+        override
+        onlyOwner
+    {
         compBorrowSpeed = compSpeed;
         emit successSetCompBorrowSpeed();
     }
@@ -91,7 +108,11 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @param contributor The contributor whose COMP speed to update
      * @param compSpeed New COMP speed for contributor
      */
-    function _setContributorCompSpeed(address contributor, uint compSpeed) external override onlyOwner {
+    function _setContributorCompSpeed(address contributor, uint256 compSpeed)
+        external
+        override
+        onlyOwner
+    {
         newContributor = contributor;
         newCompSpeed = compSpeed;
         emit successSetCompContributorSpeed();
@@ -110,7 +131,12 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @notice view function to get the comp supply speeds from the rewards distributor contract
      * @param cToken The market to view
      */
-    function compSupplySpeeds(address cToken) external view override returns(uint256) {
+    function compSupplySpeeds(address cToken)
+        external
+        view
+        override
+        returns (uint256)
+    {
         return compSupplySpeed;
     }
 
@@ -118,11 +144,16 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @notice view function to get the comp borrow speeds from the rewards distributor contract
      * @param cToken The market to view
      */
-    function compBorrowSpeeds(address cToken) external view override returns(uint256) {
+    function compBorrowSpeeds(address cToken)
+        external
+        view
+        override
+        returns (uint256)
+    {
         return compBorrowSpeed;
     }
 
-    /// @notice admin function 
+    /// @notice admin function
     function setCompSupplySpeed(uint256 newSpeed) external {
         compSupplySpeed = newSpeed;
     }
@@ -135,7 +166,11 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
      * @notice Set the implementation contract the RewardsDistributorDelegator delegate calls
      * @param implementation_ the logic contract address
      */
-    function _setImplementation(address implementation_) external override onlyOwner {
+    function _setImplementation(address implementation_)
+        external
+        override
+        onlyOwner
+    {
         implementation = implementation_;
     }
 }

@@ -4,7 +4,6 @@ pragma solidity ^0.8.4;
 import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
 
 contract MockChainlinkOracle is AggregatorV3Interface {
-
     // fixed value
     int256 public _value;
     uint8 public _decimals;
@@ -24,32 +23,48 @@ contract MockChainlinkOracle is AggregatorV3Interface {
         _answeredInRound = 42;
     }
 
-    function decimals() external override view returns (uint8) {
-      return _decimals;
+    function decimals() external view override returns (uint8) {
+        return _decimals;
     }
 
-    function description() external override pure returns (string memory) {
-      return "MockChainlinkOracle";
+    function description() external pure override returns (string memory) {
+        return "MockChainlinkOracle";
     }
 
-    function getRoundData(uint80 _getRoundId) external override view returns (
-        uint80 roundId,
-        int256 answer,
-        uint256 startedAt,
-        uint256 updatedAt,
-        uint80 answeredInRound
-    ) {
-      return (_getRoundId, _value, 1620651856, 1620651856, _getRoundId);
+    function getRoundData(uint80 _getRoundId)
+        external
+        view
+        override
+        returns (
+            uint80 roundId,
+            int256 answer,
+            uint256 startedAt,
+            uint256 updatedAt,
+            uint80 answeredInRound
+        )
+    {
+        return (_getRoundId, _value, 1620651856, 1620651856, _getRoundId);
     }
 
-    function latestRoundData() external override view returns (
-        uint80 roundId,
-        int256 answer,
-        uint256 startedAt,
-        uint256 updatedAt,
-        uint80 answeredInRound
-    ) {
-      return (_roundId, _value, block.timestamp, block.timestamp, _answeredInRound);
+    function latestRoundData()
+        external
+        view
+        override
+        returns (
+            uint80 roundId,
+            int256 answer,
+            uint256 startedAt,
+            uint256 updatedAt,
+            uint80 answeredInRound
+        )
+    {
+        return (
+            _roundId,
+            _value,
+            block.timestamp,
+            block.timestamp,
+            _answeredInRound
+        );
     }
 
     function set(
@@ -59,14 +74,14 @@ contract MockChainlinkOracle is AggregatorV3Interface {
         uint256 updatedAt,
         uint80 answeredInRound
     ) external {
-      _roundId = roundId;
-      _value = answer;
-      _startedAt = startedAt;
-      _updatedAt = updatedAt;
-      _answeredInRound = answeredInRound;
+        _roundId = roundId;
+        _value = answer;
+        _startedAt = startedAt;
+        _updatedAt = updatedAt;
+        _answeredInRound = answeredInRound;
     }
 
-    function version() external override pure returns (uint256) {
-      return 1;
+    function version() external pure override returns (uint256) {
+        return 1;
     }
 }
