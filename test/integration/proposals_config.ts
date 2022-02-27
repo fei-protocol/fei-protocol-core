@@ -25,7 +25,7 @@ const proposals: ProposalsConfigMap = {
   },
   fip_84b: {
     deploy: false,
-    proposalId: '',
+    proposalId: '111980608549296280462721500887998027192667619429469223121519018371053122326953',
     affectedContractSignoff: ['proxyAdmin', 'timelock', 'feiDAO', 'feiDAOTimelock'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
