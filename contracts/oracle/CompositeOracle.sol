@@ -43,7 +43,6 @@ contract CompositeOracle is IOracle, CoreRef {
     /// @return oracle price
     /// @return true if price is valid
     function read() external view override returns (Decimal.D256 memory, bool) {
-
         (Decimal.D256 memory priceA, bool validA) = oracleA.read();
         (Decimal.D256 memory priceB, bool validB) = oracleB.read();
         bool valid = !paused() && validA && validB;

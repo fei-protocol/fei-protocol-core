@@ -16,28 +16,37 @@ contract FixedPricePSM is PriceBoundPSM {
         uint256 _mintingBufferCap,
         IERC20 _underlyingToken,
         IPCVDeposit _surplusTarget
-    ) PriceBoundPSM(
-        _floor,
-        _ceiling,
-        _params,
-        _mintFeeBasisPoints,
-        _redeemFeeBasisPoints,
-        _reservesThreshold,
-        _feiLimitPerSecond,
-        _mintingBufferCap,
-        _underlyingToken,
-        _surplusTarget
-    ) {}
+    )
+        PriceBoundPSM(
+            _floor,
+            _ceiling,
+            _params,
+            _mintFeeBasisPoints,
+            _redeemFeeBasisPoints,
+            _reservesThreshold,
+            _feiLimitPerSecond,
+            _mintingBufferCap,
+            _underlyingToken,
+            _surplusTarget
+        )
+    {}
 
     // ----------- Internal Methods -----------
 
     /// @notice helper function to get mint amount out based on current market prices
     /// @dev will revert if price is outside of bounds and bounded PSM is being used
-    function _getMintAmountOut(uint256 amountIn) internal virtual override view returns (uint256 amountFeiOut) {
+    function _getMintAmountOut(uint256 amountIn)
+        internal
+        view
+        virtual
+        override
+        returns (uint256 amountFeiOut)
+    {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 
-        amountFeiOut = Decimal.one()
+        amountFeiOut = Decimal
+            .one()
             .mul(amountIn)
             .mul(Constants.BASIS_POINTS_GRANULARITY - mintFeeBasisPoints)
             .div(Constants.BASIS_POINTS_GRANULARITY)
@@ -46,11 +55,18 @@ contract FixedPricePSM is PriceBoundPSM {
 
     /// @notice helper function to get redeem amount out based on current market prices
     /// @dev will revert if price is outside of bounds and bounded PSM is being used
-    function _getRedeemAmountOut(uint256 amountFeiIn) internal virtual override view returns (uint256 amountTokenOut) {
+    function _getRedeemAmountOut(uint256 amountFeiIn)
+        internal
+        view
+        virtual
+        override
+        returns (uint256 amountTokenOut)
+    {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 
-        amountTokenOut = Decimal.one()
+        amountTokenOut = Decimal
+            .one()
             .mul(amountFeiIn)
             .mul(Constants.BASIS_POINTS_GRANULARITY - redeemFeeBasisPoints)
             .div(Constants.BASIS_POINTS_GRANULARITY)

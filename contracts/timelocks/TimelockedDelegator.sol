@@ -76,8 +76,9 @@ contract TimelockedDelegator is ITimelockedDelegator, LinearTokenTimelock {
         }
 
         ITribe _tribe = tribe;
-        address _delegateContract =
-            address(new Delegatee(delegatee, address(_tribe)));
+        address _delegateContract = address(
+            new Delegatee(delegatee, address(_tribe))
+        );
         delegateContract[delegatee] = _delegateContract;
 
         delegateAmount[delegatee] = amount;

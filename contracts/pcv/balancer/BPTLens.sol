@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;  
+pragma solidity ^0.8.0;
 
 import "./IVault.sol";
 import "./IWeightedPool.sol";
@@ -22,7 +22,7 @@ contract BPTLens is IPCVDepositBalances {
 
     /// @notice the Balancer V2 Vault
     IVault public immutable VAULT;
-    
+
     // the pool id on balancer
     bytes32 internal immutable id;
 
@@ -37,12 +37,12 @@ contract BPTLens is IPCVDepositBalances {
 
     /// @notice the oracle for balanceReportedIn token
     IOracle public immutable reportedOracle;
-        
+
     /// @notice the oracle for the other token in the pair (not balanceReportedIn)
     IOracle public immutable otherOracle;
 
     constructor(
-        address _token, 
+        address _token,
         IWeightedPool _pool,
         IOracle _reportedOracle,
         IOracle _otherOracle,
@@ -55,10 +55,8 @@ contract BPTLens is IPCVDepositBalances {
 
         bytes32 _id = _pool.getPoolId();
         id = _id;
-        (
-            IERC20[] memory tokens,
-            uint256[] memory balances,
-        ) = _vault.getPoolTokens(_id); 
+        (IERC20[] memory tokens, uint256[] memory balances, ) = _vault
+            .getPoolTokens(_id);
 
         // Check the token is in the BPT and its only a 2 token pool
         require(address(tokens[0]) == _token || address(tokens[1]) == _token);
@@ -74,26 +72,30 @@ contract BPTLens is IPCVDepositBalances {
         otherOracle = _otherOracle;
     }
 
-    function balance() public view override returns(uint256) {
-        (
-            IERC20[] memory _tokens,
-            uint256[] memory balances,
-        ) = VAULT.getPoolTokens(id); 
+    function balance() public view override returns (uint256) {
+        (IERC20[] memory _tokens, uint256[] memory balances, ) = VAULT
+            .getPoolTokens(id);
 
         return balances[index];
     }
 
-   /**
+    /**
      * @notice Calculates the manipulation resistant balances of Balancer pool tokens using the logic described here:
      * https://docs.gyro.finance/learn/oracles/bpt-oracle
      * This is robust to price manipulations within the Balancer pool.
      */
-    function resistantBalanceAndFei() public view override returns(uint256, uint256) {
+    function resistantBalanceAndFei()
+        public
+        view
+        override
+        returns (uint256, uint256)
+    {
         uint256[] memory prices = new uint256[](2);
         uint256 j = index == 0 ? 1 : 0;
 
         // Check oracles and fill in prices
-        (Decimal.D256 memory reportedPrice, bool reportedValid) = reportedOracle.read();
+        (Decimal.D256 memory reportedPrice, bool reportedValid) = reportedOracle
+            .read();
         prices[index] = reportedPrice.value;
 
         (Decimal.D256 memory otherPrice, bool otherValid) = otherOracle.read();
@@ -101,10 +103,8 @@ contract BPTLens is IPCVDepositBalances {
 
         require(reportedValid && otherValid, "BPTLens: Invalid Oracle");
 
-        (
-            IERC20[] memory _tokens,
-            uint256[] memory balances,
-        ) = VAULT.getPoolTokens(id);
+        (IERC20[] memory _tokens, uint256[] memory balances, ) = VAULT
+            .getPoolTokens(id);
 
         uint256[] memory weights = pool.getNormalizedWeights();
 
@@ -113,10 +113,15 @@ contract BPTLens is IPCVDepositBalances {
 
         if (feiIsReportedIn) {
             return (reserves, reserves);
-        } 
+        }
         if (feiInPair) {
-           uint256 otherReserves = _getIdealReserves(balances, prices, weights, j);
-           return (reserves, otherReserves);
+            uint256 otherReserves = _getIdealReserves(
+                balances,
+                prices,
+                weights,
+                j
+            );
+            return (reserves, otherReserves);
         }
         return (reserves, 0);
     }
@@ -142,18 +147,23 @@ contract BPTLens is IPCVDepositBalances {
         uint256[] memory prices,
         uint256[] memory weights,
         uint256 i
-    )
-        internal
-        pure
-        returns (uint256 reserves)
-    {
+    ) internal pure returns (uint256 reserves) {
         uint256 j = i == 0 ? 1 : 0;
 
         uint256 one = Constants.ETH_GRANULARITY;
 
-        uint256 reservesScaled = one.mulPow(balances[i], weights[i], Constants.ETH_DECIMALS);
-        uint256 multiplier = (weights[i] * prices[j] * balances[j]) / (prices[i] * weights[j]);
+        uint256 reservesScaled = one.mulPow(
+            balances[i],
+            weights[i],
+            Constants.ETH_DECIMALS
+        );
+        uint256 multiplier = (weights[i] * prices[j] * balances[j]) /
+            (prices[i] * weights[j]);
 
-        reserves = reservesScaled.mulPow(multiplier, weights[j], Constants.ETH_DECIMALS);
+        reserves = reservesScaled.mulPow(
+            multiplier,
+            weights[j],
+            Constants.ETH_DECIMALS
+        );
     }
 }

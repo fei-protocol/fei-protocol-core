@@ -5,7 +5,6 @@ pragma solidity ^0.8.0;
 /// @title a Fei Timed Minter
 /// @author Fei Protocol
 interface IFeiTimedMinter {
-
     // ----------- Events -----------
 
     event FeiMinting(address indexed caller, uint256 feiAmount);
@@ -29,12 +28,12 @@ interface IFeiTimedMinter {
     function setMintAmount(uint256 newMintAmount) external;
 
     // ----------- Getters -----------
-    
-    function mintAmount() external view returns(uint256);
-    
-    function MIN_MINT_FREQUENCY() external view returns(uint256);
 
-    function MAX_MINT_FREQUENCY() external view returns(uint256);
+    function mintAmount() external view returns (uint256);
 
-    function target() external view returns(address);
+    function MIN_MINT_FREQUENCY() external view returns (uint256);
+
+    function MAX_MINT_FREQUENCY() external view returns (uint256);
+
+    function target() external view returns (address);
 }

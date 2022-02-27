@@ -31,7 +31,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
   This keeps the power to transfer or burn TRIBE minting rights isolated.
 */
 contract TribeMinter is ITribeMinter, RateLimited, Ownable {
-
     /// @notice the max inflation in TRIBE circulating supply per year in basis points (1/10000)
     uint256 public override annualMaxInflationBasisPoints;
 
@@ -53,10 +52,7 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
         address _owner,
         address _tribeTreasury,
         address _tribeRewardsDripper
-    ) 
-      RateLimited(0, 0, 0, false)
-      CoreRef(_core)
-    {
+    ) RateLimited(0, 0, 0, false) CoreRef(_core) {
         _setAnnualMaxInflationBasisPoints(_annualMaxInflationBasisPoints);
         poke();
 
@@ -80,10 +76,13 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
     function poke() public override {
         uint256 newBufferCap = idealBufferCap();
         uint256 oldBufferCap = bufferCap;
-        require(newBufferCap != oldBufferCap, "TribeMinter: No rate limit change needed");
-        
+        require(
+            newBufferCap != oldBufferCap,
+            "TribeMinter: No rate limit change needed"
+        );
+
         _setBufferCap(newBufferCap);
-        _setRateLimitPerSecond(newBufferCap / Constants.ONE_YEAR);  
+        _setRateLimitPerSecond(newBufferCap / Constants.ONE_YEAR);
     }
 
     /// @dev no-op, reverts. Prevent admin or governor from overwriting ideal rate limit
@@ -92,15 +91,19 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
     }
 
     /// @dev no-op, reverts. Prevent admin or governor from overwriting ideal buffer cap
-    function setBufferCap(uint256) external pure override { 
+    function setBufferCap(uint256) external pure override {
         revert("no-op");
     }
 
     /// @notice mints TRIBE to the target address, subject to rate limit
     /// @param to the address to send TRIBE to
     /// @param amount the amount of TRIBE to send
-    function mint(address to, uint256 amount) external override onlyGovernorOrAdmin {
-        // first apply rate limit 
+    function mint(address to, uint256 amount)
+        external
+        override
+        onlyGovernorOrAdmin
+    {
+        // first apply rate limit
         _depleteBuffer(amount);
 
         // then mint
@@ -108,36 +111,54 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
     }
 
     /// @notice sets the new TRIBE treasury address
-    function setTribeTreasury(address newTribeTreasury) external override onlyGovernorOrAdmin {
+    function setTribeTreasury(address newTribeTreasury)
+        external
+        override
+        onlyGovernorOrAdmin
+    {
         address oldTribeTreasury = tribeTreasury;
         tribeTreasury = newTribeTreasury;
         emit TribeTreasuryUpdate(oldTribeTreasury, newTribeTreasury);
     }
 
     /// @notice sets the new TRIBE treasury rewards dripper
-    function setTribeRewardsDripper(address newTribeRewardsDripper) external override onlyGovernorOrAdmin {
+    function setTribeRewardsDripper(address newTribeRewardsDripper)
+        external
+        override
+        onlyGovernorOrAdmin
+    {
         address oldTribeRewardsDripper = tribeRewardsDripper;
         tribeRewardsDripper = newTribeRewardsDripper;
-        emit TribeTreasuryUpdate(oldTribeRewardsDripper, newTribeRewardsDripper);
+        emit TribeTreasuryUpdate(
+            oldTribeRewardsDripper,
+            newTribeRewardsDripper
+        );
     }
 
     /// @notice changes the TRIBE minter address
     /// @param newMinter the new minter address
     function setMinter(address newMinter) external override onlyOwner {
-        require(newMinter != address(0), "TribeReserveStabilizer: zero address");
+        require(
+            newMinter != address(0),
+            "TribeReserveStabilizer: zero address"
+        );
         ITribe _tribe = ITribe(address(tribe()));
         _tribe.setMinter(newMinter);
     }
 
     /// @notice sets the max annual inflation relative to current supply
     /// @param newAnnualMaxInflationBasisPoints the new max inflation % denominated in basis points (1/10000)
-    function setAnnualMaxInflationBasisPoints(uint256 newAnnualMaxInflationBasisPoints) external override onlyGovernorOrAdmin {
+    function setAnnualMaxInflationBasisPoints(
+        uint256 newAnnualMaxInflationBasisPoints
+    ) external override onlyGovernorOrAdmin {
         _setAnnualMaxInflationBasisPoints(newAnnualMaxInflationBasisPoints);
     }
 
     /// @notice return the ideal buffer cap based on TRIBE circulating supply
     function idealBufferCap() public view override returns (uint256) {
-        return tribeCirculatingSupply() * annualMaxInflationBasisPoints / Constants.BASIS_POINTS_GRANULARITY;
+        return
+            (tribeCirculatingSupply() * annualMaxInflationBasisPoints) /
+            Constants.BASIS_POINTS_GRANULARITY;
     }
 
     /// @notice return the TRIBE supply, subtracting locked TRIBE
@@ -177,7 +198,7 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
         uint256 mintAmount = amount;
 
         // First transfer maximum amount of held TRIBE
-        if(_tribeBalance != 0) {
+        if (_tribeBalance != 0) {
             uint256 transferAmount = Math.min(_tribeBalance, amount);
 
             _tribe.transfer(to, transferAmount);
@@ -185,22 +206,35 @@ contract TribeMinter is ITribeMinter, RateLimited, Ownable {
             mintAmount = mintAmount - transferAmount;
             assert(mintAmount + transferAmount == amount);
         }
-        
+
         // Then mint if any more is needed
         if (mintAmount != 0) {
             _tribe.mint(to, mintAmount);
         }
     }
 
-    function _setAnnualMaxInflationBasisPoints(uint256 newAnnualMaxInflationBasisPoints) internal {
+    function _setAnnualMaxInflationBasisPoints(
+        uint256 newAnnualMaxInflationBasisPoints
+    ) internal {
         uint256 oldAnnualMaxInflationBasisPoints = annualMaxInflationBasisPoints;
-        require(newAnnualMaxInflationBasisPoints != 0, "TribeMinter: cannot have 0 inflation");
+        require(
+            newAnnualMaxInflationBasisPoints != 0,
+            "TribeMinter: cannot have 0 inflation"
+        );
 
         // make sure the new inflation is strictly lower, unless the old inflation is 0 (which is only true upon construction)
-        require(newAnnualMaxInflationBasisPoints < oldAnnualMaxInflationBasisPoints || oldAnnualMaxInflationBasisPoints == 0, "TribeMinter: cannot increase max inflation");
+        require(
+            newAnnualMaxInflationBasisPoints <
+                oldAnnualMaxInflationBasisPoints ||
+                oldAnnualMaxInflationBasisPoints == 0,
+            "TribeMinter: cannot increase max inflation"
+        );
 
         annualMaxInflationBasisPoints = newAnnualMaxInflationBasisPoints;
 
-        emit AnnualMaxInflationUpdate(oldAnnualMaxInflationBasisPoints, newAnnualMaxInflationBasisPoints);
+        emit AnnualMaxInflationUpdate(
+            oldAnnualMaxInflationBasisPoints,
+            newAnnualMaxInflationBasisPoints
+        );
     }
 }

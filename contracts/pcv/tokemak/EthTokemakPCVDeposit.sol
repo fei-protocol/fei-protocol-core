@@ -6,13 +6,13 @@ import "../../Constants.sol";
 
 interface ITokemakEthPool {
     function deposit(uint256 amount) external payable;
+
     function withdraw(uint256 requestedAmount, bool asEth) external;
 }
 
 /// @title ETH implementation for a Tokemak PCV Deposit
 /// @author Fei Protocol
 contract EthTokemakPCVDeposit is TokemakPCVDepositBase {
-
     /// @notice Tokemak ETH PCV Deposit constructor
     /// @param _core Fei Core for reference
     /// @param _pool Tokemak pool to deposit in
@@ -26,11 +26,7 @@ contract EthTokemakPCVDeposit is TokemakPCVDepositBase {
     receive() external payable {}
 
     /// @notice deposit ETH to Tokemak
-    function deposit()
-        external
-        override
-        whenNotPaused
-    {
+    function deposit() external override whenNotPaused {
         uint256 amount = address(this).balance;
 
         ITokemakEthPool(pool).deposit{value: amount}(amount);

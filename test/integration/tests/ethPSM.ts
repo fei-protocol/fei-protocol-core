@@ -18,8 +18,7 @@ import { expectApprox, expectRevert, getImpersonatedSigner, increaseTime, resetF
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '../setup/utils';
-import { contract } from '@openzeppelin/test-environment';
-import { time, overwriteChainlinkAggregator } from '@test/helpers';
+import { time } from '@test/helpers';
 
 const oneEth = ethers.constants.WeiPerEther;
 
