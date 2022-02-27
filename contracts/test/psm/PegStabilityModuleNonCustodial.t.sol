@@ -185,7 +185,7 @@ contract PegStabilityModuleNonCustodialTest is DSTest {
         public
         prank(userAddress)
     {
-        vm.expectRevert(bytes("ERC20: transfer amount exceeds allowance"));
+        vm.expectRevert(bytes("ERC20: insufficient allowance"));
 
         psm.redeem(userAddress, mintAmount, mintAmount);
     }
@@ -195,7 +195,7 @@ contract PegStabilityModuleNonCustodialTest is DSTest {
         public
         prank(userAddress)
     {
-        vm.expectRevert(bytes("ERC20: transfer amount exceeds allowance"));
+        vm.expectRevert(bytes("ERC20: insufficient allowance"));
 
         psm.mint(userAddress, mintAmount, mintAmount);
     }
