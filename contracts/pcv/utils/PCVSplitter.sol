@@ -7,11 +7,15 @@ import "../../Constants.sol";
 /// @title abstract contract for splitting PCV into different deposits
 /// @author Fei Protocol
 abstract contract PCVSplitter is CoreRef {
-
     uint256[] private ratios;
     address[] private pcvDeposits;
 
-    event AllocationUpdate(address[] oldPCVDeposits, uint256[] oldRatios, address[] newPCVDeposits, uint256[] newRatios);
+    event AllocationUpdate(
+        address[] oldPCVDeposits,
+        uint256[] oldRatios,
+        address[] newPCVDeposits,
+        uint256[] newRatios
+    );
     event Allocate(address indexed caller, uint256 amount);
 
     /// @notice PCVSplitter constructor
@@ -83,7 +87,12 @@ abstract contract PCVSplitter is CoreRef {
         pcvDeposits = _pcvDeposits;
         ratios = _ratios;
 
-        emit AllocationUpdate(_oldPCVDeposits, _oldRatios, _pcvDeposits, _ratios);
+        emit AllocationUpdate(
+            _oldPCVDeposits,
+            _oldRatios,
+            _pcvDeposits,
+            _ratios
+        );
     }
 
     /// @notice distribute funds to all pcv deposits at specified allocation ratios
@@ -91,7 +100,7 @@ abstract contract PCVSplitter is CoreRef {
     function _allocate(uint256 total) internal {
         uint256 granularity = Constants.BASIS_POINTS_GRANULARITY;
         for (uint256 i; i < ratios.length; i++) {
-            uint256 amount = total * ratios[i] / granularity;
+            uint256 amount = (total * ratios[i]) / granularity;
             _allocateSingle(amount, pcvDeposits[i]);
         }
         emit Allocate(msg.sender, total);

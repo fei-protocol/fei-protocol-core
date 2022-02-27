@@ -6,13 +6,13 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 interface ITokemakERC20Pool {
     function deposit(uint256 amount) external;
+
     function withdraw(uint256 requestedAmount) external;
 }
 
 /// @title ERC-20 implementation for a Tokemak PCV Deposit
 /// @author Fei Protocol
 contract ERC20TokemakPCVDeposit is TokemakPCVDepositBase {
-
     /// @notice Tokemak ERC20 PCV Deposit constructor
     /// @param _core Fei Core for reference
     /// @param _pool Tokemak pool to deposit in
@@ -24,11 +24,7 @@ contract ERC20TokemakPCVDeposit is TokemakPCVDepositBase {
     ) TokemakPCVDepositBase(_core, _pool, _rewards) {}
 
     /// @notice deposit ERC-20 tokens to Tokemak
-    function deposit()
-        external
-        override
-        whenNotPaused
-    {
+    function deposit() external override whenNotPaused {
         uint256 amount = token.balanceOf(address(this));
 
         token.approve(pool, amount);

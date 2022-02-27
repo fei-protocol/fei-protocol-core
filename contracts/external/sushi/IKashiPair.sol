@@ -4,18 +4,58 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IKashiPair {
-    event Approval(address indexed _owner, address indexed _spender, uint256 _value);
-    event LogAccrue(uint256 accruedAmount, uint256 feeFraction, uint64 rate, uint256 utilization);
-    event LogAddAsset(address indexed from, address indexed to, uint256 share, uint256 fraction);
-    event LogAddCollateral(address indexed from, address indexed to, uint256 share);
-    event LogBorrow(address indexed from, address indexed to, uint256 amount, uint256 part);
+    event Approval(
+        address indexed _owner,
+        address indexed _spender,
+        uint256 _value
+    );
+    event LogAccrue(
+        uint256 accruedAmount,
+        uint256 feeFraction,
+        uint64 rate,
+        uint256 utilization
+    );
+    event LogAddAsset(
+        address indexed from,
+        address indexed to,
+        uint256 share,
+        uint256 fraction
+    );
+    event LogAddCollateral(
+        address indexed from,
+        address indexed to,
+        uint256 share
+    );
+    event LogBorrow(
+        address indexed from,
+        address indexed to,
+        uint256 amount,
+        uint256 part
+    );
     event LogExchangeRate(uint256 rate);
     event LogFeeTo(address indexed newFeeTo);
-    event LogRemoveAsset(address indexed from, address indexed to, uint256 share, uint256 fraction);
-    event LogRemoveCollateral(address indexed from, address indexed to, uint256 share);
-    event LogRepay(address indexed from, address indexed to, uint256 amount, uint256 part);
+    event LogRemoveAsset(
+        address indexed from,
+        address indexed to,
+        uint256 share,
+        uint256 fraction
+    );
+    event LogRemoveCollateral(
+        address indexed from,
+        address indexed to,
+        uint256 share
+    );
+    event LogRepay(
+        address indexed from,
+        address indexed to,
+        uint256 amount,
+        uint256 part
+    );
     event LogWithdrawFees(address indexed feeTo, uint256 feesEarnedFraction);
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event OwnershipTransferred(
+        address indexed previousOwner,
+        address indexed newOwner
+    );
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
@@ -51,7 +91,9 @@ interface IKashiPair {
 
     function balanceOf(address) external view returns (uint256);
 
-    function borrow(address to, uint256 amount) external returns (uint256 part, uint256 share);
+    function borrow(address to, uint256 amount)
+        external
+        returns (uint256 part, uint256 share);
 
     function claimOwnership() external;
 
@@ -95,7 +137,9 @@ interface IKashiPair {
         bytes32 s
     ) external;
 
-    function removeAsset(address to, uint256 fraction) external returns (uint256 share);
+    function removeAsset(address to, uint256 fraction)
+        external
+        returns (uint256 share);
 
     function removeCollateral(address to, uint256 share) external;
 
@@ -111,7 +155,10 @@ interface IKashiPair {
 
     function totalAsset() external view returns (uint128 elastic, uint128 base);
 
-    function totalBorrow() external view returns (uint128 elastic, uint128 base);
+    function totalBorrow()
+        external
+        view
+        returns (uint128 elastic, uint128 base);
 
     function totalCollateralShare() external view returns (uint256);
 

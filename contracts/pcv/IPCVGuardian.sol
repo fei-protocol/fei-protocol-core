@@ -6,28 +6,24 @@ pragma solidity ^0.8.4;
 /// @dev any implementation of this contract should be granted the roles of Guardian and PCVController in order to work correctly
 interface IPCVGuardian {
     // ---------- Events ----------
-    event SafeAddressAdded(
-        address indexed safeAddress
-    );
+    event SafeAddressAdded(address indexed safeAddress);
 
-    event SafeAddressRemoved(
-        address indexed safeAddress
-    );
+    event SafeAddressRemoved(address indexed safeAddress);
 
     event PCVGuardianWithdrawal(
-        address indexed pcvDeposit, 
-        address indexed destination, 
+        address indexed pcvDeposit,
+        address indexed destination,
         uint256 amount
-    ); 
+    );
 
     event PCVGuardianETHWithdrawal(
-        address indexed pcvDeposit, 
-        address indexed destination, 
+        address indexed pcvDeposit,
+        address indexed destination,
         uint256 amount
     );
 
     event PCVGuardianERC20Withdrawal(
-        address indexed pcvDeposit, 
+        address indexed pcvDeposit,
         address indexed destination,
         address indexed token,
         uint256 amount
@@ -68,7 +64,13 @@ interface IPCVGuardian {
     /// @param amount the amount to withdraw
     /// @param pauseAfter if true, the pcv contract will be paused after the withdraw
     /// @param depositAfter if true, attempts to deposit to the target PCV deposit
-    function withdrawToSafeAddress(address pcvDeposit, address safeAddress, uint256 amount, bool pauseAfter, bool depositAfter) external;
+    function withdrawToSafeAddress(
+        address pcvDeposit,
+        address safeAddress,
+        uint256 amount,
+        bool pauseAfter,
+        bool depositAfter
+    ) external;
 
     /// @notice governor-or-guardian-only method to withdraw funds from a pcv deposit, by calling the withdraw() method on it
     /// @param pcvDeposit the address of the pcv deposit contract
@@ -76,7 +78,13 @@ interface IPCVGuardian {
     /// @param amount the amount of tokens to withdraw
     /// @param pauseAfter if true, the pcv contract will be paused after the withdraw
     /// @param depositAfter if true, attempts to deposit to the target PCV deposit
-    function withdrawETHToSafeAddress(address pcvDeposit, address payable safeAddress, uint256 amount, bool pauseAfter, bool depositAfter) external;
+    function withdrawETHToSafeAddress(
+        address pcvDeposit,
+        address payable safeAddress,
+        uint256 amount,
+        bool pauseAfter,
+        bool depositAfter
+    ) external;
 
     /// @notice governor-or-guardian-only method to withdraw funds from a pcv deposit, by calling the withdraw() method on it
     /// @param pcvDeposit the deposit to pull funds from
@@ -85,5 +93,12 @@ interface IPCVGuardian {
     /// @param amount the amount of funds to withdraw
     /// @param pauseAfter whether to pause the pcv after withdrawing
     /// @param depositAfter if true, attempts to deposit to the target PCV deposit
-    function withdrawERC20ToSafeAddress(address pcvDeposit, address safeAddress, address token, uint256 amount, bool pauseAfter, bool depositAfter) external;
+    function withdrawERC20ToSafeAddress(
+        address pcvDeposit,
+        address safeAddress,
+        address token,
+        uint256 amount,
+        bool pauseAfter,
+        bool depositAfter
+    ) external;
 }

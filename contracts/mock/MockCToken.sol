@@ -6,13 +6,14 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 interface CToken {
-    function redeemUnderlying(uint redeemAmount) external returns (uint);
-    function exchangeRateStored() external view returns (uint);
-    function balanceOf(address account) external view returns (uint);
+    function redeemUnderlying(uint256 redeemAmount) external returns (uint256);
+
+    function exchangeRateStored() external view returns (uint256);
+
+    function balanceOf(address account) external view returns (uint256);
 }
 
 contract MockCToken is MockERC20 {
-
     IERC20 public token;
     bool public error;
     bool public isCEther;
@@ -29,11 +30,11 @@ contract MockCToken is MockERC20 {
         error = _error;
     }
 
-    function isCToken() external pure returns(bool) {
+    function isCToken() external pure returns (bool) {
         return true;
     }
 
-    function underlying() external view returns(address) {
+    function underlying() external view returns (address) {
         return address(token);
     }
 
@@ -41,13 +42,13 @@ contract MockCToken is MockERC20 {
         _mint(msg.sender, msg.value / effectiveExchangeRate);
     }
 
-    function mint(uint256 amount) external returns (uint) {
+    function mint(uint256 amount) external returns (uint256) {
         token.transferFrom(msg.sender, address(this), amount);
         _mint(msg.sender, amount / effectiveExchangeRate);
         return error ? 1 : 0;
     }
 
-    function redeemUnderlying(uint redeemAmount) external returns (uint) {
+    function redeemUnderlying(uint256 redeemAmount) external returns (uint256) {
         _burn(msg.sender, redeemAmount / effectiveExchangeRate);
         if (address(this).balance >= redeemAmount) {
             payable(msg.sender).transfer(redeemAmount);
@@ -57,7 +58,7 @@ contract MockCToken is MockERC20 {
         return error ? 1 : 0;
     }
 
-    function exchangeRateStored() external view returns (uint) {
+    function exchangeRateStored() external view returns (uint256) {
         return EXCHANGE_RATE_SCALE * effectiveExchangeRate; // 2:1
     }
 }
