@@ -20,14 +20,6 @@ contract PegStabilityModuleNonCustodialTest is DSTest {
     ICore private core;
     IFei private fei;
 
-    modifier prank(address toPrank) {
-        vm.startPrank(toPrank);
-
-        _;
-
-        vm.stopPrank();
-    }
-
     uint256 public constant mintAmount = 10_000_000e18;
     uint256 public constant bufferCap = 10_000_000e18;
     uint256 public constant rps = 10_000e18;
@@ -41,7 +33,6 @@ contract PegStabilityModuleNonCustodialTest is DSTest {
 
     Vm public constant vm = Vm(HEVM_ADDRESS);
     FeiTestAddresses public addresses = getAddresses();
-    address public immutable userAddress = addresses.userAddress;
 
     function setUp() public {
         core = getCore();
@@ -81,7 +72,7 @@ contract PegStabilityModuleNonCustodialTest is DSTest {
 
         /// mint the PSM and user some underlying tokens
         underlyingToken.mint(address(psm), mintAmount);
-        underlyingToken.mint(userAddress, mintAmount);
+        underlyingToken.mint(address(this), mintAmount);
 
         vm.startPrank(addresses.governorAddress);
 
@@ -89,8 +80,9 @@ contract PegStabilityModuleNonCustodialTest is DSTest {
         core.grantMinter(addresses.governorAddress);
         core.grantPCVController(address(psm));
         core.grantMinter(address(psm));
+
         /// mint FEI to the user
-        fei.mint(userAddress, mintAmount);
+        fei.mint(address(this), mintAmount);
 
         vm.stopPrank();
 
@@ -101,7 +93,7 @@ contract PegStabilityModuleNonCustodialTest is DSTest {
     /// @notice PSM is set up correctly, all state variables and balances are correct
     function testPSMSetup() public {
         uint256 startingPSMUnderlyingBalance = psm.balance();
-        uint256 startingUserFEIBalance = fei.balanceOf(userAddress);
+        uint256 startingUserFEIBalance = fei.balanceOf(address(this));
         uint256 reserveThreshold = psm.reservesThreshold();
 
         assertEq(reserveThreshold, 0);
@@ -113,11 +105,11 @@ contract PegStabilityModuleNonCustodialTest is DSTest {
     }
 
     /// @notice pcv deposit receives underlying token on mint
-    function testSwapUnderlyingForFei() public prank(userAddress) {
+    function testSwapUnderlyingForFei() public {
         underlyingToken.approve(address(psm), mintAmount);
-        psm.mint(userAddress, mintAmount, mintAmount);
+        psm.mint(address(this), mintAmount, mintAmount);
 
-        uint256 endingUserFEIBalance = fei.balanceOf(userAddress);
+        uint256 endingUserFEIBalance = fei.balanceOf(address(this));
         uint256 endingPSMUnderlyingBalance = psm.balance();
         uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
             address(pcvDeposit)
@@ -129,13 +121,13 @@ contract PegStabilityModuleNonCustodialTest is DSTest {
     }
 
     /// @notice pcv deposit gets depleted on redeem
-    function testSwapFeiForUnderlying() public prank(userAddress) {
+    function testSwapFeiForUnderlying() public {
         fei.approve(address(psm), mintAmount);
-        psm.redeem(userAddress, mintAmount, mintAmount);
+        psm.redeem(address(this), mintAmount, mintAmount);
 
-        uint256 endingUserFEIBalance = fei.balanceOf(userAddress);
+        uint256 endingUserFEIBalance = fei.balanceOf(address(this));
         uint256 endingUserUnderlyingBalance = underlyingToken.balanceOf(
-            userAddress
+            address(this)
         );
         uint256 endingPSMUnderlyingBalance = psm.balance();
         uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
@@ -149,55 +141,49 @@ contract PegStabilityModuleNonCustodialTest is DSTest {
     }
 
     /// @notice redeem fails when price is out of bounds
-    function testMintFailsAboveCeiling() public prank(userAddress) {
+    function testMintFailsAboveCeiling() public {
         oracle.setExchangeRate(2);
         vm.expectRevert(bytes("PegStabilityModule: price out of bounds"));
 
-        psm.mint(userAddress, mintAmount, mintAmount);
+        psm.mint(address(this), mintAmount, mintAmount);
     }
 
     /// @notice mint fails when price is out of bounds
-    function testMintFailsBelowFloor() public prank(userAddress) {
+    function testMintFailsBelowFloor() public {
         oracle.setExchangeRateScaledBase(95e16);
         vm.expectRevert(bytes("PegStabilityModule: price out of bounds"));
 
-        psm.mint(userAddress, mintAmount, mintAmount);
+        psm.mint(address(this), mintAmount, mintAmount);
     }
 
     /// @notice redeem fails when price is out of bounds
-    function testRedeemFailsBelowFloor() public prank(userAddress) {
+    function testRedeemFailsBelowFloor() public {
         oracle.setExchangeRateScaledBase(95e16);
         vm.expectRevert(bytes("PegStabilityModule: price out of bounds"));
 
-        psm.redeem(userAddress, mintAmount, mintAmount);
+        psm.redeem(address(this), mintAmount, mintAmount);
     }
 
     /// @notice redeem fails when price is out of bounds
-    function testRedeemFailsAboveCeiling() public prank(userAddress) {
+    function testRedeemFailsAboveCeiling() public {
         oracle.setExchangeRate(2);
         vm.expectRevert(bytes("PegStabilityModule: price out of bounds"));
 
-        psm.redeem(userAddress, mintAmount, mintAmount);
+        psm.redeem(address(this), mintAmount, mintAmount);
     }
 
     /// @notice redeem fails without approval
-    function testSwapFeiForUnderlyingFailsWithoutApproval()
-        public
-        prank(userAddress)
-    {
+    function testSwapFeiForUnderlyingFailsWithoutApproval() public {
         vm.expectRevert(bytes("ERC20: insufficient allowance"));
 
-        psm.redeem(userAddress, mintAmount, mintAmount);
+        psm.redeem(address(this), mintAmount, mintAmount);
     }
 
     /// @notice mint fails without approval
-    function testSwapUnderlyingForFeiFailsWithoutApproval()
-        public
-        prank(userAddress)
-    {
+    function testSwapUnderlyingForFeiFailsWithoutApproval() public {
         vm.expectRevert(bytes("ERC20: insufficient allowance"));
 
-        psm.mint(userAddress, mintAmount, mintAmount);
+        psm.mint(address(this), mintAmount, mintAmount);
     }
 
     /// @notice allocate fails without underlying token balance
