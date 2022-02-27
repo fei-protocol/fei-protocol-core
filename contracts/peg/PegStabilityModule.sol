@@ -205,7 +205,10 @@ contract PegStabilityModule is
     }
 
     /// @notice helper function to set reserves threshold
-    function _setReservesThreshold(uint256 newReservesThreshold) internal {
+    function _setReservesThreshold(uint256 newReservesThreshold)
+        internal
+        virtual
+    {
         require(
             newReservesThreshold > 0,
             "PegStabilityModule: Invalid new reserves threshold"
@@ -466,7 +469,7 @@ contract PegStabilityModule is
         address from,
         address to,
         uint256 amount
-    ) internal {
+    ) internal virtual {
         SafeERC20.safeTransferFrom(underlyingToken, from, to, amount);
     }
 

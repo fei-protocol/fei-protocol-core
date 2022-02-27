@@ -16,25 +16,24 @@ import {DSTest} from "./../utils/DSTest.sol";
 import {getCore, getAddresses, FeiTestAddresses} from "./../utils/Fixtures.sol";
 
 contract PegStabilityModuleNonCustodialTest is DSTest {
-
     PegStabilityModuleNonCustodial private psm;
     ICore private core;
     IFei private fei;
 
     modifier prank(address toPrank) {
-      vm.startPrank(toPrank);
+        vm.startPrank(toPrank);
 
-      _;
+        _;
 
-      vm.stopPrank();
+        vm.stopPrank();
     }
 
-    uint256 immutable public mintAmount = 10_000_000e18;
-    uint256 immutable public bufferCap = 10_000_000e18;
-    uint256 immutable public rps = 10_000e18;
+    uint256 public constant mintAmount = 10_000_000e18;
+    uint256 public constant bufferCap = 10_000_000e18;
+    uint256 public constant rps = 10_000e18;
 
-    uint256 immutable public floorBasisPoints = 9_900;
-    uint256 immutable public ceilingBasisPoints = 10_100;
+    uint256 public constant floorBasisPoints = 9_900;
+    uint256 public constant ceilingBasisPoints = 10_100;
 
     MockERC20 public underlyingToken;
     MockPCVDepositV2 public pcvDeposit;
@@ -42,194 +41,202 @@ contract PegStabilityModuleNonCustodialTest is DSTest {
 
     Vm public constant vm = Vm(HEVM_ADDRESS);
     FeiTestAddresses public addresses = getAddresses();
-    address immutable public userAddress = addresses.userAddress;
+    address public immutable userAddress = addresses.userAddress;
 
     function setUp() public {
-      core = getCore();
+        core = getCore();
 
-      fei = core.fei();
+        fei = core.fei();
 
-      oracle = new MockOracle(1);
-      underlyingToken = new MockERC20();
-      pcvDeposit = new MockPCVDepositV2(
-          address(core),
-          address(underlyingToken),
-          0,
-          0
-      );
+        oracle = new MockOracle(1);
+        underlyingToken = new MockERC20();
+        pcvDeposit = new MockPCVDepositV2(
+            address(core),
+            address(underlyingToken),
+            0,
+            0
+        );
 
-      PegStabilityModule.OracleParams memory oracleParams = PegStabilityModule.OracleParams({
-          coreAddress: address(core),
-          oracleAddress: address(oracle),
-          backupOracle: address(0),
-          decimalsNormalizer: 0,
-          doInvert: false
-      });
+        PegStabilityModule.OracleParams memory oracleParams = PegStabilityModule
+            .OracleParams({
+                coreAddress: address(core),
+                oracleAddress: address(oracle),
+                backupOracle: address(0),
+                decimalsNormalizer: 0,
+                doInvert: false
+            });
 
-      psm = new PegStabilityModuleNonCustodial(
-        floorBasisPoints,
-        ceilingBasisPoints,
-        oracleParams,
-        0,
-        0,
-        rps,
-        bufferCap,
-        IERC20(underlyingToken),
-        IPCVDeposit(pcvDeposit)
-      );
+        /// create PSM
+        psm = new PegStabilityModuleNonCustodial(
+            floorBasisPoints,
+            ceilingBasisPoints,
+            oracleParams,
+            0,
+            0,
+            rps,
+            bufferCap,
+            IERC20(underlyingToken),
+            IPCVDeposit(pcvDeposit)
+        );
 
-      underlyingToken.mint(address(psm), mintAmount);
-      underlyingToken.mint(userAddress, mintAmount);
+        /// mint the PSM and user some underlying tokens
+        underlyingToken.mint(address(psm), mintAmount);
+        underlyingToken.mint(userAddress, mintAmount);
 
-      vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governorAddress);
 
-      core.grantMinter(addresses.governorAddress);
-      core.grantPCVController(address(psm));
-      core.grantMinter(address(psm));
-      fei.mint(userAddress, mintAmount);
+        /// give the PSM minting abilities
+        core.grantMinter(addresses.governorAddress);
+        core.grantPCVController(address(psm));
+        core.grantMinter(address(psm));
+        /// mint FEI to the user
+        fei.mint(userAddress, mintAmount);
 
-      vm.stopPrank();
+        vm.stopPrank();
 
-      psm.allocateSurplus();
+        /// send all excess tokens to the PCV deposit
+        psm.allocateSurplus();
     }
 
-    /// @notice PSM is set up correctly, all state variables and balances are correct 
+    /// @notice PSM is set up correctly, all state variables and balances are correct
     function testPSMSetup() public {
-      uint256 startingPSMUnderlyingBalance = psm.balance();
-      uint256 startingUserFEIBalance = fei.balanceOf(userAddress);
-      uint256 reserveThreshold = psm.reservesThreshold();
+        uint256 startingPSMUnderlyingBalance = psm.balance();
+        uint256 startingUserFEIBalance = fei.balanceOf(userAddress);
+        uint256 reserveThreshold = psm.reservesThreshold();
 
-      assertEq(reserveThreshold, 0);
-      assertEq(startingPSMUnderlyingBalance, 0);
-      assertEq(startingUserFEIBalance, mintAmount);
+        assertEq(reserveThreshold, 0);
+        assertEq(startingPSMUnderlyingBalance, 0);
+        assertEq(startingUserFEIBalance, mintAmount);
 
-      assertTrue(core.isPCVController(address(psm)));
-      assertTrue(core.isMinter(address(psm)));
+        assertTrue(core.isPCVController(address(psm)));
+        assertTrue(core.isMinter(address(psm)));
     }
 
     /// @notice pcv deposit receives underlying token on mint
     function testSwapUnderlyingForFei() public prank(userAddress) {
-      underlyingToken.approve(address(psm), mintAmount);
-      psm.mint(userAddress, mintAmount, mintAmount);
+        underlyingToken.approve(address(psm), mintAmount);
+        psm.mint(userAddress, mintAmount, mintAmount);
 
-      uint256 endingUserFEIBalance = fei.balanceOf(userAddress);
-      uint256 endingPSMUnderlyingBalance = psm.balance();
-      uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(address(pcvDeposit));
+        uint256 endingUserFEIBalance = fei.balanceOf(userAddress);
+        uint256 endingPSMUnderlyingBalance = psm.balance();
+        uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
+            address(pcvDeposit)
+        );
 
-      assertEq(endingPCVDepositUnderlyingBalance, mintAmount * 2);
-      assertEq(endingPSMUnderlyingBalance, 0);
-      assertEq(endingUserFEIBalance, mintAmount * 2);
+        assertEq(endingPCVDepositUnderlyingBalance, mintAmount * 2);
+        assertEq(endingPSMUnderlyingBalance, 0);
+        assertEq(endingUserFEIBalance, mintAmount * 2);
     }
 
     /// @notice pcv deposit gets depleted on redeem
     function testSwapFeiForUnderlying() public prank(userAddress) {
-      fei.approve(address(psm), mintAmount);
-      psm.redeem(userAddress, mintAmount, mintAmount);
+        fei.approve(address(psm), mintAmount);
+        psm.redeem(userAddress, mintAmount, mintAmount);
 
-      uint256 endingUserFEIBalance = fei.balanceOf(userAddress);
-      uint256 endingUserUnderlyingBalance = underlyingToken.balanceOf(userAddress);
-      uint256 endingPSMUnderlyingBalance = psm.balance();
-      uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(address(pcvDeposit));
+        uint256 endingUserFEIBalance = fei.balanceOf(userAddress);
+        uint256 endingUserUnderlyingBalance = underlyingToken.balanceOf(
+            userAddress
+        );
+        uint256 endingPSMUnderlyingBalance = psm.balance();
+        uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
+            address(pcvDeposit)
+        );
 
-      assertEq(endingPSMUnderlyingBalance, 0);
-      assertEq(endingUserFEIBalance, 0);
-      assertEq(endingUserUnderlyingBalance, mintAmount * 2);
-      assertEq(endingPCVDepositUnderlyingBalance, 0);
+        assertEq(endingPSMUnderlyingBalance, 0);
+        assertEq(endingUserFEIBalance, 0);
+        assertEq(endingUserUnderlyingBalance, mintAmount * 2);
+        assertEq(endingPCVDepositUnderlyingBalance, 0);
     }
 
     /// @notice redeem fails when price is out of bounds
     function testMintFailsAboveCeiling() public prank(userAddress) {
-      oracle.setExchangeRate(2);
-      vm.expectRevert(
-          abi.encodePacked("PegStabilityModule: price out of bounds")
-      );
+        oracle.setExchangeRate(2);
+        vm.expectRevert(bytes("PegStabilityModule: price out of bounds"));
 
-      psm.mint(userAddress, mintAmount, mintAmount);
+        psm.mint(userAddress, mintAmount, mintAmount);
     }
 
-    /// @notice redeem fails when price is out of bounds
+    /// @notice mint fails when price is out of bounds
     function testMintFailsBelowFloor() public prank(userAddress) {
-      oracle.setExchangeRateScaledBase(95e16);
-      vm.expectRevert(
-          abi.encodePacked("PegStabilityModule: price out of bounds")
-      );
+        oracle.setExchangeRateScaledBase(95e16);
+        vm.expectRevert(bytes("PegStabilityModule: price out of bounds"));
 
-      psm.mint(userAddress, mintAmount, mintAmount);
+        psm.mint(userAddress, mintAmount, mintAmount);
     }
 
     /// @notice redeem fails when price is out of bounds
     function testRedeemFailsBelowFloor() public prank(userAddress) {
-      oracle.setExchangeRateScaledBase(95e16);
-      vm.expectRevert(
-          abi.encodePacked("PegStabilityModule: price out of bounds")
-      );
+        oracle.setExchangeRateScaledBase(95e16);
+        vm.expectRevert(bytes("PegStabilityModule: price out of bounds"));
 
-      psm.redeem(userAddress, mintAmount, mintAmount);
+        psm.redeem(userAddress, mintAmount, mintAmount);
     }
 
     /// @notice redeem fails when price is out of bounds
     function testRedeemFailsAboveCeiling() public prank(userAddress) {
-      oracle.setExchangeRate(2);
-      vm.expectRevert(
-          abi.encodePacked("PegStabilityModule: price out of bounds")
-      );
+        oracle.setExchangeRate(2);
+        vm.expectRevert(bytes("PegStabilityModule: price out of bounds"));
 
-      psm.redeem(userAddress, mintAmount, mintAmount);
+        psm.redeem(userAddress, mintAmount, mintAmount);
     }
 
     /// @notice redeem fails without approval
-    function testSwapFeiForUnderlyingFailsWithoutApproval() public prank(userAddress) {
-      vm.expectRevert(
-          abi.encodePacked("ERC20: transfer amount exceeds allowance")
-      );
+    function testSwapFeiForUnderlyingFailsWithoutApproval()
+        public
+        prank(userAddress)
+    {
+        vm.expectRevert(bytes("ERC20: transfer amount exceeds allowance"));
 
-      psm.redeem(userAddress, mintAmount, mintAmount);
+        psm.redeem(userAddress, mintAmount, mintAmount);
     }
 
     /// @notice mint fails without approval
-    function testSwapUnderlyingForFeiFailsWithoutApproval() public prank(userAddress) {
-      vm.expectRevert(
-          abi.encodePacked("ERC20: transfer amount exceeds allowance")
-      );
+    function testSwapUnderlyingForFeiFailsWithoutApproval()
+        public
+        prank(userAddress)
+    {
+        vm.expectRevert(bytes("ERC20: transfer amount exceeds allowance"));
 
-      psm.mint(userAddress, mintAmount, mintAmount);
+        psm.mint(userAddress, mintAmount, mintAmount);
     }
 
     /// @notice allocate fails without underlying token balance
     function testAllocateFailure() public {
-      vm.expectRevert(
-        abi.encodePacked("PegStabilityModule: No balance to allocate")
-      );
+        vm.expectRevert(bytes("PegStabilityModule: No balance to allocate"));
 
-      psm.allocateSurplus();
+        psm.allocateSurplus();
     }
 
     /// @notice deposit fails without underlying token balance
     function testDepositFailure() public {
-      vm.expectRevert(
-        abi.encodePacked("PegStabilityModule: No balance to allocate")
-      );
+        vm.expectRevert(bytes("PegStabilityModule: No balance to allocate"));
 
-      psm.deposit();
+        psm.deposit();
     }
 
     /// @notice deposit succeeds with underlying token balance and sends to PCV Deposit
     function testDepositSuccess() public {
-      underlyingToken.mint(address(psm), mintAmount);
+        underlyingToken.mint(address(psm), mintAmount);
 
-      psm.deposit();
+        psm.deposit();
 
-      assertEq(underlyingToken.balanceOf(address(psm)), 0);
-      assertEq(underlyingToken.balanceOf(address(pcvDeposit)), mintAmount * 2);
+        assertEq(underlyingToken.balanceOf(address(psm)), 0);
+        assertEq(
+            underlyingToken.balanceOf(address(pcvDeposit)),
+            mintAmount * 2
+        );
     }
 
     /// @notice allocate surplus succeeds with underlying token balance and sends to PCV Deposit
     function testAllocateSuccess() public {
-      underlyingToken.mint(address(psm), mintAmount);
+        underlyingToken.mint(address(psm), mintAmount);
 
-      psm.allocateSurplus();
+        psm.allocateSurplus();
 
-      assertEq(underlyingToken.balanceOf(address(psm)), 0);
-      assertEq(underlyingToken.balanceOf(address(pcvDeposit)), mintAmount * 2);
+        assertEq(underlyingToken.balanceOf(address(psm)), 0);
+        assertEq(
+            underlyingToken.balanceOf(address(pcvDeposit)),
+            mintAmount * 2
+        );
     }
 }

@@ -32,24 +32,29 @@ contract PegStabilityModuleNonCustodial is FixedPricePSM {
         uint256 _mintingBufferCap,
         IERC20 _underlyingToken,
         IPCVDeposit _pcvDeposit
-    ) FixedPricePSM(
-        _floor,
-        _ceiling,
-        params,
-        _mintFeeBasisPoints,
-        _redeemFeeBasisPoints,
-        0, /// hardcode reserve threshold to 0
-        _feiLimitPerSecond,
-        _mintingBufferCap,
-        _underlyingToken,
-        _pcvDeposit
-    ) {}
+    )
+        FixedPricePSM(
+            _floor,
+            _ceiling,
+            params,
+            _mintFeeBasisPoints,
+            _redeemFeeBasisPoints,
+            0, /// hardcode reserve threshold to 0
+            _feiLimitPerSecond,
+            _mintingBufferCap,
+            _underlyingToken,
+            _pcvDeposit
+        )
+    {}
 
     /// @notice reusable function that sends all tokens to the PCV Deposit
     /// and then has the PCV Deposit allocate those tokens
     function _allocateTokens() internal {
         uint256 currentBalance = balance();
-        require(currentBalance != 0, "PegStabilityModule: No balance to allocate");
+        require(
+            currentBalance != 0,
+            "PegStabilityModule: No balance to allocate"
+        );
 
         underlyingToken.safeTransfer(address(surplusTarget), currentBalance);
         surplusTarget.deposit();
@@ -83,7 +88,11 @@ contract PegStabilityModuleNonCustodial is FixedPricePSM {
     /// @notice transfer assets from user to this contract
     /// @param from sending address
     /// @param amount number of tokens sent to PCV Deposit
-    function _transferFrom(address from, address, uint256 amount) internal override {
+    function _transferFrom(
+        address from,
+        address,
+        uint256 amount
+    ) internal override {
         underlyingToken.safeTransferFrom(from, address(surplusTarget), amount);
         surplusTarget.deposit();
     }
