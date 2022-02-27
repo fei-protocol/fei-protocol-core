@@ -9,7 +9,11 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 
 /// @title implementation for a TRIBE Reserve Stabilizer
 /// @author Fei Protocol
-contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, Timed {
+contract TribeReserveStabilizer is
+    ITribeReserveStabilizer,
+    ReserveStabilizer,
+    Timed
+{
     using Decimal for Decimal.D256;
 
     /// @notice a collateralization oracle
@@ -38,16 +42,31 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, T
         uint256 _collateralizationThresholdBasisPoints,
         ITribeMinter _tribeMinter,
         uint256 _osmDuration
-    ) 
-      ReserveStabilizer(_core, _tribeOracle, _backupOracle, IERC20(address(0)), _usdPerFeiBasisPoints)
-      Timed(_osmDuration) 
+    )
+        ReserveStabilizer(
+            _core,
+            _tribeOracle,
+            _backupOracle,
+            IERC20(address(0)),
+            _usdPerFeiBasisPoints
+        )
+        Timed(_osmDuration)
     {
         collateralizationOracle = _collateralizationOracle;
-        emit CollateralizationOracleUpdate(address(0), address(_collateralizationOracle));
-    
-        _collateralizationThreshold = Decimal.ratio(_collateralizationThresholdBasisPoints, Constants.BASIS_POINTS_GRANULARITY);
-        emit CollateralizationThresholdUpdate(0, _collateralizationThresholdBasisPoints);
-        
+        emit CollateralizationOracleUpdate(
+            address(0),
+            address(_collateralizationOracle)
+        );
+
+        _collateralizationThreshold = Decimal.ratio(
+            _collateralizationThresholdBasisPoints,
+            Constants.BASIS_POINTS_GRANULARITY
+        );
+        emit CollateralizationThresholdUpdate(
+            0,
+            _collateralizationThresholdBasisPoints
+        );
+
         // Setting token here because it isn't available until after CoreRef is constructed
         // This does skip the _setDecimalsNormalizerFromToken call in ReserveStabilizer constructor, but it isn't needed because TRIBE is 18 decimals
         token = tribe();
@@ -57,8 +76,16 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, T
 
     /// @notice exchange FEI for minted TRIBE
     /// @dev the timer counts down from first time below threshold and opens after window
-    function exchangeFei(uint256 feiAmount) public override afterTime returns(uint256) {
-        require(isCollateralizationBelowThreshold(), "TribeReserveStabilizer: Collateralization ratio above threshold");
+    function exchangeFei(uint256 feiAmount)
+        public
+        override
+        afterTime
+        returns (uint256)
+    {
+        require(
+            isCollateralizationBelowThreshold(),
+            "TribeReserveStabilizer: Collateralization ratio above threshold"
+        );
         return super.exchangeFei(feiAmount);
     }
 
@@ -69,43 +96,78 @@ contract TribeReserveStabilizer is ITribeReserveStabilizer, ReserveStabilizer, T
 
     /// @notice check whether collateralization ratio is below the threshold set
     /// @dev returns false if the oracle is invalid
-    function isCollateralizationBelowThreshold() public override view returns(bool) {
-        (Decimal.D256 memory ratio, bool valid) = collateralizationOracle.read();
+    function isCollateralizationBelowThreshold()
+        public
+        view
+        override
+        returns (bool)
+    {
+        (Decimal.D256 memory ratio, bool valid) = collateralizationOracle
+            .read();
 
         return valid && ratio.lessThanOrEqualTo(_collateralizationThreshold);
     }
 
     /// @notice delay the opening of the TribeReserveStabilizer until oracle delay duration is met
     function startOracleDelayCountdown() external override {
-        require(isCollateralizationBelowThreshold(), "TribeReserveStabilizer: Collateralization ratio above threshold");
+        require(
+            isCollateralizationBelowThreshold(),
+            "TribeReserveStabilizer: Collateralization ratio above threshold"
+        );
         require(!isTimeStarted(), "TribeReserveStabilizer: timer started");
         _initTimed();
     }
 
     /// @notice reset the opening of the TribeReserveStabilizer oracle delay as soon as above CR target
     function resetOracleDelayCountdown() external override {
-        require(!isCollateralizationBelowThreshold(), "TribeReserveStabilizer: Collateralization ratio under threshold");
+        require(
+            !isCollateralizationBelowThreshold(),
+            "TribeReserveStabilizer: Collateralization ratio under threshold"
+        );
         require(isTimeStarted(), "TribeReserveStabilizer: timer started");
         _pauseTimer();
     }
 
     /// @notice set the Collateralization oracle
-    function setCollateralizationOracle(ICollateralizationOracle newCollateralizationOracle) external override onlyGovernor {
-        require(address(newCollateralizationOracle) != address(0), "TribeReserveStabilizer: zero address");
+    function setCollateralizationOracle(
+        ICollateralizationOracle newCollateralizationOracle
+    ) external override onlyGovernor {
+        require(
+            address(newCollateralizationOracle) != address(0),
+            "TribeReserveStabilizer: zero address"
+        );
         address oldCollateralizationOracle = address(collateralizationOracle);
         collateralizationOracle = newCollateralizationOracle;
-        emit CollateralizationOracleUpdate(oldCollateralizationOracle, address(newCollateralizationOracle));
+        emit CollateralizationOracleUpdate(
+            oldCollateralizationOracle,
+            address(newCollateralizationOracle)
+        );
     }
-    
+
     /// @notice set the collateralization threshold below which exchanging becomes active
-    function setCollateralizationThreshold(uint256 newCollateralizationThresholdBasisPoints) external override onlyGovernor {        
-        uint256 oldCollateralizationThresholdBasisPoints = _collateralizationThreshold.mul(Constants.BASIS_POINTS_GRANULARITY).asUint256();
-        _collateralizationThreshold = Decimal.ratio(newCollateralizationThresholdBasisPoints, Constants.BASIS_POINTS_GRANULARITY);
-        emit CollateralizationThresholdUpdate(oldCollateralizationThresholdBasisPoints, newCollateralizationThresholdBasisPoints);
+    function setCollateralizationThreshold(
+        uint256 newCollateralizationThresholdBasisPoints
+    ) external override onlyGovernor {
+        uint256 oldCollateralizationThresholdBasisPoints = _collateralizationThreshold
+                .mul(Constants.BASIS_POINTS_GRANULARITY)
+                .asUint256();
+        _collateralizationThreshold = Decimal.ratio(
+            newCollateralizationThresholdBasisPoints,
+            Constants.BASIS_POINTS_GRANULARITY
+        );
+        emit CollateralizationThresholdUpdate(
+            oldCollateralizationThresholdBasisPoints,
+            newCollateralizationThresholdBasisPoints
+        );
     }
 
     /// @notice the collateralization threshold below which exchanging becomes active
-    function collateralizationThreshold() external view override returns(Decimal.D256 memory) {
+    function collateralizationThreshold()
+        external
+        view
+        override
+        returns (Decimal.D256 memory)
+    {
         return _collateralizationThreshold;
     }
 

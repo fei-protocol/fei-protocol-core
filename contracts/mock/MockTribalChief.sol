@@ -1,8 +1,7 @@
 pragma solidity ^0.8.0;
- pragma solidity ^0.8.0;
+pragma solidity ^0.8.0;
 
 contract MockTribalChief {
-
     /// @dev allocation points of the pool
     uint120 public poolAllocPoints;
     /// @dev Total allocation points. Must be the sum of all allocation points in all pools.
@@ -21,15 +20,17 @@ contract MockTribalChief {
         totalAllocPoint = _totalAllocPoint;
     }
 
-    function poolInfo(
-        uint256 _index
-    ) external view returns(
-        uint256,
-        uint256,
-        uint128,
-        uint120,
-        bool
-    ) {
+    function poolInfo(uint256 _index)
+        external
+        view
+        returns (
+            uint256,
+            uint256,
+            uint128,
+            uint120,
+            bool
+        )
+    {
         return (0, 0, 0, poolAllocPoints, false);
     }
 

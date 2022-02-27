@@ -11,25 +11,19 @@ interface CEther {
 /// @title ETH implementation for a Compound PCV Deposit
 /// @author Fei Protocol
 contract EthCompoundPCVDeposit is CompoundPCVDepositBase {
-
     /// @notice Compound ETH PCV Deposit constructor
     /// @param _core Fei Core for reference
     /// @param _cToken Compound cToken to deposit
-    constructor(
-        address _core,
-        address _cToken
-    ) CompoundPCVDepositBase(_core, _cToken) {
+    constructor(address _core, address _cToken)
+        CompoundPCVDepositBase(_core, _cToken)
+    {
         // require(cToken.isCEther(), "EthCompoundPCVDeposit: Not a CEther");
     }
 
     receive() external payable {}
 
     /// @notice deposit ETH to Compound
-    function deposit()
-        external
-        override
-        whenNotPaused
-    {
+    function deposit() external override whenNotPaused {
         uint256 amount = address(this).balance;
 
         // CEth deposits revert on failure

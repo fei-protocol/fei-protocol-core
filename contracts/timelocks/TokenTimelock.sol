@@ -8,7 +8,6 @@ import "../utils/Timed.sol";
 import "./ITokenTimelock.sol";
 
 abstract contract TokenTimelock is ITokenTimelock, Timed {
-
     /// @notice ERC20 basic token contract being held in timelock
     IERC20 public override lockedToken;
 
@@ -70,24 +69,37 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
     }
 
     /// @notice releases `amount` unlocked tokens to address `to`
-    function release(address to, uint256 amount) external override onlyBeneficiary balanceCheck {
+    function release(address to, uint256 amount)
+        external
+        override
+        onlyBeneficiary
+        balanceCheck
+    {
         require(amount != 0, "TokenTimelock: no amount desired");
         require(passedCliff(), "TokenTimelock: Cliff not passed");
 
         uint256 available = availableForRelease();
-        require(amount <= available, "TokenTimelock: not enough released tokens");
+        require(
+            amount <= available,
+            "TokenTimelock: not enough released tokens"
+        );
 
         _release(to, amount);
     }
 
     /// @notice releases maximum unlocked tokens to address `to`
-    function releaseMax(address to) external override onlyBeneficiary balanceCheck {
+    function releaseMax(address to)
+        external
+        override
+        onlyBeneficiary
+        balanceCheck
+    {
         require(passedCliff(), "TokenTimelock: Cliff not passed");
         _release(to, availableForRelease());
     }
 
     /// @notice the total amount of tokens held by timelock
-    function totalToken() public view override virtual returns (uint256) {
+    function totalToken() public view virtual override returns (uint256) {
         return lockedToken.balanceOf(address(this));
     }
 
@@ -100,7 +112,11 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
     function availableForRelease() public view override returns (uint256) {
         uint256 elapsed = timeSinceStart();
 
-        uint256 totalAvailable = _proportionAvailable(initialBalance, elapsed, duration);
+        uint256 totalAvailable = _proportionAvailable(
+            initialBalance,
+            elapsed,
+            duration
+        );
         uint256 netAvailable = totalAvailable - alreadyReleasedAmount();
         return netAvailable;
     }
@@ -116,12 +132,15 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
     }
 
     /// @notice pending beneficiary accepts new beneficiary
-    function acceptBeneficiary() public override virtual {
+    function acceptBeneficiary() public virtual override {
         _setBeneficiary(msg.sender);
     }
 
     function clawback() public balanceCheck {
-        require(msg.sender == clawbackAdmin, "TokenTimelock: Only clawbackAdmin");
+        require(
+            msg.sender == clawbackAdmin,
+            "TokenTimelock: Only clawbackAdmin"
+        );
         if (passedCliff()) {
             _release(beneficiary, availableForRelease());
         }
@@ -132,7 +151,11 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
         return timeSinceStart() >= cliffSeconds;
     }
 
-    function _proportionAvailable(uint256 initialBalance, uint256 elapsed, uint256 duration) internal pure virtual returns (uint256);
+    function _proportionAvailable(
+        uint256 initialBalance,
+        uint256 elapsed,
+        uint256 duration
+    ) internal pure virtual returns (uint256);
 
     function _setBeneficiary(address newBeneficiary) internal {
         require(

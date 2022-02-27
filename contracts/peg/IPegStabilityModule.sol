@@ -5,32 +5,39 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../pcv/IPCVDeposit.sol";
 
 /**
- * @title Fei Peg Stability Module 
+ * @title Fei Peg Stability Module
  * @author Fei Protocol
  * @notice  The Fei PSM is a contract which holds a reserve of assets in order to exchange FEI at $1 of underlying assets with a fee.
  * `mint()` - buy FEI for $1 of underlying tokens
  * `redeem()` - sell FEI back for $1 of the same
  *
  * The contract has a reservesThreshold() of underlying meant to stand ready for redemptions. Any surplus reserves can be sent into the PCV using `allocateSurplus()`
- * 
- * The contract is a 
+ *
+ * The contract is a
  * PCVDeposit - to track reserves
- * OracleRef - to determine price of underlying, and 
+ * OracleRef - to determine price of underlying, and
  * RateLimitedMinter - to stop infinite mints and related issues (but this is in the implementation due to inheritance-linearization difficulties)
- * 
+ *
  * Inspired by MakerDAO PSM, code written without reference
  */
 interface IPegStabilityModule {
-
     // ----------- Public State Changing API -----------
 
     /// @notice mint `amountFeiOut` FEI to address `to` for `amountIn` underlying tokens
     /// @dev see getMintAmountOut() to pre-calculate amount out
-    function mint(address to, uint256 amountIn, uint256 minAmountOut) external returns (uint256 amountFeiOut);
+    function mint(
+        address to,
+        uint256 amountIn,
+        uint256 minAmountOut
+    ) external returns (uint256 amountFeiOut);
 
-    /// @notice redeem `amountFeiIn` FEI for `amountOut` underlying tokens and send to address `to` 
+    /// @notice redeem `amountFeiIn` FEI for `amountOut` underlying tokens and send to address `to`
     /// @dev see getRedeemAmountOut() to pre-calculate amount out
-    function redeem(address to, uint256 amountFeiIn, uint256 minAmountOut) external returns (uint256 amountOut);
+    function redeem(
+        address to,
+        uint256 amountFeiIn,
+        uint256 minAmountOut
+    ) external returns (uint256 amountOut);
 
     /// @notice send any surplus reserves to the PCV allocation
     function allocateSurplus() external;
@@ -52,13 +59,19 @@ interface IPegStabilityModule {
     // ----------- Getters -----------
 
     /// @notice calculate the amount of FEI out for a given `amountIn` of underlying
-    function getMintAmountOut(uint256 amountIn) external view returns (uint256 amountFeiOut);
+    function getMintAmountOut(uint256 amountIn)
+        external
+        view
+        returns (uint256 amountFeiOut);
 
     /// @notice calculate the amount of underlying out for a given `amountFeiIn` of FEI
-    function getRedeemAmountOut(uint256 amountFeiIn) external view returns (uint256 amountOut);
+    function getRedeemAmountOut(uint256 amountFeiIn)
+        external
+        view
+        returns (uint256 amountOut);
 
     /// @notice the maximum mint amount out
-    function getMaxMintAmountOut() external view returns(uint256);
+    function getMaxMintAmountOut() external view returns (uint256);
 
     /// @notice a flag for whether the current balance is above (true) or below and equal (false) to the reservesThreshold
     function hasSurplus() external view returns (bool);
@@ -99,7 +112,10 @@ interface IPegStabilityModule {
     event RedeemFeeUpdate(uint256 oldRedeemFee, uint256 newRedeemFee);
 
     /// @notice event emitted when reservesThreshold is updated
-    event ReservesThresholdUpdate(uint256 oldReservesThreshold, uint256 newReservesThreshold);
+    event ReservesThresholdUpdate(
+        uint256 oldReservesThreshold,
+        uint256 newReservesThreshold
+    );
 
     /// @notice event emitted when surplus target is updated
     event SurplusTargetUpdate(IPCVDeposit oldTarget, IPCVDeposit newTarget);

@@ -30,7 +30,10 @@ contract Delegatee is Ownable {
 /// @title a timelock for TRIBE allowing for sub-delegation
 /// @author Fei Protocol
 /// @notice allows the timelocked TRIBE to be delegated by the beneficiary while locked
-contract QuadtraticTimelockedSubdelegator is ITimelockedDelegator, QuadraticTokenTimelock {
+contract QuadtraticTimelockedSubdelegator is
+    ITimelockedDelegator,
+    QuadraticTokenTimelock
+{
     /// @notice associated delegate proxy contract for a delegatee
     mapping(address => address) public override delegateContract;
 
@@ -57,7 +60,16 @@ contract QuadtraticTimelockedSubdelegator is ITimelockedDelegator, QuadraticToke
         address _tribe,
         uint256 _cliff,
         uint256 _startTime
-    ) QuadraticTokenTimelock(_beneficiary, _duration, _tribe, _cliff, address(0), _startTime) {
+    )
+        QuadraticTokenTimelock(
+            _beneficiary,
+            _duration,
+            _tribe,
+            _cliff,
+            address(0),
+            _startTime
+        )
+    {
         tribe = ITribe(_tribe);
     }
 
@@ -80,8 +92,9 @@ contract QuadtraticTimelockedSubdelegator is ITimelockedDelegator, QuadraticToke
         }
 
         ITribe _tribe = tribe;
-        address _delegateContract =
-            address(new Delegatee(delegatee, address(_tribe)));
+        address _delegateContract = address(
+            new Delegatee(delegatee, address(_tribe))
+        );
         delegateContract[delegatee] = _delegateContract;
 
         delegateAmount[delegatee] = amount;
