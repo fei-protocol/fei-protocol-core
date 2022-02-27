@@ -38,13 +38,13 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
         uint256 _rateLimitPerSecond,
         uint256 _maxRateLimitPerSecondMRL,
         uint256 _maxBufferCap,
-        uint256 _bufferCap,
+        uint256 _globalBufferCap,
         bool _doPartialAction
     )
         CoreRef(coreAddress)
-        RateLimited(_maxRateLimitPerSecond, _rateLimitPerSecond, _bufferCap, _doPartialAction)
+        RateLimited(_maxRateLimitPerSecond, _rateLimitPerSecond, _globalBufferCap, _doPartialAction)
     {
-        require(_maxBufferCap < _bufferCap, "MultiRateLimited: max buffer cap invalid");
+        require(_maxBufferCap < _globalBufferCap, "MultiRateLimited: max buffer cap invalid");
 
         maxRateLimitPerSecond = _maxRateLimitPerSecondMRL;
         maxBufferCap = _maxBufferCap;
@@ -52,24 +52,26 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
 
     // ----------- Governor and Admin only state changing api -----------
 
-    /// @notice update the sub gov rate limit per second
-    /// @param newRateLimitPerSecond new maximum rate limit per second for sub governors
-    /// TODO determine the proper modifier for this function
+    /// @notice update the ADD_MINTER_ROLE rate limit per second
+    /// @param newRateLimitPerSecond new maximum rate limit per second for add minter role
     function updateMaxRateLimitPerSecond(uint256 newRateLimitPerSecond) external virtual override onlyGovernor {
+        require(newRateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND, "MultiRateLimited: exceeds global max rate limit per second");
+
         uint256 oldMaxRateLimitPerSecond = maxRateLimitPerSecond;
         maxRateLimitPerSecond = newRateLimitPerSecond;
 
         emit MultiMaxRateLimitPerSecondUpdate(oldMaxRateLimitPerSecond, newRateLimitPerSecond);
     }
 
-    /// @notice update the sub gov max buffer cap
-    /// @param newSubGovBufferCap new buffer cap for sub governor added addresses
-    /// TODO determine the proper modifier for this function
-    function updateMaxBufferCap(uint256 newSubGovBufferCap) external virtual override onlyGovernor {
-        uint256 oldBufferCap = maxBufferCap;
-        maxBufferCap = newSubGovBufferCap;
+    /// @notice update the ADD_MINTER_ROLE max buffer cap
+    /// @param newBufferCap new buffer cap for ADD_MINTER_ROLE added addresses
+    function updateMaxBufferCap(uint256 newBufferCap) external virtual override onlyGovernor {
+        require(newBufferCap <= bufferCap, "MultiRateLimited: exceeds global buffer cap");
 
-        emit MultiBufferCapUpdate(oldBufferCap, newSubGovBufferCap);
+        uint256 oldBufferCap = maxBufferCap;
+        maxBufferCap = newBufferCap;
+
+        emit MultiBufferCapUpdate(oldBufferCap, newBufferCap);
     }
 
     /// @notice add an authorized rateLimitedAddress contract
@@ -92,8 +94,8 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
         address rateLimitedAddress,
         uint112 _rateLimitPerSecond,
         uint144 _bufferCap
-    ) external virtual override hasAnyOfTwoRoles(TribeRoles.MINOR_MINTER_ADD_ROLE, TribeRoles.GOVERNOR) {
-        if (core().hasRole(TribeRoles.MINOR_MINTER_ADD_ROLE, msg.sender)) {
+    ) external virtual override hasAnyOfTwoRoles(TribeRoles.ADD_MINTER_ROLE, TribeRoles.GOVERNOR) {
+        if (core().hasRole(TribeRoles.ADD_MINTER_ROLE, msg.sender)) {
             require(_rateLimitPerSecond <= maxRateLimitPerSecond, "MultiRateLimited: rate limit per second exceeds non governor allowable amount");
             require(_bufferCap <= maxBufferCap, "MultiRateLimited: max buffer cap exceeds non governor allowable amount");
         }
@@ -104,10 +106,9 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
 
     /// @notice add an authorized rateLimitedAddress contract
     /// @param rateLimitedAddress the new address to add as a rateLimitedAddress
-    /// TODO figure out what the modifier should be for this function
     function addAddressWithCaps(
         address rateLimitedAddress
-    ) external virtual override onlyTribeRole(TribeRoles.MINOR_MINTER_ADD_ROLE) {
+    ) external virtual override onlyTribeRole(TribeRoles.ADD_MINTER_ROLE) {
         _addAddress(rateLimitedAddress, uint112(maxRateLimitPerSecond), uint144(maxBufferCap));
     }
 
