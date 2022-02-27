@@ -30,7 +30,13 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     /// @param _backupOracle backup oracle to reference
     /// @param _decimalsNormalizer number of decimals to normalize the oracle feed if necessary
     /// @param _doInvert invert the oracle price if this flag is on
-    constructor(address _core, address _oracle, address _backupOracle, int256 _decimalsNormalizer, bool _doInvert) CoreRef(_core) {
+    constructor(
+        address _core,
+        address _oracle,
+        address _backupOracle,
+        int256 _decimalsNormalizer,
+        bool _doInvert
+    ) CoreRef(_core) {
         _setOracle(_oracle);
         if (_backupOracle != address(0) && _backupOracle != _oracle) {
             _setBackupOracle(_backupOracle);
@@ -53,12 +59,21 @@ abstract contract OracleRef is IOracleRef, CoreRef {
 
     /// @notice sets the new decimalsNormalizer
     /// @param newDecimalsNormalizer the new decimalsNormalizer
-    function setDecimalsNormalizer(int256 newDecimalsNormalizer) external override onlyGovernor {
+    function setDecimalsNormalizer(int256 newDecimalsNormalizer)
+        external
+        override
+        onlyGovernor
+    {
         _setDecimalsNormalizer(newDecimalsNormalizer);
     }
+
     /// @notice sets the referenced backup oracle
     /// @param newBackupOracle the new backup oracle to reference
-    function setBackupOracle(address newBackupOracle) external override onlyGovernorOrAdmin {
+    function setBackupOracle(address newBackupOracle)
+        external
+        override
+        onlyGovernorOrAdmin
+    {
         _setBackupOracle(newBackupOracle);
     }
 
@@ -93,10 +108,10 @@ abstract contract OracleRef is IOracleRef, CoreRef {
         // Scale the oracle price by token decimals delta if necessary
         uint256 scalingFactor;
         if (decimalsNormalizer < 0) {
-            scalingFactor = 10 ** (-1 * decimalsNormalizer).toUint256();
+            scalingFactor = 10**(-1 * decimalsNormalizer).toUint256();
             _peg = _peg.div(scalingFactor);
         } else {
-            scalingFactor = 10 ** decimalsNormalizer.toUint256();
+            scalingFactor = 10**decimalsNormalizer.toUint256();
             _peg = _peg.mul(scalingFactor);
         }
 
@@ -124,9 +139,9 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     function _setDoInvert(bool newDoInvert) internal {
         bool oldDoInvert = doInvert;
         doInvert = newDoInvert;
-        
+
         if (oldDoInvert != newDoInvert) {
-            _setDecimalsNormalizer( -1 * decimalsNormalizer);
+            _setDecimalsNormalizer(-1 * decimalsNormalizer);
         }
 
         emit InvertUpdate(oldDoInvert, newDoInvert);
@@ -135,17 +150,21 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     function _setDecimalsNormalizer(int256 newDecimalsNormalizer) internal {
         int256 oldDecimalsNormalizer = decimalsNormalizer;
         decimalsNormalizer = newDecimalsNormalizer;
-        emit DecimalsNormalizerUpdate(oldDecimalsNormalizer, newDecimalsNormalizer);
+        emit DecimalsNormalizerUpdate(
+            oldDecimalsNormalizer,
+            newDecimalsNormalizer
+        );
     }
 
     function _setDecimalsNormalizerFromToken(address token) internal {
         int256 feiDecimals = 18;
-        int256 _decimalsNormalizer = feiDecimals - int256(uint256(IERC20Metadata(token).decimals()));
-        
+        int256 _decimalsNormalizer = feiDecimals -
+            int256(uint256(IERC20Metadata(token).decimals()));
+
         if (doInvert) {
             _decimalsNormalizer = -1 * _decimalsNormalizer;
         }
-        
+
         _setDecimalsNormalizer(_decimalsNormalizer);
     }
 }

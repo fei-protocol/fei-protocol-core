@@ -10,9 +10,9 @@ import "../dao/timelock/Timelock.sol";
  @notice MergerBase is used by all merger contracts. 
  It represents an "AND" gate on both DAOs accepting the contract, and Rari Timelock being owned by the specified DAO.
 */
-contract MergerBase {   
+contract MergerBase {
     event Accept(address indexed dao);
-    event Enabled(address indexed caller); 
+    event Enabled(address indexed caller);
 
     /// @notice the granularity of the exchange rate
     uint256 public constant scalar = 1e9;
@@ -32,7 +32,7 @@ contract MergerBase {
 
     /// @notice the new DAO to assume governance for rgtTimelock
     address public immutable tribeRariDAO;
-    
+
     /// @notice tells whether or not both parties have accepted the deal
     bool public bothPartiesAccepted;
 
@@ -42,20 +42,14 @@ contract MergerBase {
 
     /// @notice function for the rari timelock to accept the deal
     function rgtAccept() external {
-        require(
-            msg.sender == rgtTimelock,
-            "Only rari timelock"
-        );
+        require(msg.sender == rgtTimelock, "Only rari timelock");
         rgtAccepted = true;
         emit Accept(rgtTimelock);
     }
 
     /// @notice function for the tribe timelock to accept the deal
     function tribeAccept() external {
-        require(
-            msg.sender == tribeTimelock,
-            "Only tribe timelock"
-        );
+        require(msg.sender == tribeTimelock, "Only tribe timelock");
         tribeAccepted = true;
         emit Accept(tribeTimelock);
     }
@@ -63,10 +57,13 @@ contract MergerBase {
     /// @notice make sure Tribe rari timelock is active
     function setBothPartiesAccepted() external {
         require(!bothPartiesAccepted, "already set");
-        require(Timelock(payable(rgtTimelock)).admin() == tribeRariDAO, "admin not accepted");    
+        require(
+            Timelock(payable(rgtTimelock)).admin() == tribeRariDAO,
+            "admin not accepted"
+        );
         require(tribeAccepted, "Tribe DAO not yet accepted");
         require(rgtAccepted, "Rari DAO not yet accepted");
         bothPartiesAccepted = true;
         emit Enabled(msg.sender);
     }
-}   
+}

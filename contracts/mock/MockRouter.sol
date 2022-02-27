@@ -23,12 +23,20 @@ contract MockRouter {
 
     function addLiquidityETH(
         address token,
-        uint amountTokenDesired,
-        uint amountToken0Min,
-        uint,
+        uint256 amountTokenDesired,
+        uint256 amountToken0Min,
+        uint256,
         address to,
-        uint
-    ) external payable returns (uint amountToken, uint amountETH, uint liquidity) {
+        uint256
+    )
+        external
+        payable
+        returns (
+            uint256 amountToken,
+            uint256 amountETH,
+            uint256 liquidity
+        )
+    {
         address pair = address(PAIR);
         checkAmountMin(amountToken0Min);
 
@@ -44,7 +52,10 @@ contract MockRouter {
     }
 
     function checkAmountMin(uint256 amount) public view {
-        require(amountMinThreshold == 0 || amountMinThreshold > amount, "amount liquidity revert");
+        require(
+            amountMinThreshold == 0 || amountMinThreshold > amount,
+            "amount liquidity revert"
+        );
     }
 
     function setAmountMin(uint256 amount) public {
@@ -54,13 +65,20 @@ contract MockRouter {
     function addLiquidity(
         address token0,
         address token1,
-        uint amountToken0Desired,
-        uint amountToken1Desired,
-        uint amountToken0Min,
-        uint,
+        uint256 amountToken0Desired,
+        uint256 amountToken1Desired,
+        uint256 amountToken0Min,
+        uint256,
         address to,
-        uint
-    ) external returns (uint, uint, uint liquidity) {
+        uint256
+    )
+        external
+        returns (
+            uint256,
+            uint256,
+            uint256 liquidity
+        )
+    {
         address pair = address(PAIR);
         checkAmountMin(amountToken0Min);
 
@@ -87,17 +105,23 @@ contract MockRouter {
     function removeLiquidity(
         address,
         address,
-        uint liquidity,
-        uint amountToken0Min,
-        uint,
+        uint256 liquidity,
+        uint256 amountToken0Min,
+        uint256,
         address to,
-        uint
-    ) external returns (uint amountFei, uint amountToken) {
+        uint256
+    ) external returns (uint256 amountFei, uint256 amountToken) {
         checkAmountMin(amountToken0Min);
 
-        Decimal.D256 memory percentWithdrawal = Decimal.ratio(liquidity, PAIR.balanceOf(to));
+        Decimal.D256 memory percentWithdrawal = Decimal.ratio(
+            liquidity,
+            PAIR.balanceOf(to)
+        );
         Decimal.D256 memory ratio = ratioOwned(to);
-        (amountFei, amountToken) = PAIR.burnToken(to, ratio.mul(percentWithdrawal));
+        (amountFei, amountToken) = PAIR.burnToken(
+            to,
+            ratio.mul(percentWithdrawal)
+        );
 
         (uint112 reserves0, uint112 reserves1, ) = PAIR.getReserves();
         uint112 newReserve0 = uint112(reserves0) - uint112(amountFei);
@@ -107,12 +131,11 @@ contract MockRouter {
         transferLiquidity(liquidity);
     }
 
-    function transferLiquidity(uint liquidity) internal {
+    function transferLiquidity(uint256 liquidity) internal {
         PAIR.transferFrom(msg.sender, address(PAIR), liquidity); // send liquidity to pair
-
     }
 
-    function ratioOwned(address to) public view returns (Decimal.D256 memory) {   
+    function ratioOwned(address to) public view returns (Decimal.D256 memory) {
         uint256 balance = PAIR.balanceOf(to);
         uint256 total = PAIR.totalSupply();
         return Decimal.ratio(balance, total);

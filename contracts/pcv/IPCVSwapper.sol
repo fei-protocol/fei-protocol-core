@@ -4,9 +4,11 @@ pragma solidity ^0.8.4;
 /// @title a PCV Swapper interface
 /// @author eswak
 interface IPCVSwapper {
-
     // ----------- Events -----------
-    event UpdateReceivingAddress(address oldTokenReceivingAddress, address newTokenReceivingAddress);
+    event UpdateReceivingAddress(
+        address oldTokenReceivingAddress,
+        address newTokenReceivingAddress
+    );
 
     event Swap(
         address indexed _caller,
@@ -27,7 +29,8 @@ interface IPCVSwapper {
     // ----------- Getters -----------
 
     function tokenSpent() external view returns (address);
-    function tokenReceived() external view returns (address);
-    function tokenReceivingAddress() external view returns (address);
 
+    function tokenReceived() external view returns (address);
+
+    function tokenReceivingAddress() external view returns (address);
 }
