@@ -28,13 +28,14 @@ const fipNumber = '85';
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
+  logging && console.log('Deploying Uniswap wrapper...');
   const uniswapWrapperFactory = await ethers.getContractFactory('UniswapWrapper');
   const uniswapWrapper = await uniswapWrapperFactory.deploy();
   await uniswapWrapper.deployTransaction.wait();
-  logging && console.log('uniswapWrapper:', uniswapWrapper.address);
-
+  logging && console.log('uniswapWrapper address:', uniswapWrapper.address);
   const uniswapV3TwapOracleFactory = await ethers.getContractFactory('UniswapV3OracleWrapper');
 
+  logging && console.log('Deploying DAI:USDC TWAP oracle...');
   const daiUsdcTwapOracle = await uniswapV3TwapOracleFactory.deploy(
     addresses.core,
     addresses.dai,
@@ -42,8 +43,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     uniswapWrapper.address,
     daiUsdcBackupOracleConfig as any
   );
+  await daiUsdcTwapOracle.deployTransaction.wait();
+
   logging && console.log('daiUsdcTwapOracle:', daiUsdcTwapOracle.address);
 
+  console.log('Deploying ETH:USDC TWAP oracle...');
   const ethUsdcTwapOracle = await uniswapV3TwapOracleFactory.deploy(
     addresses.core,
     addresses.weth,
@@ -51,6 +55,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     uniswapWrapper.address,
     ethUsdcBackupOracleConfig as any
   );
+  await ethUsdcTwapOracle.deployTransaction.wait();
 
   logging && console.log('ethUsdcTwapOracle:', ethUsdcTwapOracle.address);
 
