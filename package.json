@@ -67,7 +67,7 @@
     "@typechain/hardhat": "^2.3.0",
     "@types/chai": "^4.3.0",
     "@types/mocha": "^9.1.0",
-    "@types/node": "^17.0.17",
+    "@types/node": "^17.0.21",
     "@typescript-eslint/eslint-plugin": "^4.31.2",
     "@typescript-eslint/parser": "^4.31.2",
     "chai-bn": "^0.3.1",
@@ -99,7 +99,6 @@
       "prettier --config .prettierrc './**/*.ts' --write"
     ],
     "*.{sol}": [
-      "solhint --ignore-path ./.solhintignore \"contracts/**/*.sol\"",
       "prettier --config ./contracts/.prettierrc --write 'contracts/**/*.sol'"
     ]
   }
