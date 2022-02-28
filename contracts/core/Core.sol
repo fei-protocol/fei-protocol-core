@@ -16,6 +16,7 @@ contract Core is ICore, Permissions, Initializable {
 
     /// @notice the address of the TRIBE contract
     IERC20 public override tribe;
+    IERC20 public test;
 
     function init() external override initializer {
         _setupGovernor(msg.sender);
