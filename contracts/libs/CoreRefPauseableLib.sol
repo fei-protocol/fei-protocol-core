@@ -9,11 +9,17 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 /// @dev This library should only be used on contracts that implement CoreRef.
 library CoreRefPauseableLib {
     function _requireUnpaused(address _pausableCoreRefAddress) internal view {
-        require(!CoreRef(_pausableCoreRefAddress).paused(), "PausableLib: Address is paused but required to not be paused.");
+        require(
+            !CoreRef(_pausableCoreRefAddress).paused(),
+            "PausableLib: Address is paused but required to not be paused."
+        );
     }
 
     function _requirePaused(address _pausableCoreRefAddress) internal view {
-        require(CoreRef(_pausableCoreRefAddress).paused(), "PausableLib: Address is not paused but required to be paused.");
+        require(
+            CoreRef(_pausableCoreRefAddress).paused(),
+            "PausableLib: Address is not paused but required to be paused."
+        );
     }
 
     function _ensureUnpaused(address _pausableCoreRefAddress) internal {
@@ -31,7 +37,7 @@ library CoreRefPauseableLib {
     function _pause(address _pauseableCoreRefAddress) internal {
         CoreRef(_pauseableCoreRefAddress).pause();
     }
-    
+
     function _unpause(address _pauseableCoreRefAddress) internal {
         CoreRef(_pauseableCoreRefAddress).unpause();
     }

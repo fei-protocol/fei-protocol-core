@@ -6,5 +6,5 @@ interface IRewardsDistributor {
 
     function claimRewards(address holder) external;
 
-    function getAllMarkets() external view returns(address[] memory);
-} 
+    function getAllMarkets() external view returns (address[] memory);
+}

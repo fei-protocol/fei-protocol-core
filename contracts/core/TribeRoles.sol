@@ -10,7 +10,6 @@ pragma solidity ^0.8.4;
          * Minor Roles - operational roles. May be held or managed by shorter optimistic timelocks or trusted multisigs.
  */
 library TribeRoles {
-
     /*///////////////////////////////////////////////////////////////
                                  Major Roles
     //////////////////////////////////////////////////////////////*/
@@ -38,10 +37,12 @@ library TribeRoles {
     bytes32 internal constant ORACLE_ADMIN = keccak256("ORACLE_ADMIN_ROLE");
 
     /// @notice manages TribalChief incentives and related functionality.
-    bytes32 internal constant TRIBAL_CHIEF_ADMIN = keccak256("TRIBAL_CHIEF_ADMIN_ROLE");
+    bytes32 internal constant TRIBAL_CHIEF_ADMIN =
+        keccak256("TRIBAL_CHIEF_ADMIN_ROLE");
 
     /// @notice admin of PCVGuardian
-    bytes32 internal constant PCV_GUARDIAN_ADMIN = keccak256("PCV_GUARDIAN_ADMIN_ROLE");
+    bytes32 internal constant PCV_GUARDIAN_ADMIN =
+        keccak256("PCV_GUARDIAN_ADMIN_ROLE");
 
     /// @notice admin of all Minor Roles
     bytes32 internal constant MINOR_ROLE_ADMIN = keccak256("MINOR_ROLE_ADMIN");
@@ -82,4 +83,4 @@ library TribeRoles {
 
     /// @notice capable of changing parameters within non-critical ranges
     bytes32 internal constant MINOR_PARAM_ROLE = keccak256("MINOR_PARAM_ROLE");
-} 
+}
