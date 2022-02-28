@@ -13,6 +13,12 @@ const dependencies: DependencyMap = {
   rariInfraFeiTimelock: {
     contractDependencies: ['fei']
   },
+  laTribuFeiTimelock: {
+    contractDependencies: ['fei']
+  },
+  laTribuTribeTimelock: {
+    contractDependencies: ['tribe']
+  },
   core: {
     contractDependencies: [
       'collateralizationOracleGuardian',
@@ -146,7 +152,8 @@ const dependencies: DependencyMap = {
       'restrictedPermissions',
       'ethPSMFeiSkimmer',
       'rariInfraFeiTimelock',
-      'reptbRedeemer'
+      'reptbRedeemer',
+      'laTribuFeiTimelock'
     ]
   },
   ethPSMFeiSkimmer: {
@@ -200,7 +207,8 @@ const dependencies: DependencyMap = {
       'rariPool8Fei3Crv',
       'rariPool8d3',
       'rariInfraTribeTimelock',
-      'pegExchanger'
+      'pegExchanger',
+      'laTribuTribeTimelock'
     ]
   },
   tribeMinter: {
