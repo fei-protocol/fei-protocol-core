@@ -1,5 +1,6 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
+// import fip_x from '@proposals/description/fip_x';
 import fip_83 from '@proposals/description/fip_83';
 
 const proposals: ProposalsConfigMap = {
