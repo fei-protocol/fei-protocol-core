@@ -70,9 +70,6 @@ library TribeRoles {
     /// @notice manages whitelisting of gauges where the protocol's tokens can be staked
     bytes32 internal constant METAGOVERNANCE_GAUGE_ADMIN = keccak256("METAGOVERNANCE_GAUGE_ADMIN");
 
-    /// @notice manages staking to & unstaking from gauges of the protocol's tokens
-    bytes32 internal constant METAGOVERNANCE_GAUGE_STAKING = keccak256("METAGOVERNANCE_GAUGE_STAKING");
-
     /*///////////////////////////////////////////////////////////////
                                  Minor Roles
     //////////////////////////////////////////////////////////////*/
