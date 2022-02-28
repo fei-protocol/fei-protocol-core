@@ -99,7 +99,6 @@
       "prettier --config .prettierrc './**/*.ts' --write"
     ],
     "*.{sol}": [
-      "solhint --ignore-path ./.solhintignore \"contracts/**/*.sol\"",
       "prettier --config ./contracts/.prettierrc --write 'contracts/**/*.sol'"
     ]
   }
