@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.10;  
+pragma solidity ^0.8.10;
 
 import "../../metagov/utils/LiquidityGaugeManager.sol";
 import "../IPCVDepositBalances.sol";
@@ -8,7 +8,6 @@ import "../IPCVDepositBalances.sol";
 /// @author Fei Protocol
 /// @notice a contract to read tokens held in a gauge
 contract GaugeLens is IPCVDepositBalances {
-
     /// @notice FEI token address
     address private constant FEI = 0x956F47F50A910163D8BF957Cf5846D573E7f87CA;
 
@@ -21,18 +20,15 @@ contract GaugeLens is IPCVDepositBalances {
     /// @notice the token the lens reports balances in
     address public immutable override balanceReportedIn;
 
-    constructor(
-        address _gaugeAddress, 
-        address _stakerAddress
-    ) {
+    constructor(address _gaugeAddress, address _stakerAddress) {
         gaugeAddress = _gaugeAddress;
         stakerAddress = _stakerAddress;
         balanceReportedIn = ILiquidityGauge(_gaugeAddress).staking_token();
     }
 
-    /// @notice returns the amount of tokens staked by stakerAddress in 
+    /// @notice returns the amount of tokens staked by stakerAddress in
     /// the gauge gaugeAddress.
-    function balance() public view override returns(uint256) {
+    function balance() public view override returns (uint256) {
         return ILiquidityGauge(gaugeAddress).balanceOf(stakerAddress);
     }
 
@@ -43,7 +39,12 @@ contract GaugeLens is IPCVDepositBalances {
     /// underlying amounts of XYZ and FEI tokens held within the LP tokens.
     /// This lens can be coupled with another lens in order to compute the
     /// underlying amounts of FEI and XYZ held inside the LP tokens.
-    function resistantBalanceAndFei() public view override returns(uint256, uint256) {
+    function resistantBalanceAndFei()
+        public
+        view
+        override
+        returns (uint256, uint256)
+    {
         uint256 stakedBalance = balance();
         if (balanceReportedIn == FEI) {
             return (stakedBalance, stakedBalance);

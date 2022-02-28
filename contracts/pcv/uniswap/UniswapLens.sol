@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.10;  
+pragma solidity ^0.8.10;
 
 import "../IPCVDepositBalances.sol";
 import "../../refs/UniRef.sol";
@@ -29,26 +29,35 @@ contract UniswapLens is IPCVDepositBalances, UniRef {
         address _core,
         address _oracle,
         address _backupOracle
-    ) UniRef(
-      _core,
-      IPCVDepositBalances(_depositAddress).balanceReportedIn(), // pair address
-      _oracle,
-      _backupOracle
-    ) {
+    )
+        UniRef(
+            _core,
+            IPCVDepositBalances(_depositAddress).balanceReportedIn(), // pair address
+            _oracle,
+            _backupOracle
+        )
+    {
         depositAddress = _depositAddress;
-        IUniswapV2Pair pair = IUniswapV2Pair(IPCVDepositBalances(_depositAddress).balanceReportedIn());
+        IUniswapV2Pair pair = IUniswapV2Pair(
+            IPCVDepositBalances(_depositAddress).balanceReportedIn()
+        );
         address token0 = pair.token0();
         address token1 = pair.token1();
         feiIsToken0 = token0 == FEI;
         balanceReportedIn = feiIsToken0 ? token1 : token0;
     }
 
-    function balance() public view override returns(uint256) {
+    function balance() public view override returns (uint256) {
         (, uint256 tokenReserves) = getReserves();
         return _ratioOwned().mul(tokenReserves).asUint256();
     }
 
-    function resistantBalanceAndFei() public view override returns(uint256, uint256) {
+    function resistantBalanceAndFei()
+        public
+        view
+        override
+        returns (uint256, uint256)
+    {
         (uint256 reserve0, uint256 reserve1) = getReserves();
         uint256 feiInPool = feiIsToken0 ? reserve0 : reserve1;
         uint256 otherInPool = feiIsToken0 ? reserve1 : reserve0;
@@ -58,8 +67,15 @@ contract UniswapLens is IPCVDepositBalances, UniRef {
         uint256 k = feiInPool * otherInPool;
 
         // resistant other/fei in pool
-        uint256 resistantOtherInPool = Decimal.one().div(priceOfToken).mul(k).asUint256().sqrt();
-        uint256 resistantFeiInPool = Decimal.ratio(k, resistantOtherInPool).asUint256();
+        uint256 resistantOtherInPool = Decimal
+            .one()
+            .div(priceOfToken)
+            .mul(k)
+            .asUint256()
+            .sqrt();
+        uint256 resistantFeiInPool = Decimal
+            .ratio(k, resistantOtherInPool)
+            .asUint256();
 
         Decimal.D256 memory ratioOwned = _ratioOwned();
         return (

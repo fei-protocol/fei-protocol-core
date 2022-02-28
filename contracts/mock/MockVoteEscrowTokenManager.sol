@@ -7,9 +7,12 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract MockVoteEscrowTokenManager is VoteEscrowTokenManager, MockCoreRef {
     constructor(
-      address core,
-      address liquidToken,
-      address veToken,
-      uint256 maxTime
-    ) MockCoreRef(core) VoteEscrowTokenManager(IERC20(liquidToken), IVeToken(veToken), maxTime) {}
+        address core,
+        address liquidToken,
+        address veToken,
+        uint256 maxTime
+    )
+        MockCoreRef(core)
+        VoteEscrowTokenManager(IERC20(liquidToken), IVeToken(veToken), maxTime)
+    {}
 }

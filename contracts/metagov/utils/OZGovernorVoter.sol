@@ -11,17 +11,25 @@ interface IOZGovernor {
         bytes[] memory calldatas,
         string memory description
     ) external returns (uint256 proposalId);
-    function castVote(uint256 proposalId, uint8 support) external returns (uint256 weight);
+
+    function castVote(uint256 proposalId, uint8 support)
+        external
+        returns (uint256 weight);
+
     function state(uint256 proposalId) external view returns (uint256);
 }
 
 /// @title Abstract class to interact with an OZ governor.
 /// @author Fei Protocol
 abstract contract OZGovernorVoter is CoreRef {
-
     // Events
     event Proposed(IOZGovernor indexed governor, uint256 proposalId);
-    event Voted(IOZGovernor indexed governor, uint256 proposalId, uint256 weight, uint8 support);
+    event Voted(
+        IOZGovernor indexed governor,
+        uint256 proposalId,
+        uint256 weight,
+        uint8 support
+    );
 
     /// @notice propose a new proposal on the target governor.
     function propose(
@@ -30,8 +38,17 @@ abstract contract OZGovernorVoter is CoreRef {
         uint256[] memory values,
         bytes[] memory calldatas,
         string memory description
-    ) external onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN) returns (uint256) {
-        uint256 proposalId = governor.propose(targets, values, calldatas, description);
+    )
+        external
+        onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN)
+        returns (uint256)
+    {
+        uint256 proposalId = governor.propose(
+            targets,
+            values,
+            calldatas,
+            description
+        );
         emit Proposed(governor, proposalId);
         return proposalId;
     }
@@ -41,7 +58,11 @@ abstract contract OZGovernorVoter is CoreRef {
         IOZGovernor governor,
         uint256 proposalId,
         uint8 support
-    ) external onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN) returns (uint256) {
+    )
+        external
+        onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN)
+        returns (uint256)
+    {
         uint256 weight = governor.castVote(proposalId, support);
         emit Voted(governor, proposalId, weight, support);
         return weight;
