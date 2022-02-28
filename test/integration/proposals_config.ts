@@ -14,7 +14,7 @@ const proposals: ProposalsConfigMap = {
     */
   fip_78a: {
     deploy: false,
-    proposalId: undefined,
+    proposalId: '66667349112851224683580888438687783361640656155642227132655133290875788452872',
     affectedContractSignoff: [
       'core',
       'indexDelegator',
