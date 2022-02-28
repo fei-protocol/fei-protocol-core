@@ -306,6 +306,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x7AC2Ab8143634419c5bc230A9f9955C3e29f64Ef',
     category: AddressCategory.Deprecated
   },
+  agEurUniswapPCVDeposit: {
+    artifactName: 'UniswapPCVDeposit',
+    address: '0xE8633C49AcE655EB4A8B720e6b12F09Bd3a97812',
+    category: AddressCategory.PCV
+  },
   bammDeposit: {
     artifactName: 'BAMMDeposit',
     address: '0x374628EBE7Ef6AcA0574e750B618097531A26Ff8',
@@ -1010,6 +1015,21 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'IUniswapV2Pair',
     address: '0xF89CE5eD65737dA8440411544b0499c9FaD323B2',
     category: AddressCategory.External
+  },
+  angleDelegatorPCVDeposit: {
+    artifactName: 'AngleDelegatorPCVDeposit',
+    address: '0xb91F96b7C62fe4a2301219956Cc023fA7892F0C0',
+    category: AddressCategory.Governance
+  },
+  gaugeLensAgEurUniswapGauge: {
+    artifactName: 'GaugeLens',
+    address: '0x10f59bd0a100bcAD86CaB39751797D952eE1f76f',
+    category: AddressCategory.Oracle
+  },
+  uniswapLensAgEurUniswapGauge: {
+    artifactName: 'UniswapLens',
+    address: '0xD2554839c2e8a87Dd2CddD013EF828B6534aBC26',
+    category: AddressCategory.PCV
   },
   anglePoolManager: {
     artifactName: 'IPoolManager',
