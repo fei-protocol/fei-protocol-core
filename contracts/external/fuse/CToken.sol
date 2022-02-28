@@ -2,5 +2,5 @@
 pragma solidity ^0.8.4;
 
 abstract contract CToken {
-    function getCash() external view returns (uint) {}
+    function getCash() external view returns (uint256) {}
 }

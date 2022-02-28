@@ -4,20 +4,19 @@ pragma solidity ^0.8.4;
 import "../fei/minter/RateLimitedMinter.sol";
 
 contract MockRateLimitedMinter is RateLimitedMinter {
-
-	constructor(
-        address _core, 
-        uint256 _feiLimitPerSecond, 
-        uint256 _mintingBufferCap, 
+    constructor(
+        address _core,
+        uint256 _feiLimitPerSecond,
+        uint256 _mintingBufferCap,
         bool _doPartialMint
-    ) 
+    )
         CoreRef(_core)
         RateLimitedMinter(_feiLimitPerSecond, _mintingBufferCap, _doPartialMint)
     {}
 
-	function setDoPartialMint(bool _doPartialMint) public {
-		doPartialAction = _doPartialMint;
-	}
+    function setDoPartialMint(bool _doPartialMint) public {
+        doPartialAction = _doPartialMint;
+    }
 
     function mint(address to, uint256 amount) public {
         _mintFei(to, amount);

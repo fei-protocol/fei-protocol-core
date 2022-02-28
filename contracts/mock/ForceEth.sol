@@ -2,17 +2,11 @@
 pragma solidity ^0.8.4;
 
 contract ForceEth {
+    constructor() payable {}
 
-	constructor() payable {
+    receive() external payable {}
 
-	}
-	
-	receive() external payable {
-
-	}
-
-	function forceEth(address to) public {
-		selfdestruct(payable(to));
-	}
+    function forceEth(address to) public {
+        selfdestruct(payable(to));
+    }
 }
-

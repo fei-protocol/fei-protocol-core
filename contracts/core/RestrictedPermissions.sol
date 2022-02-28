@@ -17,7 +17,6 @@ import "./IPermissionsRead.sol";
   @dev IMPORTANT: fei() and tribe() calls normally present on Core are not used here, so this contract only works for contracts that don't rely on them.
 */
 contract RestrictedPermissions is IPermissionsRead {
-
     /// @notice passthrough core to reference
     IPermissionsRead public immutable core;
 

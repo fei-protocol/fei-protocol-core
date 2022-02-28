@@ -18,11 +18,13 @@
     "test:hardhat": "npx hardhat test",
     "test:hardhat:dependencies": "LOGGING=true NO_RESET=true npx hardhat test test/integration/tests/dependencies.ts",
     "test:e2e": "ENABLE_MAINNET_FORKING=true RUN_E2E_TESTS=true npx hardhat test",
-    "test:hardhat:gas": "REPORT_GAS=true npx hardhat test",
-    "test:hardhat:all": "RUN_ALL_TESTS=true npx hardhat test",
-    "lint": "eslint --config ./.eslintrc --ignore-path ./.eslintignore --ext .ts,.tsx .",
+    "test:gas": "REPORT_GAS=true npx hardhat test",
+    "test:all": "RUN_ALL_TESTS=true npx hardhat test",
+    "lint": "npm run lint:ts && npm run lint:sol",
+    "lint:ts": "eslint --config ./.eslintrc --ignore-path ./.eslintignore --ext .ts,.tsx .",
     "lint-all": "eslint --config ./.eslintrc --ignore-path ./.eslintignore --ext .js,.jsx,.ts,.tsx .",
     "lint:fix": "eslint --fix --config ./.eslintrc --ignore-path ./.eslintignore --ext .ts,.tsx .",
+    "lint:sol": "solhint --ignore-path ./.solhintignore \"contracts/**/*.sol\"",
     "size-contracts": "npx hardhat size-contracts",
     "setup:forge": "curl -L https://foundry.paradigm.xyz | bash && foundryup",
     "deploy:localhost": "npx hardhat run --network localhost scripts/deploy/migrations.ts",
@@ -34,7 +36,9 @@
     "abis": "node scripts/utils/abis.js",
     "calldata": "npx hardhat run scripts/utils/getProposalCalldata.ts",
     "check-proposal": "ENABLE_MAINNET_FORKING=true npx hardhat run scripts/utils/checkProposal.ts",
-    "prettier-format": "prettier --config .prettierrc './**/*.ts' --write",
+    "prettier:sol": "prettier --config ./contracts/.prettierrc --write 'contracts/**/*.sol'",
+    "prettier:ts": "prettier --config .prettierrc './**/*.ts' --write",
+    "prettier": "npx prettier:soldity && npx prettier:ts",
     "prepare": "husky install"
   },
   "author": "joeysantoro",
@@ -55,7 +59,7 @@
     "dotenv": "^16.0.0",
     "hardhat": "^2.8.3",
     "hardhat-contract-sizer": "^2.4.0",
-    "hardhat-gas-reporter": "^1.0.7",
+    "hardhat-gas-reporter": "^1.0.8",
     "merkletreejs": "^0.2.27",
     "openzeppelinv0.7": "npm:@openzeppelin/contracts@^3.4.0",
     "string-template": "^1.0.0"
@@ -84,6 +88,9 @@
     "mocha-junit-reporter": "^2.0.2",
     "mocha-multi-reporters": "^1.5.1",
     "prettier": "^2.5.1",
+    "prettier-plugin-solidity": "^1.0.0-beta.19",
+    "solhint": "^3.3.7",
+    "solhint-plugin-prettier": "^0.0.5",
     "solidity-coverage": "^0.7.18",
     "ts-node": "^10.5.0",
     "tsconfig-paths": "^3.12.0",
@@ -94,6 +101,9 @@
     "*.{ts,tsx}": [
       "eslint --cache --fix --config ./.eslintrc --ignore-path ./.eslintignore --ext .ts,.tsx .",
       "prettier --config .prettierrc './**/*.ts' --write"
+    ],
+    "*.sol": [
+      "prettier --config ./contracts/.prettierrc --write 'contracts/**/*.sol'"
     ]
   }
 }

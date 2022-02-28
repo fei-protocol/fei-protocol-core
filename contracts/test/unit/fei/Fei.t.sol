@@ -19,14 +19,14 @@ contract FeiTest is DSTest {
     FeiTestAddresses public addresses = getAddresses();
 
     function setUp() public {
-      core = getCore();
-      
-      fei = core.fei();
+        core = getCore();
+
+        fei = core.fei();
     }
 
     function testDeployedMetaData() public {
-      assertEq(fei.totalSupply(), 0);
-      assertTrue(core.isGovernor(addresses.governorAddress));
+        assertEq(fei.totalSupply(), 0);
+        assertTrue(core.isGovernor(addresses.governorAddress));
     }
 
     function testMintsFei() public {
