@@ -2,7 +2,6 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 import fip_78a from '@proposals/description/fip_78a';
-import fip_84a from '@proposals/description/fip_84a';
 import fip_84b from '@proposals/description/fip_84b';
 import fip_84c from '@proposals/description/fip_84c';
 
@@ -15,27 +14,9 @@ const proposals: ProposalsConfigMap = {
         proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
     }
     */
-  fip_78a: {
-    deploy: true,
-    proposalId: undefined,
-    affectedContractSignoff: [],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.DAO,
-    totalValue: 0,
-    proposal: fip_78a
-  },
-  fip_84a: {
-    deploy: false,
-    proposalId: '90781494616199164598522639897196626909064874385916078084737651147175659861373',
-    affectedContractSignoff: ['feiDAO', 'core', 'rariTimelock', 'feiDAOTimelock', 'timelock'],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.DAO,
-    totalValue: 0,
-    proposal: fip_84a
-  },
   fip_84b: {
     deploy: false,
-    proposalId: '',
+    proposalId: '111980608549296280462721500887998027192667619429469223121519018371053122326953',
     affectedContractSignoff: ['proxyAdmin', 'timelock', 'feiDAO', 'feiDAOTimelock'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
@@ -50,6 +31,15 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_84c
+  },
+  fip_78a: {
+    deploy: false,
+    proposalId: undefined,
+    affectedContractSignoff: [],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_78a
   }
 };
 
