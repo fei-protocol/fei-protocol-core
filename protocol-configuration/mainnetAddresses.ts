@@ -1795,6 +1795,21 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'SmartYieldRedeemer',
     address: '0x2dC77678Be7F900e81c638b056F4835BB7203C96',
     category: AddressCategory.TBD
+  },
+  uniswapWrapper: {
+    artifactName: 'UniswapWrapper',
+    address: '0x7255bD3bA6e8b1DA7AA76344Ca9718a53fb7D752',
+    category: AddressCategory.Oracle
+  },
+  daiUsdcTwapOracle: {
+    artifactName: 'UniswapV3OracleWrapper',
+    address: '0xFFd19E036BE4e67304fAD2Fc5bb19a073751797a',
+    category: AddressCategory.Oracle
+  },
+  ethUsdcTwapOracle: {
+    artifactName: 'UniswapV3OracleWrapper',
+    address: '0xcF72Ba8c6198a61B15da7B5a0E51DE535cfF4d48',
+    category: AddressCategory.Oracle
   }
 };
 

@@ -14,7 +14,7 @@ export const daiUsdcBackupOracleConfig: BackupOracleConfig = {
 export const ethUsdcBackupOracleConfig: BackupOracleConfig = {
   twapPeriod: 600, // 10 minutes
   minPoolLiquidity: 50e6, // 50m
-  uniswapPool: '0x8ad599c3A0ff1De082011EFDDc58f1908eb6e6D8',
+  uniswapPool: '0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640',
   precision: BNe18(1)
 };
 
