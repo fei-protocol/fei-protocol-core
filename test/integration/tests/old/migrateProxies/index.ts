@@ -7,7 +7,7 @@ import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { resetFork, performDAOAction, getImpersonatedSigner } from '@test/helpers';
 import { fip_84aCalldata, fip_84bCalldata, fip_84cCalldata } from './proposalCalldata';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { forceEth } from '../../setup/utils';
+import { forceEth } from '../../../setup/utils';
 
 const reduceDAOVotingPeriod = async (feiDAO: Contract, senderAddress: string) => {
   const calldatas = [
@@ -18,7 +18,10 @@ const reduceDAOVotingPeriod = async (feiDAO: Contract, senderAddress: string) =>
   await performDAOAction(feiDAO, senderAddress, calldatas, targets, values);
 };
 
-describe('e2e-migrate-proxies', function () {
+// Note: These are extensive validation test scripts that manually generate and execute calldata
+//       to thoroughly test a multi-vote DAO proxy migration (FIP 84). They are no longer relevant
+//       but kept as an example of useful patterns in doing this.
+describe.skip('e2e-migrate-proxies', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
