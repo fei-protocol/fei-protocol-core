@@ -13,6 +13,7 @@ import {getCore, getAddresses, FeiTestAddresses} from "./utils/Fixtures.sol";
 contract FeiTest is DSTest {
     IFei private fei;
     ICore private core;
+    ICore private acore;
 
     Vm public constant vm = Vm(HEVM_ADDRESS);
     FeiTestAddresses public addresses = getAddresses();
