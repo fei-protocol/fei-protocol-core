@@ -3,8 +3,7 @@ pragma solidity ^0.8.4;
 
 /// @title Interface for UniswapV3OracleWrapper
 interface IUniswapV3OracleWrapper {
-  function getTwapPeriod() external view returns (uint32);
+    function getTwapPeriod() external view returns (uint32);
 
-  function setTwapPeriod(uint32 _twapPeriod) external;
-
+    function setTwapPeriod(uint32 _twapPeriod) external;
 }

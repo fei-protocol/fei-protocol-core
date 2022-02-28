@@ -7,13 +7,12 @@ import {UniswapWrapper} from "../oracle/uniswap/UniswapWrapper.sol";
 /// @dev Used to test internal methods on UniswapWrapper that would not otherwise be
 /// available
 contract MockUniswapWrapper is UniswapWrapper {
+    constructor() UniswapWrapper() {}
 
-  constructor() UniswapWrapper() {}
-
-  function callCalculateDecimalNormaliser(
-    uint8 _token0Decimals,
-    uint8 _token1Decimals)
-  external view returns (uint256, bool) {    
-    return calculateDecimalNormaliser(_token0Decimals, _token1Decimals);
-  }
+    function callCalculateDecimalNormaliser(
+        uint8 _token0Decimals,
+        uint8 _token1Decimals
+    ) external view returns (uint256, bool) {
+        return calculateDecimalNormaliser(_token0Decimals, _token1Decimals);
+    }
 }
