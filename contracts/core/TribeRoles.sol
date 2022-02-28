@@ -74,4 +74,4 @@ library TribeRoles {
 
     /// @notice capable of adding an address to multi rate limited
     bytes32 internal constant ADD_MINTER_ROLE = keccak256("ADD_MINTER_ROLE");
-} 
+}

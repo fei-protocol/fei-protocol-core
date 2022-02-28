@@ -39,7 +39,12 @@ contract GlobalRateLimitedMinter is MultiRateLimited, IGlobalRateLimitedMinter {
     /// pausable and depletes the msg.sender's buffer
     /// @param to the recipient address of the minted FEI
     /// @param amount the amount of FEI to mint
-    function mintFei(address to, uint256 amount) external virtual override whenNotPaused {
+    function mintFei(address to, uint256 amount)
+        external
+        virtual
+        override
+        whenNotPaused
+    {
         _depleteBuffer(msg.sender, amount);
         _mintFei(to, amount);
     }
