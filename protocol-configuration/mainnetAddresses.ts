@@ -1761,6 +1761,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x9d28B8Cb17c3E25b6Cce17f88B259f75174b69f4',
     category: AddressCategory.TBD
   },
+  laTribuFeiTimelock: {
+    artifactName: 'LinearTokenTimelock',
+    address: '0xdb02630ed4f4994414122894B5082dc6D88a4ED4',
+    category: AddressCategory.TBD
+  },
+  laTribuTribeTimelock: {
+    artifactName: 'QuadraticTokenTimelock',
+    address: '0x552b8A441E945D021D29ae58B6Ae3dE96da75A05',
+    category: AddressCategory.TBD
+  },
   rariInfraFeiTimelock: {
     artifactName: 'LinearTokenTimelock',
     address: '0xfaFC562265a49975E8B20707EAC966473795CF90',
