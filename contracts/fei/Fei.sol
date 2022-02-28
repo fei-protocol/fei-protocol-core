@@ -8,7 +8,6 @@ import "../refs/CoreRef.sol";
 /// @title FEI stablecoin
 /// @author Fei Protocol
 contract Fei is IFei, ERC20Burnable, CoreRef {
-    
     /// @notice get associated incentive contract, 0 address if N/A
     mapping(address => address) public override incentiveContract;
 
@@ -162,23 +161,22 @@ contract Fei is IFei, ERC20Burnable, CoreRef {
         bytes32 s
     ) external override {
         require(deadline >= block.timestamp, "Fei: EXPIRED");
-        bytes32 digest =
-            keccak256(
-                abi.encodePacked(
-                    "\x19\x01",
-                    DOMAIN_SEPARATOR,
-                    keccak256(
-                        abi.encode(
-                            PERMIT_TYPEHASH,
-                            owner,
-                            spender,
-                            value,
-                            nonces[owner]++,
-                            deadline
-                        )
+        bytes32 digest = keccak256(
+            abi.encodePacked(
+                "\x19\x01",
+                DOMAIN_SEPARATOR,
+                keccak256(
+                    abi.encode(
+                        PERMIT_TYPEHASH,
+                        owner,
+                        spender,
+                        value,
+                        nonces[owner]++,
+                        deadline
                     )
                 )
-            );
+            )
+        );
         address recoveredAddress = ecrecover(digest, v, r, s);
         require(
             recoveredAddress != address(0) && recoveredAddress == owner,

@@ -9,7 +9,6 @@ import "./IUniRef.sol";
 /// @notice defines some utilities around interacting with Uniswap
 /// @dev the uniswap pair should be FEI and another asset
 abstract contract UniRef is IUniRef, OracleRef {
-
     /// @notice the referenced Uniswap pair contract
     IUniswapV2Pair public override pair;
 
@@ -33,7 +32,7 @@ abstract contract UniRef is IUniRef, OracleRef {
 
     /// @notice set the new pair contract
     /// @param newPair the new pair
-    function setPair(address newPair) external override virtual onlyGovernor {
+    function setPair(address newPair) external virtual override onlyGovernor {
         _setupPair(newPair);
     }
 

@@ -13,10 +13,14 @@ contract MockConvexBooster is MockERC20 {
         lpToken = MockERC20(_lpTokens);
     }
 
-    function deposit(uint256 poolId, uint256 lpTokens, bool stake) public returns (bool) {
+    function deposit(
+        uint256 poolId,
+        uint256 lpTokens,
+        bool stake
+    ) public returns (bool) {
         lpToken.transferFrom(msg.sender, address(reward), lpTokens);
 
-        if (stake){
+        if (stake) {
             reward.stakeFor(msg.sender, lpTokens);
         }
 
