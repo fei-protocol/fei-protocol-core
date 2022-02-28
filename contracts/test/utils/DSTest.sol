@@ -38,7 +38,8 @@ contract DSTest {
     bool public IS_TEST = true;
     bool public failed;
 
-    address constant HEVM_ADDRESS = address(bytes20(uint160(uint256(keccak256('hevm cheat code')))));
+    address constant HEVM_ADDRESS =
+        address(bytes20(uint160(uint256(keccak256("hevm cheat code")))));
 
     modifier mayRevert() {
         _;
@@ -55,28 +56,28 @@ contract DSTest {
         uint256 startGas = gasleft();
         _;
         uint256 endGas = gasleft();
-        emit log_named_uint('gas', startGas - endGas);
+        emit log_named_uint("gas", startGas - endGas);
     }
 
     function assertTrue(bool condition) internal {
         if (!condition) {
-            emit log('Error: Assertion Failed');
+            emit log("Error: Assertion Failed");
             fail();
         }
     }
 
     function assertTrue(bool condition, string memory err) internal {
         if (!condition) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertTrue(condition);
         }
     }
 
     function assertEq(address a, address b) internal {
         if (a != b) {
-            emit log('Error: a == b not satisfied [address]');
-            emit log_named_address('  Expected', b);
-            emit log_named_address('    Actual', a);
+            emit log("Error: a == b not satisfied [address]");
+            emit log_named_address("  Expected", b);
+            emit log_named_address("    Actual", a);
             fail();
         }
     }
@@ -87,16 +88,16 @@ contract DSTest {
         string memory err
     ) internal {
         if (a != b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertEq(a, b);
         }
     }
 
     function assertEq(bytes32 a, bytes32 b) internal {
         if (a != b) {
-            emit log('Error: a == b not satisfied [bytes32]');
-            emit log_named_bytes32('  Expected', b);
-            emit log_named_bytes32('    Actual', a);
+            emit log("Error: a == b not satisfied [bytes32]");
+            emit log_named_bytes32("  Expected", b);
+            emit log_named_bytes32("    Actual", a);
             fail();
         }
     }
@@ -107,7 +108,7 @@ contract DSTest {
         string memory err
     ) internal {
         if (a != b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertEq(a, b);
         }
     }
@@ -126,9 +127,9 @@ contract DSTest {
 
     function assertEq(int256 a, int256 b) internal {
         if (a != b) {
-            emit log('Error: a == b not satisfied [int]');
-            emit log_named_int('  Expected', b);
-            emit log_named_int('    Actual', a);
+            emit log("Error: a == b not satisfied [int]");
+            emit log_named_int("  Expected", b);
+            emit log_named_int("    Actual", a);
             fail();
         }
     }
@@ -139,16 +140,16 @@ contract DSTest {
         string memory err
     ) internal {
         if (a != b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertEq(a, b);
         }
     }
 
     function assertEq(uint256 a, uint256 b) internal {
         if (a != b) {
-            emit log('Error: a == b not satisfied [uint]');
-            emit log_named_uint('  Expected', b);
-            emit log_named_uint('    Actual', a);
+            emit log("Error: a == b not satisfied [uint]");
+            emit log_named_uint("  Expected", b);
+            emit log_named_uint("    Actual", a);
             fail();
         }
     }
@@ -159,7 +160,7 @@ contract DSTest {
         string memory err
     ) internal {
         if (a != b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertEq(a, b);
         }
     }
@@ -170,9 +171,9 @@ contract DSTest {
         uint256 decimals
     ) internal {
         if (a != b) {
-            emit log('Error: a == b not satisfied [decimal int]');
-            emit log_named_decimal_int('  Expected', b, decimals);
-            emit log_named_decimal_int('    Actual', a, decimals);
+            emit log("Error: a == b not satisfied [decimal int]");
+            emit log_named_decimal_int("  Expected", b, decimals);
+            emit log_named_decimal_int("    Actual", a, decimals);
             fail();
         }
     }
@@ -184,7 +185,7 @@ contract DSTest {
         string memory err
     ) internal {
         if (a != b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertEqDecimal(a, b, decimals);
         }
     }
@@ -195,9 +196,9 @@ contract DSTest {
         uint256 decimals
     ) internal {
         if (a != b) {
-            emit log('Error: a == b not satisfied [decimal uint]');
-            emit log_named_decimal_uint('  Expected', b, decimals);
-            emit log_named_decimal_uint('    Actual', a, decimals);
+            emit log("Error: a == b not satisfied [decimal uint]");
+            emit log_named_decimal_uint("  Expected", b, decimals);
+            emit log_named_decimal_uint("    Actual", a, decimals);
             fail();
         }
     }
@@ -209,16 +210,16 @@ contract DSTest {
         string memory err
     ) internal {
         if (a != b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertEqDecimal(a, b, decimals);
         }
     }
 
     function assertGt(uint256 a, uint256 b) internal {
         if (a <= b) {
-            emit log('Error: a > b not satisfied [uint]');
-            emit log_named_uint('  Value a', a);
-            emit log_named_uint('  Value b', b);
+            emit log("Error: a > b not satisfied [uint]");
+            emit log_named_uint("  Value a", a);
+            emit log_named_uint("  Value b", b);
             fail();
         }
     }
@@ -229,16 +230,16 @@ contract DSTest {
         string memory err
     ) internal {
         if (a <= b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertGt(a, b);
         }
     }
 
     function assertGt(int256 a, int256 b) internal {
         if (a <= b) {
-            emit log('Error: a > b not satisfied [int]');
-            emit log_named_int('  Value a', a);
-            emit log_named_int('  Value b', b);
+            emit log("Error: a > b not satisfied [int]");
+            emit log_named_int("  Value a", a);
+            emit log_named_int("  Value b", b);
             fail();
         }
     }
@@ -249,7 +250,7 @@ contract DSTest {
         string memory err
     ) internal {
         if (a <= b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertGt(a, b);
         }
     }
@@ -260,9 +261,9 @@ contract DSTest {
         uint256 decimals
     ) internal {
         if (a <= b) {
-            emit log('Error: a > b not satisfied [decimal int]');
-            emit log_named_decimal_int('  Value a', a, decimals);
-            emit log_named_decimal_int('  Value b', b, decimals);
+            emit log("Error: a > b not satisfied [decimal int]");
+            emit log_named_decimal_int("  Value a", a, decimals);
+            emit log_named_decimal_int("  Value b", b, decimals);
             fail();
         }
     }
@@ -274,7 +275,7 @@ contract DSTest {
         string memory err
     ) internal {
         if (a <= b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertGtDecimal(a, b, decimals);
         }
     }
@@ -285,9 +286,9 @@ contract DSTest {
         uint256 decimals
     ) internal {
         if (a <= b) {
-            emit log('Error: a > b not satisfied [decimal uint]');
-            emit log_named_decimal_uint('  Value a', a, decimals);
-            emit log_named_decimal_uint('  Value b', b, decimals);
+            emit log("Error: a > b not satisfied [decimal uint]");
+            emit log_named_decimal_uint("  Value a", a, decimals);
+            emit log_named_decimal_uint("  Value b", b, decimals);
             fail();
         }
     }
@@ -299,16 +300,16 @@ contract DSTest {
         string memory err
     ) internal {
         if (a <= b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertGtDecimal(a, b, decimals);
         }
     }
 
     function assertGe(uint256 a, uint256 b) internal {
         if (a < b) {
-            emit log('Error: a >= b not satisfied [uint]');
-            emit log_named_uint('  Value a', a);
-            emit log_named_uint('  Value b', b);
+            emit log("Error: a >= b not satisfied [uint]");
+            emit log_named_uint("  Value a", a);
+            emit log_named_uint("  Value b", b);
             fail();
         }
     }
@@ -319,16 +320,16 @@ contract DSTest {
         string memory err
     ) internal {
         if (a < b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertGe(a, b);
         }
     }
 
     function assertGe(int256 a, int256 b) internal {
         if (a < b) {
-            emit log('Error: a >= b not satisfied [int]');
-            emit log_named_int('  Value a', a);
-            emit log_named_int('  Value b', b);
+            emit log("Error: a >= b not satisfied [int]");
+            emit log_named_int("  Value a", a);
+            emit log_named_int("  Value b", b);
             fail();
         }
     }
@@ -339,7 +340,7 @@ contract DSTest {
         string memory err
     ) internal {
         if (a < b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertGe(a, b);
         }
     }
@@ -350,9 +351,9 @@ contract DSTest {
         uint256 decimals
     ) internal {
         if (a < b) {
-            emit log('Error: a >= b not satisfied [decimal int]');
-            emit log_named_decimal_int('  Value a', a, decimals);
-            emit log_named_decimal_int('  Value b', b, decimals);
+            emit log("Error: a >= b not satisfied [decimal int]");
+            emit log_named_decimal_int("  Value a", a, decimals);
+            emit log_named_decimal_int("  Value b", b, decimals);
             fail();
         }
     }
@@ -364,7 +365,7 @@ contract DSTest {
         string memory err
     ) internal {
         if (a < b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertGeDecimal(a, b, decimals);
         }
     }
@@ -375,9 +376,9 @@ contract DSTest {
         uint256 decimals
     ) internal {
         if (a < b) {
-            emit log('Error: a >= b not satisfied [decimal uint]');
-            emit log_named_decimal_uint('  Value a', a, decimals);
-            emit log_named_decimal_uint('  Value b', b, decimals);
+            emit log("Error: a >= b not satisfied [decimal uint]");
+            emit log_named_decimal_uint("  Value a", a, decimals);
+            emit log_named_decimal_uint("  Value b", b, decimals);
             fail();
         }
     }
@@ -389,16 +390,16 @@ contract DSTest {
         string memory err
     ) internal {
         if (a < b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertGeDecimal(a, b, decimals);
         }
     }
 
     function assertLt(uint256 a, uint256 b) internal {
         if (a >= b) {
-            emit log('Error: a < b not satisfied [uint]');
-            emit log_named_uint('  Value a', a);
-            emit log_named_uint('  Value b', b);
+            emit log("Error: a < b not satisfied [uint]");
+            emit log_named_uint("  Value a", a);
+            emit log_named_uint("  Value b", b);
             fail();
         }
     }
@@ -409,16 +410,16 @@ contract DSTest {
         string memory err
     ) internal {
         if (a >= b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertLt(a, b);
         }
     }
 
     function assertLt(int256 a, int256 b) internal {
         if (a >= b) {
-            emit log('Error: a < b not satisfied [int]');
-            emit log_named_int('  Value a', a);
-            emit log_named_int('  Value b', b);
+            emit log("Error: a < b not satisfied [int]");
+            emit log_named_int("  Value a", a);
+            emit log_named_int("  Value b", b);
             fail();
         }
     }
@@ -429,7 +430,7 @@ contract DSTest {
         string memory err
     ) internal {
         if (a >= b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertLt(a, b);
         }
     }
@@ -440,9 +441,9 @@ contract DSTest {
         uint256 decimals
     ) internal {
         if (a >= b) {
-            emit log('Error: a < b not satisfied [decimal int]');
-            emit log_named_decimal_int('  Value a', a, decimals);
-            emit log_named_decimal_int('  Value b', b, decimals);
+            emit log("Error: a < b not satisfied [decimal int]");
+            emit log_named_decimal_int("  Value a", a, decimals);
+            emit log_named_decimal_int("  Value b", b, decimals);
             fail();
         }
     }
@@ -454,7 +455,7 @@ contract DSTest {
         string memory err
     ) internal {
         if (a >= b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertLtDecimal(a, b, decimals);
         }
     }
@@ -465,9 +466,9 @@ contract DSTest {
         uint256 decimals
     ) internal {
         if (a >= b) {
-            emit log('Error: a < b not satisfied [decimal uint]');
-            emit log_named_decimal_uint('  Value a', a, decimals);
-            emit log_named_decimal_uint('  Value b', b, decimals);
+            emit log("Error: a < b not satisfied [decimal uint]");
+            emit log_named_decimal_uint("  Value a", a, decimals);
+            emit log_named_decimal_uint("  Value b", b, decimals);
             fail();
         }
     }
@@ -479,16 +480,16 @@ contract DSTest {
         string memory err
     ) internal {
         if (a >= b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertLtDecimal(a, b, decimals);
         }
     }
 
     function assertLe(uint256 a, uint256 b) internal {
         if (a > b) {
-            emit log('Error: a <= b not satisfied [uint]');
-            emit log_named_uint('  Value a', a);
-            emit log_named_uint('  Value b', b);
+            emit log("Error: a <= b not satisfied [uint]");
+            emit log_named_uint("  Value a", a);
+            emit log_named_uint("  Value b", b);
             fail();
         }
     }
@@ -499,16 +500,16 @@ contract DSTest {
         string memory err
     ) internal {
         if (a > b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertLe(a, b);
         }
     }
 
     function assertLe(int256 a, int256 b) internal {
         if (a > b) {
-            emit log('Error: a <= b not satisfied [int]');
-            emit log_named_int('  Value a', a);
-            emit log_named_int('  Value b', b);
+            emit log("Error: a <= b not satisfied [int]");
+            emit log_named_int("  Value a", a);
+            emit log_named_int("  Value b", b);
             fail();
         }
     }
@@ -519,7 +520,7 @@ contract DSTest {
         string memory err
     ) internal {
         if (a > b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertLe(a, b);
         }
     }
@@ -530,9 +531,9 @@ contract DSTest {
         uint256 decimals
     ) internal {
         if (a > b) {
-            emit log('Error: a <= b not satisfied [decimal int]');
-            emit log_named_decimal_int('  Value a', a, decimals);
-            emit log_named_decimal_int('  Value b', b, decimals);
+            emit log("Error: a <= b not satisfied [decimal int]");
+            emit log_named_decimal_int("  Value a", a, decimals);
+            emit log_named_decimal_int("  Value b", b, decimals);
             fail();
         }
     }
@@ -544,7 +545,7 @@ contract DSTest {
         string memory err
     ) internal {
         if (a > b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertLeDecimal(a, b, decimals);
         }
     }
@@ -555,9 +556,9 @@ contract DSTest {
         uint256 decimals
     ) internal {
         if (a > b) {
-            emit log('Error: a <= b not satisfied [decimal uint]');
-            emit log_named_decimal_uint('  Value a', a, decimals);
-            emit log_named_decimal_uint('  Value b', b, decimals);
+            emit log("Error: a <= b not satisfied [decimal uint]");
+            emit log_named_decimal_uint("  Value a", a, decimals);
+            emit log_named_decimal_uint("  Value b", b, decimals);
             fail();
         }
     }
@@ -569,16 +570,16 @@ contract DSTest {
         string memory err
     ) internal {
         if (a > b) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertGeDecimal(a, b, decimals);
         }
     }
 
     function assertEq(string memory a, string memory b) internal {
         if (keccak256(abi.encodePacked(a)) != keccak256(abi.encodePacked(b))) {
-            emit log('Error: a == b not satisfied [string]');
-            emit log_named_string('  Value a', a);
-            emit log_named_string('  Value b', b);
+            emit log("Error: a == b not satisfied [string]");
+            emit log_named_string("  Value a", a);
+            emit log_named_string("  Value b", b);
             fail();
         }
     }
@@ -589,12 +590,16 @@ contract DSTest {
         string memory err
     ) internal {
         if (keccak256(abi.encodePacked(a)) != keccak256(abi.encodePacked(b))) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertEq(a, b);
         }
     }
 
-    function checkEq0(bytes memory a, bytes memory b) internal pure returns (bool ok) {
+    function checkEq0(bytes memory a, bytes memory b)
+        internal
+        pure
+        returns (bool ok)
+    {
         ok = true;
         if (a.length == b.length) {
             for (uint256 i = 0; i < a.length; i++) {
@@ -609,9 +614,9 @@ contract DSTest {
 
     function assertEq0(bytes memory a, bytes memory b) internal {
         if (!checkEq0(a, b)) {
-            emit log('Error: a == b not satisfied [bytes]');
-            emit log_named_bytes('  Expected', a);
-            emit log_named_bytes('    Actual', b);
+            emit log("Error: a == b not satisfied [bytes]");
+            emit log_named_bytes("  Expected", a);
+            emit log_named_bytes("    Actual", b);
             fail();
         }
     }
@@ -622,7 +627,7 @@ contract DSTest {
         string memory err
     ) internal {
         if (!checkEq0(a, b)) {
-            emit log_named_string('Error', err);
+            emit log_named_string("Error", err);
             assertEq0(a, b);
         }
     }

@@ -65,10 +65,10 @@ contract TribalChiefSyncV2 {
         for (uint256 i = 0; i < len; i++) {
             uint256 nextReward = rewards[i];
             uint256 nextTimestamp = timestamps[i];
-            
+
             require(nextReward < lastReward, "rewards");
             require(nextTimestamp > lastTimestamp, "timestamp");
-            
+
             rewardsSchedule[nextReward] = nextTimestamp;
             rewardsArray[len - i - 1] = nextReward;
 
@@ -78,7 +78,7 @@ contract TribalChiefSyncV2 {
     }
 
     /// @notice Before an action, mass update all pools, after sync the autoRewardsDistributor
-    modifier update {
+    modifier update() {
         uint256 numPools = tribalChief.numPools();
         uint256[] memory pids = new uint256[](numPools);
         for (uint256 i = 0; i < numPools; i++) {
@@ -97,55 +97,47 @@ contract TribalChiefSyncV2 {
         rewardsArray.pop();
     }
 
-    function isRewardDecreaseAvailable() public view returns(bool) {
-        return rewardsArray.length > 0 && nextRewardTimestamp() < block.timestamp;
+    function isRewardDecreaseAvailable() public view returns (bool) {
+        return
+            rewardsArray.length > 0 && nextRewardTimestamp() < block.timestamp;
     }
 
-    function nextRewardTimestamp() public view returns(uint256) {
+    function nextRewardTimestamp() public view returns (uint256) {
         return rewardsSchedule[nextRewardsRate()];
     }
 
-    function nextRewardsRate() public view returns(uint256) {
+    function nextRewardsRate() public view returns (uint256) {
         return rewardsArray[rewardsArray.length - 1];
     }
 
     /// @notice Sync a rewards rate change
-    function decreaseRewards(uint256 tribePerBlock, bytes32 salt) external update {
+    function decreaseRewards(uint256 tribePerBlock, bytes32 salt)
+        external
+        update
+    {
         bytes memory data = abi.encodeWithSelector(
-            tribalChief.updateBlockReward.selector, 
+            tribalChief.updateBlockReward.selector,
             tribePerBlock
         );
-        timelock.execute(
-            address(tribalChief), 
-            0, 
-            data, 
-            bytes32(0), 
-            salt
-        );
+        timelock.execute(address(tribalChief), 0, data, bytes32(0), salt);
     }
 
     /// @notice Sync a pool addition
     function addPool(
-        uint120 allocPoint, 
-        address stakedToken, 
-        address rewarder, 
-        RewardData[] memory rewardData, 
+        uint120 allocPoint,
+        address stakedToken,
+        address rewarder,
+        RewardData[] memory rewardData,
         bytes32 salt
     ) external update {
         bytes memory data = abi.encodeWithSelector(
-            tribalChief.add.selector, 
+            tribalChief.add.selector,
             allocPoint,
             stakedToken,
             rewarder,
             rewardData
         );
-        timelock.execute(
-            address(tribalChief), 
-            0, 
-            data, 
-            bytes32(0), 
-            salt
-        );
+        timelock.execute(address(tribalChief), 0, data, bytes32(0), salt);
     }
 
     /// @notice Sync a pool set action
@@ -163,30 +155,15 @@ contract TribalChiefSyncV2 {
             rewarder,
             overwrite
         );
-        timelock.execute(
-            address(tribalChief), 
-            0, 
-            data, 
-            bytes32(0), 
-            salt
-        );
+        timelock.execute(address(tribalChief), 0, data, bytes32(0), salt);
     }
 
     /// @notice Sync a pool reset rewards action
-    function resetPool(
-        uint256 pid,
-        bytes32 salt
-    ) external update {
+    function resetPool(uint256 pid, bytes32 salt) external update {
         bytes memory data = abi.encodeWithSelector(
             tribalChief.resetRewards.selector,
             pid
         );
-        timelock.execute(
-            address(tribalChief), 
-            0, 
-            data, 
-            bytes32(0), 
-            salt
-        );
+        timelock.execute(address(tribalChief), 0, data, bytes32(0), salt);
     }
 }

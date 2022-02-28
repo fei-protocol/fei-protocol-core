@@ -4,21 +4,36 @@ pragma solidity ^0.8.0;
 import "../utils/WethPCVDeposit.sol";
 
 interface LendingPool {
-    function deposit(address asset, uint256 amount, address onBehalfOf, uint16 referralCode) external;
-    
-    function withdraw(address asset, uint256 amount, address to) external;
+    function deposit(
+        address asset,
+        uint256 amount,
+        address onBehalfOf,
+        uint16 referralCode
+    ) external;
+
+    function withdraw(
+        address asset,
+        uint256 amount,
+        address to
+    ) external;
 }
 
 interface IncentivesController {
-    function claimRewards(address[] calldata assets, uint256 amount, address to) external;
+    function claimRewards(
+        address[] calldata assets,
+        uint256 amount,
+        address to
+    ) external;
 
-    function getRewardsBalance(address[] calldata assets, address user) external view returns(uint256);
+    function getRewardsBalance(address[] calldata assets, address user)
+        external
+        view
+        returns (uint256);
 }
 
 /// @title Aave PCV Deposit
 /// @author Fei Protocol
 contract AavePCVDeposit is WethPCVDeposit {
-
     event ClaimRewards(address indexed caller, uint256 amount);
 
     /// @notice the associated Aave aToken for the deposit
@@ -57,7 +72,10 @@ contract AavePCVDeposit is WethPCVDeposit {
         address[] memory assets = new address[](1);
         assets[0] = address(aToken);
         // First grab the available balance
-        uint256 amount = incentivesController.getRewardsBalance(assets, address(this));
+        uint256 amount = incentivesController.getRewardsBalance(
+            assets,
+            address(this)
+        );
 
         // claim all available rewards
         incentivesController.claimRewards(assets, amount, address(this));
@@ -74,7 +92,7 @@ contract AavePCVDeposit is WethPCVDeposit {
         uint256 pendingBalance = token.balanceOf(address(this));
         token.approve(address(lendingPool), pendingBalance);
         lendingPool.deposit(address(token), pendingBalance, address(this), 0);
-        
+
         emit Deposit(msg.sender, pendingBalance);
     }
 

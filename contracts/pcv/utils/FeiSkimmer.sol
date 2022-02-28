@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "../IPCVDeposit.sol"; 
+import "../IPCVDeposit.sol";
 import "../../refs/CoreRef.sol";
 
 /// @title a contract to skim excess FEI from addresses
 /// @author Fei Protocol
 contract FeiSkimmer is CoreRef {
- 
     event ThresholdUpdate(uint256 newThreshold);
-    
+
     /// @notice source PCV deposit to skim excess FEI from
     IPCVDeposit public immutable source;
 
@@ -24,9 +23,7 @@ contract FeiSkimmer is CoreRef {
         address _core,
         IPCVDeposit _source,
         uint256 _threshold
-    ) 
-        CoreRef(_core)
-    {
+    ) CoreRef(_core) {
         source = _source;
         threshold = _threshold;
         emit ThresholdUpdate(threshold);
@@ -38,15 +35,12 @@ contract FeiSkimmer is CoreRef {
     }
 
     /// @notice skim FEI above the threshold from the source. Pausable. Requires skimEligible()
-    function skim()
-        external
-        whenNotPaused
-    {
+    function skim() external whenNotPaused {
         IFei _fei = fei();
         uint256 feiTotal = _fei.balanceOf(address(source));
 
         require(feiTotal > threshold, "under threshold");
-        
+
         uint256 burnAmount = feiTotal - threshold;
         source.withdrawERC20(address(_fei), address(this), burnAmount);
 

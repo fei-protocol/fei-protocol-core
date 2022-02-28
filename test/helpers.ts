@@ -2,7 +2,7 @@ import hre, { ethers, artifacts, network } from 'hardhat';
 import chai from 'chai';
 import CBN from 'chai-bn';
 import { Core, Core__factory } from '@custom-types/contracts';
-import { BigNumber, BigNumberish, Signer } from 'ethers';
+import { BigNumber, BigNumberish, Contract } from 'ethers';
 import { NamedAddresses } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
@@ -250,6 +250,56 @@ const time = {
   }
 };
 
+async function performDAOAction(
+  feiDAO: Contract,
+  multisigAddress: string,
+  calldatas: string[],
+  targets: string[],
+  values: number[]
+): Promise<void> {
+  const description = [];
+
+  await hre.network.provider.request({
+    method: 'hardhat_impersonateAccount',
+    params: [multisigAddress]
+  });
+
+  const signer = await ethers.getSigner(multisigAddress);
+
+  // Propose
+  // note ethers.js requires using this notation when two overloaded methods exist)
+  // https://docs.ethers.io/v5/migration/web3/#migration-from-web3-js--contracts--overloaded-functions
+  await feiDAO.connect(signer)['propose(address[],uint256[],bytes[],string)'](targets, values, calldatas, description);
+
+  const pid = await feiDAO.hashProposal(targets, values, calldatas, ethers.utils.keccak256(description));
+  const startBlock = (await feiDAO.proposals(pid)).startBlock;
+  await time.advanceBlockTo(startBlock.toString());
+
+  // vote
+  await feiDAO.connect(signer).castVote(pid, 1);
+
+  const endBlock = (await feiDAO.proposals(pid)).endBlock;
+  await time.advanceBlockTo(endBlock.toString());
+
+  // queue
+  await feiDAO['queue(address[],uint256[],bytes[],bytes32)'](
+    targets,
+    values,
+    calldatas,
+    ethers.utils.keccak256(description)
+  );
+
+  await time.increase('1000000');
+
+  // execute
+  await feiDAO['execute(address[],uint256[],bytes[],bytes32)'](
+    targets,
+    values,
+    calldatas,
+    ethers.utils.keccak256(description)
+  );
+}
+
 export {
   // utils
   ZERO_ADDRESS,
@@ -272,5 +322,6 @@ export {
   setNextBlockTimestamp,
   resetTime,
   resetFork,
-  overwriteChainlinkAggregator
+  overwriteChainlinkAggregator,
+  performDAOAction
 };

@@ -20,17 +20,14 @@ contract IdlePCVRedeemer {
 
     IIdleToken public immutable idleToken;
 
-    constructor(
-        address _target,
-        IIdleToken _idleToken
-    ) { 
-      target = _target;
-      idleToken = _idleToken;
+    constructor(address _target, IIdleToken _idleToken) {
+        target = _target;
+        idleToken = _idleToken;
     }
 
     /// @notice redeem Idle Token shares
     /// @param amount asset amount to redeem
-    function redeem(uint256 amount) external { 
+    function redeem(uint256 amount) external {
         idleToken.redeemIdleToken(amount);
 
         IERC20 token = idleToken.token();
