@@ -15,7 +15,21 @@ const proposals: ProposalsConfigMap = {
   fip_78a: {
     deploy: false,
     proposalId: undefined,
-    affectedContractSignoff: [],
+    affectedContractSignoff: [
+      'core',
+      'indexDelegator',
+      'ratioPCVControllerV2',
+      'agEurAngleUniswapPCVDeposit',
+      'agEurUniswapPCVDeposit',
+      'angleDelegatorPCVDeposit',
+      'fei',
+      'collateralizationOracle',
+      'uniswapLensAgEurUniswapGauge',
+      'pcvGuardian',
+      'feiDAOTimelock',
+      'opsOptimisticTimelock',
+      'optimisticTimelock'
+    ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,

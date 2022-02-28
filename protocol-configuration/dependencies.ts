@@ -1,6 +1,15 @@
 import { DependencyMap } from '../types/types';
 
 const dependencies: DependencyMap = {
+  angleDelegatorPCVDeposit: {
+    contractDependencies: ['core', 'gaugeLensAgEurUniswapGauge']
+  },
+  gaugeLensAgEurUniswapGauge: {
+    contractDependencies: ['angleDelegatorPCVDeposit', 'uniswapLensAgEurUniswapGauge']
+  },
+  uniswapLensAgEurUniswapGauge: {
+    contractDependencies: ['core', 'gaugeLensAgEurUniswapGauge', 'chainlinkEurUsdOracleWrapper']
+  },
   collateralizationOracleGuardian: {
     contractDependencies: ['core', 'guardian', 'collateralizationOracleWrapper']
   },
@@ -41,6 +50,7 @@ const dependencies: DependencyMap = {
       'aaveFeiPCVDeposit',
       'aaveRaiPCVDeposit',
       'agEurAngleUniswapPCVDeposit',
+      'agEurUniswapPCVDeposit',
       'balancerDepositBalWeth',
       'compoundDaiPCVDeposit',
       'compoundEthPCVDeposit',
@@ -107,7 +117,9 @@ const dependencies: DependencyMap = {
       'fuseGuardian',
       'restrictedPermissions',
       'balancerDepositFeiWeth',
-      'delayedPCVMoverWethUniToBal'
+      'delayedPCVMoverWethUniToBal',
+      'angleDelegatorPCVDeposit',
+      'uniswapLensAgEurUniswapGauge'
     ]
   },
   fei: {
@@ -319,6 +331,9 @@ const dependencies: DependencyMap = {
   },
   agEurAngleUniswapPCVDeposit: {
     contractDependencies: ['core', 'fei', 'chainlinkEurUsdOracleWrapper']
+  },
+  agEurUniswapPCVDeposit: {
+    contractDependencies: ['core', 'chainlinkEurUsdOracleWrapper']
   },
   balancerDepositBalWeth: {
     contractDependencies: ['core', 'balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
@@ -632,7 +647,13 @@ const dependencies: DependencyMap = {
     ]
   },
   chainlinkEurUsdOracleWrapper: {
-    contractDependencies: ['core', 'collateralizationOracle', 'agEurAngleUniswapPCVDeposit']
+    contractDependencies: [
+      'core',
+      'collateralizationOracle',
+      'agEurAngleUniswapPCVDeposit',
+      'agEurUniswapPCVDeposit',
+      'uniswapLensAgEurUniswapGauge'
+    ]
   },
   chainlinkFeiEthOracleWrapper: {
     contractDependencies: ['core']
