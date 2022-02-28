@@ -13,7 +13,7 @@ const proposals: ProposalsConfigMap = {
     */
   fip_83: {
     deploy: false,
-    proposalId: null,
+    proposalId: '42252633381525796377407696085248355994722597040719506134401876309524117642013',
     affectedContractSignoff: ['core', 'fei', 'laTribuTribeTimelock', 'laTribuFeiTimelock'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
