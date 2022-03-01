@@ -9,14 +9,14 @@ import {MockOracle} from "../../mock/MockOracle.sol";
 import {ICore} from "../../core/ICore.sol";
 import {Core} from "../../core/Core.sol";
 import {IFei, Fei} from "../../fei/Fei.sol";
-import {PegStabilityModuleNonCustodial} from "./../../peg/PegStabilityModuleNonCustodial.sol";
+import {NonCustodialPSM} from "./../../peg/NonCustodialPSM.sol";
 import {PegStabilityModule} from "./../../peg/PegStabilityModule.sol";
 import {Vm} from "./../utils/Vm.sol";
 import {DSTest} from "./../utils/DSTest.sol";
 import {getCore, getAddresses, FeiTestAddresses} from "./../utils/Fixtures.sol";
 
-contract PegStabilityModuleNonCustodialTest is DSTest {
-    PegStabilityModuleNonCustodial private psm;
+contract NonCustodialPSMTest is DSTest {
+    NonCustodialPSM private psm;
     ICore private core;
     IFei private fei;
 
@@ -58,9 +58,7 @@ contract PegStabilityModuleNonCustodialTest is DSTest {
             });
 
         /// create PSM
-        psm = new PegStabilityModuleNonCustodial(
-            floorBasisPoints,
-            ceilingBasisPoints,
+        psm = new NonCustodialPSM(
             oracleParams,
             0,
             0,
@@ -138,38 +136,6 @@ contract PegStabilityModuleNonCustodialTest is DSTest {
         assertEq(endingUserFEIBalance, 0);
         assertEq(endingUserUnderlyingBalance, mintAmount * 2);
         assertEq(endingPCVDepositUnderlyingBalance, 0);
-    }
-
-    /// @notice redeem fails when price is out of bounds
-    function testMintFailsAboveCeiling() public {
-        oracle.setExchangeRate(2);
-        vm.expectRevert(bytes("PegStabilityModule: price out of bounds"));
-
-        psm.mint(address(this), mintAmount, mintAmount);
-    }
-
-    /// @notice mint fails when price is out of bounds
-    function testMintFailsBelowFloor() public {
-        oracle.setExchangeRateScaledBase(95e16);
-        vm.expectRevert(bytes("PegStabilityModule: price out of bounds"));
-
-        psm.mint(address(this), mintAmount, mintAmount);
-    }
-
-    /// @notice redeem fails when price is out of bounds
-    function testRedeemFailsBelowFloor() public {
-        oracle.setExchangeRateScaledBase(95e16);
-        vm.expectRevert(bytes("PegStabilityModule: price out of bounds"));
-
-        psm.redeem(address(this), mintAmount, mintAmount);
-    }
-
-    /// @notice redeem fails when price is out of bounds
-    function testRedeemFailsAboveCeiling() public {
-        oracle.setExchangeRate(2);
-        vm.expectRevert(bytes("PegStabilityModule: price out of bounds"));
-
-        psm.redeem(address(this), mintAmount, mintAmount);
     }
 
     /// @notice redeem fails without approval

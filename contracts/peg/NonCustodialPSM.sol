@@ -2,19 +2,17 @@
 pragma solidity ^0.8.4;
 
 import {IPCVDeposit} from "./../pcv/IPCVDeposit.sol";
-import {FixedPricePSM} from "./FixedPricePSM.sol";
+import {PegStabilityModule} from "./PegStabilityModule.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @notice Peg Stability Module that holds no funds.
 /// On a mint, it transfers all proceeds to a PCV Deposit and then deposits them into the deposit's target
 /// When funds are needed for a redemption, they are simply pulled from the PCV Deposit
-contract PegStabilityModuleNonCustodial is FixedPricePSM {
+contract NonCustodialPSM is PegStabilityModule {
     using SafeERC20 for IERC20;
 
     /// @notice constructor
-    /// @param _floor minimum acceptable orace price in basis points
-    /// @param _ceiling maximum acceptable orace price in basis points
     /// @param params PSM constructor parameter struct
     /// @param _mintFeeBasisPoints fee for minting in basis points
     /// @param _redeemFeeBasisPoints fee for redemption in basis points
@@ -23,8 +21,6 @@ contract PegStabilityModuleNonCustodial is FixedPricePSM {
     /// @param _underlyingToken underlying token this PSM trades against
     /// @param _pcvDeposit where all assets are stored and all assets are pulled from
     constructor(
-        uint256 _floor,
-        uint256 _ceiling,
         OracleParams memory params,
         uint256 _mintFeeBasisPoints,
         uint256 _redeemFeeBasisPoints,
@@ -33,9 +29,7 @@ contract PegStabilityModuleNonCustodial is FixedPricePSM {
         IERC20 _underlyingToken,
         IPCVDeposit _pcvDeposit
     )
-        FixedPricePSM(
-            _floor,
-            _ceiling,
+        PegStabilityModule(
             params,
             _mintFeeBasisPoints,
             _redeemFeeBasisPoints,
