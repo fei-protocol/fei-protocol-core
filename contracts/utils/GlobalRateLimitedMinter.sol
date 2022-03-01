@@ -10,7 +10,7 @@ import "./IGlobalRateLimitedMinter.sol";
 contract GlobalRateLimitedMinter is MultiRateLimited, IGlobalRateLimitedMinter {
     /// @param coreAddress address of the core contract
     /// @param _globalMaxRateLimitPerSecond maximum amount of fei that can replenish per second ever, this amount cannot be changed by governance
-    /// @param _globalRateLimitPerSecond maximum rate limit per second per address
+    /// @param _perAddressRateLimitMaximum maximum rate limit per second per address
     /// @param _maxRateLimitPerSecondMRL maximum rate limit per second per address in multi rate limited
     /// @param _maxBufferCap maximum buffer cap in multi rate limited
     /// @param _globalBufferCap maximum global buffer cap
@@ -18,7 +18,7 @@ contract GlobalRateLimitedMinter is MultiRateLimited, IGlobalRateLimitedMinter {
     constructor(
         address coreAddress,
         uint256 _globalMaxRateLimitPerSecond,
-        uint256 _globalRateLimitPerSecond,
+        uint256 _perAddressRateLimitMaximum,
         uint256 _maxRateLimitPerSecondMRL,
         uint256 _maxBufferCap,
         uint256 _globalBufferCap,
@@ -27,7 +27,7 @@ contract GlobalRateLimitedMinter is MultiRateLimited, IGlobalRateLimitedMinter {
         MultiRateLimited(
             coreAddress,
             _globalMaxRateLimitPerSecond,
-            _globalRateLimitPerSecond,
+            _perAddressRateLimitMaximum,
             _maxRateLimitPerSecondMRL,
             _maxBufferCap,
             _globalBufferCap,
