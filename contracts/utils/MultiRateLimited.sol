@@ -32,6 +32,13 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @notice max buffer cap allowable by non governor
     uint256 public maxBufferCap;
 
+    /// @param coreAddress address of the core contract
+    /// @param _maxRateLimitPerSecond maximum amount of fei that can replenish per second ever, this amount cannot be changed by governance
+    /// @param _rateLimitPerSecond maximum rate limit per second per address
+    /// @param _maxRateLimitPerSecondMRL maximum rate limit per second per address in multi rate limited
+    /// @param _maxBufferCap maximum buffer cap in multi rate limited
+    /// @param _globalBufferCap maximum global buffer cap
+    /// @param _doPartialAction boolean to describe whether partial actions are allowed or not in Rate Limited Minter
     constructor(
         address coreAddress,
         uint256 _maxRateLimitPerSecond,
