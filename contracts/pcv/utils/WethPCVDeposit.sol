@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/utils/Address.sol";
 /// @title base class for a WethPCVDeposit PCV Deposit
 /// @author Fei Protocol
 abstract contract WethPCVDeposit is PCVDeposit {
-
     /// @notice Empty callback on ETH reception
     receive() external payable virtual {}
 

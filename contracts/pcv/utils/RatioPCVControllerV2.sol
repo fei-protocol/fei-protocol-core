@@ -14,9 +14,7 @@ contract RatioPCVControllerV2 is CoreRef {
 
     /// @notice PCV controller constructor
     /// @param _core Fei Core for reference
-    constructor(
-        address _core
-    ) CoreRef(_core) {}
+    constructor(address _core) CoreRef(_core) {}
 
     receive() external payable {}
 
@@ -24,11 +22,11 @@ contract RatioPCVControllerV2 is CoreRef {
     /// @param pcvDeposit PCV deposit to withdraw from
     /// @param to the address to send PCV to
     /// @param basisPoints ratio of PCV to withdraw in basis points terms (1/10000)
-    function withdrawRatio(IPCVDeposit pcvDeposit, address to, uint256 basisPoints)
-        public
-        onlyPCVController
-        whenNotPaused
-    {
+    function withdrawRatio(
+        IPCVDeposit pcvDeposit,
+        address to,
+        uint256 basisPoints
+    ) public onlyPCVController whenNotPaused {
         _withdrawRatio(pcvDeposit, to, basisPoints);
     }
 
@@ -36,11 +34,11 @@ contract RatioPCVControllerV2 is CoreRef {
     /// @param pcvDeposit PCV deposit to withdraw from
     /// @param to the address to send PCV to
     /// @param basisPoints ratio of PCV to withdraw in basis points terms (1/10000)
-    function withdrawRatioUnwrapWETH(IPCVDeposit pcvDeposit, address payable to, uint256 basisPoints)
-        public
-        onlyPCVController
-        whenNotPaused
-    {
+    function withdrawRatioUnwrapWETH(
+        IPCVDeposit pcvDeposit,
+        address payable to,
+        uint256 basisPoints
+    ) public onlyPCVController whenNotPaused {
         uint256 amount = _withdrawRatio(pcvDeposit, address(this), basisPoints);
         _transferWETHAsETH(to, amount);
     }
@@ -49,11 +47,11 @@ contract RatioPCVControllerV2 is CoreRef {
     /// @param pcvDeposit PCV deposit to withdraw from
     /// @param to the address to send PCV to
     /// @param basisPoints ratio of PCV to withdraw in basis points terms (1/10000)
-    function withdrawRatioWrapETH(IPCVDeposit pcvDeposit, address to, uint256 basisPoints)
-        public
-        onlyPCVController
-        whenNotPaused
-    {
+    function withdrawRatioWrapETH(
+        IPCVDeposit pcvDeposit,
+        address to,
+        uint256 basisPoints
+    ) public onlyPCVController whenNotPaused {
         uint256 amount = _withdrawRatio(pcvDeposit, address(this), basisPoints);
         _transferETHAsWETH(to, amount);
     }
@@ -62,11 +60,11 @@ contract RatioPCVControllerV2 is CoreRef {
     /// @param pcvDeposit PCV deposit to withdraw from
     /// @param to the address to send PCV to
     /// @param amount raw amount of PCV to withdraw
-    function withdrawUnwrapWETH(IPCVDeposit pcvDeposit, address payable to, uint256 amount)
-        public
-        onlyPCVController
-        whenNotPaused
-    {
+    function withdrawUnwrapWETH(
+        IPCVDeposit pcvDeposit,
+        address payable to,
+        uint256 amount
+    ) public onlyPCVController whenNotPaused {
         pcvDeposit.withdraw(address(this), amount);
         _transferWETHAsETH(to, amount);
     }
@@ -75,11 +73,11 @@ contract RatioPCVControllerV2 is CoreRef {
     /// @param pcvDeposit PCV deposit to withdraw from
     /// @param to the address to send PCV to
     /// @param amount raw amount of PCV to withdraw
-    function withdrawWrapETH(IPCVDeposit pcvDeposit, address to, uint256 amount)
-        public
-        onlyPCVController
-        whenNotPaused
-    {
+    function withdrawWrapETH(
+        IPCVDeposit pcvDeposit,
+        address to,
+        uint256 amount
+    ) public onlyPCVController whenNotPaused {
         pcvDeposit.withdraw(address(this), amount);
         _transferETHAsWETH(to, amount);
     }
@@ -89,13 +87,18 @@ contract RatioPCVControllerV2 is CoreRef {
     /// @param token the ERC20 token to withdraw
     /// @param to the address to send tokens to
     /// @param basisPoints ratio of PCV to withdraw in basis points terms (1/10000)
-    function withdrawRatioERC20(IPCVDeposit pcvDeposit, address token, address to, uint256 basisPoints)
-        public
-        onlyPCVController
-        whenNotPaused
-    {
-        require(basisPoints <= Constants.BASIS_POINTS_GRANULARITY, "RatioPCVController: basisPoints too high");
-        uint256 amount = IERC20(token).balanceOf(address(pcvDeposit)) * basisPoints / Constants.BASIS_POINTS_GRANULARITY;
+    function withdrawRatioERC20(
+        IPCVDeposit pcvDeposit,
+        address token,
+        address to,
+        uint256 basisPoints
+    ) public onlyPCVController whenNotPaused {
+        require(
+            basisPoints <= Constants.BASIS_POINTS_GRANULARITY,
+            "RatioPCVController: basisPoints too high"
+        );
+        uint256 amount = (IERC20(token).balanceOf(address(pcvDeposit)) *
+            basisPoints) / Constants.BASIS_POINTS_GRANULARITY;
         require(amount != 0, "RatioPCVController: no value to withdraw");
 
         pcvDeposit.withdrawERC20(token, to, amount);
@@ -106,13 +109,18 @@ contract RatioPCVControllerV2 is CoreRef {
     /// @param token the ERC20 token to withdraw
     /// @param to the address to send tokens to
     /// @param basisPoints ratio of PCV to withdraw in basis points terms (1/10000)
-    function transferFromRatio(address from, IERC20 token, address to, uint256 basisPoints)
-        public
-        onlyPCVController
-        whenNotPaused
-    {
-        require(basisPoints <= Constants.BASIS_POINTS_GRANULARITY, "RatioPCVController: basisPoints too high");
-        uint256 amount = token.balanceOf(address(from)) * basisPoints / Constants.BASIS_POINTS_GRANULARITY;
+    function transferFromRatio(
+        address from,
+        IERC20 token,
+        address to,
+        uint256 basisPoints
+    ) public onlyPCVController whenNotPaused {
+        require(
+            basisPoints <= Constants.BASIS_POINTS_GRANULARITY,
+            "RatioPCVController: basisPoints too high"
+        );
+        uint256 amount = (token.balanceOf(address(from)) * basisPoints) /
+            Constants.BASIS_POINTS_GRANULARITY;
         require(amount != 0, "RatioPCVController: no value to transfer");
 
         token.safeTransferFrom(from, to, amount);
@@ -123,11 +131,12 @@ contract RatioPCVControllerV2 is CoreRef {
     /// @param token the ERC20 token to withdraw
     /// @param to the address to send tokens to
     /// @param amount of tokens to transfer
-    function transferFrom(address from, IERC20 token, address to, uint256 amount)
-        public
-        onlyPCVController
-        whenNotPaused
-    {
+    function transferFrom(
+        address from,
+        IERC20 token,
+        address to,
+        uint256 amount
+    ) public onlyPCVController whenNotPaused {
         require(amount != 0, "RatioPCVController: no value to transfer");
 
         token.safeTransferFrom(from, to, amount);
@@ -150,7 +159,10 @@ contract RatioPCVControllerV2 is CoreRef {
         onlyPCVController
         whenNotPaused
     {
-        _transferWETHAsETH(to, IERC20(address(Constants.WETH)).balanceOf(address(this)));
+        _transferWETHAsETH(
+            to,
+            IERC20(address(Constants.WETH)).balanceOf(address(this))
+        );
     }
 
     /// @notice send away ERC20 held on this contract, to avoid having any stuck.
@@ -165,9 +177,17 @@ contract RatioPCVControllerV2 is CoreRef {
         token.safeTransfer(to, amount);
     }
 
-    function _withdrawRatio(IPCVDeposit pcvDeposit, address to, uint256 basisPoints) internal returns (uint256) {
-        require(basisPoints <= Constants.BASIS_POINTS_GRANULARITY, "RatioPCVController: basisPoints too high");
-        uint256 amount = pcvDeposit.balance() * basisPoints / Constants.BASIS_POINTS_GRANULARITY;
+    function _withdrawRatio(
+        IPCVDeposit pcvDeposit,
+        address to,
+        uint256 basisPoints
+    ) internal returns (uint256) {
+        require(
+            basisPoints <= Constants.BASIS_POINTS_GRANULARITY,
+            "RatioPCVController: basisPoints too high"
+        );
+        uint256 amount = (pcvDeposit.balance() * basisPoints) /
+            Constants.BASIS_POINTS_GRANULARITY;
         require(amount != 0, "RatioPCVController: no value to withdraw");
 
         pcvDeposit.withdraw(to, amount);

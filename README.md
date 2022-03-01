@@ -14,9 +14,15 @@ Smart contract code for Fei Protocol and the FEI stablecoin
  - run `npm run test` to run unit tests
  - run `npm run test:e2e` to run end-to-end/integration tests
  - run `npm run test:all` to run all tests
- - run `npm run lint` to lint ts files; run `npm lint:all` to lint ts AND js files
+ - run `npm run lint` to lint ts files and sol files
+ - run `npm lint:all` to lint ts AND js files
+ - run `npm run lint:sol` to lint .sol files
  - run `npm run lint:fix` to fix linting errors, if fixable automatically
- - run `npm run prettier-format` to run prettier and automatically format all ts files
+ - run `npm run prettier:ts` to run prettier and automatically format all ts files
+ automatically
+ - run `npm run prettier:sol` to run prettier and automatically format all Solidity files
+ automatically
+ - run `npm run prettier` to run prettier and format all files
  - run `npm run coverage:hardhat` to run smart-contract coverage based off of all tests
  - run `npm run calldata` to generage calldata for a proposal
  - run `npm run check-proposal` to run tests for a specific dao proposal

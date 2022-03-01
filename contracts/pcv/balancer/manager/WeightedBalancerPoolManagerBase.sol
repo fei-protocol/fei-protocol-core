@@ -9,6 +9,5 @@ import "./WeightedBalancerPoolManager.sol";
 /// This contract  manages a Balancer WeightedPool (including LBP).
 /// Exposes the governable methods to Fei Governors or admins
 contract WeightedBalancerPoolManagerBase is WeightedBalancerPoolManager {
-
     constructor(address _core) WeightedBalancerPoolManager() CoreRef(_core) {}
 }

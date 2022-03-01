@@ -32,7 +32,7 @@ contract PegExchanger is MergerBase {
     function exchange(uint256 amount) public {
         require(!isExpired(), "Redemption period is over");
         require(bothPartiesAccepted, "Proposals are not both passed");
-        uint256 tribeOut =  amount * exchangeRate / scalar;
+        uint256 tribeOut = (amount * exchangeRate) / scalar;
         rgt.safeTransferFrom(msg.sender, address(this), amount);
         tribe.safeTransfer(msg.sender, tribeOut);
         emit Exchange(msg.sender, amount, tribeOut);

@@ -1,0 +1,13 @@
+# We only specify owners for the contracts & dao directories
+# This is used to require pull requests to develop that touch important files
+
+# Any solidity files anywhere should require a review
+# (except for the .t.sol files in contracts/test)
+/contracts/ @fei-protocol/fei-core-contributors
+/contracts/test
+
+# Any DAO proposal changes should also be reviewed
+/proposals/ @fei-protocol/fei-core-contributors
+
+# Mainnet addresses should also be protected
+/protocol-configuration/mainnetAddresses.ts @fei-protocol/fei-core-contributors

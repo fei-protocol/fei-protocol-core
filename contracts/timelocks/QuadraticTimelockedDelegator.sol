@@ -26,7 +26,16 @@ contract QuadraticTimelockedDelegator is QuadraticTokenTimelock {
         uint256 _cliff,
         address _clawbackAdmin,
         uint256 _startTime
-    ) QuadraticTokenTimelock(_beneficiary, _duration, _token, _cliff, _clawbackAdmin, _startTime) {}
+    )
+        QuadraticTokenTimelock(
+            _beneficiary,
+            _duration,
+            _token,
+            _cliff,
+            _clawbackAdmin,
+            _startTime
+        )
+    {}
 
     /// @notice accept beneficiary role over timelocked TRIBE
     function acceptBeneficiary() public override {

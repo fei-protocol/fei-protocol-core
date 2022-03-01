@@ -8,22 +8,29 @@ import "./IBaseBalancerPoolManager.sol";
 /// @notice an abstract utility class for a contract that manages a Balancer BasePool
 /// exposes the governable methods to Fei Governors or admins
 abstract contract BaseBalancerPoolManager is IBaseBalancerPoolManager, CoreRef {
-    
     constructor() {
         _setContractAdminRole(keccak256("BALANCER_MANAGER_ADMIN_ROLE"));
     }
 
-    function setSwapFee(IBasePool pool, uint256 swapFee) public override onlyGovernorOrAdmin {
+    function setSwapFee(IBasePool pool, uint256 swapFee)
+        public
+        override
+        onlyGovernorOrAdmin
+    {
         pool.setSwapFeePercentage(swapFee);
     }
 
-    function setPaused(IBasePool pool, bool paused) public override onlyGovernorOrAdmin {
+    function setPaused(IBasePool pool, bool paused)
+        public
+        override
+        onlyGovernorOrAdmin
+    {
         pool.setPaused(paused);
     }
 
     function setAssetManagerPoolConfig(
-        IBasePool pool, 
-        IERC20 token, 
+        IBasePool pool,
+        IERC20 token,
         IAssetManager.PoolConfig memory poolConfig
     ) public override onlyGovernorOrAdmin {
         pool.setAssetManagerPoolConfig(token, poolConfig);

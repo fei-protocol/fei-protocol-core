@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { NamedContracts, NamedAddresses } from '@custom-types/types';
-import { getImpersonatedSigner, time, resetFork } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
+import { NamedContracts } from '@custom-types/types';
+import { getImpersonatedSigner, time } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
+import proposals from '@test/integration/proposals_config';
 import { expectRevert } from '@test/helpers';
 import { forceEth } from '../setup/utils';
 

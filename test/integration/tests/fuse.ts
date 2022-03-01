@@ -99,7 +99,11 @@ describe('e2e-fuse', function () {
 
       const operator = await getImpersonatedSigner(await contracts.convexD3poolRewards.operator());
       await forceEth(await operator.getAddress());
-      await time.increaseTo(await contracts.convexD3poolRewards.periodFinish());
+
+      const periodFinish = await contracts.convexD3poolRewards.periodFinish();
+      if (time.latest < periodFinish) {
+        await time.increaseTo(periodFinish);
+      }
 
       await contracts.convexD3poolRewards
         .connect(operator)
