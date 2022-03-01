@@ -55,7 +55,7 @@
     "chai": "^4.3.6",
     "dotenv": "^16.0.0",
     "hardhat": "^2.8.3",
-    "hardhat-contract-sizer": "^2.4.0",
+    "hardhat-contract-sizer": "^2.5.0",
     "hardhat-gas-reporter": "^1.0.8",
     "merkletreejs": "^0.2.27",
     "string-template": "^1.0.0"
