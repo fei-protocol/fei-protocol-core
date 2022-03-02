@@ -105,6 +105,30 @@ describe('GlobalRateLimitedMinterBuffer', function () {
         expect(await fei.balanceOf(userAddress)).to.be.equal(bufferCap);
         expectApprox(await globalRateLimitedMinter.individualBuffer(authorizedMinter.address), '0');
       });
+
+      it('fully clears out buffer and second call mints 0 silently', async function () {
+        await authorizedMinter.mintAllFei(userAddress);
+        await authorizedMinter.mintAllFei(userAddress);
+        expectApprox(await globalRateLimitedMinter.individualBuffer(authorizedMinter.address), '0');
+      });
+    });
+
+    describe('Mint Fails', function () {
+      it('non whitelisted address fails mints on mintMaxAllowableFei', async function () {
+        await expectRevert(
+          globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).mintMaxAllowableFei(userAddress),
+          'MultiRateLimited: no rate limit buffer'
+        );
+        expect(await fei.balanceOf(userAddress)).to.be.equal(0);
+      });
+
+      it('non whitelisted address fails mints on mintFei', async function () {
+        await expectRevert(
+          globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).mintFei(userAddress, 1),
+          'MultiRateLimited: no rate limit buffer'
+        );
+        expect(await fei.balanceOf(userAddress)).to.be.equal(0);
+      });
     });
 
     describe('Full mint', function () {
