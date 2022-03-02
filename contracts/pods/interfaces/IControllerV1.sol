@@ -11,4 +11,8 @@ interface IControllerV1 {
         uint256 expectedPodId,
         string memory _imageUrl
     ) external;
+
+    function podIdToSafe(uint256) external view returns (address);
+
+    function podAdmin(uint256) external view returns (address);
 }

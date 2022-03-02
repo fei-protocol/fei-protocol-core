@@ -1,15 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import {IGnosisSafe} from "@orcaprotocol/contracts/contracts/interfaces/IGnosisSafe.sol";
 import {OptimisticTimelock} from "../../dao/timelock/OptimisticTimelock.sol";
 import {IControllerV1} from "../../pods/interfaces/IControllerV1.sol";
 import {IMemberToken} from "../../pods/interfaces/IMemberToken.sol";
 import {IInviteToken} from "../../pods/interfaces/IInviteToken.sol";
 
+import {createPod, setupOptimisticTimelock} from "./fixtures/Orca.sol";
 import {Vm} from "../utils/Vm.sol";
 import {DSTest} from "../utils/DSTest.sol";
+import "hardhat/console.sol";
 
 contract OptimisticPodTest is DSTest {
+    Vm public constant vm = Vm(HEVM_ADDRESS);
+
     // Mainnet addresses
     address private core = 0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9;
     address private podControllerAddress =
@@ -23,8 +28,8 @@ contract OptimisticPodTest is DSTest {
     address private priviledgedShipAddress =
         0x2149A222feD42fefc3A120B3DdA34482190fC666;
 
-    OptimisticTimelock timelock;
     IMemberToken memberToken = IMemberToken(memberTokenAddress);
+
     IControllerV1 controller = IControllerV1(podControllerAddress);
     IInviteToken inviteToken = IInviteToken(shipTokenAddress);
 
@@ -32,47 +37,85 @@ contract OptimisticPodTest is DSTest {
     address executor = address(0x2);
     address podAdmin = address(0x3);
 
-    Vm public constant vm = Vm(HEVM_ADDRESS);
+    // vm.label(address(memberTokenAddress), "Member token");
+    // vm.label(address(podControllerAddress), "Controller");
+
+    uint256 podId;
+    uint256 numPodMembers;
 
     function setUp() public {
-        address[] memory proposers = new address[](1);
-        proposers[0] = proposer;
-
-        address[] memory executors = new address[](1);
-        executors[0] = executor;
-        timelock = new OptimisticTimelock(core, 0, proposers, executors);
-
         // Mint SHIP to self - needed to create a Pod
         vm.prank(priviledgedShipAddress);
         inviteToken.mint(address(this), 1);
-    }
 
-    function testCreatePod() public {
-        // Members of the pod
+        // Note: Gnosis safe creation fails if < 3 members
         address[] memory members = new address[](3);
         members[0] = address(0x4);
         members[1] = address(0x5);
         members[2] = address(0x6);
 
-        // Number of members required to sign a transaction
-        uint256 threshold = 2;
-        bytes32 podLabel = bytes32("hellopod");
-        string memory ensString = "hellopod.eth";
-        string memory imageUrl = "hellopod.come";
+        numPodMembers = members.length;
 
-        // Get the next podId
-        uint256 expectedPodId = memberToken.getNextAvailablePodId();
+        podId = createPod(controller, memberToken, members, podAdmin);
+    }
 
-        controller.createPod(
-            members,
-            threshold,
-            podAdmin,
-            podLabel,
-            ensString,
-            expectedPodId,
-            imageUrl
+    // Do we need a contract to manage this?
+    // Likely that there needs to be a wrapper deployer contract that the Tribal
+    // Council calls. This contract will then call the Pod contract.
+    // Steps: 1. Deploy timelock
+    //        2. Create pod, with relevant config
+    //        3. Link timelock and pod together
+    //        3.5 Be able to add and remove pod members
+    //        4. Be able to grant the pod access to different parts of the protocol
+    //        5. Require the pods to be authorised by the tribal council or DAO
+    //        6. Ensure the pods can be veto'ed by the correct parties
+
+    /// @notice Validate that a pod can be created
+    function testCreatePod() public {
+        address safeAddress = controller.podIdToSafe(podId);
+        assert(safeAddress != address(0));
+
+        // Validate membership
+        address[] memory members = IGnosisSafe(safeAddress).getOwners();
+        assertEq(members.length, 3);
+
+        address setPodAdmin = controller.podAdmin(podId);
+        assertEq(setPodAdmin, podAdmin);
+    }
+
+    /// @notice Verify that the pod is set as the proposer and can propose on the timelock
+    function testLinkOptimisticTimelock() public {
+        address safeAddress = controller.podIdToSafe(podId);
+        OptimisticTimelock timelock = setupOptimisticTimelock(
+            safeAddress,
+            safeAddress,
+            core
+        );
+
+        // Be able to call propose via pod/safe. Verify that safe has onlyPropose role
+        vm.prank(safeAddress);
+        timelock.schedule(
+            address(0x10),
+            5,
+            "",
+            bytes32("testing"),
+            bytes32("random"),
+            0
         );
     }
 
-    function testLinkOptimisticTimelock() public {}
+    /// @notice Validate that a member can be removed from a pod by the admin
+    function testRemovePodMember() public {
+        address safeAddress = controller.podIdToSafe(podId);
+
+        // Compromised member transfers their membership to an illegal member
+        address illegalMember = address(0x20);
+        // Note: Orca sets the memberTokenID to be the podId
+
+        // TODO: Fails for unknown reasons
+        vm.prank(podAdmin);
+        memberToken.burn(illegalMember, podId);
+
+        // TODO: Validate membership removed the and can not vote
+    }
 }
