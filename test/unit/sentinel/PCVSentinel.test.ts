@@ -23,7 +23,7 @@ chai.config.includeStack = true;
 // Import if needed, just a helper.
 // const toBN = ethers.BigNumber.from;
 
-describe.only('PCV Sentinel', function () {
+describe('PCV Sentinel', function () {
   // variable decs for vars that you want to use in multiple tests
   // typeing contracts specifically to what kind they are will catch before you run them!
   let core: Core;
