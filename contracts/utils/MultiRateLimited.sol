@@ -26,10 +26,10 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @notice rate limited address information
     mapping(address => RateLimitData) public rateLimitPerAddress;
 
-    /// @notice max rate limit per second allowable by non governor
+    /// @notice max rate limit per second allowable by non governor per contract
     uint256 public maxRateLimitPerSecond;
 
-    /// @notice max buffer cap allowable by non governor
+    /// @notice max buffer cap allowable by non governor per contract
     uint256 public maxBufferCap;
 
     /// @param coreAddress address of the core contract
