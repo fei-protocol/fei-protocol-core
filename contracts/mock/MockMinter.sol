@@ -13,4 +13,8 @@ contract MockMinter {
     function mintFei(address to, uint256 amount) external {
         globalRateLimitedMinter.mintFei(to, amount);
     }
+
+    function mintAllFei(address to) external {
+        globalRateLimitedMinter.mintMaxAllowableFei(to);
+    }
 }

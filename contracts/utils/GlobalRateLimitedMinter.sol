@@ -45,4 +45,20 @@ contract GlobalRateLimitedMinter is MultiRateLimited, IGlobalRateLimitedMinter {
         _depleteBuffer(msg.sender, amount);
         _mintFei(to, amount);
     }
+
+    /// @notice mint fei to the target address and deplete the whole rate limited
+    ///  minter's buffer, pausable and completely depletes the msg.sender's buffer
+    /// @param to the recipient address of the minted FEI
+    /// mints all FEI that msg.sender has in the buffer
+    function mintMaxAllowableFei(address to)
+        external
+        virtual
+        override
+        whenNotPaused
+    {
+        uint256 amount = individualBuffer(msg.sender);
+
+        _depleteBuffer(msg.sender, amount);
+        _mintFei(to, amount);
+    }
 }

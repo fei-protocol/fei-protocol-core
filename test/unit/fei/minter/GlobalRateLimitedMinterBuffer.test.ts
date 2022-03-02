@@ -99,6 +99,14 @@ describe('GlobalRateLimitedMinterBuffer', function () {
   });
 
   describe('Mint', function () {
+    describe('Mint Max Allowable', function () {
+      it('fully clears out buffer', async function () {
+        await authorizedMinter.mintAllFei(userAddress);
+        expect(await fei.balanceOf(userAddress)).to.be.equal(bufferCap);
+        expectApprox(await globalRateLimitedMinter.individualBuffer(authorizedMinter.address), '0');
+      });
+    });
+
     describe('Full mint', function () {
       beforeEach(async function () {
         await authorizedMinter.mintFei(userAddress, bufferCap);
