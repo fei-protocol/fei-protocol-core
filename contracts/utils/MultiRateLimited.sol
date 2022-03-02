@@ -27,23 +27,23 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     mapping(address => RateLimitData) public rateLimitPerAddress;
 
     /// @notice max rate limit per second allowable by non governor per contract
-    uint256 public maxRateLimitPerSecond;
+    uint256 public individualMaxRateLimitPerSecond;
 
     /// @notice max buffer cap allowable by non governor per contract
-    uint256 public maxBufferCap;
+    uint256 public individualMaxBufferCap;
 
     /// @param coreAddress address of the core contract
     /// @param _maxRateLimitPerSecond maximum amount of fei that can replenish per second ever, this amount cannot be changed by governance
     /// @param _rateLimitPerSecond maximum rate limit per second per address
-    /// @param _maxRateLimitPerSecondMRL maximum rate limit per second per address in multi rate limited
-    /// @param _maxBufferCap maximum buffer cap in multi rate limited
+    /// @param _individualMaxRateLimitPerSecond maximum rate limit per second per address in multi rate limited
+    /// @param _individualMaxBufferCap maximum buffer cap in multi rate limited
     /// @param _globalBufferCap maximum global buffer cap
     constructor(
         address coreAddress,
         uint256 _maxRateLimitPerSecond,
         uint256 _rateLimitPerSecond,
-        uint256 _maxRateLimitPerSecondMRL,
-        uint256 _maxBufferCap,
+        uint256 _individualMaxRateLimitPerSecond,
+        uint256 _individualMaxBufferCap,
         uint256 _globalBufferCap
     )
         CoreRef(coreAddress)
@@ -55,12 +55,12 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
         )
     {
         require(
-            _maxBufferCap < _globalBufferCap,
+            _individualMaxBufferCap < _globalBufferCap,
             "MultiRateLimited: max buffer cap invalid"
         );
 
-        maxRateLimitPerSecond = _maxRateLimitPerSecondMRL;
-        maxBufferCap = _maxBufferCap;
+        individualMaxRateLimitPerSecond = _individualMaxRateLimitPerSecond;
+        individualMaxBufferCap = _individualMaxBufferCap;
     }
 
     // ----------- Governor and Admin only state changing api -----------
@@ -78,8 +78,8 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
             "MultiRateLimited: exceeds global max rate limit per second"
         );
 
-        uint256 oldMaxRateLimitPerSecond = maxRateLimitPerSecond;
-        maxRateLimitPerSecond = newRateLimitPerSecond;
+        uint256 oldMaxRateLimitPerSecond = individualMaxRateLimitPerSecond;
+        individualMaxRateLimitPerSecond = newRateLimitPerSecond;
 
         emit MultiMaxRateLimitPerSecondUpdate(
             oldMaxRateLimitPerSecond,
@@ -100,8 +100,8 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
             "MultiRateLimited: exceeds global buffer cap"
         );
 
-        uint256 oldBufferCap = maxBufferCap;
-        maxBufferCap = newBufferCap;
+        uint256 oldBufferCap = individualMaxBufferCap;
+        individualMaxBufferCap = newBufferCap;
 
         emit MultiBufferCapUpdate(oldBufferCap, newBufferCap);
     }
@@ -134,11 +134,11 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     {
         if (core().hasRole(TribeRoles.ADD_MINTER_ROLE, msg.sender)) {
             require(
-                _rateLimitPerSecond <= maxRateLimitPerSecond,
+                _rateLimitPerSecond <= individualMaxRateLimitPerSecond,
                 "MultiRateLimited: rate limit per second exceeds non governor allowable amount"
             );
             require(
-                _bufferCap <= maxBufferCap,
+                _bufferCap <= individualMaxBufferCap,
                 "MultiRateLimited: max buffer cap exceeds non governor allowable amount"
             );
         }
@@ -161,8 +161,8 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     {
         _addAddress(
             rateLimitedAddress,
-            uint112(maxRateLimitPerSecond),
-            uint144(maxBufferCap)
+            uint112(individualMaxRateLimitPerSecond),
+            uint144(individualMaxBufferCap)
         );
     }
 

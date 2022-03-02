@@ -90,11 +90,11 @@ describe('GlobalRateLimitedMinterBuffer', function () {
     });
 
     it('maxBufferCap is correctly initialized on individual minter', async function () {
-      expect(await globalRateLimitedMinter.maxBufferCap()).to.be.equal(maxBufferCap);
+      expect(await globalRateLimitedMinter.individualMaxBufferCap()).to.be.equal(maxBufferCap);
     });
 
     it('maxRateLimitPerSecond is correctly initialized on individual minter', async function () {
-      expect(await globalRateLimitedMinter.maxRateLimitPerSecond()).to.be.equal(maxRateLimitPerSecond);
+      expect(await globalRateLimitedMinter.individualMaxRateLimitPerSecond()).to.be.equal(maxRateLimitPerSecond);
     });
   });
 
