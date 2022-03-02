@@ -132,61 +132,6 @@ describe.only('PCV Sentinel', function () {
     });
   });
 
-  describe('sentinel with several guards', async () => {
-    it('does not execute failing guards when failures are allowed', async () => {
-      await pcvSentinel.connect(impersonatedSigners[guardianAddress]).knight(balanceGuard.address);
-
-      await forceSpecificEth(balanceGuard.address, '1');
-
-      await expect(
-        pcvSentinel.protecMany(true, [
-          balanceGuard.address, // should not execute
-          balanceGuard.address, // should not execute
-          balanceGuard.address // should not execute
-        ])
-      )
-        .to.emit(pcvSentinel, 'ProtecFailure')
-        .and.to.not.emit(pcvSentinel, 'Protected');
-    });
-
-    it('reverts when failures are not allowed', async () => {
-      await pcvSentinel.connect(impersonatedSigners[guardianAddress]).knight(balanceGuard.address);
-
-      await forceSpecificEth(balanceGuard.address, '1');
-
-      await expect(
-        pcvSentinel.protecMany(false, [
-          balanceGuard.address, // should not execute
-          balanceGuard.address, // should not execute
-          balanceGuard.address // should not execute
-        ])
-      ).to.be.reverted;
-    });
-
-    it('catches failures gracefully', async () => {
-      await pcvSentinel.connect(impersonatedSigners[guardianAddress]).knight(noOpGuard.address);
-      await pcvSentinel.connect(impersonatedSigners[guardianAddress]).knight(balanceGuard.address);
-      await pcvSentinel.connect(impersonatedSigners[guardianAddress]).knight(multiActionGuard.address);
-      await pcvSentinel.connect(impersonatedSigners[guardianAddress]).knight(reEntrancyGuard.address);
-
-      await forceSpecificEth(balanceGuard.address, '1');
-
-      await expect(
-        pcvSentinel.protecMany(true, [
-          noOpGuard.address, // should execute
-          multiActionGuard.address, // should execute
-          reEntrancyGuard.address // should execute *and* revert
-        ])
-      )
-        .to.emit(pcvSentinel, 'ProtecFailure')
-        .withArgs(reEntrancyGuard.address)
-        .and.to.emit(pcvSentinel, 'Protected')
-        .withArgs(multiActionGuard.address)
-        .and.to.emit(pcvSentinel, 'Protected')
-        .withArgs(noOpGuard.address);
-    });
-  });
-
   describe('sentinel access control', async () => {
     it('prevents normal user from adding guards', async () => {
       await expect(pcvSentinel.connect(impersonatedSigners[userAddress]).knight(noOpGuard.address)).to.be.revertedWith(
