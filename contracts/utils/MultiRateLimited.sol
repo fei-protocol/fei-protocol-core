@@ -154,6 +154,7 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
 
     /// @notice add an authorized rateLimitedAddress contract
     /// @param rateLimitedAddress the new address to add as a rateLimitedAddress
+    /// gives the newly added contract the maximum allowable rate limit per second and buffer cap
     function addAddressWithCaps(address rateLimitedAddress)
         external
         virtual
