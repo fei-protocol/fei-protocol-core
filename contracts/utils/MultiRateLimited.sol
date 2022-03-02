@@ -38,22 +38,20 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @param _maxRateLimitPerSecondMRL maximum rate limit per second per address in multi rate limited
     /// @param _maxBufferCap maximum buffer cap in multi rate limited
     /// @param _globalBufferCap maximum global buffer cap
-    /// @param _doPartialAction boolean to describe whether partial actions are allowed or not in Rate Limited Minter
     constructor(
         address coreAddress,
         uint256 _maxRateLimitPerSecond,
         uint256 _rateLimitPerSecond,
         uint256 _maxRateLimitPerSecondMRL,
         uint256 _maxBufferCap,
-        uint256 _globalBufferCap,
-        bool _doPartialAction
+        uint256 _globalBufferCap
     )
         CoreRef(coreAddress)
         RateLimited(
             _maxRateLimitPerSecond,
             _rateLimitPerSecond,
             _globalBufferCap,
-            _doPartialAction
+            false
         )
     {
         require(
@@ -227,6 +225,7 @@ contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @notice the amount of action used before hitting limit
     /// @dev replenishes at rateLimitPerSecond per second up to bufferCap
     /// @param rateLimitedAddress the address whose buffer will be returned
+    /// @return the buffer of the specified rate limited address
     function individualBuffer(address rateLimitedAddress)
         public
         view

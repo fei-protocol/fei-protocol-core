@@ -57,8 +57,7 @@ describe('GlobalRateLimitedMinterGovernor', function () {
       globalRateLimitPerSecond,
       maxRateLimitPerSecond,
       maxBufferCap,
-      bufferCap,
-      false
+      bufferCap
     );
 
     authorizedMinter = await (await ethers.getContractFactory('MockMinter')).deploy(globalRateLimitedMinter.address);
