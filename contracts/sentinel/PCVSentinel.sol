@@ -100,7 +100,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
                 (bool success, bytes memory data) = targets[i].call(
                     calldatas[i]
                 );
-                require(success, string(data)); // Fail this call if any of the sub-calls fail
+                require(success, "Sub-call failed."); // Fail this call if any of the sub-calls fail
             }
 
             emit Protected(guard);

@@ -148,7 +148,7 @@ describe.only('PCV Sentinel', function () {
 
     it('prevents re-entrancy/calling self', async () => {
       await pcvSentinel.connect(impersonatedSigners[guardianAddress]).knight(reEntrancyGuard.address);
-      await expect(pcvSentinel.protec(reEntrancyGuard.address)).to.be.revertedWith('Nyeh!');
+      await expect(pcvSentinel.protec(reEntrancyGuard.address)).to.be.revertedWith('Cannot target self.');
     });
 
     it('allows guardian to slay & knight', async () => {
