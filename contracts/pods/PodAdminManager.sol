@@ -23,8 +23,6 @@ contract PodAdminManager is CoreRef {
     /// @notice Membership token for the pod
     IMemberToken private immutable memberToken;
 
-    address private immutable core;
-
     bytes32 private constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
     bytes32 private constant GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
     bytes32 private constant TRIBAL_COUNCIL_ROLE =
@@ -52,7 +50,6 @@ contract PodAdminManager is CoreRef {
         // TODO: Validate that the supplied _podAdmin has the Tribal Council role
         // Have to enforce that this Manager contract belongs to the Tribal Council
         adminPod = _podAdmin;
-        core = _core;
         podController = IControllerV1(_podController);
         memberToken = IMemberToken(_memberToken);
     }
@@ -66,7 +63,8 @@ contract PodAdminManager is CoreRef {
         uint256 _threshold,
         bytes32 _podLabel,
         string memory _ensString,
-        string memory _imageUrl
+        string memory _imageUrl,
+        uint256 minDelay
     )
         public
         hasAnyOfTwoRoles(GOVERN_ROLE, TRIBAL_COUNCIL_ROLE)
@@ -84,9 +82,10 @@ contract PodAdminManager is CoreRef {
         );
         address safeAddress = podController.podIdToSafe(podId);
         address timelock = createOptimisticTimelock(
-            core,
+            address(core()),
             safeAddress,
-            safeAddress
+            safeAddress,
+            minDelay
         );
 
         emit CreatePod(podId, safeAddress);
@@ -97,14 +96,14 @@ contract PodAdminManager is CoreRef {
     function createOptimisticTimelock(
         address _core,
         address proposer,
-        address executor
+        address executor,
+        uint256 minDelay
     ) internal returns (address) {
         address[] memory proposers = new address[](1);
         proposers[0] = proposer;
 
         address[] memory executors = new address[](1);
         executors[0] = executor;
-        uint256 minDelay = 0;
 
         OptimisticTimelock timelock = new OptimisticTimelock(
             _core,
@@ -122,6 +121,7 @@ contract PodAdminManager is CoreRef {
         bytes32 _podLabel,
         string memory _ensString,
         string memory _imageUrl,
+        uint256 minDelay,
         bytes32[] memory _roles
     )
         external
@@ -133,7 +133,8 @@ contract PodAdminManager is CoreRef {
             _threshold,
             _podLabel,
             _ensString,
-            _imageUrl
+            _imageUrl,
+            minDelay
         );
 
         for (uint256 i = 0; i < _roles.length; i += 1) {
