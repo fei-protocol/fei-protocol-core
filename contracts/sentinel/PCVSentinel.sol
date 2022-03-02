@@ -97,9 +97,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef {
 
             for (uint256 i = 0; i < targets.length; i++) {
                 require(targets[i] != address(this), "Cannot target self.");
-                (bool success, bytes memory data) = targets[i].call(
-                    calldatas[i]
-                );
+                (bool success, ) = targets[i].call(calldatas[i]);
                 require(success, "Sub-call failed."); // Fail this call if any of the sub-calls fail
             }
 

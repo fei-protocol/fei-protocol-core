@@ -4,11 +4,16 @@ pragma solidity ^0.8.4;
 import "../../IGuard.sol";
 
 contract MultiActionGuard is IGuard {
-    address private constant ONE = address(0x1);
-    address private constant TWO = address(0x2);
-    address private constant THREE = address(0x3);
-    address private constant FOUR = address(0x4);
-    address private constant FIVE = address(0x5);
+    address private constant ONE =
+        address(0x11e52c75998fe2E7928B191bfc5B25937Ca16741);
+    address private constant TWO =
+        address(0x11e52c75998fe2E7928B191bfc5B25937Ca16741);
+    address private constant THREE =
+        address(0x11e52c75998fe2E7928B191bfc5B25937Ca16741);
+    address private constant FOUR =
+        address(0x11e52c75998fe2E7928B191bfc5B25937Ca16741);
+    address private constant FIVE =
+        address(0x11e52c75998fe2E7928B191bfc5B25937Ca16741);
 
     function check() external view override returns (bool) {
         if (address(block.coinbase).balance % 2 == 0) return true;
