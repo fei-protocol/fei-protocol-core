@@ -303,7 +303,7 @@ describe('GlobalRateLimitedMinterGovernor', function () {
         .connect(impersonatedSigners[governorAddress])
         .updateMaxBufferCap(newRateLimitPerSecond);
 
-      expect(await globalRateLimitedMinter.maxBufferCap()).to.be.equal(newRateLimitPerSecond);
+      expect(await globalRateLimitedMinter.individualMaxBufferCap()).to.be.equal(newRateLimitPerSecond);
     });
 
     it('governor fails when new buffer cap is over global max', async function () {
@@ -329,7 +329,7 @@ describe('GlobalRateLimitedMinterGovernor', function () {
         .connect(impersonatedSigners[governorAddress])
         .updateMaxRateLimitPerSecond(newRateLimitPerSecond);
 
-      expect(await globalRateLimitedMinter.maxRateLimitPerSecond()).to.be.equal(newRateLimitPerSecond);
+      expect(await globalRateLimitedMinter.individualMaxRateLimitPerSecond()).to.be.equal(newRateLimitPerSecond);
     });
 
     it('governor fails when over global max rate limit per second', async function () {
