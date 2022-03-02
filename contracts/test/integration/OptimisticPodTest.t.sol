@@ -59,17 +59,6 @@ contract OptimisticPodTest is DSTest {
         podId = createPod(controller, memberToken, members, podAdmin);
     }
 
-    // Do we need a contract to manage this?
-    // Likely that there needs to be a wrapper deployer contract that the Tribal
-    // Council calls. This contract will then call the Pod contract.
-    // Steps: 1. Deploy timelock
-    //        2. Create pod, with relevant config
-    //        3. Link timelock and pod together
-    //        3.5 Be able to add and remove pod members
-    //        4. Be able to grant the pod access to different parts of the protocol
-    //        5. Require the pods to be authorised by the tribal council or DAO
-    //        6. Ensure the pods can be veto'ed by the correct parties
-
     /// @notice Validate that a pod can be created
     function testCreatePod() public {
         address safeAddress = controller.podIdToSafe(podId);
