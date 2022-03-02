@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "./../pcv/PCVDeposit.sol";
-import "./../fei/minter/RateLimitedMinter.sol";
-import "./IPegStabilityModule.sol";
-import "./../refs/OracleRef.sol";
-import "../Constants.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {PCVDeposit} from "./../pcv/PCVDeposit.sol";
+import {MultiRateLimited} from "./../utils/MultiRateLimited.sol";
+import {IPegStabilityModule} from "./IPegStabilityModule.sol";
+import {OracleRef} from "./../refs/OracleRef.sol";
+import {Constants} from "../Constants.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract PegStabilityModule is
     IPegStabilityModule,
-    RateLimitedMinter,
+    MultiRateLimited,
     OracleRef,
     PCVDeposit,
     ReentrancyGuard
@@ -87,7 +87,7 @@ contract PegStabilityModule is
             params.doInvert
         )
         /// rate limited minter passes false as the last param as there can be no partial mints
-        RateLimitedMinter(_feiLimitPerSecond, _mintingBufferCap, false)
+        MultiRateLimited(_feiLimitPerSecond, _mintingBufferCap, false)
     {
         underlyingToken = _underlyingToken;
 
@@ -301,6 +301,7 @@ contract PegStabilityModule is
         IERC20(fei()).safeTransfer(to, amountFeiToTransfer);
 
         if (amountFeiToMint > 0) {
+            _depleteBuffer(address(fei()));
             _mintFei(to, amountFeiToMint);
         }
 
