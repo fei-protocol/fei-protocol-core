@@ -5,7 +5,7 @@ import "./IMultiRateLimited.sol";
 
 /// @notice global contract to handle rate limited minting of FEI on a global level
 /// allows whitelisted minters to call in and specify the address to mint FEI to within
-/// that contract's limits
+/// the calling contract's limits
 interface IGlobalRateLimitedMinter is IMultiRateLimited {
     /// @notice function that all FEI minters call to mint FEI
     /// pausable and depletes the msg.sender's buffer
