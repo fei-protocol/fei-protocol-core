@@ -4,22 +4,17 @@ pragma solidity ^0.8.4;
 import "../../IGuard.sol";
 
 contract NoOpGuard is IGuard {
-    address constant private ZERO = address(0x0);
+    address private constant ZERO = address(0x0);
 
-    function check() 
-        external 
-        pure 
-        override 
-        returns (bool) 
-    {
+    function check() external pure override returns (bool) {
         return true;
     }
 
-    function getProtecActions() 
-        external 
-        pure 
-        override 
-        returns (address[] memory targets, bytes[] memory datas) 
+    function getProtecActions()
+        external
+        pure
+        override
+        returns (address[] memory targets, bytes[] memory datas)
     {
         targets = new address[](1);
         datas = new bytes[](1);

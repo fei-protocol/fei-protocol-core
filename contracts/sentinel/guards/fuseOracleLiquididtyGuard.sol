@@ -7,21 +7,16 @@ contract FuseOracleLiquidityGuard is IGuard {
     // Hardcoded addresses to check
     // Or address to use as lens to look up what to check
 
-    function check() 
-        external 
-        pure 
-        override 
-        returns (bool) 
-    {
+    function check() external pure override returns (bool) {
         // logic here to determine if the any of the fuse pool oracles are illiquid
         // we could check just one fuse pool, or many
     }
 
-    function getProtecActions() 
-        external 
-        pure 
-        override 
-        returns (address[] memory targets, bytes[] memory datas) 
+    function getProtecActions()
+        external
+        pure
+        override
+        returns (address[] memory targets, bytes[] memory datas)
     {
         // logic here to compute and output the actions to take
         // this could involve pausing a single pool
