@@ -120,6 +120,15 @@ contract DSTest {
         }
     }
 
+    function assertEq(bool a, bool b) internal {
+        if (a != b) {
+            emit log("Error: a == b not satisfied [address]");
+            emit log_named_string("  Expected", b ? "true" : "false");
+            emit log_named_string("    Actual", a ? "true" : "false");
+            fail();
+        }
+    }
+
     function assertEq32(bytes32 a, bytes32 b) internal {
         assertEq(a, b);
     }

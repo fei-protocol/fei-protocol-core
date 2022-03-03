@@ -6,7 +6,6 @@ import {OptimisticTimelock} from "../dao/timelock/OptimisticTimelock.sol";
 
 import {IControllerV1} from "../pods/interfaces/IControllerV1.sol";
 import {IMemberToken} from "../pods/interfaces/IMemberToken.sol";
-import "hardhat/console.sol";
 
 /// @notice Contract used by an Admin pod to manage child pods.
 
@@ -17,24 +16,26 @@ import "hardhat/console.sol";
 /// The timelock and Orca pod are then linked up so that the Orca pod is
 /// the only proposer and executor.
 contract PodManager {
-    /// @notice Address from which the admin pod transactions will be sent. Likely a timelock
+    /// @notice Address from which the admin pod transactions are sent. Likely a timelock
     address private immutable podAdmin;
 
     /// @notice Orca controller for Pod
     IControllerV1 private immutable podController;
 
-    /// @notice Membership token for the pod
+    /// @notice Orca membership token for the pod
     IMemberToken private immutable memberToken;
 
-    /// @notice Core address
+    /// @notice Fei core address
     address private immutable core;
 
     /// @notice Mapping between podId and it's optimistic timelock
     mapping(uint256 => address) public getPodTimelock;
 
     event CreatePod(uint256 podId, address safeAddress);
+    event CreateOptimisticTimelock(address timelock);
 
-    modifier onlyAdmin() {
+    /// @notice Restrict function calls to podAdmin
+    modifier onlyPodAdmin() {
         require(msg.sender == podAdmin, "Only PodAdmin can deploy");
         _;
     }
@@ -79,7 +80,7 @@ contract PodManager {
         string memory _ensString,
         string memory _imageUrl,
         uint256 minDelay
-    ) public onlyAdmin returns (uint256, address) {
+    ) public onlyPodAdmin returns (uint256, address) {
         uint256 podId = memberToken.getNextAvailablePodId();
 
         podController.createPod(
@@ -94,8 +95,8 @@ contract PodManager {
         address safeAddress = podController.podIdToSafe(podId);
         address timelock = createOptimisticTimelock(
             core,
-            safeAddress,
-            safeAddress,
+            safeAddress, // proposer
+            safeAddress, // executor
             minDelay
         );
 
@@ -129,6 +130,7 @@ contract PodManager {
             proposers,
             executors
         );
+        emit CreateOptimisticTimelock(address(timelock));
         return address(timelock);
     }
 }
