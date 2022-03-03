@@ -8,9 +8,12 @@ import {CoreRef} from "../refs/CoreRef.sol";
 import {IControllerV1} from "../pods/interfaces/IControllerV1.sol";
 import {IMemberToken} from "../pods/interfaces/IMemberToken.sol";
 
+// TODO: Maybe this just becomes a factory for help in deploying/creating pods?
 /// @notice Contract used by an Admin pod to manage child pods.
-/// Responsibilities include: creating a child pod, authorising the child
-/// with specific permissions over parts of the protocol and adding or removing child pod members.
+/// Responsibilities include:
+/// - Create a child pod
+/// - Authorise the child with specific permissions over parts of the protocol
+/// - Add or remove child pod members
 /// One of these contracts should be deployed per admin pod.
 /// All state changing methods are callable by the DAO or admin pod.
 contract PodAdminManager is CoreRef {
@@ -54,6 +57,11 @@ contract PodAdminManager is CoreRef {
         memberToken = IMemberToken(_memberToken);
     }
 
+    ///////////////////// GETTERS ///////////////////////
+    function getPodSafe(uint256 podId) external view returns (address) {
+        return podController.podIdToSafe(podId);
+    }
+
     //////////////////// STATE-CHANGING API ////////////////////
 
     /// @notice Create a child Orca pod. Callable by the DAO and the Tribal Council
@@ -65,11 +73,7 @@ contract PodAdminManager is CoreRef {
         string memory _ensString,
         string memory _imageUrl,
         uint256 minDelay
-    )
-        public
-        hasAnyOfTwoRoles(GOVERN_ROLE, TRIBAL_COUNCIL_ROLE)
-        returns (uint256, address)
-    {
+    ) public returns (uint256, address) {
         uint256 podId = memberToken.getNextAvailablePodId();
         podController.createPod(
             _members,
@@ -144,6 +148,7 @@ contract PodAdminManager is CoreRef {
         return podId;
     }
 
+    // TODO
     /// @notice Add a member to a child pod
     function addChildPodMember(uint256 podId, address member)
         external
@@ -153,21 +158,20 @@ contract PodAdminManager is CoreRef {
         // TODO
     }
 
+    // TODO
     /// @notice Remove a member from a child pod. Can be called also by the Guardian as a safety mechanism
     function removeChildPodMember(uint256 podId, address member)
         external
         hasAnyOfThreeRoles(GOVERN_ROLE, TRIBAL_COUNCIL_ROLE, GUARDIAN)
     {
         emit RemovePodMember(podId, member);
-        memberToken.burn(member, podId);
+        // memberToken.burn(member, podId);
     }
 
+    // TODO
     /// @notice Grant an admin role to the pod. Authorised by either the DAO or the Tribal Council
     function grantAdminRole(address timelock, bytes32 role)
         public
         hasAnyOfTwoRoles(GOVERN_ROLE, TRIBAL_COUNCIL_ROLE)
-    {
-        // TODO: Grant roles via core
-        // grantRole(podId, role);
-    }
+    {}
 }

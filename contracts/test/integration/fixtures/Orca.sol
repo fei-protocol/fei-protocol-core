@@ -3,8 +3,9 @@ pragma solidity ^0.8.0;
 
 import {IMemberToken} from "../../../pods/interfaces/IMemberToken.sol";
 import {IControllerV1} from "../../../pods/interfaces/IControllerV1.sol";
+import {IInviteToken} from "../../../pods/interfaces/IInviteToken.sol";
 import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
-import "hardhat/console.sol";
+import {Vm} from "../../utils/Vm.sol";
 
 function createPod(
     IControllerV1 controller,
@@ -50,4 +51,20 @@ function setupOptimisticTimelock(
         executors
     );
     return timelock;
+}
+
+/// @notice Mint SHIP tokens to an address. SHIP tokens required to deploy
+///         Orca pods in beta release
+function mintOrcaTokens(
+    address to,
+    uint256 amount,
+    Vm vm
+) {
+    address shipToken = 0x872EdeaD0c56930777A82978d4D7deAE3A2d1539;
+    address priviledgedShip = 0x2149A222feD42fefc3A120B3DdA34482190fC666;
+
+    IInviteToken inviteToken = IInviteToken(shipToken);
+
+    vm.prank(priviledgedShip);
+    inviteToken.mint(to, amount);
 }
