@@ -30,6 +30,28 @@ contract PodManagerIntegrationTest is DSTest {
         mintOrcaTokens(address(manager), 2, vm);
     }
 
+    /// @notice Validate that a non-pod admin can not create a pod
+    function testOnlyAdminCanCreatePod() public {
+        (
+            address[] memory members,
+            uint256 threshold,
+            bytes32 podLabel,
+            string memory ensString,
+            string memory imageUrl,
+            uint256 minDelay
+        ) = podParams();
+
+        vm.expectRevert(bytes("Only PodAdmin can deploy"));
+        manager.createChildOptimisticPod(
+            members,
+            threshold,
+            podLabel,
+            ensString,
+            imageUrl,
+            minDelay
+        );
+    }
+
     /// @notice Creates a child pod with an optimistic timelock attached
     function testDeployOptimisticGovernancePod() public {
         (
@@ -41,6 +63,7 @@ contract PodManagerIntegrationTest is DSTest {
             uint256 minDelay
         ) = podParams();
 
+        vm.prank(podAdmin);
         (uint256 podId, address timelock) = manager.createChildOptimisticPod(
             members,
             threshold,
@@ -67,6 +90,30 @@ contract PodManagerIntegrationTest is DSTest {
         assertTrue(hasExecutorRole);
     }
 
+    /// @notice Validate that the podId to timelock mapping is correct
+    function testTimelockStorageOnDeploy() public {
+        (
+            address[] memory members,
+            uint256 threshold,
+            bytes32 podLabel,
+            string memory ensString,
+            string memory imageUrl,
+            uint256 minDelay
+        ) = podParams();
+
+        vm.prank(podAdmin);
+        (uint256 podId, address timelock) = manager.createChildOptimisticPod(
+            members,
+            threshold,
+            podLabel,
+            ensString,
+            imageUrl,
+            minDelay
+        );
+
+        assertEq(timelock, manager.getPodTimelock(podId));
+    }
+
     /// @notice Validate that multiple pods can be deployed with the correct admin set
     function testDeployMultiplePodsWithAdmin() public {
         (
@@ -78,6 +125,7 @@ contract PodManagerIntegrationTest is DSTest {
             uint256 minDelay
         ) = podParams();
 
+        vm.prank(podAdmin);
         (uint256 podAId, ) = manager.createChildOptimisticPod(
             members,
             threshold,
@@ -90,6 +138,7 @@ contract PodManagerIntegrationTest is DSTest {
         address podAAdmin = IControllerV1(podController).podAdmin(podAId);
         assertEq(podAAdmin, podAdmin);
 
+        vm.prank(podAdmin);
         (uint256 podBId, ) = manager.createChildOptimisticPod(
             members,
             threshold,

@@ -145,9 +145,5 @@ contract OptimisticPodIntegrationTest is DSTest {
             safeAddress,
             core
         );
-
-        // Only proposer and executor on the timelock is the Gnosis safe contract
-        // Flow: Member1 schedules on Gnosis safe, owner members sign, then execute.
-        //       Transaction goes to timelock. Transaction goes from timelock to protocol
     }
 }

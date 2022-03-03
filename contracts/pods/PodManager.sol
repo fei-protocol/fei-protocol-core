@@ -29,10 +29,13 @@ contract PodManager {
     /// @notice Core address
     address private immutable core;
 
+    /// @notice Mapping between podId and it's optimistic timelock
+    mapping(uint256 => address) public getPodTimelock;
+
     event CreatePod(uint256 podId, address safeAddress);
 
     modifier onlyAdmin() {
-        require(msg.sender == podAdmin, "UNAUTHORISED");
+        require(msg.sender == podAdmin, "Only PodAdmin can deploy");
         _;
     }
 
@@ -42,7 +45,7 @@ contract PodManager {
         address _podController,
         address _memberToken
     ) {
-        require(_core != address(0), "CORE_ADDRESS_NOT_SET");
+        require(_core != address(0), "Zero address");
         require(_podAdmin != address(0x0), "Zero address");
         require(_podController != address(0x0), "Zero address");
 
@@ -95,6 +98,10 @@ contract PodManager {
             safeAddress,
             minDelay
         );
+
+        // Set mapping from podId to timelock for reference
+        getPodTimelock[podId] = timelock;
+
         emit CreatePod(podId, safeAddress);
         return (podId, timelock);
     }
