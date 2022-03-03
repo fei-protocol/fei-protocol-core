@@ -3,23 +3,22 @@ pragma solidity ^0.8.0;
 
 import {TribeRoles} from "../core/TribeRoles.sol";
 import {OptimisticTimelock} from "../dao/timelock/OptimisticTimelock.sol";
-import {CoreRef} from "../refs/CoreRef.sol";
 
 import {IControllerV1} from "../pods/interfaces/IControllerV1.sol";
 import {IMemberToken} from "../pods/interfaces/IMemberToken.sol";
 import "hardhat/console.sol";
 
-// TODO: Maybe this just becomes a factory for help in deploying/creating pods?
 /// @notice Contract used by an Admin pod to manage child pods.
-/// Responsibilities include:
-/// - Create a child pod
-/// - Authorise the child with specific permissions over parts of the protocol
-/// - Add or remove child pod members
-/// One of these contracts should be deployed per admin pod.
-/// All state changing methods are callable by the DAO or admin pod.
-contract PodManager is CoreRef {
+
+/// @dev This contract is primarily a factory contract which an admin
+/// can use to deploy more optimistic governance pods. It will create an
+/// Orca pod and deploy an optimistic timelock alongside it.
+///
+/// The timelock and Orca pod are then linked up so that the Orca pod is
+/// the only proposer and executor.
+contract PodManager {
     /// @notice Address from which the admin pod transactions will be sent. Likely a timelock
-    address private immutable adminPod;
+    address private immutable podAdmin;
 
     /// @notice Orca controller for Pod
     IControllerV1 private immutable podController;
@@ -27,18 +26,13 @@ contract PodManager is CoreRef {
     /// @notice Membership token for the pod
     IMemberToken private immutable memberToken;
 
-    bytes32 private constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
-    bytes32 private constant GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
-    bytes32 private constant TRIBAL_COUNCIL_ROLE =
-        keccak256("TRIBAL_COUNCIL_ROLE");
-    bytes32 private constant GUARDIAN = keccak256("GUARDIAN_ROLE");
+    /// @notice Core address
+    address private immutable core;
 
     event CreatePod(uint256 podId, address safeAddress);
-    event AddPodMember(uint256 podId, address member);
-    event RemovePodMember(uint256 podId, address member);
 
     modifier onlyAdmin() {
-        require(msg.sender == adminPod, "UNAUTHORISED");
+        require(msg.sender == podAdmin, "UNAUTHORISED");
         _;
     }
 
@@ -47,18 +41,21 @@ contract PodManager is CoreRef {
         address _podAdmin,
         address _podController,
         address _memberToken
-    ) CoreRef(_core) {
-        require(_core != address(0x0), "Zero address");
+    ) {
+        require(_core != address(0), "CORE_ADDRESS_NOT_SET");
         require(_podAdmin != address(0x0), "Zero address");
         require(_podController != address(0x0), "Zero address");
-        // TODO: Validate that the supplied _podAdmin has the Tribal Council role
-        // Have to enforce that this Manager contract belongs to the Tribal Council
-        adminPod = _podAdmin;
+
+        core = _core;
+        podAdmin = _podAdmin;
         podController = IControllerV1(_podController);
         memberToken = IMemberToken(_memberToken);
     }
 
     ///////////////////// GETTERS ///////////////////////
+
+    /// @notice Get the address of the Gnosis safe that represents a pod
+    /// @param podId Unique id for the orca pod
     function getPodSafe(uint256 podId) external view returns (address) {
         return podController.podIdToSafe(podId);
     }
@@ -66,7 +63,12 @@ contract PodManager is CoreRef {
     //////////////////// STATE-CHANGING API ////////////////////
 
     /// @notice Create a child Orca pod. Callable by the DAO and the Tribal Council
-    /// @dev Returns the podId and the address of the optimistic timelock
+    /// @param _members List of members to be added to the pod
+    /// @param _threshold Number of members that need to approve a transaction on the Gnosis safe
+    /// @param _podLabel Metadata, Human readable label for the pod
+    /// @param _ensString Metadata, ENS name of the pod
+    /// @param _imageUrl Metadata, URL to a image to represent the pod in frontends
+    /// @param minDelay Delay on the timelock
     function createChildOptimisticPod(
         address[] memory _members,
         uint256 _threshold,
@@ -74,13 +76,13 @@ contract PodManager is CoreRef {
         string memory _ensString,
         string memory _imageUrl,
         uint256 minDelay
-    ) public returns (uint256, address) {
+    ) public onlyAdmin returns (uint256, address) {
         uint256 podId = memberToken.getNextAvailablePodId();
 
         podController.createPod(
             _members,
             _threshold,
-            adminPod,
+            podAdmin,
             _podLabel,
             _ensString,
             podId,
@@ -88,7 +90,7 @@ contract PodManager is CoreRef {
         );
         address safeAddress = podController.podIdToSafe(podId);
         address timelock = createOptimisticTimelock(
-            address(core()),
+            core,
             safeAddress,
             safeAddress,
             minDelay
@@ -98,6 +100,10 @@ contract PodManager is CoreRef {
     }
 
     /// @notice Create an Optimistic timelock, with a proposer and executor
+    /// @param _core Fei core address
+    /// @param proposer Timelock proposer address
+    /// @param executor Timelock executor address
+    /// @param minDelay Delay on the timelock before execution
     function createOptimisticTimelock(
         address _core,
         address proposer,
@@ -118,61 +124,4 @@ contract PodManager is CoreRef {
         );
         return address(timelock);
     }
-
-    /// @notice Create a child orca pod and assign it authorisation over parts of the protocol
-    function createChildOptimisticPodWithRoles(
-        address[] memory _members,
-        uint256 _threshold,
-        bytes32 _podLabel,
-        string memory _ensString,
-        string memory _imageUrl,
-        uint256 minDelay,
-        bytes32[] memory _roles
-    )
-        external
-        hasAnyOfTwoRoles(GOVERN_ROLE, TRIBAL_COUNCIL_ROLE)
-        returns (uint256)
-    {
-        (uint256 podId, address timelock) = createChildOptimisticPod(
-            _members,
-            _threshold,
-            _podLabel,
-            _ensString,
-            _imageUrl,
-            minDelay
-        );
-
-        for (uint256 i = 0; i < _roles.length; i += 1) {
-            grantAdminRole(timelock, _roles[i]);
-        }
-
-        return podId;
-    }
-
-    // TODO: Maybe, or just have the podAdmin directly call the pod controller?
-    /// @notice Add a member to a child pod
-    function addChildPodMember(uint256 podId, address member)
-        external
-        hasAnyOfTwoRoles(GOVERN_ROLE, TRIBAL_COUNCIL_ROLE)
-    {
-        emit AddPodMember(podId, member);
-        // TODO
-    }
-
-    // TODO
-    /// @notice Remove a member from a child pod. Can be called also by the Guardian as a safety mechanism
-    function removeChildPodMember(uint256 podId, address member)
-        external
-        hasAnyOfThreeRoles(GOVERN_ROLE, TRIBAL_COUNCIL_ROLE, GUARDIAN)
-    {
-        emit RemovePodMember(podId, member);
-        // memberToken.burn(member, podId);
-    }
-
-    // TODO
-    /// @notice Grant an admin role to the pod. Authorised by either the DAO or the Tribal Council
-    function grantAdminRole(address timelock, bytes32 role)
-        public
-        hasAnyOfTwoRoles(GOVERN_ROLE, TRIBAL_COUNCIL_ROLE)
-    {}
 }
