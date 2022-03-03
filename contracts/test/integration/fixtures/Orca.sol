@@ -6,6 +6,7 @@ import {IControllerV1} from "../../../pods/interfaces/IControllerV1.sol";
 import {IInviteToken} from "../../../pods/interfaces/IInviteToken.sol";
 import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
 import {Vm} from "../../utils/Vm.sol";
+import "hardhat/console.sol";
 
 function createPod(
     IControllerV1 controller,
@@ -67,4 +68,28 @@ function mintOrcaTokens(
 
     vm.prank(priviledgedShip);
     inviteToken.mint(to, amount);
+}
+
+function podParams()
+    pure
+    returns (
+        address[] memory,
+        uint256,
+        bytes32,
+        string memory,
+        string memory,
+        uint256
+    )
+{
+    uint256 threshold = 2;
+    bytes32 podLabel = bytes32("hellopod");
+    string memory ensString = "hellopod.eth";
+    string memory imageUrl = "hellopod.com";
+    uint256 minDelay = 0;
+
+    address[] memory members = new address[](3);
+    members[0] = address(0x4);
+    members[1] = address(0x5);
+    members[2] = address(0x6);
+    return (members, threshold, podLabel, ensString, imageUrl, minDelay);
 }

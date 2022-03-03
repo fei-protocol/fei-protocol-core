@@ -7,6 +7,7 @@ import {CoreRef} from "../refs/CoreRef.sol";
 
 import {IControllerV1} from "../pods/interfaces/IControllerV1.sol";
 import {IMemberToken} from "../pods/interfaces/IMemberToken.sol";
+import "hardhat/console.sol";
 
 // TODO: Maybe this just becomes a factory for help in deploying/creating pods?
 /// @notice Contract used by an Admin pod to manage child pods.
@@ -16,9 +17,9 @@ import {IMemberToken} from "../pods/interfaces/IMemberToken.sol";
 /// - Add or remove child pod members
 /// One of these contracts should be deployed per admin pod.
 /// All state changing methods are callable by the DAO or admin pod.
-contract PodAdminManager is CoreRef {
+contract PodManager is CoreRef {
     /// @notice Address from which the admin pod transactions will be sent. Likely a timelock
-    address immutable adminPod;
+    address private immutable adminPod;
 
     /// @notice Orca controller for Pod
     IControllerV1 private immutable podController;
@@ -66,7 +67,7 @@ contract PodAdminManager is CoreRef {
 
     /// @notice Create a child Orca pod. Callable by the DAO and the Tribal Council
     /// @dev Returns the podId and the address of the optimistic timelock
-    function createChildPod(
+    function createChildOptimisticPod(
         address[] memory _members,
         uint256 _threshold,
         bytes32 _podLabel,
@@ -75,6 +76,7 @@ contract PodAdminManager is CoreRef {
         uint256 minDelay
     ) public returns (uint256, address) {
         uint256 podId = memberToken.getNextAvailablePodId();
+
         podController.createPod(
             _members,
             _threshold,
@@ -91,7 +93,6 @@ contract PodAdminManager is CoreRef {
             safeAddress,
             minDelay
         );
-
         emit CreatePod(podId, safeAddress);
         return (podId, timelock);
     }
@@ -119,7 +120,7 @@ contract PodAdminManager is CoreRef {
     }
 
     /// @notice Create a child orca pod and assign it authorisation over parts of the protocol
-    function createChildPodWithRoles(
+    function createChildOptimisticPodWithRoles(
         address[] memory _members,
         uint256 _threshold,
         bytes32 _podLabel,
@@ -132,7 +133,7 @@ contract PodAdminManager is CoreRef {
         hasAnyOfTwoRoles(GOVERN_ROLE, TRIBAL_COUNCIL_ROLE)
         returns (uint256)
     {
-        (uint256 podId, address timelock) = createChildPod(
+        (uint256 podId, address timelock) = createChildOptimisticPod(
             _members,
             _threshold,
             _podLabel,
@@ -148,7 +149,7 @@ contract PodAdminManager is CoreRef {
         return podId;
     }
 
-    // TODO
+    // TODO: Maybe, or just have the podAdmin directly call the pod controller?
     /// @notice Add a member to a child pod
     function addChildPodMember(uint256 podId, address member)
         external
