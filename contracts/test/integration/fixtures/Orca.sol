@@ -20,7 +20,6 @@ function createPod(
 
     // Get the next podId
     uint256 expectedPodId = memberToken.getNextAvailablePodId();
-    console.log("expected pod Id: ", expectedPodId);
 
     controller.createPod(
         members,

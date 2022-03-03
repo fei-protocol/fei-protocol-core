@@ -12,6 +12,12 @@ import {Vm} from "../utils/Vm.sol";
 import {DSTest} from "../utils/DSTest.sol";
 import "hardhat/console.sol";
 
+/// @dev Tests for the optimistic governance pod unit. This is composed of an
+/// Orca pod and an optimistic timelock. Key agents involved are:
+/// - Orca pod: a Gnosis Safe with a membership wrapper.
+///             It is the Gnosis safe from which transactions are sent to
+///             the optimistic timelock
+/// - Optimistic timelock: a timelock from which transactions are sent to the protocol
 contract OptimisticPodTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
@@ -37,8 +43,9 @@ contract OptimisticPodTest is DSTest {
     address executor = address(0x2);
     address podAdmin = address(0x3);
 
-    // vm.label(address(memberTokenAddress), "Member token");
-    // vm.label(address(podControllerAddress), "Controller");
+    address member1 = address(0x4);
+    address member2 = address(0x5);
+    address member3 = address(0x6);
 
     uint256 podId;
     uint256 numPodMembers;
@@ -50,9 +57,9 @@ contract OptimisticPodTest is DSTest {
 
         // Note: Gnosis safe creation fails if < 3 members
         address[] memory members = new address[](3);
-        members[0] = address(0x4);
-        members[1] = address(0x5);
-        members[2] = address(0x6);
+        members[0] = member1;
+        members[1] = member2;
+        members[2] = member3;
 
         numPodMembers = members.length;
 
@@ -81,7 +88,7 @@ contract OptimisticPodTest is DSTest {
             core
         );
 
-        // Be able to call propose via pod/safe. Verify that safe has onlyPropose role
+        // Be able to call propose via pod/safe. This verifies that the safe has onlyPropose role
         vm.prank(safeAddress);
         timelock.schedule(
             address(0x10),
@@ -94,17 +101,63 @@ contract OptimisticPodTest is DSTest {
     }
 
     /// @notice Validate that a member can be removed from a pod by the admin
+    /// Note: Orca sets the memberTokenID to be the podId
     function testRemovePodMember() public {
         address safeAddress = controller.podIdToSafe(podId);
+        assertEq(IGnosisSafe(safeAddress).getOwners().length, numPodMembers);
 
-        // Compromised member transfers their membership to an illegal member
-        address illegalMember = address(0x20);
-        // Note: Orca sets the memberTokenID to be the podId
-
-        // TODO: Fails for unknown reasons
+        // PodAdmin removes a member. This simulates the DAO removing a Tribal Council member
         vm.prank(podAdmin);
-        memberToken.burn(illegalMember, podId);
+        memberToken.burn(member1, podId);
 
-        // TODO: Validate membership removed the and can not vote
+        // Validate membership removed
+        uint256 hasMemberToken = memberToken.balanceOf(member1, podId);
+        assertEq(hasMemberToken, 0);
+
+        // Validate not an owner of the safe
+        address[] memory members = IGnosisSafe(safeAddress).getOwners();
+        bool isOwner = IGnosisSafe(safeAddress).isOwner(member1);
+        assertFalse(isOwner);
+        assertEq(members.length, 2);
+        assertEq(members[0], member2);
+        assertEq(members[1], member3);
+    }
+
+    /// @notice Validate that a member can be added to a pod
+    function testAddPodMember() public {
+        address newMember = address(0x30);
+        address safeAddress = controller.podIdToSafe(podId);
+
+        // PodAdmin adds a new member
+        vm.prank(podAdmin);
+        memberToken.mint(newMember, podId, bytes(""));
+
+        // Validate membership added
+        uint256 hasMemberToken = memberToken.balanceOf(member1, podId);
+        assertEq(hasMemberToken, 1);
+
+        // Validate member is a Safe Owner
+        address[] memory members = IGnosisSafe(safeAddress).getOwners();
+        bool isOwner = IGnosisSafe(safeAddress).isOwner(newMember);
+        assertTrue(isOwner);
+        assertEq(members.length, numPodMembers + 1);
+        assertEq(members[0], newMember);
+        assertEq(members[1], member1);
+        assertEq(members[2], member2);
+        assertEq(members[3], member3);
+    }
+
+    function testProposeAndExecute() public {
+        // End to end flow where a proposal is created and executed by owners of the DAO
+        address safeAddress = controller.podIdToSafe(podId);
+        OptimisticTimelock timelock = setupOptimisticTimelock(
+            safeAddress,
+            safeAddress,
+            core
+        );
+
+        // Only proposer and executor on the timelock is the Gnosis safe contract
+        // Flow: Member1 schedules on Gnosis safe, owner members sign, then execute.
+        //       Transaction goes to timelock. Transaction goes from timelock to protocol
     }
 }

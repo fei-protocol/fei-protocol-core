@@ -11,4 +11,9 @@ interface IMemberToken {
         uint256 _id,
         bytes memory data
     ) external;
+
+    function balanceOf(address account, uint256 id)
+        external
+        view
+        returns (uint256);
 }
