@@ -136,14 +136,4 @@ contract OptimisticPodIntegrationTest is DSTest {
         assertEq(members[2], member2);
         assertEq(members[3], member3);
     }
-
-    function testProposeAndExecute() public {
-        // End to end flow where a proposal is created and executed by owners of the DAO
-        address safeAddress = controller.podIdToSafe(podId);
-        OptimisticTimelock timelock = setupOptimisticTimelock(
-            safeAddress,
-            safeAddress,
-            core
-        );
-    }
 }
