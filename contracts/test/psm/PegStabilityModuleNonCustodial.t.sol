@@ -159,6 +159,53 @@ contract NonCustodialPSMTest is DSTest {
         assertEq(endingPCVDepositUnderlyingBalance, 0);
     }
 
+    /// @notice pcv deposit gets depleted on redeem
+    function testUnderlyingBufferDepletion() public {
+        uint256 bufferStart = psm.individualBuffer(address(underlyingToken));
+
+        fei.approve(address(psm), mintAmount);
+        psm.redeem(address(this), mintAmount, mintAmount);
+
+        uint256 bufferEnd = psm.individualBuffer(address(underlyingToken));
+        uint256 endingUserFEIBalance = fei.balanceOf(address(this));
+        uint256 endingUserUnderlyingBalance = underlyingToken.balanceOf(
+            address(this)
+        );
+        uint256 endingPSMUnderlyingBalance = psm.balance();
+        uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
+            address(pcvDeposit)
+        );
+
+        assertEq(endingPSMUnderlyingBalance, 0);
+        assertEq(endingUserFEIBalance, 0);
+        assertEq(endingUserUnderlyingBalance, mintAmount * 2);
+        assertEq(endingPCVDepositUnderlyingBalance, 0);
+        assertEq(bufferStart, bufferCap);
+        assertEq(bufferEnd, bufferCap - mintAmount);
+    }
+
+    /// @notice pcv deposit gets depleted on redeem
+    function testFeiBufferDepletion() public {
+        uint256 bufferStart = psm.individualBuffer(address(fei));
+
+        underlyingToken.approve(address(psm), mintAmount);
+        psm.mint(address(this), mintAmount, mintAmount);
+
+        uint256 bufferEnd = psm.individualBuffer(address(fei));
+        uint256 endingUserFEIBalance = fei.balanceOf(address(this));
+        uint256 endingPSMUnderlyingBalance = psm.balance();
+        uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
+            address(pcvDeposit)
+        );
+
+        assertEq(endingPCVDepositUnderlyingBalance, mintAmount * 2);
+        assertEq(endingPSMUnderlyingBalance, 0);
+        assertEq(endingUserFEIBalance, mintAmount * 2);
+
+        assertEq(bufferStart, bufferCap);
+        assertEq(bufferEnd, bufferCap - mintAmount);
+    }
+
     /// @notice redeem fails without approval
     function testSwapFeiForUnderlyingFailsWithoutApproval() public {
         vm.expectRevert(bytes("ERC20: insufficient allowance"));
