@@ -9,19 +9,22 @@ import {MockOracle} from "../../mock/MockOracle.sol";
 import {ICore} from "../../core/ICore.sol";
 import {Core} from "../../core/Core.sol";
 import {IFei, Fei} from "../../fei/Fei.sol";
-import {NonCustodialPSM} from "./../../peg/NonCustodialPSM.sol";
+import {NonCustodialPSM, GlobalRateLimitedMinter} from "./../../peg/NonCustodialPSM.sol";
+
 import {PegStabilityModule} from "./../../peg/PegStabilityModule.sol";
 import {Vm} from "./../utils/Vm.sol";
 import {DSTest} from "./../utils/DSTest.sol";
 import {getCore, getAddresses, FeiTestAddresses} from "./../utils/Fixtures.sol";
 
 contract NonCustodialPSMTest is DSTest {
+    GlobalRateLimitedMinter private rateLimitedMinter;
     NonCustodialPSM private psm;
     ICore private core;
     IFei private fei;
 
     uint256 public constant mintAmount = 10_000_000e18;
     uint256 public constant bufferCap = 10_000_000e18;
+    uint256 public constant individualMaxBufferCap = 5_000_000e18;
     uint256 public constant rps = 10_000e18;
 
     uint256 public constant floorBasisPoints = 9_900;
@@ -48,7 +51,16 @@ contract NonCustodialPSMTest is DSTest {
             0
         );
 
-        PegStabilityModule.OracleParams memory oracleParams = PegStabilityModule
+        rateLimitedMinter = new GlobalRateLimitedMinter(
+            address(core),
+            rps,
+            rps,
+            rps,
+            individualMaxBufferCap,
+            bufferCap
+        );
+
+        NonCustodialPSM.OracleParams memory oracleParams = NonCustodialPSM
             .OracleParams({
                 coreAddress: address(core),
                 oracleAddress: address(oracle),
@@ -57,30 +69,26 @@ contract NonCustodialPSMTest is DSTest {
                 doInvert: false
             });
 
-        PegStabilityModule.MultiRateLimitedParams
-            memory multiRateLimitedParams = PegStabilityModule
-                .MultiRateLimitedParams({
-                    maxRateLimitPerSecond: rps,
-                    rateLimitPerSecond: rps,
-                    individualMaxRateLimitPerSecond: rps,
-                    individualMaxBufferCap: bufferCap - 1,
-                    globalBufferCap: bufferCap
-                });
-
-        PegStabilityModule.PSMParams memory PSMParams = PegStabilityModule
-            .PSMParams({
-                mintFeeBasisPoints: 0,
-                redeemFeeBasisPoints: 0,
-                reservesThreshold: 0,
-                feiLimitPerSecond: rps,
-                mintingBufferCap: bufferCap,
-                underlyingToken: underlyingToken,
-                surplusTarget: pcvDeposit,
-                feiRateLimitPerSecond: uint112(rps),
-                feiBufferCap: uint144(bufferCap),
-                underlyingTokenRateLimitPerSecond: uint112(rps),
-                underlyingTokenBufferCap: uint144(bufferCap)
+        NonCustodialPSM.RateLimitedParams
+            memory multiRateLimitedParams = NonCustodialPSM.RateLimitedParams({
+                maxRateLimitPerSecond: rps,
+                rateLimitPerSecond: rps,
+                bufferCap: bufferCap
             });
+
+        NonCustodialPSM.PSMParams memory PSMParams = NonCustodialPSM.PSMParams({
+            mintFeeBasisPoints: 0,
+            redeemFeeBasisPoints: 0,
+            feiLimitPerSecond: rps,
+            mintingBufferCap: bufferCap,
+            underlyingToken: underlyingToken,
+            pcvDeposit: pcvDeposit,
+            rateLimitedMinter: rateLimitedMinter,
+            feiRateLimitPerSecond: uint112(rps),
+            feiBufferCap: uint144(bufferCap),
+            underlyingTokenRateLimitPerSecond: uint112(rps),
+            underlyingTokenBufferCap: uint144(bufferCap)
+        });
 
         /// create PSM
         psm = new NonCustodialPSM(
@@ -89,38 +97,41 @@ contract NonCustodialPSMTest is DSTest {
             PSMParams
         );
 
-        /// mint the PSM and user some underlying tokens
-        underlyingToken.mint(address(psm), mintAmount);
-        underlyingToken.mint(address(this), mintAmount);
-
         vm.startPrank(addresses.governorAddress);
 
-        /// give the PSM minting abilities
+        /// grant the PSM the PCV Controller role
         core.grantMinter(addresses.governorAddress);
+        core.grantMinter(address(rateLimitedMinter));
         core.grantPCVController(address(psm));
-        core.grantMinter(address(psm));
+        rateLimitedMinter.addAddress(
+            address(psm),
+            uint112(rps),
+            uint144(bufferCap)
+        );
 
         /// mint FEI to the user
         fei.mint(address(this), mintAmount);
 
         vm.stopPrank();
 
+        /// mint the PSM and user some underlying tokens
+        underlyingToken.mint(address(psm), mintAmount);
+        underlyingToken.mint(address(this), mintAmount);
+
         /// send all excess tokens to the PCV deposit
-        psm.allocateSurplus();
+        psm.sweep();
     }
 
     /// @notice PSM is set up correctly, all state variables and balances are correct
     function testPSMSetup() public {
         uint256 startingPSMUnderlyingBalance = psm.balance();
         uint256 startingUserFEIBalance = fei.balanceOf(address(this));
-        uint256 reserveThreshold = psm.reservesThreshold();
 
-        assertEq(reserveThreshold, 0);
         assertEq(startingPSMUnderlyingBalance, 0);
         assertEq(startingUserFEIBalance, mintAmount);
 
         assertTrue(core.isPCVController(address(psm)));
-        assertTrue(core.isMinter(address(psm)));
+        assertTrue(core.isMinter(address(rateLimitedMinter)));
     }
 
     /// @notice pcv deposit receives underlying token on mint
@@ -161,12 +172,12 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice pcv deposit gets depleted on redeem
     function testUnderlyingBufferDepletion() public {
-        uint256 bufferStart = psm.individualBuffer(address(underlyingToken));
+        uint256 bufferStart = psm.buffer();
 
         fei.approve(address(psm), mintAmount);
         psm.redeem(address(this), mintAmount, mintAmount);
 
-        uint256 bufferEnd = psm.individualBuffer(address(underlyingToken));
+        uint256 bufferEnd = psm.buffer();
         uint256 endingUserFEIBalance = fei.balanceOf(address(this));
         uint256 endingUserUnderlyingBalance = underlyingToken.balanceOf(
             address(this)
@@ -184,14 +195,14 @@ contract NonCustodialPSMTest is DSTest {
         assertEq(bufferEnd, bufferCap - mintAmount);
     }
 
-    /// @notice pcv deposit gets depleted on redeem
+    /// @notice global rate limited minter buffer on the PSM gets depleted on mint
     function testFeiBufferDepletion() public {
-        uint256 bufferStart = psm.individualBuffer(address(fei));
+        uint256 bufferStart = rateLimitedMinter.individualBuffer(address(psm));
 
         underlyingToken.approve(address(psm), mintAmount);
         psm.mint(address(this), mintAmount, mintAmount);
 
-        uint256 bufferEnd = psm.individualBuffer(address(fei));
+        uint256 bufferEnd = rateLimitedMinter.individualBuffer(address(psm));
         uint256 endingUserFEIBalance = fei.balanceOf(address(this));
         uint256 endingPSMUnderlyingBalance = psm.balance();
         uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
@@ -222,14 +233,14 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice allocate fails without underlying token balance
     function testAllocateFailure() public {
-        vm.expectRevert(bytes("PegStabilityModule: No balance to allocate"));
+        vm.expectRevert(bytes("PegStabilityModule: No balance to sweep"));
 
-        psm.allocateSurplus();
+        psm.sweep();
     }
 
     /// @notice deposit fails without underlying token balance
     function testDepositFailure() public {
-        vm.expectRevert(bytes("PegStabilityModule: No balance to allocate"));
+        vm.expectRevert(bytes("PegStabilityModule: No balance to deposit"));
 
         psm.deposit();
     }
@@ -248,10 +259,10 @@ contract NonCustodialPSMTest is DSTest {
     }
 
     /// @notice allocate surplus succeeds with underlying token balance and sends to PCV Deposit
-    function testAllocateSuccess() public {
+    function testSweepSuccess() public {
         underlyingToken.mint(address(psm), mintAmount);
 
-        psm.allocateSurplus();
+        psm.sweep();
 
         assertEq(underlyingToken.balanceOf(address(psm)), 0);
         assertEq(

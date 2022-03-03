@@ -9,15 +9,25 @@ contract FixedPricePSM is PriceBoundPSM {
         uint256 _floor,
         uint256 _ceiling,
         OracleParams memory _params,
-        MultiRateLimitedParams memory _multiRateLimitedParams,
-        PSMParams memory _psmParams
+        uint256 _mintFeeBasisPoints,
+        uint256 _redeemFeeBasisPoints,
+        uint256 _reservesThreshold,
+        uint256 _feiLimitPerSecond,
+        uint256 _mintingBufferCap,
+        IERC20 _underlyingToken,
+        IPCVDeposit _surplusTarget
     )
         PriceBoundPSM(
             _floor,
             _ceiling,
             _params,
-            _multiRateLimitedParams,
-            _psmParams
+            _mintFeeBasisPoints,
+            _redeemFeeBasisPoints,
+            _reservesThreshold,
+            _feiLimitPerSecond,
+            _mintingBufferCap,
+            _underlyingToken,
+            _surplusTarget
         )
     {}
 
