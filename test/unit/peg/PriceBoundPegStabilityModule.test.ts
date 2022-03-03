@@ -41,6 +41,11 @@ describe('PriceBoundPegStabilityModule', function () {
   let oracle: MockOracle;
   let psm: PriceBoundPSM;
   let pcvDeposit: MockPCVDepositV2;
+  const maxRateLimitPerSecond = ethers.constants.WeiPerEther.mul(100_000);
+  const rateLimitPerSecond = ethers.constants.WeiPerEther.mul(100_000);
+  const individualMaxRateLimitPerSecond = ethers.constants.WeiPerEther.mul(100_000);
+  const individualMaxBufferCap = ethers.constants.WeiPerEther.mul(10_000_000);
+  const globalBufferCap = ethers.constants.WeiPerEther.mul(100_000_000);
 
   before(async () => {
     const addresses = await getAddresses();
@@ -94,13 +99,26 @@ describe('PriceBoundPegStabilityModule', function () {
         decimalsNormalizer,
         doInvert: false
       },
-      mintFeeBasisPoints,
-      redeemFeeBasisPoints,
-      reservesThreshold,
-      feiLimitPerSecond,
-      bufferCap,
-      asset.address,
-      pcvDeposit.address
+      {
+        maxRateLimitPerSecond,
+        rateLimitPerSecond,
+        individualMaxRateLimitPerSecond,
+        individualMaxBufferCap,
+        globalBufferCap
+      },
+      {
+        mintFeeBasisPoints: mintFeeBasisPoints,
+        redeemFeeBasisPoints: redeemFeeBasisPoints,
+        reservesThreshold: reservesThreshold,
+        feiLimitPerSecond: feiLimitPerSecond,
+        mintingBufferCap: bufferCap,
+        underlyingToken: asset.address,
+        surplusTarget: pcvDeposit.address,
+        feiRateLimitPerSecond: maxRateLimitPerSecond,
+        feiBufferCap: individualMaxBufferCap,
+        underlyingTokenRateLimitPerSecond: maxRateLimitPerSecond,
+        underlyingTokenBufferCap: individualMaxBufferCap
+      }
     );
 
     await core.grantMinter(psm.address);
@@ -132,11 +150,11 @@ describe('PriceBoundPegStabilityModule', function () {
     });
 
     it('rateLimitPerSecond', async () => {
-      expect(await psm.rateLimitPerSecond()).to.be.equal(feiLimitPerSecond);
+      expect(await psm.rateLimitPerSecond()).to.be.equal(rateLimitPerSecond);
     });
 
     it('mintingBufferCap', async () => {
-      expect(await psm.bufferCap()).to.be.equal(bufferCap);
+      expect(await psm.bufferCap()).to.be.equal(globalBufferCap);
     });
 
     it('decimalsNormalizer', async () => {
@@ -205,7 +223,7 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(expectedMintAmountOut);
         expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(ten);
         // buffer has not been eaten into as the PSM holds FEI
-        expect(await psm.buffer()).to.be.equal(bufferCap);
+        expect(await psm.individualBuffer(fei.address)).to.be.equal(bufferCap);
         expect(startingUserAssetBalance.sub(endingUserAssetBalance)).to.be.equal(ten);
       });
 
@@ -236,7 +254,7 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(expectedMintAmountOut);
         expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(oneK);
         // buffer has not been eaten into as the PSM holds FEI
-        expect(await psm.buffer()).to.be.equal(bufferCap);
+        expect(await psm.individualBuffer(fei.address)).to.be.equal(bufferCap);
       });
 
       it('exchanges 1000 DAI for 975 FEI as fee is 250 bips and exchange rate is 1:1 when to address is not msg.sender', async () => {
@@ -266,7 +284,7 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(expectedMintAmountOut);
         expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(oneK);
         // buffer has not been eaten into as the PSM holds FEI
-        expect(await psm.buffer()).to.be.equal(bufferCap);
+        expect(await psm.individualBuffer(fei.address)).to.be.equal(bufferCap);
       });
 
       it('exchanges 1000 DAI for 975 FEI as fee is 300 bips and exchange rate is 1:1', async () => {
@@ -297,7 +315,7 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(oneK);
 
         // buffer has not been eaten into as the PSM holds FEI
-        expect(await psm.buffer()).to.be.equal(bufferCap);
+        expect(await psm.individualBuffer(fei.address)).to.be.equal(bufferCap);
       });
 
       it('exchanges 1000 DAI for 975 FEI as mint fee is 250 bips and exchange rate is 1:1', async () => {
@@ -328,7 +346,7 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(oneK);
 
         // buffer has not been eaten into as the PSM holds FEI
-        expect(await psm.buffer()).to.be.equal(bufferCap);
+        expect(await psm.individualBuffer(fei.address)).to.be.equal(bufferCap);
       });
 
       it('exchanges 1000 DAI for 950 FEI as mint fee is 50 bips and exchange rate is 1DAI:1.2FEI', async () => {
@@ -363,7 +381,7 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(oneK);
 
         // buffer has not been eaten into as the PSM holds FEI
-        expect(await psm.buffer()).to.be.equal(bufferCap);
+        expect(await psm.individualBuffer(fei.address)).to.be.equal(bufferCap);
       });
 
       it('exchange and getMintAmountOut fails when new oracle ceiling is equal to the new exchange rate', async () => {
@@ -433,7 +451,7 @@ describe('PriceBoundPegStabilityModule', function () {
 
         expect(userEndingFeiBalance.sub(userStartingFeiBalance)).to.be.equal(expectedMintAmountOut);
         expect(psmEndingAssetBalance.sub(psmStartingAssetBalance)).to.be.equal(mintAmt);
-        expect(await psm.buffer()).to.be.equal(bufferCap);
+        expect(await psm.individualBuffer(fei.address)).to.be.equal(bufferCap);
         expect(userStartingAssetBalance.sub(userEndingAssetBalance)).to.be.equal(mintAmt);
       });
 
@@ -627,7 +645,7 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(userEndingAssetBalance.sub(userStartingAssetBalance)).to.be.equal(expectedAssetAmount);
         expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(mintAmount));
         expect(await fei.balanceOf(psm.address)).to.be.equal(mintAmount.add(startingPSMFeiBalance));
-        expect(await psm.buffer()).to.be.equal(bufferCap);
+        expect(await psm.individualBuffer(fei.address)).to.be.equal(bufferCap);
       });
 
       it('redeem succeeds when user has enough funds and DAI is $1.019', async () => {
@@ -656,7 +674,7 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(mintAmount));
         expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
         expect(await fei.balanceOf(psm.address)).to.be.equal(mintAmount.add(startingPSMFeiBalance));
-        expect(await psm.buffer()).to.be.equal(bufferCap);
+        expect(await psm.individualBuffer(fei.address)).to.be.equal(bufferCap);
       });
 
       it('redeem succeeds when user has enough funds and DAI is $1.019 with .1 FEI', async () => {
@@ -686,7 +704,7 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(pointOneFei));
         expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
         expect(await fei.balanceOf(psm.address)).to.be.equal(pointOneFei.add(startingPSMFeiBalance));
-        expect(await psm.buffer()).to.be.equal(bufferCap);
+        expect(await psm.individualBuffer(fei.address)).to.be.equal(bufferCap);
       });
 
       it('redeem succeeds when user has enough funds and DAI is $1.019 with .01 FEI', async () => {
@@ -716,7 +734,7 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(pointOneFei));
         expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
         expect(await fei.balanceOf(psm.address)).to.be.equal(pointOneFei.add(startingPSMFeiBalance));
-        expect(await psm.buffer()).to.be.equal(bufferCap);
+        expect(await psm.individualBuffer(fei.address)).to.be.equal(bufferCap);
       });
 
       it('redeem succeeds when user has enough funds and DAI is $0.9801', async () => {
@@ -747,7 +765,7 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(mintAmount));
         expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
         expect(await fei.balanceOf(psm.address)).to.be.equal(mintAmount.add(startingPSMFeiBalance));
-        expect(await psm.buffer()).to.be.equal(bufferCap);
+        expect(await psm.individualBuffer(fei.address)).to.be.equal(bufferCap);
       });
 
       it('redeem succeeds when user has enough funds, DAI is $0.9801 and mint fee has been changed to 100 bips', async () => {
@@ -779,7 +797,7 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(mintAmount));
         expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
         expect(await fei.balanceOf(psm.address)).to.be.equal(mintAmount.add(startingPSMFeiBalance));
-        expect(await psm.buffer()).to.be.equal(bufferCap);
+        expect(await psm.individualBuffer(fei.address)).to.be.equal(bufferCap);
       });
 
       it('redeem succeeds when user has enough funds, DAI is $0.5 and mint fee has been changed to 100 bips', async () => {
@@ -813,7 +831,7 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(mintAmount));
         expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
         expect(await fei.balanceOf(psm.address)).to.be.equal(mintAmount.add(startingPSMFeiBalance));
-        expect(await psm.buffer()).to.be.equal(bufferCap);
+        expect(await psm.individualBuffer(fei.address)).to.be.equal(bufferCap);
       });
 
       it('redeem succeeds when user has enough funds, DAI is $0.5 and mint fee has been changed to 500 bips', async () => {
@@ -847,7 +865,7 @@ describe('PriceBoundPegStabilityModule', function () {
         expect(endingUserFeiBalance).to.be.equal(startingUserFeiBalance.sub(mintAmount));
         expect(endingUserAssetBalance).to.be.equal(startingUserAssetBalance.add(actualAssetAmount));
         expect(await fei.balanceOf(psm.address)).to.be.equal(mintAmount.add(startingPSMFeiBalance));
-        expect(await psm.buffer()).to.be.equal(bufferCap);
+        expect(await psm.individualBuffer(fei.address)).to.be.equal(bufferCap);
       });
 
       it('redeem fails when oracle price is $2', async () => {
