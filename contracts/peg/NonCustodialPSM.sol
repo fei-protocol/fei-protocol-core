@@ -14,32 +14,13 @@ contract NonCustodialPSM is PegStabilityModule {
 
     /// @notice constructor
     /// @param params PSM constructor parameter struct
-    /// @param _mintFeeBasisPoints fee for minting in basis points
-    /// @param _redeemFeeBasisPoints fee for redemption in basis points
-    /// @param _feiLimitPerSecond the amount of FEI that will be replenished every second on the buffer
-    /// @param _mintingBufferCap cap on minting buffer
-    /// @param _underlyingToken underlying token this PSM trades against
-    /// @param _pcvDeposit where all assets are stored and all assets are pulled from
+    /// @param multiRateLimitedParams params for multi rate limited
+    /// @param psmParams params for PSM setup
     constructor(
         OracleParams memory params,
-        uint256 _mintFeeBasisPoints,
-        uint256 _redeemFeeBasisPoints,
-        uint256 _feiLimitPerSecond,
-        uint256 _mintingBufferCap,
-        IERC20 _underlyingToken,
-        IPCVDeposit _pcvDeposit
-    )
-        PegStabilityModule(
-            params,
-            _mintFeeBasisPoints,
-            _redeemFeeBasisPoints,
-            0, /// hardcode reserve threshold to 0
-            _feiLimitPerSecond,
-            _mintingBufferCap,
-            _underlyingToken,
-            _pcvDeposit
-        )
-    {}
+        MultiRateLimitedParams memory multiRateLimitedParams,
+        PSMParams memory psmParams
+    ) PegStabilityModule(params, multiRateLimitedParams, psmParams) {}
 
     /// @notice reusable function that sends all tokens to the PCV Deposit
     /// and then has the PCV Deposit allocate those tokens

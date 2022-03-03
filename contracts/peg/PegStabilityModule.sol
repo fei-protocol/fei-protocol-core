@@ -1,13 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import {PCVDeposit} from "./../pcv/PCVDeposit.sol";
+import {IPCVDeposit, PCVDeposit} from "./../pcv/PCVDeposit.sol";
 import {MultiRateLimited} from "./../utils/MultiRateLimited.sol";
 import {IPegStabilityModule} from "./IPegStabilityModule.sol";
 import {OracleRef} from "./../refs/OracleRef.sol";
 import {Constants} from "../Constants.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {Decimal} from "../external/Decimal.sol";
+
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract PegStabilityModule is
     IPegStabilityModule,
@@ -67,17 +72,35 @@ contract PegStabilityModule is
         bool doInvert;
     }
 
+    /// @notice struct for passing constructor parameters related to MultiRateLimited
+    struct MultiRateLimitedParams {
+        uint256 maxRateLimitPerSecond;
+        uint256 rateLimitPerSecond;
+        uint256 individualMaxRateLimitPerSecond;
+        uint256 individualMaxBufferCap;
+        uint256 globalBufferCap;
+    }
+
+    struct PSMParams {
+        uint256 mintFeeBasisPoints;
+        uint256 redeemFeeBasisPoints;
+        uint256 reservesThreshold;
+        uint256 feiLimitPerSecond;
+        uint256 mintingBufferCap;
+        IERC20 underlyingToken;
+        IPCVDeposit surplusTarget;
+        uint112 feiRateLimitPerSecond;
+        uint144 feiBufferCap;
+        uint112 underlyingTokenRateLimitPerSecond;
+        uint144 underlyingTokenBufferCap;
+    }
+
     /// @notice constructor
     /// @param params PSM constructor parameter struct
     constructor(
         OracleParams memory params,
-        uint256 _mintFeeBasisPoints,
-        uint256 _redeemFeeBasisPoints,
-        uint256 _reservesThreshold,
-        uint256 _feiLimitPerSecond,
-        uint256 _mintingBufferCap,
-        IERC20 _underlyingToken,
-        IPCVDeposit _surplusTarget
+        MultiRateLimitedParams memory multiRateLimitedParams,
+        PSMParams memory psmParams
     )
         OracleRef(
             params.coreAddress,
@@ -87,15 +110,32 @@ contract PegStabilityModule is
             params.doInvert
         )
         /// rate limited minter passes false as the last param as there can be no partial mints
-        MultiRateLimited(_feiLimitPerSecond, _mintingBufferCap, false)
+        MultiRateLimited(
+            multiRateLimitedParams.maxRateLimitPerSecond,
+            multiRateLimitedParams.rateLimitPerSecond,
+            multiRateLimitedParams.individualMaxRateLimitPerSecond,
+            multiRateLimitedParams.individualMaxBufferCap,
+            multiRateLimitedParams.globalBufferCap
+        )
     {
-        underlyingToken = _underlyingToken;
+        underlyingToken = psmParams.underlyingToken;
 
-        _setReservesThreshold(_reservesThreshold);
-        _setMintFee(_mintFeeBasisPoints);
-        _setRedeemFee(_redeemFeeBasisPoints);
-        _setSurplusTarget(_surplusTarget);
+        _setReservesThreshold(psmParams.reservesThreshold);
+        _setMintFee(psmParams.mintFeeBasisPoints);
+        _setRedeemFee(psmParams.redeemFeeBasisPoints);
+        _setSurplusTarget(psmParams.surplusTarget);
         _setContractAdminRole(keccak256("PSM_ADMIN_ROLE"));
+
+        _addAddress(
+            address(psmParams.underlyingToken),
+            psmParams.underlyingTokenRateLimitPerSecond,
+            psmParams.underlyingTokenBufferCap
+        );
+        _addAddress(
+            address(fei()),
+            psmParams.feiRateLimitPerSecond,
+            psmParams.feiBufferCap
+        );
     }
 
     /// @notice modifier that allows execution when redemptions are not paused
@@ -272,6 +312,7 @@ contract PegStabilityModule is
         IERC20(fei()).safeTransferFrom(msg.sender, address(this), amountFeiIn);
 
         _transfer(to, amountOut);
+        _depleteBuffer(address(underlyingToken), amountOut);
 
         emit Redeem(to, amountFeiIn, amountOut);
     }
@@ -301,7 +342,7 @@ contract PegStabilityModule is
         IERC20(fei()).safeTransfer(to, amountFeiToTransfer);
 
         if (amountFeiToMint > 0) {
-            _depleteBuffer(address(fei()));
+            _depleteBuffer(address(fei()), amountFeiToMint);
             _mintFei(to, amountFeiToMint);
         }
 
@@ -472,14 +513,6 @@ contract PegStabilityModule is
         uint256 amount
     ) internal virtual {
         SafeERC20.safeTransferFrom(underlyingToken, from, to, amount);
-    }
-
-    /// @notice mint amount of FEI to the specified user on a rate limit
-    function _mintFei(address to, uint256 amount)
-        internal
-        override(CoreRef, RateLimitedMinter)
-    {
-        super._mintFei(to, amount);
     }
 
     // ----------- Hooks -----------

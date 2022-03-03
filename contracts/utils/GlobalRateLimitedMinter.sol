@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "./MultiRateLimited.sol";
-import "./IGlobalRateLimitedMinter.sol";
+import {MultiRateLimited} from "./MultiRateLimited.sol";
+import {IGlobalRateLimitedMinter} from "./IGlobalRateLimitedMinter.sol";
+import {CoreRef} from "./../refs/CoreRef.sol";
 
 /// @notice global contract to handle rate limited minting of FEI on a global level
 /// allows whitelisted minters to call in and specify the address to mint FEI to within
@@ -22,8 +23,8 @@ contract GlobalRateLimitedMinter is MultiRateLimited, IGlobalRateLimitedMinter {
         uint256 _maxBufferCap,
         uint256 _globalBufferCap
     )
+        CoreRef(coreAddress)
         MultiRateLimited(
-            coreAddress,
             _globalMaxRateLimitPerSecond,
             _perAddressRateLimitMaximum,
             _maxRateLimitPerSecondPerAddress,

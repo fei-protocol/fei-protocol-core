@@ -57,15 +57,36 @@ contract NonCustodialPSMTest is DSTest {
                 doInvert: false
             });
 
+        PegStabilityModule.MultiRateLimitedParams
+            memory multiRateLimitedParams = PegStabilityModule
+                .MultiRateLimitedParams({
+                    maxRateLimitPerSecond: rps,
+                    rateLimitPerSecond: rps,
+                    individualMaxRateLimitPerSecond: rps,
+                    individualMaxBufferCap: bufferCap - 1,
+                    globalBufferCap: bufferCap
+                });
+
+        PegStabilityModule.PSMParams memory PSMParams = PegStabilityModule
+            .PSMParams({
+                mintFeeBasisPoints: 0,
+                redeemFeeBasisPoints: 0,
+                reservesThreshold: 0,
+                feiLimitPerSecond: rps,
+                mintingBufferCap: bufferCap,
+                underlyingToken: underlyingToken,
+                surplusTarget: pcvDeposit,
+                feiRateLimitPerSecond: uint112(rps),
+                feiBufferCap: uint144(bufferCap),
+                underlyingTokenRateLimitPerSecond: uint112(rps),
+                underlyingTokenBufferCap: uint144(bufferCap)
+            });
+
         /// create PSM
         psm = new NonCustodialPSM(
             oracleParams,
-            0,
-            0,
-            rps,
-            bufferCap,
-            IERC20(underlyingToken),
-            IPCVDeposit(pcvDeposit)
+            multiRateLimitedParams,
+            PSMParams
         );
 
         /// mint the PSM and user some underlying tokens
