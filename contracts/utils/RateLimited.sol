@@ -23,7 +23,7 @@ abstract contract RateLimited is CoreRef {
     bool public doPartialAction;
 
     /// @notice the buffer at the timestamp of lastBufferUsedTime
-    uint256 private _bufferStored;
+    uint256 internal _bufferStored;
 
     event BufferUsed(uint256 amountUsed, uint256 bufferRemaining);
     event BufferCapUpdate(uint256 oldBufferCap, uint256 newBufferCap);

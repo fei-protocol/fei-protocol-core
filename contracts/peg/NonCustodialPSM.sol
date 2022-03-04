@@ -4,10 +4,10 @@ pragma solidity ^0.8.4;
 import {Decimal} from "../external/Decimal.sol";
 import {Constants} from "../Constants.sol";
 import {OracleRef} from "./../refs/OracleRef.sol";
-import {RateLimited} from "./../utils/RateLimited.sol";
 import {IPCVDeposit, PCVDeposit} from "./../pcv/PCVDeposit.sol";
 import {INonCustodialPSM} from "./INonCustodialPSM.sol";
 import {GlobalRateLimitedMinter} from "./../utils/GlobalRateLimitedMinter.sol";
+import {RateLimitedReplenishable} from "./../utils/RateLimitedReplenishable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
@@ -19,7 +19,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 /// When funds are needed for a redemption, they are simply pulled from the PCV Deposit
 contract NonCustodialPSM is
     INonCustodialPSM,
-    RateLimited,
+    RateLimitedReplenishable,
     OracleRef,
     ReentrancyGuard
 {
@@ -109,8 +109,8 @@ contract NonCustodialPSM is
             params.decimalsNormalizer,
             params.doInvert
         )
-        /// rate limited minter passes false as the last param as there can be no partial mints
-        RateLimited(
+        /// rate limited replenishable passes false as the last param as there can be no partial mints
+        RateLimitedReplenishable(
             rateLimitedParams.maxRateLimitPerSecond,
             rateLimitedParams.rateLimitPerSecond,
             rateLimitedParams.bufferCap,
@@ -268,7 +268,7 @@ contract NonCustodialPSM is
             amountOut >= minAmountOut,
             "PegStabilityModule: Redeem not enough out"
         );
-        _depleteBuffer(amountOut);
+        _depleteBuffer(amountFeiIn);
 
         IERC20(fei()).safeTransferFrom(msg.sender, address(this), amountFeiIn);
 
@@ -318,6 +318,8 @@ contract NonCustodialPSM is
         if (amountFeiToMint != 0) {
             rateLimitedMinter.mintFei(to, amountFeiToMint);
         }
+
+        _replenishBuffer(amountFeiToTransfer + amountFeiToMint);
 
         emit Mint(to, amountIn, amountFeiOut);
     }
