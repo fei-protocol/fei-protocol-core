@@ -5,8 +5,8 @@ import {Decimal} from "../external/Decimal.sol";
 import {Constants} from "../Constants.sol";
 import {OracleRef} from "./../refs/OracleRef.sol";
 import {RateLimited} from "./../utils/RateLimited.sol";
+import {IPCVDeposit} from "./../pcv/PCVDeposit.sol";
 import {INonCustodialPSM} from "./INonCustodialPSM.sol";
-import {IPCVDeposit, PCVDeposit} from "./../pcv/PCVDeposit.sol";
 import {GlobalRateLimitedMinter} from "./../utils/GlobalRateLimitedMinter.sol";
 
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
@@ -22,7 +22,6 @@ contract NonCustodialPSM is
     INonCustodialPSM,
     RateLimited,
     OracleRef,
-    PCVDeposit,
     ReentrancyGuard
 {
     using Decimal for Decimal.D256;
@@ -164,16 +163,6 @@ contract NonCustodialPSM is
         emit MintingUnpaused(msg.sender);
     }
 
-    /// @notice withdraw assets from PSM to an external address
-    function withdraw(address to, uint256 amount)
-        external
-        virtual
-        override
-        onlyPCVController
-    {
-        _withdrawERC20(address(underlyingToken), to, amount);
-    }
-
     /// @notice set the mint fee vs oracle price in basis point terms
     function setMintFee(uint256 newMintFeeBasisPoints)
         external
@@ -303,9 +292,11 @@ contract NonCustodialPSM is
         );
         uint256 amountFeiToMint = amountFeiOut - amountFeiToTransfer;
 
-        IERC20(fei()).safeTransfer(to, amountFeiToTransfer);
+        if (amountFeiToTransfer != 0) {
+            IERC20(fei()).safeTransfer(to, amountFeiToTransfer);
+        }
 
-        if (amountFeiToMint > 0) {
+        if (amountFeiToMint != 0) {
             rateLimitedMinter.mintFei(to, amountFeiToMint);
         }
 
@@ -345,24 +336,10 @@ contract NonCustodialPSM is
         return fei().balanceOf(address(this)) + buffer();
     }
 
-    /// @notice function from PCVDeposit that must be overriden
-    function balance() public view virtual override returns (uint256) {
+    /// @notice function from PCVDeposit that usually must be overriden, but because
+    /// this contract is not a PCV deposit is not overriden
+    function balance() public view virtual returns (uint256) {
         return underlyingToken.balanceOf(address(this));
-    }
-
-    /// @notice returns address of token this contracts balance is reported in
-    function balanceReportedIn() external view override returns (address) {
-        return address(underlyingToken);
-    }
-
-    /// @notice override default behavior of not checking fei balance
-    function resistantBalanceAndFei()
-        public
-        view
-        override
-        returns (uint256, uint256)
-    {
-        return (balance(), feiBalance());
     }
 
     // ----------- Internal Methods -----------
@@ -416,7 +393,8 @@ contract NonCustodialPSM is
         pcvDeposit.withdraw(to, amount);
     }
 
-    /// @notice transfer assets from user to this contract
+    /// @notice transfer assets from user to the PCV Deposit
+    /// Does not call deposit to save gas and make mints cheaper
     /// @param from sending address
     /// @param amount number of tokens sent to PCV Deposit
     function _transferFrom(
@@ -425,12 +403,11 @@ contract NonCustodialPSM is
         uint256 amount
     ) internal {
         underlyingToken.safeTransferFrom(from, address(pcvDeposit), amount);
-        pcvDeposit.deposit();
     }
 
     /// @notice function to move non FEI ERC20 tokens to the PCV Deposit
     function sweep() external override {
-        uint256 currentBalance = balance();
+        uint256 currentBalance = underlyingToken.balanceOf(address(this));
         require(currentBalance != 0, "PegStabilityModule: No balance to sweep");
 
         underlyingToken.safeTransfer(address(pcvDeposit), currentBalance);
@@ -438,8 +415,8 @@ contract NonCustodialPSM is
     }
 
     /// @notice function to move non FEI ERC20 tokens to the PCV Deposit
-    function deposit() external override {
-        uint256 currentBalance = balance();
+    function deposit() external {
+        uint256 currentBalance = underlyingToken.balanceOf(address(this));
         require(
             currentBalance != 0,
             "PegStabilityModule: No balance to deposit"
