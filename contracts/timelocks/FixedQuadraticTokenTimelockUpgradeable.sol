@@ -18,10 +18,10 @@ contract FixedQuadraticTokenTimelockUpgradeable is Initializable, FixedTokenTime
         __FixedTokenTimelock_init(
             _beneficiary, 
             _duration, 
-            _cliffDuration,
             _lockedToken, 
-            _lockedAmount,
-            _clawbackAdmin
+            _cliffDuration,
+            _clawbackAdmin,
+            _lockedAmount
         );
 
         if (_startTime != 0) {

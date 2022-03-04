@@ -25,9 +25,9 @@ abstract contract TokenTimelockUpgradeable is Initializable, ITokenTimelock, Tim
     uint256 internal lastBalance;
 
     /// @notice number of seconds before releasing is allowed
-    uint256 public immutable cliffSeconds;
+    uint256 public cliffSeconds;
 
-    address public immutable clawbackAdmin;
+    address public clawbackAdmin;
 
     function __TokenTimelock_init(
         address _beneficiary,
@@ -70,7 +70,7 @@ abstract contract TokenTimelockUpgradeable is Initializable, ITokenTimelock, Tim
     }
 
     // Prevents incoming LP tokens from messing up calculations
-    modifier balanceCheck() {
+    modifier balanceCheck() virtual {
         if (totalToken() > lastBalance) {
             uint256 delta = totalToken() - lastBalance;
             initialBalance = initialBalance + delta;
@@ -110,7 +110,7 @@ abstract contract TokenTimelockUpgradeable is Initializable, ITokenTimelock, Tim
     }
 
     /// @notice amount of tokens released to beneficiary
-    function alreadyReleasedAmount() public view override returns (uint256) {
+    function alreadyReleasedAmount() public view override virtual returns (uint256) {
         return initialBalance - totalToken();
     }
 
@@ -166,7 +166,7 @@ abstract contract TokenTimelockUpgradeable is Initializable, ITokenTimelock, Tim
         lockedToken = IERC20(tokenAddress);
     }
 
-    function _release(address to, uint256 amount) internal {
+    function _release(address to, uint256 amount) internal virtual {
         lockedToken.transfer(to, amount);
         emit Release(beneficiary, to, amount);
     }
