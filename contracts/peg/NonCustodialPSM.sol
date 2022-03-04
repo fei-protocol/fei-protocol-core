@@ -357,12 +357,6 @@ contract NonCustodialPSM is
         return fei().balanceOf(address(this)) + buffer();
     }
 
-    /// @notice function from PCVDeposit that usually must be overriden, but because
-    /// this contract is not a PCV deposit is not overriden
-    function balance() public view virtual returns (uint256) {
-        return underlyingToken.balanceOf(address(this));
-    }
-
     // ----------- Internal Methods -----------
 
     /// @notice helper function to get mint amount out based on current market prices

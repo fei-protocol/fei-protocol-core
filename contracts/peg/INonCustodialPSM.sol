@@ -7,7 +7,7 @@ import {IPCVDeposit} from "../pcv/IPCVDeposit.sol";
 /**
  * @title Fei Peg Stability Module
  * @author Fei Protocol
- * @notice  The Fei PSM is a contract which pulls reserve assets from PCV Deposits a reserve in order to exchange FEI at $1 of underlying assets with a fee.
+ * @notice  The Fei PSM is a contract which pulls reserve assets from PCV Deposits in order to exchange FEI at $1 of underlying assets with a fee.
  * `mint()` - buy FEI for $1 of underlying tokens
  * `redeem()` - sell FEI back for $1 of the same
  *

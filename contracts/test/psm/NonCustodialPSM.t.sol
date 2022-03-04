@@ -124,7 +124,9 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice PSM is set up correctly, all state variables and balances are correct
     function testPSMSetup() public {
-        uint256 startingPSMUnderlyingBalance = psm.balance();
+        uint256 startingPSMUnderlyingBalance = underlyingToken.balanceOf(
+            address(psm)
+        );
         uint256 startingUserFEIBalance = fei.balanceOf(address(this));
 
         assertEq(startingPSMUnderlyingBalance, 0);
@@ -140,7 +142,9 @@ contract NonCustodialPSMTest is DSTest {
         psm.mint(address(this), mintAmount, mintAmount);
 
         uint256 endingUserFEIBalance = fei.balanceOf(address(this));
-        uint256 endingPSMUnderlyingBalance = psm.balance();
+        uint256 endingPSMUnderlyingBalance = underlyingToken.balanceOf(
+            address(psm)
+        );
         uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
             address(pcvDeposit)
         );
@@ -159,7 +163,9 @@ contract NonCustodialPSMTest is DSTest {
         uint256 endingUserUnderlyingBalance = underlyingToken.balanceOf(
             address(this)
         );
-        uint256 endingPSMUnderlyingBalance = psm.balance();
+        uint256 endingPSMUnderlyingBalance = underlyingToken.balanceOf(
+            address(psm)
+        );
         uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
             address(pcvDeposit)
         );
@@ -182,7 +188,9 @@ contract NonCustodialPSMTest is DSTest {
         uint256 endingUserUnderlyingBalance = underlyingToken.balanceOf(
             address(this)
         );
-        uint256 endingPSMUnderlyingBalance = psm.balance();
+        uint256 endingPSMUnderlyingBalance = underlyingToken.balanceOf(
+            address(psm)
+        );
         uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
             address(pcvDeposit)
         );
@@ -204,7 +212,9 @@ contract NonCustodialPSMTest is DSTest {
 
         uint256 bufferEnd = rateLimitedMinter.individualBuffer(address(psm));
         uint256 endingUserFEIBalance = fei.balanceOf(address(this));
-        uint256 endingPSMUnderlyingBalance = psm.balance();
+        uint256 endingPSMUnderlyingBalance = underlyingToken.balanceOf(
+            address(psm)
+        );
         uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
             address(pcvDeposit)
         );
