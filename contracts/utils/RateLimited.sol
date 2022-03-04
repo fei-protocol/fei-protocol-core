@@ -23,7 +23,7 @@ abstract contract RateLimited is CoreRef {
     bool public doPartialAction;
 
     /// @notice the buffer at the timestamp of lastBufferUsedTime
-    uint256 internal _bufferStored;
+    uint256 private _bufferStored;
 
     event BufferUsed(uint256 amountUsed, uint256 bufferRemaining);
     event BufferCapUpdate(uint256 oldBufferCap, uint256 newBufferCap);
@@ -85,6 +85,11 @@ abstract contract RateLimited is CoreRef {
             Math.min(_bufferStored + (rateLimitPerSecond * elapsed), bufferCap);
     }
 
+    /// @notice return buffer stored to validate state transitions
+    function bufferStored() public view returns (uint256) {
+        return _bufferStored;
+    }
+
     /** 
         @notice the method that enforces the rate limit. Decreases buffer by "amount". 
         If buffer is <= amount either
@@ -110,6 +115,19 @@ abstract contract RateLimited is CoreRef {
         emit BufferUsed(usedAmount, _bufferStored);
 
         return usedAmount;
+    }
+
+    /// @notice function to replenish buffer
+    /// @param amount to increase buffer by if under buffer cap
+    function _replenishBuffer(uint256 amount) internal {
+        uint256 newBuffer = buffer();
+
+        /// cannot replenish any further if already at buffer cap
+        if (newBuffer == bufferCap) {
+            return;
+        }
+
+        _bufferStored = newBuffer + amount;
     }
 
     function _setRateLimitPerSecond(uint256 newRateLimitPerSecond) internal {

@@ -4,10 +4,10 @@ pragma solidity ^0.8.4;
 import {Decimal} from "../external/Decimal.sol";
 import {Constants} from "../Constants.sol";
 import {OracleRef} from "./../refs/OracleRef.sol";
+import {RateLimited} from "./../utils/RateLimited.sol";
 import {IPCVDeposit, PCVDeposit} from "./../pcv/PCVDeposit.sol";
 import {INonCustodialPSM} from "./INonCustodialPSM.sol";
 import {GlobalRateLimitedMinter} from "./../utils/GlobalRateLimitedMinter.sol";
-import {RateLimitedReplenishable} from "./../utils/RateLimitedReplenishable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
@@ -19,7 +19,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 /// When funds are needed for a redemption, they are simply pulled from the PCV Deposit
 contract NonCustodialPSM is
     INonCustodialPSM,
-    RateLimitedReplenishable,
+    RateLimited,
     OracleRef,
     ReentrancyGuard
 {
@@ -109,8 +109,8 @@ contract NonCustodialPSM is
             params.decimalsNormalizer,
             params.doInvert
         )
-        /// rate limited replenishable passes false as the last param as there can be no partial mints
-        RateLimitedReplenishable(
+        /// rate limited replenishable passes false as the last param as there can be no partial actions
+        RateLimited(
             rateLimitedParams.maxRateLimitPerSecond,
             rateLimitedParams.rateLimitPerSecond,
             rateLimitedParams.bufferCap,
@@ -208,7 +208,7 @@ contract NonCustodialPSM is
         address token,
         address to,
         uint256 amount
-    ) external override onlyGovernorOrAdmin {
+    ) external override onlyPCVController {
         IERC20(token).safeTransfer(to, amount);
         emit WithdrawERC20(msg.sender, token, to, amount);
     }
@@ -295,11 +295,12 @@ contract NonCustodialPSM is
             amountOut >= minAmountOut,
             "PegStabilityModule: Redeem not enough out"
         );
+
         _depleteBuffer(amountFeiIn);
 
         IERC20(fei()).safeTransferFrom(msg.sender, address(this), amountFeiIn);
 
-        _transfer(to, amountOut);
+        pcvDeposit.withdraw(to, amountOut);
 
         emit Redeem(to, amountFeiIn, amountOut);
     }
@@ -330,7 +331,11 @@ contract NonCustodialPSM is
             "PegStabilityModule: Mint not enough out"
         );
 
-        _transferFrom(msg.sender, address(pcvDeposit), amountIn);
+        underlyingToken.safeTransferFrom(
+            msg.sender,
+            address(pcvDeposit),
+            amountIn
+        );
 
         uint256 amountFeiToTransfer = Math.min(
             fei().balanceOf(address(this)),
@@ -428,49 +433,9 @@ contract NonCustodialPSM is
         amountTokenOut = adjustedAmountIn.div(price).asUint256();
     }
 
-    /// @notice transfer ERC20 token to the recipient from the PCV Deposit
-    /// @param to recipient address
-    /// @param amount number of tokens sent to recipient
-    function _transfer(address to, uint256 amount) internal {
-        pcvDeposit.withdraw(to, amount);
-    }
-
-    /// @notice transfer assets from user to the PCV Deposit
-    /// Does not call deposit to save gas and make mints cheaper
-    /// @param from sending address
-    /// @param amount number of tokens sent to PCV Deposit
-    function _transferFrom(
-        address from,
-        address pcvDepositAddress,
-        uint256 amount
-    ) internal {
-        underlyingToken.safeTransferFrom(from, pcvDepositAddress, amount);
-    }
-
-    /// @notice function to move non FEI ERC20 tokens to the PCV Deposit
-    function sweep() external override {
-        uint256 currentBalance = underlyingToken.balanceOf(address(this));
-        require(currentBalance != 0, "PegStabilityModule: No balance to sweep");
-
-        underlyingToken.safeTransfer(address(pcvDeposit), currentBalance);
-        pcvDeposit.deposit();
-    }
-
-    /// @notice function to move non FEI ERC20 tokens to the PCV Deposit
-    function deposit() external {
-        uint256 currentBalance = underlyingToken.balanceOf(address(this));
-        require(
-            currentBalance != 0,
-            "PegStabilityModule: No balance to deposit"
-        );
-
-        underlyingToken.safeTransfer(address(pcvDeposit), currentBalance);
-        pcvDeposit.deposit();
-    }
-
     // ----------- Hooks -----------
 
-    /// @notice overriden function in the bounded PSM
+    /// @notice overriden function in the price bound PSM
     function _validatePriceRange(Decimal.D256 memory price)
         internal
         view

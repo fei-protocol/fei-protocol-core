@@ -38,9 +38,6 @@ interface INonCustodialPSM {
         uint256 minAmountOut
     ) external returns (uint256 amountOut);
 
-    /// @notice send any surplus token to the PCV Deposit
-    function sweep() external;
-
     // ----------- Governor or Admin Only State Changing API -----------
 
     /// @notice set the mint fee vs oracle price in basis point terms

@@ -103,6 +103,7 @@ contract NonCustodialPSMTest is DSTest {
         core.grantMinter(addresses.governorAddress);
         core.grantMinter(address(rateLimitedMinter));
         core.grantPCVController(address(psm));
+        core.grantPCVController(addresses.governorAddress);
         rateLimitedMinter.addAddress(
             address(psm),
             uint112(rps),
@@ -115,11 +116,11 @@ contract NonCustodialPSMTest is DSTest {
         vm.stopPrank();
 
         /// mint the PSM and user some underlying tokens
-        underlyingToken.mint(address(psm), mintAmount);
+        underlyingToken.mint(address(pcvDeposit), mintAmount);
         underlyingToken.mint(address(this), mintAmount);
 
-        /// send all excess tokens to the PCV deposit
-        psm.sweep();
+        /// invest all excess tokens in the PCV deposit
+        pcvDeposit.deposit();
     }
 
     /// @notice PSM is set up correctly, all state variables and balances are correct
@@ -257,25 +258,9 @@ contract NonCustodialPSMTest is DSTest {
         psm.mint(address(this), mintAmount, mintAmount);
     }
 
-    /// @notice allocate fails without underlying token balance
-    function testAllocateFailure() public {
-        vm.expectRevert(bytes("PegStabilityModule: No balance to sweep"));
-
-        psm.sweep();
-    }
-
-    /// @notice deposit fails without underlying token balance
-    function testDepositFailure() public {
-        vm.expectRevert(bytes("PegStabilityModule: No balance to deposit"));
-
-        psm.deposit();
-    }
-
     /// @notice withdraw erc20 fails without correct permissions
     function testERC20WithdrawFailure() public {
-        vm.expectRevert(
-            bytes("CoreRef: Caller is not a governor or contract admin")
-        );
+        vm.expectRevert(bytes("CoreRef: Caller is not a PCV controller"));
 
         psm.withdrawERC20(address(underlyingToken), address(this), 100);
     }
@@ -284,7 +269,7 @@ contract NonCustodialPSMTest is DSTest {
     function testERC20WithdrawSuccess() public {
         vm.startPrank(addresses.governorAddress);
 
-        core.grantGovernor(address(this));
+        core.grantPCVController(address(this));
         underlyingToken.mint(address(psm), mintAmount);
 
         vm.stopPrank();
@@ -294,32 +279,6 @@ contract NonCustodialPSMTest is DSTest {
         uint256 endingBalance = underlyingToken.balanceOf(address(this));
 
         assertEq(endingBalance - startingBalance, mintAmount);
-    }
-
-    /// @notice deposit succeeds with underlying token balance and sends to PCV Deposit
-    function testDepositSuccess() public {
-        underlyingToken.mint(address(psm), mintAmount);
-
-        psm.deposit();
-
-        assertEq(underlyingToken.balanceOf(address(psm)), 0);
-        assertEq(
-            underlyingToken.balanceOf(address(pcvDeposit)),
-            mintAmount * 2
-        );
-    }
-
-    /// @notice allocate surplus succeeds with underlying token balance and sends to PCV Deposit
-    function testSweepSuccess() public {
-        underlyingToken.mint(address(psm), mintAmount);
-
-        psm.sweep();
-
-        assertEq(underlyingToken.balanceOf(address(psm)), 0);
-        assertEq(
-            underlyingToken.balanceOf(address(pcvDeposit)),
-            mintAmount * 2
-        );
     }
 
     /// @notice set global rate limited minter fails when caller is not governor
