@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IPCVDeposit} from "../pcv/IPCVDeposit.sol";
+import {GlobalRateLimitedMinter} from "../utils/GlobalRateLimitedMinter.sol";
 
 /**
  * @title Fei Peg Stability Module
@@ -50,6 +51,17 @@ interface INonCustodialPSM {
 
     /// @notice set the target for sending surplus reserves
     function setPCVDeposit(IPCVDeposit newTarget) external;
+
+    /// @notice set the target to call for FEI minting
+    function setGlobalRateLimitedMinter(GlobalRateLimitedMinter newMinter)
+        external;
+
+    /// @notice withdraw ERC20 from the contract
+    function withdrawERC20(
+        address token,
+        address to,
+        uint256 amount
+    ) external;
 
     // ----------- Getters -----------
 
@@ -115,5 +127,11 @@ interface INonCustodialPSM {
         address indexed _token,
         address indexed _to,
         uint256 _amount
+    );
+
+    /// @notice event emitted when global rate limited minter is updated
+    event GlobalRateLimitedMinterUpdate(
+        GlobalRateLimitedMinter oldMinter,
+        GlobalRateLimitedMinter newMinter
     );
 }

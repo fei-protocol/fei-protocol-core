@@ -41,7 +41,7 @@ contract NonCustodialPSM is
     IERC20 public immutable override underlyingToken;
 
     /// @notice Rate Limited Minter contract that will be called when FEI needs to be minted
-    GlobalRateLimitedMinter public immutable rateLimitedMinter;
+    GlobalRateLimitedMinter public rateLimitedMinter;
 
     /// @notice the max mint and redeem fee in basis points
     /// Governance can change this fee
@@ -118,8 +118,8 @@ contract NonCustodialPSM is
         )
     {
         underlyingToken = psmParams.underlyingToken;
-        rateLimitedMinter = psmParams.rateLimitedMinter;
 
+        _setGlobalRateLimitedMinter(psmParams.rateLimitedMinter);
         _setMintFee(psmParams.mintFeeBasisPoints);
         _setRedeemFee(psmParams.redeemFeeBasisPoints);
         _setPCVDeposit(psmParams.pcvDeposit);
@@ -190,6 +190,16 @@ contract NonCustodialPSM is
         _setPCVDeposit(newTarget);
     }
 
+    /// @notice set the target to call for FEI minting
+    /// @param newMinter new Global Rate Limited Minter for this PSM
+    function setGlobalRateLimitedMinter(GlobalRateLimitedMinter newMinter)
+        external
+        override
+        onlyGovernorOrAdmin
+    {
+        _setGlobalRateLimitedMinter(newMinter);
+    }
+
     /// @notice withdraw ERC20 from the contract
     /// @param token address of the ERC20 to send
     /// @param to address destination of the ERC20
@@ -198,9 +208,22 @@ contract NonCustodialPSM is
         address token,
         address to,
         uint256 amount
-    ) external onlyGovernorOrAdmin {
+    ) external override onlyGovernorOrAdmin {
         IERC20(token).safeTransfer(to, amount);
         emit WithdrawERC20(msg.sender, token, to, amount);
+    }
+
+    function _setGlobalRateLimitedMinter(GlobalRateLimitedMinter newMinter)
+        internal
+    {
+        require(
+            address(newMinter) != address(0),
+            "PegStabilityModule: Invalid new GlobalRateLimitedMinter"
+        );
+        GlobalRateLimitedMinter oldMinter = rateLimitedMinter;
+        rateLimitedMinter = newMinter;
+
+        emit GlobalRateLimitedMinterUpdate(oldMinter, newMinter);
     }
 
     /// @notice set the mint fee vs oracle price in basis point terms

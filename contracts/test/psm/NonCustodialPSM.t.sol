@@ -321,4 +321,36 @@ contract NonCustodialPSMTest is DSTest {
             mintAmount * 2
         );
     }
+
+    /// @notice set global rate limited minter fails when caller is not governor
+    function testSetGlobalRateLimitedMinterFailure() public {
+        vm.expectRevert(
+            bytes("CoreRef: Caller is not a governor or contract admin")
+        );
+
+        psm.setGlobalRateLimitedMinter(GlobalRateLimitedMinter(address(this)));
+    }
+
+    /// @notice set global rate limited minter fails when caller is governor and new address is 0
+    function testSetGlobalRateLimitedMinterFailureZeroAddress() public {
+        vm.startPrank(addresses.governorAddress);
+
+        vm.expectRevert(
+            bytes("PegStabilityModule: Invalid new GlobalRateLimitedMinter")
+        );
+        psm.setGlobalRateLimitedMinter(GlobalRateLimitedMinter(address(0)));
+
+        vm.stopPrank();
+    }
+
+    /// @notice set global rate limited minter succeeds when caller is governor
+    function testSetGlobalRateLimitedMinterSuccess() public {
+        vm.startPrank(addresses.governorAddress);
+
+        psm.setGlobalRateLimitedMinter(GlobalRateLimitedMinter(address(this)));
+
+        assertEq(address(psm.rateLimitedMinter()), address(this));
+
+        vm.stopPrank();
+    }
 }
