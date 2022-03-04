@@ -283,7 +283,7 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice set global rate limited minter fails when caller is not governor
     function testSetGlobalRateLimitedMinterFailure() public {
-        vm.expectRevert(bytes("CoreRef: Caller is not a governor"));
+        vm.expectRevert(bytes("UNAUTHORIZED"));
 
         psm.setGlobalRateLimitedMinter(GlobalRateLimitedMinter(address(this)));
     }
@@ -321,13 +321,13 @@ contract NonCustodialPSMTest is DSTest {
         vm.stopPrank();
     }
 
-    /// @notice set global rate limited minter fails when caller is governor and new address is 0
+    /// @notice set PCV deposit fails when caller is governor and new address is 0
     function testSetPCVDepositFailureNonGovernor() public {
-        vm.expectRevert(bytes("CoreRef: Caller is not a governor"));
+        vm.expectRevert(bytes("UNAUTHORIZED"));
         psm.setPCVDeposit(IPCVDeposit(address(0)));
     }
 
-    /// @notice set global rate limited minter fails when caller is governor and new address is 0
+    /// @notice set PCV deposit fails when caller is governor and new address is 0
     function testSetPCVDepositFailureUnderlyingTokenMismatch() public {
         vm.startPrank(addresses.governorAddress);
 
@@ -361,5 +361,23 @@ contract NonCustodialPSMTest is DSTest {
         vm.stopPrank();
 
         assertEq(address(newPCVDeposit), address(psm.pcvDeposit()));
+    }
+
+    /// @notice set mint fee succeeds
+    function testSetMintFeeSuccess() public {
+        vm.startPrank(addresses.governorAddress);
+        psm.setMintFee(100);
+        vm.stopPrank();
+
+        assertEq(psm.mintFeeBasisPoints(), 100);
+    }
+
+    /// @notice set redeem fee succeeds
+    function testSetRedeemFeeSuccess() public {
+        vm.startPrank(addresses.governorAddress);
+        psm.setRedeemFee(100);
+        vm.stopPrank();
+
+        assertEq(psm.redeemFeeBasisPoints(), 100);
     }
 }

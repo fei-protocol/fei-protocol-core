@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 import {Decimal} from "../external/Decimal.sol";
 import {Constants} from "../Constants.sol";
 import {OracleRef} from "./../refs/OracleRef.sol";
+import {TribeRoles} from "./../core/TribeRoles.sol";
 import {RateLimited} from "./../utils/RateLimited.sol";
 import {IPCVDeposit, PCVDeposit} from "./../pcv/PCVDeposit.sol";
 import {INonCustodialPSM} from "./INonCustodialPSM.sol";
@@ -165,7 +166,7 @@ contract NonCustodialPSM is
     function setMintFee(uint256 newMintFeeBasisPoints)
         external
         override
-        onlyGovernor
+        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.PARAMETER_ADMIN)
     {
         _setMintFee(newMintFeeBasisPoints);
     }
@@ -174,7 +175,7 @@ contract NonCustodialPSM is
     function setRedeemFee(uint256 newRedeemFeeBasisPoints)
         external
         override
-        onlyGovernor
+        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.PARAMETER_ADMIN)
     {
         _setRedeemFee(newRedeemFeeBasisPoints);
     }
@@ -184,7 +185,7 @@ contract NonCustodialPSM is
     function setPCVDeposit(IPCVDeposit newTarget)
         external
         override
-        onlyGovernor
+        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.PSM_ADMIN_ROLE)
     {
         _setPCVDeposit(newTarget);
     }
@@ -194,7 +195,7 @@ contract NonCustodialPSM is
     function setGlobalRateLimitedMinter(GlobalRateLimitedMinter newMinter)
         external
         override
-        onlyGovernor
+        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.PSM_ADMIN_ROLE)
     {
         _setGlobalRateLimitedMinter(newMinter);
     }
