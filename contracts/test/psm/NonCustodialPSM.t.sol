@@ -283,9 +283,7 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice set global rate limited minter fails when caller is not governor
     function testSetGlobalRateLimitedMinterFailure() public {
-        vm.expectRevert(
-            bytes("CoreRef: Caller is not a governor or contract admin")
-        );
+        vm.expectRevert(bytes("CoreRef: Caller is not a governor"));
 
         psm.setGlobalRateLimitedMinter(GlobalRateLimitedMinter(address(this)));
     }
@@ -311,5 +309,57 @@ contract NonCustodialPSMTest is DSTest {
         assertEq(address(psm.rateLimitedMinter()), address(this));
 
         vm.stopPrank();
+    }
+
+    /// @notice set global rate limited minter fails when caller is governor and new address is 0
+    function testSetPCVDepositFailureZeroAddress() public {
+        vm.startPrank(addresses.governorAddress);
+
+        vm.expectRevert(bytes("PegStabilityModule: Invalid new PCVDeposit"));
+        psm.setPCVDeposit(IPCVDeposit(address(0)));
+
+        vm.stopPrank();
+    }
+
+    /// @notice set global rate limited minter fails when caller is governor and new address is 0
+    function testSetPCVDepositFailureNonGovernor() public {
+        vm.expectRevert(bytes("CoreRef: Caller is not a governor"));
+        psm.setPCVDeposit(IPCVDeposit(address(0)));
+    }
+
+    /// @notice set global rate limited minter fails when caller is governor and new address is 0
+    function testSetPCVDepositFailureUnderlyingTokenMismatch() public {
+        vm.startPrank(addresses.governorAddress);
+
+        MockPCVDepositV2 newPCVDeposit = new MockPCVDepositV2(
+            address(core),
+            address(fei),
+            0,
+            0
+        );
+
+        vm.expectRevert(bytes("PegStabilityModule: Underlying token mismatch"));
+
+        psm.setPCVDeposit(IPCVDeposit(address(newPCVDeposit)));
+
+        vm.stopPrank();
+    }
+
+    /// @notice set PCV Deposit succeeds when caller is governor and underlying tokens match
+    function testSetPCVDepositSuccess() public {
+        vm.startPrank(addresses.governorAddress);
+
+        MockPCVDepositV2 newPCVDeposit = new MockPCVDepositV2(
+            address(core),
+            address(underlyingToken),
+            0,
+            0
+        );
+
+        psm.setPCVDeposit(IPCVDeposit(address(newPCVDeposit)));
+
+        vm.stopPrank();
+
+        assertEq(address(newPCVDeposit), address(psm.pcvDeposit()));
     }
 }

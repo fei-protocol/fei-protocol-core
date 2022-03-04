@@ -185,7 +185,7 @@ contract NonCustodialPSM is
     function setPCVDeposit(IPCVDeposit newTarget)
         external
         override
-        onlyGovernorOrAdmin
+        onlyGovernor
     {
         _setPCVDeposit(newTarget);
     }
@@ -195,7 +195,7 @@ contract NonCustodialPSM is
     function setGlobalRateLimitedMinter(GlobalRateLimitedMinter newMinter)
         external
         override
-        onlyGovernorOrAdmin
+        onlyGovernor
     {
         _setGlobalRateLimitedMinter(newMinter);
     }
@@ -351,7 +351,7 @@ contract NonCustodialPSM is
             rateLimitedMinter.mintFei(to, amountFeiToMint);
         }
 
-        _replenishBuffer(amountFeiToTransfer + amountFeiToMint);
+        _replenishBuffer(amountFeiOut);
 
         emit Mint(to, amountIn, amountFeiOut);
     }
