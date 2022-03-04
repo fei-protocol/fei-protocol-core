@@ -123,7 +123,6 @@ contract NonCustodialPSM is
         _setMintFee(psmParams.mintFeeBasisPoints);
         _setRedeemFee(psmParams.redeemFeeBasisPoints);
         _setPCVDeposit(psmParams.pcvDeposit);
-        _setContractAdminRole(keccak256("PSM_ADMIN_ROLE"));
     }
 
     /// @notice modifier that allows execution when redemptions are not paused
@@ -139,25 +138,25 @@ contract NonCustodialPSM is
     }
 
     /// @notice set secondary pausable methods to paused
-    function pauseRedeem() external isGovernorOrGuardianOrAdmin {
+    function pauseRedeem() external onlyGuardianOrGovernor {
         redeemPaused = true;
         emit RedemptionsPaused(msg.sender);
     }
 
     /// @notice set secondary pausable methods to unpaused
-    function unpauseRedeem() external isGovernorOrGuardianOrAdmin {
+    function unpauseRedeem() external onlyGuardianOrGovernor {
         redeemPaused = false;
         emit RedemptionsUnpaused(msg.sender);
     }
 
     /// @notice set secondary pausable methods to paused
-    function pauseMint() external isGovernorOrGuardianOrAdmin {
+    function pauseMint() external onlyGuardianOrGovernor {
         mintPaused = true;
         emit MintingPaused(msg.sender);
     }
 
     /// @notice set secondary pausable methods to unpaused
-    function unpauseMint() external isGovernorOrGuardianOrAdmin {
+    function unpauseMint() external onlyGuardianOrGovernor {
         mintPaused = false;
         emit MintingUnpaused(msg.sender);
     }
@@ -166,7 +165,7 @@ contract NonCustodialPSM is
     function setMintFee(uint256 newMintFeeBasisPoints)
         external
         override
-        onlyGovernorOrAdmin
+        onlyGovernor
     {
         _setMintFee(newMintFeeBasisPoints);
     }
@@ -175,7 +174,7 @@ contract NonCustodialPSM is
     function setRedeemFee(uint256 newRedeemFeeBasisPoints)
         external
         override
-        onlyGovernorOrAdmin
+        onlyGovernor
     {
         _setRedeemFee(newRedeemFeeBasisPoints);
     }
