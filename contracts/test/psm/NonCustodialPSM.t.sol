@@ -217,6 +217,22 @@ contract NonCustodialPSMTest is DSTest {
         assertEq(bufferEnd, bufferCap - mintAmount);
     }
 
+    /// @notice replenishable rate limited minter buffer on the PSM gets increased on mint
+    function testBufferReplenishment() public {
+        /// drain buffer
+        fei.approve(address(psm), mintAmount);
+        psm.redeem(address(this), mintAmount, mintAmount);
+
+        uint256 bufferStart = psm.bufferStored();
+
+        underlyingToken.approve(address(psm), mintAmount);
+        psm.mint(address(this), mintAmount, mintAmount);
+
+        uint256 bufferEnd = psm.bufferStored();
+
+        assertEq(bufferEnd - bufferStart, mintAmount);
+    }
+
     /// @notice redeem fails without approval
     function testSwapFeiForUnderlyingFailsWithoutApproval() public {
         vm.expectRevert(bytes("ERC20: insufficient allowance"));

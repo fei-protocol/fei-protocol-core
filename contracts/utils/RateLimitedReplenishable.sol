@@ -32,4 +32,9 @@ abstract contract RateLimitedReplenishable is RateLimited {
 
         _bufferStored = newBuffer + amount;
     }
+
+    /// @notice return buffer stored to validate state transitions
+    function bufferStored() public view returns (uint256) {
+        return _bufferStored;
+    }
 }
