@@ -227,16 +227,16 @@ contract NonCustodialPSM is
         emit RedeemFeeUpdate(_oldRedeemFee, newRedeemFeeBasisPoints);
     }
 
-    /// @notice helper function to set the surplus target
-    function _setPCVDeposit(IPCVDeposit newSurplusTarget) internal {
+    /// @notice helper function to set the PCV deposit
+    function _setPCVDeposit(IPCVDeposit newPCVDeposit) internal {
         require(
-            address(newSurplusTarget) != address(0),
-            "PegStabilityModule: Invalid new surplus target"
+            address(newPCVDeposit) != address(0),
+            "PegStabilityModule: Invalid new PCVDeposit"
         );
         IPCVDeposit oldTarget = pcvDeposit;
-        pcvDeposit = newSurplusTarget;
+        pcvDeposit = newPCVDeposit;
 
-        emit PCVDepositUpdate(oldTarget, newSurplusTarget);
+        emit PCVDepositUpdate(oldTarget, newPCVDeposit);
     }
 
     // ----------- Public State Changing API -----------
