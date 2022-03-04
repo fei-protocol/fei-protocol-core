@@ -233,6 +233,10 @@ contract NonCustodialPSM is
             address(newPCVDeposit) != address(0),
             "PegStabilityModule: Invalid new PCVDeposit"
         );
+        require(
+            newPCVDeposit.balanceReportedIn() == address(underlyingToken),
+            "PegStabilityModule: Underlying token mismatch"
+        );
         IPCVDeposit oldTarget = pcvDeposit;
         pcvDeposit = newPCVDeposit;
 
@@ -303,7 +307,7 @@ contract NonCustodialPSM is
             "PegStabilityModule: Mint not enough out"
         );
 
-        _transferFrom(msg.sender, address(this), amountIn);
+        _transferFrom(msg.sender, address(pcvDeposit), amountIn);
 
         uint256 amountFeiToTransfer = Math.min(
             fei().balanceOf(address(this)),
@@ -414,10 +418,10 @@ contract NonCustodialPSM is
     /// @param amount number of tokens sent to PCV Deposit
     function _transferFrom(
         address from,
-        address,
+        address pcvDepositAddress,
         uint256 amount
     ) internal {
-        underlyingToken.safeTransferFrom(from, address(pcvDeposit), amount);
+        underlyingToken.safeTransferFrom(from, pcvDepositAddress, amount);
     }
 
     /// @notice function to move non FEI ERC20 tokens to the PCV Deposit
