@@ -2,7 +2,8 @@
 pragma solidity ^0.8.0;
 
 import {PodManager} from "../../../pods/PodManager.sol";
-import {IOptimisticTimelock} from "../../../dao/timelock/IOptimisticTimelock.sol";
+import {PodExecutor} from "../../../pods/PodExecutor.sol";
+import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
 import {IControllerV1} from "../../../pods/interfaces/IControllerV1.sol";
 
 import {DSTest} from "../../utils/DSTest.sol";
@@ -17,6 +18,7 @@ contract PodManagerIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
     PodManager manager;
+    PodExecutor podExecutor;
     address private core = 0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9;
     address private podController = 0xD89AAd5348A34E440E72f5F596De4fA7e291A3e8;
     address private memberToken = 0x0762aA185b6ed2dCA77945Ebe92De705e0C37AE3;
@@ -26,7 +28,14 @@ contract PodManagerIntegrationTest is DSTest {
     bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
 
     function setUp() public {
-        manager = new PodManager(core, podAdmin, podController, memberToken);
+        podExecutor = new PodExecutor();
+        manager = new PodManager(
+            core,
+            podAdmin,
+            podController,
+            memberToken,
+            address(podExecutor)
+        );
         mintOrcaTokens(address(manager), 2, vm);
     }
 
@@ -75,7 +84,8 @@ contract PodManagerIntegrationTest is DSTest {
         require(timelock != address(0));
 
         address safeAddress = manager.getPodSafe(podId);
-        IOptimisticTimelock timelockContract = IOptimisticTimelock(timelock);
+        ITimelock timelockContract = ITimelock(timelock);
+
         // Gnosis safe should be the proposer
         bool hasProposerRole = timelockContract.hasRole(
             PROPOSER_ROLE,
@@ -83,11 +93,17 @@ contract PodManagerIntegrationTest is DSTest {
         );
         assertTrue(hasProposerRole);
 
-        bool hasExecutorRole = timelockContract.hasRole(
+        bool safeAddressIsExecutor = timelockContract.hasRole(
             EXECUTOR_ROLE,
             safeAddress
         );
-        assertTrue(hasExecutorRole);
+        assertTrue(safeAddressIsExecutor);
+
+        bool publicPodExecutorIsExecutor = timelockContract.hasRole(
+            EXECUTOR_ROLE,
+            address(podExecutor)
+        );
+        assertTrue(publicPodExecutorIsExecutor);
     }
 
     /// @notice Validate that the podId to timelock mapping is correct
