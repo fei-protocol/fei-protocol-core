@@ -288,6 +288,8 @@ contract NonCustodialPSM is
         whileRedemptionsNotPaused
         returns (uint256 amountOut)
     {
+        _depleteBuffer(amountFeiIn); /// deplete buffer first to save gas on buffer exhaustion sad path
+
         updateOracle();
 
         amountOut = _getRedeemAmountOut(amountFeiIn);
@@ -295,8 +297,6 @@ contract NonCustodialPSM is
             amountOut >= minAmountOut,
             "PegStabilityModule: Redeem not enough out"
         );
-
-        _depleteBuffer(amountFeiIn);
 
         IERC20(fei()).safeTransferFrom(msg.sender, address(this), amountFeiIn);
 

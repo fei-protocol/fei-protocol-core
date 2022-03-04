@@ -23,7 +23,7 @@ abstract contract RateLimited is CoreRef {
     bool public doPartialAction;
 
     /// @notice the buffer at the timestamp of lastBufferUsedTime
-    uint256 private _bufferStored;
+    uint256 public bufferStored;
 
     event BufferUsed(uint256 amountUsed, uint256 bufferRemaining);
     event BufferCapUpdate(uint256 oldBufferCap, uint256 newBufferCap);
@@ -41,7 +41,7 @@ abstract contract RateLimited is CoreRef {
         lastBufferUsedTime = block.timestamp;
 
         _setBufferCap(_bufferCap);
-        _bufferStored = _bufferCap;
+        bufferStored = _bufferCap;
 
         require(
             _rateLimitPerSecond <= _maxRateLimitPerSecond,
@@ -82,12 +82,7 @@ abstract contract RateLimited is CoreRef {
     function buffer() public view returns (uint256) {
         uint256 elapsed = block.timestamp - lastBufferUsedTime;
         return
-            Math.min(_bufferStored + (rateLimitPerSecond * elapsed), bufferCap);
-    }
-
-    /// @notice return buffer stored to validate state transitions
-    function bufferStored() public view returns (uint256) {
-        return _bufferStored;
+            Math.min(bufferStored + (rateLimitPerSecond * elapsed), bufferCap);
     }
 
     /** 
@@ -108,11 +103,11 @@ abstract contract RateLimited is CoreRef {
         require(newBuffer != 0, "RateLimited: no rate limit buffer");
         require(usedAmount <= newBuffer, "RateLimited: rate limit hit");
 
-        _bufferStored = newBuffer - usedAmount;
+        bufferStored = newBuffer - usedAmount;
 
         lastBufferUsedTime = block.timestamp;
 
-        emit BufferUsed(usedAmount, _bufferStored);
+        emit BufferUsed(usedAmount, bufferStored);
 
         return usedAmount;
     }
@@ -127,7 +122,7 @@ abstract contract RateLimited is CoreRef {
             return;
         }
 
-        _bufferStored = newBuffer + amount;
+        bufferStored = newBuffer + amount;
     }
 
     function _setRateLimitPerSecond(uint256 newRateLimitPerSecond) internal {
@@ -150,11 +145,11 @@ abstract contract RateLimited is CoreRef {
     }
 
     function _resetBuffer() internal {
-        _bufferStored = bufferCap;
+        bufferStored = bufferCap;
     }
 
     function _updateBufferStored() internal {
-        _bufferStored = buffer();
+        bufferStored = buffer();
         lastBufferUsedTime = block.timestamp;
     }
 }
