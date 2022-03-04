@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {PodManager} from "../../../pods/PodManager.sol";
+import {PodFactory} from "../../../pods/PodFactory.sol";
 import {PodExecutor} from "../../../pods/PodExecutor.sol";
 import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
 import {IControllerV1} from "../../../pods/interfaces/IControllerV1.sol";
@@ -11,13 +11,13 @@ import {mintOrcaTokens, podParams} from "../fixtures/Orca.sol";
 import {Vm} from "../../utils/Vm.sol";
 import "hardhat/console.sol";
 
-/// @notice Validate PodManager critical functionality such as
+/// @notice Validate PodFactory critical functionality such as
 /// creating pods
 ///  @dev Admin pod can not also be a pod member
-contract PodManagerIntegrationTest is DSTest {
+contract PodFactoryIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
-    PodManager manager;
+    PodFactory manager;
     PodExecutor podExecutor;
     address private core = 0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9;
     address private podController = 0xD89AAd5348A34E440E72f5F596De4fA7e291A3e8;
@@ -29,7 +29,7 @@ contract PodManagerIntegrationTest is DSTest {
 
     function setUp() public {
         podExecutor = new PodExecutor();
-        manager = new PodManager(
+        manager = new PodFactory(
             core,
             podAdmin,
             podController,

@@ -15,7 +15,7 @@ import {IMemberToken} from "../pods/interfaces/IMemberToken.sol";
 ///
 /// The timelock and Orca pod are then linked up so that the Orca pod is
 /// the only proposer and executor.
-contract PodManager {
+contract PodFactory {
     /// @notice Address from which the admin pod transactions are sent. Likely a timelock
     address private immutable podAdmin;
 
