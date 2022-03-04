@@ -245,6 +245,31 @@ contract NonCustodialPSMTest is DSTest {
         psm.deposit();
     }
 
+    /// @notice withdraw erc20 fails without correct permissions
+    function testERC20WithdrawFailure() public {
+        vm.expectRevert(
+            bytes("CoreRef: Caller is not a governor or contract admin")
+        );
+
+        psm.withdrawERC20(address(underlyingToken), address(this), 100);
+    }
+
+    /// @notice withdraw erc20 succeeds with correct permissions
+    function testERC20WithdrawSuccess() public {
+        vm.startPrank(addresses.governorAddress);
+
+        core.grantGovernor(address(this));
+        underlyingToken.mint(address(psm), mintAmount);
+
+        vm.stopPrank();
+
+        uint256 startingBalance = underlyingToken.balanceOf(address(this));
+        psm.withdrawERC20(address(underlyingToken), address(this), mintAmount);
+        uint256 endingBalance = underlyingToken.balanceOf(address(this));
+
+        assertEq(endingBalance - startingBalance, mintAmount);
+    }
+
     /// @notice deposit succeeds with underlying token balance and sends to PCV Deposit
     function testDepositSuccess() public {
         underlyingToken.mint(address(psm), mintAmount);

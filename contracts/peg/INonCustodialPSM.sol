@@ -110,4 +110,12 @@ interface INonCustodialPSM {
 
     /// @notice event emitted when fei gets minted
     event Mint(address to, uint256 amountIn, uint256 amountFeiOut);
+
+    /// @notice event emitted when ERC20 tokens get withdrawn
+    event WithdrawERC20(
+        address indexed _caller,
+        address indexed _token,
+        address indexed _to,
+        uint256 _amount
+    );
 }

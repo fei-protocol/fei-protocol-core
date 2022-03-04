@@ -5,10 +5,9 @@ import {Decimal} from "../external/Decimal.sol";
 import {Constants} from "../Constants.sol";
 import {OracleRef} from "./../refs/OracleRef.sol";
 import {RateLimited} from "./../utils/RateLimited.sol";
-import {IPCVDeposit} from "./../pcv/PCVDeposit.sol";
+import {IPCVDeposit, PCVDeposit} from "./../pcv/PCVDeposit.sol";
 import {INonCustodialPSM} from "./INonCustodialPSM.sol";
 import {GlobalRateLimitedMinter} from "./../utils/GlobalRateLimitedMinter.sol";
-
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
@@ -182,12 +181,26 @@ contract NonCustodialPSM is
     }
 
     /// @notice set the target for sending all PCV
+    /// @param newTarget new PCV Deposit target for this PSM
     function setPCVDeposit(IPCVDeposit newTarget)
         external
         override
         onlyGovernorOrAdmin
     {
         _setPCVDeposit(newTarget);
+    }
+
+    /// @notice withdraw ERC20 from the contract
+    /// @param token address of the ERC20 to send
+    /// @param to address destination of the ERC20
+    /// @param amount quantity of ERC20 to send
+    function withdrawERC20(
+        address token,
+        address to,
+        uint256 amount
+    ) external onlyGovernorOrAdmin {
+        IERC20(token).safeTransfer(to, amount);
+        emit WithdrawERC20(msg.sender, token, to, amount);
     }
 
     /// @notice set the mint fee vs oracle price in basis point terms
@@ -232,6 +245,9 @@ contract NonCustodialPSM is
     /// We do not burn Fei; this allows the contract's balance of Fei to be used before the buffer is used
     /// In practice, this helps prevent artificial cycling of mint-burn cycles and prevents a griefing vector.
     /// This function will deplete the buffer for pulling from the PCV Deposit
+    /// @param to the destination address for proceeds
+    /// @param amountFeiIn the amount of FEI to sell
+    /// @param minAmountOut the minimum amount out otherwise the TX will fail
     function redeem(
         address to,
         uint256 amountFeiIn,
@@ -263,6 +279,9 @@ contract NonCustodialPSM is
 
     /// @notice function to buy FEI for an underlying asset
     /// We first transfer any contract-owned fei, then mint the remaining if necessary
+    /// @param to the destination address for proceeds
+    /// @param amountIn the amount of external asset to sell to the PSM
+    /// @param minAmountOut the minimum amount of FEI out otherwise the TX will fail
     function mint(
         address to,
         uint256 amountIn,
