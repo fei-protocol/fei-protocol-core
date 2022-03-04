@@ -7,16 +7,14 @@ import {IPCVDeposit} from "../pcv/IPCVDeposit.sol";
 /**
  * @title Fei Peg Stability Module
  * @author Fei Protocol
- * @notice  The Fei PSM is a contract which holds a reserve of assets in order to exchange FEI at $1 of underlying assets with a fee.
+ * @notice  The Fei PSM is a contract which pulls reserve assets from PCV Deposits a reserve in order to exchange FEI at $1 of underlying assets with a fee.
  * `mint()` - buy FEI for $1 of underlying tokens
  * `redeem()` - sell FEI back for $1 of the same
  *
- * The contract has a reservesThreshold() of underlying meant to stand ready for redemptions. Any surplus reserves can be sent into the PCV using `allocateSurplus()`
  *
  * The contract is a
- * PCVDeposit - to track reserves
  * OracleRef - to determine price of underlying, and
- * RateLimitedMinter - to stop infinite mints and related issues (but this is in the implementation due to inheritance-linearization difficulties)
+ * RateLimitedReplenishable - to stop infinite mints and related DOS issues
  *
  * Inspired by MakerDAO PSM, code written without reference
  */
