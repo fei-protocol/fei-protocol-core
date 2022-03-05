@@ -89,6 +89,12 @@ interface INonCustodialPSM {
     /// @notice the PCV deposit target to deposit and withdraw from
     function pcvDeposit() external view returns (IPCVDeposit);
 
+    /// @notice Rate Limited Minter contract that will be called when FEI needs to be minted
+    function rateLimitedMinter()
+        external
+        view
+        returns (GlobalRateLimitedMinter);
+
     /// @notice the max mint and redeem fee in basis points
     function MAX_FEE() external view returns (uint256);
 
