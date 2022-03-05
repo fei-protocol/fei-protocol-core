@@ -137,6 +137,29 @@ contract NonCustodialPSMTest is DSTest {
         assertTrue(core.isMinter(address(rateLimitedMinter)));
     }
 
+    /// @notice PSM is set up correctly and view functions are working
+    function testGetRedeemAmountOut() public {
+        uint256 amountFeiIn = 100;
+        assertEq(psm.getRedeemAmountOut(amountFeiIn), amountFeiIn);
+    }
+
+    /// @notice PSM is set up correctly and view functions are working
+    function testGetMaxMintAmountOut() public {
+        assertEq(psm.getMaxMintAmountOut(), bufferCap);
+
+        vm.startPrank(addresses.governorAddress);
+        fei.mint(address(psm), mintAmount);
+        vm.stopPrank();
+
+        assertEq(psm.getMaxMintAmountOut(), bufferCap + mintAmount);
+    }
+
+    /// @notice PSM is set up correctly and view functions are working
+    function testGetMintAmountOut() public {
+        uint256 amountFeiIn = 100;
+        assertEq(psm.getMintAmountOut(amountFeiIn), amountFeiIn);
+    }
+
     /// @notice pcv deposit receives underlying token on mint
     function testSwapUnderlyingForFei() public {
         underlyingToken.approve(address(psm), mintAmount);
@@ -372,6 +395,13 @@ contract NonCustodialPSMTest is DSTest {
         assertEq(psm.mintFeeBasisPoints(), 100);
     }
 
+    /// @notice set mint fee fails unauthorized
+    function testSetMintFeeFailsWithoutCorrectRoles() public {
+        vm.expectRevert(bytes("UNAUTHORIZED"));
+
+        psm.setMintFee(100);
+    }
+
     /// @notice set redeem fee succeeds
     function testSetRedeemFeeSuccess() public {
         vm.startPrank(addresses.governorAddress);
@@ -379,5 +409,32 @@ contract NonCustodialPSMTest is DSTest {
         vm.stopPrank();
 
         assertEq(psm.redeemFeeBasisPoints(), 100);
+    }
+
+    /// @notice set redeem fee fails unauthorized
+    function testSetRedeemFeeFailsWithoutCorrectRoles() public {
+        vm.expectRevert(bytes("UNAUTHORIZED"));
+
+        psm.setRedeemFee(100);
+    }
+
+    /// @notice redeem fails when paused
+    function testRedeemFailsWhenPaused() public {
+        vm.startPrank(addresses.governorAddress);
+        psm.pauseRedeem();
+        vm.stopPrank();
+
+        vm.expectRevert(bytes("PegStabilityModule: Redeem paused"));
+        psm.redeem(address(this), 100, 100);
+    }
+
+    /// @notice mint fails when paused
+    function testMintFailsWhenPaused() public {
+        vm.startPrank(addresses.governorAddress);
+        psm.pauseMint();
+        vm.stopPrank();
+
+        vm.expectRevert(bytes("PegStabilityModule: Minting paused"));
+        psm.mint(address(this), 100, 100);
     }
 }
