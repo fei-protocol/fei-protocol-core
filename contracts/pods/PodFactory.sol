@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import {IGnosisSafe} from "@orcaprotocol/contracts/contracts/interfaces/IGnosisSafe.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
 import {OptimisticTimelock} from "../dao/timelock/OptimisticTimelock.sol";
+import {CoreRef} from "../refs/CoreRef.sol";
 
 import {IControllerV1} from "../pods/interfaces/IControllerV1.sol";
 import {IMemberToken} from "../pods/interfaces/IMemberToken.sol";
@@ -15,18 +17,19 @@ import {IMemberToken} from "../pods/interfaces/IMemberToken.sol";
 ///
 /// The timelock and Orca pod are then linked up so that the Orca pod is
 /// the only proposer and executor.
-contract PodFactory {
+contract PodFactory is CoreRef {
+    /// @notice TRIBE roles used for permissioning
+    bytes32 public constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
+    bytes32 public constant GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
+
     /// @notice Address from which the admin pod transactions are sent. Likely a timelock
-    address private immutable podAdmin;
+    address public podAdmin;
 
     /// @notice Orca controller for Pod
     IControllerV1 private immutable podController;
 
     /// @notice Orca membership token for the pod
     IMemberToken private immutable memberToken;
-
-    /// @notice Fei core address
-    address private immutable core;
 
     /// @notice Public contract that will be granted to execute all timelocks created
     address public immutable podExecutor;
@@ -36,6 +39,7 @@ contract PodFactory {
 
     event CreatePod(uint256 podId, address safeAddress);
     event CreateOptimisticTimelock(address timelock);
+    event SetPodAdmin(address _podAdmin);
 
     /// @notice Restrict function calls to podAdmin
     modifier onlyPodAdmin() {
@@ -49,16 +53,16 @@ contract PodFactory {
         address _podController,
         address _memberToken,
         address _podExecutor
-    ) {
+    ) CoreRef(_core) {
         require(_core != address(0), "Zero address");
-        require(_podAdmin != address(0x0), "Zero address");
+        /// @notice podAdmin can be set to zero address
         require(_podController != address(0x0), "Zero address");
         require(_podExecutor != address(0x0), "Zero address");
 
-        core = _core;
         podAdmin = _podAdmin;
         podExecutor = _podExecutor;
         podController = IControllerV1(_podController);
+        // TODO: Checkout what happens when migrate controller. Probs need to update pointer here
         memberToken = IMemberToken(_memberToken);
     }
 
@@ -70,9 +74,38 @@ contract PodFactory {
         return podController.podIdToSafe(podId);
     }
 
+    /// @notice Get all members on the pod
+    function getPodMembers(uint256 podId)
+        external
+        view
+        returns (address[] memory)
+    {
+        address safeAddress = podController.podIdToSafe(podId);
+        return IGnosisSafe(safeAddress).getOwners();
+    }
+
+    /// @notice Get the signer threshold on the pod
+    function getPodThreshold(uint256 podId) external view returns (uint256) {
+        address safeAddress = podController.podIdToSafe(podId);
+        address[] memory members = IGnosisSafe(safeAddress).getOwners();
+        return members.length;
+    }
+
+    //////////////// SETTERS ////////////////////
+
+    /// @notice Set the pod admin. Restricted to Governor or Guardian
+    function setPodAdmin(address _podAdmin)
+        external
+        hasAnyOfTwoRoles(GOVERN_ROLE, GUARDIAN_ROLE)
+    {
+        require(_podAdmin != address(0x0), "Zero address");
+        podAdmin = _podAdmin;
+        emit SetPodAdmin(_podAdmin);
+    }
+
     //////////////////// STATE-CHANGING API ////////////////////
 
-    /// @notice Create a child Orca pod. Callable by the DAO and the Tribal Council
+    /// @notice Create a child Orca pod with optimistic timelock. Callable by the DAO and the Tribal Council
     /// @param _members List of members to be added to the pod
     /// @param _threshold Number of members that need to approve a transaction on the Gnosis safe
     /// @param _podLabel Metadata, Human readable label for the pod
@@ -108,7 +141,7 @@ contract PodFactory {
         executors[1] = podExecutor;
 
         OptimisticTimelock timelock = new OptimisticTimelock(
-            core,
+            address(core()),
             minDelay,
             proposers,
             executors
