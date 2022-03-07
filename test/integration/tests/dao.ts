@@ -219,7 +219,7 @@ describe('e2e-dao', function () {
         const id = ethers.utils.id(element);
         const numRoles = await core.getRoleMemberCount(id);
         doLogging && console.log(`Role count for ${element}: ${numRoles}`);
-        expect(numRoles.toNumber()).to.be.equal(accessRights[element].length);
+        expect(numRoles.toNumber()).to.be.equal(accessRights[element].length, 'role ' + element);
       }
     });
 
@@ -235,7 +235,10 @@ describe('e2e-dao', function () {
           const contractAddress = accessControl[element][i];
           doLogging && console.log(`${element} contract address: ${contractAddress}`);
           const hasRole = await core.hasRole(id, contractAddress);
-          expect(hasRole).to.be.true;
+          expect(hasRole).to.be.equal(
+            true,
+            'expect contract ' + accessControl[element][i] + ' expected to have role ' + element
+          );
         }
       }
 
