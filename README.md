@@ -11,7 +11,10 @@ Smart contract code for Fei Protocol and the FEI stablecoin
  - run `npm install` in the root directory
 
 ## Usage
- - run `npm run test` to run unit tests
+ - run `npm run test` to run Forge based unit tests
+ - run `npm run test:hardhat` to run Hardhat based unit tests
+ - run `npm run test:integration` to run Solidity integration tests, forked from a pinned Mainnet block
+ - run `npm run test:integration:latest` to run Solidity integration tests, forked from the latest block 
  - run `npm run test:e2e` to run end-to-end/integration tests
  - run `npm run test:all` to run all tests
  - run `npm run lint` to lint ts files and sol files
