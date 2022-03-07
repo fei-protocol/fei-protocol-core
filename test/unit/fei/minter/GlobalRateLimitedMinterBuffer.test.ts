@@ -1,7 +1,7 @@
 import { time, expectRevert, expectApprox, getAddresses, getCore } from '@test/helpers';
 import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
-import { Signer } from 'ethers';
+import { Contract, Signer } from 'ethers';
 import { Core, Fei, GlobalRateLimitedMinter, MockMinter } from '@custom-types/contracts';
 
 const scale = ethers.constants.WeiPerEther;
@@ -110,6 +110,55 @@ describe('GlobalRateLimitedMinterBuffer', function () {
         await authorizedMinter.mintAllFei(userAddress);
         await authorizedMinter.mintAllFei(userAddress);
         expectApprox(await globalRateLimitedMinter.individualBuffer(authorizedMinter.address), '0');
+      });
+
+      it('fully clears out buffer and second call mints 0 silently', async function () {
+        await authorizedMinter.mintAllFei(userAddress);
+        await authorizedMinter.mintAllFei(userAddress);
+        expectApprox(await globalRateLimitedMinter.individualBuffer(authorizedMinter.address), '0');
+      });
+    });
+
+    describe('Mint Max Allowable With Drained Global Buffer', function () {
+      let secondAuthorizedMinter: Contract;
+
+      before(async function () {
+        globalRateLimitedMinter = await (
+          await ethers.getContractFactory('GlobalRateLimitedMinter')
+        ).deploy(
+          core.address,
+          globalRateLimitPerSecond,
+          globalRateLimitPerSecond,
+          maxRateLimitPerSecond,
+          maxBufferCap.sub(1),
+          maxBufferCap
+        );
+
+        authorizedMinter = await (
+          await ethers.getContractFactory('MockMinter')
+        ).deploy(globalRateLimitedMinter.address);
+
+        secondAuthorizedMinter = await (
+          await ethers.getContractFactory('MockMinter')
+        ).deploy(globalRateLimitedMinter.address);
+
+        await core.connect(impersonatedSigners[governorAddress]).grantMinter(globalRateLimitedMinter.address);
+
+        await globalRateLimitedMinter
+          .connect(impersonatedSigners[governorAddress])
+          .addAddress(authorizedMinter.address, globalRateLimitPerSecond, maxBufferCap);
+
+        await globalRateLimitedMinter
+          .connect(impersonatedSigners[governorAddress])
+          .addAddress(secondAuthorizedMinter.address, globalRateLimitPerSecond, maxBufferCap);
+      });
+
+      it('fully clears out global buffer and second call mints 0 silently as global buffer is exhausted', async function () {
+        await secondAuthorizedMinter.mintAllFei(userAddress);
+        await authorizedMinter.mintAllFei(userAddress);
+        expectApprox(await globalRateLimitedMinter.individualBuffer(authorizedMinter.address), '0');
+        expectApprox(await globalRateLimitedMinter.individualBuffer(secondAuthorizedMinter.address), maxBufferCap);
+        expectApprox(await globalRateLimitedMinter.buffer(), '0');
       });
     });
 

@@ -45,8 +45,8 @@ contract NonCustodialPSM is
     GlobalRateLimitedMinter public override rateLimitedMinter;
 
     /// @notice the max mint and redeem fee in basis points
-    /// Governance can change this fee
-    uint256 public override MAX_FEE = 300;
+    /// Governance cannot change this fee
+    uint256 public immutable override MAX_FEE = 300;
 
     /// @notice boolean switch that indicates whether redeeming is paused
     bool public redeemPaused;
