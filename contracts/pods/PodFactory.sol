@@ -37,6 +37,9 @@ contract PodFactory is CoreRef {
     /// @notice Mapping between podId and it's optimistic timelock
     mapping(uint256 => address) public getPodTimelock;
 
+    /// @notice Latest pod created
+    uint256 public latestPodId;
+
     event CreatePod(uint256 podId, address safeAddress);
     event CreateOptimisticTimelock(address timelock);
     event SetPodAdmin(address _podAdmin);
@@ -70,13 +73,20 @@ contract PodFactory is CoreRef {
 
     /// @notice Get the address of the Gnosis safe that represents a pod
     /// @param podId Unique id for the orca pod
-    function getPodSafe(uint256 podId) external view returns (address) {
+    function getPodSafe(uint256 podId) public view returns (address) {
         return podController.podIdToSafe(podId);
+    }
+
+    /// @notice Get the number of pod members
+    function getNumMembers(uint256 podId) external view returns (uint256) {
+        address safe = getPodSafe(podId);
+        address[] memory members = IGnosisSafe(safe).getOwners();
+        return uint256(members.length);
     }
 
     /// @notice Get all members on the pod
     function getPodMembers(uint256 podId)
-        external
+        public
         view
         returns (address[] memory)
     {
@@ -85,10 +95,10 @@ contract PodFactory is CoreRef {
     }
 
     /// @notice Get the signer threshold on the pod
-    function getPodThreshold(uint256 podId) external view returns (uint256) {
-        address safeAddress = podController.podIdToSafe(podId);
-        address[] memory members = IGnosisSafe(safeAddress).getOwners();
-        return members.length;
+    function getPodThreshold(uint256 podId) external returns (uint256) {
+        address safe = getPodSafe(podId);
+        uint256 threshold = uint256(IGnosisSafe(safe).getThreshold());
+        return threshold;
     }
 
     //////////////// SETTERS ////////////////////
@@ -152,6 +162,8 @@ contract PodFactory is CoreRef {
 
         // Set mapping from podId to timelock for reference
         getPodTimelock[podId] = address(timelock);
+
+        latestPodId = podId;
         return (podId, address(timelock));
     }
 }

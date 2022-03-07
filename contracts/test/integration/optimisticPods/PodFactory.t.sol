@@ -17,7 +17,7 @@ import "hardhat/console.sol";
 contract PodFactoryIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
-    PodFactory manager;
+    PodFactory factory;
     PodExecutor podExecutor;
     address private core = 0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9;
     address private podController = 0xD89AAd5348A34E440E72f5F596De4fA7e291A3e8;
@@ -29,14 +29,14 @@ contract PodFactoryIntegrationTest is DSTest {
 
     function setUp() public {
         podExecutor = new PodExecutor();
-        manager = new PodFactory(
+        factory = new PodFactory(
             core,
             podAdmin,
             podController,
             memberToken,
             address(podExecutor)
         );
-        mintOrcaTokens(address(manager), 2, vm);
+        mintOrcaTokens(address(factory), 2, vm);
     }
 
     /// @notice Validate that a non-pod admin can not create a pod
@@ -51,7 +51,7 @@ contract PodFactoryIntegrationTest is DSTest {
         ) = podParams();
 
         vm.expectRevert(bytes("Only PodAdmin can deploy"));
-        manager.createChildOptimisticPod(
+        factory.createChildOptimisticPod(
             members,
             threshold,
             podLabel,
@@ -59,6 +59,41 @@ contract PodFactoryIntegrationTest is DSTest {
             imageUrl,
             minDelay
         );
+    }
+
+    function testGnosisGetters() public {
+        (
+            address[] memory members,
+            uint256 threshold,
+            bytes32 podLabel,
+            string memory ensString,
+            string memory imageUrl,
+            uint256 minDelay
+        ) = podParams();
+
+        vm.prank(podAdmin);
+        (uint256 podId, address timelock) = factory.createChildOptimisticPod(
+            members,
+            threshold,
+            podLabel,
+            ensString,
+            imageUrl,
+            minDelay
+        );
+
+        uint256 numMembers = factory.getNumMembers(podId);
+        assertEq(numMembers, members.length);
+
+        uint256 storedThreshold = factory.getPodThreshold(podId);
+        assertEq(storedThreshold, threshold);
+
+        address[] memory storedMembers = factory.getPodMembers(podId);
+        assertEq(storedMembers[0], members[0]);
+        assertEq(storedMembers[1], members[1]);
+        assertEq(storedMembers[2], members[2]);
+
+        uint256 latestPodId = factory.latestPodId();
+        assertEq(latestPodId, podId);
     }
 
     /// @notice Creates a child pod with an optimistic timelock attached
@@ -73,7 +108,7 @@ contract PodFactoryIntegrationTest is DSTest {
         ) = podParams();
 
         vm.prank(podAdmin);
-        (uint256 podId, address timelock) = manager.createChildOptimisticPod(
+        (uint256 podId, address timelock) = factory.createChildOptimisticPod(
             members,
             threshold,
             podLabel,
@@ -83,7 +118,7 @@ contract PodFactoryIntegrationTest is DSTest {
         );
         require(timelock != address(0));
 
-        address safeAddress = manager.getPodSafe(podId);
+        address safeAddress = factory.getPodSafe(podId);
         ITimelock timelockContract = ITimelock(timelock);
 
         // Gnosis safe should be the proposer
@@ -118,7 +153,7 @@ contract PodFactoryIntegrationTest is DSTest {
         ) = podParams();
 
         vm.prank(podAdmin);
-        (uint256 podId, address timelock) = manager.createChildOptimisticPod(
+        (uint256 podId, address timelock) = factory.createChildOptimisticPod(
             members,
             threshold,
             podLabel,
@@ -127,7 +162,7 @@ contract PodFactoryIntegrationTest is DSTest {
             minDelay
         );
 
-        assertEq(timelock, manager.getPodTimelock(podId));
+        assertEq(timelock, factory.getPodTimelock(podId));
     }
 
     /// @notice Validate that multiple pods can be deployed with the correct admin set
@@ -142,7 +177,7 @@ contract PodFactoryIntegrationTest is DSTest {
         ) = podParams();
 
         vm.prank(podAdmin);
-        (uint256 podAId, ) = manager.createChildOptimisticPod(
+        (uint256 podAId, ) = factory.createChildOptimisticPod(
             members,
             threshold,
             bytes32("A"),
@@ -155,7 +190,7 @@ contract PodFactoryIntegrationTest is DSTest {
         assertEq(podAAdmin, podAdmin);
 
         vm.prank(podAdmin);
-        (uint256 podBId, ) = manager.createChildOptimisticPod(
+        (uint256 podBId, ) = factory.createChildOptimisticPod(
             members,
             threshold,
             bytes32("B"),
