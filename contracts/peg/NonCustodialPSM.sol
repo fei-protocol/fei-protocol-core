@@ -54,18 +54,6 @@ contract NonCustodialPSM is
     /// @notice boolean switch that indicates whether minting is paused
     bool public mintPaused;
 
-    /// @notice event that is emitted when redemptions are paused
-    event RedemptionsPaused(address account);
-
-    /// @notice event that is emitted when redemptions are unpaused
-    event RedemptionsUnpaused(address account);
-
-    /// @notice event that is emitted when minting is paused
-    event MintingPaused(address account);
-
-    /// @notice event that is emitted when minting is unpaused
-    event MintingUnpaused(address account);
-
     /// @notice struct for passing constructor parameters related to OracleRef
     struct OracleParams {
         address coreAddress;

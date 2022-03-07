@@ -137,4 +137,16 @@ interface INonCustodialPSM {
         GlobalRateLimitedMinter oldMinter,
         GlobalRateLimitedMinter newMinter
     );
+
+    /// @notice event that is emitted when redemptions are paused
+    event RedemptionsPaused(address account);
+
+    /// @notice event that is emitted when redemptions are unpaused
+    event RedemptionsUnpaused(address account);
+
+    /// @notice event that is emitted when minting is paused
+    event MintingPaused(address account);
+
+    /// @notice event that is emitted when minting is unpaused
+    event MintingUnpaused(address account);
 }

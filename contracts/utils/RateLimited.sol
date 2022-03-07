@@ -117,12 +117,15 @@ abstract contract RateLimited is CoreRef {
     function _replenishBuffer(uint256 amount) internal {
         uint256 newBuffer = buffer();
 
+        uint256 _bufferCap = bufferCap; /// gas opti, save an SLOAD
+
         /// cannot replenish any further if already at buffer cap
-        if (newBuffer == bufferCap) {
+        if (newBuffer == _bufferCap) {
             return;
         }
 
-        bufferStored = newBuffer + amount;
+        /// ensure that bufferStored cannot be gt buffer cap
+        bufferStored = Math.min(newBuffer + amount, _bufferCap);
     }
 
     function _setRateLimitPerSecond(uint256 newRateLimitPerSecond) internal {
