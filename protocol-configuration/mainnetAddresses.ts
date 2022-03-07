@@ -1795,6 +1795,16 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'SmartYieldRedeemer',
     address: '0x2dC77678Be7F900e81c638b056F4835BB7203C96',
     category: AddressCategory.TBD
+  },
+  podController: {
+    artifactName: 'unknown',
+    address: '0xD89AAd5348A34E440E72f5F596De4fA7e291A3e8',
+    category: AddressCategory.External
+  },
+  memberToken: {
+    artifactName: 'unknown',
+    address: '0x0762aA185b6ed2dCA77945Ebe92De705e0C37AE3',
+    category: AddressCategory.External
   }
 };
 
