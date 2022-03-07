@@ -7,7 +7,7 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { assert } from 'console';
+import { getImpersonatedSigner } from '@test/helpers';
 
 const ZERO_ADDRESS = ethers.constants.AddressZero;
 
@@ -20,7 +20,7 @@ const ZERO_ADDRESS = ethers.constants.AddressZero;
 // 6. Relevant authority gives each pod the necessary role
 // Think through what happens if the controller is updated or changed somehow
 
-const fipNumber = 'fip_82'; // Change me!
+const fipNumber = '82'; // Change me!
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -29,7 +29,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const podExecutorFactory = await ethers.getContractFactory('PodExecutor');
   const podExecutor = await podExecutorFactory.deploy();
   await podExecutor.deployTransaction.wait();
-  logging && console.log('PodExecutor deployed to', podExecutor.address);
+  console.log('PodExecutor deployed to', podExecutor.address);
 
   // 2. Deploy tribalCouncilPodFactory
   const podFactoryEthersFactory = await ethers.getContractFactory('PodFactory');
@@ -42,7 +42,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   );
   await tribalCouncilPodFactory.deployTransaction.wait();
 
-  logging && console.log('DAO pod factory deployed to:', tribalCouncilPodFactory.address);
+  console.log('DAO pod factory deployed to:', tribalCouncilPodFactory.address);
 
   // 3. Deploy tribalCouncilPodFactory
   const protocolTierPodFactory = await podFactoryEthersFactory.deploy(
@@ -53,6 +53,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     podExecutor.address // Public pod executor
   );
   await protocolTierPodFactory.deployTransaction.wait();
+  console.log('Protocol tier pod factory deployed to:', protocolTierPodFactory.address);
 
   return {
     podExecutor,
@@ -65,7 +66,20 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in setup for fip${fipNumber}`);
+  // TODO: Remove once have SHIP tokens on Mainnet
+  const inviteTokenAddress = '0x872EdeaD0c56930777A82978d4D7deAE3A2d1539';
+  const priviledgedAddress = '0x2149A222feD42fefc3A120B3DdA34482190fC666';
+
+  const inviteTokenABI = [
+    'function mint(address account, uint256 amount) external',
+    'function balanceOf(address account) external view returns (uint256)'
+  ];
+  // Mint Orca Ship tokens to deploy address, to allow to deploy contracts
+  const priviledgedAddressSigner = await getImpersonatedSigner(priviledgedAddress);
+  const inviteToken = new ethers.Contract(inviteTokenAddress, inviteTokenABI, priviledgedAddressSigner);
+
+  await inviteToken.mint(addresses.feiDAOTimelock, 10);
+  await inviteToken.mint(contracts.tribalCouncilPodFactory.address, 10);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -77,20 +91,18 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  // This runs after DAO script
-
-  // 1. Validate admin of daoPodFactory is the DAO timelock
-  const daoPodFactory = contracts.daoPodFactory;
-  const daoPodFactoryAdmin = await daoPodFactory.podAdmin();
-  expect(daoPodFactoryAdmin).to.equal(addresses.feiDAOTimelock);
-
-  // 2. Validate admin of tribalCouncilPodFactory is the TribalCouncil pod timelock
+  // 1. Validate admin of tribeCouncilPodFactory is the DAO timelock
   const tribalCouncilPodFactory = contracts.tribalCouncilPodFactory;
-  const tribalCouncilPodFactoryAdmin = await tribalCouncilPodFactory.podAdmin();
-  expect(tribalCouncilPodFactoryAdmin).to.equal(addresses.tribalCouncilTimelock);
+  const tribeCouncilFactoryAdmin = await tribalCouncilPodFactory.podAdmin();
+  expect(tribeCouncilFactoryAdmin).to.equal(addresses.feiDAOTimelock);
+
+  // 2. Validate admin of protocolTierPodFactory is the TribalCouncil pod timelock
+  // const protocolTierPodFactory = contracts.protocolTierPodFactory;
+  // const protocolTierFactoryAdmin = await protocolTierPodFactory.podAdmin();
+  // expect(protocolTierFactoryAdmin).to.equal(addresses.tribalCouncilTimelock);
 
   // 3. Validate that Tribal Council pod has been correctly deployed
-  const tribalCouncilPodId = 0; // TODO: How to make this robust?
+  const tribalCouncilPodId = await tribalCouncilPodFactory.latestPodId(); // TODO: How to make this robust?
   const tribalCouncilTimelockAddress = await tribalCouncilPodFactory.getPodTimelock(tribalCouncilPodId);
   const tribalCouncilSafeAddress = await tribalCouncilPodFactory.getPodSafe(tribalCouncilPodId);
   const tribalCouncilTimelock = await ethers.getContractAt('OptimisticTimelock', tribalCouncilTimelockAddress);
@@ -110,16 +122,15 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const numCouncilMembers = await tribalCouncilPodFactory.getNumMembers(tribalCouncilPodId);
   expect(numCouncilMembers).to.equal(9);
 
-  const councilThreshold = await tribalCouncilPodFactory.getThreshold(tribalCouncilPodId);
+  const councilThreshold = await tribalCouncilPodFactory.getPodThreshold(tribalCouncilPodId);
+  // this is coming back as 22
+  console.log({ councilThreshold });
   expect(councilThreshold).to.equal(5);
 
-  // Validate that tribal council has the correct roles, if any
+  // 5. Validate that tribal council has the correct roles, if any
 
-  // 4. Validate that protocol specific pods have been correctly deployed
+  // 6. Validate that protocol specific pods have been correctly deployed
   // const fusePod = contracts.fusePod;
-
-  // TODO: Check timelock proposer and executor
-  // TODO: Check has expected roles
 };
 
 export { deploy, setup, teardown, validate };
