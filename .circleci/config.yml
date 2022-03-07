@@ -81,7 +81,9 @@ jobs:
           command: curl -L https://foundry.paradigm.xyz | bash; source /home/circleci/.bashrc; foundryup 
       - run:
           name: Run tests
-          command: source /home/circleci/.bashrc; npm run test
+          command: |
+            source /home/circleci/.bashrc
+            npm run clean && npm run compile && npm run test && npm run test:integration:latest
 
   e2e-test:
     working_directory: ~/repo
