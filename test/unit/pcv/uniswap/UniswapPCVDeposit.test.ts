@@ -63,14 +63,12 @@ describe('EthUniswapPCVDeposit', function () {
       '100'
     );
 
-    await this.core.connect(impersonatedSigners[governorAddress]).grantMinter(this.pcvDeposit.address, {});
-
     await this.pair
       .connect(impersonatedSigners[userAddress])
       .set(50000000, 100000, LIQUIDITY_INCREMENT, { value: 100000 }); // 500:1 FEI/ETH with 10k liquidity
 
     await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pair.address, 50000000, {});
-    1;
+
     await this.weth.mint(this.pair.address, 100000);
   });
 
@@ -122,11 +120,15 @@ describe('EthUniswapPCVDeposit', function () {
 
     describe('Post deposit values', function () {
       beforeEach(async function () {
+        // seed deposit with 100k ETH
         await impersonatedSigners[userAddress].sendTransaction({
           from: userAddress,
           to: this.pcvDeposit.address,
           value: 100000
         });
+        // pre-mint FEI for deposit (400 * 100k FEI)
+        await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pcvDeposit.address, 40000000, {});
+        // deposit
         await this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({});
       });
 
@@ -153,11 +155,15 @@ describe('EthUniswapPCVDeposit', function () {
       });
       describe('With existing liquidity', function () {
         beforeEach(async function () {
+          // seed deposit with 100k ETH
           await impersonatedSigners[userAddress].sendTransaction({
             from: userAddress,
             to: this.pcvDeposit.address,
             value: 100000
           });
+          // pre-mint FEI for deposit (400 * 100k FEI)
+          await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pcvDeposit.address, 40000000, {});
+          // deposit
           await this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({});
         });
 
@@ -200,11 +206,15 @@ describe('EthUniswapPCVDeposit', function () {
           beforeEach(async function () {
             await this.router.setAmountMin(39000000);
             await this.pcvDeposit.connect(impersonatedSigners[governorAddress]).setMaxBasisPointsFromPegLP(300, {});
+            // seed deposit with 100k ETH
             await impersonatedSigners[userAddress].sendTransaction({
               from: userAddress,
               to: this.pcvDeposit.address,
               value: 100000
             });
+            // pre-mint FEI for deposit (400 * 100k FEI)
+            await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pcvDeposit.address, 40000000, {});
+            // deposit
             await this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({});
           });
 
@@ -233,11 +243,15 @@ describe('EthUniswapPCVDeposit', function () {
       describe('Pool price changes over threshold', function () {
         beforeEach(async function () {
           await this.router.setAmountMin(41000000);
+          // seed deposit with 100k ETH
           await impersonatedSigners[userAddress].sendTransaction({
             from: userAddress,
             to: this.pcvDeposit.address,
-            value: toBN(100000)
+            value: 100000
           });
+          // pre-mint FEI for deposit (400 * 100k FEI)
+          await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pcvDeposit.address, 40000000, {});
+          // deposit
           await this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({});
         });
 
@@ -270,7 +284,9 @@ describe('EthUniswapPCVDeposit', function () {
             to: this.pcvDeposit.address,
             value: 100000
           });
-          await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pcvDeposit.address, '1000', {});
+          // pre-mint FEI for deposit (400 * 100k * 2 FEI) + 1000 extra
+          await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pcvDeposit.address, 80001000, {});
+          // deposit
           await this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({});
         });
 
@@ -299,11 +315,15 @@ describe('EthUniswapPCVDeposit', function () {
         beforeEach(async function () {
           await this.oracle.setExchangeRate(600); // 600:1 oracle price
           // Then deposit
+          // seed deposit with 100k ETH
           await impersonatedSigners[userAddress].sendTransaction({
             from: userAddress,
             to: this.pcvDeposit.address,
             value: 100000
           });
+          // pre-mint FEI for deposit (600 * 100k FEI)
+          await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pcvDeposit.address, 60000000, {});
+          // deposit
           await this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({});
         });
 
@@ -361,11 +381,15 @@ describe('EthUniswapPCVDeposit', function () {
     });
     describe('With Balance', function () {
       beforeEach(async function () {
+        // seed deposit with 100k ETH
         await impersonatedSigners[userAddress].sendTransaction({
           from: userAddress,
           to: this.pcvDeposit.address,
           value: 100000
         });
+        // pre-mint FEI for deposit (400 * 100k FEI)
+        await this.fei.connect(impersonatedSigners[minterAddress]).mint(this.pcvDeposit.address, 40000000, {});
+        // deposit
         await this.pcvDeposit.connect(impersonatedSigners[userAddress]).deposit({});
         this.beneficiaryBalance = await this.weth.balanceOf(beneficiaryAddress1);
       });

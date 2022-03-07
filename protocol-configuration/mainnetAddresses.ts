@@ -304,6 +304,11 @@ const MainnetAddresses: MainnetAddresses = {
   agEurAngleUniswapPCVDeposit: {
     artifactName: 'AngleUniswapPCVDeposit',
     address: '0x7AC2Ab8143634419c5bc230A9f9955C3e29f64Ef',
+    category: AddressCategory.PCV_V1 // Not used anymore, stakes in old rewards contract
+  },
+  agEurUniswapPCVDeposit: {
+    artifactName: 'UniswapPCVDeposit',
+    address: '0xE8633C49AcE655EB4A8B720e6b12F09Bd3a97812',
     category: AddressCategory.PCV
   },
   bammDeposit: {
@@ -1002,7 +1007,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.External
   },
   angle: {
-    artifactName: 'IERC20',
+    artifactName: 'Tribe', // using Tribe instead of IERC20 to have delegate()
     address: '0x31429d1856ad1377a8a0079410b297e1a9e214c2',
     category: AddressCategory.External
   },
@@ -1010,6 +1015,21 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'IUniswapV2Pair',
     address: '0xF89CE5eD65737dA8440411544b0499c9FaD323B2',
     category: AddressCategory.External
+  },
+  angleDelegatorPCVDeposit: {
+    artifactName: 'AngleDelegatorPCVDeposit',
+    address: '0xb91F96b7C62fe4a2301219956Cc023fA7892F0C0',
+    category: AddressCategory.Governance
+  },
+  gaugeLensAgEurUniswapGauge: {
+    artifactName: 'GaugeLens',
+    address: '0x10f59bd0a100bcAD86CaB39751797D952eE1f76f',
+    category: AddressCategory.Oracle
+  },
+  uniswapLensAgEurUniswapGauge: {
+    artifactName: 'UniswapLens',
+    address: '0xD2554839c2e8a87Dd2CddD013EF828B6534aBC26',
+    category: AddressCategory.PCV
   },
   anglePoolManager: {
     artifactName: 'IPoolManager',
@@ -1021,9 +1041,19 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x5adDc89785D75C86aB939E9e15bfBBb7Fc086A87',
     category: AddressCategory.External
   },
-  angleStakingRewards: {
-    artifactName: 'IStakingRewards',
-    address: '0xBcb307F590972B1C3188b7916d2969Cf75309dc6',
+  angleGaugeController: {
+    artifactName: 'ILiquidityGaugeController',
+    address: '0x9aD7e7b0877582E14c17702EecF49018DD6f2367',
+    category: AddressCategory.External
+  },
+  angleGaugeUniswapV2FeiAgEur: {
+    artifactName: 'ILiquidityGauge',
+    address: '0xd6282C5aEAaD4d776B932451C44b8EB453E44244',
+    category: AddressCategory.External
+  },
+  veAngle: {
+    artifactName: 'IVeToken',
+    address: '0x0C462Dbb9EC8cD1630f1728B2CFD2769d09f0dd5',
     category: AddressCategory.External
   },
   aRai: {
