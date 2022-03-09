@@ -77,12 +77,12 @@ jobs:
       - run:
           name: Setup env
           command: echo "export PATH=$PATH:$(pwd)/.circleci" >> /home/circleci/.bashrc
+      - run:
+          name: Finish setting up env
+          command: echo "export PATH=$PATH:$(pwd)/.foundry/bin" >> /home/circleci/.bashrc
       - run: 
           name: Install Foundry
           command: curl -L https://foundry.paradigm.xyz | bash; source /home/circleci/.bashrc; $HOME/.foundry/bin/foundryup
-      - run:
-          name: Finish setting up env
-          command: export PATH=$PATH:/home/circleci/.foundry/bin
       - run:
           name: Run tests
           command: |
