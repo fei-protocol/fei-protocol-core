@@ -67,7 +67,7 @@ jobs:
   test-forge:
     working_directory: ~/repo
     machine:
-      image: cimg/base:20.04
+      image: cimg/base:2022.03
     steps:
       - checkout
       - restore_cache:
