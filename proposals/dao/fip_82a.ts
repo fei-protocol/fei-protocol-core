@@ -1,4 +1,4 @@
-import hre, { ethers, artifacts } from 'hardhat';
+import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
@@ -8,13 +8,17 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { getImpersonatedSigner } from '@test/helpers';
-
-const ZERO_ADDRESS = ethers.constants.AddressZero;
+import {
+  tribalCouncilMembers,
+  tribalCouncilThreshold,
+  tribalCouncilNumMembers
+} from '@protocol/optimisticGovernance/tribalCouncilMembers';
 
 // How this will work:
-// 1. DAO deploys a factory contract
+// 1. DAO deploys a factory contract to deploy pods
 // 2. DAO uses factory contract to deploy a Tribal Council
 // 3. DAO adds members to the Tribal Council
+// 3.5 Tribal Council granted ROLE_ADMIN
 // 4. Tribal Council deploys a factory contract
 // 5. Factory contract used to deploy several product specific pods
 // 6. Relevant authority gives each pod the necessary role
@@ -41,24 +45,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     podExecutor.address // Public pod executor
   );
   await tribalCouncilPodFactory.deployTransaction.wait();
-
   console.log('DAO pod factory deployed to:', tribalCouncilPodFactory.address);
-
-  // 3. Deploy tribalCouncilPodFactory
-  const protocolTierPodFactory = await podFactoryEthersFactory.deploy(
-    addresses.core, // core
-    ZERO_ADDRESS, // Set podAdmin to be zero address. Will later be set to Tribal council pod timelock
-    addresses.podController, // podController
-    addresses.memberToken, // podMembershipToken
-    podExecutor.address // Public pod executor
-  );
-  await protocolTierPodFactory.deployTransaction.wait();
-  console.log('Protocol tier pod factory deployed to:', protocolTierPodFactory.address);
 
   return {
     podExecutor,
-    tribalCouncilPodFactory,
-    protocolTierPodFactory
+    tribalCouncilPodFactory
   };
 };
 
@@ -96,12 +87,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const tribeCouncilFactoryAdmin = await tribalCouncilPodFactory.podAdmin();
   expect(tribeCouncilFactoryAdmin).to.equal(addresses.feiDAOTimelock);
 
-  // 2. Validate admin of protocolTierPodFactory is the TribalCouncil pod timelock
-  // const protocolTierPodFactory = contracts.protocolTierPodFactory;
-  // const protocolTierFactoryAdmin = await protocolTierPodFactory.podAdmin();
-  // expect(protocolTierFactoryAdmin).to.equal(addresses.tribalCouncilTimelock);
-
-  // 3. Validate that Tribal Council pod has been correctly deployed
+  // 2. Validate that Tribal Council Safe and timelock configured
   const tribalCouncilPodId = await tribalCouncilPodFactory.latestPodId(); // TODO: How to make this robust?
   const tribalCouncilTimelockAddress = await tribalCouncilPodFactory.getPodTimelock(tribalCouncilPodId);
   const tribalCouncilSafeAddress = await tribalCouncilPodFactory.getPodSafe(tribalCouncilPodId);
@@ -119,19 +105,15 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   );
   expect(publicExecutorIsExecutor).to.be.true;
 
+  // 3. Validate that Tribal Council members are correctly set
+  const councilMembers = await tribalCouncilPodFactory.getPodMembers(tribalCouncilPodId);
+  expect(councilMembers).to.deep.equal(tribalCouncilMembers);
+
   const numCouncilMembers = await tribalCouncilPodFactory.getNumMembers(tribalCouncilPodId);
-  expect(numCouncilMembers).to.equal(9);
+  expect(numCouncilMembers).to.equal(tribalCouncilNumMembers);
 
   const councilThreshold = await tribalCouncilPodFactory.getPodThreshold(tribalCouncilPodId);
-  expect(councilThreshold).to.equal(5);
-
-  // 5. Validate that tribal council timelock has the ADMIN_ROLE
-  const core = contracts.core;
-  const hasAdminRole = await core.hasRole(ethers.utils.id('ADMIN_ROLE'), tribalCouncilTimelockAddress);
-  expect(hasAdminRole).to.be.true;
-
-  // 6. Validate that protocol specific pods have been correctly deployed
-  // const fusePod = contracts.fusePod;
+  expect(councilThreshold).to.equal(tribalCouncilThreshold);
 };
 
 export { deploy, setup, teardown, validate };

@@ -26,6 +26,9 @@ library TribeRoles {
     /// @notice can mint FEI arbitrarily
     bytes32 internal constant MINTER = keccak256("MINTER_ROLE");
 
+    /// @notice Can grant any admin role
+    bytes32 internal constant ROLE_ADMIN = keccak256("ROLE_ADMIN");
+
     /*///////////////////////////////////////////////////////////////
                                  Admin Roles
     //////////////////////////////////////////////////////////////*/
