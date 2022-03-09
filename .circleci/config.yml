@@ -67,7 +67,7 @@ jobs:
   test-forge:
     working_directory: ~/repo
     docker:
-      - image: cimg/base:2022.02
+      - image: cimg/node:16.14
     resource_class: xlarge
     steps:
       - checkout
