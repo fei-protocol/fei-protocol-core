@@ -21,6 +21,7 @@ contract PodFactory is CoreRef {
     /// @notice TRIBE roles used for permissioning
     bytes32 public constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
     bytes32 public constant GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
+    bytes32 public constant ROLE_ADMIN = keccak256("ROLE_ADMIN");
 
     /// @notice Address from which the admin pod transactions are sent. Likely a timelock
     address public podAdmin;
@@ -46,7 +47,7 @@ contract PodFactory is CoreRef {
 
     /// @notice Restrict function calls to podAdmin
     modifier onlyPodAdmin() {
-        require(msg.sender == podAdmin, "Only PodAdmin can deploy");
+        require(msg.sender == podAdmin, "Unauthorised");
         _;
     }
 
@@ -106,7 +107,7 @@ contract PodFactory is CoreRef {
     /// @notice Set the pod admin. Restricted to Governor or Guardian
     function setPodAdmin(address _podAdmin)
         external
-        hasAnyOfTwoRoles(GOVERN_ROLE, GUARDIAN_ROLE)
+        hasAnyOfThreeRoles(GOVERN_ROLE, GUARDIAN_ROLE, ROLE_ADMIN)
     {
         require(_podAdmin != address(0x0), "Zero address");
         podAdmin = _podAdmin;
@@ -122,6 +123,10 @@ contract PodFactory is CoreRef {
     /// @param _ensString Metadata, ENS name of the pod
     /// @param _imageUrl Metadata, URL to a image to represent the pod in frontends
     /// @param minDelay Delay on the timelock
+    // Can this be called off-chain? Or does it have to be calleable by the DAO/podAdmin?
+    // Think need to be able to call this off-chain. Figure out permissioning to allow that
+    // Want the various pods setup off chain, and then transfer ownership to the thing responsible for deploying more pods
+
     function createChildOptimisticPod(
         address[] calldata _members,
         uint256 _threshold,

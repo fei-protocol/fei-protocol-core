@@ -23,6 +23,7 @@ contract PodFactoryIntegrationTest is DSTest {
     address private podController = 0xD89AAd5348A34E440E72f5F596De4fA7e291A3e8;
     address private memberToken = 0x0762aA185b6ed2dCA77945Ebe92De705e0C37AE3;
     address private podAdmin = address(0x3);
+    address private feiDAOTimelock = 0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c;
 
     bytes32 public constant PROPOSER_ROLE = keccak256("PROPOSER_ROLE");
     bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
@@ -50,7 +51,7 @@ contract PodFactoryIntegrationTest is DSTest {
             uint256 minDelay
         ) = podParams();
 
-        vm.expectRevert(bytes("Only PodAdmin can deploy"));
+        vm.expectRevert(bytes("Unauthorised"));
         factory.createChildOptimisticPod(
             members,
             threshold,
@@ -59,6 +60,42 @@ contract PodFactoryIntegrationTest is DSTest {
             imageUrl,
             minDelay
         );
+    }
+
+    function testPodAdminCanBeSet() public {
+        (
+            address[] memory members,
+            uint256 threshold,
+            bytes32 podLabel,
+            string memory ensString,
+            string memory imageUrl,
+            uint256 minDelay
+        ) = podParams();
+
+        address dummyPodAdmin = address(this);
+        PodFactory dummyPodAdminFactory = new PodFactory(
+            core,
+            dummyPodAdmin,
+            podController,
+            memberToken,
+            address(podExecutor)
+        );
+        assertEq(dummyPodAdminFactory.podAdmin(), dummyPodAdmin);
+        mintOrcaTokens(address(dummyPodAdminFactory), 2, vm);
+
+        dummyPodAdminFactory.createChildOptimisticPod(
+            members,
+            threshold,
+            podLabel,
+            ensString,
+            imageUrl,
+            minDelay
+        );
+
+        // Set PodAdmin to expected address
+        vm.prank(feiDAOTimelock);
+        dummyPodAdminFactory.setPodAdmin(podAdmin);
+        assertEq(dummyPodAdminFactory.podAdmin(), podAdmin);
     }
 
     function testGnosisGetters() public {
