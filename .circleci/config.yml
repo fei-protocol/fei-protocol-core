@@ -6,7 +6,7 @@ jobs:
   build:
     working_directory: ~/repo
     docker:
-      - image: cimg/node:14
+      - image: cimg/node:16.14
     resource_class: xlarge
     steps:
       - checkout 
@@ -36,7 +36,7 @@ jobs:
   lint:
     working_directory: ~/repo
     docker:
-      - image: cimg/node:14
+      - image: ccimg/node:16.14
     steps:
       - restore_cache:
           keys:
@@ -47,7 +47,7 @@ jobs:
   test:
     working_directory: ~/repo
     docker:
-      - image: cimg/node:14
+      - image: cimg/node:16.14
     parallelism: 16
     resource_class: large
     steps:
@@ -67,7 +67,7 @@ jobs:
   test-forge:
     working_directory: ~/repo
     machine:
-      image: ubuntu-2004:202111-02
+      image: cimg:base
     steps:
       - checkout
       - restore_cache:
@@ -88,7 +88,7 @@ jobs:
   e2e-test:
     working_directory: ~/repo
     docker:
-      - image: cimg/node:14
+      - image: cimg/node:16.14
     parallelism: 5
     resource_class: xlarge
     steps:
