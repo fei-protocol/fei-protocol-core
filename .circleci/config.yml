@@ -87,7 +87,7 @@ jobs:
           name: Run tests
           command: |
             source /home/circleci/.bashrc
-            npm run clean && npm run compile && npm run test && npm run test:integration:latest
+            export PATH=$PATH:/home/circleci/.foundry/bin; npm run clean && npm run compile && npm run test && npm run test:integration:latest
 
   e2e-test:
     working_directory: ~/repo
