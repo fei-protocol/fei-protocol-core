@@ -2,13 +2,19 @@
 
 Smart contract code for Fei Protocol and the FEI stablecoin
 
+## To get started:
+1. Git clone this repo: git clone git@github.com:fei-protocol/fei-protocol-core.git
+2. Install dependencies: `npm install`
+3. Set the relevant environment variables in a gitignored `.env`: `MAINNET_ALCHEMY_API_KEY` and `ETH_PRIVATE_KEY`. You can use the `.env.example` as a base
+4. To run the Hardhat based unit tests, run `npm run test:hardhat`
+
+### Setting up Forge
+Fei makes use of Forge as a smart contract development framework alongside Hardhat. To set this up run: `npm run setup`
+
 ## Dependencies
  Note that this has only been tested on Linux; you may encounter issues running on other operating systems.
  
  - Node v12 or v16 (you can manage Node versions easily with [NVM](https://github.com/nvm-sh/nvm))
-
-## Installation
- - run `npm install` in the root directory
 
 ## Usage
  - run `npm run test` to run Forge based unit tests
