@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {IGnosisSafe} from "@orcaprotocol/contracts/contracts/interfaces/IGnosisSafe.sol";
+import {IGnosisSafe} from "./interfaces/IGnosisSafe.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
 import {OptimisticTimelock} from "../dao/timelock/OptimisticTimelock.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
 
-import {IControllerV1} from "../pods/interfaces/IControllerV1.sol";
-import {IMemberToken} from "../pods/interfaces/IMemberToken.sol";
+import {IControllerV1} from "./interfaces/IControllerV1.sol";
+import {IMemberToken} from "./interfaces/IMemberToken.sol";
 
 /// @notice Contract used by an Admin pod to manage child pods.
 
@@ -95,7 +95,7 @@ contract PodFactory is CoreRef {
     }
 
     /// @notice Get the signer threshold on the pod
-    function getPodThreshold(uint256 podId) external returns (uint256) {
+    function getPodThreshold(uint256 podId) external view returns (uint256) {
         address safe = getPodSafe(podId);
         uint256 threshold = uint256(IGnosisSafe(safe).getThreshold());
         return threshold;

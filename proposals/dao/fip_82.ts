@@ -123,11 +123,12 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(numCouncilMembers).to.equal(9);
 
   const councilThreshold = await tribalCouncilPodFactory.getPodThreshold(tribalCouncilPodId);
-  // this is coming back as 22
-  console.log({ councilThreshold });
   expect(councilThreshold).to.equal(5);
 
-  // 5. Validate that tribal council has the correct roles, if any
+  // 5. Validate that tribal council timelock has the ADMIN_ROLE
+  const core = contracts.core;
+  const hasAdminRole = await core.hasRole(ethers.utils.id('ADMIN_ROLE'), tribalCouncilTimelockAddress);
+  expect(hasAdminRole).to.be.true;
 
   // 6. Validate that protocol specific pods have been correctly deployed
   // const fusePod = contracts.fusePod;
