@@ -36,7 +36,7 @@ jobs:
   lint:
     working_directory: ~/repo
     docker:
-      - image: ccimg/node:16.14
+      - image: cimg/node:16.14
     steps:
       - restore_cache:
           keys:
