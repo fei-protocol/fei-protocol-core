@@ -8,38 +8,47 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { getImpersonatedSigner } from '@test/helpers';
-import {
-  tribalCouncilMembers,
-  tribalCouncilThreshold,
-  tribalCouncilNumMembers
-} from '@protocol/optimisticGovernance/tribalCouncilMembers';
+import { tribeCouncilPodConfig, protocolPodConfig } from '@protocol/optimisticGovernance';
 
 // How this will work:
-// 1. DAO deploys a factory contract to deploy pods
-// 2. DAO uses factory contract to deploy a Tribal Council
-// 3. DAO adds members to the Tribal Council
-// 3.5 Tribal Council granted ROLE_ADMIN
-// 4. Tribal Council deploys a factory contract
-// 5. Factory contract used to deploy several product specific pods
-// 6. Relevant authority gives each pod the necessary role
-// Think through what happens if the controller is updated or changed somehow
+// Deployment
+// 1. DAO deploys an admin tier factory contract to deploy admin pods, specifically the Tribal Council
+// 2. DAO uses factory contract to create a Tribal Council pod, with empty members initially
+// 3. DAO deploys a protocol tier pod factory to deploy protocol pods
+// 4. DAO uses protocol tier pod factory to deploy the first protocol pod
+
+// DAO actions
+// 1. Set the Tribal Council members
+// 2. Set the correct admin on the Tribal Council factory
+// 3. Set the correct admin on the Protocol Pod Factory
+// 4. Grant the TribalCouncil timelock the ROLE_ADMIN
+// 5. Grant the Protocol Pod timelock the ORACLE_ADMIN role
+
+// Validation
+// 1. Validate admins
+// 2. Validate all pod members, proposers and executors
+// 3. Validate correct roles set on contracts
+
+// How to pass the contract addresses through to the DAO script?
 
 const fipNumber = '82'; // Change me!
 
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
+  const tempPodAdmin = deployAddress;
+
   // 1. Deploy public pod executor
   const podExecutorFactory = await ethers.getContractFactory('PodExecutor');
   const podExecutor = await podExecutorFactory.deploy();
   await podExecutor.deployTransaction.wait();
   console.log('PodExecutor deployed to', podExecutor.address);
 
-  // 2. Deploy tribalCouncilPodFactory
+  // 2. Deploy tribalCouncilPodFactory. Set podAdmin to deploy address, so pods can be created
   const podFactoryEthersFactory = await ethers.getContractFactory('PodFactory');
   const tribalCouncilPodFactory = await podFactoryEthersFactory.deploy(
     addresses.core, // core
-    addresses.feiDAOTimelock, // podAdmin - adds members etc. FEI DAO timelock
+    tempPodAdmin, // tempPodAdmin. Later changed to FEI DAO timelock
     addresses.podController, // podController
     addresses.memberToken, // podMembershipToken
     podExecutor.address // Public pod executor
@@ -47,9 +56,42 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await tribalCouncilPodFactory.deployTransaction.wait();
   console.log('DAO pod factory deployed to:', tribalCouncilPodFactory.address);
 
+  // 3. Create TribalCouncil pod - what part of this needs to go on-chain?
+  // Maybe create empty pods first, then rely on the DAO vote to populate with real members?
+  const [tribalCouncilPodId, tribalCouncilTimelock] = await tribalCouncilPodFactory.createChildOptimisticPod(
+    tribeCouncilPodConfig.members,
+    tribeCouncilPodConfig.threshold,
+    tribeCouncilPodConfig.podLabel,
+    tribeCouncilPodConfig.ensString,
+    tribeCouncilPodConfig.imageUrl,
+    tribeCouncilPodConfig.minDelay
+  );
+
+  // 4. Deploy protocolTierPodFactory. Set podAdmin to deploy address, to pods can be created
+  const protocolTierPodFactory = await podFactoryEthersFactory.deploy(
+    addresses.core, // core
+    tempPodAdmin, // tempPodAdmin. Later changed to TribalCouncil pod timelock
+    addresses.podController, // podController
+    addresses.memberToken, // podMembershipToken
+    addresses.podExecutor // Public pod executor
+  );
+  await protocolTierPodFactory.deployTransaction.wait();
+  console.log('Protocol tier pod factory deployed to:', protocolTierPodFactory.address);
+
+  // 5. Create protocol tier pod
+  const [protocolPodId, protocolPodTimelock] = await protocolTierPodFactory.createChildOptimisticPod(
+    tribeCouncilPodConfig.members,
+    tribeCouncilPodConfig.threshold,
+    tribeCouncilPodConfig.podLabel,
+    tribeCouncilPodConfig.ensString,
+    tribeCouncilPodConfig.imageUrl,
+    tribeCouncilPodConfig.minDelay
+  );
+
   return {
     podExecutor,
-    tribalCouncilPodFactory
+    tribalCouncilPodFactory,
+    protocolTierPodFactory
   };
 };
 
@@ -69,6 +111,8 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   const priviledgedAddressSigner = await getImpersonatedSigner(priviledgedAddress);
   const inviteToken = new ethers.Contract(inviteTokenAddress, inviteTokenABI, priviledgedAddressSigner);
 
+  // Want access to deploy address, mint it SHIP
+  await inviteToken.mint(addresses.feiDAOTimelock, 10);
   await inviteToken.mint(addresses.feiDAOTimelock, 10);
   await inviteToken.mint(contracts.tribalCouncilPodFactory.address, 10);
 };
@@ -93,27 +137,65 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const tribalCouncilSafeAddress = await tribalCouncilPodFactory.getPodSafe(tribalCouncilPodId);
   const tribalCouncilTimelock = await ethers.getContractAt('OptimisticTimelock', tribalCouncilTimelockAddress);
 
-  const gnosisSafeIsProposer = await tribalCouncilTimelock.hasRole(
+  const councilSafeIsProposer = await tribalCouncilTimelock.hasRole(
     ethers.utils.id('PROPOSER_ROLE'),
     tribalCouncilSafeAddress
   );
-  expect(gnosisSafeIsProposer).to.be.true;
+  expect(councilSafeIsProposer).to.be.true;
 
-  const publicExecutorIsExecutor = await tribalCouncilTimelock.hasRole(
+  const tribePublicExecutorIs = await tribalCouncilTimelock.hasRole(
     ethers.utils.id('EXECUTOR_ROLE'),
     addresses.podExecutor
   );
-  expect(publicExecutorIsExecutor).to.be.true;
+  expect(tribePublicExecutorIs).to.be.true;
 
   // 3. Validate that Tribal Council members are correctly set
   const councilMembers = await tribalCouncilPodFactory.getPodMembers(tribalCouncilPodId);
-  expect(councilMembers).to.deep.equal(tribalCouncilMembers);
+  expect(councilMembers).to.deep.equal(tribeCouncilPodConfig.members);
 
   const numCouncilMembers = await tribalCouncilPodFactory.getNumMembers(tribalCouncilPodId);
-  expect(numCouncilMembers).to.equal(tribalCouncilNumMembers);
+  expect(numCouncilMembers).to.equal(tribeCouncilPodConfig.numMembers);
 
   const councilThreshold = await tribalCouncilPodFactory.getPodThreshold(tribalCouncilPodId);
-  expect(councilThreshold).to.equal(tribalCouncilThreshold);
+  expect(councilThreshold).to.equal(tribeCouncilPodConfig.threshold);
+
+  // 4. Validate that TribalCouncil timelock has ROLE_ADMIN role
+  const core = contracts.core;
+  const councilHasRole = await core.hasRole(ethers.utils.id('ROLE_ADMIN'), tribalCouncilTimelockAddress);
+  expect(councilHasRole).to.be.true;
+
+  ////////////////////// PROTOCOL TIER POD ///////////////////////////////
+
+  // 1. Validate admin of protocolTierPodFactory is the TribalCouncil pod timelock
+  const protocolTierPodFactory = contracts.protocolTierPodFactory;
+  const protocolTierFactoryAdmin = await protocolTierPodFactory.podAdmin();
+  expect(protocolTierFactoryAdmin).to.equal(addresses.tribalCouncilTimelock);
+
+  // 2. Validate that the protocolTierPod Safe and timelock are configured
+  const protocolPodId = await protocolTierPodFactory.latestPodId(); // TODO: How to make this robust?
+  const protocolTimelockAddress = await protocolTierPodFactory.getPodTimelock(protocolPodId);
+  const protocolSafeAddress = await protocolTierPodFactory.getPodSafe(protocolPodId);
+  const protocolTimelock = await ethers.getContractAt('OptimisticTimelock', protocolTimelockAddress);
+
+  const podSafeIsProposer = await protocolTimelock.hasRole(ethers.utils.id('PROPOSER_ROLE'), protocolSafeAddress);
+  expect(podSafeIsProposer).to.be.true;
+
+  const podExecutorIsExecutor = await protocolTimelock.hasRole(ethers.utils.id('EXECUTOR_ROLE'), addresses.podExecutor);
+  expect(podExecutorIsExecutor).to.be.true;
+
+  // 3. Validate that protocol tier pod members Council members are correctly set
+  const numPodMembers = await protocolTierPodFactory.getNumMembers(protocolPodId);
+  expect(numPodMembers).to.equal(protocolPodConfig.numMembers);
+
+  const podThreshold = await protocolTierPodFactory.getPodThreshold(protocolPodId);
+  expect(podThreshold).to.equal(protocolPodConfig.threshold);
+
+  const podMembers = await protocolTierPodFactory.getPodMembers(protocolPodId);
+  expect(podMembers).to.deep.equal(protocolPodConfig.members);
+
+  // 4. Validate that protocol pod tier has role ORACLE_ADMIN
+  const protocolPodHasRole = await core.hasRole(ethers.utils.id('ORACLE_ADMIN'), protocolTimelockAddress);
+  expect(protocolPodHasRole).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };
