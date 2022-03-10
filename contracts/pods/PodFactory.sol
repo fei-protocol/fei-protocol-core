@@ -25,9 +25,6 @@ contract PodFactory is CoreRef, Ownable, IPodFactory {
     bytes32 public constant GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
     bytes32 public constant ROLE_ADMIN = keccak256("ROLE_ADMIN");
 
-    /// @notice Address from which the admin pod transactions are sent. Likely a timelock
-    address public podAdmin;
-
     /// @notice Orca controller for Pod
     IControllerV1 private immutable podController;
 
@@ -48,7 +45,6 @@ contract PodFactory is CoreRef, Ownable, IPodFactory {
 
     event CreatePod(uint256 podId, address safeAddress);
     event CreateOptimisticTimelock(address timelock);
-    event UpdatePodAdmin(address oldPodAdmin, address newPodAdmin);
 
     constructor(
         address _core,
@@ -125,20 +121,6 @@ contract PodFactory is CoreRef, Ownable, IPodFactory {
         returns (address)
     {
         return IControllerV1(podController).podAdmin(podId);
-    }
-
-    //////////////////////  SET POD ADMIN ///////////////////
-    /// @notice Wrapper to allow current podAdmin to change the podAdmin
-    function updatePodAdmin(uint256 _podId, address _podAdmin)
-        external
-        override
-    {
-        address oldPodAdmin = _podAdmin;
-        emit UpdatePodAdmin(oldPodAdmin, _podAdmin);
-
-        // Update local cached podAdmin
-        podAdmin = _podAdmin;
-        podController.updatePodAdmin(_podId, _podAdmin);
     }
 
     //////////////////// STATE-CHANGING API ////////////////////
