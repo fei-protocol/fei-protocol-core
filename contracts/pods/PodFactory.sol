@@ -25,7 +25,7 @@ contract PodFactory is Ownable, IPodFactory {
     /// @notice Orca controller for Pod
     IControllerV1 private immutable podController;
 
-    /// @notice Orca membership token for the pod
+    /// @notice Orca membership token for the pods. Handles permissioning pod members
     IMemberToken private immutable memberToken;
 
     /// @notice Public contract that will be granted to execute all timelocks created
@@ -43,6 +43,10 @@ contract PodFactory is Ownable, IPodFactory {
     event CreatePod(uint256 indexed podId, address indexed safeAddress);
     event CreateOptimisticTimelock(address indexed timelock);
 
+    /// @param _core Fei core address
+    /// @param _podController Orca pod controller
+    /// @param _memberToken Membership token that manages the Orca pod membership
+    /// @param _podExecutor Public contract that will be granted to execute all timelocks created
     constructor(
         address _core,
         address _podController,
@@ -70,6 +74,7 @@ contract PodFactory is Ownable, IPodFactory {
     }
 
     /// @notice Get the number of pod members
+    /// @param podId Unique id for the orca pod
     function getNumMembers(uint256 podId)
         external
         view
@@ -82,6 +87,7 @@ contract PodFactory is Ownable, IPodFactory {
     }
 
     /// @notice Get all members on the pod
+    /// @param podId Unique id for the orca pod
     function getPodMembers(uint256 podId)
         public
         view
@@ -93,6 +99,7 @@ contract PodFactory is Ownable, IPodFactory {
     }
 
     /// @notice Get the signer threshold on the pod
+    /// @param podId Unique id for the orca pod
     function getPodThreshold(uint256 podId)
         external
         view
@@ -111,6 +118,7 @@ contract PodFactory is Ownable, IPodFactory {
 
     /// @notice Get the podAdmin from the base Orca controller
     /// @dev Controller only allows existing admin to change
+    /// @param podId Unique id for the orca pod
     function getPodAdmin(uint256 podId)
         external
         view
@@ -189,8 +197,10 @@ contract PodFactory is Ownable, IPodFactory {
     }
 
     /// @notice Create an optimistic timelock, linking to an Orca pod
-    /// @dev Make a pod safe address the proposer and an executor. Execution is made public through
-    ///      a public executor
+    /// @param safeAddress Address of the Gnosis Safe
+    /// @param minDelay Delay on the timelock
+    /// @param publicExecutor Non-permissioned smart contract that
+    ///        allows any address to execute a ready transaction
     function createOptimisticTimelock(
         address safeAddress,
         uint256 minDelay,
