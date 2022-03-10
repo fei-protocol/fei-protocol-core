@@ -137,7 +137,6 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const mockSigner = await getImpersonatedSigner(deployAddress);
   const tribalCouncilTimelock = new ethers.Contract(councilTimelockAddress, timelockABI, mockSigner);
   const protocolPodTimelock = new ethers.Contract(protocolPodTimelockAddress, timelockABI, mockSigner);
-  console.log('finished deploy phase');
 
   return {
     podExecutor,
