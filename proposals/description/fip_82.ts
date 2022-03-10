@@ -1,11 +1,9 @@
 import { ProposalDescription } from '@custom-types/types';
 
-// TODO: Need to be able to inject podIds into here ideally. For now they're hardcoded
 const fip_82: ProposalDescription = {
   title: 'FIP-82: Deploy TribalCouncil',
   commands: [
     //////////// GRANT POD TIMELOCKS RELEVANT ACCESS ROLES ///////////
-    // Create ROLE_ADMIN role
     {
       target: 'core',
       values: '0',
@@ -26,7 +24,6 @@ const fip_82: ProposalDescription = {
       ],
       description: 'Create ORACLE_ADMIN role'
     },
-    // Grant TribalCouncil timelock ROLE_ADMIN
     {
       target: 'core',
       values: '0',
@@ -34,7 +31,6 @@ const fip_82: ProposalDescription = {
       arguments: ['0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096', '{tribalCouncilTimelock}'],
       description: 'Grant Tribal Council ROLE_ADMIN'
     },
-    // Grant protocolPod timelock ORACLE_ADMIN role
     {
       target: 'core',
       values: '0',
@@ -44,7 +40,6 @@ const fip_82: ProposalDescription = {
     },
 
     //////////////    Configure Membership of Council and Pod /////////////
-    // Add members to the Tribal Council
     {
       target: 'memberToken',
       values: '0',
@@ -64,9 +59,8 @@ const fip_82: ProposalDescription = {
         '13', // TODO: Replace hardcoded value with real podId
         '0x0000000000000000000000000000000000000000000000000000000000000000'
       ],
-      description: 'Add member to the Tribal Council'
+      description: 'Add designated members to the Tribal Council'
     },
-    // Remove initial placeholders members from the Tribal Council
     {
       target: 'memberToken',
       values: '0',
@@ -85,9 +79,8 @@ const fip_82: ProposalDescription = {
         ],
         '13' // TODO: Replace hardcoded value with real podId
       ],
-      description: 'Burn placeholder deploy members from Tribal Council'
+      description: 'Remove placeholder members from Tribal Council'
     },
-    // Add members to the Protocol Pod
     {
       target: 'memberToken',
       values: '0',
@@ -103,9 +96,8 @@ const fip_82: ProposalDescription = {
         '14', // TODO: Replace with real protocol pod ID
         '0x0000000000000000000000000000000000000000000000000000000000000000'
       ],
-      description: 'Add members to the Protocol Pod'
+      description: 'Add designated members to the Protocol Pod'
     },
-    // Remove initial placeholder members from Protocol Pod
     {
       target: 'memberToken',
       values: '0',
@@ -122,8 +114,6 @@ const fip_82: ProposalDescription = {
       ],
       description: 'Remove initial placeholder members from Protocol Pod'
     },
-    // Update PodAdmin for protocol tier pods to be the TribalCouncil timelock
-    // TODO: Think need to handle that different pods might have different admins?
     {
       target: 'podController',
       values: '0',
@@ -132,16 +122,22 @@ const fip_82: ProposalDescription = {
         '14', // TODO: Replace with real protocol pod ID
         '{tribalCouncilTimelock}'
       ],
-      description: 'Remove initial placeholder members from Protocol Pod'
+      description: `
+      Update the podAdmin of the protocol pod to the tribalCouncilTimelock.
+      This replaces the default deploy address, which was used for 
+      convenience in creating the pod from the factory.
+      `
     }
   ],
   description: `
-  FIP-82a enacts the first stage of the governance upgrade to the TRIBE DAO
-  Specifically, this FIP will:
-  1. Transition PodAdmins to correct podAdmins
-  2. Grant relevant pod timelocks access roles
-  3. Configure memberships of the Tribal Council and Protocol Pod as according to 
-     that previously decided
+  FIP-82 enacts the governance upgrade to the TRIBE DAO. Specifically, this FIP will:
+  1. Create roles for the Tribal Council and Protocol Pod
+  2. Grant those roles to the Tribal Council and first Protocol pod timelocks
+  3. Initialise the membership of the Tribal Council and protocol pod, as previously decided on in snapshot
+  4. Update the admin of the protocol pod to the Tribal Council timelock
+
+  Snapshot vote: https://snapshot.fei.money/#/proposal/0x463fd1be98d9e86c83eb845ca7e2a5555387e3c86ca0b756aada17a11df87f2b
+  Forum post discussion: https://tribe.fei.money/t/fip-82-governance-enhancements/3945
   `
 };
 

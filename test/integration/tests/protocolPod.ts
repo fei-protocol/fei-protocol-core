@@ -11,6 +11,7 @@ import { TestEndtoEndCoordinator } from '../setup';
 import { BigNumber } from 'ethers';
 import { tribalCouncilMembers } from '@protocol/optimisticGovernance';
 import { forceEth } from '@test/integration/setup/utils';
+import { Contract } from 'ethers';
 
 const toBN = ethers.BigNumber.from;
 
@@ -21,7 +22,7 @@ describe('Protocol pod', function () {
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
   let protocolTierPodFactory: PodFactory;
-  let memberToken: any;
+  let memberToken: Contract;
   let podId: BigNumber;
 
   before(async () => {
@@ -76,7 +77,6 @@ describe('Protocol pod', function () {
     const initialNumPodMembers = await protocolTierPodFactory.getNumMembers(podId);
 
     const memberToBurn = tribalCouncilMembers[0];
-    console.log({ memberToBurn, tribalCouncilPodId: podId });
     await memberToken.burn(memberToBurn, podId);
 
     const numPodMembers = await protocolTierPodFactory.getNumMembers(podId);

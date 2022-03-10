@@ -7,7 +7,7 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { getImpersonatedSigner } from '@test/helpers';
+import { getImpersonatedSigner, validateArraysEqual } from '@test/helpers';
 import { tribeCouncilPodConfig, protocolPodConfig } from '@protocol/optimisticGovernance';
 
 // How this works:
@@ -17,20 +17,13 @@ import { tribeCouncilPodConfig, protocolPodConfig } from '@protocol/optimisticGo
 // 3. DAO deploys a protocol tier pod factory to deploy protocol pods
 // 4. DAO uses protocol tier pod factory to deploy the first protocol pod
 
-// DAO actions
-// 1. Set the Tribal Council members
-// 2. Set the correct admin on the Tribal Council factory
-// 3. Set the correct admin on the Protocol Pod Factory
-// 4. Grant the TribalCouncil timelock the ROLE_ADMIN
-// 5. Grant the Protocol Pod timelock the ORACLE_ADMIN role
-
 // Validation
 // 1. Validate admins
 // 2. Validate all pod members, proposers and executors
 // 3. Validate correct roles set on contracts
 
+// TODO: Remove once have SHIP tokens on Mainnet
 const mintOrcaToken = async (address: string) => {
-  // TODO: Remove once have SHIP tokens on Mainnet
   const inviteTokenAddress = '0x872EdeaD0c56930777A82978d4D7deAE3A2d1539';
   const priviledgedAddress = '0x2149A222feD42fefc3A120B3DdA34482190fC666';
 
@@ -41,19 +34,7 @@ const mintOrcaToken = async (address: string) => {
   // Mint Orca Ship tokens to deploy address, to allow to deploy contracts
   const priviledgedAddressSigner = await getImpersonatedSigner(priviledgedAddress);
   const inviteToken = new ethers.Contract(inviteTokenAddress, inviteTokenABI, priviledgedAddressSigner);
-
-  // Want access to deploy address, mint it SHIP
   await inviteToken.mint(address, 10);
-};
-
-const validateArraysEqual = async (arrayA: string[], arrayB: string[]) => {
-  expect(arrayA.length).to.equal(arrayB.length);
-  const lowerCaseA = arrayA.map((a) => a.toLowerCase());
-  const lowerCaseB = arrayB.map((b) => b.toLowerCase());
-
-  for (let i = 0; i < lowerCaseA.length; i++) {
-    expect(lowerCaseA.includes(lowerCaseB[i])).to.be.true;
-  }
 };
 
 const fipNumber = '82';
@@ -63,7 +44,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const podExecutorFactory = await ethers.getContractFactory('PodExecutor');
   const podExecutor = await podExecutorFactory.deploy();
   await podExecutor.deployTransaction.wait();
-  console.log('PodExecutor deployed to', podExecutor.address);
+  logging && console.log('PodExecutor deployed to', podExecutor.address);
 
   // 2. Deploy tribalCouncilPodFactory. Set podAdmin to deploy address, so pods can be created
   const podFactoryEthersFactory = await ethers.getContractFactory('PodFactory');
@@ -76,7 +57,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   );
   await tribalCouncilPodFactory.deployTransaction.wait();
   await mintOrcaToken(tribalCouncilPodFactory.address);
-  console.log('DAO pod factory deployed to:', tribalCouncilPodFactory.address);
+  logging && console.log('DAO pod factory deployed to:', tribalCouncilPodFactory.address);
 
   // 3. Create TribalCouncil pod
   await tribalCouncilPodFactory.createChildOptimisticPod(
@@ -91,8 +72,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const tribalCouncilPodId = await tribalCouncilPodFactory.latestPodId();
   const councilTimelockAddress = await tribalCouncilPodFactory.getPodTimelock(tribalCouncilPodId);
 
-  console.log('TribalCouncil pod Id: ', tribalCouncilPodId.toString());
-  console.log('Tribal council timelock deployed to: ', councilTimelockAddress);
+  logging && console.log('TribalCouncil pod Id: ', tribalCouncilPodId.toString());
+  logging && console.log('Tribal council timelock deployed to: ', councilTimelockAddress);
 
   // 4. Deploy protocolTierPodFactory. Set podAdmin to deploy address, to pods can be created
   const protocolTierPodFactory = await podFactoryEthersFactory.deploy(
@@ -103,7 +84,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   );
   await protocolTierPodFactory.deployTransaction.wait();
   await mintOrcaToken(protocolTierPodFactory.address);
-  console.log('Protocol tier pod factory deployed to:', protocolTierPodFactory.address);
+  logging && console.log('Protocol tier pod factory deployed to:', protocolTierPodFactory.address);
 
   // 5. Create protocol tier pod
   await protocolTierPodFactory.createChildOptimisticPod(
@@ -116,10 +97,10 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     addresses.feiDAOTimelock // Temporarily set to FeiDAOTimelock for deployment. Later transferred to TribalCouncil pod timelock
   );
   const protocolPodId = await protocolTierPodFactory.latestPodId();
-  console.log('Protocol tier pod Id: ', protocolPodId.toString());
+  logging && console.log('Protocol tier pod Id: ', protocolPodId.toString());
 
   const protocolPodTimelockAddress = await protocolTierPodFactory.getPodTimelock(protocolPodId);
-  console.log('Protocol pod timelock deployed to: ', protocolPodTimelockAddress);
+  logging && console.log('Protocol pod timelock deployed to: ', protocolPodTimelockAddress);
 
   // 6. Transfer ownership of PodFactories to the relevant timelocks
   //    These owners are the addresses allowed to create new pods in the future

@@ -11,9 +11,8 @@ import {mintOrcaTokens, podParams} from "../fixtures/Orca.sol";
 import {Vm} from "../../utils/Vm.sol";
 import "hardhat/console.sol";
 
-/// @notice Validate PodFactory critical functionality such as
-/// creating pods
-///  @dev Admin pod can not also be a pod member
+/// @notice Validate PodFactory critical functionality such as creating pods
+///  @dev PodAdmin can not also be a pod member
 contract PodFactoryIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
@@ -40,7 +39,7 @@ contract PodFactoryIntegrationTest is DSTest {
         mintOrcaTokens(address(factory), 2, vm);
     }
 
-    /// @notice Validate that a non-pod admin can not create a pod
+    /// @notice Validate that a non-pod owner can not create a pod
     function testOnlyOwnerCanCreatePod() public {
         (
             address[] memory members,
@@ -123,42 +122,6 @@ contract PodFactoryIntegrationTest is DSTest {
         assertEq(IControllerV1(podController).podAdmin(podId), newAdmin);
         assertEq(factory.getPodAdmin(podId), newAdmin);
     }
-
-    // function testPodAdminCanBeSet() public {
-    //     (
-    //         address[] memory members,
-    //         uint256 threshold,
-    //         bytes32 podLabel,
-    //         string memory ensString,
-    //         string memory imageUrl,
-    //         uint256 minDelay
-    //     ) = podParams();
-
-    //     address dummyPodAdmin = address(this);
-    //     PodFactory dummyPodAdminFactory = new PodFactory(
-    //         core,
-    //         dummyPodAdmin,
-    //         podController,
-    //         memberToken,
-    //         address(podExecutor)
-    //     );
-    //     assertEq(dummyPodAdminFactory.podAdmin(), dummyPodAdmin);
-    //     mintOrcaTokens(address(dummyPodAdminFactory), 2, vm);
-
-    //     dummyPodAdminFactory.createChildOptimisticPod(
-    //         members,
-    //         threshold,
-    //         podLabel,
-    //         ensString,
-    //         imageUrl,
-    //         minDelay
-    //     );
-
-    //     // Set PodAdmin to expected address
-    //     vm.prank(feiDAOTimelock);
-    //     dummyPodAdminFactory.setPodAdmin(podAdmin);
-    //     assertEq(dummyPodAdminFactory.podAdmin(), podAdmin);
-    // }
 
     function testGnosisGetters() public {
         (
@@ -265,10 +228,11 @@ contract PodFactoryIntegrationTest is DSTest {
         );
 
         assertEq(timelock, factory.getPodTimelock(podId));
+        assertEq(podId, factory.getPodId(timelock));
     }
 
     /// @notice Validate that multiple pods can be deployed with the correct admin set
-    function testDeployMultiplePodsWithAdmin() public {
+    function testDeployMultiplePods() public {
         (
             address[] memory members,
             uint256 threshold,

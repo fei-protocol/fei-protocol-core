@@ -8,7 +8,6 @@ import {IPodFactory} from "./IPodFactory.sol";
 
 import {TribeRoles} from "../core/TribeRoles.sol";
 import {OptimisticTimelock} from "../dao/timelock/OptimisticTimelock.sol";
-import {CoreRef} from "../refs/CoreRef.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @notice Contract used by an Admin pod to manage child pods.
@@ -19,11 +18,9 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 ///
 /// The timelock and Orca pod are then linked up so that the Orca pod is
 /// the only proposer and executor.
-contract PodFactory is CoreRef, Ownable, IPodFactory {
-    /// @notice TRIBE roles used for permissioning
-    bytes32 public constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
-    bytes32 public constant GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
-    bytes32 public constant ROLE_ADMIN = keccak256("ROLE_ADMIN");
+contract PodFactory is Ownable, IPodFactory {
+    /// @notice Core address
+    address private immutable core;
 
     /// @notice Orca controller for Pod
     IControllerV1 private immutable podController;
@@ -43,20 +40,22 @@ contract PodFactory is CoreRef, Ownable, IPodFactory {
     /// @notice Latest pod created
     uint256 public latestPodId;
 
-    event CreatePod(uint256 podId, address safeAddress);
-    event CreateOptimisticTimelock(address timelock);
+    event CreatePod(uint256 indexed podId, address indexed safeAddress);
+    event CreateOptimisticTimelock(address indexed timelock);
 
     constructor(
         address _core,
         address _podController,
         address _memberToken,
         address _podExecutor
-    ) CoreRef(_core) Ownable() {
+    ) Ownable() {
         require(_core != address(0), "Zero address");
         require(_podController != address(0x0), "Zero address");
+        require(_memberToken != address(0x0), "Zero address");
         require(_podExecutor != address(0x0), "Zero address");
 
         podExecutor = _podExecutor;
+        core = _core;
         podController = IControllerV1(_podController);
         // TODO: Checkout what happens when migrate controller. Probs need to update pointer here
         memberToken = IMemberToken(_memberToken);
@@ -110,7 +109,8 @@ contract PodFactory is CoreRef, Ownable, IPodFactory {
         return memberToken.getNextAvailablePodId();
     }
 
-    /// @notice Get the podAdmin from the base Orca controller. Controller only allows existing admin to change
+    /// @notice Get the podAdmin from the base Orca controller
+    /// @dev Controller only allows existing admin to change
     function getPodAdmin(uint256 podId)
         external
         view
@@ -204,7 +204,7 @@ contract PodFactory is CoreRef, Ownable, IPodFactory {
         executors[1] = publicExecutor;
 
         OptimisticTimelock timelock = new OptimisticTimelock(
-            address(core()),
+            core,
             minDelay,
             proposers,
             executors

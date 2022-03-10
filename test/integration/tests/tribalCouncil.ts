@@ -10,6 +10,7 @@ import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { BigNumber } from 'ethers';
 import { tribalCouncilMembers } from '@protocol/optimisticGovernance';
+import { Contract } from 'ethers';
 
 const toBN = ethers.BigNumber.from;
 
@@ -20,7 +21,7 @@ describe('Tribal Council', function () {
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
   let tribalCouncilPodFactory: PodFactory;
-  let memberToken: any;
+  let memberToken: Contract;
   let tribalCouncilPodId: BigNumber;
 
   before(async () => {
