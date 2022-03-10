@@ -3,20 +3,25 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
-import hre, { ethers } from 'hardhat';
+import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { expectApprox, expectRevert, getImpersonatedSigner, resetFork } from '@test/helpers';
+import { getImpersonatedSigner, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
+import { BigNumber } from 'ethers';
+import { tribalCouncilMembers } from '@protocol/optimisticGovernance';
 
-describe('Tribal Council', function () {
-  // Tests validate the post deploy state
+const toBN = ethers.BigNumber.from;
+
+describe.only('Tribal Council', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: SignerWithAddress;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
   let tribalCouncilPodFactory: PodFactory;
+  let memberToken: any;
+  let tribalCouncilPodId: BigNumber;
 
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
@@ -44,12 +49,48 @@ describe('Tribal Council', function () {
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
     tribalCouncilPodFactory = contracts.tribalCouncilPodFactory as PodFactory;
-    await hre.network.provider.send('hardhat_setBalance', [deployAddress.address, '0x21E19E0C9BAB2400000']);
+    tribalCouncilPodId = await tribalCouncilPodFactory.getPodId(contractAddresses.tribalCouncilTimelock);
+
+    const memberTokenABI = [
+      'function mint(address _account,uint256 _id,bytes memory data) external',
+      'function burn(address _account, uint256 _id) external;'
+    ];
+    const feiDAOTimelockSigner = await getImpersonatedSigner(contractAddresses.feiDAOTimelock);
+    memberToken = new ethers.Contract(contractAddresses.memberToken, memberTokenABI, feiDAOTimelockSigner);
   });
 
-  it('should allow DAO to add members', async () => {});
+  it('should allow DAO to add members', async () => {
+    const initialNumPodMembers = await tribalCouncilPodFactory.getNumMembers(tribalCouncilPodId);
 
-  it('should allow DAO to remove members', async () => {});
+    const newMember = '0x0000000000000000000000000000000000000030';
+    await memberToken.mint(
+      newMember,
+      tribalCouncilPodId,
+      '0x0000000000000000000000000000000000000000000000000000000000000000'
+    );
 
-  it('should allow a proposal to be proposed and executed', async () => {});
+    const numPodMembers = await tribalCouncilPodFactory.getNumMembers(tribalCouncilPodId);
+    await expect(numPodMembers).to.equal(initialNumPodMembers.add(toBN(1)));
+
+    const podMembers = await tribalCouncilPodFactory.getPodMembers(tribalCouncilPodId);
+    expect(podMembers[0]).to.equal(newMember);
+  });
+
+  it('should allow DAO to remove members', async () => {
+    const initialNumPodMembers = await tribalCouncilPodFactory.getNumMembers(tribalCouncilPodId);
+
+    const memberToBurn = tribalCouncilMembers[0];
+    await memberToken.burn(memberToBurn, tribalCouncilPodId);
+
+    const numPodMembers = await tribalCouncilPodFactory.getNumMembers(tribalCouncilPodId);
+    await expect(numPodMembers).to.equal(initialNumPodMembers.sub(toBN(1)));
+
+    const podMembers = await tribalCouncilPodFactory.getPodMembers(tribalCouncilPodId);
+    expect(!podMembers.includes(memberToBurn)).to.be.true;
+  });
+
+  it('should allow a proposal to be proposed and executed', async () => {
+    // TODO: Possibly need to perform on a testnet/mainnet
+    // Proposals will come from the pod's timelock. Would need to fast forward state
+  });
 });

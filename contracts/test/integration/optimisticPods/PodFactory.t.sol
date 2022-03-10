@@ -33,7 +33,6 @@ contract PodFactoryIntegrationTest is DSTest {
         podExecutor = new PodExecutor();
         factory = new PodFactory(
             core,
-            podAdmin,
             podController,
             memberToken,
             address(podExecutor)
@@ -62,7 +61,8 @@ contract PodFactoryIntegrationTest is DSTest {
             podLabel,
             ensString,
             imageUrl,
-            minDelay
+            minDelay,
+            podAdmin
         );
     }
 
@@ -87,7 +87,8 @@ contract PodFactoryIntegrationTest is DSTest {
             podLabel,
             ensString,
             imageUrl,
-            minDelay
+            minDelay,
+            podAdmin
         );
     }
 
@@ -113,7 +114,8 @@ contract PodFactoryIntegrationTest is DSTest {
             podLabel,
             ensString,
             imageUrl,
-            minDelay
+            minDelay,
+            podAdmin
         );
 
         vm.prank(podAdmin);
@@ -175,7 +177,8 @@ contract PodFactoryIntegrationTest is DSTest {
             podLabel,
             ensString,
             imageUrl,
-            minDelay
+            minDelay,
+            podAdmin
         );
 
         uint256 numMembers = factory.getNumMembers(podId);
@@ -211,7 +214,8 @@ contract PodFactoryIntegrationTest is DSTest {
             podLabel,
             ensString,
             imageUrl,
-            minDelay
+            minDelay,
+            podAdmin
         );
         require(timelock != address(0));
 
@@ -256,7 +260,8 @@ contract PodFactoryIntegrationTest is DSTest {
             podLabel,
             ensString,
             imageUrl,
-            minDelay
+            minDelay,
+            podAdmin
         );
 
         assertEq(timelock, factory.getPodTimelock(podId));
@@ -280,7 +285,8 @@ contract PodFactoryIntegrationTest is DSTest {
             bytes32("A"),
             ensString,
             imageUrl,
-            minDelay
+            minDelay,
+            podAdmin
         );
 
         address podAAdmin = IControllerV1(podController).podAdmin(podAId);
@@ -293,7 +299,8 @@ contract PodFactoryIntegrationTest is DSTest {
             bytes32("B"),
             ensString,
             imageUrl,
-            minDelay
+            minDelay,
+            podAdmin
         );
 
         assertEq(podBId, podAId + 1);

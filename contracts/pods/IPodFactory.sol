@@ -23,6 +23,7 @@ interface IPodFactory {
         bytes32 _podLabel,
         string calldata _ensString,
         string calldata _imageUrl,
-        uint256 minDelay
+        uint256 minDelay,
+        address podAdmin
     ) external returns (uint256, address);
 }

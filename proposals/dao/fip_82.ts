@@ -10,7 +10,7 @@ import {
 import { getImpersonatedSigner } from '@test/helpers';
 import { tribeCouncilPodConfig, protocolPodConfig } from '@protocol/optimisticGovernance';
 
-// How this will work:
+// How this works:
 // Deployment
 // 1. DAO deploys an admin tier factory contract to deploy admin pods, specifically the Tribal Council
 // 2. DAO uses factory contract to create a Tribal Council pod, with empty members initially
@@ -28,8 +28,6 @@ import { tribeCouncilPodConfig, protocolPodConfig } from '@protocol/optimisticGo
 // 1. Validate admins
 // 2. Validate all pod members, proposers and executors
 // 3. Validate correct roles set on contracts
-
-// How to pass the contract addresses through to the DAO script?
 
 const mintOrcaToken = async (address: string) => {
   // TODO: Remove once have SHIP tokens on Mainnet
@@ -72,7 +70,6 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   const tribalCouncilPodFactory = await podFactoryEthersFactory.deploy(
     addresses.core, // core
-    addresses.feiDAOTimelock, // tempPodAdmin. Later changed to FEI DAO timelock
     addresses.podController, // podController
     addresses.memberToken, // podMembershipToken
     podExecutor.address // Public pod executor
@@ -88,18 +85,18 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     tribeCouncilPodConfig.podLabel,
     tribeCouncilPodConfig.ensString,
     tribeCouncilPodConfig.imageUrl,
-    tribeCouncilPodConfig.minDelay
+    tribeCouncilPodConfig.minDelay,
+    addresses.feiDAOTimelock // podAdmin
   );
   const tribalCouncilPodId = await tribalCouncilPodFactory.latestPodId();
   const councilTimelockAddress = await tribalCouncilPodFactory.getPodTimelock(tribalCouncilPodId);
 
-  console.log('TribalCouncil pod Id: ', tribalCouncilPodId);
+  console.log('TribalCouncil pod Id: ', tribalCouncilPodId.toString());
   console.log('Tribal council timelock deployed to: ', councilTimelockAddress);
 
   // 4. Deploy protocolTierPodFactory. Set podAdmin to deploy address, to pods can be created
   const protocolTierPodFactory = await podFactoryEthersFactory.deploy(
     addresses.core, // core
-    addresses.feiDAOTimelock, // Temporarily set to FeiDAOTimelock for deployment. Later transferred to TribalCouncil pod timelock
     addresses.podController, // podController
     addresses.memberToken, // podMembershipToken
     podExecutor.address // Public pod executor
@@ -115,9 +112,12 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     protocolPodConfig.podLabel,
     protocolPodConfig.ensString,
     protocolPodConfig.imageUrl,
-    protocolPodConfig.minDelay
+    protocolPodConfig.minDelay,
+    addresses.feiDAOTimelock // Temporarily set to FeiDAOTimelock for deployment. Later transferred to TribalCouncil pod timelock
   );
   const protocolPodId = await protocolTierPodFactory.latestPodId();
+  console.log('Protocol tier pod Id: ', protocolPodId.toString());
+
   const protocolPodTimelockAddress = await protocolTierPodFactory.getPodTimelock(protocolPodId);
   console.log('Protocol pod timelock deployed to: ', protocolPodTimelockAddress);
 

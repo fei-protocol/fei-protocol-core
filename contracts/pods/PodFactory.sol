@@ -48,17 +48,14 @@ contract PodFactory is CoreRef, Ownable, IPodFactory {
 
     constructor(
         address _core,
-        address _podAdmin,
         address _podController,
         address _memberToken,
         address _podExecutor
     ) CoreRef(_core) Ownable() {
         require(_core != address(0), "Zero address");
-        /// @notice podAdmin can be set to zero address
         require(_podController != address(0x0), "Zero address");
         require(_podExecutor != address(0x0), "Zero address");
 
-        podAdmin = _podAdmin;
         podExecutor = _podExecutor;
         podController = IControllerV1(_podController);
         // TODO: Checkout what happens when migrate controller. Probs need to update pointer here
@@ -131,37 +128,80 @@ contract PodFactory is CoreRef, Ownable, IPodFactory {
     /// @param _podLabel Metadata, Human readable label for the pod
     /// @param _ensString Metadata, ENS name of the pod
     /// @param _imageUrl Metadata, URL to a image to represent the pod in frontends
-    /// @param minDelay Delay on the timelock
-    // Can this be called off-chain? Or does it have to be calleable by the DAO/podAdmin?
-    // Think need to be able to call this off-chain. Figure out permissioning to allow that
-    // Want the various pods setup off chain, and then transfer ownership to the thing responsible for deploying more pods
+    /// @param _minDelay Delay on the timelock
+    /// @param _podAdmin The admin of the pod - able to add and remove pod members
     function createChildOptimisticPod(
         address[] calldata _members,
         uint256 _threshold,
         bytes32 _podLabel,
         string calldata _ensString,
         string calldata _imageUrl,
-        uint256 minDelay
+        uint256 _minDelay,
+        address _podAdmin
     ) external override onlyOwner returns (uint256, address) {
         uint256 podId = memberToken.getNextAvailablePodId();
 
+        address safeAddress = createPod(
+            _members,
+            _threshold,
+            _podLabel,
+            _ensString,
+            _imageUrl,
+            _podAdmin,
+            podId
+        );
+
+        address timelock = createOptimisticTimelock(
+            safeAddress,
+            _minDelay,
+            podExecutor
+        );
+
+        // Set mapping from podId to timelock for reference
+        getPodTimelock[podId] = timelock;
+        getPodId[timelock] = podId;
+        latestPodId = podId;
+
+        emit CreatePod(podId, safeAddress);
+        return (podId, timelock);
+    }
+
+    /// @notice Create an Orca pod - a Gnosis Safe with a membership wrapper
+    function createPod(
+        address[] calldata _members,
+        uint256 _threshold,
+        bytes32 _podLabel,
+        string calldata _ensString,
+        string calldata _imageUrl,
+        address _podAdmin,
+        uint256 podId
+    ) internal returns (address) {
         podController.createPod(
             _members,
             _threshold,
-            podAdmin,
+            _podAdmin,
             _podLabel,
             _ensString,
             podId,
             _imageUrl
         );
-        address safeAddress = podController.podIdToSafe(podId);
+        return podController.podIdToSafe(podId);
+    }
 
+    /// @notice Create an optimistic timelock, linking to an Orca pod
+    /// @dev Make a pod safe address the proposer and an executor. Execution is made public through
+    ///      a public executor
+    function createOptimisticTimelock(
+        address safeAddress,
+        uint256 minDelay,
+        address publicExecutor
+    ) internal returns (address) {
         address[] memory proposers = new address[](1);
         proposers[0] = safeAddress;
 
         address[] memory executors = new address[](2);
         executors[0] = safeAddress;
-        executors[1] = podExecutor;
+        executors[1] = publicExecutor;
 
         OptimisticTimelock timelock = new OptimisticTimelock(
             address(core()),
@@ -169,14 +209,7 @@ contract PodFactory is CoreRef, Ownable, IPodFactory {
             proposers,
             executors
         );
-
         emit CreateOptimisticTimelock(address(timelock));
-        emit CreatePod(podId, safeAddress);
-
-        // Set mapping from podId to timelock for reference
-        getPodTimelock[podId] = address(timelock);
-        getPodId[address(timelock)] = podId;
-        latestPodId = podId;
-        return (podId, address(timelock));
+        return address(timelock);
     }
 }
