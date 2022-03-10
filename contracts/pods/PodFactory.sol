@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {IGnosisSafe} from "./interfaces/IGnosisSafe.sol";
+import {IGnosisSafe} from "./orcaInterfaces/IGnosisSafe.sol";
+import {IControllerV1} from "./orcaInterfaces/IControllerV1.sol";
+import {IMemberToken} from "./orcaInterfaces/IMemberToken.sol";
+import {IPodFactory} from "./IPodFactory.sol";
+
 import {TribeRoles} from "../core/TribeRoles.sol";
 import {OptimisticTimelock} from "../dao/timelock/OptimisticTimelock.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-
-import {IControllerV1} from "./interfaces/IControllerV1.sol";
-import {IMemberToken} from "./interfaces/IMemberToken.sol";
 
 /// @notice Contract used by an Admin pod to manage child pods.
 
@@ -18,7 +19,7 @@ import {IMemberToken} from "./interfaces/IMemberToken.sol";
 ///
 /// The timelock and Orca pod are then linked up so that the Orca pod is
 /// the only proposer and executor.
-contract PodFactory is CoreRef, Ownable {
+contract PodFactory is CoreRef, Ownable, IPodFactory {
     /// @notice TRIBE roles used for permissioning
     bytes32 public constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
     bytes32 public constant GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
@@ -47,13 +48,7 @@ contract PodFactory is CoreRef, Ownable {
 
     event CreatePod(uint256 podId, address safeAddress);
     event CreateOptimisticTimelock(address timelock);
-    event SetPodAdmin(address _podAdmin);
-
-    /// @notice Restrict function calls to podAdmin
-    modifier onlyPodAdmin() {
-        require(msg.sender == podAdmin, "Unauthorised");
-        _;
-    }
+    event UpdatePodAdmin(address oldPodAdmin, address newPodAdmin);
 
     constructor(
         address _core,
@@ -78,12 +73,17 @@ contract PodFactory is CoreRef, Ownable {
 
     /// @notice Get the address of the Gnosis safe that represents a pod
     /// @param podId Unique id for the orca pod
-    function getPodSafe(uint256 podId) public view returns (address) {
+    function getPodSafe(uint256 podId) public view override returns (address) {
         return podController.podIdToSafe(podId);
     }
 
     /// @notice Get the number of pod members
-    function getNumMembers(uint256 podId) external view returns (uint256) {
+    function getNumMembers(uint256 podId)
+        external
+        view
+        override
+        returns (uint256)
+    {
         address safe = getPodSafe(podId);
         address[] memory members = IGnosisSafe(safe).getOwners();
         return uint256(members.length);
@@ -93,6 +93,7 @@ contract PodFactory is CoreRef, Ownable {
     function getPodMembers(uint256 podId)
         public
         view
+        override
         returns (address[] memory)
     {
         address safeAddress = podController.podIdToSafe(podId);
@@ -100,15 +101,44 @@ contract PodFactory is CoreRef, Ownable {
     }
 
     /// @notice Get the signer threshold on the pod
-    function getPodThreshold(uint256 podId) external view returns (uint256) {
+    function getPodThreshold(uint256 podId)
+        external
+        view
+        override
+        returns (uint256)
+    {
         address safe = getPodSafe(podId);
         uint256 threshold = uint256(IGnosisSafe(safe).getThreshold());
         return threshold;
     }
 
     /// @notice Get the next pod id
-    function getNextPodId() external view returns (uint256) {
+    function getNextPodId() external view override returns (uint256) {
         return memberToken.getNextAvailablePodId();
+    }
+
+    /// @notice Get the podAdmin from the base Orca controller. Controller only allows existing admin to change
+    function getPodAdmin(uint256 podId)
+        external
+        view
+        override
+        returns (address)
+    {
+        return IControllerV1(podController).podAdmin(podId);
+    }
+
+    //////////////////////  SET POD ADMIN ///////////////////
+    /// @notice Wrapper to allow current podAdmin to change the podAdmin
+    function updatePodAdmin(uint256 _podId, address _podAdmin)
+        external
+        override
+    {
+        address oldPodAdmin = _podAdmin;
+        emit UpdatePodAdmin(oldPodAdmin, _podAdmin);
+
+        // Update local cached podAdmin
+        podAdmin = _podAdmin;
+        podController.updatePodAdmin(_podId, _podAdmin);
     }
 
     //////////////////// STATE-CHANGING API ////////////////////
@@ -123,7 +153,6 @@ contract PodFactory is CoreRef, Ownable {
     // Can this be called off-chain? Or does it have to be calleable by the DAO/podAdmin?
     // Think need to be able to call this off-chain. Figure out permissioning to allow that
     // Want the various pods setup off chain, and then transfer ownership to the thing responsible for deploying more pods
-
     function createChildOptimisticPod(
         address[] calldata _members,
         uint256 _threshold,
@@ -131,7 +160,7 @@ contract PodFactory is CoreRef, Ownable {
         string calldata _ensString,
         string calldata _imageUrl,
         uint256 minDelay
-    ) external onlyOwner returns (uint256, address) {
+    ) external override onlyOwner returns (uint256, address) {
         uint256 podId = memberToken.getNextAvailablePodId();
 
         podController.createPod(

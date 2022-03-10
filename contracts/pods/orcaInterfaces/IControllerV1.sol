@@ -15,4 +15,6 @@ interface IControllerV1 {
     function podIdToSafe(uint256) external view returns (address);
 
     function podAdmin(uint256) external view returns (address);
+
+    function updatePodAdmin(uint256 _podId, address _newAdmin) external;
 }

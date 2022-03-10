@@ -3,8 +3,8 @@ pragma solidity ^0.8.0;
 
 import {IGnosisSafe} from "@orcaprotocol/contracts/contracts/interfaces/IGnosisSafe.sol";
 import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
-import {IControllerV1} from "../../../pods/interfaces/IControllerV1.sol";
-import {IMemberToken} from "../../../pods/interfaces/IMemberToken.sol";
+import {IControllerV1} from "../../../pods/orcaInterfaces/IControllerV1.sol";
+import {IMemberToken} from "../../../pods/orcaInterfaces/IMemberToken.sol";
 
 import {createPod, setupOptimisticTimelock, mintOrcaTokens} from "../fixtures/Orca.sol";
 import {Vm} from "../../utils/Vm.sol";

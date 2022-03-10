@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {IMemberToken} from "../../../pods/interfaces/IMemberToken.sol";
-import {IControllerV1} from "../../../pods/interfaces/IControllerV1.sol";
-import {IInviteToken} from "../../../pods/interfaces/IInviteToken.sol";
+import {IMemberToken} from "../../../pods/orcaInterfaces/IMemberToken.sol";
+import {IControllerV1} from "../../../pods/orcaInterfaces/IControllerV1.sol";
+import {IInviteToken} from "../../../pods/orcaInterfaces/IInviteToken.sol";
 import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
 import {Vm} from "../../utils/Vm.sol";
 import "hardhat/console.sol";

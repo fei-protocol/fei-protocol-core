@@ -6,18 +6,19 @@ type PodConfig = {
   imageUrl: string;
   minDelay: number;
   numMembers: number;
+  placeHolderMembers: string[];
 };
 
 export const tribalCouncilMembers = [
-  '0x0000000000000000000000000000000000000004', // TODO: Complete with real member addresses
-  '0x0000000000000000000000000000000000000005',
-  '0x0000000000000000000000000000000000000006',
-  '0x0000000000000000000000000000000000000007',
-  '0x0000000000000000000000000000000000000008',
-  '0x0000000000000000000000000000000000000009',
-  '0x000000000000000000000000000000000000000a',
-  '0x000000000000000000000000000000000000000b',
-  '0x000000000000000000000000000000000000000c'
+  '0x000000000000000000000000000000000000000D', // TODO: Complete with real member addresses
+  '0x000000000000000000000000000000000000000E',
+  '0x000000000000000000000000000000000000000F',
+  '0x0000000000000000000000000000000000000010',
+  '0x0000000000000000000000000000000000000011',
+  '0x0000000000000000000000000000000000000012',
+  '0x0000000000000000000000000000000000000013',
+  '0x0000000000000000000000000000000000000014',
+  '0x0000000000000000000000000000000000000015'
 ];
 
 export const placeHolderCouncilMembers = [
@@ -35,19 +36,20 @@ export const placeHolderCouncilMembers = [
 export const tribeCouncilPodConfig: PodConfig = {
   members: tribalCouncilMembers,
   threshold: 5,
-  podLabel: 'Tribe Council',
+  podLabel: '0x54726962616c436f756e63696c00000000000000000000000000000000000000', // TribalCouncil
   ensString: 'tribalCouncil.eth',
   imageUrl: 'tribalCouncil.com',
   minDelay: 345600,
-  numMembers: tribalCouncilMembers.length
+  numMembers: tribalCouncilMembers.length,
+  placeHolderMembers: placeHolderCouncilMembers
 };
 
 export const protocolPodMembers = [
-  '0x0000000000000000000000000000000000000004', // TODO: Complete with real member addresses
-  '0x0000000000000000000000000000000000000005',
-  '0x0000000000000000000000000000000000000006',
-  '0x0000000000000000000000000000000000000007',
-  '0x0000000000000000000000000000000000000008'
+  '0x0000000000000000000000000000000000000009', // TODO: Complete with real member addresses
+  '0x000000000000000000000000000000000000000A',
+  '0x000000000000000000000000000000000000000B',
+  '0x000000000000000000000000000000000000000C',
+  '0x000000000000000000000000000000000000000D'
 ];
 
 export const placeHolderPodMembers = [
@@ -61,9 +63,10 @@ export const placeHolderPodMembers = [
 export const protocolPodConfig: PodConfig = {
   members: protocolPodMembers,
   threshold: 3,
-  podLabel: 'ProtocolPod',
+  podLabel: '0x50726f746f636f6c506f64000000000000000000000000000000000000000000', // ProtocolPod
   ensString: 'protocolPod.eth',
   imageUrl: 'protocolPod.com',
   minDelay: 0,
-  numMembers: protocolPodMembers.length
+  numMembers: protocolPodMembers.length,
+  placeHolderMembers: placeHolderPodMembers
 };

@@ -16,4 +16,12 @@ interface IMemberToken {
         external
         view
         returns (uint256);
+
+    function mintSingleBatch(
+        address[] memory _accounts,
+        uint256 _id,
+        bytes memory data
+    ) external;
+
+    function burnSingleBatch(address[] memory _accounts, uint256 _id) external;
 }

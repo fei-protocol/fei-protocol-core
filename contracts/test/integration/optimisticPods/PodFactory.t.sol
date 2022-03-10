@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import {PodFactory} from "../../../pods/PodFactory.sol";
 import {PodExecutor} from "../../../pods/PodExecutor.sol";
 import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
-import {IControllerV1} from "../../../pods/interfaces/IControllerV1.sol";
+import {IControllerV1} from "../../../pods/orcaInterfaces/IControllerV1.sol";
 
 import {DSTest} from "../../utils/DSTest.sol";
 import {mintOrcaTokens, podParams} from "../fixtures/Orca.sol";
@@ -94,6 +94,32 @@ contract PodFactoryIntegrationTest is DSTest {
     function testGetNextPodId() public {
         uint256 nextPodId = factory.getNextPodId();
         assertGt(nextPodId, 10);
+    }
+
+    function testUpdatePodAdmin() public {
+        address newAdmin = address(0x10);
+        (
+            address[] memory members,
+            uint256 threshold,
+            bytes32 podLabel,
+            string memory ensString,
+            string memory imageUrl,
+            uint256 minDelay
+        ) = podParams();
+
+        (uint256 podId, ) = factory.createChildOptimisticPod(
+            members,
+            threshold,
+            podLabel,
+            ensString,
+            imageUrl,
+            minDelay
+        );
+
+        vm.prank(podAdmin);
+        IControllerV1(podController).updatePodAdmin(podId, newAdmin);
+        assertEq(IControllerV1(podController).podAdmin(podId), newAdmin);
+        assertEq(factory.getPodAdmin(podId), newAdmin);
     }
 
     // function testPodAdminCanBeSet() public {

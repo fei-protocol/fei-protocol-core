@@ -1797,12 +1797,12 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.TBD
   },
   podController: {
-    artifactName: 'unknown',
+    artifactName: 'IControllerV1',
     address: '0xD89AAd5348A34E440E72f5F596De4fA7e291A3e8',
     category: AddressCategory.External
   },
   memberToken: {
-    artifactName: 'unknown',
+    artifactName: 'IMemberToken',
     address: '0x0762aA185b6ed2dCA77945Ebe92De705e0C37AE3',
     category: AddressCategory.External
   }
