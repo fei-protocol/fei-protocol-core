@@ -9,7 +9,9 @@ import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-/// @title implementation for Uniswap LP PCV Deposit
+/// @title implementation for Uniswap LP PCV Deposit.
+/// Note: the FEI counterpart of tokens deposited have to be pre-minted on
+/// this contract before deposit(), if it doesn't have the MINTER_ROLE role.
 /// @author Fei Protocol
 contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
     using Decimal for Decimal.D256;
@@ -221,7 +223,9 @@ contract UniswapPCVDeposit is IUniswapPCVDeposit, PCVDeposit, UniRef {
         internal
         virtual
     {
-        _mintFei(address(this), feiAmount);
+        if (core().isMinter(address(this))) {
+            _mintFei(address(this), feiAmount);
+        }
 
         uint256 endOfTime = type(uint256).max;
         // Deposit price gated by slippage parameter

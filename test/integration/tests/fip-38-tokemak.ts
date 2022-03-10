@@ -10,12 +10,11 @@ import { forceEth } from '@test/integration/setup/utils';
 const toBN = ethers.BigNumber.from;
 const tenPow18 = toBN('1000000000000000000');
 
-const TOKEMAK_MANAGER_ROLLOVER_ADDRESS = '0x878510cde784681e4d10ca3eae6a8495d06902d2'; // has the rollover role
+const TOKEMAK_MANAGER_ROLLOVER_ADDRESS = '0x90b6C61B102eA260131aB48377E143D6EB3A9d4B'; // has the rollover role
 const TOKEMAK_MANAGER_ADDRESS = '0xa86e412109f77c45a3bc1c5870b880492fb86a14'; // tokemak manager
-const TOKE_HOLDER_ADDRESS = '0x96f98ed74639689c3a11daf38ef86e59f43417d3'; // TOKE staking contract
 const IPFS_JSON_FILE_HASH = 'QmP4Vzg45jExr3mcNsx9xxV1fNft95uVzgZGeLtkBXgpkx';
 
-describe('e2e-fip-38-tokemak', function () {
+describe.only('e2e-fip-38-tokemak', function () {
   let contracts: NamedContracts;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;

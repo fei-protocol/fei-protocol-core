@@ -62,6 +62,21 @@ library TribeRoles {
     /// @notice manages the constituents of Optimistic Timelocks, including Proposers and Executors
     bytes32 internal constant OPTIMISTIC_ADMIN = keccak256("OPTIMISTIC_ADMIN");
 
+    /// @notice manages meta-governance actions, like voting & delegating.
+    /// Also used to vote for gauge weights & similar liquid governance things.
+    bytes32 internal constant METAGOVERNANCE_VOTE_ADMIN =
+        keccak256("METAGOVERNANCE_VOTE_ADMIN");
+
+    /// @notice allows to manage locking of vote-escrowed tokens, and staking/unstaking
+    /// governance tokens from a pre-defined contract in order to eventually allow voting.
+    /// Examples: ANGLE <> veANGLE, AAVE <> stkAAVE, CVX <> vlCVX, CRV > cvxCRV.
+    bytes32 internal constant METAGOVERNANCE_TOKEN_STAKING =
+        keccak256("METAGOVERNANCE_TOKEN_STAKING");
+
+    /// @notice manages whitelisting of gauges where the protocol's tokens can be staked
+    bytes32 internal constant METAGOVERNANCE_GAUGE_ADMIN =
+        keccak256("METAGOVERNANCE_GAUGE_ADMIN");
+
     /*///////////////////////////////////////////////////////////////
                                  Minor Roles
     //////////////////////////////////////////////////////////////*/
