@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 interface IMemberToken {
-    function getNextAvailablePodId() external returns (uint256);
+    function getNextAvailablePodId() external view returns (uint256);
 
     function burn(address _account, uint256 _id) external;
 

@@ -5,6 +5,7 @@ import {IGnosisSafe} from "./interfaces/IGnosisSafe.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
 import {OptimisticTimelock} from "../dao/timelock/OptimisticTimelock.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {IControllerV1} from "./interfaces/IControllerV1.sol";
 import {IMemberToken} from "./interfaces/IMemberToken.sol";
@@ -17,7 +18,7 @@ import {IMemberToken} from "./interfaces/IMemberToken.sol";
 ///
 /// The timelock and Orca pod are then linked up so that the Orca pod is
 /// the only proposer and executor.
-contract PodFactory is CoreRef {
+contract PodFactory is CoreRef, Ownable {
     /// @notice TRIBE roles used for permissioning
     bytes32 public constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
     bytes32 public constant GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
@@ -38,6 +39,9 @@ contract PodFactory is CoreRef {
     /// @notice Mapping between podId and it's optimistic timelock
     mapping(uint256 => address) public getPodTimelock;
 
+    /// @notice Mapping between timelock and podId
+    mapping(address => uint256) public getPodId;
+
     /// @notice Latest pod created
     uint256 public latestPodId;
 
@@ -57,7 +61,7 @@ contract PodFactory is CoreRef {
         address _podController,
         address _memberToken,
         address _podExecutor
-    ) CoreRef(_core) {
+    ) CoreRef(_core) Ownable() {
         require(_core != address(0), "Zero address");
         /// @notice podAdmin can be set to zero address
         require(_podController != address(0x0), "Zero address");
@@ -102,16 +106,9 @@ contract PodFactory is CoreRef {
         return threshold;
     }
 
-    //////////////// SETTERS ////////////////////
-
-    /// @notice Set the pod admin. Restricted to Governor or Guardian
-    function setPodAdmin(address _podAdmin)
-        external
-        hasAnyOfThreeRoles(GOVERN_ROLE, GUARDIAN_ROLE, ROLE_ADMIN)
-    {
-        require(_podAdmin != address(0x0), "Zero address");
-        podAdmin = _podAdmin;
-        emit SetPodAdmin(_podAdmin);
+    /// @notice Get the next pod id
+    function getNextPodId() external view returns (uint256) {
+        return memberToken.getNextAvailablePodId();
     }
 
     //////////////////// STATE-CHANGING API ////////////////////
@@ -134,7 +131,7 @@ contract PodFactory is CoreRef {
         string calldata _ensString,
         string calldata _imageUrl,
         uint256 minDelay
-    ) external onlyPodAdmin returns (uint256, address) {
+    ) external onlyOwner returns (uint256, address) {
         uint256 podId = memberToken.getNextAvailablePodId();
 
         podController.createPod(
@@ -167,7 +164,7 @@ contract PodFactory is CoreRef {
 
         // Set mapping from podId to timelock for reference
         getPodTimelock[podId] = address(timelock);
-
+        getPodId[address(timelock)] = podId;
         latestPodId = podId;
         return (podId, address(timelock));
     }

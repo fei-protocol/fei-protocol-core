@@ -6,18 +6,10 @@ import {
   placeHolderPodMembers
 } from '@protocol/optimisticGovernance';
 
+// TODO: Need to be able to inject podIds into here ideally. For now they're hardcoded
 const fip_82: ProposalDescription = {
   title: 'FIP-82: Deploy TribalCouncil',
   commands: [
-    // 0. Set the corrrect pod admin on the Tribal Council factory
-    {
-      target: 'core',
-      values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: ['0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096', '{tribalCouncilTimelock}'],
-      description: 'Grant Tribal Council ROLE_ADMIN'
-    },
-
     //////////// GRANT POD TIMELOCKS RELEVANT ACCESS ROLES ///////////
     // Grant TribalCouncil timelock ROLE_ADMIN
     {
@@ -44,7 +36,7 @@ const fip_82: ProposalDescription = {
       method: 'mintSingleBatch(address[] memory,uint256,bytes)',
       arguments: [
         tribeCouncilPodConfig.members,
-        'tribalCouncilPodId', // TODO: Insert real pod ID
+        '13', // TODO: Replace hardcoded value with real podId
         ''
       ],
       description: 'Add member to the Tribal Council'
@@ -56,7 +48,7 @@ const fip_82: ProposalDescription = {
       method: 'burnSingleBatch(address[] memory,uint256)',
       arguments: [
         placeHolderCouncilMembers,
-        'tribalCouncilPodId', // TODO: Insert
+        '13', // TODO: Replace hardcoded value with real podId
         ''
       ],
       description: 'Burn placeholder deploy members from Tribal Council'
@@ -68,7 +60,7 @@ const fip_82: ProposalDescription = {
       method: 'mintSingleBatch(address[] memory,uint256,bytes)',
       arguments: [
         protocolPodConfig.members,
-        'protocolPodId', // TODO: Insert real pod ID
+        '14', // TODO: Replace with real protocol pod ID
         ''
       ],
       description: 'Add members to the Protocol Pod'
@@ -80,7 +72,7 @@ const fip_82: ProposalDescription = {
       method: 'mintSingleBatch(address[] memory,uint256,bytes)',
       arguments: [
         placeHolderPodMembers,
-        'protocolPodId', // TODO: Insert real pod ID
+        '14', // TODO: Replace with real protocol pod ID
         ''
       ],
       description: 'Remove initial placeholder members from Protocol Pod'

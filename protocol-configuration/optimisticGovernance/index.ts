@@ -31,11 +31,10 @@ export const placeHolderCouncilMembers = [
   '0x000000000000000000000000000000000000000b',
   '0x000000000000000000000000000000000000000c'
 ];
-export const tribalCouncilThreshold = 5;
 
 export const tribeCouncilPodConfig: PodConfig = {
   members: tribalCouncilMembers,
-  threshold: tribalCouncilThreshold,
+  threshold: 5,
   podLabel: 'Tribe Council',
   ensString: 'tribalCouncil.eth',
   imageUrl: 'tribalCouncil.com',
@@ -59,11 +58,9 @@ export const placeHolderPodMembers = [
   '0x0000000000000000000000000000000000000008'
 ];
 
-export const protocolPodThreshold = 3;
-
 export const protocolPodConfig: PodConfig = {
   members: protocolPodMembers,
-  threshold: protocolPodThreshold,
+  threshold: 3,
   podLabel: 'ProtocolPod',
   ensString: 'protocolPod.eth',
   imageUrl: 'protocolPod.com',
