@@ -119,6 +119,16 @@ contract PodFactoryIntegrationTest is DSTest {
         assertEq(factory.getPodAdmin(podId), newAdmin);
     }
 
+    function testUpdatePodController() public {
+        address newController = address(0x10);
+
+        vm.prank(feiDAOTimelock);
+        factory.updatePodController(newController);
+
+        address updatedContoller = address(factory.podController());
+        assertEq(updatedContoller, newController);
+    }
+
     function testGnosisGetters() public {
         (
             address[] memory members,

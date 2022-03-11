@@ -26,7 +26,7 @@ contract PodFactory is CoreRef, IPodFactory {
         keccak256("POD_DEPLOYER_ROLE");
 
     /// @notice Orca controller for Pod
-    IControllerV1 private immutable podController;
+    IControllerV1 public podController;
 
     /// @notice Orca membership token for the pods. Handles permissioning pod members
     IMemberToken private immutable memberToken;
@@ -48,6 +48,10 @@ contract PodFactory is CoreRef, IPodFactory {
 
     event CreatePod(uint256 indexed podId, address indexed safeAddress);
     event CreateOptimisticTimelock(address indexed timelock);
+    event UpdatePodController(
+        address indexed oldController,
+        address indexed newController
+    );
 
     modifier onlyTribeRolesOrDeployer() {
         ICore core = core();
@@ -143,6 +147,19 @@ contract PodFactory is CoreRef, IPodFactory {
         returns (address)
     {
         return IControllerV1(podController).podAdmin(podId);
+    }
+
+    /// @notice Migrate to a new podController. Upgrades are opt in
+    ///         and state is transitioned by the Orca controllers
+    /// @dev Expects that breaking changes are not introduced by the podController
+    function updatePodController(address newPodController)
+        external
+        override
+        hasAnyOfTwoRoles(GOVERN_ROLE, POD_DEPLOYER_ROLE)
+    {
+        address oldController = newPodController;
+        podController = IControllerV1(newPodController);
+        emit UpdatePodController(oldController, newPodController);
     }
 
     //////////////////// STATE-CHANGING API ////////////////////

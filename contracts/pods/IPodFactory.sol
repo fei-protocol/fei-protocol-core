@@ -26,4 +26,6 @@ interface IPodFactory {
         uint256 minDelay,
         address podAdmin
     ) external returns (uint256, address);
+
+    function updatePodController(address newPodController) external;
 }
