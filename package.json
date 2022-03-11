@@ -44,6 +44,10 @@
   },
   "author": "joeysantoro",
   "license": "AGPL-3.0-only",
+  "engines" : { 
+    "npm" : ">=8.0.0",
+    "node" : ">=16.0.0"
+  },
   "dependencies": {
     "@balancer-labs/v2-pool-weighted": "^2.0.1",
     "@chainlink/contracts": "^0.1.7",
