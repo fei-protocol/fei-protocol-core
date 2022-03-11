@@ -40,7 +40,7 @@ contract PodFactoryIntegrationTest is DSTest {
     }
 
     /// @notice Validate that a non-pod owner can not create a pod
-    function testOnlyOwnerCanCreatePod() public {
+    function testOnlyDesignatedUsersCanCreatePod() public {
         (
             address[] memory members,
             uint256 threshold,
@@ -50,8 +50,7 @@ contract PodFactoryIntegrationTest is DSTest {
             uint256 minDelay
         ) = podParams();
 
-        vm.expectRevert(bytes("Ownable: caller is not the owner"));
-
+        vm.expectRevert(bytes("Unauthorised"));
         address fraud = address(0x10);
         vm.prank(fraud);
         factory.createChildOptimisticPod(
@@ -66,10 +65,7 @@ contract PodFactoryIntegrationTest is DSTest {
     }
 
     /// @notice Validate that a transferred owner can create a pod
-    function testTransferredOwnerCanCreatePod() public {
-        address newOwner = address(0x11);
-        factory.transferOwnership(newOwner);
-
+    function testGovernorCanCreatePod() public {
         (
             address[] memory members,
             uint256 threshold,
@@ -79,7 +75,7 @@ contract PodFactoryIntegrationTest is DSTest {
             uint256 minDelay
         ) = podParams();
 
-        vm.prank(newOwner);
+        vm.prank(feiDAOTimelock);
         factory.createChildOptimisticPod(
             members,
             threshold,

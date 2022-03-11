@@ -9,6 +9,7 @@ import {IPodFactory} from "./IPodFactory.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
 import {OptimisticTimelock} from "../dao/timelock/OptimisticTimelock.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
+import {ICore} from "../core/ICore.sol";
 
 /// @notice Contract used by an Admin pod to manage child pods.
 
@@ -42,8 +43,22 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @notice Latest pod created
     uint256 public latestPodId;
 
+    /// @notice Deployer address
+    address private deployer;
+
     event CreatePod(uint256 indexed podId, address indexed safeAddress);
     event CreateOptimisticTimelock(address indexed timelock);
+
+    modifier onlyTribeRolesOrDeployer() {
+        ICore core = core();
+        require(
+            core.hasRole(GOVERN_ROLE, msg.sender) ||
+                core.hasRole(POD_DEPLOYER_ROLE, msg.sender) ||
+                msg.sender == deployer,
+            "Unauthorised"
+        );
+        _;
+    }
 
     /// @param _core Fei core address
     /// @param _podController Orca pod controller
@@ -62,6 +77,7 @@ contract PodFactory is CoreRef, IPodFactory {
 
         podExecutor = _podExecutor;
         podController = IControllerV1(_podController);
+        deployer = msg.sender;
         // TODO: Checkout what happens when migrate controller. Probs need to update pointer here
         memberToken = IMemberToken(_memberToken);
     }
@@ -147,12 +163,7 @@ contract PodFactory is CoreRef, IPodFactory {
         string calldata _imageUrl,
         uint256 _minDelay,
         address _podAdmin
-    )
-        external
-        override
-        hasAnyOfTwoRoles(GOVERN_ROLE, POD_DEPLOYER_ROLE)
-        returns (uint256, address)
-    {
+    ) external override onlyTribeRolesOrDeployer returns (uint256, address) {
         uint256 podId = memberToken.getNextAvailablePodId();
 
         address safeAddress = createPod(
