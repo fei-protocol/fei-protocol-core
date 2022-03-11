@@ -19,6 +19,16 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'createRole(bytes32,bytes32)',
       arguments: [
+        '0x1c4afb10045e2ffba702b04df46e551f6f2c584499b4abe7b6136efe6b05a34d', // POD_DEPLOYER_ROLE
+        '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e' // GOVERN_ROLE
+      ],
+      description: 'Create POD_DEPLOYER_ROLE role'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
         '0xa8d944a5277d6a203f114d020d26918a390f167b089a46be4fca9da716d23783', // ORACLE_ADMIN
         '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e' // GOVERN_ROLE
       ],
@@ -30,6 +40,20 @@ const fip_82: ProposalDescription = {
       method: 'grantRole(bytes32,address)',
       arguments: ['0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096', '{tribalCouncilTimelock}'],
       description: 'Grant Tribal Council ROLE_ADMIN'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: ['0x1c4afb10045e2ffba702b04df46e551f6f2c584499b4abe7b6136efe6b05a34d', '{tribalCouncilTimelock}'],
+      description: 'Grant POD_DEPLOYER_ROLE to TribalCouncil timelock'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: ['0x1c4afb10045e2ffba702b04df46e551f6f2c584499b4abe7b6136efe6b05a34d', '{protocolPodTimelock}'],
+      description: 'Grant POD_DEPLOYER_ROLE to Protocol pod timelock'
     },
     {
       target: 'core',

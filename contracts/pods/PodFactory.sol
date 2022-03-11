@@ -8,7 +8,7 @@ import {IPodFactory} from "./IPodFactory.sol";
 
 import {TribeRoles} from "../core/TribeRoles.sol";
 import {OptimisticTimelock} from "../dao/timelock/OptimisticTimelock.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {CoreRef} from "../refs/CoreRef.sol";
 
 /// @notice Contract used by an Admin pod to manage child pods.
 
@@ -18,9 +18,11 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 ///
 /// The timelock and Orca pod are then linked up so that the Orca pod is
 /// the only proposer and executor.
-contract PodFactory is Ownable, IPodFactory {
-    /// @notice Core address
-    address private immutable core;
+contract PodFactory is CoreRef, IPodFactory {
+    /// @notice Tribe roles governing deployment of pods
+    bytes32 internal constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
+    bytes32 internal constant POD_DEPLOYER_ROLE =
+        keccak256("POD_DEPLOYER_ROLE");
 
     /// @notice Orca controller for Pod
     IControllerV1 private immutable podController;
@@ -52,14 +54,13 @@ contract PodFactory is Ownable, IPodFactory {
         address _podController,
         address _memberToken,
         address _podExecutor
-    ) Ownable() {
+    ) CoreRef(_core) {
         require(_core != address(0), "Zero address");
         require(_podController != address(0x0), "Zero address");
         require(_memberToken != address(0x0), "Zero address");
         require(_podExecutor != address(0x0), "Zero address");
 
         podExecutor = _podExecutor;
-        core = _core;
         podController = IControllerV1(_podController);
         // TODO: Checkout what happens when migrate controller. Probs need to update pointer here
         memberToken = IMemberToken(_memberToken);
@@ -146,7 +147,12 @@ contract PodFactory is Ownable, IPodFactory {
         string calldata _imageUrl,
         uint256 _minDelay,
         address _podAdmin
-    ) external override onlyOwner returns (uint256, address) {
+    )
+        external
+        override
+        hasAnyOfTwoRoles(GOVERN_ROLE, POD_DEPLOYER_ROLE)
+        returns (uint256, address)
+    {
         uint256 podId = memberToken.getNextAvailablePodId();
 
         address safeAddress = createPod(
@@ -214,7 +220,7 @@ contract PodFactory is Ownable, IPodFactory {
         executors[1] = publicExecutor;
 
         OptimisticTimelock timelock = new OptimisticTimelock(
-            core,
+            address(core()),
             minDelay,
             proposers,
             executors

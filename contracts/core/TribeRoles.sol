@@ -81,6 +81,10 @@ library TribeRoles {
                                  Minor Roles
     //////////////////////////////////////////////////////////////*/
 
+    /// @notice capable of deploying optimistic governance pods
+    bytes32 internal constant POD_DEPLOYER_ROLE =
+        keccak256("POD_DEPLOYER_ROLE");
+
     /// @notice capable of poking existing LBP auctions to exchange tokens.
     bytes32 internal constant LBP_SWAP_ROLE = keccak256("SWAP_ADMIN_ROLE");
 
