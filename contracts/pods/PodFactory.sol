@@ -20,11 +20,6 @@ import {ICore} from "../core/ICore.sol";
 /// The timelock and Orca pod are then linked up so that the Orca pod is
 /// the only proposer and executor.
 contract PodFactory is CoreRef, IPodFactory {
-    /// @notice Tribe roles governing deployment of pods
-    bytes32 internal constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
-    bytes32 internal constant POD_DEPLOYER_ROLE =
-        keccak256("POD_DEPLOYER_ROLE");
-
     /// @notice Orca controller for Pod
     IControllerV1 public podController;
 
@@ -56,8 +51,8 @@ contract PodFactory is CoreRef, IPodFactory {
     modifier onlyTribeRolesOrDeployer() {
         ICore core = core();
         require(
-            core.hasRole(GOVERN_ROLE, msg.sender) ||
-                core.hasRole(POD_DEPLOYER_ROLE, msg.sender) ||
+            core.hasRole(TribeRoles.GOVERNOR, msg.sender) ||
+                core.hasRole(TribeRoles.POD_DEPLOYER_ROLE, msg.sender) ||
                 msg.sender == deployer,
             "Unauthorised"
         );
@@ -155,7 +150,7 @@ contract PodFactory is CoreRef, IPodFactory {
     function updatePodController(address newPodController)
         external
         override
-        hasAnyOfTwoRoles(GOVERN_ROLE, POD_DEPLOYER_ROLE)
+        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_DEPLOYER_ROLE)
     {
         address oldController = newPodController;
         podController = IControllerV1(newPodController);
