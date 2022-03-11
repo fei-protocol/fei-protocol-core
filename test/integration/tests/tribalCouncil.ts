@@ -20,7 +20,7 @@ describe('Tribal Council', function () {
   let deployAddress: SignerWithAddress;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
-  let tribalCouncilPodFactory: PodFactory;
+  let podFactory: PodFactory;
   let memberToken: Contract;
   let tribalCouncilPodId: BigNumber;
 
@@ -49,8 +49,8 @@ describe('Tribal Council', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
-    tribalCouncilPodFactory = contracts.tribalCouncilPodFactory as PodFactory;
-    tribalCouncilPodId = await tribalCouncilPodFactory.getPodId(contractAddresses.tribalCouncilTimelock);
+    podFactory = contracts.podFactory as PodFactory;
+    tribalCouncilPodId = await podFactory.getPodId(contractAddresses.tribalCouncilTimelock);
 
     const memberTokenABI = [
       'function mint(address _account,uint256 _id,bytes memory data) external',
@@ -61,7 +61,7 @@ describe('Tribal Council', function () {
   });
 
   it('should allow DAO to add members', async () => {
-    const initialNumPodMembers = await tribalCouncilPodFactory.getNumMembers(tribalCouncilPodId);
+    const initialNumPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
 
     const newMember = '0x0000000000000000000000000000000000000030';
     await memberToken.mint(
@@ -70,23 +70,23 @@ describe('Tribal Council', function () {
       '0x0000000000000000000000000000000000000000000000000000000000000000'
     );
 
-    const numPodMembers = await tribalCouncilPodFactory.getNumMembers(tribalCouncilPodId);
+    const numPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
     await expect(numPodMembers).to.equal(initialNumPodMembers.add(toBN(1)));
 
-    const podMembers = await tribalCouncilPodFactory.getPodMembers(tribalCouncilPodId);
+    const podMembers = await podFactory.getPodMembers(tribalCouncilPodId);
     expect(podMembers[0]).to.equal(newMember);
   });
 
   it('should allow DAO to remove members', async () => {
-    const initialNumPodMembers = await tribalCouncilPodFactory.getNumMembers(tribalCouncilPodId);
+    const initialNumPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
 
     const memberToBurn = tribalCouncilMembers[0];
     await memberToken.burn(memberToBurn, tribalCouncilPodId);
 
-    const numPodMembers = await tribalCouncilPodFactory.getNumMembers(tribalCouncilPodId);
+    const numPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
     await expect(numPodMembers).to.equal(initialNumPodMembers.sub(toBN(1)));
 
-    const podMembers = await tribalCouncilPodFactory.getPodMembers(tribalCouncilPodId);
+    const podMembers = await podFactory.getPodMembers(tribalCouncilPodId);
     expect(!podMembers.includes(memberToBurn)).to.be.true;
   });
 

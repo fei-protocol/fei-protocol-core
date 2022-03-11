@@ -21,7 +21,7 @@ describe('Protocol pod', function () {
   let deployAddress: SignerWithAddress;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
-  let protocolTierPodFactory: PodFactory;
+  let podFactory: PodFactory;
   let memberToken: Contract;
   let podId: BigNumber;
 
@@ -49,8 +49,8 @@ describe('Protocol pod', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
-    protocolTierPodFactory = contracts.protocolTierPodFactory as PodFactory;
-    podId = await protocolTierPodFactory.getPodId(contractAddresses.protocolPodTimelock);
+    podFactory = contracts.podFactory as PodFactory;
+    podId = await podFactory.getPodId(contractAddresses.protocolPodTimelock);
 
     const memberTokenABI = [
       'function mint(address _account,uint256 _id,bytes memory data) external',
@@ -62,27 +62,27 @@ describe('Protocol pod', function () {
   });
 
   it('should allow Tribal council to add members to protocol pod', async () => {
-    const initialNumPodMembers = await protocolTierPodFactory.getNumMembers(podId);
+    const initialNumPodMembers = await podFactory.getNumMembers(podId);
     const newMember = '0x0000000000000000000000000000000000000030';
     await memberToken.mint(newMember, podId, '0x0000000000000000000000000000000000000000000000000000000000000000');
 
-    const numPodMembers = await protocolTierPodFactory.getNumMembers(podId);
+    const numPodMembers = await podFactory.getNumMembers(podId);
     await expect(numPodMembers).to.equal(initialNumPodMembers.add(toBN(1)));
 
-    const podMembers = await protocolTierPodFactory.getPodMembers(podId);
+    const podMembers = await podFactory.getPodMembers(podId);
     expect(podMembers[0]).to.equal(newMember);
   });
 
   it('should allow Tribal council to remove members from protocol pod', async () => {
-    const initialNumPodMembers = await protocolTierPodFactory.getNumMembers(podId);
+    const initialNumPodMembers = await podFactory.getNumMembers(podId);
 
     const memberToBurn = tribalCouncilMembers[0];
     await memberToken.burn(memberToBurn, podId);
 
-    const numPodMembers = await protocolTierPodFactory.getNumMembers(podId);
+    const numPodMembers = await podFactory.getNumMembers(podId);
     await expect(numPodMembers).to.equal(initialNumPodMembers.sub(toBN(1)));
 
-    const podMembers = await protocolTierPodFactory.getPodMembers(podId);
+    const podMembers = await podFactory.getPodMembers(podId);
     expect(!podMembers.includes(memberToBurn)).to.be.true;
   });
 
