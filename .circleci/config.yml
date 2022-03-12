@@ -6,13 +6,13 @@ jobs:
   build:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:14
+      - image: cimg/node:16.14
     resource_class: xlarge
     steps:
       - checkout 
       - run:
           name: 'Update NPM'
-          command: sudo npm install -g npm@6.13.4
+          command: sudo npm install -g npm@8.5.3
       - run:
           name: 'Set caching variables'
           command: |
@@ -36,7 +36,7 @@ jobs:
   lint:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:14
+      - image: cimg/node:16.14
     steps:
       - restore_cache:
           keys:
@@ -47,7 +47,7 @@ jobs:
   test:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:14
+      - image: cimg/node:16.14
     parallelism: 16
     resource_class: large
     steps:
@@ -66,8 +66,9 @@ jobs:
 
   test-forge:
     working_directory: ~/repo
-    machine:
-      image: ubuntu-2004:202111-02
+    docker:
+      - image: cimg/node:16.14
+    resource_class: xlarge
     steps:
       - checkout
       - restore_cache:
@@ -76,17 +77,22 @@ jobs:
       - run:
           name: Setup env
           command: echo "export PATH=$PATH:$(pwd)/.circleci" >> /home/circleci/.bashrc
+      - run:
+          name: Finish setting up env
+          command: echo "export PATH=$PATH:$(pwd)/.foundry/bin" >> /home/circleci/.bashrc
       - run: 
           name: Install Foundry
-          command: curl -L https://foundry.paradigm.xyz | bash; source /home/circleci/.bashrc; foundryup 
+          command: curl -L https://foundry.paradigm.xyz | bash; source /home/circleci/.bashrc; $HOME/.foundry/bin/foundryup
       - run:
           name: Run tests
-          command: source /home/circleci/.bashrc; npm run test
+          command: |
+            source /home/circleci/.bashrc
+            export PATH=$PATH:/home/circleci/.foundry/bin; npm run clean && npm run compile && npm run test && npm run test:integration:latest
 
   e2e-test:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:14
+      - image: cimg/node:16.14
     parallelism: 5
     resource_class: xlarge
     steps:
