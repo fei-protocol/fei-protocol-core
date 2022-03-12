@@ -1,13 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "./../pcv/PCVDeposit.sol";
-import "./../fei/minter/RateLimitedMinter.sol";
-import "./IPegStabilityModule.sol";
-import "./../refs/OracleRef.sol";
-import "../Constants.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Decimal} from "../external/Decimal.sol";
+import {OracleRef} from "./../refs/OracleRef.sol";
+import {CoreRef} from "./../refs/CoreRef.sol";
+import {Constants} from "../Constants.sol";
+import {RateLimitedMinter} from "./../fei/minter/RateLimitedMinter.sol";
+import {IPegStabilityModule} from "./IPegStabilityModule.sol";
+import {IPCVDeposit, PCVDeposit} from "./../pcv/PCVDeposit.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract PegStabilityModule is
     IPegStabilityModule,
@@ -43,14 +48,14 @@ contract PegStabilityModule is
     /// @notice boolean switch that indicates whether redemptions are paused
     bool public redeemPaused;
 
+    /// @notice boolean switch that indicates whether minting is paused
+    bool public mintPaused;
+
     /// @notice event that is emitted when redemptions are paused
     event RedemptionsPaused(address account);
 
     /// @notice event that is emitted when redemptions are unpaused
     event RedemptionsUnpaused(address account);
-
-    /// @notice boolean switch that indicates whether minting is paused
-    bool public mintPaused;
 
     /// @notice event that is emitted when minting is paused
     event MintingPaused(address account);
@@ -205,7 +210,10 @@ contract PegStabilityModule is
     }
 
     /// @notice helper function to set reserves threshold
-    function _setReservesThreshold(uint256 newReservesThreshold) internal {
+    function _setReservesThreshold(uint256 newReservesThreshold)
+        internal
+        virtual
+    {
         require(
             newReservesThreshold > 0,
             "PegStabilityModule: Invalid new reserves threshold"
@@ -234,7 +242,7 @@ contract PegStabilityModule is
     // ----------- Public State Changing API -----------
 
     /// @notice send any surplus reserves to the PCV allocation
-    function allocateSurplus() external override {
+    function allocateSurplus() external virtual override {
         int256 currentSurplus = reservesSurplus();
         require(
             currentSurplus > 0,
@@ -245,7 +253,7 @@ contract PegStabilityModule is
     }
 
     /// @notice function to receive ERC20 tokens from external contracts
-    function deposit() external override {
+    function deposit() external virtual override {
         int256 currentSurplus = reservesSurplus();
         if (currentSurplus > 0) {
             _allocate(currentSurplus.toUint256());
@@ -457,7 +465,7 @@ contract PegStabilityModule is
     }
 
     /// @notice transfer ERC20 token
-    function _transfer(address to, uint256 amount) internal {
+    function _transfer(address to, uint256 amount) internal virtual {
         SafeERC20.safeTransfer(underlyingToken, to, amount);
     }
 
@@ -466,7 +474,7 @@ contract PegStabilityModule is
         address from,
         address to,
         uint256 amount
-    ) internal {
+    ) internal virtual {
         SafeERC20.safeTransferFrom(underlyingToken, from, to, amount);
     }
 
