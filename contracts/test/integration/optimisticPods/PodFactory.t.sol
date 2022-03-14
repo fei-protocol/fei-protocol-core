@@ -68,6 +68,33 @@ contract PodFactoryIntegrationTest is DSTest {
         assertGt(nextPodId, 10);
     }
 
+    function testGnosisGetters() public {
+        (
+            IPodFactory.PodConfig memory podConfig,
+            uint256 minDelay
+        ) = getPodParams(podAdmin);
+
+        vm.prank(feiDAOTimelock);
+        (uint256 podId, address timelock) = factory.createChildOptimisticPod(
+            podConfig,
+            minDelay
+        );
+
+        uint256 numMembers = factory.getNumMembers(podId);
+        assertEq(numMembers, podConfig.members.length);
+
+        uint256 storedThreshold = factory.getPodThreshold(podId);
+        assertEq(storedThreshold, podConfig.threshold);
+
+        address[] memory storedMembers = factory.getPodMembers(podId);
+        assertEq(storedMembers[0], podConfig.members[0]);
+        assertEq(storedMembers[1], podConfig.members[1]);
+        assertEq(storedMembers[2], podConfig.members[2]);
+
+        uint256 latestPodId = factory.latestPodId();
+        assertEq(latestPodId, podId);
+    }
+
     function testUpdatePodAdmin() public {
         (
             IPodFactory.PodConfig memory podConfig,
@@ -95,33 +122,6 @@ contract PodFactoryIntegrationTest is DSTest {
 
         address updatedContoller = address(factory.podController());
         assertEq(updatedContoller, newController);
-    }
-
-    function testGnosisGetters() public {
-        (
-            IPodFactory.PodConfig memory podConfig,
-            uint256 minDelay
-        ) = getPodParams(podAdmin);
-
-        vm.prank(feiDAOTimelock);
-        (uint256 podId, address timelock) = factory.createChildOptimisticPod(
-            podConfig,
-            minDelay
-        );
-
-        uint256 numMembers = factory.getNumMembers(podId);
-        assertEq(numMembers, podConfig.members.length);
-
-        uint256 storedThreshold = factory.getPodThreshold(podId);
-        assertEq(storedThreshold, podConfig.threshold);
-
-        address[] memory storedMembers = factory.getPodMembers(podId);
-        assertEq(storedMembers[0], podConfig.members[0]);
-        assertEq(storedMembers[1], podConfig.members[1]);
-        assertEq(storedMembers[2], podConfig.members[2]);
-
-        uint256 latestPodId = factory.latestPodId();
-        assertEq(latestPodId, podId);
     }
 
     /// @notice Creates a child pod with an optimistic timelock attached
@@ -205,5 +205,34 @@ contract PodFactoryIntegrationTest is DSTest {
         assertEq(podBId, podAId + 1);
         address podBAdmin = IControllerV1(podController).podAdmin(podBId);
         assertEq(podBAdmin, podAdmin);
+    }
+
+    function testBurnerPodDeploy() public {
+        (
+            IPodFactory.PodConfig memory podConfigA,
+            uint256 minDelayA
+        ) = getPodParams(podAdmin);
+        podConfigA.label = bytes32("A");
+
+        (
+            IPodFactory.PodConfig memory podConfigB,
+            uint256 minDelayB
+        ) = getPodParams(podAdmin);
+        podConfigB.label = bytes32("B");
+
+        IPodFactory.PodConfig[] memory configs = new IPodFactory.PodConfig[](2);
+        configs[0] = podConfigA;
+        configs[1] = podConfigB;
+
+        uint256[] memory minDelays = new uint256[](2);
+        minDelays[0] = minDelayA;
+        minDelays[1] = minDelayB;
+
+        vm.prank(feiDAOTimelock);
+        factory.burnerCreateChildOptimisticPods(configs, minDelays);
+        assertTrue(factory.burnerDeploymentUsed());
+
+        vm.expectRevert(bytes("Burner deployment already used"));
+        factory.burnerCreateChildOptimisticPods(configs, minDelays);
     }
 }

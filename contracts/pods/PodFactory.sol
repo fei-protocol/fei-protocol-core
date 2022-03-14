@@ -38,8 +38,8 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @notice Latest pod created
     uint256 public latestPodId;
 
-    /// @notice Deployer address
-    address private deployer;
+    /// @notice Burner function used flag
+    bool public burnerDeploymentUsed = false;
 
     event CreatePod(uint256 indexed podId, address indexed safeAddress);
     event CreateOptimisticTimelock(address indexed timelock);
@@ -47,17 +47,6 @@ contract PodFactory is CoreRef, IPodFactory {
         address indexed oldController,
         address indexed newController
     );
-
-    modifier onlyTribeRolesOrDeployer() {
-        ICore core = core();
-        require(
-            core.hasRole(TribeRoles.GOVERNOR, msg.sender) ||
-                core.hasRole(TribeRoles.POD_DEPLOYER_ROLE, msg.sender) ||
-                msg.sender == deployer,
-            "Unauthorised"
-        );
-        _;
-    }
 
     /// @param _core Fei core address
     /// @param _podController Orca pod controller
@@ -76,7 +65,6 @@ contract PodFactory is CoreRef, IPodFactory {
 
         podExecutor = _podExecutor;
         podController = IControllerV1(_podController);
-        deployer = msg.sender;
         // TODO: Checkout what happens when migrate controller. Probs need to update pointer here
         memberToken = IMemberToken(_memberToken);
     }
@@ -172,7 +160,32 @@ contract PodFactory is CoreRef, IPodFactory {
         emit UpdatePodController(oldController, newPodController);
     }
 
-    //////////////////// STATE-CHANGING API ////////////////////
+    /// @notice One time use at deploy time function to create childOptimisticTimelocks
+    function burnerCreateChildOptimisticPods(
+        PodConfig[] calldata _config,
+        uint256[] calldata _minDelay
+    ) external override returns (uint256[] memory, address[] memory) {
+        require(
+            burnerDeploymentUsed == false,
+            "Burner deployment already used"
+        );
+
+        uint256[] memory podIds = new uint256[](_config.length);
+        address[] memory timelocks = new address[](_config.length);
+
+        {
+            for (uint256 i = 0; i < _config.length; i += 1) {
+                (uint256 podId, address timelock) = _createChildOptimisticPod(
+                    _config[i],
+                    _minDelay[i]
+                );
+                podIds[i] = podId;
+                timelocks[i] = timelock;
+            }
+        }
+        burnerDeploymentUsed = true;
+        return (podIds, timelocks);
+    }
 
     ////////////////////////     INTERNAL          ////////////////////////////
 
