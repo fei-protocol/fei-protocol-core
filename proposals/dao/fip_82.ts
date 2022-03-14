@@ -7,8 +7,9 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { getImpersonatedSigner, validateArraysEqual } from '@test/helpers';
+import { getImpersonatedSigner } from '@test/helpers';
 import { tribeCouncilPodConfig, protocolPodConfig } from '@protocol/optimisticGovernance';
+import { abi as timelockABI } from '../../artifacts/contracts/dao/timelock/OptimisticTimelock.sol/OptimisticTimelock.json';
 
 // How this works:
 // Deployment
@@ -22,7 +23,13 @@ import { tribeCouncilPodConfig, protocolPodConfig } from '@protocol/optimisticGo
 // 2. Validate all pod members, proposers and executors
 // 3. Validate correct roles set on contracts
 
-// TODO: Remove once have SHIP tokens on Mainnet
+const validateArraysEqual = (arrayA: string[], arrayB: string[]) => {
+  arrayA.every((a) => expect(arrayB.map((b) => b.toLowerCase()).includes(a.toLowerCase())));
+};
+
+// Note: The Orca token is a slow rollout mechanism used by Orca. In order to successfully deploy pods
+// you need to have first been minted Orca tokens. Here, for testing purposes locally, we mint
+// the addresses that will create pods Orca tokens. TODO: Remove once have SHIP tokens on Mainnet
 const mintOrcaToken = async (address: string) => {
   const inviteTokenAddress = '0x872EdeaD0c56930777A82978d4D7deAE3A2d1539';
   const priviledgedAddress = '0x2149A222feD42fefc3A120B3DdA34482190fC666';
@@ -92,12 +99,6 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   logging && console.log('Protocol pod timelock deployed to: ', protocolPodTimelockAddress);
 
   // 7. Create contract artifacts for timelocks, so address is available to DAO script
-  const timelockABI = [
-    'function execute(address target,uint256 value,bytes calldata data,bytes32 predecessor,bytes32 salt)',
-    'function cancel(bytes32 id)',
-    'function schedule(address target,uint256 value,bytes calldata data,bytes32 predecessor,bytes32 salt,uint256 delay)',
-    'function hasRole(bytes32 role, address account) view returns(bool)'
-  ];
   const mockSigner = await getImpersonatedSigner(deployAddress);
   const tribalCouncilTimelock = new ethers.Contract(councilTimelockAddress, timelockABI, mockSigner);
   const protocolPodTimelock = new ethers.Contract(protocolPodTimelockAddress, timelockABI, mockSigner);

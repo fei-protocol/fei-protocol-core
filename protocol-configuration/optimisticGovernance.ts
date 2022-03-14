@@ -66,7 +66,7 @@ export const protocolPodConfig: PodConfig = {
   podLabel: '0x50726f746f636f6c506f64000000000000000000000000000000000000000000', // ProtocolPod
   ensString: 'protocolPod.eth',
   imageUrl: 'protocolPod.com',
-  minDelay: 0,
+  minDelay: 172800, // 2 days
   numMembers: protocolPodMembers.length,
   placeHolderMembers: placeHolderPodMembers
 };

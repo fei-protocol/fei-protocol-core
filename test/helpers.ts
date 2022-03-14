@@ -300,16 +300,6 @@ async function performDAOAction(
   );
 }
 
-const validateArraysEqual = async (arrayA: string[], arrayB: string[]) => {
-  expect(arrayA.length).to.equal(arrayB.length);
-  const lowerCaseA = arrayA.map((a) => a.toLowerCase());
-  const lowerCaseB = arrayB.map((b) => b.toLowerCase());
-
-  for (let i = 0; i < lowerCaseA.length; i++) {
-    expect(lowerCaseA.includes(lowerCaseB[i])).to.be.true;
-  }
-};
-
 export {
   // utils
   ZERO_ADDRESS,
@@ -333,6 +323,5 @@ export {
   resetTime,
   resetFork,
   overwriteChainlinkAggregator,
-  performDAOAction,
-  validateArraysEqual
+  performDAOAction
 };
