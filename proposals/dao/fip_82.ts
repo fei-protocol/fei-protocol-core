@@ -10,6 +10,7 @@ import {
 import { getImpersonatedSigner } from '@test/helpers';
 import { tribeCouncilPodConfig, protocolPodConfig } from '@protocol/optimisticGovernance';
 import { abi as timelockABI } from '../../artifacts/contracts/dao/timelock/OptimisticTimelock.sol/OptimisticTimelock.json';
+const toBN = ethers.BigNumber.from;
 
 // How this works:
 // Deployment
@@ -66,39 +67,42 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await mintOrcaToken(podFactory.address);
   logging && console.log('DAO pod factory deployed to:', podFactory.address);
 
-  // 3. Create TribalCouncil pod
-  await podFactory.createChildOptimisticPod(
-    tribeCouncilPodConfig.placeHolderMembers,
-    tribeCouncilPodConfig.threshold,
-    tribeCouncilPodConfig.podLabel,
-    tribeCouncilPodConfig.ensString,
-    tribeCouncilPodConfig.imageUrl,
-    tribeCouncilPodConfig.minDelay,
-    addresses.feiDAOTimelock // podAdmin
-  );
-  const tribalCouncilPodId = await podFactory.latestPodId();
-  const councilTimelockAddress = await podFactory.getPodTimelock(tribalCouncilPodId);
+  // 3. Create TribalCouncil and Protocol Tier pods
+  const tribalCouncilPod = {
+    members: tribeCouncilPodConfig.placeHolderMembers,
+    threshold: tribeCouncilPodConfig.threshold,
+    label: tribeCouncilPodConfig.label,
+    ensString: tribeCouncilPodConfig.ensString,
+    imageUrl: tribeCouncilPodConfig.imageUrl,
+    admin: addresses.feiDAOTimelock
+  };
+
+  const protocolTierPod = {
+    members: protocolPodConfig.placeHolderMembers,
+    threshold: protocolPodConfig.threshold,
+    label: protocolPodConfig.label,
+    ensString: protocolPodConfig.ensString,
+    imageUrl: protocolPodConfig.imageUrl,
+    admin: addresses.feiDAOTimelock
+  };
+
+  const pods = [tribalCouncilPod, protocolTierPod];
+  const podMinDelays = [tribeCouncilPodConfig.minDelay, protocolPodConfig.minDelay];
+  await podFactory.burnerCreateChildOptimisticPods(pods, podMinDelays);
+
+  const protocolPodId = await podFactory.latestPodId();
+  const tribalCouncilPodId = protocolPodId.sub(toBN(1));
 
   logging && console.log('TribalCouncil pod Id: ', tribalCouncilPodId.toString());
-  logging && console.log('Tribal council timelock deployed to: ', councilTimelockAddress);
-
-  // 4. Create protocol tier pod
-  await podFactory.createChildOptimisticPod(
-    protocolPodConfig.placeHolderMembers,
-    protocolPodConfig.threshold,
-    protocolPodConfig.podLabel,
-    protocolPodConfig.ensString,
-    protocolPodConfig.imageUrl,
-    protocolPodConfig.minDelay,
-    addresses.feiDAOTimelock // Temporarily set to FeiDAOTimelock for deployment. Later transferred to TribalCouncil pod timelock
-  );
-  const protocolPodId = await podFactory.latestPodId();
   logging && console.log('Protocol tier pod Id: ', protocolPodId.toString());
 
+  const councilTimelockAddress = await podFactory.getPodTimelock(tribalCouncilPodId);
   const protocolPodTimelockAddress = await podFactory.getPodTimelock(protocolPodId);
+
+  logging && console.log('Tribal council timelock deployed to: ', councilTimelockAddress);
   logging && console.log('Protocol pod timelock deployed to: ', protocolPodTimelockAddress);
 
-  // 7. Create contract artifacts for timelocks, so address is available to DAO script
+  // 4. Create contract artifacts for timelocks, so address is available to DAO script
   const mockSigner = await getImpersonatedSigner(deployAddress);
   const tribalCouncilTimelock = new ethers.Contract(councilTimelockAddress, timelockABI, mockSigner);
   const protocolPodTimelock = new ethers.Contract(protocolPodTimelockAddress, timelockABI, mockSigner);

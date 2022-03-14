@@ -92,7 +92,6 @@ function getPodParams(address admin)
         label: label,
         ensString: ensString,
         imageUrl: imageUrl,
-        minDelay: minDelay,
         admin: admin
     });
     return (config, minDelay);

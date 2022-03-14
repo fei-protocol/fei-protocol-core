@@ -1,7 +1,7 @@
 type PodConfig = {
   members: string[];
   threshold: number;
-  podLabel: string;
+  label: string;
   ensString: string;
   imageUrl: string;
   minDelay: number;
@@ -36,7 +36,7 @@ export const placeHolderCouncilMembers = [
 export const tribeCouncilPodConfig: PodConfig = {
   members: tribalCouncilMembers,
   threshold: 5,
-  podLabel: '0x54726962616c436f756e63696c00000000000000000000000000000000000000', // TribalCouncil
+  label: '0x54726962616c436f756e63696c00000000000000000000000000000000000000', // TribalCouncil
   ensString: 'tribalCouncil.eth',
   imageUrl: 'tribalCouncil.com',
   minDelay: 345600,
@@ -63,7 +63,7 @@ export const placeHolderPodMembers = [
 export const protocolPodConfig: PodConfig = {
   members: protocolPodMembers,
   threshold: 3,
-  podLabel: '0x50726f746f636f6c506f64000000000000000000000000000000000000000000', // ProtocolPod
+  label: '0x50726f746f636f6c506f64000000000000000000000000000000000000000000', // ProtocolPod
   ensString: 'protocolPod.eth',
   imageUrl: 'protocolPod.com',
   minDelay: 172800, // 2 days
