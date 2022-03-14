@@ -144,6 +144,21 @@ contract PodFactory is CoreRef, IPodFactory {
         return IControllerV1(podController).podAdmin(podId);
     }
 
+    //////////////////// STATE-CHANGING API ////////////////////
+
+    /// @notice Create a child Orca pod with optimistic timelock. Callable by the DAO and the Tribal Council
+    function createChildOptimisticPod(
+        PodConfig calldata _config,
+        uint256 minDelay
+    )
+        public
+        override
+        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_DEPLOYER_ROLE)
+        returns (uint256, address)
+    {
+        return _createChildOptimisticPod(_config, minDelay);
+    }
+
     /// @notice Migrate to a new podController. Upgrades are opt in
     ///         and state is transitioned by the Orca controllers
     /// @dev Expects that breaking changes are not introduced by the podController
@@ -159,32 +174,24 @@ contract PodFactory is CoreRef, IPodFactory {
 
     //////////////////// STATE-CHANGING API ////////////////////
 
-    /// @notice Create a child Orca pod with optimistic timelock. Callable by the DAO and the Tribal Council
-    /// @param _members List of members to be added to the pod
-    /// @param _threshold Number of members that need to approve a transaction on the Gnosis safe
-    /// @param _podLabel Metadata, Human readable label for the pod
-    /// @param _ensString Metadata, ENS name of the pod
-    /// @param _imageUrl Metadata, URL to a image to represent the pod in frontends
+    ////////////////////////     INTERNAL          ////////////////////////////
+
+    /// @notice Internal method to create a child optimistic pod
+    /// @param _config Pod configuraton
     /// @param _minDelay Delay on the timelock
-    /// @param _podAdmin The admin of the pod - able to add and remove pod members
-    function createChildOptimisticPod(
-        address[] calldata _members,
-        uint256 _threshold,
-        bytes32 _podLabel,
-        string calldata _ensString,
-        string calldata _imageUrl,
-        uint256 _minDelay,
-        address _podAdmin
-    ) external override onlyTribeRolesOrDeployer returns (uint256, address) {
+    function _createChildOptimisticPod(
+        PodConfig calldata _config,
+        uint256 _minDelay
+    ) internal returns (uint256, address) {
         uint256 podId = memberToken.getNextAvailablePodId();
 
         address safeAddress = createPod(
-            _members,
-            _threshold,
-            _podLabel,
-            _ensString,
-            _imageUrl,
-            _podAdmin,
+            _config.members,
+            _config.threshold,
+            _config.label,
+            _config.ensString,
+            _config.imageUrl,
+            _config.admin,
             podId
         );
 
@@ -207,17 +214,17 @@ contract PodFactory is CoreRef, IPodFactory {
     function createPod(
         address[] calldata _members,
         uint256 _threshold,
-        bytes32 _podLabel,
+        bytes32 _label,
         string calldata _ensString,
         string calldata _imageUrl,
-        address _podAdmin,
+        address _admin,
         uint256 podId
     ) internal returns (address) {
         podController.createPod(
             _members,
             _threshold,
-            _podAdmin,
-            _podLabel,
+            _admin,
+            _label,
             _ensString,
             podId,
             _imageUrl
