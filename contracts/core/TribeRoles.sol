@@ -26,6 +26,9 @@ library TribeRoles {
     /// @notice can mint FEI arbitrarily
     bytes32 internal constant MINTER = keccak256("MINTER_ROLE");
 
+    /// @notice Can grant any admin role
+    bytes32 internal constant ROLE_ADMIN = keccak256("ROLE_ADMIN");
+
     /*///////////////////////////////////////////////////////////////
                                  Admin Roles
     //////////////////////////////////////////////////////////////*/
@@ -77,6 +80,10 @@ library TribeRoles {
     /*///////////////////////////////////////////////////////////////
                                  Minor Roles
     //////////////////////////////////////////////////////////////*/
+
+    /// @notice capable of deploying optimistic governance pods
+    bytes32 internal constant POD_DEPLOYER_ROLE =
+        keccak256("POD_DEPLOYER_ROLE");
 
     /// @notice capable of poking existing LBP auctions to exchange tokens.
     bytes32 internal constant LBP_SWAP_ROLE = keccak256("SWAP_ADMIN_ROLE");
