@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {DSTest} from "./utils/DSTest.sol";
-import {Vm} from "./utils/Vm.sol";
-import {MetadataRegistry} from "../pods/MetadataRegistry.sol";
+import {DSTest} from "../utils/DSTest.sol";
+import {Vm} from "../utils/Vm.sol";
+import {MetadataRegistry} from "../../pods/MetadataRegistry.sol";
 
-contract MetadataRegistryTest is DSTest {
+contract MetadataRegistryIntegrationTest is DSTest {
     MetadataRegistry registry;
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
     function setUp() public {
-        registry = new MetadataRegistry();
+        address _core = 0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9;
+        registry = new MetadataRegistry(_core);
     }
 
     function testRegisterProposal() public {
@@ -22,6 +23,8 @@ contract MetadataRegistryTest is DSTest {
         assertFalse(
             registry.isProposalRegistered(podId, proposalId, proposalMetadata)
         );
+
+        // TODO: Only allow pods to register proposals, to limit DDOS
         registry.registerProposal(podId, proposalId, proposalMetadata);
 
         assertTrue(
@@ -35,6 +38,7 @@ contract MetadataRegistryTest is DSTest {
         uint256 podId = uint256(1);
         uint256 proposalId = uint256(1);
 
+        // TODO: Only allow pod Gnosis Safes to register proposals, to limit DDOS
         registry.registerProposal(podId, proposalId, proposalMetadata);
 
         vm.expectRevert(bytes("Proposal already registered"));

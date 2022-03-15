@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
+import {CoreRef} from "../refs/CoreRef.sol";
 
 /// @title Metadata registry for Pods
 /// @notice Exposes a single public method which should be called as part of a Pods proposal.
 /// @dev Expected that a call is made to this MetadataRegistry contract as the first function call in the
 /// calldata that is
-contract MetadataRegistry {
+contract MetadataRegistry is CoreRef {
     /// @notice Mapping identifying whether a particular proposal metadata was submitted for registration
     /// @dev Maps the hash of the proposal metadata to a bool identifying if it was submitted
     mapping(bytes32 => bool) public registration;
@@ -16,6 +17,8 @@ contract MetadataRegistry {
         uint256 indexed proposalId,
         string metadata
     );
+
+    constructor(address _core) CoreRef(_core) {}
 
     /// @notice Get whether a pod proposal has been registered
     /// @param podId Unique identifier of the pod for which metadata is being registered
@@ -37,6 +40,7 @@ contract MetadataRegistry {
     /// @param podId Unique identifier of the pod for which metadata is being registered
     /// @param proposalId Unique identifier of the proposal for which metadata is being registered
     /// @param metadata Proposal metadata
+    // TODO: Restrict to only being callable by pods, to limit DDOS potential. Add new role
     function registerProposal(
         uint256 podId,
         uint256 proposalId,

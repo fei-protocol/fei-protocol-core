@@ -107,11 +107,17 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const tribalCouncilTimelock = new ethers.Contract(councilTimelockAddress, timelockABI, mockSigner);
   const protocolPodTimelock = new ethers.Contract(protocolPodTimelockAddress, timelockABI, mockSigner);
 
+  // 5. Deploy MetadataRegistry contract
+  const metadataRegistryFactory = await ethers.getContractFactory('MetadataRegistry');
+  const metadataRegistry = await metadataRegistryFactory.deploy(addresses.core);
+  await metadataRegistry.deployTransaction.wait();
+
   return {
     podExecutor,
     podFactory,
     tribalCouncilTimelock,
-    protocolPodTimelock
+    protocolPodTimelock,
+    metadataRegistry
   };
 };
 
@@ -191,6 +197,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 4. Validate that protocol pod tier has role ORACLE_ADMIN
   const protocolPodHasRole = await core.hasRole(ethers.utils.id('ORACLE_ADMIN'), addresses.protocolPodTimelock);
   expect(protocolPodHasRole).to.be.true;
+
+  ///////////// METADATA REGISTRY ////////////////////////
+  const metadataRegistry = contracts.metadataRegistry;
+  const isProposalRegistered = await metadataRegistry.isProposalRegistered(0, 0, 'test');
+  expect(isProposalRegistered).to.be.false;
 };
 
 export { deploy, setup, teardown, validate };
