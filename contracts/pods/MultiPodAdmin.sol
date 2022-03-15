@@ -8,6 +8,10 @@ import {TribeRoles} from "../core/TribeRoles.sol";
 
 /// @title Multiple Pod Admins for Orca pods
 /// @notice Expose pod admin functionality from Orca pods to multiple addresses
+/// @dev This contract is intended to be granted the podAdmin role on a deployed pod. This
+///      contract then maintains it's own internal state of additional addresses that it will
+///      expose podAdmin actions to. In this way, multiple podAdmins can be added per pod via this
+///      contract.
 contract MultiPodAdmin is CoreRef {
     using EnumerableSet for EnumerableSet.AddressSet;
 
@@ -41,6 +45,10 @@ contract MultiPodAdmin is CoreRef {
         view
         returns (address[] memory)
     {
+        if (podAdmins[_podId].length() == 0) {
+            address[] memory emptyAdmins = new address[](0);
+            return emptyAdmins;
+        }
         return podAdmins[_podId].values();
     }
 
