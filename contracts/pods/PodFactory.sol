@@ -135,6 +135,7 @@ contract PodFactory is CoreRef, IPodFactory {
     //////////////////// STATE-CHANGING API ////////////////////
 
     /// @notice Create a child Orca pod with optimistic timelock. Callable by the DAO and the Tribal Council
+    /// @dev Returns podId and the optimistic timelock address
     function createChildOptimisticPod(
         PodConfig calldata _config,
         uint256 minDelay
