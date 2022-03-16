@@ -3,12 +3,19 @@ import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
   NamedAddresses,
+  NamedContracts,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { getImpersonatedSigner } from '@test/helpers';
-import { tribeCouncilPodConfig, protocolPodConfig } from '@protocol/optimisticGovernance';
+import {
+  tribeCouncilPodConfig,
+  protocolPodConfig,
+  tribalCouncilAdminTribeRoles,
+  protocolPodAdminTribeRoles,
+  adminPriviledge
+} from '@protocol/optimisticGovernance';
 import { abi as timelockABI } from '../../artifacts/contracts/dao/timelock/OptimisticTimelock.sol/OptimisticTimelock.json';
 const toBN = ethers.BigNumber.from;
 
@@ -48,13 +55,19 @@ const mintOrcaToken = async (address: string) => {
 const fipNumber = '82';
 
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
+  // 0. Deploy MultiPodAdmin contract
+  const multiPodAdminFactory = await ethers.getContractFactory('MultiPodAdmin');
+  const multiPodAdmin = await multiPodAdminFactory.deploy(addresses.core, addresses.memberToken);
+  await multiPodAdmin.deployTransaction.wait();
+  logging && console.log(`Deployed MultiPodAdmin at ${multiPodAdmin.address}`);
+
   // 1. Deploy public pod executor
   const podExecutorFactory = await ethers.getContractFactory('PodExecutor');
   const podExecutor = await podExecutorFactory.deploy();
   await podExecutor.deployTransaction.wait();
   logging && console.log('PodExecutor deployed to', podExecutor.address);
 
-  // 2. Deploy tribalCouncilPodFactory. Set podAdmin to deploy address, so pods can be created
+  // 2. Deploy tribalCouncilPodFactory
   const podFactoryEthersFactory = await ethers.getContractFactory('PodFactory');
 
   const podFactory = await podFactoryEthersFactory.deploy(
@@ -74,7 +87,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     label: tribeCouncilPodConfig.label,
     ensString: tribeCouncilPodConfig.ensString,
     imageUrl: tribeCouncilPodConfig.imageUrl,
-    admin: addresses.feiDAOTimelock
+    admin: multiPodAdmin.address
   };
 
   const protocolTierPod = {
@@ -83,7 +96,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     label: protocolPodConfig.label,
     ensString: protocolPodConfig.ensString,
     imageUrl: protocolPodConfig.imageUrl,
-    admin: addresses.feiDAOTimelock
+    admin: multiPodAdmin.address
   };
 
   const pods = [tribalCouncilPod, protocolTierPod];
@@ -111,7 +124,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     podExecutor,
     podFactory,
     tribalCouncilTimelock,
-    protocolPodTimelock
+    protocolPodTimelock,
+    multiPodAdmin
   };
 };
 
@@ -130,7 +144,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const tribalCouncilSafeAddress = await podFactory.getPodSafe(tribalCouncilPodId);
 
   const councilPodAdmin = await podFactory.getPodAdmin(tribalCouncilPodId);
-  expect(councilPodAdmin).to.equal(addresses.feiDAOTimelock);
+  expect(councilPodAdmin).to.equal(addresses.multiPodAdmin);
 
   const tribalCouncilTimelock = contracts.tribalCouncilTimelock;
   const councilSafeIsProposer = await tribalCouncilTimelock.hasRole(
@@ -166,7 +180,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const protocolSafeAddress = await podFactory.getPodSafe(protocolPodId);
 
   const protocolPodAdmin = await podFactory.getPodAdmin(protocolPodId);
-  expect(protocolPodAdmin).to.equal(addresses.tribalCouncilTimelock);
+  expect(protocolPodAdmin).to.equal(addresses.multiPodAdmin);
 
   const protocolTimelock = contracts.protocolPodTimelock;
   const protocolSafeIsProposer = await protocolTimelock.hasRole(ethers.utils.id('PROPOSER_ROLE'), protocolSafeAddress);
@@ -191,6 +205,32 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 4. Validate that protocol pod tier has role ORACLE_ADMIN
   const protocolPodHasRole = await core.hasRole(ethers.utils.id('ORACLE_ADMIN'), addresses.protocolPodTimelock);
   expect(protocolPodHasRole).to.be.true;
+
+  // Validate all podAdmins have been set
+  validatePodAdmins(tribalCouncilPodId, protocolPodId, contracts);
+};
+
+const validatePodAdmins = async (tribalCouncilPodId: number, protocolPodId: number, contracts: NamedContracts) => {
+  // TODO: Add steps into DAO FIP script
+  // TODO: e2e test to add members to pods
+  const multiPodAdminContract = contracts.multiPodAdmin;
+
+  // TribalCouncil admin priviledges
+  for (const priviledge in Object.keys(adminPriviledge)) {
+    const tribalRolesWithPriviledge = await multiPodAdminContract.getPodAdminPriviledges(
+      tribalCouncilPodId,
+      adminPriviledge[priviledge]
+    );
+    expect(tribalRolesWithPriviledge).to.deep.equal(tribalCouncilAdminTribeRoles[priviledge]);
+  }
+
+  for (const priviledge in Object.keys(adminPriviledge)) {
+    const tribalRolesWithPriviledge = await multiPodAdminContract.getPodAdminPriviledges(
+      protocolPodId,
+      adminPriviledge[priviledge]
+    );
+    expect(tribalRolesWithPriviledge).to.deep.equal(protocolPodAdminTribeRoles[priviledge]);
+  }
 };
 
 export { deploy, setup, teardown, validate };
