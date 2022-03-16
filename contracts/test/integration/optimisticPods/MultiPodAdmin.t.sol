@@ -100,13 +100,13 @@ contract MultiPodAdminIntegrationTest is DSTest {
 
     /// @notice Validate that an added podAdmin has access to admin functionality for a pod
     function testPodAdminCanAddMembers() public {
-        address extraAdmin = address(0x10);
+        // Grant Votium address admin access to pod
         vm.prank(feiDAOTimelock);
-        multiPodAdmin.addPodAdmin(podId, extraAdmin);
+        multiPodAdmin.grantPodAdminRole(podId, testRole);
 
-        // Add member to pod
-        address newPodMember = address(0x11);
-        vm.prank(extraAdmin);
+        // Have Votium address add new member to pod
+        address newPodMember = address(0x12);
+        vm.prank(votiumAddress);
         multiPodAdmin.addMemberToPod(podId, newPodMember);
 
         // Validate membership added
@@ -119,13 +119,12 @@ contract MultiPodAdminIntegrationTest is DSTest {
     }
 
     function testPodAdminCanRemoveMembers() public {
-        address extraAdmin = address(0x10);
         vm.prank(feiDAOTimelock);
-        multiPodAdmin.addPodAdmin(podId, extraAdmin);
+        multiPodAdmin.grantPodAdminRole(podId, testRole);
 
         // Remove member from pod
         address podMemberToRemove = factory.getPodMembers(podId)[0];
-        vm.prank(extraAdmin);
+        vm.prank(votiumAddress);
         multiPodAdmin.removeMemberFromPod(podId, podMemberToRemove);
 
         // Validate membership added
@@ -136,7 +135,7 @@ contract MultiPodAdminIntegrationTest is DSTest {
 
     /// @notice Validate that a non-PodAdmin fails to call a priviledged admin method
     function testNonExposedAdminFailsToRemove() public {
-        vm.expectRevert(bytes("Caller not added as an admin"));
+        vm.expectRevert(bytes("Only pod admin"));
         multiPodAdmin.removeMemberFromPod(podId, address(0x1));
     }
 }
