@@ -206,10 +206,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const protocolPodHasRole = await core.hasRole(ethers.utils.id('ORACLE_ADMIN'), addresses.protocolPodTimelock);
   expect(protocolPodHasRole).to.be.true;
 
-  await validatePodAdmins(tribalCouncilPodId.toNumber(), contracts);
+  await validatePodAdmins(tribalCouncilPodId.toNumber(), protocolPodId.toNumber(), contracts);
 };
 
-const validatePodAdmins = async (tribalCouncilPodId: number, contracts: NamedContracts) => {
+const validatePodAdmins = async (tribalCouncilPodId: number, protocolPodId: number, contracts: NamedContracts) => {
   const multiPodAdminContract = contracts.multiPodAdmin;
 
   const tribalRolesWithAddPriviledge = await multiPodAdminContract.getPodAdminPriviledges(
@@ -223,6 +223,18 @@ const validatePodAdmins = async (tribalCouncilPodId: number, contracts: NamedCon
     adminPriviledge.REMOVE_MEMBER
   );
   expect(tribalRolesWithRemovePriviledge).to.deep.equal(tribalCouncilAdminTribeRoles.REMOVE_MEMBER);
+
+  const protocolPodRolesWithAddPriviledge = await multiPodAdminContract.getPodAdminPriviledges(
+    protocolPodId,
+    adminPriviledge.ADD_MEMBER
+  );
+  expect(protocolPodRolesWithAddPriviledge).to.deep.equal(protocolPodAdminTribeRoles.ADD_MEMBER);
+
+  const protocolPodRolesWithRemovePriviledge = await multiPodAdminContract.getPodAdminPriviledges(
+    protocolPodId,
+    adminPriviledge.REMOVE_MEMBER
+  );
+  expect(protocolPodRolesWithRemovePriviledge).to.deep.equal(protocolPodAdminTribeRoles.REMOVE_MEMBER);
 };
 
 export { deploy, setup, teardown, validate };

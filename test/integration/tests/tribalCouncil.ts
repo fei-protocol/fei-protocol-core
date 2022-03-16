@@ -1,4 +1,4 @@
-import { PodFactory } from '@custom-types/contracts';
+import { PodFactory, MultiPodAdmin } from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -10,7 +10,6 @@ import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { BigNumber } from 'ethers';
 import { tribalCouncilMembers } from '@protocol/optimisticGovernance';
-import { Contract } from 'ethers';
 
 const toBN = ethers.BigNumber.from;
 
@@ -21,8 +20,9 @@ describe('Tribal Council', function () {
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
   let podFactory: PodFactory;
-  let memberToken: Contract;
+  let multiPodAdmin: MultiPodAdmin;
   let tribalCouncilPodId: BigNumber;
+  let feiDAOTimelockSigner: SignerWithAddress;
 
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
@@ -50,25 +50,17 @@ describe('Tribal Council', function () {
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
     podFactory = contracts.podFactory as PodFactory;
+    multiPodAdmin = contracts.multiPodAdmin as MultiPodAdmin;
     tribalCouncilPodId = await podFactory.getPodId(contractAddresses.tribalCouncilTimelock);
 
-    const memberTokenABI = [
-      'function mint(address _account,uint256 _id,bytes memory data) external',
-      'function burn(address _account, uint256 _id) external;'
-    ];
-    const feiDAOTimelockSigner = await getImpersonatedSigner(contractAddresses.feiDAOTimelock);
-    memberToken = new ethers.Contract(contractAddresses.memberToken, memberTokenABI, feiDAOTimelockSigner);
+    feiDAOTimelockSigner = await getImpersonatedSigner(contractAddresses.feiDAOTimelock);
   });
 
   it('should allow DAO to add members', async () => {
     const initialNumPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
 
     const newMember = '0x0000000000000000000000000000000000000030';
-    await memberToken.mint(
-      newMember,
-      tribalCouncilPodId,
-      '0x0000000000000000000000000000000000000000000000000000000000000000'
-    );
+    await multiPodAdmin.connect(feiDAOTimelockSigner).addMemberToPod(tribalCouncilPodId, newMember);
 
     const numPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
     await expect(numPodMembers).to.equal(initialNumPodMembers.add(toBN(1)));
@@ -81,7 +73,7 @@ describe('Tribal Council', function () {
     const initialNumPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
 
     const memberToBurn = tribalCouncilMembers[0];
-    await memberToken.burn(memberToBurn, tribalCouncilPodId);
+    await multiPodAdmin.connect(feiDAOTimelockSigner).removeMemberFromPod(tribalCouncilPodId, memberToBurn);
 
     const numPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
     await expect(numPodMembers).to.equal(initialNumPodMembers.sub(toBN(1)));
