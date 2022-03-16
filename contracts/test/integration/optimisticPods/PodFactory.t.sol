@@ -10,7 +10,6 @@ import {IPodFactory} from "../../../pods/IPodFactory.sol";
 import {DSTest} from "../../utils/DSTest.sol";
 import {mintOrcaTokens, getPodParams} from "../fixtures/Orca.sol";
 import {Vm} from "../../utils/Vm.sol";
-import "hardhat/console.sol";
 
 /// @notice Validate PodFactory critical functionality such as creating pods
 ///  @dev PodAdmin can not also be a pod member

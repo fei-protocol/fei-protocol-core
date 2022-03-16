@@ -6,9 +6,7 @@ import {IMemberToken} from "./orcaInterfaces/IMemberToken.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
 import {ICore} from "../core/ICore.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
-import {IMultiPodAdmin} from "./IMultiPodAdmin.sol";
-
-import "hardhat/console.sol";
+import {IPodAdminGateway} from "./IPodAdminGateway.sol";
 
 /// @title Multiple Pod Admins for Orca pods
 /// @notice Expose pod admin functionality from Orca pods to multiple Tribe Roles.
@@ -16,7 +14,7 @@ import "hardhat/console.sol";
 ///      contract then maintains it's own internal state of additional TribeRoles that it will
 ///      expose podAdmin actions to.
 ///      In this way, multiple podAdmins can be added per pod.
-contract MultiPodAdmin is CoreRef, IMultiPodAdmin {
+contract PodAdminGateway is CoreRef, IPodAdminGateway {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     /// @notice Orca membership token for the pods. Handles permissioning pod members

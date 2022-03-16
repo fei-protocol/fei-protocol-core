@@ -1,4 +1,4 @@
-import { PodFactory, MultiPodAdmin } from '@custom-types/contracts';
+import { PodFactory, PodAdminGateway } from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -20,7 +20,7 @@ describe('Tribal Council', function () {
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
   let podFactory: PodFactory;
-  let multiPodAdmin: MultiPodAdmin;
+  let podAdminGateway: PodAdminGateway;
   let tribalCouncilPodId: BigNumber;
   let feiDAOTimelockSigner: SignerWithAddress;
 
@@ -50,7 +50,7 @@ describe('Tribal Council', function () {
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
     podFactory = contracts.podFactory as PodFactory;
-    multiPodAdmin = contracts.multiPodAdmin as MultiPodAdmin;
+    podAdminGateway = contracts.podAdminGateway as PodAdminGateway;
     tribalCouncilPodId = await podFactory.getPodId(contractAddresses.tribalCouncilTimelock);
 
     feiDAOTimelockSigner = await getImpersonatedSigner(contractAddresses.feiDAOTimelock);
@@ -60,7 +60,7 @@ describe('Tribal Council', function () {
     const initialNumPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
 
     const newMember = '0x0000000000000000000000000000000000000030';
-    await multiPodAdmin.connect(feiDAOTimelockSigner).addMemberToPod(tribalCouncilPodId, newMember);
+    await podAdminGateway.connect(feiDAOTimelockSigner).addMemberToPod(tribalCouncilPodId, newMember);
 
     const numPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
     await expect(numPodMembers).to.equal(initialNumPodMembers.add(toBN(1)));
@@ -73,7 +73,7 @@ describe('Tribal Council', function () {
     const initialNumPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
 
     const memberToBurn = tribalCouncilMembers[0];
-    await multiPodAdmin.connect(feiDAOTimelockSigner).removeMemberFromPod(tribalCouncilPodId, memberToBurn);
+    await podAdminGateway.connect(feiDAOTimelockSigner).removeMemberFromPod(tribalCouncilPodId, memberToBurn);
 
     const numPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
     await expect(numPodMembers).to.equal(initialNumPodMembers.sub(toBN(1)));

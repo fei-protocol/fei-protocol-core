@@ -1,4 +1,4 @@
-import { PodFactory, MultiPodAdmin } from '@custom-types/contracts';
+import { PodFactory, PodAdminGateway } from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -22,7 +22,7 @@ describe('Protocol pod', function () {
   let doLogging: boolean;
   let podFactory: PodFactory;
   let podId: BigNumber;
-  let multiPodAdmin: MultiPodAdmin;
+  let podAdminGateway: PodAdminGateway;
   let tribalCouncilTimelockSigner: SignerWithAddress;
 
   before(async () => {
@@ -50,7 +50,7 @@ describe('Protocol pod', function () {
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
     podFactory = contracts.podFactory as PodFactory;
-    multiPodAdmin = contracts.multiPodAdmin as MultiPodAdmin;
+    podAdminGateway = contracts.podAdminGateway as PodAdminGateway;
     podId = await podFactory.getPodId(contractAddresses.protocolPodTimelock);
 
     await forceEth(contractAddresses.tribalCouncilTimelock);
@@ -60,7 +60,7 @@ describe('Protocol pod', function () {
   it('should allow Tribal council to add members to protocol pod', async () => {
     const initialNumPodMembers = await podFactory.getNumMembers(podId);
     const newMember = '0x0000000000000000000000000000000000000030';
-    await multiPodAdmin.connect(tribalCouncilTimelockSigner).addMemberToPod(podId, newMember);
+    await podAdminGateway.connect(tribalCouncilTimelockSigner).addMemberToPod(podId, newMember);
 
     const numPodMembers = await podFactory.getNumMembers(podId);
     await expect(numPodMembers).to.equal(initialNumPodMembers.add(toBN(1)));
@@ -73,7 +73,7 @@ describe('Protocol pod', function () {
     const initialNumPodMembers = await podFactory.getNumMembers(podId);
 
     const memberToBurn = tribalCouncilMembers[0];
-    await multiPodAdmin.connect(tribalCouncilTimelockSigner).removeMemberFromPod(podId, memberToBurn);
+    await podAdminGateway.connect(tribalCouncilTimelockSigner).removeMemberFromPod(podId, memberToBurn);
 
     const numPodMembers = await podFactory.getNumMembers(podId);
     await expect(numPodMembers).to.equal(initialNumPodMembers.sub(toBN(1)));

@@ -7,7 +7,6 @@ import {IInviteToken} from "../../../pods/orcaInterfaces/IInviteToken.sol";
 import {IPodFactory} from "../../../pods/IPodFactory.sol";
 import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
 import {Vm} from "../../utils/Vm.sol";
-import "hardhat/console.sol";
 
 function createPod(
     IControllerV1 controller,

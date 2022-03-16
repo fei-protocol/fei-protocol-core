@@ -9,7 +9,6 @@ import {IMemberToken} from "../../../pods/orcaInterfaces/IMemberToken.sol";
 import {createPod, setupOptimisticTimelock, mintOrcaTokens} from "../fixtures/Orca.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {DSTest} from "../../utils/DSTest.sol";
-import "hardhat/console.sol";
 
 /// @dev Tests for the optimistic governance pod unit. This is composed of an
 /// Orca pod and an optimistic timelock. Key agents involved are:

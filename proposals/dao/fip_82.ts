@@ -55,11 +55,11 @@ const mintOrcaToken = async (address: string) => {
 const fipNumber = '82';
 
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  // 0. Deploy MultiPodAdmin contract
-  const multiPodAdminFactory = await ethers.getContractFactory('MultiPodAdmin');
-  const multiPodAdmin = await multiPodAdminFactory.deploy(addresses.core, addresses.memberToken);
-  await multiPodAdmin.deployTransaction.wait();
-  logging && console.log(`Deployed MultiPodAdmin at ${multiPodAdmin.address}`);
+  // 0. Deploy PodAdminGateway contract
+  const multiPodAdminFactory = await ethers.getContractFactory('PodAdminGateway');
+  const podAdminGateway = await multiPodAdminFactory.deploy(addresses.core, addresses.memberToken);
+  await podAdminGateway.deployTransaction.wait();
+  logging && console.log(`Deployed PodAdminGateway at ${podAdminGateway.address}`);
 
   // 1. Deploy public pod executor
   const podExecutorFactory = await ethers.getContractFactory('PodExecutor');
@@ -87,7 +87,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     label: tribeCouncilPodConfig.label,
     ensString: tribeCouncilPodConfig.ensString,
     imageUrl: tribeCouncilPodConfig.imageUrl,
-    admin: multiPodAdmin.address
+    admin: podAdminGateway.address
   };
 
   const protocolTierPod = {
@@ -96,7 +96,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     label: protocolPodConfig.label,
     ensString: protocolPodConfig.ensString,
     imageUrl: protocolPodConfig.imageUrl,
-    admin: multiPodAdmin.address
+    admin: podAdminGateway.address
   };
 
   const pods = [tribalCouncilPod, protocolTierPod];
@@ -125,7 +125,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     podFactory,
     tribalCouncilTimelock,
     protocolPodTimelock,
-    multiPodAdmin
+    podAdminGateway
   };
 };
 
@@ -144,7 +144,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const tribalCouncilSafeAddress = await podFactory.getPodSafe(tribalCouncilPodId);
 
   const councilPodAdmin = await podFactory.getPodAdmin(tribalCouncilPodId);
-  expect(councilPodAdmin).to.equal(addresses.multiPodAdmin);
+  expect(councilPodAdmin).to.equal(addresses.podAdminGateway);
 
   const tribalCouncilTimelock = contracts.tribalCouncilTimelock;
   const councilSafeIsProposer = await tribalCouncilTimelock.hasRole(
@@ -180,7 +180,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const protocolSafeAddress = await podFactory.getPodSafe(protocolPodId);
 
   const protocolPodAdmin = await podFactory.getPodAdmin(protocolPodId);
-  expect(protocolPodAdmin).to.equal(addresses.multiPodAdmin);
+  expect(protocolPodAdmin).to.equal(addresses.podAdminGateway);
 
   const protocolTimelock = contracts.protocolPodTimelock;
   const protocolSafeIsProposer = await protocolTimelock.hasRole(ethers.utils.id('PROPOSER_ROLE'), protocolSafeAddress);
@@ -210,7 +210,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 };
 
 const validatePodAdmins = async (tribalCouncilPodId: number, protocolPodId: number, contracts: NamedContracts) => {
-  const multiPodAdminContract = contracts.multiPodAdmin;
+  const multiPodAdminContract = contracts.podAdminGateway;
 
   const tribalRolesWithAddPriviledge = await multiPodAdminContract.getPodAdminPriviledges(
     tribalCouncilPodId,

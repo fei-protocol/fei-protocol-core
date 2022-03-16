@@ -65,7 +65,7 @@ const fip_82: ProposalDescription = {
     },
     /////// Grant appropriate Tribe Roles admin priviledges over Tribal Council /////
     {
-      target: 'multiPodAdmin',
+      target: 'podAdminGateway',
       values: '0',
       method: 'batchGrantAdminPriviledge(uint256[] memory,uint8[] memory,bytes32[] memory)',
       arguments: [
@@ -84,7 +84,7 @@ const fip_82: ProposalDescription = {
     },
     /////// Grant appropriate Tribe Roles admin priviledges over Protocol tier pod /////
     {
-      target: 'multiPodAdmin',
+      target: 'podAdminGateway',
       values: '0',
       method: 'batchGrantAdminPriviledge(uint256[] memory,uint8[] memory,bytes32[] memory)',
       arguments: [
@@ -104,9 +104,9 @@ const fip_82: ProposalDescription = {
       `
     },
     //////////////    Configure Membership of Council and Pod /////////////
-    // TODO: Replace with calls to multiPodAdmin
+    // TODO: Replace with calls to podAdminGateway
     {
-      target: 'multiPodAdmin',
+      target: 'podAdminGateway',
       values: '0',
       method: 'batchAddMemberToPod(uint256 _podId,address[] memory _members)',
       arguments: [
@@ -126,7 +126,7 @@ const fip_82: ProposalDescription = {
       description: 'Add designated members to the Tribal Council'
     },
     {
-      target: 'multiPodAdmin',
+      target: 'podAdminGateway',
       values: '0',
       method: 'batchRemoveMemberFromPod(uint256 _podId, address[] memory)',
       arguments: [
@@ -146,7 +146,7 @@ const fip_82: ProposalDescription = {
       description: 'Remove placeholder members from Tribal Council'
     },
     {
-      target: 'multiPodAdmin',
+      target: 'podAdminGateway',
       values: '0',
       method: 'batchAddMemberToPod(uint256 _podId,address[] memory _members)',
       arguments: [
@@ -162,7 +162,7 @@ const fip_82: ProposalDescription = {
       description: 'Add designated members to the Protocol Pod'
     },
     {
-      target: 'multiPodAdmin',
+      target: 'podAdminGateway',
       values: '0',
       method: 'batchRemoveMemberFromPod(uint256 _podId, address[] memory)',
       arguments: [
