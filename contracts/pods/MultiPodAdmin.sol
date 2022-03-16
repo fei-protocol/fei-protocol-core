@@ -6,6 +6,8 @@ import {IMemberToken} from "./orcaInterfaces/IMemberToken.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
 import {ICore} from "../core/ICore.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
+import {IMultiPodAdmin} from "./IMultiPodAdmin.sol";
+
 import "hardhat/console.sol";
 
 /// @title Multiple Pod Admins for Orca pods
@@ -14,41 +16,17 @@ import "hardhat/console.sol";
 ///      contract then maintains it's own internal state of additional TribeRoles that it will
 ///      expose podAdmin actions to.
 ///      In this way, multiple podAdmins can be added per pod.
-contract MultiPodAdmin is CoreRef {
+contract MultiPodAdmin is CoreRef, IMultiPodAdmin {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     /// @notice Orca membership token for the pods. Handles permissioning pod members
     IMemberToken private immutable memberToken;
 
-    /// @notice Mapping between a podId and all added TribeRoles, which have admin access to that pod
-    mapping(uint256 => EnumerableSet.Bytes32Set) private podAdminRoles;
-
-    event GrantPodAdminRole(uint256 indexed podId, bytes32 indexed tribeRole);
-    event RevokePodAdminRole(uint256 indexed podId, bytes32 indexed tribeRole);
-
-    /// @notice Validate that a calling address has a TribeRole which has been granted admin functionality
-    /// @dev
-    // 1. Get all TribeRoles that have been granted admin access to pod
-    // 2. Iterate through all these roles, and see if the calling address has one of these roles
-    // 3. If so, progress. Otherwise, revert
-    modifier onlyPodAdmin(uint256 podId) {
-        ICore core = core();
-
-        bool hasAdminRole = false;
-        for (uint256 i = 0; i < podAdminRoles[podId].length(); i += 1) {
-            bytes32 role = podAdminRoles[podId].at(i);
-
-            if (core.hasRole(role, msg.sender)) {
-                hasAdminRole = true;
-            }
-        }
-
-        if (hasAdminRole) {
-            _;
-        } else {
-            revert("Only pod admin");
-        }
-    }
+    /// @notice Mapping from a podId to an admin priviledge and the set of TribeRoles that have
+    ///         been granted that admin priviledge on that pod
+    /// @dev Used to permission the exposure of pod admin priviledges to multiple TribeRoles
+    mapping(uint256 => mapping(AdminPriviledge => EnumerableSet.Bytes32Set))
+        private podAdminRoles;
 
     constructor(address _core, address _memberToken) CoreRef(_core) {
         memberToken = IMemberToken(_memberToken);
@@ -56,37 +34,69 @@ contract MultiPodAdmin is CoreRef {
 
     /////////////////////////     GETTERS                   ///////////////////////
 
-    /// @notice Get all TribeRoles which have admin access to a pod
-    function getPodAdminRoles(uint256 _podId)
+    /// @notice Get all TribeRoles which have a particular admin priviledge on a pod
+    function getPodAdminPriviledges(uint256 _podId, AdminPriviledge _priviledge)
         external
         view
         returns (bytes32[] memory)
     {
-        if (podAdminRoles[_podId].length() == 0) {
+        if (podAdminRoles[_podId][_priviledge].length() == 0) {
             bytes32[] memory emptyAdmins = new bytes32[](0);
             return emptyAdmins;
         }
-        return podAdminRoles[_podId].values();
+        return podAdminRoles[_podId][_priviledge].values();
     }
 
     /////////////////////////     STATE CHANGING API       ////////////////////////////
 
     ///// Grant and revoke pod admin functionality to Tribe Roles
 
-    /// @notice Grant a TribeRole admin acces to a pod
-    /// @dev Permissioned to the GOVERNOR, ROLE_ADMIN (TribalCouncil). Security Guardian
-    ///      not able to add admins
-    function grantPodAdminRole(uint256 _podId, bytes32 _tribeRole)
-        external
-        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.ROLE_ADMIN)
-    {
-        podAdminRoles[_podId].add(_tribeRole);
-        emit GrantPodAdminRole(_podId, _tribeRole);
+    /// @notice Grant an admin priviledge to a TribeRole
+    /// @dev Permissioned to the GOVERNOR, ROLE_ADMIN (TribalCouncil)
+    function grantPodAdminPriviledge(
+        uint256 _podId,
+        AdminPriviledge priviledge,
+        bytes32 _tribeRole
+    ) public hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.ROLE_ADMIN) {
+        podAdminRoles[_podId][priviledge].add(_tribeRole);
+        emit GrantPodAdminPriviledge(_podId, _tribeRole);
     }
 
-    /// @notice Remove a TribeRole from having admin access to a pod
+    /// @notice Revoke an admin priviledge from a TribeRole
     /// @dev Permissioned to the GOVERNOR, ROLE_ADMIN (TribalCouncil) and GUARDIAN roles
-    function revokePodAdminRole(uint256 _podId, bytes32 _tribeRole)
+    function revokePodAdminPriviledge(
+        uint256 _podId,
+        AdminPriviledge priviledge,
+        bytes32 _tribeRole
+    )
+        public
+        hasAnyOfThreeRoles(
+            TribeRoles.GOVERNOR,
+            TribeRoles.ROLE_ADMIN,
+            TribeRoles.GUARDIAN
+        )
+    {
+        podAdminRoles[_podId][priviledge].remove(_tribeRole);
+        emit RevokePodAdminPriviledge(_podId, _tribeRole);
+    }
+
+    /// @notice Batch grant admin priviledges
+    function batchGrantAdminPriviledge(
+        uint256[] memory _podId,
+        AdminPriviledge[] memory priviledge,
+        bytes32[] memory _tribeRole
+    ) external hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.ROLE_ADMIN) {
+        for (uint256 i = 0; i < _podId.length; i++) {
+            grantPodAdminPriviledge(_podId[i], priviledge[i], _tribeRole[i]);
+        }
+    }
+
+    /// @notice Batch grant admin priviledges
+    function batchRevokeAdminPriviledge(
+        uint256[] memory _podId,
+        AdminPriviledge[] memory priviledge,
+        bytes32[] memory _tribeRole
+    )
         external
         hasAnyOfThreeRoles(
             TribeRoles.GOVERNOR,
@@ -94,27 +104,60 @@ contract MultiPodAdmin is CoreRef {
             TribeRoles.GUARDIAN
         )
     {
-        podAdminRoles[_podId].remove(_tribeRole);
-        emit RevokePodAdminRole(_podId, _tribeRole);
+        for (uint256 i = 0; i < _podId.length; i++) {
+            revokePodAdminPriviledge(_podId[i], priviledge[i], _tribeRole[i]);
+        }
     }
 
     ///// Expose admin functionality to addresses which have the appropriate TribeRole
 
     /// @notice Admin functionality to add a member to a pod
-    function addMemberToPod(uint256 _podId, address _member)
-        external
-        onlyPodAdmin(_podId)
-    {
+    function addMemberToPod(uint256 _podId, address _member) external {
         require(_member != address(0), "ZERO_ADDRESS");
+        validateAdminPriviledge(_podId, AdminPriviledge.ADD_MEMBER, msg.sender);
+
         memberToken.mint(_member, _podId, bytes(""));
     }
 
     /// @notice Admin functionality to remove a member from a pod
-    function removeMemberFromPod(uint256 _podId, address _member)
-        external
-        onlyPodAdmin(_podId)
-    {
+    function removeMemberFromPod(uint256 _podId, address _member) external {
         require(_member != address(0), "ZERO_ADDRESS");
+
+        validateAdminPriviledge(
+            _podId,
+            AdminPriviledge.REMOVE_MEMBER,
+            msg.sender
+        );
         memberToken.burn(_member, _podId);
+    }
+
+    /// @notice Valdidate that a calling address has the relevant admin priviledge, for the
+    ///         function it is calling
+    function validateAdminPriviledge(
+        uint256 _podId,
+        AdminPriviledge priviledge,
+        address caller
+    ) internal view {
+        ICore core = core();
+        bool hasAdminRole = false;
+
+        // Iterate through all TribeRoles that have correct priviledge.
+        // Validate caller has one of these roles
+        // podAdminRoles[_podId][priviledge] = tribeRolesWithPriviledge
+        for (
+            uint256 i = 0;
+            i < podAdminRoles[_podId][priviledge].length();
+            i += 1
+        ) {
+            bytes32 role = podAdminRoles[_podId][priviledge].at(i);
+
+            if (core.hasRole(role, caller)) {
+                hasAdminRole = true;
+            }
+        }
+
+        if (!hasAdminRole) {
+            revert UnauthorisedAdminAction();
+        }
     }
 }
