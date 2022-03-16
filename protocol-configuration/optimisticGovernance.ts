@@ -89,8 +89,8 @@ export const adminPriviledge = {
 
 // TribeRoles which are granted a form of admin control over the TribalCouncil
 export const tribalCouncilAdminTribeRoles: PodAdminPriviledges = {
-  ADD_MEMBER: [GOVERN_ROLE_ID, ROLE_ADMIN_ID],
-  REMOVE_MEMBER: [GOVERN_ROLE_ID, ROLE_ADMIN_ID, GUARDIAN_ROLE_ID]
+  ADD_MEMBER: [GOVERN_ROLE_ID],
+  REMOVE_MEMBER: [GOVERN_ROLE_ID, GUARDIAN_ROLE_ID]
 };
 
 // TribeRoles which are granted a form of control over the ProtocolTier pod

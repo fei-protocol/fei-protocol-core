@@ -112,15 +112,24 @@ contract MultiPodAdmin is CoreRef, IMultiPodAdmin {
     ///// Expose admin functionality to addresses which have the appropriate TribeRole
 
     /// @notice Admin functionality to add a member to a pod
-    function addMemberToPod(uint256 _podId, address _member) external {
+    function addMemberToPod(uint256 _podId, address _member) public {
         require(_member != address(0), "ZERO_ADDRESS");
         validateAdminPriviledge(_podId, AdminPriviledge.ADD_MEMBER, msg.sender);
 
         memberToken.mint(_member, _podId, bytes(""));
     }
 
+    /// @notice Admin functionality to batch add a member to a pod
+    function batchAddMemberToPod(uint256 _podId, address[] memory _members)
+        external
+    {
+        for (uint256 i = 0; i < _members.length; i++) {
+            addMemberToPod(_podId, _members[i]);
+        }
+    }
+
     /// @notice Admin functionality to remove a member from a pod
-    function removeMemberFromPod(uint256 _podId, address _member) external {
+    function removeMemberFromPod(uint256 _podId, address _member) public {
         require(_member != address(0), "ZERO_ADDRESS");
 
         validateAdminPriviledge(
@@ -129,6 +138,15 @@ contract MultiPodAdmin is CoreRef, IMultiPodAdmin {
             msg.sender
         );
         memberToken.burn(_member, _podId);
+    }
+
+    /// @notice Admin functionality to batch remove a member from a pod
+    function batchRemoveMemberFromPod(uint256 _podId, address[] memory _members)
+        external
+    {
+        for (uint256 i = 0; i < _members.length; i++) {
+            removeMemberFromPod(_podId, _members[i]);
+        }
     }
 
     /// @notice Valdidate that a calling address has the relevant admin priviledge, for the
