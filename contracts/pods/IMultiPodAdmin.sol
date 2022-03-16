@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 interface IMultiPodAdmin {
     error UnauthorisedAdminAction();
+
     event GrantPodAdminPriviledge(
         uint256 indexed podId,
         bytes32 indexed tribeRole

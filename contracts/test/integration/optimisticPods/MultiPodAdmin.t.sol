@@ -5,6 +5,7 @@ import {Vm} from "../../utils/Vm.sol";
 import {DSTest} from "../../utils/DSTest.sol";
 import {PodFactory} from "../../../pods/PodFactory.sol";
 import {MultiPodAdmin} from "../../../pods/MultiPodAdmin.sol";
+import {IMultiPodAdmin} from "../../../pods/IMultiPodAdmin.sol";
 import {mintOrcaTokens, getPodParams} from "../fixtures/Orca.sol";
 import {IPodFactory} from "../../../pods/IPodFactory.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
@@ -59,15 +60,24 @@ contract MultiPodAdminIntegrationTest is DSTest {
         address podAdmin = factory.getPodAdmin(podId);
         assertEq(podAdmin, address(multiPodAdmin));
 
-        bytes32[] memory allPodAdmins = multiPodAdmin.getPodAdminRoles(podId);
+        bytes32[] memory allPodAdmins = multiPodAdmin.getPodAdminPriviledges(
+            podId,
+            IMultiPodAdmin.AdminPriviledge.ADD_MEMBER
+        );
         assertEq(allPodAdmins.length, 0);
 
         // Grant a TribeRole pod admin status to pod
         vm.prank(feiDAOTimelock);
-        multiPodAdmin.grantPodAdminRole(podId, TribeRoles.VOTIUM_ROLE);
-        bytes32[] memory updatedAdminRoles = multiPodAdmin.getPodAdminRoles(
-            podId
+        multiPodAdmin.grantPodAdminPriviledge(
+            podId,
+            IMultiPodAdmin.AdminPriviledge.ADD_MEMBER,
+            TribeRoles.VOTIUM_ROLE
         );
+        bytes32[] memory updatedAdminRoles = multiPodAdmin
+            .getPodAdminPriviledges(
+                podId,
+                IMultiPodAdmin.AdminPriviledge.ADD_MEMBER
+            );
         assertEq(updatedAdminRoles[0], TribeRoles.VOTIUM_ROLE);
     }
 
@@ -76,25 +86,42 @@ contract MultiPodAdminIntegrationTest is DSTest {
         bytes32 extraRole = TribeRoles.VOTIUM_ROLE;
 
         vm.prank(feiDAOTimelock);
-        multiPodAdmin.grantPodAdminRole(podId, extraRole);
+        multiPodAdmin.grantPodAdminPriviledge(
+            podId,
+            IMultiPodAdmin.AdminPriviledge.ADD_MEMBER,
+            extraRole
+        );
 
-        bytes32[] memory allPodAdmins = multiPodAdmin.getPodAdminRoles(podId);
+        bytes32[] memory allPodAdmins = multiPodAdmin.getPodAdminPriviledges(
+            podId,
+            IMultiPodAdmin.AdminPriviledge.ADD_MEMBER
+        );
         assertEq(allPodAdmins.length, 1);
         assertEq(allPodAdmins[0], extraRole);
     }
 
     /// @notice Validate that a podAdmin can be removed for a particular pod
     function testRemovePodAdmin() public {
-        bytes32 testRole = TribeRoles.VOTIUM_ROLE;
         // Grant a role admin access
         vm.prank(feiDAOTimelock);
-        multiPodAdmin.grantPodAdminRole(podId, testRole);
+        multiPodAdmin.grantPodAdminPriviledge(
+            podId,
+            IMultiPodAdmin.AdminPriviledge.REMOVE_MEMBER,
+            testRole
+        );
 
         // Revoke that role admin access
         vm.prank(securityGuardian);
-        multiPodAdmin.revokePodAdminRole(podId, testRole);
+        multiPodAdmin.revokePodAdminPriviledge(
+            podId,
+            IMultiPodAdmin.AdminPriviledge.REMOVE_MEMBER,
+            testRole
+        );
 
-        bytes32[] memory allPodAdmins = multiPodAdmin.getPodAdminRoles(podId);
+        bytes32[] memory allPodAdmins = multiPodAdmin.getPodAdminPriviledges(
+            podId,
+            IMultiPodAdmin.AdminPriviledge.REMOVE_MEMBER
+        );
         assertEq(allPodAdmins.length, 0);
     }
 
@@ -102,7 +129,11 @@ contract MultiPodAdminIntegrationTest is DSTest {
     function testPodAdminCanAddMembers() public {
         // Grant Votium address admin access to pod
         vm.prank(feiDAOTimelock);
-        multiPodAdmin.grantPodAdminRole(podId, testRole);
+        multiPodAdmin.grantPodAdminPriviledge(
+            podId,
+            IMultiPodAdmin.AdminPriviledge.ADD_MEMBER,
+            testRole
+        );
 
         // Have Votium address add new member to pod
         address newPodMember = address(0x12);
@@ -120,7 +151,11 @@ contract MultiPodAdminIntegrationTest is DSTest {
 
     function testPodAdminCanRemoveMembers() public {
         vm.prank(feiDAOTimelock);
-        multiPodAdmin.grantPodAdminRole(podId, testRole);
+        multiPodAdmin.grantPodAdminPriviledge(
+            podId,
+            IMultiPodAdmin.AdminPriviledge.REMOVE_MEMBER,
+            testRole
+        );
 
         // Remove member from pod
         address podMemberToRemove = factory.getPodMembers(podId)[0];
@@ -133,9 +168,55 @@ contract MultiPodAdminIntegrationTest is DSTest {
         assertEq(numMembers, initialNumMembers - 1);
     }
 
+    /// @notice Validate that a role with ADD_MEMBER access can not remove a member
+    function testFailAdminDelineation() public {
+        vm.prank(feiDAOTimelock);
+        multiPodAdmin.grantPodAdminPriviledge(
+            podId,
+            IMultiPodAdmin.AdminPriviledge.ADD_MEMBER,
+            testRole
+        );
+
+        // Remove member from pod
+        address podMemberToRemove = factory.getPodMembers(podId)[0];
+        vm.prank(votiumAddress);
+        multiPodAdmin.removeMemberFromPod(podId, podMemberToRemove);
+    }
+
+    /// @notice Validate that a role can have both ADD_MEMBER and REMOVE_MEMBER access
+    function validateMultiplAdminRoles() public {
+        vm.prank(feiDAOTimelock);
+        multiPodAdmin.grantPodAdminPriviledge(
+            podId,
+            IMultiPodAdmin.AdminPriviledge.ADD_MEMBER,
+            testRole
+        );
+        multiPodAdmin.grantPodAdminPriviledge(
+            podId,
+            IMultiPodAdmin.AdminPriviledge.REMOVE_MEMBER,
+            testRole
+        );
+
+        bytes32[] memory addMemberTribeRoles = multiPodAdmin
+            .getPodAdminPriviledges(
+                podId,
+                IMultiPodAdmin.AdminPriviledge.ADD_MEMBER
+            );
+        assertEq(addMemberTribeRoles.length, 1);
+        assertEq(addMemberTribeRoles[0], testRole);
+
+        bytes32[] memory removeMemberTribeRoles = multiPodAdmin
+            .getPodAdminPriviledges(
+                podId,
+                IMultiPodAdmin.AdminPriviledge.REMOVE_MEMBER
+            );
+        assertEq(removeMemberTribeRoles.length, 1);
+        assertEq(removeMemberTribeRoles[0], testRole);
+    }
+
     /// @notice Validate that a non-PodAdmin fails to call a priviledged admin method
-    function testNonExposedAdminFailsToRemove() public {
-        vm.expectRevert(bytes("Only pod admin"));
+    function testFailNonAdminRemoveMember() public {
+        vm.expectRevert(bytes("UnauthorisedAdminAction"));
         multiPodAdmin.removeMemberFromPod(podId, address(0x1));
     }
 }
