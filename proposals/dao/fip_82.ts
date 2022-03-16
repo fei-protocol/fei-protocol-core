@@ -206,31 +206,23 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const protocolPodHasRole = await core.hasRole(ethers.utils.id('ORACLE_ADMIN'), addresses.protocolPodTimelock);
   expect(protocolPodHasRole).to.be.true;
 
-  // Validate all podAdmins have been set
-  validatePodAdmins(tribalCouncilPodId, protocolPodId, contracts);
+  await validatePodAdmins(tribalCouncilPodId.toNumber(), contracts);
 };
 
-const validatePodAdmins = async (tribalCouncilPodId: number, protocolPodId: number, contracts: NamedContracts) => {
-  // TODO: Add steps into DAO FIP script
-  // TODO: e2e test to add members to pods
+const validatePodAdmins = async (tribalCouncilPodId: number, contracts: NamedContracts) => {
   const multiPodAdminContract = contracts.multiPodAdmin;
 
-  // TribalCouncil admin priviledges
-  for (const priviledge in Object.keys(adminPriviledge)) {
-    const tribalRolesWithPriviledge = await multiPodAdminContract.getPodAdminPriviledges(
-      tribalCouncilPodId,
-      adminPriviledge[priviledge]
-    );
-    expect(tribalRolesWithPriviledge).to.deep.equal(tribalCouncilAdminTribeRoles[priviledge]);
-  }
+  const tribalRolesWithAddPriviledge = await multiPodAdminContract.getPodAdminPriviledges(
+    tribalCouncilPodId,
+    adminPriviledge.ADD_MEMBER
+  );
+  expect(tribalRolesWithAddPriviledge).to.deep.equal(tribalCouncilAdminTribeRoles.ADD_MEMBER);
 
-  for (const priviledge in Object.keys(adminPriviledge)) {
-    const tribalRolesWithPriviledge = await multiPodAdminContract.getPodAdminPriviledges(
-      protocolPodId,
-      adminPriviledge[priviledge]
-    );
-    expect(tribalRolesWithPriviledge).to.deep.equal(protocolPodAdminTribeRoles[priviledge]);
-  }
+  const tribalRolesWithRemovePriviledge = await multiPodAdminContract.getPodAdminPriviledges(
+    tribalCouncilPodId,
+    adminPriviledge.REMOVE_MEMBER
+  );
+  expect(tribalRolesWithRemovePriviledge).to.deep.equal(tribalCouncilAdminTribeRoles.REMOVE_MEMBER);
 };
 
 export { deploy, setup, teardown, validate };

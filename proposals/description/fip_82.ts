@@ -24,6 +24,7 @@ const fip_82: ProposalDescription = {
       ],
       description: 'Create POD_DEPLOYER_ROLE role'
     },
+    // TODO: Update to Votium role
     {
       target: 'core',
       values: '0',
@@ -62,13 +63,54 @@ const fip_82: ProposalDescription = {
       arguments: ['0xa8d944a5277d6a203f114d020d26918a390f167b089a46be4fca9da716d23783', '{protocolPodTimelock}'],
       description: 'Grant Protocol Pod ORACLE_ADMIN role'
     },
-
-    //////////////    Configure Membership of Council and Pod /////////////
+    /////// Grant appropriate Tribe Roles admin priviledges over Tribal Council /////
     {
-      target: 'memberToken',
+      target: 'multiPodAdmin',
       values: '0',
-      method: 'mintSingleBatch(address[] memory,uint256,bytes)',
+      method: 'batchGrantAdminPriviledge(uint256[] memory,uint8[] memory,bytes32[] memory)',
       arguments: [
+        ['13', '13', '13'], // TODO: Replace with real protocol pod ID
+        ['0', '1', '1'], // ADD_MEMBER, REMOVE_MEMBER, ADD_MEMBER
+        [
+          '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e', // GOVERNOR (able to add member)
+          '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e', // GOVERNOR (able to remove member)
+          '0x55435dd261a4b9b3364963f7738a7a662ad9c84396d64be3365284bb7f0a5041' // GUARDIAN (able to remove member)
+        ]
+      ],
+      description: `
+      Grant GOVERNOR ability to add members to TribalCouncil. 
+      Grant GOVERNOR and GUARDIAN ability to remove members from TribalCouncil
+      `
+    },
+    /////// Grant appropriate Tribe Roles admin priviledges over Protocol tier pod /////
+    {
+      target: 'multiPodAdmin',
+      values: '0',
+      method: 'batchGrantAdminPriviledge(uint256[] memory,uint8[] memory,bytes32[] memory)',
+      arguments: [
+        ['14', '14', '14', '14', '14'],
+        ['0', '1', '0', '1', '1'], // ADD_MEMBER, REMOVE_MEMBER, ADD_MEMBER, REMOVE_MEMBER, REMOVE_MEMBER
+        [
+          '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e', // GOVERNOR (able to add member)
+          '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e', // GOVERNOR (able to remove member)
+          '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096', // ROLE_ADMIN (able to add member)
+          '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096', // ROLE_ADMIN (able to remove member)
+          '0x55435dd261a4b9b3364963f7738a7a662ad9c84396d64be3365284bb7f0a5041' // GUARDIAN (able to remove member)
+        ]
+      ],
+      description: `
+      Grant GOVERNOR ability to add members to TribalCouncil. 
+      Grant GOVERNOR and GUARDIAN ability to remove members from TribalCouncil
+      `
+    },
+    //////////////    Configure Membership of Council and Pod /////////////
+    // TODO: Replace with calls to multiPodAdmin
+    {
+      target: 'multiPodAdmin',
+      values: '0',
+      method: 'batchAddMemberToPod(uint256 _podId,address[] memory _members)',
+      arguments: [
+        '13',
         [
           '0x000000000000000000000000000000000000000D', // TODO: Complete with real member addresses
           '0x000000000000000000000000000000000000000E',
@@ -79,17 +121,16 @@ const fip_82: ProposalDescription = {
           '0x0000000000000000000000000000000000000013',
           '0x0000000000000000000000000000000000000014',
           '0x0000000000000000000000000000000000000015'
-        ],
-        '13', // TODO: Replace hardcoded value with real podId
-        '0x0000000000000000000000000000000000000000000000000000000000000000'
+        ]
       ],
       description: 'Add designated members to the Tribal Council'
     },
     {
-      target: 'memberToken',
+      target: 'multiPodAdmin',
       values: '0',
-      method: 'burnSingleBatch(address[] memory,uint256)',
+      method: 'batchRemoveMemberFromPod(uint256 _podId, address[] memory)',
       arguments: [
+        '13', // TODO: Replace hardcoded value with real podId
         [
           '0x0000000000000000000000000000000000000004',
           '0x0000000000000000000000000000000000000005',
@@ -100,57 +141,41 @@ const fip_82: ProposalDescription = {
           '0x000000000000000000000000000000000000000A',
           '0x000000000000000000000000000000000000000B',
           '0x000000000000000000000000000000000000000C'
-        ],
-        '13' // TODO: Replace hardcoded value with real podId
+        ]
       ],
       description: 'Remove placeholder members from Tribal Council'
     },
     {
-      target: 'memberToken',
+      target: 'multiPodAdmin',
       values: '0',
-      method: 'mintSingleBatch(address[] memory,uint256,bytes)',
+      method: 'batchAddMemberToPod(uint256 _podId,address[] memory _members)',
       arguments: [
+        '14', // TODO: Replace with real protocol pod ID
         [
           '0x0000000000000000000000000000000000000009', // TODO: Complete with real member addresses
           '0x000000000000000000000000000000000000000A',
           '0x000000000000000000000000000000000000000B',
           '0x000000000000000000000000000000000000000C',
           '0x000000000000000000000000000000000000000D'
-        ],
-        '14', // TODO: Replace with real protocol pod ID
-        '0x0000000000000000000000000000000000000000000000000000000000000000'
+        ]
       ],
       description: 'Add designated members to the Protocol Pod'
     },
     {
-      target: 'memberToken',
+      target: 'multiPodAdmin',
       values: '0',
-      method: 'burnSingleBatch(address[] memory,uint256)',
+      method: 'batchRemoveMemberFromPod(uint256 _podId, address[] memory)',
       arguments: [
+        '14', // TODO: Replace with real protocol pod ID
         [
           '0x0000000000000000000000000000000000000004',
           '0x0000000000000000000000000000000000000005',
           '0x0000000000000000000000000000000000000006',
           '0x0000000000000000000000000000000000000007',
           '0x0000000000000000000000000000000000000008'
-        ],
-        '14' // TODO: Replace with real protocol pod ID
+        ]
       ],
       description: 'Remove initial placeholder members from Protocol Pod'
-    },
-    {
-      target: 'podController',
-      values: '0',
-      method: 'updatePodAdmin(uint256,address)',
-      arguments: [
-        '14', // TODO: Replace with real protocol pod ID
-        '{tribalCouncilTimelock}'
-      ],
-      description: `
-      Update the podAdmin of the protocol pod to the tribalCouncilTimelock.
-      This replaces the default deploy address, which was used for 
-      convenience in creating the pod from the factory.
-      `
     }
   ],
   description: `
