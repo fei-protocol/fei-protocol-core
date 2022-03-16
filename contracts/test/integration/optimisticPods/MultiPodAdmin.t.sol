@@ -7,6 +7,8 @@ import {PodFactory} from "../../../pods/PodFactory.sol";
 import {MultiPodAdmin} from "../../../pods/MultiPodAdmin.sol";
 import {mintOrcaTokens, getPodParams} from "../fixtures/Orca.sol";
 import {IPodFactory} from "../../../pods/IPodFactory.sol";
+import {TribeRoles} from "../../../core/TribeRoles.sol";
+import {ICore} from "../../../core/ICore.sol";
 
 contract MultiPodAdminIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
@@ -15,11 +17,15 @@ contract MultiPodAdminIntegrationTest is DSTest {
     MultiPodAdmin multiPodAdmin;
     IPodFactory.PodConfig podConfig;
     uint256 podId;
+    address votiumAddress;
+    bytes32 testRole;
 
     address private core = 0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9;
     address private podController = 0xD89AAd5348A34E440E72f5F596De4fA7e291A3e8;
     address private memberToken = 0x0762aA185b6ed2dCA77945Ebe92De705e0C37AE3;
     address private feiDAOTimelock = 0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c;
+    address private securityGuardian =
+        0xB8f482539F2d3Ae2C9ea6076894df36D1f632775;
     address private podExecutor = address(0x500);
 
     function setUp() public {
@@ -40,37 +46,55 @@ contract MultiPodAdminIntegrationTest is DSTest {
         vm.prank(feiDAOTimelock);
         (podId, ) = factory.createChildOptimisticPod(podConfig, minDelay);
 
-        // 5.0 Record admin in MultiPodAdmin
+        // 5.0 Grant a test role admin access
+        testRole = TribeRoles.VOTIUM_ROLE;
+        votiumAddress = address(0x11);
+
         vm.prank(feiDAOTimelock);
-        multiPodAdmin.addPodAdmin(podId, address(multiPodAdmin));
+        ICore(core).grantRole(testRole, votiumAddress);
     }
 
+    /// @notice Validate that multiPodAdmin contract pod admin, and initial state is valid
     function testInitialState() public {
-        address[] memory allPodAdmins = multiPodAdmin.getPodAdmins(podId);
-        assertEq(allPodAdmins.length, 1);
-        assertEq(allPodAdmins[0], address(multiPodAdmin));
-        assertEq(factory.getPodAdmin(podId), address(multiPodAdmin));
+        address podAdmin = factory.getPodAdmin(podId);
+        assertEq(podAdmin, address(multiPodAdmin));
+
+        bytes32[] memory allPodAdmins = multiPodAdmin.getPodAdminRoles(podId);
+        assertEq(allPodAdmins.length, 0);
+
+        // Grant a TribeRole pod admin status to pod
+        vm.prank(feiDAOTimelock);
+        multiPodAdmin.grantPodAdminRole(podId, TribeRoles.VOTIUM_ROLE);
+        bytes32[] memory updatedAdminRoles = multiPodAdmin.getPodAdminRoles(
+            podId
+        );
+        assertEq(updatedAdminRoles[0], TribeRoles.VOTIUM_ROLE);
     }
 
     /// @notice Validate that a podAdmin can be added for a particular pod
     function testAddPodAdmin() public {
-        address extraAdmin = address(0x10);
+        bytes32 extraRole = TribeRoles.VOTIUM_ROLE;
 
         vm.prank(feiDAOTimelock);
-        multiPodAdmin.addPodAdmin(podId, extraAdmin);
+        multiPodAdmin.grantPodAdminRole(podId, extraRole);
 
-        address[] memory allPodAdmins = multiPodAdmin.getPodAdmins(podId);
-        assertEq(allPodAdmins.length, 2);
-        assertEq(allPodAdmins[0], address(multiPodAdmin));
-        assertEq(allPodAdmins[1], extraAdmin);
+        bytes32[] memory allPodAdmins = multiPodAdmin.getPodAdminRoles(podId);
+        assertEq(allPodAdmins.length, 1);
+        assertEq(allPodAdmins[0], extraRole);
     }
 
     /// @notice Validate that a podAdmin can be removed for a particular pod
     function testRemovePodAdmin() public {
+        bytes32 testRole = TribeRoles.VOTIUM_ROLE;
+        // Grant a role admin access
         vm.prank(feiDAOTimelock);
-        multiPodAdmin.removePodAdmin(podId, address(multiPodAdmin));
+        multiPodAdmin.grantPodAdminRole(podId, testRole);
 
-        address[] memory allPodAdmins = multiPodAdmin.getPodAdmins(podId);
+        // Revoke that role admin access
+        vm.prank(securityGuardian);
+        multiPodAdmin.revokePodAdminRole(podId, testRole);
+
+        bytes32[] memory allPodAdmins = multiPodAdmin.getPodAdminRoles(podId);
         assertEq(allPodAdmins.length, 0);
     }
 
