@@ -24,6 +24,8 @@ interface IPodFactory {
 
     function getPodSafe(uint256 podId) external view returns (address);
 
+    function getPodTimelock(uint256 podId) external view returns (address);
+
     function getNumMembers(uint256 podId) external view returns (uint256);
 
     function getPodMembers(uint256 podId)
