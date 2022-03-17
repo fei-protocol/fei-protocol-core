@@ -8,9 +8,9 @@ import {CoreRef} from "../refs/CoreRef.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
 
 /// @title Pod Veto Controller
-/// @notice Exposes veto functionality over the timelock of pods to addresses with a VETO_TRIBE_ROLE
+/// @notice Exposes veto functionality over the timelock of pods to a configurable set of TribeRoles
 /// @dev This contract is intended to be set as a proposer on the timelock of a pod. This gives it the ability
-///      to cancel a proposal. Contract introduced to allow TribeRoles to be added and revoked from
+///      to cancel a proposal. The contract introduced to allow TribeRoles to be added and revoked from
 ///      vetoing pods
 contract VetoController is CoreRef {
     using EnumerableSet for EnumerableSet.Bytes32Set;
@@ -68,6 +68,7 @@ contract VetoController is CoreRef {
         emit GrantVetoPermission(_podId, timelock, role);
     }
 
+    /// @notice Revoke a particular TribeRole's veto permission over a pod
     function revokeVetoPermission(uint256 _podId, bytes32 role)
         public
         hasAnyOfThreeRoles(
