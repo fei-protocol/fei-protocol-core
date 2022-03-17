@@ -8,8 +8,9 @@ interface IPodFactory {
     /// @param label Metadata, Human readable label for the pod
     /// @param ensString Metadata, ENS name of the pod
     /// @param imageUrl Metadata, URL to a image to represent the pod in frontends
-    /// @param minDelay Delay on the timelock
     /// @param admin The admin of the pod - able to add and remove pod members
+    /// @param minDelay Delay on the timelock
+    /// @param vetoController A controller through which a pod can be vetoed
     struct PodConfig {
         address[] members;
         uint256 threshold;
@@ -17,6 +18,8 @@ interface IPodFactory {
         string ensString;
         string imageUrl;
         address admin;
+        uint256 minDelay;
+        address vetoController;
     }
 
     function getPodSafe(uint256 podId) external view returns (address);
@@ -34,15 +37,13 @@ interface IPodFactory {
 
     function getPodAdmin(uint256 podId) external view returns (address);
 
-    function createChildOptimisticPod(
-        PodConfig calldata _config,
-        uint256 minDelay
-    ) external returns (uint256, address);
+    function createChildOptimisticPod(PodConfig calldata _config)
+        external
+        returns (uint256, address);
 
     function updatePodController(address newPodController) external;
 
-    function burnerCreateChildOptimisticPods(
-        PodConfig[] calldata _config,
-        uint256[] calldata minDelay
-    ) external returns (uint256[] memory, address[] memory);
+    function burnerCreateChildOptimisticPods(PodConfig[] calldata _config)
+        external
+        returns (uint256[] memory, address[] memory);
 }
