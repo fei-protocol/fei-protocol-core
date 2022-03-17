@@ -90,11 +90,10 @@ contract VetoControllerIntegrationTest is DSTest {
     /// @notice Validate that can cancel a transaction proposed on a pod timelock, to which an address
     ///         has been granted veto power
     function testCancel() public {
-        // 1. Create
+        // 1. Create test role and grant to a testAddress
         bytes32 testRole = keccak256("TEST_ROLE");
         address testAddress = address(0x12);
 
-        // 1. Create test role and grant to a testAddress
         vm.startPrank(feiDAOTimelock);
         Core(core).createRole(testRole, TribeRoles.GOVERNOR);
         Core(core).grantRole(testRole, testAddress);
@@ -105,17 +104,23 @@ contract VetoControllerIntegrationTest is DSTest {
         vetoController.grantVetoPermission(podId, testRole);
 
         // 3. Validate that it can call veto
-        // Note: Check it reverts with "TimelockController: operation cannot be cancelled"
-        //       - if this codepath is reached, it has passed the permission check
         bytes32 proposalId = bytes32("0x1");
+        vm.startPrank(testAddress);
         vm.expectRevert(
             bytes("TimelockController: operation cannot be cancelled")
         );
         vetoController.veto(podId, proposalId);
+        vm.stopPrank();
     }
 
-    /// @notice Validate that an attempt to cancel a transaction on a different pod timelock fails
-    function testFailCancelFailsOnDifferentPod() public {
-        // TODO
+    /// @notice Validate that an attempt to cancel a transaction from a non-authorised address fails
+    function testCancelFailsForNonAuth() public {
+        address testAddress = address(0x12);
+        bytes32 proposalId = bytes32("0x1");
+
+        vm.startPrank(testAddress);
+        vm.expectRevert(bytes("UNAUTHORISED_VETO"));
+        vetoController.veto(podId, proposalId);
+        vm.stopPrank();
     }
 }

@@ -105,7 +105,29 @@ contract VetoController is CoreRef {
     /// @notice Veto a proposal in a pod timelock
     function veto(uint256 _podId, bytes32 proposalId) external {
         address timelock = podFactory.getPodTimelock(_podId);
+
+        validateVetoPermission(timelock, msg.sender);
+
         emit VetoTimelock(_podId, timelock);
         TimelockController(payable(timelock)).cancel(proposalId);
+    }
+
+    /// @notice Validate that the caller has permission to veto a proposal in a pod timelock
+    function validateVetoPermission(address _timelock, address _caller)
+        internal
+        view
+    {
+        bool hasPermission = false;
+        uint256 vetoRolesLength = podVetoRoles[_timelock].length();
+
+        for (uint256 i = 0; i < vetoRolesLength; i += 1) {
+            bytes32 role = podVetoRoles[_timelock].at(i);
+
+            if (core().hasRole(role, _caller)) {
+                hasPermission = true;
+                return;
+            }
+        }
+        require(hasPermission, "UNAUTHORISED_VETO");
     }
 }
