@@ -29,6 +29,16 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'createRole(bytes32,bytes32)',
       arguments: [
+        '0x29af6c210963c1cf458c6a5bf082996cf54b23ebba0c0fb8ae110e8e43371c71', // POD_VETO_ADMIN
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
+      ],
+      description: 'Create POD_VETO_ADMIN role, with ROLE_ADMIN as the role admin'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
         '0x2d46c62aa6fbc9b550f22e00476aebb90f4ea69cd492a68db4d444217763330d', // VOTIUM_ADMIN_ROLE
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
@@ -43,6 +53,16 @@ const fip_82: ProposalDescription = {
       description: `
       Grant Tribal Council timelock the ROLE_ADMIN role. TribalCouncil will be able to manage Admin level roles
       and below
+      `
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: ['0x29af6c210963c1cf458c6a5bf082996cf54b23ebba0c0fb8ae110e8e43371c71', '{tribalCouncilTimelock}'],
+      description: `
+      Grant POD_VETO_ADMIN to TribalCouncil timelock. TribalCouncil will be able grant or revoke other TribeRoles
+      from having veto permissions over pods
       `
     },
     {

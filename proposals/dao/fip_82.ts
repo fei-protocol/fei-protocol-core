@@ -202,12 +202,15 @@ const validateTribeRoles = async (
   const daoIsPodDeployer = await core.hasRole(ethers.utils.id('POD_DEPLOYER_ROLE'), feiDAOTimelockAddress);
   expect(daoIsPodDeployer).to.be.true;
 
-  // TribalCouncilTimelock roles: ROLE_ADMIN, POD_DEPLOYER_ROLE
+  // TribalCouncilTimelock roles: ROLE_ADMIN, POD_DEPLOYER_ROLE, POD_VETO_ROLE
   const councilIsRoleAdmin = await core.hasRole(ethers.utils.id('ROLE_ADMIN'), tribalCouncilTimelockAddress);
   expect(councilIsRoleAdmin).to.be.true;
 
   const councilIsPodDeployer = await core.hasRole(ethers.utils.id('POD_DEPLOYER_ROLE'), tribalCouncilTimelockAddress);
   expect(councilIsPodDeployer).to.be.true;
+
+  const councilIsPodVetoAdmin = await core.hasRole(ethers.utils.id('POD_VETO_ADMIN'), tribalCouncilTimelockAddress);
+  expect(councilIsPodVetoAdmin).to.be.true;
 
   // Protocol pod timelock roles: Specific first pod duties role
   const protocolPodIsVotiumRole = await core.hasRole(ethers.utils.id('VOTIUM_ADMIN_ROLE'), protocolPodTimelockAddress);

@@ -33,6 +33,9 @@ library TribeRoles {
                                  Admin Roles
     //////////////////////////////////////////////////////////////*/
 
+    /// @notice capable of granting and revoking other TribeRoles from having veto power over a pod
+    bytes32 internal constant POD_VETO_ADMIN = keccak256("POD_VETO_ADMIN");
+
     /// @notice can manage the majority of Tribe protocol parameters. Sets boundaries for MINOR_PARAM_ROLE.
     bytes32 internal constant PARAMETER_ADMIN = keccak256("PARAMETER_ADMIN");
 
