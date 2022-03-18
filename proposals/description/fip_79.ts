@@ -11,7 +11,7 @@ const fip_79: ProposalDescription = {
       description: 'Send 3.74M TRIBE to Fei DAO Timelock'
     },
     {
-      target: 'feiDAOTimelock',
+      target: 'tribe',
       values: '0',
       method: 'approve(address,uint256)',
       arguments: ['{ohmEscrow}', '3747957360000000000000000'],

@@ -7,10 +7,6 @@ import { forceEth } from '@test/integration/setup/utils';
 
 chai.use(CBN(ethers.BigNumber));
 
-const eth = ethers.constants.WeiPerEther;
-const toBN = ethers.BigNumber.from;
-const ZERO_ADDRESS = ethers.constants.AddressZero;
-
 /*
 FIP-79
 DEPLOY ACTIONS:
@@ -69,6 +65,6 @@ export const validate: ValidateUpgradeFunc = async (addresses, oldContracts, con
   const { tribe } = contracts;
 
   const gohmERC20 = await ethers.getContractAt('IERC20', gOHM);
-  expect(tribe.balanceOf(ohmTreasury)).to.be.equal(tribeAmount);
-  expect(gohmERC20.balanceOf(addresses.feiDAOTimelock)).to.be.equal(ohmAmount);
+  expect(await tribe.balanceOf(ohmTreasury)).to.be.equal(tribeAmount);
+  expect(await gohmERC20.balanceOf(addresses.feiDAOTimelock)).to.be.equal(ohmAmount);
 };
