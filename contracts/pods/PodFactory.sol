@@ -30,7 +30,7 @@ contract PodFactory is CoreRef, IPodFactory {
     address public immutable podExecutor;
 
     /// @notice Mapping between podId and it's optimistic timelock
-    mapping(uint256 => address) public getPodTimelock;
+    mapping(uint256 => address) public override getPodTimelock;
 
     /// @notice Mapping between timelock and podId
     mapping(address => uint256) public getPodId;
@@ -65,7 +65,6 @@ contract PodFactory is CoreRef, IPodFactory {
 
         podExecutor = _podExecutor;
         podController = IControllerV1(_podController);
-        // TODO: Checkout what happens when migrate controller. Probs need to update pointer here
         memberToken = IMemberToken(_memberToken);
     }
 

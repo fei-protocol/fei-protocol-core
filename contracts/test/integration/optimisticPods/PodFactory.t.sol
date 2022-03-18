@@ -6,6 +6,8 @@ import {PodExecutor} from "../../../pods/PodExecutor.sol";
 import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
 import {IControllerV1} from "../../../pods/orcaInterfaces/IControllerV1.sol";
 import {IPodFactory} from "../../../pods/IPodFactory.sol";
+import {Core} from "../../../core/Core.sol";
+import {TribeRoles} from "../../../core/TribeRoles.sol";
 
 import {DSTest} from "../../utils/DSTest.sol";
 import {mintOrcaTokens, getPodParams} from "../fixtures/Orca.sol";
@@ -40,8 +42,8 @@ contract PodFactoryIntegrationTest is DSTest {
         mintOrcaTokens(address(factory), 2, vm);
     }
 
-    /// @notice Validate that a non-pod feiDAOTimelock can not create a pod
-    function testOnlyDesignatedUsersCanCreatePod() public {
+    /// @notice Validate that a non-authorised address fails to create a pod
+    function testOnlyAuthedUsersCanCreatePod() public {
         IPodFactory.PodConfig memory podConfig = getPodParams(
             podAdmin,
             vetoController
@@ -53,7 +55,7 @@ contract PodFactoryIntegrationTest is DSTest {
         factory.createChildOptimisticPod(podConfig);
     }
 
-    /// @notice Validate that a transferred feiDAOTimelock can create a pod
+    /// @notice Validate that a GOVERNOR role can create a pod
     function testGovernorCanCreatePod() public {
         IPodFactory.PodConfig memory podConfig = getPodParams(
             podAdmin,
@@ -61,6 +63,33 @@ contract PodFactoryIntegrationTest is DSTest {
         );
 
         vm.prank(feiDAOTimelock);
+        factory.createChildOptimisticPod(podConfig);
+    }
+
+    /// @notice Validate that the PodDeployerRole is able to deploy pods
+    function testPodDeployerRoleCanDeploy() public {
+        address dummyTribalCouncil = address(0x1);
+
+        // Create ROLE_ADMIN, POD_DEPLOYER role and grant ROLE_ADMIN to a dummyTribalCouncil address
+        vm.startPrank(feiDAOTimelock);
+        Core(core).createRole(TribeRoles.ROLE_ADMIN, TribeRoles.GOVERNOR);
+        Core(core).createRole(
+            TribeRoles.POD_DEPLOYER_ROLE,
+            TribeRoles.ROLE_ADMIN
+        );
+        Core(core).grantRole(TribeRoles.ROLE_ADMIN, dummyTribalCouncil);
+        vm.stopPrank();
+
+        // Grant POD_DEPLOYER_ROLE to a dummyPodDeployer
+        address dummyPodDeployer = address(0x2);
+        vm.prank(dummyTribalCouncil);
+        Core(core).grantRole(TribeRoles.POD_DEPLOYER_ROLE, dummyPodDeployer);
+
+        IPodFactory.PodConfig memory podConfig = getPodParams(
+            podAdmin,
+            vetoController
+        );
+        vm.prank(dummyPodDeployer);
         factory.createChildOptimisticPod(podConfig);
     }
 
