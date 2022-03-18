@@ -15,9 +15,9 @@ const proposals: ProposalsConfigMap = {
   }*/
 
   fip_79: {
-    deploy: true,
+    deploy: false,
     proposalId: null,
-    affectedContractSignoff: [],
+    affectedContractSignoff: ['core', 'feiDAOTimelock', 'tribe', 'ohmEscrow'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,
