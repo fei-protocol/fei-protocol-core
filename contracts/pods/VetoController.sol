@@ -87,8 +87,14 @@ contract VetoController is CoreRef {
         uint256[] memory _podIds,
         bytes32[] memory roles
     ) external {
-        for (uint256 i = 0; i < roles.length; i += 1) {
+        require(_podIds.length == roles.length, "Mismatched input lengths");
+        for (uint256 i = 0; i < roles.length; ) {
             grantVetoPermission(_podIds[i], roles[i]);
+
+            // i is constrained by being < roles.length
+            unchecked {
+                i += 1;
+            }
         }
     }
 
@@ -97,8 +103,13 @@ contract VetoController is CoreRef {
         uint256[] memory _podIds,
         bytes32[] memory roles
     ) external {
-        for (uint256 i = 0; i < roles.length; i += 1) {
+        require(_podIds.length == roles.length, "Mismatched input lengths");
+        for (uint256 i = 0; i < roles.length; ) {
             revokeVetoPermission(_podIds[i], roles[i]);
+            // i is constrained by being < roles.length
+            unchecked {
+                i += 1;
+            }
         }
     }
 

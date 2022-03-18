@@ -73,6 +73,54 @@ contract VetoControllerIntegrationTest is DSTest {
         assertEq(vetoTribeRoles[0], roleToGrant);
     }
 
+    function testBatchGrantVetoPermission() public {
+        bytes32[] memory rolesToGrant = new bytes32[](2);
+        rolesToGrant[0] = keccak256("TEST_ROLE_1");
+        rolesToGrant[1] = keccak256("TEST_ROLE_2");
+
+        uint256[] memory podIds = new uint256[](2);
+        podIds[0] = uint256(0);
+        podIds[1] = uint256(1);
+
+        vm.prank(feiDAOTimelock);
+        vetoController.batchGrantVetoPermission(podIds, rolesToGrant);
+
+        bytes32[] memory vetoTribeRoles1 = vetoController.getPodVetoRoles(
+            podIds[0]
+        );
+        assertEq(vetoTribeRoles1.length, 2);
+
+        bytes32[] memory vetoTribeRoles2 = vetoController.getPodVetoRoles(
+            podIds[1]
+        );
+        assertEq(vetoTribeRoles2.length, 2);
+    }
+
+    function testBatchRevokeVetoPermission() public {
+        bytes32[] memory rolesToGrant = new bytes32[](2);
+        rolesToGrant[0] = keccak256("TEST_ROLE_1");
+        rolesToGrant[1] = keccak256("TEST_ROLE_2");
+
+        uint256[] memory podIds = new uint256[](2);
+        podIds[0] = uint256(0);
+        podIds[1] = uint256(1);
+
+        vm.startPrank(feiDAOTimelock);
+        vetoController.batchGrantVetoPermission(podIds, rolesToGrant);
+        vetoController.batchRevokeVetoPermission(podIds, rolesToGrant);
+        vm.stopPrank();
+
+        bytes32[] memory vetoTribeRoles1 = vetoController.getPodVetoRoles(
+            podIds[0]
+        );
+        assertEq(vetoTribeRoles1.length, 0);
+
+        bytes32[] memory vetoTribeRoles2 = vetoController.getPodVetoRoles(
+            podIds[1]
+        );
+        assertEq(vetoTribeRoles2.length, 0);
+    }
+
     function testRevokeVetoPermission() public {
         bytes32 roleToGrant = keccak256("TEST_ROLE");
 
