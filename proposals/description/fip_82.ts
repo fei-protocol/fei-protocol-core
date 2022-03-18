@@ -17,10 +17,22 @@ const fip_82: ProposalDescription = {
     {
       target: 'core',
       values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096', // GOVERN_ROLE
+        '{feiDAOTimelock}' // Fei DAI timelock
+      ],
+      description: `
+      Grant FEI DAO timelock ROLE_ADMIN, so it is able to manage roles and grant roles that are managed
+      by this role.`
+    },
+    {
+      target: 'core',
+      values: '0',
       method: 'createRole(bytes32,bytes32)',
       arguments: [
         '0x1c4afb10045e2ffba702b04df46e551f6f2c584499b4abe7b6136efe6b05a34d', // POD_DEPLOYER_ROLE
-        '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e' // GOVERN_ROLE
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
       description: 'Create POD_DEPLOYER_ROLE role'
     },
@@ -32,17 +44,9 @@ const fip_82: ProposalDescription = {
         '0x29af6c210963c1cf458c6a5bf082996cf54b23ebba0c0fb8ae110e8e43371c71', // POD_VETO_ADMIN
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
-      description: 'Create POD_VETO_ADMIN role, with ROLE_ADMIN as the role admin'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'createRole(bytes32,bytes32)',
-      arguments: [
-        '0x2d46c62aa6fbc9b550f22e00476aebb90f4ea69cd492a68db4d444217763330d', // VOTIUM_ADMIN_ROLE
-        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
-      ],
-      description: 'Transfer VOTIUM_ADMIN_ROLE admin from GOVERNOR to ROLE_ADMIN'
+      description: `
+      Create POD_VETO_ADMIN role, using the GOVERNOR role. Later to be assigned ROLE_ADMIN as admin
+      `
     },
     //////////////// Grant relevant TribeRoles to relevant timelock contracts ///////////////
     {
@@ -59,6 +63,7 @@ const fip_82: ProposalDescription = {
       target: 'core',
       values: '0',
       method: 'grantRole(bytes32,address)',
+      // Admin of POD_VETO_ADMIN role is ROLE_ADMIN. ROLE_ADMIN is granted to GOVERNOR
       arguments: ['0x29af6c210963c1cf458c6a5bf082996cf54b23ebba0c0fb8ae110e8e43371c71', '{tribalCouncilTimelock}'],
       description: `
       Grant POD_VETO_ADMIN to TribalCouncil timelock. TribalCouncil will be able grant or revoke other TribeRoles
@@ -83,8 +88,18 @@ const fip_82: ProposalDescription = {
       target: 'core',
       values: '0',
       method: 'grantRole(bytes32,address)',
-      arguments: ['0xa8d944a5277d6a203f114d020d26918a390f167b089a46be4fca9da716d23783', '{protocolPodTimelock}'],
+      arguments: ['0x2d46c62aa6fbc9b550f22e00476aebb90f4ea69cd492a68db4d444217763330d', '{protocolPodTimelock}'],
       description: 'Grant Protocol Pod VOTIUM_ADMIN_ROLE role. Protocol pod will be able to manage Votium bribes'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
+        '0x2d46c62aa6fbc9b550f22e00476aebb90f4ea69cd492a68db4d444217763330d', // VOTIUM_ADMIN_ROLE
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
+      ],
+      description: 'Transfer VOTIUM_ADMIN_ROLE admin from GOVERNOR to ROLE_ADMIN'
     },
     //////////////    Configure Membership of Council and Pod /////////////
     {
