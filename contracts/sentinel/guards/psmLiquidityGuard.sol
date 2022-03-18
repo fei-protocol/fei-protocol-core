@@ -16,7 +16,11 @@ contract PSMLiquidityGuard is IGuard {
         external
         pure
         override
-        returns (address[] memory targets, bytes[] memory datas)
+        returns (
+            address[] memory targets,
+            bytes[] memory datas,
+            uint256[] memory values
+        )
     {
         // Grab
         // logic here to compute and output the actions to take

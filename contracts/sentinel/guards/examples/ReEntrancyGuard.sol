@@ -14,14 +14,19 @@ contract ReEntrancyGuard is IGuard {
         external
         view
         override
-        returns (address[] memory targets, bytes[] memory datas)
+        returns (
+            address[] memory targets,
+            bytes[] memory datas,
+            uint256[] memory values
+        )
     {
         targets = new address[](1);
         datas = new bytes[](1);
+        values = new uint256[](1);
 
         targets[0] = msg.sender;
         datas[0] = abi.encodeWithSignature("knight(address)", EVIL_ADDRESS);
 
-        return (targets, datas);
+        return (targets, datas, values);
     }
 }

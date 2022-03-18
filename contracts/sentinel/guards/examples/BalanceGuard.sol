@@ -15,14 +15,19 @@ contract BalanceGuard is IGuard {
         external
         pure
         override
-        returns (address[] memory targets, bytes[] memory datas)
+        returns (
+            address[] memory targets,
+            bytes[] memory datas,
+            uint256[] memory values
+        )
     {
         targets = new address[](1);
         datas = new bytes[](1);
+        values = new uint256[](1);
 
         targets[0] = ZERO;
         datas[0] = bytes("");
 
-        return (targets, datas);
+        return (targets, datas, values);
     }
 }

@@ -9,5 +9,9 @@ interface IGuard {
     function getProtecActions()
         external
         view
-        returns (address[] memory targets, bytes[] memory datas);
+        returns (
+            address[] memory targets,
+            bytes[] memory datas,
+            uint256[] memory values
+        );
 }

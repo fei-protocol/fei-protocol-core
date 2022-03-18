@@ -24,10 +24,15 @@ contract MultiActionGuard is IGuard {
         external
         pure
         override
-        returns (address[] memory targets, bytes[] memory datas)
+        returns (
+            address[] memory targets,
+            bytes[] memory datas,
+            uint256[] memory values
+        )
     {
         targets = new address[](5);
         datas = new bytes[](5);
+        values = new uint256[](5);
 
         targets[0] = ONE;
         targets[1] = TWO;
@@ -40,6 +45,6 @@ contract MultiActionGuard is IGuard {
         datas[3] = bytes("four");
         datas[4] = bytes("five");
 
-        return (targets, datas);
+        return (targets, datas, values);
     }
 }
