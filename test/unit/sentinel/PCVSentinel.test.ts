@@ -32,6 +32,7 @@ describe('PCV Sentinel', function () {
   let balanceGuard: BalanceGuard;
   let multiActionGuard: MultiActionGuard;
   let reEntrancyGuard: ReEntrancyGuard;
+  let recoverEthGuard: RecoverEthGuard;
 
   let userAddress: string;
   let userAddress2: string;
@@ -71,12 +72,14 @@ describe('PCV Sentinel', function () {
     const balanceGuardFactory = await ethers.getContractFactory('BalanceGuard');
     const multiActionGuardFactory = await ethers.getContractFactory('MultiActionGuard');
     const reEntrancyGuardFactory = await ethers.getContractFactory('ReEntrancyGuard');
+    const recoverEthGuardFactory = await ethers.getContractFactory('RecoverEthGuard');
 
     pcvSentinel = await (await pcvSentinelFactory.deploy(core.address)).deployed();
     noOpGuard = await (await noOpGuardFactory.deploy()).deployed();
     balanceGuard = await (await balanceGuardFactory.deploy()).deployed();
     multiActionGuard = await (await multiActionGuardFactory.deploy()).deployed();
     reEntrancyGuard = await (await reEntrancyGuardFactory.deploy()).deployed();
+    recoverEthGuard = await (await recoverEthGuardFactory.deploy()).deployed();
 
     // To deploy a contract, import and use the contract factory specific to that contract
     // note that the signer supplied is optional
@@ -122,6 +125,18 @@ describe('PCV Sentinel', function () {
       await pcvSentinel.connect(impersonatedSigners[guardianAddress]).knight(balanceGuard.address);
       await forceSpecificEth(balanceGuard.address, '1');
       await expect(pcvSentinel.protec(balanceGuard.address)).to.be.revertedWith('No need to protec.');
+    });
+
+    it('is able to send and receive value', async () => {
+      await pcvSentinel.connect(impersonatedSigners[guardianAddress]).knight(recoverEthGuard.address);
+      await impersonatedSigners[guardianAddress].sendTransaction({
+        to: recoverEthGuard.address,
+        value: ethers.utils.parseEther('0.1')
+      });
+      await pcvSentinel.protec(recoverEthGuard.address);
+      expect(await recoverEthGuard.provider.getBalance(recoverEthGuard.address)).to.equal(
+        ethers.utils.parseEther('0.05')
+      );
     });
   });
 
