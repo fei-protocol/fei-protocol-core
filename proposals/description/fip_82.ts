@@ -3,7 +3,7 @@ import { ProposalDescription } from '@custom-types/types';
 const fip_82: ProposalDescription = {
   title: 'FIP-82: Deploy TribalCouncil',
   commands: [
-    //////////// GRANT POD TIMELOCKS RELEVANT ACCESS ROLES ///////////
+    //////////// Create relevant TribeRoles and transfer admin of relevant roles to ROLE_ADMIN ///////////
     {
       target: 'core',
       values: '0',
@@ -29,40 +29,43 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'createRole(bytes32,bytes32)',
       arguments: [
-        '0xa8d944a5277d6a203f114d020d26918a390f167b089a46be4fca9da716d23783', // ORACLE_ADMIN
-        '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e' // GOVERN_ROLE
+        '0x2d46c62aa6fbc9b550f22e00476aebb90f4ea69cd492a68db4d444217763330d', // VOTIUM_ADMIN_ROLE
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
-      description: 'Create ORACLE_ADMIN role'
+      description: 'Transfer VOTIUM_ADMIN_ROLE admin from GOVERNOR to ROLE_ADMIN'
     },
+    //////////////// Grant relevant TribeRoles to relevant timelock contracts ///////////////
     {
       target: 'core',
       values: '0',
       method: 'grantRole(bytes32,address)',
       arguments: ['0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096', '{tribalCouncilTimelock}'],
-      description: 'Grant Tribal Council ROLE_ADMIN'
+      description: `
+      Grant Tribal Council timelock the ROLE_ADMIN role. TribalCouncil will be able to manage Admin level roles
+      and below
+      `
     },
     {
       target: 'core',
       values: '0',
       method: 'grantRole(bytes32,address)',
       arguments: ['0x1c4afb10045e2ffba702b04df46e551f6f2c584499b4abe7b6136efe6b05a34d', '{tribalCouncilTimelock}'],
-      description: 'Grant POD_DEPLOYER_ROLE to TribalCouncil timelock'
+      description: 'Grant POD_DEPLOYER_ROLE to TribalCouncil timelock. TribalCouncil will be able to deploy pods'
     },
     {
       target: 'core',
       values: '0',
       method: 'grantRole(bytes32,address)',
-      arguments: ['0x1c4afb10045e2ffba702b04df46e551f6f2c584499b4abe7b6136efe6b05a34d', '{protocolPodTimelock}'],
-      description: 'Grant POD_DEPLOYER_ROLE to Protocol pod timelock'
+      arguments: ['0x1c4afb10045e2ffba702b04df46e551f6f2c584499b4abe7b6136efe6b05a34d', '{feiDAOTimelock}'],
+      description: 'Grant POD_DEPLOYER_ROLE to FeiDAO timelock. FeiDAO will be able to create and deploy pods'
     },
     {
       target: 'core',
       values: '0',
       method: 'grantRole(bytes32,address)',
       arguments: ['0xa8d944a5277d6a203f114d020d26918a390f167b089a46be4fca9da716d23783', '{protocolPodTimelock}'],
-      description: 'Grant Protocol Pod ORACLE_ADMIN role'
+      description: 'Grant Protocol Pod VOTIUM_ADMIN_ROLE role. Protocol pod will be able to manage Votium bribes'
     },
-
     //////////////    Configure Membership of Council and Pod /////////////
     {
       target: 'memberToken',

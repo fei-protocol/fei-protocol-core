@@ -10,6 +10,7 @@ import {
 import { getImpersonatedSigner } from '@test/helpers';
 import { tribeCouncilPodConfig, protocolPodConfig } from '@protocol/optimisticGovernance';
 import { abi as timelockABI } from '../../artifacts/contracts/dao/timelock/OptimisticTimelock.sol/OptimisticTimelock.json';
+import { Contract } from 'ethers';
 const toBN = ethers.BigNumber.from;
 
 // How this works:
@@ -155,11 +156,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const councilThreshold = await podFactory.getPodThreshold(tribalCouncilPodId);
   expect(councilThreshold).to.equal(tribeCouncilPodConfig.threshold);
 
-  // 4. Validate that TribalCouncil timelock has ROLE_ADMIN role
-  const core = contracts.core;
-  const councilHasRole = await core.hasRole(ethers.utils.id('ROLE_ADMIN'), addresses.tribalCouncilTimelock);
-  expect(councilHasRole).to.be.true;
-
   ////////////////////// PROTOCOL TIER POD ///////////////////////////////
   // 1. Validate that the protocolTierPod Safe, timelock and podAdmin are configured
   const protocolPodId = await podFactory.getPodId(addresses.protocolPodTimelock);
@@ -188,9 +184,34 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const podMembers = await podFactory.getPodMembers(protocolPodId);
   validateArraysEqual(podMembers, protocolPodConfig.members);
 
-  // 4. Validate that protocol pod tier has role ORACLE_ADMIN
-  const protocolPodHasRole = await core.hasRole(ethers.utils.id('ORACLE_ADMIN'), addresses.protocolPodTimelock);
-  expect(protocolPodHasRole).to.be.true;
+  await validateTribeRoles(
+    contracts.core,
+    addresses.feiDAOTimelock,
+    addresses.tribalCouncilTimelock,
+    addresses.protocolTimelock
+  );
+};
+
+const validateTribeRoles = async (
+  core: Contract,
+  feiDAOTimelockAddress: string,
+  tribalCouncilTimelockAddress: string,
+  protocolPodTimelockAddress: string
+) => {
+  // feiDAOTimelock added roles: POD_DEPLOYER_ROLE
+  const daoIsPodDeployer = await core.hasRole(ethers.utils.id('POD_DEPLOYER_ROLE'), feiDAOTimelockAddress);
+  expect(daoIsPodDeployer).to.be.true;
+
+  // TribalCouncilTimelock roles: ROLE_ADMIN, POD_DEPLOYER_ROLE
+  const councilIsRoleAdmin = await core.hasRole(ethers.utils.id('ROLE_ADMIN'), tribalCouncilTimelockAddress);
+  expect(councilIsRoleAdmin).to.be.true;
+
+  const councilIsPodDeployer = await core.hasRole(ethers.utils.id('POD_DEPLOYER_ROLE'), tribalCouncilTimelockAddress);
+  expect(councilIsPodDeployer).to.be.true;
+
+  // Protocol pod timelock roles: Specific first pod duties role
+  const protocolPodIsVotiumRole = await core.hasRole(ethers.utils.id('VOTIUM_ADMIN_ROLE'), protocolPodTimelockAddress);
+  expect(protocolPodIsVotiumRole).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };
