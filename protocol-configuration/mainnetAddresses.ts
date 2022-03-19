@@ -1771,6 +1771,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
     category: AddressCategory.Deprecated
   },
+  ohmEscrow: {
+    artifactName: 'OtcEscrow',
+    address: '0x14d2F529576d3a5451BfbA370408a899Bb5261a9',
+    category: AddressCategory.TBD
+  },
   mergerGate: {
     artifactName: 'MergerGate',
     address: '0xC2d452A4Feb76B41659cd036D5746149B98453D6',
