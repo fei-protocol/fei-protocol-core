@@ -41,12 +41,11 @@ contract GovernanceMetadataRegistry is CoreRef {
     /// @param podId Unique identifier of the pod for which metadata is being registered
     /// @param proposalId Unique identifier of the proposal for which metadata is being registered
     /// @param metadata Proposal metadata
-    // TODO: Restrict to only being callable by pods, to limit DDOS potential. Add new role
     function registerProposal(
         uint256 podId,
         uint256 proposalId,
         string memory metadata
-    ) external {
+    ) external onlyTribeRole(TribeRoles.POD_METADATA_REGISTER_ROLE) {
         require(bytes(metadata).length > 0, "Metadata must be non-empty");
 
         bytes32 proposalHash = keccak256(
