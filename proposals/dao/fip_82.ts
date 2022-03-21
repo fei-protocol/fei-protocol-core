@@ -10,6 +10,7 @@ import {
 import { getImpersonatedSigner } from '@test/helpers';
 import { tribeCouncilPodConfig, protocolPodConfig, PodCreationConfig } from '@protocol/optimisticGovernance';
 import { abi as timelockABI } from '../../artifacts/contracts/dao/timelock/OptimisticTimelock.sol/OptimisticTimelock.json';
+import { abi as gnosisSafeABI } from '../../artifacts/contracts/pods/orcaInterfaces/IGnosisSafe.sol/IGnosisSafe.json';
 import { Contract } from 'ethers';
 const toBN = ethers.BigNumber.from;
 
@@ -109,14 +110,20 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   const councilTimelockAddress = await podFactory.getPodTimelock(tribalCouncilPodId);
   const protocolPodTimelockAddress = await podFactory.getPodTimelock(protocolPodId);
+  const councilSafeAddress = await podFactory.getPodSafe(tribalCouncilPodId);
+  const protocolPodSafeAddress = await podFactory.getPodSafe(protocolPodId);
 
   logging && console.log('Tribal council timelock deployed to: ', councilTimelockAddress);
   logging && console.log('Protocol pod timelock deployed to: ', protocolPodTimelockAddress);
+  logging && console.log('Tribal council Gnosis safe is: ', councilSafeAddress);
+  logging && console.log('Protocol pod safe is: ', protocolPodSafeAddress);
 
-  // 4. Create contract artifacts for timelocks, so address is available to DAO script
+  // 4. Create contract artifacts for timelocks and Safes, so addresses are available to DAO script
   const mockSigner = await getImpersonatedSigner(deployAddress);
   const tribalCouncilTimelock = new ethers.Contract(councilTimelockAddress, timelockABI, mockSigner);
   const protocolPodTimelock = new ethers.Contract(protocolPodTimelockAddress, timelockABI, mockSigner);
+  const tribalCouncilSafe = new ethers.Contract(councilSafeAddress, gnosisSafeABI, mockSigner);
+  const protocolPodSafe = new ethers.Contract(protocolPodSafeAddress, gnosisSafeABI, mockSigner);
 
   // 5. Deploy GovernanceMetadataRegistry contract
   const metadataRegistryFactory = await ethers.getContractFactory('GovernanceMetadataRegistry');
@@ -129,7 +136,9 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     tribalCouncilTimelock,
     protocolPodTimelock,
     governanceMetadataRegistry,
-    vetoController
+    vetoController,
+    tribalCouncilSafe,
+    protocolPodSafe
   };
 };
 
@@ -223,7 +232,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     contracts.core,
     addresses.feiDAOTimelock,
     addresses.tribalCouncilTimelock,
-    addresses.protocolPodTimelock
+    addresses.protocolPodTimelock,
+    tribalCouncilSafeAddress,
+    protocolSafeAddress
   );
 };
 
@@ -231,7 +242,9 @@ const validateTribeRoles = async (
   core: Contract,
   feiDAOTimelockAddress: string,
   tribalCouncilTimelockAddress: string,
-  protocolPodTimelockAddress: string
+  protocolPodTimelockAddress: string,
+  tribalCouncilSafeAddress: string,
+  protocolPodSafeAddress: string
 ) => {
   // feiDAOTimelock added roles: POD_DEPLOYER_ROLE
   const daoIsPodDeployer = await core.hasRole(ethers.utils.id('POD_DEPLOYER_ROLE'), feiDAOTimelockAddress);
@@ -250,6 +263,20 @@ const validateTribeRoles = async (
   // Protocol pod timelock roles: Specific first pod duties role
   const protocolPodIsVotiumRole = await core.hasRole(ethers.utils.id('VOTIUM_ADMIN_ROLE'), protocolPodTimelockAddress);
   expect(protocolPodIsVotiumRole).to.be.true;
+
+  // TribalCouncil Gnosis Safe roles: POD_METADATA_REGISTER_ROLE
+  const councilHasMetadataRegisterRole = await core.hasRole(
+    ethers.utils.id('POD_METADATA_REGISTER_ROLE'),
+    tribalCouncilSafeAddress
+  );
+  expect(councilHasMetadataRegisterRole).to.be.true;
+
+  // Protocol pod Gnosis Safe roles: POD_METADATA_REGISTER_ROLE
+  const protocolPodHasMetadataRegisterRole = await core.hasRole(
+    ethers.utils.id('POD_METADATA_REGISTER_ROLE'),
+    protocolPodSafeAddress
+  );
+  expect(protocolPodHasMetadataRegisterRole).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };
