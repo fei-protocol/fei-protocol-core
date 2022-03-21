@@ -1840,6 +1840,11 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'SmartYieldRedeemer',
     address: '0x2dC77678Be7F900e81c638b056F4835BB7203C96',
     category: AddressCategory.TBD
+  },
+  rariGovernanceProxyAdmin: {
+    artifactName: 'ProxyAdmin',
+    address: '0x1c9aA54a013962C2444ECae06902F31D532c6AD3',
+    category: AddressCategory.Governance
   }
 };
 
