@@ -70,9 +70,9 @@ function mintOrcaTokens(
     inviteToken.mint(to, amount);
 }
 
-function getPodParams(address admin)
+function getPodParams(address admin, address vetoController)
     pure
-    returns (IPodFactory.PodConfig memory, uint256)
+    returns (IPodFactory.PodConfig memory)
 {
     uint256 threshold = 2;
     bytes32 label = bytes32("hellopod");
@@ -91,7 +91,9 @@ function getPodParams(address admin)
         label: label,
         ensString: ensString,
         imageUrl: imageUrl,
-        admin: admin
+        admin: admin,
+        minDelay: minDelay,
+        vetoController: vetoController
     });
-    return (config, minDelay);
+    return config;
 }

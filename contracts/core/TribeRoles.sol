@@ -26,12 +26,15 @@ library TribeRoles {
     /// @notice can mint FEI arbitrarily
     bytes32 internal constant MINTER = keccak256("MINTER_ROLE");
 
-    /// @notice Can grant any admin role
+    /// @notice Manages lower level - Admin and Minor - roles. Able to grant and revoke these
     bytes32 internal constant ROLE_ADMIN = keccak256("ROLE_ADMIN");
 
     /*///////////////////////////////////////////////////////////////
                                  Admin Roles
     //////////////////////////////////////////////////////////////*/
+
+    /// @notice capable of granting and revoking other TribeRoles from having veto power over a pod
+    bytes32 internal constant POD_VETO_ADMIN = keccak256("POD_VETO_ADMIN");
 
     /// @notice can manage the majority of Tribe protocol parameters. Sets boundaries for MINOR_PARAM_ROLE.
     bytes32 internal constant PARAMETER_ADMIN = keccak256("PARAMETER_ADMIN");

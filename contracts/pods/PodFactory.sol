@@ -30,7 +30,7 @@ contract PodFactory is CoreRef, IPodFactory {
     address public immutable podExecutor;
 
     /// @notice Mapping between podId and it's optimistic timelock
-    mapping(uint256 => address) public getPodTimelock;
+    mapping(uint256 => address) public override getPodTimelock;
 
     /// @notice Mapping between timelock and podId
     mapping(address => uint256) public getPodId;
@@ -65,7 +65,6 @@ contract PodFactory is CoreRef, IPodFactory {
 
         podExecutor = _podExecutor;
         podController = IControllerV1(_podController);
-        // TODO: Checkout what happens when migrate controller. Probs need to update pointer here
         memberToken = IMemberToken(_memberToken);
     }
 
@@ -135,17 +134,13 @@ contract PodFactory is CoreRef, IPodFactory {
     //////////////////// STATE-CHANGING API ////////////////////
 
     /// @notice Create a child Orca pod with optimistic timelock. Callable by the DAO and the Tribal Council
-    /// @dev Returns podId and the optimistic timelock address
-    function createChildOptimisticPod(
-        PodConfig calldata _config,
-        uint256 minDelay
-    )
+    function createChildOptimisticPod(PodConfig calldata _config)
         public
         override
         hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_DEPLOYER_ROLE)
         returns (uint256, address)
     {
-        return _createChildOptimisticPod(_config, minDelay);
+        return _createChildOptimisticPod(_config);
     }
 
     /// @notice Migrate to a new podController. Upgrades are opt in
@@ -162,10 +157,11 @@ contract PodFactory is CoreRef, IPodFactory {
     }
 
     /// @notice One time use at deploy time function to create childOptimisticTimelocks
-    function burnerCreateChildOptimisticPods(
-        PodConfig[] calldata _config,
-        uint256[] calldata _minDelay
-    ) external override returns (uint256[] memory, address[] memory) {
+    function burnerCreateChildOptimisticPods(PodConfig[] calldata _config)
+        external
+        override
+        returns (uint256[] memory, address[] memory)
+    {
         require(
             burnerDeploymentUsed == false,
             "Burner deployment already used"
@@ -177,8 +173,7 @@ contract PodFactory is CoreRef, IPodFactory {
         {
             for (uint256 i = 0; i < _config.length; i += 1) {
                 (uint256 podId, address timelock) = _createChildOptimisticPod(
-                    _config[i],
-                    _minDelay[i]
+                    _config[i]
                 );
                 podIds[i] = podId;
                 timelocks[i] = timelock;
@@ -192,11 +187,10 @@ contract PodFactory is CoreRef, IPodFactory {
 
     /// @notice Internal method to create a child optimistic pod
     /// @param _config Pod configuraton
-    /// @param _minDelay Delay on the timelock
-    function _createChildOptimisticPod(
-        PodConfig calldata _config,
-        uint256 _minDelay
-    ) internal returns (uint256, address) {
+    function _createChildOptimisticPod(PodConfig calldata _config)
+        internal
+        returns (uint256, address)
+    {
         uint256 podId = memberToken.getNextAvailablePodId();
 
         address safeAddress = createPod(
@@ -211,8 +205,9 @@ contract PodFactory is CoreRef, IPodFactory {
 
         address timelock = createOptimisticTimelock(
             safeAddress,
-            _minDelay,
-            podExecutor
+            _config.minDelay,
+            podExecutor,
+            _config.vetoController
         );
 
         // Set mapping from podId to timelock for reference
@@ -254,10 +249,12 @@ contract PodFactory is CoreRef, IPodFactory {
     function createOptimisticTimelock(
         address safeAddress,
         uint256 minDelay,
-        address publicExecutor
+        address publicExecutor,
+        address vetoController
     ) internal returns (address) {
-        address[] memory proposers = new address[](1);
+        address[] memory proposers = new address[](2);
         proposers[0] = safeAddress;
+        proposers[1] = vetoController;
 
         address[] memory executors = new address[](2);
         executors[0] = safeAddress;

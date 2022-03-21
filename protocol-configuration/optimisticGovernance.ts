@@ -11,6 +11,17 @@ type PodConfig = {
   placeHolderMembers: string[];
 };
 
+export type PodCreationConfig = {
+  members: string[];
+  threshold: number;
+  label: string;
+  ensString: string;
+  imageUrl: string;
+  admin: string;
+  minDelay: number;
+  vetoController: string;
+};
+
 export const tribalCouncilMembers = [
   '0x000000000000000000000000000000000000000D', // TODO: Complete with real member addresses
   '0x000000000000000000000000000000000000000E',
