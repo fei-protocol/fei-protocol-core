@@ -8,7 +8,7 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { getImpersonatedSigner } from '@test/helpers';
-import { tribeCouncilPodConfig, protocolPodConfig } from '@protocol/optimisticGovernance';
+import { tribeCouncilPodConfig, protocolPodConfig, PodCreationConfig } from '@protocol/optimisticGovernance';
 import { abi as timelockABI } from '../../artifacts/contracts/dao/timelock/OptimisticTimelock.sol/OptimisticTimelock.json';
 import { Contract } from 'ethers';
 const toBN = ethers.BigNumber.from;
@@ -74,7 +74,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   logging && console.log('Veto controller deployed to:', vetoController.address);
 
   // 3. Create TribalCouncil and Protocol Tier pods
-  const tribalCouncilPod = {
+  // are these in the right order?
+  const tribalCouncilPod: PodCreationConfig = {
     members: tribeCouncilPodConfig.placeHolderMembers,
     threshold: tribeCouncilPodConfig.threshold,
     label: tribeCouncilPodConfig.label,
@@ -85,7 +86,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     vetoController: ethers.constants.AddressZero
   };
 
-  const protocolTierPod = {
+  const protocolTierPod: PodCreationConfig = {
     members: protocolPodConfig.placeHolderMembers,
     threshold: protocolPodConfig.threshold,
     label: protocolPodConfig.label,
@@ -97,6 +98,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   };
 
   const pods = [tribalCouncilPod, protocolTierPod];
+
   await podFactory.burnerCreateChildOptimisticPods(pods);
 
   const protocolPodId = await podFactory.latestPodId();
@@ -139,7 +141,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 1. Validate VetoController has PROPOSER role on protocol pod. Validate TribalCouncil
   // does not have a VetoController role
   const tribalCouncilTimelock = contracts.tribalCouncilTimelock;
-  const vetoControllerIsProposer = await tribalCouncilTimelock.hasRole(
+  const protocolTierTimelock = contracts.protocolPodTimelock;
+  const vetoControllerIsProposer = await protocolTierTimelock.hasRole(
     ethers.utils.id('PROPOSER_ROLE'),
     addresses.vetoController
   );
@@ -209,7 +212,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     contracts.core,
     addresses.feiDAOTimelock,
     addresses.tribalCouncilTimelock,
-    addresses.protocolTimelock
+    addresses.protocolPodTimelock
   );
 };
 

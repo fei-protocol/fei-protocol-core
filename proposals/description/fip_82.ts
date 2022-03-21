@@ -118,7 +118,7 @@ const fip_82: ProposalDescription = {
           '0x0000000000000000000000000000000000000014',
           '0x0000000000000000000000000000000000000015'
         ],
-        '13', // TODO: Replace hardcoded value with real podId
+        '17', // TODO: Replace hardcoded value with real podId
         '0x0000000000000000000000000000000000000000000000000000000000000000'
       ],
       description: 'Add designated members to the Tribal Council'
@@ -139,7 +139,7 @@ const fip_82: ProposalDescription = {
           '0x000000000000000000000000000000000000000B',
           '0x000000000000000000000000000000000000000C'
         ],
-        '13' // TODO: Replace hardcoded value with real podId
+        '17' // TODO: Replace hardcoded value with real podId
       ],
       description: 'Remove placeholder members from Tribal Council'
     },
@@ -155,7 +155,7 @@ const fip_82: ProposalDescription = {
           '0x000000000000000000000000000000000000000C',
           '0x000000000000000000000000000000000000000D'
         ],
-        '14', // TODO: Replace with real protocol pod ID
+        '18', // TODO: Replace with real protocol pod ID
         '0x0000000000000000000000000000000000000000000000000000000000000000'
       ],
       description: 'Add designated members to the Protocol Pod'
@@ -172,7 +172,7 @@ const fip_82: ProposalDescription = {
           '0x0000000000000000000000000000000000000007',
           '0x0000000000000000000000000000000000000008'
         ],
-        '14' // TODO: Replace with real protocol pod ID
+        '18' // TODO: Replace with real protocol pod ID
       ],
       description: 'Remove initial placeholder members from Protocol Pod'
     },
@@ -181,7 +181,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'updatePodAdmin(uint256,address)',
       arguments: [
-        '14', // TODO: Replace with real protocol pod ID
+        '18', // TODO: Replace with real protocol pod ID
         '{tribalCouncilTimelock}'
       ],
       description: `

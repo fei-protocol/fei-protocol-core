@@ -244,10 +244,19 @@ contract PodFactoryIntegrationTest is DSTest {
         configs[1] = podConfigB;
 
         vm.prank(feiDAOTimelock);
-        factory.burnerCreateChildOptimisticPods(configs);
+        (uint256[] memory podIds, ) = factory.burnerCreateChildOptimisticPods(
+            configs
+        );
         assertTrue(factory.burnerDeploymentUsed());
 
         vm.expectRevert(bytes("Burner deployment already used"));
         factory.burnerCreateChildOptimisticPods(configs);
+
+        // Check pod admin
+        address setPodAdminA = IControllerV1(podController).podAdmin(podIds[0]);
+        assertEq(setPodAdminA, podAdmin);
+
+        address setPodAdminB = IControllerV1(podController).podAdmin(podIds[0]);
+        assertEq(setPodAdminB, podAdmin);
     }
 }
