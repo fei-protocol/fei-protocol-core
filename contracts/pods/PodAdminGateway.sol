@@ -20,12 +20,6 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Orca membership token for the pods. Handles permissioning pod members
     IMemberToken private immutable memberToken;
 
-    /// @notice Mapping from a podId to an admin priviledge and the set of TribeRoles that have
-    ///         been granted that admin priviledge on that pod
-    /// @dev Used to permission the exposure of pod admin priviledges to multiple TribeRoles
-    mapping(uint256 => mapping(AdminPriviledge => EnumerableSet.Bytes32Set))
-        private podAdminRoles;
-
     constructor(address _core, address _memberToken) CoreRef(_core) {
         memberToken = IMemberToken(_memberToken);
     }
@@ -38,103 +32,69 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         view
         returns (bytes32[] memory)
     {
-        if (podAdminRoles[_podId][_priviledge].length() == 0) {
-            bytes32[] memory emptyAdmins = new bytes32[](0);
-            return emptyAdmins;
-        }
-        return podAdminRoles[_podId][_priviledge].values();
+        // TODO
     }
 
-    /////////////////////////     STATE CHANGING API       ////////////////////////////
+    /////////////////////////    GRANT POD ADMIN PRIVILEDGES       ////////////////////////////
 
-    ///// Grant and revoke pod admin functionality to Tribe Roles
-
-    /// @notice Grant an admin priviledge to a TribeRole
-    /// @dev Permissioned to the GOVERNOR, ROLE_ADMIN (TribalCouncil)
-    function grantPodAdminPriviledge(
-        uint256 _podId,
-        AdminPriviledge priviledge,
-        bytes32 _tribeRole
-    ) public hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.ROLE_ADMIN) {
-        podAdminRoles[_podId][priviledge].add(_tribeRole);
-        emit GrantPodAdminPriviledge(_podId, _tribeRole);
-    }
-
-    /// @notice Revoke an admin priviledge from a TribeRole
-    /// @dev Permissioned to the GOVERNOR, ROLE_ADMIN (TribalCouncil) and GUARDIAN roles
-    function revokePodAdminPriviledge(
-        uint256 _podId,
-        AdminPriviledge priviledge,
-        bytes32 _tribeRole
-    )
-        public
-        hasAnyOfThreeRoles(
-            TribeRoles.GOVERNOR,
-            TribeRoles.ROLE_ADMIN,
-            TribeRoles.GUARDIAN
-        )
-    {
-        podAdminRoles[_podId][priviledge].remove(_tribeRole);
-        emit RevokePodAdminPriviledge(_podId, _tribeRole);
-    }
-
-    /// @notice Batch grant admin priviledges
-    function batchGrantAdminPriviledge(
-        uint256[] memory _podId,
-        AdminPriviledge[] memory priviledge,
-        bytes32[] memory _tribeRole
-    ) external hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.ROLE_ADMIN) {
-        for (uint256 i = 0; i < _podId.length; i++) {
-            grantPodAdminPriviledge(_podId[i], priviledge[i], _tribeRole[i]);
-        }
-    }
-
-    /// @notice Batch grant admin priviledges
-    function batchRevokeAdminPriviledge(
-        uint256[] memory _podId,
-        AdminPriviledge[] memory priviledge,
-        bytes32[] memory _tribeRole
-    )
+    /// @notice Admin functionality to add a member to a pod
+    /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and POD_ADMIN_ADD_MEMBER
+    function addPodMember(uint256 _podId, address _member)
         external
         hasAnyOfThreeRoles(
             TribeRoles.GOVERNOR,
-            TribeRoles.ROLE_ADMIN,
-            TribeRoles.GUARDIAN
+            TribeRoles.POD_ADMIN,
+            TribeRoles.POD_ADMIN_ADD_MEMBER
         )
     {
-        for (uint256 i = 0; i < _podId.length; i++) {
-            revokePodAdminPriviledge(_podId[i], priviledge[i], _tribeRole[i]);
-        }
+        _addMemberToPod(_podId, _member);
     }
 
-    ///// Expose admin functionality to addresses which have the appropriate TribeRole
-
-    /// @notice Admin functionality to add a member to a pod
-    function addMemberToPod(uint256 _podId, address _member) public {
+    /// @notice Internal method to add a member to a pod
+    function _addMemberToPod(uint256 _podId, address _member) internal {
         require(_member != address(0), "ZERO_ADDRESS");
-        validateAdminPriviledge(_podId, AdminPriviledge.ADD_MEMBER, msg.sender);
-
+        emit AddPodMember(_podId, _member);
         memberToken.mint(_member, _podId, bytes(""));
     }
 
     /// @notice Admin functionality to batch add a member to a pod
     function batchAddMemberToPod(uint256 _podId, address[] memory _members)
         external
+        hasAnyOfThreeRoles(
+            TribeRoles.GOVERNOR,
+            TribeRoles.POD_ADMIN,
+            TribeRoles.POD_ADMIN_ADD_MEMBER
+        )
     {
-        for (uint256 i = 0; i < _members.length; i++) {
-            addMemberToPod(_podId, _members[i]);
+        uint256 numMembers = _members.length;
+        for (uint256 i = 0; i < numMembers; ) {
+            _addMemberToPod(_podId, _members[i]);
+
+            // i is constrained by being < _members.length
+            unchecked {
+                i += 1;
+            }
         }
     }
 
-    /// @notice Admin functionality to remove a member from a pod
-    function removeMemberFromPod(uint256 _podId, address _member) public {
-        require(_member != address(0), "ZERO_ADDRESS");
+    /// @notice Admin functionality to remove a member from a pod.
+    /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and POD_ADMIN_REMOVE_MEMBER
+    function removePodMember(uint256 _podId, address _member)
+        external
+        hasAnyOfThreeRoles(
+            TribeRoles.GOVERNOR,
+            TribeRoles.POD_ADMIN,
+            TribeRoles.GUARDIAN,
+            TribeRoles.POD_ADMIN_REMOVE_MEMBER
+        )
+    {
+        _removePodMember(_podId, _member);
+    }
 
-        validateAdminPriviledge(
-            _podId,
-            AdminPriviledge.REMOVE_MEMBER,
-            msg.sender
-        );
+    /// @notice Internal method to remove a member from a pod
+    function _removePodMember(uint256 _podId, address _member) internal {
+        require(_member != address(0), "ZERO_ADDRESS");
+        emit RemovePodMember(_podId, _member);
         memberToken.burn(_member, _podId);
     }
 
@@ -142,39 +102,14 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     function batchRemoveMemberFromPod(uint256 _podId, address[] memory _members)
         external
     {
-        for (uint256 i = 0; i < _members.length; i++) {
-            removeMemberFromPod(_podId, _members[i]);
-        }
-    }
+        uint256 numMembers = _members.length;
+        for (uint256 i = 0; i < numMembers; ) {
+            _removePodMember(_podId, _members[i]);
 
-    /// @notice Valdidate that a calling address has the relevant admin priviledge, for the
-    ///         function it is calling
-    function validateAdminPriviledge(
-        uint256 _podId,
-        AdminPriviledge priviledge,
-        address caller
-    ) internal view {
-        ICore core = core();
-        bool hasAdminRole = false;
-
-        // Iterate through all TribeRoles that have correct priviledge, validate caller has one of these roles
-        uint256 numTribeRolesWithPriviledge = podAdminRoles[_podId][priviledge]
-            .length();
-        for (uint256 i = 0; i < numTribeRolesWithPriviledge; ) {
-            bytes32 role = podAdminRoles[_podId][priviledge].at(i);
-
-            if (core.hasRole(role, caller)) {
-                hasAdminRole = true;
-            }
-
-            // unchecked as i is bounded by podAdminRoles[_podId][priviledge].length()
+            // i is constrained by being < _members.length
             unchecked {
                 i += 1;
             }
-        }
-
-        if (!hasAdminRole) {
-            revert UnauthorisedAdminAction();
         }
     }
 }
