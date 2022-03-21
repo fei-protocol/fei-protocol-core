@@ -12,7 +12,8 @@ import {
   NoOpGuard,
   BalanceGuard,
   MultiActionGuard,
-  ReEntrancyGuard
+  ReEntrancyGuard,
+  RecoverEthGuard
 } from '@custom-types/contracts';
 import chai from 'chai';
 import { forceEth, forceSpecificEth } from '@test/integration/setup/utils';
