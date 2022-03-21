@@ -157,18 +157,19 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         ICore core = core();
         bool hasAdminRole = false;
 
-        // Iterate through all TribeRoles that have correct priviledge.
-        // Validate caller has one of these roles
-        // podAdminRoles[_podId][priviledge] = tribeRolesWithPriviledge
-        for (
-            uint256 i = 0;
-            i < podAdminRoles[_podId][priviledge].length();
-            i += 1
-        ) {
+        // Iterate through all TribeRoles that have correct priviledge, validate caller has one of these roles
+        uint256 numTribeRolesWithPriviledge = podAdminRoles[_podId][priviledge]
+            .length();
+        for (uint256 i = 0; i < numTribeRolesWithPriviledge; ) {
             bytes32 role = podAdminRoles[_podId][priviledge].at(i);
 
             if (core.hasRole(role, caller)) {
                 hasAdminRole = true;
+            }
+
+            // unchecked as i is bounded by podAdminRoles[_podId][priviledge].length()
+            unchecked {
+                i += 1;
             }
         }
 
