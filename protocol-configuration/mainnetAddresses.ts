@@ -1845,6 +1845,11 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'ProxyAdmin',
     address: '0x1c9aA54a013962C2444ECae06902F31D532c6AD3',
     category: AddressCategory.Governance
+  },
+  rariGovernanceTokenSushiSwapDistributor: {
+    artifactName: 'RariGovernanceTokenUniswapDistributor',
+    address: '0x1fa69a416bcf8572577d3949b742fbb0a9cd98c7',
+    category: AddressCategory.Governance
   }
 };
 
