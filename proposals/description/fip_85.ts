@@ -1,6 +1,6 @@
 import { ProposalDescription } from '@custom-types/types';
 
-const fip_x: ProposalDescription = {
+const fip_85: ProposalDescription = {
   title: 'FIP-85: Kill RGT rewards on RGT/ETH SushiSwap pair',
   commands: [
     {
@@ -35,4 +35,4 @@ const fip_x: ProposalDescription = {
   description: 'Kill RGT rewards on RGT/ETH SushiSwap pair--we don\'t need them anymore.'
 };
 
-export default fip_x;
+export default fip_85;
