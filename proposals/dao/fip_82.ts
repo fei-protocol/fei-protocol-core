@@ -232,6 +232,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   );
 };
 
+// Validate that pod admin priviledges are set as expected
 const validatePodAdmins = async (tribalCouncilPodId: number, protocolPodId: number, contracts: NamedContracts) => {
   const multiPodAdminContract = contracts.podAdminGateway;
 
@@ -260,6 +261,7 @@ const validatePodAdmins = async (tribalCouncilPodId: number, protocolPodId: numb
   expect(protocolPodRolesWithRemovePriviledge).to.deep.equal(protocolPodAdminTribeRoles.REMOVE_MEMBER);
 };
 
+// Validate that the relevant timelocks and Safes have the relevant TribeRoles
 const validateTribeRoles = async (
   core: Contract,
   feiDAOTimelockAddress: string,

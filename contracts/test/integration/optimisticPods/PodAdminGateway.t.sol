@@ -37,15 +37,16 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         podAdminGateway = new PodAdminGateway(core, memberToken);
 
         // 3.0 Make config for pod, mint Orca tokens to factory
-        (IPodFactory.PodConfig memory config, uint256 minDelay) = getPodParams(
-            address(podAdminGateway)
+        IPodFactory.PodConfig memory config = getPodParams(
+            address(podAdminGateway),
+            address(0x20)
         );
         podConfig = config;
         mintOrcaTokens(address(factory), 2, vm);
 
         // 4.0 Create pod
         vm.prank(feiDAOTimelock);
-        (podId, ) = factory.createChildOptimisticPod(podConfig, minDelay);
+        (podId, ) = factory.createChildOptimisticPod(podConfig);
 
         // 5.0 Grant a test role admin access
         testRole = TribeRoles.VOTIUM_ROLE;
