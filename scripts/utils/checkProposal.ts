@@ -5,6 +5,7 @@ import proposals from '@test/integration/proposals_config';
 import * as dotenv from 'dotenv';
 import { execProposal } from './exec';
 import { overwriteChainlinkAggregator } from '@test/helpers';
+import { formatNumber } from './printUtils';
 
 dotenv.config();
 
@@ -31,11 +32,7 @@ async function checkProposal(proposalName: string, doSetup?: string) {
   const contractAddresses = getAllContractAddresses();
 
   if (proposalFuncs.setup.toString().length > 130 && !doSetup) {
-    console.log(
-      '\x1b[33mHeads up: setup() is defined in ' +
-        proposalName +
-        ', but you did not use the DO_SETUP=true env variable\x1b[0m'
-    );
+    console.log(`Heads up: setup() is defined in ${proposalName}, but you did not use the DO_SETUP=true env variable`);
   }
 
   if (doSetup) {
@@ -92,8 +89,8 @@ async function checkProposal(proposalName: string, doSetup?: string) {
       crOracleReadingBefore.protocolControlledValue.toString() / 1;
     const feiChange =
       crOracleReadingAfter.userCirculatingFei.toString() / 1 - crOracleReadingBefore.userCirculatingFei.toString() / 1;
-    console.log('\x1b[33mPCV Change\x1b[0m :', formatNumber(pcvChange));
-    console.log('\x1b[33mFEI Circulating Change\x1b[0m :', formatNumber(feiChange));
+    console.log('PCV Change :', formatNumber(pcvChange));
+    console.log('FEI Circulating Change :', formatNumber(feiChange));
   }
 }
 
@@ -103,28 +100,3 @@ checkProposal(proposalName, doSetup)
     console.log(err);
     process.exit(1);
   });
-
-function formatNumber(x) {
-  x = Number(x);
-  let ret = x >= 0 ? '\x1b[32m+' : '\x1b[31m-'; // red or green
-  let absX = Math.abs(x);
-  let suffix = '';
-  if (absX >= 1e17) {
-    // 18 decimals... probably
-    absX = absX / 1e18;
-    suffix = ' (e18)';
-  }
-  if (absX > 1e6) {
-    // > 1M
-    absX = absX / 1e6;
-    suffix = ' M' + suffix;
-  } else if (absX > 1e3) {
-    // > 1k
-    absX = absX / 1e3;
-    suffix = ' k' + suffix;
-  }
-  const xRound = Math.round(absX * 100) / 100;
-  ret += xRound + suffix;
-  ret += '\x1b[0m'; // end color
-  return ret;
-}
