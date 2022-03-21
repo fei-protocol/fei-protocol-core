@@ -118,17 +118,17 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const tribalCouncilTimelock = new ethers.Contract(councilTimelockAddress, timelockABI, mockSigner);
   const protocolPodTimelock = new ethers.Contract(protocolPodTimelockAddress, timelockABI, mockSigner);
 
-  // 5. Deploy MetadataRegistry contract
-  const metadataRegistryFactory = await ethers.getContractFactory('MetadataRegistry');
-  const metadataRegistry = await metadataRegistryFactory.deploy(addresses.core);
-  await metadataRegistry.deployTransaction.wait();
+  // 5. Deploy GovernanceMetadataRegistry contract
+  const metadataRegistryFactory = await ethers.getContractFactory('GovernanceMetadataRegistry');
+  const governanceMetadataRegistry = await metadataRegistryFactory.deploy(addresses.core);
+  await governanceMetadataRegistry.deployTransaction.wait();
 
   return {
     podExecutor,
     podFactory,
     tribalCouncilTimelock,
     protocolPodTimelock,
-    metadataRegistry,
+    governanceMetadataRegistry,
     vetoController
   };
 };
@@ -215,8 +215,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   validateArraysEqual(podMembers, protocolPodConfig.members);
 
   ///////////// METADATA REGISTRY ////////////////////////
-  const metadataRegistry = contracts.metadataRegistry;
-  const isProposalRegistered = await metadataRegistry.isProposalRegistered(0, 0, 'test');
+  const governanceMetadataRegistry = contracts.governanceMetadataRegistry;
+  const isProposalRegistered = await governanceMetadataRegistry.isProposalRegistered(0, 0, 'test');
   expect(isProposalRegistered).to.be.false;
 
   await validateTribeRoles(

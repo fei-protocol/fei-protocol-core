@@ -3,15 +3,15 @@ pragma solidity ^0.8.0;
 
 import {DSTest} from "../utils/DSTest.sol";
 import {Vm} from "../utils/Vm.sol";
-import {MetadataRegistry} from "../../pods/MetadataRegistry.sol";
+import {GovernanceMetadataRegistry} from "../../pods/GovernanceMetadataRegistry.sol";
 
 contract MetadataRegistryIntegrationTest is DSTest {
-    MetadataRegistry registry;
+    GovernanceMetadataRegistry registry;
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
     function setUp() public {
         address _core = 0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9;
-        registry = new MetadataRegistry(_core);
+        registry = new GovernanceMetadataRegistry(_core);
     }
 
     function testRegisterProposal() public {
