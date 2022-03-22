@@ -5,6 +5,7 @@ import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet
 import {IMemberToken} from "./orcaInterfaces/IMemberToken.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
 import {ICore} from "../core/ICore.sol";
+import {Core} from "../core/Core.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
 import {IPodAdminGateway} from "./IPodAdminGateway.sol";
 
@@ -24,30 +25,44 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         memberToken = IMemberToken(_memberToken);
     }
 
-    /////////////////////////     GETTERS                   ///////////////////////
+    ////////////////////////   GETTERS   ////////////////////////////////
 
-    /// @notice Get all TribeRoles which have a particular admin priviledge on a pod
-    function getPodAdminPriviledges(uint256 _podId, AdminPriviledge _priviledge)
-        external
-        view
-        returns (bytes32[] memory)
-    {
-        // TODO
+    /// @notice Calculate the specific pod admin role related to adding pod members
+    function getPodAddMemberRole(uint256 _podId) public pure returns (bytes32) {
+        return keccak256(abi.encode(_podId, "ORCA_POD", "POD_ADD_MEMBER_ROLE"));
     }
 
-    /////////////////////////    GRANT POD ADMIN PRIVILEDGES       ////////////////////////////
+    /// @notice Calculate the pod admin role related ot removing pod members
+    function getPodRemoveMemberRole(uint256 _podId)
+        public
+        pure
+        returns (bytes32)
+    {
+        return
+            keccak256(abi.encode(_podId, "ORCA_POD", "POD_REMOVE_MEMBER_ROLE"));
+    }
+
+    /////////////////////////    ADMIN PRIVILEDGES       ////////////////////////////
 
     /// @notice Admin functionality to add a member to a pod
-    /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and POD_ADMIN_ADD_MEMBER
-    function addPodMember(uint256 _podId, address _member)
-        external
-        hasAnyOfThreeRoles(
-            TribeRoles.GOVERNOR,
-            TribeRoles.POD_ADMIN,
-            TribeRoles.POD_ADMIN_ADD_MEMBER
-        )
-    {
+    /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and POD_ADD_MEMBER_ROLE
+    function addPodMember(uint256 _podId, address _member) external {
+        validateAddPodMember(_podId);
         _addMemberToPod(_podId, _member);
+    }
+
+    /// @notice Validate the calling address is able to remove a pod member
+    /// @dev Valid permissions are GOVERNOR, POD_ADMIN and POD_REMOVE_MEMBER_ROLE
+    function validateAddPodMember(uint256 _podId) internal view {
+        // ROLE_ID = Hash(podId, Orca salt, ROLE_NAME)
+        bytes32 POD_ADMIN_ADD_MEMBER_ROLE = getPodAddMemberRole(_podId);
+        ICore core = core();
+        require(
+            core.hasRole(TribeRoles.GOVERNOR, msg.sender) ||
+                core.hasRole(TribeRoles.POD_ADMIN, msg.sender) ||
+                core.hasRole(POD_ADMIN_ADD_MEMBER_ROLE, msg.sender),
+            "UNAUTHORISED"
+        );
     }
 
     /// @notice Internal method to add a member to a pod
@@ -58,18 +73,13 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     }
 
     /// @notice Admin functionality to batch add a member to a pod
-    function batchAddMemberToPod(uint256 _podId, address[] memory _members)
+    function batchAddPodMember(uint256 _podId, address[] memory _members)
         external
-        hasAnyOfThreeRoles(
-            TribeRoles.GOVERNOR,
-            TribeRoles.POD_ADMIN,
-            TribeRoles.POD_ADMIN_ADD_MEMBER
-        )
     {
+        validateAddPodMember(_podId);
         uint256 numMembers = _members.length;
         for (uint256 i = 0; i < numMembers; ) {
             _addMemberToPod(_podId, _members[i]);
-
             // i is constrained by being < _members.length
             unchecked {
                 i += 1;
@@ -79,16 +89,24 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
 
     /// @notice Admin functionality to remove a member from a pod.
     /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and POD_ADMIN_REMOVE_MEMBER
-    function removePodMember(uint256 _podId, address _member)
-        external
-        hasAnyOfThreeRoles(
-            TribeRoles.GOVERNOR,
-            TribeRoles.POD_ADMIN,
-            TribeRoles.GUARDIAN,
-            TribeRoles.POD_ADMIN_REMOVE_MEMBER
-        )
-    {
+    function removePodMember(uint256 _podId, address _member) external {
+        validateRemovePodMember(_podId);
         _removePodMember(_podId, _member);
+    }
+
+    /// @notice Validate the calling address is able to remove a pod member
+    /// @dev Valid permissions are GOVERNOR, POD_ADMIN, GUARDIAN and POD_ADMIN_REMOVE_MEMBER
+    function validateRemovePodMember(uint256 _podId) internal view {
+        // ROLE_ID = Hash(podId, Orca salt, ROLE_NAME)
+        bytes32 POD_ADMIN_REMOVE_MEMBER = getPodRemoveMemberRole(_podId);
+        ICore core = core();
+        require(
+            core.hasRole(TribeRoles.GOVERNOR, msg.sender) ||
+                core.hasRole(TribeRoles.POD_ADMIN, msg.sender) ||
+                core.hasRole(TribeRoles.GUARDIAN, msg.sender) ||
+                core.hasRole(POD_ADMIN_REMOVE_MEMBER, msg.sender),
+            "UNAUTHORISED"
+        );
     }
 
     /// @notice Internal method to remove a member from a pod
@@ -99,9 +117,10 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     }
 
     /// @notice Admin functionality to batch remove a member from a pod
-    function batchRemoveMemberFromPod(uint256 _podId, address[] memory _members)
+    function batchRemovePodMember(uint256 _podId, address[] memory _members)
         external
     {
+        validateRemovePodMember(_podId);
         uint256 numMembers = _members.length;
         for (uint256 i = 0; i < numMembers; ) {
             _removePodMember(_podId, _members[i]);
@@ -112,4 +131,6 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
             }
         }
     }
+
+    ///////////////  VETO CONTROLLER /////////////////
 }
