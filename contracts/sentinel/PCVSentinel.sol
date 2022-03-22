@@ -61,11 +61,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
     function knight(address guard)
         external
         override
-        hasAnyOfThreeRoles(
-            TribeRoles.PCV_SENTINEL_ADMIN,
-            TribeRoles.GOVERNOR,
-            TribeRoles.GUARDIAN
-        )
+        hasAnyOfTwoRoles(TribeRoles.GUARDIAN, TribeRoles.GOVERNOR)
     {
         guards.add(guard);
 
@@ -80,11 +76,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
     function slay(address traitor)
         external
         override
-        hasAnyOfThreeRoles(
-            TribeRoles.PCV_SENTINEL_ADMIN,
-            TribeRoles.GOVERNOR,
-            TribeRoles.GUARDIAN
-        )
+        hasAnyOfTwoRoles(TribeRoles.GUARDIAN, TribeRoles.GOVERNOR)
     {
         guards.remove(traitor);
 
@@ -124,7 +116,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
     }
 
     /**
-     * @dev receive() and fallback() have been added and made payable for cases where the contract
+     * @dev receive() and fallback() have been added and made payable for cases wrhere the contract
      * needs to be able to receive eth as part of an operation - such as receiving an incentivization
      * (in eth) from a contract as part of operation. For similar (and not unlikely) edge cases,
      * the contract also has the capability of sending eth inside when instructed by a guard to do so.

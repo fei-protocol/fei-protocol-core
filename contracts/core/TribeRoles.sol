@@ -44,10 +44,6 @@ library TribeRoles {
     bytes32 internal constant PCV_GUARDIAN_ADMIN =
         keccak256("PCV_GUARDIAN_ADMIN_ROLE");
 
-    /// @notice admin of PCVSentinel
-    bytes32 internal constant PCV_SENTINEL_ADMIN =
-        keccak256("PCV_SENTINEL_ADMIN_ROLE");
-
     /// @notice admin of all Minor Roles
     bytes32 internal constant MINOR_ROLE_ADMIN = keccak256("MINOR_ROLE_ADMIN");
 
