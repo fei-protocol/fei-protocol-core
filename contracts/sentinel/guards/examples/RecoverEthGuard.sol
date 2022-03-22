@@ -7,7 +7,7 @@ contract RecoverEthGuard is IGuard {
     address private constant ZERO = address(0x0);
 
     function check() external view override returns (bool) {
-        return (address(this).balance != 0);
+        return true;
     }
 
     function getProtecActions()
