@@ -11,6 +11,8 @@ import {IPodFactory} from "../../../pods/IPodFactory.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {ICore} from "../../../core/ICore.sol";
 
+// import "hardhat/console.sol";
+
 contract PodAdminGatewayIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
@@ -60,164 +62,144 @@ contract PodAdminGatewayIntegrationTest is DSTest {
     function testInitialState() public {
         address podAdmin = factory.getPodAdmin(podId);
         assertEq(podAdmin, address(podAdminGateway));
-
-        bytes32[] memory allPodAdmins = podAdminGateway.getPodAdminPriviledges(
-            podId,
-            IPodAdminGateway.AdminPriviledge.ADD_MEMBER
-        );
-        assertEq(allPodAdmins.length, 0);
-
-        // Grant a TribeRole pod admin status to pod
-        vm.prank(feiDAOTimelock);
-        podAdminGateway.grantPodAdminPriviledge(
-            podId,
-            IPodAdminGateway.AdminPriviledge.ADD_MEMBER,
-            TribeRoles.VOTIUM_ROLE
-        );
-        bytes32[] memory updatedAdminRoles = podAdminGateway
-            .getPodAdminPriviledges(
-                podId,
-                IPodAdminGateway.AdminPriviledge.ADD_MEMBER
-            );
-        assertEq(updatedAdminRoles[0], TribeRoles.VOTIUM_ROLE);
     }
 
-    /// @notice Validate that a podAdmin can be added for a particular pod
-    function testAddPodAdmin() public {
-        bytes32 extraRole = TribeRoles.VOTIUM_ROLE;
+    /// @notice Validate that a podAdmin can be added for a particular pod by the GOVERNOR
+    function testAddPodMember() public {
+        address newMember = address(0x11);
 
         vm.prank(feiDAOTimelock);
-        podAdminGateway.grantPodAdminPriviledge(
-            podId,
-            IPodAdminGateway.AdminPriviledge.ADD_MEMBER,
-            extraRole
-        );
-
-        bytes32[] memory allPodAdmins = podAdminGateway.getPodAdminPriviledges(
-            podId,
-            IPodAdminGateway.AdminPriviledge.ADD_MEMBER
-        );
-        assertEq(allPodAdmins.length, 1);
-        assertEq(allPodAdmins[0], extraRole);
+        podAdminGateway.addPodMember(podId, newMember);
+        uint256 numPodMembers = factory.getNumMembers(podId);
+        assertEq(numPodMembers, podConfig.members.length + 1);
+        address[] memory podMembers = factory.getPodMembers(podId);
+        assertEq(podMembers[0], newMember);
     }
 
     /// @notice Validate that a podAdmin can be removed for a particular pod
-    function testRemovePodAdmin() public {
-        // Grant a role admin access
+    function testRemovePodMember() public {
+        address memberToRemove = podConfig.members[0];
+
         vm.prank(feiDAOTimelock);
-        podAdminGateway.grantPodAdminPriviledge(
-            podId,
-            IPodAdminGateway.AdminPriviledge.REMOVE_MEMBER,
-            testRole
-        );
+        podAdminGateway.removePodMember(podId, memberToRemove);
 
-        // Revoke that role admin access
-        vm.prank(securityGuardian);
-        podAdminGateway.revokePodAdminPriviledge(
-            podId,
-            IPodAdminGateway.AdminPriviledge.REMOVE_MEMBER,
-            testRole
-        );
+        uint256 numPodMembers = factory.getNumMembers(podId);
+        assertEq(numPodMembers, podConfig.members.length - 1);
 
-        bytes32[] memory allPodAdmins = podAdminGateway.getPodAdminPriviledges(
-            podId,
-            IPodAdminGateway.AdminPriviledge.REMOVE_MEMBER
-        );
-        assertEq(allPodAdmins.length, 0);
+        address[] memory podMembers = factory.getPodMembers(podId);
+        assertEq(podMembers[0], podConfig.members[1]);
+        assertEq(podMembers[1], podConfig.members[2]);
     }
 
-    /// @notice Validate that an added podAdmin has access to admin functionality for a pod
-    function testPodAdminCanAddMembers() public {
-        // Grant Votium address admin access to pod
+    /// @notice Validate that members can be removed by batch
+    function testBatchRemoveMembers() public {
+        address[] memory membersToRemove = new address[](2);
+        membersToRemove[0] = podConfig.members[0];
+        membersToRemove[1] = podConfig.members[1];
+
         vm.prank(feiDAOTimelock);
-        podAdminGateway.grantPodAdminPriviledge(
-            podId,
-            IPodAdminGateway.AdminPriviledge.ADD_MEMBER,
-            testRole
+        podAdminGateway.batchRemovePodMember(podId, membersToRemove);
+
+        uint256 numPodMembers = factory.getNumMembers(podId);
+        assertEq(
+            numPodMembers,
+            podConfig.members.length - membersToRemove.length
         );
 
-        // Have Votium address add new member to pod
-        address newPodMember = address(0x12);
-        vm.prank(votiumAddress);
-        podAdminGateway.addMemberToPod(podId, newPodMember);
-
-        // Validate membership added
-        uint256 numMembers = factory.getNumMembers(podId);
-        uint256 initialNumMembers = podConfig.members.length;
-        assertEq(numMembers, initialNumMembers + 1);
-
-        address[] memory members = factory.getPodMembers(podId);
-        assertEq(members[0], newPodMember);
+        // Should only be 1 podMember left - the last
+        address[] memory podMembers = factory.getPodMembers(podId);
+        assertEq(podMembers[0], podConfig.members[2]);
     }
 
-    function testPodAdminCanRemoveMembers() public {
+    /// @notice Validate that members can be added by batch
+    function testBatchAddMembers() public {
+        address[] memory membersToAdd = new address[](2);
+        membersToAdd[0] = address(0x11);
+        membersToAdd[1] = address(0x12);
+
         vm.prank(feiDAOTimelock);
-        podAdminGateway.grantPodAdminPriviledge(
-            podId,
-            IPodAdminGateway.AdminPriviledge.REMOVE_MEMBER,
-            testRole
-        );
+        podAdminGateway.batchAddPodMember(podId, membersToAdd);
 
-        // Remove member from pod
-        address podMemberToRemove = factory.getPodMembers(podId)[0];
-        vm.prank(votiumAddress);
-        podAdminGateway.removeMemberFromPod(podId, podMemberToRemove);
+        uint256 numPodMembers = factory.getNumMembers(podId);
+        assertEq(numPodMembers, podConfig.members.length + membersToAdd.length);
 
-        // Validate membership added
-        uint256 numMembers = factory.getNumMembers(podId);
-        uint256 initialNumMembers = podConfig.members.length;
-        assertEq(numMembers, initialNumMembers - 1);
-    }
-
-    /// @notice Validate that a role with ADD_MEMBER access can not remove a member
-    function testFailAdminDelineation() public {
-        vm.prank(feiDAOTimelock);
-        podAdminGateway.grantPodAdminPriviledge(
-            podId,
-            IPodAdminGateway.AdminPriviledge.ADD_MEMBER,
-            testRole
-        );
-
-        // Remove member from pod
-        address podMemberToRemove = factory.getPodMembers(podId)[0];
-        vm.prank(votiumAddress);
-        podAdminGateway.removeMemberFromPod(podId, podMemberToRemove);
-    }
-
-    /// @notice Validate that a role can have both ADD_MEMBER and REMOVE_MEMBER access
-    function validateMultiplAdminRoles() public {
-        vm.prank(feiDAOTimelock);
-        podAdminGateway.grantPodAdminPriviledge(
-            podId,
-            IPodAdminGateway.AdminPriviledge.ADD_MEMBER,
-            testRole
-        );
-        podAdminGateway.grantPodAdminPriviledge(
-            podId,
-            IPodAdminGateway.AdminPriviledge.REMOVE_MEMBER,
-            testRole
-        );
-
-        bytes32[] memory addMemberTribeRoles = podAdminGateway
-            .getPodAdminPriviledges(
-                podId,
-                IPodAdminGateway.AdminPriviledge.ADD_MEMBER
-            );
-        assertEq(addMemberTribeRoles.length, 1);
-        assertEq(addMemberTribeRoles[0], testRole);
-
-        bytes32[] memory removeMemberTribeRoles = podAdminGateway
-            .getPodAdminPriviledges(
-                podId,
-                IPodAdminGateway.AdminPriviledge.REMOVE_MEMBER
-            );
-        assertEq(removeMemberTribeRoles.length, 1);
-        assertEq(removeMemberTribeRoles[0], testRole);
+        address[] memory podMembers = factory.getPodMembers(podId);
+        assertEq(podMembers[0], membersToAdd[1]);
+        assertEq(podMembers[1], membersToAdd[0]);
     }
 
     /// @notice Validate that a non-PodAdmin fails to call a priviledged admin method
     function testFailNonAdminRemoveMember() public {
-        vm.expectRevert(bytes("UnauthorisedAdminAction"));
-        podAdminGateway.removeMemberFromPod(podId, address(0x1));
+        vm.expectRevert(bytes("UNAUTHORIZED"));
+        podAdminGateway.removePodMember(podId, podConfig.members[0]);
+    }
+
+    /// @notice Validate that PodAddMemberRole is computed is expected
+    function testGetPodAddMemberRole() public {
+        bytes32 specificAddRole = keccak256(
+            abi.encode(podId, "ORCA_POD", "POD_ADD_MEMBER_ROLE")
+        );
+        assertEq(specificAddRole, podAdminGateway.getPodAddMemberRole(podId));
+    }
+
+    /// @notice Validate that PodRemoveMemberRole is computed is expected
+    function testRemovePodAddMemberRole() public {
+        bytes32 specificRemoveRole = keccak256(
+            abi.encode(podId, "ORCA_POD", "POD_REMOVE_MEMBER_ROLE")
+        );
+        assertEq(
+            specificRemoveRole,
+            podAdminGateway.getPodRemoveMemberRole(podId)
+        );
+    }
+
+    /// @notice Validate that the specific add member pod admin can add
+    function testSpecificAddMemberRole() public {
+        address userWithSpecificRole = address(0x11);
+
+        // Create role in core
+        bytes32 specificPodAddRole = keccak256(
+            abi.encode(podId, "ORCA_POD", "POD_ADD_MEMBER_ROLE")
+        );
+
+        vm.startPrank(feiDAOTimelock);
+        ICore(core).createRole(specificPodAddRole, TribeRoles.GOVERNOR);
+        ICore(core).grantRole(specificPodAddRole, userWithSpecificRole);
+        vm.stopPrank();
+
+        address newMember = address(0x12);
+        vm.prank(userWithSpecificRole);
+        podAdminGateway.addPodMember(podId, newMember);
+
+        uint256 numPodMembers = factory.getNumMembers(podId);
+        assertEq(numPodMembers, podConfig.members.length + 1);
+
+        address[] memory podMembers = factory.getPodMembers(podId);
+        assertEq(podMembers[0], newMember);
+    }
+
+    /// @notice Validate that the specific add member pod admin can remove members
+    function testSpecificRemoveMemberRole() public {
+        address userWithSpecificRole = address(0x11);
+
+        // Create role in core
+        bytes32 specificPodRemoveRole = keccak256(
+            abi.encode(podId, "ORCA_POD", "POD_REMOVE_MEMBER_ROLE")
+        );
+
+        vm.startPrank(feiDAOTimelock);
+        ICore(core).createRole(specificPodRemoveRole, TribeRoles.GOVERNOR);
+        ICore(core).grantRole(specificPodRemoveRole, userWithSpecificRole);
+        vm.stopPrank();
+
+        vm.prank(userWithSpecificRole);
+        podAdminGateway.removePodMember(podId, podConfig.members[0]);
+
+        uint256 numPodMembers = factory.getNumMembers(podId);
+        assertEq(numPodMembers, podConfig.members.length - 1);
+
+        address[] memory podMembers = factory.getPodMembers(podId);
+        assertEq(podMembers[0], podConfig.members[1]);
+        assertEq(podMembers[1], podConfig.members[2]);
     }
 }

@@ -54,7 +54,6 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Validate the calling address is able to remove a pod member
     /// @dev Valid permissions are GOVERNOR, POD_ADMIN and POD_REMOVE_MEMBER_ROLE
     function validateAddPodMember(uint256 _podId) internal view {
-        // ROLE_ID = Hash(podId, Orca salt, ROLE_NAME)
         bytes32 POD_ADMIN_ADD_MEMBER_ROLE = getPodAddMemberRole(_podId);
         ICore core = core();
         require(
@@ -97,7 +96,6 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Validate the calling address is able to remove a pod member
     /// @dev Valid permissions are GOVERNOR, POD_ADMIN, GUARDIAN and POD_ADMIN_REMOVE_MEMBER
     function validateRemovePodMember(uint256 _podId) internal view {
-        // ROLE_ID = Hash(podId, Orca salt, ROLE_NAME)
         bytes32 POD_ADMIN_REMOVE_MEMBER = getPodRemoveMemberRole(_podId);
         ICore core = core();
         require(
