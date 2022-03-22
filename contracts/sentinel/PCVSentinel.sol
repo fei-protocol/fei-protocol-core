@@ -102,6 +102,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
 
         for (uint256 i = 0; i < targets.length; i++) {
             require(targets[i] != address(this), "Cannot target self.");
+            require(address(this).balance >= values[i], "Insufficient ETH.");
             (bool success, bytes memory returndata) = targets[i].call{
                 value: values[i]
             }(calldatas[i]);

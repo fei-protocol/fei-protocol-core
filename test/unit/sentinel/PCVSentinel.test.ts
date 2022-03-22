@@ -146,14 +146,14 @@ describe('PCV Sentinel', function () {
   describe('sentinel access control', async () => {
     it('prevents normal user from adding guards', async () => {
       await expect(pcvSentinel.connect(impersonatedSigners[userAddress]).knight(noOpGuard.address)).to.be.revertedWith(
-        'CoreRef: Caller is not governor or guardian or admin'
+        'UNAUTHORIZED'
       );
     });
 
     it('prevents normal user from removing guards', async () => {
       await pcvSentinel.connect(impersonatedSigners[guardianAddress]).knight(noOpGuard.address);
       await expect(pcvSentinel.connect(impersonatedSigners[userAddress]).slay(noOpGuard.address)).to.be.revertedWith(
-        'CoreRef: Caller is not governor or guardian or admin'
+        'UNAUTHORIZED'
       );
     });
 

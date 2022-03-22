@@ -4,9 +4,7 @@ pragma solidity ^0.8.4;
 import "../../IGuard.sol";
 
 contract RecoverEthGuard is IGuard {
-    address private constant ZERO = address(0x0);
-
-    function check() external view override returns (bool) {
+    function check() external pure override returns (bool) {
         return true;
     }
 
