@@ -26,7 +26,7 @@ contract RecoverEthGuard is IGuard {
 
         targets[0] = ZERO;
         datas[0] = bytes("");
-        values[0] = 0.05 ether;
+        values[0] = 0.5 ether;
 
         return (targets, datas, values);
     }

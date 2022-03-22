@@ -130,11 +130,9 @@ describe('PCV Sentinel', function () {
 
     it('is able to send and receive value', async () => {
       await pcvSentinel.connect(impersonatedSigners[guardianAddress]).knight(recoverEthGuard.address);
-      await forceSpecificEth(recoverEthGuard.address, '0.1');
+      await forceSpecificEth(pcvSentinel.address, '1');
       await pcvSentinel.protec(recoverEthGuard.address);
-      expect(await recoverEthGuard.provider.getBalance(recoverEthGuard.address)).to.equal(
-        ethers.utils.parseEther('0.05')
-      );
+      expect(await pcvSentinel.provider.getBalance(pcvSentinel.address)).to.equal(ethers.utils.parseEther('0.5'));
     });
   });
 
