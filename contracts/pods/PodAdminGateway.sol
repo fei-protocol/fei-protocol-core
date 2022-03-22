@@ -64,22 +64,15 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
 
     /// @notice Admin functionality to add a member to a pod
     /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and POD_ADD_MEMBER_ROLE
-    function addPodMember(uint256 _podId, address _member) external {
-        validateAddPodMember(_podId);
+    function addPodMember(uint256 _podId, address _member)
+        external
+        hasAnyOfThreeRoles(
+            TribeRoles.GOVERNOR,
+            TribeRoles.POD_ADMIN,
+            getPodAddMemberRole(_podId)
+        )
+    {
         _addMemberToPod(_podId, _member);
-    }
-
-    /// @notice Validate the calling address is able to remove a pod member
-    /// @dev Valid permissions are GOVERNOR, POD_ADMIN and POD_REMOVE_MEMBER_ROLE
-    function validateAddPodMember(uint256 _podId) internal view {
-        bytes32 POD_ADMIN_ADD_MEMBER_ROLE = getPodAddMemberRole(_podId);
-        ICore core = core();
-        require(
-            core.hasRole(TribeRoles.GOVERNOR, msg.sender) ||
-                core.hasRole(TribeRoles.POD_ADMIN, msg.sender) ||
-                core.hasRole(POD_ADMIN_ADD_MEMBER_ROLE, msg.sender),
-            "UNAUTHORISED"
-        );
     }
 
     /// @notice Internal method to add a member to a pod
@@ -92,8 +85,12 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Admin functionality to batch add a member to a pod
     function batchAddPodMember(uint256 _podId, address[] memory _members)
         external
+        hasAnyOfThreeRoles(
+            TribeRoles.GOVERNOR,
+            TribeRoles.POD_ADMIN,
+            getPodAddMemberRole(_podId)
+        )
     {
-        validateAddPodMember(_podId);
         uint256 numMembers = _members.length;
         for (uint256 i = 0; i < numMembers; ) {
             _addMemberToPod(_podId, _members[i]);
@@ -106,23 +103,16 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
 
     /// @notice Admin functionality to remove a member from a pod.
     /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and POD_ADMIN_REMOVE_MEMBER
-    function removePodMember(uint256 _podId, address _member) external {
-        validateRemovePodMember(_podId);
+    function removePodMember(uint256 _podId, address _member)
+        external
+        hasAnyOfFourRoles(
+            TribeRoles.GOVERNOR,
+            TribeRoles.POD_ADMIN,
+            TribeRoles.GUARDIAN,
+            getPodRemoveMemberRole(_podId)
+        )
+    {
         _removePodMember(_podId, _member);
-    }
-
-    /// @notice Validate the calling address is able to remove a pod member
-    /// @dev Valid permissions are GOVERNOR, POD_ADMIN, GUARDIAN and POD_ADMIN_REMOVE_MEMBER
-    function validateRemovePodMember(uint256 _podId) internal view {
-        bytes32 POD_ADMIN_REMOVE_MEMBER = getPodRemoveMemberRole(_podId);
-        ICore core = core();
-        require(
-            core.hasRole(TribeRoles.GOVERNOR, msg.sender) ||
-                core.hasRole(TribeRoles.POD_ADMIN, msg.sender) ||
-                core.hasRole(TribeRoles.GUARDIAN, msg.sender) ||
-                core.hasRole(POD_ADMIN_REMOVE_MEMBER, msg.sender),
-            "UNAUTHORISED"
-        );
     }
 
     /// @notice Internal method to remove a member from a pod
@@ -135,8 +125,13 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Admin functionality to batch remove a member from a pod
     function batchRemovePodMember(uint256 _podId, address[] memory _members)
         external
+        hasAnyOfFourRoles(
+            TribeRoles.GOVERNOR,
+            TribeRoles.POD_ADMIN,
+            TribeRoles.GUARDIAN,
+            getPodRemoveMemberRole(_podId)
+        )
     {
-        validateRemovePodMember(_podId);
         uint256 numMembers = _members.length;
         for (uint256 i = 0; i < numMembers; ) {
             _removePodMember(_podId, _members[i]);
