@@ -22,7 +22,7 @@ contract NoOpGuard is IGuard {
     {
         targets = new address[](1);
         datas = new bytes[](1);
-        values = new bytes[](1);
+        values = new uint256[](1);
 
         targets[0] = ZERO;
         datas[0] = bytes("");

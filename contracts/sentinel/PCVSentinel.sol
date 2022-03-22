@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@rari-capital/solmate/src/utils/ReentrancyGuard.sol";
+import "../core/TribeRoles.sol";
 import "../refs/CoreRef.sol";
 import "../pcv/IPCVDeposit.sol";
 import "./IPCVSentinel.sol";
@@ -27,7 +28,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
      * @param _core the Tribe core address
      */
     constructor(address _core) CoreRef(_core) {
-        _setContractAdminRole(keccak256("PCV_SENTINEL_ADMIN_ROLE"));
+        _setContractAdminRole(TribeRoles.PCV_SENTINEL_ADMIN);
     }
 
     // ---------- Read-Only API ----------
