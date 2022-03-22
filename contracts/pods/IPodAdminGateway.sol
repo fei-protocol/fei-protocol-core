@@ -20,4 +20,7 @@ interface IPodAdminGateway {
         ADD_MEMBER,
         REMOVE_MEMBER
     }
+
+    // Veto functionality
+    event VetoTimelock(uint256 indexed podId, address indexed timelock);
 }

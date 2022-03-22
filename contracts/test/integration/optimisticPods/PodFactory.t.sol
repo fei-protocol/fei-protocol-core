@@ -24,7 +24,6 @@ contract PodFactoryIntegrationTest is DSTest {
     address private podController = 0xD89AAd5348A34E440E72f5F596De4fA7e291A3e8;
     address private memberToken = 0x0762aA185b6ed2dCA77945Ebe92De705e0C37AE3;
     address private podAdmin = address(0x3);
-    address private vetoController = address(0x4);
     address private feiDAOTimelock = 0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c;
 
     bytes32 public constant PROPOSER_ROLE = keccak256("PROPOSER_ROLE");
@@ -43,10 +42,7 @@ contract PodFactoryIntegrationTest is DSTest {
 
     /// @notice Validate that a non-authorised address fails to create a pod
     function testOnlyAuthedUsersCanCreatePod() public {
-        IPodFactory.PodConfig memory podConfig = getPodParams(
-            podAdmin,
-            vetoController
-        );
+        IPodFactory.PodConfig memory podConfig = getPodParams(podAdmin);
 
         vm.expectRevert(bytes("UNAUTHORIZED"));
         address fraud = address(0x10);
@@ -56,10 +52,7 @@ contract PodFactoryIntegrationTest is DSTest {
 
     /// @notice Validate that a GOVERNOR role can create a pod
     function testGovernorCanCreatePod() public {
-        IPodFactory.PodConfig memory podConfig = getPodParams(
-            podAdmin,
-            vetoController
-        );
+        IPodFactory.PodConfig memory podConfig = getPodParams(podAdmin);
 
         vm.prank(feiDAOTimelock);
         factory.createChildOptimisticPod(podConfig);
@@ -84,10 +77,7 @@ contract PodFactoryIntegrationTest is DSTest {
         vm.prank(dummyTribalCouncil);
         Core(core).grantRole(TribeRoles.POD_DEPLOYER_ROLE, dummyPodDeployer);
 
-        IPodFactory.PodConfig memory podConfig = getPodParams(
-            podAdmin,
-            vetoController
-        );
+        IPodFactory.PodConfig memory podConfig = getPodParams(podAdmin);
         vm.prank(dummyPodDeployer);
         factory.createChildOptimisticPod(podConfig);
     }
@@ -98,10 +88,7 @@ contract PodFactoryIntegrationTest is DSTest {
     }
 
     function testGnosisGetters() public {
-        IPodFactory.PodConfig memory podConfig = getPodParams(
-            podAdmin,
-            vetoController
-        );
+        IPodFactory.PodConfig memory podConfig = getPodParams(podAdmin);
 
         vm.prank(feiDAOTimelock);
         (uint256 podId, address timelock) = factory.createChildOptimisticPod(
@@ -124,10 +111,7 @@ contract PodFactoryIntegrationTest is DSTest {
     }
 
     function testUpdatePodAdmin() public {
-        IPodFactory.PodConfig memory podConfig = getPodParams(
-            podAdmin,
-            vetoController
-        );
+        IPodFactory.PodConfig memory podConfig = getPodParams(podAdmin);
 
         vm.prank(feiDAOTimelock);
         (uint256 podId, ) = factory.createChildOptimisticPod(podConfig);
@@ -151,10 +135,7 @@ contract PodFactoryIntegrationTest is DSTest {
 
     /// @notice Creates a child pod with an optimistic timelock attached
     function testDeployOptimisticGovernancePod() public {
-        IPodFactory.PodConfig memory podConfig = getPodParams(
-            podAdmin,
-            vetoController
-        );
+        IPodFactory.PodConfig memory podConfig = getPodParams(podAdmin);
 
         vm.prank(feiDAOTimelock);
         (uint256 podId, address timelock) = factory.createChildOptimisticPod(
@@ -187,10 +168,7 @@ contract PodFactoryIntegrationTest is DSTest {
 
     /// @notice Validate that the podId to timelock mapping is correct
     function testTimelockStorageOnDeploy() public {
-        IPodFactory.PodConfig memory podConfig = getPodParams(
-            podAdmin,
-            vetoController
-        );
+        IPodFactory.PodConfig memory podConfig = getPodParams(podAdmin);
 
         vm.prank(feiDAOTimelock);
         (uint256 podId, address timelock) = factory.createChildOptimisticPod(
@@ -203,10 +181,7 @@ contract PodFactoryIntegrationTest is DSTest {
 
     /// @notice Validate that multiple pods can be deployed with the correct admin set
     function testDeployMultiplePods() public {
-        IPodFactory.PodConfig memory podConfig = getPodParams(
-            podAdmin,
-            vetoController
-        );
+        IPodFactory.PodConfig memory podConfig = getPodParams(podAdmin);
 
         podConfig.label = bytes32("A");
 
@@ -226,16 +201,10 @@ contract PodFactoryIntegrationTest is DSTest {
     }
 
     function testBurnerPodDeploy() public {
-        IPodFactory.PodConfig memory podConfigA = getPodParams(
-            podAdmin,
-            vetoController
-        );
+        IPodFactory.PodConfig memory podConfigA = getPodParams(podAdmin);
         podConfigA.label = bytes32("A");
 
-        IPodFactory.PodConfig memory podConfigB = getPodParams(
-            podAdmin,
-            vetoController
-        );
+        IPodFactory.PodConfig memory podConfigB = getPodParams(podAdmin);
         podConfigB.label = bytes32("B");
 
         IPodFactory.PodConfig[] memory configs = new IPodFactory.PodConfig[](2);

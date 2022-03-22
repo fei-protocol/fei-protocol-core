@@ -2,12 +2,14 @@
 pragma solidity ^0.8.0;
 
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
 import {IMemberToken} from "./orcaInterfaces/IMemberToken.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
 import {ICore} from "../core/ICore.sol";
 import {Core} from "../core/Core.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
 import {IPodAdminGateway} from "./IPodAdminGateway.sol";
+import {IPodFactory} from "./IPodFactory.sol";
 
 /// @title Multiple Pod Admins for Orca pods
 /// @notice Expose pod admin functionality from Orca pods to multiple Tribe Roles.
@@ -21,8 +23,19 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Orca membership token for the pods. Handles permissioning pod members
     IMemberToken private immutable memberToken;
 
-    constructor(address _core, address _memberToken) CoreRef(_core) {
+    /// @notice Pod factory which creates optimistic pods and acts as a source of information
+    IPodFactory private immutable podFactory;
+
+    constructor(
+        address _core,
+        address _memberToken,
+        address _podFactory
+    ) CoreRef(_core) {
+        require(_memberToken != address(0x0), "ZERO_ADDRESS");
+        require(_podFactory != address(0x0), "ZERO_ADDRESS");
+
         memberToken = IMemberToken(_memberToken);
+        podFactory = IPodFactory(_podFactory);
     }
 
     ////////////////////////   GETTERS   ////////////////////////////////
@@ -32,7 +45,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         return keccak256(abi.encode(_podId, "ORCA_POD", "POD_ADD_MEMBER_ROLE"));
     }
 
-    /// @notice Calculate the pod admin role related ot removing pod members
+    /// @notice Calculate the pod admin role related to removing pod members
     function getPodRemoveMemberRole(uint256 _podId)
         public
         pure
@@ -40,6 +53,11 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     {
         return
             keccak256(abi.encode(_podId, "ORCA_POD", "POD_REMOVE_MEMBER_ROLE"));
+    }
+
+    /// @notice Calculate the specific pod veto role, which allows an
+    function getPodVetoRole(uint256 _podId) public pure returns (bytes32) {
+        return keccak256(abi.encode(_podId, "ORCA_POD", "POD_VETO_ROLE"));
     }
 
     /////////////////////////    ADMIN PRIVILEDGES       ////////////////////////////
@@ -131,4 +149,17 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     }
 
     ///////////////  VETO CONTROLLER /////////////////
+    function veto(uint256 _podId, bytes32 proposalId)
+        external
+        hasAnyOfFourRoles(
+            TribeRoles.GOVERNOR,
+            TribeRoles.POD_VETO_ROLE,
+            TribeRoles.GUARDIAN,
+            getPodVetoRole(_podId)
+        )
+    {
+        address timelock = podFactory.getPodTimelock(_podId);
+        emit VetoTimelock(_podId, timelock);
+        TimelockController(payable(timelock)).cancel(proposalId);
+    }
 }

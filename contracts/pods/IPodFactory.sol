@@ -8,9 +8,8 @@ interface IPodFactory {
     /// @param label Metadata, Human readable label for the pod
     /// @param ensString Metadata, ENS name of the pod
     /// @param imageUrl Metadata, URL to a image to represent the pod in frontends
-    /// @param admin The admin of the pod - able to add and remove pod members
+    /// @param admin The admin of the pod - able to add and remove pod members. Expected to be set to a Gateway contract
     /// @param minDelay Delay on the timelock
-    /// @param vetoController A controller through which a pod can be vetoed
     struct PodConfig {
         address[] members;
         uint256 threshold;
@@ -19,7 +18,6 @@ interface IPodFactory {
         string imageUrl;
         address admin;
         uint256 minDelay;
-        address vetoController;
     }
 
     function getPodSafe(uint256 podId) external view returns (address);
