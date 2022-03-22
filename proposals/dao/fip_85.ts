@@ -35,7 +35,26 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const distributor = new ethers.Contract("0x1fa69a416bcf8572577d3949b742fbb0a9cd98c7", [{"constant":true,"inputs":[],"name":"distributionEndBlock","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"uint256","name":"blockNumber","type":"uint256"}],"name":"getRgtDistributed","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"}]);
+  const distributor = new ethers.Contract('0x1fa69a416bcf8572577d3949b742fbb0a9cd98c7', [
+    {
+      constant: true,
+      inputs: [],
+      name: 'distributionEndBlock',
+      outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+      payable: false,
+      stateMutability: 'view',
+      type: 'function'
+    },
+    {
+      constant: true,
+      inputs: [{ internalType: 'uint256', name: 'blockNumber', type: 'uint256' }],
+      name: 'getRgtDistributed',
+      outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+      payable: false,
+      stateMutability: 'view',
+      type: 'function'
+    }
+  ]);
   expect(await distributor.distributionEndBlock()).to.be.equal('14476500');
   expect(await distributor.getRgtDistributed(14476500)).to.be.equal('164123133170876605822414');
   expect(await distributor.getRgtDistributed(19026500)).to.be.equal('164123133170876605822414');
