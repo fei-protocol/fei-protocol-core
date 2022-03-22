@@ -27,9 +27,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
      * @notice Creates a PCV Sentinel with no guards
      * @param _core the Tribe core address
      */
-    constructor(address _core) CoreRef(_core) {
-        _setContractAdminRole(TribeRoles.PCV_SENTINEL_ADMIN);
-    }
+    constructor(address _core) CoreRef(_core) {}
 
     // ---------- Read-Only API ----------
 
@@ -63,7 +61,11 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
     function knight(address guard)
         external
         override
-        isGovernorOrGuardianOrAdmin
+        hasAnyOfThreeRoles(
+            TribeRoles.PCV_SENTINEL_ADMIN,
+            TribeRoles.GOVERNOR,
+            TribeRoles.GUARDIAN
+        )
     {
         guards.add(guard);
 
@@ -78,7 +80,11 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
     function slay(address traitor)
         external
         override
-        isGovernorOrGuardianOrAdmin
+        hasAnyOfThreeRoles(
+            TribeRoles.PCV_SENTINEL_ADMIN,
+            TribeRoles.GOVERNOR,
+            TribeRoles.GUARDIAN
+        )
     {
         guards.remove(traitor);
 
