@@ -9,7 +9,7 @@ const fip_87: ProposalDescription = {
       method: 'grantRole(bytes32,address)',
       arguments: [
         '0x55435dd261a4b9b3364963f7738a7a662ad9c84396d64be3365284bb7f0a5041', // guardian
-        '{PCVSentinel}'
+        '{pcvSentinel}'
       ],
       description: 'Grant GUARDIAN_ROLE to Sentinel'
     }
