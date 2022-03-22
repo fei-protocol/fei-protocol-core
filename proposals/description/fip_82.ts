@@ -17,6 +17,16 @@ const fip_82: ProposalDescription = {
     {
       target: 'core',
       values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
+        '0x6ecc8dff15d98038e3ff32bfe76768123628cfdd2c3d11f2ec23c5433a9d4ba3', // POD_ADMIN
+        '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e' // GOVERN_ROLE
+      ],
+      description: 'Create POD_ADMIN role'
+    },
+    {
+      target: 'core',
+      values: '0',
       method: 'grantRole(bytes32,address)',
       arguments: [
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096', // GOVERN_ROLE
@@ -36,7 +46,6 @@ const fip_82: ProposalDescription = {
       ],
       description: 'Create POD_DEPLOYER_ROLE role'
     },
-    // TODO: Update to Votium role
     {
       target: 'core',
       values: '0',
@@ -77,6 +86,16 @@ const fip_82: ProposalDescription = {
       method: 'grantRole(bytes32,address)',
       arguments: ['0x1c4afb10045e2ffba702b04df46e551f6f2c584499b4abe7b6136efe6b05a34d', '{tribalCouncilTimelock}'],
       description: 'Grant POD_DEPLOYER_ROLE to TribalCouncil timelock. TribalCouncil will be able to deploy pods'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x6ecc8dff15d98038e3ff32bfe76768123628cfdd2c3d11f2ec23c5433a9d4ba3', // POD_ADMIN
+        '{tribalCouncilTimelock}'
+      ],
+      description: 'Grant POD_ADMIN role to TribalCouncil timelock'
     },
     {
       target: 'core',

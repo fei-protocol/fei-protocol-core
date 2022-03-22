@@ -148,7 +148,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         external
         hasAnyOfFourRoles(
             TribeRoles.GOVERNOR,
-            TribeRoles.POD_VETO_ROLE,
+            TribeRoles.POD_VETO_ADMIN,
             TribeRoles.GUARDIAN,
             getPodVetoRole(_podId)
         )
