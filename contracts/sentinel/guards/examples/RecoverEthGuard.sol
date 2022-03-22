@@ -12,7 +12,7 @@ contract RecoverEthGuard is IGuard {
 
     function getProtecActions()
         external
-        pure
+        view
         override
         returns (
             address[] memory targets,
@@ -24,10 +24,15 @@ contract RecoverEthGuard is IGuard {
         datas = new bytes[](1);
         values = new uint256[](1);
 
-        targets[0] = ZERO;
+        targets[0] = address(this);
         datas[0] = bytes("");
         values[0] = 0.5 ether;
 
         return (targets, datas, values);
     }
+
+    // Just added so that we can receive ether for the test
+    fallback() external payable {}
+
+    receive() external payable {}
 }
